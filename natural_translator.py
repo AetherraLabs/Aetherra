@@ -259,7 +259,7 @@ class NaturalToNeuroTranslator:
         """Execute the generated NeuroCode"""
         try:
             # Import the standalone runner
-            from neuro_runner_standalone import StandaloneNeuroRunner
+            from scripts.neuro_runner_standalone import StandaloneNeuroRunner
 
             runner = StandaloneNeuroRunner(verbose=True)
 
