@@ -4,10 +4,10 @@
 Prepares NeuroCode for GitHub publication with comprehensive documentation and examples
 """
 
-import os
 import subprocess
 import sys
 from pathlib import Path
+
 
 def run_command(command, description):
     """Run a command and print status"""
@@ -28,6 +28,7 @@ def run_command(command, description):
         print(f"❌ {description} failed with exception: {e}")
         return False
 
+
 def check_file_exists(file_path, description):
     """Check if a file exists and report status"""
     if Path(file_path).exists():
@@ -37,14 +38,15 @@ def check_file_exists(file_path, description):
         print(f"❌ Missing: {description} - {file_path}")
         return False
 
+
 def main():
     """Main preparation workflow"""
     print("🧬 NeuroCode GitHub Preparation")
     print("=" * 50)
-    
+
     # Check current status
     print("\n📋 Checking Repository Status...")
-    
+
     # Essential files check
     essential_files = [
         ("README.md", "Main repository README"),
@@ -57,16 +59,16 @@ def main():
         ("TUTORIAL.md", "Tutorial guide"),
         ("examples/EXAMPLES_GUIDE.md", "Examples guide"),
     ]
-    
+
     missing_files = []
     for file_path, description in essential_files:
         if not check_file_exists(file_path, description):
             missing_files.append(file_path)
-    
+
     if missing_files:
         print(f"\n⚠️  Missing {len(missing_files)} essential files")
         return False
-    
+
     # Check examples directory
     print("\n📁 Checking Examples Directory...")
     examples_dir = Path("examples")
@@ -78,63 +80,80 @@ def main():
     else:
         print("❌ Examples directory not found")
         return False
-    
+
     # Git repository check
     print("\n🔧 Git Repository Status...")
     if not run_command("git status --porcelain", "Checking git status"):
         print("❌ Git repository check failed")
         return False
-    
+
     # Check for uncommitted changes
-    git_status = subprocess.run("git status --porcelain", shell=True, capture_output=True, text=True)
+    git_status = subprocess.run(
+        "git status --porcelain", shell=True, capture_output=True, text=True
+    )
     if git_status.stdout.strip():
         print("⚠️  Uncommitted changes detected:")
         print(git_status.stdout)
-        
+
         commit_choice = input("\n🤔 Commit all changes before preparation? (y/n): ")
-        if commit_choice.lower() == 'y':
+        if commit_choice.lower() == "y":
             if not run_command("git add .", "Adding all files"):
                 return False
-            if not run_command('git commit -m "📚 DOCUMENTATION: Complete GitHub preparation with examples and guides"', "Committing changes"):
+            if not run_command(
+                'git commit -m "📚 DOCUMENTATION: Complete GitHub preparation with examples and guides"',
+                "Committing changes",
+            ):
                 return False
         else:
             print("⚠️  Proceeding with uncommitted changes...")
-    
+
     # Test core functionality
     print("\n🧪 Testing Core Functionality...")
-    
+
     # Test Python syntax
     test_files = [
         "main.py",
-        "neurocode.py", 
+        "neurocode.py",
         "ui/neuroplex_gui.py",
         "core/local_ai.py",
         "core/vector_memory.py",
-        "core/intent_parser.py"
+        "core/intent_parser.py",
     ]
-    
+
     for test_file in test_files:
         if Path(test_file).exists():
             if not run_command(f"python -m py_compile {test_file}", f"Testing {test_file} syntax"):
                 print(f"❌ Syntax error in {test_file}")
                 return False
-    
+
     # Test imports
     print("\n🔍 Testing Module Imports...")
     import_tests = [
-        ("python -c \"import neurocode; print('✅ NeuroCode core imports successfully')\"", "NeuroCode core"),
-        ("python -c \"import sys; sys.path.append('ui'); from neuroplex_gui import NeuroplexMainWindow; print('✅ Neuroplex GUI imports successfully')\"", "Neuroplex GUI"),
-        ("python -c \"from core.local_ai import LocalAIEngine; print('✅ Local AI imports successfully')\"", "Local AI Engine"),
-        ("python -c \"from core.vector_memory import VectorMemory; print('✅ Vector Memory imports successfully')\"", "Vector Memory"),
+        (
+            "python -c \"import neurocode; print('✅ NeuroCode core imports successfully')\"",
+            "NeuroCode core",
+        ),
+        (
+            "python -c \"import sys; sys.path.append('ui'); from neuroplex_gui import NeuroplexMainWindow; print('✅ Neuroplex GUI imports successfully')\"",
+            "Neuroplex GUI",
+        ),
+        (
+            "python -c \"from core.local_ai import LocalAIEngine; print('✅ Local AI imports successfully')\"",
+            "Local AI Engine",
+        ),
+        (
+            "python -c \"from core.vector_memory import VectorMemory; print('✅ Vector Memory imports successfully')\"",
+            "Vector Memory",
+        ),
     ]
-    
+
     for command, description in import_tests:
         if not run_command(command, f"Testing {description} import"):
             print(f"⚠️  {description} import test failed (may be due to missing dependencies)")
-    
+
     # Generate final status report
     print("\n📊 Generating Final Status Report...")
-    
+
     status_report = f"""
 # 🧬 NeuroCode Repository Status Report
 Generated: {Path(__file__).stat().st_mtime}
@@ -197,12 +216,12 @@ NeuroCode is ready to revolutionize programming on GitHub. The repository contai
 
 **The future of programming starts here! 🧬✨**
 """
-    
+
     with open("GITHUB_READINESS_REPORT.md", "w", encoding="utf-8") as f:
         f.write(status_report)
-    
+
     print("✅ Status report generated: GITHUB_READINESS_REPORT.md")
-    
+
     # Final summary
     print("\n🎉 GitHub Preparation Complete!")
     print("=" * 50)
@@ -223,8 +242,9 @@ NeuroCode is ready to revolutionize programming on GitHub. The repository contai
     print("   4. Share with programming communities")
     print()
     print("🌟 NeuroCode is ready to revolutionize programming! 🌟")
-    
+
     return True
+
 
 if __name__ == "__main__":
     success = main()

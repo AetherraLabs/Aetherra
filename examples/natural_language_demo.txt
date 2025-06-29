@@ -1,0 +1,42 @@
+# 🧠 Natural-to-NeuroCode Translator Demo
+# Test various natural language inputs
+
+# Memory operations in natural language
+"Remember this conversation about AI development"
+"Store my learning about NeuroCode syntax"
+"Save this insight about consciousness"
+
+# Pattern detection and analysis
+"Find patterns in my memory"
+"Analyze my learning progress"
+"Detect recurring themes in my thoughts"
+
+# Problem solving
+"Fix any recurring memory errors"
+"Debug the pattern detection system"
+"Solve the consciousness alignment problem"
+
+# Learning and improvement
+"Learn from this experience"
+"Improve my understanding of AI"
+"Study the patterns in successful projects"
+
+# Reflection and meta-cognition
+"Think about my progress"
+"Reflect on my goals"
+"Consider the implications of AI consciousness"
+
+# Automation and actions
+"When memory errors occur, fix them automatically"
+"If patterns emerge, analyze them deeply"
+"Automatically save important insights"
+
+# Plugin operations
+"Calculate the fibonacci sequence for 10"
+"Use math plugin to compute 2^10"
+"Transcribe this audio using whisper"
+
+# Advanced queries
+"What do I know about machine learning?"
+"Show me everything about consciousness"
+"Explain what patterns you've detected"

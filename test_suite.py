@@ -466,7 +466,7 @@ def main():
     if result.failures:
         print("\n❌ Failures:")
         for test, failure in result.failures:
-            error_msg = failure.split('AssertionError: ')[-1].split('\n')[0]
+            error_msg = failure.split("AssertionError: ")[-1].split("\n")[0]
             print(f"   • {test}: {error_msg}")
 
     if result.errors:

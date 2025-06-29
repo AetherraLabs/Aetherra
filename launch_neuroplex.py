@@ -14,16 +14,17 @@ sys.path.insert(0, str(ui_path))
 # Import and run Neuroplex
 try:
     import sys
-    from PyQt5.QtWidgets import QApplication
+
     from neuroplex_gui import NeuroplexMainWindow
+    from PyQt5.QtWidgets import QApplication
 
     print("🧬 Starting Neuroplex - The Future of AI-Native Programming!")
-    
+
     app = QApplication(sys.argv)
     window = NeuroplexMainWindow()
     window.show()
     sys.exit(app.exec_())
-    
+
 except ImportError as e:
     print(f"❌ Missing dependencies for GUI: {e}")
     print("💡 Try: pip install PyQt5")

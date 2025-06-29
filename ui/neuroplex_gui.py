@@ -880,37 +880,19 @@ class NeuroplexMainWindow(QMainWindow):
             ai_layout.addStretch()
             self.tab_widget.addTab(ai_tab, "🧠 Local AI")
 
-        # Chat interface tab
-        chat_tab = QWidget()
-        chat_layout = QVBoxLayout(chat_tab)
+        # Plugin Management tab (new!)
+        plugin_tab = QWidget()
+        plugin_layout = QVBoxLayout(plugin_tab)
 
-        # Enhanced chat display
-        self.chat_display = QTextEdit()
-        self.chat_display.setReadOnly(True)
-        welcome_msg = "🤖 Neuroplex: Welcome to the future of programming!"
-        if self.ai_enhanced_mode:
-            welcome_msg += "\n🚀 AI Enhancement Suite is active. I can help you with:"
-            welcome_msg += "\n  • Intent-to-code generation"
-            welcome_msg += "\n  • Multi-AI collaboration"
-            welcome_msg += "\n  • Performance optimization"
-            welcome_msg += "\n  • Semantic memory search"
-            welcome_msg += "\n  • Local AI inference"
-        welcome_msg += "\n\nHow can I help you explore AI-native programming?"
-        self.chat_display.append(welcome_msg)
+        # Create plugin manager interface
+        self.plugin_interface = PluginManagerInterface()
+        plugin_layout.addWidget(self.plugin_interface)
 
-        # Chat input
-        chat_input_layout = QHBoxLayout()
-        self.chat_input = QLineEdit()
-        self.chat_input.setPlaceholderText("Ask me anything about NeuroCode...")
-        self.chat_send_btn = QPushButton("Send")
+        self.tab_widget.addTab(plugin_tab, "🔌 Plugins")
 
-        chat_input_layout.addWidget(self.chat_input)
-        chat_input_layout.addWidget(self.chat_send_btn)
-
-        chat_layout.addWidget(self.chat_display)
-        chat_layout.addLayout(chat_input_layout)
-
-        self.tab_widget.addTab(chat_tab, "💬 AI Chat")
+        # Enhanced AI-native chat interface
+        self.enhanced_chat = EnhancedNeuroChat(self)
+        self.tab_widget.addTab(self.enhanced_chat, "💬 AI Chat")
 
         center_panel.addWidget(self.tab_widget)
 
@@ -1013,9 +995,6 @@ class NeuroplexMainWindow(QMainWindow):
         self.save_btn.clicked.connect(self.save_program)
 
         self.code_editor.code_executed.connect(self.execute_code_from_editor)
-
-        self.chat_send_btn.clicked.connect(self.send_chat_message)
-        self.chat_input.returnPressed.connect(self.send_chat_message)
 
         # AI Enhancement connections
         if self.ai_collaboration:
@@ -1574,29 +1553,187 @@ NeuroCode is the first AI-native programming language where code thinks, learns,
             self.console.append(f"❌ AI benchmark failed: {e}")
 
 
-def main():
-    """Main entry point for Neuroplex GUI"""
-    app = QApplication(sys.argv)
+class PluginManagerInterface(QWidget):
+    """Enhanced plugin management interface with metadata display"""
 
-    # Set application properties
-    app.setApplicationName("Neuroplex")
-    app.setApplicationVersion("1.0.0")
-    app.setOrganizationName("NeuroCode Foundation")
+    def __init__(self):
+        super().__init__()
+        self.setup_ui()
+        self.refresh_plugins()
 
-    # Create and show main window
-    window = NeuroplexMainWindow()
-    window.show()
+    def setup_ui(self):
+        """Setup the plugin management interface"""
+        layout = QVBoxLayout(self)
 
-    # Handle graceful shutdown
-    def cleanup():
-        print("🧬 Neuroplex shutting down...")
+        # Header
+        header = QLabel("🔌 Plugin Management Center")
+        header.setFont(QFont("Arial", 16, QFont.Weight.Bold))
+        header.setStyleSheet("color: #00d4ff; margin: 10px 0;")
+        layout.addWidget(header)
 
-    app.aboutToQuit.connect(cleanup)
+        # Plugin controls
+        controls = QHBoxLayout()
+        self.refresh_btn = QPushButton("🔄 Refresh")
+        self.reload_btn = QPushButton("⚡ Reload All")
+        self.search_box = QLineEdit()
+        self.search_box.setPlaceholderText("🔍 Search plugins...")
 
-    # Run application
-    print("🚀 Launching Neuroplex GUI...")
-    sys.exit(app.exec())
+        controls.addWidget(QLabel("Search:"))
+        controls.addWidget(self.search_box)
+        controls.addWidget(self.refresh_btn)
+        controls.addWidget(self.reload_btn)
+        controls.addStretch()
 
+        layout.addLayout(controls)
 
-if __name__ == "__main__":
-    main()
+        # Plugin display area
+        self.plugin_display = QTextEdit()
+        self.plugin_display.setReadOnly(True)
+        self.plugin_display.setFont(QFont("Consolas", 10))
+        layout.addWidget(self.plugin_display)
+
+        # Status bar
+        self.status_label = QLabel("Ready")
+        self.status_label.setStyleSheet("color: #888; padding: 5px;")
+        layout.addWidget(self.status_label)
+
+        # Connect signals
+        self.refresh_btn.clicked.connect(self.refresh_plugins)
+        self.reload_btn.clicked.connect(self.reload_plugins)
+        self.search_box.textChanged.connect(self.filter_plugins)
+
+    def refresh_plugins(self):
+        """Refresh plugin information display"""
+        try:
+            from core.plugin_manager import get_plugin_ui_data, get_plugins_info
+
+            # Get comprehensive plugin data
+            ui_data = get_plugin_ui_data()
+            plugins_info = get_plugins_info()
+
+            # Build display text
+            display_text = self.build_plugin_display(ui_data, plugins_info)
+            self.plugin_display.setHtml(display_text)
+
+            # Update status
+            total = ui_data.get("total_plugins", 0)
+            enabled = ui_data.get("enabled_plugins", 0)
+            available = ui_data.get("available_plugins", 0)
+
+            self.status_label.setText(
+                f"📊 Total: {total} | ✅ Enabled: {enabled} | 🟢 Available: {available}"
+            )
+
+        except Exception as e:
+            self.plugin_display.setText(f"Error loading plugins: {e}")
+            self.status_label.setText("❌ Error loading plugin data")
+
+    def build_plugin_display(self, ui_data, plugins_info):
+        """Build HTML display for plugins with metadata"""
+        html = "<div style='font-family: Consolas, monospace; color: #e0e0e0;'>"
+
+        # Summary header
+        html += f"""
+        <h2 style='color: #00d4ff; border-bottom: 2px solid #00d4ff; padding-bottom: 10px;'>
+            🔌 Plugin Ecosystem Overview
+        </h2>
+        
+        <div style='background: #1a1a1a; padding: 15px; border-radius: 8px; margin: 10px 0;'>
+            <b>📊 Statistics:</b><br>
+            • Total Plugins: <span style='color: #00ff88;'>{ui_data.get("total_plugins", 0)}</span><br>
+            • Enabled: <span style='color: #00ff88;'>{ui_data.get("enabled_plugins", 0)}</span><br>
+            • Available: <span style='color: #00ff88;'>{ui_data.get("available_plugins", 0)}</span><br>
+        </div>
+        """
+
+        # Plugin categories
+        categories = ui_data.get("categories", {})
+        for category, plugins in categories.items():
+            html += f"""
+            <h3 style='color: #ffaa00; margin-top: 25px; border-left: 4px solid #ffaa00; padding-left: 10px;'>
+                📂 {category.title()} Plugins
+            </h3>
+            """
+
+            for plugin in plugins:
+                # Status indicators
+                status_color = "#00ff88" if plugin["enabled"] else "#ff6b6b"
+                available_icon = "🟢" if plugin["available"] else "🔴"
+                enabled_icon = "✅" if plugin["enabled"] else "❌"
+
+                # Build capabilities list
+                capabilities = (
+                    ", ".join(plugin["capabilities"])
+                    if plugin["capabilities"]
+                    else "No capabilities listed"
+                )
+
+                html += f"""
+                <div style='background: #2a2a2a; margin: 10px 0; padding: 15px; border-radius: 8px; border-left: 4px solid {status_color};'>
+                    <div style='display: flex; align-items: center; margin-bottom: 10px;'>
+                        <span style='font-size: 18px; font-weight: bold; color: #ffffff;'>{available_icon} {plugin["name"]}</span>
+                        <span style='margin-left: auto; color: {status_color};'>{enabled_icon} {"Enabled" if plugin["enabled"] else "Disabled"}</span>
+                    </div>
+                    
+                    <div style='color: #cccccc; margin-bottom: 10px;'>
+                        <b>Description:</b> {plugin["description"]}<br>
+                        <b>Version:</b> <span style='color: #00d4ff;'>{plugin["version"]}</span> | 
+                        <b>Author:</b> <span style='color: #00d4ff;'>{plugin["author"]}</span>
+                    </div>
+                    
+                    <div style='color: #aaaaaa; font-size: 12px;'>
+                        <b>🎯 Capabilities:</b> <span style='color: #ffdd44;'>{capabilities}</span><br>
+                        {"<b>⏰ Last Loaded:</b> " + plugin["last_loaded"] if plugin["last_loaded"] else "<b>⏰ Status:</b> Not loaded"}
+                    </div>
+                </div>
+                """
+
+        html += "</div>"
+        return html
+
+    def reload_plugins(self):
+        """Reload all plugins"""
+        try:
+            from core.plugin_manager import reload_plugins
+
+            reload_plugins()
+            self.refresh_plugins()
+            self.status_label.setText("✅ Plugins reloaded successfully")
+        except Exception as e:
+            self.status_label.setText(f"❌ Reload failed: {e}")
+
+    def filter_plugins(self, query):
+        """Filter plugins based on search query"""
+        if not query:
+            self.refresh_plugins()
+            return
+
+        try:
+            from core.plugin_manager import get_plugin_metadata, search_plugins
+
+            matching_plugins = search_plugins(query)
+
+            if not matching_plugins:
+                self.plugin_display.setText(f"No plugins found matching '{query}'")
+                return
+
+            # Display matching plugins
+            html = f"<h2 style='color: #00d4ff;'>🔍 Search Results for '{query}'</h2>"
+
+            for plugin_name in matching_plugins:
+                metadata = get_plugin_metadata(plugin_name)
+                if metadata:
+                    html += f"""
+                    <div style='background: #2a2a2a; margin: 10px 0; padding: 15px; border-radius: 8px;'>
+                        <h3 style='color: #ffffff;'>{plugin_name}</h3>
+                        <p style='color: #cccccc;'>{metadata.description}</p>
+                        <p style='color: #aaaaaa; font-size: 12px;'>
+                            Category: {metadata.category} | Version: {metadata.version}
+                        </p>
+                    </div>
+                    """
+
+            self.plugin_display.setHtml(html)
+
+        except Exception as e:
+            self.plugin_display.setText(f"Search error: {e}")

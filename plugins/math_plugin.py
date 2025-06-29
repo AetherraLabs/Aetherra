@@ -1,27 +1,46 @@
 # plugins/math_plugin.py - Mathematical Operations Plugin
-from core.plugin_manager import register_plugin
 import math
 import re
 
-@register_plugin("calculate")
+from core.plugin_manager import register_plugin
+
+
+@register_plugin(
+    name="calculate",
+    description="Safely evaluate mathematical expressions with basic operations",
+    capabilities=["arithmetic", "expression_evaluation", "safe_math"],
+    version="1.1.0",
+    author="NeuroCode Team",
+    category="mathematics",
+    dependencies=["math", "re"],
+)
 def calculate(expression):
     """Safely evaluate mathematical expressions"""
     try:
         # Remove any potentially dangerous operations
-        safe_expression = re.sub(r'[^0-9+\-*/().\s]', '', expression)
-        
+        safe_expression = re.sub(r"[^0-9+\-*/().\s]", "", expression)
+
         # Use eval safely with restricted globals
         result = eval(safe_expression, {"__builtins__": {}}, {})
         return f"Result: {expression} = {result}"
     except Exception as e:
         return f"Error calculating '{expression}': {e}"
 
-@register_plugin("math_func")
+
+@register_plugin(
+    name="math_func",
+    description="Apply mathematical functions like sqrt, sin, cos, etc.",
+    capabilities=["trigonometry", "square_root", "mathematical_functions"],
+    version="1.1.0",
+    author="NeuroCode Team",
+    category="mathematics",
+    dependencies=["math"],
+)
 def math_function(func_name, value):
     """Apply mathematical functions"""
     try:
         value = float(value)
-        
+
         if func_name == "sqrt":
             result = math.sqrt(value)
         elif func_name == "sin":
@@ -36,10 +55,11 @@ def math_function(func_name, value):
             result = math.exp(value)
         else:
             return f"Unknown function: {func_name}"
-        
+
         return f"{func_name}({value}) = {result}"
     except Exception as e:
         return f"Error in {func_name}({value}): {e}"
+
 
 @register_plugin("statistics")
 def calculate_stats(*numbers):
@@ -48,21 +68,21 @@ def calculate_stats(*numbers):
         nums = [float(n) for n in numbers]
         if not nums:
             return "No numbers provided"
-        
+
         mean = sum(nums) / len(nums)
         sorted_nums = sorted(nums)
         n = len(sorted_nums)
-        
+
         # Median
         if n % 2 == 0:
-            median = (sorted_nums[n//2 - 1] + sorted_nums[n//2]) / 2
+            median = (sorted_nums[n // 2 - 1] + sorted_nums[n // 2]) / 2
         else:
-            median = sorted_nums[n//2]
-        
+            median = sorted_nums[n // 2]
+
         # Standard deviation
         variance = sum((x - mean) ** 2 for x in nums) / len(nums)
         std_dev = math.sqrt(variance)
-        
+
         return f"Stats for {nums}: Mean={mean:.2f}, Median={median:.2f}, StdDev={std_dev:.2f}"
     except Exception as e:
         return f"Error calculating statistics: {e}"
