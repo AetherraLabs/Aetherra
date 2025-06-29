@@ -38,7 +38,6 @@ try:
     from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt, QTimer, Signal
     from PySide6.QtGui import QAction, QBrush, QColor, QFont, QPainter, QPen
     from PySide6.QtWidgets import (
-        QApplication,
         QFileDialog,
         QFrame,
         QGraphicsOpacityEffect,
@@ -68,7 +67,6 @@ except ImportError:
         from PyQt6.QtCore import pyqtSignal as Signal
         from PyQt6.QtGui import QAction, QBrush, QColor, QFont, QPainter, QPen
         from PyQt6.QtWidgets import (
-            QApplication,
             QFileDialog,
             QFrame,
             QGraphicsOpacityEffect,
@@ -1749,7 +1747,7 @@ class PluginManagerInterface(QWidget):
                     
                     <div style='color: #cccccc; margin-bottom: 10px;'>
                         <b>Description:</b> {plugin["description"]}<br>
-                        <b>Version:</b> <span style='color: #00d4ff;'>{plugin["version"]}</span> | 
+                        <b>Version:</b> <span style='color: #00d4ff;'>{plugin["version"]}</span> |
                         <b>Author:</b> <span style='color: #00d4ff;'>{plugin["author"]}</span>
                     </div>
                     

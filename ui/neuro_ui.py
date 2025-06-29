@@ -28,30 +28,19 @@ sys.path.insert(0, str(project_root / "core"))
 
 # Qt imports with PySide6 (standardized for production)
 try:
-    from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt, QTimer, Signal
-    from PySide6.QtGui import QBrush, QColor, QFont, QIcon, QPainter, QPalette, QPixmap
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QFont
     from PySide6.QtWidgets import (
         QApplication,
         QComboBox,
-        QFrame,
-        QGridLayout,
-        QGroupBox,
         QHBoxLayout,
         QLabel,
         QLineEdit,
-        QListWidget,
-        QListWidgetItem,
         QMainWindow,
-        QProgressBar,
         QPushButton,
-        QScrollArea,
-        QSlider,
         QSplitter,
-        QStackedWidget,
-        QStatusBar,
         QTabWidget,
         QTextEdit,
-        QToolBar,
         QTreeWidget,
         QTreeWidgetItem,
         QVBoxLayout,
@@ -66,12 +55,9 @@ except ImportError:
 # Import NeuroCode components with robust error handling
 Memory = None
 try:
-    from memory import Memory
+    from core.memory import NeuroMemory as Memory
 except ImportError:
-    try:
-        from core.memory import Memory
-    except ImportError:
-        print("⚠️ Memory module not available - using mock")
+    print("⚠️ Memory module not available - using mock")
 
 
 class MemoryReflectionViewer(QWidget):
