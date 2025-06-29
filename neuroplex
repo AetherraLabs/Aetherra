@@ -1,0 +1,6 @@
+#!/bin/bash
+# Neuroplex Command-Line Interface for Unix/Linux/macOS
+# This enables: neuroplex run monitor.neuro
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+python3 "$SCRIPT_DIR/neuroplex_cli.py" "$@"
