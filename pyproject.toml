@@ -1,0 +1,53 @@
+[tool.ruff]
+# Set the line length to match your other formatters
+line-length = 100
+
+# Enable import sorting
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import sorting)
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+]
+
+# Ignore specific rules that might be too strict for your codebase
+ignore = [
+    "E501",  # line too long (handled by line-length setting)
+    "B008",  # function calls in default arguments
+    "N806",  # variable name should be lowercase (for compatibility)
+]
+
+# Exclude certain directories
+exclude = [
+    ".git",
+    "__pycache__",
+    "venv",
+    ".venv",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+# Target Python version
+target-version = "py38"
+
+[tool.ruff.format]
+# Use single quotes for strings
+quote-style = "double"
+
+# Indent with spaces
+indent-style = "space"
+
+# Respect magic trailing commas
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint.isort]
+# Known first-party modules (your project modules)
+known-first-party = ["core", "plugins", "stdlib", "ui"]
+
+# Split imports on separate lines
+split-on-trailing-comma = true

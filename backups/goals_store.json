@@ -1,0 +1,75 @@
+{
+  "goals": [
+    {
+      "id": "goal_1_20250628_125843",
+      "text": "demonstrate NeuroCode capabilities",
+      "priority": "high",
+      "metrics": {},
+      "status": "active",
+      "created": "2025-06-28 12:58:43.858905",
+      "last_checked": null,
+      "progress": []
+    },
+    {
+      "id": "goal_2_20250628_125917",
+      "text": "maintain system stability",
+      "priority": "high",
+      "metrics": {},
+      "status": "active",
+      "created": "2025-06-28 12:59:17.796252",
+      "last_checked": null,
+      "progress": []
+    },
+    {
+      "id": "goal_3_20250628_130524",
+      "text": "maintain system stability",
+      "priority": "high",
+      "metrics": {},
+      "status": "active",
+      "created": "2025-06-28 13:05:24.365433",
+      "last_checked": null,
+      "progress": []
+    },
+    {
+      "id": "goal_4_20250628_130908",
+      "text": "demonstrate full language independence",
+      "priority": "critical",
+      "metrics": {},
+      "status": "active",
+      "created": "2025-06-28 13:09:08.259046",
+      "last_checked": null,
+      "progress": []
+    },
+    {
+      "id": "goal_5_20250628_130908",
+      "text": "maintain system_health > 95%",
+      "priority": "high",
+      "metrics": {},
+      "status": "active",
+      "created": "2025-06-28 13:09:08.515002",
+      "last_checked": null,
+      "progress": []
+    },
+    {
+      "id": "goal_6_20250628_130908",
+      "text": "ensure plugin_reliability",
+      "priority": "medium",
+      "metrics": {},
+      "status": "active",
+      "created": "2025-06-28 13:09:08.525331",
+      "last_checked": null,
+      "progress": []
+    }
+  ],
+  "agent_mode": true,
+  "active_goals": [
+    "goal_1_20250628_125843",
+    "goal_2_20250628_125917",
+    "goal_3_20250628_130524",
+    "goal_4_20250628_130908",
+    "goal_5_20250628_130908",
+    "goal_6_20250628_130908"
+  ],
+  "goal_history": [],
+  "last_updated": "2025-06-28 13:09:08.525337"
+}
