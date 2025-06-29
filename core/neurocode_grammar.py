@@ -86,10 +86,10 @@ NEUROCODE_GRAMMAR = r"""
 
     // Intent-driven actions
     intent_action: action_verb (intent_modifier value)?
-    action_verb: "analyze" | "optimize" | "learn" | "adapt" | "evolve" | "investigate" 
+    action_verb: "analyze" | "optimize" | "learn" | "adapt" | "evolve" | "investigate"
                | "suggest" | "apply" | "monitor" | "predict" | "transcribe" | "summarize"
                | "refactor" | "self_edit" | "simulate"
-    
+
     intent_modifier: "for" | "from" | "to" | "with" | "based_on"
 
     // Conditions
@@ -101,10 +101,10 @@ NEUROCODE_GRAMMAR = r"""
 
     // Values and expressions
     ?value: STRING | NUMBER | BOOLEAN | IDENTIFIER | method_call | arithmetic_expr | array_expr
-    
+
     array_expr: "[" array_elements? "]"
     array_elements: value ("," value)*
-    
+
     method_call: IDENTIFIER "." IDENTIFIER "(" argument_list? ")"
     argument_list: value ("," value)*
     arithmetic_expr: value ("+" | "-" | "*" | "/") value
@@ -124,7 +124,7 @@ NEUROCODE_GRAMMAR = r"""
     BOOLEAN: "true" | "false"
     IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
     COMMENT: /#[^\r\n]*/
-    
+
     %import common.WS
     %import common.NEWLINE
     %ignore WS

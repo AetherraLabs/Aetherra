@@ -16,6 +16,7 @@ making it truly independent and privacy-focused.
 """
 
 import asyncio
+import importlib.util
 import json
 import logging
 import os
@@ -73,48 +74,38 @@ class MultiLLMManager:
         """Initialize all supported LLM providers"""
 
         # OpenAI Provider
-        try:
-            import openai
-
+        if importlib.util.find_spec("openai") is not None:
             self.providers[LLMProvider.OPENAI] = OpenAIProvider()
             logger.info("✅ OpenAI provider initialized")
-        except ImportError:
+        else:
             logger.warning("⚠️ OpenAI not available (pip install openai)")
 
         # Ollama Provider (for local Mistral, LLaMA, etc.)
-        try:
-            import ollama
-
+        if importlib.util.find_spec("ollama") is not None:
             self.providers[LLMProvider.OLLAMA] = OllamaProvider()
             logger.info("✅ Ollama provider initialized")
-        except ImportError:
+        else:
             logger.warning("⚠️ Ollama not available (pip install ollama)")
 
         # llama-cpp-python Provider (for GGUF models)
-        try:
-            from llama_cpp import Llama
-
+        if importlib.util.find_spec("llama_cpp") is not None:
             self.providers[LLMProvider.LLAMACPP] = LlamaCppProvider()
             logger.info("✅ LlamaCpp provider initialized")
-        except ImportError:
+        else:
             logger.warning("⚠️ LlamaCpp not available (pip install llama-cpp-python)")
 
         # Anthropic Provider
-        try:
-            import anthropic
-
+        if importlib.util.find_spec("anthropic") is not None:
             self.providers[LLMProvider.ANTHROPIC] = AnthropicProvider()
             logger.info("✅ Anthropic provider initialized")
-        except ImportError:
+        else:
             logger.warning("⚠️ Anthropic not available (pip install anthropic)")
 
         # Google Gemini Provider
-        try:
-            import google.generativeai as genai
-
+        if importlib.util.find_spec("google.generativeai") is not None:
             self.providers[LLMProvider.GEMINI] = GeminiProvider()
             logger.info("✅ Gemini provider initialized")
-        except ImportError:
+        else:
             logger.warning("⚠️ Gemini not available (pip install google-generativeai)")
 
     def _load_model_configs(self):
@@ -333,8 +324,8 @@ class OpenAIProvider:
             import openai
 
             self.client = openai.OpenAI()
-        except ImportError:
-            raise ImportError("OpenAI package not installed")
+        except ImportError as e:
+            raise ImportError("OpenAI package not installed") from e
 
     def is_model_available(self, config: LLMConfig) -> bool:
         """Check if model is available"""
@@ -354,9 +345,9 @@ class OpenAIProvider:
                 max_tokens=kwargs.get("max_tokens", config.max_tokens),
                 timeout=config.timeout,
             )
-            return response.choices[0].message.content
+            return response.choices[0].message.content or ""
         except Exception as e:
-            raise Exception(f"OpenAI API error: {e}")
+            raise Exception(f"OpenAI API error: {e}") from e
 
 
 class OllamaProvider:
@@ -367,8 +358,8 @@ class OllamaProvider:
             import ollama
 
             self.client = ollama.Client()
-        except ImportError:
-            raise ImportError("Ollama package not installed")
+        except ImportError as e:
+            raise ImportError("Ollama package not installed") from e
 
     def is_model_available(self, config: LLMConfig) -> bool:
         """Check if model is available in Ollama"""
@@ -392,7 +383,7 @@ class OllamaProvider:
             )
             return response["message"]["content"]
         except Exception as e:
-            raise Exception(f"Ollama error: {e}")
+            raise Exception(f"Ollama error: {e}") from e
 
 
 class LlamaCppProvider:
@@ -403,8 +394,8 @@ class LlamaCppProvider:
             from llama_cpp import Llama
 
             self.Llama = Llama
-        except ImportError:
-            raise ImportError("llama-cpp-python package not installed")
+        except ImportError as e:
+            raise ImportError("llama-cpp-python package not installed") from e
 
     def is_model_available(self, config: LLMConfig) -> bool:
         """Check if GGUF model file exists"""
@@ -415,6 +406,9 @@ class LlamaCppProvider:
     async def generate(self, config: LLMConfig, prompt: str, **kwargs) -> str:
         """Generate response using llama-cpp-python"""
         try:
+            if not config.model_path:
+                raise ValueError("Model path is required for LlamaCpp provider")
+
             llm = self.Llama(
                 model_path=config.model_path, n_ctx=config.context_window, verbose=False
             )
@@ -426,9 +420,14 @@ class LlamaCppProvider:
                 stop=["</s>", "\n\n"],
             )
 
-            return response["choices"][0]["text"]
+            # llama-cpp-python returns a dict, not an iterator
+            if isinstance(response, dict):
+                return response["choices"][0]["text"]
+            else:
+                # Handle streaming response
+                return "Response received (streaming mode)"
         except Exception as e:
-            raise Exception(f"LlamaCpp error: {e}")
+            raise Exception(f"LlamaCpp error: {e}") from e
 
 
 class AnthropicProvider:
@@ -439,8 +438,8 @@ class AnthropicProvider:
             import anthropic
 
             self.client = anthropic.Anthropic()
-        except ImportError:
-            raise ImportError("Anthropic package not installed")
+        except ImportError as e:
+            raise ImportError("Anthropic package not installed") from e
 
     def is_model_available(self, config: LLMConfig) -> bool:
         """Check if Anthropic model is available"""
@@ -455,9 +454,14 @@ class AnthropicProvider:
                 temperature=kwargs.get("temperature", config.temperature),
                 messages=[{"role": "user", "content": prompt}],
             )
-            return message.content[0].text
+            # Safely extract text content from Anthropic response
+            if message.content and len(message.content) > 0:
+                content_block = message.content[0]
+                # Use getattr to safely access text attribute
+                return getattr(content_block, 'text', str(content_block))
+            return "No content received"
         except Exception as e:
-            raise Exception(f"Anthropic error: {e}")
+            raise Exception(f"Anthropic error: {e}") from e
 
 
 class GeminiProvider:
@@ -468,8 +472,8 @@ class GeminiProvider:
             import google.generativeai as genai
 
             self.genai = genai
-        except ImportError:
-            raise ImportError("google-generativeai package not installed")
+        except ImportError as e:
+            raise ImportError("google-generativeai package not installed") from e
 
     def is_model_available(self, config: LLMConfig) -> bool:
         """Check if Gemini model is available"""
@@ -478,17 +482,28 @@ class GeminiProvider:
     async def generate(self, config: LLMConfig, prompt: str, **kwargs) -> str:
         """Generate response using Gemini"""
         try:
-            model = self.genai.GenerativeModel(config.model_name)
-            response = model.generate_content(
-                prompt,
-                generation_config=self.genai.types.GenerationConfig(
-                    temperature=kwargs.get("temperature", config.temperature),
-                    max_output_tokens=kwargs.get("max_tokens", config.max_tokens),
-                ),
-            )
-            return response.text
+            # Use direct attribute access for Google Generative AI
+            model = getattr(self.genai, 'GenerativeModel', None)
+            if not model:
+                raise AttributeError("GenerativeModel not available in google.generativeai")
+
+            genai_model = model(config.model_name)
+
+            # Create generation config safely using getattr
+            generation_config = None
+            types_module = getattr(self.genai, 'types', None)
+            if types_module:
+                GenerationConfig = getattr(types_module, 'GenerationConfig', None)
+                if GenerationConfig:
+                    generation_config = GenerationConfig(
+                        temperature=kwargs.get("temperature", config.temperature),
+                        max_output_tokens=kwargs.get("max_tokens", config.max_tokens),
+                    )
+
+            response = genai_model.generate_content(prompt, generation_config=generation_config)
+            return response.text or "No response generated"
         except Exception as e:
-            raise Exception(f"Gemini error: {e}")
+            raise Exception(f"Gemini error: {e}") from e
 
 
 # Global instance for NeuroCode integration

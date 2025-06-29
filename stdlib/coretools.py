@@ -470,7 +470,9 @@ class CoreToolsPlugin:
         except Exception as e:
             raise Exception(f"Failed to filter data: {e}") from e
 
-    def sort_data(self, data: List[Any], key: Optional[str] = None, reverse: bool = False) -> List[Any]:
+    def sort_data(
+        self, data: List[Any], key: Optional[str] = None, reverse: bool = False
+    ) -> List[Any]:
         """Sort data"""
         try:
             if key and isinstance(data[0], dict):

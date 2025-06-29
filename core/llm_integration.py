@@ -20,18 +20,20 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# Import multi-LLM manager
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
 
-from core.multi_llm_manager import llm_manager
+def _get_llm_manager():
+    """Dynamically import the LLM manager to handle path setup"""
+    project_root = Path(__file__).parent.parent
+    sys.path.insert(0, str(project_root))
+    from core.multi_llm_manager import llm_manager
+    return llm_manager
 
 
 class NeuroCodeLLMIntegration:
     """Integrates multi-LLM support into NeuroCode interpreter"""
 
     def __init__(self):
-        self.llm_manager = llm_manager
+        self.llm_manager = _get_llm_manager()
         self.current_model = None
         self.conversation_history = []
         self.model_preferences = {}
@@ -49,7 +51,7 @@ class NeuroCodeLLMIntegration:
 
             if success:
                 self.current_model = model_name
-                model_info = self.llm_manager.get_current_model_info()
+                model_info = self.llm_manager.get_current_model_info() or {}
 
                 return {
                     "status": "success",

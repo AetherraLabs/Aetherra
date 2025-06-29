@@ -29,7 +29,9 @@ class ReflectorPlugin:
         self.reflection_data = {}
         self.behavior_log = []
 
-    def analyze_behavior(self, context: str, action_log: Optional[List[Dict]] = None) -> Dict[str, Any]:
+    def analyze_behavior(
+        self, context: str, action_log: Optional[List[Dict]] = None
+    ) -> Dict[str, Any]:
         """Analyze recent behavior patterns and provide insights"""
         if action_log is None:
             action_log = self.behavior_log
@@ -298,9 +300,7 @@ class ReflectorPlugin:
         return {
             "goals_set": len(goal_actions),
             "goal_completion_estimate": 0.7,  # Mock value
-            "active_goals": len(
-                {action.get("data", {}).get("goal_id") for action in goal_actions}
-            ),
+            "active_goals": len({action.get("data", {}).get("goal_id") for action in goal_actions}),
         }
 
     def _detect_inefficiencies(self, action_log: List[Dict]) -> List[str]:
