@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # NeuroCode Basic Memory Example
 # Demonstrates the revolutionary memory system
 
@@ -27,33 +26,3 @@ detect patterns
 # Advanced memory operations
 memory summary
 memory tags
-=======
-# NeuroCode Basic Memory Example
-# Demonstrates the revolutionary memory system
-
-# Store memories with tags
-remember("Python is procedural") as "programming_paradigm"
-remember("JavaScript can be functional") as "programming_paradigm"
-remember("NeuroCode is cognitive") as "programming_paradigm"
-
-# Recall memories by tag
-recall tag: "programming_paradigm"
-
-# Store learning with multiple tags
-remember("Always backup before self-editing") as "best_practice,safety"
-
-# Complex memory patterns
-remember("API calls should be rate-limited") as "performance,api"
-remember("Database queries need indexing") as "performance,database"
-
-# Recall with specific patterns
-recall tag: "performance"
-
-# AI-powered memory analysis
-reflect on tags="programming_paradigm"
-detect patterns
-
-# Advanced memory operations
-memory summary
-memory tags
->>>>>>> 20a510e90c83aa50461841f557e9447d03056c8d

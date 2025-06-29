@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # NeuroCode Goal-Driven Programming Example
 # Shows how AI agents work with goals
 
@@ -32,38 +31,3 @@ adapt to user_behavior_patterns
 
 # Multi-goal optimization
 reflective loop
-=======
-# NeuroCode Goal-Driven Programming Example
-# Shows how AI agents work with goals
-
-# Set performance goals
-goal: improve system performance > 90% priority: high
-goal: reduce memory usage by 25% priority: medium
-goal: maintain uptime > 99.9% priority: critical
-
-# Activate the AI agent
-agent: on
-
-# The agent will now monitor and work towards goals
-check goal "performance"
-goal status
-
-# Conditional goal-based actions
-if memory.pattern("memory_leak", frequency="daily"):
-    goal: fix memory issues priority: urgent
-    suggest fix for "memory leaks"
-end
-
-# Autonomous goal monitoring
-autonomous monitoring
-
-# Agent will suggest actions based on goals
-suggest next actions
-
-# Advanced goal patterns
-goal: learn from user behavior metrics: engagement=80%,satisfaction=90%
-adapt to user_behavior_patterns
-
-# Multi-goal optimization
-reflective loop
->>>>>>> 20a510e90c83aa50461841f557e9447d03056c8d
