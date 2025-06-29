@@ -37,7 +37,7 @@ class NeuroCodeLLMIntegration:
         self.model_preferences = {}
 
     def execute_model_statement(
-        self, model_name: str, config: Dict[str, Any] = None
+        self, model_name: str, config: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Execute model: statement in NeuroCode"""
         try:
@@ -73,7 +73,7 @@ class NeuroCodeLLMIntegration:
             }
 
     def execute_assistant_statement(
-        self, task: str, context: Dict[str, Any] = None
+        self, task: str, context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Execute assistant: statement in NeuroCode"""
         if not self.current_model:
@@ -116,7 +116,7 @@ class NeuroCodeLLMIntegration:
                 "model": self.current_model,
             }
 
-    def _build_context_prompt(self, task: str, context: Dict[str, Any] = None) -> str:
+    def _build_context_prompt(self, task: str, context: Optional[Dict[str, Any]] = None) -> str:
         """Build context-aware prompt for the LLM"""
         prompt_parts = []
 

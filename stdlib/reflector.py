@@ -6,7 +6,7 @@ Built-in plugin for behavior analysis and self-reflection
 
 from collections import Counter
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class ReflectorPlugin:
@@ -29,7 +29,7 @@ class ReflectorPlugin:
         self.reflection_data = {}
         self.behavior_log = []
 
-    def analyze_behavior(self, context: str, action_log: List[Dict] = None) -> Dict[str, Any]:
+    def analyze_behavior(self, context: str, action_log: Optional[List[Dict]] = None) -> Dict[str, Any]:
         """Analyze recent behavior patterns and provide insights"""
         if action_log is None:
             action_log = self.behavior_log
@@ -269,9 +269,7 @@ class ReflectorPlugin:
         return {
             "learning_frequency": len(learning_actions) / len(action_log) if action_log else 0,
             "learning_domains": list(
-                set(
-                    [action.get("data", {}).get("domain", "general") for action in learning_actions]
-                )
+                {action.get("data", {}).get("domain", "general") for action in learning_actions}
             ),
             "adaptation_rate": self._calculate_adaptation_rate(action_log),
         }
@@ -301,7 +299,7 @@ class ReflectorPlugin:
             "goals_set": len(goal_actions),
             "goal_completion_estimate": 0.7,  # Mock value
             "active_goals": len(
-                set([action.get("data", {}).get("goal_id") for action in goal_actions])
+                {action.get("data", {}).get("goal_id") for action in goal_actions}
             ),
         }
 
@@ -324,7 +322,7 @@ class ReflectorPlugin:
         growth_areas = []
 
         # Analyze action diversity
-        action_types = set([action.get("type", "unknown") for action in action_log])
+        action_types = {action.get("type", "unknown") for action in action_log}
 
         if "optimize" not in action_types:
             growth_areas.append("Consider adding optimization activities")

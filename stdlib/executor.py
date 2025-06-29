@@ -11,7 +11,7 @@ import uuid
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime, timedelta
 from queue import PriorityQueue
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class ExecutorPlugin:
@@ -48,7 +48,7 @@ class ExecutorPlugin:
         self.scheduler_thread.start()
 
     def schedule_command(
-        self, command: str, execution_time: str, context: Dict[str, Any] = None
+        self, command: str, execution_time: str, context: Optional[Dict[str, Any]] = None
     ) -> str:
         """Schedule a command for future execution"""
         task_id = str(uuid.uuid4())
@@ -81,7 +81,7 @@ class ExecutorPlugin:
 
         return f"Command scheduled with ID: {task_id} for {scheduled_time}"
 
-    def execute_now(self, command: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
+    def execute_now(self, command: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Execute a command immediately"""
         task_id = str(uuid.uuid4())
 
@@ -122,7 +122,7 @@ class ExecutorPlugin:
 
             return {"task_id": task_id, "status": "failed", "error": str(e)}
 
-    def execute_async(self, command: str, context: Dict[str, Any] = None) -> str:
+    def execute_async(self, command: str, context: Optional[Dict[str, Any]] = None) -> str:
         """Execute a command asynchronously"""
         task_id = str(uuid.uuid4())
 
@@ -146,7 +146,7 @@ class ExecutorPlugin:
         return f"Async execution started with ID: {task_id}"
 
     def schedule_recurring(
-        self, command: str, interval: str, context: Dict[str, Any] = None
+        self, command: str, interval: str, context: Optional[Dict[str, Any]] = None
     ) -> str:
         """Schedule a command for recurring execution"""
         task_id = str(uuid.uuid4())
