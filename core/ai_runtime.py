@@ -17,18 +17,27 @@ def load_env_file():
 # Load .env file if it exists
 load_env_file()
 
+# Global flag to prevent duplicate initialization
+_openai_client_initialized = False
+
 # Initialize OpenAI client with environment variable
 api_key = os.getenv("OPENAI_API_KEY")
-if api_key:
+if api_key and not _openai_client_initialized:
     client = openai.OpenAI(api_key=api_key)
     print(f"[AI] OpenAI client initialized (key ending in ...{api_key[-4:]})")
+    _openai_client_initialized = True
+elif api_key and _openai_client_initialized:
+    # Client already initialized, just create the object without message
+    client = openai.OpenAI(api_key=api_key)
 else:
     client = None
-    print("[Warning] OPENAI_API_KEY environment variable not set. AI features will be disabled.")
-    print("💡 To enable AI features:")
-    print("   1. Get an API key from https://platform.openai.com/api-keys")
-    print("   2. Set environment variable: set OPENAI_API_KEY=your-key")
-    print("   3. Or add it to the .env file in the project root")
+    if not _openai_client_initialized:
+        print("[Warning] OPENAI_API_KEY environment variable not set. AI features will be disabled.")
+        print("💡 To enable AI features:")
+        print("   1. Get an API key from https://platform.openai.com/api-keys")
+        print("   2. Set environment variable: set OPENAI_API_KEY=your-key")
+        print("   3. Or add it to the .env file in the project root")
+        _openai_client_initialized = True
 
 def ask_ai(prompt, temperature=0.2):
     """Basic AI query function"""

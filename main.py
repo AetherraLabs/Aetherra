@@ -10,17 +10,31 @@ import os
 # Add the current directory to the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core.interpreter import NeuroCodeInterpreter
+# Use Enhanced Interpreter for best AI-native experience
+try:
+    from core.enhanced_interpreter import EnhancedNeuroCodeInterpreter
+    use_enhanced = True
+except ImportError:
+    from core.interpreter import NeuroCodeInterpreter
+    use_enhanced = False
 
 def main():
     """Main entry point for Neuroplex"""
-    print("🧠 Neuroplex - AI-Native Programming Language")
+    if use_enhanced:
+        print("� Neuroplex - Enhanced AI-Native Programming Language")
+        print("🚀 Enhanced mode: Natural language programming enabled!")
+        interpreter = EnhancedNeuroCodeInterpreter()
+    else:
+        print("�🧠 Neuroplex - AI-Native Programming Language")
+        print("⚠️  Basic mode: Enhanced features not available")
+        interpreter = NeuroCodeInterpreter()
+    
     print("=" * 50)
     print("Type commands or 'help' for assistance")
     print("Type 'exit' or press Ctrl+C to quit")
+    if use_enhanced:
+        print("💡 Try: 'create a REST API' or 'ai: explain NeuroCode'")
     print("=" * 50)
-    
-    interpreter = NeuroCodeInterpreter()
     
     while True:
         try:
@@ -50,7 +64,14 @@ def main():
             elif code.strip() == "":
                 continue
             
-            interpreter.execute(code)
+            # Execute based on interpreter type
+            if use_enhanced:
+                result = interpreter.execute_neurocode(code)  # type: ignore
+            else:
+                result = interpreter.execute(code)  # type: ignore
+            
+            if result:
+                print(result)
         except KeyboardInterrupt:
             print("\n🚀 Thanks for using Neuroplex!")
             break

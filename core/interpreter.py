@@ -6,40 +6,59 @@ import re
 import shutil
 import traceback
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Union
 
 # Use robust import strategy with proper fallbacks
 try:
-    from .agent import NeuroAgent
-    from .ai_runtime import (
-        ask_ai,
-        auto_tag_content,
-        reflect_on_memories,
-        suggest_next_actions,
-    )
-    from .block_executor import BlockExecutor
-    from .debug_system import NeuroDebugSystem
-    from .functions import NeuroFunctions
-    from .goal_system import GoalSystem
-    from .memory import NeuroMemory
-    from .meta_plugins import MetaPluginSystem
-    from .plugin_manager import PLUGIN_REGISTRY
-except ImportError:
-    # Fallback for when running as standalone script or from different context
+    # Try relative imports first (when run as module)
     try:
-        from agent import NeuroAgent
-        from ai_runtime import (
+        from .agent import NeuroAgent  # type: ignore
+        from .ai_runtime import (  # type: ignore
             ask_ai,
             auto_tag_content,
             reflect_on_memories,
             suggest_next_actions,
         )
-        from block_executor import BlockExecutor
-        from debug_system import NeuroDebugSystem
-        from functions import NeuroFunctions
-        from goal_system import GoalSystem
-        from memory import NeuroMemory
-        from meta_plugins import MetaPluginSystem
-        from plugin_manager import PLUGIN_REGISTRY
+        from .block_executor import BlockExecutor  # type: ignore
+        from .debug_system import NeuroDebugSystem  # type: ignore
+        from .functions import NeuroFunctions  # type: ignore
+        from .goal_system import GoalSystem  # type: ignore
+        from .memory import NeuroMemory  # type: ignore
+        from .meta_plugins import MetaPluginSystem  # type: ignore
+        from .plugin_manager import PLUGIN_REGISTRY  # type: ignore
+    except ImportError:
+        # Fallback to direct imports (when run from parent directory)
+        from agent import NeuroAgent  # type: ignore
+        from ai_runtime import (  # type: ignore
+            ask_ai,
+            auto_tag_content,
+            reflect_on_memories,
+            suggest_next_actions,
+        )
+        from block_executor import BlockExecutor  # type: ignore
+        from debug_system import NeuroDebugSystem  # type: ignore
+        from functions import NeuroFunctions  # type: ignore
+        from goal_system import GoalSystem  # type: ignore
+        from memory import NeuroMemory  # type: ignore
+        from meta_plugins import MetaPluginSystem  # type: ignore
+        from plugin_manager import PLUGIN_REGISTRY  # type: ignore
+except ImportError:
+    # Fallback for when running as standalone script or from different context
+    try:
+        from agent import NeuroAgent  # type: ignore
+        from ai_runtime import (  # type: ignore
+            ask_ai,
+            auto_tag_content,
+            reflect_on_memories,
+            suggest_next_actions,
+        )
+        from block_executor import BlockExecutor  # type: ignore
+        from debug_system import NeuroDebugSystem  # type: ignore
+        from functions import NeuroFunctions  # type: ignore
+        from goal_system import GoalSystem  # type: ignore
+        from memory import NeuroMemory  # type: ignore
+        from meta_plugins import MetaPluginSystem  # type: ignore
+        from plugin_manager import PLUGIN_REGISTRY  # type: ignore
     except ImportError as e:
         print(f"⚠️ Some interpreter dependencies not available: {e}")
         
@@ -131,11 +150,15 @@ except ImportError:
                 self.auto_apply_enabled = enabled
             def show_debug_status(self): print("Debug system: demo mode")
             
-        # Fallback functions
-        def ask_ai(query, **kwargs): return f"AI response to: {query}"
-        def reflect_on_memories(memories, filter_desc): return "Reflection on memories"
-        def auto_tag_content(content): return ["demo"]
-        def suggest_next_actions(context): return "Continue exploring"
+        # Fallback functions with exact signatures to match imports
+        def ask_ai(prompt: str, temperature: float = 0.2) -> str: 
+            return f"AI response to: {prompt}"
+        def reflect_on_memories(memories: Any, filter_description: str) -> str: 
+            return "Reflection on memories"
+        def auto_tag_content(summary: str) -> List[str]: 
+            return ["demo"]
+        def suggest_next_actions(summary: str) -> str: 
+            return "Continue exploring"
         
         PLUGIN_REGISTRY = {}
 
