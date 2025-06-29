@@ -25,9 +25,9 @@ sys.path.insert(0, str(project_root / "core"))
 
 # Import NeuroCode components
 try:
-    from enhanced_interpreter import EnhancedNeuroCodeInterpreter
-    from memory import NeuroMemory
-    from plugin_manager import PluginManager
+    from core.enhanced_interpreter import EnhancedNeuroCodeInterpreter
+    from core.memory import NeuroMemory
+    # Note: PluginManager is not a class but a collection of functions
 except ImportError as e:
     print(f"⚠️ Some NeuroCode components not available: {e}")
 
@@ -67,9 +67,9 @@ class NeuroCodeFileRunner:
             print(f"⚠️ Memory system warning: {e}")
 
         try:
-            self.plugin_manager = PluginManager()
+            self.plugin_manager = None  # Plugin manager is function-based, not class-based
             if self.verbose:
-                print("✅ Plugin manager initialized")
+                print("✅ Plugin functions available")
         except Exception as e:
             print(f"⚠️ Plugin manager warning: {e}")
 
@@ -83,30 +83,30 @@ class NeuroCodeFileRunner:
         Returns:
             Dictionary containing execution results, stats, and outputs
         """
-        file_path = Path(file_path)
+        file_path_obj = Path(file_path)
 
         # Validate file
-        if not file_path.exists():
-            raise FileNotFoundError(f"NeuroCode file not found: {file_path}")
+        if not file_path_obj.exists():
+            raise FileNotFoundError(f"NeuroCode file not found: {file_path_obj}")
 
-        if file_path.suffix != ".neuro":
-            raise ValueError(f"Expected .neuro file, got: {file_path.suffix}")
+        if file_path_obj.suffix != ".neuro":
+            raise ValueError(f"Expected .neuro file, got: {file_path_obj.suffix}")
 
-        print(f"🧬 Executing NeuroCode file: {file_path.name}")
+        print(f"🧬 Executing NeuroCode file: {file_path_obj.name}")
         print("=" * 50)
 
         # Read file content
         try:
-            content = file_path.read_text(encoding="utf-8")
+            content = file_path_obj.read_text(encoding="utf-8")
             if self.verbose:
                 print(f"📄 File content ({len(content)} characters):")
                 print("-" * 30)
         except Exception as e:
-            raise RuntimeError(f"Failed to read file: {e}")
+            raise RuntimeError(f"Failed to read file: {e}") from e
 
         # Execute the file
         results = {
-            "file_path": str(file_path),
+            "file_path": str(file_path_obj),
             "success": True,
             "outputs": [],
             "errors": [],
@@ -212,7 +212,7 @@ class NeuroCodeFileRunner:
         # Use enhanced interpreter for other lines
         elif self.interpreter:
             try:
-                return self.interpreter.execute(line)
+                return self.interpreter.execute_neurocode(line)
             except Exception as e:
                 return f"Interpreter error: {e}"
 
@@ -241,7 +241,7 @@ class NeuroCodeFileRunner:
                 return f"💾 Would store: '{memory_text}' (memory system not available)"
 
         except Exception as e:
-            raise RuntimeError(f"Failed to parse remember command: {e}")
+            raise RuntimeError(f"Failed to parse remember command: {e}") from e
 
     def _handle_recall(self, line: str) -> str:
         """Handle recall commands"""
@@ -259,7 +259,7 @@ class NeuroCodeFileRunner:
             else:
                 return "🧠 Recall command processed"
         except Exception as e:
-            raise RuntimeError(f"Failed to parse recall command: {e}")
+            raise RuntimeError(f"Failed to parse recall command: {e}") from e
 
     def _handle_reflect(self, line: str) -> str:
         """Handle reflection commands"""
@@ -268,12 +268,12 @@ class NeuroCodeFileRunner:
                 if "tags=" in line:
                     tags_part = line.split("tags=")[1].strip().strip('"')
                     tags = [tag.strip() for tag in tags_part.split(",")]
-                    reflection = self.memory.reflection_summary("all_time")
+                    self.memory.reflection_summary("all_time")
                     return f"🔍 Reflection on {tags}: Generated analysis"
                 else:
-                    reflection = self.memory.reflection_summary("all_time")
+                    self.memory.reflection_summary("all_time")
                     return "🔍 General reflection completed"
-            except:
+            except Exception:
                 return "🔍 Reflection analysis completed"
         return "🔍 Reflection processed"
 
@@ -283,7 +283,7 @@ class NeuroCodeFileRunner:
             try:
                 stats = self.memory.get_memory_stats()
                 return f"📊 Memory Summary: {stats[:100]}..."
-            except:
+            except Exception:
                 return f"📊 Memory entries: {len(self.memory.memory)}"
         return "📊 Memory summary generated"
 
@@ -295,7 +295,7 @@ class NeuroCodeFileRunner:
                 for mem in self.memory.memory:
                     all_tags.update(mem.get("tags", []))
                 return f"🏷️ Available tags: {', '.join(sorted(all_tags))}"
-            except:
+            except Exception:
                 return "🏷️ Tags enumerated"
         return "🏷️ Memory tags listed"
 
@@ -353,7 +353,7 @@ class NeuroCodeFileRunner:
             try:
                 patterns = self.memory.patterns()
                 return f"🔍 Patterns detected: {len(patterns.get('tag_frequency', {})) if patterns else 0} tag patterns"
-            except:
+            except Exception:
                 return "🔍 Pattern detection completed"
         return "🔍 Patterns analyzed"
 
