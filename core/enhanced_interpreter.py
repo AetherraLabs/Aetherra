@@ -93,22 +93,22 @@ class AIModelRouter:
 try:
     # Try relative imports first (when run as module)
     try:
+        from .ai_collaboration import AICollaborationFramework
         from .ai_runtime import ask_ai
         from .intent_parser import IntentToCodeParser, parse_natural_intent
         from .interpreter import NeuroCodeInterpreter
         from .local_ai import LocalAIEngine, local_analyze_code, local_ask_ai
-        from .vector_memory import EnhancedSemanticMemory
         from .performance_optimizer import PerformanceOptimizer
-        from .ai_collaboration import AICollaborationFramework, AgentRole, TaskPriority
+        from .vector_memory import EnhancedSemanticMemory
     except ImportError:
         # Fallback to direct imports (when run from parent directory)
+        from ai_collaboration import AICollaborationFramework
         from ai_runtime import ask_ai
         from intent_parser import IntentToCodeParser, parse_natural_intent
         from interpreter import NeuroCodeInterpreter
         from local_ai import LocalAIEngine, local_analyze_code, local_ask_ai
-        from vector_memory import EnhancedSemanticMemory
         from performance_optimizer import PerformanceOptimizer
-        from ai_collaboration import AICollaborationFramework, AgentRole, TaskPriority
+        from vector_memory import EnhancedSemanticMemory
 
     ENHANCEMENTS_AVAILABLE = True
     print("✅ All enhancement modules loaded successfully")
@@ -406,7 +406,7 @@ Generated NeuroCode:
         elif command.startswith("analyze"):
             # Get recent performance data
             report = self.performance_optimizer.get_performance_report()
-            
+
             response = "📊 Performance Analysis\n\n"
             if 'suggestions' in report and report['suggestions']:
                 response += "🔧 Recent Optimization Suggestions:\n"
@@ -415,7 +415,7 @@ Generated NeuroCode:
                     response += f"  Suggestion: {suggestion['suggested_optimization']}\n"
             else:
                 response += "✅ No performance issues detected\n"
-            
+
             return response
 
         elif command.startswith("profile"):
@@ -429,7 +429,7 @@ Generated NeuroCode:
             try:
                 result = self.core_interpreter.execute(code_to_profile)
                 execution_time = time.time() - start_time
-                
+
                 # Record metrics using the correct method
                 self.performance_optimizer.profile_execution(
                     command=code_to_profile,
@@ -437,7 +437,7 @@ Generated NeuroCode:
                     memory_usage=None,  # Will be auto-detected
                     context={"result_length": len(str(result))}
                 )
-                
+
                 return f"⏱️ Profiled execution in {execution_time:.3f}s\nResult: {result}"
             except Exception as e:
                 return f"[Profile Error] {e}"
@@ -509,11 +509,11 @@ Generated NeuroCode:
             # Run a quick benchmark
             import time
             start_time = time.time()
-            
+
             # Test basic operations
             for i in range(100):
                 self.core_interpreter.execute(f"set test_var_{i} = {i}")
-            
+
             benchmark_time = time.time() - start_time
             return f"⚡ Benchmark completed in {benchmark_time:.3f}s (100 operations)"
 
@@ -537,41 +537,41 @@ Generated NeuroCode:
     def demonstrate_enhancements(self) -> str:
         """Demonstrate available enhancements"""
         demo = "🚀 NeuroCode Enhanced Features Demo\n\n"
-        
+
         if not ENHANCEMENTS_AVAILABLE:
             return demo + "⚠️  No enhancements available - basic interpreter only"
-        
+
         demo += "Available Enhancement Commands:\n\n"
         demo += "🧠 Natural Language:\n"
         demo += "  'Create a simple calculator function'\n"
         demo += "  'Build a data processing pipeline'\n\n"
-        
+
         demo += "⚡ Performance Optimization:\n"
         demo += "  optimize status - View optimization status\n"
         demo += "  optimize analyze - Get performance analysis\n"
         demo += "  optimize profile <code> - Profile code execution\n\n"
-        
+
         demo += "🤝 AI Collaboration:\n"
         demo += "  collaborate status - View collaboration status\n"
         demo += "  collaborate task <description> - Create collaborative task\n"
         demo += "  collaborate agents - List available AI agents\n\n"
-        
+
         demo += "🎯 Intent Commands:\n"
         demo += "  intent: build a web scraper\n"
         demo += "  intent: optimize database queries\n\n"
-        
+
         demo += "🔍 AI Analysis:\n"
         demo += "  ai: analyze this code for bugs\n"
         demo += "  local_ai status - Check local AI status\n\n"
-        
+
         demo += "🧠 Semantic Memory:\n"
         demo += "  semantic_recall machine learning\n"
         demo += "  analyze_patterns recent code\n\n"
-        
+
         demo += "📊 Performance Monitoring:\n"
         demo += "  performance report - Get performance report\n"
         demo += "  performance benchmark - Run benchmark test\n"
-        
+
         return demo
 
 
@@ -584,11 +584,11 @@ def test_enhancements():
     """Test enhancement integrations"""
     interpreter = create_enhanced_interpreter()
     print("🧪 Testing enhancements...")
-    
+
     # Test status
     status = interpreter.get_enhancement_status()
     print(f"✅ Enhancements available: {status['enhancements_available']}")
-    
+
     return True
 
 

@@ -238,7 +238,7 @@ class LocalAIEngine:
 
         if not avg_times:
             return list(self.local_models.keys())[0] if self.local_models else "none"
-            
+
         return min(avg_times, key=lambda k: avg_times[k])
 
     def get_model_status(self) -> Dict:
@@ -275,11 +275,11 @@ def local_analyze_code(code: str, filename: str = "") -> str:
     """Analyze code using local AI"""
     prompt = f"""
     Analyze this code for potential improvements, bugs, and optimization opportunities:
-    
+
     Filename: {filename}
     Code:
     {code}
-    
+
     Provide specific, actionable suggestions for improvement.
     """
     return local_ask_ai(prompt, max_tokens=1024, temperature=0.3)
@@ -289,10 +289,10 @@ def local_suggest_fix(error: str, context: str = "") -> str:
     """Suggest fix for error using local AI"""
     prompt = f"""
     Analyze this error and suggest a specific fix:
-    
+
     Error: {error}
     Context: {context}
-    
+
     Provide a clear, actionable solution.
     """
     return local_ask_ai(prompt, max_tokens=512, temperature=0.3)
@@ -302,9 +302,9 @@ def local_optimize_code(code: str, target: str = "performance") -> str:
     """Optimize code using local AI"""
     prompt = f"""
     Optimize this code for {target}:
-    
+
     {code}
-    
+
     Provide the optimized version with explanation of changes.
     """
     return local_ask_ai(prompt, max_tokens=1024, temperature=0.2)
