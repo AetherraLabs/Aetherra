@@ -1,18 +1,67 @@
-# NeuroCode Enhancement Dependencies
-sentence-transformers>=2.2.0
-chromadb>=0.4.0
-numpy>=1.21.0
-scipy>=1.7.0
-scikit-learn>=1.0.0
-transformers>=4.21.0
-torch>=1.12.0
-accelerate>=0.20.0
+# NeuroCode v1.0.0 - Enhanced Dependencies
+# Advanced features for AI research, enterprise use, and development
 
-# Optional dependencies
-ollama
-llama-cpp-python
-ctransformers
-faiss-cpu
-pinecone-client
-weaviate-client
-onnxruntime
+# === BASE REQUIREMENTS ===
+-r requirements_minimal.txt
+
+# === MACHINE LEARNING & AI ===
+transformers>=4.30.0,<5.0.0     # Hugging Face transformers
+torch>=2.0.0,<3.0.0             # PyTorch for local models
+sentence-transformers>=2.2.0    # Semantic embeddings
+accelerate>=0.20.0              # Hugging Face model acceleration
+numpy>=1.24.0,<2.0.0            # Numerical operations
+scipy>=1.9.0,<2.0.0             # Scientific computing
+scikit-learn>=1.3.0,<2.0.0      # Machine learning algorithms
+
+# === VECTOR DATABASES & MEMORY ===
+chromadb>=0.4.0,<1.0.0          # Vector database for AI memory
+faiss-cpu>=1.7.0,<2.0.0         # Facebook AI similarity search
+pinecone-client>=3.0.0,<4.0.0   # Pinecone vector database
+weaviate-client>=3.0.0,<4.0.0   # Weaviate vector database
+
+# === LOCAL AI MODELS ===
+ollama>=0.1.0                    # Local model server
+llama-cpp-python>=0.2.0         # Direct GGUF model loading
+ctransformers>=0.2.0            # C Transformers for speed
+onnxruntime>=1.15.0             # ONNX runtime for optimized models
+
+# === GUI FRAMEWORKS ===
+PySide6>=6.5.0,<7.0.0           # Primary Qt backend
+PyQt6>=6.5.0,<7.0.0             # Alternative Qt backend
+qdarkstyle>=3.2.0,<4.0.0        # Dark theme for Qt
+
+# === VISUALIZATION ===
+matplotlib>=3.7.0,<4.0.0        # Plotting and visualization
+networkx>=3.1.0,<4.0.0          # Graph algorithms
+plotly>=5.15.0,<6.0.0           # Interactive visualizations
+
+# === NATURAL LANGUAGE PROCESSING ===
+spacy>=3.6.0,<4.0.0             # Advanced NLP
+textblob>=0.17.0,<1.0.0         # Simple NLP and sentiment
+nltk>=3.8.1,<4.0.0              # Natural language toolkit
+
+# === CODE INTELLIGENCE ===
+pygments>=2.15.0,<3.0.0         # Syntax highlighting
+tree-sitter>=0.20.0,<1.0.0      # Advanced code parsing
+black>=23.0.0,<24.0.0           # Code formatting
+flake8>=6.0.0,<7.0.0            # Code linting
+
+# === PERFORMANCE & MONITORING ===
+memory-profiler>=0.61.0,<1.0.0  # Memory usage analysis
+line-profiler>=4.0.0,<5.0.0     # Line-by-line profiling
+py-spy>=0.3.14                  # Sampling profiler
+
+# === UTILITIES & FORMATTING ===
+rich>=13.0.0,<14.0.0            # Enhanced terminal formatting
+loguru>=0.7.0,<1.0.0            # Advanced logging
+click>=8.1.0,<9.0.0             # Command line interfaces
+pydantic>=2.0.0,<3.0.0          # Data validation
+
+# === HIGH-PERFORMANCE STORAGE ===
+redis>=4.5.0,<5.0.0             # High-performance caching
+sqlalchemy>=2.0.0,<3.0.0        # Database ORM
+
+# === AUDIO & SPEECH (EXPERIMENTAL) ===
+# openai-whisper>=20230314       # Speech recognition (large download ~1GB)
+# pyttsx3>=2.90                  # Text-to-speech
+# speechrecognition>=3.10.0      # Speech input

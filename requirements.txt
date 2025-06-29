@@ -1,45 +1,67 @@
-# Neuroplex - AI-Native Programming Language Requirements
+# NeuroCode v1.0.0 - AI-Native Programming Language Requirements
+# Production-ready dependencies for the world's first AI-native language
 
-# === CORE AI FUNCTIONALITY ===
-openai>=1.0.0
+# === CORE REQUIREMENTS (ALWAYS NEEDED) ===
+lark>=1.1.7                      # Grammar parser for .neuro files
+streamlit>=1.28.0                # Interactive playground interface
 
-# === GUI FRAMEWORK ===
-PySide6>=6.5.0                   # Primary Qt backend
-PyQt6>=6.5.0                     # Fallback Qt backend
+# === AI & LLM PROVIDERS ===
+openai>=1.0.0,<2.0.0            # OpenAI GPT models
+anthropic>=0.5.0                 # Claude AI integration
+google-generativeai>=0.3.0      # Gemini AI integration
 
-# === ESSENTIAL PERFORMANCE STACK ===
-numpy>=1.24.0                    # Fast numerical operations for memory analysis
-transformers>=4.30.0             # Local AI models (optional, install if needed)
-sentence-transformers>=2.2.0     # Semantic search capabilities
-
-# === VISUALIZATION & UI ENHANCEMENT ===
-matplotlib>=3.7.0                # Memory network visualization
-networkx>=3.1.0                  # Graph algorithms for neural connections
-qdarkstyle>=3.2.0                # Enhanced dark theme
-
-# === NATURAL LANGUAGE PROCESSING ===
-spacy>=3.6.0                     # Advanced NLP for code understanding
-textblob>=0.17.0                 # Sentiment analysis for AI responses
-
-# === VOICE & AUDIO (OPTIONAL) ===
-# openai-whisper>=20230314        # Advanced speech recognition (large download)
-# pyttsx3>=2.90                   # Text-to-speech for AI responses
-# speechrecognition>=3.10.0       # Alternative speech recognition
-
-# === CODE INTELLIGENCE ===
-pygments>=2.15.0                 # Enhanced syntax highlighting
-tree-sitter>=0.20.0              # Advanced syntax parsing (optional)
+# === LOCAL AI SUPPORT (OPTIONAL) ===
+ollama>=0.1.0                    # Local model server (Mistral, LLaMA, etc.)
+llama-cpp-python>=0.2.0         # Direct GGUF model loading (used in multi_llm_manager.py)
 
 # === SYSTEM MONITORING ===
-psutil>=5.9.0                    # System resource monitoring
-memory-profiler>=0.61.0          # Memory usage analysis
+psutil>=5.9.0                    # System resource monitoring (used in performance_optimizer.py)
 
-# === UTILITIES ===
-requests>=2.31.0                 # HTTP requests for web-based plugins
-colorama>=0.4.6                  # Colored terminal output
-rich>=13.0.0                     # Enhanced UI formatting
-loguru>=0.7.0                    # Advanced logging
+# === ENHANCED FEATURES (OPTIONAL BUT RECOMMENDED) ===
+# Uncomment any of these for enhanced functionality:
 
-# === HIGH-PERFORMANCE STORAGE (OPTIONAL) ===
+# === GUI FRAMEWORKS (for advanced UI) ===
+# PySide6>=6.5.0                 # Primary Qt backend for GUI apps
+# PyQt6>=6.5.0                   # Alternative Qt backend
+
+# === PERFORMANCE & ANALYTICS ===
+# numpy>=1.24.0                  # Fast numerical operations
+# scipy>=1.9.0                   # Scientific computing
+# memory-profiler>=0.61.0        # Memory usage analysis
+
+# === MACHINE LEARNING (for advanced AI features) ===
+# transformers>=4.30.0           # Hugging Face transformers
+# torch>=2.0.0                   # PyTorch for local AI models
+# sentence-transformers>=2.2.0   # Semantic embeddings
+
+# === VECTOR DATABASES (for semantic memory) ===
+# chromadb>=0.4.0                # Vector database for AI memory
+# faiss-cpu>=1.7.0               # Facebook AI similarity search
+# pinecone-client>=3.0.0         # Pinecone vector database
+
+# === VISUALIZATION ===
+# matplotlib>=3.7.0              # Plotting and visualization
+# networkx>=3.1.0                # Graph algorithms for neural networks
+
+# === NATURAL LANGUAGE PROCESSING ===
+# spacy>=3.6.0                   # Advanced NLP capabilities
+# textblob>=0.17.0               # Simple NLP and sentiment analysis
+
+# === CODE INTELLIGENCE ===
+# pygments>=2.15.0               # Syntax highlighting
+# tree-sitter>=0.20.0            # Advanced code parsing
+
+# === UTILITIES (OPTIONAL) ===
+# requests>=2.31.0               # HTTP requests (not currently used)  
+# colorama>=0.4.6                # Colored terminal output (not currently used)
+# rich>=13.0.0                   # Enhanced terminal formatting
+# loguru>=0.7.0                  # Advanced logging
+
+# === AUDIO & SPEECH (EXPERIMENTAL) ===
+# openai-whisper>=20230314       # Speech recognition (large download)
+# pyttsx3>=2.90                  # Text-to-speech
+# speechrecognition>=3.10.0      # Speech input
+
+# === HIGH-PERFORMANCE STORAGE ===
 # redis>=4.5.0                   # High-performance caching
-# chromadb>=0.4.0                # Vector database for semantic memory
+# weaviate-client>=3.0.0         # Weaviate vector database

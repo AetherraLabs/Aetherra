@@ -1,0 +1,22 @@
+# NeuroCode v1.0.0 - Minimal Core Requirements
+# Essential dependencies for basic NeuroCode functionality
+
+# === CORE LANGUAGE FEATURES ===
+lark>=1.1.7                      # Grammar parser for .neuro files (REQUIRED)
+streamlit>=1.28.0                # Interactive playground (REQUIRED)
+
+# === AI PROVIDERS (Choose at least one) ===
+openai>=1.0.0,<2.0.0            # OpenAI GPT models
+# anthropic>=0.5.0               # Claude AI (alternative)
+# google-generativeai>=0.3.0    # Gemini AI (alternative)
+# ollama>=0.1.0                  # Local models (alternative)
+
+# === UTILITIES ===
+# requests>=2.31.0               # HTTP requests (not currently used)
+# colorama>=0.4.6                # Colored terminal output (not currently used)
+psutil>=5.9.0                    # System monitoring
+
+# === INSTALLATION NOTES ===
+# For local AI models: pip install ollama llama-cpp-python
+# For advanced features: pip install -r requirements_enhanced.txt
+# For GUI applications: pip install PySide6 PyQt6
