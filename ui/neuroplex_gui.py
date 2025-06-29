@@ -238,6 +238,7 @@ except Exception as e:
     NeuroCodeChatRouter = None
     NEUROCODE_AVAILABLE = False
 
+
 class NeuroAnimation(QPropertyAnimation):
     """Custom animation for NeuroCode UI elements"""
 
@@ -245,6 +246,7 @@ class NeuroAnimation(QPropertyAnimation):
         super().__init__(target, property_name.encode())
         self.setDuration(500)
         self.setEasingCurve(QEasingCurve.Type.OutCubic)
+
 
 class NeuroTheme:
     """NeuroCode theme and styling"""
@@ -370,6 +372,7 @@ class NeuroTheme:
         }}
         """
 
+
 class PulsingWidget(QWidget):
     """Widget that pulses with neural activity"""
 
@@ -400,6 +403,7 @@ class PulsingWidget(QWidget):
             self.pulse_value = 0.3
 
         self.opacity_effect.setOpacity(self.pulse_value)
+
 
 class NeuroCodeEditor(QTextEdit):
     """Advanced code editor for NeuroCode with syntax highlighting"""
@@ -436,6 +440,7 @@ class NeuroCodeEditor(QTextEdit):
         code = self.toPlainText().strip()
         if code:
             self.code_executed.emit(code)
+
 
 class MemoryVisualization(QWidget):
     """Visual representation of NeuroCode memory system"""
@@ -492,6 +497,7 @@ class MemoryVisualization(QWidget):
             painter.setPen(pen)  # type: ignore
             painter.drawText(memory["x"] + 15, memory["y"], memory["text"][:20] + "...")
 
+
 class GoalTracker(QGroupBox):
     """Visual goal tracking system"""
 
@@ -546,6 +552,7 @@ class GoalTracker(QGroupBox):
             {"text": goal_text, "priority": priority, "widget": goal_widget, "progress": progress}
         )
 
+
 class SystemMonitor(QGroupBox):
     """Real-time system monitoring"""
 
@@ -590,6 +597,7 @@ class SystemMonitor(QGroupBox):
         else:
             self.performance_status.setText("⚡ Performance: Optimal")
 
+
 class LiveConsole(QTextEdit):
     """Live console output showing NeuroCode execution"""
 
@@ -610,6 +618,7 @@ class LiveConsole(QTextEdit):
         # Auto-scroll to bottom
         scrollbar = self.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
+
 
 class NeuroplexMainWindow(QMainWindow):
     """Main Neuroplex GUI window"""
@@ -1564,6 +1573,7 @@ NeuroCode is the first AI-native programming language where code thinks, learns,
         except Exception as e:
             self.console.append(f"❌ AI benchmark failed: {e}")
 
+
 def main():
     """Main entry point for Neuroplex GUI"""
     app = QApplication(sys.argv)
@@ -1586,6 +1596,7 @@ def main():
     # Run application
     print("🚀 Launching Neuroplex GUI...")
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()
