@@ -50,6 +50,18 @@ tmp/
 memory_store.json
 goals_store.json
 neurocode_functions.json
+
+# Runtime files in subdirectories
+ui/memory_store.json
+ui/goals_store.json
+
+# User data and test outputs
+debug_output/
+test_output/
+*.bak
+*.backup
+goals_store.json
+neurocode_functions.json
 *.backup.*
 backups/
 

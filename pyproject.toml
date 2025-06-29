@@ -1,8 +1,50 @@
-[tool.ruff]
-# Set the line length to match your other formatters
-line-length = 100
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
-# Enable import sorting
+[project]
+name = "neurocode"
+version = "1.0.0"
+description = "NeuroCode - The First AI-Native Programming Language"
+authors = [{name = "NeuroCode Team", email = "info@neurocode.dev"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["ai", "programming-language", "cognitive-computing", "artificial-intelligence"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Interpreters",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Homepage = "https://github.com/Zyonic88/neurocode"
+Repository = "https://github.com/Zyonic88/neurocode"
+Issues = "https://github.com/Zyonic88/neurocode/issues"
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+exclude = [
+    ".git",
+    "__pycache__",
+    "venv",
+    ".venv",
+    "build",
+    "dist",
+    "*.egg-info",
+    "backups",
+]
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -14,40 +56,17 @@ select = [
     "C4",  # flake8-comprehensions
 ]
 
-# Ignore specific rules that might be too strict for your codebase
 ignore = [
     "E501",  # line too long (handled by line-length setting)
     "B008",  # function calls in default arguments
     "N806",  # variable name should be lowercase (for compatibility)
 ]
 
-# Exclude certain directories
-exclude = [
-    ".git",
-    "__pycache__",
-    "venv",
-    ".venv",
-    "build",
-    "dist",
-    "*.egg-info",
-]
-
-# Target Python version
-target-version = "py38"
-
 [tool.ruff.format]
-# Use single quotes for strings
 quote-style = "double"
-
-# Indent with spaces
 indent-style = "space"
-
-# Respect magic trailing commas
 skip-magic-trailing-comma = false
 
 [tool.ruff.lint.isort]
-# Known first-party modules (your project modules)
 known-first-party = ["core", "plugins", "stdlib", "ui"]
-
-# Split imports on separate lines
 split-on-trailing-comma = true

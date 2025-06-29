@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # core/interpreter.py
 import os
 import re
@@ -1171,3 +1172,1178 @@ class NeuroCodeInterpreter:
         except Exception as e:
             print(f"❌ [Load Error] {e}")
             self.debug_system.detect_and_store_error(e, f"Loading file: {filename}", filename)
+=======
+# core/interpreter.py
+import os
+import re
+import shutil
+import difflib
+import ast
+import traceback
+from datetime import datetime
+
+# Use relative imports for better module isolation
+try:
+    from .memory import NeuroMemory
+    from .functions import NeuroFunctions
+    from .agent import NeuroAgent
+    from .goal_system import GoalSystem
+    from .meta_plugins import MetaPluginSystem
+    from .block_executor import BlockExecutor
+    from .ai_runtime import ask_ai, reflect_on_memories, auto_tag_content, suggest_next_actions
+    from .plugin_manager import PLUGIN_REGISTRY
+    from .debug_system import NeuroDebugSystem
+except ImportError:
+    # Fallback for when running as standalone script or from different context
+    try:
+        from memory import NeuroMemory
+        from functions import NeuroFunctions
+        from agent import NeuroAgent
+        from goal_system import GoalSystem
+        from meta_plugins import MetaPluginSystem
+        from block_executor import BlockExecutor
+        from ai_runtime import ask_ai, reflect_on_memories, auto_tag_content, suggest_next_actions
+        from plugin_manager import PLUGIN_REGISTRY
+        from debug_system import NeuroDebugSystem
+    except ImportError as e:
+        print(f"⚠️ Some interpreter dependencies not available: {e}")
+        # Create minimal fallbacks for graceful degradation
+        class NeuroMemory:
+            def __init__(self): 
+                self.memory = []
+                self.store_file = "memory_store.json"
+            def remember(self, *args, **kwargs): 
+                return {"status": "demo mode", "id": "demo"}
+            def recall(self, *args, **kwargs): 
+                return []
+            def save_to_file(self): pass
+            def load_from_file(self): pass
+            def clear(self): pass
+        
+        class NeuroFunctions:
+            def __init__(self): 
+                self.functions = {}
+            def call_function(self, name, args): 
+                return f"Demo function call: {name}({args})"
+            
+        class NeuroAgent:
+            def __init__(self, *args): 
+                self.active = False
+            def activate(self): 
+                self.active = True
+                return "Agent activated (demo mode)"
+            def deactivate(self): 
+                self.active = False
+            
+# Use relative imports for better module isolation
+try:
+    from .memory import NeuroMemory
+    from .functions import NeuroFunctions
+    from .agent import NeuroAgent
+    from .goal_system import GoalSystem
+    from .meta_plugins import MetaPluginSystem
+    from .block_executor import BlockExecutor
+    from .ai_runtime import ask_ai, reflect_on_memories, auto_tag_content, suggest_next_actions
+    from .plugin_manager import PLUGIN_REGISTRY
+    from .debug_system import NeuroDebugSystem
+except ImportError:
+    # Fallback for when running as standalone script or from different context
+    try:
+        from memory import NeuroMemory
+        from functions import NeuroFunctions
+        from agent import NeuroAgent
+        from goal_system import GoalSystem
+        from meta_plugins import MetaPluginSystem
+        from block_executor import BlockExecutor
+        from ai_runtime import ask_ai, reflect_on_memories, auto_tag_content, suggest_next_actions
+        from plugin_manager import PLUGIN_REGISTRY
+        from debug_system import NeuroDebugSystem
+    except ImportError as e:
+        print(f"⚠️ Some interpreter dependencies not available: {e}")
+        # Create minimal fallback classes for graceful degradation
+        class NeuroMemory:
+            def __init__(self): 
+                self.memory = []
+                self.store_file = "memory_store.json"
+            def remember(self, content, tags=None): 
+                return {"status": "demo mode", "id": "demo"}
+            def recall(self, query=None, tags=None, category=None): 
+                return []
+            def get_tags(self): return []
+            def get_categories(self): return []
+            def get_memory_summary(self): return "Demo mode"
+            def get_memory_stats(self): return {"total": 0}
+            def save_to_file(self): pass
+            def load_from_file(self): pass
+            def clear(self): pass
+        
+        class NeuroFunctions:
+            def __init__(self): 
+                self.functions = {}
+            def call_function(self, name, args, executor=None): 
+                return f"Demo function call: {name}({args})"
+            def define_function(self, name, params, commands):
+                return f"Demo function defined: {name}"
+            def list_functions(self): return []
+            def show_function(self, name): return f"Demo function: {name}"
+            def delete_function(self, name): return f"Demo function deleted: {name}"
+            
+        class NeuroAgent:
+            def __init__(self, memory=None, functions=None): 
+                self.active = False
+                self.memory = memory
+                self.functions = functions
+            def activate(self): 
+                self.active = True
+                return "Agent activated (demo mode)"
+            def deactivate(self): 
+                self.active = False
+            def get_command_type(self, command): return "demo"
+            def detect_memory_patterns(self): return "Demo patterns"
+            
+        class GoalSystem:
+            def __init__(self, memory=None): 
+                self.goals = []
+                self.memory = memory
+            def add_goal(self, goal, priority="medium"): 
+                self.goals.append({"goal": goal, "priority": priority})
+                return f"Goal added: {goal}"
+            
+        class MetaPluginSystem:
+            def __init__(self, *args): 
+                self.plugins = {}
+            def load_plugin(self, name): return f"Demo plugin loaded: {name}"
+            
+        class BlockExecutor:
+            def __init__(self, *args): pass
+            def execute_block(self, block, executor): return "Demo block executed"
+            
+        class NeuroDebugSystem:
+            def __init__(self, *args): pass
+            def debug(self, msg): print(f"Debug: {msg}")
+            
+        # Fallback functions
+        def ask_ai(query): return f"AI response to: {query}"
+        def reflect_on_memories(memories): return "Reflection on memories"
+        def auto_tag_content(content): return ["demo"]
+        def suggest_next_actions(context): return ["Continue exploring"]
+        
+        PLUGIN_REGISTRY = {}
+        
+        class NeuroFunctions:
+            def __init__(self): pass
+            
+        class NeuroAgent:
+            def __init__(self, *args): pass
+            
+        class GoalSystem:
+            def __init__(self, *args): pass
+            
+        class MetaPluginSystem:
+            def __init__(self, *args): pass
+            
+        class BlockExecutor:
+            def __init__(self, *args): pass
+            
+        class NeuroDebugSystem:
+            def __init__(self, *args): pass
+            
+        def ask_ai(*args): return "AI not available"
+        def reflect_on_memories(*args): return "Reflection not available"
+        def auto_tag_content(*args): return []
+        def suggest_next_actions(*args): return "Suggestions not available"
+        
+        PLUGIN_REGISTRY = {}
+
+# Import stdlib manager for standard plugins
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent / "stdlib"))
+from stdlib import stdlib_manager
+
+class NeuroCodeInterpreter:
+    """
+    Core NeuroCode interpreter - handles line-by-line parsing and execution flow
+    Delegates specific functionality to specialized modules
+    """
+    
+    def __init__(self):
+        self.memory = NeuroMemory()
+        self.functions = NeuroFunctions()
+        self.command_history = []  # Track command usage patterns
+        self.agent = NeuroAgent(self.memory, self.functions, self.command_history)
+        self.goal_system = GoalSystem(self.memory, self)  # New goal system
+        self.meta_plugins = MetaPluginSystem(self.memory, self, self.goal_system)  # Meta-plugin system
+        self.block_executor = BlockExecutor(self.memory, self.functions)  # Block execution engine
+        
+        # Self-editing capabilities
+        self.loaded_files = {}  # Store loaded file contents
+        self.pending_fixes = {}  # Store suggested fixes awaiting approval
+        self.backup_dir = "backups"  # Directory for file backups
+        self.self_edit_mode = False  # Safety flag for self-editing
+        
+        # Block parsing state
+        self.block_buffer = []  # For multi-line block parsing
+        self.in_block = False
+        self.block_type = None
+        
+        # Debug system
+        self.debug_system = NeuroDebugSystem(self.memory)
+        
+        # Standard library manager
+        self.stdlib = stdlib_manager
+        
+        # Create backup directory if it doesn't exist
+        if not os.path.exists(self.backup_dir):
+            os.makedirs(self.backup_dir)
+
+    def execute(self, line):
+        """Main execution entry point - parses and executes a single line"""
+        line = line.strip()
+        
+        # Handle block parsing for multi-line constructs
+        if self._is_block_start(line):
+            return self._start_block(line)
+        elif self.in_block:
+            return self._add_to_block(line)
+        
+        # Track command usage for pattern analysis
+        self._track_command(line)
+        
+        # Route command to appropriate handler
+        result = self._route_command(line)
+        return result
+    
+    def _track_command(self, line):
+        """Track command usage for behavioral analysis"""
+        self.command_history.append({
+            'command': line,
+            'timestamp': str(datetime.now()),
+            'command_type': self.agent.get_command_type(line)
+        })
+        
+        # Keep only last 100 commands to avoid memory bloat
+        if len(self.command_history) > 100:
+            self.command_history = self.command_history[-100:]
+    
+    def _route_command(self, line):
+        """Route commands to appropriate handlers"""
+        
+        # Memory commands
+        if line.startswith("remember(") or line.startswith("remember "):
+            return self._handle_remember(line)
+        elif line.startswith("recall(") or line.startswith("recall tag:"):
+            return self._handle_recall(line)
+        elif line.startswith("memory "):
+            return self._handle_memory_management(line)
+        
+        # Function commands
+        elif line.startswith("define "):
+            return self._handle_function_define(line)
+        elif line.startswith("call "):
+            return self._handle_function_call(line)
+        elif line.startswith("list functions"):
+            return self.functions.list_functions()
+        elif line.startswith("show function "):
+            func_name = line.split("show function")[-1].strip()
+            return self.functions.show_function(func_name)
+        elif line.startswith("delete function "):
+            func_name = line.split("delete function")[-1].strip()
+            return self.functions.delete_function(func_name)
+        
+        # AI and analysis commands
+        elif line.startswith("reflect on"):
+            return self._handle_reflect(line)
+        elif line.startswith("detect patterns"):
+            return self.agent.detect_memory_patterns()
+        elif line.startswith("analyze behavior"):
+            return self.agent.analyze_behavior()
+        elif line.startswith("suggest evolution"):
+            context = line.split("suggest evolution")[-1].strip().strip('"\'')
+            return self.agent.suggest_evolution(context)
+        elif line.startswith("adaptive suggest"):
+            context = line.split("adaptive suggest")[-1].strip().strip('"\'')
+            return self.agent.adaptive_suggest(context)
+        elif line.startswith("self edit opportunities"):
+            return self.agent.suggest_self_editing_opportunities()
+        
+        # Goal system and agent commands
+        elif line.startswith("goal:"):
+            return self._handle_goal_setting(line)
+        elif line.startswith("agent:"):
+            return self._handle_agent_control(line)
+        elif line.startswith("check goal"):
+            return self._handle_goal_check(line)
+        elif line.startswith("goal status"):
+            return self.goal_system.get_goal_status()
+        elif line.startswith("reflective loop"):
+            return self.goal_system.reflective_loop()
+        elif line.startswith("autonomous monitoring"):
+            return self.goal_system.autonomous_goal_monitoring()
+        
+        # Pattern recognition and memory analysis
+        elif line.startswith("if memory.pattern"):
+            return self._handle_memory_pattern_condition(line)
+        elif line.startswith("detect recurring patterns"):
+            return self._handle_detect_recurring_patterns(line)
+        elif line.startswith("pattern frequency"):
+            return self._handle_pattern_frequency(line)
+        
+        # Learning and optimization commands
+        elif line.startswith("learn from"):
+            return self._handle_learn_from(line)
+        elif line.startswith("optimize for"):
+            return self._handle_optimize(line)
+        elif line.startswith("suggest fix"):
+            return self._handle_suggest_fix(line)
+        
+        # Self-editing commands
+        elif line.startswith("load "):
+            return self._handle_load_file(line)
+        elif line.startswith("analyze "):
+            return self._handle_analyze_code(line)
+        elif line.startswith("refactor "):
+            return self._handle_refactor(line)
+        elif line.startswith("apply fix"):
+            return self._handle_apply_fix(line)
+        elif line.startswith("backup "):
+            return self._handle_backup(line)
+        elif line.startswith("diff "):
+            return self._handle_diff(line)
+        elif line.startswith("set self_edit_mode"):
+            mode = line.split("set self_edit_mode")[-1].strip()
+            if mode in ["on", "true", "enabled"]:
+                return self.set_self_edit_mode(True)
+            elif mode in ["off", "false", "disabled"]:
+                return self.set_self_edit_mode(False)
+            else:
+                return "[Safety] Usage: set self_edit_mode on/off"
+        
+        # Assistant and plugin commands
+        elif line.startswith("assistant:"):
+            return self._handle_assistant(line)
+        elif line.startswith("plugin:"):
+            return self._handle_plugin(line)
+        elif line.startswith("meta:"):
+            return self._handle_meta_plugin(line)
+        elif line.startswith("list meta plugins"):
+            return self.meta_plugins.list_meta_plugins()
+        elif line.startswith("list plugins"):
+            return self._handle_list_plugins()
+        elif line.startswith("plugin info"):
+            return self._handle_plugin_info(line)
+        
+        # Debug commands
+        elif line.startswith("debug status"):
+            self.debug_system.show_debug_status()
+        
+        elif line.startswith("set auto_debug"):
+            parts = line.split()
+            if len(parts) >= 3:
+                enabled = parts[2].lower() in ['on', 'true', 'yes', 'enabled']
+                confidence = int(parts[3]) if len(parts) > 3 else 80
+                self.debug_system.set_auto_apply(enabled, confidence)
+            else:
+                print("Usage: set auto_debug on/off [confidence_threshold]")
+        
+        elif line.startswith("suggest fix"):
+            # Handle manual fix suggestion
+            if "for" in line:
+                error_description = line.split("for", 1)[1].strip().strip('"')
+                # Find matching error in history
+                matching_errors = [e for e in self.debug_system.error_history 
+                                 if error_description.lower() in str(e).lower()]
+                if matching_errors:
+                    fix_suggestion = self.debug_system.suggest_fix(matching_errors[-1])
+                    print(f"🤖 [Fix Suggestion] {fix_suggestion.get('fix', 'No fix available')}")
+                    print(f"📊 Confidence: {fix_suggestion.get('confidence', 0)}%")
+                    print(f"⚠️ Risk: {fix_suggestion.get('risk', 'unknown')}")
+                    self._last_fix_suggestion = fix_suggestion
+                else:
+                    print("❌ No matching error found in history")
+            else:
+                print("Usage: suggest fix for \"error description\"")
+        
+        elif line.startswith("apply fix"):
+            if hasattr(self, '_last_fix_suggestion'):
+                force = "force" in line
+                success = self.debug_system.apply_fix(self._last_fix_suggestion, force)
+                if success:
+                    print("✅ Fix applied successfully!")
+                else:
+                    print("❌ Fix application failed")
+            else:
+                print("❌ No fix suggestion available. Use 'suggest fix' first.")
+        
+        elif line.startswith("load "):
+            # Enhanced load with error detection
+            filename = line.split("load ")[1].strip().strip('"')
+            self._load_and_analyze_file(filename)
+        
+        else:
+            return f"[Unknown] Could not interpret: {line}"
+    
+    def _handle_remember(self, line):
+        """Handle remember() command with support for both syntaxes"""
+        # First try the new tagged syntax: remember("content") as "tag"
+        tagged_match = re.search(r'remember\s*\(["\'](.*?)["\']\)\s+as\s+["\'](.*?)["\']', line)
+        if tagged_match:
+            content = tagged_match.group(1)
+            tag = tagged_match.group(2).strip()
+            tags = [tag] if tag else ['general']
+            
+            self.memory.remember(content, tags=tags)
+            return f"[Memory] Stored: {content} | Tag: {tag}"
+        
+        # Try the original function syntax: remember("content", tags="tag1,tag2")
+        function_match = re.search(r'remember\(["\'](.*?)["\']\s*(?:,\s*tags=["\'](.*?)["\']\s*)?\)', line)
+        if function_match:
+            content = function_match.group(1)
+            tags = function_match.group(2).split(',') if function_match.group(2) else ['general']
+            tags = [tag.strip() for tag in tags]
+            
+            self.memory.remember(content, tags=tags)
+            return f"[Memory] Stored: {content} | Tags: {', '.join(tags)}"
+        
+        # If neither syntax matches
+        return "[Memory] Invalid syntax. Use: remember(\"content\") as \"tag\" OR remember(\"content\", tags=\"tag1,tag2\")"
+    
+    def _handle_recall(self, line):
+        """Handle recall() command with support for both syntaxes"""
+        # First try the simple tag syntax: recall tag: "tag_name"
+        simple_tag_match = re.search(r'recall\s+tag:\s*["\'](.*?)["\']', line)
+        if simple_tag_match:
+            tag = simple_tag_match.group(1).strip()
+            memories = self.memory.recall(tags=[tag])
+            if memories:
+                return f"[Memory] Recalled {len(memories)} memories with tag '{tag}':\n" + "\n".join([f"- {m}" for m in memories])
+            else:
+                return f"[Memory] No memories found with tag '{tag}'"
+        
+        # Try the original function syntax: recall(tags="tag1,tag2", category="cat")
+        tag_match = re.search(r'tags=["\'](.*?)["\']\s*', line)
+        category_match = re.search(r'category=["\'](.*?)["\']\s*', line)
+        
+        tags = tag_match.group(1).split(',') if tag_match else None
+        tags = [tag.strip() for tag in tags] if tags else None
+        category = category_match.group(1) if category_match else None
+        
+        memories = self.memory.recall(tags=tags, category=category)
+        if memories:
+            filter_desc = []
+            if tags: filter_desc.append(f"tags: {', '.join(tags)}")
+            if category: filter_desc.append(f"category: {category}")
+            filter_text = f" (filtered by {', '.join(filter_desc)})" if filter_desc else ""
+            
+            result = f"[Recall{filter_text}] Found {len(memories)} memories:\n"
+            for i, memory in enumerate(memories, 1):
+                result += f"  {i}. {memory}\n"
+            return result.strip()
+        else:
+            return "[Recall] No memories found matching criteria"
+    
+    def _handle_memory_management(self, line):
+        """Handle memory management commands"""
+        if line.startswith("memory tags"):
+            tags = self.memory.get_tags()
+            return f"[Memory Tags] Available tags: {', '.join(tags)}"
+        elif line.startswith("memory categories"):
+            categories = self.memory.get_categories()
+            return f"[Memory Categories] Available categories: {', '.join(categories)}"
+        elif line.startswith("memory summary"):
+            summary = self.memory.get_memory_summary()
+            result = "[Memory Summary]\n"
+            result += f"  Total memories: {summary['total_memories']}\n"
+            result += f"  Tags: {', '.join(summary['tags'])}\n"
+            result += f"  Categories: {', '.join(summary['categories'])}"
+            return result
+        elif line.startswith("memory stats"):
+            return self.memory.get_memory_stats()
+        else:
+            return "[Memory] Unknown memory command"
+    
+    def _handle_function_define(self, line):
+        """Handle function definition"""
+        match = re.search(r'define\s+(\w+)\s*\((.*?)\)\s*\{\s*(.*?)\s*\}', line, re.DOTALL)
+        if match:
+            func_name = match.group(1)
+            params = [p.strip() for p in match.group(2).split(',') if p.strip()]
+            commands = match.group(3).strip()
+            
+            return self.functions.define_function(func_name, params, commands)
+        else:
+            return "[Function] Invalid syntax. Use: define function_name(param1, param2) { commands }"
+    
+    def _handle_function_call(self, line):
+        """Handle function call"""
+        match = re.search(r'call\s+(\w+)\s*\((.*?)\)', line)
+        if match:
+            func_name = match.group(1)
+            args = [arg.strip().strip('"\'') for arg in match.group(2).split(',') if arg.strip()]
+            
+            # Use lambda to pass execute method as callback
+            result = self.functions.call_function(func_name, args, lambda cmd: self.execute(cmd))
+            return result
+        else:
+            return "[Function] Invalid syntax. Use: call function_name(arg1, arg2)"
+    
+    def _handle_reflect(self, line):
+        """Handle AI reflection on memories"""
+        match = re.search(r'reflect on\s+(?:tags=["\'](.*?)["\']\s*|category=["\'](.*?)["\']\s*)+', line)
+        if match:
+            tags = match.group(1).split(',') if match.group(1) else None
+            tags = [tag.strip() for tag in tags] if tags else None
+            category = match.group(2) if match.group(2) else None
+            
+            memories = self.memory.recall(tags=tags, category=category)
+            if memories:
+                filter_desc = f"tags: {', '.join(tags)}" if tags else f"category: {category}"
+                reflection = reflect_on_memories(memories, filter_desc)
+                return f"[AI Reflection] {reflection}"
+            else:
+                return "[Reflect] No memories found matching criteria"
+        else:
+            return "[Reflect] Invalid syntax. Use: reflect on tags=\"tag\" or reflect on category=\"category\""
+    
+    def _handle_learn_from(self, line):
+        """Handle learning from files"""
+        file = line.split("learn from")[-1].strip().strip('"')
+        if os.path.exists(file):
+            with open(file, "r") as f:
+                data = f.read()
+            summary = ask_ai(f"Summarize and learn from this content:\n{data}")
+            
+            # Enhanced learning with auto-tagging
+            tags = auto_tag_content(summary)
+            
+            self.memory.remember(f"Learned from {file}: {summary}", tags=tags, category="learning")
+            result = f"[Learned] Summary stored to memory with tags: {', '.join(tags)}\n"
+
+            # Auto-suggest NeuroCode based on learning
+            suggestion = suggest_next_actions(summary)
+            result += f"[Auto-Suggested NeuroCode]\n{suggestion}"
+            return result
+        else:
+            return f"[Learn] File not found: {file}"
+    
+    def _handle_optimize(self, line):
+        """Handle optimization requests"""
+        goal = line.split("optimize for")[-1].strip().strip('"')
+        context = "\n".join(self.memory.recall())
+        result = ask_ai(f"Optimize this system for {goal} using what it knows:\n{context}")
+        return f"[Optimization] {result}"
+    
+    def _handle_suggest_fix(self, line):
+        """Handle fix suggestions"""
+        context = "\n".join(self.memory.recall())
+        issue = line.split("suggest fix for")[-1].strip().strip('"')
+        suggestion = ask_ai(f"Suggest a fix for this issue: {issue}\nContext: {context}")
+        return f"[Fix Suggestion] {suggestion}"
+    
+    def _handle_assistant(self, line):
+        """Handle assistant queries"""
+        query = line.split("assistant:", 1)[-1].strip()
+        context = "\n".join(self.memory.recall())
+        prompt = f"You are NeuroAssistant, a helpful AI embedded in the NeuroCode runtime. Here is your memory:\n{context}\n\nAnswer this: {query}"
+        response = ask_ai(prompt)
+        return f"[NeuroAssistant] {response}"
+    
+    def _handle_plugin(self, line):
+        """Handle plugin execution - supports both legacy and stdlib plugins"""
+        parts = line.split("plugin:")[-1].strip().split()
+        if not parts:
+            return "[Plugin] No plugin name provided."
+        
+        plugin_name = parts[0]
+        plugin_args = parts[1:]
+        
+        # First check stdlib plugins (standard library)
+        if plugin_name in self.stdlib.plugins:
+            try:
+                # Convert args to a single action string if needed
+                action = " ".join(plugin_args) if plugin_args else "default"
+                result = self.stdlib.execute_plugin_action(
+                    plugin_name, 
+                    action, 
+                    memory_system=self.memory
+                )
+                return f"[StdLib:{plugin_name}] {result}"
+            except Exception as e:
+                return f"[StdLib:{plugin_name}] Error: {e}"
+        
+        # Fallback to legacy plugin registry
+        elif plugin_name in PLUGIN_REGISTRY:
+            result = PLUGIN_REGISTRY[plugin_name](*plugin_args)
+            return f"[Plugin:{plugin_name}] {result}"
+        else:
+            # Suggest available plugins
+            available_stdlib = list(self.stdlib.plugins.keys())
+            available_legacy = list(PLUGIN_REGISTRY.keys())
+            all_available = available_stdlib + available_legacy
+            return f"[Plugin] '{plugin_name}' not found. Available: {all_available}"
+
+    def _handle_list_plugins(self):
+        """List all available plugins (stdlib and legacy)"""
+        result = "[Plugins] Available plugins:\n"
+        
+        # Standard library plugins
+        if self.stdlib.plugins:
+            result += "\n📚 Standard Library Plugins:\n"
+            for name, plugin in self.stdlib.plugins.items():
+                result += f"  • {name}: {plugin.description}\n"
+        
+        # Legacy plugins
+        if PLUGIN_REGISTRY:
+            result += "\n🔌 Legacy Plugins:\n"
+            for name in PLUGIN_REGISTRY.keys():
+                result += f"  • {name}\n"
+        
+        if not self.stdlib.plugins and not PLUGIN_REGISTRY:
+            result += "  No plugins available\n"
+        
+        return result.rstrip()
+    
+    def _handle_plugin_info(self, line):
+        """Get detailed information about a specific plugin"""
+        plugin_name = line.split("plugin info")[-1].strip()
+        if not plugin_name:
+            return "[Plugin Info] Please specify a plugin name. Usage: plugin info <plugin_name>"
+        
+        # Check stdlib first
+        plugin_info = self.stdlib.get_plugin_info(plugin_name)
+        if plugin_info:
+            result = f"[Plugin Info] {plugin_name}\n"
+            result += f"  Description: {plugin_info['description']}\n"
+            result += f"  Actions: {', '.join(plugin_info['available_actions'])}\n"
+            result += f"  Source: Standard Library\n"
+            return result
+        
+        # Check legacy plugins
+        if plugin_name in PLUGIN_REGISTRY:
+            return f"[Plugin Info] {plugin_name}\n  Source: Legacy Plugin Registry\n  Actions: execute with arguments"
+        
+        return f"[Plugin Info] Plugin '{plugin_name}' not found. Use 'list plugins' to see available plugins."
+
+    def _handle_meta_plugin(self, line):
+        """Handle meta-plugin execution"""
+        parts = line.split("meta:")[-1].strip().split()
+        if not parts:
+            return "[Meta-Plugin] No plugin name provided."
+        
+        plugin_name = parts[0]
+        plugin_args = parts[1:]
+        
+        return self.meta_plugins.execute_meta_plugin(plugin_name, *plugin_args)
+
+    # ==================== SELF-EDITING CAPABILITIES ====================
+    
+    def _handle_load_file(self, line):
+        """Load and analyze a source code file for potential modifications"""
+        filename = line.split("load")[-1].strip().strip('"')
+        
+        if not os.path.exists(filename):
+            return f"[Load] File not found: {filename}"
+        
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Store file for future analysis/editing
+            self.loaded_files[filename] = content
+            
+            # Use AI to analyze the file and provide insights
+            from core.ai_runtime import analyze_code_structure, generate_code_summary
+            analysis = analyze_code_structure(content, filename)
+            summary = generate_code_summary(content, filename)
+            
+            # Remember this analysis for future reference
+            self.memory.remember(
+                f"Loaded and analyzed {filename}: {summary}",
+                tags=['code_analysis', 'file_load', 'self_editing'],
+                category='code_management'
+            )
+            
+            result = f"[Load] Successfully loaded {filename}\n"
+            result += f"[Analysis] {analysis}\n"
+            result += f"[Summary] {summary}"
+            
+            return result
+            
+        except Exception as e:
+            return f"[Load] Error reading file {filename}: {str(e)}"
+    
+    def _handle_analyze_code(self, line):
+        """Analyze loaded code for potential improvements, bugs, or patterns"""
+        filename = line.split("analyze")[-1].strip().strip('"')
+        
+        if filename not in self.loaded_files:
+            return f"[Analyze] File not loaded: {filename}. Use 'load {filename}' first."
+        
+        content = self.loaded_files[filename]
+        
+        # Get relevant memories for context
+        memories = self.memory.recall(tags=['code_analysis', 'patterns', 'bugs'])
+        memory_context = "\n".join([m['text'] for m in memories[-5:]])  # Recent relevant memories
+        
+        # Use AI to perform deep code analysis
+        from core.ai_runtime import deep_code_analysis, suggest_code_improvements
+        analysis = deep_code_analysis(content, filename, memory_context)
+        improvements = suggest_code_improvements(content, filename, memory_context)
+        
+        # Store analysis results
+        analysis_summary = f"Deep analysis of {filename}: {analysis[:200]}..."
+        self.memory.remember(
+            analysis_summary,
+            tags=['deep_analysis', 'code_review', 'improvements'],
+            category='code_management'
+        )
+        
+        result = f"[Deep Analysis] {filename}\n"
+        result += f"{analysis}\n\n"
+        result += f"[Suggested Improvements]\n{improvements}"
+        
+        return result
+    
+    def _handle_refactor(self, line):
+        """Suggest or perform refactoring on loaded code"""
+        # Extract filename and refactor target
+        parts = line.split("refactor")[-1].strip().split()
+        if not parts:
+            return "[Refactor] Please specify: refactor <filename> [target]"
+        
+        filename = parts[0].strip('"')
+        target = " ".join(parts[1:]) if len(parts) > 1 else "general improvements"
+        
+        if filename not in self.loaded_files:
+            return f"[Refactor] File not loaded: {filename}. Use 'load {filename}' first."
+        
+        content = self.loaded_files[filename]
+        
+        # Get memory context for informed refactoring
+        memories = self.memory.recall(tags=['refactor', 'patterns', 'best_practices'])
+        memory_context = "\n".join([m['text'] for m in memories[-3:]])
+        
+        # Use AI to suggest refactoring
+        from core.ai_runtime import suggest_refactoring, justify_refactoring
+        refactor_suggestion = suggest_refactoring(content, filename, target, memory_context)
+        justification = justify_refactoring(content, target, memory_context)
+        
+        # Get memory-driven justification from agent
+        agent_justification = self.agent.justify_self_editing(filename, f"Refactoring for {target}")
+        
+        # Store as pending fix for review
+        fix_id = f"{filename}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        self.pending_fixes[fix_id] = {
+            'filename': filename,
+            'original_content': content,
+            'suggested_content': refactor_suggestion,
+            'target': target,
+            'justification': justification,
+            'agent_justification': agent_justification,
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        # Remember this refactoring session
+        self.memory.remember(
+            f"Suggested refactoring for {filename} targeting '{target}': {justification[:100]}...",
+            tags=['refactor_suggestion', 'pending_fix', target.replace(' ', '_')],
+            category='code_management'
+        )
+        
+        result = f"[Refactor] Suggested improvements for {filename}\n"
+        result += f"[Target] {target}\n"
+        result += f"[Justification] {justification}\n\n"
+        result += f"[Suggested Changes]\n{refactor_suggestion}\n\n"
+        result += f"[Fix ID] {fix_id} (use 'apply fix {fix_id}' to apply)\n"
+        result += f"[Safety] Use 'diff {fix_id}' to review changes before applying"
+        
+        return result
+    
+    def _handle_apply_fix(self, line):
+        """Apply a pending fix after review and approval"""
+        fix_id = line.split("apply fix")[-1].strip().strip('"')
+        
+        if not fix_id:
+            # List all pending fixes
+            if not self.pending_fixes:
+                return "[Apply Fix] No pending fixes available"
+            
+            result = "[Apply Fix] Pending fixes:\n"
+            for fid, fix in self.pending_fixes.items():
+                result += f"  {fid}: {fix['filename']} - {fix['target']}\n"
+            return result
+        
+        if fix_id not in self.pending_fixes:
+            return f"[Apply Fix] Fix ID not found: {fix_id}"
+        
+        fix = self.pending_fixes[fix_id]
+        filename = fix['filename']
+        
+        # Safety check: require explicit approval for self-editing
+        if not self.self_edit_mode:
+            return f"[Apply Fix] Self-editing mode disabled. Enable with 'set self_edit_mode on' first.\n[Safety] This will modify {filename}. Review with 'diff {fix_id}' first."
+        
+        try:
+            # Create backup before applying fix
+            backup_path = self._create_backup(filename)
+            
+            # Apply the fix
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(fix['suggested_content'])
+            
+            # Update loaded files cache
+            self.loaded_files[filename] = fix['suggested_content']
+            
+            # Remember this action
+            self.memory.remember(
+                f"Applied fix {fix_id} to {filename}: {fix['justification']}",
+                tags=['fix_applied', 'code_modification', 'self_editing'],
+                category='code_management'
+            )
+            
+            # Remove from pending fixes
+            del self.pending_fixes[fix_id]
+            
+            result = f"[Apply Fix] Successfully applied fix {fix_id} to {filename}\n"
+            result += f"[Backup] Created backup at {backup_path}\n"
+            result += f"[Target] {fix['target']}\n"
+            result += f"[Justification] {fix['justification']}"
+            
+            return result
+            
+        except Exception as e:
+            return f"[Apply Fix] Error applying fix: {str(e)}"
+    
+    def _handle_backup(self, line):
+        """Create backup of specified file"""
+        filename = line.split("backup")[-1].strip().strip('"')
+        
+        if not filename:
+            return "[Backup] Please specify filename: backup <filename>"
+        
+        if not os.path.exists(filename):
+            return f"[Backup] File not found: {filename}"
+        
+        try:
+            backup_path = self._create_backup(filename)
+            self.memory.remember(
+                f"Created backup of {filename} at {backup_path}",
+                tags=['backup', 'file_safety'],
+                category='code_management'
+            )
+            return f"[Backup] Created backup: {backup_path}"
+        except Exception as e:
+            return f"[Backup] Error creating backup: {str(e)}"
+    
+    def _handle_diff(self, line):
+        """Show differences between original and suggested code"""
+        fix_id = line.split("diff")[-1].strip().strip('"')
+        
+        if not fix_id:
+            return "[Diff] Please specify fix ID: diff <fix_id>"
+        
+        if fix_id not in self.pending_fixes:
+            return f"[Diff] Fix ID not found: {fix_id}"
+        
+        fix = self.pending_fixes[fix_id]
+        original = fix['original_content'].splitlines()
+        suggested = fix['suggested_content'].splitlines()
+        
+        # Generate unified diff
+        diff_lines = list(difflib.unified_diff(
+            original,
+            suggested,
+            fromfile=f"{fix['filename']} (original)",
+            tofile=f"{fix['filename']} (suggested)",
+            lineterm=""
+        ))
+        
+        if not diff_lines:
+            return f"[Diff] No differences found for fix {fix_id}"
+        
+        # Format diff output
+        diff_output = "\n".join(diff_lines)
+        
+        result = f"[Diff] Changes for fix {fix_id}\n"
+        result += f"[File] {fix['filename']}\n"
+        result += f"[Target] {fix['target']}\n"
+        result += f"[Justification] {fix['justification']}\n"
+        if 'agent_justification' in fix:
+            result += f"[Memory-Driven Justification] {fix['agent_justification']}\n"
+        result += "\n[Changes]\n"
+        result += diff_output
+        
+        return result
+    
+    def _create_backup(self, filename):
+        """Create a timestamped backup of a file"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_filename = f"{os.path.basename(filename)}.backup.{timestamp}"
+        backup_path = os.path.join(self.backup_dir, backup_filename)
+        
+        shutil.copy2(filename, backup_path)
+        return backup_path
+    
+    def set_self_edit_mode(self, enabled):
+        """Enable/disable self-editing mode for safety"""
+        self.self_edit_mode = enabled
+        mode_str = "enabled" if enabled else "disabled"
+        self.memory.remember(
+            f"Self-editing mode {mode_str}",
+            tags=['safety', 'self_edit_mode'],
+            category='system_settings'
+        )
+        return f"[Safety] Self-editing mode {mode_str}"
+    
+    # ==================== GOAL SYSTEM & AGENT HANDLERS ====================
+    
+    def _handle_goal_setting(self, line):
+        """Handle goal: commands"""
+        goal_text = line.split("goal:")[-1].strip()
+        
+        # Parse priority if specified
+        priority = "medium"
+        if " priority:" in goal_text:
+            parts = goal_text.split(" priority:")
+            goal_text = parts[0].strip()
+            priority = parts[1].strip()
+        
+        # Parse metrics if specified
+        metrics = {}
+        if " metrics:" in goal_text:
+            parts = goal_text.split(" metrics:")
+            goal_text = parts[0].strip()
+            try:
+                # Simple metric parsing: "key=value,key2=value2"
+                metric_str = parts[1].strip()
+                for metric in metric_str.split(","):
+                    if "=" in metric:
+                        key, value = metric.split("=", 1)
+                        metrics[key.strip()] = value.strip()
+            except:
+                pass  # Ignore metric parsing errors
+        
+        return self.goal_system.set_goal(goal_text, priority, metrics)
+    
+    def _handle_agent_control(self, line):
+        """Handle agent: commands"""
+        command = line.split("agent:")[-1].strip().lower()
+        
+        if command in ["on", "enabled", "true"]:
+            return self.goal_system.set_agent_mode(True)
+        elif command in ["off", "disabled", "false"]:
+            return self.goal_system.set_agent_mode(False)
+        else:
+            return "[Agent] Usage: agent: on/off"
+    
+    def _handle_goal_check(self, line):
+        """Handle goal checking commands"""
+        goal_ref = line.split("check goal")[-1].strip()
+        
+        if not goal_ref:
+            # Check all active goals
+            return self.goal_system.autonomous_goal_monitoring()
+        else:
+            # Check specific goal
+            return self.goal_system.check_goal_progress(goal_ref)
+    
+    def _handle_memory_pattern_condition(self, line):
+        """Handle if memory.pattern() conditional statements"""
+        # Parse: if memory\.pattern("pattern", frequency="threshold"):
+        pattern_match = re.search(r'memory\.pattern\(["\']([^"\']+)["\']\s*(?:,\s*frequency=["\']([^"\']+)["\']\s*)?\)', line)
+        
+        if not pattern_match:
+            return "[Pattern] Invalid syntax. Use: if memory.pattern(\"pattern\", frequency=\"threshold\"):"
+        
+        pattern = pattern_match.group(1)
+        frequency = pattern_match.group(2) or "weekly"
+        
+        # Analyze the pattern
+        analysis = self.memory.pattern_analysis(pattern, frequency)
+        
+        # Extract the action part after the colon
+        if ":" in line:
+            action_part = line.split(":", 1)[1].strip()
+            
+            if analysis["meets_threshold"]:
+                # Pattern condition is met, execute the action
+                result = f"[Pattern Condition] Pattern '{pattern}' meets {frequency} threshold ({analysis['matches']} matches)\n"
+                result += f"[Executing] {action_part}\n"
+                
+                try:
+                    action_result = self.execute(action_part)
+                    result += action_result
+                except Exception as e:
+                    result += f"[Error] {str(e)}"
+                
+                return result
+            else:
+                return f"[Pattern Condition] Pattern '{pattern}' does not meet {frequency} threshold ({analysis['matches']} matches) - no action taken"
+        else:
+            # Just return the analysis
+            return f"[Pattern Analysis] {analysis['analysis']} - Meets {frequency} threshold: {analysis['meets_threshold']}"
+    
+    def _handle_detect_recurring_patterns(self, line):
+        """Handle automatic pattern detection"""
+        # Parse optional parameters
+        min_frequency = 3
+        timeframe = 30
+        
+        if "min_frequency=" in line:
+            try:
+                freq_match = re.search(r'min_frequency=(\d+)', line)
+                if freq_match:
+                    min_frequency = int(freq_match.group(1))
+            except:
+                pass
+        
+        if "timeframe=" in line:
+            try:
+                time_match = re.search(r'timeframe=(\d+)', line)
+                if time_match:
+                    timeframe = int(time_match.group(1))
+            except:
+                pass
+        
+        patterns = self.memory.detect_recurring_patterns(min_frequency, timeframe)
+        
+        if not patterns["phrases"]:
+            return f"[Pattern Detection] No recurring patterns found (min frequency: {min_frequency}, timeframe: {timeframe} days)"
+        
+        result = f"[Pattern Detection] Found {len(patterns['phrases'])} recurring patterns:\n"
+        
+        # Sort by frequency
+        sorted_patterns = sorted(patterns["phrases"].items(), key=lambda x: x[1], reverse=True)
+        
+        for phrase, count in sorted_patterns[:10]:  # Show top 10
+            result += f"  • '{phrase}' ({count} times)\n"
+        
+        # Remember this analysis
+        self.memory.remember(
+            f"Detected {len(patterns['phrases'])} recurring patterns in {timeframe} days",
+            tags=["pattern_detection", "analysis", "recurring"],
+            category="system_analysis"
+        )
+        
+        return result
+    
+    def _handle_pattern_frequency(self, line):
+        """Handle pattern frequency queries"""
+        # Parse: pattern frequency "pattern" [timeframe=30]
+        pattern_match = re.search(r'pattern frequency ["\']([^"\']+)["\']', line)
+        
+        if not pattern_match:
+            return "[Pattern] Invalid syntax. Use: pattern frequency \"pattern\""
+        
+        pattern = pattern_match.group(1)
+        
+        # Parse optional timeframe
+        timeframe = 30
+        if "timeframe=" in line:
+            try:
+                time_match = re.search(r'timeframe=(\d+)', line)
+                if time_match:
+                    timeframe = int(time_match.group(1))
+            except:
+                pass
+        
+        frequency = self.memory.get_pattern_frequency(pattern, timeframe)
+        
+        return f"[Pattern Frequency] Pattern '{pattern}' found {frequency} times in the last {timeframe} days"
+    
+    def _is_block_start(self, line):
+        """Check if line starts a multi-line block"""
+        block_starters = ['define ', 'if ', 'for ', 'while ', 'simulate ']
+        return any(line.startswith(starter) for starter in block_starters)
+    
+    def _start_block(self, line):
+        """Start a new block"""
+        self.in_block = True
+        self.block_buffer = [line]
+        
+        if line.startswith('define '):
+            self.block_type = 'function'
+        elif line.startswith('if '):
+            self.block_type = 'conditional'
+        elif line.startswith('for '):
+            self.block_type = 'for_loop'
+        elif line.startswith('while '):
+            self.block_type = 'while_loop'
+        elif line.startswith('simulate '):
+            self.block_type = 'simulation'
+        
+        return f"[Block] Started {self.block_type} block. Enter commands, type 'end' to execute."
+    
+    def _add_to_block(self, line):
+        """Add line to current block or execute if 'end'"""
+        if line == 'end':
+            return self._execute_block()
+        else:
+            self.block_buffer.append(line)
+            return f"[Block] Added to {self.block_type}. Lines: {len(self.block_buffer)}"
+    
+    def _execute_block(self):
+        """Execute the current block"""
+        if not self.in_block or not self.block_buffer:
+            return "[Error] No block to execute"
+        
+        try:
+            # Execute the block using the block executor
+            result = self.block_executor.execute_block(self.block_buffer, self.execute)
+            
+            # Reset block state
+            self.in_block = False
+            self.block_buffer = []
+            self.block_type = None
+            
+            return result
+        except Exception as e:
+            # Reset block state on error
+            self.in_block = False
+            self.block_buffer = []
+            self.block_type = None
+            return f"[Error] Block execution failed: {str(e)}"
+    
+    def _load_and_analyze_file(self, filename):
+        """Load file with automatic error detection and analysis"""
+        try:
+            if not os.path.exists(filename):
+                raise FileNotFoundError(f"File not found: {filename}")
+            
+            with open(filename, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            print(f"📁 [Loaded] {filename} ({len(content)} characters)")
+            
+            # Try to validate Python files
+            if filename.endswith('.py'):
+                try:
+                    ast.parse(content)
+                    print("✅ [Validation] No syntax errors detected")
+                except SyntaxError as e:
+                    print(f"🐛 [Syntax Error] {e}")
+                    self.debug_system.detect_and_store_error(e, f"Loading file: {filename}", filename)
+                    
+                    # Auto-suggest fix if enabled
+                    if self.debug_system.auto_apply_enabled:
+                        print("🔄 [Auto-Debug] Analyzing syntax error...")
+                        error_info = {
+                            'type': 'SyntaxError',
+                            'message': str(e),
+                            'file_path': filename,
+                            'line_number': e.lineno,
+                            'context': f'Loading file: {filename}',
+                            'traceback': traceback.format_exc(),
+                            'timestamp': str(datetime.now())
+                        }
+                        fix_suggestion = self.debug_system.suggest_fix(error_info)
+                        self._last_fix_suggestion = fix_suggestion
+                        print(f"💡 [Suggestion] {fix_suggestion.get('fix', 'Manual review needed')}")
+            
+            # Store successful load in memory
+            self.memory.remember(f"Loaded file: {filename}", tags=["file", "load"], category="operations")
+            
+        except Exception as e:
+            print(f"❌ [Load Error] {e}")
+            self.debug_system.detect_and_store_error(e, f"Loading file: {filename}", filename)
+>>>>>>> 20a510e90c83aa50461841f557e9447d03056c8d

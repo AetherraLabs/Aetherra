@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Neuroplex - AI-Native Programming Language Requirements
 
 # === CORE AI FUNCTIONALITY ===
@@ -42,4 +43,50 @@ loguru>=0.7.0                    # Advanced logging
 
 # === HIGH-PERFORMANCE STORAGE (OPTIONAL) ===
 # redis>=4.5.0                   # High-performance caching
+=======
+# Neuroplex - AI-Native Programming Language Requirements
+
+# === CORE AI FUNCTIONALITY ===
+openai>=1.0.0
+
+# === GUI FRAMEWORK ===
+PySide6>=6.5.0                   # Primary Qt backend
+PyQt6>=6.5.0                     # Fallback Qt backend
+
+# === ESSENTIAL PERFORMANCE STACK ===
+numpy>=1.24.0                    # Fast numerical operations for memory analysis
+transformers>=4.30.0             # Local AI models (optional, install if needed)
+sentence-transformers>=2.2.0     # Semantic search capabilities
+
+# === VISUALIZATION & UI ENHANCEMENT ===
+matplotlib>=3.7.0                # Memory network visualization
+networkx>=3.1.0                  # Graph algorithms for neural connections
+qdarkstyle>=3.2.0                # Enhanced dark theme
+
+# === NATURAL LANGUAGE PROCESSING ===
+spacy>=3.6.0                     # Advanced NLP for code understanding
+textblob>=0.17.0                 # Sentiment analysis for AI responses
+
+# === VOICE & AUDIO (OPTIONAL) ===
+# openai-whisper>=20230314        # Advanced speech recognition (large download)
+# pyttsx3>=2.90                   # Text-to-speech for AI responses
+# speechrecognition>=3.10.0       # Alternative speech recognition
+
+# === CODE INTELLIGENCE ===
+pygments>=2.15.0                 # Enhanced syntax highlighting
+tree-sitter>=0.20.0              # Advanced syntax parsing (optional)
+
+# === SYSTEM MONITORING ===
+psutil>=5.9.0                    # System resource monitoring
+memory-profiler>=0.61.0          # Memory usage analysis
+
+# === UTILITIES ===
+requests>=2.31.0                 # HTTP requests for web-based plugins
+colorama>=0.4.6                  # Colored terminal output
+rich>=13.0.0                     # Enhanced UI formatting
+loguru>=0.7.0                    # Advanced logging
+
+# === HIGH-PERFORMANCE STORAGE (OPTIONAL) ===
+# redis>=4.5.0                   # High-performance caching
+>>>>>>> 20a510e90c83aa50461841f557e9447d03056c8d
 # chromadb>=0.4.0                # Vector database for semantic memory
