@@ -172,52 +172,6 @@ try:
     PerformanceOptimizer = None
     AICollaborationFramework = None
 
-    def safe_import_module(module_name, file_path):
-        """Safely import a module using multiple strategies"""
-        module = None
-
-        # Strategy 1: Try direct module import first
-        try:
-            module = importlib.import_module(module_name)
-            return module
-        except Exception:
-            pass
-
-        # Strategy 2: Try package-qualified import
-        try:
-            module = importlib.import_module(f"core.{module_name}")
-            return module
-        except Exception:
-            pass
-
-        # Strategy 3: Try file-based import with proper module setup
-        try:
-            if file_path.exists():
-                spec = importlib.util.spec_from_file_location(f"core.{module_name}", file_path)
-                if spec and spec.loader:
-                    module = importlib.util.module_from_spec(spec)
-
-                    # Setup module in sys.modules to resolve relative imports
-                    sys.modules[f"core.{module_name}"] = module
-                    sys.modules[module_name] = module
-
-                    # Mock the core package for relative imports
-                    if "core" not in sys.modules:
-                        import types
-
-                        core_module = types.ModuleType("core")
-                        core_module.__path__ = [str(core_path)]
-                        core_module.__file__ = str(core_path / "__init__.py")
-                        sys.modules["core"] = core_module
-
-                    # Execute the module
-                    spec.loader.exec_module(module)
-                    return module
-        except Exception as e:
-            print(f"Failed to import {module_name}: {e}")
-
-        return None
-
     # Import core NeuroCode components
     interpreter_module = safe_import_module(
         "enhanced_interpreter", core_path / "enhanced_interpreter.py"
@@ -284,7 +238,6 @@ except Exception as e:
     NeuroCodeChatRouter = None
     NEUROCODE_AVAILABLE = False
 
-
 class NeuroAnimation(QPropertyAnimation):
     """Custom animation for NeuroCode UI elements"""
 
@@ -292,7 +245,6 @@ class NeuroAnimation(QPropertyAnimation):
         super().__init__(target, property_name.encode())
         self.setDuration(500)
         self.setEasingCurve(QEasingCurve.Type.OutCubic)
-
 
 class NeuroTheme:
     """NeuroCode theme and styling"""
@@ -316,13 +268,13 @@ class NeuroTheme:
             background-color: {NeuroTheme.BACKGROUND};
             color: {NeuroTheme.TEXT_PRIMARY};
         }}
-        
+
         QWidget {{
             background-color: {NeuroTheme.BACKGROUND};
             color: {NeuroTheme.TEXT_PRIMARY};
             font-family: 'Consolas', 'Monaco', monospace;
         }}
-        
+
         QPushButton {{
             background-color: {NeuroTheme.PRIMARY};
             color: {NeuroTheme.TEXT_PRIMARY};
@@ -332,16 +284,16 @@ class NeuroTheme:
             font-weight: bold;
             font-size: 14px;
         }}
-        
+
         QPushButton:hover {{
             background-color: {NeuroTheme.SECONDARY};
             border-color: {NeuroTheme.ACCENT};
         }}
-        
+
         QPushButton:pressed {{
             background-color: {NeuroTheme.ACCENT};
         }}
-        
+
         QTextEdit, QLineEdit {{
             background-color: {NeuroTheme.SURFACE};
             color: {NeuroTheme.TEXT_PRIMARY};
@@ -350,17 +302,17 @@ class NeuroTheme:
             padding: 8px;
             font-size: 14px;
         }}
-        
+
         QTextEdit:focus, QLineEdit:focus {{
             border-color: {NeuroTheme.ACCENT};
         }}
-        
+
         QTabWidget::pane {{
             border: 2px solid {NeuroTheme.PRIMARY};
             border-radius: 8px;
             background-color: {NeuroTheme.SURFACE};
         }}
-        
+
         QTabBar::tab {{
             background-color: {NeuroTheme.PRIMARY};
             color: {NeuroTheme.TEXT_PRIMARY};
@@ -368,12 +320,12 @@ class NeuroTheme:
             margin-right: 2px;
             border-radius: 6px 6px 0 0;
         }}
-        
+
         QTabBar::tab:selected {{
             background-color: {NeuroTheme.ACCENT};
             color: {NeuroTheme.BACKGROUND};
         }}
-        
+
         QGroupBox {{
             border: 2px solid {NeuroTheme.PRIMARY};
             border-radius: 8px;
@@ -381,43 +333,42 @@ class NeuroTheme:
             padding-top: 10px;
             font-weight: bold;
         }}
-        
+
         QGroupBox::title {{
             subcontrol-origin: margin;
             subcontrol-position: top left;
             padding: 0 5px;
             color: {NeuroTheme.ACCENT};
         }}
-        
+
         QProgressBar {{
             border: 2px solid {NeuroTheme.PRIMARY};
             border-radius: 8px;
             background-color: {NeuroTheme.SURFACE};
             text-align: center;
         }}
-        
+
         QProgressBar::chunk {{
             background-color: {NeuroTheme.ACCENT};
             border-radius: 6px;
         }}
-        
+
         QScrollBar:vertical {{
             background-color: {NeuroTheme.SURFACE};
             width: 12px;
             border-radius: 6px;
         }}
-        
+
         QScrollBar::handle:vertical {{
             background-color: {NeuroTheme.PRIMARY};
             border-radius: 6px;
             min-height: 30px;
         }}
-        
+
         QScrollBar::handle:vertical:hover {{
             background-color: {NeuroTheme.ACCENT};
         }}
         """
-
 
 class PulsingWidget(QWidget):
     """Widget that pulses with neural activity"""
@@ -450,7 +401,6 @@ class PulsingWidget(QWidget):
 
         self.opacity_effect.setOpacity(self.pulse_value)
 
-
 class NeuroCodeEditor(QTextEdit):
     """Advanced code editor for NeuroCode with syntax highlighting"""
 
@@ -471,7 +421,8 @@ class NeuroCodeEditor(QTextEdit):
         # This is a simplified version - could be expanded
         pass
 
-    def keyPressEvent(self, event):
+    # Note: Qt framework method names must be kept as camelCase
+    def keyPressEvent(self, event):  # pylint: disable=invalid-name
         if (
             event.key() == Qt.Key.Key_Return
             and event.modifiers() == Qt.KeyboardModifier.ControlModifier
@@ -485,7 +436,6 @@ class NeuroCodeEditor(QTextEdit):
         code = self.toPlainText().strip()
         if code:
             self.code_executed.emit(code)
-
 
 class MemoryVisualization(QWidget):
     """Visual representation of NeuroCode memory system"""
@@ -507,7 +457,7 @@ class MemoryVisualization(QWidget):
         )
         self.update()
 
-    def paintEvent(self, event):
+    def paintEvent(self, event):  # pylint: disable=invalid-name
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)  # type: ignore
 
@@ -521,7 +471,7 @@ class MemoryVisualization(QWidget):
         painter.setPen(pen)  # type: ignore
 
         for i, memory in enumerate(self.memories):
-            for j, other_memory in enumerate(self.memories[i + 1 :], i + 1):
+            for _j, other_memory in enumerate(self.memories[i + 1 :], i + 1):
                 # Draw connections between related memories
                 if set(memory["tags"]) & set(other_memory["tags"]):
                     painter.drawLine(memory["x"], memory["y"], other_memory["x"], other_memory["y"])
@@ -541,7 +491,6 @@ class MemoryVisualization(QWidget):
             pen = QPen(QColor(NeuroTheme.TEXT_PRIMARY))
             painter.setPen(pen)  # type: ignore
             painter.drawText(memory["x"] + 15, memory["y"], memory["text"][:20] + "...")
-
 
 class GoalTracker(QGroupBox):
     """Visual goal tracking system"""
@@ -597,7 +546,6 @@ class GoalTracker(QGroupBox):
             {"text": goal_text, "priority": priority, "widget": goal_widget, "progress": progress}
         )
 
-
 class SystemMonitor(QGroupBox):
     """Real-time system monitoring"""
 
@@ -642,7 +590,6 @@ class SystemMonitor(QGroupBox):
         else:
             self.performance_status.setText("⚡ Performance: Optimal")
 
-
 class LiveConsole(QTextEdit):
     """Live console output showing NeuroCode execution"""
 
@@ -663,7 +610,6 @@ class LiveConsole(QTextEdit):
         # Auto-scroll to bottom
         scrollbar = self.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
-
 
 class NeuroplexMainWindow(QMainWindow):
     """Main Neuroplex GUI window"""
@@ -1238,9 +1184,9 @@ suggest "next steps for mastery"
 
         elif "neurocode" in message_lower:
             return """NeuroCode is revolutionary! It's the first AI-native programming language where:
-            
+
 🧠 Code thinks and reasons about outcomes
-🎯 You express intentions, not implementations  
+🎯 You express intentions, not implementations
 💾 Memory is a first-class language feature
 🤖 AI models are built into the language itself
 ⚡ Programs evolve and optimize themselves
@@ -1309,7 +1255,7 @@ remember("Learning AI programming") as "goal"
 
 recall experiences with "amazing"
 memory summary""",
-            "Goal Setting": """# NeuroCode Goal Example  
+            "Goal Setting": """# NeuroCode Goal Example
 goal: build an AI assistant priority: high
 goal: learn machine learning priority: medium
 
@@ -1355,7 +1301,7 @@ reflect on "plugin_results" """,
 
 **Basic Syntax:**
 • remember(text) as 'tag' - Store memory
-• recall tag: 'tag' - Retrieve memories  
+• recall tag: 'tag' - Retrieve memories
 • goal: description priority: level - Set objectives
 • agent: on/off - Enable AI agent
 • analyze "subject" - AI analysis
@@ -1363,7 +1309,7 @@ reflect on "plugin_results" """,
 
 **Control Flow:**
 • if condition: ... end
-• when event: ... end  
+• when event: ... end
 • for item in collection: ... end
 
 **Plugins:**
@@ -1392,7 +1338,7 @@ NeuroCode is the first AI-native programming language where code thinks, learns,
 
 **Features:**
 • AI-first runtime with built-in machine learning
-• Memory-driven evolution and adaptation  
+• Memory-driven evolution and adaptation
 • Natural language programming constructs
 • Real-time collaboration with AI agents
 • Plugin ecosystem for extensibility
@@ -1618,7 +1564,6 @@ NeuroCode is the first AI-native programming language where code thinks, learns,
         except Exception as e:
             self.console.append(f"❌ AI benchmark failed: {e}")
 
-
 def main():
     """Main entry point for Neuroplex GUI"""
     app = QApplication(sys.argv)
@@ -1641,7 +1586,6 @@ def main():
     # Run application
     print("🚀 Launching Neuroplex GUI...")
     sys.exit(app.exec())
-
 
 if __name__ == "__main__":
     main()
