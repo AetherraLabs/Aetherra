@@ -659,10 +659,18 @@ class NeuroplexMainWindow(QMainWindow):
                     self.ai_enhanced_mode = True
 
                 if VectorMemory is not None:
-                    self.vector_memory = VectorMemory()
-                    # Use vector memory as primary if available
-                    if not self.memory:
-                        self.memory = self.vector_memory
+                    # Use the EnhancedSemanticMemory class instead of the dataclass
+                    try:
+                        from core.vector_memory import EnhancedSemanticMemory
+
+                        self.vector_memory = EnhancedSemanticMemory()
+                        # Use vector memory as primary if available
+                        if not self.memory:
+                            self.memory = self.vector_memory
+                    except ImportError:
+                        print("⚠️ EnhancedSemanticMemory not available")
+                    except Exception as e:
+                        print(f"⚠️ Could not initialize vector memory: {e}")
 
                 if IntentToCodeParser is not None and self.local_ai:
                     self.intent_parser = IntentToCodeParser(self.local_ai)
@@ -891,7 +899,7 @@ class NeuroplexMainWindow(QMainWindow):
         self.tab_widget.addTab(plugin_tab, "🔌 Plugins")
 
         # Enhanced AI-native chat interface
-        self.enhanced_chat = EnhancedNeuroChat(self)
+        self.enhanced_chat = self.create_chat_tab()
         self.tab_widget.addTab(self.enhanced_chat, "💬 AI Chat")
 
         center_panel.addWidget(self.tab_widget)
@@ -1551,6 +1559,70 @@ NeuroCode is the first AI-native programming language where code thinks, learns,
 
         except Exception as e:
             self.console.append(f"❌ AI benchmark failed: {e}")
+
+    def create_chat_tab(self):
+        """Create the AI chat tab interface"""
+        chat_widget = QWidget()
+        layout = QVBoxLayout(chat_widget)
+
+        # Chat display
+        self.chat_display = QTextEdit()
+        self.chat_display.setReadOnly(True)
+        self.chat_display.setStyleSheet("""
+            QTextEdit {
+                background-color: #1e1e1e;
+                color: #ffffff;
+                border: 1px solid #00d4ff;
+                border-radius: 5px;
+                font-family: 'Consolas', 'Monaco', monospace;
+                font-size: 14px;
+                padding: 10px;
+            }
+        """)
+        layout.addWidget(self.chat_display)
+
+        # Chat input
+        input_layout = QHBoxLayout()
+        self.chat_input = QLineEdit()
+        self.chat_input.setPlaceholderText("💬 Ask me anything about NeuroCode...")
+        self.chat_input.setStyleSheet("""
+            QLineEdit {
+                background-color: #2d2d2d;
+                color: #ffffff;
+                border: 2px solid #00d4ff;
+                border-radius: 5px;
+                padding: 8px;
+                font-size: 14px;
+            }
+        """)
+        self.chat_input.returnPressed.connect(self.send_chat_message)
+
+        chat_send_btn = QPushButton("Send")
+        chat_send_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #00d4ff;
+                color: #000000;
+                border: none;
+                border-radius: 5px;
+                padding: 8px 15px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #00b8e6;
+            }
+        """)
+        chat_send_btn.clicked.connect(self.send_chat_message)
+
+        input_layout.addWidget(self.chat_input)
+        input_layout.addWidget(chat_send_btn)
+        layout.addLayout(input_layout)
+
+        # Add welcome message
+        self.chat_display.append(
+            "🧬 NeuroCode AI Assistant: Hello! I'm here to help you with AI-native programming. Ask me anything!"
+        )
+
+        return chat_widget
 
 
 class PluginManagerInterface(QWidget):

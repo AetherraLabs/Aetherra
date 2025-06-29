@@ -1,0 +1,8 @@
+{
+  "timestamp": "2025-06-28T23:58:26.762152",
+  "error_type": "PermissionError",
+  "error_message": "[Errno 13] Permission denied: 'memory_store.json'",
+  "context": "memory_benchmark",
+  "operation": null,
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\enigm\\Desktop\\New Neurocode Language\\test_suite.py\", line 397, in run_benchmark_suite\n    memory.remember(f\"Benchmark memory {i}\", [\"benchmark\", f\"batch_{i // 10}\"])\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\enigm\\Desktop\\New Neurocode Language\\core\\memory.py\", line 47, in remember\n    self.save()\n    ~~~~~~~~~^^\n  File \"C:\\Users\\enigm\\Desktop\\New Neurocode Language\\core\\memory.py\", line 31, in save\n    with open(MEMORY_FILE, \"w\") as f:\n         ~~~~^^^^^^^^^^^^^^^^^^\nPermissionError: [Errno 13] Permission denied: 'memory_store.json'\n"
+}
