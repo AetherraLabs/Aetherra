@@ -1,5 +1,6 @@
 # core/ai_runtime.py
 import os
+
 import openai
 
 # Try to load from .env file if it exists
@@ -7,7 +8,7 @@ def load_env_file():
     """Load environment variables from .env file"""
     env_file = os.path.join(os.path.dirname(__file__), "..", ".env")
     if os.path.exists(env_file):
-        with open(env_file, 'r') as f:
+        with open(env_file) as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith('#') and '=' in line:
@@ -43,11 +44,11 @@ def ask_ai(prompt, temperature=0.2):
     """Basic AI query function"""
     if client is None:
         return "[AI Disabled] OPENAI_API_KEY not configured"
-    
+
     try:
         # Try gpt-4o-mini first (most accessible), fallback to gpt-3.5-turbo
         models_to_try = ["gpt-4o-mini", "gpt-3.5-turbo", "gpt-4"]
-        
+
         for model in models_to_try:
             try:
                 response = client.chat.completions.create(
@@ -62,7 +63,7 @@ def ask_ai(prompt, temperature=0.2):
                     continue  # Try next model
                 else:
                     raise model_error  # Different error, don't retry
-        
+
         return "[AI Error] No available models found"
     except Exception as e:
         return f"[AI Error] {str(e)}"
@@ -71,7 +72,7 @@ def analyze_memory_patterns(memories, tag_frequency, category_frequency):
     """AI analysis of memory patterns and behavior suggestions"""
     recent_memories = [m['text'] for m in memories[-10:]]  # Last 10 memories
     content_context = "\n".join(recent_memories)
-    
+
     prompt = f"""Analyze these recent memories for patterns and suggest 3 specific behaviors or workflows the user should adopt:
 
 Memories:
@@ -81,7 +82,7 @@ Tag patterns: {tag_frequency}
 Category patterns: {category_frequency}
 
 Provide actionable NeuroCode suggestions based on detected patterns."""
-    
+
     return ask_ai(prompt)
 
 def analyze_user_behavior(command_types, recent_commands, functions, memories, command_history_length):
@@ -93,7 +94,7 @@ Available functions: {list(functions.keys())}
 Total memories: {len(memories)}
 Command history length: {command_history_length}
 """
-    
+
     prompt = f"""Analyze user behavior patterns based on their NeuroCode usage:
 
 {behavior_context}
@@ -106,7 +107,7 @@ Identify:
 5. Potential automation opportunities
 
 Provide specific NeuroCode recommendations."""
-    
+
     return ask_ai(prompt)
 
 def suggest_system_evolution(memory_summary, function_count, context=""):
@@ -122,7 +123,7 @@ System State:
 Recent memory sample:
 {chr(10).join(memory_summary.get('recent_memories', []))}
 """
-    
+
     prompt = f"""Based on this Neuroplex system state, suggest evolutionary improvements:
 
 {evolution_context}
@@ -135,7 +136,7 @@ Suggest:
 5. Function templates the user should create
 
 Provide concrete, actionable suggestions."""
-    
+
     return ask_ai(prompt)
 
 def provide_adaptive_suggestions(context, recent_memories, available_tags, function_names):
@@ -146,7 +147,7 @@ Recent memories: {recent_memories}
 Available tags: {available_tags}
 Available functions: {function_names}
 """
-    
+
     prompt = f"""Provide 3-5 adaptive suggestions for the user's next actions in NeuroCode:
 
 {adaptive_context}
@@ -158,7 +159,7 @@ Consider:
 - Workflow optimizations
 
 Suggest specific NeuroCode commands they should run next."""
-    
+
     return ask_ai(prompt)
 
 def reflect_on_memories(memories, filter_description):
@@ -195,7 +196,7 @@ Provide insights on:
 5. Code quality indicators
 
 Be concise but thorough."""
-    
+
     return ask_ai(prompt)
 
 def generate_code_summary(content, filename):
@@ -213,7 +214,7 @@ Summarize:
 4. Role in the larger system
 
 Keep it brief but informative."""
-    
+
     return ask_ai(prompt)
 
 def deep_code_analysis(content, filename, memory_context):
@@ -236,7 +237,7 @@ Analyze for:
 6. Testing gaps
 
 Provide specific, actionable feedback."""
-    
+
     return ask_ai(prompt)
 
 def suggest_code_improvements(content, filename, memory_context):
@@ -258,7 +259,7 @@ Suggest:
 5. Error handling enhancements
 
 Prioritize suggestions by impact and feasibility."""
-    
+
     return ask_ai(prompt)
 
 def suggest_refactoring(content, filename, target, memory_context):
@@ -279,7 +280,7 @@ Provide the complete refactored code that:
 4. Is well-documented
 
 Return only the refactored code, ready to replace the original."""
-    
+
     return ask_ai(prompt, temperature=0.1)  # Lower temperature for code generation
 
 def justify_refactoring(content, target, memory_context):
@@ -300,14 +301,14 @@ Explain:
 5. Expected impact on the system
 
 Be persuasive but factual."""
-    
+
     return ask_ai(prompt)
 
 def memory_driven_code_suggestion(memories, patterns, code_context=""):
     """Use memory patterns to suggest code improvements and self-editing opportunities"""
     recent_patterns = [m['text'] for m in memories if 'pattern' in m.get('tags', [])]
     error_patterns = [m['text'] for m in memories if 'error' in m.get('tags', [])]
-    
+
     prompt = f"""Based on memory patterns, suggest self-editing opportunities:
 
 Recent patterns detected: {recent_patterns}
@@ -322,7 +323,7 @@ Suggest:
 4. Why these changes would be beneficial
 
 Provide actionable NeuroCode commands."""
-    
+
     return ask_ai(prompt)
 
 def justify_self_editing_decision(filename, analysis, memory_context):
@@ -341,5 +342,5 @@ Explain:
 5. Why this is the right time for this change
 
 Be specific and reference memory patterns."""
-    
+
     return ask_ai(prompt)
