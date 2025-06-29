@@ -1,0 +1,78 @@
+# Multi-LLM NeuroCode Demo
+# ========================
+# This demonstrates NeuroCode's ability to seamlessly switch between
+# different AI models for various tasks, enabling privacy-focused
+# and model-agnostic AI programming.
+
+# Set initial goal
+goal: "develop AI-native code analysis system" priority: high
+
+# Start with local Mistral for privacy-focused analysis
+model: "mistral"
+assistant: "analyze this codebase structure and identify potential optimizations"
+
+# Remember the analysis
+remember("Local AI analysis provides privacy and control") as "privacy_benefits"
+
+# Switch to GPT-4 for complex reasoning
+model: "gpt-4"
+assistant: "generate a comprehensive architecture review based on previous analysis"
+
+# Switch to LLaMA for code generation
+model: "llama2"
+assistant: "generate Python code snippets for the identified improvements"
+
+# Use Mixtral for multi-modal analysis
+model: "mixtral"
+assistant: "synthesize all previous analyses into actionable recommendations"
+
+# Switch to local GGUF model for final processing
+model: "codellama"
+assistant: "generate implementation plan with timeline estimates"
+
+# Activate agent for autonomous monitoring
+agent: on
+
+# Set up memory for learning
+remember("Multi-LLM approach provides specialized expertise") as "architecture_insight"
+remember("Local models ensure privacy, cloud models provide advanced reasoning") as "hybrid_strategy"
+
+# Define optimization workflow
+define multi_llm_analysis()
+    model: "mistral"
+    assistant: "perform initial code scan"
+    
+    model: "gpt-4"
+    assistant: "deep architectural analysis"
+    
+    model: "llama2"
+    assistant: "generate improvement suggestions"
+    
+    remember("Multi-LLM analysis complete") as "workflow_status"
+end
+
+# Execute the workflow
+run multi_llm_analysis()
+
+# Performance monitoring with different models
+when system_load > 80%:
+    model: "mistral"  # Use fast local model for monitoring
+    assistant: "suggest immediate performance fixes"
+end
+
+# Advanced pattern: model selection based on task
+if task_type == "creative":
+    model: "mixtral"
+    assistant: "generate creative solutions"
+else:
+    model: "codellama"
+    assistant: "provide technical implementation"
+end
+
+# Recall insights for decision making
+recall "privacy_benefits"
+recall "architecture_insight"
+
+# Final goal completion
+goal: "multi-LLM system operational" priority: critical
+agent: "monitor and optimize continuously"

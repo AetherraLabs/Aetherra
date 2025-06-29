@@ -27,11 +27,11 @@ sys.path.insert(0, str(project_root / "core"))
 
 try:
     from memory import NeuroMemory
+    from performance_monitor import NeuroLogger, PerformanceMonitor
 
     from agent_reflection_loop import AgentReflectionLoop
     from natural_translator import NaturalToNeuroTranslator
     from scripts.neuro_runner_standalone import StandaloneNeuroRunner
-    from performance_monitor import NeuroLogger, PerformanceMonitor
 except ImportError as e:
     print(f"⚠️ Some test dependencies not available: {e}")
 

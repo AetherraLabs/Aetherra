@@ -27,7 +27,9 @@ def run_neuro_file(file_path: str, verbose: bool = False) -> int:
     runner_path = project_root / "scripts" / "neuro_runner_standalone.py"
 
     if not runner_path.exists():
-        print("❌ NeuroCode runner not found. Please ensure scripts/neuro_runner_standalone.py exists.")
+        print(
+            "❌ NeuroCode runner not found. Please ensure scripts/neuro_runner_standalone.py exists."
+        )
         return 1
 
     # Build command

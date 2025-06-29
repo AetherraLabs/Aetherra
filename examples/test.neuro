@@ -1,0 +1,24 @@
+# NeuroCode Test File - Demonstrating Language Syntax
+
+# Basic goal statement
+goal: "improve system performance" priority: high
+
+# Agent activation
+agent: on
+
+# Memory operations
+remember("Database optimized successfully") as "optimization"
+
+# Variable assignment
+performance_target = 95%
+system_name = "production"
+
+# Intent-driven actions
+analyze for "bottlenecks"
+optimize for "speed"
+learn from "user_feedback"
+
+# Comments are supported
+# This demonstrates NeuroCode as a true programming language
+
+# End of test file
