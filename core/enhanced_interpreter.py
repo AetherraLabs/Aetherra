@@ -408,9 +408,9 @@ Generated NeuroCode:
             report = self.performance_optimizer.get_performance_report()
 
             response = "📊 Performance Analysis\n\n"
-            if 'suggestions' in report and report['suggestions']:
+            if "suggestions" in report and report["suggestions"]:
                 response += "🔧 Recent Optimization Suggestions:\n"
-                for suggestion in list(report['suggestions'].values())[:3]:  # Top 3 suggestions
+                for suggestion in list(report["suggestions"].values())[:3]:  # Top 3 suggestions
                     response += f"• Command: {suggestion['command']}\n"
                     response += f"  Suggestion: {suggestion['suggested_optimization']}\n"
             else:
@@ -435,7 +435,7 @@ Generated NeuroCode:
                     command=code_to_profile,
                     execution_time=execution_time,
                     memory_usage=None,  # Will be auto-detected
-                    context={"result_length": len(str(result))}
+                    context={"result_length": len(str(result))},
                 )
 
                 return f"⏱️ Profiled execution in {execution_time:.3f}s\nResult: {result}"
@@ -443,7 +443,9 @@ Generated NeuroCode:
                 return f"[Profile Error] {e}"
 
         else:
-            return "[Error] Unknown optimization command. Available: status, analyze, profile <code>"
+            return (
+                "[Error] Unknown optimization command. Available: status, analyze, profile <code>"
+            )
 
     def _handle_collaboration_command(self, code: str) -> str:
         """Handle AI collaboration commands"""
@@ -470,6 +472,7 @@ Generated NeuroCode:
 
             # Use async wrapper for collaborative solving
             import asyncio
+
             try:
                 result = asyncio.run(self.ai_collaboration.quick_solve(task_description))
                 return f"🚀 Collaborative solution:\n{result}"
@@ -508,6 +511,7 @@ Generated NeuroCode:
         elif command == "benchmark":
             # Run a quick benchmark
             import time
+
             start_time = time.time()
 
             # Test basic operations
@@ -531,7 +535,7 @@ Generated NeuroCode:
                 "intent_parser": self.intent_parser is not None,
                 "performance_optimizer": self.performance_optimizer is not None,
                 "ai_collaboration": self.ai_collaboration is not None,
-            }
+            },
         }
 
     def demonstrate_enhancements(self) -> str:

@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 
 class AgentRole(Enum):
     """Roles for different AI agents"""
+
     CODE_GENERATOR = "code_generator"
     OPTIMIZER = "optimizer"
     DEBUGGER = "debugger"
@@ -25,6 +26,7 @@ class AgentRole(Enum):
 
 class TaskPriority(Enum):
     """Task priority levels"""
+
     LOW = 1
     MEDIUM = 2
     HIGH = 3
@@ -34,6 +36,7 @@ class TaskPriority(Enum):
 @dataclass
 class CollaborationTask:
     """A task that requires multiple AI agents to collaborate"""
+
     id: str
     description: str
     requirements: List[str]
@@ -48,6 +51,7 @@ class CollaborationTask:
 @dataclass
 class AgentResponse:
     """Response from an AI agent"""
+
     agent_role: AgentRole
     task_id: str
     solution: str
@@ -87,7 +91,7 @@ class LocalCodeGenerator(AIAgent):
             "python_code_generation",
             "api_design",
             "algorithm_implementation",
-            "data_structure_design"
+            "data_structure_design",
         ]
 
     async def process_task(self, task: CollaborationTask) -> AgentResponse:
@@ -112,13 +116,13 @@ class LocalCodeGenerator(AIAgent):
             suggestions=[
                 "Consider adding error handling",
                 "Add input validation",
-                "Include performance monitoring"
+                "Include performance monitoring",
             ],
             metadata={
-                "lines_of_code": len(generated_code.split('\n')),
+                "lines_of_code": len(generated_code.split("\n")),
                 "complexity": "medium",
-                "language": "neurocode"
-            }
+                "language": "neurocode",
+            },
         )
 
     def _generate_code(self, description: str, requirements: List[str]) -> str:
@@ -126,7 +130,7 @@ class LocalCodeGenerator(AIAgent):
         # This would integrate with local AI models for actual code generation
         code_template = f"""
 # Generated NeuroCode for: {description}
-goal: {description.lower().replace(' ', '_')} priority: high
+goal: {description.lower().replace(" ", "_")} priority: high
 agent: on
 
 define main_implementation():
@@ -165,7 +169,7 @@ class PerformanceOptimizer(AIAgent):
             "code_optimization",
             "memory_optimization",
             "algorithm_optimization",
-            "caching_strategies"
+            "caching_strategies",
         ]
 
     async def process_task(self, task: CollaborationTask) -> AgentResponse:
@@ -188,13 +192,13 @@ class PerformanceOptimizer(AIAgent):
             suggestions=[
                 "Add performance monitoring",
                 "Implement caching for frequent operations",
-                "Consider parallel processing"
+                "Consider parallel processing",
             ],
             metadata={
                 "optimization_type": "performance",
                 "expected_improvement": "30-50%",
-                "complexity": "low"
-            }
+                "complexity": "low",
+            },
         )
 
     def _optimize_code(self, code: str) -> str:
@@ -214,7 +218,7 @@ class PerformanceOptimizer(AIAgent):
             "# Additional optimizations:",
             "cache_enabled: true",
             "parallel_processing: true",
-            "lazy_loading: true"
+            "lazy_loading: true",
         ]
 
         return "\n".join(optimizations)
@@ -233,7 +237,7 @@ class AIDebugger(AIAgent):
             "logic_verification",
             "error_detection",
             "test_generation",
-            "security_scanning"
+            "security_scanning",
         ]
 
     async def process_task(self, task: CollaborationTask) -> AgentResponse:
@@ -256,13 +260,9 @@ class AIDebugger(AIAgent):
             suggestions=[
                 "Add comprehensive error handling",
                 "Include unit tests",
-                "Add logging for debugging"
+                "Add logging for debugging",
             ],
-            metadata={
-                "issues_found": 2,
-                "severity": "low",
-                "test_coverage": "85%"
-            }
+            metadata={"issues_found": 2, "severity": "low", "test_coverage": "85%"},
         )
 
     def _validate_code(self, code: str) -> str:
@@ -286,7 +286,7 @@ class AIDebugger(AIAgent):
             "# Validated Code:",
             code,
             "",
-            "# Validation passed ✅"
+            "# Validation passed ✅",
         ]
 
         return "\n".join(validation_report)
@@ -305,7 +305,7 @@ class DocumentationGenerator(AIAgent):
             "api_documentation",
             "user_guides",
             "technical_specifications",
-            "tutorial_creation"
+            "tutorial_creation",
         ]
 
     async def process_task(self, task: CollaborationTask) -> AgentResponse:
@@ -314,10 +314,7 @@ class DocumentationGenerator(AIAgent):
 
         await asyncio.sleep(0.2)  # Simulate processing time
 
-        documentation = self._generate_documentation(
-            task.description,
-            task.context.get("code", "")
-        )
+        documentation = self._generate_documentation(task.description, task.context.get("code", ""))
 
         execution_time = time.time() - start_time
 
@@ -331,13 +328,13 @@ class DocumentationGenerator(AIAgent):
             suggestions=[
                 "Add code examples",
                 "Include troubleshooting section",
-                "Add API reference"
+                "Add API reference",
             ],
             metadata={
                 "doc_type": "comprehensive",
                 "sections": 5,
-                "estimated_read_time": "10 minutes"
-            }
+                "estimated_read_time": "10 minutes",
+            },
         )
 
     def _generate_documentation(self, description: str, code: str) -> str:
@@ -356,7 +353,7 @@ This implementation provides {description.lower()} functionality with AI-powered
 
 ## Usage
 ```neurocode
-{code if code else '# Code will be documented here'}
+{code if code else "# Code will be documented here"}
 ```
 
 ## Configuration
@@ -402,15 +399,19 @@ class AICollaborationFramework:
             AgentRole.CODE_GENERATOR: LocalCodeGenerator(),
             AgentRole.OPTIMIZER: PerformanceOptimizer(),
             AgentRole.DEBUGGER: AIDebugger(),
-            AgentRole.DOCUMENTER: DocumentationGenerator()
+            AgentRole.DOCUMENTER: DocumentationGenerator(),
         }
 
         self.active_tasks: Dict[str, CollaborationTask] = {}
         self.completed_tasks: List[CollaborationTask] = []
         self.collaboration_history: List[Dict[str, Any]] = []
 
-    async def collaborative_solve(self, problem: str, requirements: Optional[List[str]] = None,
-                                priority: TaskPriority = TaskPriority.MEDIUM) -> Dict[str, Any]:
+    async def collaborative_solve(
+        self,
+        problem: str,
+        requirements: Optional[List[str]] = None,
+        priority: TaskPriority = TaskPriority.MEDIUM,
+    ) -> Dict[str, Any]:
         """Multiple AI agents collaborate on problem solving"""
 
         task_id = f"task_{int(time.time())}"
@@ -426,10 +427,10 @@ class AICollaborationFramework:
                 AgentRole.CODE_GENERATOR,
                 AgentRole.OPTIMIZER,
                 AgentRole.DEBUGGER,
-                AgentRole.DOCUMENTER
+                AgentRole.DOCUMENTER,
             ],
             context={},
-            status="in_progress"
+            status="in_progress",
         )
 
         self.active_tasks[task_id] = task
@@ -472,35 +473,42 @@ class AICollaborationFramework:
                 "code": code_response.solution,
                 "optimized_code": optimization_response.solution,
                 "validated_code": debug_response.solution,
-                "documentation": doc_response.solution
+                "documentation": doc_response.solution,
             },
             "agent_responses": {
                 "code_generator": asdict(code_response),
                 "optimizer": asdict(optimization_response),
                 "debugger": asdict(debug_response),
-                "documenter": asdict(doc_response)
+                "documenter": asdict(doc_response),
             },
             "collaboration_metrics": {
-                "total_time": sum([
-                    code_response.execution_time,
-                    optimization_response.execution_time,
-                    debug_response.execution_time,
-                    doc_response.execution_time
-                ]),
-                "average_confidence": sum([
-                    code_response.confidence,
-                    optimization_response.confidence,
-                    debug_response.confidence,
-                    doc_response.confidence
-                ]) / 4,
+                "total_time": sum(
+                    [
+                        code_response.execution_time,
+                        optimization_response.execution_time,
+                        debug_response.execution_time,
+                        doc_response.execution_time,
+                    ]
+                ),
+                "average_confidence": sum(
+                    [
+                        code_response.confidence,
+                        optimization_response.confidence,
+                        debug_response.confidence,
+                        doc_response.confidence,
+                    ]
+                )
+                / 4,
                 "agents_involved": len(task.assigned_agents),
-                "suggestions_count": sum([
-                    len(code_response.suggestions),
-                    len(optimization_response.suggestions),
-                    len(debug_response.suggestions),
-                    len(doc_response.suggestions)
-                ])
-            }
+                "suggestions_count": sum(
+                    [
+                        len(code_response.suggestions),
+                        len(optimization_response.suggestions),
+                        len(debug_response.suggestions),
+                        len(doc_response.suggestions),
+                    ]
+                ),
+            },
         }
 
         # Update task status
@@ -510,18 +518,22 @@ class AICollaborationFramework:
         del self.active_tasks[task_id]
 
         # Record collaboration history
-        self.collaboration_history.append({
-            "timestamp": time.time(),
-            "task_id": task_id,
-            "problem": problem,
-            "agents_used": [agent.value for agent in task.assigned_agents],
-            "success": True,
-            "metrics": final_solution["collaboration_metrics"]
-        })
+        self.collaboration_history.append(
+            {
+                "timestamp": time.time(),
+                "task_id": task_id,
+                "problem": problem,
+                "agents_used": [agent.value for agent in task.assigned_agents],
+                "success": True,
+                "metrics": final_solution["collaboration_metrics"],
+            }
+        )
 
         print("✅ Collaborative solution completed!")
         print(f"   Total time: {final_solution['collaboration_metrics']['total_time']:.2f}s")
-        print(f"   Average confidence: {final_solution['collaboration_metrics']['average_confidence']:.0%}")
+        print(
+            f"   Average confidence: {final_solution['collaboration_metrics']['average_confidence']:.0%}"
+        )
 
         return final_solution
 
@@ -532,10 +544,7 @@ class AICollaborationFramework:
 
     def get_agent_capabilities(self) -> Dict[str, List[str]]:
         """Get capabilities of all agents"""
-        return {
-            role.value: agent.get_capabilities()
-            for role, agent in self.ai_agents.items()
-        }
+        return {role.value: agent.get_capabilities() for role, agent in self.ai_agents.items()}
 
     def get_collaboration_stats(self) -> Dict[str, Any]:
         """Get statistics about collaborations"""
@@ -543,8 +552,14 @@ class AICollaborationFramework:
             return {"message": "No collaborations completed yet"}
 
         total_collaborations = len(self.collaboration_history)
-        avg_time = sum(c["metrics"]["total_time"] for c in self.collaboration_history) / total_collaborations
-        avg_confidence = sum(c["metrics"]["average_confidence"] for c in self.collaboration_history) / total_collaborations
+        avg_time = (
+            sum(c["metrics"]["total_time"] for c in self.collaboration_history)
+            / total_collaborations
+        )
+        avg_confidence = (
+            sum(c["metrics"]["average_confidence"] for c in self.collaboration_history)
+            / total_collaborations
+        )
 
         return {
             "total_collaborations": total_collaborations,
@@ -552,7 +567,7 @@ class AICollaborationFramework:
             "average_confidence": avg_confidence,
             "success_rate": 100,  # All completed tasks are successful for now
             "active_tasks": len(self.active_tasks),
-            "available_agents": len(self.ai_agents)
+            "available_agents": len(self.ai_agents),
         }
 
     async def quick_solve(self, problem: str) -> str:
@@ -567,7 +582,7 @@ class AICollaborationFramework:
             requirements=[],
             priority=TaskPriority.MEDIUM,
             assigned_agents=[AgentRole.CODE_GENERATOR],
-            context={}
+            context={},
         )
 
         response = await code_agent.process_task(task)
@@ -579,7 +594,9 @@ ai_collaboration = AICollaborationFramework()
 
 
 # Utility functions for easy integration
-async def collaborate_on_problem(problem: str, requirements: Optional[List[str]] = None) -> Dict[str, Any]:
+async def collaborate_on_problem(
+    problem: str, requirements: Optional[List[str]] = None
+) -> Dict[str, Any]:
     """Collaborate on solving a problem with multiple AI agents"""
     return await ai_collaboration.collaborative_solve(problem, requirements)
 
@@ -608,8 +625,8 @@ if __name__ == "__main__":
                 "Handle large datasets",
                 "Include error handling",
                 "Optimize for performance",
-                "Generate documentation"
-            ]
+                "Generate documentation",
+            ],
         )
 
         print("\n📊 Collaboration Results:")

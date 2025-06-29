@@ -41,6 +41,7 @@ try:
 except Exception as e:
     print(f"❌ Local AI Engine test failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Test 2: Vector Memory System
@@ -55,10 +56,14 @@ try:
     print("✅ EnhancedSemanticMemory initialized successfully")
 
     # Test memory storage
-    result1 = memory.remember("NeuroCode is revolutionary AI programming", ["ai", "programming"], "development")
+    result1 = memory.remember(
+        "NeuroCode is revolutionary AI programming", ["ai", "programming"], "development"
+    )
     print(f"✅ Memory storage: {result1['status']}")
 
-    result2 = memory.remember("Machine learning optimization techniques", ["ml", "optimization"], "research")
+    result2 = memory.remember(
+        "Machine learning optimization techniques", ["ml", "optimization"], "research"
+    )
     print(f"✅ Memory storage: {result2['status']}")
 
     # Test semantic search
@@ -82,6 +87,7 @@ try:
 except Exception as e:
     print(f"❌ Vector Memory System test failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Test 3: Intent-to-Code Parser
@@ -110,7 +116,7 @@ try:
     test_cases = [
         "Optimize the database performance",
         "Process CSV data and extract insights",
-        "Monitor system metrics and send alerts"
+        "Monitor system metrics and send alerts",
     ]
 
     for test_case in test_cases:
@@ -126,6 +132,7 @@ try:
 except Exception as e:
     print(f"❌ Intent-to-Code Parser test failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Test 4: Enhanced Interpreter
@@ -143,12 +150,12 @@ try:
     print("✅ Unified interface available")
 
     # Test performance metrics
-    if hasattr(interpreter, 'performance_metrics'):
+    if hasattr(interpreter, "performance_metrics"):
         metrics = interpreter.performance_metrics
         print(f"✅ Performance metrics: {len(metrics)} capabilities tracked")
 
     # Test AI model router
-    if hasattr(interpreter, 'model_router'):
+    if hasattr(interpreter, "model_router"):
         model = interpreter.model_router.select_best_model("code_generation")
         print(f"✅ AI model routing: Selected {model}")
 
@@ -161,6 +168,7 @@ try:
 except Exception as e:
     print(f"❌ Enhanced Interpreter test failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Test 5: Setup & Installation
@@ -173,7 +181,7 @@ try:
     print("✅ setup_enhancements.py module accessible")
 
     # Check if key functions exist
-    functions = ['check_python_version', 'install_core_dependencies', 'setup_local_models']
+    functions = ["check_python_version", "install_core_dependencies", "setup_local_models"]
     for func in functions:
         if hasattr(setup_enhancements, func):
             print(f"✅ Function {func} available")

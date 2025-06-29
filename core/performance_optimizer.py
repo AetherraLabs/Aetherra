@@ -16,6 +16,7 @@ import psutil
 @dataclass
 class ExecutionMetric:
     """Single execution measurement"""
+
     command: str
     execution_time: float
     memory_usage: float
@@ -27,6 +28,7 @@ class ExecutionMetric:
 @dataclass
 class OptimizationSuggestion:
     """AI-generated optimization suggestion"""
+
     command: str
     current_performance: Dict[str, float]
     suggested_optimization: str
@@ -50,16 +52,20 @@ class PerformanceOptimizer:
         # Performance targets
         self.performance_targets = {
             "memory_efficiency": 100,  # MB
-            "response_time": 0.5,      # seconds
-            "cpu_efficiency": 80       # percentage
+            "response_time": 0.5,  # seconds
+            "cpu_efficiency": 80,  # percentage
         }
 
         # Load existing metrics
         self.load_metrics()
 
-    def profile_execution(self, command: str, execution_time: float,
-                         memory_usage: Optional[float] = None,
-                         context: Optional[Dict[str, Any]] = None) -> Optional[OptimizationSuggestion]:
+    def profile_execution(
+        self,
+        command: str,
+        execution_time: float,
+        memory_usage: Optional[float] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> Optional[OptimizationSuggestion]:
         """Profile command execution for optimization opportunities"""
 
         # Get system metrics if not provided
@@ -70,7 +76,9 @@ class PerformanceOptimizer:
         cpu_usage = psutil.cpu_percent(interval=0.1)
 
         # Ensure memory_usage is not None
-        final_memory_usage = memory_usage if memory_usage is not None else process.memory_info().rss / 1024 / 1024
+        final_memory_usage = (
+            memory_usage if memory_usage is not None else process.memory_info().rss / 1024 / 1024
+        )
 
         metric = ExecutionMetric(
             command=command,
@@ -78,7 +86,7 @@ class PerformanceOptimizer:
             memory_usage=final_memory_usage,
             cpu_usage=cpu_usage,
             timestamp=time.time(),
-            context=context or {}
+            context=context or {},
         )
 
         # Store metric
@@ -112,8 +120,10 @@ class PerformanceOptimizer:
         avg_memory = sum(m.memory_usage for m in metrics[-10:]) / min(10, len(metrics))
 
         # Check if performance is below threshold
-        return (avg_time > self.optimization_threshold or
-                avg_memory > self.performance_targets["memory_efficiency"])
+        return (
+            avg_time > self.optimization_threshold
+            or avg_memory > self.performance_targets["memory_efficiency"]
+        )
 
     def suggest_optimization(self, command: str) -> Optional[OptimizationSuggestion]:
         """AI-powered optimization suggestions"""
@@ -133,20 +143,22 @@ class PerformanceOptimizer:
         current_performance = {
             "avg_execution_time": avg_time,
             "avg_memory_usage": avg_memory,
-            "avg_cpu_usage": avg_cpu
+            "avg_cpu_usage": avg_cpu,
         }
 
         # Generate optimization suggestion based on patterns
-        suggestion = self._generate_optimization_suggestion(command, current_performance, recent_metrics)
+        suggestion = self._generate_optimization_suggestion(
+            command, current_performance, recent_metrics
+        )
 
         if suggestion:
             self.optimization_cache[command] = suggestion
 
         return suggestion
 
-    def _generate_optimization_suggestion(self, command: str,
-                                        current_performance: Dict[str, float],
-                                        metrics: List[ExecutionMetric]) -> Optional[OptimizationSuggestion]:
+    def _generate_optimization_suggestion(
+        self, command: str, current_performance: Dict[str, float], metrics: List[ExecutionMetric]
+    ) -> Optional[OptimizationSuggestion]:
         """Generate specific optimization suggestions"""
 
         avg_time = current_performance["avg_execution_time"]
@@ -209,7 +221,7 @@ class PerformanceOptimizer:
             suggested_optimization=" | ".join(suggestions),
             expected_improvement=expected_improvement,
             confidence=min(confidence, 0.95),
-            implementation_complexity=complexity
+            implementation_complexity=complexity,
         )
 
     def _calculate_time_trend(self, metrics: List[ExecutionMetric]) -> float:
@@ -233,12 +245,14 @@ class PerformanceOptimizer:
         report = {
             "summary": {
                 "total_commands_tracked": len(self.execution_metrics),
-                "total_executions": sum(len(metrics) for metrics in self.execution_metrics.values()),
-                "optimization_suggestions": len(self.optimization_cache)
+                "total_executions": sum(
+                    len(metrics) for metrics in self.execution_metrics.values()
+                ),
+                "optimization_suggestions": len(self.optimization_cache),
             },
             "command_performance": {},
             "system_health": self._get_system_health(),
-            "optimization_opportunities": []
+            "optimization_opportunities": [],
         }
 
         # Analyze each command
@@ -252,7 +266,7 @@ class PerformanceOptimizer:
                 "avg_time": sum(m.execution_time for m in recent_metrics) / len(recent_metrics),
                 "avg_memory": sum(m.memory_usage for m in recent_metrics) / len(recent_metrics),
                 "trend": self._calculate_time_trend(metrics),
-                "needs_optimization": self.should_optimize(command)
+                "needs_optimization": self.should_optimize(command),
             }
 
             if self.should_optimize(command):
@@ -267,8 +281,8 @@ class PerformanceOptimizer:
         return {
             "cpu_usage": psutil.cpu_percent(interval=1),
             "memory_usage": psutil.virtual_memory().percent,
-            "disk_usage": psutil.disk_usage('/').percent,
-            "timestamp": time.time()
+            "disk_usage": psutil.disk_usage("/").percent,
+            "timestamp": time.time(),
         }
 
     def apply_optimization(self, command: str, optimization_type: str) -> bool:
@@ -290,13 +304,11 @@ class PerformanceOptimizer:
                     cmd: [asdict(metric) for metric in metrics]
                     for cmd, metrics in self.execution_metrics.items()
                 },
-                "optimizations": {
-                    cmd: asdict(opt) for cmd, opt in self.optimization_cache.items()
-                },
-                "saved_at": time.time()
+                "optimizations": {cmd: asdict(opt) for cmd, opt in self.optimization_cache.items()},
+                "saved_at": time.time(),
             }
 
-            with open(self.metrics_file, 'w') as f:
+            with open(self.metrics_file, "w") as f:
                 json.dump(data, f, indent=2)
 
         except Exception as e:

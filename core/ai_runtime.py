@@ -3,6 +3,7 @@ import os
 
 import openai
 
+
 # Try to load from .env file if it exists
 def load_env_file():
     """Load environment variables from .env file"""
@@ -11,9 +12,10 @@ def load_env_file():
         with open(env_file) as f:
             for line in f:
                 line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
                     os.environ[key.strip()] = value.strip()
+
 
 # Load .env file if it exists
 load_env_file()
@@ -33,12 +35,15 @@ elif api_key and _openai_client_initialized:
 else:
     client = None
     if not _openai_client_initialized:
-        print("[Warning] OPENAI_API_KEY environment variable not set. AI features will be disabled.")
+        print(
+            "[Warning] OPENAI_API_KEY environment variable not set. AI features will be disabled."
+        )
         print("💡 To enable AI features:")
         print("   1. Get an API key from https://platform.openai.com/api-keys")
         print("   2. Set environment variable: set OPENAI_API_KEY=your-key")
         print("   3. Or add it to the .env file in the project root")
         _openai_client_initialized = True
+
 
 def ask_ai(prompt, temperature=0.2):
     """Basic AI query function"""
@@ -54,7 +59,7 @@ def ask_ai(prompt, temperature=0.2):
                 response = client.chat.completions.create(
                     model=model,
                     messages=[{"role": "user", "content": prompt}],
-                    temperature=temperature
+                    temperature=temperature,
                 )
                 content = response.choices[0].message.content
                 return content.strip() if content is not None else ""
@@ -68,9 +73,10 @@ def ask_ai(prompt, temperature=0.2):
     except Exception as e:
         return f"[AI Error] {str(e)}"
 
+
 def analyze_memory_patterns(memories, tag_frequency, category_frequency):
     """AI analysis of memory patterns and behavior suggestions"""
-    recent_memories = [m['text'] for m in memories[-10:]]  # Last 10 memories
+    recent_memories = [m["text"] for m in memories[-10:]]  # Last 10 memories
     content_context = "\n".join(recent_memories)
 
     prompt = f"""Analyze these recent memories for patterns and suggest 3 specific behaviors or workflows the user should adopt:
@@ -85,7 +91,10 @@ Provide actionable NeuroCode suggestions based on detected patterns."""
 
     return ask_ai(prompt)
 
-def analyze_user_behavior(command_types, recent_commands, functions, memories, command_history_length):
+
+def analyze_user_behavior(
+    command_types, recent_commands, functions, memories, command_history_length
+):
     """AI analysis of user behavior patterns and optimization suggestions"""
     behavior_context = f"""
 Command usage patterns: {command_types}
@@ -110,18 +119,19 @@ Provide specific NeuroCode recommendations."""
 
     return ask_ai(prompt)
 
+
 def suggest_system_evolution(memory_summary, function_count, context=""):
     """AI suggestions for system evolution and improvements"""
     evolution_context = f"""
 System State:
-- Total memories: {memory_summary['total_memories']}
-- Available tags: {memory_summary['tags']}
-- Categories: {memory_summary['categories']}
+- Total memories: {memory_summary["total_memories"]}
+- Available tags: {memory_summary["tags"]}
+- Categories: {memory_summary["categories"]}
 - Defined functions: {function_count}
 - User context: {context}
 
 Recent memory sample:
-{chr(10).join(memory_summary.get('recent_memories', []))}
+{chr(10).join(memory_summary.get("recent_memories", []))}
 """
 
     prompt = f"""Based on this Neuroplex system state, suggest evolutionary improvements:
@@ -138,6 +148,7 @@ Suggest:
 Provide concrete, actionable suggestions."""
 
     return ask_ai(prompt)
+
 
 def provide_adaptive_suggestions(context, recent_memories, available_tags, function_names):
     """AI-powered adaptive suggestions based on current context"""
@@ -162,22 +173,26 @@ Suggest specific NeuroCode commands they should run next."""
 
     return ask_ai(prompt)
 
+
 def reflect_on_memories(memories, filter_description):
     """AI reflection on filtered memories"""
     context = "\n".join(memories)
     prompt = f"Reflect on and analyze these memories filtered by {filter_description}:\n{context}"
     return ask_ai(prompt)
 
+
 def auto_tag_content(summary):
     """Generate relevant tags for content automatically"""
     prompt = f"Generate 2-3 relevant tags for this content (comma-separated): {summary}"
     response = ask_ai(prompt)
-    return [tag.strip() for tag in response.split(',')]
+    return [tag.strip() for tag in response.split(",")]
+
 
 def suggest_next_actions(summary):
     """Suggest next NeuroCode actions based on learned content"""
     prompt = f"Based on this summary, suggest useful NeuroCode to execute next:\n{summary}"
     return ask_ai(prompt)
+
 
 # ==================== SELF-EDITING AI FUNCTIONS =============
 def analyze_code_structure(content, filename):
@@ -199,6 +214,7 @@ Be concise but thorough."""
 
     return ask_ai(prompt)
 
+
 def generate_code_summary(content, filename):
     """Generate a concise summary of what the code does"""
     prompt = f"""Provide a concise summary of this code file:
@@ -216,6 +232,7 @@ Summarize:
 Keep it brief but informative."""
 
     return ask_ai(prompt)
+
 
 def deep_code_analysis(content, filename, memory_context):
     """Perform deep analysis of code for bugs, improvements, and patterns"""
@@ -240,6 +257,7 @@ Provide specific, actionable feedback."""
 
     return ask_ai(prompt)
 
+
 def suggest_code_improvements(content, filename, memory_context):
     """Suggest specific code improvements based on analysis"""
     prompt = f"""Suggest specific improvements for this code:
@@ -262,6 +280,7 @@ Prioritize suggestions by impact and feasibility."""
 
     return ask_ai(prompt)
 
+
 def suggest_refactoring(content, filename, target, memory_context):
     """Generate refactored code based on specific targets"""
     prompt = f"""Refactor this code focusing on: {target}
@@ -282,6 +301,7 @@ Provide the complete refactored code that:
 Return only the refactored code, ready to replace the original."""
 
     return ask_ai(prompt, temperature=0.1)  # Lower temperature for code generation
+
 
 def justify_refactoring(content, target, memory_context):
     """Provide justification for why refactoring is beneficial"""
@@ -304,10 +324,11 @@ Be persuasive but factual."""
 
     return ask_ai(prompt)
 
+
 def memory_driven_code_suggestion(memories, patterns, code_context=""):
     """Use memory patterns to suggest code improvements and self-editing opportunities"""
-    recent_patterns = [m['text'] for m in memories if 'pattern' in m.get('tags', [])]
-    error_patterns = [m['text'] for m in memories if 'error' in m.get('tags', [])]
+    recent_patterns = [m["text"] for m in memories if "pattern" in m.get("tags", [])]
+    error_patterns = [m["text"] for m in memories if "error" in m.get("tags", [])]
 
     prompt = f"""Based on memory patterns, suggest self-editing opportunities:
 
@@ -325,6 +346,7 @@ Suggest:
 Provide actionable NeuroCode commands."""
 
     return ask_ai(prompt)
+
 
 def justify_self_editing_decision(filename, analysis, memory_context):
     """Provide memory-driven justification for self-editing decisions"""
