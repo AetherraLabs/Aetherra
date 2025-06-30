@@ -121,7 +121,7 @@ class MockPluginRegistry:
 
     def get_categories(self):
         """Get available categories"""
-        categories = set(plugin["category"] for plugin in self.plugins.values())
+        categories = {plugin["category"] for plugin in self.plugins.values()}
         return sorted(categories)
 
 

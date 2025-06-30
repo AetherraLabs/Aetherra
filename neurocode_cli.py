@@ -100,7 +100,7 @@ class SimpleInterpreter:
         self.variables = {}
         self.goals = []
 
-    def execute(self, statements: List[Dict], context: Dict = None) -> Any:
+    def execute(self, statements: List[Dict], context: Optional[Dict[str, Any]] = None) -> Any:
         """Execute parsed NeuroCode statements"""
         context = context or {}
         results = []
@@ -583,6 +583,7 @@ Examples:
 
     # REPL command
     repl_parser = subparsers.add_parser("repl", help="Interactive NeuroCode consciousness")
+    repl_parser.add_argument("--debug", action="store_true", help="Enable debug mode")
 
     # Analyze command
     analyze_parser = subparsers.add_parser("analyze", help="Analyze consciousness patterns")
@@ -590,9 +591,11 @@ Examples:
 
     # Memory command
     memory_parser = subparsers.add_parser("memory", help="Inspect persistent memory")
+    memory_parser.add_argument("--list", action="store_true", help="List memory contents")
 
     # Goals command
     goals_parser = subparsers.add_parser("goals", help="View AI goal system")
+    goals_parser.add_argument("--status", action="store_true", help="Show goal status")
 
     # Plugin command
     plugin_parser = subparsers.add_parser("plugin", help="Manage consciousness plugins")

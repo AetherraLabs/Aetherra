@@ -9,7 +9,7 @@ import logging
 import pickle
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -430,7 +430,7 @@ class VectorMemorySystem:
             "timestamp": datetime.now().isoformat(),
         }
 
-    def _get_memory_by_id(self, memory_id: str) -> Dict:
+    def _get_memory_by_id(self, memory_id: str) -> Optional[Dict[str, Any]]:
         """Get memory by ID from any memory store"""
         # Check episodic memories
         for memory in self.episodic_memories:
@@ -489,7 +489,9 @@ class GoalTrackingSystem:
 
         self._load_goals()
 
-    def create_goal(self, description: str, priority: str = "medium", deadline: str = None) -> str:
+    def create_goal(
+        self, description: str, priority: str = "medium", deadline: Optional[str] = None
+    ) -> str:
         """Create a new goal"""
         goal_id = self._generate_goal_id(description)
 
@@ -535,7 +537,7 @@ class GoalTrackingSystem:
             if progress >= 1.0:
                 self._complete_goal(goal_id)
 
-    def add_goal_milestone(self, goal_id: str, milestone: str, target_date: str = None):
+    def add_goal_milestone(self, goal_id: str, milestone: str, target_date: Optional[str] = None):
         """Add a milestone to a goal"""
         goal = self._find_goal_by_id(goal_id)
         if goal:
@@ -612,7 +614,7 @@ class GoalTrackingSystem:
 
             logger.info(f"🎉 Goal completed: {goal['description']}")
 
-    def _find_goal_by_id(self, goal_id: str) -> Dict:
+    def _find_goal_by_id(self, goal_id: str) -> Optional[Dict[str, Any]]:
         """Find goal by ID in all goal lists"""
         for goal in self.active_goals + self.completed_goals + self.paused_goals:
             if goal["id"] == goal_id:
@@ -649,6 +651,26 @@ class GoalTrackingSystem:
             json.dump(goal_data, f, indent=2)
 
         logger.info("💾 Goals saved to persistent storage")
+
+    def get_active_goals(self) -> List[Dict[str, Any]]:
+        """Get all active goals"""
+        return self.active_goals
+
+    def add_goal_context(self, goal_id: str, context: Dict[str, Any]):
+        """Add context to a goal"""
+        goal = self._find_goal_by_id(goal_id)
+        if goal:
+            if "context" not in goal:
+                goal["context"] = []
+            goal["context"].append({"data": context, "timestamp": datetime.now().isoformat()})
+
+    def get_completed_goals(self) -> List[Dict[str, Any]]:
+        """Get all completed goals"""
+        return self.completed_goals
+
+    def get_goal_by_id(self, goal_id: str) -> Optional[Dict[str, Any]]:
+        """Get a specific goal by ID"""
+        return self._find_goal_by_id(goal_id)
 
 
 # Example usage

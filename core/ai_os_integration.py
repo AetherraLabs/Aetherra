@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from .ai_identity_system import AIIdentity
-from .enhanced_memory_system import VectorMemorySystem
+from .enhanced_memory_system import GoalTrackingSystem, VectorMemorySystem
 from .voice_personality_system import VoicePersonalitySystem
 
 # Configure logging
@@ -29,10 +29,10 @@ class NeuroCodeAIOS:
 
         # Initialize core subsystems
         self.identity = AIIdentity(data_dir)
-        self.memory = VectorMemorySystem(data_dir)
-        self.voice = VoicePersonalitySystem(data_dir)
-        # Note: Using existing goal system with simplified interface
-        self.goals = None  # Will be initialized after memory and interpreter setup
+        self.memory = VectorMemorySystem(self.data_dir)
+        self.voice = VoicePersonalitySystem(self.data_dir)
+        # Initialize goal system with proper integration
+        self.goals = GoalTrackingSystem(self.data_dir)
 
         # Integration state
         self.system_active = False
@@ -151,7 +151,9 @@ class NeuroCodeAIOS:
         if recent_interactions:
             interaction_analysis = self._analyze_interaction_patterns(recent_interactions)
             mood = interaction_analysis.get("dominant_mood", "neutral")
-            self.voice.adapt_to_user_mood(mood, confidence=0.7)
+            # Ensure mood is a string
+            if isinstance(mood, str):
+                self.voice.adapt_to_user_mood(mood)
 
         # Goal-driven memory prioritization
         active_goals = self.goals.get_active_goals()
@@ -285,9 +287,8 @@ class NeuroCodeAIOS:
         }
 
         # Store as high-importance memory
-        self.memory.store_memory(
-            "semantic",
-            {"concept": "deep_integration_analysis", "details": analysis_result, "importance": 0.9},
+        self.memory.store_semantic_memory(
+            concept="deep_integration_analysis", knowledge=analysis_result, importance=0.9
         )
 
     def _analyze_interaction_patterns(self, memories: List[Dict]) -> Dict[str, float]:
@@ -343,8 +344,7 @@ class NeuroCodeAIOS:
 
         sentiments = []
         for interaction in interactions:
-            # Simple sentiment analysis based on context
-            context = interaction.get("context", "")
+            # Simple sentiment analysis based on emotion
             emotion = interaction.get("emotion", "neutral")
 
             if emotion in ["joy", "excitement", "satisfaction"]:
@@ -356,7 +356,7 @@ class NeuroCodeAIOS:
 
         return sum(sentiments) / len(sentiments)
 
-    def _analyze_personality_goal_alignment(self) -> Dict[str, float]:
+    def _analyze_personality_goal_alignment(self) -> Dict[str, Any]:
         """Analyze alignment between personality traits and active goals"""
         personality_traits = self.voice.personality["traits"]
         active_goals = self.goals.get_active_goals()
@@ -519,12 +519,11 @@ class NeuroCodeAIOS:
         start_time = time.time()
 
         # Store user input as episodic memory
-        self.memory.store_memory(
-            "episodic",
-            {
-                "event": f"user_input: {user_input}",
+        self.memory.store_episodic_memory(
+            event=f"user_input: {user_input}",
+            context={
                 "timestamp": datetime.now().isoformat(),
-                "context": "user_interaction",
+                "interaction_type": "user_interaction",
                 "importance": 0.7,
             },
         )
@@ -542,15 +541,14 @@ class NeuroCodeAIOS:
             self.voice.speak(response, emotion=emotion, context=context)
 
         # Store interaction outcome
-        self.memory.store_memory(
-            "episodic",
-            {
-                "event": f"ai_response: {response}",
+        self.memory.store_episodic_memory(
+            event=f"ai_response: {response}",
+            context={
                 "user_input": user_input,
                 "processing_time": time.time() - start_time,
-                "context": "ai_response",
-                "importance": 0.6,
+                "interaction_type": "ai_response",
             },
+            importance=0.6,
         )
 
         return response
@@ -690,7 +688,7 @@ class NeuroCodeAIOS:
 💚 System Health: {system_health}%
 🧠 Memory: {memory_stats["total_memories"]} memories stored
 🎯 Goals: {active_goals} active objectives
-🎭 Personality: {max(personality_state, key=personality_state.get)} dominant trait
+🎭 Personality: {max(personality_state.keys(), key=lambda k: personality_state[k])} dominant trait
 🗣️ Voice: {"Enabled" if self.voice.voice_config["enabled"] else "Disabled"}
 ⚡ Integration: {"Active" if self.cross_system_sync_active else "Inactive"}
 
@@ -749,13 +747,10 @@ All systems operational and learning continuously."""
             else:
                 response = f"I'd be happy to help you learn about {topic}. Let me gather information and provide a comprehensive explanation."
                 # Store learning request for future enhancement
-                self.memory.store_memory(
-                    "semantic",
-                    {
-                        "concept": f"learning_request: {topic}",
-                        "importance": 0.8,
-                        "context": "education",
-                    },
+                self.memory.store_semantic_memory(
+                    concept=f"learning_request: {topic}",
+                    knowledge={"context": "education"},
+                    importance=0.8,
                 )
         else:
             response = "I'm ready to help you learn! What topic are you interested in?"

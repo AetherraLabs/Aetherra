@@ -240,8 +240,11 @@ except ImportError:
         PLUGIN_REGISTRY = {}
 
 # Import stdlib manager for standard plugins
-# Use relative import within the package
-from ...stdlib import stdlib_manager
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent / "stdlib"))
+from stdlib import stdlib_manager
 
 
 class NeuroCodeInterpreter:

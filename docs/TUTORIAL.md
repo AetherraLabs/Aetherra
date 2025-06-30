@@ -5,6 +5,7 @@ Welcome to NeuroCode, a pioneering AI-consciousness programming language! This t
 ## What Makes NeuroCode Special?
 
 Unlike traditional programming languages that execute static instructions, NeuroCode programs:
+
 - 🧠 **Think and reason** about problems
 - 💾 **Remember and learn** from experiences  
 - 🎯 **Understand intentions** rather than just commands
@@ -367,12 +368,14 @@ suggest "process improvements for future reviews"
 ## Available Models
 
 ### Cloud Models (Requires API Keys)
+
 - `"gpt-4"` - Best overall reasoning and analysis
 - `"gpt-3.5-turbo"` - Fast and efficient for most tasks
 - `"claude-3"` - Excellent for safety and nuanced analysis
 - `"gemini-pro"` - Strong multimodal capabilities
 
 ### Local Models (Privacy-First, via Ollama)
+
 - `"mistral"` - Excellent local model for general tasks
 - `"llama2"` - Strong reasoning, completely open source
 - `"mixtral"` - High-performance mixture of experts model

@@ -17,6 +17,10 @@ llama-cpp-python>=0.2.0         # Direct GGUF model loading (used in multi_llm_m
 # === SYSTEM MONITORING ===
 psutil>=5.9.0                    # System resource monitoring (used in performance_optimizer.py)
 
+# === PLUGIN SYSTEM ===
+semantic-version>=2.10.0         # Semantic version parsing for plugin management
+requests>=2.31.0                 # HTTP client for plugin registry
+
 # === ENHANCED FEATURES (OPTIONAL BUT RECOMMENDED) ===
 # Uncomment any of these for enhanced functionality:
 
