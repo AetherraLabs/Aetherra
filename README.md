@@ -419,6 +419,8 @@ NeuroCode Project/
 │   └── debug/                  # Debug artifacts
 ├── 📄 main.py                  # CLI entry point
 ├── 📄 README.md                # This file
+├── 📄 CHANGELOG.md             # Version history and change log
+├── 📄 CHANGE_MANAGEMENT_PROTOCOL.md # Documentation standards
 ├── 📄 requirements.txt         # Python dependencies
 ├── 📄 pyproject.toml           # Modern Python packaging
 └── 📄 LICENSE                  # MIT License
@@ -601,6 +603,8 @@ Want to contribute? Dream. Build. Inject AI into your code.
 ## 🤝 **Contributing**
 
 NeuroCode is open source and welcomes contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
+
+**📋 Change Management**: All major changes follow our [Change Management Protocol](CHANGE_MANAGEMENT_PROTOCOL.md) to ensure proper documentation, version control, and deployment standards.
 
 ### **Ways to Contribute:**
 - 🐛 **Bug Reports**: Found an issue? Open an issue on GitHub
