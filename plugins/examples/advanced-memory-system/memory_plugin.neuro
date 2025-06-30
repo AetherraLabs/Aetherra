@@ -1,0 +1,290 @@
+# 🧠 Advanced Memory System Plugin
+# Enhanced episodic and semantic memory with vector search
+
+plugin advanced_memory_system {
+    version: "1.2.3"
+    category: "memory"
+    
+    # Vector database configuration
+    vector_config {
+        model: "sentence-transformers/all-MiniLM-L6-v2"
+        dimensions: 384
+        index_type: "HNSW"
+        similarity_metric: "cosine"
+    }
+    
+    # Memory storage backends
+    storage_backends {
+        episodic: "sqlite://memories/episodic.db"
+        semantic: "sqlite://memories/semantic.db" 
+        vector_index: "faiss://memories/vectors.index"
+    }
+    
+    # Plugin initialization
+    init() {
+        log "🧠 Advanced Memory System v1.2.3 initializing..."
+        
+        # Initialize vector model
+        load_sentence_transformer(vector_config.model)
+        log "✅ Sentence transformer model loaded"
+        
+        # Initialize storage backends
+        initialize_database_connections()
+        load_existing_vector_index()
+        log "✅ Storage backends initialized"
+        
+        # Setup background processes
+        start_memory_consolidation_scheduler()
+        log "✅ Background processes started"
+        
+        log "🚀 Advanced Memory System ready for enhanced cognition!"
+    }
+    
+    # Enhanced memory storage with context and importance
+    export remember_advanced(content, context={}, importance_score=5.0, tags=[]) {
+        timestamp = now()
+        
+        # Generate embeddings for semantic search
+        embeddings = generate_embeddings(content)
+        
+        # Create comprehensive memory entry
+        memory_entry = {
+            id: generate_uuid(),
+            content: content,
+            context: context,
+            importance: importance_score,
+            tags: tags,
+            timestamp: timestamp,
+            embeddings: embeddings,
+            session_id: get_current_session_id(),
+            
+            # Advanced metadata
+            emotional_context: detect_emotional_context(content),
+            confidence_level: calculate_confidence(content, context),
+            related_memories: find_related_memories(embeddings),
+            
+            # Memory classification
+            memory_type: classify_memory_type(content, context),
+            retention_priority: calculate_retention_priority(importance_score, context)
+        }
+        
+        # Store in multiple backends
+        store_episodic_memory(memory_entry)
+        update_semantic_index(memory_entry)
+        add_to_vector_index(memory_entry.embeddings, memory_entry.id)
+        
+        # Update memory networks
+        update_memory_associations(memory_entry)
+        
+        log "💾 Advanced memory stored: " + memory_entry.id
+        return memory_entry.id
+    }
+    
+    # Semantic search with advanced relevance ranking
+    export semantic_search(query, limit=10, filters={}, include_context=true) {
+        # Generate query embeddings
+        query_embeddings = generate_embeddings(query)
+        
+        # Vector similarity search
+        vector_results = vector_index.search(
+            query_embeddings, 
+            limit=limit * 2  # Get more candidates for filtering
+        )
+        
+        # Filter and rank results
+        filtered_results = []
+        for result in vector_results:
+            memory = get_memory_by_id(result.id)
+            
+            # Apply filters
+            if filters.importance and memory.importance < filters.importance:
+                continue
+            end
+            
+            if filters.tags and not any(tag in memory.tags for tag in filters.tags):
+                continue  
+            end
+            
+            if filters.time_range and not in_time_range(memory.timestamp, filters.time_range):
+                continue
+            end
+            
+            # Calculate relevance score
+            relevance_score = calculate_relevance_score(
+                semantic_similarity=result.score,
+                importance=memory.importance, 
+                recency=calculate_recency_factor(memory.timestamp),
+                context_match=calculate_context_match(query, memory.context)
+            )
+            
+            # Build result entry
+            result_entry = {
+                id: memory.id,
+                content: memory.content,
+                relevance: relevance_score,
+                importance: memory.importance,
+                timestamp: memory.timestamp,
+                tags: memory.tags
+            }
+            
+            if include_context:
+                result_entry.context = memory.context
+                result_entry.emotional_context = memory.emotional_context
+            end
+            
+            filtered_results.append(result_entry)
+        end
+        
+        # Sort by relevance and return top results
+        sorted_results = filtered_results.sort_by(lambda r: r.relevance, reverse=true)
+        return sorted_results.take(limit)
+    }
+    
+    # Memory consolidation and optimization
+    export memory_consolidation() {
+        log "🔄 Starting advanced memory consolidation..."
+        
+        consolidation_stats = {
+            memories_processed: 0,
+            duplicates_merged: 0,
+            weak_memories_archived: 0,
+            associations_strengthened: 0,
+            index_optimizations: 0
+        }
+        
+        # Phase 1: Identify and merge similar memories
+        similar_groups = find_similar_memory_groups(similarity_threshold=0.85)
+        for group in similar_groups:
+            merged_memory = merge_similar_memories(group)
+            consolidation_stats.duplicates_merged += group.length - 1
+        end
+        
+        # Phase 2: Archive low-importance, old memories
+        weak_memories = find_weak_memories(
+            min_age_days=30,
+            max_importance=3.0,
+            min_access_count=0
+        )
+        
+        for memory in weak_memories:
+            archive_memory(memory.id)
+            consolidation_stats.weak_memories_archived += 1
+        end
+        
+        # Phase 3: Strengthen important memory associations
+        important_memories = get_memories_by_importance(min_importance=8.0)
+        for memory in important_memories:
+            strengthen_memory_associations(memory.id)
+            consolidation_stats.associations_strengthened += 1
+        end
+        
+        # Phase 4: Optimize vector indices
+        optimize_vector_index()
+        rebuild_semantic_index()
+        consolidation_stats.index_optimizations = 2
+        
+        # Phase 5: Update memory statistics
+        update_memory_statistics()
+        
+        consolidation_stats.memories_processed = count_total_memories()
+        
+        log "✅ Memory consolidation complete:"
+        log "   Processed: " + consolidation_stats.memories_processed + " memories"
+        log "   Merged: " + consolidation_stats.duplicates_merged + " duplicates"  
+        log "   Archived: " + consolidation_stats.weak_memories_archived + " weak memories"
+        log "   Strengthened: " + consolidation_stats.associations_strengthened + " associations"
+        
+        return consolidation_stats
+    }
+    
+    # Memory system statistics and health
+    export get_memory_stats() {
+        stats = {
+            # Basic counts
+            total_memories: count_total_memories(),
+            episodic_memories: count_episodic_memories(),
+            semantic_memories: count_semantic_memories(),
+            
+            # Storage usage
+            database_size_mb: get_database_size() / (1024 * 1024),
+            vector_index_size_mb: get_vector_index_size() / (1024 * 1024),
+            
+            # Memory distribution
+            importance_distribution: get_importance_distribution(),
+            category_distribution: get_category_distribution(),
+            temporal_distribution: get_temporal_distribution(),
+            
+            # Performance metrics
+            average_search_time_ms: get_average_search_time(),
+            index_efficiency: calculate_index_efficiency(),
+            memory_fragmentation: calculate_memory_fragmentation(),
+            
+            # System health
+            consistency_score: verify_memory_consistency(),
+            backup_status: get_backup_status(),
+            last_consolidation: get_last_consolidation_time()
+        }
+        
+        return stats
+    }
+    
+    # Background memory consolidation scheduler
+    define start_memory_consolidation_scheduler() {
+        # Schedule consolidation every 6 hours
+        schedule_recurring_task("memory_consolidation", 6, "hours")
+        
+        # Schedule index optimization daily at 3 AM
+        schedule_daily_task("optimize_indices", "03:00")
+        
+        # Schedule backup every 12 hours
+        schedule_recurring_task("backup_memories", 12, "hours")
+        
+        log "📅 Memory consolidation scheduler started"
+    }
+    
+    # Helper function for embedding generation
+    define generate_embeddings(text) {
+        # Use sentence transformer to generate embeddings
+        embeddings = sentence_transformer.encode(text)
+        return embeddings.normalize()  # Normalize for cosine similarity
+    }
+    
+    # Advanced relevance scoring
+    define calculate_relevance_score(semantic_similarity, importance, recency, context_match) {
+        # Weighted combination of relevance factors
+        weights = {
+            semantic: 0.4,
+            importance: 0.3,
+            recency: 0.2,
+            context: 0.1
+        }
+        
+        score = (
+            semantic_similarity * weights.semantic +
+            (importance / 10.0) * weights.importance +
+            recency * weights.recency +
+            context_match * weights.context
+        )
+        
+        return score.clamp(0.0, 1.0)
+    }
+    
+    # Plugin cleanup and state preservation
+    cleanup() {
+        log "💾 Saving advanced memory system state..."
+        
+        # Save vector index
+        save_vector_index()
+        
+        # Backup critical memories
+        backup_critical_memories()
+        
+        # Close database connections
+        close_database_connections()
+        
+        # Save consolidation state
+        save_consolidation_state()
+        
+        log "✅ Advanced Memory System state preserved"
+    }
+}

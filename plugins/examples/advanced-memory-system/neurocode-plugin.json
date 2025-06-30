@@ -1,0 +1,34 @@
+{
+  "name": "advanced-memory-system",
+  "version": "1.2.3",
+  "description": "Enhanced episodic and semantic memory with vector search capabilities",
+  "category": "memory",
+  "author": "NeuroCode Community",
+  "license": "GPL-3.0",
+  "neurocode_version": ">=3.0.0",
+  "dependencies": {
+    "numpy": "^1.21.0",
+    "sentence-transformers": "^2.2.0",
+    "faiss-cpu": "^1.7.0"
+  },
+  "entry_point": "memory_plugin.neuro",
+  "exports": {
+    "remember_advanced": "function",
+    "semantic_search": "function",
+    "memory_consolidation": "process",
+    "get_memory_stats": "function"
+  },
+  "keywords": ["memory", "vector", "semantic", "episodic", "ai-consciousness"],
+  "repository": "https://github.com/neurocode/plugins/advanced-memory",
+  "documentation": "https://docs.neurocode.org/plugins/advanced-memory",
+  "homepage": "https://neurocode.org/plugins/advanced-memory",
+  "security_permissions": [
+    "file_system_read",
+    "memory_persistent_storage"
+  ],
+  "compatibility": {
+    "python_version": ">=3.8",
+    "operating_systems": ["linux", "macos", "windows"],
+    "gpu_acceleration": "optional"
+  }
+}
