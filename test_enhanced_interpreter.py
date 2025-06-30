@@ -1,63 +1,108 @@
 #!/usr/bin/env python3
 """
-Test the enhanced interpreter with SyntaxTree integration
+Enhanced Interpreter Integration Test
+===================================
+
+Test the integration of the enhanced SyntaxTree parser with the main interpreter.
 """
 
 import sys
-from pathlib import Path
+import os
 
-# Add core directory to path
-project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root / "core"))
+# Add project root to Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-try:
-    from interpreter import NeuroCodeInterpreter
+from core.interpreter import NeuroCodeInterpreter
+
+def test_enhanced_interpreter():
+    """Test the enhanced interpreter with SyntaxTree parsing"""
+    print("🔄 Testing Enhanced Interpreter Integration...")
+    print("=" * 60)
     
-    def test_enhanced_interpreter():
-        print("🔄 Testing Enhanced NeuroCode Interpreter with SyntaxTree Integration")
-        print("=" * 70)
+    # Create interpreter instance
+    interpreter = NeuroCodeInterpreter()
+    
+    # Test data
+    test_scripts = [
+        {
+            "name": "Basic NeuroCode",
+            "code": '''goal: optimize system performance priority: high
+remember("system optimized") as "maintenance"
+assistant: "analyze current system bottlenecks"
+plugin: sysmon status''',
+        },
+        {
+            "name": "Enhanced Memory Operations",
+            "code": '''memory.search("optimization")
+recall "maintenance" since "today"
+memory.pattern("performance", frequency="daily")''',
+        },
+        {
+            "name": "Function Definition",
+            "code": '''define process_data(input_file, output_format)
+    result = load_data(input_file)
+    return format_output(result, output_format)
+end''',
+        },
+        {
+            "name": "Control Flow",
+            "code": '''if system_load > 80:
+    plugin: alert high_load
+else:
+    remember("system normal") as "monitoring"
+end''',
+        }
+    ]
+    
+    # Test each script
+    for i, test in enumerate(test_scripts, 1):
+        print(f"\n📝 Test {i}: {test['name']}")
+        print("-" * 40)
         
-        # Create interpreter instance
-        interpreter = NeuroCodeInterpreter()
-        
-        # Test various NeuroCode constructs
-        test_commands = [
-            'goal: "optimize system performance" priority: high',
-            'remember("system optimized") as "maintenance"',
-            'assistant: "analyze current system bottlenecks"',
-            'plugin: sysmon status',
-            'recall "maintenance"'
-        ]
-        
-        print("📝 Testing NeuroCode commands:")
-        for i, cmd in enumerate(test_commands, 1):
-            print(f"\n{i}. Command: {cmd}")
+        # Test enhanced parsing
+        if interpreter.use_enhanced_parser:
+            print("🚀 Using Enhanced Parser:")
             try:
-                result = interpreter.execute(cmd)
+                result = interpreter.execute_enhanced(test['code'])
                 print(f"   ✅ Result: {result}")
             except Exception as e:
                 print(f"   ❌ Error: {e}")
-        
-        print("\n🎯 Enhanced interpreter test completed!")
-        
-        # Test syntax tree parsing specifically
-        if interpreter.syntax_parser:
-            print("\n📊 Testing SyntaxTree Parser Integration:")
-            test_line = 'goal: "test parsing" priority: high'
-            try:
-                result = interpreter._try_syntax_tree_parsing(test_line)
-                if result:
-                    print(f"   ✅ SyntaxTree parsed: {result}")
-                else:
-                    print("   ℹ️ SyntaxTree parsing fell back to standard parsing")
-            except Exception as e:
-                print(f"   ❌ SyntaxTree error: {e}")
         else:
-            print("   ⚠️ SyntaxTree parser not available")
-    
-    if __name__ == "__main__":
-        test_enhanced_interpreter()
+            print("⚠️  Enhanced parser not available")
         
-except ImportError as e:
-    print(f"❌ Import error: {e}")
-    print("Make sure all core modules are available")
+        # Test standard parsing for comparison
+        print("\n🔄 Standard Parser Comparison:")
+        try:
+            # Test line by line for standard parser
+            lines = test['code'].strip().split('\n')
+            for line in lines:
+                if line.strip():
+                    result = interpreter.execute(line.strip())
+                    if result:
+                        print(f"   📤 {line.strip()} → {result}")
+        except Exception as e:
+            print(f"   ❌ Standard parser error: {e}")
+    
+    print("\n" + "=" * 60)
+    print("🎯 Enhanced interpreter integration test completed!")
+    
+    # Test syntax tree analysis
+    print("\n📊 Syntax Tree Analysis:")
+    if interpreter.use_enhanced_parser:
+        from core.syntax_tree import parse_neurocode, analyze_syntax_tree
+        
+        sample_code = '''goal: test parsing priority: medium
+remember("test data") as "testing"
+assistant: "help with analysis"'''
+        
+        try:
+            tree = parse_neurocode(sample_code)
+            stats = analyze_syntax_tree(tree)
+            print(f"   📈 Tree Statistics: {stats}")
+        except Exception as e:
+            print(f"   ❌ Tree analysis error: {e}")
+    
+    return True
+
+if __name__ == "__main__":
+    test_enhanced_interpreter()

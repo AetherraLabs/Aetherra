@@ -8,17 +8,6 @@ import traceback
 from datetime import datetime
 from typing import Any, List
 
-# Import the new SyntaxTree parser
-try:
-    from .syntax_tree import NeuroCodeParser, SyntaxTreeVisitor
-except ImportError:
-    try:
-        from syntax_tree import NeuroCodeParser, SyntaxTreeVisitor
-    except ImportError:
-        # Fallback for when syntax_tree is not available
-        NeuroCodeParser = None
-        SyntaxTreeVisitor = None
-
 # Use robust import strategy with proper fallbacks
 try:
     # Try relative imports first (when run as module)
@@ -265,6 +254,19 @@ except ImportError:
     # Fallback if stdlib not available
     stdlib_manager = None
 
+# Import the enhanced syntax tree parser
+try:
+    from .syntax_tree import parse_neurocode, SyntaxTreeVisitor, SyntaxNode, NodeType
+except ImportError:
+    try:
+        from syntax_tree import parse_neurocode, SyntaxTreeVisitor, SyntaxNode, NodeType
+    except ImportError:
+        # Fallback if syntax tree not available
+        parse_neurocode = None
+        SyntaxTreeVisitor = object  # Use object as base class if SyntaxTreeVisitor not available
+        SyntaxNode = None
+        NodeType = None
+
 
 class NeuroCodeInterpreter:
     """
@@ -300,9 +302,10 @@ class NeuroCodeInterpreter:
         # Standard library manager
         self.stdlib = stdlib_manager
 
-        # Enhanced syntax tree parser
-        self.syntax_parser = NeuroCodeParser() if NeuroCodeParser else None
-        self.syntax_visitor = SyntaxTreeVisitor() if SyntaxTreeVisitor else None
+        # Enhanced parsing with SyntaxTree
+        self.use_enhanced_parser = parse_neurocode is not None
+        if self.use_enhanced_parser:
+            self.syntax_visitor = NeuroExecutionVisitor(self)
 
         # Create backup directory if it doesn't exist
         if not os.path.exists(self.backup_dir):
@@ -332,12 +335,6 @@ class NeuroCodeInterpreter:
 
     def _try_enhanced_parsing(self, line):
         """Try enhanced parsing patterns for better NeuroCode support"""
-        
-        # Try SyntaxTree parser first for comprehensive parsing
-        if self.syntax_parser:
-            syntax_result = self._try_syntax_tree_parsing(line)
-            if syntax_result:
-                return syntax_result
 
         # Enhanced remember() parsing with multiple tags and metadata
         if "remember(" in line and " as " in line:
@@ -366,107 +363,6 @@ class NeuroCodeInterpreter:
                 return enhanced_result
 
         return None
-
-    def _try_syntax_tree_parsing(self, line):
-        """Try parsing with the new SyntaxTree parser for advanced NeuroCode constructs"""
-        try:
-            # Parse the line using the syntax tree parser
-            syntax_tree = self.syntax_parser.parse(line)
-            
-            if syntax_tree and syntax_tree.children:
-                # Use the visitor to extract execution information
-                if self.syntax_visitor:
-                    self.syntax_visitor.visit(syntax_tree)
-                    
-                    # Execute based on parsed nodes
-                    results = []
-                    for node in syntax_tree.children:
-                        result = self._execute_syntax_node(node)
-                        if result:
-                            results.append(result)
-                    
-                    if results:
-                        return "\n".join(results)
-                        
-                # Fallback: basic node execution
-                results = []
-                for node in syntax_tree.children:
-                    result = self._execute_syntax_node(node)
-                    if result:
-                        results.append(result)
-                
-                if results:
-                    return "\n".join(results)
-                    
-        except Exception:
-            # If syntax tree parsing fails, fall back to standard parsing
-            pass
-            
-        return None
-
-    def _execute_syntax_node(self, node):
-        """Execute a single syntax tree node"""
-        if not node or not hasattr(node, 'type'):
-            return None
-            
-        node_type = node.type.value if hasattr(node.type, 'value') else str(node.type)
-        
-        if node_type == 'goal':
-            goal_text = node.value or ''
-            priority = node.metadata.get('priority', 'medium') if node.metadata else 'medium'
-            return self._handle_goal_node(goal_text, priority)
-            
-        elif node_type == 'memory':
-            content = node.value or ''
-            tags = node.metadata.get('tags', []) if node.metadata else []
-            category = node.metadata.get('category', None) if node.metadata else None
-            return self._handle_memory_node(content, tags, category)
-            
-        elif node_type == 'assistant':
-            question = node.value or ''
-            return self._handle_assistant_node(question)
-            
-        elif node_type == 'plugin':
-            plugin_name = node.value or ''
-            args = node.metadata.get('args', {}) if node.metadata else {}
-            return self._handle_plugin_node(plugin_name, args)
-            
-        elif node_type == 'function_def':
-            func_name = node.value or ''
-            params = node.metadata.get('parameters', []) if node.metadata else []
-            body = node.metadata.get('body', []) if node.metadata else []
-            return self._handle_function_node(func_name, params, body)
-            
-        return None
-
-    def _handle_goal_node(self, goal_text, priority):
-        """Handle goal syntax node"""
-        result = self.goal_system.set_goal(goal_text, priority)
-        return f"🎯 Goal Set: {goal_text} (Priority: {priority})"
-
-    def _handle_memory_node(self, content, tags, category):
-        """Handle memory syntax node"""
-        result = self.memory.remember(content, tags=tags, category=category)
-        tag_str = ', '.join(tags) if tags else 'general'
-        return f"💾 Remembered: {content} | Tags: {tag_str}"
-
-    def _handle_assistant_node(self, question):
-        """Handle assistant syntax node"""
-        return self._handle_assistant(f"assistant: {question}")
-
-    def _handle_plugin_node(self, plugin_name, args):
-        """Handle plugin syntax node"""
-        if args:
-            args_str = ', '.join([f"{k}={v}" for k, v in args.items()])
-            return self._handle_plugin(f"plugin: {plugin_name}({args_str})")
-        else:
-            return self._handle_plugin(f"plugin: {plugin_name}")
-
-    def _handle_function_node(self, func_name, params, body):
-        """Handle function definition syntax node"""
-        params_str = ', '.join(params)
-        body_str = '\n'.join(body)
-        return f"🔧 Function Defined: {func_name}({params_str})\n{body_str}"
 
     def _parse_enhanced_remember(self, line):
         """
@@ -1369,7 +1265,7 @@ class NeuroCodeInterpreter:
             return self.goal_system.check_goal_progress(goal_ref)
 
     def _handle_memory_pattern_condition(self, line):
-        """Handle if memory.pattern() conditional statements"""
+        r"""Handle if memory\.pattern() conditional statements"""
         # Parse: if memory\.pattern("pattern", frequency="threshold"):
         pattern_match = re.search(
             r'memory\.pattern\(["\']([^"\']+)["\']\s*(?:,\s*frequency=["\']([^"\']+)["\']\s*)?\)',
@@ -1785,3 +1681,215 @@ class NeuroCodeInterpreter:
         except Exception as e:
             print(f"❌ [Load Error] {e}")
             self.debug_system.detect_and_store_error(e, f"Loading file: {filename}", filename)
+
+    def execute_enhanced(self, code):
+        """Enhanced execution using SyntaxTree parser - separates parsing from execution"""
+        if not self.use_enhanced_parser or parse_neurocode is None:
+            return "Enhanced parser not available, falling back to standard execution"
+        
+        try:
+            # Parse the code into a syntax tree
+            syntax_tree = parse_neurocode(code)
+            
+            # Execute using the visitor pattern
+            result = self.syntax_visitor.visit(syntax_tree)
+            
+            return result
+        except Exception as e:
+            return f"Enhanced execution failed: {e}. Falling back to standard parsing."
+
+    def execute_syntax_tree(self, syntax_tree):
+        """Execute a pre-parsed syntax tree"""
+        if not self.use_enhanced_parser:
+            return "Enhanced parser not available"
+
+        try:
+            result = self.syntax_visitor.visit(syntax_tree)
+            return result
+        except Exception as e:
+            return f"Syntax tree execution failed: {e}"
+
+
+class NeuroExecutionVisitor:
+    """Execution visitor that runs NeuroCode syntax tree nodes"""
+
+    def __init__(self, interpreter):
+        self.interpreter = interpreter
+        # Initialize base visitor if available
+        if SyntaxTreeVisitor and SyntaxTreeVisitor is not object:
+            super().__init__()
+
+    def visit(self, node):
+        """Visit a node using the visitor pattern"""
+        method_name = f'visit_{node.type.value}'
+        visitor = getattr(self, method_name, self.generic_visit)
+        return visitor(node)
+
+    def generic_visit(self, node):
+        """Default visitor for unhandled node types"""
+        children = getattr(node, 'children', []) or []
+        results = []
+        for child in children:
+            result = self.visit(child)
+            if result:
+                results.append(result)
+        return results
+
+    def visit_program(self, node):
+        """Execute a program node"""
+        results = []
+        for child in node.children:
+            result = self.visit(child)
+            if result:
+                results.append(result)
+        return "\n".join(str(r) for r in results if r)
+
+    def visit_goal(self, node):
+        """Execute a goal node"""
+        goal_text = node.value
+        priority = node.metadata.get('priority', 'medium')
+
+        # Use the goal system to set the goal
+        self.interpreter.goal_system.set_goal(goal_text, priority)
+
+        return f"🎯 Goal set: {goal_text} (Priority: {priority})"
+
+    def visit_memory(self, node):
+        """Execute a memory operation node"""
+        action = node.value['action']
+
+        if action == 'remember':
+            content = node.value['content']
+            tag = node.value.get('tag', 'general')
+            tags = [tag] if tag else ['general']
+            
+            self.interpreter.memory.remember(content, tags)
+            return f"💾 Remembered: '{content}' as '{tag}'"
+
+        elif action == 'recall':
+            tag = node.value.get('tag')
+            since = node.value.get('since')
+            category = node.value.get('category')
+
+            # Build query parameters
+            time_filter = since if since else None
+
+            # Recall memories
+            memories = self.interpreter.memory.recall(tags=[tag] if tag else None, 
+                                                    category=category, 
+                                                    time_filter=time_filter)
+
+            if memories:
+                return f"🧠 Recalled {len(memories)} memories:\n" + "\n".join(f"  • {m}" for m in memories[:5])
+            else:
+                return f"🔍 No memories found for tag '{tag}'"
+
+        elif action == 'search':
+            keyword = node.value['keyword']
+            results = self.interpreter.memory.search(keyword)
+
+            if results:
+                return f"🔍 Found {len(results)} memories containing '{keyword}':\n" + "\n".join(f"  • {r}" for r in results[:5])
+            else:
+                return f"🔍 No memories found containing '{keyword}'"
+
+        elif action == 'pattern':
+            pattern = node.value['pattern']
+            frequency = node.value.get('frequency', 'weekly')
+
+            analysis = self.interpreter.memory.pattern_analysis(pattern, frequency)
+            return f"📊 Pattern analysis for '{pattern}': {analysis['matches']} matches, threshold: {analysis['meets_threshold']}"
+
+        return f"Memory operation: {action}"
+
+    def visit_assistant(self, node):
+        """Execute an assistant call node"""
+        prompt = node.value
+
+        try:
+            # Use the AI runtime if available
+            response = ask_ai(prompt, temperature=0.2)
+            return f"🤖 Assistant: {response}"
+        except Exception as e:
+            return f"🤖 Assistant: {prompt} (AI not available: {e})"
+
+    def visit_plugin(self, node):
+        """Execute a plugin call node"""
+        plugin_name = node.value['name']
+        plugin_args = node.value['args']
+
+        try:
+            if plugin_name in PLUGIN_REGISTRY:
+                # Parse arguments if needed
+                result = PLUGIN_REGISTRY[plugin_name](plugin_args)
+                return f"🔌 Plugin '{plugin_name}': {result}"
+            else:
+                return f"🔌 Plugin '{plugin_name}' not found. Available: {list(PLUGIN_REGISTRY.keys())}"
+        except Exception as e:
+            return f"🔌 Plugin '{plugin_name}' error: {e}"
+
+    def visit_function_def(self, node):
+        """Execute a function definition node"""
+        func_name = node.value['name']
+        params = node.value['params']
+
+        # Store function definition for later execution
+        self.interpreter.functions.define_function(func_name, params, node.children)
+
+        return f"📝 Function defined: {func_name}({', '.join(params)})"
+
+    def visit_function_call(self, node):
+        """Execute a function call node"""
+        func_name = node.value['name']
+        args = node.value['args']
+
+        try:
+            result = self.interpreter.functions.call_function(func_name, args)
+            return f"🔧 Function '{func_name}' result: {result}"
+        except Exception as e:
+            return f"🔧 Function '{func_name}' error: {e}"
+
+    def visit_variable_assign(self, node):
+        """Execute a variable assignment node"""
+        var_name = node.value['name']
+        var_value = node.value['value']
+
+        # Store in interpreter's variable context
+        if not hasattr(self.interpreter, 'variables'):
+            self.interpreter.variables = {}
+
+        self.interpreter.variables[var_name] = var_value
+        return f"📋 Variable assigned: {var_name} = {var_value}"
+
+    def visit_conditional(self, node):
+        """Execute a conditional node"""
+        if node.value['type'] == 'if':
+            condition = node.value['condition']
+            return f"🔀 If condition: {condition}"
+        else:
+            return "🔀 Else block"
+
+    def visit_loop(self, node):
+        """Execute a loop node"""
+        if node.value['type'] == 'for':
+            var_name = node.value['var']
+            iterable = node.value['iterable']
+            return f"🔄 For loop: {var_name} in {iterable}"
+        elif node.value['type'] == 'while':
+            condition = node.value['condition']
+            return f"🔄 While loop: {condition}"
+
+    def visit_expression(self, node):
+        """Execute an expression node"""
+        expression = node.value
+
+        # Try to evaluate simple expressions
+        try:
+            # For now, just return the expression
+            return f"📐 Expression: {expression}"
+        except Exception as e:
+            return f"📐 Expression error: {e}"
+
+    def visit_comment(self, node):
+        """Execute a comment node (no-op)"""
+        return None  # Comments don't produce output
