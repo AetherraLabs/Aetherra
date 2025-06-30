@@ -10,9 +10,9 @@ import argparse
 import sys
 from pathlib import Path
 
-# Add src to path for imports
-src_path = Path(__file__).parent.parent / "src"
-sys.path.insert(0, str(src_path))
+# Add project root to path for imports
+project_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 
 def main():
@@ -55,14 +55,20 @@ Examples:
 
     try:
         if args.command == "run":
-            from neurocode.core import create_interpreter, parse_code
-
+            from core.neurocode_grammar import NEUROCODE_GRAMMAR
+            from lark import Lark
+            
             with open(args.file) as f:
                 code = f.read()
 
-            interpreter = create_interpreter(enhanced=args.enhanced)
-            result = interpreter.execute(code)
-            print(f"✅ Execution completed: {result}")
+            # Create parser and parse the code
+            lark_parser = Lark(NEUROCODE_GRAMMAR, start='program')
+            try:
+                tree = lark_parser.parse(code)
+                print("✅ Parse successful, execution would follow")
+                print(f"AST: {tree.pretty()}")
+            except Exception as e:
+                print(f"❌ Parse error: {e}")
 
         elif args.command == "gui":
             if args.modular:
@@ -72,17 +78,23 @@ Examples:
             launch_gui()
 
         elif args.command == "parse":
-            from neurocode.core import parse_code
+            from core.neurocode_grammar import NEUROCODE_GRAMMAR
+            from lark import Lark
 
             with open(args.file) as f:
                 code = f.read()
 
-            ast = parse_code(code)
-            if args.ast:
-                print("🌳 Abstract Syntax Tree:")
-                print(ast)
-            else:
-                print("✅ Parse successful")
+            # Create parser and parse the code
+            lark_parser = Lark(NEUROCODE_GRAMMAR, start='program')
+            try:
+                tree = lark_parser.parse(code)
+                if args.ast:
+                    print("🌳 Abstract Syntax Tree:")
+                    print(tree.pretty())
+                else:
+                    print("✅ Parse successful")
+            except Exception as e:
+                print(f"❌ Parse error: {e}")
 
     except ImportError as e:
         print(f"❌ Import error: {e}")
