@@ -167,7 +167,7 @@ CNAME   www     neurocode.dev              Auto
 ## 📞 Contact
 
 - **Website**: https://neurocode.dev
-- **GitHub**: https://github.com/VirtualVerse-Corporation/NeuroCode
+- **GitHub**: https://github.com/Zyonic88/NeuroCode
 - **Email**: contact@neurocode.dev
 
 ---

@@ -24,7 +24,7 @@
   "homepage": "https://neurocode.dev",
   "repository": {
     "type": "git",
-    "url": "https://github.com/VirtualVerse-Corporation/NeuroCode.git"
+    "url": "https://github.com/Zyonic88/NeuroCode.git"
   },
   "devDependencies": {
     "live-server": "^1.2.2",

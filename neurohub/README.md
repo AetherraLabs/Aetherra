@@ -420,7 +420,7 @@ This project is licensed under the GPL-3.0 License - see the [LICENSE](../LICENS
 ## 🆘 Support
 
 - **Documentation**: [neurocode.dev/docs](https://neurocode.dev/docs)
-- **Issues**: [GitHub Issues](https://github.com/VirtualVerse-Corporation/NeuroCode/issues)
+- **Issues**: [GitHub Issues](https://github.com/Zyonic88/NeuroCode/issues)
 - **Community**: [NeuroCode Community](https://neurocode.dev/community)
 
 ---

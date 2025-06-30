@@ -36,11 +36,11 @@
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/VirtualVerse-Corporation/NeuroCode.git",
+    "url": "https://github.com/Zyonic88/NeuroCode.git",
     "directory": "neurohub"
   },
   "bugs": {
-    "url": "https://github.com/VirtualVerse-Corporation/NeuroCode/issues"
+    "url": "https://github.com/Zyonic88/NeuroCode/issues"
   },
   "homepage": "https://neurocode.dev/neurohub",
   "engines": {

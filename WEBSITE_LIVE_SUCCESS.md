@@ -141,7 +141,7 @@
 
 **Live Site**: <https://c4e0fc07.neurocode-website.pages.dev/>  
 **Production (soon)**: <https://neurocode.dev>  
-**Repository**: <https://github.com/VirtualVerse-Corporation/NeuroCode>  
+**Repository**: <https://github.com/Zyonic88/NeuroCode>  
 **Documentation**: All linked from website
 
 ---
