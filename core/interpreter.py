@@ -243,8 +243,16 @@ except ImportError:
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "stdlib"))
-from stdlib import stdlib_manager
+# Add paths for relative imports
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(project_root / "src" / "neurocode"))
+
+try:
+    from stdlib import stdlib_manager
+except ImportError:
+    # Fallback if stdlib not available
+    stdlib_manager = None
 
 
 class NeuroCodeInterpreter:
