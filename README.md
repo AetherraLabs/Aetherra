@@ -505,7 +505,7 @@ python scripts/view_overview.py --stats-only
 - **📁 Files**: 650+ organized files
 - **🧠 Core Modules**: 65+ modular components
 - **🧪 Tests**: 56+ test files
-- **🌐 Website**: Live at [httpsneurocode.dev](https://httpsneurocode.dev)
+- **🌐 Website**: Deploying to [neurocode.dev](https://neurocode.dev) (DNS propagating)
 - **🛡️ Protection**: Comprehensive backup system active
 - **📖 Documentation**: Complete system documentation
 
