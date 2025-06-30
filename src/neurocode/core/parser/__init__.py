@@ -26,6 +26,7 @@ def create_parser(enhanced=True):
     Returns a function that can parse code, since the actual parser
     needs tokens which come from lexing the code first.
     """
+
     def parse_function(code: str):
         # Tokenize the code first
         lexer = NeuroCodeLexer(code)

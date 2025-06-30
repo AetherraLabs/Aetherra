@@ -55,14 +55,15 @@ Examples:
 
     try:
         if args.command == "run":
-            from core.neurocode_grammar import NEUROCODE_GRAMMAR
             from lark import Lark
-            
+
+            from core.neurocode_grammar import NEUROCODE_GRAMMAR
+
             with open(args.file) as f:
                 code = f.read()
 
             # Create parser and parse the code
-            lark_parser = Lark(NEUROCODE_GRAMMAR, start='program')
+            lark_parser = Lark(NEUROCODE_GRAMMAR, start="program")
             try:
                 tree = lark_parser.parse(code)
                 print("✅ Parse successful, execution would follow")
@@ -78,14 +79,15 @@ Examples:
             launch_gui()
 
         elif args.command == "parse":
-            from core.neurocode_grammar import NEUROCODE_GRAMMAR
             from lark import Lark
+
+            from core.neurocode_grammar import NEUROCODE_GRAMMAR
 
             with open(args.file) as f:
                 code = f.read()
 
             # Create parser and parse the code
-            lark_parser = Lark(NEUROCODE_GRAMMAR, start='program')
+            lark_parser = Lark(NEUROCODE_GRAMMAR, start="program")
             try:
                 tree = lark_parser.parse(code)
                 if args.ast:
