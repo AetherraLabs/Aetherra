@@ -30,6 +30,9 @@ class NodeType(Enum):
     EXPRESSION = "expression"
     LITERAL = "literal"
     COMMENT = "comment"
+    AGENT = "agent"
+    AGENT_MODE = "agent_mode"
+    AGENT_GOAL = "agent_goal"
 
 
 @dataclass
@@ -80,6 +83,15 @@ class NeuroCodeParser:
             "while_loop": re.compile(r"^\s*while\s+(.+?):\s*$"),
             "end_block": re.compile(r"^\s*end\s*$"),
             "expression": re.compile(r"^\s*(.+)$"),
+            # Agent control patterns
+            "agent_mode": re.compile(r'^\s*agent\.mode\s*=\s*"([^"]+)"\s*$'),
+            "agent_start": re.compile(r"^\s*agent\.start\(\)\s*$"),
+            "agent_stop": re.compile(r"^\s*agent\.stop\(\)\s*$"),
+            "agent_goal_add": re.compile(
+                r'^\s*agent\.add_goal\("([^"]+)"(?:,\s*priority="([^"]+)")?\)\s*$'
+            ),
+            "agent_goals_clear": re.compile(r"^\s*agent\.clear_goals\(\)\s*$"),
+            "agent_status": re.compile(r"^\s*agent\.status\(\)\s*$"),
         }
 
     def parse(self, code: str) -> SyntaxNode:
@@ -275,9 +287,51 @@ class NeuroCodeParser:
         if self.patterns["end_block"].match(line):
             return None  # End blocks are handled by block parsing logic
 
-        # Generic expression
-        if match := self.patterns["expression"].match(line):
-            return SyntaxNode(NodeType.EXPRESSION, value=match.group(1), line_number=line_number)
+        # Agent control operations
+        if match := self.patterns["agent_mode"].match(line):
+            mode = match.group(1)
+            return SyntaxNode(
+                NodeType.AGENT_MODE,
+                value={"action": "set_mode", "mode": mode},
+                line_number=line_number,
+            )
+
+        if match := self.patterns["agent_start"].match(line):
+            return SyntaxNode(
+                NodeType.AGENT,
+                value={"action": "start"},
+                line_number=line_number,
+            )
+
+        if match := self.patterns["agent_stop"].match(line):
+            return SyntaxNode(
+                NodeType.AGENT,
+                value={"action": "stop"},
+                line_number=line_number,
+            )
+
+        if match := self.patterns["agent_goal_add"].match(line):
+            goal_text = match.group(1)
+            priority = match.group(2) or "medium"
+            return SyntaxNode(
+                NodeType.AGENT_GOAL,
+                value={"action": "add", "goal": goal_text, "priority": priority},
+                line_number=line_number,
+            )
+
+        if match := self.patterns["agent_goals_clear"].match(line):
+            return SyntaxNode(
+                NodeType.AGENT_GOAL,
+                value={"action": "clear"},
+                line_number=line_number,
+            )
+
+        if match := self.patterns["agent_status"].match(line):
+            return SyntaxNode(
+                NodeType.AGENT,
+                value={"action": "status"},
+                line_number=line_number,
+            )
 
         return None
 
@@ -399,6 +453,35 @@ class SyntaxTreeVisitor:
     def visit_comment(self, node: SyntaxNode) -> str:
         """Visit a comment node"""
         return f"Comment: {node.value}"
+
+    def visit_agent(self, node: SyntaxNode) -> str:
+        """Visit an agent operation node"""
+        action = node.value["action"]
+        if action == "start":
+            return "Start Agent"
+        elif action == "stop":
+            return "Stop Agent"
+        elif action == "status":
+            return "Get Agent Status"
+        else:
+            return f"Agent: {action}"
+
+    def visit_agent_mode(self, node: SyntaxNode) -> str:
+        """Visit an agent mode setting node"""
+        mode = node.value["mode"]
+        return f"Set Agent Mode: {mode}"
+
+    def visit_agent_goal(self, node: SyntaxNode) -> str:
+        """Visit an agent goal operation node"""
+        action = node.value["action"]
+        if action == "add":
+            goal = node.value["goal"]
+            priority = node.value.get("priority", "medium")
+            return f"Add Agent Goal: '{goal}' (Priority: {priority})"
+        elif action == "clear":
+            return "Clear Agent Goals"
+        else:
+            return f"Agent Goal: {action}"
 
 
 def parse_neurocode(code: str) -> SyntaxNode:
