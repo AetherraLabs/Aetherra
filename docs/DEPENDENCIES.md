@@ -230,7 +230,7 @@ pip install -r requirements.txt
 - [Installation Guide](docs/INSTALLATION.md)
 - [Getting Started Tutorial](docs/TUTORIAL.md)
 - [AI Provider Setup](docs/AI_SETUP.md)
-- [Development Setup](CONTRIBUTING.md)
+- [Development Setup](docs/guides/CONTRIBUTING.md)
 
 ---
 

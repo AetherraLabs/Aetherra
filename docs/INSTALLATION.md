@@ -167,7 +167,7 @@ pip install PySide6 qtawesome
 1. **Read the Documentation**: Check out `NEUROCODE_LANGUAGE_SPEC.md`
 2. **Try Examples**: Run the example programs
 3. **Join the Community**: Participate in GitHub Discussions
-4. **Contribute**: See `CONTRIBUTING.md` for how to help
+4. **Contribute**: See `docs/guides/CONTRIBUTING.md` for how to help
 
 ## 🌟 Advanced Features
 

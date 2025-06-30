@@ -752,7 +752,7 @@ Want to contribute? Dream. Build. Inject AI into your code.
 
 ## 🤝 **Contributing**
 
-NeuroCode is open source and welcomes contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
+NeuroCode is open source and welcomes contributions! See our [Contributing Guide](docs/guides/CONTRIBUTING.md) for details.
 
 **📋 Change Management**: All major changes follow our [Change Management Protocol](CHANGE_MANAGEMENT_PROTOCOL.md) to ensure proper documentation, version control, and deployment standards.
 
