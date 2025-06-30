@@ -62,7 +62,9 @@ class NeuroCodeParser:
             "goal": re.compile(r"^\s*goal:\s*(.+?)(?:\s+priority:\s*(\w+))?$"),
             "memory_remember": re.compile(r'^\s*remember\("([^"]+)"\)(?:\s+as\s+"([^"]+)")?$'),
             "memory_recall": re.compile(r'^\s*recall\s+"([^"]+)"$'),
-            "memory_recall_adv": re.compile(r'^\s*recall\s+"([^"]+)"(?:\s+since\s+"([^"]+)")?(?:\s+in\s+category\s+"([^"]+)")?\s*$'),
+            "memory_recall_adv": re.compile(
+                r'^\s*recall\s+"([^"]+)"(?:\s+since\s+"([^"]+)")?(?:\s+in\s+category\s+"([^"]+)")?\s*$'
+            ),
             "memory_search": re.compile(r'^\s*memory\.search\("([^"]+)"\)\s*$'),
             "memory_pattern": re.compile(
                 r'^\s*memory\.pattern\("([^"]+)"(?:,\s*frequency="([^"]+)")?\)$'

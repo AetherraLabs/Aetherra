@@ -128,22 +128,22 @@ end
 def test_enhanced_memory_operations():
     """Test enhanced memory operations parsing"""
     print("🔄 Testing enhanced memory operations...")
-    
-    enhanced_memory_code = '''memory.search("optimization")
+
+    enhanced_memory_code = """memory.search("optimization")
 recall "maintenance" since "today" in category "system"
-memory.pattern("performance", frequency="daily")'''
-    
+memory.pattern("performance", frequency="daily")"""
+
     tree = parse_neurocode(enhanced_memory_code)
     visitor = SyntaxTreeVisitor()
-    
+
     print("📝 Enhanced memory operations:")
     results = visitor.visit(tree)
     for i, result in enumerate(results, 1):
         print(f"   {i}. {result}")
-    
+
     stats = analyze_syntax_tree(tree)
     print(f"📊 Enhanced memory stats: {stats['node_counts']}")
-    
+
     print("✅ Enhanced memory operations test passed!")
     return tree
 

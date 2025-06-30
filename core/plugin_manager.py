@@ -35,11 +35,35 @@ class PluginMetadata:
         }
 
 
+@dataclass
+class PluginIntent:
+    """Plugin intent declaration for assistant discovery"""
+
+    purpose: str  # What the plugin is used for (e.g., "optimization", "analysis")
+    triggers: List[str] = field(default_factory=list)  # Keywords that should trigger this plugin
+    scenarios: List[str] = field(default_factory=list)  # Use cases where this plugin applies
+    ai_description: str = ""  # AI-friendly description for LLM understanding
+    example_usage: str = ""  # Example of how to use this plugin
+    confidence_boost: float = 1.0  # Multiplier for relevance scoring
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert intent to dictionary for serialization"""
+        return {
+            "purpose": self.purpose,
+            "triggers": self.triggers,
+            "scenarios": self.scenarios,
+            "ai_description": self.ai_description,
+            "example_usage": self.example_usage,
+            "confidence_boost": self.confidence_boost,
+        }
+
+
 # Enhanced plugin registry with metadata
 PLUGIN_REGISTRY: Dict[str, Callable] = {}
 PLUGIN_METADATA: Dict[str, PluginMetadata] = {}
+PLUGIN_INTENTS: Dict[str, PluginIntent] = {}
 
-PLUGIN_DIR = os.path.join(os.path.dirname(__file__), "..", "plugins")
+PLUGIN_DIR = os.path.join(os.path.dirname(__file__), "..", "src", "neurocode", "plugins")
 os.makedirs(PLUGIN_DIR, exist_ok=True)
 
 
@@ -51,9 +75,16 @@ def register_plugin(
     author: str = "Unknown",
     category: str = "general",
     dependencies: Optional[List[str]] = None,
+    # New intent-based parameters
+    intent_purpose: Optional[str] = None,
+    intent_triggers: Optional[List[str]] = None,
+    intent_scenarios: Optional[List[str]] = None,
+    ai_description: Optional[str] = None,
+    example_usage: Optional[str] = None,
+    confidence_boost: float = 1.0,
 ):
     """
-    Enhanced plugin registration decorator with metadata support
+    Enhanced plugin registration decorator with intent and AI discovery support
 
     Args:
         name: Plugin name
@@ -63,6 +94,12 @@ def register_plugin(
         author: Plugin author
         category: Plugin category for organization
         dependencies: List of required dependencies
+        intent_purpose: What the plugin is intended for (AI discovery)
+        intent_triggers: Keywords that should trigger this plugin
+        intent_scenarios: Use cases where this plugin applies
+        ai_description: AI-friendly description for LLM understanding
+        example_usage: Example of how to use this plugin
+        confidence_boost: Multiplier for relevance scoring (default 1.0)
     """
 
     def decorator(func: Callable) -> Callable:
@@ -83,6 +120,19 @@ def register_plugin(
         )
 
         PLUGIN_METADATA[name] = metadata
+
+        # Create and store intent information
+        if intent_purpose or intent_triggers or intent_scenarios:
+            intent = PluginIntent(
+                purpose=intent_purpose or "general purpose",
+                triggers=intent_triggers or [],
+                scenarios=intent_scenarios or [],
+                ai_description=ai_description or description or func.__doc__ or "",
+                example_usage=example_usage or f"plugin: {name} <args>",
+                confidence_boost=confidence_boost,
+            )
+            PLUGIN_INTENTS[name] = intent
+
         return func
 
     return decorator
@@ -265,6 +315,225 @@ def reload_plugins():
     PLUGIN_REGISTRY.clear()
     PLUGIN_METADATA.clear()
     load_plugins()
+
+
+def discover_plugins_by_intent(
+    query: str,
+    context: Optional[str] = None,
+    max_results: int = 5,
+) -> List[Dict[str, Any]]:
+    """
+    AI-powered plugin discovery based on intent and context
+
+    Args:
+        query: User's intent or goal description
+        context: Additional context about the task
+        max_results: Maximum number of plugins to return
+
+    Returns:
+        List of relevant plugins with relevance scores
+    """
+    query_lower = query.lower()
+    context_lower = (context or "").lower()
+    combined_text = f"{query_lower} {context_lower}".strip()
+
+    relevant_plugins = []
+
+    for name, intent in PLUGIN_INTENTS.items():
+        metadata = PLUGIN_METADATA.get(name)
+        if not metadata or not metadata.enabled:
+            continue
+
+        # Calculate relevance score
+        score = 0.0
+
+        # Check purpose match
+        if intent.purpose.lower() in combined_text:
+            score += 3.0
+
+        # Check trigger words
+        for trigger in intent.triggers:
+            if trigger.lower() in combined_text:
+                score += 2.0
+
+        # Check scenarios
+        for scenario in intent.scenarios:
+            if any(word in combined_text for word in scenario.lower().split()):
+                score += 1.5
+
+        # Check capabilities
+        for capability in metadata.capabilities:
+            if capability.lower() in combined_text:
+                score += 1.0
+
+        # Check description and AI description
+        desc_text = f"{metadata.description} {intent.ai_description}".lower()
+        query_words = query_lower.split()
+        for word in query_words:
+            if word in desc_text:
+                score += 0.5
+
+        # Apply confidence boost
+        score *= intent.confidence_boost
+
+        if score > 0:
+            relevant_plugins.append(
+                {
+                    "name": name,
+                    "score": score,
+                    "metadata": metadata.to_dict(),
+                    "intent": intent.to_dict(),
+                    "reason": _generate_relevance_reason(query, intent, metadata, score),
+                }
+            )
+
+    # Sort by relevance score and return top results
+    relevant_plugins.sort(key=lambda x: x["score"], reverse=True)
+    return relevant_plugins[:max_results]
+
+
+def _generate_relevance_reason(
+    query: str,
+    intent: PluginIntent,
+    metadata: PluginMetadata,
+    score: float,
+) -> str:
+    """Generate a human-readable explanation of why a plugin is relevant"""
+    reasons = []
+
+    query_lower = query.lower()
+
+    if intent.purpose.lower() in query_lower:
+        reasons.append(f"designed for {intent.purpose}")
+
+    trigger_matches = [t for t in intent.triggers if t.lower() in query_lower]
+    if trigger_matches:
+        reasons.append(f"triggered by: {', '.join(trigger_matches)}")
+
+    capability_matches = [c for c in metadata.capabilities if c.lower() in query_lower]
+    if capability_matches:
+        reasons.append(f"provides: {', '.join(capability_matches)}")
+
+    if not reasons:
+        reasons.append("general relevance to query")
+
+    return f"Relevant because it's {' and '.join(reasons)} (score: {score:.1f})"
+
+
+def get_ai_plugin_recommendations(
+    user_goal: str,
+    current_context: Optional[str] = None,
+    include_examples: bool = True,
+) -> Dict[str, Any]:
+    """
+    Get AI-friendly plugin recommendations for assistant integration
+
+    Args:
+        user_goal: What the user wants to accomplish
+        current_context: Current state or context information
+        include_examples: Whether to include usage examples
+
+    Returns:
+        Structured recommendations for AI assistant consumption
+    """
+    discoveries = discover_plugins_by_intent(user_goal, current_context)
+
+    recommendations = {
+        "query": user_goal,
+        "context": current_context,
+        "total_found": len(discoveries),
+        "recommendations": [],
+        "summary": "",
+    }
+
+    for discovery in discoveries:
+        name = discovery["name"]
+        plugin_rec = {
+            "plugin_name": name,
+            "relevance_score": discovery["score"],
+            "description": discovery["metadata"]["description"],
+            "ai_description": discovery["intent"]["ai_description"],
+            "purpose": discovery["intent"]["purpose"],
+            "capabilities": discovery["metadata"]["capabilities"],
+            "reason": discovery["reason"],
+        }
+
+        if include_examples:
+            plugin_rec["example_usage"] = discovery["intent"]["example_usage"]
+            plugin_rec["triggers"] = discovery["intent"]["triggers"]
+            plugin_rec["scenarios"] = discovery["intent"]["scenarios"]
+
+        recommendations["recommendations"].append(plugin_rec)
+
+    # Generate summary
+    if discoveries:
+        top_plugin = discoveries[0]
+        recommendations["summary"] = (
+            f"Found {len(discoveries)} relevant plugins. "
+            f"Top recommendation: '{top_plugin['name']}' "
+            f"({top_plugin['metadata']['description']}) "
+            f"with relevance score {top_plugin['score']:.1f}"
+        )
+    else:
+        recommendations["summary"] = "No plugins found matching the specified goal or context."
+
+    return recommendations
+
+
+def register_plugin_intent(
+    plugin_name: str,
+    purpose: str,
+    triggers: Optional[List[str]] = None,
+    scenarios: Optional[List[str]] = None,
+    ai_description: Optional[str] = None,
+    example_usage: Optional[str] = None,
+    confidence_boost: float = 1.0,
+) -> bool:
+    """
+    Register intent information for an existing plugin
+
+    This allows adding intent data to plugins that were registered without it
+    """
+    if plugin_name not in PLUGIN_REGISTRY:
+        return False
+
+    intent = PluginIntent(
+        purpose=purpose,
+        triggers=triggers or [],
+        scenarios=scenarios or [],
+        ai_description=ai_description or "",
+        example_usage=example_usage or f"plugin: {plugin_name} <args>",
+        confidence_boost=confidence_boost,
+    )
+
+    PLUGIN_INTENTS[plugin_name] = intent
+    return True
+
+
+def get_plugin_discovery_stats() -> Dict[str, Any]:
+    """Get statistics about plugin discovery capabilities"""
+    total_plugins = len(PLUGIN_REGISTRY)
+    plugins_with_intent = len(PLUGIN_INTENTS)
+
+    categories = {}
+    purposes = {}
+
+    for metadata in PLUGIN_METADATA.values():
+        cat = metadata.category
+        categories[cat] = categories.get(cat, 0) + 1
+
+    for intent in PLUGIN_INTENTS.values():
+        purpose = intent.purpose
+        purposes[purpose] = purposes.get(purpose, 0) + 1
+
+    return {
+        "total_plugins": total_plugins,
+        "plugins_with_intent": plugins_with_intent,
+        "intent_coverage": f"{(plugins_with_intent/total_plugins)*100:.1f}%" if total_plugins > 0 else "0%",
+        "categories": categories,
+        "purposes": purposes,
+        "top_purposes": sorted(purposes.items(), key=lambda x: x[1], reverse=True)[:5],
+    }
 
 
 # Call this at startup to populate PLUGIN_REGISTRY

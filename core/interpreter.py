@@ -60,7 +60,7 @@ except ImportError:
         from meta_plugins import MetaPluginSystem  # type: ignore
         from plugin_manager import PLUGIN_REGISTRY  # type: ignore
     except ImportError as e:
-        print(f"⚠️ Some interpreter dependencies not available: {e}")
+        print(f"Warning: Some interpreter dependencies not available: {e}")
 
         # Create comprehensive fallback classes for graceful degradation
         class NeuroMemory:
@@ -256,10 +256,10 @@ except ImportError:
 
 # Import the enhanced syntax tree parser
 try:
-    from .syntax_tree import parse_neurocode, SyntaxTreeVisitor, SyntaxNode, NodeType
+    from .syntax_tree import NodeType, SyntaxNode, SyntaxTreeVisitor, parse_neurocode
 except ImportError:
     try:
-        from syntax_tree import parse_neurocode, SyntaxTreeVisitor, SyntaxNode, NodeType
+        from syntax_tree import NodeType, SyntaxNode, SyntaxTreeVisitor, parse_neurocode
     except ImportError:
         # Fallback if syntax tree not available
         parse_neurocode = None
@@ -1686,14 +1686,14 @@ class NeuroCodeInterpreter:
         """Enhanced execution using SyntaxTree parser - separates parsing from execution"""
         if not self.use_enhanced_parser or parse_neurocode is None:
             return "Enhanced parser not available, falling back to standard execution"
-        
+
         try:
             # Parse the code into a syntax tree
             syntax_tree = parse_neurocode(code)
-            
+
             # Execute using the visitor pattern
             result = self.syntax_visitor.visit(syntax_tree)
-            
+
             return result
         except Exception as e:
             return f"Enhanced execution failed: {e}. Falling back to standard parsing."
@@ -1721,13 +1721,13 @@ class NeuroExecutionVisitor:
 
     def visit(self, node):
         """Visit a node using the visitor pattern"""
-        method_name = f'visit_{node.type.value}'
+        method_name = f"visit_{node.type.value}"
         visitor = getattr(self, method_name, self.generic_visit)
         return visitor(node)
 
     def generic_visit(self, node):
         """Default visitor for unhandled node types"""
-        children = getattr(node, 'children', []) or []
+        children = getattr(node, "children", []) or []
         results = []
         for child in children:
             result = self.visit(child)
@@ -1747,7 +1747,7 @@ class NeuroExecutionVisitor:
     def visit_goal(self, node):
         """Execute a goal node"""
         goal_text = node.value
-        priority = node.metadata.get('priority', 'medium')
+        priority = node.metadata.get("priority", "medium")
 
         # Use the goal system to set the goal
         self.interpreter.goal_system.set_goal(goal_text, priority)
@@ -1756,46 +1756,50 @@ class NeuroExecutionVisitor:
 
     def visit_memory(self, node):
         """Execute a memory operation node"""
-        action = node.value['action']
+        action = node.value["action"]
 
-        if action == 'remember':
-            content = node.value['content']
-            tag = node.value.get('tag', 'general')
-            tags = [tag] if tag else ['general']
-            
+        if action == "remember":
+            content = node.value["content"]
+            tag = node.value.get("tag", "general")
+            tags = [tag] if tag else ["general"]
+
             self.interpreter.memory.remember(content, tags)
             return f"💾 Remembered: '{content}' as '{tag}'"
 
-        elif action == 'recall':
-            tag = node.value.get('tag')
-            since = node.value.get('since')
-            category = node.value.get('category')
+        elif action == "recall":
+            tag = node.value.get("tag")
+            since = node.value.get("since")
+            category = node.value.get("category")
 
             # Build query parameters
             time_filter = since if since else None
 
             # Recall memories
-            memories = self.interpreter.memory.recall(tags=[tag] if tag else None, 
-                                                    category=category, 
-                                                    time_filter=time_filter)
+            memories = self.interpreter.memory.recall(
+                tags=[tag] if tag else None, category=category, time_filter=time_filter
+            )
 
             if memories:
-                return f"🧠 Recalled {len(memories)} memories:\n" + "\n".join(f"  • {m}" for m in memories[:5])
+                return f"🧠 Recalled {len(memories)} memories:\n" + "\n".join(
+                    f"  • {m}" for m in memories[:5]
+                )
             else:
                 return f"🔍 No memories found for tag '{tag}'"
 
-        elif action == 'search':
-            keyword = node.value['keyword']
+        elif action == "search":
+            keyword = node.value["keyword"]
             results = self.interpreter.memory.search(keyword)
 
             if results:
-                return f"🔍 Found {len(results)} memories containing '{keyword}':\n" + "\n".join(f"  • {r}" for r in results[:5])
+                return f"🔍 Found {len(results)} memories containing '{keyword}':\n" + "\n".join(
+                    f"  • {r}" for r in results[:5]
+                )
             else:
                 return f"🔍 No memories found containing '{keyword}'"
 
-        elif action == 'pattern':
-            pattern = node.value['pattern']
-            frequency = node.value.get('frequency', 'weekly')
+        elif action == "pattern":
+            pattern = node.value["pattern"]
+            frequency = node.value.get("frequency", "weekly")
 
             analysis = self.interpreter.memory.pattern_analysis(pattern, frequency)
             return f"📊 Pattern analysis for '{pattern}': {analysis['matches']} matches, threshold: {analysis['meets_threshold']}"
@@ -1815,8 +1819,8 @@ class NeuroExecutionVisitor:
 
     def visit_plugin(self, node):
         """Execute a plugin call node"""
-        plugin_name = node.value['name']
-        plugin_args = node.value['args']
+        plugin_name = node.value["name"]
+        plugin_args = node.value["args"]
 
         try:
             if plugin_name in PLUGIN_REGISTRY:
@@ -1830,8 +1834,8 @@ class NeuroExecutionVisitor:
 
     def visit_function_def(self, node):
         """Execute a function definition node"""
-        func_name = node.value['name']
-        params = node.value['params']
+        func_name = node.value["name"]
+        params = node.value["params"]
 
         # Store function definition for later execution
         self.interpreter.functions.define_function(func_name, params, node.children)
@@ -1840,8 +1844,8 @@ class NeuroExecutionVisitor:
 
     def visit_function_call(self, node):
         """Execute a function call node"""
-        func_name = node.value['name']
-        args = node.value['args']
+        func_name = node.value["name"]
+        args = node.value["args"]
 
         try:
             result = self.interpreter.functions.call_function(func_name, args)
@@ -1851,11 +1855,11 @@ class NeuroExecutionVisitor:
 
     def visit_variable_assign(self, node):
         """Execute a variable assignment node"""
-        var_name = node.value['name']
-        var_value = node.value['value']
+        var_name = node.value["name"]
+        var_value = node.value["value"]
 
         # Store in interpreter's variable context
-        if not hasattr(self.interpreter, 'variables'):
+        if not hasattr(self.interpreter, "variables"):
             self.interpreter.variables = {}
 
         self.interpreter.variables[var_name] = var_value
@@ -1863,20 +1867,20 @@ class NeuroExecutionVisitor:
 
     def visit_conditional(self, node):
         """Execute a conditional node"""
-        if node.value['type'] == 'if':
-            condition = node.value['condition']
+        if node.value["type"] == "if":
+            condition = node.value["condition"]
             return f"🔀 If condition: {condition}"
         else:
             return "🔀 Else block"
 
     def visit_loop(self, node):
         """Execute a loop node"""
-        if node.value['type'] == 'for':
-            var_name = node.value['var']
-            iterable = node.value['iterable']
+        if node.value["type"] == "for":
+            var_name = node.value["var"]
+            iterable = node.value["iterable"]
             return f"🔄 For loop: {var_name} in {iterable}"
-        elif node.value['type'] == 'while':
-            condition = node.value['condition']
+        elif node.value["type"] == "while":
+            condition = node.value["condition"]
             return f"🔄 While loop: {condition}"
 
     def visit_expression(self, node):
