@@ -253,6 +253,29 @@ We are building more than an operating system. We are creating the foundation fo
 
 ---
 
+## 🛡️ **Legal Foundation: GPL-3.0 License**
+
+### **Why GPL-3.0?**
+Following the proven Linux model, NeuroCode adopts the **GNU General Public License v3.0** to ensure:
+
+- **🔒 Community Protection**: All AI OS improvements remain open source
+- **🚫 No Proprietary Forks**: Big tech cannot create closed AI operating systems on our foundation  
+- **🤝 Collaborative Development**: Strong incentives for contributing back to the ecosystem
+- **🌍 Democratic AI**: Prevents monopolization of AI operating system technology
+- **📈 Unified Evolution**: Ensures a single, community-driven AI OS standard
+
+### **Strategic Alignment**
+Just as Linux democratized server computing with GPL-2.0, **NeuroCode democratizes AI computing with GPL-3.0**. This legal framework guarantees that the AI OS remains:
+
+1. **Forever Open**: No corporation can capture and close the platform
+2. **Community-Driven**: All stakeholders benefit from improvements
+3. **Innovation-Friendly**: Encourages collaborative development
+4. **Globally Accessible**: Available to everyone, everywhere
+
+The GPL-3.0 license is not just legal text - it's the **constitutional foundation** of democratic AI computing.
+
+---
+
 ## 🌟 **Join the Revolution**
 
 The AI Operating System is not just a technical achievement - it's a **transformation of how humans and computers collaborate**. We invite you to be part of this historic moment.

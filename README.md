@@ -571,7 +571,13 @@ NeuroCode is open source and welcomes contributions! See our [Contributing Guide
 
 ## 📄 **License**
 
-NeuroCode is released under the [MIT License](LICENSE). Feel free to use, modify, and distribute!
+NeuroCode is released under the [GNU General Public License v3.0 (GPL-3.0)](LICENSE). This ensures that NeuroCode remains free and open source, and that all improvements and derivatives benefit the entire AI OS community.
+
+**Why GPL-3.0?** Following the Linux model, GPL-3.0 ensures that:
+- ✅ All AI OS improvements are shared back to the community
+- ✅ No proprietary forks can fragment the ecosystem  
+- ✅ The AI OS remains truly open and democratic
+- ✅ Big tech cannot create closed AI operating systems on our foundation
 
 ---
 
