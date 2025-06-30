@@ -1,7 +1,7 @@
 {
   "protected_files": [
     "README.md",
-    "LICENSE", 
+    "LICENSE",
     "pyproject.toml",
     "requirements.txt",
     "requirements_enhanced.txt",
@@ -26,7 +26,7 @@
   ],
   "critical_extensions": [
     ".py",
-    ".neuro", 
+    ".neuro",
     ".md",
     ".json",
     ".toml",

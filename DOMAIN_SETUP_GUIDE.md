@@ -105,33 +105,64 @@ Based on your latest screenshot, everything is set up perfectly:
 
 **IMMEDIATE FIX NEEDED**:
 
-### Option 1: Change GitHub Pages Source (RECOMMENDED)
-1. **Go back to GitHub Pages settings**
-2. **Change Source** from `/ (root)` to `/website`
-3. **This will serve your custom website instead of README.md**
+### ✅ SOLUTION IMPLEMENTED!
 
-### Option 2: Move Files to Root
-1. **Move** `website/index.html` to root directory
-2. **Rename** current `README.md` to `README_backup.md`
-3. **This ensures your custom site is served**
+**What we just did:**
+1. ✅ **Moved custom website files** from `/website/` to root directory
+2. ✅ **Backed up README.md** as `README_original.md`
+3. ✅ **Your custom `index.html`** is now in the root
+4. ✅ **Committed and pushed** changes to GitHub
 
-### 🎯 The Jekyll site is the problem!
-Your custom website works perfectly, but GitHub Pages is serving the wrong files.
+**Result:**
+- GitHub Pages will now serve your custom website instead of Jekyll
+- Your custom website has all the correct GitHub links
+- The redirect issue should be resolved in 2-5 minutes
 
-## Verification Commands
+### 🎯 What to expect:
+- **Wait 2-5 minutes** for GitHub Pages to rebuild
+- **Visit `https://httpsneurocode.dev`** - should now show your custom website
+- **All GitHub links** should now work correctly
 
-```bash
+## Verification Commands (PowerShell)
+
+```powershell
 # Check DNS propagation
-nslookup yourdomain.com
+nslookup httpsneurocode.dev
 
 # Test CNAME resolution  
-nslookup www.yourdomain.com
+nslookup www.httpsneurocode.dev
 
-# Verify GitHub Pages
-curl -I https://yourdomain.com
+# Verify GitHub Pages (use Invoke-WebRequest instead of curl)
+Invoke-WebRequest -Uri "https://httpsneurocode.dev" -Method Head
+
+# Alternative: Test if site is responding
+Test-NetConnection httpsneurocode.dev -Port 443
+```
+
+## Troubleshooting Commands (PowerShell)
+
+```powershell
+# Force refresh DNS cache
+ipconfig /flushdns
+
+# Check if GitHub Pages is serving content
+$response = Invoke-WebRequest -Uri "https://httpsneurocode.dev" -UseBasicParsing
+$response.StatusCode
+$response.Headers
+
+# Test connection to GitHub's servers
+Test-NetConnection github.io -Port 443
+
+# Check if CNAME file exists in repository
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Zyonic88/NeuroCode/main/CNAME" -UseBasicParsing
+
+# Test with different DNS servers
+nslookup httpsneurocode.dev 8.8.8.8
+nslookup httpsneurocode.dev 1.1.1.1
 ```
 
 ## Notes
+
 - DNS changes can take 24-48 hours to propagate
 - GitHub Pages automatically serves HTTPS with custom domains
 - Ensure your domain registrar points to GitHub's servers
