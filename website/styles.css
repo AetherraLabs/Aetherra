@@ -16,7 +16,7 @@
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --error-color: #ef4444;
-    
+
     /* Neutrals */
     --bg-primary: #0f0f23;
     --bg-secondary: #1a1a3e;
@@ -25,15 +25,15 @@
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
     --border-color: #334155;
-    
+
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     --gradient-accent: linear-gradient(135deg, var(--accent-color), var(--primary-color));
-    
+
     /* Typography */
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Menlo', monospace;
-    
+
     /* Spacing */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
@@ -42,17 +42,17 @@
     --spacing-xl: 2rem;
     --spacing-2xl: 3rem;
     --spacing-3xl: 4rem;
-    
+
     /* Borders */
     --border-radius: 0.5rem;
     --border-radius-lg: 1rem;
-    
+
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    
+
     /* Transitions */
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -167,7 +167,7 @@ body {
     display: flex;
     align-items: center;
     background: radial-gradient(ellipse at top, rgba(99, 102, 241, 0.1), transparent),
-                radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.1), transparent);
+        radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.1), transparent);
     position: relative;
     overflow: hidden;
 }
@@ -306,9 +306,17 @@ body {
     background: var(--text-muted);
 }
 
-.code-dots span:nth-child(1) { background: #ef4444; }
-.code-dots span:nth-child(2) { background: #f59e0b; }
-.code-dots span:nth-child(3) { background: #10b981; }
+.code-dots span:nth-child(1) {
+    background: #ef4444;
+}
+
+.code-dots span:nth-child(2) {
+    background: #f59e0b;
+}
+
+.code-dots span:nth-child(3) {
+    background: #10b981;
+}
 
 .code-title {
     color: var(--text-secondary);
@@ -691,15 +699,15 @@ body {
         grid-template-columns: 1fr;
         text-align: center;
     }
-    
+
     .plugin-showcase {
         grid-template-columns: 1fr;
     }
-    
+
     .cli-demo {
         grid-template-columns: 1fr;
     }
-    
+
     .footer-content {
         grid-template-columns: 1fr;
     }
@@ -709,23 +717,23 @@ body {
     .nav-links {
         display: none;
     }
-    
+
     .nav-toggle {
         display: flex;
     }
-    
+
     .hero-title {
         font-size: 2.5rem;
     }
-    
+
     .section-title {
         font-size: 2rem;
     }
-    
+
     .hero-buttons {
         justify-content: center;
     }
-    
+
     .footer-links {
         grid-template-columns: 1fr;
     }
@@ -735,19 +743,19 @@ body {
     .hero-title {
         font-size: 2rem;
     }
-    
+
     .hero-description {
         font-size: 1rem;
     }
-    
+
     .features-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .getting-started-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .docs-grid {
         grid-template-columns: 1fr;
     }
@@ -759,13 +767,14 @@ body {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-.hero-content > * {
+.hero-content>* {
     animation: fadeInUp 0.8s ease-out;
 }
 
@@ -774,10 +783,31 @@ body {
 }
 
 /* Syntax Highlighting */
-.language-neuro .keyword { color: #c792ea; }
-.language-neuro .string { color: #c3e88d; }
-.language-neuro .comment { color: #676e95; font-style: italic; }
-.language-neuro .number { color: #f78c6c; }
-.language-neuro .operator { color: #89ddff; }
-.language-neuro .function { color: #82aaff; }
-.language-neuro .variable { color: #eeffff; }
+.language-neuro .keyword {
+    color: #c792ea;
+}
+
+.language-neuro .string {
+    color: #c3e88d;
+}
+
+.language-neuro .comment {
+    color: #676e95;
+    font-style: italic;
+}
+
+.language-neuro .number {
+    color: #f78c6c;
+}
+
+.language-neuro .operator {
+    color: #89ddff;
+}
+
+.language-neuro .function {
+    color: #82aaff;
+}
+
+.language-neuro .variable {
+    color: #eeffff;
+}

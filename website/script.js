@@ -1,13 +1,13 @@
 // NeuroCode Website JavaScript
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Navigation scroll effect
     const navbar = document.querySelector('.navbar');
     let lastScrollY = window.scrollY;
 
     window.addEventListener('scroll', () => {
         const currentScrollY = window.scrollY;
-        
+
         if (currentScrollY > 100) {
             navbar.style.background = 'rgba(15, 15, 35, 0.98)';
             navbar.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
@@ -15,18 +15,18 @@ document.addEventListener('DOMContentLoaded', function() {
             navbar.style.background = 'rgba(15, 15, 35, 0.95)';
             navbar.style.boxShadow = 'none';
         }
-        
+
         lastScrollY = currentScrollY;
     });
 
     // Smooth scrolling for navigation links
     const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
     navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
+        link.addEventListener('click', function (e) {
             e.preventDefault();
             const targetId = this.getAttribute('href');
             const targetElement = document.querySelector(targetId);
-            
+
             if (targetElement) {
                 const offsetTop = targetElement.offsetTop - 80; // Account for fixed navbar
                 window.scrollTo({
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mobile navigation toggle
     const navToggle = document.querySelector('.nav-toggle');
     const navLinksContainer = document.querySelector('.nav-links');
-    
+
     if (navToggle && navLinksContainer) {
         navToggle.addEventListener('click', () => {
             navLinksContainer.classList.toggle('nav-open');
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
     terminalCommands.forEach((command, index) => {
         const text = command.textContent;
         command.textContent = '';
-        
+
         setTimeout(() => {
             typeText(command, text, 50);
         }, index * 2000);
@@ -103,23 +103,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function highlightNeuroCode(block) {
         let html = block.innerHTML;
-        
+
         // Keywords
-        html = html.replace(/\b(AI_SYSTEM|CONSCIOUSNESS|MEMORY|GOALS|ENVIRONMENT|TASK|INPUT|OUTPUT|PROCESS|PERSISTENT|IDENTITY|VOICE|PERSONALITY|AWARENESS|PRIMARY|LEARNING|ADAPTATION)\b/g, 
+        html = html.replace(/\b(AI_SYSTEM|CONSCIOUSNESS|MEMORY|GOALS|ENVIRONMENT|TASK|INPUT|OUTPUT|PROCESS|PERSISTENT|IDENTITY|VOICE|PERSONALITY|AWARENESS|PRIMARY|LEARNING|ADAPTATION)\b/g,
             '<span class="keyword">$1</span>');
-        
+
         // Strings
         html = html.replace(/"([^"]*)"/g, '<span class="string">"$1"</span>');
-        
+
         // Comments
         html = html.replace(/(#.*$)/gm, '<span class="comment">$1</span>');
-        
+
         // Numbers
         html = html.replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
-        
+
         // Functions
         html = html.replace(/\b(\w+)(?=\()/g, '<span class="function">$1</span>');
-        
+
         block.innerHTML = html;
     }
 
@@ -130,14 +130,14 @@ document.addEventListener('DOMContentLoaded', function() {
         copyBtn.className = 'copy-btn';
         copyBtn.innerHTML = '📋';
         copyBtn.title = 'Copy code';
-        
+
         const header = window.querySelector('.code-header');
         header.appendChild(copyBtn);
-        
+
         copyBtn.addEventListener('click', () => {
             const code = window.querySelector('code');
             const text = code.textContent;
-            
+
             navigator.clipboard.writeText(text).then(() => {
                 copyBtn.innerHTML = '✅';
                 setTimeout(() => {
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
         card.addEventListener('mouseenter', () => {
             card.style.transform = 'translateY(-8px) scale(1.02)';
         });
-        
+
         card.addEventListener('mouseleave', () => {
             card.style.transform = 'translateY(0) scale(1)';
         });
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
         cursor.className = 'terminal-cursor';
         cursor.textContent = '█';
         cursor.style.animation = 'blink 1s infinite';
-        
+
         // Add cursor CSS animation
         const style = document.createElement('style');
         style.textContent = `
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         `;
         document.head.appendChild(style);
-        
+
         pluginTerminal.appendChild(cursor);
     }
 
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // External link tracking
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     const link = e.target.closest('a');
     if (link && link.target === '_blank') {
         console.log(`External link clicked: ${link.href}`);
@@ -241,13 +241,13 @@ document.addEventListener('click', function(e) {
 });
 
 // Error handling
-window.addEventListener('error', function(e) {
+window.addEventListener('error', function (e) {
     console.error('JavaScript error:', e.error);
     // Add error tracking here
 });
 
 // Performance monitoring
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
     const perfData = performance.getEntriesByType('navigation')[0];
     console.log(`Page load time: ${perfData.loadEventEnd - perfData.fetchStart}ms`);
     // Add performance tracking here
