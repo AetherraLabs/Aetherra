@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **NeuroCode Manifesto v3.0**: Complete rewrite positioning NeuroCode as AI OS foundation
+- **4-Phase AI OS Roadmap**: Detailed plan from current state through 2027+ 
+- **Strategic Vision Update**: From programming language to democratized AI operating system
 - Comprehensive change management protocol
 - Documentation standards for all future changes
 - Git workflow standards and commit message formats
