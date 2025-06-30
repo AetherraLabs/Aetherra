@@ -8,6 +8,17 @@ import traceback
 from datetime import datetime
 from typing import Any, List
 
+# Import the new SyntaxTree parser
+try:
+    from .syntax_tree import NeuroCodeParser, SyntaxTreeVisitor
+except ImportError:
+    try:
+        from syntax_tree import NeuroCodeParser, SyntaxTreeVisitor
+    except ImportError:
+        # Fallback for when syntax_tree is not available
+        NeuroCodeParser = None
+        SyntaxTreeVisitor = None
+
 # Use robust import strategy with proper fallbacks
 try:
     # Try relative imports first (when run as module)
@@ -289,6 +300,10 @@ class NeuroCodeInterpreter:
         # Standard library manager
         self.stdlib = stdlib_manager
 
+        # Enhanced syntax tree parser
+        self.syntax_parser = NeuroCodeParser() if NeuroCodeParser else None
+        self.syntax_visitor = SyntaxTreeVisitor() if SyntaxTreeVisitor else None
+
         # Create backup directory if it doesn't exist
         if not os.path.exists(self.backup_dir):
             os.makedirs(self.backup_dir)
@@ -317,6 +332,12 @@ class NeuroCodeInterpreter:
 
     def _try_enhanced_parsing(self, line):
         """Try enhanced parsing patterns for better NeuroCode support"""
+        
+        # Try SyntaxTree parser first for comprehensive parsing
+        if self.syntax_parser:
+            syntax_result = self._try_syntax_tree_parsing(line)
+            if syntax_result:
+                return syntax_result
 
         # Enhanced remember() parsing with multiple tags and metadata
         if "remember(" in line and " as " in line:
@@ -345,6 +366,107 @@ class NeuroCodeInterpreter:
                 return enhanced_result
 
         return None
+
+    def _try_syntax_tree_parsing(self, line):
+        """Try parsing with the new SyntaxTree parser for advanced NeuroCode constructs"""
+        try:
+            # Parse the line using the syntax tree parser
+            syntax_tree = self.syntax_parser.parse(line)
+            
+            if syntax_tree and syntax_tree.children:
+                # Use the visitor to extract execution information
+                if self.syntax_visitor:
+                    self.syntax_visitor.visit(syntax_tree)
+                    
+                    # Execute based on parsed nodes
+                    results = []
+                    for node in syntax_tree.children:
+                        result = self._execute_syntax_node(node)
+                        if result:
+                            results.append(result)
+                    
+                    if results:
+                        return "\n".join(results)
+                        
+                # Fallback: basic node execution
+                results = []
+                for node in syntax_tree.children:
+                    result = self._execute_syntax_node(node)
+                    if result:
+                        results.append(result)
+                
+                if results:
+                    return "\n".join(results)
+                    
+        except Exception:
+            # If syntax tree parsing fails, fall back to standard parsing
+            pass
+            
+        return None
+
+    def _execute_syntax_node(self, node):
+        """Execute a single syntax tree node"""
+        if not node or not hasattr(node, 'type'):
+            return None
+            
+        node_type = node.type.value if hasattr(node.type, 'value') else str(node.type)
+        
+        if node_type == 'goal':
+            goal_text = node.value or ''
+            priority = node.metadata.get('priority', 'medium') if node.metadata else 'medium'
+            return self._handle_goal_node(goal_text, priority)
+            
+        elif node_type == 'memory':
+            content = node.value or ''
+            tags = node.metadata.get('tags', []) if node.metadata else []
+            category = node.metadata.get('category', None) if node.metadata else None
+            return self._handle_memory_node(content, tags, category)
+            
+        elif node_type == 'assistant':
+            question = node.value or ''
+            return self._handle_assistant_node(question)
+            
+        elif node_type == 'plugin':
+            plugin_name = node.value or ''
+            args = node.metadata.get('args', {}) if node.metadata else {}
+            return self._handle_plugin_node(plugin_name, args)
+            
+        elif node_type == 'function_def':
+            func_name = node.value or ''
+            params = node.metadata.get('parameters', []) if node.metadata else []
+            body = node.metadata.get('body', []) if node.metadata else []
+            return self._handle_function_node(func_name, params, body)
+            
+        return None
+
+    def _handle_goal_node(self, goal_text, priority):
+        """Handle goal syntax node"""
+        result = self.goal_system.set_goal(goal_text, priority)
+        return f"🎯 Goal Set: {goal_text} (Priority: {priority})"
+
+    def _handle_memory_node(self, content, tags, category):
+        """Handle memory syntax node"""
+        result = self.memory.remember(content, tags=tags, category=category)
+        tag_str = ', '.join(tags) if tags else 'general'
+        return f"💾 Remembered: {content} | Tags: {tag_str}"
+
+    def _handle_assistant_node(self, question):
+        """Handle assistant syntax node"""
+        return self._handle_assistant(f"assistant: {question}")
+
+    def _handle_plugin_node(self, plugin_name, args):
+        """Handle plugin syntax node"""
+        if args:
+            args_str = ', '.join([f"{k}={v}" for k, v in args.items()])
+            return self._handle_plugin(f"plugin: {plugin_name}({args_str})")
+        else:
+            return self._handle_plugin(f"plugin: {plugin_name}")
+
+    def _handle_function_node(self, func_name, params, body):
+        """Handle function definition syntax node"""
+        params_str = ', '.join(params)
+        body_str = '\n'.join(body)
+        return f"🔧 Function Defined: {func_name}({params_str})\n{body_str}"
 
     def _parse_enhanced_remember(self, line):
         """
