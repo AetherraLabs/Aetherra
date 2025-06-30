@@ -1,0 +1,36 @@
+{
+  "name": "neurocode-website",
+  "version": "1.0.0",
+  "description": "Official website for NeuroCode - Where Computation Becomes Cognition",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx live-server --host=localhost --port=3000 --open=/",
+    "build": "echo 'Building static site...' && npm run optimize",
+    "optimize": "echo 'Optimizing assets...'",
+    "deploy": "echo 'Deploying to production...'",
+    "test": "echo 'Running tests...'",
+    "lighthouse": "npx lighthouse http://localhost:3000 --output html --output-path ./lighthouse-report.html"
+  },
+  "keywords": [
+    "neurocode",
+    "ai-programming",
+    "consciousness-programming",
+    "ai-os",
+    "artificial-intelligence",
+    "cognitive-computing"
+  ],
+  "author": "NeuroCode Project",
+  "license": "MIT",
+  "homepage": "https://neurocode.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VirtualVerse-Corporation/NeuroCode.git"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "lighthouse": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
