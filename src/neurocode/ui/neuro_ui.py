@@ -312,9 +312,17 @@ def create_enhanced_neuro_ui():
     central_widget.addTab(memory_viewer, "🧠 Memory Reflection")
 
     # Placeholder tabs for future expansion
-    placeholder1 = QLabel("💬 Chat interface coming soon...")
-    placeholder1.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    central_widget.addTab(placeholder1, "💬 AI Chat")
+    from neuro_chat import NeuroChatInterface
+    
+    # Replace chat placeholder with actual chat interface
+    try:
+        chat_interface = NeuroChatInterface()
+        central_widget.addTab(chat_interface.tab_widget, "💬 AI Chat")
+    except Exception as e:
+        print(f"⚠️ Could not load chat interface: {e}")
+        placeholder1 = QLabel("💬 Chat interface - loading error...")
+        placeholder1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        central_widget.addTab(placeholder1, "💬 AI Chat")
 
     placeholder2 = QLabel("📝 Code editor coming soon...")
     placeholder2.setAlignment(Qt.AlignmentFlag.AlignCenter)

@@ -529,7 +529,9 @@ def get_plugin_discovery_stats() -> Dict[str, Any]:
     return {
         "total_plugins": total_plugins,
         "plugins_with_intent": plugins_with_intent,
-        "intent_coverage": f"{(plugins_with_intent/total_plugins)*100:.1f}%" if total_plugins > 0 else "0%",
+        "intent_coverage": f"{(plugins_with_intent / total_plugins) * 100:.1f}%"
+        if total_plugins > 0
+        else "0%",
         "categories": categories,
         "purposes": purposes,
         "top_purposes": sorted(purposes.items(), key=lambda x: x[1], reverse=True)[:5],
