@@ -1,0 +1,44 @@
+{
+  "protected_files": [
+    "README.md",
+    "LICENSE", 
+    "pyproject.toml",
+    "requirements.txt",
+    "requirements_enhanced.txt",
+    "requirements_minimal.txt",
+    "CHANGE_MANAGEMENT_PROTOCOL.md",
+    "DOMAIN_SETUP_GUIDE.md",
+    "MISSION_COMPLETE.md",
+    "SUCCESS_SUMMARY.md",
+    "FINAL_ORGANIZATION_STATUS.md",
+    ".project_protection.json",
+    "protect.ps1"
+  ],
+  "protected_directories": [
+    "core/",
+    "src/",
+    "docs/",
+    "examples/",
+    "tests/",
+    "data/",
+    "scripts/",
+    "launchers/"
+  ],
+  "critical_extensions": [
+    ".py",
+    ".neuro", 
+    ".md",
+    ".json",
+    ".toml",
+    ".yaml",
+    ".yml",
+    ".bat",
+    ".ps1"
+  ],
+  "backup_frequency": "daily",
+  "max_backups": 30,
+  "protection_enabled": true,
+  "auto_backup_on_edit": true,
+  "block_git_deletion": true,
+  "require_reason_for_deletion": true
+}
