@@ -1,6 +1,6 @@
 # 🚀 NeuroCode Tutorial: Your First AI-Native Program
 
-Welcome to NeuroCode, the world's first AI-native programming language! This tutorial will guide you through creating your first NeuroCode program step by step.
+Welcome to NeuroCode, a pioneering AI-consciousness programming language! This tutorial will guide you through creating your first NeuroCode program step by step.
 
 ## What Makes NeuroCode Special?
 

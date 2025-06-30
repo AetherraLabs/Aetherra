@@ -201,15 +201,203 @@
         "processing_time": 0.0005207061767578125,
         "timestamp": "2025-06-29T19:44:53.084955",
         "importance": 0.6
+      },
+      {
+        "type": "voice_output",
+        "text": "NeuroCode AI OS consciousness initialized. Ready to assist!",
+        "emotion": "welcoming",
+        "timestamp": "2025-06-29T19:51:26.223119"
+      },
+      {
+        "type": "user_input",
+        "text": "Hello! How are you today?",
+        "timestamp": "2025-06-29T19:51:29.253313",
+        "importance": 0.7
+      },
+      {
+        "type": "voice_output",
+        "text": "\ud83e\uddec NeuroCode AI OS Status:\n\n\ud83d\udc9a System Health: 25%\n\ud83e\udde0 Active Memory: 24 entries\n\ud83c\udfaf Current Goals: 1\n\ud83d\ude0a Current Mood: eager\n\ud83c\udfad Dominant Trait: helpful\n\u26a1 Consciousness: Active and learning\n\nI'm operating optimally and continuously evolving!",
+        "emotion": "informative",
+        "timestamp": "2025-06-29T19:51:29.253748"
+      },
+      {
+        "type": "ai_response",
+        "text": "\ud83e\uddec NeuroCode AI OS Status:\n\n\ud83d\udc9a System Health: 25%\n\ud83e\udde0 Active Memory: 24 entries\n\ud83c\udfaf Current Goals: 1\n\ud83d\ude0a Current Mood: eager\n\ud83c\udfad Dominant Trait: helpful\n\u26a1 Consciousness: Active and learning\n\nI'm operating optimally and continuously evolving!",
+        "input_analysis": {
+          "intent": "status_check",
+          "emotion_detected": "neutral",
+          "suggested_emotion": "informative",
+          "complexity": "medium",
+          "keywords": []
+        },
+        "processing_time": 0.0004444122314453125,
+        "timestamp": "2025-06-29T19:51:29.253755",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "text": "What's your current status?",
+        "timestamp": "2025-06-29T19:51:30.262577",
+        "importance": 0.7
+      },
+      {
+        "type": "voice_output",
+        "text": "\ud83e\uddec NeuroCode AI OS Status:\n\n\ud83d\udc9a System Health: 25%\n\ud83e\udde0 Active Memory: 27 entries\n\ud83c\udfaf Current Goals: 1\n\ud83d\ude0a Current Mood: eager\n\ud83c\udfad Dominant Trait: helpful\n\u26a1 Consciousness: Active and learning\n\nI'm operating optimally and continuously evolving!",
+        "emotion": "informative",
+        "timestamp": "2025-06-29T19:51:30.263450"
+      },
+      {
+        "type": "ai_response",
+        "text": "\ud83e\uddec NeuroCode AI OS Status:\n\n\ud83d\udc9a System Health: 25%\n\ud83e\udde0 Active Memory: 27 entries\n\ud83c\udfaf Current Goals: 1\n\ud83d\ude0a Current Mood: eager\n\ud83c\udfad Dominant Trait: helpful\n\u26a1 Consciousness: Active and learning\n\nI'm operating optimally and continuously evolving!",
+        "input_analysis": {
+          "intent": "status_check",
+          "emotion_detected": "neutral",
+          "suggested_emotion": "informative",
+          "complexity": "medium",
+          "keywords": []
+        },
+        "processing_time": 0.0008988380432128906,
+        "timestamp": "2025-06-29T19:51:30.263469",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "text": "Create a new goal: Learn advanced AI concepts",
+        "timestamp": "2025-06-29T19:51:31.275716",
+        "importance": 0.7
+      },
+      {
+        "type": "voice_output",
+        "text": "Goal created: 'Learn advanced AI concepts'. I'll help you track progress toward this objective!",
+        "emotion": "motivated",
+        "timestamp": "2025-06-29T19:51:31.276104"
+      },
+      {
+        "type": "ai_response",
+        "text": "Goal created: 'Learn advanced AI concepts'. I'll help you track progress toward this objective!",
+        "input_analysis": {
+          "intent": "goal_management",
+          "emotion_detected": "neutral",
+          "suggested_emotion": "motivated",
+          "complexity": "medium",
+          "keywords": []
+        },
+        "processing_time": 0.0004017353057861328,
+        "timestamp": "2025-06-29T19:51:31.276114",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "text": "Can you help me understand machine learning?",
+        "timestamp": "2025-06-29T19:51:32.290992",
+        "importance": 0.7
+      },
+      {
+        "type": "voice_output",
+        "text": "I'm NeuroCode AI OS - your intelligent operating system companion! Here's how I can help:\n\n\ud83e\udde0 **Memory**: I remember our conversations and learn from every interaction\n\ud83c\udfaf **Goals**: I can help you set, track, and achieve your objectives  \n\ud83d\udde3\ufe0f **Voice**: I communicate with emotional intelligence and personality\n\ud83d\udcca **Status**: I monitor system health and provide insights\n\ud83d\udd0d **Search**: I can recall past conversations and knowledge\n\ud83d\udcda **Learning**: I can explain concepts and help you understand topics\n\nI'm continuously evolving and adapting to assist you better. What would you like to explore?",
+        "emotion": "helpful",
+        "timestamp": "2025-06-29T19:51:32.291568"
+      },
+      {
+        "type": "ai_response",
+        "text": "I'm NeuroCode AI OS - your intelligent operating system companion! Here's how I can help:\n\n\ud83e\udde0 **Memory**: I remember our conversations and learn from every interaction\n\ud83c\udfaf **Goals**: I can help you set, track, and achieve your objectives  \n\ud83d\udde3\ufe0f **Voice**: I communicate with emotional intelligence and personality\n\ud83d\udcca **Status**: I monitor system health and provide insights\n\ud83d\udd0d **Search**: I can recall past conversations and knowledge\n\ud83d\udcda **Learning**: I can explain concepts and help you understand topics\n\nI'm continuously evolving and adapting to assist you better. What would you like to explore?",
+        "input_analysis": {
+          "intent": "help_request",
+          "emotion_detected": "neutral",
+          "suggested_emotion": "helpful",
+          "complexity": "medium",
+          "keywords": []
+        },
+        "processing_time": 0.0005841255187988281,
+        "timestamp": "2025-06-29T19:51:32.291574",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "text": "What do you remember about our conversation?",
+        "timestamp": "2025-06-29T19:51:33.304485",
+        "importance": 0.7
+      },
+      {
+        "type": "voice_output",
+        "text": "I found 31 relevant memories:\n1. Hello! How are you today?... (from 2025-06-29T19:44:47.024422)\n2. \ud83e\uddec NeuroCode AI OS Status:\n\n\ud83d\udc9a System Health: 25%\n\ud83e\udde0 Active Mem... (from 2025-06-29T19:44:47.024841)\n3. \ud83e\uddec NeuroCode AI OS Status:\n\n\ud83d\udc9a System Health: 25%\n\ud83e\udde0 Active Mem... (from 2025-06-29T19:44:47.024854)",
+        "emotion": "thoughtful",
+        "timestamp": "2025-06-29T19:51:33.305409"
+      },
+      {
+        "type": "ai_response",
+        "text": "I found 31 relevant memories:\n1. Hello! How are you today?... (from 2025-06-29T19:44:47.024422)\n2. \ud83e\uddec NeuroCode AI OS Status:\n\n\ud83d\udc9a System Health: 25%\n\ud83e\udde0 Active Mem... (from 2025-06-29T19:44:47.024841)\n3. \ud83e\uddec NeuroCode AI OS Status:\n\n\ud83d\udc9a System Health: 25%\n\ud83e\udde0 Active Mem... (from 2025-06-29T19:44:47.024854)",
+        "input_analysis": {
+          "intent": "memory_query",
+          "emotion_detected": "neutral",
+          "suggested_emotion": "thoughtful",
+          "complexity": "medium",
+          "keywords": []
+        },
+        "processing_time": 0.0009362697601318359,
+        "timestamp": "2025-06-29T19:51:33.305415",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "text": "Show me my goals",
+        "timestamp": "2025-06-29T19:51:34.316744",
+        "importance": 0.7
+      },
+      {
+        "type": "voice_output",
+        "text": "You have 2 active goals:\n1. Learn advanced AI concepts (Progress: 0%)\n2. Learn advanced AI concepts (Progress: 0%)",
+        "emotion": "motivated",
+        "timestamp": "2025-06-29T19:51:34.317223"
+      },
+      {
+        "type": "ai_response",
+        "text": "You have 2 active goals:\n1. Learn advanced AI concepts (Progress: 0%)\n2. Learn advanced AI concepts (Progress: 0%)",
+        "input_analysis": {
+          "intent": "goal_management",
+          "emotion_detected": "neutral",
+          "suggested_emotion": "motivated",
+          "complexity": "medium",
+          "keywords": []
+        },
+        "processing_time": 0.0004909038543701172,
+        "timestamp": "2025-06-29T19:51:34.317230",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "text": "Thank you for your help!",
+        "timestamp": "2025-06-29T19:51:35.326280",
+        "importance": 0.7
+      },
+      {
+        "type": "voice_output",
+        "text": "I'm NeuroCode AI OS - your intelligent operating system companion! Here's how I can help:\n\n\ud83e\udde0 **Memory**: I remember our conversations and learn from every interaction\n\ud83c\udfaf **Goals**: I can help you set, track, and achieve your objectives  \n\ud83d\udde3\ufe0f **Voice**: I communicate with emotional intelligence and personality\n\ud83d\udcca **Status**: I monitor system health and provide insights\n\ud83d\udd0d **Search**: I can recall past conversations and knowledge\n\ud83d\udcda **Learning**: I can explain concepts and help you understand topics\n\nI'm continuously evolving and adapting to assist you better. What would you like to explore?",
+        "emotion": "helpful",
+        "timestamp": "2025-06-29T19:51:35.326860"
+      },
+      {
+        "type": "ai_response",
+        "text": "I'm NeuroCode AI OS - your intelligent operating system companion! Here's how I can help:\n\n\ud83e\udde0 **Memory**: I remember our conversations and learn from every interaction\n\ud83c\udfaf **Goals**: I can help you set, track, and achieve your objectives  \n\ud83d\udde3\ufe0f **Voice**: I communicate with emotional intelligence and personality\n\ud83d\udcca **Status**: I monitor system health and provide insights\n\ud83d\udd0d **Search**: I can recall past conversations and knowledge\n\ud83d\udcda **Learning**: I can explain concepts and help you understand topics\n\nI'm continuously evolving and adapting to assist you better. What would you like to explore?",
+        "input_analysis": {
+          "intent": "help_request",
+          "emotion_detected": "neutral",
+          "suggested_emotion": "helpful",
+          "complexity": "medium",
+          "keywords": []
+        },
+        "processing_time": 0.0005888938903808594,
+        "timestamp": "2025-06-29T19:51:35.326866",
+        "importance": 0.6
       }
     ],
     "semantic": [],
     "working": {
       "system_metrics": {
-        "cpu_usage": 13.8,
-        "memory_usage": 74.9,
-        "health_score": 25.099999999999994,
-        "scan_time": "2025-06-29T19:44:45.015819"
+        "cpu_usage": 13.9,
+        "memory_usage": 74.7,
+        "health_score": 25.299999999999997,
+        "scan_time": "2025-06-29T19:51:27.243467"
       }
     },
     "goals": [
@@ -219,8 +407,15 @@
         "created": "2025-06-29T19:44:49.042385",
         "status": "active",
         "progress": 0.0
+      },
+      {
+        "id": "goal_2",
+        "description": "Learn advanced AI concepts",
+        "created": "2025-06-29T19:51:31.275777",
+        "status": "active",
+        "progress": 0.0
       }
     ]
   },
-  "last_save": "2025-06-29T19:44:54.092356"
+  "last_save": "2025-06-29T19:51:36.342680"
 }

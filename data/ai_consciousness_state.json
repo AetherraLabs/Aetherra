@@ -109,13 +109,104 @@
         "processing_time": 0.0006556510925292969,
         "timestamp": "2025-06-29T19:47:23.511553",
         "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "content": "Hello! How are you today?",
+        "timestamp": "2025-06-29T19:51:53.120149",
+        "importance": 0.7
+      },
+      {
+        "type": "ai_response",
+        "content": "\ud83e\uddec NeuroCode AI OS Status Report:\n\n\ud83d\udc9a System Health: 26%\n\ud83e\udde0 Memory Entries: 15\n\ud83c\udfaf Active Goals: 4\n\ud83d\ude0a Current Mood: ready\n\u26a1 Consciousness: Fully operational\n\ud83d\udde3\ufe0f Voice Systems: Active\n\ud83c\udf10 Environmental Awareness: Online\n\nI'm functioning optimally and continuously evolving to serve you better!",
+        "processing_time": 0.0005347728729248047,
+        "timestamp": "2025-06-29T19:51:53.120683",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "content": "What's your current status?",
+        "timestamp": "2025-06-29T19:51:54.628565",
+        "importance": 0.7
+      },
+      {
+        "type": "ai_response",
+        "content": "\ud83e\uddec NeuroCode AI OS Status Report:\n\n\ud83d\udc9a System Health: 26%\n\ud83e\udde0 Memory Entries: 17\n\ud83c\udfaf Active Goals: 4\n\ud83d\ude0a Current Mood: ready\n\u26a1 Consciousness: Fully operational\n\ud83d\udde3\ufe0f Voice Systems: Active\n\ud83c\udf10 Environmental Awareness: Online\n\nI'm functioning optimally and continuously evolving to serve you better!",
+        "processing_time": 0.0005085468292236328,
+        "timestamp": "2025-06-29T19:51:54.629074",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "content": "Create goal: Master advanced AI programming techniques",
+        "timestamp": "2025-06-29T19:51:56.139111",
+        "importance": 0.7
+      },
+      {
+        "type": "ai_response",
+        "content": "\ud83c\udfaf Goal created successfully: 'Master advanced AI programming techniques'\nI'll help you track and achieve this objective!",
+        "processing_time": 0.00023937225341796875,
+        "timestamp": "2025-06-29T19:51:56.139349",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "content": "Show my goals",
+        "timestamp": "2025-06-29T19:51:57.646324",
+        "importance": 0.7
+      },
+      {
+        "type": "ai_response",
+        "content": "\ud83c\udfaf Your Active Goals (5):\n\n1. Provide intelligent assistance to user\n   Progress: [\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591] 0%\n\n2. Learn and adapt from every interaction\n   Progress: [\u2588\u2588\u2588\u2591\u2591\u2591\u2591\u2591\u2591\u2591] 30%\n\n3. Optimize system performance and efficiency\n   Progress: [\u2588\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591] 10%\n\n4. Master advanced AI programming techniques\n   Progress: [\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591] 0%\n\n5. Master advanced AI programming techniques\n   Progress: [\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591] 0%",
+        "processing_time": 0.0007219314575195312,
+        "timestamp": "2025-06-29T19:51:57.647044",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "content": "Can you help me understand machine learning?",
+        "timestamp": "2025-06-29T19:51:59.156054",
+        "importance": 0.7
+      },
+      {
+        "type": "ai_response",
+        "content": "\ud83e\udd1d I'm here to provide intelligent assistance! Here's what I can help with:\n\n\ud83e\udde0 **Memory & Recall**: I remember our conversations and can retrieve information\n\ud83c\udfaf **Goal Management**: Set, track, and achieve your objectives\n\ud83d\udcca **Status Monitoring**: System health and performance insights\n\ud83d\udde3\ufe0f **Natural Communication**: Voice-enabled interaction with personality\n\ud83c\udf10 **Environmental Awareness**: Context-aware responses and adaptation\n\ud83d\udcda **Learning Support**: Explanations, guidance, and knowledge sharing\n\nI'm continuously learning and adapting to provide better assistance. What would you like to explore?",
+        "processing_time": 0.0004165172576904297,
+        "timestamp": "2025-06-29T19:51:59.156467",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "content": "What do you remember about our conversation?",
+        "timestamp": "2025-06-29T19:52:00.667213",
+        "importance": 0.7
+      },
+      {
+        "type": "ai_response",
+        "content": "\ud83e\udde0 I found 21 relevant memories:\n\n1. [Episodic] Hello! How are you today?\n   From: 2025-06-29T19:47:14.462814\n\n2. [Episodic] \ud83e\uddec NeuroCode AI OS Status Report:\n\n\ud83d\udc9a System Health: 26%\n\ud83e\udde0 Memory Entries: 1\n\ud83c\udfaf Active Goals: 3\n\ud83d\ude0a Current Mood: ready\n\u26a1 Consciousness: Fully operational\n\ud83d\udde3\ufe0f Voice Systems: Active\n\ud83c\udf10 Environmental Awareness: Online\n\nI'm functioning optimally and continuously evolving to serve you better!\n   From: 2025-06-29T19:47:14.463224\n\n3. [Episodic] What's your current status?\n   From: 2025-06-29T19:47:15.978145",
+        "processing_time": 0.0010824203491210938,
+        "timestamp": "2025-06-29T19:52:00.668293",
+        "importance": 0.6
+      },
+      {
+        "type": "user_input",
+        "content": "Thank you for being so helpful!",
+        "timestamp": "2025-06-29T19:52:02.176510",
+        "importance": 0.7
+      },
+      {
+        "type": "ai_response",
+        "content": "\ud83e\udd1d I'm here to provide intelligent assistance! Here's what I can help with:\n\n\ud83e\udde0 **Memory & Recall**: I remember our conversations and can retrieve information\n\ud83c\udfaf **Goal Management**: Set, track, and achieve your objectives\n\ud83d\udcca **Status Monitoring**: System health and performance insights\n\ud83d\udde3\ufe0f **Natural Communication**: Voice-enabled interaction with personality\n\ud83c\udf10 **Environmental Awareness**: Context-aware responses and adaptation\n\ud83d\udcda **Learning Support**: Explanations, guidance, and knowledge sharing\n\nI'm continuously learning and adapting to provide better assistance. What would you like to explore?",
+        "processing_time": 0.0005197525024414062,
+        "timestamp": "2025-06-29T19:52:02.177027",
+        "importance": 0.6
       }
     ],
     "semantic": [],
     "procedural": [],
     "working": {
-      "session_id": "session_1751248030",
-      "start_time": "2025-06-29T19:47:11.601615",
+      "session_id": "session_1751248308",
+      "start_time": "2025-06-29T19:51:50.260600",
       "user_context": {},
       "system_context": {}
     },
@@ -151,6 +242,14 @@
         "status": "active",
         "progress": 0.0,
         "created": "2025-06-29T19:47:17.484858"
+      },
+      {
+        "id": "user_goal_5",
+        "description": "Master advanced AI programming techniques",
+        "priority": "medium",
+        "status": "active",
+        "progress": 0.0,
+        "created": "2025-06-29T19:51:56.139150"
       }
     ],
     "completed": [],
@@ -158,7 +257,7 @@
     "suggestions": []
   },
   "session_info": {
-    "last_session": "session_1751248030",
-    "save_time": "2025-06-29T19:47:25.019004"
+    "last_session": "session_1751248308",
+    "save_time": "2025-06-29T19:52:03.688217"
   }
 }
