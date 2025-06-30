@@ -331,7 +331,8 @@ NeuroCode Project/
 │   ├── guides/                 # User guides & tutorials
 │   ├── reports/                # Status & completion reports
 │   ├── NEUROCODE_MANIFESTO.md  # Project vision
-│   └── LANGUAGE_SPEC.md        # Language specification
+│   ├── LANGUAGE_SPEC.md        # Basic language specification
+│   └── NEUROCODE_LANGUAGE_SPECIFICATION.md  # Complete v3.0 language spec
 ├── 🎯 examples/                # Demo programs & .neuro files
 │   ├── basic/                  # Basic syntax examples
 │   ├── advanced/               # Advanced features
