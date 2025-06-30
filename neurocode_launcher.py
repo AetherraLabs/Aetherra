@@ -29,13 +29,14 @@ def print_banner():
 def print_menu():
     """Print main menu options."""
     print("🎯 Available Options:")
-    print("  1. 🖥️  Launch Neuroplex GUI (Fully Modular)")
-    print("  2. 🖥️  Launch Neuroplex GUI (Standard Modular)")
-    print("  3. 🎮  Launch NeuroCode Playground")
-    print("  4. 🧪  Verify Modular Components")
-    print("  5. 📊  Show Project Structure")
-    print("  6. 🔧  Run CLI Interface")
-    print("  7. ❓  Help & Documentation")
+    print("  1. 🎭  Launch Enhanced Neuroplex (Integrated NeuroChat)")
+    print("  2. 🖥️  Launch Neuroplex GUI (Fully Modular)")
+    print("  3. 🖥️  Launch Neuroplex GUI (Standard Modular)")
+    print("  4. 🎮  Launch NeuroCode Playground")
+    print("  5. 🧪  Verify Modular Components")
+    print("  6. 📊  Show Project Structure")
+    print("  7. 🔧  Run CLI Interface")
+    print("  8. ❓  Help & Documentation")
     print("  0. 🚪  Exit")
     print()
 
@@ -71,7 +72,7 @@ def main():
 
     while True:
         print_menu()
-        choice = input("🎯 Choose an option (0-7): ").strip()
+        choice = input("🎯 Choose an option (0-8): ").strip()
 
         try:
             if choice == "0":
@@ -79,6 +80,15 @@ def main():
                 break
 
             elif choice == "1":
+                print("🚀 Launching Enhanced Neuroplex (Integrated NeuroChat)...")
+                try:
+                    os.system(
+                        f'python "{project_root}/launchers/launch_enhanced_neuroplex.py"'
+                    )
+                except Exception as e:
+                    print(f"❌ Error launching Enhanced Neuroplex: {e}")
+
+            elif choice == "2":
                 print("🚀 Launching Fully Modular Neuroplex GUI...")
                 try:
                     os.system(
@@ -87,31 +97,31 @@ def main():
                 except Exception as e:
                     print(f"❌ Error launching GUI: {e}")
 
-            elif choice == "2":
+            elif choice == "3":
                 print("🚀 Launching Standard Modular Neuroplex GUI...")
                 try:
                     os.system(f'python "{project_root}/launchers/launch_modular_neuroplex.py"')
                 except Exception as e:
                     print(f"❌ Error launching GUI: {e}")
 
-            elif choice == "3":
+            elif choice == "4":
                 print("🎮 Launching NeuroCode Playground...")
                 try:
                     os.system(f'python "{project_root}/launchers/launch_playground.py"')
                 except Exception as e:
                     print(f"❌ Error launching playground: {e}")
 
-            elif choice == "4":
+            elif choice == "5":
                 print("🧪 Verifying Modular Components...")
                 try:
                     os.system(f'python "{project_root}/scripts/tools/verify_modular_components.py"')
                 except Exception as e:
                     print(f"❌ Error running verification: {e}")
 
-            elif choice == "5":
+            elif choice == "6":
                 show_project_structure()
 
-            elif choice == "6":
+            elif choice == "7":
                 print("🔧 Launching CLI Interface...")
                 try:
                     from neurocode.cli import main as cli_main
@@ -120,7 +130,7 @@ def main():
                 except Exception as e:
                     print(f"❌ Error launching CLI: {e}")
 
-            elif choice == "7":
+            elif choice == "8":
                 print("📚 NeuroCode Documentation:")
                 print("  • Architecture: docs/MODULAR_ARCHITECTURE.md")
                 print("  • Installation: docs/guides/INSTALLATION.md")
@@ -130,7 +140,7 @@ def main():
                 print()
 
             else:
-                print("❌ Invalid choice. Please enter 0-7.")
+                print("❌ Invalid choice. Please enter 0-8.")
 
         except KeyboardInterrupt:
             print("\n👋 Goodbye!")
