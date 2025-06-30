@@ -12,15 +12,11 @@ This demo showcases:
 License: GPL-3.0
 """
 
-import sys
-import json
-from pathlib import Path
-from datetime import datetime
 
 # Mock implementation for demo purposes
 class MockPluginRegistry:
     """Mock plugin registry for demonstration"""
-    
+
     def __init__(self):
         self.plugins = {
             "advanced-memory-system": {
@@ -33,7 +29,7 @@ class MockPluginRegistry:
                 "keywords": ["memory", "vector", "semantic", "episodic"],
                 "download_count": 15420,
                 "rating": 4.8,
-                "last_updated": "2025-06-25T10:30:00Z"
+                "last_updated": "2025-06-25T10:30:00Z",
             },
             "professional-personality": {
                 "name": "professional-personality",
@@ -45,7 +41,7 @@ class MockPluginRegistry:
                 "keywords": ["personality", "professional", "communication"],
                 "download_count": 8930,
                 "rating": 4.5,
-                "last_updated": "2025-06-20T14:15:00Z"
+                "last_updated": "2025-06-20T14:15:00Z",
             },
             "cloud-optimizer": {
                 "name": "cloud-optimizer",
@@ -57,7 +53,7 @@ class MockPluginRegistry:
                 "keywords": ["cloud", "optimization", "aws", "azure", "gcp"],
                 "download_count": 12750,
                 "rating": 4.7,
-                "last_updated": "2025-06-28T09:45:00Z"
+                "last_updated": "2025-06-28T09:45:00Z",
             },
             "emotional-intelligence": {
                 "name": "emotional-intelligence",
@@ -69,7 +65,7 @@ class MockPluginRegistry:
                 "keywords": ["emotions", "empathy", "consciousness", "psychology"],
                 "download_count": 6840,
                 "rating": 4.9,
-                "last_updated": "2025-06-22T16:20:00Z"
+                "last_updated": "2025-06-22T16:20:00Z",
             },
             "voice-synthesis-pro": {
                 "name": "voice-synthesis-pro",
@@ -81,7 +77,7 @@ class MockPluginRegistry:
                 "keywords": ["voice", "tts", "synthesis", "emotional", "neural"],
                 "download_count": 18950,
                 "rating": 4.6,
-                "last_updated": "2025-06-26T11:10:00Z"
+                "last_updated": "2025-06-26T11:10:00Z",
             },
             "goal-tracker-ai": {
                 "name": "goal-tracker-ai",
@@ -93,10 +89,10 @@ class MockPluginRegistry:
                 "keywords": ["goals", "productivity", "tracking", "optimization"],
                 "download_count": 9670,
                 "rating": 4.4,
-                "last_updated": "2025-06-24T13:30:00Z"
-            }
+                "last_updated": "2025-06-24T13:30:00Z",
+            },
         }
-    
+
     def search(self, query="", category=""):
         """Search plugins"""
         results = []
@@ -104,71 +100,79 @@ class MockPluginRegistry:
             # Filter by category
             if category and plugin_data["category"] != category:
                 continue
-            
+
             # Filter by query (search in name, description, keywords)
             if query:
                 search_text = f"{plugin_data['name']} {plugin_data['description']} {' '.join(plugin_data['keywords'])}".lower()
                 if query.lower() not in search_text:
                     continue
-            
+
             results.append(plugin_data)
-        
+
         # Sort by downloads (popularity)
         return sorted(results, key=lambda p: p["download_count"], reverse=True)
-    
+
     def get_popular(self, limit=10):
         """Get most popular plugins"""
-        sorted_plugins = sorted(self.plugins.values(), key=lambda p: p["download_count"], reverse=True)
+        sorted_plugins = sorted(
+            self.plugins.values(), key=lambda p: p["download_count"], reverse=True
+        )
         return sorted_plugins[:limit]
-    
+
     def get_categories(self):
         """Get available categories"""
         categories = set(plugin["category"] for plugin in self.plugins.values())
         return sorted(categories)
 
+
 def print_header(text):
     """Print a formatted header"""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"🔌 {text}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
+
 
 def print_plugin(plugin_data, installed=False, loaded=False):
     """Print formatted plugin information"""
     status = "✅ Installed" if installed else "📦 Available"
     if installed and loaded:
         status += " & Loaded"
-    
+
     rating_stars = "⭐" * int(plugin_data["rating"])
-    
+
     print(f"{status} {plugin_data['name']} v{plugin_data['version']} ({plugin_data['category']})")
     print(f"    {plugin_data['description']}")
-    print(f"    Author: {plugin_data['author']} | Downloads: {plugin_data['download_count']:,} | {rating_stars}")
+    print(
+        f"    Author: {plugin_data['author']} | Downloads: {plugin_data['download_count']:,} | {rating_stars}"
+    )
     print(f"    Keywords: {', '.join(plugin_data['keywords'])}")
     print()
+
 
 def demo_plugin_search():
     """Demonstrate plugin search functionality"""
     print_header("Plugin Search Demo")
-    
+
     registry = MockPluginRegistry()
-    
+
     print("🔍 Searching for 'memory' plugins:")
     results = registry.search(query="memory")
     for plugin in results:
         print_plugin(plugin)
-    
+
     print("\n🔍 Searching in 'consciousness' category:")
     results = registry.search(category="consciousness")
     for plugin in results:
         print_plugin(plugin)
 
+
 def demo_popular_plugins():
     """Demonstrate popular plugins listing"""
     print_header("Popular Plugins Demo")
-    
+
     registry = MockPluginRegistry()
     popular = registry.get_popular(limit=5)
-    
+
     print("🌟 Top 5 Most Popular Plugins:")
     for i, plugin in enumerate(popular, 1):
         print(f"{i}. {plugin['name']} ({plugin['download_count']:,} downloads)")
@@ -176,35 +180,37 @@ def demo_popular_plugins():
         print(f"   Rating: {'⭐' * int(plugin['rating'])} ({plugin['rating']})")
         print()
 
+
 def demo_plugin_categories():
     """Demonstrate plugin categories"""
     print_header("Plugin Categories Demo")
-    
+
     registry = MockPluginRegistry()
     categories = registry.get_categories()
-    
+
     print("📂 Available Plugin Categories:")
     for category in categories:
         # Count plugins in each category
         count = len([p for p in registry.plugins.values() if p["category"] == category])
         print(f"   📁 {category} ({count} plugins)")
 
+
 def demo_plugin_management():
     """Demonstrate plugin management operations"""
     print_header("Plugin Management Demo")
-    
+
     # Simulate installed plugins
     installed_plugins = ["advanced-memory-system", "professional-personality"]
     loaded_plugins = ["advanced-memory-system"]
-    
+
     registry = MockPluginRegistry()
-    
+
     print("📋 Installed Plugins:")
     for plugin_name in installed_plugins:
         plugin_data = registry.plugins[plugin_name]
         is_loaded = plugin_name in loaded_plugins
         print_plugin(plugin_data, installed=True, loaded=is_loaded)
-    
+
     print("💡 Plugin Management Commands:")
     print("   neurocode plugin install <name>     - Install a plugin")
     print("   neurocode plugin uninstall <name>   - Uninstall a plugin")
@@ -212,10 +218,11 @@ def demo_plugin_management():
     print("   neurocode plugin search <query>     - Search registry")
     print("   neurocode plugin update             - Update all plugins")
 
+
 def demo_plugin_usage():
     """Demonstrate how plugins would be used in NeuroCode"""
     print_header("Plugin Usage in NeuroCode Demo")
-    
+
     print("🧠 Example: Using Advanced Memory System Plugin")
     print("""
 # Import and use plugin in NeuroCode
@@ -248,7 +255,7 @@ for memory in related_memories:
     log "Found: " + memory.content + " (relevance: " + memory.relevance + ")"
 end
 """)
-    
+
     print("\n🎭 Example: Using Professional Personality Plugin")
     print("""
 use plugin "professional-personality" as personality
@@ -273,10 +280,11 @@ when user_emotion == "frustrated":
 end
 """)
 
+
 def demo_plugin_development():
     """Demonstrate plugin development concepts"""
     print_header("Plugin Development Demo")
-    
+
     print("🛠️ Creating a Custom Plugin:")
     print("""
 1. Plugin Structure:
@@ -325,14 +333,17 @@ def demo_plugin_development():
    neurocode plugin publish       # Submit to registry
 """)
 
+
 def main():
     """Run the complete plugin registry demo"""
     print("🔌 NeuroCode Plugin Registry System Demo")
     print("=" * 50)
     print("Welcome to the NeuroCode Plugin Registry demonstration!")
     print("This showcases the first standardized plugin system for AI-consciousness programming.")
-    print("\nNote: This is a demonstration with mock data. The actual registry is under development.")
-    
+    print(
+        "\nNote: This is a demonstration with mock data. The actual registry is under development."
+    )
+
     # Run all demos
     demo_plugin_search()
     demo_popular_plugins()
@@ -340,7 +351,7 @@ def main():
     demo_plugin_management()
     demo_plugin_usage()
     demo_plugin_development()
-    
+
     print_header("Demo Complete!")
     print("🎉 NeuroCode Plugin Registry Demo completed successfully!")
     print("\n🔗 Learn More:")
@@ -352,6 +363,7 @@ def main():
     print("   2. Create your first NeuroCode plugin")
     print("   3. Join the plugin developer community")
     print("   4. Contribute to the ecosystem!")
+
 
 if __name__ == "__main__":
     main()

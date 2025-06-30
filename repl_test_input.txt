@@ -1,0 +1,4 @@
+goal: test the REPL system
+agent: on
+remember("REPL test successful")
+exit

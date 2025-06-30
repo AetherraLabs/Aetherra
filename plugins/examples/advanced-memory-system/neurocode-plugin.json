@@ -18,7 +18,13 @@
     "memory_consolidation": "process",
     "get_memory_stats": "function"
   },
-  "keywords": ["memory", "vector", "semantic", "episodic", "ai-consciousness"],
+  "keywords": [
+    "memory",
+    "vector",
+    "semantic",
+    "episodic",
+    "ai-consciousness"
+  ],
   "repository": "https://github.com/neurocode/plugins/advanced-memory",
   "documentation": "https://docs.neurocode.org/plugins/advanced-memory",
   "homepage": "https://neurocode.org/plugins/advanced-memory",
@@ -28,7 +34,11 @@
   ],
   "compatibility": {
     "python_version": ">=3.8",
-    "operating_systems": ["linux", "macos", "windows"],
+    "operating_systems": [
+      "linux",
+      "macos",
+      "windows"
+    ],
     "gpu_acceleration": "optional"
   }
 }
