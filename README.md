@@ -735,175 +735,12 @@ NeuroCode Project/
 │   ├── performance_monitor.py # Performance tracking
 │   └── verify_installation.py # Installation verification
 ├── 📁 archive/                 # Historical files & backups
-│   ├── historical/             # Achievement reports & legacy docs
 │   ├── old_reports/            # Legacy documentation
 │   └── debug/                  # Debug artifacts
 ├── 📄 main.py                  # CLI entry point
 ├── 📄 README.md                # This file
 ├── 📄 CHANGELOG.md             # Version history and change log
 ├── 📄 CHANGE_MANAGEMENT_PROTOCOL.md # Documentation standards
-├── 📄 requirements.txt         # Python dependencies
-├── 📄 pyproject.toml           # Modern Python packaging
-└── 📄 LICENSE                  # MIT License
-```
-## 📖 **PROJECT OVERVIEW SYSTEM**
-Stay informed about project status with our intelligent overview system.
-
-### 🚀 **Quick Access Commands**
-```bash
-# Quick project overview
-./overview.bat                    # Windows batch script
-python scripts/view_overview.py   # Python script
-
-# Update overview data
-./overview.bat update
-python scripts/update_overview.py
-
-# View statistics only
-./overview.bat stats
-python scripts/view_overview.py --stats-only
-```
-
-### 📊 **Current Project Status**
-- **📁 Files**: 650+ organized files
-- **🧠 Core Modules**: 65+ modular components
-- **🧪 Tests**: 56+ test files
-- **🌐 Website**: Deploying to [neurocode.dev](https://neurocode.dev) (DNS propagating)
-- **🛡️ Protection**: Comprehensive backup system active
-- **📖 Documentation**: Complete system documentation
-
-**For detailed status**: See `PROJECT_OVERVIEW.md` or run overview commands above.
-
----
-## 📦 **Installation & Quick Start**
-### **Prerequisites**
-- Python 3.8+ (tested with Python 3.11+)
-- OpenAI API key (for AI-powered features)
-### **Step 1: Clone & Install**
-```bash
-git clone https://github.com/Zyonic88/NeuroCode.git
-cd NeuroCode
-pip install -r requirements.txt
-```
-### **Step 2: Setup API Key**
-```bash
-# Windows PowerShell:
-$env:OPENAI_API_KEY="your-api-key-here"
-# Linux/macOS:
-export OPENAI_API_KEY="your-api-key-here"
-```
-### **Step 3: Run NeuroCode**
-**🎯 Unified CLI (New!):**
-```bash
-python neurocode_unified_cli.py --help     # Show all available commands
-python neurocode_unified_cli.py demo       # Run interactive demo
-python neurocode_unified_cli.py persona    # Manage AI persona system
-python neurocode_unified_cli.py plugin     # Manage plugins
-```
-**🎨 GUI Applications:**
-```bash
-python neurocode_launcher.py
-```
-**Modular GUI (Latest):**
-```bash
-python launchers/launch_fully_modular_neuroplex.py
-```
-**Enhanced GUI:**
-```bash
-python launchers/launch_neuroplex_v2.py
-```
-**Command Line Interface:**
-```bash
-python src/neurocode/cli/main.py
-```
-**Quick Test:**
-```bash
-python -c "from core.interpreter import NeuroCodeInterpreter; print('✓ NeuroCode Ready!')"
-```
----
-## 🎯 **Quick Examples**
-### **Basic NeuroCode Program**
-```neurocode
-# goal_setting.neuro
-goal: learn user preferences priority: medium
-remember("user likes dark themes") as "ui_preferences"
-when system_startup:
-    apply dark_theme
-    log "Applied user preference"
-end
-```
-### **AI-Powered Self-Healing**
-```neurocode
-# auto_debug.neuro
-set auto_debug on 80
-load "my_script.py"
-if errors_detected:
-    suggest fix for "detected issues"
-    apply fix if confidence > 85%
-end
-```
-### **Memory & Learning**
-```neurocode
-# basic_memory.neuro
-remember("optimization improved speed by 40%") as "performance"
-learn from "system_logs"
-recall "performance improvements"
-```
----
-## 🗂️ **Repository Structure**
-**NeuroCode is professionally organized with a clean, maintainable architecture:**
-```
-NeuroCode/
-├── 📁 core/                    # Core AI engine (25+ modules)
-│   ├── interpreter.py          # Main NeuroCode interpreter
-│   ├── enhanced_interpreter.py # Advanced cognitive interpreter
-│   ├── memory.py               # Memory system & vector storage
-│   ├── agent.py                # Autonomous AI agent
-│   ├── ai_runtime.py           # OpenAI/LLM integration
-│   ├── goal_system.py          # Goal management & tracking
-│   ├── plugin_manager.py       # Plugin ecosystem manager
-│   ├── debug_system.py         # Auto-debug & self-healing
-│   └── enhanced_parser.py      # Advanced NeuroCode parser
-├── 📁 ui/                      # Modern GUI interfaces
-│   ├── neuroplex_gui.py        # Main PySide6 application
-│   ├── neuro_ui.py             # Enhanced UI with chat
-│   ├── neuro_chat.py           # AI chat interface
-│   └── neuro_chat_console.py   # Console chat interface
-├── 📁 launchers/               # Application launchers
-│   ├── launch_neuroplex.py     # Main GUI launcher
-│   ├── launch_neuro_ui.py      # Enhanced UI launcher
-│   └── safe_launcher.py        # Safe mode launcher
-├── 📁 plugins/                 # Extensible plugin system
-│   ├── math_plugin.py          # Mathematical operations
-│   ├── whisper.py              # Audio processing
-│   └── system_monitor.py       # System monitoring
-├── 📁 stdlib/                  # Standard library modules
-│   ├── sysmon.py               # System monitoring
-│   ├── optimizer.py            # Performance optimization
-│   ├── selfrepair.py           # Auto-debugging
-│   └── whisper.py              # Speech processing
-├── 📁 examples/                # Sample NeuroCode programs
-│   ├── basic_memory.neuro      # Memory system demo
-│   ├── ai_collaboration.neuro  # AI collaboration
-│   └── goal_setting.neuro      # Goal management
-├── 📁 tests/                   # Comprehensive test suite
-│   ├── test_suite.py           # Full system tests
-│   ├── test_core_features.py   # Core functionality tests
-│   └── test_gui.py             # GUI component tests
-├── 📁 demos/                   # Interactive demonstrations
-│   ├── comprehensive_demo.py   # Full feature showcase
-│   └── natural_translation_demo.py # AI translation demo
-├── 📁 scripts/                 # Utility & setup scripts
-│   ├── setup_enhancements.py  # Environment setup
-│   ├── performance_monitor.py # Performance tracking
-│   └── verify_installation.py # Installation verification
-├── 📁 archive/                 # Historical files & backups
-│   ├── old_reports/            # Legacy documentation
-│   └── debug/                  # Debug artifacts
-├── 📄 main.py                  # CLI entry point
-├── 📄 neurocode.py             # Core language module
-├── 📄 neuroplex.py             # Main application
-├── 📄 README.md                # This file
 ├── 📄 requirements.txt         # Python dependencies
 ├── 📄 pyproject.toml           # Modern Python packaging
 └── 📄 LICENSE                  # MIT License
@@ -945,180 +782,42 @@ If NeuroCode revolutionizes your coding experience, give us a ⭐ on GitHub!
 
 ---
 
-## ⚖️ **Legal Compliance & Responsible AI**
+## ⚖️ **Legal & Ethical AI Framework**
 
-**NeuroCode & Neuroplex are designed with legal compliance and responsible AI principles at their core.**
+**NeuroCode & Neuroplex are built with comprehensive legal compliance and responsible AI principles.**
 
-📋 **For comprehensive legal documentation, see [docs/LEGAL.md](docs/LEGAL.md)**
+### 🛡️ **Core Legal Principles**
 
-### 🛡️ **Legal Framework Summary**
+✅ **Open** - GPL-3.0 licensed, community-driven development  
+✅ **Ethical** - Transparent AI decisions with human oversight  
+✅ **Autonomous** - Self-modifying capabilities with safety controls  
+✅ **Audited** - Complete logging of all AI actions and decisions  
+✅ **AI-Native** - Purpose-built for safe human-AI collaboration  
 
-**✅ Programming Language Development**
-- Creating new programming languages, compilers, and runtimes is **100% legal** in all jurisdictions
-- AI-enhanced languages with self-modifying capabilities are permitted under software development law
-- Cognitive computing paradigms are protected as innovative software development
-- Domain-specific languages (DSLs) and natural language programming are established legal practices
-- Compiler and interpreter development follows decades of legal precedent
+### 📋 **Legal Compliance Summary**
 
-**✅ AI Model Usage Compliance**
-- **OpenAI Integration**: Fully compliant with OpenAI usage policies and terms of service
-- **Local Models**: Respects all open-source licenses (Apache, MIT, LLaMA research clauses)
-- **Multi-LLM Support**: Adheres to each provider's specific terms and conditions
-- **No Model Redistribution**: We use AI models via APIs - no redistribution of trained weights
-- **Data Processing**: Compliant with GDPR, CCPA, and other regional data protection laws
+- **Programming Language Development**: 100% legal in all jurisdictions - creating languages, compilers, and runtimes is protected intellectual property
+- **AI Model Integration**: Fully compliant with OpenAI, local model licenses, and multi-LLM provider terms
+- **Regulatory Ready**: Designed for emerging AI regulations (EU AI Act, etc.) with built-in safety controls
+- **Enterprise Grade**: Sandboxed execution, audit trails, and user consent for all autonomous actions
+- **Open Source**: GPL-3.0 ensures community benefits while preventing proprietary fragmentation
 
-**⚖️ Jurisdictional & Regulatory Compliance**
-- **Global Software Legality**: Programming languages are legal intellectual property in all major jurisdictions
-- **AI Regulation Ready**: Designed to comply with emerging AI regulations (EU AI Act, etc.)
-- **Export Control Compliance**: No restricted cryptography or dual-use technology
-- **Professional Standards**: Adheres to software engineering ethics and professional guidelines
-- **Regulatory Monitoring**: Actively tracks and adapts to new AI governance frameworks
+### ⚠️ **Important Disclaimer**
 
-**✅ Autonomous System Safeguards**
-- **Sandboxed Execution**: All self-modifying operations run in controlled environments
-- **Audit Logging**: Complete logs of all autonomous decisions and actions
-- **User Consent**: All automated changes require explicit user approval above confidence thresholds
-- **Responsible Automation**: Built-in safeguards prevent harmful or unauthorized actions
+> **Autonomous AI Capabilities**: NeuroCode includes self-modifying AI that can edit code and execute commands. Users are responsible for reviewing AI suggestions, maintaining backups, and ensuring compliance with local regulations and organizational policies.
 
-### 🔒 **Security & Safety Measures**
+### 📚 **Comprehensive Legal Documentation**
 
-### 💡 **Intellectual Property & Code Ethics**
+**📋 Complete Legal Framework**
+- **[⚖️ Legal Compliance Guide](docs/LEGAL.md)** - Comprehensive legal framework, compliance requirements, and international considerations
+- **[🔒 Security Policy](SECURITY.md)** - Vulnerability reporting and security guidelines  
+- **[🤝 Code of Conduct](CODE_OF_CONDUCT.md)** - Community standards and behavior expectations
+- **[📜 License](LICENSE)** - GPL-3.0-or-later open source license
 
-**🏛️ Code Generation Ethics**
-- AI-generated code should be reviewed for originality and licensing compliance
-- Users retain ownership of their prompts and derivative works
-- AI suggestions are tools to enhance human creativity, not replace human judgment
-- Generated code should respect existing copyrights and patents
-- Attribution of AI assistance in code generation is recommended best practice
-
-**📜 Licensing Considerations**
-- All generated code inherits the licensing context of the project
-- Users must ensure AI-generated modifications comply with existing project licenses
-- Open source contributions should clearly indicate any AI assistance used
-- Commercial use must comply with all applicable AI provider terms of service
-
-### �️ **Technical Safeguards & Implementation**
-```neurocode
-# Example: Built-in safety checks
-when auto_fix_suggested:
-    if confidence < 85%:
-        require user_approval
-    if file.critical:
-        require explicit_confirmation
-    if system.production:
-        disable auto_apply
-end
-
-# Audit trail for all actions
-remember("Applied fix to {file} with confidence {conf}") as "audit_log"
-```
-
-**🔍 Responsible AI Principles**
-- **Transparency**: All AI decisions are explainable and auditable
-- **Human Control**: Users maintain ultimate control over all system actions
-- **Privacy Protection**: Local model options for sensitive data processing
-- **Ethical Guidelines**: Prohibited use cases prevented by design
-
-### 📋 **Usage Guidelines & Disclaimer**
-
-**⚠️ IMPORTANT DISCLAIMER**
-> NeuroCode & Neuroplex include autonomous AI capabilities that can modify code, execute commands, and make system changes. Users are responsible for:
-> - Reviewing all AI-suggested modifications before application
-> - Ensuring compliance with local laws and regulations in their jurisdiction
-> - Using appropriate safeguards in production environments
-> - Maintaining backups and version control
-> - Verifying AI-generated code meets security and quality standards
-> - Understanding that AI outputs may contain errors or biases
-> - Complying with their organization's policies for AI tool usage
-> - Respecting intellectual property rights and licensing terms
-
-**✅ Permitted Uses**
-- Software development and automation
-- Educational and research purposes
-- Personal productivity enhancement
-- Enterprise development with proper safeguards
-
-**❌ Prohibited Uses**
-- Automated harmful activities (malware, DDoS, fraud)
-- Unauthorized access to systems or data
-- Violation of third-party terms of service
-- Bypassing security measures or controls
-- Creating code that violates applicable laws
-- Generating content that infringes intellectual property
-- Developing systems for surveillance without proper authorization
-- Creating autonomous systems without appropriate human oversight
-
-### 🏛️ **Open Source Commitment**
-
-**📄 GPL-3.0 License**
-- Ensures all improvements benefit the community
-- Prevents proprietary forks that fragment the ecosystem
-- Maintains democratic control over AI OS development
-- Follows the proven Linux model for open innovation
-
-**🌍 Community Governance**
-- Open development process with transparent decision-making
-- Community oversight of safety and ethical considerations
-- Regular security audits and vulnerability assessments
-- Collaborative approach to responsible AI development
-
-### 🛠️ **Implementation Best Practices**
-
-**For Developers:**
-```bash
-# Enable audit logging
-neurocode config set audit_logging on
-neurocode config set auto_backup on
-
-# Set conservative defaults for production
-neurocode config set auto_apply_threshold 95
-neurocode config set require_confirmation on
-```
-
-**For Organizations:**
-- Deploy with appropriate access controls and monitoring
-- Implement code review processes for AI-generated changes
-- Maintain comprehensive audit trails and backups
-- Train users on responsible AI practices
-
-**For Researchers:**
-- Use local models for sensitive data processing
-- Implement additional safeguards for experimental features
-- Document all AI decision-making processes
-- Share safety findings with the community
-
-### 📞 **Contact & Reporting**
-
-**Security Issues**: Report vulnerabilities responsibly through GitHub's security advisory system
-**Legal Concerns**: Contact project maintainers for compliance questions
-**Ethics Questions**: Engage with the community through our discussion forums
-
-### 🌐 **Legal Resources & Support**
-
-**📚 Additional Resources**
-- Stay updated with your local AI and software development regulations
-- Consult with legal counsel for enterprise deployments
-- Review AI provider terms of service regularly
-- Monitor emerging AI governance frameworks and standards
-
-**🤝 Community Support**
-- Legal compliance discussions in our forums
-- Best practices sharing for enterprise users
-- Regular updates on regulatory changes affecting AI development
-- Open collaboration on safety and ethics improvements
-
-### 📚 **Additional Legal Resources**
-
-**📋 Governance Documentation**
-- **[📄 Security Policy](SECURITY.md)**: Comprehensive security and vulnerability reporting guidelines
-- **[🤝 Code of Conduct](CODE_OF_CONDUCT.md)**: Community standards and behavior guidelines
-- **[⚖️ Comprehensive Legal Guide](docs/LEGAL.md)**: Complete legal framework and compliance documentation
-- **[📜 License](LICENSE)**: GPL-3.0-or-later open source license
-
-**🔗 Quick Reference**
+**🔗 Quick Access**
 - **Bug Reports**: [GitHub Issues](https://github.com/Zyonic88/NeuroCode/issues)
-- **Security Reports**: [GitHub Security Advisories](https://github.com/Zyonic88/NeuroCode/security/advisories)
-- **Community Discussions**: [GitHub Discussions](https://github.com/Zyonic88/NeuroCode/discussions)
+- **Security Reports**: [GitHub Security Advisories](https://github.com/Zyonic88/NeuroCode/security/advisories)  
 - **Legal Questions**: Create an issue with the "legal" label
+- **Community Discussions**: [GitHub Discussions](https://github.com/Zyonic88/NeuroCode/discussions)
 
-**We are committed to building AI systems that are powerful, safe, and beneficial for everyone.**
+*Building AI systems that are powerful, safe, and beneficial for everyone.*
