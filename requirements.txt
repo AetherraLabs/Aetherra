@@ -2,34 +2,39 @@
 # Production-ready dependencies for the world's first AI-native language
 
 # === CORE REQUIREMENTS (ALWAYS NEEDED) ===
-lark>=1.1.7                      # Grammar parser for .neuro files
-streamlit>=1.28.0                # Interactive playground interface
-
-# === AI & LLM PROVIDERS ===
-openai>=1.0.0,<2.0.0            # OpenAI GPT models
-anthropic>=0.5.0                 # Claude AI integration
-google-generativeai>=0.3.0      # Gemini AI integration
-
-# === LOCAL AI SUPPORT (OPTIONAL) ===
-ollama>=0.1.0                    # Local model server (Mistral, LLaMA, etc.)
-llama-cpp-python>=0.2.0         # Direct GGUF model loading (used in multi_llm_manager.py)
+lark>=1.1.7                      # Grammar parser for .neuro files (used in multiple parsers)
 
 # === SYSTEM MONITORING ===
-psutil>=5.9.0                    # System resource monitoring (used in performance_optimizer.py)
+psutil>=5.9.0                    # System resource monitoring (used in performance modules)
 
-# === PLUGIN SYSTEM ===
-semantic-version>=2.10.0         # Semantic version parsing for plugin management
-requests>=2.31.0                 # HTTP client for plugin registry
+# === AI & LLM PROVIDERS (OPTIONAL - Install as needed) ===
+# At least ONE AI provider is recommended for full functionality
+openai>=1.0.0,<2.0.0            # OpenAI GPT models (used in ai_runtime.py)
+# anthropic>=0.5.0               # Claude AI integration
+# google-generativeai>=0.3.0    # Gemini AI integration
+
+# === LOCAL AI SUPPORT (OPTIONAL) ===
+# ollama>=0.1.0                  # Local model server (Mistral, LLaMA, etc.)
+# llama-cpp-python>=0.2.0       # Direct GGUF model loading
+
+# === WEB INTERFACE (OPTIONAL) ===
+# streamlit>=1.28.0              # Interactive playground interface (src/neurocode/ui/playground)
+
+# === PLUGIN SYSTEM (OPTIONAL) ===
+# requests>=2.31.0               # HTTP client for plugin registry
 
 # === ENHANCED FEATURES (OPTIONAL BUT RECOMMENDED) ===
 # Uncomment any of these for enhanced functionality:
+
+# === TEXT PROCESSING ===
+# markdown>=3.4.0                # Markdown rendering for chat enhancements
 
 # === GUI FRAMEWORKS (for advanced UI) ===
 # PySide6>=6.5.0                 # Primary Qt backend for GUI apps
 # PyQt6>=6.5.0                   # Alternative Qt backend
 
 # === PERFORMANCE & ANALYTICS ===
-# numpy>=1.24.0                  # Fast numerical operations
+numpy>=1.24.0                    # Fast numerical operations (used in enhanced_memory_system.py)
 # scipy>=1.9.0                   # Scientific computing
 # memory-profiler>=0.61.0        # Memory usage analysis
 
@@ -56,8 +61,7 @@ requests>=2.31.0                 # HTTP client for plugin registry
 # tree-sitter>=0.20.0            # Advanced code parsing
 
 # === UTILITIES (OPTIONAL) ===
-# requests>=2.31.0               # HTTP requests (not currently used)  
-# colorama>=0.4.6                # Colored terminal output (not currently used)
+# colorama>=0.4.6                # Colored terminal output
 # rich>=13.0.0                   # Enhanced terminal formatting
 # loguru>=0.7.0                  # Advanced logging
 
@@ -69,3 +73,42 @@ requests>=2.31.0                 # HTTP client for plugin registry
 # === HIGH-PERFORMANCE STORAGE ===
 # redis>=4.5.0                   # High-performance caching
 # weaviate-client>=3.0.0         # Weaviate vector database
+
+# ===============================================================================
+# INSTALLATION GUIDE:
+# ===============================================================================
+# 
+# MINIMAL INSTALL (Core functionality only):
+#   pip install lark psutil
+#
+# RECOMMENDED INSTALL (With AI provider):
+#   pip install lark psutil openai
+#
+# FULL INSTALL (All features):
+#   pip install -r requirements.txt
+#
+# DEVELOPMENT INSTALL:
+#   pip install -r requirements_dev.txt
+#
+# ===============================================================================
+# DEPENDENCIES EXPLAINED:
+# ===============================================================================
+#
+# REQUIRED:
+# - lark: Parses .neuro files using grammar definitions
+# - psutil: System monitoring for performance optimization
+#
+# AI PROVIDERS (Choose at least one):
+# - openai: GPT-3.5/GPT-4 integration via OpenAI API
+# - anthropic: Claude AI integration via Anthropic API  
+# - google-generativeai: Gemini AI integration via Google API
+# - ollama: Local model server for privacy-focused AI
+# - llama-cpp-python: Direct GGUF model loading
+#
+# OPTIONAL FEATURES:
+# - streamlit: Web-based playground interface
+# - requests: Plugin registry and HTTP functionality
+# - numpy: Enhanced memory and performance systems
+# - PySide6/PyQt6: Advanced GUI applications
+#
+# ===============================================================================

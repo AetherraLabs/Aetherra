@@ -29,6 +29,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 try:
     import markdown
+
+    MARKDOWN_AVAILABLE = True
+except ImportError:
+    MARKDOWN_AVAILABLE = False
+    markdown = None
+
+try:
     from pygments import highlight
     from pygments.formatters import TerminalFormatter
     from pygments.lexers import get_lexer_by_name
@@ -207,9 +214,16 @@ class RichFormatter:
 
     def _apply_markdown(self, content: str) -> str:
         """Apply markdown formatting"""
+        if not MARKDOWN_AVAILABLE:
+            return content
+
         try:
             # Convert markdown to formatted text
-            html = markdown.markdown(content, extensions=["codehilite", "fenced_code"])
+            html = (
+                markdown.markdown(content, extensions=["codehilite", "fenced_code"])
+                if markdown
+                else content
+            )
             # Convert to terminal-friendly format
             return self._html_to_terminal(html)
         except Exception:
@@ -253,7 +267,7 @@ class ChatMemoryManager:
 
         self._load_sessions()
 
-    def create_session(self, title: str = None, tags: List[str] = None) -> str:
+    def create_session(self, title: Optional[str] = None, tags: Optional[List[str]] = None) -> str:
         """Create a new chat session"""
         session_id = f"session_{int(time.time() * 1000)}"
 
@@ -270,12 +284,7 @@ class ChatMemoryManager:
         if self.memory_logger:
             try:
                 self.memory_logger.log_memory(
-                    {
-                        "type": "chat_session_created",
-                        "session_id": session_id,
-                        "title": title,
-                        "timestamp": datetime.now().isoformat(),
-                    }
+                    f"Chat session created: {title} [session:{session_id}]"
                 )
             except Exception:
                 pass  # Graceful fallback
@@ -289,7 +298,7 @@ class ChatMemoryManager:
         return None
 
     def add_message(
-        self, content: str, message_type: ChatMessageType, metadata: Dict[str, Any] = None
+        self, content: str, message_type: ChatMessageType, metadata: Optional[Dict[str, Any]] = None
     ):
         """Add a message to the current session"""
         if not self.current_session_id:
@@ -306,13 +315,9 @@ class ChatMemoryManager:
             # Log important messages to memory system
             if self.memory_logger and message_type == ChatMessageType.ASSISTANT:
                 try:
+                    truncated_content = content[:200] + "..." if len(content) > 200 else content
                     self.memory_logger.log_memory(
-                        {
-                            "type": "chat_response",
-                            "content": content[:200] + "..." if len(content) > 200 else content,
-                            "session_id": self.current_session_id,
-                            "timestamp": datetime.now().isoformat(),
-                        }
+                        f"Chat response: {truncated_content} [session:{self.current_session_id}]"
                     )
                 except Exception:
                     pass  # Graceful fallback
@@ -476,7 +481,7 @@ class ChatEnhancementSystem:
         self,
         content: str,
         message_type: ChatMessageType = ChatMessageType.USER,
-        metadata: Dict[str, Any] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> ChatMessage:
         """Send a message and apply formatting"""
         formatted_content = self.formatter.format_message(content, message_type)
@@ -497,7 +502,9 @@ class ChatEnhancementSystem:
             return session.get_context_window(max_messages)
         return []
 
-    def create_new_session(self, title: str = None, tags: List[str] = None) -> str:
+    def create_new_session(
+        self, title: Optional[str] = None, tags: Optional[List[str]] = None
+    ) -> str:
         """Create a new chat session"""
         return self.memory_manager.create_session(title, tags)
 

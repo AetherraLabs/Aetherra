@@ -51,7 +51,7 @@ class UIOptimizer:
     def __init__(self):
         self.metrics_history: deque = deque(maxlen=100)
         self.widget_cache: Dict[str, Any] = {}
-        self.render_cache: Dict[str, QPixmap] = {} if PYSIDE_AVAILABLE else {}
+        self.render_cache: Dict[str, Any] = {}
         self.event_debounce: Dict[str, float] = {}
         self.widget_refs: List[weakref.ref] = []
         self.optimization_enabled = True
@@ -62,10 +62,12 @@ class UIOptimizer:
         self.memory_threshold_mb = 100
 
         # Setup cleanup timer
-        if PYSIDE_AVAILABLE:
+        if PYSIDE_AVAILABLE and QTimer:
             self.cleanup_timer = QTimer()
             self.cleanup_timer.timeout.connect(self._cleanup_widgets)
             self.cleanup_timer.start(30000)  # 30 seconds
+        else:
+            self.cleanup_timer = None
 
     def optimize_widget_creation(self, widget_class: type, *args, **kwargs) -> Any:
         """Optimize widget creation with caching"""
@@ -119,7 +121,12 @@ class UIOptimizer:
         render_time = (time.time() - start_time) * 1000
 
         # Cache expensive renders
-        if render_time > self.target_render_time and isinstance(result, QPixmap):
+        if (
+            render_time > self.target_render_time
+            and PYSIDE_AVAILABLE
+            and QPixmap
+            and isinstance(result, QPixmap)
+        ):
             self.render_cache[operation_name] = result
 
         return result
@@ -135,12 +142,12 @@ class UIOptimizer:
 
     def batch_ui_updates(self, updates: List[Callable], batch_size: int = 10) -> None:
         """Batch UI updates to reduce repaints"""
-        if not PYSIDE_AVAILABLE:
+        if not PYSIDE_AVAILABLE or not QApplication:
             for update in updates:
                 update()
             return
 
-        app = QApplication.instance()
+        app = QApplication.instance() if QApplication else None
         if not app:
             for update in updates:
                 update()
@@ -159,11 +166,22 @@ class UIOptimizer:
 
     def measure_ui_performance(self) -> UIPerformanceMetrics:
         """Measure current UI performance"""
-        if not PYSIDE_AVAILABLE:
+        if not PYSIDE_AVAILABLE or not QApplication:
             return UIPerformanceMetrics(0, 0, 0, 0, 0, time.time())
 
-        app = QApplication.instance()
-        widget_count = len(app.allWidgets()) if app else 0
+        app = QApplication.instance() if QApplication else None
+        widget_count = 0
+        if app:
+            try:
+                # Try to get widget count safely - use try/except for type safety
+                widgets = getattr(app, "allWidgets", lambda: [])()
+                widget_count = len(list(widgets))
+            except Exception:
+                try:
+                    widgets = getattr(app, "topLevelWidgets", lambda: [])()
+                    widget_count = len(list(widgets))
+                except Exception:
+                    widget_count = 0
 
         # Measure memory usage
         import psutil

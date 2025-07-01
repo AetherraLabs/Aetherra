@@ -9,7 +9,7 @@ and intelligent conversation management for deeper AI interactions.
 import json
 import time
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -101,7 +101,7 @@ class ConversationalAI:
         self.data_dir.mkdir(exist_ok=True)
 
         # Initialize memory logger conditionally
-        if MEMORY_LOGGER_AVAILABLE:
+        if MEMORY_LOGGER_AVAILABLE and MemoryLogger:
             try:
                 self.memory_logger = MemoryLogger()
             except (PermissionError, FileNotFoundError):
@@ -382,7 +382,7 @@ class ConversationalAI:
 
         if context_scores:
             # Return context with highest score
-            return max(context_scores, key=context_scores.get)
+            return max(context_scores.keys(), key=lambda k: context_scores[k])
 
         return ConversationContext.CASUAL
 
@@ -492,17 +492,18 @@ class ConversationalAI:
             self.current_session.last_activity = datetime.now()
 
         # Store in memory logger
-        self.memory_logger.log_memory(
-            content=f"Conversation: {user_input[:100]}...",
-            category="conversation",
-            importance=0.7,
-            tags=["conversation", persona.value, context.value],
-            metadata={
-                "conversation_id": conversation_memory.conversation_id,
-                "persona": persona.value,
-                "context": context.value,
-            },
-        )
+        if self.memory_logger:
+            try:
+                # Attempt to log the memory with available parameters
+                if hasattr(self.memory_logger, "log_memory"):
+                    self.memory_logger.log_memory(
+                        text=f"Conversation: {user_input[:100]}...",
+                        category="conversation",
+                        tags=["conversation", persona.value, context.value],
+                    )
+            except Exception:
+                # Silently continue if logging fails
+                pass
 
         # Save periodically
         if len(self.conversation_history) % 10 == 0:
@@ -612,7 +613,7 @@ class ConversationalAI:
             "primary_context": session.context.value,
             "persona_used": session.persona_mode.value,
             "topics_discussed": list(
-                set([tag for memory in session.conversation_memories for tag in memory.tags])
+                {tag for memory in session.conversation_memories for tag in memory.tags}
             ),
             "satisfaction": self._calculate_session_satisfaction(session),
         }

@@ -7,6 +7,7 @@ ratings, and comprehensive plugin lifecycle management.
 """
 
 import importlib
+import importlib.util
 import json
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -84,7 +85,7 @@ class PluginMetadata:
     performance_score: float = 0.0
 
     # Ratings and reviews
-    ratings: List[PluginRating] = None
+    ratings: Optional[List[PluginRating]] = None
     average_rating: float = 0.0
     total_ratings: int = 0
 
@@ -94,9 +95,9 @@ class PluginMetadata:
     support_url: Optional[str] = None
 
     # Compatibility and dependencies
-    compatible_versions: List[str] = None
-    dependencies: List[str] = None
-    conflicts: List[str] = None
+    compatible_versions: Optional[List[str]] = None
+    dependencies: Optional[List[str]] = None
+    conflicts: Optional[List[str]] = None
 
     def __post_init__(self):
         if self.ratings is None:
@@ -133,7 +134,7 @@ class PluginRegistry:
         self.data_dir.mkdir(exist_ok=True)
 
         # Initialize memory logger conditionally
-        if MEMORY_LOGGER_AVAILABLE:
+        if MEMORY_LOGGER_AVAILABLE and MemoryLogger is not None:
             try:
                 self.memory_logger = MemoryLogger()
             except (PermissionError, FileNotFoundError):
@@ -193,6 +194,8 @@ class PluginRegistry:
                                 timestamp=datetime.fromisoformat(rating_data["timestamp"]),
                                 helpful_count=rating_data.get("helpful_count", 0),
                             )
+                            if metadata.ratings is None:
+                                metadata.ratings = []
                             metadata.ratings.append(rating)
 
                         self.available_plugins[metadata.id] = metadata
@@ -235,7 +238,7 @@ class PluginRegistry:
                         "timestamp": rating.timestamp.isoformat(),
                         "helpful_count": rating.helpful_count,
                     }
-                    for rating in metadata.ratings
+                    for rating in (metadata.ratings or [])
                 ]
 
                 data["plugins"].append(plugin_data)
@@ -264,6 +267,9 @@ class PluginRegistry:
             try:
                 # Import plugin module
                 spec = importlib.util.spec_from_file_location(plugin_file.stem, plugin_file)
+                if spec is None or spec.loader is None:
+                    continue
+
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
 
@@ -313,6 +319,9 @@ class PluginRegistry:
 
         try:
             spec = importlib.util.spec_from_file_location(plugin_id, plugin_file)
+            if spec is None or spec.loader is None:
+                return None
+
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
 
@@ -408,7 +417,7 @@ class PluginRegistry:
 
         try:
             # Check dependencies
-            if not self._check_dependencies(metadata.dependencies):
+            if metadata.dependencies and not self._check_dependencies(metadata.dependencies):
                 print(f"Missing dependencies for {plugin_id}")
                 return False
 
@@ -423,13 +432,10 @@ class PluginRegistry:
             self.installed_plugins[plugin_id] = plugin_instance
 
             # Log installation
-            self.memory_logger.log_memory(
-                content=f"Installed plugin: {metadata.name}",
-                category="plugin_management",
-                importance=0.6,
-                tags=["plugin", "installation", metadata.category.value],
-                metadata={"plugin_id": plugin_id, "action": "install"},
-            )
+            if self.memory_logger:
+                self.memory_logger.log_memory(
+                    f"Installed plugin: {metadata.name} [plugin:{plugin_id}]"
+                )
 
             self._save_registry_data()
             return True
@@ -457,13 +463,10 @@ class PluginRegistry:
             metadata.status = PluginStatus.AVAILABLE
 
             # Log uninstallation
-            self.memory_logger.log_memory(
-                content=f"Uninstalled plugin: {metadata.name}",
-                category="plugin_management",
-                importance=0.5,
-                tags=["plugin", "uninstallation", metadata.category.value],
-                metadata={"plugin_id": plugin_id, "action": "uninstall"},
-            )
+            if self.memory_logger:
+                self.memory_logger.log_memory(
+                    f"Uninstalled plugin: {metadata.name} [plugin:{plugin_id}]"
+                )
 
             self._save_registry_data()
             return True
@@ -539,6 +542,9 @@ class PluginRegistry:
         new_rating = PluginRating(
             user_id=user_id, rating=rating, review=review, timestamp=datetime.now()
         )
+
+        if metadata.ratings is None:
+            metadata.ratings = []
         metadata.ratings.append(new_rating)
 
         # Recalculate average rating
@@ -648,7 +654,7 @@ plugin_registry = PluginRegistry()
 
 
 # Convenience functions
-def search_plugins(query: str, category: str = None) -> List[Dict[str, Any]]:
+def search_plugins(query: str, category: Optional[str] = None) -> List[Dict[str, Any]]:
     """Search plugins with simplified interface"""
     cat = PluginCategory(category) if category else None
     results = plugin_registry.search_plugins(query, cat)

@@ -18,12 +18,12 @@ def main():
 
     # Add project paths
     project_root = Path(__file__).parent.parent
-    sys.path.insert(0, str(project_root))
-    sys.path.insert(0, str(project_root / "src" / "neurocode" / "ui"))
+    src_path = project_root / "src"
+    sys.path.insert(0, str(src_path))
 
     try:
         # Import and run enhanced Neuroplex
-        from enhanced_neuroplex import main as enhanced_main
+        from neurocode.ui.enhanced_neuroplex import main as enhanced_main
 
         print("✅ Enhanced Neuroplex components loaded")
         print("🎯 Features enabled:")
@@ -44,7 +44,7 @@ def main():
 
         try:
             # Fallback to standard Neuroplex
-            from neuroplex_fully_modular import main as fallback_main
+            from neurocode.ui.neuroplex_fully_modular import main as fallback_main
 
             print("✅ Falling back to standard Neuroplex")
             return fallback_main()

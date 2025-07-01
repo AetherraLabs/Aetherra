@@ -101,6 +101,64 @@ Human → Describe Intent → AI Understands → AI Implements → AI Learns →
 
 ---
 
+## 🚀 **Quick Start**
+
+**Ready to experience the future of AI-native computing? Get started in under 2 minutes:**
+
+### 🎬 **See NeuroCode in Action**
+
+![NeuroCode Demo](docs/images/neurocode-demo.gif)
+
+**📺 Watch the Magic:**
+- **Live AI Collaboration**: See NeuroCode and AI working together in real-time
+- **Self-Healing Code**: Watch the system automatically detect and fix errors
+- **Cognitive Programming**: Experience intent-driven development in action
+- **Multiple AI Personalities**: See different AI personalities adapt to tasks
+
+*🎥 [Full Demo Video](https://www.youtube.com/watch?v=demo-link) | 📱 [Mobile Demo](docs/images/mobile-demo.gif)*
+
+```bash
+# Clone the repository
+git clone https://github.com/Zyonic88/NeuroCode.git
+cd NeuroCode
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set your OpenAI API key (optional - local models supported)
+export OPENAI_API_KEY="your-api-key-here"  # Linux/macOS
+# OR for Windows PowerShell:
+$env:OPENAI_API_KEY="your-api-key-here"
+
+# Launch the revolutionary AI OS
+python launchers/launch_fully_modular_neuroplex.py
+```
+
+**🎯 What You'll See:**
+- **Modern GUI**: Beautiful interface with code editor, AI chat, and real-time feedback
+- **AI Personalities**: Choose from 7 distinct AI personalities that adapt to your needs  
+- **Live NeuroCode**: Write cognitive programs that think, learn, and evolve
+- **Memory System**: AI that remembers your preferences and learns from every interaction
+
+**💡 Try Your First NeuroCode Program:**
+```neurocode
+goal: learn user preferences
+remember("user prefers dark themes") as "ui_preferences"
+when system_startup:
+    think "What would make the user more productive?"
+    suggest improvements with confidence > 80%
+end
+```
+
+**🔥 Alternative Launch Options:**
+- **CLI Mode**: `python main.py` - Command-line interface
+- **Web Playground**: `python ui/neurocode_playground.py` - Browser-based editor
+- **Chat Only**: `python ui/neuro_chat_console.py` - Pure AI conversation
+
+**Need Help?** Check our [Installation Guide](docs/INSTALLATION.md) or [Tutorial](docs/TUTORIAL.md)
+
+---
+
 ## ⚡ **PERFORMANCE REVOLUTION: Lightning-Fast & Fluid Operations**
 
 **NeuroCode & Neuroplex now operate at unprecedented speed with our advanced performance engine:**

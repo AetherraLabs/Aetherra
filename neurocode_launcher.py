@@ -123,7 +123,7 @@ def main():
             elif choice == "7":
                 print("🔧 Launching CLI Interface...")
                 try:
-                    from neurocode.cli import main as cli_main
+                    from neurocode.cli.main import main as cli_main
 
                     cli_main()
                 except Exception as e:

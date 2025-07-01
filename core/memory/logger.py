@@ -9,6 +9,7 @@ automatic categorization, and real-time memory insights.
 import json
 import os
 import time
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
@@ -82,9 +83,9 @@ class EnhancedMemoryEntry(MemoryEntry):
         importance = MemoryImportance(data.get("importance", 3))
 
         entry = cls(
-            id=data.get("id"),
+            id=data.get("id") or str(uuid.uuid4()),
             text=data.get("text", ""),
-            timestamp=data.get("timestamp"),
+            timestamp=data.get("timestamp") or str(datetime.now()),
             tags=data.get("tags", []),
             category=data.get("category", "general"),
             metadata=data.get("metadata", {}),
@@ -407,7 +408,7 @@ class MemoryLogger:
                     entry_time = datetime.fromisoformat(entry.timestamp.replace("Z", "+00:00"))
                     days_old = (datetime.now() - entry_time).days
                     recency_score = max(0.1, 1.0 - (days_old / 365))  # Decay over a year
-                except:
+                except Exception:
                     pass
 
             return (

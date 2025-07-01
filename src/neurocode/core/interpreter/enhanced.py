@@ -9,6 +9,9 @@ import sys
 import time
 from typing import Any, Dict
 
+# Import base interpreter first
+from .base import NeuroCodeInterpreter
+
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -90,32 +93,43 @@ class AIModelRouter:
             return task_models[0][0]
 
 
+# Optional imports with fallbacks
+AICollaborationFramework = None
+ask_ai = None
+IntentToCodeParser = None
+parse_natural_intent = None
+LocalAIEngine = None
+local_analyze_code = None
+local_ask_ai = None
+PerformanceOptimizer = None
+EnhancedSemanticMemory = None
+
 try:
-    # Try relative imports first (when run as module)
-    try:
-        from .ai_collaboration import AICollaborationFramework
-        from .ai_runtime import ask_ai
-        from .intent_parser import IntentToCodeParser, parse_natural_intent
-        from .interpreter import NeuroCodeInterpreter
-        from .local_ai import LocalAIEngine, local_analyze_code, local_ask_ai
-        from .performance_optimizer import PerformanceOptimizer
-        from .vector_memory import EnhancedSemanticMemory
-    except ImportError:
-        # Fallback to direct imports (when run from parent directory)
-        from ai_collaboration import AICollaborationFramework
-        from ai_runtime import ask_ai
-        from intent_parser import IntentToCodeParser, parse_natural_intent
-        from interpreter import NeuroCodeInterpreter
-        from local_ai import LocalAIEngine, local_analyze_code, local_ask_ai
-        from performance_optimizer import PerformanceOptimizer
-        from vector_memory import EnhancedSemanticMemory
+    from ..ai.collaboration import AICollaborationFramework
+except ImportError:
+    pass
 
-    ENHANCEMENTS_AVAILABLE = True
-    print("✅ All enhancement modules loaded successfully")
+try:
+    from ..ai.runtime import ask_ai
+except ImportError:
+    pass
 
-except ImportError as e:
-    print(f"⚠️  Some enhancement modules not available: {e}")
-    ENHANCEMENTS_AVAILABLE = False
+try:
+    from ..parser.intent_parser import IntentToCodeParser, parse_natural_intent
+except ImportError:
+    pass
+
+try:
+    from ..ai.local_ai import LocalAIEngine, local_analyze_code, local_ask_ai
+except ImportError:
+    pass
+
+try:
+    from ..memory.vector import EnhancedSemanticMemory
+except ImportError:
+    pass
+
+ENHANCEMENTS_AVAILABLE = bool(AICollaborationFramework and ask_ai and LocalAIEngine)
 
 
 class EnhancedNeuroCodeInterpreter:
@@ -131,20 +145,34 @@ class EnhancedNeuroCodeInterpreter:
         self.core_interpreter = NeuroCodeInterpreter()
 
         # Initialize enhancement modules if available
-        if ENHANCEMENTS_AVAILABLE:
-            self.local_ai = LocalAIEngine()
-            self.vector_memory = EnhancedSemanticMemory("enhanced_memory.json")
-            self.intent_parser = IntentToCodeParser()
-            self.performance_optimizer = PerformanceOptimizer()
-            self.ai_collaboration = AICollaborationFramework()
-            print("🚀 Enhanced NeuroCode Interpreter initialized with AI capabilities")
-        else:
+        try:
+            self.local_ai = LocalAIEngine() if LocalAIEngine else None
+            self.vector_memory = (
+                EnhancedSemanticMemory("enhanced_memory.json") if EnhancedSemanticMemory else None
+            )
+            self.intent_parser = IntentToCodeParser() if IntentToCodeParser else None
+            self.performance_optimizer = PerformanceOptimizer() if PerformanceOptimizer else None
+            self.ai_collaboration = AICollaborationFramework() if AICollaborationFramework else None
+
+            if all(
+                [
+                    self.local_ai,
+                    self.vector_memory,
+                    self.intent_parser,
+                    self.performance_optimizer,
+                    self.ai_collaboration,
+                ]
+            ):
+                print("🚀 Enhanced NeuroCode Interpreter initialized with AI capabilities")
+            else:
+                print("⚠️  Enhanced NeuroCode Interpreter initialized with partial AI capabilities")
+        except Exception as e:
+            print(f"⚠️  Enhancement initialization failed: {e}")
             self.local_ai = None
             self.vector_memory = None
             self.intent_parser = None
             self.performance_optimizer = None
             self.ai_collaboration = None
-            print("⚠️  Running with basic interpreter only")
 
         # Performance metrics
         self.performance_metrics = {
@@ -155,6 +183,10 @@ class EnhancedNeuroCodeInterpreter:
             "optimizations_applied": 0,
             "collaborative_tasks": 0,
         }
+
+    def execute(self, code: str) -> str:
+        """Execute NeuroCode with enhanced AI capabilities (compatibility method)"""
+        return self.execute_neurocode(code)
 
     def execute_neurocode(self, code: str) -> str:
         """Execute NeuroCode with enhanced AI capabilities"""
@@ -225,7 +257,10 @@ class EnhancedNeuroCodeInterpreter:
             self.performance_metrics["intent_translations"] += 1
 
             # Parse natural language to NeuroCode
-            parsed_intent = parse_natural_intent(natural_description)
+            if parse_natural_intent:
+                parsed_intent = parse_natural_intent(natural_description)
+            else:
+                return "[Enhancement] Intent parser not available. Please use NeuroCode syntax."
 
             # Store the translation in memory
             if self.vector_memory:
@@ -266,7 +301,10 @@ Execution Result:
         intent_description = code[7:].strip()  # Remove "intent:"
 
         try:
-            parsed_intent = parse_natural_intent(intent_description)
+            if parse_natural_intent:
+                parsed_intent = parse_natural_intent(intent_description)
+            else:
+                return "[Enhancement] Intent parser not available. Please use NeuroCode syntax."
             return f"""Intent Parsed Successfully!
 
 Type: {parsed_intent.intent_type.value}
@@ -286,7 +324,7 @@ Generated NeuroCode:
         query = code[3:].strip()  # Remove "ai:"
         self.performance_metrics["ai_queries"] += 1
 
-        if self.local_ai:
+        if self.local_ai and local_ask_ai:
             # Try local AI first
             local_response = local_ask_ai(query)
             if "[LocalAI]" not in local_response:
@@ -301,8 +339,11 @@ Generated NeuroCode:
 
         # Fall back to OpenAI
         try:
-            openai_response = ask_ai(query)
-            return f"🌐 [OpenAI] {openai_response}"
+            if ask_ai:
+                openai_response = ask_ai(query)
+                return f"🌐 [OpenAI] {openai_response}"
+            else:
+                return "[Enhancement] AI functionality not available"
         except Exception as e:
             return f"[AI Error] {e}"
 
@@ -381,8 +422,11 @@ Generated NeuroCode:
             if not code_to_analyze:
                 return "[Error] No code provided for analysis"
 
-            analysis = local_analyze_code(code_to_analyze)
-            return f"🔍 Local AI Code Analysis:\n{analysis}"
+            if local_analyze_code:
+                analysis = local_analyze_code(code_to_analyze)
+                return f"🔍 Local AI Code Analysis:\n{analysis}"
+            else:
+                return "[Enhancement] Local AI code analysis not available"
 
         else:
             return "[Error] Unknown local AI command. Available: status, analyze <code>"

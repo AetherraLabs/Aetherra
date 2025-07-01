@@ -35,9 +35,9 @@ class Command:
     description: str
     usage: str
     examples: List[str]
-    aliases: List[str] = None
-    parameters: List[str] = None
-    shortcuts: List[str] = None
+    aliases: Optional[List[str]] = None
+    parameters: Optional[List[str]] = None
+    shortcuts: Optional[List[str]] = None
 
     def __post_init__(self):
         if self.aliases is None:
@@ -179,12 +179,14 @@ class CommandRegistry:
         self.categories[command.category].append(command.name)
 
         # Register aliases
-        for alias in command.aliases:
-            self.aliases[alias] = command.name
+        if command.aliases:
+            for alias in command.aliases:
+                self.aliases[alias] = command.name
 
         # Register shortcuts
-        for shortcut in command.shortcuts:
-            self.shortcuts[shortcut] = command.name
+        if command.shortcuts:
+            for shortcut in command.shortcuts:
+                self.shortcuts[shortcut] = command.name
 
     def get_command(self, name: str) -> Optional[Command]:
         """Get command by name or alias"""
@@ -298,16 +300,17 @@ class CommandSuggestions:
                 )
 
             # Check aliases too
-            for alias in command.aliases:
-                if alias.lower().startswith(partial_lower):
-                    score = len(partial) / len(alias)
-                    suggestions.append(
-                        Suggestion(
-                            command=command,
-                            score=score + 0.3,  # Aliases get slightly lower score
-                            reason=f"Alias '{alias}' starts with '{partial}'",
+            if command.aliases:
+                for alias in command.aliases:
+                    if alias.lower().startswith(partial_lower):
+                        score = len(partial) / len(alias)
+                        suggestions.append(
+                            Suggestion(
+                                command=command,
+                                score=score + 0.3,  # Aliases get slightly lower score
+                                reason=f"Alias '{alias}' starts with '{partial}'",
+                            )
                         )
-                    )
 
         return suggestions
 
@@ -419,7 +422,7 @@ class CommandSuggestions:
     def get_shortcut_info(self, command_name: str) -> List[str]:
         """Get keyboard shortcuts for a command"""
         command = self.registry.get_command(command_name)
-        return command.shortcuts if command else []
+        return command.shortcuts if command and command.shortcuts else []
 
     def search_commands(self, query: str) -> List[Command]:
         """Search commands by description or name"""
@@ -438,10 +441,11 @@ class CommandSuggestions:
                 continue
 
             # Search in aliases
-            for alias in command.aliases:
-                if query_lower in alias.lower():
-                    results.append(command)
-                    break
+            if command.aliases:
+                for alias in command.aliases:
+                    if query_lower in alias.lower():
+                        results.append(command)
+                        break
 
         return results
 

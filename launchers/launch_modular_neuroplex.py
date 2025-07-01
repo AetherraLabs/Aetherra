@@ -9,16 +9,17 @@ Launch the modular version of Neuroplex with separated components.
 import sys
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root))
+# Add project root and src to path
+project_root = Path(__file__).parent.parent
+src_path = project_root / "src"
+sys.path.insert(0, str(src_path))
 
 
 def main():
     """Launch Modular Neuroplex"""
     try:
         # Try to launch the modular GUI
-        from ui.neuroplex_modular import main as launch_modular_neuroplex
+        from neurocode.ui.neuroplex_modular import main as launch_modular_neuroplex
 
         print("🧬 Launching Modular Neuroplex v2.0")
         print("📦 Using separated component architecture")
@@ -31,7 +32,7 @@ def main():
 
         # Fallback to original monolithic GUI
         try:
-            from ui.neuroplex_gui_v2 import main as launch_neuroplex_v2
+            from neurocode.ui.neuroplex_gui_v2 import main as launch_neuroplex_v2
 
             print("\n🔄 Falling back to original Neuroplex v2.0...")
             launch_neuroplex_v2()

@@ -11,12 +11,11 @@ import sys
 from pathlib import Path
 
 # Add core modules to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-sys.path.insert(0, str(project_root / "core"))
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root / "src"))
 
 # Import Qt components
-from ui.components.utils.qt_imports import (
+from neurocode.ui.components.utils.qt_imports import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
@@ -31,7 +30,7 @@ from ui.components.utils.qt_imports import (
 
 # Import theme and components
 try:
-    from ui.components.panels import (
+    from neurocode.ui.components.panels import (
         GoalTrackingPanel,
         LLMProviderPanel,
         MemoryVisualizationPanel,
@@ -39,7 +38,7 @@ try:
         PerformanceMonitorPanel,
         PluginManagerPanel,
     )
-    from ui.components.theme import ModernTheme
+    from neurocode.ui.components.theme import ModernTheme
 
     COMPONENTS_AVAILABLE = True
     print("✅ All modular components loaded successfully")

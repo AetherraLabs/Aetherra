@@ -13,13 +13,52 @@ from typing import Dict
 # Add core to path for imports
 sys.path.append(str(Path(__file__).parent / "core"))
 
-from contextual_adaptation import (
-    ContextType,
-    UrgencyLevel,
-    get_contextual_adaptation_system,
-)
-from emotional_memory import get_emotional_memory_system
-from persona_engine import PersonaArchetype, get_persona_engine
+try:
+    from src.neurocode.persona.contextual_adaptation import (
+        ContextType,
+        UrgencyLevel,
+        get_contextual_adaptation_system,
+    )
+
+    PERSONA_AVAILABLE = True
+except ImportError:
+    # Fallback for when persona module is not available
+    print("⚠️ Persona module not available, using fallback")
+    PERSONA_AVAILABLE = False
+
+    class ContextType:
+        DEBUGGING = "debugging"
+        CREATING = "creating"
+        LEARNING = "learning"
+        EMERGENCY = "emergency"
+
+    class UrgencyLevel:
+        CRITICAL = "critical"
+
+    def get_contextual_adaptation_system(*args, **kwargs):
+        return None
+
+
+try:
+    from src.neurocode.persona.emotional_memory import get_emotional_memory_system
+    from src.neurocode.persona.engine import PersonaArchetype, get_persona_engine
+except ImportError:
+    print("⚠️ Additional persona modules not available, using fallbacks")
+
+    class PersonaArchetype:
+        GUARDIAN = "guardian"
+        CREATOR = "creator"
+        SAGE = "sage"
+        EXPLORER = "explorer"
+        OPTIMIST = "optimist"
+        ANALYST = "analyst"
+        CATALYST = "catalyst"
+
+    def get_emotional_memory_system(*args, **kwargs):
+        return None
+
+    def get_persona_engine(*args, **kwargs):
+        return None
 
 
 class RevolutionaryPersonaCLI:
@@ -35,6 +74,42 @@ class RevolutionaryPersonaCLI:
 
         self.session_start = time.time()
         self.interaction_count = 0
+
+    def _safe_detect_context(self, **kwargs):
+        """Safely detect context with fallback for missing modules"""
+        if self.contextual_adaptation:
+            return self._safe_detect_context(**kwargs)
+        else:
+            # Create a minimal fallback situation
+            class FallbackSituation:
+                def __init__(self):
+                    self.context_type = (
+                        ContextType.DEBUGGING if "error" in str(kwargs) else ContextType.LEARNING
+                    )
+                    self.urgency_level = (
+                        UrgencyLevel.CRITICAL
+                        if "emergency" in str(kwargs)
+                        else UrgencyLevel.CRITICAL
+                    )
+
+            return FallbackSituation()
+
+    def _safe_adapt_persona(self, situation):
+        """Safely adapt persona with fallback"""
+        if self.contextual_adaptation:
+            return self._safe_adapt_persona(situation)
+        return None
+
+    def _safe_get_guidance(self, context):
+        """Safely get emotional guidance with fallback"""
+        if self.emotional_memory:
+            return self._safe_get_guidance(context)
+        return {"guidance": "Working in basic mode without emotional intelligence"}
+
+    def _safe_record_interaction(self, **kwargs):
+        """Safely record interaction with fallback"""
+        if self.emotional_memory:
+            self._safe_record_interaction(**kwargs)
 
     def run_interactive_demo(self):
         """Run an interactive demo showing contextual adaptation"""
@@ -95,7 +170,7 @@ class RevolutionaryPersonaCLI:
         print("User command: 'help me debug this database issue'")
 
         # Detect context
-        situation = self.contextual_adaptation.detect_context(
+        situation = self._safe_detect_context(
             user_command="help me debug this database issue",
             file_patterns=["database.py", "config.py", "production.log"],
             error_messages=["Connection timeout", "Database unavailable", "Auth failed"],
@@ -103,13 +178,13 @@ class RevolutionaryPersonaCLI:
         )
 
         # Adapt persona
-        adaptation_result = self.contextual_adaptation.adapt_persona(situation)
+        adaptation_result = self._safe_adapt_persona(situation)
 
         # Show adaptation
         self._show_adaptation_result(adaptation_result)
 
         # Get AI response with emotional guidance
-        guidance = self.emotional_memory.get_emotional_guidance("database debugging production")
+        guidance = self._safe_get_guidance("database debugging production")
         ai_response = self._generate_contextual_response(situation, guidance)
 
         print("\n🤖 NeuroCode Response:")
@@ -117,7 +192,7 @@ class RevolutionaryPersonaCLI:
 
         # Record the interaction
         user_satisfaction = self._get_user_satisfaction()
-        self.emotional_memory.record_interaction(
+        self._safe_record_interaction(
             context="debugging database connection",
             user_action="asked for help with database issue",
             ai_response=ai_response,
@@ -136,24 +211,24 @@ class RevolutionaryPersonaCLI:
         print("Context: Building a new AI-powered chat feature")
         print("User command: 'help me brainstorm creative chat features'")
 
-        situation = self.contextual_adaptation.detect_context(
+        situation = self._safe_detect_context(
             user_command="help me brainstorm creative chat features",
             file_patterns=["chat.js", "ai_features.py", "prototype.html"],
             error_messages=[],
             time_since_last_action=1200,  # Taking time to think
         )
 
-        adaptation_result = self.contextual_adaptation.adapt_persona(situation)
+        adaptation_result = self._safe_adapt_persona(situation)
         self._show_adaptation_result(adaptation_result)
 
-        guidance = self.emotional_memory.get_emotional_guidance("creative prototyping features")
+        guidance = self._safe_get_guidance("creative prototyping features")
         ai_response = self._generate_contextual_response(situation, guidance)
 
         print("\n🤖 NeuroCode Response:")
         print(f"✨ {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
-        self.emotional_memory.record_interaction(
+        self._safe_record_interaction(
             context="creative prototyping",
             user_action="requested brainstorming for chat features",
             ai_response=ai_response,
@@ -172,26 +247,24 @@ class RevolutionaryPersonaCLI:
         print("Context: Understanding neural networks")
         print("User command: 'explain how transformers work in AI'")
 
-        situation = self.contextual_adaptation.detect_context(
+        situation = self._safe_detect_context(
             user_command="explain how transformers work in AI",
             file_patterns=["learning_notes.md", "ml_tutorial.py"],
             error_messages=[],
             time_since_last_action=600,
         )
 
-        adaptation_result = self.contextual_adaptation.adapt_persona(situation)
+        adaptation_result = self._safe_adapt_persona(situation)
         self._show_adaptation_result(adaptation_result)
 
-        guidance = self.emotional_memory.get_emotional_guidance(
-            "learning machine learning concepts"
-        )
+        guidance = self._safe_get_guidance("learning machine learning concepts")
         ai_response = self._generate_contextual_response(situation, guidance)
 
         print("\n🤖 NeuroCode Response:")
         print(f"🎓 {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
-        self.emotional_memory.record_interaction(
+        self._safe_record_interaction(
             context="learning AI concepts",
             user_action="asked for explanation of transformers",
             ai_response=ai_response,
@@ -211,24 +284,24 @@ class RevolutionaryPersonaCLI:
         print("Error: 'Service unavailable', 'Memory leak detected'")
         print("User command: 'URGENT: server crashed, need immediate help'")
 
-        situation = self.contextual_adaptation.detect_context(
+        situation = self._safe_detect_context(
             user_command="URGENT: server crashed, need immediate help",
             file_patterns=["server.py", "memory_monitor.log", "error.log"],
             error_messages=["Memory leak", "Service unavailable", "Crash dump", "Out of memory"],
             time_since_last_action=60,  # Just happened
         )
 
-        adaptation_result = self.contextual_adaptation.adapt_persona(situation)
+        adaptation_result = self._safe_adapt_persona(situation)
         self._show_adaptation_result(adaptation_result)
 
-        guidance = self.emotional_memory.get_emotional_guidance("emergency server crash production")
+        guidance = self._safe_get_guidance("emergency server crash production")
         ai_response = self._generate_contextual_response(situation, guidance)
 
         print("\n🤖 NeuroCode Response:")
         print(f"🆘 {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
-        self.emotional_memory.record_interaction(
+        self._safe_record_interaction(
             context="emergency server crash",
             user_action="requested urgent help with server crash",
             ai_response=ai_response,
@@ -247,24 +320,24 @@ class RevolutionaryPersonaCLI:
         print("Context: Cleaning up legacy code")
         print("User command: 'help me refactor this messy function'")
 
-        situation = self.contextual_adaptation.detect_context(
+        situation = self._safe_detect_context(
             user_command="help me refactor this messy function",
             file_patterns=["legacy_code.py", "utils.py", "cleanup.md"],
             error_messages=[],
             time_since_last_action=900,
         )
 
-        adaptation_result = self.contextual_adaptation.adapt_persona(situation)
+        adaptation_result = self._safe_adapt_persona(situation)
         self._show_adaptation_result(adaptation_result)
 
-        guidance = self.emotional_memory.get_emotional_guidance("refactoring legacy code")
+        guidance = self._safe_get_guidance("refactoring legacy code")
         ai_response = self._generate_contextual_response(situation, guidance)
 
         print("\n🤖 NeuroCode Response:")
         print(f"🔧 {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
-        self.emotional_memory.record_interaction(
+        self._safe_record_interaction(
             context="refactoring legacy code",
             user_action="requested help refactoring function",
             ai_response=ai_response,
@@ -283,24 +356,24 @@ class RevolutionaryPersonaCLI:
         print("Context: Writing API documentation")
         print("User command: 'help me write clear API docs'")
 
-        situation = self.contextual_adaptation.detect_context(
+        situation = self._safe_detect_context(
             user_command="help me write clear API docs",
             file_patterns=["api_docs.md", "README.md", "api.py"],
             error_messages=[],
             time_since_last_action=1800,
         )
 
-        adaptation_result = self.contextual_adaptation.adapt_persona(situation)
+        adaptation_result = self._safe_adapt_persona(situation)
         self._show_adaptation_result(adaptation_result)
 
-        guidance = self.emotional_memory.get_emotional_guidance("writing documentation")
+        guidance = self._safe_get_guidance("writing documentation")
         ai_response = self._generate_contextual_response(situation, guidance)
 
         print("\n🤖 NeuroCode Response:")
         print(f"📝 {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
-        self.emotional_memory.record_interaction(
+        self._safe_record_interaction(
             context="writing API documentation",
             user_action="requested help with API docs",
             ai_response=ai_response,
@@ -319,24 +392,24 @@ class RevolutionaryPersonaCLI:
         print("Context: Working on team code review")
         print("User command: 'help me give constructive code review feedback'")
 
-        situation = self.contextual_adaptation.detect_context(
+        situation = self._safe_detect_context(
             user_command="help me give constructive code review feedback",
             file_patterns=["pull_request.md", "team_code.py", "review.md"],
             error_messages=[],
             time_since_last_action=600,
         )
 
-        adaptation_result = self.contextual_adaptation.adapt_persona(situation)
+        adaptation_result = self._safe_adapt_persona(situation)
         self._show_adaptation_result(adaptation_result)
 
-        guidance = self.emotional_memory.get_emotional_guidance("team collaboration code review")
+        guidance = self._safe_get_guidance("team collaboration code review")
         ai_response = self._generate_contextual_response(situation, guidance)
 
         print("\n🤖 NeuroCode Response:")
         print(f"🤝 {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
-        self.emotional_memory.record_interaction(
+        self._safe_record_interaction(
             context="team collaboration",
             user_action="requested help with code review feedback",
             ai_response=ai_response,
@@ -353,7 +426,11 @@ class RevolutionaryPersonaCLI:
         print("\n📊 EMOTIONAL INTELLIGENCE INSIGHTS")
         print("=" * 40)
 
-        trends = self.emotional_memory.get_emotional_trends()
+        trends = (
+            self.emotional_memory.get_emotional_trends()
+            if self.emotional_memory
+            else {"status": "no_data"}
+        )
 
         if trends.get("status") == "no_data":
             print("💭 No interaction data yet. Try some scenarios first!")
@@ -372,7 +449,12 @@ class RevolutionaryPersonaCLI:
         for area in trends["areas_for_improvement"][:3]:
             print(f"   • {area.replace('_', ' ').title()}")
 
-        print(f"\n📝 Total Interactions: {len(self.emotional_memory.memories)}")
+        memory_count = (
+            len(self.emotional_memory.memories)
+            if self.emotional_memory and hasattr(self.emotional_memory, "memories")
+            else 0
+        )
+        print(f"\n📝 Total Interactions: {memory_count}")
 
     def _manual_persona_switch(self):
         """Allow manual persona switching"""
@@ -399,24 +481,38 @@ class RevolutionaryPersonaCLI:
 
         if choice in archetype_map:
             archetype = archetype_map[choice]
-            self.persona_engine.set_persona(archetype)
-            print(f"\n✅ Switched to {archetype.value.title()} persona!")
-            self._show_current_persona()
+            if self.persona_engine:
+                self.persona_engine.set_persona(archetype)
+                print(
+                    f"\n✅ Switched to {archetype.title() if isinstance(archetype, str) else archetype.value.title()} persona!"
+                )
+                self._show_current_persona()
+            else:
+                print("\n⚠️ Persona engine not available")
         else:
             print("❌ Invalid choice.")
 
     def _show_current_persona(self):
         """Show current persona configuration"""
-        persona = self.persona_engine.current_persona
+        persona = self.persona_engine.current_persona if self.persona_engine else None
 
-        print("\n🤖 Current Persona Configuration:")
-        print(f"🎭 Archetype: {persona['archetype'].value.title()}")
-        print(f"🎵 Voice Tone: {persona['voice'].formality.title()}")
-        print(f"💪 Encouragement: {persona['voice'].encouragement.title()}")
-        print(f"🧠 Mindprint ID: {persona['mindprint']['installation_id'][:8]}...")
+        if persona:
+            print("\n🤖 Current Persona Configuration:")
+            print(f"🎭 Archetype: {persona['archetype'].value.title()}")
+            print(f"🎵 Voice Tone: {persona['voice'].formality.title()}")
+            print(f"💪 Encouragement: {persona['voice'].encouragement.title()}")
+            print(f"🧠 Mindprint ID: {persona['mindprint']['installation_id'][:8]}...")
+        else:
+            print("\n🤖 Current Persona Configuration:")
+            print("⚠️ Persona system not available - running in basic mode")
 
-    def _show_adaptation_result(self, adaptation_result: Dict):
+    def _show_adaptation_result(self, adaptation_result):
         """Show the result of contextual adaptation"""
+        if not adaptation_result:
+            print("\n🔄 Contextual Adaptation:")
+            print("⚠️ Running in basic mode - contextual adaptation not available")
+            return
+
         situation = adaptation_result["situation"]
 
         print("\n🔄 Contextual Adaptation:")
@@ -504,7 +600,11 @@ class RevolutionaryPersonaCLI:
         print(f"   • Persona Adaptations: {self.interaction_count}")
 
         if self.interaction_count > 0:
-            trends = self.emotional_memory.get_emotional_trends()
+            trends = (
+                self.emotional_memory.get_emotional_trends()
+                if self.emotional_memory
+                else {"status": "no_data"}
+            )
             if trends.get("status") != "no_data":
                 print(f"   • Average Satisfaction: {trends['overall_satisfaction']:.2f}/1.0")
 

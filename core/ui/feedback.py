@@ -324,7 +324,7 @@ class VisualFeedback:
         if self.thinking_animation:
             self.thinking_animation.stop()
 
-        for progress in self.progress_indicators.values():
+        for _progress in self.progress_indicators.values():
             # Progress indicators don't need explicit cleanup
             pass
 

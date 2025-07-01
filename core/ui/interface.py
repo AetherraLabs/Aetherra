@@ -244,6 +244,9 @@ class NeuroplexUI:
 
     def show_welcome_message(self):
         """Show welcome message"""
+        if not self.current_theme:
+            return
+
         self.rich_display.print_separator("═", 60)
         self.rich_display.print_text(
             "🧬 Welcome to Neuroplex AI OS",
@@ -410,10 +413,11 @@ Type any command name followed by arguments. Use Tab for auto-completion.
 
     def _cmd_status(self):
         """Show system status"""
+        theme_name = self.current_theme.name if self.current_theme else "Unknown"
         self.rich_display.print_table(
             headers=["Component", "Status", "Details"],
             rows=[
-                ["Theme System", "✅ Active", self.current_theme.name],
+                ["Theme System", "✅ Active", theme_name],
                 ["Visual Feedback", "✅ Active", "Real-time indicators"],
                 [
                     "Command Suggestions",

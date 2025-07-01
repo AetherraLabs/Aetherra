@@ -10,7 +10,12 @@ from pathlib import Path
 # Add core to path for imports
 sys.path.append(str(Path(__file__).parent / "core"))
 
-from persona_engine import PersonaArchetype, PersonaEngine, VoiceConfiguration, get_persona_engine
+from neurocode.persona.engine import (
+    PersonaArchetype,
+    PersonaEngine,
+    VoiceConfiguration,
+    get_persona_engine,
+)
 
 
 class PersonaCLI:
@@ -148,7 +153,7 @@ class PersonaCLI:
 
     def list_archetypes(self):
         """List available persona archetypes"""
-        from persona_engine import PersonaArchetypeDefinitions
+        from neurocode.persona.engine import PersonaArchetypeDefinitions
 
         print("🎭 Available Persona Archetypes")
         print("=" * 40)

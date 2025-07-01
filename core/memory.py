@@ -203,9 +203,9 @@ class NeuroMemory:
         """Analyze memory patterns and their frequency"""
         # Enhanced implementation using pattern analyzer
         try:
-            from .memory import PatternAnalyzer
-
-            analyzer = PatternAnalyzer()
+            # Future: Use PatternAnalyzer when implemented
+            # from .memory import PatternAnalyzer
+            # analyzer = PatternAnalyzer()
 
             # Get memories matching the pattern
             cutoff_date = datetime.now() - timedelta(days=timeframe_days)

@@ -1,13 +1,5 @@
 """
-🔍 Introsfrom typing import Any, Dict, List, Optional, Set
-
-# Use conditional import to avoid file permission issues during testing
-try:
-    from .memory.logger import MemoryLogger
-    MEMORY_LOGGER_AVAILABLE = True
-except (ImportError, PermissionError):
-    MEMORY_LOGGER_AVAILABLE = False
-    MemoryLogger = Nonetive Logging System
+🔍 Introspective Logging System
 ==============================
 
 Self-aware AI execution tracking, reflection, and activity monitoring
@@ -110,7 +102,7 @@ class IntrospectiveLogger:
         self.current_session: Optional[ActivitySession] = None
 
         # Initialize memory logger conditionally
-        if MEMORY_LOGGER_AVAILABLE:
+        if MEMORY_LOGGER_AVAILABLE and MemoryLogger is not None:
             try:
                 self.memory_logger = MemoryLogger()
             except (PermissionError, FileNotFoundError):
@@ -244,15 +236,7 @@ class IntrospectiveLogger:
         # Store in memory system
         if self.memory_logger:
             self.memory_logger.log_memory(
-                content=f"Executed: {operation}",
-                category="execution_reflection",
-                importance=0.8,
-                tags=["execution", "reflection", activity_type.value],
-                metadata={
-                    "reflection_id": reflection_id,
-                    "status": status.value,
-                    "operation": operation,
-                },
+                f"Executed: {operation} [status:{status.value}, type:{activity_type.value}]"
             )
 
         # Update patterns and trends

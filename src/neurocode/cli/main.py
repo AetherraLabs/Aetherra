@@ -18,9 +18,55 @@ from pathlib import Path
 # Add core to path
 sys.path.append(str(Path(__file__).parent / "core"))
 
-from contextual_adaptation import ContextType, UrgencyLevel, get_contextual_adaptation_system
-from emotional_memory import get_emotional_memory_system
-from persona_engine import PersonaArchetype, get_persona_engine
+try:
+    from src.neurocode.persona.contextual_adaptation import (
+        ContextType,
+        UrgencyLevel,
+        get_contextual_adaptation_system,
+    )
+    from src.neurocode.persona.emotional_memory import get_emotional_memory_system
+    from src.neurocode.persona.engine import PersonaArchetype, get_persona_engine
+
+    PERSONA_AVAILABLE = True
+except ImportError:
+    print("⚠️ Persona modules not available, using fallback")
+    PERSONA_AVAILABLE = False
+
+    # Create fallback enums and classes
+    from enum import Enum
+
+    class ContextType(Enum):
+        STANDARD = "standard"
+        DEBUG = "debug"
+        DEBUGGING = "debugging"
+        CREATIVE = "creative"
+        CREATING = "creating"
+        LEARNING = "learning"
+        EMERGENCY = "emergency"
+
+    class UrgencyLevel(Enum):
+        LOW = "low"
+        MEDIUM = "medium"
+        HIGH = "high"
+        CRITICAL = "critical"
+
+    class PersonaArchetype(Enum):
+        OPTIMIST = "optimist"
+        ANALYST = "analyst"
+        CATALYST = "catalyst"
+        GUARDIAN = "guardian"
+        EXPLORER = "explorer"
+        SAGE = "sage"
+
+    # Fallback functions that return None
+    def get_contextual_adaptation_system(*args, **kwargs):
+        return None
+
+    def get_emotional_memory_system(*args, **kwargs):
+        return None
+
+    def get_persona_engine(*args, **kwargs):
+        return None
 
 
 class NeuroCodePersonaInterface:
@@ -37,37 +83,77 @@ class NeuroCodePersonaInterface:
     def process_command(self, command: str, context_hints: str = "") -> str:
         """Process a command with contextual persona adaptation"""
 
+        if not PERSONA_AVAILABLE:
+            return f"[Basic Mode] Command received: {command}\nPersona functionality not available."
+
         # Detect context from command
-        situation = self.contextual_adaptation.detect_context(
-            user_command=command,
-            file_patterns=self._extract_file_patterns(command),
-            error_messages=self._extract_error_patterns(command),
-            time_since_last_action=0.0,
-        )
+        if self.contextual_adaptation:
+            situation = self.contextual_adaptation.detect_context(
+                user_command=command,
+                file_patterns=self._extract_file_patterns(command),
+                error_messages=self._extract_error_patterns(command),
+                time_since_last_action=0.0,
+            )
 
-        # Adapt persona based on context
-        self.contextual_adaptation.adapt_persona(situation)
+            # Adapt persona based on context
+            self.contextual_adaptation.adapt_persona(situation)
+        else:
+            situation = None
 
-        # Generate contextual response
-        guidance = self.emotional_memory.get_emotional_guidance(command)
-        response = self._generate_ai_response(command, situation, guidance)
+        # Get emotional guidance if available
+        if self.emotional_memory:
+            guidance = self.emotional_memory.get_emotional_guidance(command)
+        else:
+            guidance = None
 
-        # Record interaction for learning
-        self.emotional_memory.record_interaction(
-            context=f"{situation.context_type.value}",
-            user_action=command,
-            ai_response=response,
-            outcome="provided contextual assistance",
-            user_satisfaction=0.8,  # Default good satisfaction
-            confidence_level=0.9,
-            tags=[situation.context_type.value, "cli_interaction"],
-        )
+        # Generate response
+        if self.persona_engine and self.persona_engine.current_persona:
+            persona = self.persona_engine.current_persona
+            if hasattr(persona, "archetype"):
+                archetype_name = persona.archetype.value
+            elif isinstance(persona, dict) and "archetype" in persona:
+                archetype_name = (
+                    persona["archetype"].value
+                    if hasattr(persona["archetype"], "value")
+                    else str(persona["archetype"])
+                )
+            else:
+                archetype_name = "Unknown"
+            response = f"[{archetype_name}] {command}"
+        else:
+            response = f"[Basic Mode] {command}"
+
+        # Record interaction if emotional memory is available
+        if self.emotional_memory:
+            self.emotional_memory.record_interaction(
+                command,
+                response,
+                situation.context_type if situation else ContextType.STANDARD,
+                1.0,
+            )
 
         return response
 
     def show_persona_status(self) -> str:
         """Show current persona configuration"""
-        persona = self.persona_engine.current_persona
+        if not PERSONA_AVAILABLE or not self.persona_engine:
+            return """
+🤖 NeuroCode Persona Status
+═══════════════════════════════════════════
+
+⚠️ Persona system not available
+🔧 Running in basic CLI mode
+
+Available commands:
+• Basic NeuroCode execution
+• Standard help and information
+• Limited functionality without persona features
+"""
+
+        try:
+            persona = self.persona_engine.current_persona
+        except Exception:
+            return "⚠️ Error accessing persona information"
 
         status = f"""
 🤖 NeuroCode Persona Status
@@ -91,7 +177,7 @@ class NeuroCodePersonaInterface:
      - Energy: {persona["traits"].energy:.2f}
 
 📊 Emotional Intelligence:
-   • Total Interactions: {len(self.emotional_memory.memories)}
+   • Total Interactions: {len(self.emotional_memory.memories) if self.emotional_memory and hasattr(self.emotional_memory, "memories") else 0}
    • Learning Velocity: Active
    • Context Adaptation: Enabled
 
@@ -118,11 +204,17 @@ class NeuroCodePersonaInterface:
             }
 
             if archetype_name.lower() in archetype_map:
-                archetype = archetype_map[archetype_name.lower()]
-                self.persona_engine.set_persona(archetype)
+                if not PERSONA_AVAILABLE or not self.persona_engine:
+                    return "⚠️ Persona system not available - cannot set archetype"
 
-                # Update voice configuration based on tone
-                current_voice = self.persona_engine.current_persona["voice"]
+                archetype = archetype_map[archetype_name.lower()]
+                try:
+                    self.persona_engine.set_persona(archetype)
+
+                    # Update voice configuration based on tone
+                    current_voice = self.persona_engine.current_persona["voice"]
+                except Exception as e:
+                    return f"⚠️ Error setting persona: {e}"
 
                 # Map voice tones
                 tone_map = {
@@ -198,11 +290,17 @@ class NeuroCodePersonaInterface:
 
     def _generate_ai_response(self, command: str, situation, guidance: dict) -> str:
         """Generate contextual AI response based on persona and situation"""
-        archetype_name = self.persona_engine.current_persona["archetype"]["name"]
-        voice = self.persona_engine.current_persona["voice"]
+        if not PERSONA_AVAILABLE or not self.persona_engine:
+            return f"[Basic Mode] Processing: {command}\n\nPersona features not available. Basic response generated."
 
-        # Convert archetype name to enum for lookup
-        archetype_enum = PersonaArchetype(archetype_name.lower())
+        try:
+            archetype_name = self.persona_engine.current_persona["archetype"]["name"]
+            voice = self.persona_engine.current_persona["voice"]
+
+            # Convert archetype name to enum for lookup
+            archetype_enum = PersonaArchetype(archetype_name.lower())
+        except Exception:
+            return f"[Fallback Mode] Processing: {command}\n\nPersona information unavailable."
 
         # Base response templates by archetype
         response_templates = {
@@ -293,7 +391,7 @@ class NeuroCodePersonaInterface:
             return "• I'll learn from this interaction to provide better guidance in the future\n• Feel free to provide feedback on my responses"
 
 
-def main():
+def main() -> None:
     """Main CLI entry point for the persona interface"""
     interface = NeuroCodePersonaInterface()
 
@@ -368,10 +466,15 @@ Examples:
         print(f"\n🤖 NeuroCode Response:\n{response}")
 
         # Show brief adaptation info
-        situation = interface.contextual_adaptation.current_situation
-        print(
-            f"\n🔄 Context: {situation.context_type.value.title()} | Urgency: {situation.urgency_level.value.title()}"
-        )
+        if interface.contextual_adaptation and hasattr(
+            interface.contextual_adaptation, "current_situation"
+        ):
+            situation = interface.contextual_adaptation.current_situation
+            print(
+                f"\n🔄 Context: {situation.context_type.value.title()} | Urgency: {situation.urgency_level.value.title()}"
+            )
+        else:
+            print("\n🔄 Context: Standard | Urgency: Low")
     else:
         parser.print_help()
 

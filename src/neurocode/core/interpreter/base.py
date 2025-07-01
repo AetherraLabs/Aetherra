@@ -240,11 +240,14 @@ except ImportError:
         PLUGIN_REGISTRY = {}
 
 # Import stdlib manager for standard plugins
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "stdlib"))
-from stdlib import stdlib_manager
+try:
+    from src.neurocode.stdlib import stdlib_manager
+except ImportError:
+    try:
+        from neurocode.stdlib import stdlib_manager
+    except ImportError:
+        print("⚠️ Standard library manager not available")
+        stdlib_manager = None
 
 
 class NeuroCodeInterpreter:
@@ -280,6 +283,8 @@ class NeuroCodeInterpreter:
 
         # Standard library manager
         self.stdlib = stdlib_manager
+        if self.stdlib is None:
+            print("⚠️ Standard library not available, using basic functionality")
 
         # Create backup directory if it doesn't exist
         if not os.path.exists(self.backup_dir):
@@ -414,7 +419,7 @@ class NeuroCodeInterpreter:
         agent = agent_match.group(1) if agent_match else None
 
         # Execute enhanced goal setting
-        result = self.goal_system.set_goal(goal_content, priority)
+        self.goal_system.set_goal(goal_content, priority)
 
         # Enhanced response
         response = "🎯 Enhanced Goal Setting\n"
@@ -848,12 +853,16 @@ class NeuroCodeInterpreter:
         plugin_args = parts[1:]
 
         # First check stdlib plugins (standard library)
-        if plugin_name in self.stdlib.plugins:
+        if plugin_name in (self.stdlib.plugins if self.stdlib else {}):
             try:
                 # Convert args to a single action string if needed
                 action = " ".join(plugin_args) if plugin_args else "default"
-                result = self.stdlib.execute_plugin_action(
-                    plugin_name, action, memory_system=self.memory
+                result = (
+                    self.stdlib.execute_plugin_action(
+                        plugin_name, action, memory_system=self.memory
+                    )
+                    if self.stdlib
+                    else None
                 )
                 return f"[StdLib:{plugin_name}] {result}"
             except Exception as e:
@@ -865,7 +874,7 @@ class NeuroCodeInterpreter:
             return f"[Plugin:{plugin_name}] {result}"
         else:
             # Suggest available plugins
-            available_stdlib = list(self.stdlib.plugins.keys())
+            available_stdlib = list(self.stdlib.plugins.keys()) if self.stdlib else []
             available_legacy = list(PLUGIN_REGISTRY.keys())
             all_available = available_stdlib + available_legacy
             return f"[Plugin] '{plugin_name}' not found. Available: {all_available}"
@@ -875,9 +884,9 @@ class NeuroCodeInterpreter:
         result = "[Plugins] Available plugins:\n"
 
         # Standard library plugins
-        if self.stdlib.plugins:
+        if self.stdlib and self.stdlib.plugins:
             result += "\n📚 Standard Library Plugins:\n"
-            for name, plugin in self.stdlib.plugins.items():
+            for name, plugin in self.stdlib.plugins.items() if self.stdlib else {}:
                 result += f"  • {name}: {plugin.description}\n"
 
         # Legacy plugins
@@ -886,7 +895,7 @@ class NeuroCodeInterpreter:
             for name in PLUGIN_REGISTRY.keys():
                 result += f"  • {name}\n"
 
-        if not self.stdlib.plugins and not PLUGIN_REGISTRY:
+        if not (self.stdlib and self.stdlib.plugins) and not PLUGIN_REGISTRY:
             result += "  No plugins available\n"
 
         return result.rstrip()
@@ -898,13 +907,14 @@ class NeuroCodeInterpreter:
             return "[Plugin Info] Please specify a plugin name. Usage: plugin info <plugin_name>"
 
         # Check stdlib first
-        plugin_info = self.stdlib.get_plugin_info(plugin_name)
-        if plugin_info:
-            result = f"[Plugin Info] {plugin_name}\n"
-            result += f"  Description: {plugin_info['description']}\n"
-            result += f"  Actions: {', '.join(plugin_info['available_actions'])}\n"
-            result += "  Source: Standard Library\n"
-            return result
+        if self.stdlib:
+            plugin_info = self.stdlib.get_plugin_info(plugin_name)
+            if plugin_info:
+                result = f"[Plugin Info] {plugin_name}\n"
+                result += f"  Description: {plugin_info['description']}\n"
+                result += f"  Actions: {', '.join(plugin_info['available_actions'])}\n"
+                result += "  Source: Standard Library\n"
+                return result
 
         # Check legacy plugins
         if plugin_name in PLUGIN_REGISTRY:
@@ -1509,7 +1519,7 @@ class NeuroCodeInterpreter:
         body = self.block_buffer[1:]
 
         # Store function using existing function system
-        result = self.functions.define_function(func_name, params, body)
+        self.functions.define_function(func_name, params, body)
 
         self._reset_block_state()
 

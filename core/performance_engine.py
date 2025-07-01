@@ -65,7 +65,7 @@ class OptimizationConfig:
     enable_memory_optimization: bool = True
     enable_startup_optimization: bool = True
     max_cache_size: int = 1000
-    max_workers: int = None
+    max_workers: Optional[int] = None
     gc_threshold: int = 100
     memory_limit_mb: int = 1024
     profiling_enabled: bool = True
@@ -247,14 +247,11 @@ class MemoryOptimizer:
     def _clear_system_caches(self) -> None:
         """Clear various system caches"""
         # Clear import cache
+        # Clear type cache if available
         if hasattr(sys, "_clear_type_cache"):
             sys._clear_type_cache()
 
-        # Clear regex cache
-        import re
-
-        if hasattr(re, "_cache_clear"):
-            re._cache_clear()
+        # Note: regex cache clearing is handled internally by Python
 
 
 class StartupOptimizer:
@@ -536,7 +533,9 @@ performance_engine = PerformanceEngine()
 
 # Decorators for easy performance optimization
 def performance_optimized(
-    operation_name: str = None, cache_key: str = None, enable_parallel: bool = False
+    operation_name: Optional[str] = None,
+    cache_key: Optional[str] = None,
+    enable_parallel: bool = False,
 ):
     """Decorator for automatic performance optimization"""
 
@@ -599,7 +598,7 @@ def parallel_processing(use_processes: bool = False):
 
 
 # Utility functions
-def optimize_neurocode_startup(modules: List[str] = None) -> Dict[str, Any]:
+def optimize_neurocode_startup(modules: Optional[List[str]] = None) -> Dict[str, Any]:
     """Optimize NeuroCode startup performance"""
     default_modules = [
         "core.interpreter",

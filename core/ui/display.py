@@ -123,7 +123,7 @@ class SyntaxHighlighter:
         for token_type, pattern in patterns.items():
             highlighted_code = re.sub(
                 pattern,
-                lambda m: self._wrap_token(m.group(0), token_type),
+                lambda m, tt=token_type: self._wrap_token(m.group(0), tt),
                 highlighted_code,
                 flags=re.MULTILINE,
             )

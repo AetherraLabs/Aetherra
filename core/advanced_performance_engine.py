@@ -549,7 +549,7 @@ class OptimizedExecution:
 
     def __init__(self, operation_name: str):
         self.operation_name = operation_name
-        self.start_time = None
+        self.start_time: Optional[float] = None
         self.engine = get_performance_engine()
 
     def __enter__(self):
@@ -557,15 +557,14 @@ class OptimizedExecution:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        execution_time = time.time() - self.start_time
-        self.engine._record_performance(self.operation_name, execution_time, False)
+        if self.start_time is not None:
+            execution_time = time.time() - self.start_time
+            self.engine._record_performance(self.operation_name, execution_time, False)
 
 
 # Utility functions for common optimizations
 def optimize_string_operations(text: str) -> str:
     """Optimize string operations with interning and pooling"""
-    engine = get_performance_engine()
-
     # Use string interning for small strings
     if len(text) < 100:
         return sys.intern(text)

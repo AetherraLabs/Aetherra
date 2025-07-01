@@ -15,13 +15,14 @@ def main():
     """Launch the fully modular Neuroplex GUI"""
     print("🚀 Launching Neuroplex v2.0 - Fully Modular Edition")
 
-    # Add current directory to Python path
-    current_dir = Path(__file__).parent
-    sys.path.insert(0, str(current_dir))
+    # Add src to Python path to access neurocode package
+    project_root = Path(__file__).parent.parent
+    src_path = project_root / "src"
+    sys.path.insert(0, str(src_path))
 
     try:
         # Import and run the fully modular version
-        from ui.neuroplex_fully_modular import main as modular_main
+        from neurocode.ui.neuroplex_fully_modular import main as modular_main
 
         return modular_main()
 
@@ -31,10 +32,14 @@ def main():
 
         try:
             # Fallback to the simplified modular version
-            from ui.components.utils.qt_imports import QApplication, ensure_qt_app
-            from ui.neuroplex_modular import ModularNeuroplexWindow
+            from neurocode.ui.neuroplex_modular import ModularNeuroplexWindow
 
-            app = ensure_qt_app()
+            try:
+                from PySide2.QtWidgets import QApplication
+            except ImportError:
+                from PyQt6.QtWidgets import QApplication
+
+            app = QApplication.instance() or QApplication([])
             window = ModularNeuroplexWindow()
             window.show()
 

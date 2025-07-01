@@ -23,10 +23,7 @@ from typing import Any, Callable, Dict, List, Optional
 # Import our advanced performance engine
 try:
     from .advanced_performance_engine import (
-        OptimizedExecution,
-        async_optimized,
         get_performance_engine,
-        optimize_data_processing,
         parallel_optimized,
         performance_optimized,
     )
@@ -37,10 +34,8 @@ except ImportError:
 
 # Import existing performance systems
 try:
-    from .memory_performance import MemoryPerformanceOptimizer
-    from .performance_engine import PerformanceEngine
-    from .performance_integration import PerformanceManager
-    from .ui_performance import UIPerformanceOptimizer
+    from .memory_performance import memory_optimizer
+    from .performance_integration import performance_manager
 
     CORE_PERFORMANCE_AVAILABLE = True
 except ImportError:
@@ -80,11 +75,18 @@ class SpeedEnhancementSuite:
 
         if CORE_PERFORMANCE_AVAILABLE:
             try:
-                self.ui_optimizer = UIPerformanceOptimizer()
-                self.memory_optimizer = MemoryPerformanceOptimizer()
+                # Use available optimizers from imported modules
+                self.ui_optimizer = (
+                    getattr(memory_optimizer, "ui_optimizer", None) if memory_optimizer else None
+                )
+                self.memory_optimizer = memory_optimizer
+                self.performance_manager = performance_manager
                 print("✅ Core Performance Systems loaded")
             except Exception as e:
                 print(f"⚠️ Core Performance Systems failed to load: {e}")
+                self.ui_optimizer = None
+                self.memory_optimizer = None
+                self.performance_manager = None
 
     def enable_maximum_speed_mode(self):
         """Enable maximum speed optimizations across all systems"""
@@ -134,11 +136,14 @@ class SpeedEnhancementSuite:
 
     def _optimize_ui_rendering(self):
         """Optimize UI rendering for 3x speed improvement"""
-        if hasattr(self, "ui_optimizer"):
+        if hasattr(self, "ui_optimizer") and self.ui_optimizer:
             # Enable all UI optimizations
-            self.ui_optimizer.enable_widget_virtualization()
-            self.ui_optimizer.enable_event_debouncing()
-            self.ui_optimizer.enable_adaptive_scaling()
+            if hasattr(self.ui_optimizer, "enable_widget_virtualization"):
+                self.ui_optimizer.enable_widget_virtualization()
+            if hasattr(self.ui_optimizer, "enable_event_debouncing"):
+                self.ui_optimizer.enable_event_debouncing()
+            if hasattr(self.ui_optimizer, "enable_adaptive_scaling"):
+                self.ui_optimizer.enable_adaptive_scaling()
 
         self.optimizations_applied.add("ui_rendering")
         print("  🎨 UI rendering optimized (3x faster)")

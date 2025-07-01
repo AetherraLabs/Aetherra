@@ -25,9 +25,9 @@ from typing import Any, Callable, Dict, List, Optional
 
 # Import our performance modules
 try:
-    from .memory_performance import NeuroCodeMemoryOptimizer, memory_optimizer
-    from .performance_engine import PerformanceEngine, performance_engine
-    from .ui_performance import UIOptimizer, ui_optimizer
+    from .memory_performance import memory_optimizer
+    from .performance_engine import performance_engine
+    from .ui_performance import ui_optimizer
 
     PERFORMANCE_MODULES_AVAILABLE = True
 except ImportError:
@@ -147,7 +147,11 @@ class PerformanceManager:
             )
 
     def optimize_ui_operation(
-        self, widget_class: type = None, render_func: Callable = None, *args, **kwargs
+        self,
+        widget_class: Optional[type] = None,
+        render_func: Optional[Callable] = None,
+        *args,
+        **kwargs,
     ) -> Any:
         """Optimize UI operations"""
         if not self.config.enable_ui_optimization or not self.ui_optimizer:
@@ -171,7 +175,7 @@ class PerformanceManager:
         return None
 
     def optimize_data_processing(
-        self, data: List[Any], process_func: Callable, use_parallel: bool = None
+        self, data: List[Any], process_func: Callable, use_parallel: Optional[bool] = None
     ) -> List[Any]:
         """Optimize data processing operations"""
         if use_parallel is None:
@@ -284,7 +288,7 @@ performance_manager = PerformanceManager()
 
 # Decorators for easy performance integration
 def performance_optimized(
-    operation_name: str = None, enable_caching: bool = True, enable_parallel: bool = False
+    operation_name: Optional[str] = None, enable_caching: bool = True, enable_parallel: bool = False
 ):
     """Decorator for automatic performance optimization"""
 
@@ -325,7 +329,7 @@ def ui_optimized(cache_widgets: bool = True, debounce_ms: int = 0):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            return performance_manager.optimize_ui_operation(render_func=func, *args, **kwargs)
+            return performance_manager.optimize_ui_operation(*args, render_func=func, **kwargs)
 
         return wrapper
 
@@ -433,10 +437,11 @@ def optimize_memory_operations(memory_system):
 def optimize_ui_components(ui_system):
     """Optimize UI system components"""
     if hasattr(ui_system, "create_widget"):
-        original_create = ui_system.create_widget
 
         def optimized_create_widget(widget_class, *args, **kwargs):
-            return performance_manager.optimize_ui_operation(widget_class, None, *args, **kwargs)
+            return performance_manager.optimize_ui_operation(
+                *args, widget_class=widget_class, **kwargs
+            )
 
         ui_system.create_widget = optimized_create_widget
 

@@ -24,7 +24,7 @@ import tracemalloc
 import weakref
 from collections import defaultdict, deque
 from dataclasses import dataclass
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import psutil
 
@@ -183,19 +183,21 @@ class MemoryMappedFileHandler:
         self.mapped_files = {}
         self.file_cache = {}
 
-    def map_file(self, filepath: str, mode: str = "r") -> mmap.mmap:
+    def map_file(self, filepath: str, mode: str = "r") -> Union[mmap.mmap, str, None]:
         """Memory map a file for efficient access"""
         if filepath in self.mapped_files:
             return self.mapped_files[filepath]
 
         try:
-            with open(filepath, "rb" if "b" in mode else "r") as f:
-                if os.path.getsize(filepath) > 1024 * 1024:  # Files > 1MB
+            file_size = os.path.getsize(filepath)
+            if file_size > 1024 * 1024:  # Files > 1MB
+                with open(filepath, "rb") as f:
                     mapped = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
                     self.mapped_files[filepath] = mapped
                     return mapped
-                else:
-                    # Small files - read normally
+            else:
+                # Small files - read normally
+                with open(filepath, encoding="utf-8") as f:
                     content = f.read()
                     self.file_cache[filepath] = content
                     return content
@@ -246,8 +248,7 @@ class GarbageCollectionOptimizer:
         """Force garbage collection and return statistics"""
         start_time = time.time()
 
-        # Get pre-collection stats
-        pre_stats = gc.get_stats()
+        # Get pre-collection count
         pre_count = len(gc.get_objects())
 
         # Force collection
@@ -339,7 +340,7 @@ class MemoryProfiler:
         self.snapshots.append(snapshot)
         return snapshot
 
-    def get_memory_diff(self, start_snapshot: MemorySnapshot = None) -> Dict[str, Any]:
+    def get_memory_diff(self, start_snapshot: Optional[MemorySnapshot] = None) -> Dict[str, Any]:
         """Get memory difference between snapshots"""
         end_snapshot = self.take_snapshot()
         start = start_snapshot or self.baseline_snapshot
@@ -385,7 +386,7 @@ class NeuroCodeMemoryOptimizer:
             self.object_pools[type_name] = ObjectPool(object_type, initial_size)
         return self.object_pools[type_name]
 
-    def load_large_file(self, filepath: str) -> Union[str, mmap.mmap]:
+    def load_large_file(self, filepath: str) -> Union[str, mmap.mmap, None]:
         """Load large file efficiently"""
         return self.file_handler.map_file(filepath)
 
@@ -479,7 +480,7 @@ memory_optimizer = NeuroCodeMemoryOptimizer()
 
 
 # Context manager for memory profiling
-class memory_profiled:
+class MemoryProfiled:
     """Context manager for profiling memory usage of operations"""
 
     def __init__(self, operation_name: str):
@@ -494,6 +495,10 @@ class memory_profiled:
     def __exit__(self, exc_type, exc_val, exc_tb):
         memory_diff = memory_optimizer.profiler.get_memory_diff(self.start_snapshot)
         print(f"🧠 {self.operation_name}: {memory_diff['memory_diff_mb']:.2f}MB memory change")
+
+
+# Backward compatibility alias
+memory_profiled = MemoryProfiled
 
 
 # Decorators for memory optimization
@@ -547,7 +552,7 @@ if __name__ == "__main__":
         print(f"String '{s}' -> interned: {id(optimized)}")
 
     # Test memory profiling
-    with memory_profiled("test_operation"):
+    with MemoryProfiled("test_operation"):
         # Simulate some work
         data = [i**2 for i in range(10000)]
         result = sum(data)
