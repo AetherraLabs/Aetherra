@@ -9,16 +9,17 @@ This script will clean up and organize the cluttered root directory by:
 3. Creating a clean, navigable structure
 """
 
+import json
 import os
 import shutil
 from pathlib import Path
-import json
+
 
 def create_directories():
     """Create organized directory structure"""
     dirs_to_create = [
         "documentation/reports",
-        "documentation/guides", 
+        "documentation/guides",
         "documentation/status",
         "documentation/changelogs",
         "testing/integration",
@@ -26,7 +27,7 @@ def create_directories():
         "testing/demos",
         "testing/verification",
         "archive/old_launchers",
-        "archive/old_demos", 
+        "archive/old_demos",
         "archive/old_tests",
         "scripts/deployment",
         "scripts/utilities",
@@ -35,14 +36,14 @@ def create_directories():
         "config/project",
         "temp/old_files"
     ]
-    
+
     for dir_path in dirs_to_create:
         Path(dir_path).mkdir(parents=True, exist_ok=True)
         print(f"✅ Created directory: {dir_path}")
 
 def move_documentation_files():
     """Move documentation files to organized folders"""
-    
+
     # Status and completion reports
     status_files = [
         "AGENT_ARCHIVE_IMPLEMENTATION_COMPLETE.md",
@@ -97,7 +98,7 @@ def move_documentation_files():
         "WORKSPACE_OPTIMIZATION_COMPLETE.md",
         "WORKSPACE_REORGANIZATION_PHASE1_COMPLETE.md"
     ]
-    
+
     # Analysis and technical reports
     report_files = [
         "AGENT_ARCHIVE_REPLAY_SYSTEM.md",
@@ -118,7 +119,7 @@ def move_documentation_files():
         "REDIRECT_ISSUE_SOLVED.md",
         "STRUCTURE_ANALYSIS.md"
     ]
-    
+
     # Guides and protocols
     guide_files = [
         "CHANGE_MANAGEMENT_PROTOCOL.md",
@@ -130,23 +131,23 @@ def move_documentation_files():
         "PROJECT_OVERVIEW.md",
         "WORKSPACE_REORGANIZATION_PLAN.md"
     ]
-    
+
     # Move files to appropriate directories
     for file in status_files:
         if Path(file).exists():
             shutil.move(file, f"documentation/status/{file}")
             print(f"📄 Moved {file} to documentation/status/")
-    
+
     for file in report_files:
         if Path(file).exists():
             shutil.move(file, f"documentation/reports/{file}")
             print(f"📊 Moved {file} to documentation/reports/")
-    
+
     for file in guide_files:
         if Path(file).exists():
             shutil.move(file, f"documentation/guides/{file}")
             print(f"📋 Moved {file} to documentation/guides/")
-    
+
     # Move CHANGELOG
     if Path("CHANGELOG.md").exists():
         shutil.move("CHANGELOG.md", "documentation/changelogs/CHANGELOG.md")
@@ -154,11 +155,11 @@ def move_documentation_files():
 
 def move_test_files():
     """Move test files to organized testing folders"""
-    
+
     # Integration tests
     integration_tests = [
         "test_agent_integration.py",
-        "test_backward_compatibility.py", 
+        "test_backward_compatibility.py",
         "test_enhanced_neuroplex_integration.py",
         "test_neurocode_integration.py",
         "test_neurocode_integration_fixed.py",
@@ -167,7 +168,7 @@ def move_test_files():
         "test_phase2_verification.py",
         "test_syntax_integration.py"
     ]
-    
+
     # Unit tests
     unit_tests = [
         "test_cli_fixes.py",
@@ -187,7 +188,7 @@ def move_test_files():
         "test_src_folder.py",
         "test_syntax_tree.py"
     ]
-    
+
     # Demo/verification tests
     demo_tests = [
         "test_and_launch_neuroplex.py",
@@ -199,11 +200,11 @@ def move_test_files():
         "test_neuro_chat.py",
         "test_phase2_basic.py"
     ]
-    
+
     # Quick tests and verification
     verification_tests = [
         "quick_interpreter_test.py",
-        "quick_memory_validation.py", 
+        "quick_memory_validation.py",
         "quick_runtime_test.py",
         "quick_test.py",
         "quick_test_neurocode.py",
@@ -218,23 +219,23 @@ def move_test_files():
         "final_verification_test.py",
         "comprehensive_error_check.py"
     ]
-    
+
     # Move test files
     for test in integration_tests:
         if Path(test).exists():
             shutil.move(test, f"testing/integration/{test}")
             print(f"🔗 Moved {test} to testing/integration/")
-    
+
     for test in unit_tests:
         if Path(test).exists():
             shutil.move(test, f"testing/unit/{test}")
             print(f"🧪 Moved {test} to testing/unit/")
-    
+
     for test in demo_tests:
         if Path(test).exists():
             shutil.move(test, f"testing/demos/{test}")
             print(f"🎭 Moved {test} to testing/demos/")
-    
+
     for test in verification_tests:
         if Path(test).exists():
             shutil.move(test, f"testing/verification/{test}")
@@ -242,7 +243,7 @@ def move_test_files():
 
 def move_demo_files():
     """Move demo files to archive or appropriate locations"""
-    
+
     demo_files = [
         "agent_archive_demo.py",
         "COMPLETE_DEBUG_DEMO.py",
@@ -263,7 +264,7 @@ def move_demo_files():
         "ui_foundation_demo.py",
         "neuro_chat_standalone.py"
     ]
-    
+
     for demo in demo_files:
         if Path(demo).exists():
             shutil.move(demo, f"archive/old_demos/{demo}")
@@ -271,7 +272,7 @@ def move_demo_files():
 
 def move_launcher_files():
     """Move launcher files to archive (keeping only the main one)"""
-    
+
     old_launchers = [
         "neurocode.py",
         "neurocode_ai_os_launcher.py",
@@ -281,7 +282,7 @@ def move_launcher_files():
         "neurocode_plugin_cli.py",
         "neurocode_unified_cli.py"
     ]
-    
+
     for launcher in old_launchers:
         if Path(launcher).exists():
             shutil.move(launcher, f"archive/old_launchers/{launcher}")
@@ -289,7 +290,7 @@ def move_launcher_files():
 
 def move_script_files():
     """Move script files to organized script folders"""
-    
+
     # Deployment scripts
     deployment_scripts = [
         "commit.bat",
@@ -303,7 +304,7 @@ def move_script_files():
         "verify-deployment.ps1",
         "verify-domain-setup.ps1"
     ]
-    
+
     # Utility scripts
     utility_scripts = [
         "final_cleanup.py",
@@ -311,12 +312,12 @@ def move_script_files():
         "organize_workspace.py",
         "IMPORT_FIX_COMPLETE.py"
     ]
-    
+
     for script in deployment_scripts:
         if Path(script).exists():
             shutil.move(script, f"scripts/deployment/{script}")
             print(f"🛠️ Moved {script} to scripts/deployment/")
-    
+
     for script in utility_scripts:
         if Path(script).exists():
             shutil.move(script, f"scripts/utilities/{script}")
@@ -324,27 +325,27 @@ def move_script_files():
 
 def move_config_files():
     """Move configuration files to config folders"""
-    
+
     # Requirements files
     req_files = [
         "requirements_dev.txt",
-        "requirements_enhanced.txt", 
+        "requirements_enhanced.txt",
         "requirements_fixed.txt",
         "requirements_minimal.txt",
         "playground_requirements.txt"
     ]
-    
+
     # Project config files
     project_files = [
         "package.json",
         "pyproject.toml"
     ]
-    
+
     for req in req_files:
         if Path(req).exists():
             shutil.move(req, f"config/requirements/{req}")
             print(f"📦 Moved {req} to config/requirements/")
-    
+
     for proj in project_files:
         if Path(proj).exists():
             shutil.move(proj, f"config/project/{proj}")
@@ -352,19 +353,19 @@ def move_config_files():
 
 def move_data_files():
     """Move data files to temp folder if they're old"""
-    
+
     old_data_files = [
         "environment_report.txt",
         "error_analysis_report.txt",
         "goals_store.json",
-        "memory_store.json", 
+        "memory_store.json",
         "neurocode_functions.json",
         "plugin_test_output.txt",
         "repl_test_input.txt",
         "simple_test.neuro",
         "test_script.neuro"
     ]
-    
+
     for data_file in old_data_files:
         if Path(data_file).exists():
             shutil.move(data_file, f"temp/old_files/{data_file}")
@@ -382,42 +383,42 @@ def main():
     """Main cleanup function"""
     print("🧹 NeuroCode Workspace Cleanup Starting...")
     print("=" * 50)
-    
+
     # Create directory structure
     print("\n📁 Creating organized directory structure...")
     create_directories()
-    
+
     # Move different types of files
     print("\n📚 Moving documentation files...")
     move_documentation_files()
-    
+
     print("\n🧪 Moving test files...")
     move_test_files()
-    
+
     print("\n🎪 Moving demo files...")
     move_demo_files()
-    
+
     print("\n🚀 Moving old launcher files...")
     move_launcher_files()
-    
+
     print("\n🛠️ Moving script files...")
     move_script_files()
-    
+
     print("\n⚙️ Moving configuration files...")
     move_config_files()
-    
+
     print("\n📁 Moving old data files...")
     move_data_files()
-    
+
     print("\n🌐 Moving HTML files...")
     cleanup_html_files()
-    
+
     print("\n" + "=" * 50)
     print("✅ Workspace cleanup completed!")
     print("\n📊 New organized structure:")
     print("├── documentation/")
     print("│   ├── reports/")
-    print("│   ├── guides/") 
+    print("│   ├── guides/")
     print("│   ├── status/")
     print("│   └── changelogs/")
     print("├── testing/")
@@ -436,7 +437,7 @@ def main():
     print("│   └── project/")
     print("└── temp/")
     print("    └── old_files/")
-    
+
     print("\n🎯 Key files remaining in root:")
     print("- README.md")
     print("- LICENSE")

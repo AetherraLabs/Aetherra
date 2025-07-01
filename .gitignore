@@ -73,3 +73,7 @@ htmlcov/
 
 # Documentation builds
 docs/_build/
+
+# Cleanup utilities and reports
+repository_cleanup.py
+cleanup_report.json

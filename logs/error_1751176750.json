@@ -1,8 +1,0 @@
-{
-  "timestamp": "2025-06-28T23:59:10.982248",
-  "error_type": "ValueError",
-  "error_message": "Test error",
-  "context": "test_context",
-  "operation": null,
-  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\enigm\\Desktop\\New Neurocode Language\\test_suite.py\", line 302, in test_error_logging\n    raise ValueError(\"Test error\")\nValueError: Test error\n"
-}

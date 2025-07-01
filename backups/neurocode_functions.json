@@ -1,6 +1,0 @@
-{
-  "test_func": {
-    "params": [],
-    "commands": "echo 'test'"
-  }
-}
