@@ -1,5 +1,6 @@
 # src/neurocode/plugins/local_llm.py - Local LLM Integration Plugin
-from typing import Dict, Any
+from typing import Any, Dict
+
 from core.plugin_manager import register_plugin
 
 
@@ -32,11 +33,11 @@ def ollama_chat(model: str, prompt: str, temperature: float = 0.7) -> Dict[str, 
             "error": "requests package not found",
             "suggestion": "Install with: pip install requests"
         }
-    
+
     try:
         # Ollama API endpoint
         url = "http://localhost:11434/api/generate"
-        
+
         payload = {
             "model": model,
             "prompt": prompt,
@@ -45,9 +46,9 @@ def ollama_chat(model: str, prompt: str, temperature: float = 0.7) -> Dict[str, 
                 "temperature": temperature
             }
         }
-        
+
         response = requests.post(url, json=payload, timeout=30)
-        
+
         if response.status_code == 200:
             result = response.json()
             return {
@@ -64,7 +65,7 @@ def ollama_chat(model: str, prompt: str, temperature: float = 0.7) -> Dict[str, 
                 "error": f"Ollama API error: {response.status_code}",
                 "message": response.text
             }
-            
+
     except requests.exceptions.ConnectionError:
         return {
             "error": "Cannot connect to Ollama",
@@ -108,17 +109,17 @@ def ollama_list_models() -> Dict[str, Any]:
             "error": "requests package not found",
             "suggestion": "Install with: pip install requests"
         }
-    
+
     try:
         # Ollama API endpoint for listing models
         url = "http://localhost:11434/api/tags"
-        
+
         response = requests.get(url, timeout=10)
-        
+
         if response.status_code == 200:
             result = response.json()
             models = []
-            
+
             for model in result.get("models", []):
                 models.append({
                     "name": model.get("name", ""),
@@ -127,7 +128,7 @@ def ollama_list_models() -> Dict[str, Any]:
                     "family": model.get("details", {}).get("family", ""),
                     "format": model.get("details", {}).get("format", "")
                 })
-            
+
             return {
                 "success": True,
                 "models": models,
@@ -139,7 +140,7 @@ def ollama_list_models() -> Dict[str, Any]:
                 "error": f"Ollama API error: {response.status_code}",
                 "message": response.text
             }
-            
+
     except requests.exceptions.ConnectionError:
         return {
             "error": "Cannot connect to Ollama",
@@ -179,7 +180,7 @@ def huggingface_local(model_name: str, text: str, max_length: int = 100) -> Dict
             "error": "transformers package not found",
             "suggestion": "Install with: pip install transformers torch"
         }
-    
+
     try:
         # Create a text generation pipeline
         generator = pipeline(
@@ -188,7 +189,7 @@ def huggingface_local(model_name: str, text: str, max_length: int = 100) -> Dict
             tokenizer=model_name,
             device_map="auto"
         )
-        
+
         # Generate text
         result = generator(
             text,
@@ -198,7 +199,7 @@ def huggingface_local(model_name: str, text: str, max_length: int = 100) -> Dict
             do_sample=True,
             pad_token_id=generator.tokenizer.eos_token_id
         )
-        
+
         return {
             "success": True,
             "model": model_name,
@@ -206,7 +207,7 @@ def huggingface_local(model_name: str, text: str, max_length: int = 100) -> Dict
             "output": result[0]["generated_text"],
             "max_length": max_length
         }
-        
+
     except Exception as e:
         return {
             "error": f"Hugging Face inference failed: {str(e)}",
@@ -243,11 +244,11 @@ def llamacpp_chat(model_path: str, prompt: str, max_tokens: int = 256) -> Dict[s
             "error": "llama-cpp-python package not found",
             "suggestion": "Install with: pip install llama-cpp-python"
         }
-    
+
     try:
         # Load the model
         llm = Llama(model_path=model_path, n_ctx=2048, verbose=False)
-        
+
         # Generate response
         output = llm(
             prompt,
@@ -256,7 +257,7 @@ def llamacpp_chat(model_path: str, prompt: str, max_tokens: int = 256) -> Dict[s
             echo=False,
             temperature=0.7
         )
-        
+
         return {
             "success": True,
             "model_path": model_path,
@@ -268,7 +269,7 @@ def llamacpp_chat(model_path: str, prompt: str, max_tokens: int = 256) -> Dict[s
                 "total_tokens": output["usage"]["total_tokens"]
             }
         }
-        
+
     except FileNotFoundError:
         return {
             "error": f"Model file not found: {model_path}",

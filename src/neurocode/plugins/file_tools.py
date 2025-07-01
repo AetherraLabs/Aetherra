@@ -1,7 +1,8 @@
 # src/neurocode/plugins/file_tools.py - File Management Plugin
 import shutil
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from core.plugin_manager import register_plugin
 
 
@@ -29,28 +30,28 @@ def create_file(filepath: str, content: str = "") -> Dict[str, Any]:
     """Create a new file with optional content"""
     try:
         path = Path(filepath)
-        
+
         # Create parent directories if they don't exist
         path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Check if file already exists
         if path.exists():
             return {
                 "error": f"File '{filepath}' already exists",
                 "suggestion": "Use 'write_file' to overwrite or 'append_file' to add content"
             }
-        
+
         # Create the file
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
-        
+
         return {
             "success": True,
             "filepath": str(path.absolute()),
             "size": len(content),
             "created": True
         }
-        
+
     except Exception as e:
         return {"error": f"Failed to create file: {str(e)}"}
 
@@ -79,13 +80,13 @@ def read_file(filepath: str, max_lines: Optional[int] = None) -> Dict[str, Any]:
     """Read the contents of a file"""
     try:
         path = Path(filepath)
-        
+
         if not path.exists():
             return {"error": f"File '{filepath}' does not exist"}
-        
+
         if not path.is_file():
             return {"error": f"'{filepath}' is not a file"}
-        
+
         # Read file content
         with open(path, 'r', encoding='utf-8') as f:
             if max_lines:
@@ -99,7 +100,7 @@ def read_file(filepath: str, max_lines: Optional[int] = None) -> Dict[str, Any]:
             else:
                 content = f.read()
                 truncated = False
-        
+
         return {
             "success": True,
             "filepath": str(path.absolute()),
@@ -108,7 +109,7 @@ def read_file(filepath: str, max_lines: Optional[int] = None) -> Dict[str, Any]:
             "lines": content.count('\n') + 1 if content else 0,
             "truncated": truncated
         }
-        
+
     except UnicodeDecodeError:
         return {"error": f"File '{filepath}' is not a valid text file"}
     except Exception as e:
@@ -139,21 +140,21 @@ def write_file(filepath: str, content: str) -> Dict[str, Any]:
     """Write content to a file (overwrites existing content)"""
     try:
         path = Path(filepath)
-        
+
         # Create parent directories if they don't exist
         path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Backup existing file if it exists
         backup_created = False
         if path.exists():
             backup_path = path.with_suffix(path.suffix + '.backup')
             shutil.copy2(path, backup_path)
             backup_created = True
-        
+
         # Write the file
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
-        
+
         return {
             "success": True,
             "filepath": str(path.absolute()),
@@ -161,7 +162,7 @@ def write_file(filepath: str, content: str) -> Dict[str, Any]:
             "backup_created": backup_created,
             "overwritten": backup_created
         }
-        
+
     except Exception as e:
         return {"error": f"Failed to write file: {str(e)}"}
 
@@ -190,27 +191,27 @@ def list_files(directory: str = ".", pattern: str = "*", include_hidden: bool = 
     """List files and directories in a given path"""
     try:
         path = Path(directory)
-        
+
         if not path.exists():
             return {"error": f"Directory '{directory}' does not exist"}
-        
+
         if not path.is_dir():
             return {"error": f"'{directory}' is not a directory"}
-        
+
         # Get all matching items
         if pattern == "*":
             items = list(path.iterdir())
         else:
             items = list(path.glob(pattern))
-        
+
         # Filter hidden files if requested
         if not include_hidden:
             items = [item for item in items if not item.name.startswith('.')]
-        
+
         # Categorize items
         files = []
         directories = []
-        
+
         for item in sorted(items):
             item_info = {
                 "name": item.name,
@@ -218,12 +219,12 @@ def list_files(directory: str = ".", pattern: str = "*", include_hidden: bool = 
                 "size": item.stat().st_size if item.is_file() else None,
                 "modified": item.stat().st_mtime
             }
-            
+
             if item.is_file():
                 files.append(item_info)
             elif item.is_dir():
                 directories.append(item_info)
-        
+
         return {
             "success": True,
             "directory": str(path.absolute()),
@@ -233,7 +234,7 @@ def list_files(directory: str = ".", pattern: str = "*", include_hidden: bool = 
             "total_files": len(files),
             "total_directories": len(directories)
         }
-        
+
     except Exception as e:
         return {"error": f"Failed to list files: {str(e)}"}
 
@@ -262,10 +263,10 @@ def delete_file(filepath: str, confirm: bool = False, create_backup: bool = True
     """Delete a file or directory (with safety confirmation)"""
     try:
         path = Path(filepath)
-        
+
         if not path.exists():
             return {"error": f"'{filepath}' does not exist"}
-        
+
         # Safety check - prevent deletion of important files
         important_files = ['.git', '.project_protection.json', 'README.md', 'requirements.txt']
         if path.name in important_files:
@@ -273,24 +274,24 @@ def delete_file(filepath: str, confirm: bool = False, create_backup: bool = True
                 "error": f"Cannot delete important file '{path.name}'",
                 "suggestion": "This file is protected from deletion"
             }
-        
+
         if not confirm:
             return {
                 "error": "Deletion requires confirmation",
                 "suggestion": "Set confirm=true to proceed with deletion"
             }
-        
+
         backup_path = None
         if create_backup and path.is_file():
             backup_path = path.with_suffix(path.suffix + '.deleted.backup')
             shutil.copy2(path, backup_path)
-        
+
         # Delete the file/directory
         if path.is_file():
             path.unlink()
         elif path.is_dir():
             shutil.rmtree(path)
-        
+
         return {
             "success": True,
             "deleted": str(path.absolute()),
@@ -298,6 +299,6 @@ def delete_file(filepath: str, confirm: bool = False, create_backup: bool = True
             "backup_created": backup_path is not None,
             "backup_path": str(backup_path) if backup_path else None
         }
-        
+
     except Exception as e:
         return {"error": f"Failed to delete: {str(e)}"}

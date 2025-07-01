@@ -1,6 +1,7 @@
 # plugins/whisper.py - Enhanced Voice Processing Plugin
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from core.plugin_manager import register_plugin
 
 
@@ -31,7 +32,7 @@ def whisper_transcribe(audio_file: str, model: str = "base", language: Optional[
         audio_path = Path(audio_file)
         if not audio_path.exists():
             return {"error": f"Audio file '{audio_file}' not found"}
-        
+
         # Try to import whisper
         try:
             import whisper
@@ -40,20 +41,20 @@ def whisper_transcribe(audio_file: str, model: str = "base", language: Optional[
                 "error": "Whisper package not installed",
                 "suggestion": "Install with: pip install openai-whisper"
             }
-        
+
         # Load the model
         try:
             whisper_model = whisper.load_model(model)
         except Exception as e:
             return {"error": f"Failed to load whisper model '{model}': {str(e)}"}
-        
+
         # Transcribe the audio
         result = whisper_model.transcribe(
             str(audio_path),
             language=language,
             verbose=False
         )
-        
+
         return {
             "success": True,
             "audio_file": str(audio_path.absolute()),
@@ -63,7 +64,7 @@ def whisper_transcribe(audio_file: str, model: str = "base", language: Optional[
             "segments": result.get("segments", []),
             "duration": "calculated from segments",
         }
-        
+
     except Exception as e:
         return {"error": f"Transcription failed: {str(e)}"}
 

@@ -19,7 +19,7 @@ from core.plugin_manager import register_plugin
     author="Your Name",
     category="utilities",
     dependencies=["requests"],  # Optional dependencies
-    
+
     # Intent-based discovery (for AI integration)
     intent_purpose="demonstration and examples",
     intent_triggers=["demo", "example", "test"],
@@ -31,10 +31,10 @@ from core.plugin_manager import register_plugin
 def my_plugin_function(message: str) -> Dict[str, Any]:
     """
     Main plugin function
-    
+
     Args:
         message: Input message to process
-        
+
     Returns:
         Dict containing result data
     """
@@ -47,28 +47,28 @@ def my_plugin_function(message: str) -> Dict[str, Any]:
 
 ### Plugin Metadata
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | str | Unique plugin identifier |
-| `description` | str | Human-readable description |
-| `capabilities` | List[str] | List of plugin capabilities |
-| `version` | str | Plugin version (semver recommended) |
-| `author` | str | Plugin author name |
-| `category` | str | Plugin category for organization |
-| `dependencies` | List[str] | Required Python packages |
+| Field          | Type      | Description                         |
+| -------------- | --------- | ----------------------------------- |
+| `name`         | str       | Unique plugin identifier            |
+| `description`  | str       | Human-readable description          |
+| `capabilities` | List[str] | List of plugin capabilities         |
+| `version`      | str       | Plugin version (semver recommended) |
+| `author`       | str       | Plugin author name                  |
+| `category`     | str       | Plugin category for organization    |
+| `dependencies` | List[str] | Required Python packages            |
 
 ### Intent-Based Discovery
 
 For AI integration and natural language discovery:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `intent_purpose` | str | What the plugin is designed for |
-| `intent_triggers` | List[str] | Keywords that should trigger this plugin |
-| `intent_scenarios` | List[str] | Use cases where plugin applies |
-| `ai_description` | str | AI-friendly description |
-| `example_usage` | str | Example of how to use the plugin |
-| `confidence_boost` | float | Relevance score multiplier (default 1.0) |
+| Field              | Type      | Description                              |
+| ------------------ | --------- | ---------------------------------------- |
+| `intent_purpose`   | str       | What the plugin is designed for          |
+| `intent_triggers`  | List[str] | Keywords that should trigger this plugin |
+| `intent_scenarios` | List[str] | Use cases where plugin applies           |
+| `ai_description`   | str       | AI-friendly description                  |
+| `example_usage`    | str       | Example of how to use the plugin         |
+| `confidence_boost` | float     | Relevance score multiplier (default 1.0) |
 
 ## Usage in .neuro Code
 

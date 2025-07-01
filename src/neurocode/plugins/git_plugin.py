@@ -1,7 +1,8 @@
 # src/neurocode/plugins/git_plugin.py - Git Integration Plugin
-import subprocess
 import os
-from typing import Dict, Any
+import subprocess
+from typing import Any, Dict
+
 from core.plugin_manager import register_plugin
 
 
@@ -35,10 +36,10 @@ def git_status() -> Dict[str, Any]:
             text=True,
             cwd=os.getcwd()
         )
-        
+
         if result.returncode != 0:
             return {"error": "Not in a Git repository"}
-        
+
         # Get status
         status_result = subprocess.run(
             ["git", "status", "--porcelain"],
@@ -46,7 +47,7 @@ def git_status() -> Dict[str, Any]:
             text=True,
             cwd=os.getcwd()
         )
-        
+
         # Get branch info
         branch_result = subprocess.run(
             ["git", "branch", "--show-current"],
@@ -54,7 +55,7 @@ def git_status() -> Dict[str, Any]:
             text=True,
             cwd=os.getcwd()
         )
-        
+
         # Parse status
         changes = []
         if status_result.stdout:
@@ -68,14 +69,14 @@ def git_status() -> Dict[str, Any]:
                         "staged": status_code[0] != ' ' and status_code[0] != '?',
                         "modified": status_code[1] != ' '
                     })
-        
+
         return {
             "success": True,
             "branch": branch_result.stdout.strip(),
             "changes": changes,
             "clean": len(changes) == 0
         }
-        
+
     except FileNotFoundError:
         return {"error": "Git not found. Please install Git."}
     except Exception as e:
@@ -107,7 +108,7 @@ def git_commit(message: str, add_all: bool = True) -> Dict[str, Any]:
     try:
         if not message.strip():
             return {"error": "Commit message cannot be empty"}
-        
+
         # Add all files if requested
         if add_all:
             add_result = subprocess.run(
@@ -116,10 +117,10 @@ def git_commit(message: str, add_all: bool = True) -> Dict[str, Any]:
                 text=True,
                 cwd=os.getcwd()
             )
-            
+
             if add_result.returncode != 0:
                 return {"error": f"Failed to add files: {add_result.stderr}"}
-        
+
         # Create commit
         commit_result = subprocess.run(
             ["git", "commit", "-m", message],
@@ -127,10 +128,10 @@ def git_commit(message: str, add_all: bool = True) -> Dict[str, Any]:
             text=True,
             cwd=os.getcwd()
         )
-        
+
         if commit_result.returncode != 0:
             return {"error": f"Commit failed: {commit_result.stderr}"}
-        
+
         # Get commit hash
         hash_result = subprocess.run(
             ["git", "rev-parse", "HEAD"],
@@ -138,14 +139,14 @@ def git_commit(message: str, add_all: bool = True) -> Dict[str, Any]:
             text=True,
             cwd=os.getcwd()
         )
-        
+
         return {
             "success": True,
             "message": message,
             "hash": hash_result.stdout.strip()[:8] if hash_result.returncode == 0 else "unknown",
             "output": commit_result.stdout
         }
-        
+
     except FileNotFoundError:
         return {"error": "Git not found. Please install Git."}
     except Exception as e:
@@ -182,10 +183,10 @@ def git_log(limit: int = 10) -> Dict[str, Any]:
             text=True,
             cwd=os.getcwd()
         )
-        
+
         if log_result.returncode != 0:
             return {"error": f"Failed to get log: {log_result.stderr}"}
-        
+
         commits = []
         if log_result.stdout:
             for line in log_result.stdout.strip().split('\n'):
@@ -198,13 +199,13 @@ def git_log(limit: int = 10) -> Dict[str, Any]:
                             "date": parts[2],
                             "message": parts[3]
                         })
-        
+
         return {
             "success": True,
             "commits": commits,
             "total_shown": len(commits)
         }
-        
+
     except FileNotFoundError:
         return {"error": "Git not found. Please install Git."}
     except Exception as e:
