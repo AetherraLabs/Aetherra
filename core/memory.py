@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 # core/memory.py - Compatibility Layer
 """
 NeuroCode Memory System - Backward Compatibility Layer
@@ -15,7 +16,7 @@ from datetime import datetime, timedelta
 
 # Import speed enhancement suite for memory optimization
 try:
-    from .speed_enhancement_suite import optimize_memory_system, ultra_fast, lightning_fast_data
+    from .speed_enhancement_suite import lightning_fast_data, optimize_memory_system, ultra_fast
 
     SPEED_ENHANCEMENT_AVAILABLE = True
     print("🧠 Speed Enhancement Suite integrated with memory system")
@@ -33,6 +34,7 @@ except ImportError:
             return func
 
         return decorator
+
 
 MEMORY_FILE = "memory_store.json"
 

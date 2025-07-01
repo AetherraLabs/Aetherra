@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 # core/interpreter.py
 """
 NeuroCode Interpreter (Modular Interface)
@@ -20,30 +21,44 @@ This file maintains backward compatibility with existing code.
 
 # Import performance optimizations
 try:
-    from .performance_integration import performance_optimized, memory_optimized, optimized_operation
+    from .performance_integration import (
+        memory_optimized,
+        optimized_operation,
+        performance_optimized,
+    )
+
     PERFORMANCE_AVAILABLE = True
 except ImportError:
     PERFORMANCE_AVAILABLE = False
+
     def performance_optimized(*args, **kwargs):
         def decorator(func):
             return func
+
         return decorator
+
     def memory_optimized(*args, **kwargs):
         def decorator(func):
             return func
+
         return decorator
+
 
 # Import speed enhancement suite
 try:
-    from .speed_enhancement_suite import optimize_interpreter_system, ultra_fast, get_speed_suite
+    from .speed_enhancement_suite import get_speed_suite, optimize_interpreter_system, ultra_fast
+
     SPEED_ENHANCEMENT_AVAILABLE = True
     print("🚀 Speed Enhancement Suite integrated with interpreter")
 except ImportError:
     SPEED_ENHANCEMENT_AVAILABLE = False
+
     def ultra_fast(*args, **kwargs):
         def decorator(func):
             return func
+
         return decorator
+
 
 # Import everything from the new modular system
 try:
@@ -51,36 +66,36 @@ try:
 
     class NeuroCodeInterpreter(BaseNeuroCodeInterpreter):
         """Ultra-fast performance-optimized NeuroCode interpreter"""
-        
+
         def __init__(self, *args, **kwargs):
             if PERFORMANCE_AVAILABLE:
                 with optimized_operation("interpreter_initialization"):
                     super().__init__(*args, **kwargs)
             else:
                 super().__init__(*args, **kwargs)
-            
+
             # Apply speed optimizations
             if SPEED_ENHANCEMENT_AVAILABLE:
                 optimize_interpreter_system(self)
                 print("⚡ Interpreter speed optimized!")
-        
+
         @ultra_fast("neurocode_execution")
         @performance_optimized("neurocode_execution", enable_caching=True)
         def execute(self, line):
             """Execute NeuroCode with performance optimizations"""
             return super().execute(line)
-        
+
         @memory_optimized(intern_strings=True)
         def parse_line(self, line):
             """Parse NeuroCode line with memory optimizations"""
-            if hasattr(super(), 'parse_line'):
+            if hasattr(super(), "parse_line"):
                 return super().parse_line(line)
             return line.strip()
-        
+
         @performance_optimized("neurocode_processing")
         def process_command(self, command, args):
             """Process commands with performance optimizations"""
-            if hasattr(super(), 'process_command'):
+            if hasattr(super(), "process_command"):
                 return super().process_command(command, args)
             return f"Processed: {command} {args}"
 

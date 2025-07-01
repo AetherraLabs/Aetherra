@@ -1,4 +1,13 @@
+<!--
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2025 NeuroCode & Neuroplex Contributors
+-->
+
 # 🧬 NeuroCode & Neuroplex - Revolutionary AI Operating System
+
+![Responsible AI](https://img.shields.io/badge/Responsible%20AI-Compliant-brightgreen?style=for-the-badge&logo=vercel)
+![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
+
 > **🚀 BREAKTHROUGH ACHIEVEMENT: June 30, 2025**
 > **Phase 2 Complete: Advanced Stability, Intelligence & Self-Awareness Systems**
 > **🔥 NEW: Ultra-High Performance Mode - 5x Faster Operations**
@@ -940,7 +949,9 @@ If NeuroCode revolutionizes your coding experience, give us a ⭐ on GitHub!
 
 **NeuroCode & Neuroplex are designed with legal compliance and responsible AI principles at their core.**
 
-### 🛡️ **Legal Framework & Compliance**
+📋 **For comprehensive legal documentation, see [docs/LEGAL.md](docs/LEGAL.md)**
+
+### 🛡️ **Legal Framework Summary**
 
 **✅ Programming Language Development**
 - Creating new programming languages, compilers, and runtimes is **100% legal** in all jurisdictions
@@ -1095,5 +1106,19 @@ neurocode config set require_confirmation on
 - Best practices sharing for enterprise users
 - Regular updates on regulatory changes affecting AI development
 - Open collaboration on safety and ethics improvements
+
+### 📚 **Additional Legal Resources**
+
+**📋 Governance Documentation**
+- **[📄 Security Policy](SECURITY.md)**: Comprehensive security and vulnerability reporting guidelines
+- **[🤝 Code of Conduct](CODE_OF_CONDUCT.md)**: Community standards and behavior guidelines
+- **[⚖️ Comprehensive Legal Guide](docs/LEGAL.md)**: Complete legal framework and compliance documentation
+- **[📜 License](LICENSE)**: GPL-3.0-or-later open source license
+
+**🔗 Quick Reference**
+- **Bug Reports**: [GitHub Issues](https://github.com/Zyonic88/NeuroCode/issues)
+- **Security Reports**: [GitHub Security Advisories](https://github.com/Zyonic88/NeuroCode/security/advisories)
+- **Community Discussions**: [GitHub Discussions](https://github.com/Zyonic88/NeuroCode/discussions)
+- **Legal Questions**: Create an issue with the "legal" label
 
 **We are committed to building AI systems that are powerful, safe, and beneficial for everyone.**
