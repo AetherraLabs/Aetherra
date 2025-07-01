@@ -13,23 +13,47 @@ For new code, consider using the modular interfaces directly:
 
 from datetime import datetime, timedelta
 
-# Performance monitoring integration available (for future use)
+# Import speed enhancement suite for memory optimization
+try:
+    from .speed_enhancement_suite import optimize_memory_system, ultra_fast, lightning_fast_data
+
+    SPEED_ENHANCEMENT_AVAILABLE = True
+    print("🧠 Speed Enhancement Suite integrated with memory system")
+except ImportError:
+    SPEED_ENHANCEMENT_AVAILABLE = False
+
+    def ultra_fast(*args, **kwargs):
+        def decorator(func):
+            return func
+
+        return decorator
+
+    def lightning_fast_data(*args, **kwargs):
+        def decorator(func):
+            return func
+
+        return decorator
 
 MEMORY_FILE = "memory_store.json"
 
 
 class NeuroMemory:
     """
-    Legacy NeuroMemory interface - now powered by the modular memory system
+    Ultra-fast legacy NeuroMemory interface - now powered by the modular memory system
 
     This class maintains backward compatibility while using the new modular
-    memory architecture under the hood.
+    memory architecture under the hood, enhanced with speed optimizations.
     """
 
     def __init__(self):
         from .memory import BasicMemory
 
         self._memory_system = BasicMemory()
+
+        # Apply speed optimizations
+        if SPEED_ENHANCEMENT_AVAILABLE:
+            optimize_memory_system(self)
+            print("🚀 Memory system speed optimized!")
 
     def load(self):
         """Load memories from persistent storage"""
@@ -46,6 +70,7 @@ class NeuroMemory:
         """Legacy compatibility: return memories as list of dicts"""
         return self._memory_system.memory
 
+    @ultra_fast("memory_remember")
     def remember(self, text, tags=None, category="general"):
         """Store text in memory with optional tags and category"""
         return self._memory_system.remember(text, tags, category)
