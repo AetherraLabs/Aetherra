@@ -1,9 +1,9 @@
-# core/syntax/__init__.py
+# core/ast/__init__.py
 """
-NeuroCode Syntax Module
-=======================
+NeuroCode Abstract Syntax Tree (AST) Module
+==========================================
 
-This module provides the complete syntax infrastructure for NeuroCode, including:
+This module provides the complete AST infrastructure for NeuroCode, including:
 - Node types and data structures
 - Parser implementation
 - Visitor pattern for tree traversal

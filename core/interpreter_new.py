@@ -20,7 +20,7 @@ This file maintains backward compatibility with existing code.
 
 # Import everything from the new modular system
 try:
-    from .interpreter.main import NeuroCodeInterpreter
+    from .interpreter import NeuroCodeInterpreter
 
     # Legacy function compatibility
     def create_interpreter():

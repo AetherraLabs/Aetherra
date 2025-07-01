@@ -78,4 +78,6 @@ class SyntaxNode:
 
     def __repr__(self) -> str:
         """String representation for debugging"""
-        return f"SyntaxNode(type={self.type.value}, value={self.value}, children={self.child_count()})"
+        return (
+            f"SyntaxNode(type={self.type.value}, value={self.value}, children={self.child_count()})"
+        )

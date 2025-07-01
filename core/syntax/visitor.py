@@ -170,7 +170,7 @@ class SyntaxTreeTransformer(SyntaxTreeVisitor):
             value=node.value,
             children=new_children,
             metadata=node.metadata.copy() if node.metadata else {},
-            line_number=node.line_number
+            line_number=node.line_number,
         )
         return new_node
 
@@ -180,27 +180,27 @@ class SyntaxTreeAnalyzer(SyntaxTreeVisitor):
 
     def __init__(self):
         self.statistics = {
-            'node_counts': {},
-            'total_depth': 0,
-            'max_depth': 0,
-            'function_definitions': [],
-            'variable_assignments': [],
-            'memory_operations': [],
-            'agent_operations': []
+            "node_counts": {},
+            "total_depth": 0,
+            "max_depth": 0,
+            "function_definitions": [],
+            "variable_assignments": [],
+            "memory_operations": [],
+            "agent_operations": [],
         }
 
     def analyze(self, node: SyntaxNode) -> dict:
         """Analyze a syntax tree and return detailed statistics"""
         self.statistics = {
-            'node_counts': {},
-            'total_depth': 0,
-            'max_depth': 0,
-            'function_definitions': [],
-            'variable_assignments': [],
-            'memory_operations': [],
-            'agent_operations': []
+            "node_counts": {},
+            "total_depth": 0,
+            "max_depth": 0,
+            "function_definitions": [],
+            "variable_assignments": [],
+            "memory_operations": [],
+            "agent_operations": [],
         }
-        
+
         self._analyze_recursive(node, 0)
         return self.statistics
 
@@ -208,18 +208,20 @@ class SyntaxTreeAnalyzer(SyntaxTreeVisitor):
         """Recursively analyze nodes"""
         # Update statistics
         node_type = node.type.value
-        self.statistics['node_counts'][node_type] = self.statistics['node_counts'].get(node_type, 0) + 1
-        self.statistics['max_depth'] = max(self.statistics['max_depth'], depth)
+        self.statistics["node_counts"][node_type] = (
+            self.statistics["node_counts"].get(node_type, 0) + 1
+        )
+        self.statistics["max_depth"] = max(self.statistics["max_depth"], depth)
 
         # Collect specific node information
-        if node.type.value == 'function_def':
-            self.statistics['function_definitions'].append(node.value)
-        elif node.type.value == 'variable_assign':
-            self.statistics['variable_assignments'].append(node.value)
-        elif node.type.value == 'memory':
-            self.statistics['memory_operations'].append(node.value)
-        elif node.type.value in ['agent', 'agent_mode', 'agent_goal']:
-            self.statistics['agent_operations'].append(node.value)
+        if node.type.value == "function_def":
+            self.statistics["function_definitions"].append(node.value)
+        elif node.type.value == "variable_assign":
+            self.statistics["variable_assignments"].append(node.value)
+        elif node.type.value == "memory":
+            self.statistics["memory_operations"].append(node.value)
+        elif node.type.value in ["agent", "agent_mode", "agent_goal"]:
+            self.statistics["agent_operations"].append(node.value)
 
         # Recurse into children
         if node.children:

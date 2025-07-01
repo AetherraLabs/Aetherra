@@ -11,7 +11,14 @@ For new code, consider using the modular interfaces directly:
 - core.memory.UnifiedMemoryInterface for all capabilities
 """
 
+import json
+import os
+import re
+from collections import defaultdict
 from datetime import datetime, timedelta
+
+# Import the new modular memory system
+from .memory import BasicMemory, get_unified_memory_interface
 
 # Performance monitoring integration available (for future use)
 
@@ -21,14 +28,13 @@ MEMORY_FILE = "memory_store.json"
 class NeuroMemory:
     """
     Legacy NeuroMemory interface - now powered by the modular memory system
-
+    
     This class maintains backward compatibility while using the new modular
     memory architecture under the hood.
     """
-
+    
     def __init__(self):
         from .memory import BasicMemory
-
         self._memory_system = BasicMemory()
 
     def load(self):
@@ -130,11 +136,7 @@ class NeuroMemory:
             "period2": period2,
             "period1_count": count1,
             "period2_count": count2,
-            "trend": "increasing"
-            if count1 > count2
-            else "decreasing"
-            if count1 < count2
-            else "stable",
+            "trend": "increasing" if count1 > count2 else "decreasing" if count1 < count2 else "stable",
             "change_ratio": count1 / count2 if count2 > 0 else float("inf"),
         }
 
@@ -177,13 +179,12 @@ class NeuroMemory:
         # Enhanced implementation using pattern analyzer
         try:
             from .memory import PatternAnalyzer
-
             analyzer = PatternAnalyzer()
-
+            
             # Get memories matching the pattern
             cutoff_date = datetime.now() - timedelta(days=timeframe_days)
             memories = self._memory_system.storage.load_memories()
-
+            
             matching_memories = []
             for memory in memories:
                 try:
@@ -202,9 +203,9 @@ class NeuroMemory:
             # Determine if pattern meets frequency threshold
             frequency_map = {
                 "daily": frequency_count >= timeframe_days * 0.8,  # 80% of days
-                "weekly": frequency_count >= timeframe_days / 7,  # At least weekly
-                "monthly": frequency_count >= 1,  # At least once per month
-                "rare": frequency_count >= 1,  # At least once
+                "weekly": frequency_count >= timeframe_days / 7,   # At least weekly
+                "monthly": frequency_count >= 1,                  # At least once per month
+                "rare": frequency_count >= 1,                     # At least once
             }
 
             meets_threshold = frequency_map.get(frequency_threshold, False)
@@ -224,7 +225,7 @@ class NeuroMemory:
                 "pattern": pattern,
                 "matches": 0,
                 "meets_threshold": False,
-                "analysis": "Pattern analysis requires modular memory system",
+                "analysis": "Pattern analysis requires modular memory system"
             }
 
     def get_pattern_frequency(self, pattern, timeframe_days=30):
@@ -236,12 +237,11 @@ class NeuroMemory:
         """Detect recurring patterns in memory automatically"""
         try:
             from .memory import PatternAnalyzer
-
             analyzer = PatternAnalyzer()
-
+            
             # Use the new pattern detection system
             patterns = analyzer.detect_text_patterns(min_frequency, timeframe_days)
-
+            
             # Convert to legacy format
             recurring = {
                 "phrases": {},
@@ -249,16 +249,12 @@ class NeuroMemory:
                 "timeframe_days": timeframe_days,
                 "min_frequency": min_frequency,
             }
-
+            
             for pattern in patterns:
-                if pattern.metadata.get("pattern_type") in ["text_phrase", "text_word"]:
-                    phrase = (
-                        pattern.pattern_name.replace("phrase_", "")
-                        .replace("word_", "")
-                        .replace("_", " ")
-                    )
+                if pattern.metadata.get('pattern_type') in ['text_phrase', 'text_word']:
+                    phrase = pattern.pattern_name.replace('phrase_', '').replace('word_', '').replace('_', ' ')
                     recurring["phrases"][phrase] = pattern.frequency
-
+            
             return recurring
         except ImportError:
             # Fallback to basic implementation
@@ -276,4 +272,4 @@ class NeuroMemory:
 
 
 # Legacy compatibility exports
-__all__ = ["NeuroMemory"]
+__all__ = ['NeuroMemory']
