@@ -4,25 +4,30 @@
     "LICENSE",
     "pyproject.toml",
     "requirements.txt",
+    "requirements_dev.txt",
     "requirements_enhanced.txt",
+    "requirements_fixed.txt",
     "requirements_minimal.txt",
-    "CHANGE_MANAGEMENT_PROTOCOL.md",
-    "DOMAIN_SETUP_GUIDE.md",
     "MISSION_COMPLETE.md",
     "SUCCESS_SUMMARY.md",
     "FINAL_ORGANIZATION_STATUS.md",
     ".project_protection.json",
-    "protect.ps1"
+    "neuroplex.bat",
+    "neurocode_launcher.py"
   ],
   "protected_directories": [
     "core/",
     "src/",
     "docs/",
+    "documentation/",
     "examples/",
     "tests/",
     "data/",
     "scripts/",
-    "launchers/"
+    "launchers/",
+    "demos/",
+    "tools/",
+    "website/"
   ],
   "critical_extensions": [
     ".py",
@@ -33,12 +38,13 @@
     ".yaml",
     ".yml",
     ".bat",
+    ".sh",
     ".ps1"
   ],
   "backup_frequency": "daily",
   "max_backups": 30,
   "protection_enabled": true,
-  "auto_backup_on_edit": true,
-  "block_git_deletion": true,
-  "require_reason_for_deletion": true
+  "created_date": "2025-07-01",
+  "system_version": "v2.1",
+  "description": "NeuroCode Project Protection Configuration - Prevents accidental deletion of critical files"
 }
