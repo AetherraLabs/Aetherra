@@ -154,7 +154,7 @@ Human → Describe Intent → AI Understands → AI Implements → AI Learns →
 
 ### 🎬 **See NeuroCode in Action**
 
-![NeuroCode Demo](docs/images/neurocode-demo.gif)
+![NeuroCode Demo](https://neuro-code.dev/images/neurocode-demo.gif)
 
 **📺 Watch the Magic:**
 - **Live AI Collaboration**: See NeuroCode and AI working together in real-time
@@ -162,7 +162,7 @@ Human → Describe Intent → AI Understands → AI Implements → AI Learns →
 - **Cognitive Programming**: Experience intent-driven development in action
 - **Multiple AI Personalities**: See different AI personalities adapt to tasks
 
-*🎥 [Full Demo Video](https://www.youtube.com/watch?v=demo-link) | 📱 [Mobile Demo](docs/images/mobile-demo.gif)*
+*🎥 [Full Demo Video](https://neuro-code.dev/demo) | 📱 [Mobile Demo](https://neuro-code.dev/mobile-demo)*
 
 ```bash
 # Clone the repository
@@ -202,7 +202,7 @@ end
 - **Web Playground**: `python ui/neurocode_playground.py` - Browser-based editor
 - **Chat Only**: `python ui/neuro_chat_console.py` - Pure AI conversation
 
-**Need Help?** Check our [Installation Guide](docs/INSTALLATION.md) or [Tutorial](docs/TUTORIAL.md)
+**Need Help?** Check our [Installation Guide](https://neuro-code.dev/docs/installation) or [Tutorial](https://neuro-code.dev/docs/tutorial)
 
 ---
 
@@ -691,7 +691,7 @@ neurocode developer examples --category data-science
 - 📚 **Contribute documentation** - help others discover NeuroCode's potential
 - 🎯 **Build something amazing** - create the first NeuroCode unicorn!
 
-**Repository**: [GitHub - NeuroCode](https://github.com/Zyonic88/NeuroCode)
+**Repository**: [GitHub - NeuroCode](https://github.com/Zyonic88/NeuroCode) | **Website**: [neuro-code.dev](https://neuro-code.dev)
 
 **Let's redefine what software can be — together.** 🚀
 
