@@ -8,7 +8,6 @@ to ensure compatibility and improved functionality.
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add project root to Python path
@@ -16,8 +15,9 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from core.modern_parser import NeuroCodeModernParser, ASTNodeType
+    from core.modern_parser import ASTNodeType, NeuroCodeModernParser
     from core.syntax_tree import NeuroCodeParser, NodeType
+
     MODERN_PARSER_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: Could not import modern parser: {e}")
@@ -26,7 +26,7 @@ except ImportError as e:
 
 def test_basic_syntax():
     """Test basic NeuroCode syntax parsing"""
-    test_code = '''
+    test_code = """
 goal: "test basic parsing" priority: high
 
 identity {
@@ -39,24 +39,24 @@ agent.mode = "interactive"
 agent.start()
 
 think about "parsing capabilities"
-'''
-    
+"""
+
     if MODERN_PARSER_AVAILABLE:
         print("🧠 Testing Modern Parser...")
         try:
             modern_parser = NeuroCodeModernParser()
             modern_ast = modern_parser.parse(test_code)
-            print(f"✅ Modern parser succeeded")
+            print("✅ Modern parser succeeded")
             print(f"   AST type: {modern_ast.type}")
             print(f"   Children: {len(modern_ast.children)}")
         except Exception as e:
             print(f"❌ Modern parser failed: {e}")
-    
+
     print("\n🏛️ Testing Legacy Parser...")
     try:
         legacy_parser = NeuroCodeParser()
         legacy_ast = legacy_parser.parse(test_code)
-        print(f"✅ Legacy parser succeeded")
+        print("✅ Legacy parser succeeded")
         print(f"   AST type: {legacy_ast.type}")
         print(f"   Children: {len(legacy_ast.children or [])}")
     except Exception as e:
@@ -65,7 +65,7 @@ think about "parsing capabilities"
 
 def test_complex_syntax():
     """Test complex NeuroCode constructs"""
-    test_code = '''
+    test_code = """
 goal: "complex parsing test" priority: critical deadline: "2024-12-31"
 
 identity {
@@ -85,14 +85,14 @@ agent.add_goal("process user requests", priority="high")
 memory.search("relevant patterns")
 
 think about "advanced language features"
-'''
-    
+"""
+
     if MODERN_PARSER_AVAILABLE:
         print("\n🧠 Testing Modern Parser (Complex)...")
         try:
             modern_parser = NeuroCodeModernParser()
             modern_ast = modern_parser.parse(test_code)
-            print(f"✅ Modern parser handled complex syntax")
+            print("✅ Modern parser handled complex syntax")
             print(f"   Statements parsed: {len(modern_ast.children)}")
         except Exception as e:
             print(f"❌ Modern parser failed on complex syntax: {e}")
@@ -100,13 +100,13 @@ think about "advanced language features"
 
 def test_error_handling():
     """Test parser error handling"""
-    invalid_code = '''
+    invalid_code = """
 goal: "test error handling
 identity {
     name: "ErrorBot"
     # Missing closing brace
-'''
-    
+"""
+
     if MODERN_PARSER_AVAILABLE:
         print("\n🧠 Testing Modern Parser Error Handling...")
         try:
@@ -124,16 +124,16 @@ identity {
 
 def test_performance():
     """Basic performance comparison"""
-    large_code = '''
+    large_code = """
 goal: "performance test" priority: high
 identity { name: "PerfBot" }
-''' + '\n'.join([f'remember("test data {i}")' for i in range(100)])
-    
+""" + "\n".join([f'remember("test data {i}")' for i in range(100)])
+
     import time
-    
+
     if MODERN_PARSER_AVAILABLE:
         print("\n⚡ Performance Test...")
-        
+
         # Test modern parser
         start_time = time.time()
         try:
@@ -143,8 +143,8 @@ identity { name: "PerfBot" }
             print(f"🧠 Modern parser: {modern_time:.4f}s")
         except Exception as e:
             print(f"❌ Modern parser failed: {e}")
-            modern_time = float('inf')
-        
+            modern_time = float("inf")
+
         # Test legacy parser
         start_time = time.time()
         try:
@@ -154,9 +154,9 @@ identity { name: "PerfBot" }
             print(f"🏛️ Legacy parser: {legacy_time:.4f}s")
         except Exception as e:
             print(f"❌ Legacy parser failed: {e}")
-            legacy_time = float('inf')
-        
-        if modern_time != float('inf') and legacy_time != float('inf'):
+            legacy_time = float("inf")
+
+        if modern_time != float("inf") and legacy_time != float("inf"):
             ratio = modern_time / legacy_time
             if ratio < 1.5:
                 print(f"✅ Performance acceptable (ratio: {ratio:.2f})")
@@ -169,44 +169,44 @@ def test_grammar_features():
     if not MODERN_PARSER_AVAILABLE:
         print("⏭️ Skipping grammar tests - modern parser not available")
         return
-        
+
     print("\n🎯 Testing Grammar Features...")
-    
+
     # Test agent syntax
-    agent_code = '''
+    agent_code = """
 agent.mode = "autonomous"
 agent.start()
 agent.add_goal("test goal", priority="high")
 agent.status()
-'''
-    
+"""
+
     try:
         parser = NeuroCodeModernParser()
         ast = parser.parse(agent_code)
         print("✅ Agent syntax parsing")
     except Exception as e:
         print(f"❌ Agent syntax failed: {e}")
-    
+
     # Test memory operations
-    memory_code = '''
+    memory_code = """
 remember("important data") as "key_info"
 recall "key_info"
 memory.search("patterns")
-'''
-    
+"""
+
     try:
         ast = parser.parse(memory_code)
         print("✅ Memory operations parsing")
     except Exception as e:
         print(f"❌ Memory operations failed: {e}")
-    
+
     # Test intent actions
-    intent_code = '''
+    intent_code = """
 think about "complex problems"
 analyze system.performance
 optimize resource.usage
-'''
-    
+"""
+
     try:
         ast = parser.parse(intent_code)
         print("✅ Intent actions parsing")
@@ -218,30 +218,31 @@ def main():
     """Run all parser tests"""
     print("🧬 NeuroCode Parser Test Suite")
     print("=" * 40)
-    
+
     print(f"Python version: {sys.version}")
     print(f"Project root: {project_root}")
     print(f"Modern parser available: {MODERN_PARSER_AVAILABLE}")
-    
+
     if MODERN_PARSER_AVAILABLE:
         try:
             import lark
+
             print(f"Lark version: {lark.__version__}")
         except ImportError:
             print("Lark not available")
-    
+
     print("\n" + "=" * 40)
-    
+
     # Run tests
     test_basic_syntax()
     test_complex_syntax()
     test_error_handling()
     test_performance()
     test_grammar_features()
-    
+
     print("\n" + "=" * 40)
     print("🎉 Parser tests completed!")
-    
+
     if MODERN_PARSER_AVAILABLE:
         print("\n📋 Next Steps:")
         print("1. Review parser output and AST structure")
