@@ -3,6 +3,10 @@ SPDX-License-Identifier: GPL-3.0-or-later
 SPDX-FileCopyrightText: 2025 NeuroCode & Neuroplex Contributors
 -->
 
+<div align="center">
+  <img src="assets/images/neurocode-header.png" alt="NeuroCode - AI-native programming language" width="600">
+</div>
+
 # 🧬 NeuroCode & Neuroplex - Revolutionary AI Operating System
 
 ![Responsible AI](https://img.shields.io/badge/Responsible%20AI-Compliant-brightgreen?style=for-the-badge&logo=vercel)
