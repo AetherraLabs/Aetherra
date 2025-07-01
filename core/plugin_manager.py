@@ -1,6 +1,7 @@
 # core/plugin_manager.py
 import importlib.util
 import os
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
@@ -536,6 +537,108 @@ def get_plugin_discovery_stats() -> Dict[str, Any]:
         "purposes": purposes,
         "top_purposes": sorted(purposes.items(), key=lambda x: x[1], reverse=True)[:5],
     }
+
+
+def parse_plugin_command(command: str) -> Dict[str, Any]:
+    """
+    Parse plugin commands from .neuro code syntax
+    
+    Supports formats:
+    - plugin: name "arg1" "arg2"
+    - plugin: name.method "arg1" 
+    - plugin: name arg1 arg2
+    """
+    # Remove 'plugin:' prefix
+    command = command.strip()
+    if command.startswith('plugin:'):
+        command = command[8:].strip()
+    
+    # Parse quoted arguments
+    quoted_pattern = r'"([^"]*)"'
+    quotes = re.findall(quoted_pattern, command)
+    
+    # Remove quoted parts to get the plugin name/method
+    command_without_quotes = re.sub(quoted_pattern, '', command).strip()
+    parts = command_without_quotes.split()
+    
+    if not parts:
+        return {"error": "No plugin name specified"}
+    
+    plugin_part = parts[0]
+    
+    # Check for method syntax (plugin.method)
+    if '.' in plugin_part:
+        plugin_name, method = plugin_part.split('.', 1)
+    else:
+        plugin_name = plugin_part
+        method = None
+    
+    # Combine quoted args and remaining args
+    remaining_args = parts[1:]
+    all_args = quotes + remaining_args
+    
+    return {
+        "plugin_name": plugin_name,
+        "method": method,
+        "args": all_args,
+        "raw_command": command
+    }
+
+
+def execute_plugin_command(command: str) -> Dict[str, Any]:
+    """
+    Execute a plugin command from .neuro code syntax
+    """
+    parsed = parse_plugin_command(command)
+    
+    if "error" in parsed:
+        return parsed
+    
+    plugin_name = parsed["plugin_name"]
+    method = parsed["method"]
+    args = parsed["args"]
+    
+    # Get the plugin
+    plugin = get_plugin(plugin_name)
+    if not plugin:
+        return {"error": f"Plugin '{plugin_name}' not found"}
+    
+    # Check if plugin is enabled
+    metadata = get_plugin_metadata(plugin_name)
+    if metadata and not metadata.enabled:
+        return {"error": f"Plugin '{plugin_name}' is disabled"}
+    
+    try:
+        # If method is specified, handle it differently
+        if method:
+            # For now, treat method as part of the plugin name
+            # Future: Could support plugin classes with methods
+            full_name = f"{plugin_name}_{method}"
+            method_plugin = get_plugin(full_name)
+            if method_plugin:
+                result = method_plugin(*args)
+            else:
+                return {"error": f"Plugin method '{plugin_name}.{method}' not found"}
+        else:
+            # Execute the plugin with arguments
+            result = plugin(*args)
+        
+        # Ensure result is always a dict
+        if not isinstance(result, dict):
+            result = {"result": result}
+        
+        # Add execution metadata
+        result["plugin_executed"] = plugin_name
+        result["execution_time"] = str(datetime.now())
+        
+        return result
+        
+    except Exception as e:
+        return {
+            "error": f"Plugin execution failed: {str(e)}",
+            "plugin": plugin_name,
+            "args": args
+        }
 
 
 # Call this at startup to populate PLUGIN_REGISTRY

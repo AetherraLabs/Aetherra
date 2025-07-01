@@ -31,8 +31,25 @@ class PluginManagerPanel(ModernCard):
         super().__init__("🔌 Plugin Manager", parent)
         self.plugins = []
         self.plugins_dir = "plugins"
+        self.icon_path = self._get_icon_path()
         self.init_ui()
         self.load_plugins()
+
+    def _get_icon_path(self):
+        """Get the NeuroCode icon path for plugin branding"""
+        from pathlib import Path
+
+        # Try to find the icon in the assets directory
+        icon_path = (
+            Path(__file__)
+            .parent.parent.parent.parent.parent
+            / "assets"
+            / "images"
+            / "neurocode-icon.png"
+        )
+        if icon_path.exists():
+            return str(icon_path)
+        return ""
 
     def init_ui(self):
         """Initialize the user interface"""

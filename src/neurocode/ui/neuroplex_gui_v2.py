@@ -1706,7 +1706,15 @@ def main():
 
     # Set application icon if available
     try:
-        app.setWindowIcon(QIcon("assets/neuroplex_icon.png"))
+        # Set application icon
+        icon_path = Path(__file__).parent.parent.parent / "assets" / "images" / "neurocode-icon.ico"
+        if icon_path.exists():
+            app.setWindowIcon(QIcon(str(icon_path)))
+        else:
+            # Fallback to PNG if ICO not available
+            png_icon_path = Path(__file__).parent.parent.parent / "assets" / "images" / "neurocode-icon.png"
+            if png_icon_path.exists():
+                app.setWindowIcon(QIcon(str(png_icon_path)))
     except Exception:
         pass
 
