@@ -76,4 +76,6 @@ docs/_build/
 
 # Cleanup utilities and reports
 repository_cleanup.py
+repository_cleanup_final.py
+repository_cleanup_safe.py
 cleanup_report.json
