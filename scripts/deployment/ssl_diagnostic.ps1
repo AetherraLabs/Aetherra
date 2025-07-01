@@ -11,7 +11,7 @@ Write-Host "=" * 50
 # Function to test HTTP vs HTTPS
 function Test-SiteAccess {
     param([string]$Url)
-    
+
     try {
         $response = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec 10
         Write-Host "✅ $Url - Status: $($response.StatusCode)" -ForegroundColor Green
@@ -26,9 +26,9 @@ function Test-SiteAccess {
 # Function to check DNS records
 function Test-DnsRecords {
     param([string]$Domain)
-    
+
     Write-Host "`n🌐 DNS Records for $Domain" -ForegroundColor Yellow
-    
+
     try {
         $aRecords = Resolve-DnsName -Name $Domain -Type A -ErrorAction SilentlyContinue
         if ($aRecords) {
@@ -36,7 +36,7 @@ function Test-DnsRecords {
                 Write-Host "   A Record: $($record.IPAddress)" -ForegroundColor White
             }
         }
-        
+
         $cnameRecords = Resolve-DnsName -Name $Domain -Type CNAME -ErrorAction SilentlyContinue
         if ($cnameRecords) {
             foreach ($record in $cnameRecords) {
@@ -52,25 +52,25 @@ function Test-DnsRecords {
 # Function to check SSL certificate
 function Test-SslCertificate {
     param([string]$Domain)
-    
+
     Write-Host "`n🔒 SSL Certificate Status" -ForegroundColor Yellow
-    
+
     try {
         $tcpClient = New-Object System.Net.Sockets.TcpClient
         $tcpClient.Connect($Domain, 443)
-        
+
         $sslStream = New-Object System.Net.Security.SslStream($tcpClient.GetStream())
         $sslStream.AuthenticateAsClient($Domain)
-        
+
         $cert = $sslStream.RemoteCertificate
         $cert2 = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($cert)
-        
+
         Write-Host "   ✅ Certificate found" -ForegroundColor Green
         Write-Host "   Subject: $($cert2.Subject)" -ForegroundColor White
         Write-Host "   Issuer: $($cert2.Issuer)" -ForegroundColor White
         Write-Host "   Valid From: $($cert2.NotBefore)" -ForegroundColor White
         Write-Host "   Valid Until: $($cert2.NotAfter)" -ForegroundColor White
-        
+
         if ($cert2.NotAfter -lt (Get-Date)) {
             Write-Host "   ❌ Certificate has EXPIRED!" -ForegroundColor Red
         } elseif ($cert2.NotAfter -lt (Get-Date).AddDays(30)) {
@@ -78,7 +78,7 @@ function Test-SslCertificate {
         } else {
             Write-Host "   ✅ Certificate is valid" -ForegroundColor Green
         }
-        
+
         $sslStream.Close()
         $tcpClient.Close()
     }

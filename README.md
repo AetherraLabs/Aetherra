@@ -108,20 +108,20 @@ Human → Describe Intent → AI Understands → AI Implements → AI Learns →
 
 ### 📊 **NeuroCode vs Existing Systems**
 
-| Feature | NeuroCode & Neuroplex | Python | AutoGPT | LangChain |
-|---------|----------------------|--------|----------|-----------|
-| **Programming Paradigm** | 🧠 Intent-driven cognitive | 📝 Imperative syntax | 🤖 Task automation | 🔗 LLM orchestration |
-| **Learning Curve** | ⚡ Zero (natural language) | 📚 Weeks to months | 📖 Days to weeks | 📘 Moderate complexity |
-| **AI Integration** | 🎯 Native & seamless | 🔌 Library-dependent | 🛠️ Agent-focused | 🔧 Chain-based |
-| **Self-Awareness** | ✅ Full introspection | ❌ No self-monitoring | ⚠️ Limited feedback | ❌ No awareness |
-| **Memory System** | 🧩 Persistent learning | 📊 Manual data handling | 💾 Basic persistence | 📁 Context windows |
-| **Error Handling** | 🛡️ Self-healing + graceful degradation | ⚠️ Exception-based | 🔄 Retry mechanisms | ⚠️ Chain failures |
-| **Multi-AI Support** | 👥 7 distinct personalities | 🔀 Single model integration | 🤖 Single agent focus | 🔗 Model-agnostic |
-| **Real-time Adaptation** | 🎭 Dynamic personality switching | ❌ Static behavior | ⚙️ Limited adaptation | 📋 Template-based |
-| **Development Speed** | 🚀 **5x faster** (AI-assisted) | 1x baseline | 2x automation gains | 1.5x chain efficiency |
-| **Enterprise Ready** | ✅ Production-grade stability | ✅ Mature ecosystem | ⚠️ Experimental | ✅ Growing adoption |
-| **Natural Language** | 💬 Full conversational interface | 📝 Code-only | 🗣️ Task descriptions | 📝 Prompt templates |
-| **Continuous Evolution** | 🌱 Self-improving system | 📈 Manual optimization | 🔄 Agent iterations | 🔧 Manual tuning |
+| Feature                  | NeuroCode & Neuroplex                 | Python                     | AutoGPT              | LangChain             |
+| ------------------------ | ------------------------------------- | -------------------------- | -------------------- | --------------------- |
+| **Programming Paradigm** | 🧠 Intent-driven cognitive             | 📝 Imperative syntax        | 🤖 Task automation    | 🔗 LLM orchestration   |
+| **Learning Curve**       | ⚡ Zero (natural language)             | 📚 Weeks to months          | 📖 Days to weeks      | 📘 Moderate complexity |
+| **AI Integration**       | 🎯 Native & seamless                   | 🔌 Library-dependent        | 🛠️ Agent-focused      | 🔧 Chain-based         |
+| **Self-Awareness**       | ✅ Full introspection                  | ❌ No self-monitoring       | ⚠️ Limited feedback   | ❌ No awareness        |
+| **Memory System**        | 🧩 Persistent learning                 | 📊 Manual data handling     | 💾 Basic persistence  | 📁 Context windows     |
+| **Error Handling**       | 🛡️ Self-healing + graceful degradation | ⚠️ Exception-based          | 🔄 Retry mechanisms   | ⚠️ Chain failures      |
+| **Multi-AI Support**     | 👥 7 distinct personalities            | 🔀 Single model integration | 🤖 Single agent focus | 🔗 Model-agnostic      |
+| **Real-time Adaptation** | 🎭 Dynamic personality switching       | ❌ Static behavior          | ⚙️ Limited adaptation | 📋 Template-based      |
+| **Development Speed**    | 🚀 **5x faster** (AI-assisted)         | 1x baseline                | 2x automation gains  | 1.5x chain efficiency |
+| **Enterprise Ready**     | ✅ Production-grade stability          | ✅ Mature ecosystem         | ⚠️ Experimental       | ✅ Growing adoption    |
+| **Natural Language**     | 💬 Full conversational interface       | 📝 Code-only                | 🗣️ Task descriptions  | 📝 Prompt templates    |
+| **Continuous Evolution** | 🌱 Self-improving system               | 📈 Manual optimization      | 🔄 Agent iterations   | 🔧 Manual tuning       |
 
 **🎯 Quantified Advantages:**
 
@@ -225,7 +225,7 @@ Just as Linux democratized server computing, **NeuroCode aims to democratize int
 **Our Vision**: Create the first truly **AI-native computing platform** where:
 
 1. **🤝 Human-AI Collaboration** becomes as natural as conversation
-2. **🧠 Self-Evolving Systems** improve themselves through continuous learning  
+2. **🧠 Self-Evolving Systems** improve themselves through continuous learning
 3. **💭 Intent-Driven Programming** replaces syntax complexity with pure expression
 4. **🌱 Adaptive Intelligence** grows smarter with every interaction
 5. **🔬 Transparent AI** shows exactly how and why decisions are made
@@ -393,20 +393,20 @@ assistant: "validate implementation quality"
 
 **See how NeuroCode & Neuroplex redefines AI programming compared to traditional approaches:**
 
-| Feature | NeuroCode & Neuroplex | Python | AutoGPT | LangChain |
-|---------|----------------------|---------|---------|-----------|
-| **🧠 Self-Aware AI** | ✅ **Full Self-Awareness** - System monitors its own performance, learns from behavior patterns, and optimizes autonomously | ❌ No built-in awareness | ⚠️ **Partial** - Basic self-monitoring | ❌ No self-awareness |
-| **🔄 Multi-LLM Switching** | ✅ **Seamless Built-in** - Dynamic model switching within same conversation (GPT-4 → Claude → Llama) | ❌ Manual API integration | ❌ Single model focus | ✅ **Plugin-based** - Requires configuration |
-| **🧮 Semantic Memory Engine** | ✅ **Advanced Modular** - Vector search, session management, daily reflection, pattern analysis | ❌ No memory system | ⚠️ **Basic** - Simple conversation history | ⚠️ **Plugin Required** - External memory tools |
-| **🎬 Agent Archive & Replay** | ✅ **Industry-First** - Complete consciousness preservation, decision replay, agent merging | ❌ No agent persistence | ❌ No replay capabilities | ❌ No agent archiving |
-| **🔌 Plugin Ecosystem** | ✅ **AI-Powered Live** - Intelligent recommendations, context-aware discovery, community ratings | ✅ **Extensive** - PyPI ecosystem | ⚠️ **Hardcoded** - Limited built-in tools | ✅ **Rich** - Tool ecosystem |
-| **💬 Natural Language Programming** | ✅ **Native NeuroCode** - Purpose-built cognitive programming language for AI collaboration | ❌ Code-centric syntax | ⚠️ **Prompted** - English prompts over Python | ❌ Python with AI helpers |
-| **🎭 AI Personalities** | ✅ **7 Distinct Personas** - Developer, Teacher, Researcher, Creative, Analyst, Mentor, Assistant | ❌ No personality system | ❌ Single AI approach | ❌ Tool-focused only |
-| **💾 Persistent Learning** | ✅ **Cross-Session** - Remembers preferences, learns from mistakes, improves over time | ❌ No persistence | ⚠️ **Limited** - Basic conversation memory | ⚠️ **Manual** - Requires setup |
-| **🛡️ Error Handling** | ✅ **Enterprise-Grade** - Circuit breakers, graceful degradation, automatic recovery | ⚠️ **Manual** - Try/catch blocks | ⚠️ **Basic** - Simple retry logic | ⚠️ **Basic** - Manual error handling |
-| **📊 Performance Monitoring** | ✅ **Real-time** - Live performance analytics, bottleneck detection, auto-optimization | ❌ External tools needed | ❌ No built-in monitoring | ❌ No performance tracking |
-| **🎯 Intent-Driven Development** | ✅ **Core Philosophy** - Describe what you want, AI figures out how | ❌ Must specify how | ⚠️ **Partial** - Goal-based prompting | ❌ Still code-centric |
-| **🔄 Self-Improving Code** | ✅ **Autonomous** - Code that learns, adapts, and optimizes itself automatically | ❌ Static code only | ⚠️ **Manual** - Requires human intervention | ❌ No self-improvement |
+| Feature                            | NeuroCode & Neuroplex                                                                                                      | Python                           | AutoGPT                                      | LangChain                                     |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | -------------------------------------------- | --------------------------------------------- |
+| **🧠 Self-Aware AI**                | ✅ **Full Self-Awareness** - System monitors its own performance, learns from behavior patterns, and optimizes autonomously | ❌ No built-in awareness          | ⚠️ **Partial** - Basic self-monitoring        | ❌ No self-awareness                           |
+| **🔄 Multi-LLM Switching**          | ✅ **Seamless Built-in** - Dynamic model switching within same conversation (GPT-4 → Claude → Llama)                        | ❌ Manual API integration         | ❌ Single model focus                         | ✅ **Plugin-based** - Requires configuration   |
+| **🧮 Semantic Memory Engine**       | ✅ **Advanced Modular** - Vector search, session management, daily reflection, pattern analysis                             | ❌ No memory system               | ⚠️ **Basic** - Simple conversation history    | ⚠️ **Plugin Required** - External memory tools |
+| **🎬 Agent Archive & Replay**       | ✅ **Industry-First** - Complete consciousness preservation, decision replay, agent merging                                 | ❌ No agent persistence           | ❌ No replay capabilities                     | ❌ No agent archiving                          |
+| **🔌 Plugin Ecosystem**             | ✅ **AI-Powered Live** - Intelligent recommendations, context-aware discovery, community ratings                            | ✅ **Extensive** - PyPI ecosystem | ⚠️ **Hardcoded** - Limited built-in tools     | ✅ **Rich** - Tool ecosystem                   |
+| **💬 Natural Language Programming** | ✅ **Native NeuroCode** - Purpose-built cognitive programming language for AI collaboration                                 | ❌ Code-centric syntax            | ⚠️ **Prompted** - English prompts over Python | ❌ Python with AI helpers                      |
+| **🎭 AI Personalities**             | ✅ **7 Distinct Personas** - Developer, Teacher, Researcher, Creative, Analyst, Mentor, Assistant                           | ❌ No personality system          | ❌ Single AI approach                         | ❌ Tool-focused only                           |
+| **💾 Persistent Learning**          | ✅ **Cross-Session** - Remembers preferences, learns from mistakes, improves over time                                      | ❌ No persistence                 | ⚠️ **Limited** - Basic conversation memory    | ⚠️ **Manual** - Requires setup                 |
+| **🛡️ Error Handling**               | ✅ **Enterprise-Grade** - Circuit breakers, graceful degradation, automatic recovery                                        | ⚠️ **Manual** - Try/catch blocks  | ⚠️ **Basic** - Simple retry logic             | ⚠️ **Basic** - Manual error handling           |
+| **📊 Performance Monitoring**       | ✅ **Real-time** - Live performance analytics, bottleneck detection, auto-optimization                                      | ❌ External tools needed          | ❌ No built-in monitoring                     | ❌ No performance tracking                     |
+| **🎯 Intent-Driven Development**    | ✅ **Core Philosophy** - Describe what you want, AI figures out how                                                         | ❌ Must specify how               | ⚠️ **Partial** - Goal-based prompting         | ❌ Still code-centric                          |
+| **🔄 Self-Improving Code**          | ✅ **Autonomous** - Code that learns, adapts, and optimizes itself automatically                                            | ❌ Static code only               | ⚠️ **Manual** - Requires human intervention   | ❌ No self-improvement                         |
 
 ### 🏆 **Key Differentiators**
 
@@ -421,13 +421,13 @@ assistant: "validate implementation quality"
 
 **📈 Quantified Benefits:**
 
-| Metric | NeuroCode Improvement |
-|--------|----------------------|
-| **Development Speed** | 10x faster plugin creation |
-| **Error Reduction** | 80%+ auto-fix accuracy |
+| Metric                  | NeuroCode Improvement           |
+| ----------------------- | ------------------------------- |
+| **Development Speed**   | 10x faster plugin creation      |
+| **Error Reduction**     | 80%+ auto-fix accuracy          |
 | **Learning Efficiency** | Persistent cross-session memory |
-| **Performance** | 5x faster operations |
-| **Reliability** | 99.9% uptime with auto-recovery |
+| **Performance**         | 5x faster operations            |
+| **Reliability**         | 99.9% uptime with auto-recovery |
 
 ### 🎯 **When to Choose NeuroCode:**
 
@@ -685,7 +685,7 @@ neurocode developer examples --category data-science
 **NeuroCode is a revolution in intelligent software.** If this vision excites you:
 
 - ⭐ **Star the project** on GitHub - help us reach more developers
-- 🧠 **Join our community** - Share ideas and collaborate with AI pioneers  
+- 🧠 **Join our community** - Share ideas and collaborate with AI pioneers
 - 🔧 **Submit a plugin or agent** - Extend NeuroCode's capabilities
 - 💬 **Share feedback** in GitHub issues - help shape the future of AI-native computing
 - 📚 **Contribute documentation** - help others discover NeuroCode's potential

@@ -17,7 +17,7 @@ Based on your setup, the SSL certificate issue is likely caused by:
 ### Step 1: Fix CNAME Configuration
 
 **Current Issue**: You have conflicting CNAME files:
-- `CNAME` (root): `neuro-code.dev` 
+- `CNAME` (root): `neuro-code.dev`
 - `website/CNAME`: `neurocode.dev` (missing hyphen)
 
 **Action Required**: Choose one domain and update all CNAME files consistently.
@@ -47,7 +47,7 @@ TTL: 300-3600
 
 Type: A (for apex domain)
 Name: @
-Values: 
+Values:
   185.199.108.153
   185.199.109.153
   185.199.110.153
@@ -68,7 +68,7 @@ echo "neuro-code.dev" > website/CNAME
 
 **Option B**: Use `neurocode.dev` (no hyphen)
 ```bash
-# Update root CNAME to match website CNAME  
+# Update root CNAME to match website CNAME
 echo "neurocode.dev" > CNAME
 ```
 
