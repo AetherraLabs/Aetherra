@@ -19,64 +19,68 @@ def test_enhanced_neuroplex():
     """Test the enhanced Neuroplex integration"""
     print("🧪 Testing Enhanced Neuroplex Integration")
     print("=" * 50)
-    
+
     # Test 1: Check Qt availability
     print("Test 1: Qt Framework Availability")
     try:
         from PySide6.QtWidgets import QApplication
+
         print("✅ PySide6 is available")
     except ImportError:
         print("❌ PySide6 not available - install with: pip install PySide6")
         return False
-    
+
     # Test 2: Check NeuroChat components
     print("\nTest 2: NeuroChat Components")
     try:
         from neuro_chat import NeuroChatInterface
+
         print("✅ NeuroChat interface available")
     except ImportError as e:
         print(f"⚠️ NeuroChat interface not available: {e}")
         print("   (This is OK - fallback will be used)")
-    
+
     # Test 3: Check Enhanced Neuroplex
     print("\nTest 3: Enhanced Neuroplex Module")
     try:
         from enhanced_neuroplex import EnhancedNeuroplexWindow
+
         print("✅ Enhanced Neuroplex module available")
     except ImportError as e:
         print(f"❌ Enhanced Neuroplex module not available: {e}")
         return False
-    
+
     # Test 4: Check existing Neuroplex components
     print("\nTest 4: Existing Neuroplex Components")
     try:
         from neuroplex_fully_modular import FullyModularNeuroplexWindow
+
         print("✅ Fully modular Neuroplex available")
     except ImportError as e:
         print(f"⚠️ Fully modular Neuroplex not available: {e}")
-    
+
     # Test 5: Test window creation (without showing)
     print("\nTest 5: Window Creation Test")
     try:
         app = QApplication.instance()
         if app is None:
             app = QApplication(sys.argv)
-        
+
         window = EnhancedNeuroplexWindow()
         print("✅ Enhanced Neuroplex window created successfully")
-        
+
         # Don't show the window, just test creation
         window.close()
-        
+
     except Exception as e:
         print(f"❌ Window creation failed: {e}")
         return False
-    
+
     print("\n🎉 All tests passed! Enhanced Neuroplex integration is ready.")
     print("\n🚀 To launch Enhanced Neuroplex:")
     print("   Option 1: python launchers/launch_enhanced_neuroplex.py")
     print("   Option 2: python neurocode_launcher.py (choose option 1)")
-    
+
     return True
 
 
@@ -109,19 +113,20 @@ def main():
     """Main test function"""
     success = test_enhanced_neuroplex()
     show_integration_summary()
-    
+
     if success:
         print("\n🎯 Ready to continue? (y/n): ", end="")
         response = input().strip().lower()
-        if response in ['y', 'yes']:
+        if response in ["y", "yes"]:
             print("🚀 Launching Enhanced Neuroplex...")
             try:
                 from enhanced_neuroplex import main as enhanced_main
+
                 return enhanced_main()
             except Exception as e:
                 print(f"❌ Launch failed: {e}")
                 return 1
-    
+
     return 0
 
 

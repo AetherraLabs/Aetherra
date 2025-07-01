@@ -123,58 +123,38 @@ apply approved_changes
 
 ## 📝 Syntax and Grammar
 
-### Formal Grammar (EBNF)
+### Formal Grammar
+
+NeuroCode uses a formally defined grammar specification available in multiple formats:
+
+- **EBNF Grammar**: [`NEUROCODE_GRAMMAR.ebnf`](NEUROCODE_GRAMMAR.ebnf) - Extended Backus-Naur Form
+- **Lark Grammar**: [`NEUROCODE_GRAMMAR.lark`](NEUROCODE_GRAMMAR.lark) - Lark parser format
+- **Reserved Keywords**: [`NEUROCODE_RESERVED_KEYWORDS.md`](NEUROCODE_RESERVED_KEYWORDS.md) - Complete keyword reference
+
+#### Core Grammar Structure (Simplified)
 
 ```ebnf
-program := statement*
+program := statement_list
 
-statement := goal_statement
-           | identity_statement  
-           | memory_statement
-           | consciousness_statement
-           | voice_statement
-           | agent_statement
-           | when_statement
-           | if_statement
-           | for_statement
-           | while_statement
-           | function_definition
-           | intent_action
-           | assignment
-           | expression_statement
-           | comment
+statement := goal_statement | identity_statement | memory_statement 
+           | consciousness_statement | voice_statement | agent_statement
+           | control_flow | function_definition | intent_action
+           | assignment | expression_statement | comment
 
-goal_statement := "goal" ":" value priority_clause?
-priority_clause := "priority" ":" ("critical" | "high" | "medium" | "low")
+goal_statement := "goal" ":" value goal_modifiers?
+goal_modifiers := priority_clause | deadline_clause | condition_clause
 
-identity_statement := "identity" "{" identity_property* "}"
-identity_property := IDENTIFIER ":" value
+identity_statement := "identity" "{" identity_properties "}"
+memory_statement := memory_operation memory_modifiers?
+agent_statement := agent_control | agent_goal_management | agent_mode_set
 
-consciousness_statement := "consciousness" "{" consciousness_property* "}"
-consciousness_property := IDENTIFIER ":" value
-
-memory_statement := remember_stmt | recall_stmt | forget_stmt | consolidate_stmt
-remember_stmt := "remember" "(" value ")" "as" STRING
-recall_stmt := "recall" value ("with" STRING)?
-forget_stmt := "forget" value
-consolidate_stmt := "consolidate" value
-
-voice_statement := "voice" "{" voice_property* "}"
-voice_property := IDENTIFIER ":" value
-
-agent_statement := "agent" ":" ("on" | "off" | value)
-
-when_statement := "when" condition ":" statement* "end"
-if_statement := "if" condition ":" statement* ("else" ":" statement*)? "end"
-
-function_definition := "define" IDENTIFIER "(" parameter_list? ")" statement* "end"
-
-intent_action := ("think" | "analyze" | "optimize" | "learn" | "investigate" 
-                | "suggest" | "reflect" | "adapt" | "evolve" | "speak") 
-                ("about" | "for" | "from" | "on")? value
-
-assignment := IDENTIFIER "=" value
+control_flow := when_statement | if_statement | for_statement | while_statement
+function_definition := "define" IDENTIFIER "(" parameters? ")" ":" block
+intent_action := intent_verb intent_target intent_modifiers?
 ```
+
+**Note**: This is a simplified overview. For the complete, normative grammar specification, 
+refer to the formal grammar files listed above.
 
 ### Lexical Elements
 
@@ -183,7 +163,8 @@ assignment := IDENTIFIER "=" value
 goal, identity, consciousness, memory, voice, agent, when, if, else, end,
 define, remember, recall, forget, consolidate, think, analyze, optimize,
 learn, investigate, suggest, reflect, adapt, evolve, speak, priority,
-high, medium, low, critical, true, false, on, off
+high, medium, low, critical, true, false, on, off, mode, start, stop,
+status, add_goal, clear_goals, as, since, in, category, search, pattern
 ```
 
 #### Operators

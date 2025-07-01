@@ -24,7 +24,7 @@ def main():
     try:
         # Import and run enhanced Neuroplex
         from enhanced_neuroplex import main as enhanced_main
-        
+
         print("✅ Enhanced Neuroplex components loaded")
         print("🎯 Features enabled:")
         print("   • 🛠️ Full development environment")
@@ -35,19 +35,20 @@ def main():
         print("   • 📊 Performance monitoring")
         print()
         print("🎭 Starting Enhanced Neuroplex...")
-        
+
         return enhanced_main()
 
     except ImportError as e:
         print(f"❌ Import error: {e}")
         print("🔄 Trying fallback options...")
-        
+
         try:
             # Fallback to standard Neuroplex
             from neuroplex_fully_modular import main as fallback_main
+
             print("✅ Falling back to standard Neuroplex")
             return fallback_main()
-            
+
         except ImportError as e2:
             print(f"❌ Fallback failed: {e2}")
             print("💡 Please ensure all dependencies are installed:")

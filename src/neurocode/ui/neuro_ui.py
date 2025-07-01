@@ -313,7 +313,7 @@ def create_enhanced_neuro_ui():
 
     # Placeholder tabs for future expansion
     from neuro_chat import NeuroChatInterface
-    
+
     # Replace chat placeholder with actual chat interface
     try:
         chat_interface = NeuroChatInterface()

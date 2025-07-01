@@ -82,9 +82,7 @@ def main():
             elif choice == "1":
                 print("🚀 Launching Enhanced Neuroplex (Integrated NeuroChat)...")
                 try:
-                    os.system(
-                        f'python "{project_root}/launchers/launch_enhanced_neuroplex.py"'
-                    )
+                    os.system(f'python "{project_root}/launchers/launch_enhanced_neuroplex.py"')
                 except Exception as e:
                     print(f"❌ Error launching Enhanced Neuroplex: {e}")
 
