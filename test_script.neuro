@@ -1,9 +1,0 @@
-# Simple NeuroCode test script
-print("Hello, NeuroCode!")
-
-# Test basic syntax
-goal save "Learn NeuroCode basics"
-memory store "first_test" value "success"
-
-# Test natural language
-translate "add two numbers: 5 and 3"
