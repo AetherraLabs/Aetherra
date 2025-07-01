@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2025 NeuroCode & Neuroplex Contributors
 -->
 
 <div align="center">
-  <img src="assets/images/neurocode-header.png" alt="NeuroCode - AI-native programming language" width="600">
+  <img src="neurocode-header.png" alt="NeuroCode - AI-native programming language" width="600">
 </div>
 
 # 🧬 NeuroCode & Neuroplex - Revolutionary AI Operating System
