@@ -8,8 +8,7 @@ and AI execution, making programming as natural as conversation.
 """
 
 import re
-import json
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 from datetime import datetime
 
 class NaturalLanguageCompiler:
@@ -186,6 +185,230 @@ class NaturalLanguageCompiler:
         context_code = "recall relevant_context from memory\n"
         return context_code + neurocode
 
+    def generate_neuro_workflow(self, description: str, complexity: str = "standard") -> str:
+        """
+        Generate a complete .neuro workflow file from natural language description
+        
+        Args:
+            description: Natural language description of desired workflow
+            complexity: "simple", "standard", or "advanced"
+            
+        Returns:
+            Complete .neuro workflow content
+        """
+        # Parse the description into workflow components
+        workflow_components = self._analyze_workflow_components(description)
+        
+        # Generate workflow header
+        workflow = self._generate_workflow_header(description, complexity)
+        
+        # Add setup phase
+        workflow += self._generate_setup_phase(workflow_components)
+        
+        # Add main execution phases
+        workflow += self._generate_execution_phases(workflow_components, complexity)
+        
+        # Add cleanup and reporting
+        workflow += self._generate_cleanup_phase(workflow_components)
+        
+        return workflow
+    
+    def _analyze_workflow_components(self, description: str) -> Dict:
+        """Analyze description to identify workflow components"""
+        description_lower = description.lower()
+        
+        components = {
+            "goals": [],
+            "data_sources": [],
+            "processing_steps": [],
+            "outputs": [],
+            "conditions": [],
+            "loops": [],
+            "collaborations": []
+        }
+        
+        # Identify goals
+        goal_keywords = ["goal", "objective", "aim", "target", "achieve", "accomplish"]
+        for keyword in goal_keywords:
+            if keyword in description_lower:
+                # Extract goal context
+                goal_pattern = rf"{keyword}[:\s]+([^.!?]+)"
+                matches = re.findall(goal_pattern, description_lower)
+                components["goals"].extend(matches)
+        
+        # Identify data sources
+        data_keywords = ["data", "file", "database", "api", "source", "input"]
+        for keyword in data_keywords:
+            if keyword in description_lower:
+                data_pattern = rf"{keyword}[:\s]*([^,.\s]+)"
+                matches = re.findall(data_pattern, description_lower)
+                components["data_sources"].extend(matches)
+        
+        # Identify processing steps
+        process_keywords = ["process", "analyze", "transform", "calculate", "generate", "create"]
+        for keyword in process_keywords:
+            if keyword in description_lower:
+                process_pattern = rf"{keyword}[:\s]+([^.!?]+)"
+                matches = re.findall(process_pattern, description_lower)
+                components["processing_steps"].extend(matches)
+        
+        # Identify outputs
+        output_keywords = ["output", "result", "report", "save", "export", "display"]
+        for keyword in output_keywords:
+            if keyword in description_lower:
+                output_pattern = rf"{keyword}[:\s]+([^.!?]+)"
+                matches = re.findall(output_pattern, description_lower)
+                components["outputs"].extend(matches)
+        
+        # Identify conditions
+        condition_keywords = ["if", "when", "unless", "while", "until"]
+        for keyword in condition_keywords:
+            if keyword in description_lower:
+                condition_pattern = rf"{keyword}[:\s]+([^.!?]+)"
+                matches = re.findall(condition_pattern, description_lower)
+                components["conditions"].extend(matches)
+        
+        # Identify loops
+        loop_keywords = ["for each", "repeat", "iterate", "loop", "continuously"]
+        for keyword in loop_keywords:
+            if keyword in description_lower:
+                loop_pattern = rf"{keyword}[:\s]+([^.!?]+)"
+                matches = re.findall(loop_pattern, description_lower)
+                components["loops"].extend(matches)
+        
+        # Identify collaborations
+        collab_keywords = ["with", "using", "via", "through", "collaborate"]
+        for keyword in collab_keywords:
+            if keyword in description_lower:
+                collab_pattern = rf"{keyword}[:\s]+([^.!?]+)"
+                matches = re.findall(collab_pattern, description_lower)
+                components["collaborations"].extend(matches)
+        
+        return components
+    
+    def _generate_workflow_header(self, description: str, complexity: str) -> str:
+        """Generate workflow file header"""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        header = f"""# NeuroCode Workflow
+# Generated from: {description[:100]}{'...' if len(description) > 100 else ''}
+# Complexity: {complexity}
+# Created: {timestamp}
+# 
+# This workflow was automatically generated from natural language
+# by the NeuroCode Natural Language Compiler
+
+# === WORKFLOW INITIALIZATION ===
+remember "Starting workflow: {description[:50]}{'...' if len(description) > 50 else ''}"
+set_goal "Complete workflow successfully"
+
+"""
+        return header
+    
+    def _generate_setup_phase(self, components: Dict) -> str:
+        """Generate workflow setup phase"""
+        setup = "# === SETUP PHASE ===\n"
+        
+        # Set up goals
+        for goal in components["goals"][:3]:  # Limit to first 3 goals
+            setup += f'set_goal "{goal.strip()}"\n'
+        
+        # Initialize memory for workflow
+        setup += 'remember "Workflow setup completed"\n'
+        
+        # Check system readiness
+        setup += "use sysmon to check_system_health\n"
+        
+        setup += "\n"
+        return setup
+    
+    def _generate_execution_phases(self, components: Dict, complexity: str) -> str:
+        """Generate main execution phases"""
+        execution = "# === EXECUTION PHASES ===\n\n"
+        
+        # Phase 1: Data Collection
+        if components["data_sources"]:
+            execution += "# Phase 1: Data Collection\n"
+            for source in components["data_sources"][:3]:
+                execution += f'use data_loader to load_from "{source.strip()}"\n'
+            execution += 'remember "Data collection completed"\n\n'
+        
+        # Phase 2: Processing
+        if components["processing_steps"]:
+            execution += "# Phase 2: Processing\n"
+            for step in components["processing_steps"][:5]:
+                step_clean = step.strip()
+                if complexity == "advanced":
+                    execution += f'think about "{step_clean}"\n'
+                    execution += f'analyze requirements for "{step_clean}"\n'
+                execution += f'process "{step_clean}"\n'
+            
+            if complexity in ["standard", "advanced"]:
+                execution += 'use performance_monitor to track_progress\n'
+            execution += 'remember "Processing phase completed"\n\n'
+        
+        # Phase 3: Conditional Logic
+        if components["conditions"]:
+            execution += "# Phase 3: Conditional Processing\n"
+            for condition in components["conditions"][:3]:
+                condition_clean = condition.strip()
+                execution += f'if {condition_clean}:\n'
+                execution += f'    remember "Condition met: {condition_clean}"\n'
+                execution += '    adapt strategy based on condition\n'
+            execution += "\n"
+        
+        # Phase 4: Iterative Processing
+        if components["loops"]:
+            execution += "# Phase 4: Iterative Processing\n"
+            for loop in components["loops"][:2]:
+                loop_clean = loop.strip()
+                execution += f'for_each item in {loop_clean}:\n'
+                execution += '    process current_item\n'
+                execution += f'    remember "Processed item in {loop_clean}"\n'
+            execution += "\n"
+        
+        # Phase 5: Collaboration
+        if components["collaborations"]:
+            execution += "# Phase 5: Collaboration\n"
+            for collab in components["collaborations"][:3]:
+                collab_clean = collab.strip()
+                execution += f'collaborate with {collab_clean}\n'
+                if complexity == "advanced":
+                    execution += f'synchronize results with {collab_clean}\n'
+            execution += "\n"
+        
+        return execution
+    
+    def _generate_cleanup_phase(self, components: Dict) -> str:
+        """Generate workflow cleanup and reporting phase"""
+        cleanup = "# === CLEANUP AND REPORTING ===\n"
+        
+        # Generate outputs
+        if components["outputs"]:
+            cleanup += "# Generate Outputs\n"
+            for output in components["outputs"][:3]:
+                output_clean = output.strip()
+                cleanup += f'generate_output "{output_clean}"\n'
+        
+        # Performance summary
+        cleanup += "\n# Performance Summary\n"
+        cleanup += "use performance_monitor to generate_report\n"
+        cleanup += "think about \"workflow efficiency and results\"\n"
+        
+        # Final memory update
+        cleanup += "\n# Final Status\n"
+        cleanup += 'remember "Workflow completed successfully"\n'
+        cleanup += 'report_status "Workflow finished"\n'
+        
+        # Cleanup
+        cleanup += "\n# Cleanup\n"
+        cleanup += "cleanup temporary_resources\n"
+        cleanup += "optimize memory_usage\n"
+        
+        cleanup += "\n# === WORKFLOW COMPLETE ===\n"
+        
+        return cleanup
+
 class NeuroCodeIDE:
     """
     Intelligent Development Environment for NeuroCode
@@ -233,7 +456,7 @@ class NeuroCodeIDE:
                 # Compile to NeuroCode
                 neurocode = self.natural_to_neuro(user_input)
                 
-                print(f"\n🧬 Generated NeuroCode:")
+                print("\n🧬 Generated NeuroCode:")
                 print("=" * 40)
                 print(neurocode)
                 print("=" * 40)

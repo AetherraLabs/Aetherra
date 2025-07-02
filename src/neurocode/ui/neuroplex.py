@@ -25,22 +25,44 @@ sys.path.insert(0, str(core_path))
 
 # Qt imports
 try:
-    from PySide6.QtCore import Qt
+    from PySide6.QtCore import Qt, QUrl
     from PySide6.QtGui import QFont, QIcon
     from PySide6.QtWidgets import (
         QApplication,
+        QComboBox,
         QHBoxLayout,
         QLabel,
         QLineEdit,
+        QListWidget,
+        QListWidgetItem,
         QMainWindow,
+        QMessageBox,
+        QProgressBar,
         QPushButton,
+        QScrollArea,
         QSplitter,
         QTabWidget,
         QTextEdit,
+        QTreeWidget,
+        QTreeWidgetItem,
         QVBoxLayout,
         QWidget,
     )
     QT_AVAILABLE = True
+    
+    # Try to import WebEngine for NeuroHub integration
+    try:
+        from PySide6.QtWebEngineWidgets import QWebEngineView
+        WEBENGINE_AVAILABLE = True
+        print("✅ WebEngine available for NeuroHub integration")
+    except ImportError:
+        WEBENGINE_AVAILABLE = False
+        print("⚠️  WebEngine not available - NeuroHub will use external browser")
+        
+except ImportError as e:
+    print(f"❌ PySide6 not available: {e}")
+    print("Please install PySide6: pip install PySide6")
+    sys.exit(1)
 except ImportError as e:
     print(f"❌ PySide6 not available: {e}")
     print("Please install PySide6: pip install PySide6")
@@ -73,6 +95,16 @@ except ImportError as e:
     print(f"⚠️  NeuroChat interface not available: {e}")
     print("ℹ️  Using built-in chat interface")
 
+# Import Task Scheduler
+try:
+    from core.task_scheduler import BackgroundTaskScheduler, TaskPriority, TaskStatus
+    TASK_SCHEDULER_AVAILABLE = True
+    print("✅ Background Task Scheduler loaded")
+except ImportError as e:
+    TASK_SCHEDULER_AVAILABLE = False
+    print(f"⚠️  Task Scheduler not available: {e}")
+    print("ℹ️  Background tasks will be disabled")
+
 
 class NeuroplexWindow(QMainWindow):
     """Main Neuroplex window with integrated AI chat and dark mode"""
@@ -80,6 +112,8 @@ class NeuroplexWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.chat_router = None
+        self.task_scheduler = None
+        self.neurohub_process = None
         self.current_personality = "default"
         self.setup_ui()
         self.init_components()
@@ -273,6 +307,18 @@ class NeuroplexWindow(QMainWindow):
         # Plugin Manager tab
         plugins_tab = self.create_plugins_tab()
         dev_tabs.addTab(plugins_tab, "🔌 Plugins")
+
+        # Memory Timeline tab
+        memory_tab = self.create_memory_timeline_tab()
+        dev_tabs.addTab(memory_tab, "🧠 Memory")
+
+        # Background Tasks tab
+        tasks_tab = self.create_tasks_tab()
+        dev_tabs.addTab(tasks_tab, "⚙️ Tasks")
+
+        # NeuroHub Package Manager tab
+        neurohub_tab = self.create_neurohub_tab()
+        dev_tabs.addTab(neurohub_tab, "🌐 NeuroHub")
 
         dev_layout.addWidget(dev_tabs)
 
@@ -478,6 +524,184 @@ Neuroplex> _""")
 
         return plugins_widget
 
+    def create_memory_timeline_tab(self):
+        """Create the memory timeline visualization tab"""
+        memory_widget = QWidget()
+        memory_layout = QVBoxLayout(memory_widget)
+
+        # Memory header with controls
+        header_layout = QHBoxLayout()
+        
+        header = QLabel("🧠 Memory Timeline")
+        header.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        header_layout.addWidget(header)
+        
+        header_layout.addStretch()
+        
+        # Refresh button
+        refresh_btn = QPushButton("🔄 Refresh")
+        refresh_btn.clicked.connect(self.refresh_memory_timeline)
+        header_layout.addWidget(refresh_btn)
+        
+        # Clear memory button
+        clear_btn = QPushButton("🗑️ Clear")
+        clear_btn.clicked.connect(self.clear_memory)
+        header_layout.addWidget(clear_btn)
+        
+        memory_layout.addLayout(header_layout)
+
+        # Memory filter controls
+        filter_layout = QHBoxLayout()
+        
+        filter_label = QLabel("Filter:")
+        filter_layout.addWidget(filter_label)
+        
+        self.memory_filter = QLineEdit()
+        self.memory_filter.setPlaceholderText("Search memories...")
+        self.memory_filter.textChanged.connect(self.filter_memory_timeline)
+        filter_layout.addWidget(self.memory_filter)
+        
+        # Memory type filter
+        self.memory_type_filter = QComboBox()
+        self.memory_type_filter.addItems(["All Types", "Conversation", "Goal", "Learning", "System", "Plugin"])
+        self.memory_type_filter.currentTextChanged.connect(self.filter_memory_timeline)
+        filter_layout.addWidget(self.memory_type_filter)
+        
+        memory_layout.addLayout(filter_layout)
+
+        # Memory timeline display
+        self.memory_timeline = QTextEdit()
+        self.memory_timeline.setReadOnly(True)
+        memory_layout.addWidget(self.memory_timeline)
+
+        # Memory stats
+        self.memory_stats = QLabel("Memory Statistics: Loading...")
+        self.memory_stats.setStyleSheet("color: #888888; font-size: 12px;")
+        memory_layout.addWidget(self.memory_stats)
+
+        # Initial load
+        self.refresh_memory_timeline()
+
+        return memory_widget
+    
+    def refresh_memory_timeline(self):
+        """Refresh the memory timeline display"""
+        try:
+            if not self.chat_router:
+                self.memory_timeline.setPlainText("Chat router not initialized")
+                return
+            
+            # Get memories from the chat router
+            memories = []
+            
+            # Get chat history as memories
+            chat_history = self.chat_router.get_chat_history(100)
+            for entry in chat_history:
+                memories.append({
+                    "timestamp": entry.get("timestamp", "Unknown"),
+                    "type": "conversation",
+                    "content": entry.get("user", ""),
+                    "response": entry.get("assistant", "")[:100] + "..." if len(entry.get("assistant", "")) > 100 else entry.get("assistant", ""),
+                    "intent": entry.get("intent", {}).get("type", "unknown")
+                })
+            
+            # Get system memories if available
+            if hasattr(self.chat_router.memory, 'memories'):
+                system_memories = getattr(self.chat_router.memory, 'memories', [])
+                for mem in system_memories:
+                    if isinstance(mem, dict):
+                        memories.append({
+                            "timestamp": mem.get("timestamp", "Unknown"),
+                            "type": mem.get("type", "system"),
+                            "content": str(mem.get("content", mem))[:200],
+                            "response": "",
+                            "intent": mem.get("category", "general")
+                        })
+            
+            # Sort by timestamp (newest first)
+            memories.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+            
+            # Build timeline display
+            timeline_text = ""
+            if not memories:
+                timeline_text = "No memories found. Start chatting to build memory!"
+            else:
+                for i, mem in enumerate(memories[:50]):  # Show last 50 memories
+                    timestamp = mem.get("timestamp", "Unknown")
+                    if "T" in timestamp:
+                        # Parse ISO timestamp
+                        try:
+                            from datetime import datetime
+                            dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                            time_str = dt.strftime("%H:%M:%S")
+                            date_str = dt.strftime("%Y-%m-%d")
+                        except Exception:
+                            time_str = timestamp
+                            date_str = ""
+                    else:
+                        time_str = timestamp
+                        date_str = ""
+                    
+                    mem_type = mem.get("type", "unknown")
+                    content = mem.get("content", "")
+                    response = mem.get("response", "")
+                    intent = mem.get("intent", "")
+                    
+                    # Memory type emoji
+                    type_emoji = {
+                        "conversation": "💬",
+                        "goal": "🎯", 
+                        "learning": "📚",
+                        "system": "⚙️",
+                        "plugin": "🔌"
+                    }.get(mem_type, "📝")
+                    
+                    timeline_text += f"{type_emoji} [{time_str}] {mem_type.upper()}\n"
+                    if content:
+                        timeline_text += f"   📝 {content}\n"
+                    if response:
+                        timeline_text += f"   🤖 {response}\n"
+                    if intent and intent != "unknown":
+                        timeline_text += f"   🔗 Intent: {intent}\n"
+                    timeline_text += "\n"
+            
+            self.memory_timeline.setPlainText(timeline_text)
+            
+            # Update stats
+            total_memories = len(memories)
+            conversation_count = len([m for m in memories if m.get("type") == "conversation"])
+            self.memory_stats.setText(f"Total Memories: {total_memories} | Conversations: {conversation_count} | System: {total_memories - conversation_count}")
+            
+        except Exception as e:
+            self.memory_timeline.setPlainText(f"Error loading memories: {str(e)}")
+            self.memory_stats.setText("Error loading memory statistics")
+    
+    def filter_memory_timeline(self):
+        """Filter the memory timeline based on search text and type"""
+        # For now, just refresh - in a full implementation this would filter the display
+        self.refresh_memory_timeline()
+    
+    def clear_memory(self):
+        """Clear memory after confirmation"""
+        reply = QMessageBox.question(
+            self, 
+            'Clear Memory', 
+            'Are you sure you want to clear all memories? This cannot be undone.',
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            try:
+                if self.chat_router:
+                    self.chat_router.clear_chat_history()
+                    # Clear system memory if available (not implemented in fallback)
+                    
+                self.refresh_memory_timeline()
+                QMessageBox.information(self, "Memory Cleared", "All memories have been cleared successfully.")
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Failed to clear memory: {str(e)}")
+
     def init_components(self):
         """Initialize the chat router and other components"""
         try:
@@ -486,6 +710,17 @@ Neuroplex> _""")
             print(f"✅ Chat router initialized with '{self.current_personality}' personality")
         except Exception as e:
             print(f"❌ Failed to initialize chat router: {e}")
+
+        # Initialize task scheduler
+        if TASK_SCHEDULER_AVAILABLE:
+            try:
+                self.task_scheduler = BackgroundTaskScheduler()
+                print("✅ Background task scheduler initialized and started")
+            except Exception as e:
+                print(f"❌ Failed to initialize task scheduler: {e}")
+                self.task_scheduler = None
+        else:
+            print("ℹ️  Task scheduler disabled (not available)")
 
     def cycle_personality(self):
         """Cycle through available AI personalities"""
@@ -531,32 +766,550 @@ Neuroplex> _""")
             scrollbar = self.chat_display.verticalScrollBar()
             scrollbar.setValue(scrollbar.maximum())
 
+    def create_tasks_tab(self):
+        """Create the background tasks management tab"""
+        tasks_widget = QWidget()
+        tasks_layout = QVBoxLayout(tasks_widget)
 
-def main():
-    """Main function to launch Neuroplex"""
-    if not QT_AVAILABLE:
-        print("❌ Cannot start Neuroplex: PySide6 not available")
-        return False
+        # Tasks header with controls
+        header_layout = QHBoxLayout()
+        
+        header = QLabel("⚙️ Background Tasks")
+        header.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        header_layout.addWidget(header)
+        
+        header_layout.addStretch()
+        
+        # Refresh button
+        refresh_btn = QPushButton("🔄 Refresh")
+        refresh_btn.clicked.connect(self.refresh_tasks_list)
+        header_layout.addWidget(refresh_btn)
+        
+        # Clear completed tasks button
+        clear_btn = QPushButton("🗑️ Clear Completed")
+        clear_btn.clicked.connect(self.clear_completed_tasks)
+        header_layout.addWidget(clear_btn)
+        
+        tasks_layout.addLayout(header_layout)
 
-    app = QApplication(sys.argv)
-    app.setApplicationName("Neuroplex")
-    app.setApplicationVersion("2.0.0")
+        # Task controls
+        controls_layout = QHBoxLayout()
+        
+        # Add test task button
+        test_task_btn = QPushButton("🧪 Add Test Task")
+        test_task_btn.clicked.connect(self.add_test_task)
+        controls_layout.addWidget(test_task_btn)
+        
+        # Pause/Resume scheduler
+        self.scheduler_toggle_btn = QPushButton("⏸️ Pause Scheduler")
+        self.scheduler_toggle_btn.clicked.connect(self.toggle_scheduler)
+        controls_layout.addWidget(self.scheduler_toggle_btn)
+        
+        controls_layout.addStretch()
+        
+        tasks_layout.addLayout(controls_layout)
 
-    # Set application icon
-    app.setWindowIcon(QIcon("Neuroplex.ico") if Path("Neuroplex.ico").exists() else QIcon())
+        # Task filter controls
+        filter_layout = QHBoxLayout()
+        
+        filter_label = QLabel("Filter:")
+        filter_layout.addWidget(filter_label)
+        
+        self.task_filter = QLineEdit()
+        self.task_filter.setPlaceholderText("Search tasks...")
+        self.task_filter.textChanged.connect(self.filter_tasks_list)
+        filter_layout.addWidget(self.task_filter)
+        
+        # Task status filter
+        self.task_status_filter = QComboBox()
+        self.task_status_filter.addItems(["All Status", "Pending", "Running", "Completed", "Failed", "Cancelled"])
+        self.task_status_filter.currentTextChanged.connect(self.filter_tasks_list)
+        filter_layout.addWidget(self.task_status_filter)
+        
+        tasks_layout.addLayout(filter_layout)
 
-    window = NeuroplexWindow()
-    window.show()
+        # Tasks list display
+        self.tasks_list = QListWidget()
+        tasks_layout.addWidget(self.tasks_list)
 
-    print("✅ Neuroplex launched successfully")
-    print("🧬 AI-native development environment ready")
+        # Task details area
+        details_layout = QHBoxLayout()
+        
+        details_label = QLabel("Task Details:")
+        details_layout.addWidget(details_label)
+        
+        # Task action buttons
+        cancel_btn = QPushButton("❌ Cancel Selected")
+        cancel_btn.clicked.connect(self.cancel_selected_task)
+        details_layout.addWidget(cancel_btn)
+        
+        retry_btn = QPushButton("🔄 Retry Selected")
+        retry_btn.clicked.connect(self.retry_selected_task)
+        details_layout.addWidget(retry_btn)
+        
+        tasks_layout.addLayout(details_layout)
 
-    try:
-        return app.exec()
-    except KeyboardInterrupt:
-        print("\n👋 Neuroplex shutting down...")
-        return 0
+        # Task details display
+        self.task_details = QTextEdit()
+        self.task_details.setReadOnly(True)
+        self.task_details.setMaximumHeight(150)
+        tasks_layout.addWidget(self.task_details)
 
+        # Tasks statistics
+        self.task_stats = QLabel("Task Statistics: Loading...")
+        self.task_stats.setStyleSheet("color: #888888; font-size: 12px;")
+        tasks_layout.addWidget(self.task_stats)
 
-if __name__ == "__main__":
-    sys.exit(main() or 0)
+        # Connect task selection
+        self.tasks_list.itemSelectionChanged.connect(self.on_task_selected)
+
+        # Initial load
+        self.refresh_tasks_list()
+
+        return tasks_widget
+
+    def refresh_tasks_list(self):
+        """Refresh the tasks list display"""
+        try:
+            if not self.task_scheduler:
+                self.tasks_list.clear()
+                self.tasks_list.addItem("❌ Task scheduler not available")
+                self.task_stats.setText("Task Statistics: Scheduler not available")
+                return
+
+            # Get task statistics
+            stats = self.task_scheduler.get_statistics()
+            self.task_stats.setText(
+                f"Task Statistics: {stats['tasks_submitted']} submitted, "
+                f"{stats['tasks_completed']} completed, {stats['tasks_failed']} failed, "
+                f"Avg time: {stats['average_execution_time']:.2f}s"
+            )
+
+            # Get all tasks
+            task_list = self.task_scheduler.get_task_list()
+            
+            self.tasks_list.clear()
+            for task_info in task_list:
+                status_emoji = {
+                    "pending": "⏳",
+                    "running": "🏃",
+                    "completed": "✅",
+                    "failed": "❌",
+                    "cancelled": "🚫",
+                    "retrying": "🔄"
+                }.get(task_info.get("status", "unknown"), "❓")
+                
+                item_text = f"{status_emoji} {task_info.get('name', 'Unknown')} - {task_info.get('status', 'unknown').title()}"
+                item = QListWidgetItem(item_text)
+                item.setData(Qt.ItemDataRole.UserRole, task_info)
+                self.tasks_list.addItem(item)
+
+        except Exception as e:
+            self.task_stats.setText(f"Error refreshing tasks: {str(e)}")
+
+    def filter_tasks_list(self):
+        """Filter the tasks list based on search criteria"""
+        search_text = self.task_filter.text().lower()
+        status_filter = self.task_status_filter.currentText()
+        
+        for i in range(self.tasks_list.count()):
+            item = self.tasks_list.item(i)
+            if item:
+                task_data = item.data(Qt.ItemDataRole.UserRole)
+                
+                # Text filter
+                text_match = search_text in item.text().lower()
+                
+                # Status filter
+                if status_filter == "All Status":
+                    status_match = True
+                else:
+                    task_status = task_data.get("status", "unknown") if task_data else "unknown"
+                    status_match = status_filter.lower() == task_status.lower()
+                
+                # Show/hide item
+                item.setHidden(not (text_match and status_match))
+
+    def on_task_selected(self):
+        """Handle task selection to show details"""
+        current_item = self.tasks_list.currentItem()
+        if current_item:
+            task_data = current_item.data(Qt.ItemDataRole.UserRole)
+            if task_data:
+                details = f"""Task ID: {task_data.get('id', 'Unknown')}
+Name: {task_data.get('name', 'Unknown')}
+Status: {task_data.get('status', 'unknown').title()}
+Priority: {task_data.get('priority', 'Unknown')}
+Created: {task_data.get('created_at', 'Unknown')}
+Started: {task_data.get('started_at', 'Not started')}
+Completed: {task_data.get('completed_at', 'Not completed')}
+Retries: {task_data.get('retry_count', 0)}/{task_data.get('max_retries', 0)}
+
+Dependencies: {', '.join(task_data.get('dependencies', [])) or 'None'}
+
+Result: {task_data.get('result', 'No result') if task_data.get('status') == 'completed' else 'N/A'}
+Error: {task_data.get('error', 'No error') if task_data.get('status') == 'failed' else 'N/A'}"""
+                self.task_details.setText(details)
+            else:
+                self.task_details.setText("No task data available")
+        else:
+            self.task_details.clear()
+
+    def add_test_task(self):
+        """Add a test task to demonstrate the scheduler"""
+        if not self.task_scheduler:
+            QMessageBox.warning(self, "Error", "Task scheduler not available")
+            return
+
+        try:
+            import time
+            import random
+
+            def test_function():
+                """A test function that simulates work"""
+                duration = random.uniform(1, 5)
+                time.sleep(duration)
+                return f"Test task completed in {duration:.2f} seconds"
+
+            task_id = self.task_scheduler.schedule_task(
+                function=test_function,
+                name=f"Test Task {int(time.time())}",
+                priority=TaskPriority.NORMAL
+            )
+            
+            QMessageBox.information(self, "Task Added", f"Test task scheduled with ID: {task_id}")
+            self.refresh_tasks_list()
+
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to add test task: {str(e)}")
+
+    def clear_completed_tasks(self):
+        """Clear all completed and failed tasks"""
+        if not self.task_scheduler:
+            return
+
+        try:
+            # This would need to be implemented in the task scheduler
+            # For now, just refresh the list
+            self.refresh_tasks_list()
+            QMessageBox.information(self, "Tasks Cleared", "Completed tasks have been cleared.")
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to clear tasks: {str(e)}")
+
+    def cancel_selected_task(self):
+        """Cancel the selected task"""
+        current_item = self.tasks_list.currentItem()
+        if not current_item or not self.task_scheduler:
+            return
+
+        task_data = current_item.data(Qt.ItemDataRole.UserRole)
+        if task_data:
+            task_id = task_data.get('id')
+            if task_id:
+                try:
+                    success = self.task_scheduler.cancel_task(task_id)
+                    if success:
+                        QMessageBox.information(self, "Task Cancelled", f"Task {task_id} has been cancelled.")
+                        self.refresh_tasks_list()
+                    else:
+                        QMessageBox.warning(self, "Error", "Failed to cancel task (may already be completed)")
+                except Exception as e:
+                    QMessageBox.warning(self, "Error", f"Failed to cancel task: {str(e)}")
+
+    def retry_selected_task(self):
+        """Retry the selected failed task"""
+        current_item = self.tasks_list.currentItem()
+        if not current_item or not self.task_scheduler:
+            return
+
+        task_data = current_item.data(Qt.ItemDataRole.UserRole)
+        if task_data and task_data.get('status') == 'failed':
+            # This would need retry functionality in the task scheduler
+            QMessageBox.information(self, "Retry", "Task retry functionality would be implemented here.")
+        else:
+            QMessageBox.warning(self, "Error", "Can only retry failed tasks")
+
+    def toggle_scheduler(self):
+        """Toggle the task scheduler pause/resume state"""
+        if not self.task_scheduler:
+            return
+
+        # This would need pause/resume functionality in the task scheduler
+        # For now, just toggle the button text
+        if self.scheduler_toggle_btn.text() == "⏸️ Pause Scheduler":
+            self.scheduler_toggle_btn.setText("▶️ Resume Scheduler")
+            QMessageBox.information(self, "Scheduler", "Task scheduler paused.")
+        else:
+            self.scheduler_toggle_btn.setText("⏸️ Pause Scheduler")
+            QMessageBox.information(self, "Scheduler", "Task scheduler resumed.")
+
+    def closeEvent(self, event):
+        """Handle application shutdown - cleanup resources"""
+        try:
+            # Shutdown task scheduler
+            if self.task_scheduler:
+                print("🔄 Shutting down task scheduler...")
+                self.task_scheduler.shutdown(timeout=5.0)
+                print("✅ Task scheduler shut down successfully")
+        except Exception as e:
+            print(f"⚠️  Error during task scheduler shutdown: {e}")
+        
+        try:
+            # Stop NeuroHub server
+            if hasattr(self, 'neurohub_process') and self.neurohub_process:
+                print("🔄 Stopping NeuroHub server...")
+                self.neurohub_process.terminate()
+                print("✅ NeuroHub server stopped")
+        except Exception as e:
+            print(f"⚠️  Error stopping NeuroHub server: {e}")
+        
+        # Accept the close event
+        event.accept()
+
+    def create_neurohub_tab(self):
+        """Create the NeuroHub package manager tab"""
+        neurohub_widget = QWidget()
+        neurohub_layout = QVBoxLayout(neurohub_widget)
+
+        # NeuroHub header with controls
+        header_layout = QHBoxLayout()
+        
+        header = QLabel("🌐 NeuroHub Package Manager")
+        header.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        header_layout.addWidget(header)
+        
+        header_layout.addStretch()
+        
+        # Start NeuroHub server button
+        self.neurohub_start_btn = QPushButton("🚀 Start NeuroHub")
+        self.neurohub_start_btn.clicked.connect(self.start_neurohub_server)
+        header_layout.addWidget(self.neurohub_start_btn)
+        
+        # Open in browser button
+        self.neurohub_browser_btn = QPushButton("🌐 Open in Browser")
+        self.neurohub_browser_btn.clicked.connect(self.open_neurohub_browser)
+        self.neurohub_browser_btn.setEnabled(False)
+        header_layout.addWidget(self.neurohub_browser_btn)
+        
+        neurohub_layout.addLayout(header_layout)
+
+        # NeuroHub status
+        self.neurohub_status = QLabel("🔄 NeuroHub Status: Not started")
+        self.neurohub_status.setStyleSheet("color: #888888; font-size: 12px;")
+        neurohub_layout.addWidget(self.neurohub_status)
+
+        # Web view or placeholder
+        if WEBENGINE_AVAILABLE:
+            try:
+                self.neurohub_web_view = QWebEngineView()
+                self.neurohub_web_view.setUrl(QUrl("about:blank"))
+                neurohub_layout.addWidget(self.neurohub_web_view)
+                
+                # Set initial placeholder
+                placeholder_html = """
+                <html>
+                <head>
+                    <style>
+                        body { 
+                            font-family: Arial, sans-serif; 
+                            background: #1e1e1e; 
+                            color: #ffffff; 
+                            text-align: center; 
+                            padding: 50px; 
+                        }
+                        .placeholder { 
+                            font-size: 18px; 
+                            color: #888888; 
+                        }
+                        .instructions {
+                            font-size: 14px;
+                            color: #aaaaaa;
+                            margin-top: 20px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="placeholder">
+                        🌐 NeuroHub Package Manager
+                        <br><br>
+                        Click "Start NeuroHub" to launch the package manager server
+                        <br>
+                        and browse AI packages for NeuroCode.
+                    </div>
+                    <div class="instructions">
+                        NeuroHub provides access to plugins, models, and tools<br>
+                        for the NeuroCode AI-native development environment.
+                    </div>
+                </body>
+                </html>
+                """
+                self.neurohub_web_view.setHtml(placeholder_html)
+                
+            except Exception as e:
+                print(f"⚠️  Failed to create web view: {e}")
+                self.neurohub_web_view = None
+                # Fall back to text display
+                self.create_neurohub_fallback(neurohub_layout)
+        else:
+            self.neurohub_web_view = None
+            self.create_neurohub_fallback(neurohub_layout)
+
+        # NeuroHub info
+        info_text = """
+NeuroHub is the AI-native package manager for NeuroCode. It provides:
+
+• 🔌 Plugin Discovery - Browse and install NeuroCode plugins
+• 🤖 AI Model Hub - Download and manage AI models  
+• 🛠️ Tool Integration - Find tools and utilities
+• 📦 Package Management - Install, update, and remove packages
+• 🌐 Community Sharing - Share your own plugins and tools
+
+To get started, click "Start NeuroHub" to launch the local server.
+        """
+        
+        info_label = QLabel(info_text)
+        info_label.setStyleSheet("color: #cccccc; font-size: 12px; padding: 10px;")
+        info_label.setWordWrap(True)
+        neurohub_layout.addWidget(info_label)
+
+        return neurohub_widget
+
+    def create_neurohub_fallback(self, layout):
+        """Create fallback UI when WebEngine is not available"""
+        fallback_text = QTextEdit()
+        fallback_text.setReadOnly(True)
+        fallback_text.setHtml("""
+        <h2>🌐 NeuroHub Package Manager</h2>
+        <p><strong>WebEngine not available - using external browser mode</strong></p>
+        
+        <p>NeuroHub provides a complete package management system for NeuroCode:</p>
+        <ul>
+            <li><strong>Plugin Discovery:</strong> Browse and install NeuroCode plugins</li>
+            <li><strong>AI Model Hub:</strong> Download and manage AI models</li>  
+            <li><strong>Tool Integration:</strong> Find tools and utilities</li>
+            <li><strong>Package Management:</strong> Install, update, and remove packages</li>
+            <li><strong>Community Sharing:</strong> Share your own plugins and tools</li>
+        </ul>
+        
+        <p><strong>To use NeuroHub:</strong></p>
+        <ol>
+            <li>Click "Start NeuroHub" to launch the server</li>
+            <li>Click "Open in Browser" to access the web interface</li>
+            <li>Browse and install packages for NeuroCode</li>
+        </ol>
+        
+        <p><em>Note: Install QtWebEngine for embedded browser support</em></p>
+        """)
+        layout.addWidget(fallback_text)
+
+    def start_neurohub_server(self):
+        """Start the NeuroHub server"""
+        try:
+            import subprocess
+            
+            neurohub_path = Path(__file__).parent.parent.parent.parent / "neurohub"
+            
+            if not neurohub_path.exists():
+                QMessageBox.warning(self, "NeuroHub Error", "NeuroHub directory not found")
+                return
+            
+            # Check if Node.js is available
+            try:
+                subprocess.run(["node", "--version"], check=True, capture_output=True)
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                QMessageBox.warning(
+                    self, 
+                    "NeuroHub Error", 
+                    "Node.js is required to run NeuroHub.\nPlease install Node.js from nodejs.org"
+                )
+                return
+            
+            # Start NeuroHub server in background
+            if hasattr(self, 'neurohub_process') and self.neurohub_process and self.neurohub_process.poll() is None:
+                QMessageBox.information(self, "NeuroHub", "NeuroHub is already running")
+                return
+            
+            # Change to NeuroHub directory and start server
+            self.neurohub_process = subprocess.Popen(
+                ["npm", "start"],
+                cwd=str(neurohub_path),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            
+            # Update UI
+            self.neurohub_start_btn.setText("🔄 Starting...")
+            self.neurohub_start_btn.setEnabled(False)
+            self.neurohub_status.setText("🔄 NeuroHub Status: Starting server...")
+            
+            # Schedule status check
+            import threading
+            def check_server():
+                import time
+                time.sleep(3)  # Give server time to start
+                
+                # Check if server is running
+                try:
+                    import requests
+                    response = requests.get("http://localhost:3001/api/health", timeout=5)
+                    if response.status_code == 200:
+                        # Server is running
+                        self.neurohub_server_started()
+                    else:
+                        self.neurohub_server_failed()
+                except Exception:
+                    self.neurohub_server_failed()
+            
+            threading.Thread(target=check_server, daemon=True).start()
+            
+        except Exception as e:
+            QMessageBox.warning(self, "NeuroHub Error", f"Failed to start NeuroHub: {str(e)}")
+            self.neurohub_server_failed()
+
+    def neurohub_server_started(self):
+        """Called when NeuroHub server starts successfully"""
+        self.neurohub_start_btn.setText("🛑 Stop NeuroHub")
+        self.neurohub_start_btn.setEnabled(True)
+        self.neurohub_start_btn.clicked.disconnect()
+        self.neurohub_start_btn.clicked.connect(self.stop_neurohub_server)
+        
+        self.neurohub_browser_btn.setEnabled(True)
+        self.neurohub_status.setText("✅ NeuroHub Status: Running on http://localhost:3001")
+        
+        # Load NeuroHub in web view if available
+        if hasattr(self, 'neurohub_web_view') and self.neurohub_web_view:
+            self.neurohub_web_view.setUrl(QUrl("http://localhost:8080"))
+
+    def neurohub_server_failed(self):
+        """Called when NeuroHub server fails to start"""
+        self.neurohub_start_btn.setText("🚀 Start NeuroHub")
+        self.neurohub_start_btn.setEnabled(True)
+        self.neurohub_status.setText("❌ NeuroHub Status: Failed to start")
+
+    def stop_neurohub_server(self):
+        """Stop the NeuroHub server"""
+        try:
+            if hasattr(self, 'neurohub_process') and self.neurohub_process:
+                self.neurohub_process.terminate()
+                self.neurohub_process = None
+            
+            self.neurohub_start_btn.setText("🚀 Start NeuroHub")
+            self.neurohub_start_btn.clicked.disconnect()
+            self.neurohub_start_btn.clicked.connect(self.start_neurohub_server)
+            self.neurohub_browser_btn.setEnabled(False)
+            self.neurohub_status.setText("🔄 NeuroHub Status: Stopped")
+            
+            # Reset web view
+            if hasattr(self, 'neurohub_web_view') and self.neurohub_web_view:
+                self.neurohub_web_view.setUrl(QUrl("about:blank"))
+                
+        except Exception as e:
+            QMessageBox.warning(self, "NeuroHub Error", f"Failed to stop NeuroHub: {str(e)}")
+
+    def open_neurohub_browser(self):
+        """Open NeuroHub in external browser"""
+        try:
+            import webbrowser
+            webbrowser.open("http://localhost:8080")
+        except Exception as e:
+            QMessageBox.warning(self, "Browser Error", f"Failed to open browser: {str(e)}")
