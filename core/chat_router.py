@@ -104,7 +104,7 @@ class NeuroCodeChatRouter:
         self.system_personality = self._load_personality()
         self.demo_mode = demo_mode  # For testing without AI calls
         self.debug_mode = debug_mode  # For debug logging
-        
+
         # Initialize personality system
         self.current_personality = None
         self.personality_persistence_enabled = False
@@ -250,7 +250,7 @@ You provide detailed technical explanations and suggest improvements.""",
         # Natural language programming
         if any(keyword in message_lower for keyword in ["create", "build", "make", "develop"]):
             return {"type": "programming_request", "confidence": 0.7}
-        
+
         # Workflow generation
         if any(keyword in message_lower for keyword in ["workflow", "process", "steps", "generate .neuro", "create workflow"]):
             return {"type": "workflow_generation", "confidence": 0.8}
@@ -300,7 +300,7 @@ You provide detailed technical explanations and suggest improvements.""",
 
         elif intent_type == "programming_request":
             response.update(self._handle_programming_request(message))
-        
+
         elif intent_type == "workflow_generation":
             response.update(self._handle_workflow_generation(message))
 
@@ -625,7 +625,7 @@ Would you like me to execute this?"""
             results = []
             errors = []
             corrections = []
-            
+
             for line in neurocode.split('\n'):
                 line = line.strip()
                 if line and not line.startswith('#'):
@@ -636,7 +636,7 @@ Would you like me to execute this?"""
                     except Exception as exec_error:
                         # Self-correction logic for plugin errors
                         correction_result = self._attempt_self_correction(line, str(exec_error))
-                        
+
                         if correction_result["success"]:
                             corrections.append(correction_result)
                             results.append(correction_result["result"])
@@ -655,7 +655,7 @@ Would you like me to execute this?"""
                 "corrections": corrections,
                 "message": self._build_execution_message(results, errors, corrections)
             }
-            
+
             # Store execution results for learning
             if hasattr(self, 'execution_history'):
                 self.execution_history.append({
@@ -669,7 +669,7 @@ Would you like me to execute this?"""
                     "neurocode": neurocode,
                     "response": response
                 }]
-            
+
             return response
 
         except Exception as e:
@@ -680,11 +680,11 @@ Would you like me to execute this?"""
                 "corrections": [],
                 "errors": [{"command": neurocode, "error": str(e)}]
             }
-    
+
     def _attempt_self_correction(self, command: str, error: str) -> Dict:
         """Attempt to self-correct plugin errors"""
         correction_attempts = []
-        
+
         # Common error patterns and corrections
         error_corrections = {
             "module not found": self._fix_import_error,
@@ -693,9 +693,9 @@ Would you like me to execute this?"""
             "syntax error": self._fix_syntax_error,
             "permission denied": self._fix_permission_error
         }
-        
+
         error_lower = error.lower()
-        
+
         for error_pattern, correction_func in error_corrections.items():
             if error_pattern in error_lower:
                 try:
@@ -716,25 +716,25 @@ Would you like me to execute this?"""
                         "type": error_pattern,
                         "error": str(correction_error)
                     })
-        
+
         return {
             "success": False,
             "correction_attempted": True,
             "attempts": correction_attempts,
             "original_error": error
         }
-    
+
     def _fix_import_error(self, command: str, error: str) -> Dict:
         """Fix module import errors"""
         # Try to suggest alternative imports or installations
         missing_module = None
-        
+
         # Extract module name from error
         import re
         match = re.search(r"no module named '([^']+)'", error.lower())
         if match:
             missing_module = match.group(1)
-        
+
         if missing_module:
             # Common module aliases
             module_alternatives = {
@@ -744,7 +744,7 @@ Would you like me to execute this?"""
                 "np": "numpy",
                 "pd": "pandas"
             }
-            
+
             if missing_module in module_alternatives:
                 suggestion = f"install {module_alternatives[missing_module]}"
                 return {
@@ -752,9 +752,9 @@ Would you like me to execute this?"""
                     "suggestion": suggestion,
                     "message": f"Module {missing_module} not found. Try: {suggestion}"
                 }
-        
+
         return {"success": False, "message": "Could not auto-fix import error"}
-    
+
     def _fix_attribute_error(self, command: str, error: str) -> Dict:
         """Fix attribute access errors"""
         # Simple correction for common attribute mistakes
@@ -765,42 +765,60 @@ Would you like me to execute this?"""
                 "suggestion": "Use dir(object) to see available attributes"
             }
         return {"success": False}
-    
+
     def _fix_plugin_loading(self, command: str, error: str) -> Dict:
         """Fix plugin loading issues"""
         # Try to reload or suggest plugin installation
         plugin_pattern = r"use\s+(\w+)"
         match = re.search(plugin_pattern, command)
-        
+
         if match:
             plugin_name = match.group(1)
             try:
-                # Attempt to reload plugin if method exists
+                # Check if interpreter has plugin reload capability
                 if hasattr(self.interpreter, 'reload_plugin'):
-                    result = self.interpreter.reload_plugin(plugin_name)
-                    if result:
-                        # Retry original command
+                    # Use getattr for safe attribute access
+                    reload_method = getattr(self.interpreter, 'reload_plugin', None)
+                    if reload_method and callable(reload_method):
+                        result = reload_method(plugin_name)
+                        if result:
+                            # Retry original command
+                            retry_result = self.interpreter.execute(command)
+                            return {
+                                "success": True,
+                                "corrected_command": command,
+                                "result": retry_result,
+                                "correction": f"Reloaded plugin {plugin_name}"
+                            }
+
+                # Alternative: try to reinitialize the plugin system
+                elif hasattr(self.interpreter, 'initialize_plugins'):
+                    init_method = getattr(self.interpreter, 'initialize_plugins', None)
+                    if init_method and callable(init_method):
+                        init_method()
+                        # Retry command after initialization
                         retry_result = self.interpreter.execute(command)
                         return {
                             "success": True,
                             "corrected_command": command,
                             "result": retry_result,
-                            "correction": f"Reloaded plugin {plugin_name}"
+                            "correction": f"Reinitialized plugin system for {plugin_name}"
                         }
+
             except Exception:
                 pass
-        
+
         return {
             "success": False,
             "message": "Plugin loading failed. Check if plugin is installed and compatible.",
             "suggestion": "Try: reload plugins or check plugin status"
         }
-    
+
     def _fix_syntax_error(self, command: str, error: str) -> Dict:
         """Fix basic syntax errors"""
         # Simple syntax corrections
         corrected = command
-        
+
         # Common fixes
         if "unexpected indent" in error.lower():
             corrected = corrected.lstrip()
@@ -808,7 +826,7 @@ Would you like me to execute this?"""
             # Try to fix assignment issues
             if " = " not in command and "=" in command:
                 corrected = command.replace("=", " = ", 1)
-        
+
         if corrected != command:
             try:
                 result = self.interpreter.execute(corrected)
@@ -820,9 +838,9 @@ Would you like me to execute this?"""
                 }
             except Exception:
                 pass
-        
+
         return {"success": False, "message": "Could not auto-fix syntax error"}
-    
+
     def _fix_permission_error(self, command: str, error: str) -> Dict:
         """Handle permission errors"""
         return {
@@ -830,27 +848,27 @@ Would you like me to execute this?"""
             "message": "Permission denied. Check file/directory permissions or run with appropriate privileges.",
             "suggestion": "Ensure you have necessary permissions for this operation"
         }
-    
+
     def _build_execution_message(self, results: List, errors: List, corrections: List) -> str:
         """Build informative execution message"""
         if not errors and not corrections:
             return "NeuroCode executed successfully"
-        
+
         messages = []
-        
+
         if results:
             messages.append(f"✅ {len(results)} command(s) executed successfully")
-        
+
         if corrections:
             messages.append(f"🔧 {len(corrections)} error(s) auto-corrected")
             for correction in corrections:
                 messages.append(f"   • Fixed {correction.get('correction_type', 'error')}")
-        
+
         if errors:
             messages.append(f"❌ {len(errors)} error(s) encountered")
             for error in errors[:3]:  # Show first 3 errors
                 messages.append(f"   • {error['command']}: {error['error']}")
-        
+
         return "\n".join(messages)
 
     def _get_system_state(self) -> Dict:
@@ -884,13 +902,13 @@ Would you like me to execute this?"""
         # Store meaningful conversations in memory
         intent = chat_entry.get("intent", {})
         confidence = intent.get("confidence", 0)
-        
+
         # Only store meaningful interactions
         if confidence > 0.7:
             # Extract key information from the conversation
             user_message = chat_entry.get("user", "")
             assistant_response = chat_entry.get("assistant", "")
-            
+
             # Create memory entry for important conversations
             memory_entry = {
                 "type": "conversation",
@@ -901,23 +919,23 @@ Would you like me to execute this?"""
                 "confidence": confidence,
                 "context": chat_entry.get("context", {})
             }
-            
+
             # Store in memory system if available
             if hasattr(self.memory, 'remember'):
                 self.memory.remember(f"conversation_{intent.get('type')}", memory_entry)
-            
+
             # Update conversation context for better continuity
             self._update_conversation_context(memory_entry)
-    
+
     def _update_conversation_context(self, memory_entry: Dict):
         """Update conversation context for better multi-turn handling"""
         # Track conversation themes and topics
         if not hasattr(self, 'conversation_topics'):
             self.conversation_topics = []
-        
+
         # Extract topics from user message
         user_message = memory_entry.get("user_message", "").lower()
-        
+
         # Simple topic extraction based on keywords
         topic_keywords = {
             "development": ["code", "program", "develop", "build", "create"],
@@ -926,7 +944,7 @@ Would you like me to execute this?"""
             "debugging": ["error", "bug", "problem", "fix", "debug"],
             "learning": ["learn", "teach", "explain", "understand", "how"]
         }
-        
+
         for topic, keywords in topic_keywords.items():
             if any(keyword in user_message for keyword in keywords):
                 if topic not in self.conversation_topics:
@@ -963,13 +981,13 @@ Would you like me to execute this?"""
         try:
             import json
             import os
-            
+
             settings_dir = "data"
             if not os.path.exists(settings_dir):
                 os.makedirs(settings_dir)
-            
+
             filepath = os.path.join(settings_dir, filename)
-            
+
             personality_data = {
                 "current_personality": getattr(self, 'current_personality', {}),
                 "personality_history": getattr(self, 'personality_history', []),
@@ -977,35 +995,35 @@ Would you like me to execute this?"""
                 "selection_criteria": getattr(self, 'personality_criteria', {}),
                 "last_updated": datetime.now().isoformat()
             }
-            
+
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(personality_data, f, indent=2)
-            
+
             return {"success": True, "file": filepath}
-            
+
         except Exception as e:
             return {"success": False, "error": str(e)}
-    
+
     def load_personality_settings(self, filename: str = "personality_settings.json"):
         """Load personality settings from file"""
         try:
             import json
             import os
-            
+
             filepath = os.path.join("data", filename)
-            
+
             if os.path.exists(filepath):
                 with open(filepath, 'r', encoding='utf-8') as f:
                     personality_data = json.load(f)
-                
+
                 # Restore settings
                 if "current_personality" in personality_data:
                     self.current_personality = personality_data["current_personality"]
-                
+
                 self.personality_history = personality_data.get("personality_history", [])
                 self.auto_personality_selection = personality_data.get("auto_selection_enabled", False)
                 self.personality_criteria = personality_data.get("selection_criteria", {})
-                
+
                 return {"success": True, "loaded": personality_data}
             else:
                 # Initialize with defaults
@@ -1013,16 +1031,16 @@ Would you like me to execute this?"""
                 self.personality_history = []
                 self.auto_personality_selection = False
                 self.personality_criteria = {}
-                
+
                 return {"success": True, "message": "No existing settings, initialized defaults"}
-                
+
         except Exception as e:
             return {"success": False, "error": str(e)}
-    
+
     def enable_auto_personality_selection(self, criteria: Optional[Dict] = None):
         """Enable automatic personality selection based on context"""
         self.auto_personality_selection = True
-        
+
         # Default criteria for automatic selection
         default_criteria = {
             "learning_keywords": ["learn", "teach", "explain", "understand", "how"],
@@ -1030,20 +1048,20 @@ Would you like me to execute this?"""
             "casual_keywords": ["chat", "talk", "hello", "hi", "casual"],
             "technical_keywords": ["analyze", "performance", "system", "technical"]
         }
-        
+
         self.personality_criteria = criteria if criteria else default_criteria
-        
+
         # Save settings
         self.save_personality_settings()
-    
+
     def auto_select_personality(self, message: str) -> str:
         """Automatically select personality based on message content"""
         if not getattr(self, 'auto_personality_selection', False):
             return getattr(self, 'current_personality', {}).get('name', 'default')
-        
+
         message_lower = message.lower()
         criteria = getattr(self, 'personality_criteria', {})
-        
+
         # Count matches for each personality type
         personality_scores = {
             "mentor": 0,
@@ -1051,37 +1069,37 @@ Would you like me to execute this?"""
             "sassy": 0,
             "default": 0
         }
-        
+
         # Score based on keywords
         for keyword in criteria.get("learning_keywords", []):
             if keyword in message_lower:
                 personality_scores["mentor"] += 1
-        
+
         for keyword in criteria.get("development_keywords", []):
             if keyword in message_lower:
                 personality_scores["dev_focused"] += 1
-        
+
         for keyword in criteria.get("technical_keywords", []):
             if keyword in message_lower:
                 personality_scores["dev_focused"] += 1
-        
+
         for keyword in criteria.get("casual_keywords", []):
             if keyword in message_lower:
                 personality_scores["sassy"] += 1
-        
+
         # Select personality with highest score
         selected_personality = max(personality_scores.keys(), key=lambda k: personality_scores[k])
-        
+
         # Only switch if there's a clear preference (score > 0)
         if personality_scores[selected_personality] > 0:
             current_name = getattr(self, 'current_personality', {}).get('name', 'default')
             if selected_personality != current_name:
                 self.set_personality(selected_personality)
-                
+
                 # Track personality changes
                 if not hasattr(self, 'personality_history'):
                     self.personality_history = []
-                
+
                 self.personality_history.append({
                     "timestamp": datetime.now().isoformat(),
                     "from": current_name,
@@ -1089,11 +1107,11 @@ Would you like me to execute this?"""
                     "trigger": message[:50],
                     "scores": personality_scores
                 })
-                
+
                 # Keep only recent history (last 20 changes)
                 if len(self.personality_history) > 20:
                     self.personality_history = self.personality_history[-20:]
-        
+
         return selected_personality
 
     def smart_intent_routing(self, user_input: str) -> Dict:
@@ -1117,23 +1135,23 @@ Would you like me to execute this?"""
         try:
             # Coordinate multiple agents for complex task
             result = self.multi_agent_manager.coordinate_multi_agent_task(message)
-            
+
             if result["success"]:
                 agents_involved = result.get("agents_involved", [])
                 plan = result.get("plan", {})
-                
+
                 response_text = "🤖 **Multi-Agent Coordination Initiated**\n\n"
                 response_text += f"**Task**: {message}\n\n"
                 response_text += f"**Agents Involved**: {', '.join(agents_involved)}\n\n"
-                
+
                 if "task_breakdown" in plan:
                     response_text += "**Execution Plan**:\n"
                     for i, step in enumerate(plan["task_breakdown"][:5], 1):
                         response_text += f"{i}. {step}\n"
-                
+
                 response_text += "\n**Coordination Status**: Active\n"
                 response_text += f"**Subtasks Completed**: {len(result.get('subtask_results', []))}"
-                
+
                 return {
                     "text": response_text,
                     "neurocode": f'remember "Multi-agent coordination: {message}"',
@@ -1144,13 +1162,13 @@ Would you like me to execute this?"""
                     "text": "🤖 Unable to coordinate multi-agent task. Agents may be busy or task complexity too high.",
                     "suggestions": ["Try simpler task", "Check agent availability", "Retry later"]
                 }
-        
+
         except Exception as e:
             return {
                 "text": f"🤖 Multi-agent coordination error: {str(e)}",
                 "suggestions": ["Check agent status", "Simplify request", "Try single agent"]
             }
-    
+
     def _handle_workflow_generation(self, message: str) -> Dict:
         """Handle workflow generation requests"""
         try:
@@ -1160,43 +1178,43 @@ Would you like me to execute this?"""
                 complexity = "simple"
             elif any(word in message.lower() for word in ["advanced", "complex", "detailed"]):
                 complexity = "advanced"
-            
+
             # Generate the workflow
             workflow = self.compiler.generate_neuro_workflow(message, complexity)
-            
+
             # Save workflow to file if requested
             workflow_filename = None
             if ".neuro" in message.lower() or "save" in message.lower():
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 workflow_filename = f"generated_workflow_{timestamp}.neuro"
-                
+
                 try:
                     with open(workflow_filename, 'w') as f:
                         f.write(workflow)
                 except Exception:
                     workflow_filename = None
-            
+
             response_text = "🧬 **NeuroCode Workflow Generated**\n\n"
             response_text += f"**Description**: {message}\n"
             response_text += f"**Complexity**: {complexity}\n"
-            
+
             if workflow_filename:
                 response_text += f"**Saved to**: {workflow_filename}\n"
-            
+
             response_text += f"\n**Preview**:\n```neurocode\n{workflow[:300]}{'...' if len(workflow) > 300 else ''}\n```"
-            
+
             return {
                 "text": response_text,
                 "neurocode": workflow if len(workflow) < 500 else workflow[:500] + "\n# ... (truncated)",
                 "suggestions": ["Execute workflow", "Modify workflow", "Save to file"]
             }
-        
+
         except Exception as e:
             return {
                 "text": f"🧬 Workflow generation error: {str(e)}",
                 "suggestions": ["Simplify description", "Try basic workflow", "Check compiler status"]
             }
-    
+
     def build_context_prompt(self, user_input: str, intent: Dict) -> str:
         """Build rich context prompt with advanced features"""
         # Get system context
@@ -1296,29 +1314,29 @@ What would you like to explore?"""
         # Get recent chat history with better context
         recent_chat = []
         conversation_summary = ""
-        
+
         # Build conversation thread with more context
         for entry in self.chat_history[-10:]:  # Last 10 exchanges for better context
             user_msg = entry.get('user', '')
             assistant_msg = entry.get('assistant', '')
             intent_type = entry.get('intent', {}).get('type', 'unknown')
-            
+
             recent_chat.append(f"[{intent_type}] User: {user_msg}")
             recent_chat.append(f"Assistant: {assistant_msg}")
-        
+
         # Create conversation summary for AI context
         if len(self.chat_history) > 0:
             topics = getattr(self, 'conversation_topics', [])
             if topics:
                 conversation_summary = f"Recent conversation topics: {', '.join(topics[-5:])}"
-        
+
         # Get system state
         memories = getattr(self.memory, 'memories', [])
         goals = getattr(self.interpreter, 'goals', [])
-        
+
         # Get relevant memories based on current message
         relevant_memories = self._get_relevant_memories(current_message)
-        
+
         return {
             "recent_chat": "\n".join(recent_chat) if recent_chat else "No previous conversation",
             "conversation_summary": conversation_summary,
@@ -1330,12 +1348,12 @@ What would you like to explore?"""
             "conversation_topics": getattr(self, 'conversation_topics', []),
             "session_length": len(self.chat_history)
         }
-    
+
     def _get_relevant_memories(self, message: str) -> List[Dict]:
         """Get memories relevant to the current message"""
         relevant_memories = []
         message_lower = message.lower()
-        
+
         # Search through stored conversation memories using safe attribute access
         try:
             if hasattr(self.memory, 'memories'):
@@ -1347,12 +1365,12 @@ What would you like to explore?"""
                             if memory.get('type') == 'conversation':
                                 user_msg = memory.get('user_message', '').lower()
                                 assistant_msg = memory.get('assistant_response', '').lower()
-                                
+
                                 # Simple relevance check based on common words
                                 message_words = set(message_lower.split())
                                 memory_words = set(user_msg.split() + assistant_msg.split())
                                 common_words = message_words.intersection(memory_words)
-                                
+
                                 if len(common_words) > 1:  # At least 2 common words
                                     relevant_memories.append({
                                         "timestamp": memory.get('timestamp'),
@@ -1368,14 +1386,14 @@ What would you like to explore?"""
             # Gracefully handle any memory access errors
             if self.debug_mode:
                 print(f"[CHAT DEBUG] Memory access error: {e}")
-        
+
         return relevant_memories[-5:]  # Return most recent 5 relevant memories
-    
+
     def generate_proactive_suggestions(self, user_input: str, context: Dict) -> List[str]:
         """Generate proactive suggestions based on conversation context"""
         suggestions = []
         input_lower = user_input.lower()
-        
+
         # Memory-based suggestions
         if any(word in input_lower for word in ["remember", "memory", "recall"]):
             suggestions.extend([
@@ -1383,7 +1401,7 @@ What would you like to explore?"""
                 "Search related memories",
                 "Save important information"
             ])
-        
+
         # Goal-based suggestions
         if any(word in input_lower for word in ["goal", "objective", "target"]):
             suggestions.extend([
@@ -1391,7 +1409,7 @@ What would you like to explore?"""
                 "Track progress",
                 "Break down objectives"
             ])
-        
+
         # Multi-agent suggestions
         if any(word in input_lower for word in ["complex", "difficult", "help"]):
             suggestions.extend([
@@ -1399,7 +1417,7 @@ What would you like to explore?"""
                 "Break into subtasks",
                 "Use specialized agents"
             ])
-        
+
         # Learning suggestions
         if any(word in input_lower for word in ["learn", "understand", "explain"]):
             suggestions.extend([
@@ -1407,7 +1425,7 @@ What would you like to explore?"""
                 "Find resources",
                 "Practice with examples"
             ])
-        
+
         # Workflow suggestions
         if any(word in input_lower for word in ["create", "build", "develop"]):
             suggestions.extend([
@@ -1415,6 +1433,6 @@ What would you like to explore?"""
                 "Use project templates",
                 "Plan development phases"
             ])
-        
+
         # Limit to top 3 most relevant suggestions
         return suggestions[:3]

@@ -24,7 +24,11 @@ def test_task_scheduler_import():
     """Test that task scheduler can be imported"""
     print("🔍 Testing task scheduler import...")
     try:
-        from core.task_scheduler import BackgroundTaskScheduler, TaskPriority, TaskStatus
+        from core.task_scheduler import (
+            BackgroundTaskScheduler,
+            TaskPriority,
+            TaskStatus,
+        )
         print("✅ Task scheduler imports successful")
         return True
     except ImportError as e:
@@ -36,23 +40,23 @@ def test_task_scheduler_basic_functionality():
     print("🔍 Testing task scheduler basic functionality...")
     try:
         from core.task_scheduler import BackgroundTaskScheduler, TaskPriority
-        
+
         # Create scheduler
         scheduler = BackgroundTaskScheduler(max_workers=2)
         print("✅ Task scheduler created successfully")
-        
+
         # Add a simple task
         def test_task():
             time.sleep(0.1)
             return "Test completed"
-        
+
         task_id = scheduler.schedule_task(
             function=test_task,
             name="Integration Test Task",
             priority=TaskPriority.HIGH
         )
         print(f"✅ Task scheduled with ID: {task_id}")
-        
+
         # Wait for task completion
         success = scheduler.wait_for_task(task_id, timeout=5.0)
         if success:
@@ -60,17 +64,17 @@ def test_task_scheduler_basic_functionality():
             print(f"✅ Task completed with result: {result}")
         else:
             print("⚠️  Task did not complete within timeout")
-        
+
         # Get statistics
         stats = scheduler.get_statistics()
         print(f"✅ Task statistics: {stats}")
-        
+
         # Shutdown
         scheduler.shutdown(timeout=3.0)
         print("✅ Task scheduler shut down successfully")
-        
+
         return True
-        
+
     except Exception as e:
         print(f"❌ Task scheduler functionality test failed: {e}")
         return False
@@ -81,38 +85,38 @@ def test_gui_integration():
     try:
         # Import Qt first
         from PySide6.QtWidgets import QApplication
-        
+
         # Create Qt application
         app = QApplication.instance()
         if app is None:
             app = QApplication(sys.argv)
-        
+
         # Import Neuroplex
         from src.neurocode.ui.neuroplex import NeuroplexWindow
-        
+
         # Create main window
         window = NeuroplexWindow()
         print("✅ Neuroplex window created successfully")
-        
+
         # Check if task scheduler was initialized
         if hasattr(window, 'task_scheduler') and window.task_scheduler:
             print("✅ Task scheduler integrated and initialized")
         else:
             print("⚠️  Task scheduler not initialized in GUI")
-        
+
         # Check if tasks tab method exists
         if hasattr(window, 'create_tasks_tab'):
             print("✅ Tasks tab method available")
         else:
             print("❌ Tasks tab method missing")
-        
+
         # Clean up
         if hasattr(window, 'task_scheduler') and window.task_scheduler:
             window.task_scheduler.shutdown(timeout=2.0)
-        
+
         window.close()
         return True
-        
+
     except Exception as e:
         print(f"❌ GUI integration test failed: {e}")
         return False
@@ -121,13 +125,13 @@ def main():
     """Run all integration tests"""
     print("🚀 Starting Task Scheduler Integration Tests")
     print("=" * 50)
-    
+
     tests = [
         ("Task Scheduler Import", test_task_scheduler_import),
         ("Task Scheduler Functionality", test_task_scheduler_basic_functionality),
         ("GUI Integration", test_gui_integration),
     ]
-    
+
     results = []
     for test_name, test_func in tests:
         print(f"\n📋 Running: {test_name}")
@@ -139,21 +143,21 @@ def main():
         except Exception as e:
             print(f"💥 {test_name}: CRASH - {e}")
             results.append((test_name, False))
-    
+
     # Summary
     print("\n" + "=" * 50)
     print("📈 INTEGRATION TEST SUMMARY")
     print("=" * 50)
-    
+
     passed = sum(1 for _, result in results if result)
     total = len(results)
-    
+
     for test_name, result in results:
         status = "✅ PASS" if result else "❌ FAIL"
         print(f"{status} {test_name}")
-    
+
     print(f"\n🎯 Overall: {passed}/{total} tests passed")
-    
+
     if passed == total:
         print("🎉 All tests passed! Task scheduler integration is working correctly.")
         return True

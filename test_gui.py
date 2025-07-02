@@ -14,7 +14,7 @@ sys.path.insert(0, str(src_path))
 try:
     from neurocode.ui.neuroplex import NeuroplexWindow
     print("✅ GUI classes loaded successfully")
-    
+
     # Test initialization without actually showing GUI
     from PySide6.QtWidgets import QApplication
     app = QApplication([])
@@ -22,7 +22,7 @@ try:
     print("✅ GUI window initialized successfully")
     print("🧠 Memory timeline feature added")
     print("🚀 Ready to launch GUI")
-    
+
 except Exception as e:
     print(f"❌ Error loading GUI: {e}")
     import traceback

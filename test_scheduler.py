@@ -3,8 +3,9 @@
 Test the background task scheduler
 """
 
-from core.task_scheduler import BackgroundTaskScheduler, TaskPriority
 import time
+
+from core.task_scheduler import BackgroundTaskScheduler, TaskPriority
 
 print('🔄 Testing Background Task Scheduler')
 scheduler = BackgroundTaskScheduler(max_workers=2)

@@ -11,8 +11,8 @@ This script verifies that:
 4. GUI integration is functional
 """
 
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 # Add project paths
@@ -27,7 +27,7 @@ def test_neurohub_directory():
         neurohub_path = project_root / "neurohub"
         if neurohub_path.exists():
             print(f"✅ NeuroHub directory found: {neurohub_path}")
-            
+
             # Check for key files
             key_files = ["package.json", "server.js", "README.md"]
             for file in key_files:
@@ -48,9 +48,9 @@ def test_nodejs_availability():
     print("🔍 Testing Node.js availability...")
     try:
         result = subprocess.run(
-            ["node", "--version"], 
-            capture_output=True, 
-            text=True, 
+            ["node", "--version"],
+            capture_output=True,
+            text=True,
             timeout=10
         )
         if result.returncode == 0:
@@ -87,53 +87,53 @@ def test_gui_neurohub_integration():
     try:
         # Import Qt first
         from PySide6.QtWidgets import QApplication
-        
+
         # Create Qt application
         app = QApplication.instance()
         if app is None:
             app = QApplication(sys.argv)
-        
+
         # Import Neuroplex
         from src.neurocode.ui.neuroplex import NeuroplexWindow
-        
+
         # Create main window
         window = NeuroplexWindow()
         print("✅ Neuroplex window created successfully")
-        
+
         # Check if NeuroHub tab method exists
         if hasattr(window, 'create_neurohub_tab'):
             print("✅ NeuroHub tab method available")
         else:
             print("❌ NeuroHub tab method missing")
-        
+
         # Check if NeuroHub process attribute exists
         if hasattr(window, 'neurohub_process'):
             print("✅ NeuroHub process management available")
         else:
             print("❌ NeuroHub process management missing")
-        
+
         # Check if NeuroHub server methods exist
         methods_to_check = [
             'start_neurohub_server',
-            'stop_neurohub_server', 
+            'stop_neurohub_server',
             'open_neurohub_browser',
             'neurohub_server_started',
             'neurohub_server_failed'
         ]
-        
+
         for method_name in methods_to_check:
             if hasattr(window, method_name):
                 print(f"✅ Method {method_name} available")
             else:
                 print(f"❌ Method {method_name} missing")
-        
+
         # Clean up
         if hasattr(window, 'task_scheduler') and window.task_scheduler:
             window.task_scheduler.shutdown(timeout=1.0)
-        
+
         window.close()
         return True
-        
+
     except Exception as e:
         print(f"❌ GUI NeuroHub integration test failed: {e}")
         import traceback
@@ -148,7 +148,7 @@ def test_neurohub_npm_setup():
         if not neurohub_path.exists():
             print("❌ NeuroHub directory not found")
             return False
-        
+
         # Check if node_modules exists or can be created
         node_modules = neurohub_path / "node_modules"
         if node_modules.exists():
@@ -157,7 +157,7 @@ def test_neurohub_npm_setup():
         else:
             print("ℹ️  Node modules not installed - would need 'npm install'")
             return True  # This is expected for a fresh setup
-            
+
     except Exception as e:
         print(f"❌ Error checking NeuroHub npm setup: {e}")
         return False
@@ -166,7 +166,7 @@ def main():
     """Run all NeuroHub integration tests"""
     print("🚀 Starting NeuroHub Integration Tests")
     print("=" * 50)
-    
+
     tests = [
         ("NeuroHub Directory", test_neurohub_directory),
         ("Node.js Availability", test_nodejs_availability),
@@ -174,7 +174,7 @@ def main():
         ("GUI NeuroHub Integration", test_gui_neurohub_integration),
         ("NeuroHub NPM Setup", test_neurohub_npm_setup),
     ]
-    
+
     results = []
     for test_name, test_func in tests:
         print(f"\n📋 Running: {test_name}")
@@ -186,30 +186,30 @@ def main():
         except Exception as e:
             print(f"💥 {test_name}: CRASH - {e}")
             results.append((test_name, False))
-    
+
     # Summary
     print("\n" + "=" * 50)
     print("📈 NEUROHUB INTEGRATION TEST SUMMARY")
     print("=" * 50)
-    
+
     passed = sum(1 for _, result in results if result)
     total = len(results)
-    
+
     for test_name, result in results:
         status = "✅ PASS" if result else "❌ FAIL"
         print(f"{status} {test_name}")
-    
+
     print(f"\n🎯 Overall: {passed}/{total} tests passed")
-    
+
     # Recommendations
     print("\n📝 RECOMMENDATIONS:")
-    
+
     if not any(name == "Node.js Availability" and result for name, result in results):
         print("⚠️  Install Node.js to enable NeuroHub server functionality")
-    
+
     if not any(name == "WebEngine Availability" and result for name, result in results):
         print("ℹ️  Install QtWebEngine for embedded browser support: pip install PySide6[WebEngine]")
-    
+
     if passed == total:
         print("🎉 All tests passed! NeuroHub integration is ready.")
         return True
