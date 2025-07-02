@@ -40,9 +40,9 @@ except ImportError:
     PluginManager = None
 
 try:
-    from core.interpreter import NeuroInterpreter
+    from core.interpreter import NeuroCodeInterpreter
 except ImportError:
-    NeuroInterpreter = None
+    NeuroCodeInterpreter = None
 
 try:
     from core.syntax_tree import analyze_syntax_tree, parse_neurocode
@@ -107,12 +107,12 @@ class EnhancedNeuroAgent:
         self,
         memory: Optional["NeuroMemory"] = None,
         goal_system: Optional["GoalSystem"] = None,
-        interpreter: Optional["NeuroInterpreter"] = None,
+        interpreter: Optional["NeuroCodeInterpreter"] = None,
     ):
         # Core components
         self.memory = memory or (NeuroMemory() if NeuroMemory else None)
         self.goal_system = goal_system or (GoalSystem() if GoalSystem else None)
-        self.interpreter = interpreter or (NeuroInterpreter() if NeuroInterpreter else None)
+        self.interpreter = interpreter or (NeuroCodeInterpreter() if NeuroCodeInterpreter else None)
 
         # Agent state
         self.state = AgentState.IDLE

@@ -13,39 +13,54 @@ from typing import Dict
 # Add core to path for imports
 sys.path.append(str(Path(__file__).parent / "core"))
 
-try:
-    from src.neurocode.persona.contextual_adaptation import (
-        ContextType,
-        UrgencyLevel,
-        get_contextual_adaptation_system,
-    )
+# Dynamic imports with global variables
+PERSONA_AVAILABLE = False
+ContextType = None  # type: ignore
+UrgencyLevel = None  # type: ignore
+get_contextual_adaptation_system = None  # type: ignore
+get_emotional_memory_system = None  # type: ignore
+PersonaArchetype = None  # type: ignore
+get_persona_engine = None  # type: ignore
 
+try:
+    # Try multiple import paths for persona modules
+    try:
+        import src.neurocode.persona.contextual_adaptation as context_module
+        import src.neurocode.persona.emotional_memory as memory_module
+        import src.neurocode.persona.engine as engine_module
+    except ImportError:
+        try:
+            import neurocode.persona.contextual_adaptation as context_module
+            import neurocode.persona.emotional_memory as memory_module
+            import neurocode.persona.engine as engine_module
+        except ImportError:
+            # Skip the core imports as they don't exist
+            raise ImportError("Persona modules not found")
+
+    # Assign to global variables
+    ContextType = context_module.ContextType  # type: ignore
+    UrgencyLevel = context_module.UrgencyLevel  # type: ignore
+    get_contextual_adaptation_system = context_module.get_contextual_adaptation_system  # type: ignore
+    get_emotional_memory_system = memory_module.get_emotional_memory_system  # type: ignore
+    PersonaArchetype = engine_module.PersonaArchetype  # type: ignore
+    get_persona_engine = engine_module.get_persona_engine  # type: ignore
     PERSONA_AVAILABLE = True
+
 except ImportError:
     # Fallback for when persona module is not available
-    print("⚠️ Persona module not available, using fallback")
+    # Note: This is expected in some configurations
     PERSONA_AVAILABLE = False
 
-    class ContextType:
+    class ContextType:  # type: ignore
         DEBUGGING = "debugging"
         CREATING = "creating"
         LEARNING = "learning"
         EMERGENCY = "emergency"
 
-    class UrgencyLevel:
+    class UrgencyLevel:  # type: ignore
         CRITICAL = "critical"
 
-    def get_contextual_adaptation_system(*args, **kwargs):
-        return None
-
-
-try:
-    from src.neurocode.persona.emotional_memory import get_emotional_memory_system
-    from src.neurocode.persona.engine import PersonaArchetype, get_persona_engine
-except ImportError:
-    print("⚠️ Additional persona modules not available, using fallbacks")
-
-    class PersonaArchetype:
+    class PersonaArchetype:  # type: ignore
         GUARDIAN = "guardian"
         CREATOR = "creator"
         SAGE = "sage"
@@ -54,10 +69,13 @@ except ImportError:
         ANALYST = "analyst"
         CATALYST = "catalyst"
 
-    def get_emotional_memory_system(*args, **kwargs):
+    def get_contextual_adaptation_system(*args, **kwargs):  # type: ignore
         return None
 
-    def get_persona_engine(*args, **kwargs):
+    def get_emotional_memory_system(*args, **kwargs):  # type: ignore
+        return None
+
+    def get_persona_engine(*args, **kwargs):  # type: ignore
         return None
 
 

@@ -45,8 +45,8 @@ else:
         _openai_client_initialized = True
 
 
-def ask_ai(prompt, temperature=0.2):
-    """Basic AI query function"""
+def ask_ai(prompt, temperature=0.2, debug_mode=False):
+    """Enhanced AI query function with detailed logging"""
     if client is None:
         return "[AI Disabled] OPENAI_API_KEY not configured"
 
@@ -56,14 +56,26 @@ def ask_ai(prompt, temperature=0.2):
 
         for model in models_to_try:
             try:
+                if debug_mode:
+                    print(f"🔹 Prompt sent to {model}:")
+                    print(f"   {prompt[:200]}{'...' if len(prompt) > 200 else ''}")
+
                 response = client.chat.completions.create(
                     model=model,
                     messages=[{"role": "user", "content": prompt}],
                     temperature=temperature,
                 )
                 content = response.choices[0].message.content
-                return content.strip() if content is not None else ""
+                result = content.strip() if content is not None else ""
+
+                if debug_mode:
+                    print(f"🔸 LLM response from {model}:")
+                    print(f"   {result[:200]}{'...' if len(result) > 200 else ''}")
+
+                return result
             except Exception as model_error:
+                if debug_mode:
+                    print(f"❌ Model {model} failed: {model_error}")
                 if "model" in str(model_error).lower() and "not" in str(model_error).lower():
                     continue  # Try next model
                 else:
@@ -71,6 +83,8 @@ def ask_ai(prompt, temperature=0.2):
 
         return "[AI Error] No available models found"
     except Exception as e:
+        if debug_mode:
+            print(f"❌ AI call failed: {e}")
         return f"[AI Error] {str(e)}"
 
 

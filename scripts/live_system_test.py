@@ -82,10 +82,10 @@ def test_interpreter_basic():
     print("-" * 30)
 
     try:
-        from core.interpreter import NeuroInterpreter
+        from core.interpreter import NeuroCodeInterpreter
 
         # Test interpreter creation
-        interpreter = NeuroInterpreter()
+        interpreter = NeuroCodeInterpreter()
 
         # Test simple expression
         result = interpreter.execute("2 + 2")

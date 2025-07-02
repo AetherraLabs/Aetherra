@@ -5,6 +5,6 @@ NeuroCode Core Utilities
 Utility functions and helpers for the NeuroCode core engine.
 """
 
-from .functions import NeuroCodeFunctions
+from .functions import NeuroFunctions
 
-__all__ = ["NeuroCodeFunctions"]
+__all__ = ["NeuroFunctions"]

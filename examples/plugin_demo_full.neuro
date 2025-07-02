@@ -1,0 +1,22 @@
+# 📄 NeuroCode Plugin Demo
+# Demonstrates real usage of multiple registered plugins
+
+plugin: example.hello_world "NeuroCode Developer"
+
+plugin: git.commit "Updated plugin registry and refactored memory core"
+
+plugin: whisper.transcribe "notes/meeting_audio.wav"
+
+plugin: search.query "Self-evolving AI systems in programming"
+
+plugin: memory.clear "short_term"
+
+plugin: file.read "docs/Plugin_SDK.md"
+
+plugin: agent.reflect "NeuroCode plugin memory"
+
+plugin: system.status ""
+
+plugin: math.evaluate "5 * (3 + 2)"
+
+plugin: greet.personal "Timothy"

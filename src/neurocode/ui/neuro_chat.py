@@ -16,6 +16,7 @@ Designed for seamless AI-native programming and interaction.
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 # Add core modules to path
 project_root = Path(__file__).parent.parent
@@ -24,8 +25,8 @@ sys.path.insert(0, str(project_root / "core"))
 
 # Qt imports with PySide6
 try:
-    from PySide6.QtCore import QPropertyAnimation, QRect, Qt, QThread, QTimer, Signal
-    from PySide6.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
+    from PySide6.QtCore import Qt, QTimer, Signal
+    from PySide6.QtGui import QFont
     from PySide6.QtWidgets import (
         QApplication,
         QFrame,
@@ -51,16 +52,35 @@ except ImportError:
     print("❌ PySide6 not available. Please install PySide6.")
     QT_AVAILABLE = False
 
-# Import NeuroCode components
+# Import NeuroCode components (optional)
 try:
-    from core.interpreter import NeuroInterpreter
-    from core.llm_integration import LLMIntegration
+    from core.interpreter import NeuroCodeInterpreter
+except ImportError:
+    NeuroCodeInterpreter = None
+
+try:
     from core.memory import NeuroMemory
-except ImportError as e:
-    print(f"⚠️ NeuroCode components not fully available: {e}")
+except ImportError:
     NeuroMemory = None
-    NeuroInterpreter = None
-    LLMIntegration = None
+
+# Import LLM Integration
+LLMIntegration = None
+try:
+    from core.llm_integration import NeuroCodeLLMIntegration
+    LLMIntegration = NeuroCodeLLMIntegration
+    NEUROCHAT_LLM_AVAILABLE = True
+except ImportError:
+    NEUROCHAT_LLM_AVAILABLE = False
+
+# Create fallback if needed
+if not NEUROCHAT_LLM_AVAILABLE:
+    class FallbackLLMIntegration:
+        def __init__(self):
+            pass
+        def process_message(self, message):
+            return "I'm a simple AI assistant. For full capabilities, ensure the LLM integration is properly configured."
+
+    LLMIntegration = FallbackLLMIntegration
 
 
 class TypingIndicator(QWidget):
@@ -111,7 +131,7 @@ class TypingIndicator(QWidget):
 class MessageWidget(QFrame):
     """Individual message widget with styling and animations"""
 
-    def __init__(self, message: str, is_user: bool = True, timestamp: str = None, parent=None):
+    def __init__(self, message: str, is_user: bool = True, timestamp: Optional[str] = None, parent=None):
         super().__init__(parent)
         self.message = message
         self.is_user = is_user
@@ -357,7 +377,7 @@ Recent learning patterns show consistent engagement with NeuroCode concepts:
   - Comprehension: High
   - Key insights: Natural language as code interface
 
-• Session 2: Memory system exploration  
+• Session 2: Memory system exploration
   - Duration: 30 minutes
   - Comprehension: Very High
   - Key insights: Persistent context awareness
@@ -378,7 +398,7 @@ Analysis of recent AI assistant conversations:
 
 • Question Types:
   - Technical queries: 45%
-  - Conceptual discussions: 30%  
+  - Conceptual discussions: 30%
   - Implementation help: 25%
 
 • Response Quality:
@@ -405,7 +425,7 @@ Analysis of recent AI assistant conversations:
 🧠 AI Analysis for {category}:
 
 • Pattern Recognition: Strong consistent patterns detected
-• Growth Trajectory: Positive upward trend  
+• Growth Trajectory: Positive upward trend
 • Optimization Opportunities: Focus on practical application
 • Recommended Actions: Continue current learning approach
 
@@ -561,19 +581,19 @@ class NeuroChatInterface(QMainWindow):
                 border: 1px solid #c0c0c0;
                 top: -1px;
             }
-            
+
             QTabBar::tab {
                 background: #f0f0f0;
                 border: 1px solid #c0c0c0;
                 padding: 8px 16px;
                 margin-right: 2px;
             }
-            
+
             QTabBar::tab:selected {
                 background: white;
                 border-bottom-color: white;
             }
-            
+
             QTabBar::tab:hover {
                 background: #e0e0e0;
             }
@@ -604,7 +624,7 @@ class NeuroChatInterface(QMainWindow):
         """Initialize NeuroCode components"""
         try:
             self.memory = NeuroMemory() if NeuroMemory else None
-            self.interpreter = NeuroInterpreter() if NeuroInterpreter else None
+            self.interpreter = NeuroCodeInterpreter() if NeuroCodeInterpreter else None
             self.llm = LLMIntegration() if LLMIntegration else None
         except Exception as e:
             print(f"⚠️ Component initialization failed: {e}")

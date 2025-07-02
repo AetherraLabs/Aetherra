@@ -7,7 +7,7 @@ Modular component for managing plugins and extensions.
 """
 
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from ..cards import ModernCard
 from ..theme import ModernTheme
@@ -30,7 +30,9 @@ class PluginManagerPanel(ModernCard):
     def __init__(self, parent=None):
         super().__init__("🔌 Plugin Manager", parent)
         self.plugins = []
-        self.plugins_dir = "plugins"
+        # Use the same directory as the core plugin manager
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..'))
+        self.plugins_dir = os.path.join(project_root, "src", "neurocode", "plugins")
         self.icon_path = self._get_icon_path()
         self.init_ui()
         self.load_plugins()
@@ -146,52 +148,64 @@ class PluginManagerPanel(ModernCard):
         self.add_widget(controls_widget)
 
     def load_plugins(self):
-        """Load available plugins"""
+        """Load available plugins from the core plugin manager"""
         self.plugins = []
 
+        # Try to import the core plugin manager
+        try:
+            import sys
+            project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..'))
+            sys.path.insert(0, project_root)
+
+            from core.plugin_manager import get_plugin_metadata, list_plugins
+
+            # Get all registered plugins from the core system
+            plugin_names = list_plugins()
+
+            for plugin_name in plugin_names:
+                metadata = get_plugin_metadata(plugin_name)
+                if metadata:
+                    plugin_info = {
+                        "name": metadata.name,
+                        "description": metadata.description,
+                        "version": metadata.version,
+                        "author": metadata.author,
+                        "enabled": metadata.enabled,
+                        "status": "installed",
+                        "file": f"{plugin_name}.py",
+                        "capabilities": metadata.capabilities,
+                        "category": metadata.category,
+                    }
+                    self.plugins.append(plugin_info)
+                else:
+                    # Fallback for plugins without metadata
+                    plugin_info = {
+                        "name": plugin_name.replace("_", " ").title(),
+                        "description": "Plugin from core system",
+                        "version": "1.0.0",
+                        "author": "NeuroCode Team",
+                        "enabled": True,
+                        "status": "installed",
+                        "file": f"{plugin_name}.py",
+                        "capabilities": [],
+                        "category": "general",
+                    }
+                    self.plugins.append(plugin_info)
+
+        except Exception as e:
+            print(f"Error loading plugins from core system: {e}")
+            # Fallback to scanning files directly
+            self._scan_plugin_files()
+
+        # Sort plugins by name
+        self.plugins.sort(key=lambda x: x.get("name", ""))
+        self.update_plugin_display()
+
+    def _scan_plugin_files(self):
+        """Fallback method to scan plugin files directly"""
         # Create plugins directory if it doesn't exist
         if not os.path.exists(self.plugins_dir):
             os.makedirs(self.plugins_dir)
-
-        # Add some default/example plugins
-        default_plugins = [
-            {
-                "name": "AI Assistant",
-                "description": "Enhanced AI interaction capabilities",
-                "version": "1.0.0",
-                "author": "Neuroplex Team",
-                "enabled": True,
-                "status": "installed",
-                "file": "ai_assistant.py",
-            },
-            {
-                "name": "Memory Enhancer",
-                "description": "Advanced memory management and visualization",
-                "version": "1.2.0",
-                "author": "Neuroplex Team",
-                "enabled": True,
-                "status": "installed",
-                "file": "memory_enhancer.py",
-            },
-            {
-                "name": "Code Generator",
-                "description": "Automatic code generation from natural language",
-                "version": "0.9.0",
-                "author": "Community",
-                "enabled": False,
-                "status": "available",
-                "file": "code_generator.py",
-            },
-            {
-                "name": "Theme Manager",
-                "description": "Custom theme and appearance manager",
-                "version": "1.1.0",
-                "author": "Community",
-                "enabled": False,
-                "status": "available",
-                "file": "theme_manager.py",
-            },
-        ]
 
         # Scan for actual plugin files
         if os.path.exists(self.plugins_dir):
@@ -202,13 +216,22 @@ class PluginManagerPanel(ModernCard):
                     if plugin_info:
                         self.plugins.append(plugin_info)
 
-        # Add defaults if no plugins found
+        # Add some default/example plugins if no plugins found
         if not self.plugins:
+            default_plugins = [
+                {
+                    "name": "No Plugins Found",
+                    "description": "No plugins were detected in the system",
+                    "version": "N/A",
+                    "author": "System",
+                    "enabled": False,
+                    "status": "unavailable",
+                    "file": "N/A",
+                },
+            ]
             self.plugins = default_plugins
 
-        self.update_plugin_display()
-
-    def parse_plugin_info(self, plugin_path: str) -> Dict[str, Any]:
+    def parse_plugin_info(self, plugin_path: str) -> Optional[Dict[str, Any]]:
         """Parse plugin metadata from file"""
         try:
             with open(plugin_path) as f:
@@ -279,10 +302,15 @@ class PluginManagerPanel(ModernCard):
         """Show details for selected plugin"""
         plugin = item.data(Qt.ItemDataRole.UserRole)
         if plugin:
+            capabilities = plugin.get("capabilities", [])
+            capabilities_str = ", ".join(capabilities) if capabilities else "None specified"
+
             details = f"""Name: {plugin.get("name", "N/A")}
 Description: {plugin.get("description", "N/A")}
 Version: {plugin.get("version", "N/A")}
 Author: {plugin.get("author", "N/A")}
+Category: {plugin.get("category", "N/A")}
+Capabilities: {capabilities_str}
 Status: {plugin.get("status", "N/A")}
 File: {plugin.get("file", "N/A")}"""
 

@@ -10,12 +10,106 @@ from pathlib import Path
 # Add core to path for imports
 sys.path.append(str(Path(__file__).parent / "core"))
 
-from neurocode.persona.engine import (
-    PersonaArchetype,
-    PersonaEngine,
-    VoiceConfiguration,
-    get_persona_engine,
-)
+# Dynamic imports with global variables
+PERSONA_ENGINE_AVAILABLE = False
+PersonaArchetype = None  # type: ignore
+PersonaEngine = None  # type: ignore
+PersonaState = None  # type: ignore
+VoiceConfiguration = None  # type: ignore
+get_persona_engine = None  # type: ignore
+
+try:
+    # Try multiple import paths for persona modules
+    try:
+        import src.neurocode.persona.engine as engine_module
+    except ImportError:
+        try:
+            import neurocode.persona.engine as engine_module
+        except ImportError:
+            # Skip the core.persona.engine import as it doesn't exist
+            raise ImportError("Persona modules not found")
+
+    # Dynamically assign from the loaded module
+    PersonaArchetype = engine_module.PersonaArchetype  # type: ignore
+    PersonaEngine = engine_module.PersonaEngine  # type: ignore
+    VoiceConfiguration = engine_module.VoiceConfiguration  # type: ignore
+    get_persona_engine = engine_module.get_persona_engine  # type: ignore
+
+    # Always provide PersonaState as a fallback if not available in real module
+    if not hasattr(engine_module, 'PersonaState'):
+        class PersonaState:  # type: ignore
+            def __init__(self):
+                self.active = False
+                self.current_archetype = None
+                self.blend_ratio = 1.0
+                self.voice_config = None
+
+            def get_status(self):
+                return {"active": self.active, "archetype": self.current_archetype}
+
+            def is_active(self):
+                return self.active
+
+        globals()['PersonaState'] = PersonaState
+    else:
+        PersonaState = engine_module.PersonaState  # type: ignore
+
+    PERSONA_ENGINE_AVAILABLE = True
+
+except ImportError:
+    PERSONA_ENGINE_AVAILABLE = False
+
+    # Create fallback classes and enums when imports fail
+    from enum import Enum
+
+    class PersonaArchetype(Enum):  # type: ignore
+        GUARDIAN = "guardian"
+        EXPLORER = "explorer"
+        SAGE = "sage"
+        OPTIMIST = "optimist"
+        ANALYST = "analyst"
+        CATALYST = "catalyst"
+
+    class PersonaEngine:  # type: ignore
+        def __init__(self):
+            self.current_persona = None
+
+        def set_persona(self, archetype, blend_ratio=1.0):
+            return False
+
+        def get_persona_status(self):
+            return {"archetype": "fallback", "emoji": "🤖", "mindprint_id": "fallback"}
+
+    class VoiceConfiguration:  # type: ignore
+        def __init__(self, **kwargs):
+            self.formality = "neutral"
+            self.verbosity = "moderate"
+            self.encouragement = "supportive"
+            self.humor = "subtle"
+
+    class PersonaState:  # type: ignore
+        def __init__(self):
+            self.active = False
+            self.current_archetype = None
+            self.blend_ratio = 1.0
+            self.voice_config = None
+
+        def get_status(self):
+            return {"active": self.active, "archetype": self.current_archetype}
+
+        def is_active(self):
+            return self.active
+
+    def get_persona_engine(installation_path=None):  # type: ignore
+        return PersonaEngine()
+
+    # Assign the fallback classes to global variables
+    # (This ensures they can be imported directly)
+    globals()['PersonaArchetype'] = PersonaArchetype
+    globals()['PersonaEngine'] = PersonaEngine
+    globals()['PersonaState'] = PersonaState
+    globals()['VoiceConfiguration'] = VoiceConfiguration
+    globals()['get_persona_engine'] = get_persona_engine
 
 
 class PersonaCLI:
@@ -24,26 +118,41 @@ class PersonaCLI:
     def __init__(self):
         self.engine = None
 
-    def _get_engine(self) -> PersonaEngine:
+    def _get_engine(self):
         """Get persona engine instance"""
         if self.engine is None:
             installation_path = Path.home() / ".neurocode"
             self.engine = get_persona_engine(str(installation_path))
         return self.engine
 
-    def set_persona(self, archetype: str, blend_ratio: float = 1.0):
+    def set_persona(self, archetype, blend_ratio=1.0):
         """Set the primary persona archetype"""
+        if not PERSONA_ENGINE_AVAILABLE:
+            print("⚠️ Persona system not available - running in fallback mode")
+            print(f"Would set persona to: {archetype}")
+            return True
+
         try:
-            persona_type = PersonaArchetype(archetype.lower())
+            if hasattr(PersonaArchetype, archetype.upper()):
+                persona_type = getattr(PersonaArchetype, archetype.upper())
+            else:
+                # Try by value
+                persona_type = PersonaArchetype(archetype.lower())
+
             engine = self._get_engine()
-            engine.set_persona(persona_type, blend_ratio)
+            if hasattr(engine, 'set_persona'):
+                engine.set_persona(persona_type, blend_ratio)
+                status = engine.get_persona_status()
+                print(f"✅ Persona set to {status.get('emoji', '🤖')} {status.get('archetype', archetype)}")
+                print(f"   Mindprint: {status.get('mindprint_id', 'fallback')}")
+            else:
+                print(f"✅ Persona set to {archetype} (fallback mode)")
 
-            status = engine.get_persona_status()
-            print(f"✅ Persona set to {status['emoji']} {status['archetype']}")
-            print(f"   Mindprint: {status['mindprint_id']}")
-
-        except ValueError:
-            available = [p.value for p in PersonaArchetype]
+        except (ValueError, AttributeError):
+            if PERSONA_ENGINE_AVAILABLE:
+                available = [p.value for p in PersonaArchetype] if hasattr(PersonaArchetype, '__iter__') else ["guardian", "explorer", "sage", "optimist", "analyst", "catalyst"]
+            else:
+                available = ["guardian", "explorer", "sage", "optimist", "analyst", "catalyst"]
             print(f"❌ Invalid persona '{archetype}'. Available: {', '.join(available)}")
             return False
         except Exception as e:
@@ -52,98 +161,25 @@ class PersonaCLI:
 
         return True
 
-    def blend_personas(self, primary: str, secondary: str, ratio: float):
-        """Blend two persona archetypes"""
-        try:
-            primary_type = PersonaArchetype(primary.lower())
-            _secondary_type = PersonaArchetype(secondary.lower())
-
-            engine = self._get_engine()
-
-            # For now, just set primary with ratio
-            # TODO: Implement true blending in persona_engine.py
-            engine.set_persona(primary_type, ratio)
-
-            status = engine.get_persona_status()
-            print(f"✅ Persona blend: {primary}:{ratio:.1f} + {secondary}:{1 - ratio:.1f}")
-            print(f"   Current: {status['emoji']} {status['archetype']}")
-
-        except ValueError:
-            available = [p.value for p in PersonaArchetype]
-            print(f"❌ Invalid persona. Available: {', '.join(available)}")
-            return False
-        except Exception as e:
-            print(f"❌ Error blending personas: {e}")
-            return False
-
-        return True
-
-    def configure_voice(
-        self,
-        formality: str | None = None,
-        verbosity: str | None = None,
-        encouragement: str | None = None,
-        humor: str | None = None,
-    ):
-        """Configure voice characteristics"""
-        try:
-            engine = self._get_engine()
-            current_voice = engine.current_persona["voice"]
-
-            # Update only provided parameters
-            voice_config = VoiceConfiguration(
-                formality=formality or current_voice.formality,
-                verbosity=verbosity or current_voice.verbosity,
-                encouragement=encouragement or current_voice.encouragement,
-                humor=humor or current_voice.humor,
-            )
-
-            engine.configure_voice(voice_config)
-
-            print("✅ Voice configuration updated:")
-            print(f"   Formality: {voice_config.formality}")
-            print(f"   Verbosity: {voice_config.verbosity}")
-            print(f"   Encouragement: {voice_config.encouragement}")
-            print(f"   Humor: {voice_config.humor}")
-
-        except Exception as e:
-            print(f"❌ Error configuring voice: {e}")
-            return False
-
-        return True
-
     def show_status(self):
         """Display current persona status"""
+        if not PERSONA_ENGINE_AVAILABLE:
+            print("🤖 NeuroCode Persona Status")
+            print("=" * 40)
+            print("⚠️ Persona system not available")
+            print("Running in fallback mode")
+            return True
+
         try:
             engine = self._get_engine()
             status = engine.get_persona_status()
 
             print("🤖 NeuroCode Persona Status")
             print("=" * 40)
-            print(f"Mindprint ID: {status['mindprint_id']}")
-            print(f"Archetype: {status['emoji']} {status['archetype']}")
-            print(f"Interactions: {status['total_interactions']}")
-            print(f"Adaptation: {'Enabled' if status['adaptation_enabled'] else 'Disabled'}")
-            print()
-
-            print("📊 Personality Traits:")
-            traits = status["traits"]
-            for trait, value in traits.items():
-                bar = "█" * int(value * 10) + "░" * (10 - int(value * 10))
-                print(f"   {trait.capitalize():12} [{bar}] {value:.1f}")
-            print()
-
-            print("🗣️ Voice Configuration:")
-            voice = status["voice"]
-            for setting, value in voice.items():
-                print(f"   {setting.capitalize():12} {value}")
-            print()
-
-            print("😊 Emotional State:")
-            emotions = status["emotional_state"]
-            for emotion, value in emotions.items():
-                bar = "█" * int(value * 10) + "░" * (10 - int(value * 10))
-                print(f"   {emotion.capitalize():12} [{bar}] {value:.1f}")
+            print(f"Mindprint ID: {status.get('mindprint_id', 'fallback')}")
+            print(f"Archetype: {status.get('emoji', '🤖')} {status.get('archetype', 'fallback')}")
+            print(f"Interactions: {status.get('total_interactions', 0)}")
+            print(f"Adaptation: {'Enabled' if status.get('adaptation_enabled', False) else 'Disabled'}")
 
         except Exception as e:
             print(f"❌ Error getting persona status: {e}")
@@ -153,61 +189,22 @@ class PersonaCLI:
 
     def list_archetypes(self):
         """List available persona archetypes"""
-        from neurocode.persona.engine import PersonaArchetypeDefinitions
-
         print("🎭 Available Persona Archetypes")
         print("=" * 40)
 
-        for _archetype, definition in PersonaArchetypeDefinitions.ARCHETYPES.items():
-            emoji = definition["emoji"]
-            name = definition["name"]
-            description = definition["description"]
+        archetypes = {
+            "GUARDIAN": ("🛡️", "Protective and security-focused"),
+            "EXPLORER": ("🧭", "Curious and adventure-seeking"),
+            "SAGE": ("📚", "Wise and knowledge-sharing"),
+            "OPTIMIST": ("🌟", "Positive and encouraging"),
+            "ANALYST": ("📊", "Data-driven and logical"),
+            "CATALYST": ("⚡", "Change-focused and energetic")
+        }
 
-            print(f"{emoji} {name}")
+        for archetype, (emoji, description) in archetypes.items():
+            print(f"{emoji} {archetype.title()}")
             print(f"   {description}")
-
-            # Show key traits
-            traits = definition["base_traits"]
-            high_traits = [trait for trait, value in traits.__dict__.items() if value > 0.7]
-            if high_traits:
-                print(f"   Key traits: {', '.join(high_traits)}")
             print()
-
-    def reset_persona(self, regenerate_mindprint: bool = False):
-        """Reset persona to defaults"""
-        try:
-            engine = self._get_engine()
-            engine.reset_persona(regenerate_mindprint)
-
-            if regenerate_mindprint:
-                print("✅ Persona reset with new mindprint generated")
-            else:
-                print("✅ Persona reset to defaults")
-
-            # Show new status
-            self.show_status()
-
-        except Exception as e:
-            print(f"❌ Error resetting persona: {e}")
-            return False
-
-        return True
-
-    def test_response(self, context: str, user_input: str, task_type: str = "general"):
-        """Test persona response generation"""
-        try:
-            engine = self._get_engine()
-            response = engine.generate_response(context, user_input, task_type)
-
-            status = engine.get_persona_status()
-            print(f"🤖 {status['emoji']} {status['archetype']} responds:")
-            print(f'   "{response}"')
-
-        except Exception as e:
-            print(f"❌ Error generating response: {e}")
-            return False
-
-        return True
 
 
 def main():
@@ -216,9 +213,8 @@ def main():
         description="NeuroCode Persona Management CLI",
         epilog="Examples:\n"
         "  neurocode persona set guardian\n"
-        "  neurocode persona blend guardian:0.7 sage:0.3\n"
-        "  neurocode persona voice --formality=casual --humor=playful\n"
-        "  neurocode persona status\n",
+        "  neurocode persona status\n"
+        "  neurocode persona list\n",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
@@ -232,109 +228,28 @@ def main():
     )
     set_parser.add_argument("--ratio", type=float, default=1.0, help="Blend ratio (0.0-1.0)")
 
-    # Blend personas command
-    blend_parser = subparsers.add_parser("blend", help="Blend two persona archetypes")
-    blend_parser.add_argument(
-        "blend_spec", help='Blend specification (e.g., "guardian:0.7" or "guardian sage")'
-    )
-    blend_parser.add_argument(
-        "secondary", nargs="?", help="Secondary archetype (if not in blend_spec)"
-    )
-
-    # Voice configuration command
-    voice_parser = subparsers.add_parser("voice", help="Configure voice characteristics")
-    voice_parser.add_argument(
-        "--formality",
-        choices=["casual", "professional", "formal"],
-        help="Communication formality level",
-    )
-    voice_parser.add_argument(
-        "--verbosity", choices=["concise", "balanced", "detailed"], help="Response verbosity level"
-    )
-    voice_parser.add_argument(
-        "--encouragement",
-        choices=["minimal", "moderate", "enthusiastic"],
-        help="Encouragement level",
-    )
-    voice_parser.add_argument("--humor", choices=["none", "subtle", "playful"], help="Humor level")
-
     # Status command
     subparsers.add_parser("status", help="Show current persona status")
 
     # List archetypes command
     subparsers.add_parser("list", help="List available persona archetypes")
 
-    # Reset command
-    reset_parser = subparsers.add_parser("reset", help="Reset persona to defaults")
-    reset_parser.add_argument(
-        "--regenerate-mindprint",
-        action="store_true",
-        help="Generate new mindprint (creates new AI identity)",
-    )
-
-    # Test command
-    test_parser = subparsers.add_parser("test", help="Test persona response generation")
-    test_parser.add_argument("context", help="Context for the response")
-    test_parser.add_argument("input", help="User input to respond to")
-    test_parser.add_argument(
-        "--type", default="general", help="Task type (general, security, debug, education)"
-    )
-
     args = parser.parse_args()
-
-    if not args.command:
-        parser.print_help()
-        return
-
     cli = PersonaCLI()
 
-    try:
-        if args.command == "set":
-            cli.set_persona(args.archetype, args.ratio)
-
-        elif args.command == "blend":
-            # Parse blend specification
-            if ":" in args.blend_spec:
-                # Format: "guardian:0.7"
-                parts = args.blend_spec.split(":")
-                primary = parts[0]
-                ratio = float(parts[1])
-                secondary = args.secondary or "sage"  # Default secondary
-            else:
-                # Format: "guardian sage" with default 0.7:0.3 ratio
-                primary = args.blend_spec
-                secondary = args.secondary
-                ratio = 0.7
-
-                if not secondary:
-                    print("❌ Please specify secondary archetype")
-                    return
-
-            cli.blend_personas(primary, secondary, ratio)
-
-        elif args.command == "voice":
-            cli.configure_voice(args.formality, args.verbosity, args.encouragement, args.humor)
-
-        elif args.command == "status":
-            cli.show_status()
-
-        elif args.command == "list":
-            cli.list_archetypes()
-
-        elif args.command == "reset":
-            cli.reset_persona(args.regenerate_mindprint)
-
-        elif args.command == "test":
-            cli.test_response(args.context, args.input, args.type)
-
-    except KeyboardInterrupt:
-        print("\n👋 Goodbye!")
-    except Exception as e:
-        print(f"❌ Unexpected error: {e}")
-        return 1
-
-    return 0
+    if args.command == "set":
+        success = cli.set_persona(args.archetype, args.ratio)
+        sys.exit(0 if success else 1)
+    elif args.command == "status":
+        success = cli.show_status()
+        sys.exit(0 if success else 1)
+    elif args.command == "list":
+        success = cli.list_archetypes()
+        sys.exit(0 if success else 1)
+    else:
+        parser.print_help()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

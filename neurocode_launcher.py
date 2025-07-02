@@ -30,14 +30,12 @@ def print_banner():
 def print_menu():
     """Print main menu options."""
     print("🎯 Available Options:")
-    print("  1. 🎭  Launch Enhanced Neuroplex (Integrated NeuroChat)")
-    print("  2. 🖥️  Launch Neuroplex GUI (Fully Modular)")
-    print("  3. 🖥️  Launch Neuroplex GUI (Standard Modular)")
-    print("  4. 🎮  Launch NeuroCode Playground")
-    print("  5. 🧪  Verify Modular Components")
-    print("  6. 📊  Show Project Structure")
-    print("  7. 🔧  Run CLI Interface")
-    print("  8. ❓  Help & Documentation")
+    print("  1. 🧬  Launch Neuroplex (AI-Native Development Environment)")
+    print("  2. 🎮  Launch NeuroCode Playground")
+    print("  3. 🧪  Verify Components")
+    print("  4. 📊  Show Project Structure")
+    print("  5. 🔧  Run CLI Interface")
+    print("  6. ❓  Help & Documentation")
     print("  0. 🚪  Exit")
     print()
 
@@ -81,11 +79,17 @@ def main():
                 break
 
             elif choice == "1":
-                print("🚀 Launching Enhanced Neuroplex (Integrated NeuroChat)...")
+                print("🚀 Launching Neuroplex...")
+                print("💡 Features:")
+                print("   • Integrated AI chat assistant")
+                print("   • Modern dark mode interface")
+                print("   • Unified development environment")
+                print("   • AI-native programming workflow")
+                input("\n📍 Press Enter to continue...")
                 try:
-                    os.system(f'python "{project_root}/launchers/launch_enhanced_neuroplex.py"')
+                    os.system(f'python "{project_root}/launchers/launch_neuroplex.py"')
                 except Exception as e:
-                    print(f"❌ Error launching Enhanced Neuroplex: {e}")
+                    print(f"❌ Error launching Neuroplex: {e}")
 
             elif choice == "2":
                 print("🚀 Launching Fully Modular Neuroplex GUI...")
