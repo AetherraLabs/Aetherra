@@ -281,7 +281,7 @@ Aetherra is released under the [GPL-3.0 License](LICENSE). We believe in open so
 ### Software Disclaimer
 Aetherra is provided "AS IS" without warranty of any kind, express or implied. The developers and contributors make no warranties regarding:
 - **Functionality**: Software performance, accuracy, or reliability
-- **Security**: Protection against vulnerabilities or data breaches  
+- **Security**: Protection against vulnerabilities or data breaches
 - **Compatibility**: Operation with specific systems or software
 - **Data Safety**: Prevention of data loss or corruption
 
@@ -336,10 +336,10 @@ Special thanks to:
 </p>
 
 <p align="center">
-  <a href="https://aetherra.dev">🌐 Website</a> •
-  <a href="https://github.com/your-username/Aetherra">💻 GitHub</a> •
-  <a href="https://twitter.com/AetherraAI">🐦 Twitter</a> •
-  <a href="mailto:hello@aetherra.dev">📧 Contact</a>
+  <a href="https://zyonic88.github.io/Aetherra">🌐 Live Website</a> •
+  <a href="https://github.com/Zyonic88/Aetherra">💻 GitHub</a> •
+  <a href="https://github.com/Zyonic88/Aetherra/discussions">� Discussions</a> •
+  <a href="https://github.com/Zyonic88/Aetherra/issues">� Issues</a>
 </p>
 
 <p align="center">
