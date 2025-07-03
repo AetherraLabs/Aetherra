@@ -949,7 +949,7 @@ lyrixa developer examples --category data-science
 - 📚 **Contribute documentation** - help others discover Aetherra's potential
 - 🎯 **Build something amazing** - create the first Aetherra unicorn!
 
-**Repository**: [GitHub - Aetherra](https://github.com/Zyonic88/Aetherra) | **Website**: [aetherra.dev](https://aetherra.dev)
+**Repository**: [GitHub - Aetherra](https://github.com/Zyonic88/Aetherra) | **Website**: [aetherra.dev](https://zyonic88.github.io/Aetherra/)
 
 **Let's redefine what software can be — together.** 🚀
 
