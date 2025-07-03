@@ -479,3 +479,19 @@ function showAIDemo() {
         if (e.target === modal) modal.remove();
     });
 }
+
+// Function to show Lyrixa demo when the navigation button is clicked
+function showLyrixaDemo() {
+    const demo = document.getElementById('lyrixa') ||
+        document.querySelector('.ai-assistant-preview') ||
+        document.querySelector('.interactive-demo') ||
+        document.querySelector('#features');
+    if (demo) {
+        demo.scrollIntoView({ behavior: 'smooth' });
+        demo.classList.add('highlight-demo');
+        setTimeout(() => demo.classList.remove('highlight-demo'), 3000);
+    }
+}
+
+// Make showLyrixaDemo available globally for onclick handler
+window.showLyrixaDemo = showLyrixaDemo;

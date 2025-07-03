@@ -22,8 +22,8 @@
     <meta property="og:image" content="https://zyonic88.github.io/Aetherra/assets/aetherra-social.png">
 
     <!-- Favicon -->
-    
-    
+
+
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -57,7 +57,8 @@
                 <a href="#features" class="nav-link">Features</a>
                 <a href="#lyrixa" onclick="showLyrixaDemo(); return false;" class="nav-link">Lyrixa AI</a>
                 <a href="#docs" class="nav-link">Docs</a>
-                <a href="https://github.com/Zyonic88/Aetherra/archive/refs/heads/main.zip" download="Aetherra-latest.zip" class="nav-link">Download</a>
+                <a href="https://github.com/Zyonic88/Aetherra/archive/refs/heads/main.zip"
+                    download="Aetherra-latest.zip" class="nav-link">Download</a>
                 <a href="https://github.com/Zyonic88/Aetherra" class="nav-link" target="_blank">GitHub</a>
             </div>
             <div class="nav-toggle">
@@ -87,7 +88,8 @@
                     <div class="feature-pill">🚀 Production Ready</div>
                 </div>
                 <div class="hero-buttons">
-                    <a href="https://github.com/Zyonic88/Aetherra/archive/refs/heads/main.zip" download="Aetherra-latest.zip" class="btn btn-primary">
+                    <a href="https://github.com/Zyonic88/Aetherra/archive/refs/heads/main.zip"
+                        download="Aetherra-latest.zip" class="btn btn-primary">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                         </svg>
@@ -509,19 +511,7 @@ pip install -r requirements.txt</code>
     </footer>
 
     <!-- Scripts -->
-    <script src="script.js">
-        function showLyrixaDemo() {
-            const demo = document.getElementById('lyrixa') || 
-                         document.querySelector('.ai-assistant-preview') ||
-                         document.querySelector('.interactive-demo') ||
-                         document.querySelector('#features');
-            if (demo) {
-                demo.scrollIntoView({ behavior: 'smooth' });
-                demo.classList.add('highlight-demo');
-                setTimeout(() => demo.classList.remove('highlight-demo'), 3000);
-            }
-        }
-            </script>
+    <script src="script.js"></script>
 </body>
 
 </html>

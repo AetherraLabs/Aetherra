@@ -1378,3 +1378,39 @@ body {
         gap: var(--spacing-md);
     }
 }
+
+/* Highlight effect for Lyrixa demo */
+.highlight-demo {
+    position: relative;
+    z-index: 10;
+}
+
+.highlight-demo::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(45deg, var(--crystal-blue), var(--jade-green), var(--intelligence-purple));
+    border-radius: 12px;
+    z-index: -1;
+    animation: highlight-pulse 3s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+    0% {
+        opacity: 0;
+        box-shadow: 0 0 0 0 rgba(8, 145, 178, 0.7);
+    }
+
+    50% {
+        opacity: 0.8;
+        box-shadow: 0 0 0 20px rgba(8, 145, 178, 0);
+    }
+
+    100% {
+        opacity: 0;
+        box-shadow: 0 0 0 40px rgba(8, 145, 178, 0);
+    }
+}
