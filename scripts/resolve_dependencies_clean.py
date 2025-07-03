@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Dependency Resolver
+aetherra Dependency Resolver
 Intelligently resolves and installs dependencies with conflict prevention
 """
 
@@ -46,7 +46,7 @@ class DependencyResolver:
                 .replace("🎉", "[SUCCESS]")
                 .replace("📋", "[REPORT]")
                 .replace("🚀", "[LAUNCH]")
-                .replace("🧬", "[NEUROCODE]")
+                .replace("🧬", "[aetherra]")
             )
             print(safe_message)
 
@@ -54,7 +54,7 @@ class DependencyResolver:
         """Ensure Python version compatibility"""
         major, minor = sys.version_info[:2]
         if major < 3 or (major == 3 and minor < 8):
-            raise RuntimeError(f"NeuroCode requires Python 3.8+, found {major}.{minor}")
+            raise RuntimeError(f"aetherra requires Python 3.8+, found {major}.{minor}")
         self.safe_print(f"✅ Python {major}.{minor} detected - Compatible")
 
     def upgrade_pip(self):
@@ -183,11 +183,14 @@ class DependencyResolver:
         print("📋 Creating environment report...")
         try:
             result = subprocess.run(
-                [sys.executable, "-m", "pip", "list"], capture_output=True, text=True, check=True
+                [sys.executable, "-m", "pip", "list"],
+                capture_output=True,
+                text=True,
+                check=True,
             )
 
             with open(self.workspace_path / "environment_report.txt", "w") as f:
-                f.write("NeuroCode Environment Report\n")
+                f.write("aetherra Environment Report\n")
                 f.write("=" * 50 + "\n")
                 f.write(f"Python Version: {sys.version}\n")
                 f.write(f"Platform: {sys.platform}\n")
@@ -200,7 +203,7 @@ class DependencyResolver:
 
     def run_resolution(self):
         """Main dependency resolution workflow"""
-        print("🚀 NeuroCode Dependency Resolver")
+        print("🚀 aetherra Dependency Resolver")
         print("=" * 50)
 
         try:
@@ -228,7 +231,7 @@ class DependencyResolver:
 
             # Step 6: Verify installation
             if self.verify_installation():
-                print("\n🎉 NeuroCode dependency resolution completed successfully!")
+                print("\n🎉 aetherra dependency resolution completed successfully!")
                 print("🧬 Ready to revolutionize programming with AI!")
             else:
                 print("\n⚠️  Some issues detected. Please review and retry.")

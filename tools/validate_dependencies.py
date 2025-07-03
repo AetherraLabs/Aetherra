@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔍 NeuroCode Dependency Validator
+🔍 aetherra Dependency Validator
 Validates that all required dependencies are available and working
 """
 
@@ -14,6 +14,7 @@ def validate_core_dependencies():
 
     # Test lark (grammar parser)
     try:
+        from lark import Lark, Transformer
 
         print("✅ lark: Available")
     except ImportError as e:
@@ -50,6 +51,7 @@ def validate_core_dependencies():
         print("⚠️ openai: Not available")
 
     try:
+        import anthropic
 
         print("✅ anthropic: Available")
         ai_available = True
@@ -57,6 +59,7 @@ def validate_core_dependencies():
         print("⚠️ anthropic: Not available")
 
     try:
+        import google.generativeai
 
         print("✅ google-generativeai: Available")
         ai_available = True
@@ -64,6 +67,7 @@ def validate_core_dependencies():
         print("⚠️ google-generativeai: Not available")
 
     try:
+        import ollama
 
         print("✅ ollama: Available")
         ai_available = True
@@ -86,6 +90,7 @@ def validate_optional_dependencies():
     # GUI frameworks
     gui_available = False
     try:
+        import PySide6
 
         print("✅ PySide6: Available")
         gui_available = True
@@ -93,6 +98,7 @@ def validate_optional_dependencies():
         print("⚠️ PySide6: Not available")
 
     try:
+        import PyQt6
 
         print("✅ PyQt6: Available")
         gui_available = True
@@ -106,6 +112,7 @@ def validate_optional_dependencies():
 
     # Local AI models
     try:
+        import llama_cpp
 
         print("✅ llama-cpp-python: Available")
     except ImportError:
@@ -114,19 +121,19 @@ def validate_optional_dependencies():
 
 def validate_imports():
     """Validate that our core modules can be imported"""
-    print("\n🧬 Validating NeuroCode Modules...")
+    print("\n🧬 Validating aetherra Modules...")
 
     # Add project root to path
     project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
 
     try:
-        from core.aethercode_grammar import create_neurocode_parser
+        from core.aethercode_grammar import create_aetherra_parser
 
-        parser = create_neurocode_parser()
-        print("✅ NeuroCode Grammar Parser: Working")
+        parser = create_aetherra_parser()
+        print("✅ aetherra Grammar Parser: Working")
     except Exception as e:
-        print(f"❌ NeuroCode Grammar Parser: Error - {e}")
+        print(f"❌ aetherra Grammar Parser: Error - {e}")
         return False
 
     try:
@@ -140,7 +147,7 @@ def validate_imports():
 
 def main():
     """Main validation function"""
-    print("🔍 NeuroCode v1.0.0 - Dependency Validation")
+    print("🔍 aetherra v1.0.0 - Dependency Validation")
     print("=" * 50)
 
     core_valid = validate_core_dependencies()
@@ -151,7 +158,7 @@ def main():
 
     if core_valid and modules_valid:
         print("🎯 All core dependencies validated successfully!")
-        print("✅ NeuroCode is ready to use")
+        print("✅ aetherra is ready to use")
         return 0
     else:
         print("❌ Some core dependencies are missing")

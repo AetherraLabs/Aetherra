@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-NeuroCode Plugin Scaffolding System
+aetherra Plugin Scaffolding System
 ===================================
 
-Advanced plugin generation system that demonstrates NeuroCode's
+Advanced plugin generation system that demonstrates aetherra's
 AI-native approach to extensible development.
 
 This system generates complete, production-ready plugins in minutes
@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Dict, List
 
 
-class NeuroCodePluginScaffolder:
+class aetherraPluginScaffolder:
     """Revolutionary plugin scaffolding for rapid development"""
 
     def __init__(self):
@@ -33,7 +33,7 @@ class NeuroCodePluginScaffolder:
 
     def create_plugin(self, plugin_name: str, plugin_type: str = "standard") -> Dict:
         """Create a complete plugin with best practices"""
-        print(f"🔌 Creating NeuroCode plugin: {plugin_name}")
+        print(f"🔌 Creating aetherra plugin: {plugin_name}")
         print("=" * 50)
 
         # Normalize plugin name
@@ -86,8 +86,8 @@ class NeuroCodePluginScaffolder:
             "type": plugin_type,
             "created": datetime.now().isoformat(),
             "version": "1.0.0",
-            "author": "NeuroCode Developer",
-            "description": f"AI-native {plugin_type} plugin for NeuroCode"
+            "author": "aetherra Developer",
+            "description": f"AI-native {plugin_type} plugin for aetherra"
         }
 
         # Create main plugin file
@@ -118,13 +118,13 @@ class NeuroCodePluginScaffolder:
             f.write(content)
 
     def _generate_standard_plugin(self, plugin_info: Dict) -> str:
-        """Generate a standard NeuroCode plugin"""
+        """Generate a standard aetherra plugin"""
         return f'''#!/usr/bin/env python3
 """
-{plugin_info['name'].title().replace('_', ' ')} Plugin for NeuroCode
+{plugin_info['name'].title().replace('_', ' ')} Plugin for aetherra
 ===================================================================
 
-A revolutionary AI-native plugin that demonstrates NeuroCode's
+A revolutionary AI-native plugin that demonstrates aetherra's
 extensible architecture and cognitive computing capabilities.
 
 Version: {plugin_info['version']}
@@ -140,7 +140,7 @@ class {plugin_info['name'].title().replace('_', '')}Plugin:
     """
     AI-native plugin for {plugin_info['name'].replace('_', ' ')} functionality
 
-    This plugin demonstrates NeuroCode's approach to intelligent,
+    This plugin demonstrates aetherra's approach to intelligent,
     self-adapting system components.
     """
 
@@ -403,7 +403,7 @@ class {plugin_info['name'].title().replace('_', '')}Plugin:
         }}
 
 
-# Plugin factory function for NeuroCode integration
+# Plugin factory function for aetherra integration
 def create_plugin(config: Dict[str, Any] = None) -> {plugin_info['name'].title().replace('_', '')}Plugin:
     """Factory function to create plugin instance"""
     plugin = {plugin_info['name'].title().replace('_', '')}Plugin()
@@ -411,7 +411,7 @@ def create_plugin(config: Dict[str, Any] = None) -> {plugin_info['name'].title()
     return plugin
 
 
-# Plugin metadata for NeuroCode discovery
+# Plugin metadata for aetherra discovery
 PLUGIN_METADATA = {{
     "name": "{plugin_info['name']}",
     "version": "{plugin_info['version']}",
@@ -438,7 +438,7 @@ if __name__ == "__main__":
     plugin = create_plugin()
 
     # Test basic functionality
-    result = plugin.process("Hello, NeuroCode!", {{"type": "demo"}})
+    result = plugin.process("Hello, aetherra!", {{"type": "demo"}})
     print(f"Result: {{result}}")
 
     # Show plugin status
@@ -470,7 +470,7 @@ if __name__ == "__main__":
             ],
             "requirements": [],
             "ai_native": True,
-            "neurocode_version": ">=2.0.0"
+            "aetherra_version": ">=2.0.0"
         }
 
         with open(manifest_file, "w") as f:
@@ -481,7 +481,7 @@ if __name__ == "__main__":
         example_file = plugin_dir / "examples" / "basic_usage.aether"
 
         content = f'''# {plugin_info['name'].title().replace('_', ' ')} Plugin Example
-# Demonstrates AI-native plugin integration with NeuroCode
+# Demonstrates AI-native plugin integration with aetherra
 
 # Load the plugin
 plugin: {plugin_info['name']}
@@ -536,16 +536,11 @@ end
 
         content = f'''# {safe_name.title().replace('_', ' ')} Plugin
 
-**An AI-native plugin for NeuroCode's cognitive computing platform**
+**An AI-native plugin for aetherra's cognitive computing platform**
 
 ## Overview
 
-The {safe_name.replace('_',
-    ' ')} plugin demonstrates NeuroCode's revolutionary approach to intelligent,
-    self-adapting system components. Built with AI-native principles,
-    this plugin learns from interactions,
-    adapts its behavior,
-    and integrates seamlessly with NeuroCode's consciousness framework.
+The {safe_name.replace('_', ' ')} plugin demonstrates aetherra's revolutionary approach to intelligent, self-adapting system components. Built with AI-native principles, this plugin learns from interactions, adapts its behavior, and integrates seamlessly with aetherra's consciousness framework.
 
 ## Features
 
@@ -559,18 +554,18 @@ The {safe_name.replace('_',
 
 ```bash
 # Install the plugin
-neurocode install plugin {safe_name}
+aetherra install plugin {safe_name}
 
 # Or install from source
 cd {safe_name}
-neurocode plugin install .
+aetherra plugin install .
 ```
 
 ## Quick Start
 
-### Basic Usage in NeuroCode
+### Basic Usage in aetherra
 
-```neurocode
+```aetherra
 # Load and configure the plugin
 plugin: {safe_name}
     config: {{
@@ -652,7 +647,7 @@ The plugin autonomously manages multiple goals:
 
 See the `examples/` directory for comprehensive usage examples:
 
-- `basic_usage.aether` - NeuroCode integration
+- `basic_usage.aether` - aetherra integration
 - `advanced_config.aether` - Advanced configuration
 - `learning_demo.aether` - Adaptive learning demonstration
 
@@ -679,20 +674,20 @@ The plugin tracks and reports:
 
 ```bash
 # Run tests
-neurocode test plugin {safe_name}
+aetherra test plugin {safe_name}
 
 # Run with coverage
-neurocode test plugin {safe_name} --coverage
+aetherra test plugin {safe_name} --coverage
 ```
 
 ### Building
 
 ```bash
 # Build plugin package
-neurocode build plugin {safe_name}
+aetherra build plugin {safe_name}
 
 # Create distribution
-neurocode package plugin {safe_name}
+aetherra package plugin {safe_name}
 ```
 
 ## Roadmap
@@ -704,17 +699,17 @@ neurocode package plugin {safe_name}
 
 ## License
 
-This plugin is part of the NeuroCode ecosystem and follows the same open-source licensing.
+This plugin is part of the aetherra ecosystem and follows the same open-source licensing.
 
 ## Support
 
-- 📖 **Documentation**: [neurocode.dev/docs/plugins/{safe_name}](https://neurocode.dev/docs/plugins/{safe_name})
-- 💬 **Community**: [GitHub Discussions](https://github.com/Zyonic88/NeuroCode/discussions)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/Zyonic88/NeuroCode/issues)
+- 📖 **Documentation**: [aetherra.dev/docs/plugins/{safe_name}](https://aetherra.dev/docs/plugins/{safe_name})
+- 💬 **Community**: [GitHub Discussions](https://github.com/Zyonic88/aetherra/discussions)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/Zyonic88/aetherra/issues)
 
 ---
 
-**Created with NeuroCode Plugin Scaffolder v{plugin_info['version']}**
+**Created with aetherra Plugin Scaffolder v{plugin_info['version']}**
 *Where plugins become cognitive extensions of AI consciousness*
 '''
 
@@ -976,28 +971,28 @@ if __name__ == "__main__":
 
         print("\n2. 🧪 Test your plugin:")
         print(f"   python tests/test_{safe_name}.py")
-        print(f"   neurocode test plugin {safe_name}")
+        print(f"   aetherra test plugin {safe_name}")
 
         print("\n3. 🎨 Customize functionality:")
         print(f"   edit src/{safe_name}.py")
         print("   # Implement your specific logic")
 
         print("\n4. 📖 Try the examples:")
-        print(f"   neurocode run examples/basic_usage.aether")
+        print(f"   aetherra run examples/basic_usage.aether")
 
         print("\n5. 🚀 Share with community:")
-        print(f"   neurocode publish plugin {safe_name}")
-        print("   neurocode community showcase")
+        print(f"   aetherra publish plugin {safe_name}")
+        print("   aetherra community showcase")
 
         print(f"\n✨ Your {safe_name.replace('_', ' ')} plugin is ready for development!")
 
 
 def main():
     """Main entry point for plugin scaffolding"""
-    scaffolder = NeuroCodePluginScaffolder()
+    scaffolder = aetherraPluginScaffolder()
 
     if len(sys.argv) < 3:
-        print("NeuroCode Plugin Scaffolding System")
+        print("aetherra Plugin Scaffolding System")
         print("Usage: python plugin_scaffolder.py create <plugin_name> [plugin_type]")
         print("Plugin types: standard, ai_agent, system_monitor, nlp_processor")
         return

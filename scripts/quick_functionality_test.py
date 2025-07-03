@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Quick NeuroCode Functionality Test
+Quick aetherra Functionality Test
 
-A simpler test to verify core NeuroCode components are working.
+A simpler test to verify core aetherra components are working.
 """
 
 import sys
@@ -10,8 +10,8 @@ from pathlib import Path
 
 
 def test_basic_functionality():
-    """Test basic NeuroCode functionality."""
-    print("🔍 Quick NeuroCode Functionality Test")
+    """Test basic aetherra functionality."""
+    print("🔍 Quick aetherra Functionality Test")
     print("=" * 50)
 
     project_root = Path(".").resolve()
@@ -24,18 +24,18 @@ def test_basic_functionality():
 
     # Test 1: Basic launcher syntax
     try:
-        launcher_file = project_root / "neurocode_launcher.py"
+        launcher_file = project_root / "aetherra_launcher.py"
         if launcher_file.exists():
             with open(launcher_file, encoding="utf-8") as f:
                 content = f.read()
             compile(content, launcher_file, "exec")
-            print("✅ NeuroCode Launcher: Syntax check passed")
+            print("✅ aetherra Launcher: Syntax check passed")
             test_results["launcher"] = True
         else:
-            print("❌ NeuroCode Launcher: File not found")
+            print("❌ aetherra Launcher: File not found")
             test_results["launcher"] = False
     except Exception as e:
-        print(f"❌ NeuroCode Launcher: Error - {e}")
+        print(f"❌ aetherra Launcher: Error - {e}")
         test_results["launcher"] = False
 
     # Test 2: Core module existence
@@ -138,7 +138,7 @@ def test_basic_functionality():
     print(f"\n🎯 Result: {passed}/{total} tests passed")
 
     if passed == total:
-        print("🎉 ALL TESTS PASSED - NeuroCode is ready!")
+        print("🎉 ALL TESTS PASSED - aetherra is ready!")
         return True
     elif passed >= total * 0.8:
         print("⚠️ MOSTLY READY - Minor issues detected")

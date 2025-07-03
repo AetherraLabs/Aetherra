@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Enhancement Installation Script
+aetherra Enhancement Installation Script
 Installs and configures next-generation AI capabilities
 """
 
@@ -29,7 +29,7 @@ def check_python_version():
     """Check if Python version is compatible"""
     version = sys.version_info
     if version.major < 3 or (version.major == 3 and version.minor < 8):
-        print("❌ Python 3.8+ required for NeuroCode enhancements")
+        print("❌ Python 3.8+ required for aetherra enhancements")
         return False
     print(f"✅ Python {version.major}.{version.minor}.{version.micro} detected")
     return True
@@ -81,7 +81,9 @@ def install_optional_dependencies():
             success_count += 1
         # Continue even if some optional packages fail
 
-    print(f"\n📊 Optional Dependencies: {success_count}/{len(optional_packages)} installed")
+    print(
+        f"\n📊 Optional Dependencies: {success_count}/{len(optional_packages)} installed"
+    )
     return success_count > 0
 
 
@@ -111,7 +113,9 @@ def setup_local_ai_models():
             print(f"   📄 {model.name}")
     else:
         print("ℹ️  No GGUF models found. Download models to ./models/ directory")
-        print("   Example: https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF")
+        print(
+            "   Example: https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF"
+        )
 
     return True
 
@@ -124,7 +128,7 @@ def create_configuration_files():
     # Create .env template if it doesn't exist
     env_file = Path(".env")
     if not env_file.exists():
-        env_content = """# NeuroCode Enhancement Configuration
+        env_content = """# aetherra Enhancement Configuration
 # OpenAI API Key (optional, for fallback)
 OPENAI_API_KEY=your_openai_api_key_here
 
@@ -149,7 +153,7 @@ MEMORY_FILE=enhanced_memory.json
 
     # Create requirements.txt for enhancements
     requirements_file = Path("requirements_enhanced.txt")
-    requirements_content = """# NeuroCode Enhancement Dependencies
+    requirements_content = """# aetherra Enhancement Dependencies
 sentence-transformers>=2.2.0
 chromadb>=0.4.0
 numpy>=1.21.0
@@ -231,7 +235,7 @@ def create_demo_script():
     """Create a demo script to showcase enhancements"""
     demo_content = '''#!/usr/bin/env python3
 """
-NeuroCode Enhancement Demo
+aetherra Enhancement Demo
 Showcases the revolutionary AI-native programming capabilities
 """
 
@@ -242,7 +246,7 @@ sys.path.insert(0, './core')
 from enhanced_interpreter import create_enhanced_interpreter
 
 def run_demo():
-    print("🧬 NeuroCode Enhancement Demo")
+    print("🧬 aetherra Enhancement Demo")
     print("=" * 50)
 
     interpreter = create_enhanced_interpreter()
@@ -259,7 +263,7 @@ def run_demo():
 
     demo_commands = [
         ("Natural Language", "Create a REST API for user authentication"),
-        ("AI Query", "ai: What are the benefits of NeuroCode?"),
+        ("AI Query", "ai: What are the benefits of aetherra?"),
         ("Intent Command", "intent: build a data processing pipeline"),
         ("Local AI Status", "local_ai status"),
         ("Pattern Analysis", "analyze_patterns")
@@ -270,12 +274,12 @@ def run_demo():
         print(f"   Command: {command}")
 
         try:
-            result = interpreter.execute_neurocode(command)
+            result = interpreter.execute_aetherra(command)
             print(f"   Result: {result[:150]}..." if len(result) > 150 else f"   Result: {result}")
         except Exception as e:
             print(f"   Error: {e}")
 
-    print("\\n✅ Demo completed! NeuroCode is ready for the future!")
+    print("\\n✅ Demo completed! aetherra is ready for the future!")
 
 if __name__ == "__main__":
     run_demo()
@@ -294,7 +298,7 @@ if __name__ == "__main__":
 
 def main():
     """Main installation process"""
-    print("🧬 NeuroCode Enhancement Installation")
+    print("🧬 aetherra Enhancement Installation")
     print("🚀 Preparing for AI-Native Programming Dominance")
     print("=" * 60)
 
@@ -322,11 +326,11 @@ def main():
 
     # Final report
     print("\n" + "=" * 60)
-    print("🎉 NeuroCode Enhancement Installation Complete!")
+    print("🎉 aetherra Enhancement Installation Complete!")
     print(f"📊 Completed: {completed_steps}/{len(steps)} steps")
 
     if completed_steps >= 4:  # Core functionality working
-        print("\n✅ NeuroCode is now enhanced with:")
+        print("\n✅ aetherra is now enhanced with:")
         print("   🤖 Local AI models for 99% API independence")
         print("   🧠 Vector-based semantic memory")
         print("   💬 Natural language to code translation")
@@ -343,7 +347,7 @@ def main():
         print("\n⚠️  Some enhancements may not be fully functional.")
         print("   Check error messages above and install missing dependencies.")
 
-    print("\n🧬 NeuroCode: Where human intent meets AI implementation!")
+    print("\n🧬 aetherra: Where human intent meets AI implementation!")
 
 
 if __name__ == "__main__":

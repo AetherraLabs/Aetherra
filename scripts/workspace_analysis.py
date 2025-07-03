@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Comprehensive NeuroCode Workspace Analysis
+Comprehensive aetherra Workspace Analysis
 Analyzes project structure, imports, dependencies, and configuration
 """
 
 import ast
+import importlib.util
 import json
 import os
 import sys
@@ -81,7 +82,9 @@ class WorkspaceAnalyzer:
         python_files = []
         for root, dirs, files in os.walk(self.workspace_path):
             # Skip venv and other irrelevant directories
-            dirs[:] = [d for d in dirs if d not in {".git", "__pycache__", "venv", ".venv"}]
+            dirs[:] = [
+                d for d in dirs if d not in {".git", "__pycache__", "venv", ".venv"}
+            ]
 
             for file in files:
                 if file.endswith(".py"):
@@ -105,7 +108,9 @@ class WorkspaceAnalyzer:
                         elif isinstance(node, ast.ImportFrom):
                             module = node.module or ""
                             for alias in node.names:
-                                full_import = f"{module}.{alias.name}" if module else alias.name
+                                full_import = (
+                                    f"{module}.{alias.name}" if module else alias.name
+                                )
                                 imports_found.add(full_import)
                 except SyntaxError as e:
                     import_issues.append(
@@ -144,10 +149,15 @@ class WorkspaceAnalyzer:
                     pyproject_data = tomllib.load(f)
 
                 # Extract dependencies
-                if "project" in pyproject_data and "dependencies" in pyproject_data["project"]:
+                if (
+                    "project" in pyproject_data
+                    and "dependencies" in pyproject_data["project"]
+                ):
                     pyproject_deps = pyproject_data["project"]["dependencies"]
                 elif "tool" in pyproject_data and "poetry" in pyproject_data["tool"]:
-                    poetry_deps = pyproject_data["tool"]["poetry"].get("dependencies", {})
+                    poetry_deps = pyproject_data["tool"]["poetry"].get(
+                        "dependencies", {}
+                    )
                     pyproject_deps = [
                         f"{k}=={v}" if v != "*" else k
                         for k, v in poetry_deps.items()
@@ -161,7 +171,9 @@ class WorkspaceAnalyzer:
             try:
                 with open(requirements_path) as f:
                     requirements_deps = [
-                        line.strip() for line in f if line.strip() and not line.startswith("#")
+                        line.strip()
+                        for line in f
+                        if line.strip() and not line.startswith("#")
                     ]
             except Exception as e:
                 self.issues.append(f"Error reading requirements.txt: {e}")
@@ -201,7 +213,9 @@ class WorkspaceAnalyzer:
                     vscode_analysis[file_name] = {
                         "status": "found",
                         "valid_json": True,
-                        "content_keys": list(content.keys()) if isinstance(content, dict) else [],
+                        "content_keys": list(content.keys())
+                        if isinstance(content, dict)
+                        else [],
                     }
                 except json.JSONDecodeError as e:
                     vscode_analysis[file_name] = {
@@ -366,7 +380,7 @@ def main():
     # Save detailed results
     results_file = Path(workspace_path) / "WORKSPACE_ANALYSIS_COMPLETE.md"
     with open(results_file, "w") as f:
-        f.write("# NeuroCode Workspace Analysis Report\n\n")
+        f.write("# aetherra Workspace Analysis Report\n\n")
         f.write(
             f"**Analysis Date:** {__import__('datetime').datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
         )

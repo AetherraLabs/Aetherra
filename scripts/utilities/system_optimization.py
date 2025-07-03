@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-System Optimization Script - NeuroCode Project
+System Optimization Script - aetherra Project
 Removes cache files, temporary files, and performs final optimizations for pristine workspace.
 """
 
@@ -46,6 +46,7 @@ def clean_cache_files(root_path):
     if removed_count == 0 and pyc_count == 0:
         print("  ✨ No cache files found - already clean!")
 
+
 def clean_temp_files(root_path):
     """Remove temporary files"""
     print("\n🗑️ Cleaning temporary files...")
@@ -65,6 +66,7 @@ def clean_temp_files(root_path):
 
     if removed_count == 0:
         print("  ✨ No temporary files found - already clean!")
+
 
 def clean_log_files(root_path):
     """Clean old log files but preserve recent ones"""
@@ -90,6 +92,7 @@ def clean_log_files(root_path):
 
     if removed_count == 0:
         print("  ✨ No old log files found - already optimized!")
+
 
 def optimize_vscode_settings(root_path):
     """Optimize VS Code settings for better performance"""
@@ -143,11 +146,12 @@ def optimize_vscode_settings(root_path):
 }"""
 
     try:
-        with open(settings_file, 'w', encoding='utf-8') as f:
+        with open(settings_file, "w", encoding="utf-8") as f:
             f.write(optimal_settings)
         print(f"  ✅ Optimized VS Code settings: {settings_file}")
     except Exception as e:
         print(f"  ⚠️ Could not update VS Code settings: {e}")
+
 
 def generate_optimization_report(root_path):
     """Generate a summary report of the optimization"""
@@ -196,19 +200,20 @@ def generate_optimization_report(root_path):
 """
 
     try:
-        with open(report_path, 'w', encoding='utf-8') as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(report_content)
         print(f"  ✅ Report saved to: {report_path}")
     except Exception as e:
         print(f"  ⚠️ Could not save report: {e}")
 
+
 def main():
     """Main optimization function"""
-    print("🚀 NeuroCode System Optimization - Starting...")
+    print("🚀 aetherra System Optimization - Starting...")
     print("=" * 60)
 
     # Get the project root
-    root_path = Path(r"c:\Users\enigm\Desktop\NeuroCode Project")
+    root_path = Path(r"c:\Users\enigm\Desktop\aetherra Project")
 
     if not root_path.exists():
         print(f"❌ Project root not found: {root_path}")
@@ -227,6 +232,7 @@ def main():
     print("✨ System optimization complete!")
     print("🚀 Your workspace is now optimized for maximum performance!")
     print("\n💡 Tip: Restart VS Code to apply all optimizations")
+
 
 if __name__ == "__main__":
     main()

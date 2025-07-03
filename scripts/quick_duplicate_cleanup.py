@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Targeted Duplicate Cleanup
+aetherra Targeted Duplicate Cleanup
 
 Quick analysis and cleanup of the most obvious duplicates:
 1. Test files in both tests/ and tests/unit/
@@ -42,9 +42,13 @@ class QuickDuplicateCleanup:
                         content2 = f2.read()
 
                     if content1.strip() == content2.strip():
-                        duplicates.append((test_file, unit_equivalent, "Exact duplicate"))
+                        duplicates.append(
+                            (test_file, unit_equivalent, "Exact duplicate")
+                        )
                     else:
-                        duplicates.append((test_file, unit_equivalent, "Similar but different"))
+                        duplicates.append(
+                            (test_file, unit_equivalent, "Similar but different")
+                        )
                 except:
                     duplicates.append((test_file, unit_equivalent, "Could not compare"))
 
@@ -58,7 +62,13 @@ class QuickDuplicateCleanup:
         if not website_dir.exists():
             return duplicates
 
-        website_files = ["index.html", "styles.css", "script.js", "CNAME", "favicon.svg"]
+        website_files = [
+            "index.html",
+            "styles.css",
+            "script.js",
+            "CNAME",
+            "favicon.svg",
+        ]
 
         for filename in website_files:
             root_file = self.project_root / filename
@@ -72,10 +82,16 @@ class QuickDuplicateCleanup:
                         content2 = f2.read()
 
                     if content1.strip() == content2.strip():
-                        duplicates.append((website_file, root_file, "Exact duplicate - keep root"))
+                        duplicates.append(
+                            (website_file, root_file, "Exact duplicate - keep root")
+                        )
                     else:
                         duplicates.append(
-                            (website_file, root_file, "Different content - needs review")
+                            (
+                                website_file,
+                                root_file,
+                                "Different content - needs review",
+                            )
                         )
                 except:
                     duplicates.append((website_file, root_file, "Could not compare"))
@@ -140,7 +156,13 @@ class QuickDuplicateCleanup:
         """Find temporary verification/test scripts"""
         verification_files = []
 
-        patterns = ["verify-*.ps1", "verify-*.bat", "test-*.ps1", "diagnose-*.bat", "force-*.bat"]
+        patterns = [
+            "verify-*.ps1",
+            "verify-*.bat",
+            "test-*.ps1",
+            "diagnose-*.bat",
+            "force-*.bat",
+        ]
 
         for pattern in patterns:
             verification_files.extend(self.project_root.glob(pattern))
@@ -149,7 +171,7 @@ class QuickDuplicateCleanup:
 
     def print_analysis(self):
         """Print analysis of all duplicates found"""
-        print("🧬 NeuroCode Quick Duplicate Analysis")
+        print("🧬 aetherra Quick Duplicate Analysis")
         print("=" * 50)
 
         # Test duplicates
@@ -244,7 +266,9 @@ class QuickDuplicateCleanup:
             archive_path = self.archive_dir / "website_old" / website_file.name
             archive_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(website_file), str(archive_path))
-            print(f"   📦 Moved {website_file.relative_to(self.project_root)} to archive")
+            print(
+                f"   📦 Moved {website_file.relative_to(self.project_root)} to archive"
+            )
             cleanup_count += 1
 
         # 3. Archive status documents
@@ -259,7 +283,9 @@ class QuickDuplicateCleanup:
         # 4. Archive legacy files
         legacy_files = self.find_legacy_files()
         for file in legacy_files:
-            archive_path = self.archive_dir / "legacy" / file.relative_to(self.project_root)
+            archive_path = (
+                self.archive_dir / "legacy" / file.relative_to(self.project_root)
+            )
             archive_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(file), str(archive_path))
             print(f"   📦 Archived {file.relative_to(self.project_root)}")
@@ -275,7 +301,9 @@ class QuickDuplicateCleanup:
             cleanup_count += 1
 
         print(f"\n✅ Cleanup complete! Processed {cleanup_count} files")
-        print(f"📁 Archived files are in: {self.archive_dir.relative_to(self.project_root)}")
+        print(
+            f"📁 Archived files are in: {self.archive_dir.relative_to(self.project_root)}"
+        )
 
 
 def main():

@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 def test_plugin_discovery_simple():
     """Simple test of plugin discovery functionality"""
-    print("🚀 NEUROCODE PLUGIN DISCOVERY SYSTEM")
+    print("🚀 aetherra PLUGIN DISCOVERY SYSTEM")
     print("=" * 50)
 
     try:

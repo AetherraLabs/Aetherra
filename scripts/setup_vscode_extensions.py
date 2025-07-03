@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 """
-🔧 VS Code Extensions Auto-Installer for NeuroCode/Neuroplex
+🔧 VS Code Extensions Auto-Installer for aetherra/Neuroplex
 Automatically installs essential VS Code extensions for optimal development
 """
 
+import json
+import os
 import subprocess
 import sys
 from pathlib import Path
+
 
 def run_command(command, description):
     """Run a command and handle errors gracefully"""
     print(f"🔧 {description}...")
     try:
-        result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
+        result = subprocess.run(
+            command, shell=True, check=True, capture_output=True, text=True
+        )
         print(f"✅ {description} - Success!")
         return True
     except subprocess.CalledProcessError as e:
@@ -22,10 +27,11 @@ def run_command(command, description):
         print(f"❌ {description} - VS Code CLI not found in PATH")
         return False
 
+
 def check_vscode_installed():
     """Check if VS Code and CLI are available"""
     try:
-        result = subprocess.run(['code', '--version'], capture_output=True, text=True)
+        result = subprocess.run(["code", "--version"], capture_output=True, text=True)
         if result.returncode == 0:
             print(f"✅ VS Code detected: {result.stdout.split()[0]}")
             return True
@@ -38,47 +44,40 @@ def check_vscode_installed():
     print("3. Manually add VS Code to your PATH")
     return False
 
+
 def install_extensions():
     """Install essential VS Code extensions"""
 
-    # Essential extensions for NeuroCode development
+    # Essential extensions for aetherra development
     extensions = {
         # Core Python Development
         "ms-python.python": "Python language support",
         "ms-python.vscode-pylance": "Advanced IntelliSense and type checking",
         "ms-python.black-formatter": "Code formatting with Black",
         "ms-python.debugpy": "Python debugging",
-
         # AI & Copilot
         "github.copilot": "AI pair programmer",
         "github.copilot-chat": "AI chat integration",
-
         # Git & Version Control
         "eamodio.gitlens": "Enhanced Git integration",
-
         # Jupyter Notebooks
         "ms-toolsai.jupyter": "Jupyter notebook support",
         "ms-toolsai.jupyter-keymap": "Jupyter keyboard shortcuts",
-
         # Code Quality & Linting
         "charliermarsh.ruff": "Fast Python linting and formatting",
-
         # Documentation & Markdown
         "yzhang.markdown-all-in-one": "Enhanced Markdown support",
         "bierner.docs-view": "Documentation viewer",
-
         # UI & Theme
         "dracula-theme.theme-dracula": "Beautiful dark theme",
         "vscode-icons-team.vscode-icons": "File and folder icons",
-
         # Productivity Tools
         "gruntfuggly.todo-tree": "TODO comment tracking",
         "continue.continue": "Local AI coding assistant",
-
         # Additional Helpful Extensions
         "ms-vscode.powershell": "PowerShell support (Windows)",
         "redhat.vscode-yaml": "YAML language support",
-        "ms-vscode.vscode-json": "Enhanced JSON support"
+        "ms-vscode.vscode-json": "Enhanced JSON support",
     }
 
     print(f"\\n🚀 Installing {len(extensions)} essential VS Code extensions...")
@@ -88,7 +87,9 @@ def install_extensions():
     failed_extensions = []
 
     for ext_id, description in extensions.items():
-        if run_command(f"code --install-extension {ext_id}", f"Installing {description}"):
+        if run_command(
+            f"code --install-extension {ext_id}", f"Installing {description}"
+        ):
             success_count += 1
         else:
             failed_extensions.append((ext_id, description))
@@ -105,8 +106,9 @@ def install_extensions():
 
     return success_count, failed_extensions
 
+
 def setup_workspace_settings():
-    """Apply optimal VS Code settings for NeuroCode development"""
+    """Apply optimal VS Code settings for aetherra development"""
     print("\\n⚙️  Applying optimal workspace settings...")
 
     # Workspace settings are already created in .vscode/settings.json
@@ -117,6 +119,7 @@ def setup_workspace_settings():
     else:
         print("⚠️  Workspace settings file not found")
         return False
+
 
 def recommend_additional_setup():
     """Provide additional setup recommendations"""
@@ -134,24 +137,29 @@ def recommend_additional_setup():
 
     print("\\n3. 🎨 Theme & Icons:")
     print("   - Theme: Ctrl+Shift+P → 'Preferences: Color Theme' → Select 'Dracula'")
-    print("   - Icons: Ctrl+Shift+P → 'Preferences: File Icon Theme' → Select 'VSCode Icons'")
+    print(
+        "   - Icons: Ctrl+Shift+P → 'Preferences: File Icon Theme' → Select 'VSCode Icons'"
+    )
 
     print("\\n4. 🔧 Terminal Setup:")
-    print("   - Set PowerShell as default: Ctrl+Shift+P → 'Terminal: Select Default Profile'")
+    print(
+        "   - Set PowerShell as default: Ctrl+Shift+P → 'Terminal: Select Default Profile'"
+    )
 
     print("\\n5. ✅ Verification:")
     print("   - Open a Python file to test IntelliSense")
     print("   - Try Copilot suggestions with Ctrl+Enter")
     print("   - Test formatting with Shift+Alt+F")
 
+
 def main():
     """Main setup function"""
-    print("🧬 NeuroCode/Neuroplex VS Code Extension Setup")
+    print("🧬 aetherra/Neuroplex VS Code Extension Setup")
     print("=" * 50)
 
     # Check if we're in the right directory
     if not Path("ui/neuroplex_gui.py").exists():
-        print("❌ Please run this script from the NeuroCode project root directory")
+        print("❌ Please run this script from the aetherra project root directory")
         sys.exit(1)
 
     # Check VS Code installation
@@ -171,7 +179,7 @@ def main():
 
     if success_count > 0:
         print(f"✨ {success_count} extensions installed successfully")
-        print("🚀 VS Code is now optimized for NeuroCode development!")
+        print("🚀 VS Code is now optimized for aetherra development!")
         print("\\n📂 To get started:")
         print("   1. Close and reopen VS Code")
         print("   2. Open this project folder")
@@ -180,6 +188,7 @@ def main():
     if failed_extensions:
         print(f"\\n⚠️  Note: {len(failed_extensions)} extensions failed to install")
         print("You can install them manually later from the Extensions marketplace")
+
 
 if __name__ == "__main__":
     main()

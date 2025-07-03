@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple duplicate file checker for NeuroCode project
+Simple duplicate file checker for aetherra project
 """
 
 import hashlib
@@ -44,7 +44,9 @@ def find_duplicates():
                 file_hashes[file_hash].append(file_path)
 
     # Find duplicates
-    duplicates = {hash_val: paths for hash_val, paths in file_hashes.items() if len(paths) > 1}
+    duplicates = {
+        hash_val: paths for hash_val, paths in file_hashes.items() if len(paths) > 1
+    }
 
     if duplicates:
         print(f"\n📋 Found {len(duplicates)} sets of duplicate files:")
@@ -71,7 +73,9 @@ def find_duplicates():
                 name_groups[base_name].append(file_path)
 
     similar_names = {
-        name: paths for name, paths in name_groups.items() if len(paths) > 1 and len(name) > 3
+        name: paths
+        for name, paths in name_groups.items()
+        if len(paths) > 1 and len(name) > 3
     }
 
     if similar_names:

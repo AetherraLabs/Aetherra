@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-🚀 NeuroCode/Neuroplex Quick Setup Script
+🚀 aetherra/Neuroplex Quick Setup Script
 Automatically installs essential packages for optimal performance
 """
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -35,7 +36,7 @@ def check_python_version():
 
 def main():
     """Main setup function"""
-    print("🧬 NeuroCode/Neuroplex Optimization Setup")
+    print("🧬 aetherra/Neuroplex Optimization Setup")
     print("=" * 50)
 
     # Check Python version
@@ -44,7 +45,7 @@ def main():
 
     # Check if we're in the right directory
     if not Path("ui/neuroplex_gui.py").exists():
-        print("❌ Please run this script from the NeuroCode project root directory")
+        print("❌ Please run this script from the aetherra project root directory")
         sys.exit(1)
 
     print("🎯 Installing essential packages for peak performance...")
@@ -140,13 +141,13 @@ def main():
             capture_output=True,
             cwd=Path.cwd(),
         )
-        print("✅ NeuroCode GUI is ready to launch!")
+        print("✅ aetherra GUI is ready to launch!")
     except subprocess.CalledProcessError as e:
         print(
             "⚠️  GUI import test failed - but this may be normal if display is not available"
         )
 
-    print("\\n🚀 NeuroCode/Neuroplex is optimized and ready!")
+    print("\\n🚀 aetherra/Neuroplex is optimized and ready!")
 
 
 if __name__ == "__main__":

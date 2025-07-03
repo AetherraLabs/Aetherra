@@ -1,4 +1,4 @@
-# 🛡️ NeuroCode Project Protection System
+# 🛡️ aetherra Project Protection System
 # Critical file protection and backup safeguards
 
 import datetime
@@ -11,7 +11,7 @@ from typing import Dict, List
 
 class ProjectProtection:
     """
-    Comprehensive protection system for critical NeuroCode project files.
+    Comprehensive protection system for critical aetherra project files.
     Prevents accidental deletion and maintains automatic backups.
     """
 
@@ -310,7 +310,7 @@ def main():
     import sys
 
     if len(sys.argv) < 2:
-        print("🛡️ NeuroCode Project Protection System")
+        print("🛡️ aetherra Project Protection System")
         print("Usage:")
         print("  python project_protection.py status")
         print("  python project_protection.py backup")
@@ -325,7 +325,7 @@ def main():
 
     if command == "status":
         status = protection.status_report()
-        print("🛡️ NeuroCode Protection Status:")
+        print("🛡️ aetherra Protection Status:")
         print(f"  Protection Enabled: {status['protection_enabled']}")
         print(
             f"  Protected Files: {status['protected_files_existing']}/{status['protected_files_count']}"

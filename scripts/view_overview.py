@@ -58,7 +58,7 @@ def show_quick_overview():
         content = f.read()
 
     print("🧬 " + "=" * 70)
-    print("🧬 NEUROCODE PROJECT OVERVIEW - QUICK VIEW")
+    print("🧬 aetherra PROJECT OVERVIEW - QUICK VIEW")
     print("🧬 " + "=" * 70)
 
     # Extract header information
@@ -76,7 +76,9 @@ def show_quick_overview():
     print()
 
     # Extract key achievements
-    achievements_section = extract_section(content, "🚀 \\*\\*WHAT IS NEUROCODE\\?\\*\\*")
+    achievements_section = extract_section(
+        content, "🚀 \\*\\*WHAT IS aetherra\\?\\*\\*"
+    )
     if achievements_section:
         print("🏆 BREAKTHROUGH ACHIEVEMENTS:")
         # Extract bullet points
@@ -87,7 +89,9 @@ def show_quick_overview():
         print()
 
     # Extract milestone status
-    milestone_section = extract_section(content, "📊 \\*\\*PROJECT STATUS DASHBOARD\\*\\*")
+    milestone_section = extract_section(
+        content, "📊 \\*\\*PROJECT STATUS DASHBOARD\\*\\*"
+    )
     if milestone_section:
         print("📊 COMPLETED MILESTONES:")
         # Extract table rows with COMPLETE status
@@ -114,8 +118,12 @@ def show_quick_overview():
     if stats_section:
         print("📈 KEY STATISTICS:")
         # Extract key numbers
-        file_match = re.search(r"\*\*Files Organized\*\*: (\d+\+[^\\n]+)", stats_section)
-        modules_match = re.search(r"\*\*Core Modules\*\*: (\d+\+[^\\n]+)", stats_section)
+        file_match = re.search(
+            r"\*\*Files Organized\*\*: (\d+\+[^\\n]+)", stats_section
+        )
+        modules_match = re.search(
+            r"\*\*Core Modules\*\*: (\d+\+[^\\n]+)", stats_section
+        )
         tests_match = re.search(r"\*\*Test Coverage\*\*: (\d+\+[^\\n]+)", stats_section)
 
         if file_match:
@@ -128,8 +136,8 @@ def show_quick_overview():
 
     # Show website status
     print("🌐 LIVE DEPLOYMENTS:")
-    print("   🌍 Website: https://httpsneurocode.dev")
-    print("   📂 Repository: https://github.com/Zyonic88/NeuroCode")
+    print("   🌍 Website: https://httpsaetherra.dev")
+    print("   📂 Repository: https://github.com/Zyonic88/aetherra")
     print()
 
     print("🧬 " + "=" * 70)
@@ -176,7 +184,7 @@ def show_stats_only():
     stats_section = extract_section(content, "📈 \\*\\*PERFORMANCE METRICS\\*\\*")
     if stats_section:
         print("📈 " + "=" * 50)
-        print("📈 NEUROCODE PERFORMANCE METRICS")
+        print("📈 aetherra PERFORMANCE METRICS")
         print("📈 " + "=" * 50)
         print(format_for_terminal(stats_section))
     else:

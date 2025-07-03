@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 🚀 GitHub Repository Preparation Script
-Prepares NeuroCode for GitHub publication with comprehensive documentation and examples
+Prepares aetherra for GitHub publication with comprehensive documentation and examples
 """
 
 import subprocess
@@ -43,7 +43,7 @@ def check_file_exists(file_path, description):
 
 def main():
     """Main preparation workflow"""
-    print("🧬 NeuroCode GitHub Preparation")
+    print("🧬 aetherra GitHub Preparation")
     print("=" * 50)
 
     # Check current status
@@ -54,8 +54,8 @@ def main():
         ("README.md", "Main repository README"),
         ("LICENSE", "MIT License file"),
         ("requirements.txt", "Python dependencies"),
-        ("main.py", "Main NeuroCode interpreter"),
-        ("neurocode.py", "Core NeuroCode module"),
+        ("main.py", "Main aetherra interpreter"),
+        ("aetherra.py", "Core aetherra module"),
         ("ui/neuroplex_gui.py", "Neuroplex GUI"),
         ("DOCUMENTATION.md", "Complete documentation"),
         ("TUTORIAL.md", "Tutorial guide"),
@@ -76,7 +76,7 @@ def main():
     examples_dir = Path("examples")
     if examples_dir.exists():
         example_files = list(examples_dir.glob("*.aether"))
-        print(f"✅ Found {len(example_files)} NeuroCode example files")
+        print(f"✅ Found {len(example_files)} aetherra example files")
         for example_file in example_files:
             print(f"   📄 {example_file.name}")
     else:
@@ -115,7 +115,7 @@ def main():
     # Test Python syntax
     test_files = [
         "main.py",
-        "neurocode.py",
+        "aetherra.py",
         "ui/neuroplex_gui.py",
         "core/local_ai.py",
         "core/vector_memory.py",
@@ -134,12 +134,11 @@ def main():
     print("\n🔍 Testing Module Imports...")
     import_tests = [
         (
-            "python -c \"import aetherra; print('✅ NeuroCode core imports successfully')\"",
-            "NeuroCode core",
+            "python -c \"import aetherra; print('✅ aetherra core imports successfully')\"",
+            "aetherra core",
         ),
         (
             "python -c \"import sys; sys.path.append('ui'); from neuroplex_gui import NeuroplexMainWindow; print('✅ Neuroplex GUI imports successfully')\"",
-
             "Neuroplex GUI",
         ),
         (
@@ -162,7 +161,7 @@ def main():
     print("\n📊 Generating Final Status Report...")
 
     status_report = f"""
-# 🧬 NeuroCode Repository Status Report
+# 🧬 aetherra Repository Status Report
 Generated: {Path(__file__).stat().st_mtime}
 
 ## ✅ Ready for GitHub Publication
@@ -175,7 +174,7 @@ Generated: {Path(__file__).stat().st_mtime}
 - ✅ CONTRIBUTING.md for community participation
 
 ### 🧬 Core System Status
-- ✅ NeuroCode interpreter: Fully operational
+- ✅ aetherra interpreter: Fully operational
 - ✅ AI Enhancement Suite: All modules integrated
 - ✅ Neuroplex GUI: Production-ready with PySide6
 - ✅ Plugin ecosystem: 15+ plugins loaded
@@ -206,7 +205,7 @@ Generated: {Path(__file__).stat().st_mtime}
 
 ## 🚀 Ready for Launch!
 
-NeuroCode is ready to revolutionize programming on GitHub. The repository contains:
+aetherra is ready to revolutionize programming on GitHub. The repository contains:
 
 1. **Revolutionary AI-native programming language**
 2. **Beautiful modern GUI interface**
@@ -232,7 +231,7 @@ NeuroCode is ready to revolutionize programming on GitHub. The repository contai
     # Final summary
     print("\n🎉 GitHub Preparation Complete!")
     print("=" * 50)
-    print("🧬 NeuroCode is ready for GitHub publication!")
+    print("🧬 aetherra is ready for GitHub publication!")
     print()
     print("📋 Summary:")
     print("   ✅ All essential files present")
@@ -248,7 +247,7 @@ NeuroCode is ready to revolutionize programming on GitHub. The repository contai
     print("   3. Create GitHub release for v1.0.0")
     print("   4. Share with programming communities")
     print()
-    print("🌟 NeuroCode is ready to revolutionize programming! 🌟")
+    print("🌟 aetherra is ready to revolutionize programming! 🌟")
 
     return True
 

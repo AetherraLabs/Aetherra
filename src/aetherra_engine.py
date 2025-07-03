@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Enhanced Engine with Multi-LLM Support
+🧬 aetherra Enhanced Engine with Multi-LLM Support
 ==================================================
 
-Complete NeuroCode execution engine that integrates the formal grammar
+Complete aetherra execution engine that integrates the formal grammar
 parser with multi-LLM support, enabling true syntax-native execution
 of model and assistant statements.
 
-Example NeuroCode with LLM integration:
+Example aetherra with LLM integration:
     model: mistral
     assistant: generate strategy for memory cleanup
 
@@ -25,16 +25,17 @@ from typing import Any, Dict, Optional
 # Import core components
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.aethercode_grammar import NeuroCodeAST, create_neurocode_parser
+from core.aethercode_grammar import aetherraAST, create_aetherra_parser
+from core.llm_integration import aetherra_llm_integration
 from core.multi_llm_manager import llm_manager
 
 
-class NeuroCodeEngine:
-    """Enhanced NeuroCode execution engine with multi-LLM support"""
+class aetherraEngine:
+    """Enhanced aetherra execution engine with multi-LLM support"""
 
     def __init__(self):
-        self.parser = create_neurocode_parser()
-        self.llm_integration = neurocode_llm_integration
+        self.parser = create_aetherra_parser()
+        self.llm_integration = aetherra_llm_integration
         self.llm_manager = llm_manager
         self.variables = {}
         self.functions = {}
@@ -54,7 +55,7 @@ class NeuroCodeEngine:
         try:
             available_models = self.llm_manager.list_available_models()
             print(
-                f"🧠 Initialized NeuroCode Engine with {len(available_models)} LLM models"
+                f"🧠 Initialized aetherra Engine with {len(available_models)} LLM models"
             )
 
             # Set default model if available
@@ -76,13 +77,13 @@ class NeuroCodeEngine:
         except Exception as e:
             print(f"⚠️ Error initializing models: {e}")
 
-    def execute_neurocode_file(self, file_path: str) -> Dict[str, Any]:
+    def execute_aetherra_file(self, file_path: str) -> Dict[str, Any]:
         """Execute a .aether file and return results"""
         try:
             with open(file_path, encoding="utf-8") as f:
                 code = f.read()
 
-            return self.execute_neurocode(code)
+            return self.execute_aetherra(code)
 
         except FileNotFoundError:
             return {
@@ -97,8 +98,8 @@ class NeuroCodeEngine:
                 "file": file_path,
             }
 
-    def execute_neurocode(self, code: str) -> Dict[str, Any]:
-        """Parse and execute NeuroCode source code"""
+    def execute_aetherra(self, code: str) -> Dict[str, Any]:
+        """Parse and execute aetherra source code"""
         try:
             # Parse the code into AST
             result = self.parser.validate_syntax(code)
@@ -106,7 +107,7 @@ class NeuroCodeEngine:
             if not result["valid"]:
                 return {
                     "status": "parse_error",
-                    "message": "Failed to parse NeuroCode",
+                    "message": "Failed to parse aetherra",
                     "errors": result.get("errors", []),
                     "code": code,
                 }
@@ -129,12 +130,12 @@ class NeuroCodeEngine:
         except Exception as e:
             return {
                 "status": "execution_error",
-                "message": f"Error executing NeuroCode: {str(e)}",
+                "message": f"Error executing aetherra: {str(e)}",
                 "code": code,
             }
 
-    def _execute_statement(self, statement: NeuroCodeAST) -> Dict[str, Any]:
-        """Execute a single NeuroCode statement"""
+    def _execute_statement(self, statement: aetherraAST) -> Dict[str, Any]:
+        """Execute a single aetherra statement"""
         try:
             if statement.type == "model":
                 return self._execute_model_statement(statement)
@@ -172,7 +173,7 @@ class NeuroCodeEngine:
                 "message": f"Error executing {statement.type}: {str(e)}",
             }
 
-    def _execute_model_statement(self, statement: NeuroCodeAST) -> Dict[str, Any]:
+    def _execute_model_statement(self, statement: aetherraAST) -> Dict[str, Any]:
         """Execute model: statement to switch LLM models"""
         model_name = statement.value
         config = statement.metadata.get("config", {}) if statement.metadata else {}
@@ -198,7 +199,7 @@ class NeuroCodeEngine:
                 "available_models": result.get("available_models", []),
             }
 
-    def _execute_assistant_statement(self, statement: NeuroCodeAST) -> Dict[str, Any]:
+    def _execute_assistant_statement(self, statement: aetherraAST) -> Dict[str, Any]:
         """Execute assistant: statement to interact with AI"""
         task = statement.value
 
@@ -240,7 +241,7 @@ class NeuroCodeEngine:
                 "task": task,
             }
 
-    def _execute_goal_statement(self, statement: NeuroCodeAST) -> Dict[str, Any]:
+    def _execute_goal_statement(self, statement: aetherraAST) -> Dict[str, Any]:
         """Execute goal: statement"""
         goal = statement.value
         priority = (
@@ -261,7 +262,7 @@ class NeuroCodeEngine:
             "priority": priority,
         }
 
-    def _execute_agent_statement(self, statement: NeuroCodeAST) -> Dict[str, Any]:
+    def _execute_agent_statement(self, statement: aetherraAST) -> Dict[str, Any]:
         """Execute agent: statement"""
         agent_command = statement.value
 
@@ -286,7 +287,7 @@ class NeuroCodeEngine:
                 "command": agent_command,
             }
 
-    def _execute_remember_statement(self, statement: NeuroCodeAST) -> Dict[str, Any]:
+    def _execute_remember_statement(self, statement: aetherraAST) -> Dict[str, Any]:
         """Execute remember statement"""
         content = statement.value
         tag = (
@@ -308,7 +309,7 @@ class NeuroCodeEngine:
             "tag": tag,
         }
 
-    def _execute_recall_statement(self, statement: NeuroCodeAST) -> Dict[str, Any]:
+    def _execute_recall_statement(self, statement: aetherraAST) -> Dict[str, Any]:
         """Execute recall statement"""
         tag = statement.value
 
@@ -329,7 +330,7 @@ class NeuroCodeEngine:
                 "tag": tag,
             }
 
-    def _execute_assignment(self, statement: NeuroCodeAST) -> Dict[str, Any]:
+    def _execute_assignment(self, statement: aetherraAST) -> Dict[str, Any]:
         """Execute variable assignment"""
         var_name = statement.value
         value = statement.children[0].value if statement.children else None
@@ -344,7 +345,7 @@ class NeuroCodeEngine:
             "value": value,
         }
 
-    def _execute_if_statement(self, statement: NeuroCodeAST) -> Dict[str, Any]:
+    def _execute_if_statement(self, statement: aetherraAST) -> Dict[str, Any]:
         """Execute if statement (basic implementation)"""
         condition = statement.value
         # This is a simplified implementation - real condition evaluation would be more complex
@@ -355,7 +356,7 @@ class NeuroCodeEngine:
             "condition": condition,
         }
 
-    def _execute_for_statement(self, statement: NeuroCodeAST) -> Dict[str, Any]:
+    def _execute_for_statement(self, statement: aetherraAST) -> Dict[str, Any]:
         """Execute for statement (basic implementation)"""
         return {
             "type": "for",
@@ -364,7 +365,7 @@ class NeuroCodeEngine:
             "loop": statement.value,
         }
 
-    def _execute_function_definition(self, statement: NeuroCodeAST) -> Dict[str, Any]:
+    def _execute_function_definition(self, statement: aetherraAST) -> Dict[str, Any]:
         """Execute function definition"""
         func_name = statement.value
         params = statement.metadata.get("parameters", []) if statement.metadata else []
@@ -414,19 +415,19 @@ class NeuroCodeEngine:
         return datetime.now().isoformat()
 
 
-# Global instance for NeuroCode integration
-neurocode_engine = NeuroCodeEngine()
+# Global instance for aetherra integration
+aetherra_engine = aetherraEngine()
 
 
 # Example usage and testing
-def demo_multi_llm_neurocode():
-    """Demonstrate multi-LLM NeuroCode execution"""
-    print("🧬 NeuroCode Multi-LLM Demo")
+def demo_multi_llm_aetherra():
+    """Demonstrate multi-LLM aetherra execution"""
+    print("🧬 aetherra Multi-LLM Demo")
     print("=" * 50)
 
-    engine = NeuroCodeEngine()
+    engine = aetherraEngine()
 
-    # Example NeuroCode with multiple models
+    # Example aetherra with multiple models
     demo_code = """
 # Set a goal for optimization
 goal: improve system performance priority: high
@@ -446,11 +447,11 @@ remember("optimization analysis complete") as "performance"
 agent: on
 """
 
-    print("NeuroCode:")
+    print("aetherra:")
     print(demo_code)
     print("=" * 50)
 
-    result = engine.execute_neurocode(demo_code)
+    result = engine.execute_aetherra(demo_code)
 
     if result["status"] == "success":
         print("✅ Execution Results:")
@@ -467,4 +468,4 @@ agent: on
 
 
 if __name__ == "__main__":
-    demo_multi_llm_neurocode()
+    demo_multi_llm_aetherra()

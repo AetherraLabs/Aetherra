@@ -1,21 +1,21 @@
 # simple_syntax_test.py
 """
-Simple test for the NeuroCode syntax tree parser
+Simple test for the aetherra syntax tree parser
 """
 
-from core.syntax_tree import SyntaxTreeVisitor, analyze_syntax_tree, parse_neurocode
+from core.syntax_tree import SyntaxTreeVisitor, analyze_syntax_tree, parse_aetherra
 
 
 def test_simple_parsing():
-    """Test simple NeuroCode parsing"""
+    """Test simple aetherra parsing"""
 
     code = """goal: optimize system performance priority: high
 remember("system optimized") as "maintenance"
 assistant: "analyze current system bottlenecks"
 plugin: sysmon status"""
 
-    print("🔄 Parsing simple NeuroCode...")
-    tree = parse_neurocode(code)
+    print("🔄 Parsing simple aetherra...")
+    tree = parse_aetherra(code)
 
     print("📊 Analyzing syntax tree...")
     stats = analyze_syntax_tree(tree)
@@ -35,7 +35,7 @@ plugin: sysmon status"""
 
 
 if __name__ == "__main__":
-    print("🧬 Simple NeuroCode Syntax Tree Test")
+    print("🧬 Simple aetherra Syntax Tree Test")
     print("=" * 40)
 
     try:

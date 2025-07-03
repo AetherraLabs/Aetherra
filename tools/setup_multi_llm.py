@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🧠 NeuroCode Multi-LLM Setup Script
+🧠 aetherra Multi-LLM Setup Script
 ==================================
 
-Installs required dependencies for NeuroCode's multi-LLM support:
+Installs required dependencies for aetherra's multi-LLM support:
 - OpenAI for GPT models
 - Ollama for local models (Mistral, LLaMA, Mixtral)
 - llama-cpp-python for GGUF models
@@ -29,7 +29,7 @@ def install_package(package, description=""):
 
 def main():
     """Main setup function"""
-    print("🧬 NeuroCode Multi-LLM Setup")
+    print("🧬 aetherra Multi-LLM Setup")
     print("=" * 50)
     print("Installing dependencies for multi-LLM support...")
     print()
@@ -42,7 +42,7 @@ def main():
         ("anthropic", "Anthropic Claude models"),
         ("google-generativeai", "Google Gemini models"),
         ("streamlit>=1.28.0", "Enhanced playground"),
-        ("lark>=1.1.0", "NeuroCode parser"),
+        ("lark>=1.1.0", "aetherra parser"),
     ]
 
     successful = 0
@@ -62,7 +62,7 @@ def main():
 
     if failed == 0:
         print("\n🎉 All dependencies installed successfully!")
-        print("\n🚀 Multi-LLM NeuroCode is ready to use!")
+        print("\n🚀 Multi-LLM aetherra is ready to use!")
         print("\nNext steps:")
         print("1. Set up API keys (optional for local models):")
         print("   export OPENAI_API_KEY='your-key'")
@@ -73,15 +73,15 @@ def main():
         print("   Run: ollama pull mistral")
         print("   Run: ollama pull llama2")
         print("   Run: ollama pull mixtral")
-        print("\n3. Launch NeuroCode playground:")
+        print("\n3. Launch aetherra playground:")
         print("   python launch_playground.py")
-        print("\n4. Test multi-LLM NeuroCode:")
-        print("   python neurocode_engine.py")
+        print("\n4. Test multi-LLM aetherra:")
+        print("   python aetherra_engine.py")
     else:
         print(f"\n⚠️ {failed} packages failed to install.")
         print("Please check the errors above and install manually if needed.")
 
-    print("\n🧬 NeuroCode Multi-LLM Setup Complete!")
+    print("\n🧬 aetherra Multi-LLM Setup Complete!")
 
 
 if __name__ == "__main__":

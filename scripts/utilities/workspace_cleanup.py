@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Project Workspace Cleanup and Organization Script
+aetherra Project Workspace Cleanup and Organization Script
 ===========================================================
 
 This script will clean up and organize the cluttered root directory by:
@@ -9,6 +9,8 @@ This script will clean up and organize the cluttered root directory by:
 3. Creating a clean, navigable structure
 """
 
+import json
+import os
 import shutil
 from pathlib import Path
 
@@ -67,9 +69,9 @@ def move_documentation_files():
         "MISSION_ACCOMPLISHED.md",
         "MISSION_COMPLETE_AGENT_ARCHIVE.md",
         "MODULARIZATION_COMPLETE.md",
-        "NEUROCODE_FINAL_STATUS.md",
-        "NEUROCODE_FIXES_COMPLETE.md",
-        "NEUROCODE_FOLDER_FIXES_COMPLETE.md",
+        "aetherra_FINAL_STATUS.md",
+        "aetherra_FIXES_COMPLETE.md",
+        "aetherra_FOLDER_FIXES_COMPLETE.md",
         "NEUROHUB_IMPLEMENTATION_COMPLETE.md",
         "NEUROHUB_LAUNCH_READY.md",
         "NEUROPLEX_LAUNCH_RESOLUTION_COMPLETE.md",
@@ -113,7 +115,7 @@ def move_documentation_files():
         "LANGUAGE_IDENTITY_STATUS.md",
         "MEMORY_MODULARIZATION_SUMMARY.md",
         "MODULARIZATION_SUMMARY.md",
-        "NEUROCODE_GRAMMAR_ANALYSIS.md",
+        "aetherra_GRAMMAR_ANALYSIS.md",
         "PLUGIN_ENHANCEMENT_REPORT.md",
         "REDIRECT_ISSUE_SOLVED.md",
         "STRUCTURE_ANALYSIS.md",
@@ -125,7 +127,7 @@ def move_documentation_files():
         "DOMAIN_SETUP_GUIDE.md",
         "DUPLICATE_CLEANUP_PLAN.md",
         "IMPLEMENTATION_CHECKLIST.md",
-        "NEUROCODE_MANIFESTO_V3_UPDATE_COMPLETE.md",
+        "aetherra_MANIFESTO_V3_UPDATE_COMPLETE.md",
         "PROGRESS_TRACKER.md",
         "PROJECT_OVERVIEW.md",
         "WORKSPACE_REORGANIZATION_PLAN.md",
@@ -161,8 +163,8 @@ def move_test_files():
         "test_agent_integration.py",
         "test_backward_compatibility.py",
         "test_enhanced_neuroplex_integration.py",
-        "test_neurocode_integration.py",
-        "test_neurocode_integration_fixed.py",
+        "test_aetherra_integration.py",
+        "test_aetherra_integration_fixed.py",
         "test_neuroplex_system.py",
         "test_phase2_systems.py",
         "test_phase2_verification.py",
@@ -193,8 +195,8 @@ def move_test_files():
     demo_tests = [
         "test_and_launch_neuroplex.py",
         "test_comprehensive_parsing.py",
-        "test_neurocode_complete.py",
-        "test_neurocode_comprehensive.py",
+        "test_aetherra_complete.py",
+        "test_aetherra_comprehensive.py",
         "test_neuroplex_final.py",
         "test_neuroplex_gui.py",
         "test_neuro_chat.py",
@@ -207,14 +209,14 @@ def move_test_files():
         "quick_memory_validation.py",
         "quick_runtime_test.py",
         "quick_test.py",
-        "quick_test_neurocode.py",
+        "quick_test_aetherra.py",
         "simple_core_test.py",
         "simple_memory_test.py",
         "simple_plugin_test.py",
         "simple_syntax_test.py",
         "final_comprehensive_verification.py",
         "final_error_check.py",
-        "final_neurocode_verification.py",
+        "final_aetherra_verification.py",
         "final_verification.py",
         "final_verification_test.py",
         "comprehensive_error_check.py",
@@ -249,14 +251,14 @@ def move_demo_files():
         "agent_archive_demo.py",
         "COMPLETE_DEBUG_DEMO.py",
         "DEEP_ANALYSIS_COMPLETE.py",
-        "demo_neurocode.py",
+        "demo_aetherra.py",
         "enhanced_parsing_demo.py",
         "implementation_demo.py",
-        "neurocode_ai_os_complete.py",
-        "neurocode_ai_os_demo.py",
-        "neurocode_persona_demo.py",
-        "neurocode_plugin_demo.py",
-        "neurocode_revolutionary_demo.py",
+        "aetherra_ai_os_complete.py",
+        "aetherra_ai_os_demo.py",
+        "aetherra_persona_demo.py",
+        "aetherra_plugin_demo.py",
+        "aetherra_revolutionary_demo.py",
         "performance_enhancement_demo.py",
         "performance_revolution_demo.py",
         "phase2_comprehensive_demo.py",
@@ -276,13 +278,13 @@ def move_launcher_files():
     """Move launcher files to archive (keeping only the main one)"""
 
     old_launchers = [
-        "neurocode.py",
-        "neurocode_ai_os_launcher.py",
-        "neurocode_cli.py",
-        "neurocode_persona_cli.py",
-        "neurocode_persona_interpreter.py",
-        "neurocode_plugin_cli.py",
-        "neurocode_unified_cli.py",
+        "aetherra.py",
+        "aetherra_ai_os_launcher.py",
+        "aetherra_cli.py",
+        "aetherra_persona_cli.py",
+        "aetherra_persona_interpreter.py",
+        "aetherra_plugin_cli.py",
+        "aetherra_unified_cli.py",
     ]
 
     for launcher in old_launchers:
@@ -361,7 +363,7 @@ def move_data_files():
         "error_analysis_report.txt",
         "goals_store.json",
         "memory_store.json",
-        "neurocode_functions.json",
+        "aetherra_functions.json",
         "plugin_test_output.txt",
         "repl_test_input.txt",
         "simple_test.aether",
@@ -385,7 +387,7 @@ def cleanup_html_files():
 
 def main():
     """Main cleanup function"""
-    print("🧹 NeuroCode Workspace Cleanup Starting...")
+    print("🧹 aetherra Workspace Cleanup Starting...")
     print("=" * 50)
 
     # Create directory structure
@@ -446,7 +448,7 @@ def main():
     print("- README.md")
     print("- LICENSE")
     print("- requirements.txt (main)")
-    print("- neurocode_launcher.py (main launcher)")
+    print("- aetherra_launcher.py (main launcher)")
     print("- neuroplex.bat / neuroplex.ico")
     print("- Core folders: src/, core/, data/, etc.")
 

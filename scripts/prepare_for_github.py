@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode GitHub Preparation Script
+aetherra GitHub Preparation Script
 Prepares the project for GitHub upload by cleaning up and organizing files
 """
 
@@ -13,7 +13,11 @@ def clean_runtime_files():
     """Remove runtime-generated files that shouldn't be in Git"""
     print("🧹 Cleaning runtime files...")
 
-    files_to_clean = ["memory_store.json", "goals_store.json", "neurocode_functions.json"]
+    files_to_clean = [
+        "memory_store.json",
+        "goals_store.json",
+        "aetherra_functions.json",
+    ]
 
     for file in files_to_clean:
         if Path(file).exists():
@@ -34,7 +38,7 @@ def clean_runtime_files():
                     "goal_history": [],
                     "last_updated": "2025-06-28T00:00:00",
                 }
-            elif file == "neurocode_functions.json":
+            elif file == "aetherra_functions.json":
                 sample_data = {"functions": {}, "last_updated": "2025-06-28T00:00:00"}
 
             with open(sample_file, "w") as f:
@@ -61,8 +65,8 @@ def organize_documentation():
 
     # Move documentation files to docs/
     doc_files = [
-        "NEUROCODE_LANGUAGE_SPEC.md",
-        "NEUROCODE_MANIFESTO.md",
+        "aetherra_LANGUAGE_SPEC.md",
+        "aetherra_MANIFESTO.md",
         "ARCHITECTURE.md",
         "SELF_EDITING_GUIDE.md",
         "DEBUG_SYSTEM_GUIDE.md",
@@ -94,7 +98,7 @@ def create_github_files():
         with open(bug_template, "w") as f:
             f.write("""---
 name: Bug report
-about: Create a report to help us improve NeuroCode
+about: Create a report to help us improve aetherra
 title: '[BUG] '
 labels: bug
 assignees: ''
@@ -103,10 +107,10 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
-**NeuroCode Example**
-Provide the NeuroCode that produces the issue:
-```neurocode
-# Your NeuroCode here
+**aetherra Example**
+Provide the aetherra that produces the issue:
+```aetherra
+# Your aetherra here
 ```
 
 **Expected behavior**
@@ -115,7 +119,7 @@ What you expected to happen.
 **Environment:**
  - OS: [e.g. Windows 10, macOS 12, Ubuntu 20.04]
  - Python version: [e.g. 3.9.7]
- - NeuroCode version: [e.g. 1.0.0]
+ - aetherra version: [e.g. 1.0.0]
 
 **Additional context**
 Add any other context about the problem here.
@@ -128,7 +132,7 @@ Add any other context about the problem here.
         with open(feature_template, "w") as f:
             f.write("""---
 name: Feature request
-about: Suggest a new NeuroCode feature or cognitive pattern
+about: Suggest a new aetherra feature or cognitive pattern
 title: '[FEATURE] '
 labels: enhancement, cognitive-pattern
 assignees: ''
@@ -138,9 +142,9 @@ assignees: ''
 Describe the new AI-native programming pattern you'd like to see.
 
 **Example Syntax**
-Show how you envision the NeuroCode syntax:
-```neurocode
-# Your proposed NeuroCode syntax
+Show how you envision the aetherra syntax:
+```aetherra
+# Your proposed aetherra syntax
 ```
 
 **Why This Improves Cognitive Programming**
@@ -179,7 +183,7 @@ def create_requirements_optimization():
 
         # Write optimized requirements
         with open("requirements_optimized.txt", "w") as f:
-            f.write("# NeuroCode Dependencies\n")
+            f.write("# aetherra Dependencies\n")
             f.write("# Core dependencies for the AI-native programming language\n\n")
             f.write("# GUI Framework\n")
             for line in optimized_lines:
@@ -187,13 +191,22 @@ def create_requirements_optimization():
                     f.write(f"{line}\n")
             f.write("\n# AI and ML\n")
             for line in optimized_lines:
-                if any(pkg in line for pkg in ["openai", "anthropic", "numpy", "scipy"]):
+                if any(
+                    pkg in line for pkg in ["openai", "anthropic", "numpy", "scipy"]
+                ):
                     f.write(f"{line}\n")
             f.write("\n# Utilities\n")
             for line in optimized_lines:
                 if not any(
                     pkg in line
-                    for pkg in ["PySide6", "qtawesome", "openai", "anthropic", "numpy", "scipy"]
+                    for pkg in [
+                        "PySide6",
+                        "qtawesome",
+                        "openai",
+                        "anthropic",
+                        "numpy",
+                        "scipy",
+                    ]
                 ):
                     f.write(f"{line}\n")
 
@@ -204,7 +217,13 @@ def verify_structure():
     """Verify the project structure is GitHub-ready"""
     print("🔍 Verifying project structure...")
 
-    required_files = ["README.md", "LICENSE", "CONTRIBUTING.md", "INSTALLATION.md", ".gitignore"]
+    required_files = [
+        "README.md",
+        "LICENSE",
+        "CONTRIBUTING.md",
+        "INSTALLATION.md",
+        ".gitignore",
+    ]
 
     missing_files = []
     for file in required_files:
@@ -234,10 +253,10 @@ def create_github_commands():
     print("📝 Creating GitHub upload commands...")
 
     commands = """#!/bin/bash
-# NeuroCode GitHub Upload Commands
+# aetherra GitHub Upload Commands
 # Run these commands to upload your project to GitHub
 
-echo "🧬 Uploading NeuroCode to GitHub..."
+echo "🧬 Uploading aetherra to GitHub..."
 
 # Initialize Git repository
 git init
@@ -246,7 +265,7 @@ git init
 git add .
 
 # Create initial commit
-git commit -m "🧬 Initial commit: NeuroCode - The First AI-Native Programming Language
+git commit -m "🧬 Initial commit: aetherra - The First AI-Native Programming Language
 
 ✨ Features:
 - Revolutionary cognitive programming paradigm
@@ -260,7 +279,7 @@ git commit -m "🧬 Initial commit: NeuroCode - The First AI-Native Programming 
 
 # Add GitHub remote (replace YOUR_USERNAME with your GitHub username)
 echo "⚠️  Replace YOUR_USERNAME with your actual GitHub username:"
-echo "git remote add origin https://github.com/YOUR_USERNAME/neurocode.git"
+echo "git remote add origin https://github.com/YOUR_USERNAME/aetherra.git"
 
 # Set main branch
 git branch -M main
@@ -271,11 +290,11 @@ echo "git push -u origin main"
 
 # Create first release tag
 echo "🏷️  After pushing, create release with:"
-echo "git tag -a v1.0.0 -m '🚀 NeuroCode v1.0.0 - Revolutionary AI-Native Language'"
+echo "git tag -a v1.0.0 -m '🚀 aetherra v1.0.0 - Revolutionary AI-Native Language'"
 echo "git push origin v1.0.0"
 
 echo ""
-echo "🎉 NeuroCode will be live on GitHub!"
+echo "🎉 aetherra will be live on GitHub!"
 echo "🌟 Don't forget to:"
 echo "  1. Add GitHub topics: ai-programming, cognitive-computing, programming-language"
 echo "  2. Enable GitHub Discussions"
@@ -287,10 +306,10 @@ echo "  3. Star your own repo! ⭐"
 
     # Also create Windows batch version
     commands_bat = """@echo off
-REM NeuroCode GitHub Upload Commands for Windows
+REM aetherra GitHub Upload Commands for Windows
 REM Run these commands to upload your project to GitHub
 
-echo 🧬 Uploading NeuroCode to GitHub...
+echo 🧬 Uploading aetherra to GitHub...
 
 REM Initialize Git repository
 git init
@@ -299,10 +318,10 @@ REM Add all files
 git add .
 
 REM Create initial commit
-git commit -m "🧬 Initial commit: NeuroCode - The First AI-Native Programming Language"
+git commit -m "🧬 Initial commit: aetherra - The First AI-Native Programming Language"
 
 echo ⚠️  Replace YOUR_USERNAME with your actual GitHub username:
-echo git remote add origin https://github.com/YOUR_USERNAME/neurocode.git
+echo git remote add origin https://github.com/YOUR_USERNAME/aetherra.git
 
 REM Set main branch
 git branch -M main
@@ -310,7 +329,7 @@ git branch -M main
 echo 🚀 Ready to push with:
 echo git push -u origin main
 
-echo 🎉 NeuroCode will be live on GitHub!
+echo 🎉 aetherra will be live on GitHub!
 """
 
     with open("github_upload_commands.bat", "w") as f:
@@ -322,7 +341,7 @@ echo 🎉 NeuroCode will be live on GitHub!
 
 def main():
     """Main preparation function"""
-    print("🚀 NeuroCode GitHub Preparation")
+    print("🚀 aetherra GitHub Preparation")
     print("=" * 50)
 
     # Run preparation steps
@@ -343,7 +362,7 @@ def main():
 
     # Final verification
     if verify_structure():
-        print("\n🎉 NeuroCode is ready for GitHub!")
+        print("\n🎉 aetherra is ready for GitHub!")
         print("\n📋 Next steps:")
         print("1. Review the generated files")
         print("2. Run: github_upload_commands.sh (or .bat on Windows)")

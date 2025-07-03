@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Quick Start Launcher
+🧬 aetherra Quick Start Launcher
 ===============================
 
-One-click launcher to get started with NeuroCode:
+One-click launcher to get started with aetherra:
 - Run status check
 - Launch playground
 - Run example programs
@@ -17,7 +17,7 @@ from pathlib import Path
 
 def print_header():
     """Print welcome header"""
-    print("🧬 NeuroCode v1.0 - AI-Native Programming Language")
+    print("🧬 aetherra v1.0 - AI-Native Programming Language")
     print("=" * 55)
     print("The world's first multi-LLM programming language!")
     print()
@@ -52,8 +52,8 @@ def show_menu():
 
 
 def launch_playground():
-    """Launch the NeuroCode playground"""
-    print("🎮 Launching NeuroCode Playground...")
+    """Launch the aetherra playground"""
+    print("🎮 Launching aetherra Playground...")
     try:
         # Launch from tools directory
         playground_path = Path(__file__).parent / "launch_playground.py"
@@ -80,7 +80,7 @@ def run_demo():
 
 def view_tutorial():
     """View tutorial information"""
-    print("📖 NeuroCode Tutorial")
+    print("📖 aetherra Tutorial")
     print("-" * 20)
     print("Tutorial file: docs/TUTORIAL.md")
     print("Language spec: docs/LANGUAGE_SPEC.md")
@@ -107,7 +107,7 @@ def view_examples():
 
     print("\nTo run an example:")
     print(
-        "python -c \"from src.aethercode_engine import aetherra_engine; engine = neurocode_engine(); engine.execute_file('examples/example.aether')\""
+        "python -c \"from src.aethercode_engine import aetherra_engine; engine = aetherra_engine(); engine.execute_file('examples/example.aether')\""
     )
 
 
@@ -140,7 +140,7 @@ def main():
         elif choice == "5":
             view_examples()
         elif choice == "6":
-            print("👋 Thanks for using NeuroCode!")
+            print("👋 Thanks for using aetherra!")
             break
         else:
             print("❌ Invalid choice. Please enter 1-6.")

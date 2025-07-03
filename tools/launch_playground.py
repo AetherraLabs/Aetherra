@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Playground Launcher
+🧬 aetherra Playground Launcher
 ===============================
 
-Quick launcher for the NeuroCode Playground web interface.
+Quick launcher for the aetherra Playground web interface.
 This starts the Streamlit app that provides an interactive
-environment for learning and experimenting with NeuroCode.
+environment for learning and experimenting with aetherra.
 """
 
 import subprocess
@@ -32,7 +32,9 @@ def check_requirements():
         parent_dir = Path(__file__).parent.parent
         requirements_file = parent_dir / "playground_requirements.txt"
         if requirements_file.exists():
-            subprocess.run([sys.executable, "-m", "pip", "install", "-r", str(requirements_file)])
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "-r", str(requirements_file)]
+            )
         else:
             for package in missing_packages:
                 subprocess.run([sys.executable, "-m", "pip", "install", package])
@@ -41,10 +43,10 @@ def check_requirements():
 
 
 def launch_playground():
-    """Launch the NeuroCode Playground"""
-    print("🧬 Starting NeuroCode Playground...")
+    """Launch the aetherra Playground"""
+    print("🧬 Starting aetherra Playground...")
     print("🌐 The playground will open in your web browser")
-    print("🎮 Interactive NeuroCode environment loading...")
+    print("🎮 Interactive aetherra environment loading...")
     print("")
     print("Features available:")
     print("  ✅ Interactive code editor")
@@ -57,10 +59,10 @@ def launch_playground():
 
     # Get the playground file path
     parent_dir = Path(__file__).parent.parent
-    playground_file = parent_dir / "ui" / "neurocode_playground.py"
+    playground_file = parent_dir / "ui" / "aetherra_playground.py"
 
     if not playground_file.exists():
-        print("❌ Error: neurocode_playground.py not found!")
+        print("❌ Error: aetherra_playground.py not found!")
         print(f"Expected location: {playground_file}")
         return False
 
@@ -91,7 +93,7 @@ def launch_playground():
 
 
 if __name__ == "__main__":
-    print("🧬 NeuroCode Playground Launcher")
+    print("🧬 aetherra Playground Launcher")
     print("=" * 40)
 
     # Check and install requirements

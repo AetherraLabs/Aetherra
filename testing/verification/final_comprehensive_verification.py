@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Final comprehensive verification of all fixes in the NeuroCode Project
+Final comprehensive verification of all fixes in the aetherra Project
 """
 
 import sys
@@ -15,7 +15,7 @@ def test_src_folder_imports():
     """Test all key imports from src folder"""
     print("🧪 Testing src folder imports...")
 
-    # Test 1: Core NeuroCode functionality
+    # Test 1: Core aetherra functionality
     try:
         from aetherra import create_interpreter, create_parser
 
@@ -43,7 +43,7 @@ def test_src_folder_imports():
     # Test 4: Interpreter functionality
     try:
         interpreter = create_interpreter()
-        result = interpreter.execute('say "Hello from NeuroCode!"')
+        result = interpreter.execute('say "Hello from aetherra!"')
         print(f"✅ Interpreter working: {result[:50]}...")
     except Exception as e:
         print(f"❌ Interpreter failed: {e}")
@@ -51,9 +51,9 @@ def test_src_folder_imports():
 
     # Test 5: Enhanced interpreter (optional features)
     try:
-        from neurocode.core.interpreter.enhanced import EnhancedAetherraInterpreter
+        from aetherra.core.interpreter.enhanced import EnhancedaetherraInterpreter
 
-        enhanced = EnhancedAetherraInterpreter()
+        enhanced = EnhancedaetherraInterpreter()
         result = enhanced.execute('say "Enhanced mode active!"')
         print(f"✅ Enhanced interpreter working: {result[:50]}...")
     except Exception as e:
@@ -93,9 +93,9 @@ def test_core_folder_imports():
         sys.path.insert(0, str(core_path))
 
         try:
-            print("✅ Core neurocode_engine import working")
+            print("✅ Core aetherra_engine import working")
         except Exception as e:
-            print(f"⚠️ Core neurocode_engine: {e}")
+            print(f"⚠️ Core aetherra_engine: {e}")
 
     return True
 
@@ -119,7 +119,7 @@ def test_launchers():
 
 def main():
     """Run comprehensive verification"""
-    print("🔧 FINAL NEUROCODE PROJECT VERIFICATION")
+    print("🔧 FINAL aetherra PROJECT VERIFICATION")
     print("=" * 50)
 
     all_passed = True
@@ -139,14 +139,14 @@ def main():
     print("\n" + "=" * 50)
     if all_passed:
         print("🎉 ALL CRITICAL TESTS PASSED!")
-        print("✅ NeuroCode Project is fully functional")
+        print("✅ aetherra Project is fully functional")
         print("✅ Both src structure and legacy core work")
         print("✅ All major components load successfully")
     else:
         print("⚠️ Some issues detected but core functionality working")
 
     print("\n📋 FINAL STATUS:")
-    print("• Core NeuroCode language: ✅ Working")
+    print("• Core aetherra language: ✅ Working")
     print("• Enhanced interpreter: ⚠️ Partial (missing optional AI modules)")
     print("• Neuroplex GUI: ✅ Working")
     print("• CLI interface: ⚠️ Partial (persona dependencies)")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Quick NeuroCode Functionality Test
+Quick aetherra Functionality Test
 """
 
 import os
@@ -13,8 +13,8 @@ sys.path.insert(0, project_root)
 sys.path.insert(0, src_path)
 
 
-def test_neurocode_basics():
-    print("🧬 TESTING NEUROCODE BASICS")
+def test_aetherra_basics():
+    print("🧬 TESTING aetherra BASICS")
     print("=" * 40)
 
     # Test 1: Core imports
@@ -29,7 +29,7 @@ def test_neurocode_basics():
     # Test 2: Parser functionality
     try:
         parser_func = create_parser()
-        neurocode = """
+        aetherra = """
 goal: test system performance
 agent: on
 remember("test data") as "session"
@@ -37,8 +37,8 @@ when cpu_usage > 80%:
     optimize for "speed"
 end
 """
-        ast = parser_func(neurocode)
-        print(f"✅ Parsed NeuroCode: {len(ast)} AST nodes generated")
+        ast = parser_func(aetherra)
+        print(f"✅ Parsed aetherra: {len(ast)} AST nodes generated")
         for node in ast:
             print(f"   - {type(node).__name__}")
     except Exception as e:
@@ -59,7 +59,7 @@ end
     except Exception as e:
         print(f"⚠️ UI system: {e}")
 
-    print("\n🎉 NEUROCODE IS FUNCTIONAL!")
+    print("\n🎉 aetherra IS FUNCTIONAL!")
     print("✅ Language parsing works")
     print("✅ Interpreter system works")
     print("✅ Core components operational")
@@ -67,13 +67,13 @@ end
     return True
 
 
-def demo_neurocode_language():
-    print("\n🚀 NEUROCODE LANGUAGE DEMO")
+def demo_aetherra_language():
+    print("\n🚀 aetherra LANGUAGE DEMO")
     print("=" * 40)
 
-    # Advanced NeuroCode example
-    advanced_neurocode = """
-# Advanced NeuroCode Program
+    # Advanced aetherra example
+    advanced_aetherra = """
+# Advanced aetherra Program
 goal: optimize application performance by 50% priority: critical
 
 agent: performance_optimizer
@@ -110,18 +110,18 @@ recall experiences with "session_log"
 
     try:
         from src.aethercode.core.parser.parser import (
-            NeuroCodeCompiler,
-            AetherraLexer,
-            AetherraParser,
+            aetherraCompiler,
+            aetherraLexer,
+            aetherraParser,
         )
 
         # Tokenize
-        lexer = AetherraLexer(advanced_neurocode)
+        lexer = aetherraLexer(advanced_aetherra)
         tokens = lexer.tokenize()
         print(f"🔤 Tokenization: {len(tokens)} tokens")
 
         # Parse to AST
-        parser = AetherraParser(tokens)
+        parser = aetherraParser(tokens)
         ast = parser.parse()
         print(f"🌳 AST Generation: {len(ast)} nodes")
 
@@ -136,11 +136,11 @@ recall experiences with "session_log"
             print(f"   {node_type}: {count}")
 
         # Compile
-        compiler = NeuroCodeCompiler()
+        compiler = aetherraCompiler()
         compiled_code = compiler.compile(ast)
         print(f"🔧 Compilation: {len(compiled_code)} chars of executable code")
 
-        print("\n✅ NEUROCODE LANGUAGE FULLY OPERATIONAL!")
+        print("\n✅ aetherra LANGUAGE FULLY OPERATIONAL!")
         print("✅ Complete lexical analysis")
         print("✅ Full syntactic parsing")
         print("✅ AST generation")
@@ -157,14 +157,14 @@ recall experiences with "session_log"
 
 
 if __name__ == "__main__":
-    print("🧬 NEUROCODE QUICK TEST SUITE")
+    print("🧬 aetherra QUICK TEST SUITE")
     print("=" * 50)
 
-    success1 = test_neurocode_basics()
-    success2 = demo_neurocode_language()
+    success1 = test_aetherra_basics()
+    success2 = demo_aetherra_language()
 
     if success1 and success2:
         print("\n🎉 ALL TESTS PASSED!")
-        print("🧬 NeuroCode is ready for use!")
+        print("🧬 aetherra is ready for use!")
     else:
         print("\n⚠️ Some tests failed, but core functionality works")

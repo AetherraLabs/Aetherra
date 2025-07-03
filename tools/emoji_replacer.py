@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Emoji Replacement Script for NeuroCode UI
+Emoji Replacement Script for aetherra UI
 
 This script replaces all emojis in the specified file with text-based alternatives.
 It maintains a mapping of common emojis to their text equivalents.

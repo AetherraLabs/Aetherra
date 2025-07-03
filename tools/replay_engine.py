@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🎬 NeuroCode Agent Replay Engine
+🎬 aetherra Agent Replay Engine
 Interactive debugging and decision playback system for agent consciousness analysis.
 
 This module provides tools to replay agent decision-making processes,
@@ -60,7 +60,9 @@ class DecisionTraceAnalyzer:
     def __init__(self):
         self.analysis_cache = {}
 
-    def analyze_decision_sequence(self, decisions: List[DecisionPoint]) -> Dict[str, Any]:
+    def analyze_decision_sequence(
+        self, decisions: List[DecisionPoint]
+    ) -> Dict[str, Any]:
         """Analyze a sequence of decisions for patterns"""
         if not decisions:
             return {"error": "No decisions to analyze"}
@@ -80,7 +82,8 @@ class DecisionTraceAnalyzer:
         """Calculate time span of decisions"""
         try:
             timestamps = [
-                datetime.fromisoformat(d.timestamp.replace("Z", "+00:00")) for d in decisions
+                datetime.fromisoformat(d.timestamp.replace("Z", "+00:00"))
+                for d in decisions
             ]
             start_time = min(timestamps)
             end_time = max(timestamps)
@@ -90,7 +93,9 @@ class DecisionTraceAnalyzer:
                 "start": start_time.isoformat(),
                 "end": end_time.isoformat(),
                 "duration_seconds": duration,
-                "decisions_per_minute": len(decisions) / (duration / 60) if duration > 0 else 0,
+                "decisions_per_minute": len(decisions) / (duration / 60)
+                if duration > 0
+                else 0,
             }
         except Exception as e:
             logger.error(f"Failed to calculate time span: {e}")
@@ -130,7 +135,9 @@ class DecisionTraceAnalyzer:
         }
         return patterns
 
-    def _find_repeated_decisions(self, decisions: List[DecisionPoint]) -> List[Dict[str, Any]]:
+    def _find_repeated_decisions(
+        self, decisions: List[DecisionPoint]
+    ) -> List[Dict[str, Any]]:
         """Find decisions that are repeated frequently"""
         decision_counts = {}
         for decision in decisions:
@@ -138,11 +145,15 @@ class DecisionTraceAnalyzer:
             decision_counts[key] = decision_counts.get(key, 0) + 1
 
         repeated = [
-            {"pattern": key, "count": count} for key, count in decision_counts.items() if count > 1
+            {"pattern": key, "count": count}
+            for key, count in decision_counts.items()
+            if count > 1
         ]
         return sorted(repeated, key=lambda x: x["count"], reverse=True)
 
-    def _find_common_sequences(self, decisions: List[DecisionPoint]) -> List[Dict[str, Any]]:
+    def _find_common_sequences(
+        self, decisions: List[DecisionPoint]
+    ) -> List[Dict[str, Any]]:
         """Find common sequences of decisions"""
         sequences = {}
         window_size = 3
@@ -152,11 +163,15 @@ class DecisionTraceAnalyzer:
             sequences[sequence] = sequences.get(sequence, 0) + 1
 
         common_sequences = [
-            {"sequence": list(seq), "count": count} for seq, count in sequences.items() if count > 1
+            {"sequence": list(seq), "count": count}
+            for seq, count in sequences.items()
+            if count > 1
         ]
         return sorted(common_sequences, key=lambda x: x["count"], reverse=True)
 
-    def _find_context_triggers(self, decisions: List[DecisionPoint]) -> List[Dict[str, Any]]:
+    def _find_context_triggers(
+        self, decisions: List[DecisionPoint]
+    ) -> List[Dict[str, Any]]:
         """Find context patterns that trigger specific decisions"""
         triggers = {}
 
@@ -169,7 +184,9 @@ class DecisionTraceAnalyzer:
                 triggers[key] = triggers.get(key, 0) + 1
 
         trigger_patterns = [
-            {"trigger": key, "count": count} for key, count in triggers.items() if count > 1
+            {"trigger": key, "count": count}
+            for key, count in triggers.items()
+            if count > 1
         ]
         return sorted(trigger_patterns, key=lambda x: x["count"], reverse=True)
 
@@ -207,7 +224,9 @@ class DecisionTraceAnalyzer:
             },
         }
 
-    def _extract_reasoning_themes(self, decisions: List[DecisionPoint]) -> List[Dict[str, Any]]:
+    def _extract_reasoning_themes(
+        self, decisions: List[DecisionPoint]
+    ) -> List[Dict[str, Any]]:
         """Extract common themes from reasoning text"""
         reasoning_texts = [d.reasoning for d in decisions if d.reasoning]
 
@@ -223,7 +242,9 @@ class DecisionTraceAnalyzer:
                     word_counts[word] = word_counts.get(word, 0) + 1
 
         themes = [
-            {"theme": word, "frequency": count} for word, count in word_counts.items() if count > 2
+            {"theme": word, "frequency": count}
+            for word, count in word_counts.items()
+            if count > 2
         ]
         return sorted(themes, key=lambda x: x["frequency"], reverse=True)[:10]
 
@@ -236,7 +257,9 @@ class ReplayEngine:
         self.breakpoint_handlers = {}
         self.decision_analyzer = DecisionTraceAnalyzer()
 
-    def start_replay_session(self, agent_name: str, decision_trace: List[Dict[str, Any]]) -> str:
+    def start_replay_session(
+        self, agent_name: str, decision_trace: List[Dict[str, Any]]
+    ) -> str:
         """Start a new replay session"""
         session_id = f"replay_{agent_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
@@ -245,7 +268,9 @@ class ReplayEngine:
         for i, trace_data in enumerate(decision_trace):
             try:
                 decision = DecisionPoint(
-                    timestamp=trace_data.get("timestamp", datetime.now(timezone.utc).isoformat()),
+                    timestamp=trace_data.get(
+                        "timestamp", datetime.now(timezone.utc).isoformat()
+                    ),
                     decision_id=trace_data.get("decision_id", f"decision_{i}"),
                     context=trace_data.get("context", {}),
                     options=trace_data.get("options", []),
@@ -272,7 +297,9 @@ class ReplayEngine:
             "current_position": 0,
         }
 
-        logger.info(f"Started replay session {session_id} with {len(decisions)} decisions")
+        logger.info(
+            f"Started replay session {session_id} with {len(decisions)} decisions"
+        )
         return session_id
 
     def step_forward(self, session_id: str, steps: int = 1) -> Dict[str, Any]:
@@ -382,7 +409,9 @@ class ReplayEngine:
                 "status": "end_of_replay",
             }
 
-    def inspect_context(self, session_id: str, position: Optional[int] = None) -> Dict[str, Any]:
+    def inspect_context(
+        self, session_id: str, position: Optional[int] = None
+    ) -> Dict[str, Any]:
         """Inspect agent context at specific position"""
         if session_id not in self.active_sessions:
             raise ValueError(f"Session {session_id} not found")
@@ -503,22 +532,24 @@ class InteractiveReplayDebugger:
         self.replay_engine = replay_engine
         self.current_session = None
 
-    def start_debug_session(self, agent_name: str, decision_trace: List[Dict[str, Any]]) -> str:
+    def start_debug_session(
+        self, agent_name: str, decision_trace: List[Dict[str, Any]]
+    ) -> str:
         """Start interactive debugging session"""
         session_id = self.replay_engine.start_replay_session(agent_name, decision_trace)
         self.current_session = session_id
 
-#         print(f"🎬 Started debug session for agent '{agent_name}'")
+        print(f"🎬 Started debug session for agent '{agent_name}'")
         print(f"📋 Session ID: {session_id}")
         print(f"🎯 Total decisions: {len(decision_trace)}")
-#         print("\nUse debug commands: step, back, breakpoint, inspect, analyze, help")
+        print("\nUse debug commands: step, back, breakpoint, inspect, analyze, help")
 
         return session_id
 
     def debug_command(self, command: str, *args) -> Any:
         """Execute debug command"""
         if not self.current_session:
-#             print("❌ No active debug session. Start one first.")
+            print("❌ No active debug session. Start one first.")
             return
 
         try:
@@ -540,7 +571,9 @@ class InteractiveReplayDebugger:
                 elif args and args[0] == "clear":
                     position = int(args[1]) if len(args) > 1 else None
                     if position is not None:
-                        self.replay_engine.remove_breakpoint(self.current_session, position)
+                        self.replay_engine.remove_breakpoint(
+                            self.current_session, position
+                        )
                         print(f"🚫 Removed breakpoint at position {position}")
                 elif args:
                     position = int(args[0])
@@ -549,7 +582,9 @@ class InteractiveReplayDebugger:
 
             elif command == "inspect":
                 position = int(args[0]) if args else None
-                context = self.replay_engine.inspect_context(self.current_session, position)
+                context = self.replay_engine.inspect_context(
+                    self.current_session, position
+                )
                 self._display_context(context)
                 return context
 
@@ -565,7 +600,9 @@ class InteractiveReplayDebugger:
 
             elif command == "export":
                 filepath = args[0] if args else None
-                export_path = self.replay_engine.export_session(self.current_session, filepath)
+                export_path = self.replay_engine.export_session(
+                    self.current_session, filepath
+                )
                 print(f"💾 Session exported to: {export_path}")
                 return export_path
 
@@ -640,7 +677,7 @@ class InteractiveReplayDebugger:
 
     def _show_help(self):
         """Show help information"""
-#         print("\n🆘 Debug Commands:")
+        print("\n🆘 Debug Commands:")
         print("  step [n]        - Step forward n positions (default: 1)")
         print("  back [n]        - Step backward n positions (default: 1)")
         print("  breakpoint <pos> - Set breakpoint at position")
@@ -694,7 +731,7 @@ if __name__ == "__main__":
 
     # Test interactive debugger
     debugger = InteractiveReplayDebugger(engine)
-#     print("\n🎬 Testing interactive debugger...")
+    print("\n🎬 Testing interactive debugger...")
     debugger.start_debug_session("TestAgent", sample_decisions)
 
-#     print("🎯 Use debugger.debug_command('step') to test commands")
+    print("🎯 Use debugger.debug_command('step') to test commands")

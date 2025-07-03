@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-NeuroCode Developer Onboarding & Scaffolding System
+aetherra Developer Onboarding & Scaffolding System
 ===================================================
 
 Revolutionary developer experience that enables plugin creation in minutes.
-This system demonstrates NeuroCode's AI-native approach to development tools.
+This system demonstrates aetherra's AI-native approach to development tools.
 
 Features:
 - Interactive developer setup wizard
@@ -20,8 +20,8 @@ from pathlib import Path
 from typing import Dict, List
 
 
-class NeuroCodeScaffolder:
-    """Advanced scaffolding system for NeuroCode development"""
+class aetherraScaffolder:
+    """Advanced scaffolding system for aetherra development"""
 
     def __init__(self):
         self.project_root = Path(__file__).parent
@@ -40,10 +40,10 @@ class NeuroCodeScaffolder:
 
     def init_developer_setup(self) -> Dict:
         """Interactive developer onboarding wizard"""
-        print("🧬 Welcome to NeuroCode Development!")
+        print("🧬 Welcome to aetherra Development!")
         print("=" * 50)
         print("This wizard will set up your development environment")
-        print("and introduce you to NeuroCode's AI-native development paradigm.\n")
+        print("and introduce you to aetherra's AI-native development paradigm.\n")
 
         # Collect developer information
         config = self._collect_developer_info()
@@ -69,7 +69,7 @@ class NeuroCodeScaffolder:
             "preferred_examples": [],
         }
 
-        print(f"\n✅ Welcome to NeuroCode development, {config['developer_name']}!")
+        print(f"\n✅ Welcome to aetherra development, {config['developer_name']}!")
         return config
 
     def _select_experience_level(self) -> str:
@@ -148,7 +148,7 @@ class NeuroCodeScaffolder:
 
     def _create_starter_project(self, config: Dict):
         """Create a starter project based on interests and experience"""
-        print("\n🚀 Creating your first NeuroCode project...")
+        print("\n🚀 Creating your first aetherra project...")
 
         workspace_dir = Path(config["workspace_dir"])
 
@@ -168,7 +168,7 @@ class NeuroCodeScaffolder:
         """Create an AI agent example"""
         agent_file = workspace_dir / "my_first_agent.aether"
 
-        content = f"""# My First NeuroCode Agent
+        content = f"""# My First aetherra Agent
 # Created by: {config["developer_name"]}
 # Date: {datetime.now().strftime("%Y-%m-%d")}
 
@@ -330,29 +330,29 @@ optimize for user_preferences
         config["starter_file"] = str(nlp_file)
 
     def _create_basic_example(self, workspace_dir: Path, config: Dict):
-        """Create a basic NeuroCode example"""
-        basic_file = workspace_dir / "hello_neurocode.aether"
+        """Create a basic aetherra example"""
+        basic_file = workspace_dir / "hello_aetherra.aether"
 
-        content = f"""# Hello NeuroCode!
+        content = f"""# Hello aetherra!
 # Created by: {config["developer_name"]}
 # Date: {datetime.now().strftime("%Y-%m-%d")}
 
-# Your first NeuroCode program with AI-native features
+# Your first aetherra program with AI-native features
 
 # Set a learning goal
-goal: "understand NeuroCode fundamentals" priority: high
+goal: "understand aetherra fundamentals" priority: high
 
 # Activate an intelligent assistant
 agent: on
     personality: friendly_teacher
-    specialization: "neurocode_education"
+    specialization: "aetherra_education"
 
 # Store your learning preferences
 remember("I am a {config["experience_level"]} developer") as "experience_level"
 remember("My interests: {", ".join(config["interests"])}") as "interests"
 
 # AI-powered greeting
-assistant: "Greet the user and explain NeuroCode's key features"
+assistant: "Greet the user and explain aetherra's key features"
 
 # Demonstrate memory capabilities
 when user_asks_question:
@@ -368,7 +368,7 @@ evolve teaching_strategies
 remember successful_explanations as "best_practices"
 
 # Encourage exploration
-assistant: "Suggest interesting NeuroCode features to explore next"
+assistant: "Suggest interesting aetherra features to explore next"
 """
 
         with open(basic_file, "w") as f:
@@ -378,40 +378,40 @@ assistant: "Suggest interesting NeuroCode features to explore next"
 
     def _show_next_steps(self, config: Dict):
         """Show next steps for the developer"""
-        print("\n🎯 Next Steps for NeuroCode Development:")
+        print("\n🎯 Next Steps for aetherra Development:")
         print("=" * 50)
 
         print("1. 🔍 Explore your starter project:")
         print(f"   cd {Path(config['workspace_dir']).name}")
-        print(f"   neurocode run {Path(config['starter_file']).name}")
+        print(f"   aetherra run {Path(config['starter_file']).name}")
 
         print("\n2. 🛠️ Create your first plugin:")
-        print("   neurocode create plugin my-awesome-plugin")
+        print("   aetherra create plugin my-awesome-plugin")
 
         print("\n3. 📖 Learn with examples:")
-        print("   neurocode examples")
-        print("   neurocode docs getting-started")
+        print("   aetherra examples")
+        print("   aetherra docs getting-started")
 
         print("\n4. 🤝 Join the community:")
-        print("   neurocode community join")
-        print("   neurocode share plugin my-awesome-plugin")
+        print("   aetherra community join")
+        print("   aetherra share plugin my-awesome-plugin")
 
         print("\n5. 🚀 Advanced features:")
-        print("   neurocode template agent security-specialist")
-        print("   neurocode template goal performance-optimizer")
+        print("   aetherra template agent security-specialist")
+        print("   aetherra template goal performance-optimizer")
 
-        print(f"\n✨ Welcome to the NeuroCode ecosystem, {config['developer_name']}!")
+        print(f"\n✨ Welcome to the aetherra ecosystem, {config['developer_name']}!")
         print("🧬 Where computation becomes cognition!")
 
 
 def main():
     """Main entry point for developer onboarding"""
-    scaffolder = NeuroCodeScaffolder()
+    scaffolder = aetherraScaffolder()
 
     if len(sys.argv) > 1 and sys.argv[1] == "init":
         scaffolder.init_developer_setup()
     else:
-        print("NeuroCode Developer Onboarding System")
+        print("aetherra Developer Onboarding System")
         print("Usage: python developer_scaffolder.py init")
 
 

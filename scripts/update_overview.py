@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Project Overview Update System
+aetherra Project Overview Update System
 
 This script intelligently updates the PROJECT_OVERVIEW.md file by:
 1. Scanning the project structure for changes
@@ -131,7 +131,9 @@ class OverviewUpdater:
 
         status["cname_exists"] = (self.project_root / "CNAME").exists()
         status["index_exists"] = (self.project_root / "index.html").exists()
-        status["domain_setup_guide_exists"] = (self.project_root / "DOMAIN_SETUP_GUIDE.md").exists()
+        status["domain_setup_guide_exists"] = (
+            self.project_root / "DOMAIN_SETUP_GUIDE.md"
+        ).exists()
         status["protection_system_exists"] = (
             self.project_root / "scripts/project_protection.py"
         ).exists()
@@ -148,15 +150,27 @@ class OverviewUpdater:
                 "✅ **COMPLETE**",
                 "AI consciousness preservation operational",
             ),
-            ("🎯 **Decision Replay**", "✅ **COMPLETE**", "Full transparency debugging system"),
-            ("🔀 **Agent Merging**", "✅ **COMPLETE**", "Intelligent capability combination"),
-            ("🏗️ **Developer Onboarding**", "✅ **COMPLETE**", "AI-guided scaffolding system"),
+            (
+                "🎯 **Decision Replay**",
+                "✅ **COMPLETE**",
+                "Full transparency debugging system",
+            ),
+            (
+                "🔀 **Agent Merging**",
+                "✅ **COMPLETE**",
+                "Intelligent capability combination",
+            ),
+            (
+                "🏗️ **Developer Onboarding**",
+                "✅ **COMPLETE**",
+                "AI-guided scaffolding system",
+            ),
             (
                 "🌐 **Website & Domain**",
                 "✅ **COMPLETE**"
                 if website_status["cname_exists"] and website_status["index_exists"]
                 else "🔄 **IN PROGRESS**",
-                "Live at httpsneurocode.dev",
+                "Live at httpsaetherra.dev",
             ),
             (
                 "🛡️ **Protection System**",
@@ -173,7 +187,7 @@ class OverviewUpdater:
             (
                 "🔗 **GitHub Integration**",
                 "✅ **COMPLETE**",
-                "All links updated to Zyonic88/NeuroCode",
+                "All links updated to Zyonic88/aetherra",
             ),
         ]
 
@@ -240,7 +254,9 @@ class OverviewUpdater:
         goals_info = self.get_goals_status()
         website_status = self.check_website_status()
 
-        print(f"📊 Found {stats['files_total']} files, {stats['core_modules']} core modules")
+        print(
+            f"📊 Found {stats['files_total']} files, {stats['core_modules']} core modules"
+        )
         print(f"🎯 Active goals: {len(goals_info['active_goals'])}")
         print(f"🌐 Website status: {'✅' if website_status['cname_exists'] else '❌'}")
 
@@ -251,7 +267,9 @@ class OverviewUpdater:
         # Update last updated date
         current_date = datetime.datetime.now().strftime("%B %d, %Y")
         content = re.sub(
-            r"> \*\*Last Updated\*\*: [^\\n]+", f"> **Last Updated**: {current_date}", content
+            r"> \*\*Last Updated\*\*: [^\\n]+",
+            f"> **Last Updated**: {current_date}",
+            content,
         )
 
         # Update milestone status table
@@ -285,10 +303,17 @@ class OverviewUpdater:
         if auto_commit:
             try:
                 subprocess.run(
-                    ["git", "add", "PROJECT_OVERVIEW.md"], cwd=self.project_root, check=True
+                    ["git", "add", "PROJECT_OVERVIEW.md"],
+                    cwd=self.project_root,
+                    check=True,
                 )
                 subprocess.run(
-                    ["git", "commit", "-m", "Update project overview with current status"],
+                    [
+                        "git",
+                        "commit",
+                        "-m",
+                        "Update project overview with current status",
+                    ],
                     cwd=self.project_root,
                     check=True,
                 )

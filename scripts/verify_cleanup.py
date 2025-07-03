@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Duplicate Cleanup Verification
+aetherra Duplicate Cleanup Verification
 
 Verifies that the duplicate cleanup was successful and the project
 structure is now clean and organized.
@@ -11,7 +11,7 @@ from pathlib import Path
 
 def verify_cleanup():
     """Verify the cleanup was successful."""
-    print("🔍 NeuroCode Duplicate Cleanup Verification")
+    print("🔍 aetherra Duplicate Cleanup Verification")
     print("=" * 50)
 
     # Check website files are only in website/
@@ -32,9 +32,13 @@ def verify_cleanup():
 
     # Check test files are only in tests/unit/
     print("\n🧪 Test Files:")
-    tests_count = len(list(Path("tests").glob("test_*.py"))) if Path("tests").exists() else 0
+    tests_count = (
+        len(list(Path("tests").glob("test_*.py"))) if Path("tests").exists() else 0
+    )
     unit_count = (
-        len(list(Path("tests/unit").glob("test_*.py"))) if Path("tests/unit").exists() else 0
+        len(list(Path("tests/unit").glob("test_*.py")))
+        if Path("tests/unit").exists()
+        else 0
     )
 
     print(f"   tests/ directory: {tests_count} test files")
@@ -69,7 +73,11 @@ def verify_cleanup():
 
     # Check archive structure
     print("\n📦 Archive Structure:")
-    archive_dirs = ["archive/status_files", "archive/duplicates", "archive/empty_scripts"]
+    archive_dirs = [
+        "archive/status_files",
+        "archive/duplicates",
+        "archive/empty_scripts",
+    ]
     for dir_path in archive_dirs:
         archive_dir = Path(dir_path)
         if archive_dir.exists():

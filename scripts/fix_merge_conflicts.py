@@ -1,5 +1,5 @@
 """
-Automatic merge conflict resolver for NeuroCode project.
+Automatic merge conflict resolver for aetherra project.
 This script removes Git merge conflict markers from all files.
 """
 
@@ -77,7 +77,7 @@ def fix_all_merge_conflicts():
     files_fixed = 0
     total_files = 0
 
-    print("🔧 Fixing merge conflicts in NeuroCode project...")
+    print("🔧 Fixing merge conflicts in aetherra project...")
 
     for ext in extensions:
         for filepath in glob.glob(f"**/{ext}", recursive=True):

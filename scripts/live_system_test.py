@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-NeuroCode Live System Test
+aetherra Live System Test
 
-Test actual NeuroCode functionality with real operations
+Test actual aetherra functionality with real operations
 """
 
 import json
@@ -16,10 +16,10 @@ def test_memory_operations():
     print("-" * 30)
 
     try:
-        from core.aetherra_memory import AetherraMemory
+        from core.memory import NeuroMemory
 
         # Test memory creation and operations
-        memory = AetherraMemory()
+        memory = NeuroMemory()
 
         # Test remembering
         test_memory = f"System test executed at {sys.version}"
@@ -82,10 +82,10 @@ def test_interpreter_basic():
     print("-" * 30)
 
     try:
-        from core.interpreter import AetherraInterpreter
+        from core.interpreter import aetherraInterpreter
 
         # Test interpreter creation
-        interpreter = AetherraInterpreter()
+        interpreter = aetherraInterpreter()
 
         # Test simple expression
         result = interpreter.execute("2 + 2")
@@ -162,7 +162,7 @@ def test_neuroplex_components():
 
 def main():
     """Run live system test."""
-    print("🧬 NeuroCode Live System Test")
+    print("🧬 aetherra Live System Test")
     print("=" * 50)
 
     tests = [
@@ -197,7 +197,7 @@ def main():
 
     if passed == total:
         print("🎉 ALL SYSTEMS FULLY OPERATIONAL!")
-        print("✅ NeuroCode and Neuroplex are ready for use")
+        print("✅ aetherra and Neuroplex are ready for use")
     elif passed >= total * 0.8:
         print("⚠️ MOSTLY OPERATIONAL - Minor issues detected")
         print("✅ Core functionality is working")

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Status Check
+🧬 aetherra Status Check
 ========================
 
-Quick status check for NeuroCode components and dependencies.
+Quick status check for aetherra components and dependencies.
 """
 
 import sys
@@ -15,7 +15,7 @@ sys.path.insert(0, str(project_root))
 
 
 def main():
-    print("🧬 NeuroCode Multi-LLM Status Report")
+    print("🧬 aetherra Multi-LLM Status Report")
     print("=" * 50)
 
     # Test core components
@@ -30,9 +30,9 @@ def main():
         print(f"❌ Multi-LLM Manager: Error - {e}")
 
     try:
-        print("✅ NeuroCode Engine: Available")
+        print("✅ aetherra Engine: Available")
     except Exception as e:
-        print(f"❌ NeuroCode Engine: Error - {e}")
+        print(f"❌ aetherra Engine: Error - {e}")
 
     # Test playground
     try:
@@ -65,7 +65,7 @@ def main():
     for provider in providers:
         print(f"   {provider}")
 
-    print("\n🎯 NeuroCode Status: Ready!")
+    print("\n🎯 aetherra Status: Ready!")
     print("Run 'python launch_playground.py' to start the interactive playground.")
 
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-NeuroCode Workspace Organization Script
+aetherra Workspace Organization Script
 =====================================
 
-Organizes and cleans up the entire NeuroCode workspace according to the
+Organizes and cleans up the entire aetherra workspace according to the
 modular architecture plan. Moves files to appropriate folders and
 cleans up obsolete files.
 """
@@ -12,8 +12,8 @@ import shutil
 from pathlib import Path
 
 # Get the workspace root directory
-WORKSPACE_ROOT = Path(r"c:\Users\enigm\Desktop\New Neurocode Language")
-print(f"🔧 Organizing NeuroCode workspace: {WORKSPACE_ROOT}")
+WORKSPACE_ROOT = Path(r"c:\Users\enigm\Desktop\New aetherra Language")
+print(f"🔧 Organizing aetherra workspace: {WORKSPACE_ROOT}")
 
 
 def create_directory_if_not_exists(path):
@@ -64,8 +64,8 @@ def main():
         WORKSPACE_ROOT / "MODULAR_ARCHITECTURE.md", docs_dir / "MODULAR_ARCHITECTURE.md"
     )
     move_file_if_exists(
-        WORKSPACE_ROOT / "NEUROCODE_LANGUAGE_SPEC.md",
-        docs_dir / "NEUROCODE_LANGUAGE_SPEC.md",
+        WORKSPACE_ROOT / "aetherra_LANGUAGE_SPEC.md",
+        docs_dir / "aetherra_LANGUAGE_SPEC.md",
     )
 
     # Move completion reports to docs/reports
@@ -206,11 +206,11 @@ def main():
         "demo_ui_features.py",
         "comprehensive_demo.py",
         "debug_demo.py",
-        "enhanced_neurocode_demo.py",
+        "enhanced_aetherra_demo.py",
         "interpreter_enhancement_demo.py",
         "memory_temporal_demo.py",
         "natural_translation_demo.py",
-        "neurocode_language_demo.py",
+        "aetherra_language_demo.py",
         "plugin_metadata_demo.py",
     ]
 
@@ -246,7 +246,7 @@ def main():
     data_files = [
         "memory_store.json.example",
         "goals_store.json.example",
-        "neurocode_functions.json.example",
+        "aetherra_functions.json.example",
         "enhanced_memory.json",
         "vector_memory.json",
     ]
@@ -267,9 +267,9 @@ def main():
 
     # Files to archive (old versions, duplicates, etc.)
     obsolete_files = [
-        "neurocode.py",  # Old main file
-        "neurocode_engine.py",
-        "neurocode_playground.py",
+        "aetherra.py",  # Old main file
+        "aetherra_engine.py",
+        "aetherra_playground.py",
         "neuroplex.py",  # Old monolithic GUI
         "neuro_runner.py",
         "neuro_runner_standalone.py",
@@ -309,7 +309,7 @@ def main():
     print("   🎯 examples/")
     print("   💾 data/")
     print("   🗄️ archive/")
-    print("   🏗️ src/neurocode/")
+    print("   🏗️ src/aetherra/")
 
 
 if __name__ == "__main__":

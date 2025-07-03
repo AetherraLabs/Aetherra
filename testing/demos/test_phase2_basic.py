@@ -8,7 +8,7 @@ Test Phase 2 features without file dependencies.
 
 def test_basic_stability():
     """Test basic stability features without file I/O"""
-#     print("Testing basic stability...")
+    print("Testing basic stability...")
 
     try:
         # Test the decorator pattern
@@ -136,5 +136,5 @@ if __name__ == "__main__":
     print("\n📝 Next Steps:")
     print("• Configure file storage permissions for full functionality")
     print("• Create sample plugins to test the registry")
-    print("• Integrate with existing NeuroCode execution engine")
+    print("• Integrate with existing aetherra execution engine")
     print("• Add UI integration for the enhanced features")

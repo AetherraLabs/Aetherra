@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-📊 NeuroCode Performance Monitor & Logger
+📊 aetherra Performance Monitor & Logger
 =========================================
 
-Comprehensive monitoring and logging system for NeuroCode operations:
+Comprehensive monitoring and logging system for aetherra operations:
 - Performance metrics collection
 - Error logging and analysis
 - Memory usage tracking
 - Execution time profiling
 - System health monitoring
 
-This provides production-ready observability for NeuroCode systems.
+This provides production-ready observability for aetherra systems.
 """
 
 import json
@@ -43,7 +43,7 @@ class PerformanceMetrics:
 
 
 class NeuroLogger:
-    """Advanced logging system for NeuroCode operations"""
+    """Advanced logging system for aetherra operations"""
 
     def __init__(self, log_dir: str = "logs", enable_performance: bool = True):
         self.log_dir = Path(log_dir)
@@ -61,14 +61,16 @@ class NeuroLogger:
             "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
         )
 
-        simple_formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+        simple_formatter = logging.Formatter(
+            "%(asctime)s | %(levelname)s | %(message)s"
+        )
 
         # File handlers
-        self.logger = logging.getLogger("neurocode")
+        self.logger = logging.getLogger("aetherra")
         self.logger.setLevel(logging.DEBUG)
 
         # Main log file
-        main_handler = logging.FileHandler(self.log_dir / "neurocode.log")
+        main_handler = logging.FileHandler(self.log_dir / "aetherra.log")
         main_handler.setLevel(logging.INFO)
         main_handler.setFormatter(detailed_formatter)
 
@@ -94,11 +96,13 @@ class NeuroLogger:
         # self.logger.addHandler(console_handler)  # Uncomment for console output
 
         # Separate performance logger
-        self.perf_logger = logging.getLogger("neurocode.performance")
+        self.perf_logger = logging.getLogger("aetherra.performance")
         self.perf_logger.addHandler(perf_handler)
         self.perf_logger.setLevel(logging.INFO)
 
-    def start_operation(self, operation: str, metadata: Optional[Dict[str, Any]] = None) -> str:
+    def start_operation(
+        self, operation: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Start monitoring an operation"""
         if not self.enable_performance:
             return operation
@@ -119,7 +123,10 @@ class NeuroLogger:
         return operation_id
 
     def end_operation(
-        self, operation_id: str, success: bool = True, error_message: Optional[str] = None
+        self,
+        operation_id: str,
+        success: bool = True,
+        error_message: Optional[str] = None,
     ) -> Optional[PerformanceMetrics]:
         """End monitoring an operation"""
         if not self.enable_performance:
@@ -163,13 +170,17 @@ class NeuroLogger:
         )
 
         if not success and error_message:
-            self.logger.error(f"Operation failed: {operation_data['operation']} - {error_message}")
+            self.logger.error(
+                f"Operation failed: {operation_data['operation']} - {error_message}"
+            )
         else:
             self.logger.info(f"Completed operation: {operation_data['operation']}")
 
         return metrics
 
-    def log_error(self, error: Exception, context: str = "", operation: Optional[str] = None):
+    def log_error(
+        self, error: Exception, context: str = "", operation: Optional[str] = None
+    ):
         """Log an error with full context"""
         error_data = {
             "timestamp": datetime.now().isoformat(),
@@ -230,7 +241,9 @@ class NeuroLogger:
             "average_duration": sum(durations) / len(durations) if durations else 0,
             "max_duration": max(durations) if durations else 0,
             "min_duration": min(durations) if durations else 0,
-            "average_memory_delta": sum(memory_deltas) / len(memory_deltas) if memory_deltas else 0,
+            "average_memory_delta": sum(memory_deltas) / len(memory_deltas)
+            if memory_deltas
+            else 0,
             "max_memory_delta": max(memory_deltas) if memory_deltas else 0,
             "operations_by_type": {},
         }
@@ -251,10 +264,14 @@ class NeuroLogger:
 
         # Calculate average durations by type
         for op_type in summary["operations_by_type"]:
-            type_metrics = [m for m in self.metrics if m.operation == op_type and m.success]
+            type_metrics = [
+                m for m in self.metrics if m.operation == op_type and m.success
+            ]
             if type_metrics:
                 avg_duration = sum(m.duration for m in type_metrics) / len(type_metrics)
-                summary["operations_by_type"][op_type]["average_duration"] = avg_duration
+                summary["operations_by_type"][op_type]["average_duration"] = (
+                    avg_duration
+                )
 
         return summary
 
@@ -315,7 +332,10 @@ class PerformanceMonitor:
     """Context manager for easy performance monitoring"""
 
     def __init__(
-        self, logger: NeuroLogger, operation: str, metadata: Optional[Dict[str, Any]] = None
+        self,
+        logger: NeuroLogger,
+        operation: str,
+        metadata: Optional[Dict[str, Any]] = None,
     ):
         self.logger = logger
         self.operation = operation
@@ -367,7 +387,7 @@ if __name__ == "__main__":
     # Demo usage
     logger = NeuroLogger()
 
-    print("🔍 NeuroCode Performance Monitor Demo")
+    print("🔍 aetherra Performance Monitor Demo")
     print("-" * 40)
 
     # Simulate some operations

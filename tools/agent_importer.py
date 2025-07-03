@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔄 NeuroCode Agent Import & Restoration System
+🔄 aetherra Agent Import & Restoration System
 Reconstructs agent cognitive states from Neural State Exchange (NSE) archives.
 
 This module handles importing, merging, and restoring agent consciousness
@@ -94,7 +94,9 @@ class CognitiveStateBuilder:
         """Restore agent memory store"""
         try:
             if not hasattr(self.target_agent, "memory_store"):
-                logger.warning("Target agent has no memory_store attribute, creating new one")
+                logger.warning(
+                    "Target agent has no memory_store attribute, creating new one"
+                )
                 self.target_agent.memory_store = {}
 
             if merge_mode == "replace":
@@ -144,9 +146,13 @@ class CognitiveStateBuilder:
                         if merge_mode == "replace":
                             setattr(self.target_agent, attr, goal_data)
                         elif merge_mode == "merge":
-                            if isinstance(existing_goals, dict) and isinstance(goal_data, dict):
+                            if isinstance(existing_goals, dict) and isinstance(
+                                goal_data, dict
+                            ):
                                 existing_goals.update(goal_data)
-                            elif isinstance(existing_goals, list) and isinstance(goal_data, list):
+                            elif isinstance(existing_goals, list) and isinstance(
+                                goal_data, list
+                            ):
                                 existing_goals.extend(goal_data)
                             else:
                                 setattr(self.target_agent, attr, goal_data)
@@ -154,7 +160,9 @@ class CognitiveStateBuilder:
                         restored_any = True
 
             if restored_any:
-                self.restoration_log.append(f"Goal hierarchies restored ({merge_mode} mode)")
+                self.restoration_log.append(
+                    f"Goal hierarchies restored ({merge_mode} mode)"
+                )
             else:
                 logger.warning("No goal data found to restore")
 
@@ -204,11 +212,15 @@ class CognitiveStateBuilder:
 
             # Restore conversation patterns if available
             if "conversation_patterns" in patterns_data:
-                self._restore_conversation_patterns(patterns_data["conversation_patterns"])
+                self._restore_conversation_patterns(
+                    patterns_data["conversation_patterns"]
+                )
                 restored_any = True
 
             if restored_any:
-                self.restoration_log.append(f"Learned patterns restored ({merge_mode} mode)")
+                self.restoration_log.append(
+                    f"Learned patterns restored ({merge_mode} mode)"
+                )
 
             return restored_any
 
@@ -318,7 +330,9 @@ class AgentMerger:
             logger.error(f"Agent merge failed: {e}")
             raise
 
-    def _merge_metadata(self, primary: Dict[str, Any], secondary: Dict[str, Any]) -> Dict[str, Any]:
+    def _merge_metadata(
+        self, primary: Dict[str, Any], secondary: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Merge agent metadata intelligently"""
         merged = primary.copy()
 
@@ -364,21 +378,27 @@ class AgentMerger:
 
             # Combine goal hierarchies
             merged["goal_hierarchies"] = self._combine_goals(
-                primary.get("goal_hierarchies", {}), secondary.get("goal_hierarchies", {})
+                primary.get("goal_hierarchies", {}),
+                secondary.get("goal_hierarchies", {}),
             )
 
             # Merge learned patterns
             merged["learned_patterns"] = self._combine_patterns(
-                primary.get("learned_patterns", {}), secondary.get("learned_patterns", {})
+                primary.get("learned_patterns", {}),
+                secondary.get("learned_patterns", {}),
             )
 
         elif strategy == "additive":
             # Simply add all data together
             for key in secondary:
                 if key in merged:
-                    if isinstance(merged[key], dict) and isinstance(secondary[key], dict):
+                    if isinstance(merged[key], dict) and isinstance(
+                        secondary[key], dict
+                    ):
                         merged[key].update(secondary[key])
-                    elif isinstance(merged[key], list) and isinstance(secondary[key], list):
+                    elif isinstance(merged[key], list) and isinstance(
+                        secondary[key], list
+                    ):
                         merged[key].extend(secondary[key])
                 else:
                     merged[key] = secondary[key]
@@ -396,10 +416,14 @@ class AgentMerger:
             primary_memories = primary_mem["memories"]
             secondary_memories = secondary_mem["memories"]
 
-            if isinstance(primary_memories, list) and isinstance(secondary_memories, list):
+            if isinstance(primary_memories, list) and isinstance(
+                secondary_memories, list
+            ):
                 # Remove duplicates while preserving order
                 seen = set(primary_memories)
-                unique_secondary = [mem for mem in secondary_memories if mem not in seen]
+                unique_secondary = [
+                    mem for mem in secondary_memories if mem not in seen
+                ]
                 merged["memories"] = primary_memories + unique_secondary
 
         # Merge other memory fields
@@ -450,7 +474,10 @@ class AgentMerger:
         merged = primary_replay.copy()
 
         # Combine decision traces
-        if "decision_traces" in primary_replay and "decision_traces" in secondary_replay:
+        if (
+            "decision_traces" in primary_replay
+            and "decision_traces" in secondary_replay
+        ):
             primary_traces = primary_replay["decision_traces"]
             secondary_traces = secondary_replay["decision_traces"]
 
@@ -506,7 +533,9 @@ class AgentImporter:
 
             # Build and restore state
             builder = CognitiveStateBuilder(target_agent)
-            restoration_results = builder.restore_full_state(cognitive_state, merge_mode)
+            restoration_results = builder.restore_full_state(
+                cognitive_state, merge_mode
+            )
 
             # Prepare result
             result = {
@@ -519,7 +548,9 @@ class AgentImporter:
                 "imported_at": datetime.now(timezone.utc).isoformat(),
             }
 
-            logger.info(f"Successfully imported agent {metadata['name']} v{metadata['version']}")
+            logger.info(
+                f"Successfully imported agent {metadata['name']} v{metadata['version']}"
+            )
             return result
 
         except Exception as e:
@@ -547,7 +578,9 @@ class AgentImporter:
 
             # Merge archives
             merger = AgentMerger()
-            merged_archive = merger.merge_agents(primary_archive, secondary_archive, merge_strategy)
+            merged_archive = merger.merge_agents(
+                primary_archive, secondary_archive, merge_strategy
+            )
 
             # Generate output path if not provided
             if output_path is None:
@@ -593,13 +626,17 @@ class AgentImporter:
                         cognitive_state.get("memory_store", {}).get("memories", [])
                     ),
                     "goal_count": len(cognitive_state.get("goal_hierarchies", {})),
-                    "pattern_types": list(cognitive_state.get("learned_patterns", {}).keys()),
+                    "pattern_types": list(
+                        cognitive_state.get("learned_patterns", {}).keys()
+                    ),
                     "has_replay_data": "replay_data" in archive_data,
                 },
                 "compatibility": archive_data.get("compatibility", {}),
                 "file_info": {
                     "size_bytes": archive_path.stat().st_size,
-                    "created": datetime.fromtimestamp(archive_path.stat().st_ctime).isoformat(),
+                    "created": datetime.fromtimestamp(
+                        archive_path.stat().st_ctime
+                    ).isoformat(),
                 },
             }
 
@@ -667,7 +704,9 @@ if __name__ == "__main__":
         print(f"📖 Previewing archive: {test_archive.name}")
         try:
             preview = importer.preview_archive(test_archive)
-            print(f"  Agent: {preview['metadata']['name']} v{preview['metadata']['version']}")
+            print(
+                f"  Agent: {preview['metadata']['name']} v{preview['metadata']['version']}"
+            )
             print(f"  Memories: {preview['cognitive_summary']['memory_items']}")
             print(f"  Goals: {preview['cognitive_summary']['goal_count']}")
             print(f"  Patterns: {preview['cognitive_summary']['pattern_types']}")

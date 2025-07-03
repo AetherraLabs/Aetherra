@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-NeuroCode Developer CLI Extensions
+aetherra Developer CLI Extensions
 =================================
 
 Enhanced CLI commands for the Developer Onboarding & Advocacy System.
-Integrates seamlessly with the existing NeuroCode unified CLI.
+Integrates seamlessly with the existing aetherra unified CLI.
 
 Commands:
-- neurocode init developer-setup    # Interactive developer onboarding
-- neurocode create plugin <name>    # Plugin scaffolding
-- neurocode template <type> <name>  # Template generation
-- neurocode examples               # Show examples gallery
-- neurocode community             # Community features
+- aetherra init developer-setup    # Interactive developer onboarding
+- aetherra create plugin <name>    # Plugin scaffolding
+- aetherra template <type> <name>  # Template generation
+- aetherra examples               # Show examples gallery
+- aetherra community             # Community features
 """
 
 import json
@@ -24,8 +24,8 @@ tools_dir = Path(__file__).parent
 sys.path.insert(0, str(tools_dir))
 
 try:
-    from developer_scaffolder import NeuroCodeScaffolder
-    from plugin_scaffolder import NeuroCodePluginScaffolder
+    from developer_scaffolder import aetherraScaffolder
+    from plugin_scaffolder import aetherraPluginScaffolder
 except ImportError:
     print(
         "❌ Developer tools not found. Please ensure scaffolding tools are installed."
@@ -33,21 +33,21 @@ except ImportError:
     sys.exit(1)
 
 
-class NeuroCodeDeveloperCLI:
+class aetherraDeveloperCLI:
     """Enhanced CLI for developer onboarding and ecosystem growth"""
 
     def __init__(self):
         self.project_root = Path(__file__).parent.parent
-        self.scaffolder = NeuroCodeScaffolder()
-        self.plugin_scaffolder = NeuroCodePluginScaffolder()
+        self.scaffolder = aetherraScaffolder()
+        self.plugin_scaffolder = aetherraPluginScaffolder()
 
     def handle_init_command(self, args: List[str]) -> int:
-        """Handle neurocode init commands"""
+        """Handle aetherra init commands"""
         if not args or args[0] != "developer-setup":
-            print("Usage: neurocode init developer-setup")
+            print("Usage: aetherra init developer-setup")
             return 1
 
-        print("🧬 NeuroCode Developer Onboarding System")
+        print("🧬 aetherra Developer Onboarding System")
         print("=" * 50)
 
         try:
@@ -62,9 +62,9 @@ class NeuroCodeDeveloperCLI:
             return 1
 
     def handle_create_command(self, args: List[str]) -> int:
-        """Handle neurocode create commands"""
+        """Handle aetherra create commands"""
         if len(args) < 2:
-            print("Usage: neurocode create <type> <name> [options]")
+            print("Usage: aetherra create <type> <name> [options]")
             print("Types: plugin, goal, agent, ui")
             return 1
 
@@ -85,9 +85,9 @@ class NeuroCodeDeveloperCLI:
             return 1
 
     def handle_template_command(self, args: List[str]) -> int:
-        """Handle neurocode template commands"""
+        """Handle aetherra template commands"""
         if len(args) < 2:
-            print("Usage: neurocode template <type> <name>")
+            print("Usage: aetherra template <type> <name>")
             print("Types: goal, agent, plugin, ui, project")
             return 1
 
@@ -97,11 +97,11 @@ class NeuroCodeDeveloperCLI:
         return self._generate_template(template_type, name)
 
     def handle_examples_command(self, args: List[str]) -> int:
-        """Handle neurocode examples commands"""
+        """Handle aetherra examples commands"""
         return self._show_examples_gallery(args)
 
     def handle_community_command(self, args: List[str]) -> int:
-        """Handle neurocode community commands"""
+        """Handle aetherra community commands"""
         if not args:
             return self._show_community_overview()
 
@@ -281,11 +281,11 @@ end
 
         content = f'''#!/usr/bin/env python3
 """
-{name.title().replace("_", " ")} UI Component for NeuroCode
+{name.title().replace("_", " ")} UI Component for aetherra
 ========================================================
 
 AI-native UI component with adaptive behavior and intelligent interaction.
-Demonstrates NeuroCode's approach to consciousness-aware user interfaces.
+Demonstrates aetherra's approach to consciousness-aware user interfaces.
 """
 
 import sys
@@ -559,7 +559,7 @@ class {name.title().replace("_", "")}Component(QWidget):
 
     def _display_intelligent_results(self, result: Dict[str, Any], approach: str):
         """Display results with AI-enhanced formatting"""
-        output = f"""🧬 NeuroCode AI Processing Results
+        output = f"""🧬 aetherra AI Processing Results
 
 📊 Analysis Approach: {{approach.replace('_', ' ').title()}}
 ⏰ Processed at: {{result['timestamp']}}
@@ -655,7 +655,7 @@ class {name.title().replace("_", "")}Component(QWidget):
         insights_text = QTextEdit()
         insights_text.setReadOnly(True)
 
-        insights_content = f"""🧬 NeuroCode Component AI Insights
+        insights_content = f"""🧬 aetherra Component AI Insights
 
 📊 Learning Statistics:
 • Total Interactions: {{len(self.interaction_history)}}
@@ -666,13 +666,9 @@ class {name.title().replace("_", "")}Component(QWidget):
 """ + "\\n".join([f"• {{k}}: {{v}}" for k, v in self.user_preferences.items()]) + f"""
 
 📈 Recent Interaction Patterns:
-• Average Input Length: {{sum(h.get('length_preference',
-    0) for h in self.interaction_history[-10:]) // max(1,
-    len(self.interaction_history[-10:]))}}
-• Question Style Usage: {{sum(1 for h in self.interaction_history[-10:] if h.get('question_style')) / max(1,
-    len(self.interaction_history[-10:])) * 100:.1f}}%
-• Command Style Usage: {{sum(1 for h in self.interaction_history[-10:] if h.get('command_style')) / max(1,
-    len(self.interaction_history[-10:])) * 100:.1f}}%
+• Average Input Length: {{sum(h.get('length_preference', 0) for h in self.interaction_history[-10:]) // max(1, len(self.interaction_history[-10:]))}}
+• Question Style Usage: {{sum(1 for h in self.interaction_history[-10:] if h.get('question_style')) / max(1, len(self.interaction_history[-10:])) * 100:.1f}}%
+• Command Style Usage: {{sum(1 for h in self.interaction_history[-10:] if h.get('command_style')) / max(1, len(self.interaction_history[-10:])) * 100:.1f}}%
 
 🎯 Active Learning Goals:
 """ + "\\n".join([f"• {{goal.replace('_', ' ').title()}}" for goal in self.learning_goals])
@@ -714,7 +710,7 @@ class {name.title().replace("_", "")}Component(QWidget):
             "component": self.__class__.__name__
         }}
 
-        # In a real implementation, this would integrate with NeuroCode's memory system
+        # In a real implementation, this would integrate with aetherra's memory system
         self.user_interaction.emit(log_entry)
 
     def get_learning_state(self) -> Dict[str, Any]:
@@ -734,14 +730,14 @@ if __name__ == "__main__":
 
     # Create and show the component
     component = {name.title().replace("_", "")}Component({{
-        "theme": "neurocode_default",
+        "theme": "aetherra_default",
         "ai_enhanced": True
     }})
 
     component.show()
 
     print(f"🧬 {{component.__class__.__name__}} Demo")
-    print("This component demonstrates NeuroCode's AI-native UI approach:")
+    print("This component demonstrates aetherra's AI-native UI approach:")
     print("• Adaptive behavior based on user patterns")
     print("• Intelligent processing with learning")
     print("• Memory of user preferences")
@@ -785,18 +781,18 @@ if __name__ == "__main__":
         # Create main project file
         main_file = project_dir / "main.aether"
         content = f'''# {name.title().replace("_", " ")} Project
-# A complete NeuroCode project with AI-native architecture
+# A complete aetherra project with AI-native architecture
 
 # Project identity
 identity {{
     name: "{name.title()}Project"
     version: "1.0.0"
-    description: "AI-native project built with NeuroCode"
-    author: "NeuroCode Developer"
+    description: "AI-native project built with aetherra"
+    author: "aetherra Developer"
 }}
 
 # Project goals
-goal: "demonstrate NeuroCode capabilities" priority: high
+goal: "demonstrate aetherra capabilities" priority: high
 goal: "provide value to users" priority: critical
 goal: "learn and evolve continuously" priority: medium
 
@@ -834,7 +830,7 @@ end
         readme_file = project_dir / "README.md"
         readme_content = f"""# {name.title().replace("_", " ")} Project
 
-An AI-native project built with NeuroCode's cognitive computing platform.
+An AI-native project built with aetherra's cognitive computing platform.
 
 ## Features
 
@@ -848,7 +844,7 @@ An AI-native project built with NeuroCode's cognitive computing platform.
 
 ```bash
 # Run the project
-neurocode run main.aether
+aetherra run main.aether
 
 # Explore components
 ls src/
@@ -859,14 +855,14 @@ ls agents/
 ## Structure
 
 - `src/` - Core project code
-- `plugins/` - NeuroCode plugins
+- `plugins/` - aetherra plugins
 - `agents/` - AI agents
 - `goals/` - Project goals
 - `docs/` - Documentation
 - `tests/` - Test suites
 - `examples/` - Usage examples
 
-**Created with NeuroCode Developer Tools**
+**Created with aetherra Developer Tools**
 """
 
         with open(readme_file, "w") as f:
@@ -877,12 +873,12 @@ ls agents/
 
     def _show_examples_gallery(self, args: List[str]) -> int:
         """Show the examples gallery"""
-        print("🧬 NeuroCode Examples Gallery")
+        print("🧬 aetherra Examples Gallery")
         print("=" * 50)
 
         examples = {
             "Basic Concepts": [
-                "hello_neurocode.aether - Your first AI-native program",
+                "hello_aetherra.aether - Your first AI-native program",
                 "goal_setting.aether - Goal-oriented programming basics",
                 "memory_usage.aether - Persistent memory examples",
                 "agent_basics.aether - AI agent fundamentals",
@@ -913,14 +909,14 @@ ls agents/
                 print(f"   • {item}")
 
         print("\n🚀 To explore an example:")
-        print("   neurocode example <name>")
-        print("   neurocode run examples/<name>")
+        print("   aetherra example <name>")
+        print("   aetherra run examples/<name>")
 
         return 0
 
     def _show_community_overview(self) -> int:
         """Show community overview"""
-        print("🌍 NeuroCode Developer Community")
+        print("🌍 aetherra Developer Community")
         print("=" * 50)
 
         print("🤝 Join the Revolution:")
@@ -936,30 +932,30 @@ ls agents/
         print("   • 🧠 Collective Intelligence: Always learning")
 
         print("\n🚀 Get Involved:")
-        print("   neurocode community join")
-        print("   neurocode community showcase")
-        print("   neurocode community contribute")
+        print("   aetherra community join")
+        print("   aetherra community showcase")
+        print("   aetherra community contribute")
 
         return 0
 
     def _join_community(self) -> int:
         """Help user join the community"""
-        print("🤝 Joining the NeuroCode Community")
+        print("🤝 Joining the aetherra Community")
         print("=" * 40)
 
-        print("1. 🌐 Visit: https://neurocode.dev/community")
+        print("1. 🌐 Visit: https://aetherra.dev/community")
         print(
-            "2. 💬 GitHub Discussions: https://github.com/Zyonic88/NeuroCode/discussions"
+            "2. 💬 GitHub Discussions: https://github.com/Zyonic88/aetherra/discussions"
         )
         print("3. 📧 Newsletter: Subscribe for updates")
-        print("4. 🐛 Report Issues: https://github.com/Zyonic88/NeuroCode/issues")
+        print("4. 🐛 Report Issues: https://github.com/Zyonic88/aetherra/issues")
 
         print("\n✨ Welcome to the cognitive computing revolution!")
         return 0
 
     def _show_community_showcase(self) -> int:
         """Show community showcase"""
-        print("🌟 NeuroCode Community Showcase")
+        print("🌟 aetherra Community Showcase")
         print("=" * 40)
 
         print("🏆 Featured Projects:")
@@ -975,13 +971,13 @@ ls agents/
         print("   • IntelliChat - Conscious conversation")
 
         print("\n🚀 Submit your project:")
-        print("   neurocode publish project <name>")
+        print("   aetherra publish project <name>")
 
         return 0
 
     def _show_contribution_guide(self) -> int:
         """Show contribution guide"""
-        print("🤝 Contributing to NeuroCode")
+        print("🤝 Contributing to aetherra")
         print("=" * 35)
 
         print("💡 Ways to Contribute:")
@@ -993,7 +989,7 @@ ls agents/
         print("   6. 🌍 Translate to other languages")
 
         print("\n🚀 Getting Started:")
-        print("   1. Fork: https://github.com/Zyonic88/NeuroCode")
+        print("   1. Fork: https://github.com/Zyonic88/aetherra")
         print("   2. Create feature branch")
         print("   3. Make awesome changes")
         print("   4. Add tests and docs")
@@ -1016,10 +1012,10 @@ ls agents/
 
 def main():
     """Main entry point for developer CLI"""
-    cli = NeuroCodeDeveloperCLI()
+    cli = aetherraDeveloperCLI()
 
     if len(sys.argv) < 2:
-        print("NeuroCode Developer CLI Extensions")
+        print("aetherra Developer CLI Extensions")
         print("Usage: python developer_cli.py <command> [args...]")
         print("Commands: init, create, template, examples, community")
         return 1

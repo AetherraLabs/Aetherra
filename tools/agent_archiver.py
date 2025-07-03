@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🧠 NeuroCode Agent Archive System
+🧠 aetherra Agent Archive System
 Core state extraction and archival functionality for preserving agent consciousness.
 
 This module implements the Neural State Exchange (NSE) format for serializing
@@ -48,7 +48,7 @@ class NSEFormat:
                 "description": description,
                 "tags": tags,
                 "privacy_level": privacy_level,
-                "neurocode_version": "3.0",  # Current NeuroCode version
+                "aetherra_version": "3.0",  # Current aetherra version
                 "archive_id": hashlib.sha256(
                     f"{agent_name}_{version}_{datetime.now(timezone.utc).isoformat()}".encode()
                 ).hexdigest()[:16],
@@ -80,10 +80,16 @@ class CognitiveStateExtractor:
                     return {"raw_memory": str(memory_data)}
             else:
                 logger.warning("Agent has no memory_store attribute")
-                return {"extracted_at": self.extraction_timestamp.isoformat(), "memories": []}
+                return {
+                    "extracted_at": self.extraction_timestamp.isoformat(),
+                    "memories": [],
+                }
         except Exception as e:
             logger.error(f"Failed to extract memory store: {e}")
-            return {"error": str(e), "extracted_at": self.extraction_timestamp.isoformat()}
+            return {
+                "error": str(e),
+                "extracted_at": self.extraction_timestamp.isoformat(),
+            }
 
     def extract_goal_hierarchies(self) -> Dict[str, Any]:
         """Extract agent goal structures and priorities"""
@@ -110,7 +116,10 @@ class CognitiveStateExtractor:
             return goals_data
         except Exception as e:
             logger.error(f"Failed to extract goal hierarchies: {e}")
-            return {"error": str(e), "extracted_at": self.extraction_timestamp.isoformat()}
+            return {
+                "error": str(e),
+                "extracted_at": self.extraction_timestamp.isoformat(),
+            }
 
     def extract_learned_patterns(self) -> Dict[str, Any]:
         """Extract learned behavioral patterns and decision weights"""
@@ -138,14 +147,17 @@ class CognitiveStateExtractor:
             if hasattr(self.agent, "llm_integration"):
                 llm_data = self.agent.llm_integration
                 if hasattr(llm_data, "conversation_history"):
-                    patterns_data["conversation_patterns"] = llm_data.conversation_history[
-                        -100:
-                    ]  # Last 100 interactions
+                    patterns_data["conversation_patterns"] = (
+                        llm_data.conversation_history[-100:]
+                    )  # Last 100 interactions
 
             return patterns_data
         except Exception as e:
             logger.error(f"Failed to extract learned patterns: {e}")
-            return {"error": str(e), "extracted_at": self.extraction_timestamp.isoformat()}
+            return {
+                "error": str(e),
+                "extracted_at": self.extraction_timestamp.isoformat(),
+            }
 
     def extract_decision_traces(self) -> List[Dict[str, Any]]:
         """Extract recent decision-making traces for replay"""
@@ -173,7 +185,9 @@ class CognitiveStateExtractor:
 
     def extract_full_state(self) -> Dict[str, Any]:
         """Extract complete cognitive state"""
-        logger.info(f"Extracting cognitive state from agent at {self.extraction_timestamp}")
+        logger.info(
+            f"Extracting cognitive state from agent at {self.extraction_timestamp}"
+        )
 
         cognitive_state = {
             "memory_store": self.extract_memory_store(),
@@ -208,8 +222,12 @@ class CognitiveStateExtractor:
             else:
                 # Calculate basic stats
                 stats = {
-                    "memory_items": len(self.extract_memory_store().get("memories", [])),
-                    "goals_count": len(self.extract_goal_hierarchies().get("goals", [])),
+                    "memory_items": len(
+                        self.extract_memory_store().get("memories", [])
+                    ),
+                    "goals_count": len(
+                        self.extract_goal_hierarchies().get("goals", [])
+                    ),
                     "patterns_count": len(self.extract_learned_patterns()),
                     "decisions_logged": len(self.extract_decision_traces()),
                 }
@@ -261,9 +279,11 @@ class AgentArchiver:
                 **metadata,
                 **state_data,
                 "compatibility": {
-                    "neurocode_version": ">=3.0",
+                    "aetherra_version": ">=3.0",
                     "required_plugins": self._detect_required_plugins(agent_instance),
-                    "model_dependencies": self._detect_model_dependencies(agent_instance),
+                    "model_dependencies": self._detect_model_dependencies(
+                        agent_instance
+                    ),
                 },
             }
 
@@ -345,12 +365,16 @@ class AgentArchiver:
                 metadata = self._read_archive_metadata(archive_file)
                 metadata["file_path"] = str(archive_file)
                 metadata["file_size"] = archive_file.stat().st_size
-                metadata["created_on_disk"] = datetime.fromtimestamp(archive_file.stat().st_ctime)
+                metadata["created_on_disk"] = datetime.fromtimestamp(
+                    archive_file.stat().st_ctime
+                )
                 archives.append(metadata)
             except Exception as e:
                 logger.error(f"Failed to read metadata from {archive_file}: {e}")
 
-        return sorted(archives, key=lambda x: x.get("created_on_disk", datetime.min), reverse=True)
+        return sorted(
+            archives, key=lambda x: x.get("created_on_disk", datetime.min), reverse=True
+        )
 
     def _read_archive_metadata(self, filepath: Path) -> Dict[str, Any]:
         """Read just the metadata from an archive file"""
@@ -429,7 +453,10 @@ if __name__ == "__main__":
         def __init__(self):
             self.agent_id = "test_agent_001"
             self.memory_store = {
-                "memories": ["learned to optimize queries", "user prefers detailed responses"]
+                "memories": [
+                    "learned to optimize queries",
+                    "user prefers detailed responses",
+                ]
             }
             self.goals = {"primary": "help users", "secondary": ["learn continuously"]}
             self.start_time = datetime.now(timezone.utc)
@@ -442,7 +469,7 @@ if __name__ == "__main__":
         version="1.0",
         description="Test agent for development",
         tags=["development", "testing"],
-        created_by="developer@neurocode.dev",
+        created_by="developer@aetherra.dev",
     )
 
     print(f"✅ Test archive created: {archive_path}")

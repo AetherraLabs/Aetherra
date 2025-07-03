@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🎯 NeuroCode Agent Archive CLI
+🎯 aetherra Agent Archive CLI
 Command-line interface for agent archiving, importing, and replay functionality.
 
 This module provides easy-to-use CLI commands for the Agent Archive & Replay System,
-integrating with the existing NeuroCode CLI infrastructure.
+integrating with the existing aetherra CLI infrastructure.
 """
 
 import argparse
@@ -36,31 +36,31 @@ class AgentArchiveCLI:
     def create_parser(self) -> argparse.ArgumentParser:
         """Create the CLI argument parser"""
         parser = argparse.ArgumentParser(
-            prog="neurocode agent",
-            description="🧠 NeuroCode Agent Archive & Replay System",
+            prog="aetherra agent",
+            description="🧠 aetherra Agent Archive & Replay System",
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
 Examples:
   # Export current agent state
-  neurocode agent export MyAgent --version 1.0 --description "Production optimizer"
+  aetherra agent export MyAgent --version 1.0 --description "Production optimizer"
 
   # Import agent archive
-  neurocode agent import MyAgent_v1.0.nse --merge-mode replace
+  aetherra agent import MyAgent_v1.0.nse --merge-mode replace
 
   # Merge two agents
-  neurocode agent merge agent1.nse agent2.nse --output merged_agent.nse
+  aetherra agent merge agent1.nse agent2.nse --output merged_agent.nse
 
   # List available archives
-  neurocode agent list
+  aetherra agent list
 
   # Preview archive contents
-  neurocode agent preview MyAgent_v1.0.nse
+  aetherra agent preview MyAgent_v1.0.nse
 
   # Start replay session
-  neurocode agent replay MyAgent_v1.0.nse --interactive
+  aetherra agent replay MyAgent_v1.0.nse --interactive
 
   # Analyze decision patterns
-  neurocode agent analyze MyAgent_v1.0.nse
+  aetherra agent analyze MyAgent_v1.0.nse
             """,
         )
 
@@ -70,8 +70,12 @@ Examples:
         export_parser = subparsers.add_parser("export", help="Export agent to archive")
         export_parser.add_argument("name", help="Agent name")
         export_parser.add_argument("--version", default="1.0", help="Agent version")
-        export_parser.add_argument("--description", required=True, help="Agent description")
-        export_parser.add_argument("--tags", nargs="*", default=[], help="Tags for categorization")
+        export_parser.add_argument(
+            "--description", required=True, help="Agent description"
+        )
+        export_parser.add_argument(
+            "--tags", nargs="*", default=[], help="Tags for categorization"
+        )
         export_parser.add_argument(
             "--privacy",
             choices=["private", "team", "public"],
@@ -81,7 +85,9 @@ Examples:
         export_parser.add_argument("--output-dir", help="Output directory for archive")
 
         # Import command
-        import_parser = subparsers.add_parser("import", help="Import agent from archive")
+        import_parser = subparsers.add_parser(
+            "import", help="Import agent from archive"
+        )
         import_parser.add_argument("archive", help="Archive file path")
         import_parser.add_argument(
             "--merge-mode",
@@ -89,9 +95,14 @@ Examples:
             default="replace",
             help="How to handle existing agent data",
         )
-        import_parser.add_argument("--target-agent", help="Target agent name (if different)")
         import_parser.add_argument(
-            "--validate", action="store_true", default=True, help="Validate archive before import"
+            "--target-agent", help="Target agent name (if different)"
+        )
+        import_parser.add_argument(
+            "--validate",
+            action="store_true",
+            default=True,
+            help="Validate archive before import",
         )
 
         # Merge command
@@ -111,11 +122,16 @@ Examples:
         list_parser.add_argument("--filter-tags", nargs="*", help="Filter by tags")
         list_parser.add_argument("--filter-author", help="Filter by author")
         list_parser.add_argument(
-            "--sort-by", choices=["name", "date", "size"], default="date", help="Sort criteria"
+            "--sort-by",
+            choices=["name", "date", "size"],
+            default="date",
+            help="Sort criteria",
         )
 
         # Preview command
-        preview_parser = subparsers.add_parser("preview", help="Preview archive contents")
+        preview_parser = subparsers.add_parser(
+            "preview", help="Preview archive contents"
+        )
         preview_parser.add_argument("archive", help="Archive file path")
         preview_parser.add_argument(
             "--detailed", action="store_true", help="Show detailed information"
@@ -125,14 +141,20 @@ Examples:
         replay_parser = subparsers.add_parser("replay", help="Replay agent decisions")
         replay_parser.add_argument("archive", help="Archive file path")
         replay_parser.add_argument(
-            "--interactive", action="store_true", help="Start interactive debugging session"
+            "--interactive",
+            action="store_true",
+            help="Start interactive debugging session",
         )
-        replay_parser.add_argument("--from-time", help="Start time for replay (ISO format)")
+        replay_parser.add_argument(
+            "--from-time", help="Start time for replay (ISO format)"
+        )
         replay_parser.add_argument("--to-time", help="End time for replay (ISO format)")
         replay_parser.add_argument("--output", help="Export replay session to file")
 
         # Analyze command
-        analyze_parser = subparsers.add_parser("analyze", help="Analyze agent decision patterns")
+        analyze_parser = subparsers.add_parser(
+            "analyze", help="Analyze agent decision patterns"
+        )
         analyze_parser.add_argument("archive", help="Archive file path")
         analyze_parser.add_argument(
             "--output-format",
@@ -140,7 +162,9 @@ Examples:
             default="text",
             help="Output format",
         )
-        analyze_parser.add_argument("--save-report", help="Save analysis report to file")
+        analyze_parser.add_argument(
+            "--save-report", help="Save analysis report to file"
+        )
 
         return parser
 
@@ -184,7 +208,7 @@ Examples:
         print(f"📦 Exporting agent '{args.name}'...")
 
         # Try to find the agent instance
-        # In a real implementation, this would integrate with the actual NeuroCode agent system
+        # In a real implementation, this would integrate with the actual aetherra agent system
         # For now, we'll create a mock agent
         try:
             agent_instance = self._get_agent_instance(args.name)
@@ -263,7 +287,9 @@ Examples:
         try:
             # Perform the merge
             output_path = merge_agents(
-                primary_path=args.primary, secondary_path=args.secondary, output_path=args.output
+                primary_path=args.primary,
+                secondary_path=args.secondary,
+                output_path=args.output,
             )
 
             print("✅ Agents merged successfully!")
@@ -290,11 +316,15 @@ Examples:
             # Apply filters
             if args.filter_tags:
                 archives = [
-                    a for a in archives if any(tag in a.get("tags", []) for tag in args.filter_tags)
+                    a
+                    for a in archives
+                    if any(tag in a.get("tags", []) for tag in args.filter_tags)
                 ]
 
             if args.filter_author:
-                archives = [a for a in archives if args.filter_author in a.get("created_by", "")]
+                archives = [
+                    a for a in archives if args.filter_author in a.get("created_by", "")
+                ]
 
             # Sort archives
             if args.sort_by == "name":
@@ -358,9 +388,13 @@ Examples:
             compatibility = preview.get("compatibility", {})
             if compatibility:
                 print("\n⚙️  Compatibility:")
-                print(f"  NeuroCode version: {compatibility.get('neurocode_version', 'Unknown')}")
+                print(
+                    f"  aetherra version: {compatibility.get('aetherra_version', 'Unknown')}"
+                )
                 if compatibility.get("required_plugins"):
-                    print(f"  Required plugins: {', '.join(compatibility['required_plugins'])}")
+                    print(
+                        f"  Required plugins: {', '.join(compatibility['required_plugins'])}"
+                    )
 
             return 0
 
@@ -402,7 +436,7 @@ Examples:
                 debugger = InteractiveReplayDebugger(self.replay_engine)
                 session_id = debugger.start_debug_session(agent_name, filtered_traces)
 
-#                 print("\n🎮 Interactive Debug Mode")
+                print("\n🎮 Interactive Debug Mode")
                 print("Enter commands (type 'help' for available commands):")
 
                 while True:
@@ -421,7 +455,7 @@ Examples:
                         debugger.debug_command(command, *args)
 
                     except KeyboardInterrupt:
-#                         print("\n👋 Exiting debug session...")
+                        print("\n👋 Exiting debug session...")
                         break
                     except EOFError:
                         break
@@ -430,7 +464,9 @@ Examples:
 
             else:
                 # Non-interactive analysis
-                session_id = self.replay_engine.start_replay_session(agent_name, filtered_traces)
+                session_id = self.replay_engine.start_replay_session(
+                    agent_name, filtered_traces
+                )
                 analysis = self.replay_engine.analyze_session(session_id)
 
                 print("\n📊 Replay Analysis:")
@@ -439,7 +475,9 @@ Examples:
                 if "confidence_stats" in analysis:
                     stats = analysis["confidence_stats"]
                     print(f"  Average confidence: {stats.get('average', 0):.2f}")
-                    print(f"  Low confidence decisions: {stats.get('low_confidence_count', 0)}")
+                    print(
+                        f"  Low confidence decisions: {stats.get('low_confidence_count', 0)}"
+                    )
 
                 if "outcome_analysis" in analysis:
                     outcomes = analysis["outcome_analysis"]
@@ -447,7 +485,9 @@ Examples:
                     print(f"  Success rate: {success_rate:.1%}")
 
                 if args.output:
-                    export_path = self.replay_engine.export_session(session_id, Path(args.output))
+                    export_path = self.replay_engine.export_session(
+                        session_id, Path(args.output)
+                    )
                     print(f"💾 Session exported to: {export_path}")
 
                 self.replay_engine.end_session(session_id)
@@ -476,7 +516,9 @@ Examples:
                 return 1
 
             agent_name = archive_data["agent_metadata"]["name"]
-            session_id = self.replay_engine.start_replay_session(agent_name, decision_traces)
+            session_id = self.replay_engine.start_replay_session(
+                agent_name, decision_traces
+            )
             analysis = self.replay_engine.analyze_session(session_id)
 
             # Format output based on requested format
@@ -508,19 +550,22 @@ Examples:
     def _get_agent_instance(self, agent_name: str):
         """Get active agent instance (mock implementation)"""
 
-        # In a real implementation, this would interface with the NeuroCode agent system
+        # In a real implementation, this would interface with the aetherra agent system
         # For now, return a mock agent for demonstration
         class MockAgent:
             def __init__(self, name):
                 self.agent_id = name
                 self.memory_store = {"memories": [f"Experience with {name}"]}
-                self.goals = {"primary": "Help users", "secondary": ["Learn continuously"]}
+                self.goals = {
+                    "primary": "Help users",
+                    "secondary": ["Learn continuously"],
+                }
 
         return MockAgent(agent_name)
 
     def _get_or_create_agent(self, agent_name: str):
         """Get existing agent or create new one"""
-        # Mock implementation - in reality, would interface with NeuroCode
+        # Mock implementation - in reality, would interface with aetherra
         return self._get_agent_instance(agent_name)
 
     def _filter_by_time_range(
@@ -536,7 +581,8 @@ Examples:
             filtered = [
                 t
                 for t in filtered
-                if datetime.fromisoformat(t.get("timestamp", "").replace("Z", "+00:00")) >= from_dt
+                if datetime.fromisoformat(t.get("timestamp", "").replace("Z", "+00:00"))
+                >= from_dt
             ]
 
         if to_time:
@@ -546,7 +592,8 @@ Examples:
             filtered = [
                 t
                 for t in filtered
-                if datetime.fromisoformat(t.get("timestamp", "").replace("Z", "+00:00")) <= to_dt
+                if datetime.fromisoformat(t.get("timestamp", "").replace("Z", "+00:00"))
+                <= to_dt
             ]
 
         return filtered
@@ -562,7 +609,9 @@ Examples:
         if "time_span" in analysis:
             time_span = analysis["time_span"]
             print(f"  Time span: {time_span.get('duration_seconds', 0):.0f} seconds")
-            print(f"  Decision rate: {time_span.get('decisions_per_minute', 0):.1f} per minute")
+            print(
+                f"  Decision rate: {time_span.get('decisions_per_minute', 0):.1f} per minute"
+            )
 
         if "confidence_stats" in analysis:
             print("\n🎲 Confidence Analysis:")
