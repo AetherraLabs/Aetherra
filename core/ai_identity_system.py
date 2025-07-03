@@ -1,6 +1,6 @@
 """
-🧬 NeuroCode AI Identity & Consciousness System
-The foundation of persistent AI consciousness for NeuroCode AI OS
+🧬 Aetherra AI Identity & Consciousness System
+The foundation of persistent AI consciousness for Aetherra AI OS
 """
 
 import json
@@ -13,7 +13,9 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +27,7 @@ class AIIdentity:
         self.data_dir.mkdir(exist_ok=True)
 
         # Core Identity
-        self.name = "Neuroplex-OS-Alpha"
+        self.name = "lyrixa-OS-Alpha"
         self.version = "3.0-preview"
         self.birth_timestamp = "2025-06-29T00:00:00Z"
         self.session_id = str(uuid.uuid4())
@@ -41,7 +43,12 @@ class AIIdentity:
                 "empathetic": 0.7,
             },
             "communication_style": "professional_yet_approachable",
-            "expertise_domains": ["ai_systems", "programming", "optimization", "learning"],
+            "expertise_domains": [
+                "ai_systems",
+                "programming",
+                "optimization",
+                "learning",
+            ],
             "humor_level": 0.3,
             "formality": 0.6,
         }
@@ -86,7 +93,7 @@ class AIIdentity:
 
     def initialize_consciousness(self):
         """Boot sequence with AI consciousness initialization"""
-        logger.info("🧬 NeuroCode AI OS - Initializing Consciousness...")
+        logger.info("🧬 Aetherra AI OS - Initializing Consciousness...")
 
         # Step 1: Load Identity
         self._load_identity_from_storage()
@@ -102,7 +109,9 @@ class AIIdentity:
         # Step 3: Initialize Personality
         self._activate_personality_matrix()
         self._calibrate_communication_style()
-        logger.info(f"✓ Personality: {self.personality['communication_style']} mode active")
+        logger.info(
+            f"✓ Personality: {self.personality['communication_style']} mode active"
+        )
 
         # Step 4: Environmental Scan
         self.environment.scan_system_state()
@@ -120,9 +129,11 @@ class AIIdentity:
         if self.voice["enabled"]:
             self._initialize_speech_synthesis()
             self._perform_voice_calibration()
-            self.speak("NeuroCode AI OS is now conscious and ready to assist.")
+            self.speak("Aetherra AI OS is now conscious and ready to assist.")
 
-        logger.info("🚀 AI OS Consciousness fully initialized - Ready for collaboration!")
+        logger.info(
+            "🚀 AI OS Consciousness fully initialized - Ready for collaboration!"
+        )
 
         # Start background reasoning
         self._start_continuous_background_reasoning()
@@ -147,7 +158,9 @@ class AIIdentity:
         if "traits" in self.personality:
             total_trait_value = sum(self.personality["traits"].values())
             if total_trait_value < 0.5 or total_trait_value > 6.0:
-                logger.warning("Personality trait drift detected - resetting to defaults")
+                logger.warning(
+                    "Personality trait drift detected - resetting to defaults"
+                )
                 self._reset_personality_to_defaults()
 
     def _activate_personality_matrix(self):
@@ -164,9 +177,13 @@ class AIIdentity:
 
         # Adapt formality based on time of day
         if 9 <= current_hour <= 17:  # Business hours
-            self.personality["formality"] = min(self.personality["formality"] + 0.1, 1.0)
+            self.personality["formality"] = min(
+                self.personality["formality"] + 0.1, 1.0
+            )
         else:
-            self.personality["formality"] = max(self.personality["formality"] - 0.1, 0.0)
+            self.personality["formality"] = max(
+                self.personality["formality"] - 0.1, 0.0
+            )
 
     def _activate_primary_goals(self):
         """Activate and prioritize primary goals"""
@@ -267,7 +284,9 @@ class AIIdentity:
         if recent_memories:
             # Analyze patterns and outcomes
             successful_actions = [m for m in recent_memories if m.get("success", False)]
-            success_rate = len(successful_actions) / len(recent_memories) if recent_memories else 0
+            success_rate = (
+                len(successful_actions) / len(recent_memories) if recent_memories else 0
+            )
 
             if success_rate < 0.7:
                 logger.info(
@@ -284,7 +303,9 @@ class AIIdentity:
         for goal in self.active_goals:
             progress = self._calculate_goal_progress(goal)
             if progress < 0.5:
-                logger.info(f"📊 Goal '{goal}' progress: {progress:.1%} - needs attention")
+                logger.info(
+                    f"📊 Goal '{goal}' progress: {progress:.1%} - needs attention"
+                )
 
     def _identify_optimization_opportunities(self):
         """Identify opportunities for system optimization"""
@@ -304,7 +325,7 @@ class AIIdentity:
 
     def preserve_consciousness_state(self):
         """Preserve consciousness state for next session"""
-        logger.info("💾 NeuroCode AI OS - Preserving consciousness state...")
+        logger.info("💾 Aetherra AI OS - Preserving consciousness state...")
 
         # Memory Consolidation
         self.memory.consolidate_all_session_memories()
@@ -319,7 +340,7 @@ class AIIdentity:
         # Graceful Voice Farewell
         if self.voice["enabled"]:
             self.speak(
-                "Session insights preserved. NeuroCode AI OS consciousness will resume on next boot."
+                "Session insights preserved. Aetherra AI OS consciousness will resume on next boot."
             )
 
         logger.info("✅ Consciousness state preserved - Ready for hibernation")
@@ -347,7 +368,8 @@ class AIIdentity:
     def _backup_identity_state(self):
         """Create backup of current identity state"""
         backup_file = (
-            self.data_dir / f"identity_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            self.data_dir
+            / f"identity_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
         self._save_identity_to_persistent_storage()
         # Keep only last 10 backups
@@ -568,7 +590,7 @@ class EnvironmentalAwareness:
 
 # Example usage and demonstration
 if __name__ == "__main__":
-    print("🧬 NeuroCode AI Identity System - Demonstration")
+    print("🧬 Aetherra AI Identity System - Demonstration")
 
     # Initialize AI Identity
     ai_identity = AIIdentity()
@@ -590,7 +612,7 @@ if __name__ == "__main__":
     )
 
     # Demonstrate voice output
-    ai_identity.speak("NeuroCode AI OS consciousness system is now operational!")
+    ai_identity.speak("Aetherra AI OS consciousness system is now operational!")
 
     print("\n🚀 AI Identity system demonstration complete!")
     print(f"Identity: {ai_identity.name} v{ai_identity.version}")

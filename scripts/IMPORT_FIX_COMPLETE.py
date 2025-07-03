@@ -24,20 +24,20 @@ try:
     # Test interpreter
     import interpreter
     print("   ✅ Interpreter: Successfully imported")
-    if hasattr(interpreter, 'NeuroCodeInterpreter'):
-        print("      - NeuroCodeInterpreter class: Available")
+    if hasattr(interpreter, 'AetherraInterpreter'):
+        print("      - AetherraInterpreter class: Available")
     
     # Test memory  
     import memory
     print("   ✅ Memory: Successfully imported")
-    if hasattr(memory, 'NeuroMemory'):
-        print("      - NeuroMemory class: Available")
+    if hasattr(memory, 'AetherraMemory'):
+        print("      - AetherraMemory class: Available")
     
     # Test chat router
     import chat_router
     print("   ✅ Chat Router: Successfully imported")
-    if hasattr(chat_router, 'NeuroCodeChatRouter'):
-        print("      - NeuroCodeChatRouter class: Available")
+    if hasattr(chat_router, 'AetherraChatRouter'):
+        print("      - AetherraChatRouter class: Available")
         
     print("\n   🎯 All core modules importing correctly!")
     

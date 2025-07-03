@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 # Add core to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "core"))
 
-from memory import NeuroMemory
+from memory import AetherraMemory
 
 
 def colorize(text, color):
@@ -122,7 +122,7 @@ def demo_temporal_filtering():
     print_section("🧠 NeuroCode Memory Temporal Enhancement Demo")
 
     # Initialize memory system
-    memory = NeuroMemory()
+    memory = AetherraMemory()
 
     # Backup existing memories
     original_memories = create_test_memories(memory)

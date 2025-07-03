@@ -2,7 +2,7 @@
 
 ## Overview
 
-The NeuroCode Plugin System provides a powerful and extensible way to add functionality to the NeuroCode environment. Plugins can be accessed both programmatically and through natural language `.neuro` code syntax.
+The NeuroCode Plugin System provides a powerful and extensible way to add functionality to the NeuroCode environment. Plugins can be accessed both programmatically and through natural language `.aether` code syntax.
 
 ## Plugin Structure
 
@@ -70,7 +70,7 @@ For AI integration and natural language discovery:
 | `example_usage`    | str       | Example of how to use the plugin         |
 | `confidence_boost` | float     | Relevance score multiplier (default 1.0) |
 
-## Usage in .neuro Code
+## Usage in .aether Code
 
 ### Basic Syntax
 
@@ -349,7 +349,7 @@ The plugin system supports the NeuroCode icon for consistent branding:
 
 ```python
 # Icon path is available in plugin manager
-from src.neurocode.ui.components.panels.plugin_manager import PluginManagerPanel
+from src.aethercode.ui.components.panels.plugin_manager import PluginManagerPanel
 panel = PluginManagerPanel()
 icon_path = panel.icon_path  # Path to neurocode-icon.png
 ```

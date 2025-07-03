@@ -28,7 +28,7 @@ I analyzed the entire NeuroCode workspace to understand which dependencies are a
 - **Added installation guides** for different use cases
 - **Moved numpy to optional** since it's only used in one enhanced feature
 
-### 2. Updated requirements_minimal.txt  
+### 2. Updated requirements_minimal.txt
 - **Stripped down to absolute essentials:** `lark` and `psutil`
 - **Made all AI providers optional** with clear instructions
 - **Added quick start guide** for new users
@@ -42,7 +42,7 @@ I analyzed the entire NeuroCode workspace to understand which dependencies are a
 ## New Requirements Structure
 
 ### Core (Always Required)
-- `lark>=1.1.7` - Grammar parser for .neuro files
+- `lark>=1.1.7` - Grammar parser for .aether files
 - `psutil>=5.9.0` - System resource monitoring
 
 ### AI Providers (Optional - Choose One)

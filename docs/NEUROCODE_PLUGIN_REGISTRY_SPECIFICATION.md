@@ -2,10 +2,10 @@
 
 ## **The First Standard Plugin System for AI-Consciousness Programming**
 
-**Date**: June 29, 2025  
-**Version**: 1.0.0  
-**Status**: SPECIFICATION DRAFT  
-**License**: GPL-3.0  
+**Date**: June 29, 2025
+**Version**: 1.0.0
+**Status**: SPECIFICATION DRAFT
+**License**: GPL-3.0
 
 ---
 
@@ -19,16 +19,16 @@ Create the **first standardized plugin registry** for AI-consciousness programmi
 
 ### **Plugin Categories**
 
-| **Category** | **Description** | **Examples** |
-|--------------|-----------------|--------------|
-| **🧠 Consciousness** | Self-awareness and introspection modules | Advanced reflection, meta-cognition, consciousness loops |
-| **💾 Memory** | Persistent storage and retrieval systems | Episodic memory, semantic graphs, procedural learning |
-| **🎭 Personality** | Behavioral and communication traits | Professional assistant, creative collaborator, technical expert |
-| **🌍 Environment** | System and external awareness | Cloud optimization, IoT integration, network monitoring |
-| **🎯 Goals** | Objective and intention management | Task planning, priority optimization, achievement tracking |
-| **🗣️ Voice** | Speech and communication interfaces | TTS engines, emotional modulation, language adaptation |
-| **🤖 AI Models** | LLM integrations and AI backends | GPT connectors, local model interfaces, multi-modal AI |
-| **🔧 Tools** | Utility and helper functions | Data processing, file management, API integrations |
+| **Category**        | **Description**                          | **Examples**                                                    |
+| ------------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| **🧠 Consciousness** | Self-awareness and introspection modules | Advanced reflection, meta-cognition, consciousness loops        |
+| **💾 Memory**        | Persistent storage and retrieval systems | Episodic memory, semantic graphs, procedural learning           |
+| **🎭 Personality**   | Behavioral and communication traits      | Professional assistant, creative collaborator, technical expert |
+| **🌍 Environment**   | System and external awareness            | Cloud optimization, IoT integration, network monitoring         |
+| **🎯 Goals**         | Objective and intention management       | Task planning, priority optimization, achievement tracking      |
+| **🗣️ Voice**         | Speech and communication interfaces      | TTS engines, emotional modulation, language adaptation          |
+| **🤖 AI Models**     | LLM integrations and AI backends         | GPT connectors, local model interfaces, multi-modal AI          |
+| **🔧 Tools**         | Utility and helper functions             | Data processing, file management, API integrations              |
 
 ---
 
@@ -49,7 +49,7 @@ Create the **first standardized plugin registry** for AI-consciousness programmi
     "vector-db": "^2.1.0",
     "semantic-search": "^1.5.0"
   },
-  "entry_point": "memory_plugin.neuro",
+  "entry_point": "memory_plugin.aether",
   "exports": {
     "remember_advanced": "function",
     "semantic_search": "function",
@@ -57,7 +57,7 @@ Create the **first standardized plugin registry** for AI-consciousness programmi
   },
   "keywords": ["memory", "vector", "semantic", "episodic"],
   "repository": "https://github.com/neurocode/plugins/memory/advanced-memory",
-  "documentation": "https://docs.neurocode.org/plugins/advanced-memory"
+  "documentation": "https://docs.aethercode.org/plugins/advanced-memory"
 }
 ```
 
@@ -66,14 +66,14 @@ Create the **first standardized plugin registry** for AI-consciousness programmi
 ```
 advanced-memory-system/
 ├── neurocode-plugin.json          # Plugin manifest
-├── memory_plugin.neuro             # Main NeuroCode implementation
+├── memory_plugin.aether             # Main NeuroCode implementation
 ├── memory_core.py                  # Python backend (if needed)
 ├── README.md                       # Documentation
 ├── tests/
-│   ├── test_memory.neuro          # NeuroCode tests
+│   ├── test_memory.aether          # NeuroCode tests
 │   └── test_integration.py        # Python tests
 ├── examples/
-│   └── usage_example.neuro        # Usage examples
+│   └── usage_example.aether        # Usage examples
 └── docs/
     └── api_reference.md           # API documentation
 ```
@@ -81,11 +81,11 @@ advanced-memory-system/
 ### **3. Plugin Interface Standard**
 
 ```neurocode
-# memory_plugin.neuro - Plugin entry point
+# memory_plugin.aether - Plugin entry point
 plugin advanced_memory_system {
     version: "1.2.3"
     category: "memory"
-    
+
     # Plugin initialization
     init() {
         log "🧠 Advanced Memory System v1.2.3 initializing..."
@@ -93,7 +93,7 @@ plugin advanced_memory_system {
         load_existing_memories()
         log "✅ Advanced Memory System ready"
     }
-    
+
     # Exported functions
     export remember_advanced(content, context, importance_score) {
         # Enhanced memory storage with context and importance
@@ -104,25 +104,25 @@ plugin advanced_memory_system {
             timestamp: now(),
             embeddings: generate_embeddings(content)
         }
-        
+
         store_in_vector_db(memory_entry)
         update_semantic_index(memory_entry)
-        
+
         return memory_entry.id
     }
-    
+
     export semantic_search(query, limit=10) {
         # Vector-based semantic memory search
         query_embeddings = generate_embeddings(query)
         results = vector_db.search(query_embeddings, limit)
-        
+
         return results.map(result => {
             content: result.content,
             relevance: result.score,
             context: result.context
         })
     }
-    
+
     export memory_consolidation() {
         # Background memory optimization process
         consolidate_similar_memories()
@@ -130,7 +130,7 @@ plugin advanced_memory_system {
         optimize_vector_indices()
         log "🔄 Memory consolidation complete"
     }
-    
+
     # Plugin cleanup
     cleanup() {
         save_memory_state()
@@ -144,7 +144,7 @@ plugin advanced_memory_system {
 
 ## 🏗️ **Registry Architecture**
 
-### **1. Central Registry (`registry.neurocode.org`)**
+### **1. Central Registry (`registry.aethercode.org`)**
 
 ```yaml
 # Registry API Endpoints
@@ -173,7 +173,7 @@ categories: [
 ]
 
 tags: [
-    "vector-search", "nlp", "tts", "cloud", "iot", 
+    "vector-search", "nlp", "tts", "cloud", "iot",
     "optimization", "learning", "adaptation", "security"
 ]
 ```
@@ -302,6 +302,6 @@ This registry will accelerate NeuroCode adoption, foster community development, 
 
 ---
 
-**Document Status**: `DRAFT` | **Next Review**: `2025-07-06`  
-**Contributors**: NeuroCode Development Team  
+**Document Status**: `DRAFT` | **Next Review**: `2025-07-06`
+**Contributors**: NeuroCode Development Team
 **License**: GPL-3.0 | **Repository**: https://github.com/neurocode/plugin-registry

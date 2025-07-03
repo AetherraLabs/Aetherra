@@ -27,7 +27,7 @@ sys.path.insert(0, str(project_root / "core"))
 
 # Import NeuroCode components
 try:
-    from memory import NeuroMemory
+    from memory import AetherraMemory
 
     from scripts.neuro_runner_standalone import StandaloneNeuroRunner
 except ImportError as e:
@@ -37,8 +37,8 @@ except ImportError as e:
 class AgentReflectionLoop:
     """Autonomous agent that reflects on memory and suggests actions"""
 
-    def __init__(self, memory_instance: Optional[NeuroMemory] = None):
-        self.memory = memory_instance or NeuroMemory()
+    def __init__(self, memory_instance: Optional[AetherraMemory] = None):
+        self.memory = memory_instance or AetherraMemory()
         self.runner = StandaloneNeuroRunner(verbose=False)
         self.is_running = False
         self.reflection_thread = None

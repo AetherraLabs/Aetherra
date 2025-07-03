@@ -103,7 +103,7 @@ class ThemeManager:
     """Manages UI themes and customization"""
 
     def __init__(self, config_dir: Optional[str] = None):
-        self.config_dir = config_dir or os.path.expanduser("~/.neurocode/themes")
+        self.config_dir = config_dir or os.path.expanduser("~/.aethercode/themes")
         self.current_theme = UITheme.DARK
         self.custom_themes: Dict[str, ThemeConfig] = {}
         self._load_default_themes()
@@ -113,7 +113,10 @@ class ThemeManager:
         """Load built-in default themes"""
         self.default_themes = {
             UITheme.DARK: ThemeConfig(
-                name="Dark", colors=UIColors(), typography=Typography(), spacing=Spacing()
+                name="Dark",
+                colors=UIColors(),
+                typography=Typography(),
+                spacing=Spacing(),
             ),
             UITheme.LIGHT: ThemeConfig(
                 name="Light",
@@ -233,7 +236,9 @@ class ThemeManager:
         if isinstance(self.current_theme, UITheme):
             return self.default_themes[self.current_theme]
         else:
-            return self.custom_themes.get(self.current_theme, self.default_themes[UITheme.DARK])
+            return self.custom_themes.get(
+                self.current_theme, self.default_themes[UITheme.DARK]
+            )
 
     def set_theme(self, theme: UITheme | str):
         """Set the current theme"""

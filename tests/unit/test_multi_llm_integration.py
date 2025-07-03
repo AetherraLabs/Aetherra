@@ -23,7 +23,7 @@ def test_multi_llm_parsing():
     print("=" * 50)
 
     try:
-        from core.neurocode_grammar import create_neurocode_parser
+        from core.aethercode_grammar import create_neurocode_parser
 
         parser = create_neurocode_parser()
 

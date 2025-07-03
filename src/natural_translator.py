@@ -27,17 +27,17 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "core"))
 
 try:
-    from memory import NeuroMemory
+    from memory import AetherraMemory
 except ImportError:
     print("⚠️ Memory module not available, running in limited mode")
-    NeuroMemory = None
+    AetherraMemory = None
 
 
 class NaturalToNeuroTranslator:
     """Translates natural language to NeuroCode"""
 
     def __init__(self):
-        self.memory = NeuroMemory() if NeuroMemory else None
+        self.memory = AetherraMemory() if AetherraMemory else None
         self.translation_patterns = self._load_translation_patterns()
         self.context_memory = []  # Store conversation context
 
@@ -259,12 +259,12 @@ class NaturalToNeuroTranslator:
         """Execute the generated NeuroCode"""
         try:
             # Import the standalone runner
-            from scripts.neuro_runner_standalone import StandaloneNeuroRunner
+            from scripts.aether_runner_standalone import StandaloneNeuroRunner
 
             runner = StandaloneNeuroRunner(verbose=True)
 
             # Create temporary file
-            temp_file = Path(__file__).parent / "temp_translation.neuro"
+            temp_file = Path(__file__).parent / "temp_translation.aether"
             temp_file.write_text(neurocode, encoding="utf-8")
 
             # Execute
@@ -306,7 +306,10 @@ def main():
 
     parser = argparse.ArgumentParser(description="Natural-to-NeuroCode Translator")
     parser.add_argument(
-        "--interactive", "-i", action="store_true", help="Start interactive translation session"
+        "--interactive",
+        "-i",
+        action="store_true",
+        help="Start interactive translation session",
     )
     parser.add_argument(
         "--translate", "-t", type=str, help="Translate a single natural language input"

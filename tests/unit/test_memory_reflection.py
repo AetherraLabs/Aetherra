@@ -4,7 +4,7 @@
 ==========================================
 
 This script demonstrates how the visual memory reflection browser
-works with actual NeuroCode syntax from basic_memory.neuro
+works with actual NeuroCode syntax from basic_memory.aether
 """
 
 import sys
@@ -17,19 +17,19 @@ sys.path.insert(0, str(project_root / "core"))
 
 
 def test_memory_reflection_with_basic_neuro():
-    """Test memory reflection features with basic_memory.neuro content"""
+    """Test memory reflection features with basic_memory.aether content"""
 
-    print("🧠 Testing Memory Reflection with basic_memory.neuro")
+    print("🧠 Testing Memory Reflection with basic_memory.aether")
     print("=" * 60)
 
     try:
-        from memory import NeuroMemory
+        from memory import AetherraMemory
 
         # Create memory instance
-        memory = NeuroMemory()
+        memory = AetherraMemory()
 
-        # Add memories from basic_memory.neuro
-        print("\n📝 Adding memories from basic_memory.neuro:")
+        # Add memories from basic_memory.aether
+        print("\n📝 Adding memories from basic_memory.aether:")
 
         # Programming paradigm memories
         memory.remember("Python is procedural", ["programming_paradigm"])
@@ -38,7 +38,9 @@ def test_memory_reflection_with_basic_neuro():
         print("   ✅ Added programming paradigm memories")
 
         # Best practices
-        memory.remember("Always backup before self-editing", ["best_practice", "safety"])
+        memory.remember(
+            "Always backup before self-editing", ["best_practice", "safety"]
+        )
         print("   ✅ Added best practice memory")
 
         # Performance memories
@@ -76,7 +78,11 @@ def test_memory_reflection_with_basic_neuro():
         print("\n4. Reflection Analysis:")
         try:
             reflection = memory.reflection_summary("all_time")
-            print(f"   {reflection[:200]}..." if len(reflection) > 200 else f"   {reflection}")
+            print(
+                f"   {reflection[:200]}..."
+                if len(reflection) > 200
+                else f"   {reflection}"
+            )
         except Exception:
             print(f"   🔍 Memory patterns detected across {len(memory.memory)} entries")
 

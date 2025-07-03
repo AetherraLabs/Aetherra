@@ -3,7 +3,7 @@
 
 # === CORE PLAYGROUND FUNCTIONALITY ===
 streamlit>=1.28.0,<2.0.0        # Interactive web interface (REQUIRED)
-lark>=1.1.7,<2.0.0              # Grammar parser for .neuro files (REQUIRED)
+lark>=1.1.7,<2.0.0              # Grammar parser for .aether files (REQUIRED)
 
 # === AI PROVIDER (Choose one) ===
 openai>=1.0.0,<2.0.0            # OpenAI GPT models (recommended)

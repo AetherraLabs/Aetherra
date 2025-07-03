@@ -20,16 +20,16 @@ This file maintains backward compatibility with existing code.
 
 # Import everything from the new modular system
 try:
-    from .interpreter import NeuroCodeInterpreter
+    from .interpreter import AetherraInterpreter
     
     # Legacy function compatibility
     def create_interpreter():
         """Create a new NeuroCode interpreter instance"""
-        return NeuroCodeInterpreter()
+        return AetherraInterpreter()
     
     # Export the same API as the original monolithic module
     __all__ = [
-        "NeuroCodeInterpreter",
+        "AetherraInterpreter",
         "create_interpreter",
     ]
     
@@ -40,7 +40,7 @@ except ImportError:
     # Include original implementation as fallback
     # (The original implementation would be here for compatibility)
     
-    class NeuroCodeInterpreter:
+    class AetherraInterpreter:
         def __init__(self):
             print("Using fallback interpreter implementation")
             
@@ -48,9 +48,9 @@ except ImportError:
             return f"Fallback interpreter processed: {line}"
     
     def create_interpreter():
-        return NeuroCodeInterpreter()
+        return AetherraInterpreter()
     
-    __all__ = ["NeuroCodeInterpreter", "create_interpreter"]
+    __all__ = ["AetherraInterpreter", "create_interpreter"]
             auto_tag_content,
             reflect_on_memories,
             suggest_next_actions,
@@ -59,14 +59,14 @@ except ImportError:
         from debug_system import NeuroDebugSystem  # type: ignore
         from functions import NeuroFunctions  # type: ignore
         from goal_system import GoalSystem  # type: ignore
-        from memory import NeuroMemory  # type: ignore
+        from memory import AetherraMemory  # type: ignore
         from meta_plugins import MetaPluginSystem  # type: ignore
         from plugin_manager import PLUGIN_REGISTRY  # type: ignore
     except ImportError as e:
         print(f"Warning: Some interpreter dependencies not available: {e}")
 
         # Create comprehensive fallback classes for graceful degradation
-        class NeuroMemory:
+        class AetherraMemory:
             def __init__(self):
                 self.memory = []
                 self.store_file = "memory_store.json"
@@ -271,14 +271,14 @@ except ImportError:
         NodeType = None
 
 
-class NeuroCodeInterpreter:
+class AetherraInterpreter:
     """
     Core NeuroCode interpreter - handles line-by-line parsing and execution flow
     Delegates specific functionality to specialized modules
     """
 
     def __init__(self):
-        self.memory = NeuroMemory()
+        self.memory = AetherraMemory()
         self.functions = NeuroFunctions()
         self.command_history = []  # Track command usage patterns
         self.agent = NeuroAgent(self.memory, self.functions, self.command_history)

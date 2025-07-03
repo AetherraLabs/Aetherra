@@ -1,7 +1,7 @@
 # 🚀 NeuroCode v1.0.0 - Production Release Notes
 
-**Release Date:** June 29, 2025  
-**Version:** 1.0.0  
+**Release Date:** June 29, 2025
+**Version:** 1.0.0
 **Status:** ✅ Production Ready
 
 ---
@@ -16,7 +16,7 @@ NeuroCode v1.0.0 marks the first stable, production-ready release of the world's
 
 ### **🧠 AI-Native Language**
 - Complete formal grammar with Lark parser
-- Native `.neuro` file support with proper AST generation
+- Native `.aether` file support with proper AST generation
 - Intent-based programming paradigm
 
 ### **🤖 Multi-LLM Support**
@@ -82,8 +82,8 @@ from neurocode_engine import neurocode_engine
 from neurocode import NeuroCode
 
 # NEW (v1.0.0):
-from src.neurocode_engine import neurocode_engine
-from src.neurocode import NeuroCode
+from src.aethercode_engine import neurocode_engine
+from src.aethercode import NeuroCode
 ```
 
 ### **Tool Locations**

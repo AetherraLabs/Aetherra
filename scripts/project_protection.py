@@ -37,8 +37,23 @@ class ProjectProtection:
                 "MISSION_COMPLETE.md",
                 "SUCCESS_SUMMARY.md",
             ],
-            "protected_directories": ["core/", "src/", "docs/", "examples/", "tests/", "data/"],
-            "critical_extensions": [".py", ".neuro", ".md", ".json", ".toml", ".yaml", ".yml"],
+            "protected_directories": [
+                "core/",
+                "src/",
+                "docs/",
+                "examples/",
+                "tests/",
+                "data/",
+            ],
+            "critical_extensions": [
+                ".py",
+                ".aether",
+                ".md",
+                ".json",
+                ".toml",
+                ".yaml",
+                ".yml",
+            ],
             "backup_frequency": "daily",
             "max_backups": 30,
             "protection_enabled": True,
@@ -74,7 +89,11 @@ class ProjectProtection:
             return False
 
         path = Path(file_path)
-        rel_path = str(path.relative_to(self.project_root)) if path.is_absolute() else str(path)
+        rel_path = (
+            str(path.relative_to(self.project_root))
+            if path.is_absolute()
+            else str(path)
+        )
 
         # Check protected files list
         if rel_path in self.config["protected_files"]:
@@ -146,7 +165,9 @@ class ProjectProtection:
             max_backups = self.config.get("max_backups", 30)
             pattern = f"{file_stem}_*"
             backups = sorted(
-                self.backup_dir.glob(pattern), key=lambda x: x.stat().st_mtime, reverse=True
+                self.backup_dir.glob(pattern),
+                key=lambda x: x.stat().st_mtime,
+                reverse=True,
             )
 
             for old_backup in backups[max_backups:]:
@@ -218,7 +239,9 @@ class ProjectProtection:
                 # Find most recent backup
                 pattern = f"{file_stem}_*{source_path.suffix}"
                 backups = sorted(
-                    self.backup_dir.glob(pattern), key=lambda x: x.stat().st_mtime, reverse=True
+                    self.backup_dir.glob(pattern),
+                    key=lambda x: x.stat().st_mtime,
+                    reverse=True,
                 )
                 if not backups:
                     print(f"❌ No backups found for {file_path}")
@@ -249,7 +272,9 @@ class ProjectProtection:
             else:
                 missing_files.append(file_path)
 
-        backup_count = len(list(self.backup_dir.glob("*"))) if self.backup_dir.exists() else 0
+        backup_count = (
+            len(list(self.backup_dir.glob("*"))) if self.backup_dir.exists() else 0
+        )
 
         return {
             "protection_enabled": self.config.get("protection_enabled", True),

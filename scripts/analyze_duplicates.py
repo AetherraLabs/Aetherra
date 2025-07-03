@@ -60,7 +60,9 @@ class DuplicateAnalyzer:
         name = file_path.name.lower()
         parent = file_path.parent.name.lower()
 
-        if any(pattern in name for pattern in ["status", "complete", "success", "summary"]):
+        if any(
+            pattern in name for pattern in ["status", "complete", "success", "summary"]
+        ):
             return "status_doc"
         elif name.startswith("test_") or parent == "tests":
             return "test"
@@ -70,7 +72,7 @@ class DuplicateAnalyzer:
             return "documentation"
         elif file_path.suffix == ".py":
             return "python"
-        elif file_path.suffix == ".neuro":
+        elif file_path.suffix == ".aether":
             return "neurocode"
         elif file_path.suffix == ".md":
             return "markdown"
@@ -96,7 +98,9 @@ class DuplicateAnalyzer:
                     self.file_hashes[file_hash].append(file_path)
 
         # Find duplicates (hashes with multiple files)
-        duplicates = {h: files for h, files in self.file_hashes.items() if len(files) > 1}
+        duplicates = {
+            h: files for h, files in self.file_hashes.items() if len(files) > 1
+        }
 
         print(f"📊 Found {len(duplicates)} groups of exact duplicates")
         return duplicates
@@ -113,7 +117,9 @@ class DuplicateAnalyzer:
                 base_name = file_path.stem.lower()
                 # Remove common suffixes like _v1, _old, _backup, etc.
                 clean_name = re.sub(
-                    r"(_v\d+|_old|_backup|_new|_copy|_fixed|_final|_test)$", "", base_name
+                    r"(_v\d+|_old|_backup|_new|_copy|_fixed|_final|_test)$",
+                    "",
+                    base_name,
                 )
                 name_groups[clean_name].append(file_path)
 
@@ -277,7 +283,10 @@ class DuplicateAnalyzer:
 
         # Status documents - most can be archived
         for status_file in status_docs:
-            if any(word in status_file.name.lower() for word in ["complete", "success", "summary"]):
+            if any(
+                word in status_file.name.lower()
+                for word in ["complete", "success", "summary"]
+            ):
                 recommendations["move_to_archive"].append(
                     {
                         "file": status_file,
@@ -330,7 +339,9 @@ class DuplicateAnalyzer:
         print("📋 DUPLICATE FILE ANALYSIS REPORT")
         print("=" * 80)
 
-        total_files_to_process = sum(len(category) for category in recommendations.values())
+        total_files_to_process = sum(
+            len(category) for category in recommendations.values()
+        )
         print(f"\n📊 SUMMARY: {total_files_to_process} files identified for action\n")
 
         # Safe to delete immediately
@@ -373,7 +384,10 @@ class DuplicateAnalyzer:
         print("   4. Check archive/duplicates/ folder before final cleanup")
 
     def execute_recommendations(
-        self, recommendations: Dict, move_to_archive: bool = False, delete_confirmed: bool = False
+        self,
+        recommendations: Dict,
+        move_to_archive: bool = False,
+        delete_confirmed: bool = False,
     ):
         """Execute the cleanup recommendations."""
         archive_dir = self.project_root / "archive" / "duplicates"
@@ -418,7 +432,12 @@ class DuplicateAnalyzer:
 
         # Generate recommendations
         recommendations = self.generate_recommendations(
-            exact_dupes, similar_files, test_dupes, website_dupes, status_docs, legacy_files
+            exact_dupes,
+            similar_files,
+            test_dupes,
+            website_dupes,
+            status_docs,
+            legacy_files,
         )
 
         return recommendations
@@ -437,10 +456,14 @@ def main():
 
     if move_to_archive or delete_confirmed:
         print("\n⚠️  EXECUTING CLEANUP...")
-        analyzer.execute_recommendations(recommendations, move_to_archive, delete_confirmed)
+        analyzer.execute_recommendations(
+            recommendations, move_to_archive, delete_confirmed
+        )
         print("\n✅ Cleanup complete!")
     else:
-        print("\n💡 Run with --move-to-archive and/or --delete-confirmed to execute cleanup")
+        print(
+            "\n💡 Run with --move-to-archive and/or --delete-confirmed to execute cleanup"
+        )
 
 
 if __name__ == "__main__":

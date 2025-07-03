@@ -18,7 +18,7 @@ def test_parser_directly():
     print("=" * 40)
 
     # Test the parser components directly
-    from src.neurocode.core.parser.parser import NeuroCodeLexer, NeuroCodeParser
+    from src.aethercode.core.parser.parser import AetherraLexer, AetherraParser
 
     neurocode_sample = """
 goal: test the parser directly
@@ -34,7 +34,7 @@ end
 
     # Step 1: Tokenize
     print("\n🔤 Step 1: Tokenization")
-    lexer = NeuroCodeLexer(neurocode_sample)
+    lexer = AetherraLexer(neurocode_sample)
     tokens = lexer.tokenize()
     print(f"Generated {len(tokens)} tokens")
 
@@ -45,7 +45,7 @@ end
 
     # Step 2: Parse
     print("\n🌳 Step 2: Parsing to AST")
-    parser = NeuroCodeParser(tokens)
+    parser = AetherraParser(tokens)
     ast = parser.parse()
     print(f"Generated {len(ast)} AST nodes")
 
@@ -63,7 +63,7 @@ def test_wrapper_function():
 
     # Test the wrapper function from the __init__.py
     try:
-        from src.neurocode.core.parser import parse_code
+        from src.aethercode.core.parser import parse_code
 
         neurocode_sample = """
 goal: test wrapper function
@@ -116,7 +116,7 @@ plugin: performance_monitor
         alert("Critical memory usage")
         suggest fix for "memory_leak"
     end
-    
+
     on_event("system_slowdown"):
         analyze bottlenecks
         optimize for "speed"
@@ -139,19 +139,19 @@ recall experiences with "test_log"
 """
 
     try:
-        from src.neurocode.core.parser.parser import (
+        from src.aethercode.core.parser.parser import (
             NeuroCodeCompiler,
-            NeuroCodeLexer,
-            NeuroCodeParser,
+            AetherraLexer,
+            AetherraParser,
         )
 
         print("🔤 Tokenizing complex program...")
-        lexer = NeuroCodeLexer(complex_program)
+        lexer = AetherraLexer(complex_program)
         tokens = lexer.tokenize()
         print(f"   {len(tokens)} tokens generated")
 
         print("🌳 Parsing to AST...")
-        parser = NeuroCodeParser(tokens)
+        parser = AetherraParser(tokens)
         ast = parser.parse()
         print(f"   {len(ast)} AST nodes generated")
 

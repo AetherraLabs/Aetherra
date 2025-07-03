@@ -4,7 +4,7 @@ The NeuroCode Plugin SDK lets you extend the language with intelligent, modular 
 
 ## 🚀 What Is a Plugin?
 
-A plugin is a Python file that registers new commands into the NeuroCode runtime. These commands can be called from `.neuro` files like:
+A plugin is a Python file that registers new commands into the NeuroCode runtime. These commands can be called from `.aether` files like:
 
 ```neuro
 plugin: whisper.transcribe "meeting.wav"
@@ -141,7 +141,7 @@ def analyze(data: str, method: str = "basic") -> Dict[str, Any]:
 | `example_usage`    | str       | Usage example            | ❌        |
 | `confidence_boost` | float     | AI confidence multiplier | ❌        |
 
-## 🎯 Plugin Usage in .neuro Files
+## 🎯 Plugin Usage in .aether Files
 
 ### Basic Syntax
 ```neuro
@@ -268,7 +268,7 @@ def memory_aware_function(data: str) -> Dict[str, Any]:
        return f"Processing {arg1} with {arg2}"
    ```
 
-3. **Test in .neuro code:**
+3. **Test in .aether code:**
    ```neuro
    plugin: my_plugin.my_function "test data" "custom value"
    ```

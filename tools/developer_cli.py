@@ -27,7 +27,9 @@ try:
     from developer_scaffolder import NeuroCodeScaffolder
     from plugin_scaffolder import NeuroCodePluginScaffolder
 except ImportError:
-    print("❌ Developer tools not found. Please ensure scaffolding tools are installed.")
+    print(
+        "❌ Developer tools not found. Please ensure scaffolding tools are installed."
+    )
     sys.exit(1)
 
 
@@ -129,7 +131,9 @@ class NeuroCodeDeveloperCLI:
                 print(f"✅ Plugin '{name}' created successfully!")
                 return 0
             else:
-                print(f"❌ Plugin creation failed: {result.get('reason', 'Unknown error')}")
+                print(
+                    f"❌ Plugin creation failed: {result.get('reason', 'Unknown error')}"
+                )
                 return 1
         except Exception as e:
             print(f"❌ Plugin creation error: {e}")
@@ -140,7 +144,7 @@ class NeuroCodeDeveloperCLI:
         template_dir = self.project_root / "templates" / "goals"
         template_dir.mkdir(parents=True, exist_ok=True)
 
-        goal_file = template_dir / f"{name}.neuro"
+        goal_file = template_dir / f"{name}.aether"
 
         content = f'''# {name.title().replace("_", " ")} Goal Template
 # AI-native goal definition with intelligent tracking
@@ -196,7 +200,7 @@ end
         template_dir = self.project_root / "templates" / "agents"
         template_dir.mkdir(parents=True, exist_ok=True)
 
-        agent_file = template_dir / f"{name}.neuro"
+        agent_file = template_dir / f"{name}.aether"
 
         content = f'''# {name.title().replace("_", " ")} Agent Template
 # Specialized AI agent with domain expertise
@@ -256,7 +260,7 @@ evolve: capabilities, expertise_depth, interaction_patterns
 # Self-reflection
 reflect_on_performance() every_day
 when reflection_reveals("improvement_opportunity"):
-    set_learning_goal() 
+    set_learning_goal()
     practice_new_approaches()
     measure_improvement()
 end
@@ -300,38 +304,38 @@ except ImportError:
 class {name.title().replace("_", "")}Component(QWidget):
     """
     AI-native {name.replace("_", " ")} component with adaptive behavior
-    
+
     Features:
     - Intelligent user interaction adaptation
-    - Memory of user preferences 
+    - Memory of user preferences
     - Goal-oriented interface optimization
     - Contextual behavior modification
     """
-    
+
     # Signals for AI-native communication
     user_interaction = Signal(dict)
     preference_learned = Signal(str, str)
     adaptation_triggered = Signal(str)
-    
+
     def __init__(self, config: Optional[Dict] = None):
         super().__init__()
-        
+
         self.config = config or {{}}
         self.user_preferences = {{}}
         self.interaction_history = []
         self.adaptation_enabled = True
-        
+
         self._setup_ui()
         self._setup_ai_behavior()
-        
+
     def _setup_ui(self):
         """Setup the user interface with intelligent defaults"""
         self.setWindowTitle(f"{self.__class__.__name__}")
         self.setMinimumSize(400, 300)
-        
+
         # Main layout
         layout = QVBoxLayout(self)
-        
+
         # Header with adaptive messaging
         self.header_label = QLabel(f"🧬 {"{name}".title().replace("_", " ")} Component")
         self.header_label.setStyleSheet("""
@@ -346,52 +350,52 @@ class {name.title().replace("_", "")}Component(QWidget):
             }}
         """)
         layout.addWidget(self.header_label)
-        
+
         # Status indicator
         self.status_label = QLabel("🟢 Active and Learning")
         self.status_label.setStyleSheet("color: #28A745; padding: 5px;")
         layout.addWidget(self.status_label)
-        
+
         # Interactive area
         self.content_area = self._create_content_area()
         layout.addWidget(self.content_area)
-        
+
         # Adaptation controls
         self.adaptation_controls = self._create_adaptation_controls()
         layout.addWidget(self.adaptation_controls)
-        
+
     def _create_content_area(self) -> QWidget:
         """Create the main content area with adaptive features"""
         content = QWidget()
         layout = QVBoxLayout(content)
-        
+
         # Intelligent input area
         input_group = QGroupBox("Intelligent Input")
         input_layout = QVBoxLayout(input_group)
-        
+
         self.input_field = QTextEdit()
         self.input_field.setPlaceholderText("Enter your input here... (I learn from your patterns)")
         self.input_field.textChanged.connect(self._on_input_changed)
         input_layout.addWidget(self.input_field)
-        
+
         # Adaptive action buttons
         button_layout = QHBoxLayout()
-        
+
         self.process_button = QPushButton("🧠 Process Intelligently")
         self.process_button.clicked.connect(self._process_intelligently)
         button_layout.addWidget(self.process_button)
-        
+
         self.learn_button = QPushButton("📚 Learn from This")
         self.learn_button.clicked.connect(self._learn_from_input)
         button_layout.addWidget(self.learn_button)
-        
+
         input_layout.addLayout(button_layout)
         layout.addWidget(input_group)
-        
+
         # Results area with AI insights
         results_group = QGroupBox("AI-Enhanced Results")
         results_layout = QVBoxLayout(results_group)
-        
+
         self.results_area = QTextEdit()
         self.results_area.setReadOnly(True)
         self.results_area.setStyleSheet("""
@@ -403,22 +407,22 @@ class {name.title().replace("_", "")}Component(QWidget):
             }}
         """)
         results_layout.addWidget(self.results_area)
-        
+
         layout.addWidget(results_group)
-        
+
         return content
-    
+
     def _create_adaptation_controls(self) -> QWidget:
         """Create controls for AI adaptation features"""
         controls = QGroupBox("🤖 AI Behavior Controls")
         layout = QHBoxLayout(controls)
-        
+
         # Adaptation toggle
         self.adaptation_checkbox = QCheckBox("Enable Adaptive Learning")
         self.adaptation_checkbox.setChecked(self.adaptation_enabled)
         self.adaptation_checkbox.stateChanged.connect(self._toggle_adaptation)
         layout.addWidget(self.adaptation_checkbox)
-        
+
         # Learning rate slider
         layout.addWidget(QLabel("Learning Rate:"))
         self.learning_rate_slider = QSlider(Qt.Horizontal)
@@ -426,38 +430,38 @@ class {name.title().replace("_", "")}Component(QWidget):
         self.learning_rate_slider.setValue(5)
         self.learning_rate_slider.valueChanged.connect(self._update_learning_rate)
         layout.addWidget(self.learning_rate_slider)
-        
+
         # Adaptation insights
         self.insights_button = QPushButton("💡 Show AI Insights")
         self.insights_button.clicked.connect(self._show_ai_insights)
         layout.addWidget(self.insights_button)
-        
+
         return controls
-    
+
     def _setup_ai_behavior(self):
         """Setup AI-native behavioral patterns"""
         # Timer for periodic adaptation
         self.adaptation_timer = QTimer()
         self.adaptation_timer.timeout.connect(self._periodic_adaptation)
         self.adaptation_timer.start(30000)  # Every 30 seconds
-        
+
         # Initialize learning goals
         self.learning_goals = [
             "understand_user_preferences",
-            "optimize_interface_efficiency", 
+            "optimize_interface_efficiency",
             "improve_response_quality",
             "minimize_user_cognitive_load"
         ]
-        
+
         self._log_interaction("component_initialized", {{"timestamp": datetime.now().isoformat()}})
-    
+
     def _on_input_changed(self):
         """React intelligently to input changes"""
         text = self.input_field.toPlainText()
-        
+
         if len(text) > 10:  # Start learning from meaningful input
             self._analyze_input_patterns(text)
-            
+
         # Adaptive UI updates
         if len(text) > 100:
             self.status_label.setText("🧠 Analyzing complex input...")
@@ -465,64 +469,64 @@ class {name.title().replace("_", "")}Component(QWidget):
             self.status_label.setText("📝 Processing input...")
         else:
             self.status_label.setText("🟢 Ready for input...")
-    
+
     def _process_intelligently(self):
         """Process input with AI-enhanced logic"""
         input_text = self.input_field.toPlainText()
-        
+
         if not input_text.strip():
             self.results_area.setText("⚠️ Please provide input to process.")
             return
-        
+
         # Simulate AI processing with adaptation
         processing_approach = self._select_processing_approach(input_text)
         result = self._apply_processing_approach(input_text, processing_approach)
-        
+
         # Display results with AI insights
         self._display_intelligent_results(result, processing_approach)
-        
+
         # Learn from this interaction
         self._log_interaction("intelligent_processing", {{
             "input_length": len(input_text),
             "approach": processing_approach,
             "timestamp": datetime.now().isoformat()
         }})
-    
+
     def _learn_from_input(self):
         """Explicitly learn from current input"""
         input_text = self.input_field.toPlainText()
-        
+
         if not input_text.strip():
             return
-        
+
         # Extract learning insights
         insights = self._extract_learning_insights(input_text)
-        
+
         # Update user preferences
         for insight in insights:
             self.user_preferences[insight["category"]] = insight["value"]
             self.preference_learned.emit(insight["category"], insight["value"])
-        
+
         # Adapt interface based on learning
         self._adapt_interface_to_preferences()
-        
+
         self.status_label.setText(f"✅ Learned {{len(insights)}} new insights!")
-        
+
         # Show learning results
         learning_summary = "\\n".join([f"• {{i['category']}}: {{i['value']}}" for i in insights])
         self.results_area.setText(f"🧠 Learning Summary:\\n{{learning_summary}}")
-    
+
     def _select_processing_approach(self, input_text: str) -> str:
         """Intelligently select processing approach based on input analysis"""
         text_length = len(input_text)
-        
+
         if text_length > 200:
             return "comprehensive_analysis"
         elif text_length > 50:
             return "standard_processing"
         else:
             return "quick_response"
-    
+
     def _apply_processing_approach(self, text: str, approach: str) -> Dict[str, Any]:
         """Apply the selected processing approach"""
         result = {{
@@ -533,30 +537,30 @@ class {name.title().replace("_", "")}Component(QWidget):
             "insights": self._generate_insights(text, approach),
             "timestamp": datetime.now().isoformat()
         }}
-        
+
         return result
-    
+
     def _generate_insights(self, text: str, approach: str) -> List[str]:
         """Generate AI insights about the processing"""
         insights = []
-        
+
         if len(text) > 100:
             insights.append("Complex input detected - used advanced analysis")
-        
+
         if any(word in text.lower() for word in ["optimize", "improve", "enhance"]):
             insights.append("Optimization intent recognized")
-        
+
         if any(word in text.lower() for word in ["help", "assist", "support"]):
             insights.append("Support request identified")
-        
+
         insights.append(f"Processing confidence: {{0.85:.1%}}")
-        
+
         return insights
-    
+
     def _display_intelligent_results(self, result: Dict[str, Any], approach: str):
         """Display results with AI-enhanced formatting"""
         output = f"""🧬 NeuroCode AI Processing Results
-        
+
 📊 Analysis Approach: {{approach.replace('_', ' ').title()}}
 ⏰ Processed at: {{result['timestamp']}}
 🎯 Confidence: {{result['confidence']:.1%}}
@@ -566,9 +570,9 @@ class {name.title().replace("_", "")}Component(QWidget):
 
 💡 AI Insights:
 """ + "\\n".join([f"• {{insight}}" for insight in result['insights']])
-        
+
         self.results_area.setText(output)
-    
+
     def _analyze_input_patterns(self, text: str):
         """Analyze patterns in user input for learning"""
         patterns = {{
@@ -578,35 +582,35 @@ class {name.title().replace("_", "")}Component(QWidget):
             "command_style": any(word in text.lower() for word in ["create", "generate", "make", "build"]),
             "timestamp": datetime.now().isoformat()
         }}
-        
+
         self.interaction_history.append(patterns)
-        
+
         # Keep only recent history for performance
         if len(self.interaction_history) > 50:
             self.interaction_history = self.interaction_history[-25:]
-    
+
     def _extract_learning_insights(self, text: str) -> List[Dict[str, str]]:
         """Extract actionable learning insights from input"""
         insights = []
-        
+
         if len(text) > 100:
             insights.append({{"category": "input_preference", "value": "detailed"}})
         else:
             insights.append({{"category": "input_preference", "value": "concise"}})
-        
+
         if "?" in text:
             insights.append({{"category": "interaction_style", "value": "inquisitive"}})
-        
+
         if any(word in text.lower() for word in ["please", "thank", "kindly"]):
             insights.append({{"category": "communication_style", "value": "polite"}})
-        
+
         return insights
-    
+
     def _adapt_interface_to_preferences(self):
         """Adapt interface based on learned preferences"""
         if not self.adaptation_enabled:
             return
-        
+
         # Adapt based on input preferences
         if self.user_preferences.get("input_preference") == "detailed":
             self.input_field.setMinimumHeight(150)
@@ -614,43 +618,43 @@ class {name.title().replace("_", "")}Component(QWidget):
         elif self.user_preferences.get("input_preference") == "concise":
             self.input_field.setMinimumHeight(80)
             self.input_field.setPlaceholderText("Quick input... (I learned you prefer concise interactions)")
-        
+
         # Adapt communication style
         if self.user_preferences.get("communication_style") == "polite":
             self.process_button.setText("🧠 Please Process Intelligently")
             self.learn_button.setText("📚 Kindly Learn from This")
-        
+
         self.adaptation_triggered.emit("interface_adapted_to_preferences")
-    
+
     def _toggle_adaptation(self, state):
         """Toggle adaptive learning on/off"""
         self.adaptation_enabled = state == Qt.Checked
-        
+
         if self.adaptation_enabled:
             self.status_label.setText("🟢 Active and Learning")
             self.adaptation_timer.start()
         else:
             self.status_label.setText("⚪ Active (Learning Disabled)")
             self.adaptation_timer.stop()
-    
+
     def _update_learning_rate(self, value):
         """Update the learning rate for adaptations"""
         rate = value / 10.0
         # In a real implementation, this would affect learning algorithms
         self.status_label.setText(f"🎓 Learning Rate: {{rate:.1f}}")
-    
+
     def _show_ai_insights(self):
         """Display current AI insights and learning state"""
         insights_dialog = QDialog(self)
         insights_dialog.setWindowTitle("🧠 AI Insights & Learning State")
         insights_dialog.resize(500, 400)
-        
+
         layout = QVBoxLayout(insights_dialog)
-        
+
         # Insights text
         insights_text = QTextEdit()
         insights_text.setReadOnly(True)
-        
+
         insights_content = f"""🧬 NeuroCode Component AI Insights
 
 📊 Learning Statistics:
@@ -668,35 +672,35 @@ class {name.title().replace("_", "")}Component(QWidget):
 
 🎯 Active Learning Goals:
 """ + "\\n".join([f"• {{goal.replace('_', ' ').title()}}" for goal in self.learning_goals])
-        
+
         insights_text.setText(insights_content)
         layout.addWidget(insights_text)
-        
+
         # Close button
         close_button = QPushButton("Close")
         close_button.clicked.connect(insights_dialog.accept)
         layout.addWidget(close_button)
-        
+
         insights_dialog.exec()
-    
+
     def _periodic_adaptation(self):
         """Perform periodic adaptations based on accumulated learning"""
         if not self.adaptation_enabled or len(self.interaction_history) < 5:
             return
-        
+
         # Analyze recent patterns
         recent_interactions = self.interaction_history[-10:]
-        
+
         # Adapt based on patterns
         avg_length = sum(h.get('length_preference', 0) for h in recent_interactions) // len(recent_interactions)
-        
+
         if avg_length > 150 and self.user_preferences.get("input_preference") != "detailed":
             self.user_preferences["input_preference"] = "detailed"
             self._adapt_interface_to_preferences()
         elif avg_length < 50 and self.user_preferences.get("input_preference") != "concise":
             self.user_preferences["input_preference"] = "concise"
             self._adapt_interface_to_preferences()
-    
+
     def _log_interaction(self, interaction_type: str, data: Dict[str, Any]):
         """Log interaction for learning and adaptation"""
         log_entry = {{
@@ -705,10 +709,10 @@ class {name.title().replace("_", "")}Component(QWidget):
             "timestamp": datetime.now().isoformat(),
             "component": self.__class__.__name__
         }}
-        
+
         # In a real implementation, this would integrate with NeuroCode's memory system
         self.user_interaction.emit(log_entry)
-    
+
     def get_learning_state(self) -> Dict[str, Any]:
         """Get current learning and adaptation state"""
         return {{
@@ -723,22 +727,22 @@ class {name.title().replace("_", "")}Component(QWidget):
 # Example usage and testing
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    
+
     # Create and show the component
     component = {name.title().replace("_", "")}Component({{
         "theme": "neurocode_default",
         "ai_enhanced": True
     }})
-    
+
     component.show()
-    
+
     print(f"🧬 {{component.__class__.__name__}} Demo")
     print("This component demonstrates NeuroCode's AI-native UI approach:")
     print("• Adaptive behavior based on user patterns")
     print("• Intelligent processing with learning")
     print("• Memory of user preferences")
     print("• Goal-oriented interface optimization")
-    
+
     sys.exit(app.exec())
 '''
 
@@ -775,7 +779,7 @@ if __name__ == "__main__":
             (project_dir / subdir).mkdir(exist_ok=True)
 
         # Create main project file
-        main_file = project_dir / "main.neuro"
+        main_file = project_dir / "main.aether"
         content = f'''# {name.title().replace("_", " ")} Project
 # A complete NeuroCode project with AI-native architecture
 
@@ -840,7 +844,7 @@ An AI-native project built with NeuroCode's cognitive computing platform.
 
 ```bash
 # Run the project
-neurocode run main.neuro
+neurocode run main.aether
 
 # Explore components
 ls src/
@@ -874,28 +878,28 @@ ls agents/
 
         examples = {
             "Basic Concepts": [
-                "hello_neurocode.neuro - Your first AI-native program",
-                "goal_setting.neuro - Goal-oriented programming basics",
-                "memory_usage.neuro - Persistent memory examples",
-                "agent_basics.neuro - AI agent fundamentals",
+                "hello_neurocode.aether - Your first AI-native program",
+                "goal_setting.aether - Goal-oriented programming basics",
+                "memory_usage.aether - Persistent memory examples",
+                "agent_basics.aether - AI agent fundamentals",
             ],
             "Plugin Development": [
                 "simple_plugin.py - Basic plugin structure",
                 "ai_enhanced_plugin.py - AI-native plugin features",
                 "plugin_testing.py - Testing methodologies",
-                "plugin_integration.neuro - Plugin usage examples",
+                "plugin_integration.aether - Plugin usage examples",
             ],
             "Advanced Features": [
-                "multi_agent_collaboration.neuro - Agent teamwork",
-                "adaptive_learning.neuro - Self-improving systems",
-                "consciousness_integration.neuro - AI consciousness",
-                "distributed_intelligence.neuro - Multi-node AI",
+                "multi_agent_collaboration.aether - Agent teamwork",
+                "adaptive_learning.aether - Self-improving systems",
+                "consciousness_integration.aether - AI consciousness",
+                "distributed_intelligence.aether - Multi-node AI",
             ],
             "Real-World Applications": [
-                "system_monitoring.neuro - Intelligent monitoring",
-                "data_analysis.neuro - AI-powered analytics",
-                "automation_suite.neuro - Intelligent automation",
-                "user_assistance.neuro - Adaptive user support",
+                "system_monitoring.aether - Intelligent monitoring",
+                "data_analysis.aether - AI-powered analytics",
+                "automation_suite.aether - Intelligent automation",
+                "user_assistance.aether - Adaptive user support",
             ],
         }
 
@@ -940,7 +944,9 @@ ls agents/
         print("=" * 40)
 
         print("1. 🌐 Visit: https://neurocode.dev/community")
-        print("2. 💬 GitHub Discussions: https://github.com/Zyonic88/NeuroCode/discussions")
+        print(
+            "2. 💬 GitHub Discussions: https://github.com/Zyonic88/NeuroCode/discussions"
+        )
         print("3. 📧 Newsletter: Subscribe for updates")
         print("4. 🐛 Report Issues: https://github.com/Zyonic88/NeuroCode/issues")
 

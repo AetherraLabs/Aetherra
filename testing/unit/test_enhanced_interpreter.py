@@ -12,7 +12,7 @@ import sys
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core.interpreter import NeuroCodeInterpreter
+from core.interpreter import AetherraInterpreter
 
 
 def test_enhanced_interpreter():
@@ -21,7 +21,7 @@ def test_enhanced_interpreter():
     print("=" * 60)
 
     # Create interpreter instance
-    interpreter = NeuroCodeInterpreter()
+    interpreter = AetherraInterpreter()
 
     # Test data
     test_scripts = [

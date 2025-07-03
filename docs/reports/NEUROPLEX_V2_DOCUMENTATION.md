@@ -1,7 +1,7 @@
 # 🧬 Neuroplex v2.0 - Modern GUI Documentation
 
-**Release Date:** June 29, 2025  
-**Version:** 2.0.0  
+**Release Date:** June 29, 2025
+**Version:** 2.0.0
 **Status:** ✅ Production Ready
 
 ---
@@ -131,7 +131,7 @@ python ui/neuroplex_gui_v2.py
 ### **Color Scheme**
 ```python
 BACKGROUND = "#0a0a0a"      # Pure dark
-SURFACE = "#1a1a1a"        # Dark surface  
+SURFACE = "#1a1a1a"        # Dark surface
 CARD = "#1e1e1e"           # Card background
 PRIMARY = "#3b82f6"        # Blue accents
 SECONDARY = "#06d6a0"      # Emerald highlights
@@ -189,23 +189,23 @@ TEXT_SECONDARY = "#a3a3a3" # Light gray text
 
 ## 📋 **Keyboard Shortcuts**
 
-| Action | Shortcut | Description |
-|--------|----------|-------------|
+| Action              | Shortcut       | Description                    |
+| ------------------- | -------------- | ------------------------------ |
 | **File Operations** |
-| New Project | `Ctrl+N` | Create new NeuroCode project |
-| Open File | `Ctrl+O` | Open existing .neuro file |
-| Save | `Ctrl+S` | Save current file |
-| Save As | `Ctrl+Shift+S` | Save with new name |
-| **Editing** |
-| Undo | `Ctrl+Z` | Undo last action |
-| Redo | `Ctrl+Y` | Redo action |
-| Cut | `Ctrl+X` | Cut selected text |
-| Copy | `Ctrl+C` | Copy selected text |
-| Paste | `Ctrl+V` | Paste from clipboard |
-| **AI Features** |
-| Generate Code | `F5` | Generate code from description |
-| AI Chat | `Ctrl+T` | Focus AI chat input |
-| Switch Model | `Ctrl+M` | Open model selection |
+| New Project         | `Ctrl+N`       | Create new NeuroCode project   |
+| Open File           | `Ctrl+O`       | Open existing .aether file     |
+| Save                | `Ctrl+S`       | Save current file              |
+| Save As             | `Ctrl+Shift+S` | Save with new name             |
+| **Editing**         |
+| Undo                | `Ctrl+Z`       | Undo last action               |
+| Redo                | `Ctrl+Y`       | Redo action                    |
+| Cut                 | `Ctrl+X`       | Cut selected text              |
+| Copy                | `Ctrl+C`       | Copy selected text             |
+| Paste               | `Ctrl+V`       | Paste from clipboard           |
+| **AI Features**     |
+| Generate Code       | `F5`           | Generate code from description |
+| AI Chat             | `Ctrl+T`       | Focus AI chat input            |
+| Switch Model        | `Ctrl+M`       | Open model selection           |
 
 ---
 
@@ -242,7 +242,7 @@ pip install PyQt6
 python -u ui/neuroplex_gui_v2.py --debug
 
 # Check component availability
-python -c "from ui.neuroplex_gui_v2 import test_components; test_components()"
+python -c "from ui.aetherplex_gui_v2 import test_components; test_components()"
 ```
 
 ---
@@ -256,14 +256,14 @@ python -c "from ui.neuroplex_gui_v2 import test_components; test_components()"
 - **Better Organization**: Cleaner layout with organized panels
 
 ### **Compatibility**
-- **File Format**: All .neuro files from v1.0 work in v2.0
+- **File Format**: All .aether files from v1.0 work in v2.0
 - **Settings**: Some settings may need reconfiguration
 - **Plugins**: v1.0 plugins may need updates for v2.0
 
 ### **Migration Steps**
 1. **Backup**: Save your v1.0 projects and settings
 2. **Install**: Set up v2.0 with required dependencies
-3. **Import**: Open your existing .neuro files in v2.0
+3. **Import**: Open your existing .aether files in v2.0
 4. **Configure**: Set up AI providers and preferences
 5. **Test**: Verify all features work as expected
 
@@ -284,7 +284,7 @@ class CustomPanel(ModernCard):
     def __init__(self, parent=None):
         super().__init__("Custom Panel", parent)
         self.init_ui()
-    
+
     def init_ui(self):
         # Add your custom widgets
         pass

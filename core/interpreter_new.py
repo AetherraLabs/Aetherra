@@ -20,16 +20,16 @@ This file maintains backward compatibility with existing code.
 
 # Import everything from the new modular system
 try:
-    from .interpreter import NeuroCodeInterpreter
+    from .interpreter import AetherraInterpreter
 
     # Legacy function compatibility
     def create_interpreter():
         """Create a new NeuroCode interpreter instance"""
-        return NeuroCodeInterpreter()
+        return AetherraInterpreter()
 
     # Export the same API as the original monolithic module
     __all__ = [
-        "NeuroCodeInterpreter",
+        "AetherraInterpreter",
         "create_interpreter",
     ]
 
@@ -40,7 +40,7 @@ except ImportError:
     # Include original implementation as fallback
     # (The original implementation would be here for compatibility)
 
-    class NeuroCodeInterpreter:
+    class AetherraInterpreter:
         def __init__(self):
             print("Using fallback interpreter implementation")
 
@@ -48,6 +48,6 @@ except ImportError:
             return f"Fallback interpreter processed: {line}"
 
     def create_interpreter():
-        return NeuroCodeInterpreter()
+        return AetherraInterpreter()
 
-    __all__ = ["NeuroCodeInterpreter", "create_interpreter"]
+    __all__ = ["AetherraInterpreter", "create_interpreter"]

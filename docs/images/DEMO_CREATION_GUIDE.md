@@ -1,13 +1,13 @@
-# 🎬 NeuroCode Demo Creation Guide
+# 🎬 Aetherra Demo Creation Guide
 
 **Goal**: Create compelling 30-second demos that turn curiosity into instant excitement
 
-## 📺 **Primary Demo: neurocode-demo.gif**
+## 📺 **Primary Demo: aetherra-demo.gif**
 
 ### **Recommended Sequence (30 seconds total):**
 
 **0-5s: Launch & Interface**
-- Show the beautiful GUI launching (`python launchers/launch_fully_modular_neuroplex.py`)
+- Show the beautiful GUI launching (`python launchers/launch_lyrixa.py`)
 - Modern interface with code editor, AI chat, and real-time panels
 
 **5-10s: Live NeuroCode Programming**
@@ -111,7 +111,7 @@ end
 
 ```
 docs/images/
-├── neurocode-demo.gif           # Main 30s demo
+├── aetherra-demo.gif           # Main 30s demo
 ├── mobile-demo.gif              # Mobile interface
 ├── terminal-demo.gif            # CLI interface
 ├── gui-screenshot.png           # Static screenshot
@@ -123,7 +123,7 @@ docs/images/
 
 After viewing the demo, users should immediately want to:
 1. Clone the repository
-2. Install dependencies  
+2. Install dependencies
 3. Launch NeuroCode
 4. Experience the revolution firsthand
 

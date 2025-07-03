@@ -16,7 +16,7 @@ sys.path.insert(0, str(project_root))
 
 try:
     from core.modern_parser import ASTNodeType, NeuroCodeModernParser
-    from core.syntax_tree import NeuroCodeParser, NodeType
+    from core.syntax_tree import AetherraParser, NodeType
 
     MODERN_PARSER_AVAILABLE = True
 except ImportError as e:
@@ -54,7 +54,7 @@ think about "parsing capabilities"
 
     print("\n🏛️ Testing Legacy Parser...")
     try:
-        legacy_parser = NeuroCodeParser()
+        legacy_parser = AetherraParser()
         legacy_ast = legacy_parser.parse(test_code)
         print("✅ Legacy parser succeeded")
         print(f"   AST type: {legacy_ast.type}")
@@ -148,7 +148,7 @@ identity { name: "PerfBot" }
         # Test legacy parser
         start_time = time.time()
         try:
-            legacy_parser = NeuroCodeParser()
+            legacy_parser = AetherraParser()
             legacy_ast = legacy_parser.parse(large_code)
             legacy_time = time.time() - start_time
             print(f"🏛️ Legacy parser: {legacy_time:.4f}s")

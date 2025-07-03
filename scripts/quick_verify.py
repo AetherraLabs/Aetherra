@@ -7,7 +7,7 @@ try:
     print('✅ Vector Memory System imports successfully')
     from core.intent_parser import IntentToCodeParser
     print('✅ Intent Parser imports successfully')
-    from core.enhanced_interpreter import EnhancedNeuroCodeInterpreter
+    from core.enhanced_interpreter import EnhancedAetherraInterpreter
     print('✅ Enhanced Interpreter imports successfully')
     import setup_enhancements
     print('✅ Setup script available')

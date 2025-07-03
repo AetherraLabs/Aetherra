@@ -38,7 +38,7 @@ sys.path.insert(0, str(CORE_DIR))
 
 # Import NeuroCode core components with graceful fallbacks
 try:
-    from memory import NeuroMemory
+    from memory import AetherraMemory
 
     MEMORY_AVAILABLE = True
 except ImportError:
@@ -178,7 +178,7 @@ class NeuroCodeCLI:
 
         # Initialize memory system
         if MEMORY_AVAILABLE:
-            self.memory = NeuroMemory()
+            self.memory = AetherraMemory()
         else:
             self.memory = None
             print("⚠️  Memory system not available")

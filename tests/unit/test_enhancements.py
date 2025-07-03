@@ -54,12 +54,12 @@ def test_basic_imports():
         print(f"❌ Intent Parser import failed: {e}")
 
     try:
-        from enhanced_interpreter import EnhancedNeuroCodeInterpreter
+        from enhanced_interpreter import EnhancedAetherraInterpreter
 
         print("✅ Enhanced Interpreter imported successfully")
 
         # Test basic functionality
-        interpreter = EnhancedNeuroCodeInterpreter()
+        interpreter = EnhancedAetherraInterpreter()
         status = interpreter.get_enhancement_status()
         print(f"   Enhancements available: {status['enhancements_available']}")
 
@@ -74,9 +74,9 @@ def test_basic_functionality():
 
     try:
         # Test that we can create instances without external dependencies
-        from enhanced_interpreter import EnhancedNeuroCodeInterpreter
+        from enhanced_interpreter import EnhancedAetherraInterpreter
 
-        interpreter = EnhancedNeuroCodeInterpreter()
+        interpreter = EnhancedAetherraInterpreter()
 
         # Test basic command execution
         result = interpreter.execute_neurocode("remember('NeuroCode test') as 'testing'")

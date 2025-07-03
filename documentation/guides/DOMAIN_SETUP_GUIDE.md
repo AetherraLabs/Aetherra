@@ -4,8 +4,8 @@
 
 ### Current Setup
 - **Domain**: httpsneurocode.dev
-- **Temporary Domain**: https://c4e0fc07.neurocode-website.pages.dev/
-- **Files Created**: 
+- **Temporary Domain**: https://c4e0fc07.aethercode-website.pages.dev/
+- **Files Created**:
   - `/CNAME` (for root deployment)
   - `/website/CNAME` (for website folder deployment)
 
@@ -62,7 +62,7 @@ CNAME   www                  zyonic88.github.io ✅ CORRECT
 ```
 Type    Name    Content               Proxy Status
 A       @       185.199.108.153      ✅ Proxied
-A       @       185.199.109.153      ✅ Proxied  
+A       @       185.199.109.153      ✅ Proxied
 A       @       185.199.110.153      ✅ Proxied
 A       @       185.199.111.153      ✅ Proxied
 CNAME   www     zyonic88.github.io   ✅ Proxied
@@ -83,14 +83,14 @@ CNAME   www     zyonic88.github.io   ✅ Proxied
 
 Based on your latest screenshot, everything is set up perfectly:
 
-✅ **GitHub Pages**: Enabled and deploying from `main` branch  
-✅ **Custom Domain**: `httpsneurocode.dev` configured  
-✅ **DNS Check**: Successful (green checkmark)  
-✅ **HTTPS**: Available but currently unavailable (will be enabled once domain propagates)  
+✅ **GitHub Pages**: Enabled and deploying from `main` branch
+✅ **Custom Domain**: `httpsneurocode.dev` configured
+✅ **DNS Check**: Successful (green checkmark)
+✅ **HTTPS**: Available but currently unavailable (will be enabled once domain propagates)
 
 ### 🎯 Current Status:
 - **Source**: Deploy from `main` branch, `/ (root)` folder ✅
-- **Custom Domain**: `httpsneurocode.dev` ✅ 
+- **Custom Domain**: `httpsneurocode.dev` ✅
 - **DNS**: Successfully configured ✅
 - **HTTPS**: Will be available shortly (waiting for domain verification)
 
@@ -129,7 +129,7 @@ Based on your latest screenshot, everything is set up perfectly:
 # Check DNS propagation
 nslookup httpsneurocode.dev
 
-# Test CNAME resolution  
+# Test CNAME resolution
 nslookup www.httpsneurocode.dev
 
 # Verify GitHub Pages (use Invoke-WebRequest instead of curl)

@@ -5,8 +5,8 @@ Test script to verify core interpreter functionality
 
 def test_interpreter():
     try:
-        from core.interpreter import NeuroCodeInterpreter
-        interpreter = NeuroCodeInterpreter()
+        from core.interpreter import AetherraInterpreter
+        interpreter = AetherraInterpreter()
         
         # Test basic memory functionality
         result = interpreter.execute('remember("test memory") as "test"')

@@ -14,17 +14,18 @@ print("Testing GUI main function import...")
 
 try:
     # Import the main function
-    from ui.neuroplex_gui import NEUROCODE_AVAILABLE, QT_AVAILABLE, main
-    
+    from ui.aetherplex_gui import NEUROCODE_AVAILABLE, QT_AVAILABLE, main
+
     print(f"✅ Main function imported successfully")
     print(f"   - Qt available: {QT_AVAILABLE}")
     print(f"   - NeuroCode available: {NEUROCODE_AVAILABLE}")
-    
+
     print("✅ All GUI components imported successfully!")
     print("   The import issues have been resolved.")
     print("   You can now run: python ui/neuroplex_gui.py")
-    
+
 except Exception as e:
     print(f"❌ Import failed: {e}")
     import traceback
+
     traceback.print_exc()

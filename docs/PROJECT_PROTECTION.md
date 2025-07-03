@@ -19,7 +19,7 @@ The NeuroCode Project Protection System is a comprehensive safeguard designed to
 ### 1. **File Protection**
 - **Protected Files**: Critical project files are protected from accidental deletion
 - **Protected Directories**: Core directories cannot be accidentally removed
-- **Extension Protection**: Important file types (.py, .neuro, .md, etc.) are monitored
+- **Extension Protection**: Important file types (.py, .aether, .md, etc.) are monitored
 
 ### 2. **Automatic Backups**
 - **Daily Backups**: Automatic backups of all critical files
@@ -69,7 +69,7 @@ launchers/    # Application launchers
 ### Protected Extensions
 ```
 .py          # Python source files
-.neuro       # NeuroCode language files
+.aether       # NeuroCode language files
 .md          # Markdown documentation
 .json        # Configuration files
 .toml        # TOML configuration

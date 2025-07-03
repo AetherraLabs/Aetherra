@@ -9,13 +9,13 @@ import os
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(__file__))
 
-from core.enhanced_interpreter import EnhancedNeuroCodeInterpreter
+from core.enhanced_interpreter import EnhancedAetherraInterpreter
 
 def test_performance_optimization():
     """Test performance optimization features"""
     print("🧪 Testing Performance Optimization Features")
     
-    interpreter = EnhancedNeuroCodeInterpreter()
+    interpreter = EnhancedAetherraInterpreter()
     
     # Test optimization status
     print("\n1. Testing optimization status...")
@@ -38,7 +38,7 @@ def test_ai_collaboration():
     """Test AI collaboration features"""
     print("\n🤝 Testing AI Collaboration Features")
     
-    interpreter = EnhancedNeuroCodeInterpreter()
+    interpreter = EnhancedAetherraInterpreter()
     
     # Test collaboration status
     print("\n1. Testing collaboration status...")
@@ -61,7 +61,7 @@ def test_performance_monitoring():
     """Test performance monitoring features"""
     print("\n📊 Testing Performance Monitoring Features")
     
-    interpreter = EnhancedNeuroCodeInterpreter()
+    interpreter = EnhancedAetherraInterpreter()
     
     # Test performance report
     print("\n1. Testing performance report...")

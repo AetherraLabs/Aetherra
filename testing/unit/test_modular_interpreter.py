@@ -19,12 +19,12 @@ def test_import_modular_interpreter():
     print("🧪 Testing Modular Interpreter Import...")
 
     try:
-        from core.interpreter import NeuroCodeInterpreter
+        from core.interpreter import AetherraInterpreter
 
-        print("✅ Successfully imported NeuroCodeInterpreter")
+        print("✅ Successfully imported AetherraInterpreter")
         return True
     except ImportError as e:
-        print(f"❌ Failed to import NeuroCodeInterpreter: {e}")
+        print(f"❌ Failed to import AetherraInterpreter: {e}")
         return False
 
 
@@ -33,9 +33,9 @@ def test_interpreter_initialization():
     print("🧪 Testing Interpreter Initialization...")
 
     try:
-        from core.interpreter import NeuroCodeInterpreter
+        from core.interpreter import AetherraInterpreter
 
-        interpreter = NeuroCodeInterpreter()
+        interpreter = AetherraInterpreter()
         print("✅ Successfully initialized interpreter")
         return True
     except Exception as e:
@@ -48,9 +48,9 @@ def test_basic_commands():
     print("🧪 Testing Basic Commands...")
 
     try:
-        from core.interpreter import NeuroCodeInterpreter
+        from core.interpreter import AetherraInterpreter
 
-        interpreter = NeuroCodeInterpreter()
+        interpreter = AetherraInterpreter()
 
         # Test basic commands
         test_commands = [
@@ -86,9 +86,9 @@ def test_enhanced_commands():
     print("🧪 Testing Enhanced Commands...")
 
     try:
-        from core.interpreter import NeuroCodeInterpreter
+        from core.interpreter import AetherraInterpreter
 
-        interpreter = NeuroCodeInterpreter()
+        interpreter = AetherraInterpreter()
 
         # Test enhanced commands
         enhanced_commands = [
@@ -124,9 +124,9 @@ def test_block_processing():
     print("🧪 Testing Block Processing...")
 
     try:
-        from core.interpreter import NeuroCodeInterpreter
+        from core.interpreter import AetherraInterpreter
 
-        interpreter = NeuroCodeInterpreter()
+        interpreter = AetherraInterpreter()
 
         # Test function definition block
         block_lines = [
@@ -162,9 +162,9 @@ def test_system_status():
     print("🧪 Testing System Status...")
 
     try:
-        from core.interpreter import NeuroCodeInterpreter
+        from core.interpreter import AetherraInterpreter
 
-        interpreter = NeuroCodeInterpreter()
+        interpreter = AetherraInterpreter()
 
         # Test system information methods
         status = interpreter.get_system_status()
@@ -222,9 +222,9 @@ def test_performance():
     print("🧪 Testing Performance...")
 
     try:
-        from core.interpreter import NeuroCodeInterpreter
+        from core.interpreter import AetherraInterpreter
 
-        interpreter = NeuroCodeInterpreter()
+        interpreter = AetherraInterpreter()
 
         # Execute multiple commands rapidly
         start_time = time.time()
@@ -258,10 +258,10 @@ def test_backward_compatibility():
 
     try:
         # Test that old import patterns still work
-        from core.interpreter import NeuroCodeInterpreter, create_interpreter
+        from core.interpreter import AetherraInterpreter, create_interpreter
 
         # Test old-style instantiation
-        interpreter1 = NeuroCodeInterpreter()
+        interpreter1 = AetherraInterpreter()
         interpreter2 = create_interpreter()
 
         # Test that both work the same way

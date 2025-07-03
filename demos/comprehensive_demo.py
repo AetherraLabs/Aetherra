@@ -8,7 +8,7 @@ Complete showcase of NeuroCode's AI-native capabilities:
 - Advanced plugin architecture with rich metadata
 - Modern tabbed UI with visual memory browsing
 - Agent Reflection Loop for autonomous operation
-- Direct .neuro file execution
+- Direct .aether file execution
 - Plugin transparency and management
 
 This script demonstrates all major enhancements and validates system integrity.
@@ -33,14 +33,18 @@ def main():
     print("-" * 40)
 
     try:
-        from memory import NeuroMemory
+        from memory import AetherraMemory
 
-        memory = NeuroMemory()
+        memory = AetherraMemory()
 
         # Test temporal memory features
         print("✅ Creating test memories with timestamps...")
-        memory.remember("Advanced memory systems enable AI consciousness", ["ai", "consciousness"])
-        memory.remember("Temporal filtering reveals patterns over time", ["patterns", "time"])
+        memory.remember(
+            "Advanced memory systems enable AI consciousness", ["ai", "consciousness"]
+        )
+        memory.remember(
+            "Temporal filtering reveals patterns over time", ["patterns", "time"]
+        )
         memory.remember("NeuroCode bridges human and AI cognition", ["ai", "cognition"])
 
         # Test recall with temporal filtering
@@ -55,7 +59,9 @@ def main():
 
         # Test statistics
         _ = memory.get_memory_stats()
-        print(f"   📈 Memory stats: {len(memory.memory)} memories, {len(memory.get_tags())} tags")
+        print(
+            f"   📈 Memory stats: {len(memory.memory)} memories, {len(memory.get_tags())} tags"
+        )
 
     except Exception as e:
         print(f"❌ Memory test failed: {e}")
@@ -87,8 +93,8 @@ def main():
     try:
         from neuro_runner_standalone import StandaloneNeuroRunner
 
-        # Create a test .neuro file
-        test_file = project_root / "test_demo.neuro"
+        # Create a test .aether file
+        test_file = project_root / "test_demo.aether"
         test_content = """# Test NeuroCode Demo
 remember("Demo test completed successfully") as "demo,test"
 remember("System integration working") as "system,integration"
@@ -100,11 +106,13 @@ memory summary
         test_file.write_text(test_content, encoding="utf-8")
 
         # Run the test file
-        print("✅ Executing test .neuro file...")
+        print("✅ Executing test .aether file...")
         runner = StandaloneNeuroRunner(verbose=False)
         results = runner.run_file(str(test_file))
 
-        print(f"   📊 Execution result: {'SUCCESS' if results.get('success') else 'FAILED'}")
+        print(
+            f"   📊 Execution result: {'SUCCESS' if results.get('success') else 'FAILED'}"
+        )
         print(f"   📝 Lines executed: {results.get('lines_executed', 0)}")
         print(f"   💾 Memories created: {results.get('memories_created', 0)}")
 
@@ -157,7 +165,10 @@ memory summary
 
         print("✅ Testing CLI help...")
         result = subprocess.run(
-            [sys.executable, "neuroplex_cli.py", "help"], capture_output=True, text=True, timeout=10
+            [sys.executable, "neuroplex_cli.py", "help"],
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
 
         if result.returncode == 0:
@@ -166,10 +177,15 @@ memory summary
             print(f"   ⚠️ CLI help returned code {result.returncode}")
 
         # Test examples execution
-        if (project_root / "examples" / "basic_memory.neuro").exists():
+        if (project_root / "examples" / "basic_memory.aether").exists():
             print("✅ Testing example file execution...")
             result = subprocess.run(
-                [sys.executable, "neuroplex_cli.py", "run", "examples/basic_memory.neuro"],
+                [
+                    sys.executable,
+                    "neuroplex_cli.py",
+                    "run",
+                    "examples/basic_memory.aether",
+                ],
                 capture_output=True,
                 text=True,
                 timeout=15,
@@ -189,16 +205,16 @@ memory summary
     print("🚀 NeuroCode System Status:")
     print("   ✅ Enhanced memory system with temporal features")
     print("   ✅ Advanced plugin architecture with rich metadata")
-    print("   ✅ Standalone .neuro file execution")
+    print("   ✅ Standalone .aether file execution")
     print("   ✅ Agent Reflection Loop for autonomous operation")
     print("   ✅ Modern tabbed UI (launch with: python neuroplex_cli.py ui)")
     print("   ✅ Command-line interface (neuroplex run/ui/help)")
 
     print("\n💡 Next Steps:")
     print("   • Launch UI: python neuroplex_cli.py ui")
-    print("   • Run examples: neuroplex run examples/basic_memory.neuro")
+    print("   • Run examples: neuroplex run examples/basic_memory.aether")
     print("   • Explore agent: Enable Agent tab in UI")
-    print("   • Create .neuro files and experiment!")
+    print("   • Create .aether files and experiment!")
 
     print(f"\n⏰ Demo completed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 

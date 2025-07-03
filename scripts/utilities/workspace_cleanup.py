@@ -34,12 +34,13 @@ def create_directories():
         "scripts/testing",
         "config/requirements",
         "config/project",
-        "temp/old_files"
+        "temp/old_files",
     ]
 
     for dir_path in dirs_to_create:
         Path(dir_path).mkdir(parents=True, exist_ok=True)
         print(f"✅ Created directory: {dir_path}")
+
 
 def move_documentation_files():
     """Move documentation files to organized folders"""
@@ -96,7 +97,7 @@ def move_documentation_files():
         "WEBSITE_LIVE_SUCCESS.md",
         "WORKSPACE_ERRORS_FIXED.md",
         "WORKSPACE_OPTIMIZATION_COMPLETE.md",
-        "WORKSPACE_REORGANIZATION_PHASE1_COMPLETE.md"
+        "WORKSPACE_REORGANIZATION_PHASE1_COMPLETE.md",
     ]
 
     # Analysis and technical reports
@@ -117,7 +118,7 @@ def move_documentation_files():
         "NEUROCODE_GRAMMAR_ANALYSIS.md",
         "PLUGIN_ENHANCEMENT_REPORT.md",
         "REDIRECT_ISSUE_SOLVED.md",
-        "STRUCTURE_ANALYSIS.md"
+        "STRUCTURE_ANALYSIS.md",
     ]
 
     # Guides and protocols
@@ -129,7 +130,7 @@ def move_documentation_files():
         "NEUROCODE_MANIFESTO_V3_UPDATE_COMPLETE.md",
         "PROGRESS_TRACKER.md",
         "PROJECT_OVERVIEW.md",
-        "WORKSPACE_REORGANIZATION_PLAN.md"
+        "WORKSPACE_REORGANIZATION_PLAN.md",
     ]
 
     # Move files to appropriate directories
@@ -153,6 +154,7 @@ def move_documentation_files():
         shutil.move("CHANGELOG.md", "documentation/changelogs/CHANGELOG.md")
         print("📝 Moved CHANGELOG.md to documentation/changelogs/")
 
+
 def move_test_files():
     """Move test files to organized testing folders"""
 
@@ -166,7 +168,7 @@ def move_test_files():
         "test_neuroplex_system.py",
         "test_phase2_systems.py",
         "test_phase2_verification.py",
-        "test_syntax_integration.py"
+        "test_syntax_integration.py",
     ]
 
     # Unit tests
@@ -186,7 +188,7 @@ def move_test_files():
         "test_runtime_system.py",
         "test_src_core_fixes.py",
         "test_src_folder.py",
-        "test_syntax_tree.py"
+        "test_syntax_tree.py",
     ]
 
     # Demo/verification tests
@@ -198,7 +200,7 @@ def move_test_files():
         "test_neuroplex_final.py",
         "test_neuroplex_gui.py",
         "test_neuro_chat.py",
-        "test_phase2_basic.py"
+        "test_phase2_basic.py",
     ]
 
     # Quick tests and verification
@@ -217,7 +219,7 @@ def move_test_files():
         "final_neurocode_verification.py",
         "final_verification.py",
         "final_verification_test.py",
-        "comprehensive_error_check.py"
+        "comprehensive_error_check.py",
     ]
 
     # Move test files
@@ -241,6 +243,7 @@ def move_test_files():
             shutil.move(test, f"testing/verification/{test}")
             print(f"✅ Moved {test} to testing/verification/")
 
+
 def move_demo_files():
     """Move demo files to archive or appropriate locations"""
 
@@ -262,13 +265,14 @@ def move_demo_files():
         "phase2_final_demo.py",
         "simple_ui_demo.py",
         "ui_foundation_demo.py",
-        "neuro_chat_standalone.py"
+        "neuro_chat_standalone.py",
     ]
 
     for demo in demo_files:
         if Path(demo).exists():
             shutil.move(demo, f"archive/old_demos/{demo}")
             print(f"🎪 Moved {demo} to archive/old_demos/")
+
 
 def move_launcher_files():
     """Move launcher files to archive (keeping only the main one)"""
@@ -280,13 +284,14 @@ def move_launcher_files():
         "neurocode_persona_cli.py",
         "neurocode_persona_interpreter.py",
         "neurocode_plugin_cli.py",
-        "neurocode_unified_cli.py"
+        "neurocode_unified_cli.py",
     ]
 
     for launcher in old_launchers:
         if Path(launcher).exists():
             shutil.move(launcher, f"archive/old_launchers/{launcher}")
             print(f"🚀 Moved {launcher} to archive/old_launchers/")
+
 
 def move_script_files():
     """Move script files to organized script folders"""
@@ -302,7 +307,7 @@ def move_script_files():
         "test-domain.ps1",
         "verify-deployment.bat",
         "verify-deployment.ps1",
-        "verify-domain-setup.ps1"
+        "verify-domain-setup.ps1",
     ]
 
     # Utility scripts
@@ -310,7 +315,7 @@ def move_script_files():
         "final_cleanup.py",
         "fix_demo.py",
         "organize_workspace.py",
-        "IMPORT_FIX_COMPLETE.py"
+        "IMPORT_FIX_COMPLETE.py",
     ]
 
     for script in deployment_scripts:
@@ -323,6 +328,7 @@ def move_script_files():
             shutil.move(script, f"scripts/utilities/{script}")
             print(f"🔧 Moved {script} to scripts/utilities/")
 
+
 def move_config_files():
     """Move configuration files to config folders"""
 
@@ -332,14 +338,11 @@ def move_config_files():
         "requirements_enhanced.txt",
         "requirements_fixed.txt",
         "requirements_minimal.txt",
-        "playground_requirements.txt"
+        "playground_requirements.txt",
     ]
 
     # Project config files
-    project_files = [
-        "package.json",
-        "pyproject.toml"
-    ]
+    project_files = ["package.json", "pyproject.toml"]
 
     for req in req_files:
         if Path(req).exists():
@@ -350,6 +353,7 @@ def move_config_files():
         if Path(proj).exists():
             shutil.move(proj, f"config/project/{proj}")
             print(f"⚙️ Moved {proj} to config/project/")
+
 
 def move_data_files():
     """Move data files to temp folder if they're old"""
@@ -362,14 +366,15 @@ def move_data_files():
         "neurocode_functions.json",
         "plugin_test_output.txt",
         "repl_test_input.txt",
-        "simple_test.neuro",
-        "test_script.neuro"
+        "simple_test.aether",
+        "test_script.aether",
     ]
 
     for data_file in old_data_files:
         if Path(data_file).exists():
             shutil.move(data_file, f"temp/old_files/{data_file}")
             print(f"📁 Moved {data_file} to temp/old_files/")
+
 
 def cleanup_html_files():
     """Move HTML files to website folder"""
@@ -378,6 +383,7 @@ def cleanup_html_files():
             Path("website").mkdir()
         shutil.move("live_site_content.html", "website/live_site_content.html")
         print("🌐 Moved live_site_content.html to website/")
+
 
 def main():
     """Main cleanup function"""
@@ -445,6 +451,7 @@ def main():
     print("- neurocode_launcher.py (main launcher)")
     print("- neuroplex.bat / neuroplex.ico")
     print("- Core folders: src/, core/, data/, etc.")
+
 
 if __name__ == "__main__":
     main()

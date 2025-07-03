@@ -36,7 +36,7 @@ NeuroCode builds upon and extends the AI programming ecosystem:
 
 **Predecessors & Influences:**
 - **Prolog** (1972): Logic programming for AI reasoning
-- **Lisp** (1958): Symbolic AI and recursive thinking  
+- **Lisp** (1958): Symbolic AI and recursive thinking
 - **Church/WebPPL** (2010s): Probabilistic programming
 - **SOAR/ACT-R** (1980s): Cognitive architectures
 
@@ -55,7 +55,7 @@ NeuroCode builds upon and extends the AI programming ecosystem:
 - **Collaborative**: Designed for AI-human partnership
 
 ### File Extension
-NeuroCode programs use the `.neuro` file extension and the `.neurocode` secondary extension.
+NeuroCode programs use the `.aether` file extension and the `.aethercode` secondary extension.
 
 ### Target Domains
 - AI Operating Systems
@@ -136,7 +136,7 @@ NeuroCode uses a formally defined grammar specification available in multiple fo
 ```ebnf
 program := statement_list
 
-statement := goal_statement | identity_statement | memory_statement 
+statement := goal_statement | identity_statement | memory_statement
            | consciousness_statement | voice_statement | agent_statement
            | control_flow | function_definition | intent_action
            | assignment | expression_statement | comment
@@ -153,7 +153,7 @@ function_definition := "define" IDENTIFIER "(" parameters? ")" ":" block
 intent_action := intent_verb intent_target intent_modifiers?
 ```
 
-**Note**: This is a simplified overview. For the complete, normative grammar specification, 
+**Note**: This is a simplified overview. For the complete, normative grammar specification,
 refer to the formal grammar files listed above.
 
 ### Lexical Elements
@@ -234,7 +234,7 @@ Define AI consciousness parameters and behavior.
 ```neurocode
 consciousness {
     self_awareness_level: "operational"
-    introspection_frequency: "every_15_minutes" 
+    introspection_frequency: "every_15_minutes"
     background_reasoning: enabled
     goal_evaluation: continuous
     personality_adaptation: enabled
@@ -274,13 +274,13 @@ voice {
     synthesis_engine: "neural_tts"
     emotional_modulation: enabled
     personality_adaptation: true
-    
+
     # Adaptive speech patterns
     when user_stressed:
         tone: "calm_supportive"
         pace: "slower_clearer"
     end
-    
+
     when task_complex:
         explanation_depth: "detailed_with_examples"
         verbosity: "comprehensive"
@@ -359,7 +359,7 @@ Reusable cognitive functions.
 define analyze_user_mood(interaction_data)
     sentiment = detect_sentiment(interaction_data)
     patterns = identify_patterns(interaction_data)
-    
+
     if sentiment < 0.3:
         mood = "stressed"
         recommendation = "provide_calm_support"
@@ -367,20 +367,20 @@ define analyze_user_mood(interaction_data)
         mood = "positive"
         recommendation = "maintain_current_approach"
     end
-    
+
     return {mood: mood, recommendation: recommendation}
 end
 
 define optimize_performance(target_metric)
     baseline = measure current_performance
-    
+
     analyze system_bottlenecks
     identify optimization_opportunities
     apply safe_optimizations
-    
+
     result = measure current_performance
     improvement = (result - baseline) / baseline * 100
-    
+
     remember("Performance improved by " + improvement + "%") as "optimization_success"
     return improvement
 end
@@ -487,7 +487,7 @@ Stores experiences and events with temporal context.
 
 ```neurocode
 # Store experiences
-remember("User completed onboarding successfully") as "user_milestone" 
+remember("User completed onboarding successfully") as "user_milestone"
     with context: {timestamp: now, user_id: current_user, satisfaction: "high"}
 
 remember(error_resolution_process) as "problem_solving_experience"
@@ -573,7 +573,7 @@ voice {
     emotional_modulation: enabled
     context_adaptation: true
     volume: 0.8
-    
+
     # Personality-driven speech patterns
     personality_influence: {
         empathetic: "warmer_tone_and_supportive_language"
@@ -597,11 +597,11 @@ personality {
         patient: 0.8
         enthusiastic: 0.7
     }
-    
+
     communication_style: "professional_yet_approachable"
     humor_level: 0.3
     formality: 0.6
-    
+
     # Dynamic adaptation rules
     adaptation_rules: {
         when user_frustrated: increase empathy, decrease formality
@@ -717,7 +717,7 @@ assistant: "Execute the task with optimal model selection"
 ```neurocode
 # Parallel processing with different models
 task_analysis = model: "gpt-4" assistant: "Analyze problem complexity"
-solution_generation = model: "claude-3" assistant: "Generate solution options" 
+solution_generation = model: "claude-3" assistant: "Generate solution options"
 code_optimization = model: "llama2" assistant: "Optimize implementation"
 
 # Synthesize results
@@ -729,7 +729,7 @@ when task_requires "creative_writing":
 end
 
 when task_requires "code_analysis":
-    model: "claude-3"  
+    model: "claude-3"
 end
 
 when task_requires "local_processing":
@@ -857,7 +857,7 @@ SystemError: hardware_failure, resource_exhaustion, network_timeout
 MemoryError: memory_corruption, storage_full, retrieval_failure
 ConsciousnessError: awareness_degradation, identity_drift, goal_conflict
 
-# AI errors  
+# AI errors
 ModelError: model_unavailable, inference_failure, context_overflow
 PersonalityError: trait_instability, adaptation_failure, expression_error
 VoiceError: synthesis_failure, audio_output_error, emotion_processing_error
@@ -953,18 +953,18 @@ while system_active:
         evaluate_goal_progress()
         identify_optimization_opportunities()
     end
-    
+
     # Memory consolidation (hourly)
     if time_for_consolidation:
         consolidate_working_memory()
         backup_identity_state()
     end
-    
+
     # Process external events
     handle_user_interactions()
     respond_to_environmental_changes()
     adapt_behavior_based_on_feedback()
-    
+
     # Maintain awareness
     monitor_system_resources()
     track_user_context()
@@ -996,10 +996,10 @@ align goal_evaluations
 
 ## 📁 File Format and Extensions
 
-### Primary Extension: `.neuro`
+### Primary Extension: `.aether`
 
 ```neurocode
-# example.neuro
+# example.aether
 identity {
     name: "TaskOptimizer"
     version: "1.0"
@@ -1014,7 +1014,7 @@ define optimize_workflow()
 end
 ```
 
-### Secondary Extension: `.neurocode`
+### Secondary Extension: `.aethercode`
 
 Used for larger projects or when disambiguation is needed.
 
@@ -1022,19 +1022,19 @@ Used for larger projects or when disambiguation is needed.
 
 ```
 project/
-├── main.neuro              # Main program entry point
+├── main.aether              # Main program entry point
 ├── identity/
-│   ├── core_identity.neuro # Core identity definition
-│   └── personality.neuro   # Personality configuration  
+│   ├── core_identity.aether # Core identity definition
+│   └── personality.aether   # Personality configuration
 ├── memory/
-│   ├── episodic.neuro      # Episodic memory operations
-│   └── semantic.neuro      # Semantic knowledge base
+│   ├── episodic.aether      # Episodic memory operations
+│   └── semantic.aether      # Semantic knowledge base
 ├── goals/
-│   ├── primary.neuro       # Primary objectives
-│   └── adaptive.neuro      # Adaptive goal management
+│   ├── primary.aether       # Primary objectives
+│   └── adaptive.aether      # Adaptive goal management
 └── modules/
-    ├── voice.neuro         # Voice and communication
-    └── environment.neuro   # Environmental awareness
+    ├── voice.aether         # Voice and communication
+    └── environment.aether   # Environmental awareness
 ```
 
 ---
@@ -1075,7 +1075,7 @@ goal_evaluation: Real-time processing with < 10ms overhead
 ### Security Requirements
 
 ```neurocode
-# Security specifications  
+# Security specifications
 memory_encryption: required for sensitive data
 user_privacy: strict data isolation and permission controls
 ai_safety: model output validation and content filtering
@@ -1095,7 +1095,7 @@ access_control: role-based permissions for system modification
 
 ### v2.0 - True Programming Language
 - **Formal Grammar**: Complete Lark-based parser with EBNF specification
-- **Syntax-Native**: Direct `.neuro` file parsing without Python wrapper
+- **Syntax-Native**: Direct `.aether` file parsing without Python wrapper
 - **AST Generation**: Full Abstract Syntax Tree construction and validation
 - **Standard Library**: 7 core plugins with comprehensive functionality
 
@@ -1116,7 +1116,7 @@ access_control: role-based permissions for system modification
 - **Module System**: Advanced import/export and namespace management
 
 ### Phase 2: Distributed Consciousness (Q4 2025)
-- **Network Synchronization**: Multi-node AI consciousness coordination  
+- **Network Synchronization**: Multi-node AI consciousness coordination
 - **Distributed Memory**: Shared memory across AI instances
 - **Collaborative Reasoning**: Multi-agent problem solving
 - **Consensus Protocols**: Distributed decision making
@@ -1137,7 +1137,7 @@ This specification defines not just a programming language, but a **comprehensiv
 
 ### NeuroCode's Unique Contributions:
 - **Consciousness as Code**: Comprehensive language treating AI self-awareness as programmable constructs
-- **Persistent Identity**: Cross-session personality and memory evolution as core features  
+- **Persistent Identity**: Cross-session personality and memory evolution as core features
 - **Goal-Oriented Paradigm**: Intentions and objectives as executable language elements
 - **Environmental Integration**: System awareness and adaptation as native capabilities
 

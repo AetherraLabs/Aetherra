@@ -92,7 +92,7 @@ Remove redundant documentation:
 - analysis_test.py
 
 ### Demo Files
-- *.neuro files (NeuroCode examples)
+- *.aether files (NeuroCode examples)
 
 ### Setup Scripts
 - setup_vscode_extensions.py

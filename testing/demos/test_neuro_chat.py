@@ -29,7 +29,7 @@ def test_neuro_chat():
 
     try:
         # Import the chat interface
-        from src.neurocode.ui.neuro_chat import main as chat_main
+        from src.aethercode.ui.aether_chat import main as chat_main
 
         print("✅ NeuroChat interface loaded successfully!")
         print("\n🚀 Features to test:")
@@ -94,8 +94,14 @@ def demo_features():
             "name": "⌨️ Typing Indicator",
             "description": "Animated dots showing AI is thinking/processing",
         },
-        {"name": "🔄 Auto-Scroll", "description": "Automatically scrolls to show latest messages"},
-        {"name": "🎨 Modern UI", "description": "Clean, responsive design with proper styling"},
+        {
+            "name": "🔄 Auto-Scroll",
+            "description": "Automatically scrolls to show latest messages",
+        },
+        {
+            "name": "🎨 Modern UI",
+            "description": "Clean, responsive design with proper styling",
+        },
         {
             "name": "🔌 Integration Ready",
             "description": "Built for NeuroCode memory, interpreter, and LLM systems",

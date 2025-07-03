@@ -18,9 +18,9 @@ class FallbackSystemManager:
         self.demo_mode = False
 
     def create_fallback_memory(self):
-        """Create fallback NeuroMemory implementation"""
+        """Create fallback AetherraMemory implementation"""
 
-        class NeuroMemory:
+        class AetherraMemory:
             def __init__(self):
                 self.memory = []
                 self.store_file = "memory_store.json"
@@ -61,7 +61,7 @@ class FallbackSystemManager:
             def clear(self):
                 pass
 
-        return NeuroMemory
+        return AetherraMemory
 
     def create_fallback_functions(self):
         """Create fallback NeuroFunctions implementation"""
@@ -210,7 +210,7 @@ class FallbackSystemManager:
     def get_fallback_components(self) -> Dict[str, Any]:
         """Get all fallback components"""
         return {
-            "NeuroMemory": self.create_fallback_memory(),
+            "AetherraMemory": self.create_fallback_memory(),
             "NeuroFunctions": self.create_fallback_functions(),
             "NeuroAgent": self.create_fallback_agent(),
             "GoalSystem": self.create_fallback_goal_system(),

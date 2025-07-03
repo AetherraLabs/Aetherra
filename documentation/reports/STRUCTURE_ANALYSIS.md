@@ -35,7 +35,7 @@ Our current structure is actually superior to the suggested alternative because:
 core/
 ├── runtime/
 │   ├── __init__.py
-│   ├── loader.py           # .neuro file execution engine
+│   ├── loader.py           # .aether file execution engine
 │   ├── reflection.py       # Runtime introspection system
 │   ├── environment.py      # Runtime environment management
 │   └── session_manager.py  # Session lifecycle management
@@ -72,7 +72,7 @@ src/
 
 ### Phase 1: Runtime Enhancement (High Priority)
 - [ ] Create `core/runtime/` module
-- [ ] Implement `.neuro` file loader
+- [ ] Implement `.aether` file loader
 - [ ] Add runtime reflection system
 - [ ] Session management
 
@@ -90,15 +90,15 @@ src/
 
 ### Current vs Suggested Comparison:
 
-| Aspect | Current Structure | Suggested Structure | Winner |
-|--------|------------------|-------------------|---------|
-| **Scope** | Full language ecosystem | UI-focused project | ✅ Current |
-| **Maturity** | 40+ core modules | 5 basic modules | ✅ Current |
-| **Documentation** | Complete formal specs | Basic docs | ✅ Current |
-| **Testing** | Comprehensive suite | Not mentioned | ✅ Current |
-| **Package Structure** | Python best practices | Flat organization | ✅ Current |
-| **Grammar** | Formal EBNF + Lark | Not addressed | ✅ Current |
-| **Parser** | Modern + Legacy | Not mentioned | ✅ Current |
+| Aspect                | Current Structure       | Suggested Structure | Winner    |
+| --------------------- | ----------------------- | ------------------- | --------- |
+| **Scope**             | Full language ecosystem | UI-focused project  | ✅ Current |
+| **Maturity**          | 40+ core modules        | 5 basic modules     | ✅ Current |
+| **Documentation**     | Complete formal specs   | Basic docs          | ✅ Current |
+| **Testing**           | Comprehensive suite     | Not mentioned       | ✅ Current |
+| **Package Structure** | Python best practices   | Flat organization   | ✅ Current |
+| **Grammar**           | Formal EBNF + Lark      | Not addressed       | ✅ Current |
+| **Parser**            | Modern + Legacy         | Not mentioned       | ✅ Current |
 
 ## 🏆 **Conclusion**
 
@@ -107,7 +107,7 @@ src/
 Our current structure represents months of thoughtful development and follows professional software engineering practices. The suggested structure would be a step backward in terms of:
 
 - Project maturity
-- Documentation completeness  
+- Documentation completeness
 - Testing infrastructure
 - Language formalization
 - Package organization

@@ -2,7 +2,7 @@
 """
 NeuroCode Memory System - Backward Compatibility Layer
 
-This module provides backward compatibility for the original NeuroMemory interface
+This module provides backward compatibility for the original AetherraMemory interface
 while using the new modular memory system under the hood.
 
 For new code, consider using the modular interfaces directly:
@@ -25,9 +25,9 @@ from .memory import BasicMemory, get_unified_memory_interface
 MEMORY_FILE = "memory_store.json"
 
 
-class NeuroMemory:
+class AetherraMemory:
     """
-    Legacy NeuroMemory interface - now powered by the modular memory system
+    Legacy AetherraMemory interface - now powered by the modular memory system
     
     This class maintains backward compatibility while using the new modular
     memory architecture under the hood.
@@ -272,4 +272,4 @@ class NeuroMemory:
 
 
 # Legacy compatibility exports
-__all__ = ['NeuroMemory']
+__all__ = ['AetherraMemory']

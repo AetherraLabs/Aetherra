@@ -86,7 +86,7 @@ def demonstration_launch_simulation():
 
     # Simulate the launch process without actually showing the GUI
     try:
-        from src.neurocode.core import create_interpreter, create_memory_system
+        from src.aethercode.core import create_interpreter, create_memory_system
 
         # Create core components
         print("🧬 Creating NeuroCode interpreter...")
@@ -138,4 +138,4 @@ if __name__ == "__main__":
     print("\n💡 TO LAUNCH NEUROPLEX:")
     print("   python launchers/launch_fully_modular_neuroplex.py")
     print("   OR")
-    print('   python -c "from src.neurocode.ui import launch_gui; launch_gui()"')
+    print('   python -c "from src.aethercode.ui import launch_gui; launch_gui()"')

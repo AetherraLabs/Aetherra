@@ -45,23 +45,23 @@ else:
         _openai_client_initialized = True
 
 
-def ask_ai(prompt, temperature=0.2, debug_mode=False):
+def ask_ai(prompt, temperature=0.2, debug_mode=False, model=None):
     """Enhanced AI query function with detailed logging"""
     if client is None:
         return "[AI Disabled] OPENAI_API_KEY not configured"
 
     try:
-        # Try gpt-4o-mini first (most accessible), fallback to gpt-3.5-turbo
-        models_to_try = ["gpt-4o-mini", "gpt-3.5-turbo", "gpt-4"]
+        # Use specified model or try defaults
+        models_to_try = [model] if model else ["gpt-4o-mini", "gpt-3.5-turbo", "gpt-4"]
 
-        for model in models_to_try:
+        for current_model in models_to_try:
             try:
                 if debug_mode:
-                    print(f"🔹 Prompt sent to {model}:")
+                    print(f"🔹 Prompt sent to {current_model}:")
                     print(f"   {prompt[:200]}{'...' if len(prompt) > 200 else ''}")
 
                 response = client.chat.completions.create(
-                    model=model,
+                    model=current_model,
                     messages=[{"role": "user", "content": prompt}],
                     temperature=temperature,
                 )
@@ -69,14 +69,17 @@ def ask_ai(prompt, temperature=0.2, debug_mode=False):
                 result = content.strip() if content is not None else ""
 
                 if debug_mode:
-                    print(f"🔸 LLM response from {model}:")
+                    print(f"🔸 LLM response from {current_model}:")
                     print(f"   {result[:200]}{'...' if len(result) > 200 else ''}")
 
                 return result
             except Exception as model_error:
                 if debug_mode:
-                    print(f"❌ Model {model} failed: {model_error}")
-                if "model" in str(model_error).lower() and "not" in str(model_error).lower():
+                    print(f"❌ Model {current_model} failed: {model_error}")
+                if (
+                    "model" in str(model_error).lower()
+                    and "not" in str(model_error).lower()
+                ):
                     continue  # Try next model
                 else:
                     raise model_error  # Different error, don't retry
@@ -101,7 +104,7 @@ Memories:
 Tag patterns: {tag_frequency}
 Category patterns: {category_frequency}
 
-Provide actionable NeuroCode suggestions based on detected patterns."""
+Provide actionable Aetherra suggestions based on detected patterns."""
 
     return ask_ai(prompt)
 
@@ -118,7 +121,7 @@ Total memories: {len(memories)}
 Command history length: {command_history_length}
 """
 
-    prompt = f"""Analyze user behavior patterns based on their NeuroCode usage:
+    prompt = f"""Analyze user behavior patterns based on their Aetherra usage:
 
 {behavior_context}
 
@@ -129,7 +132,7 @@ Identify:
 4. Suggested workflow improvements
 5. Potential automation opportunities
 
-Provide specific NeuroCode recommendations."""
+Provide specific Aetherra recommendations."""
 
     return ask_ai(prompt)
 
@@ -148,12 +151,12 @@ Recent memory sample:
 {chr(10).join(memory_summary.get("recent_memories", []))}
 """
 
-    prompt = f"""Based on this Neuroplex system state, suggest evolutionary improvements:
+    prompt = f"""Based on this Lyrixa system state, suggest evolutionary improvements:
 
 {evolution_context}
 
 Suggest:
-1. New NeuroCode commands that would be useful
+1. New Aetherra commands that would be useful
 2. System capabilities that should be added
 3. Workflow optimizations
 4. Memory organization improvements
@@ -164,7 +167,9 @@ Provide concrete, actionable suggestions."""
     return ask_ai(prompt)
 
 
-def provide_adaptive_suggestions(context, recent_memories, available_tags, function_names):
+def provide_adaptive_suggestions(
+    context, recent_memories, available_tags, function_names
+):
     """AI-powered adaptive suggestions based on current context"""
     adaptive_context = f"""
 Current Context: {context}
@@ -173,7 +178,7 @@ Available tags: {available_tags}
 Available functions: {function_names}
 """
 
-    prompt = f"""Provide 3-5 adaptive suggestions for the user's next actions in NeuroCode:
+    prompt = f"""Provide 3-5 adaptive suggestions for the user's next actions in Aetherra:
 
 {adaptive_context}
 
@@ -183,7 +188,7 @@ Consider:
 - Potential knowledge gaps
 - Workflow optimizations
 
-Suggest specific NeuroCode commands they should run next."""
+Suggest specific Aetherra commands they should run next."""
 
     return ask_ai(prompt)
 
@@ -203,8 +208,10 @@ def auto_tag_content(summary):
 
 
 def suggest_next_actions(summary):
-    """Suggest next NeuroCode actions based on learned content"""
-    prompt = f"Based on this summary, suggest useful NeuroCode to execute next:\n{summary}"
+    """Suggest next Aetherra actions based on learned content"""
+    prompt = (
+        f"Based on this summary, suggest useful Aetherra to execute next:\n{summary}"
+    )
     return ask_ai(prompt)
 
 
@@ -357,7 +364,7 @@ Suggest:
 3. Self-editing commands to run
 4. Why these changes would be beneficial
 
-Provide actionable NeuroCode commands."""
+Provide actionable Aetherra commands."""
 
     return ask_ai(prompt)
 

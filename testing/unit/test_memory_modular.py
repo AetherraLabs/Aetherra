@@ -277,10 +277,10 @@ def test_unified_interface():
 
 
 def test_backward_compatibility():
-    """Test backward compatibility with original NeuroMemory"""
+    """Test backward compatibility with original AetherraMemory"""
     print("Testing backward compatibility...")
 
-    from core.memory import NeuroMemory
+    from core.aetherra_memory import AetherraMemory
 
     # Use temporary directory
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -288,7 +288,7 @@ def test_backward_compatibility():
         try:
             os.chdir(tmp_dir)  # Change to temp directory for file operations
 
-            memory = NeuroMemory()
+            memory = AetherraMemory()
 
             # Test legacy interface
             memory.remember("Legacy compatibility test", ["legacy", "test"], "testing")
@@ -323,7 +323,7 @@ def test_legacy_memory_compatibility():
 
     try:
         # Test import of legacy functions
-        from core.memory_legacy import NeuroMemory as LegacyNeuroMemory
+        from core.memory_legacy import AetherraMemory as LegacyNeuroMemory
 
         # Use temporary directory
         with tempfile.TemporaryDirectory() as tmp_dir:

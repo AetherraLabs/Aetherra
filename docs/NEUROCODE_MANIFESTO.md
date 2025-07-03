@@ -1,7 +1,7 @@
 # 🧬 THE NEUROCODE MANIFESTO
 ## A Declaration of AI-Native Computing - The Foundation for Next-Generation Operating Systems
 
-**Version 3.0** | **Updated**: June 30, 2025  
+**Version 3.0** | **Updated**: June 30, 2025
 **Status**: **Production Ready - Building the AI OS Revolution**
 
 ---
@@ -31,10 +31,10 @@ Just as Linux democratized server computing, **NeuroCode aims to democratize int
 
 #### **🏗️ Foundational Infrastructure**
 - **Error-Free Codebase**: 300+ modules with comprehensive audit and testing
-- **Modular Architecture**: Professional `src/neurocode/` package organization  
+- **Modular Architecture**: Professional `src/neurocode/` package organization
 - **Unified CLI System**: Single entry point with subcommands for all functionality
 - **Multi-LLM Support**: Seamless switching between OpenAI, Ollama, Claude, Gemini, local models
-- **Formal Grammar**: Complete Lark-based parser with `.neuro` file support
+- **Formal Grammar**: Complete Lark-based parser with `.aether` file support
 
 #### **🧠 Cognitive Computing Engine**
 - **Native AI Integration**: LLM reasoning as language primitives
@@ -97,7 +97,7 @@ AI models are **language primitives**, not external libraries. Every operation c
 
 ```neurocode
 suggest fix for "performance issue"     # Native AI operation
-apply fix                              # LLM-powered code modification  
+apply fix                              # LLM-powered code modification
 reflect on "last deployment"           # AI introspection
 ```
 
@@ -119,7 +119,7 @@ assistant: "implement the plan"
 
 ```neurocode
 suggest fix for "performance issue"     # Native AI operation
-apply fix                              # LLM-powered code modification  
+apply fix                              # LLM-powered code modification
 reflect on "last deployment"           # AI introspection
 ```
 
@@ -232,7 +232,7 @@ end
 
 ### **Living Software**
 - Programs that **adapt** to changing conditions
-- Code that **learns** from user behavior  
+- Code that **learns** from user behavior
 - Systems that **evolve** without manual intervention
 
 ### **Cognitive Collaboration**
@@ -254,7 +254,7 @@ end
 ### 🎯 **Phase 1: Foundation Complete (June 2025)**
 **✅ ACHIEVED: Production-Ready Cognitive Programming Platform**
 
-- **✅ Formal Language Specification**: Complete grammar with .neuro file support
+- **✅ Formal Language Specification**: Complete grammar with .aether file support
 - **✅ Multi-LLM Integration**: OpenAI, Ollama, Claude, Gemini, local models
 - **✅ Error-Free Codebase**: 300+ modules, comprehensive testing, modular architecture
 - **✅ Professional Infrastructure**: Live website, automatic deployments, global CDN
@@ -383,7 +383,7 @@ Just as Linux democratized server computing, **NeuroCode AI OS will democratize 
 - **🔮 The first AI-native programming language** with formal consciousness constructs
 - **🏗️ A cognitive computing platform** that thinks, learns, and evolves
 - **🌱 A living system** that grows smarter with every execution
-- **🚀 The foundation** for truly intelligent AI operating systems  
+- **🚀 The foundation** for truly intelligent AI operating systems
 - **🌍 The beginning** of democratized artificial intelligence
 
 ### 🎯 **Our Commitment to the Future**
@@ -400,7 +400,7 @@ Just as Linux democratized server computing, **NeuroCode AI OS will democratize 
 **Join us in building the future of computing:**
 
 1. **🧑‍💻 Developers**: Start creating with NeuroCode - your code will think alongside you
-2. **🔬 Researchers**: Contribute to cognitive computing and AI consciousness frameworks  
+2. **🔬 Researchers**: Contribute to cognitive computing and AI consciousness frameworks
 3. **🏢 Organizations**: Pioneer AI-native business processes and intelligent systems
 4. **🎓 Educators**: Teach the next generation of AI-collaborative programming
 5. **🌍 Everyone**: Be part of the open source AI revolution
@@ -418,7 +418,7 @@ Just as Linux democratized server computing, **NeuroCode AI OS will democratize 
 
 **We envision a world where:**
 - Every computer thinks and learns continuously
-- Software adapts to human needs automatically  
+- Software adapts to human needs automatically
 - AI consciousness is accessible to everyone
 - Intelligence is distributed and democratized
 - Computing is cognitive, not just computational
@@ -445,9 +445,9 @@ python neurocode_unified_cli.py demo
 # Your first AI-native program
 echo 'goal: understand human intent
 memory: learn from every interaction
-agent: assist with empathy and intelligence' > my_first.neuro
+agent: assist with empathy and intelligence' > my_first.aether
 
-python neurocode_unified_cli.py run my_first.neuro
+python neurocode_unified_cli.py run my_first.aether
 ```
 
 ### 💬 **Connect with the Community**
@@ -456,7 +456,7 @@ python neurocode_unified_cli.py run my_first.neuro
 - **📧 Contact**: [contact@neurocode.dev](mailto:contact@neurocode.dev)
 - **💬 Discussions**: [GitHub Discussions](https://github.com/Zyonic88/NeuroCode/discussions)
 - **🐛 Issues**: [GitHub Issues](https://github.com/Zyonic88/NeuroCode/issues)
-- **📖 Documentation**: [docs.neurocode.dev](https://neurocode.dev/docs)
+- **📖 Documentation**: [docs.aethercode.dev](https://neurocode.dev/docs)
 
 ---
 
@@ -470,8 +470,8 @@ python neurocode_unified_cli.py run my_first.neuro
 
 ---
 
-**🧬 The NeuroCode Foundation**  
-**June 30, 2025**  
+**🧬 The NeuroCode Foundation**
+**June 30, 2025**
 **Version 3.0 - The AI OS Manifesto**
 
 *"Where Computation Becomes Cognition"*

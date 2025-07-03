@@ -21,7 +21,11 @@ def test_core_imports():
     print("🔧 Testing Core Module Imports...")
 
     try:
-        from src.neurocode.core import create_interpreter, create_memory_system, create_parser
+        from src.aethercode.core import (
+            create_interpreter,
+            create_memory_system,
+            create_parser,
+        )
 
         print("  ✅ Core factory functions imported successfully")
 
@@ -72,7 +76,7 @@ def test_cli_imports():
 
         # Test basic import (this might fail due to persona dependencies)
         try:
-            import src.neurocode.cli
+            import src.aethercode.cli
 
             print("  ✅ CLI package imports successfully")
         except ImportError as e:
@@ -93,7 +97,11 @@ def test_ui_imports():
         print("  ✅ UI launch_gui function imported")
 
         # Test availability of UI modules
-        ui_modules = ["neuroplex_fully_modular.py", "neuroplex_gui_v2.py", "neuro_ui.py"]
+        ui_modules = [
+            "neuroplex_fully_modular.py",
+            "neuroplex_gui_v2.py",
+            "neuro_ui.py",
+        ]
 
         ui_dir = os.path.join(project_root, "src", "neurocode", "ui")
         available_modules = []
@@ -116,10 +124,10 @@ def test_parser_system():
     print("\n📝 Testing Parser System...")
 
     try:
-        from src.neurocode.core.parser.parser import (
+        from src.aethercode.core.parser.parser import (
             NeuroCodeCompiler,
-            NeuroCodeLexer,
-            NeuroCodeParser,
+            AetherraLexer,
+            AetherraParser,
         )
 
         # Complex test program
@@ -142,12 +150,12 @@ suggest fix for "optimization"
 """
 
         # Test lexer
-        lexer = NeuroCodeLexer(test_program)
+        lexer = AetherraLexer(test_program)
         tokens = lexer.tokenize()
         print(f"  ✅ Lexer: {len(tokens)} tokens generated")
 
         # Test parser
-        parser = NeuroCodeParser(tokens)
+        parser = AetherraParser(tokens)
         ast = parser.parse()
         print(f"  ✅ Parser: {len(ast)} AST nodes generated")
 

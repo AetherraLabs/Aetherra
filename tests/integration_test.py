@@ -17,9 +17,9 @@ def test_integration():
     # Test 1: Memory & Agent Integration
     try:
         from agent_reflection_loop import AgentReflectionLoop
-        from core.memory import NeuroMemory
+        from core.aetherra_memory import AetherraMemory
 
-        memory = NeuroMemory()
+        memory = AetherraMemory()
         agent = AgentReflectionLoop(memory)
 
         print("✅ Agent and Memory integrated successfully")

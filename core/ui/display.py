@@ -82,7 +82,7 @@ class SyntaxHighlighter:
     def _initialize_patterns(self) -> Dict[CodeLanguage, Dict[str, str]]:
         """Initialize syntax highlighting patterns"""
         return {
-            CodeLanguage.NEUROCODE: {
+            CodeLanguage.aetherCODE: {
                 "keywords": r"\b(think|remember|goal|agent|if|else|while|for|function|return|import|export)\b",
                 "strings": r'(["\'])(?:(?=(\\?))\2.)*?\1',
                 "comments": r"#.*$",
@@ -140,7 +140,9 @@ class TableRenderer:
     """Renders tables in various formats"""
 
     @staticmethod
-    def render_table(headers: List[str], rows: List[List[str]], style: str = "grid") -> str:
+    def render_table(
+        headers: List[str], rows: List[List[str]], style: str = "grid"
+    ) -> str:
         """Render a table with given headers and rows"""
         if not headers or not rows:
             return ""
@@ -160,7 +162,9 @@ class TableRenderer:
             return TableRenderer._render_plain_table(headers, rows, col_widths)
 
     @staticmethod
-    def _render_grid_table(headers: List[str], rows: List[List[str]], col_widths: List[int]) -> str:
+    def _render_grid_table(
+        headers: List[str], rows: List[List[str]], col_widths: List[int]
+    ) -> str:
         """Render table with grid borders"""
         lines = []
 
@@ -197,7 +201,9 @@ class TableRenderer:
         lines = []
 
         # Headers
-        header_line = " ".join(f"{header:<{col_widths[i]}}" for i, header in enumerate(headers))
+        header_line = " ".join(
+            f"{header:<{col_widths[i]}}" for i, header in enumerate(headers)
+        )
         lines.append(header_line)
 
         # Header separator
@@ -206,7 +212,9 @@ class TableRenderer:
         # Data rows
         for row in rows:
             row_line = " ".join(
-                f"{str(cell):<{col_widths[i]}}" for i, cell in enumerate(row) if i < len(col_widths)
+                f"{str(cell):<{col_widths[i]}}"
+                for i, cell in enumerate(row)
+                if i < len(col_widths)
             )
             lines.append(row_line)
 
@@ -220,13 +228,17 @@ class TableRenderer:
         lines = []
 
         # Headers
-        header_line = " | ".join(f"{header:<{col_widths[i]}}" for i, header in enumerate(headers))
+        header_line = " | ".join(
+            f"{header:<{col_widths[i]}}" for i, header in enumerate(headers)
+        )
         lines.append(header_line)
 
         # Data rows
         for row in rows:
             row_line = " | ".join(
-                f"{str(cell):<{col_widths[i]}}" for i, cell in enumerate(row) if i < len(col_widths)
+                f"{str(cell):<{col_widths[i]}}"
+                for i, cell in enumerate(row)
+                if i < len(col_widths)
             )
             lines.append(row_line)
 
@@ -341,7 +353,9 @@ class RichDisplay:
 
     def print_text(self, text: str, style: Optional[TextStyle] = None):
         """Print plain text"""
-        element = DisplayElement(content=text, display_type=DisplayType.PLAIN, style=style)
+        element = DisplayElement(
+            content=text, display_type=DisplayType.PLAIN, style=style
+        )
         self.add_element(element)
 
     def print_markdown(self, markdown: str):
@@ -350,7 +364,7 @@ class RichDisplay:
         element = DisplayElement(content=rendered, display_type=DisplayType.MARKDOWN)
         self.add_element(element)
 
-    def print_code(self, code: str, language: CodeLanguage = CodeLanguage.NEUROCODE):
+    def print_code(self, code: str, language: CodeLanguage = CodeLanguage.aetherCODE):
         """Print code with syntax highlighting"""
         highlighted = self.syntax_highlighter.highlight(code, language)
         element = DisplayElement(
@@ -360,7 +374,9 @@ class RichDisplay:
         )
         self.add_element(element)
 
-    def print_table(self, headers: List[str], rows: List[List[str]], style: str = "grid"):
+    def print_table(
+        self, headers: List[str], rows: List[List[str]], style: str = "grid"
+    ):
         """Print a table"""
         table_content = self.table_renderer.render_table(headers, rows, style)
         element = DisplayElement(
@@ -415,7 +431,9 @@ class RichDisplay:
             content += f"\n   {details}"
 
         element = DisplayElement(
-            content=content, display_type=DisplayType.ERROR, style=TextStyle(color="red", bold=True)
+            content=content,
+            display_type=DisplayType.ERROR,
+            style=TextStyle(color="red", bold=True),
         )
         self.add_element(element)
 
@@ -439,7 +457,9 @@ class RichDisplay:
             content += f"\n   {details}"
 
         element = DisplayElement(
-            content=content, display_type=DisplayType.INFO, style=TextStyle(color="blue", bold=True)
+            content=content,
+            display_type=DisplayType.INFO,
+            style=TextStyle(color="blue", bold=True),
         )
         self.add_element(element)
 
@@ -447,7 +467,9 @@ class RichDisplay:
         """Print a separator line"""
         content = char * width
         element = DisplayElement(
-            content=content, display_type=DisplayType.PLAIN, style=TextStyle(color="gray")
+            content=content,
+            display_type=DisplayType.PLAIN,
+            style=TextStyle(color="gray"),
         )
         self.add_element(element)
 

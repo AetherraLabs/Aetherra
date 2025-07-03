@@ -17,7 +17,7 @@
 ### 📋 **DNS Records (Cloudflare)**
 ```
 Type: A, Name: @, Content: 185.199.108.153, Proxy: DNS only
-Type: A, Name: @, Content: 185.199.109.153, Proxy: DNS only  
+Type: A, Name: @, Content: 185.199.109.153, Proxy: DNS only
 Type: A, Name: @, Content: 185.199.110.153, Proxy: DNS only
 Type: A, Name: @, Content: 185.199.111.153, Proxy: DNS only
 Type: CNAME, Name: www, Content: zyonic88.github.io, Proxy: DNS only
@@ -32,11 +32,11 @@ Type: CNAME, Name: www, Content: zyonic88.github.io, Proxy: DNS only
 ```bash
 # Check DNS propagation
 nslookup neurocode.dev
-nslookup www.neurocode.dev
+nslookup www.aethercode.dev
 
-# Test website accessibility  
+# Test website accessibility
 curl -I https://neurocode.dev
-curl -I https://www.neurocode.dev
+curl -I https://www.aethercode.dev
 ```
 
 ### 📝 **Next Steps**

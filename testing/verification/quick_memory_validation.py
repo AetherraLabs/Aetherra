@@ -17,9 +17,9 @@ def main():
     try:
         # Test 1: Basic memory import and operation
         print("1. Testing basic memory import...")
-        from core.memory import NeuroMemory
+        from core.aetherra_memory import AetherraMemory
 
-        memory = NeuroMemory()
+        memory = AetherraMemory()
         memory.remember("Validation test", ["test"], "validation")
         results = memory.recall()
         assert len(results) >= 1

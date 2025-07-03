@@ -3,12 +3,12 @@
 
 try:
     print("Testing modular interpreter import...")
-    from core.interpreter import NeuroCodeInterpreter
+    from core.interpreter import AetherraInterpreter
 
     print("✅ Import successful")
 
     print("Testing interpreter initialization...")
-    interpreter = NeuroCodeInterpreter()
+    interpreter = AetherraInterpreter()
     print("✅ Initialization successful")
 
     print("Testing basic command execution...")

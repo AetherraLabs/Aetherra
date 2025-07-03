@@ -8,7 +8,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from core.memory import NeuroMemory
+from core.aetherra_memory import AetherraMemory
 from core.functions import NeuroFunctions
 from core.block_executor import BlockExecutor
 
@@ -17,7 +17,7 @@ def test_memory_system():
     print("🧠 Testing Memory System")
     print("-" * 30)
     
-    memory = NeuroMemory()
+    memory = AetherraMemory()
     
     # Test basic remember/recall
     memory.remember("Test memory", tags=["test", "basic"])
@@ -39,7 +39,7 @@ def test_function_system():
     print("\n🔧 Testing Function System")
     print("-" * 30)
     
-    memory = NeuroMemory()
+    memory = AetherraMemory()
     func_manager = NeuroFunctions()
     
     # Test function definition
@@ -58,7 +58,7 @@ def test_block_executor():
     print("\n⚡ Testing Block Executor")
     print("-" * 30)
     
-    memory = NeuroMemory()
+    memory = AetherraMemory()
     func_manager = NeuroFunctions()
     executor = BlockExecutor(memory, func_manager)
     
@@ -93,7 +93,7 @@ def test_syntax_discrepancies():
     print("\n🔍 Testing Syntax Discrepancies")
     print("-" * 30)
     
-    memory = NeuroMemory()
+    memory = AetherraMemory()
     
     # Check for 'pattern()' method that was documented but missing
     has_pattern_method = hasattr(memory, 'pattern')
@@ -118,8 +118,8 @@ def test_new_tagged_syntax():
     
     # Test this without importing interpreter to avoid AI dependency issues
     try:
-        from core.interpreter import NeuroCodeInterpreter
-        interpreter = NeuroCodeInterpreter()
+        from core.interpreter import AetherraInterpreter
+        interpreter = AetherraInterpreter()
         
         # Test new tagged syntax
         result1 = interpreter.execute('remember("New tagged test") as "test_tag"')

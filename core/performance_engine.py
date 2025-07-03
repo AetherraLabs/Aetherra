@@ -300,7 +300,9 @@ class PerformanceEngine:
         self.metrics: List[PerformanceMetrics] = []
         self.cache = IntelligentCache(max_size=self.config.max_cache_size)
         self.parallel_processor = ParallelProcessor(max_workers=self.config.max_workers)
-        self.memory_optimizer = MemoryOptimizer(memory_limit_mb=self.config.memory_limit_mb)
+        self.memory_optimizer = MemoryOptimizer(
+            memory_limit_mb=self.config.memory_limit_mb
+        )
         self.startup_optimizer = StartupOptimizer()
 
         # Performance tracking
@@ -354,7 +356,9 @@ class PerformanceEngine:
             if auto_optimize and self._should_optimize(operation_name, execution_time):
                 self._apply_optimizations(operation_name)
 
-    def cached_operation(self, cache_key: str, operation_func: Callable, *args, **kwargs) -> Any:
+    def cached_operation(
+        self, cache_key: str, operation_func: Callable, *args, **kwargs
+    ) -> Any:
         """Execute operation with intelligent caching"""
         if not self.config.enable_caching:
             return operation_func(*args, **kwargs)
@@ -374,7 +378,11 @@ class PerformanceEngine:
             return result
 
     def parallel_operation(
-        self, operation_name: str, func: Callable, items: List[Any], use_processes: bool = False
+        self,
+        operation_name: str,
+        func: Callable,
+        items: List[Any],
+        use_processes: bool = False,
     ) -> List[Any]:
         """Execute operation in parallel"""
         if not self.config.enable_parallel_processing or len(items) <= 1:
@@ -382,7 +390,9 @@ class PerformanceEngine:
 
         with self.profile_operation(f"parallel_{operation_name}"):
             start_time = time.time()
-            results = self.parallel_processor.execute_parallel(func, items, use_processes)
+            results = self.parallel_processor.execute_parallel(
+                func, items, use_processes
+            )
             parallel_time = time.time() - start_time
 
             # Calculate speedup (estimate sequential time)
@@ -420,9 +430,12 @@ class PerformanceEngine:
 
         # Calculate statistics
         total_operations = len(self.metrics)
-        avg_execution_time = sum(m.execution_time for m in self.metrics) / total_operations
+        avg_execution_time = (
+            sum(m.execution_time for m in self.metrics) / total_operations
+        )
         avg_memory_usage = (
-            sum(m.memory_after - m.memory_before for m in self.metrics) / total_operations
+            sum(m.memory_after - m.memory_before for m in self.metrics)
+            / total_operations
         )
 
         # Find slow operations
@@ -432,9 +445,9 @@ class PerformanceEngine:
         cache_stats = self.cache.stats()
 
         # Top operations by count
-        top_operations = sorted(self.operation_counts.items(), key=lambda x: x[1], reverse=True)[
-            :10
-        ]
+        top_operations = sorted(
+            self.operation_counts.items(), key=lambda x: x[1], reverse=True
+        )[:10]
 
         return {
             "summary": {
@@ -454,7 +467,9 @@ class PerformanceEngine:
                 }
                 for m in slow_operations[-5:]  # Last 5 slow operations
             ],
-            "optimization_history": self.optimization_history[-5:],  # Last 5 optimizations
+            "optimization_history": self.optimization_history[
+                -5:
+            ],  # Last 5 optimizations
             "startup_report": self.startup_optimizer.get_startup_report(),
             "system_health": {
                 "cpu_usage": psutil.cpu_percent(interval=1),
@@ -481,12 +496,16 @@ class PerformanceEngine:
         # Memory optimization
         if self.memory_optimizer.check_memory_pressure():
             memory_results = self.memory_optimizer.optimize_memory()
-            optimizations_applied.append(f"memory_cleanup:{memory_results['freed_mb']:.1f}MB")
+            optimizations_applied.append(
+                f"memory_cleanup:{memory_results['freed_mb']:.1f}MB"
+            )
 
         # Cache optimization
         if self.cache.stats()["hit_rate"] < 0.5 and self.cache.stats()["size"] > 100:
             # Increase cache size if hit rate is low
-            self.cache.max_size = min(self.cache.max_size * 2, self.config.max_cache_size * 2)
+            self.cache.max_size = min(
+                self.cache.max_size * 2, self.config.max_cache_size * 2
+            )
             optimizations_applied.append("cache_size_increased")
 
         # Record optimization
@@ -545,7 +564,9 @@ def performance_optimized(
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             if cache_key:
-                return performance_engine.cached_operation(cache_key, func, *args, **kwargs)
+                return performance_engine.cached_operation(
+                    cache_key, func, *args, **kwargs
+                )
             elif enable_parallel and isinstance(args[0], list):
                 # For functions that take a list as first argument
                 items = args[0]
@@ -555,7 +576,9 @@ def performance_optimized(
                     if remaining_args or kwargs
                     else func
                 )
-                return performance_engine.parallel_operation(op_name, partial_func, items)
+                return performance_engine.parallel_operation(
+                    op_name, partial_func, items
+                )
             else:
                 with performance_engine.profile_operation(op_name):
                     return func(*args, **kwargs)
@@ -587,7 +610,9 @@ def parallel_processing(use_processes: bool = False):
             if not isinstance(items, list):
                 return func(items, *args, **kwargs)
 
-            partial_func = functools.partial(func, *args, **kwargs) if args or kwargs else func
+            partial_func = (
+                functools.partial(func, *args, **kwargs) if args or kwargs else func
+            )
             return performance_engine.parallel_operation(
                 func.__name__, partial_func, items, use_processes
             )
@@ -605,7 +630,7 @@ def optimize_neurocode_startup(modules: Optional[List[str]] = None) -> Dict[str,
         "core.memory",
         "core.ai_runtime",
         "core.plugin_manager",
-        "ui.neuroplex_gui",
+        "ui.aetherplex_gui",
     ]
     modules_to_optimize = modules or default_modules
     return performance_engine.optimize_startup(modules_to_optimize)

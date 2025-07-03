@@ -47,39 +47,39 @@ def test_core_systems():
 
     # Test interpreter
     try:
-        from core.interpreter import NeuroCodeInterpreter
+        from core.interpreter import AetherraInterpreter
 
-        interpreter = NeuroCodeInterpreter()
-        print("  ✅ NeuroCodeInterpreter: Initialization successful")
+        interpreter = AetherraInterpreter()
+        print("  ✅ AetherraInterpreter: Initialization successful")
     except Exception as e:
-        print(f"  ❌ NeuroCodeInterpreter: {e}")
+        print(f"  ❌ AetherraInterpreter: {e}")
 
     # Test enhanced interpreter
     try:
-        from core.enhanced_interpreter import EnhancedNeuroCodeInterpreter
+        from core.enhanced_interpreter import EnhancedAetherraInterpreter
 
-        enhanced = EnhancedNeuroCodeInterpreter()
-        print("  ✅ EnhancedNeuroCodeInterpreter: Initialization successful")
+        enhanced = EnhancedAetherraInterpreter()
+        print("  ✅ EnhancedAetherraInterpreter: Initialization successful")
     except Exception as e:
-        print(f"  ❌ EnhancedNeuroCodeInterpreter: {e}")
+        print(f"  ❌ EnhancedAetherraInterpreter: {e}")
 
     # Test memory
     try:
-        from core.memory import NeuroMemory
+        from core.aetherra_memory import AetherraMemory
 
-        memory = NeuroMemory()
+        memory = AetherraMemory()
         memory.remember("Test memory")
-        print("  ✅ NeuroMemory: Basic operations working")
+        print("  ✅ AetherraMemory: Basic operations working")
     except Exception as e:
-        print(f"  ❌ NeuroMemory: {e}")
+        print(f"  ❌ AetherraMemory: {e}")
 
     # Test agent
     try:
         from core.agent import NeuroAgent
         from core.functions import NeuroFunctions
-        from core.memory import NeuroMemory
+        from core.aetherra_memory import AetherraMemory
 
-        memory = NeuroMemory()
+        memory = AetherraMemory()
         functions = NeuroFunctions()
         agent = NeuroAgent(memory, functions, [])
         print("  ✅ NeuroAgent: Initialization successful")
@@ -93,7 +93,7 @@ def test_ui_systems():
 
     # Test Qt availability
     try:
-        from src.neurocode.ui.components.utils.qt_imports import is_qt_available
+        from src.aethercode.ui.components.utils.qt_imports import is_qt_available
 
         qt_available = is_qt_available()
         if qt_available:
@@ -104,7 +104,10 @@ def test_ui_systems():
         print(f"  ❌ Qt Framework check: {e}")
 
     # Test main GUI modules
-    ui_modules = ["src.neurocode.ui.neuroplex_gui", "src.neurocode.ui.enhanced_neuroplex"]
+    ui_modules = [
+        "src.aethercode.ui.aetherplex_gui",
+        "src.aethercode.ui.enhanced_neuroplex",
+    ]
 
     for module in ui_modules:
         try:
@@ -125,7 +128,7 @@ def test_plugin_system():
         print(f"  ✅ Plugin Registry: {len(plugins)} plugins available")
 
         # Try enhanced plugin manager
-        from src.neurocode.plugins.manager import EnhancedPluginManager
+        from src.aethercode.plugins.manager import EnhancedPluginManager
 
         manager = EnhancedPluginManager()
         installed = manager.list_installed_plugins()
@@ -140,7 +143,7 @@ def test_parser_system():
     print("\n📝 Testing Parser System...")
 
     try:
-        from src.neurocode.core.parser import create_parser
+        from src.aethercode.core.parser import create_parser
 
         parser = create_parser()
         result = parser("goal: test parsing")
@@ -149,9 +152,9 @@ def test_parser_system():
         print(f"  ❌ Modular Parser: {e}")
 
     try:
-        from core.neurocode_parser import NeuroCodeLexer
+        from core.aethercode_parser import AetherraLexer
 
-        lexer = NeuroCodeLexer("goal: test")
+        lexer = AetherraLexer("goal: test")
         tokens = lexer.tokenize()
         print("  ✅ NeuroCode Lexer: Tokenization working")
     except Exception as e:

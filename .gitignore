@@ -1,4 +1,4 @@
-# NeuroCode .gitignore
+# Aetherra .gitignore
 
 # Environment variables (contains API keys)
 .env
@@ -46,10 +46,10 @@ ehthumbs.db
 temp/
 tmp/
 
-# NeuroCode runtime files (sensitive/personal data)
+# Aetherra runtime files (sensitive/personal data)
 memory_store.json
 goals_store.json
-neurocode_functions.json
+aetherra_functions.json
 
 # Runtime files in subdirectories
 ui/memory_store.json
@@ -61,7 +61,7 @@ test_output/
 *.bak
 *.backup
 goals_store.json
-neurocode_functions.json
+aetherra_functions.json
 *.backup.*
 backups/
 

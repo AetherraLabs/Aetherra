@@ -17,7 +17,7 @@ from .fallback_systems import FallbackSystemManager
 from .line_processor import LineProcessor
 
 
-class NeuroCodeInterpreter(NeuroCodeInterpreterBase):
+class AetherraInterpreter(NeuroCodeInterpreterBase):
     """
     Main NeuroCode Interpreter
 
@@ -61,29 +61,69 @@ class NeuroCodeInterpreter(NeuroCodeInterpreterBase):
             print(f"Warning: Using fallback components due to import error: {e}")
             components.update(self.fallback_manager.enable_demo_mode())
 
-        # Instantiate components
+        # Instantiate components in proper dependency order
         instantiated = {}
+
+        # First pass: Create basic components with no dependencies
+        for name, component_class in components.items():
+            try:
+                if name in ["AetherraMemory", "NeuroFunctions"]:
+                    key = name.lower().replace("neuro", "").replace("system", "")
+                    instantiated[key] = component_class()
+            except Exception as e:
+                print(f"Warning: Could not instantiate {name}: {e}")
+
+        # Second pass: Create components that depend on basic ones
+        for name, component_class in components.items():
+            try:
+                if name == "GoalSystem":
+                    # Goal system needs memory (but can work without interpreter)
+                    memory = instantiated.get("memory")
+                    if memory:
+                        instantiated["goal_system"] = component_class(memory, self)
+                    else:
+                        print(f"Warning: Skipping {name} - memory system not available")
+
+                elif name == "NeuroDebugSystem":
+                    # Debug system needs memory
+                    memory = instantiated.get("memory")
+                    if memory:
+                        instantiated["debug"] = component_class(memory)
+                    else:
+                        print(f"Warning: Skipping {name} - memory system not available")
+
+                elif name == "BlockExecutor":
+                    # Block executor needs memory and functions
+                    memory = instantiated.get("memory")
+                    functions = instantiated.get("functions")
+                    if memory and functions:
+                        instantiated["executor"] = component_class(memory, functions)
+                    else:
+                        print(f"Warning: Skipping {name} - required systems not available")
+
+            except Exception as e:
+                print(f"Warning: Could not instantiate {name}: {e}")
+
+        # Third pass: Create components that depend on multiple others
         for name, component_class in components.items():
             try:
                 if name == "NeuroAgent":
-                    # Agent needs special initialization
-                    instantiated[name.lower().replace("neuro", "")] = component_class(
-                        instantiated.get("memory"), instantiated.get("functions"), []
-                    )
-                elif name == "GoalSystem":
-                    # Goal system needs memory and interpreter reference
-                    instantiated["goal_system"] = component_class(instantiated.get("memory"), self)
+                    # Agent needs memory, functions, and other components
+                    memory = instantiated.get("memory")
+                    functions = instantiated.get("functions")
+                    if memory and functions:
+                        instantiated["agent"] = component_class(memory, functions, [])
+                    else:
+                        print(f"Warning: Skipping {name} - required systems not available")
+
                 elif name == "MetaPluginSystem":
-                    # Meta plugins need multiple references
-                    instantiated["meta_plugins"] = component_class(
-                        instantiated.get("memory"), self, instantiated.get("goal_system")
-                    )
-                else:
-                    # Standard initialization
-                    key = name.lower().replace("neuro", "").replace("system", "")
-                    if key.endswith("s"):
-                        key = key[:-1]  # Remove plural 's'
-                    instantiated[key] = component_class()
+                    # Meta plugins need memory, interpreter, and goal system
+                    memory = instantiated.get("memory")
+                    goal_system = instantiated.get("goal_system")
+                    if memory:
+                        instantiated["meta_plugins"] = component_class(memory, self, goal_system)
+                    else:
+                        print(f"Warning: Skipping {name} - required systems not available")
 
             except Exception as e:
                 print(f"Warning: Could not instantiate {name}: {e}")
@@ -96,9 +136,9 @@ class NeuroCodeInterpreter(NeuroCodeInterpreterBase):
 
         try:
             # Memory system
-            from ..memory import NeuroMemory
+            from ..memory import AetherraMemory
 
-            components["NeuroMemory"] = NeuroMemory
+            components["AetherraMemory"] = AetherraMemory
         except ImportError:
             pass
 

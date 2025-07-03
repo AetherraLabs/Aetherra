@@ -14,21 +14,21 @@ This is the modularized version of the legacy syntax_tree.py for better maintain
 
 from .analysis import analyze_syntax_tree
 from .nodes import NodeType, SyntaxNode
-from .parser import NeuroCodeParser
+from .parser import AetherraParser
 from .visitor import SyntaxTreeVisitor
 
 
 # Main API functions
 def parse_neurocode(code: str) -> SyntaxNode:
     """Parse NeuroCode into a syntax tree"""
-    parser = NeuroCodeParser()
+    parser = AetherraParser()
     return parser.parse(code)
 
 
 __all__ = [
     "NodeType",
     "SyntaxNode",
-    "NeuroCodeParser",
+    "AetherraParser",
     "SyntaxTreeVisitor",
     "analyze_syntax_tree",
     "parse_neurocode",

@@ -7,7 +7,7 @@ Welcome to NeuroCode, a pioneering AI-consciousness programming language! This t
 Unlike traditional programming languages that execute static instructions, NeuroCode programs:
 
 - 🧠 **Think and reason** about problems
-- 💾 **Remember and learn** from experiences  
+- 💾 **Remember and learn** from experiences
 - 🎯 **Understand intentions** rather than just commands
 - 🤖 **Collaborate with AI** agents in real-time
 - ⚡ **Self-optimize** for better performance
@@ -180,13 +180,13 @@ assistant: "suggest UI improvements based on general UX principles"
 define analyze_codebase()
     model: "gpt-4"
     assistant: "identify architectural patterns and potential issues"
-    
+
     model: "codellama"
     assistant: "suggest code optimizations and refactoring opportunities"
-    
+
     model: "claude-3"
     assistant: "review for security vulnerabilities and best practices"
-    
+
     # Combine insights
     remember("codebase analysis completed with multi-model approach") as "analysis"
 end
@@ -201,7 +201,7 @@ end
 define optimize_performance(component)
     model: "gpt-4"
     assistant: "analyze performance bottlenecks in " + component
-    
+
     if assistant_confidence > 80%:
         apply suggested_optimizations
         remember("optimized " + component) as "performance_improvements"
@@ -242,23 +242,23 @@ end
 # Gather insights from multiple models
 define get_multi_model_insights(problem)
     insights = []
-    
+
     model: "gpt-4"
     gpt4_insight = assistant: "analyze " + problem + " from technical perspective"
     insights.append(gpt4_insight)
-    
+
     model: "claude-3"
     claude_insight = assistant: "analyze " + problem + " from user experience perspective"
     insights.append(claude_insight)
-    
+
     model: "mistral"
     mistral_insight = assistant: "analyze " + problem + " from security perspective"
     insights.append(mistral_insight)
-    
+
     # Synthesize insights
     model: "gpt-4"
     synthesis = assistant: "combine these insights into actionable recommendations: " + str(insights)
-    
+
     remember(synthesis) as "multi_model_analysis"
     return synthesis
 end
@@ -304,31 +304,31 @@ goal: "ensure privacy and security" priority: critical
 # Define multi-model code review function
 define review_code(filename)
     load filename
-    
+
     # Stage 1: Technical analysis with GPT-4
     model: "gpt-4"
     technical_review = assistant: "analyze code structure, patterns, and technical quality"
     remember(technical_review) as "technical_analysis"
-    
+
     # Stage 2: Security audit with Claude
     model: "claude-3"
     security_review = assistant: "identify security vulnerabilities and risks"
     remember(security_review) as "security_analysis"
-    
+
     # Stage 3: Performance analysis with local Mixtral (privacy)
     model: "mixtral"
     performance_review = assistant: "analyze performance bottlenecks and optimization opportunities"
     remember(performance_review) as "performance_analysis"
-    
+
     # Stage 4: Code style with CodeLLaMA
     model: "codellama"
     style_review = assistant: "check code style, naming conventions, and readability"
     remember(style_review) as "style_analysis"
-    
+
     # Stage 5: Synthesize final report
     model: "gpt-4"
     final_report = assistant: "create comprehensive review combining all analyses"
-    
+
     return final_report
 end
 
@@ -350,7 +350,7 @@ suggest "process improvements for future reviews"
 
 ## Next Steps
 
-1. **Try Multi-LLM Examples**: Run the examples in `examples/multi_llm_demo.neuro`
+1. **Try Multi-LLM Examples**: Run the examples in `examples/multi_llm_demo.aether`
 2. **Launch the Playground**: Use `python launch_playground.py` for interactive experimentation
 3. **Explore Model Options**: Test different AI models with your specific use cases
 4. **Build Privacy-First Apps**: Use local models for sensitive data processing

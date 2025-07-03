@@ -124,7 +124,7 @@ class MemoryLogger:
     """Advanced memory logging system"""
 
     def __init__(self, storage_path: Optional[str] = None):
-        self.storage_path = storage_path or os.path.expanduser("~/.neurocode/memory")
+        self.storage_path = storage_path or os.path.expanduser("~/.aethercode/memory")
         self.storage = FileMemoryStorage(self.storage_path)
 
         # Create enhanced storage paths
@@ -185,7 +185,9 @@ class MemoryLogger:
 
         # Log session start
         if self.log_all_operations:
-            self._log_operation("session_start", {"session_id": session_id, "context": context})
+            self._log_operation(
+                "session_start", {"session_id": session_id, "context": context}
+            )
 
         return session_id
 
@@ -306,7 +308,9 @@ class MemoryLogger:
             context=context,
         )
 
-    def log_learning(self, learning_text: str, context: Optional[Dict[str, Any]] = None) -> str:
+    def log_learning(
+        self, learning_text: str, context: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Log a learning experience"""
         return self.log_memory(
             text=learning_text,
@@ -316,7 +320,9 @@ class MemoryLogger:
             context=context,
         )
 
-    def log_error(self, error_text: str, context: Optional[Dict[str, Any]] = None) -> str:
+    def log_error(
+        self, error_text: str, context: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Log an error for learning"""
         return self.log_memory(
             text=error_text,
@@ -326,7 +332,9 @@ class MemoryLogger:
             context=context,
         )
 
-    def log_success(self, success_text: str, context: Optional[Dict[str, Any]] = None) -> str:
+    def log_success(
+        self, success_text: str, context: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Log a successful outcome"""
         return self.log_memory(
             text=success_text,
@@ -405,9 +413,13 @@ class MemoryLogger:
             recency_score = 1.0
             if entry.timestamp:
                 try:
-                    entry_time = datetime.fromisoformat(entry.timestamp.replace("Z", "+00:00"))
+                    entry_time = datetime.fromisoformat(
+                        entry.timestamp.replace("Z", "+00:00")
+                    )
                     days_old = (datetime.now() - entry_time).days
-                    recency_score = max(0.1, 1.0 - (days_old / 365))  # Decay over a year
+                    recency_score = max(
+                        0.1, 1.0 - (days_old / 365)
+                    )  # Decay over a year
                 except Exception:
                     pass
 
@@ -426,8 +438,12 @@ class MemoryLogger:
                     "query": query,
                     "results_count": len(results[:limit]),
                     "filters": {
-                        "memory_types": [t.value for t in memory_types] if memory_types else None,
-                        "importance_min": importance_min.value if importance_min else None,
+                        "memory_types": [t.value for t in memory_types]
+                        if memory_types
+                        else None,
+                        "importance_min": importance_min.value
+                        if importance_min
+                        else None,
                     },
                 },
             )
@@ -442,7 +458,9 @@ class MemoryLogger:
         for entry in self.storage.load_memories():
             if isinstance(entry, EnhancedMemoryEntry) and entry.timestamp:
                 try:
-                    entry_time = datetime.fromisoformat(entry.timestamp.replace("Z", "+00:00"))
+                    entry_time = datetime.fromisoformat(
+                        entry.timestamp.replace("Z", "+00:00")
+                    )
                     if entry_time >= cutoff_date:
                         recent_entries.append(entry)
                 except Exception:
@@ -471,7 +489,9 @@ class MemoryLogger:
             )
 
             for tag in entry.tags:
-                insights["frequent_tags"][tag] = insights["frequent_tags"].get(tag, 0) + 1
+                insights["frequent_tags"][tag] = (
+                    insights["frequent_tags"].get(tag, 0) + 1
+                )
 
         # Most accessed memories
         accessed_entries = [e for e in recent_entries if e.access_count > 0]
@@ -495,7 +515,9 @@ class MemoryLogger:
         for entry in self.storage.load_memories():
             if isinstance(entry, EnhancedMemoryEntry):
                 try:
-                    entry_time = datetime.fromisoformat(entry.timestamp.replace("Z", "+00:00"))
+                    entry_time = datetime.fromisoformat(
+                        entry.timestamp.replace("Z", "+00:00")
+                    )
                     if (
                         entry_time < cutoff_date
                         and entry.importance.value <= importance_threshold.value
@@ -577,7 +599,9 @@ class MemoryLogger:
             overlap = entry_words.intersection(existing_words)
 
             # Consider entries related if they share enough words or tags
-            if len(overlap) >= 3 or set(entry.tags).intersection(set(existing_entry.tags)):
+            if len(overlap) >= 3 or set(entry.tags).intersection(
+                set(existing_entry.tags)
+            ):
                 related.append(existing_entry.id)
                 if len(related) >= 5:  # Limit related entries
                     break
@@ -586,7 +610,11 @@ class MemoryLogger:
 
     def _log_operation(self, operation: str, data: Dict[str, Any]):
         """Log memory operations for analytics"""
-        log_entry = {"timestamp": datetime.now().isoformat(), "operation": operation, "data": data}
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "operation": operation,
+            "data": data,
+        }
 
         # Write to daily log file
         log_date = datetime.now().strftime("%Y-%m-%d")
@@ -618,7 +646,9 @@ class MemoryLogger:
             # Filter by date range
             if date_range:
                 try:
-                    entry_time = datetime.fromisoformat(entry.timestamp.replace("Z", "+00:00"))
+                    entry_time = datetime.fromisoformat(
+                        entry.timestamp.replace("Z", "+00:00")
+                    )
                     if not (date_range[0] <= entry_time <= date_range[1]):
                         continue
                 except Exception:

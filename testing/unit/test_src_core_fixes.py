@@ -20,7 +20,7 @@ def test_core_imports():
         print("✅ neurocode.core imported successfully")
 
         # Test interpreter modules
-        print("✅ EnhancedNeuroCodeInterpreter imported successfully")
+        print("✅ EnhancedAetherraInterpreter imported successfully")
 
         print("✅ BaseInterpreter imported successfully")
 
@@ -29,13 +29,13 @@ def test_core_imports():
         print("✅ BlockExecutor imported successfully")
 
         # Test parser modules
-        print("✅ NeuroCodeParser imported successfully")
+        print("✅ AetherraParser imported successfully")
 
         print("✅ EnhancedParser imported successfully")
 
         print("✅ IntentToCodeParser imported successfully")
 
-        print("✅ NeuroCodeGrammar imported successfully")
+        print("✅ AetherraGrammar imported successfully")
 
         # Test memory modules
         print("✅ Memory system imported successfully")
@@ -71,19 +71,19 @@ def test_core_functionality():
 
     try:
         # Test interpreter creation
-        from neurocode.core.interpreter import EnhancedNeuroCodeInterpreter
+        from aetherra.core.aetherra_interpreter import EnhancedAetherraInterpreter
 
-        interpreter = EnhancedNeuroCodeInterpreter()
-        print("✅ EnhancedNeuroCodeInterpreter created successfully")
+        interpreter = EnhancedAetherraInterpreter()
+        print("✅ EnhancedAetherraInterpreter created successfully")
 
         # Test parser creation
-        from neurocode.core.parser import NeuroCodeParser
+        from neurocode.core.parser import AetherraParser
 
-        parser = NeuroCodeParser()
-        print("✅ NeuroCodeParser created successfully")
+        parser = AetherraParser()
+        print("✅ AetherraParser created successfully")
 
         # Test memory system
-        from neurocode.core.memory import get_memory_system
+        from aetherra.core.aetherra_memory import get_memory_system
 
         memory = get_memory_system()
         print("✅ Memory system created successfully")
@@ -115,9 +115,9 @@ def test_error_handling():
     print("\n🧪 Testing error handling...")
 
     try:
-        from neurocode.core.interpreter import EnhancedNeuroCodeInterpreter
+        from aetherra.core.aetherra_interpreter import EnhancedAetherraInterpreter
 
-        interpreter = EnhancedNeuroCodeInterpreter()
+        interpreter = EnhancedAetherraInterpreter()
 
         # Test with invalid syntax
         invalid_code = "def invalid_syntax(:"

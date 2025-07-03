@@ -20,7 +20,7 @@ and backward compatibility. The new modular system is in core/syntax/.
 
 # For backward compatibility, import from the new modular system:
 from .syntax import (
-    NeuroCodeParser,
+    AetherraParser,
     NodeType,
     SyntaxNode,
     SyntaxTreeVisitor,
@@ -41,7 +41,7 @@ def _calculate_depth(node, current_depth=0):
 __all__ = [
     "NodeType",
     "SyntaxNode",
-    "NeuroCodeParser",
+    "AetherraParser",
     "SyntaxTreeVisitor",
     "parse_neurocode",
     "analyze_syntax_tree",

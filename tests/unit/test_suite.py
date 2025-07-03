@@ -26,12 +26,12 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "core"))
 
 try:
-    from memory import NeuroMemory
+    from agent_reflection_loop import AgentReflectionLoop
+    from memory import AetherraMemory
     from performance_monitor import NeuroLogger, PerformanceMonitor
 
-    from agent_reflection_loop import AgentReflectionLoop
     from natural_translator import NaturalToNeuroTranslator
-    from scripts.neuro_runner_standalone import StandaloneNeuroRunner
+    from scripts.aether_runner_standalone import StandaloneNeuroRunner
 except ImportError as e:
     print(f"⚠️ Some test dependencies not available: {e}")
 
@@ -41,7 +41,7 @@ class TestMemorySystem(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment"""
-        self.memory = NeuroMemory()
+        self.memory = AetherraMemory()
         # Clear any existing memories for clean testing
         self.original_memories = self.memory.memory.copy()
         self.memory.memory = []
@@ -93,11 +93,11 @@ class TestMemorySystem(unittest.TestCase):
     def test_memory_persistence(self):
         """Test memory persistence across instances"""
         # Create memory and add data
-        memory1 = NeuroMemory()
+        memory1 = AetherraMemory()
         memory1.remember("Persistence test", ["persistence"])
 
         # Create new instance and check data persists
-        memory2 = NeuroMemory()
+        memory2 = AetherraMemory()
         memories = memory2.recall(tags=["persistence"])
         self.assertGreaterEqual(len(memories), 1)
 
@@ -107,7 +107,7 @@ class TestAgentReflectionLoop(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment"""
-        self.memory = NeuroMemory()
+        self.memory = AetherraMemory()
         self.agent = AgentReflectionLoop(self.memory)
 
     def test_agent_initialization(self):
@@ -217,7 +217,7 @@ class TestNeuroCodeRunner(unittest.TestCase):
     def test_file_execution(self):
         """Test NeuroCode file execution"""
         # Create temporary test file
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".neuro", delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".aether", delete=False) as f:
             f.write('remember("Test execution") as "test"\n')
             f.write('recall tag: "test"\n')
             f.write("memory summary\n")
@@ -240,7 +240,7 @@ class TestNeuroCodeRunner(unittest.TestCase):
         """Test runner error handling"""
         # Test non-existent file
         with self.assertRaises(FileNotFoundError):
-            self.runner.run_file("nonexistent.neuro")
+            self.runner.run_file("nonexistent.aether")
 
         # Test invalid file extension
         with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
@@ -255,7 +255,7 @@ class TestNeuroCodeRunner(unittest.TestCase):
 
     def test_empty_file_handling(self):
         """Test handling of empty files"""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".neuro", delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".aether", delete=False) as f:
             f.write("")  # Empty file
             temp_file = f.name
 
@@ -344,7 +344,7 @@ class TestSystemIntegration(unittest.TestCase):
         self.assertIn("remember", neurocode.lower())
 
         # Execute translated code
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".neuro", delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".aether", delete=False) as f:
             f.write(neurocode)
             temp_file = f.name
 
@@ -356,7 +356,7 @@ class TestSystemIntegration(unittest.TestCase):
 
     def test_agent_memory_integration(self):
         """Test agent and memory system integration"""
-        memory = NeuroMemory()
+        memory = AetherraMemory()
         agent = AgentReflectionLoop(memory)
 
         # Add some memories
@@ -373,7 +373,7 @@ class TestSystemIntegration(unittest.TestCase):
         logger = NeuroLogger()
 
         with PerformanceMonitor(logger, "memory_operation"):
-            memory = NeuroMemory()
+            memory = AetherraMemory()
             memory.remember("Performance test", ["performance"])
 
         summary = logger.get_performance_summary()
@@ -390,7 +390,7 @@ def run_benchmark_suite():
     # Memory performance benchmark
     print("📊 Memory Operations Benchmark")
     with PerformanceMonitor(logger, "memory_benchmark"):
-        memory = NeuroMemory()
+        memory = AetherraMemory()
 
         # Bulk memory operations
         for i in range(100):

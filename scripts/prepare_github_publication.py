@@ -13,7 +13,9 @@ def run_command(command, description):
     """Run a command and print status"""
     print(f"🔄 {description}...")
     try:
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=".")
+        result = subprocess.run(
+            command, shell=True, capture_output=True, text=True, cwd="."
+        )
         if result.returncode == 0:
             print(f"✅ {description} completed successfully")
             if result.stdout.strip():
@@ -73,7 +75,7 @@ def main():
     print("\n📁 Checking Examples Directory...")
     examples_dir = Path("examples")
     if examples_dir.exists():
-        example_files = list(examples_dir.glob("*.neuro"))
+        example_files = list(examples_dir.glob("*.aether"))
         print(f"✅ Found {len(example_files)} NeuroCode example files")
         for example_file in example_files:
             print(f"   📄 {example_file.name}")
@@ -122,7 +124,9 @@ def main():
 
     for test_file in test_files:
         if Path(test_file).exists():
-            if not run_command(f"python -m py_compile {test_file}", f"Testing {test_file} syntax"):
+            if not run_command(
+                f"python -m py_compile {test_file}", f"Testing {test_file} syntax"
+            ):
                 print(f"❌ Syntax error in {test_file}")
                 return False
 
@@ -130,7 +134,7 @@ def main():
     print("\n🔍 Testing Module Imports...")
     import_tests = [
         (
-            "python -c \"import neurocode; print('✅ NeuroCode core imports successfully')\"",
+            "python -c \"import aetherra; print('✅ NeuroCode core imports successfully')\"",
             "NeuroCode core",
         ),
         (
@@ -149,7 +153,9 @@ def main():
 
     for command, description in import_tests:
         if not run_command(command, f"Testing {description} import"):
-            print(f"⚠️  {description} import test failed (may be due to missing dependencies)")
+            print(
+                f"⚠️  {description} import test failed (may be due to missing dependencies)"
+            )
 
     # Generate final status report
     print("\n📊 Generating Final Status Report...")
@@ -162,7 +168,7 @@ Generated: {Path(__file__).stat().st_mtime}
 
 ### 📚 Documentation Status
 - ✅ Complete README.md with revolutionary features showcase
-- ✅ Comprehensive DOCUMENTATION.md with full language reference  
+- ✅ Comprehensive DOCUMENTATION.md with full language reference
 - ✅ Step-by-step TUTORIAL.md for beginners
 - ✅ EXAMPLES_GUIDE.md with real-world applications
 - ✅ CONTRIBUTING.md for community participation
@@ -202,7 +208,7 @@ Generated: {Path(__file__).stat().st_mtime}
 NeuroCode is ready to revolutionize programming on GitHub. The repository contains:
 
 1. **Revolutionary AI-native programming language**
-2. **Beautiful modern GUI interface** 
+2. **Beautiful modern GUI interface**
 3. **Comprehensive documentation and tutorials**
 4. **Real-world example programs**
 5. **Production-ready codebase**

@@ -13,7 +13,7 @@ sys.path.insert(0, str(src_path))
 print("🧪 Testing NeuroCode Core Functionality...")
 
 try:
-    from neurocode import create_interpreter, create_parser
+    from aetherra import create_interpreter, create_parser
 
     print("✅ All core NeuroCode functionality imports successfully!")
 

@@ -7,13 +7,13 @@
 - `docs/NEUROCODE_GRAMMAR.ebnf` - Complete EBNF grammar specification
 - `docs/NEUROCODE_GRAMMAR.lark` - Lark parser grammar implementation
 - `docs/NEUROCODE_RESERVED_KEYWORDS.md` - Comprehensive keyword documentation (82 reserved keywords)
-- `docs/NEUROCODE_FILE_FORMAT.md` - Complete .neuro file format specification
+- `docs/NEUROCODE_FILE_FORMAT.md` - Complete .aether file format specification
 
 **Key Achievements:**
 - Formalized NeuroCode as a proper programming language with grammar rules
 - Defined syntax for all language constructs (goals, identity, memory, agents, etc.)
 - Documented 82 reserved keywords across 8 categories
-- Established .neuro file format standards and conventions
+- Established .aether file format standards and conventions
 
 ### 2. Modern Parser Implementation
 **Files Created:**
@@ -35,7 +35,7 @@
 **Key Achievements:**
 - Integrated formal grammar into language specification
 - Documented parser architecture and migration path
-- Established best practices for .neuro file development
+- Established best practices for .aether file development
 
 ## Language Identity Status
 
@@ -48,7 +48,7 @@
 ### After Enhancement
 - **Formal Programming Language** with EBNF/Lark grammar
 - **82 Reserved Keywords** across 8 semantic categories
-- **Standardized File Format** (.neuro) with conventions
+- **Standardized File Format** (.aether) with conventions
 - **Modern Parser Architecture** ready for IDE integration
 - **Comprehensive Documentation** for language specification
 
@@ -105,7 +105,7 @@ end
 ### Directory Layout
 ```
 project/
-├── main.neuro              # Main application
+├── main.aether              # Main application
 ├── config/                 # Configuration files
 ├── modules/                # Functional modules
 ├── agents/                 # Agent definitions
@@ -182,7 +182,7 @@ project/
 
 - **Complete grammar specification** (EBNF + Lark)
 - **82 reserved keywords** across semantic categories
-- **Standardized file format** (.neuro)
+- **Standardized file format** (.aether)
 - **Modern parser architecture** (Lark-based AST)
 - **Comprehensive documentation**
 - **Migration strategy** for existing code

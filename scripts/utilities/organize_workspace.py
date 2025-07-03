@@ -43,18 +43,29 @@ def main():
     docs_dir = WORKSPACE_ROOT / "docs"
 
     # Move guides and tutorials
-    move_file_if_exists(WORKSPACE_ROOT / "TUTORIAL.md", docs_dir / "guides" / "TUTORIAL.md")
-    move_file_if_exists(WORKSPACE_ROOT / "INSTALLATION.md", docs_dir / "guides" / "INSTALLATION.md")
-    move_file_if_exists(WORKSPACE_ROOT / "CONTRIBUTING.md", docs_dir / "guides" / "CONTRIBUTING.md")
-    move_file_if_exists(WORKSPACE_ROOT / "DOCUMENTATION.md", docs_dir / "DOCUMENTATION.md")
+    move_file_if_exists(
+        WORKSPACE_ROOT / "TUTORIAL.md", docs_dir / "guides" / "TUTORIAL.md"
+    )
+    move_file_if_exists(
+        WORKSPACE_ROOT / "INSTALLATION.md", docs_dir / "guides" / "INSTALLATION.md"
+    )
+    move_file_if_exists(
+        WORKSPACE_ROOT / "CONTRIBUTING.md", docs_dir / "guides" / "CONTRIBUTING.md"
+    )
+    move_file_if_exists(
+        WORKSPACE_ROOT / "DOCUMENTATION.md", docs_dir / "DOCUMENTATION.md"
+    )
 
     # Move architecture and spec docs
-    move_file_if_exists(WORKSPACE_ROOT / "ARCHITECTURE.md", docs_dir / "ARCHITECTURE.md")
+    move_file_if_exists(
+        WORKSPACE_ROOT / "ARCHITECTURE.md", docs_dir / "ARCHITECTURE.md"
+    )
     move_file_if_exists(
         WORKSPACE_ROOT / "MODULAR_ARCHITECTURE.md", docs_dir / "MODULAR_ARCHITECTURE.md"
     )
     move_file_if_exists(
-        WORKSPACE_ROOT / "NEUROCODE_LANGUAGE_SPEC.md", docs_dir / "NEUROCODE_LANGUAGE_SPEC.md"
+        WORKSPACE_ROOT / "NEUROCODE_LANGUAGE_SPEC.md",
+        docs_dir / "NEUROCODE_LANGUAGE_SPEC.md",
     )
 
     # Move completion reports to docs/reports
@@ -166,13 +177,21 @@ def main():
 
     for test_file in test_files:
         if test_file.startswith("test_"):
-            move_file_if_exists(WORKSPACE_ROOT / test_file, tests_dir / "unit" / test_file)
+            move_file_if_exists(
+                WORKSPACE_ROOT / test_file, tests_dir / "unit" / test_file
+            )
 
     # Move integration tests
-    integration_tests = ["integration_test.py", "analysis_test.py", "comprehensive_analysis.py"]
+    integration_tests = [
+        "integration_test.py",
+        "analysis_test.py",
+        "comprehensive_analysis.py",
+    ]
 
     for test_file in integration_tests:
-        move_file_if_exists(WORKSPACE_ROOT / test_file, tests_dir / "integration" / test_file)
+        move_file_if_exists(
+            WORKSPACE_ROOT / test_file, tests_dir / "integration" / test_file
+        )
 
     # 5. Move example and demo files
     print("\n🎯 Organizing examples...")
@@ -198,23 +217,27 @@ def main():
     for demo in demo_files:
         move_file_if_exists(WORKSPACE_ROOT / demo, examples_dir / "demos" / demo)
 
-    # Move .neuro example files
+    # Move .aether example files
     neuro_files = [
-        "advanced_syntax_demo.neuro",
-        "independence_demo.neuro",
-        "monitor.neuro",
-        "plugin_test.neuro",
-        "revolution_demo.neuro",
-        "stdlib_test.neuro",
-        "test_program.neuro",
-        "universal_ai_demo.neuro",
+        "advanced_syntax_demo.aether",
+        "independence_demo.aether",
+        "monitor.aether",
+        "plugin_test.aether",
+        "revolution_demo.aether",
+        "stdlib_test.aether",
+        "test_program.aether",
+        "universal_ai_demo.aether",
     ]
 
     for neuro_file in neuro_files:
-        if neuro_file.endswith("demo.neuro") or neuro_file.endswith("test.neuro"):
-            move_file_if_exists(WORKSPACE_ROOT / neuro_file, examples_dir / "basic" / neuro_file)
+        if neuro_file.endswith("demo.aether") or neuro_file.endswith("test.aether"):
+            move_file_if_exists(
+                WORKSPACE_ROOT / neuro_file, examples_dir / "basic" / neuro_file
+            )
         else:
-            move_file_if_exists(WORKSPACE_ROOT / neuro_file, examples_dir / "advanced" / neuro_file)
+            move_file_if_exists(
+                WORKSPACE_ROOT / neuro_file, examples_dir / "advanced" / neuro_file
+            )
 
     # 6. Move data files
     print("\n💾 Organizing data files...")

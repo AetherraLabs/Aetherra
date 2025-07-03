@@ -1,15 +1,15 @@
-# 🎬 NeuroCode Demo Media
+# 🎬 Aetherra Demo Media
 
-This directory contains visual demonstrations of NeuroCode & Neuroplex in action.
+This directory contains visual demonstrations of Aetherra & Lyrixa in action.
 
 ## 📁 Current Media Files
 
 ### **Main Demo**
-- `neurocode-demo.gif` - Primary 30-second demonstration (Coming Soon)
+- `aetherra-demo.gif` - Primary 30-second demonstration (Coming Soon)
   - Shows GUI launch, live programming, AI collaboration, and self-healing
   - Optimized for GitHub README display
 
-### **Additional Demos** 
+### **Additional Demos**
 - `mobile-demo.gif` - Mobile interface demonstration (Coming Soon)
 - `terminal-demo.gif` - CLI and self-repair demo (Coming Soon)
 
@@ -25,7 +25,7 @@ This directory contains visual demonstrations of NeuroCode & Neuroplex in action
 Transform curiosity into instant excitement by showcasing:
 - **Revolutionary AI-human collaboration**
 - **Self-healing, intelligent code**
-- **Natural language programming** 
+- **Natural language programming**
 - **Zero learning curve experience**
 - **Production-ready stability**
 
@@ -34,7 +34,7 @@ Transform curiosity into instant excitement by showcasing:
 The main demo is embedded in the Quick Start section to immediately engage visitors:
 
 ```markdown
-![NeuroCode Demo](docs/images/neurocode-demo.gif)
+![Aetherra Demo](docs/images/aetherra-demo.gif)
 ```
 
 ## 🚀 **Impact**

@@ -5,10 +5,10 @@ Test script to verify all core errors have been resolved
 
 print('=== NeuroCode Core Error Resolution Test ===')
 try:
-    from core.enhanced_interpreter import EnhancedNeuroCodeInterpreter
+    from core.enhanced_interpreter import EnhancedAetherraInterpreter
     print('✅ Enhanced interpreter import: SUCCESS')
     
-    interpreter = EnhancedNeuroCodeInterpreter()
+    interpreter = EnhancedAetherraInterpreter()
     print('✅ Enhanced interpreter creation: SUCCESS')
     
     result = interpreter.execute_neurocode('test = "Hello NeuroCode!"')

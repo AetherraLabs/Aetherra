@@ -41,8 +41,12 @@ class PluginIntent:
     """Plugin intent declaration for assistant discovery"""
 
     purpose: str  # What the plugin is used for (e.g., "optimization", "analysis")
-    triggers: List[str] = field(default_factory=list)  # Keywords that should trigger this plugin
-    scenarios: List[str] = field(default_factory=list)  # Use cases where this plugin applies
+    triggers: List[str] = field(
+        default_factory=list
+    )  # Keywords that should trigger this plugin
+    scenarios: List[str] = field(
+        default_factory=list
+    )  # Use cases where this plugin applies
     ai_description: str = ""  # AI-friendly description for LLM understanding
     example_usage: str = ""  # Example of how to use this plugin
     confidence_boost: float = 1.0  # Multiplier for relevance scoring
@@ -64,7 +68,9 @@ PLUGIN_REGISTRY: Dict[str, Callable] = {}
 PLUGIN_METADATA: Dict[str, PluginMetadata] = {}
 PLUGIN_INTENTS: Dict[str, PluginIntent] = {}
 
-PLUGIN_DIR = os.path.join(os.path.dirname(__file__), "..", "src", "neurocode", "plugins")
+PLUGIN_DIR = os.path.join(
+    os.path.dirname(__file__), "..", "src", "neurocode", "plugins"
+)
 os.makedirs(PLUGIN_DIR, exist_ok=True)
 
 
@@ -384,7 +390,9 @@ def discover_plugins_by_intent(
                     "score": score,
                     "metadata": metadata.to_dict(),
                     "intent": intent.to_dict(),
-                    "reason": _generate_relevance_reason(query, intent, metadata, score),
+                    "reason": _generate_relevance_reason(
+                        query, intent, metadata, score
+                    ),
                 }
             )
 
@@ -476,7 +484,9 @@ def get_ai_plugin_recommendations(
             f"with relevance score {top_plugin['score']:.1f}"
         )
     else:
-        recommendations["summary"] = "No plugins found matching the specified goal or context."
+        recommendations["summary"] = (
+            "No plugins found matching the specified goal or context."
+        )
 
     return recommendations
 
@@ -541,7 +551,7 @@ def get_plugin_discovery_stats() -> Dict[str, Any]:
 
 def parse_plugin_command(command: str) -> Dict[str, Any]:
     """
-    Parse plugin commands from .neuro code syntax
+    Parse plugin commands from .aether code syntax
 
     Supports formats:
     - plugin: name "arg1" "arg2"
@@ -550,7 +560,7 @@ def parse_plugin_command(command: str) -> Dict[str, Any]:
     """
     # Remove 'plugin:' prefix
     command = command.strip()
-    if command.startswith('plugin:'):
+    if command.startswith("plugin:"):
         command = command[8:].strip()
 
     # Parse quoted arguments
@@ -558,7 +568,7 @@ def parse_plugin_command(command: str) -> Dict[str, Any]:
     quotes = re.findall(quoted_pattern, command)
 
     # Remove quoted parts to get the plugin name/method
-    command_without_quotes = re.sub(quoted_pattern, '', command).strip()
+    command_without_quotes = re.sub(quoted_pattern, "", command).strip()
     parts = command_without_quotes.split()
 
     if not parts:
@@ -567,8 +577,8 @@ def parse_plugin_command(command: str) -> Dict[str, Any]:
     plugin_part = parts[0]
 
     # Check for method syntax (plugin.method)
-    if '.' in plugin_part:
-        plugin_name, method = plugin_part.split('.', 1)
+    if "." in plugin_part:
+        plugin_name, method = plugin_part.split(".", 1)
     else:
         plugin_name = plugin_part
         method = None
@@ -581,13 +591,13 @@ def parse_plugin_command(command: str) -> Dict[str, Any]:
         "plugin_name": plugin_name,
         "method": method,
         "args": all_args,
-        "raw_command": command
+        "raw_command": command,
     }
 
 
 def execute_plugin_command(command: str) -> Dict[str, Any]:
     """
-    Execute a plugin command from .neuro code syntax
+    Execute a plugin command from .aether code syntax
     """
     parsed = parse_plugin_command(command)
 
@@ -637,7 +647,7 @@ def execute_plugin_command(command: str) -> Dict[str, Any]:
         return {
             "error": f"Plugin execution failed: {str(e)}",
             "plugin": plugin_name,
-            "args": args
+            "args": args,
         }
 
 

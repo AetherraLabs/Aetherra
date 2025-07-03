@@ -33,7 +33,7 @@ def test_enhanced_neuroplex():
     # Test 2: Check NeuroChat components
     print("\nTest 2: NeuroChat Components")
     try:
-        from neuro_chat import NeuroChatInterface
+        from neuro_chat import LyrixaAssistantInterface
 
         print("✅ NeuroChat interface available")
     except ImportError as e:
@@ -43,7 +43,7 @@ def test_enhanced_neuroplex():
     # Test 3: Check Enhanced Neuroplex
     print("\nTest 3: Enhanced Neuroplex Module")
     try:
-        from enhanced_neuroplex import EnhancedNeuroplexWindow
+        from enhanced_neuroplex import EnhancedLyrixaWindow
 
         print("✅ Enhanced Neuroplex module available")
     except ImportError as e:
@@ -66,7 +66,7 @@ def test_enhanced_neuroplex():
         if app is None:
             app = QApplication(sys.argv)
 
-        window = EnhancedNeuroplexWindow()
+        window = EnhancedLyrixaWindow()
         print("✅ Enhanced Neuroplex window created successfully")
 
         # Don't show the window, just test creation

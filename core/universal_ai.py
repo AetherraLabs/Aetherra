@@ -4,12 +4,12 @@
 Next-generation capabilities for universal AI adoption
 """
 
-from core.interpreter import NeuroCodeInterpreter
+from core.interpreter import AetherraInterpreter
 from datetime import datetime
 import json
 import hashlib
 
-class UniversalAIInterpreter(NeuroCodeInterpreter):
+class UniversalAIInterpreter(AetherraInterpreter):
     """
     Extended NeuroCode interpreter with next-generation AI features
     for universal AI adoption and collaboration

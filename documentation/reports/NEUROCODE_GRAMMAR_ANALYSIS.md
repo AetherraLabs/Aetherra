@@ -20,7 +20,7 @@ We have successfully completed a comprehensive analysis and formal definition of
 ```neurocode
 model: "gpt-4"
 assistant: "Help me code"
-think: "Consider the options"  
+think: "Consider the options"
 learn from "documentation"
 ```
 
@@ -82,7 +82,7 @@ end
 #### 8. Intent Actions
 ```neurocode
 analyze "code quality"
-optimize "performance" 
+optimize "performance"
 investigate "anomalies"
 summarize "report data"
 ```
@@ -148,7 +148,7 @@ assert x > 0: "Value must be positive"
 ```python
 parser = NeuroCodeProductionParser()
 ast = parser.parse(neurocode_code)
-ast = parser.parse_file("program.neuro")
+ast = parser.parse_file("program.aether")
 ```
 
 ### AST Structure: `NeuroCodeAST`

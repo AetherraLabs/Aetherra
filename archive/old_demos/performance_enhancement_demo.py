@@ -25,8 +25,8 @@ try:
 
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-    from core.interpreter import NeuroCodeInterpreter
-    from core.memory import NeuroMemory
+    from core.interpreter import AetherraInterpreter
+    from core.aetherra_memory import AetherraMemory
     from core.performance_integration import (
         auto_tune_performance,
         enable_performance_mode,
@@ -251,7 +251,7 @@ def demo_neurocode_operations():
     # Test 1: Memory operations
     def memory_operations_baseline():
         """Baseline memory operations"""
-        memory = NeuroMemory()
+        memory = AetherraMemory()
         for i in range(100):
             memory.remember(f"test memory {i}", category="demo")
 
@@ -264,7 +264,7 @@ def demo_neurocode_operations():
     @performance_optimized("memory_operations", enable_caching=True)
     def memory_operations_optimized():
         """Optimized memory operations"""
-        memory = NeuroMemory()
+        memory = AetherraMemory()
         for i in range(100):
             memory.remember(f"test memory {i}", category="demo")
 

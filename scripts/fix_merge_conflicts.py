@@ -67,7 +67,7 @@ def fix_all_merge_conflicts():
         "*.yaml",
         "*.yml",
         "*.json",
-        "*.neuro",
+        "*.aether",
         "*.js",
         "*.ts",
         "*.html",
@@ -82,7 +82,10 @@ def fix_all_merge_conflicts():
     for ext in extensions:
         for filepath in glob.glob(f"**/{ext}", recursive=True):
             # Skip certain directories
-            if any(skip in filepath for skip in ["__pycache__", ".git", "backups", "node_modules"]):
+            if any(
+                skip in filepath
+                for skip in ["__pycache__", ".git", "backups", "node_modules"]
+            ):
                 continue
 
             total_files += 1

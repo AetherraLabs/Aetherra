@@ -56,7 +56,7 @@ def test_neurocode_launcher():
 
     try:
         # Test import
-        import neurocode_launcher
+        import aetherra_launcher
 
         print("  ✅ neurocode_launcher.py: Import successful")
 

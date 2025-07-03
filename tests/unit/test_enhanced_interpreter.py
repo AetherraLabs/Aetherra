@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🧪 Test Enhanced Interpreter with basic_memory.neuro
+🧪 Test Enhanced Interpreter with basic_memory.aether
 Tests the integrated enhancements with your actual NeuroCode example
 """
 
@@ -12,7 +12,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root / "core"))
 
 try:
-    from core.interpreter import NeuroCodeInterpreter
+    from core.interpreter import AetherraInterpreter
 
     HAS_INTERPRETER = True
     print("✅ Core interpreter loaded successfully")
@@ -32,9 +32,9 @@ def test_enhanced_interpreter():
     print("=" * 60)
 
     # Initialize interpreter
-    interpreter = NeuroCodeInterpreter()
+    interpreter = AetherraInterpreter()
 
-    # Test cases from basic_memory.neuro
+    # Test cases from basic_memory.aether
     test_cases = [
         # Enhanced memory operations
         'remember("Python is procedural") as "programming_paradigm"',
@@ -107,22 +107,22 @@ end""",
 
 
 def test_with_actual_file():
-    """Test by loading and executing the actual basic_memory.neuro file"""
+    """Test by loading and executing the actual basic_memory.aether file"""
 
     if not HAS_INTERPRETER:
         return
 
     print("\n" + "=" * 60)
-    print("📁 Testing with actual basic_memory.neuro file")
+    print("📁 Testing with actual basic_memory.aether file")
     print("=" * 60)
 
     # Try to load the actual file
-    memory_file = Path(__file__).parent / "examples" / "basic_memory.neuro"
+    memory_file = Path(__file__).parent / "examples" / "basic_memory.aether"
 
     if memory_file.exists():
         print(f"✅ Found file: {memory_file}")
 
-        interpreter = NeuroCodeInterpreter()
+        interpreter = AetherraInterpreter()
 
         try:
             with open(memory_file, encoding="utf-8") as f:

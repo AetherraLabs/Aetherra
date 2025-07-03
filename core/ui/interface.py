@@ -104,9 +104,7 @@ class StatusBar:
         left_padding = center_padding // 2
         right_padding = center_padding - left_padding
 
-        status_line = (
-            f"{left_text}{' ' * left_padding}{center_text}{' ' * right_padding}{right_text}"
-        )
+        status_line = f"{left_text}{' ' * left_padding}{center_text}{' ' * right_padding}{right_text}"
 
         return f"─{status_line}─"
 
@@ -260,7 +258,9 @@ class NeuroplexUI:
         self.rich_display.print_text("")
 
         if self.config.auto_suggestions:
-            self.rich_display.print_info("Type 'help' for commands or start typing for suggestions")
+            self.rich_display.print_info(
+                "Type 'help' for commands or start typing for suggestions"
+            )
 
     def show_dashboard(self):
         """Show the system dashboard"""
@@ -359,7 +359,9 @@ class NeuroplexUI:
                     for example in command.examples:
                         self.rich_display.print_text(f"  {example}")
                 if command.shortcuts:
-                    self.rich_display.print_text(f"Shortcuts: {', '.join(command.shortcuts)}")
+                    self.rich_display.print_text(
+                        f"Shortcuts: {', '.join(command.shortcuts)}"
+                    )
             else:
                 self.show_error(f"Command '{args[0]}' not found")
         else:
@@ -372,7 +374,7 @@ Type any command name followed by arguments. Use Tab for auto-completion.
 
 ### Core Commands
 - `help [command]` - Show help information
-- `run <file.neuro>` - Execute NeuroCode program
+- `run <file.aether>` - Execute NeuroCode program
 - `chat [message]` - Start AI chat session
 - `memory <action>` - Manage AI memory
 
@@ -424,7 +426,11 @@ Type any command name followed by arguments. Use Tab for auto-completion.
                     "✅ Active",
                     f"{len(self.command_suggestions.registry.commands)} commands",
                 ],
-                ["Rich Display", "✅ Active", f"{len(self.rich_display.output_buffer)} elements"],
+                [
+                    "Rich Display",
+                    "✅ Active",
+                    f"{len(self.rich_display.output_buffer)} elements",
+                ],
                 [
                     "Keyboard Shortcuts",
                     "✅ Active" if self.config.keyboard_shortcuts else "❌ Disabled",
@@ -452,7 +458,9 @@ Type any command name followed by arguments. Use Tab for auto-completion.
         shortcuts = self.keyboard_handler.list_shortcuts()
         if shortcuts:
             rows = [[key, desc] for key, desc in shortcuts.items()]
-            self.rich_display.print_table(headers=["Shortcut", "Description"], rows=rows)
+            self.rich_display.print_table(
+                headers=["Shortcut", "Description"], rows=rows
+            )
         else:
             self.show_info("No keyboard shortcuts registered")
 
@@ -508,7 +516,7 @@ Type any command name followed by arguments. Use Tab for auto-completion.
         """Show markdown content"""
         self.rich_display.print_markdown(markdown)
 
-    def show_code(self, code: str, language: CodeLanguage = CodeLanguage.NEUROCODE):
+    def show_code(self, code: str, language: CodeLanguage = CodeLanguage.aetherCODE):
         """Show code with syntax highlighting"""
         self.rich_display.print_code(code, language)
 

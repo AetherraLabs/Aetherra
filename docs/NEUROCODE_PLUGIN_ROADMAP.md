@@ -2,10 +2,10 @@
 
 ## **The First Standard Plugin Ecosystem for AI-Consciousness Programming**
 
-**Version**: 1.0.0  
-**Date**: June 29, 2025  
-**Status**: Phase 1 - Foundation Complete  
-**License**: GPL-3.0  
+**Version**: 1.0.0
+**Date**: June 29, 2025
+**Status**: Phase 1 - Foundation Complete
+**License**: GPL-3.0
 
 ---
 
@@ -175,7 +175,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 
 ### **Registry Infrastructure**
 ```
-🌐 registry.neurocode.org
+🌐 registry.aethercode.org
 ├── 📡 API Gateway (authentication, rate limiting)
 ├── 🗄️ Plugin Database (PostgreSQL)
 ├── 📦 Package Storage (S3-compatible)
@@ -188,7 +188,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 ```
 📦 Plugin Package (.npkg)
 ├── 📋 neurocode-plugin.json    # Manifest
-├── 🧠 plugin.neuro             # Main implementation
+├── 🧠 plugin.aether             # Main implementation
 ├── 🐍 python/                  # Python backends
 ├── 📚 docs/                    # Documentation
 ├── 🧪 tests/                   # Test suites
@@ -362,6 +362,6 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 
 ---
 
-**Document Status**: `ACTIVE ROADMAP` | **Next Review**: `2025-07-15`  
-**Version**: `1.0.0` | **Last Updated**: `2025-06-29`  
+**Document Status**: `ACTIVE ROADMAP` | **Next Review**: `2025-07-15`
+**Version**: `1.0.0` | **Last Updated**: `2025-06-29`
 **License**: GPL-3.0 | **Contributors**: NeuroCode Development Team

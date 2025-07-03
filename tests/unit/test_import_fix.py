@@ -19,32 +19,35 @@ success_count = 0
 total_tests = 3
 
 try:
-    from core.memory import NeuroMemory
-    memory = NeuroMemory()
+    from core.aetherra_memory import AetherraMemory
+
+    memory = AetherraMemory()
     memory.remember("Test memory", ["test"])
     memories = memory.recall(["test"])
-    print("✅ NeuroMemory: Import and basic functionality working")
+    print("✅ AetherraMemory: Import and basic functionality working")
     success_count += 1
 except Exception as e:
-    print(f"❌ NeuroMemory: {e}")
+    print(f"❌ AetherraMemory: {e}")
 
 try:
-    from core.interpreter import NeuroCodeInterpreter
-    interpreter = NeuroCodeInterpreter()
+    from core.interpreter import AetherraInterpreter
+
+    interpreter = AetherraInterpreter()
     result = interpreter.execute('remember("Hello NeuroCode") as "greeting"')
-    print("✅ NeuroCodeInterpreter: Import and basic functionality working")
+    print("✅ AetherraInterpreter: Import and basic functionality working")
     success_count += 1
 except Exception as e:
-    print(f"❌ NeuroCodeInterpreter: {e}")
+    print(f"❌ AetherraInterpreter: {e}")
 
 try:
-    from core.chat_router import NeuroCodeChatRouter
-    chat_router = NeuroCodeChatRouter()
+    from core.chat_router import AetherraChatRouter
+
+    chat_router = AetherraChatRouter()
     response = chat_router.process_message("Hello")
-    print("✅ NeuroCodeChatRouter: Import and basic functionality working")
+    print("✅ AetherraChatRouter: Import and basic functionality working")
     success_count += 1
 except Exception as e:
-    print(f"❌ NeuroCodeChatRouter: {e}")
+    print(f"❌ AetherraChatRouter: {e}")
 
 print()
 print(f"📊 Results: {success_count}/{total_tests} core modules working correctly")
@@ -60,29 +63,30 @@ print("-" * 30)
 
 try:
     # Test the GUI's import system
-    import ui.neuroplex_gui as gui_module
+    import ui.aetherplex_gui as gui_module
+
     print("✅ GUI module imports successfully")
-    
-    if hasattr(gui_module, 'NeuroCodeInterpreter') and gui_module.NeuroCodeInterpreter:
-        print("✅ GUI has access to NeuroCodeInterpreter")
+
+    if hasattr(gui_module, "AetherraInterpreter") and gui_module.aetherCodeInterpreter:
+        print("✅ GUI has access to AetherraInterpreter")
     else:
-        print("⚠️ GUI does not have NeuroCodeInterpreter")
-        
-    if hasattr(gui_module, 'NeuroMemory') and gui_module.NeuroMemory:
-        print("✅ GUI has access to NeuroMemory")
+        print("⚠️ GUI does not have AetherraInterpreter")
+
+    if hasattr(gui_module, "AetherraMemory") and gui_module.aetherMemory:
+        print("✅ GUI has access to AetherraMemory")
     else:
-        print("⚠️ GUI does not have NeuroMemory")
-        
-    if hasattr(gui_module, 'NeuroCodeChatRouter') and gui_module.NeuroCodeChatRouter:
-        print("✅ GUI has access to NeuroCodeChatRouter")
+        print("⚠️ GUI does not have AetherraMemory")
+
+    if hasattr(gui_module, "AetherraChatRouter") and gui_module.aetherCodeChatRouter:
+        print("✅ GUI has access to AetherraChatRouter")
     else:
-        print("⚠️ GUI does not have NeuroCodeChatRouter")
-        
-    if hasattr(gui_module, 'NEUROCODE_AVAILABLE') and gui_module.NEUROCODE_AVAILABLE:
+        print("⚠️ GUI does not have AetherraChatRouter")
+
+    if hasattr(gui_module, "NEUROCODE_AVAILABLE") and gui_module.aetherCODE_AVAILABLE:
         print("🎉 GUI reports: All NeuroCode components available!")
     else:
         print("⚠️ GUI reports: Some NeuroCode components not available")
-        
+
 except Exception as e:
     print(f"❌ GUI import test failed: {e}")
 

@@ -4,7 +4,7 @@ The NeuroCode Plugin SDK lets you extend the language with intelligent, modular 
 
 ## 🚀 What Is a Plugin?
 
-A plugin is a Python file that registers new commands into the NeuroCode runtime. These commands can be called from `.neuro` files like:
+A plugin is a Python file that registers new commands into the NeuroCode runtime. These commands can be called from `.aether` files like:
 
 ```neuro
 plugin: whisper.transcribe "meeting.wav"
@@ -53,7 +53,7 @@ def hello_world(args=""):
     return f"Hello from example plugin! Args: {args}"
 ```
 
-Use in `.neuro`:
+Use in `.aether`:
 ```neuro
 plugin: example.hello_world "NeuroCode"
 ```
@@ -205,10 +205,10 @@ def delete_file(filepath: str):
 
 ## 🧪 Testing Your Plugin
 
-Create a test `.neuro` file to verify your plugin:
+Create a test `.aether` file to verify your plugin:
 
 ```neuro
-# test_plugin.neuro
+# test_plugin.aether
 plugin: example.hello_world "Test"
 plugin: example.greet "Developer"
 plugin: example.calculate "5 + 3"
@@ -221,7 +221,7 @@ Run with NeuroCode to test functionality.
 
 1. **Fork** the repository
 2. **Add** your `.py` file to `/sdk/plugins/`
-3. **Test** with sample `.neuro` files
+3. **Test** with sample `.aether` files
 4. **Document** usage and capabilities
 5. **Submit** a pull request with description
 
@@ -233,7 +233,7 @@ Run with NeuroCode to test functionality.
 - [ ] Error handling is comprehensive
 - [ ] Example usage is provided
 - [ ] Security considerations are addressed
-- [ ] Plugin is tested with sample `.neuro` files
+- [ ] Plugin is tested with sample `.aether` files
 
 ## 🔧 Advanced Features
 

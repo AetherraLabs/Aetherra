@@ -1,55 +1,58 @@
 #!/usr/bin/env python3
 """
-Neuroplex - AI-Native Programming Language
-Main entry point for the Neuroplex interpreter
+Lyrixa - AI-Native Programming Language
+Main entry point for the Lyrixa interpreter
 """
 
-import sys
 import os
+import sys
 
 # Add the current directory to the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Use Enhanced Interpreter for best AI-native experience
 try:
-    from core.enhanced_interpreter import EnhancedNeuroCodeInterpreter
+    from core.enhanced_interpreter import EnhancedAetherraInterpreter
+
     use_enhanced = True
 except ImportError:
-    from core.interpreter import NeuroCodeInterpreter
+    from core.interpreter import AetherraInterpreter
+
     use_enhanced = False
 
+
 def main():
-    """Main entry point for Neuroplex"""
+    """Main entry point for Lyrixa"""
     if use_enhanced:
-        print("� Neuroplex - Enhanced AI-Native Programming Language")
+        print("🔮 Lyrixa - Enhanced AI-Native Programming Language")
         print("🚀 Enhanced mode: Natural language programming enabled!")
-        interpreter = EnhancedNeuroCodeInterpreter()
+        interpreter = EnhancedAetherraInterpreter()
     else:
-        print("�🧠 Neuroplex - AI-Native Programming Language")
+        print("🧠 Lyrixa - AI-Native Programming Language")
         print("⚠️  Basic mode: Enhanced features not available")
-        interpreter = NeuroCodeInterpreter()
-    
+        interpreter = AetherraInterpreter()
+
     print("=" * 50)
     print("Type commands or 'help' for assistance")
     print("Type 'exit' or press Ctrl+C to quit")
     if use_enhanced:
-        print("💡 Try: 'create a REST API' or 'ai: explain NeuroCode'")
+        print("💡 Try: 'create a REST API' or 'ai: explain Aetherra'")
     print("=" * 50)
-    
+
     while True:
         try:
             try:
                 code = input("🔮 >> ")
             except EOFError:
-                print("\n🚀 Input stream closed. Thanks for using Neuroplex!")
+                print("\n🚀 Input stream closed. Thanks for using Lyrixa!")
                 break
-                
+
             if code.lower() in ["exit", "quit", "q"]:
-                print("🚀 Thanks for using Neuroplex!")
+                print("🚀 Thanks for using Lyrixa!")
                 break
             elif code.lower() in ["help", "?"]:
                 print("""
-📋 Neuroplex Commands:
+📋 Lyrixa Commands:
   remember('text') as 'tag'    - Store memory with tag
   recall tag: 'tag'            - Recall memories by tag
   memory summary               - Show memory statistics
@@ -63,20 +66,21 @@ def main():
                 continue
             elif code.strip() == "":
                 continue
-            
+
             # Execute based on interpreter type
             if use_enhanced:
-                result = interpreter.execute_neurocode(code)  # type: ignore
+                result = interpreter.execute_aether(code)
             else:
-                result = interpreter.execute(code)  # type: ignore
-            
+                result = interpreter.execute(code)
+
             if result:
                 print(result)
         except KeyboardInterrupt:
-            print("\n🚀 Thanks for using Neuroplex!")
+            print("\n🚀 Thanks for using Lyrixa!")
             break
         except Exception as e:
-            print(f"❌ [Error] {e}")
+            print(f"❌ Error: {e}")
+
 
 if __name__ == "__main__":
     main()

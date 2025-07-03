@@ -18,7 +18,7 @@ This file maintains backward compatibility with existing code.
 
 # Import everything from the new modular system
 from .syntax import (
-    NeuroCodeParser,
+    AetherraParser,
     NodeType,
     SyntaxNode,
     SyntaxTreeVisitor,
@@ -39,7 +39,7 @@ def _calculate_depth(node, current_depth=0):
 __all__ = [
     "NodeType",
     "SyntaxNode",
-    "NeuroCodeParser",
+    "AetherraParser",
     "SyntaxTreeVisitor",
     "parse_neurocode",
     "analyze_syntax_tree",

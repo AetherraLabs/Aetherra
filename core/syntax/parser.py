@@ -13,7 +13,7 @@ from typing import List, Optional
 from .nodes import NodeType, SyntaxNode
 
 
-class NeuroCodeParser:
+class AetherraParser:
     """Enhanced parser for NeuroCode syntax"""
 
     def __init__(self):

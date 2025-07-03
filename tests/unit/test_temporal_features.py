@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 # Add core to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "core"))
 
-from memory import NeuroMemory
+from memory import AetherraMemory
 
 
 def test_temporal_memory_features():
@@ -19,7 +19,7 @@ def test_temporal_memory_features():
     print("🧠 Testing Memory Temporal Features")
     print("=" * 50)
 
-    memory = NeuroMemory()
+    memory = AetherraMemory()
 
     # Store original memories
     original_memories = memory.memory.copy()

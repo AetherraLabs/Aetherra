@@ -17,13 +17,13 @@ def test_core_components():
 
     try:
         # Test memory system
-        from core.memory import NeuroMemory
+        from core.aetherra_memory import AetherraMemory
 
-        memory = NeuroMemory()
+        memory = AetherraMemory()
         print("✅ Memory system initialized")
 
         # Test grammar system
-        from core.neurocode_grammar import NEUROCODE_GRAMMAR
+        from core.aethercode_grammar import NEUROCODE_GRAMMAR
 
         print("✅ Grammar system loaded")
 

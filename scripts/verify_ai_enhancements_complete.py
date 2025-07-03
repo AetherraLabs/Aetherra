@@ -21,7 +21,7 @@ def test_module_imports():
         ("core.intent_parser", "IntentToCodeParser"),
         ("core.performance_optimizer", "PerformanceOptimizer"),
         ("core.ai_collaboration", "AICollaborationFramework"),
-        ("core.enhanced_interpreter", "EnhancedNeuroCodeInterpreter")
+        ("core.enhanced_interpreter", "EnhancedAetherraInterpreter")
     ]
     
     results = {}
@@ -42,8 +42,8 @@ def test_enhancement_features():
     """Test all enhancement features described in the documentation"""
     print("\n🧪 Testing Enhancement Features")
     
-    from core.enhanced_interpreter import EnhancedNeuroCodeInterpreter
-    interpreter = EnhancedNeuroCodeInterpreter()
+    from core.enhanced_interpreter import EnhancedAetherraInterpreter
+    interpreter = EnhancedAetherraInterpreter()
     
     # Test commands from AI_ENHANCEMENT_IMPLEMENTATION.md
     test_commands = [
@@ -101,8 +101,8 @@ def test_integration_status():
     """Test the integration status of all enhancements"""
     print("\n📊 Testing Integration Status")
     
-    from core.enhanced_interpreter import EnhancedNeuroCodeInterpreter
-    interpreter = EnhancedNeuroCodeInterpreter()
+    from core.enhanced_interpreter import EnhancedAetherraInterpreter
+    interpreter = EnhancedAetherraInterpreter()
     
     try:
         status = interpreter.get_enhancement_status()

@@ -2,8 +2,8 @@
 
 ## ✅ **NEUROHUB MARKETPLACE CREATED**
 
-**Date**: June 30, 2025  
-**Status**: **MVP READY FOR LAUNCH** 🎉  
+**Date**: June 30, 2025
+**Status**: **MVP READY FOR LAUNCH** 🎉
 **Location**: `/neurohub/` directory
 
 ---
@@ -51,7 +51,7 @@
 
 ### **Memory & Learning**
 4. **memory-palace** - Spatial memory organization system
-5. **learning-accelerator** - Meta-learning enhancement  
+5. **learning-accelerator** - Meta-learning enhancement
 6. **goal-tracker** - Intelligent goal management
 
 ### **Perception & Analysis**
@@ -70,11 +70,11 @@ neurocode install optimizer
 neurocode install reflector
 ```
 
-### **2. .neuroplug Format**
+### **2. .aetherplug Format**
 ```
-plugin.neuroplug/
+plugin.aetherplug/
 ├── neurocode-plugin.json    # Plugin manifest
-├── consciousness.neuro      # AI behavior definition  
+├── consciousness.aether      # AI behavior definition
 ├── memory_patterns.json     # Learning templates
 └── goal_templates.json      # Objective frameworks
 ```
@@ -87,12 +87,12 @@ consciousness TranscriberPlugin {
         capacity: 1000
         persistence: true
     }
-    
+
     goals {
         primary: "accurate_transcription"
         metrics: ["accuracy", "speed", "context_awareness"]
     }
-    
+
     behavior {
         learning_rate: 0.1
         adaptation_speed: "fast"
@@ -107,7 +107,7 @@ consciousness TranscriberPlugin {
 
 - **247** Plugins Available
 - **1.2M** Total Downloads
-- **156** Active Developers  
+- **156** Active Developers
 - **4.7/5** Average Rating
 - **98%** Uptime
 
@@ -238,6 +238,6 @@ consciousness TranscriberPlugin {
 
 ---
 
-**🧬 NeuroCode: Where Computation Becomes Cognition**  
-**📦 NeuroHub: Where AI Intelligence Modules Find Their Home**  
+**🧬 NeuroCode: Where Computation Becomes Cognition**
+**📦 NeuroHub: Where AI Intelligence Modules Find Their Home**
 **🚀 The Future of AI Development Starts Here!**

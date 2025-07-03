@@ -133,7 +133,8 @@ class NeuroCodeScaffolder:
 
         # Create personal workspace
         workspace_dir = (
-            self.project_root / f"workspace_{config['developer_name'].lower().replace(' ', '_')}"
+            self.project_root
+            / f"workspace_{config['developer_name'].lower().replace(' ', '_')}"
         )
         workspace_dir.mkdir(exist_ok=True)
 
@@ -165,7 +166,7 @@ class NeuroCodeScaffolder:
 
     def _create_agent_example(self, workspace_dir: Path, config: Dict):
         """Create an AI agent example"""
-        agent_file = workspace_dir / "my_first_agent.neuro"
+        agent_file = workspace_dir / "my_first_agent.aether"
 
         content = f"""# My First NeuroCode Agent
 # Created by: {config["developer_name"]}
@@ -215,7 +216,7 @@ end
 
     def _create_monitoring_example(self, workspace_dir: Path, config: Dict):
         """Create a system monitoring example"""
-        monitor_file = workspace_dir / "system_monitor.neuro"
+        monitor_file = workspace_dir / "system_monitor.aether"
 
         content = f"""# Intelligent System Monitor
 # Created by: {config["developer_name"]}
@@ -225,7 +226,7 @@ end
 goal: "maintain system health > 95%" priority: critical
 
 # Setup monitoring agent
-agent: "system_monitor" 
+agent: "system_monitor"
     specialization: "performance_optimization"
     monitoring_interval: 30_seconds
 
@@ -271,7 +272,7 @@ generate_optimization_recommendations()
 
     def _create_nlp_example(self, workspace_dir: Path, config: Dict):
         """Create an NLP processing example"""
-        nlp_file = workspace_dir / "text_processor.neuro"
+        nlp_file = workspace_dir / "text_processor.aether"
 
         content = f"""# Intelligent Text Processor
 # Created by: {config["developer_name"]}
@@ -305,7 +306,7 @@ define process_text(input_text):
     extract_key_entities(input_text)
     summarize_main_points(input_text)
     identify_action_items(input_text)
-    
+
     remember(analysis_results) as "text_processing_history"
     return comprehensive_analysis
 end
@@ -330,7 +331,7 @@ optimize for user_preferences
 
     def _create_basic_example(self, workspace_dir: Path, config: Dict):
         """Create a basic NeuroCode example"""
-        basic_file = workspace_dir / "hello_neurocode.neuro"
+        basic_file = workspace_dir / "hello_neurocode.aether"
 
         content = f"""# Hello NeuroCode!
 # Created by: {config["developer_name"]}

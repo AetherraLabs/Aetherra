@@ -5,29 +5,29 @@ Welcome to the NeuroCode Examples Collection! This guide showcases the power of 
 ## 📁 Example Categories
 
 ### 🧠 **Foundational Examples**
-- [`basic_memory.neuro`](basic_memory.neuro) - Memory operations and intelligent recall
-- [`goal_setting.neuro`](goal_setting.neuro) - Goal-driven programming fundamentals
-- [`agent_basics.neuro`](agent_basics.neuro) - Working with AI agents
+- [`basic_memory.aether`](basic_memory.aether) - Memory operations and intelligent recall
+- [`goal_setting.aether`](goal_setting.aether) - Goal-driven programming fundamentals
+- [`agent_basics.aether`](agent_basics.aether) - Working with AI agents
 
 ### 🤝 **AI Collaboration**
-- [`ai_collaboration.neuro`](ai_collaboration.neuro) - Multi-agent problem solving
-- [`intent_to_code.neuro`](intent_to_code.neuro) - Natural language programming
-- [`collaborative_debugging.neuro`](collaborative_debugging.neuro) - AI-assisted debugging
+- [`ai_collaboration.aether`](ai_collaboration.aether) - Multi-agent problem solving
+- [`intent_to_code.aether`](intent_to_code.aether) - Natural language programming
+- [`collaborative_debugging.aether`](collaborative_debugging.aether) - AI-assisted debugging
 
 ### 📊 **Data & Analytics**
-- [`data_analysis.neuro`](data_analysis.neuro) - AI-powered data insights
-- [`pattern_recognition.neuro`](pattern_recognition.neuro) - Learning from data patterns
-- [`predictive_modeling.neuro`](predictive_modeling.neuro) - Building ML models
+- [`data_analysis.aether`](data_analysis.aether) - AI-powered data insights
+- [`pattern_recognition.aether`](pattern_recognition.aether) - Learning from data patterns
+- [`predictive_modeling.aether`](predictive_modeling.aether) - Building ML models
 
 ### 🌐 **Web Development**
-- [`web_development.neuro`](web_development.neuro) - Modern web applications
-- [`api_design.neuro`](api_design.neuro) - Intelligent API development
-- [`security_hardening.neuro`](security_hardening.neuro) - AI-driven security
+- [`web_development.aether`](web_development.aether) - Modern web applications
+- [`api_design.aether`](api_design.aether) - Intelligent API development
+- [`security_hardening.aether`](security_hardening.aether) - AI-driven security
 
 ### ⚡ **Performance & Optimization**
-- [`performance_tuning.neuro`](performance_tuning.neuro) - Automatic optimization
-- [`resource_management.neuro`](resource_management.neuro) - Intelligent resource allocation
-- [`load_balancing.neuro`](load_balancing.neuro) - Adaptive load distribution
+- [`performance_tuning.aether`](performance_tuning.aether) - Automatic optimization
+- [`resource_management.aether`](resource_management.aether) - Intelligent resource allocation
+- [`load_balancing.aether`](load_balancing.aether) - Adaptive load distribution
 
 ## 🚀 Running Examples
 
@@ -40,13 +40,13 @@ Welcome to the NeuroCode Examples Collection! This guide showcases the power of 
 ### Command Line
 ```bash
 # Run any example directly
-python main.py examples/basic_memory.neuro
+python main.py examples/basic_memory.aether
 
 # Run with verbose output
-python main.py --verbose examples/ai_collaboration.neuro
+python main.py --verbose examples/ai_collaboration.aether
 
 # Interactive mode
-python main.py --interactive examples/goal_setting.neuro
+python main.py --interactive examples/goal_setting.aether
 ```
 
 ## 🧬 Example Walkthrough: Basic Memory
@@ -125,7 +125,7 @@ when architect_proposes_design:
     security_expert: review_for_vulnerabilities
     performance_engineer: analyze_scalability
     devops_specialist: assess_deployment_complexity
-    
+
     if all_agents_approve:
         proceed: with_implementation_planning
     else:
@@ -320,7 +320,7 @@ enhance: with_neurocode_intelligence
 
 ## 🚀 Next Steps
 
-1. **Start Simple**: Begin with `basic_memory.neuro` and `goal_setting.neuro`
+1. **Start Simple**: Begin with `basic_memory.aether` and `goal_setting.aether`
 2. **Experiment**: Modify examples to explore different approaches
 3. **Build Projects**: Use examples as templates for your own applications
 4. **Share Knowledge**: Contribute your own examples to the community

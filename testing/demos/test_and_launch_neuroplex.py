@@ -15,7 +15,7 @@ def test_neuroplex_basic():
 
     try:
         # Test the main launcher
-        import neurocode_launcher
+        import aetherra_launcher
 
         print("  ✅ NeuroCode Launcher: Import successful")
 
@@ -54,7 +54,7 @@ def launch_neuroplex_demo():
 
     try:
         # Import the launcher
-        import neurocode_launcher
+        import aetherra_launcher
 
         print("  🎯 Neuroplex is ready to launch!")
         print("  📋 Available options:")

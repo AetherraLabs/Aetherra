@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path.cwd()))
 
 try:
-    from core.neurocode_grammar import create_neurocode_parser
+    from core.aethercode_grammar import create_neurocode_parser
 
     print("✅ Parser imported successfully")
 

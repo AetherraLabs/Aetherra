@@ -32,7 +32,7 @@ NeuroCode is the world's first **AI-native programming language** designed for c
 - **Self-reflective**: Code that can analyze and improve itself
 
 ### File Extension
-NeuroCode programs use the `.neuro` file extension.
+NeuroCode programs use the `.aether` file extension.
 
 ---
 
@@ -637,7 +637,7 @@ end
 ## Version History
 
 - **v1.0.0** (2024): Initial release with formal grammar, multi-LLM support, and standard library
-- **v0.9.0** (2024): Added function definitions, loops, and conditionals  
+- **v0.9.0** (2024): Added function definitions, loops, and conditionals
 - **v0.8.0** (2024): Implemented self-repair and debugging system
 - **v0.7.0** (2024): Added goal and agent systems
 - **v0.6.0** (2024): Introduced memory system

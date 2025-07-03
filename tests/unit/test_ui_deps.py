@@ -30,9 +30,9 @@ try:
     sys.path.insert(0, str(project_root))
     sys.path.insert(0, str(project_root / "core"))
 
-    from memory import NeuroMemory
+    from memory import AetherraMemory
 
-    print("✅ NeuroMemory available")
+    print("✅ AetherraMemory available")
 
     from plugin_manager import get_plugin_ui_data, get_plugins_info
 

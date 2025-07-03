@@ -138,7 +138,7 @@ After implementing these fixes:
    - Custom domain with instant HTTPS
 
 3. **GitHub Pages Apex Domain**:
-   - Use `www.neuro-code.dev` instead of apex domain
+   - Use `www.aether-code.dev` instead of apex domain
    - Redirect apex to www subdomain
 
 ---

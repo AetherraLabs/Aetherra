@@ -14,7 +14,7 @@ from .storage import FileMemoryStorage, MemoryStorage
 
 class BasicMemory:
     """
-    Basic memory interface - compatible with original NeuroMemory
+    Basic memory interface - compatible with original AetherraMemory
     Provides simple memory operations with backward compatibility
     """
 

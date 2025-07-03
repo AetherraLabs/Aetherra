@@ -66,7 +66,7 @@ python simple_gui_launcher.py
 
 ## 📝 Your First NeuroCode Program
 
-Create a file called `hello.neuro`:
+Create a file called `hello.aether`:
 
 ```neurocode
 # Your first AI-native program
@@ -84,7 +84,7 @@ optimize for "user_experience"
 Run it with:
 
 ```bash
-python main.py hello.neuro
+python main.py hello.aether
 ```
 
 ## 🧠 Interactive Mode
@@ -108,10 +108,10 @@ suggest next actions
 
 Check out the example NeuroCode programs:
 
-- `examples/basic_memory.neuro` - Memory system basics
-- `examples/goal_setting.neuro` - AI goal management
-- `examples/self_editing.neuro` - Code self-modification
-- `examples/pattern_recognition.neuro` - Learning patterns
+- `examples/basic_memory.aether` - Memory system basics
+- `examples/goal_setting.aether` - AI goal management
+- `examples/self_editing.aether` - Code self-modification
+- `examples/pattern_recognition.aether` - Learning patterns
 
 ## 🔧 Configuration
 

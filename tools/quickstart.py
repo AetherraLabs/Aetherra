@@ -100,14 +100,14 @@ def view_examples():
     parent_dir = Path(__file__).parent.parent
     examples_dir = parent_dir / "examples"
     if examples_dir.exists():
-        for example in examples_dir.glob("*.neuro"):
+        for example in examples_dir.glob("*.aether"):
             print(f"• {example.name}")
     else:
         print("❌ Examples directory not found.")
 
     print("\nTo run an example:")
     print(
-        "python -c \"from src.neurocode_engine import neurocode_engine; engine = neurocode_engine(); engine.execute_file('examples/example.neuro')\""
+        "python -c \"from src.aethercode_engine import aetherra_engine; engine = neurocode_engine(); engine.execute_file('examples/example.aether')\""
     )
 
 

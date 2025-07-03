@@ -27,8 +27,7 @@ sys.path.insert(0, str(project_root / "core"))
 
 # Import NeuroCode components
 try:
-    from memory import NeuroMemory
-
+    from memory import AetherraMemory
     from neuro_runner_standalone import StandaloneNeuroRunner
 except ImportError as e:
     print(f"⚠️ Some components not available: {e}")
@@ -37,8 +36,8 @@ except ImportError as e:
 class AgentReflectionLoop:
     """Autonomous agent that reflects on memory and suggests actions"""
 
-    def __init__(self, memory_instance: Optional[NeuroMemory] = None):
-        self.memory = memory_instance or NeuroMemory()
+    def __init__(self, memory_instance: Optional[AetherraMemory] = None):
+        self.memory = memory_instance or AetherraMemory()
         self.runner = StandaloneNeuroRunner(verbose=False)
         self.is_running = False
         self.reflection_thread = None
@@ -73,7 +72,9 @@ class AgentReflectionLoop:
             return
 
         self.is_running = True
-        self.reflection_thread = threading.Thread(target=self._reflection_loop, daemon=True)
+        self.reflection_thread = threading.Thread(
+            target=self._reflection_loop, daemon=True
+        )
         self.reflection_thread.start()
 
         print("🚀 Agent Reflection Loop started")
@@ -119,7 +120,9 @@ class AgentReflectionLoop:
         # 4. Update agent knowledge
         self._update_agent_knowledge(insights, suggestions)
 
-        print(f"📊 Cycle complete - {len(insights)} insights, {len(suggestions)} suggestions")
+        print(
+            f"📊 Cycle complete - {len(insights)} insights, {len(suggestions)} suggestions"
+        )
 
     def _analyze_memory_patterns(self) -> List[Dict[str, Any]]:
         """Analyze memory to find patterns and generate insights"""
@@ -197,7 +200,10 @@ class AgentReflectionLoop:
                     "type": "tag_pattern",
                     "message": f'Strong focus on "{most_common[0]}" domain ({most_common[1]} memories)',
                     "confidence": min(0.9, most_common[1] * 0.1),
-                    "data": {"dominant_tag": most_common[0], "frequency": most_common[1]},
+                    "data": {
+                        "dominant_tag": most_common[0],
+                        "frequency": most_common[1],
+                    },
                     "suggested_action": "expand_domain_knowledge",
                 }
 
@@ -262,13 +268,20 @@ class AgentReflectionLoop:
         gaps = []
 
         # Check for missing fundamental domains
-        fundamental_domains = ["best_practice", "performance", "security", "architecture"]
+        fundamental_domains = [
+            "best_practice",
+            "performance",
+            "security",
+            "architecture",
+        ]
         existing_tags = set()
 
         for memory in self.memory.memory:
             existing_tags.update(memory.get("tags", []))
 
-        missing_domains = [domain for domain in fundamental_domains if domain not in existing_tags]
+        missing_domains = [
+            domain for domain in fundamental_domains if domain not in existing_tags
+        ]
 
         for domain in missing_domains[:2]:  # Limit to top 2 gaps
             gaps.append(
@@ -283,7 +296,9 @@ class AgentReflectionLoop:
 
         return gaps
 
-    def _generate_suggestions(self, insights: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _generate_suggestions(
+        self, insights: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """Generate actionable NeuroCode suggestions based on insights"""
         suggestions = []
 
@@ -294,7 +309,9 @@ class AgentReflectionLoop:
 
         return suggestions
 
-    def _create_suggestion_from_insight(self, insight: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def _create_suggestion_from_insight(
+        self, insight: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Create a specific NeuroCode suggestion from an insight"""
         action = insight.get("suggested_action")
         confidence = insight.get("confidence", 0.5)
@@ -377,7 +394,9 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
                 self.on_action_callback(neurocode, success)
 
         elif confidence >= self.config["confidence_threshold"]:
-            print(f"🤔 Suggestion ready for user approval (confidence: {confidence:.1f})")
+            print(
+                f"🤔 Suggestion ready for user approval (confidence: {confidence:.1f})"
+            )
         else:
             print("💭 Low confidence suggestion logged for future consideration")
 
@@ -385,7 +404,7 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
         """Execute NeuroCode and return success status"""
         try:
             # Create temporary file
-            temp_file = project_root / "temp_agent_suggestion.neuro"
+            temp_file = project_root / "temp_agent_suggestion.aether"
             temp_file.write_text(neurocode, encoding="utf-8")
 
             # Execute using the standalone runner
@@ -430,9 +449,13 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
             "reflection_count": self.reflection_count,
             "suggestions_made": self.suggestions_made,
             "actions_taken": self.actions_taken,
-            "last_reflection": self.last_reflection.isoformat() if self.last_reflection else None,
+            "last_reflection": self.last_reflection.isoformat()
+            if self.last_reflection
+            else None,
             "config": self.config.copy(),
-            "recent_insights": self.insights_generated[-5:] if self.insights_generated else [],
+            "recent_insights": self.insights_generated[-5:]
+            if self.insights_generated
+            else [],
         }
 
     def update_config(self, new_config: Dict[str, Any]):

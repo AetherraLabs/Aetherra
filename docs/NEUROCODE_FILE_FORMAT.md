@@ -1,17 +1,17 @@
-# NeuroCode File Format Specification (.neuro)
+# NeuroCode File Format Specification (.aether)
 
 **Version**: 3.0 | **Date**: 2024-12-27 | **Status**: Production Ready
 
 ## Overview
 
-The `.neuro` file format is the standard file extension for NeuroCode source files. This document defines the structure, conventions, and requirements for NeuroCode files.
+The `.aether` file format is the standard file extension for NeuroCode source files. This document defines the structure, conventions, and requirements for NeuroCode files.
 
 ## File Extension
 
-- **Primary**: `.neuro` - Standard NeuroCode source files
-- **Configuration**: `.neuro.config` - NeuroCode configuration files
-- **Data**: `.neuro.data` - NeuroCode data files
-- **Template**: `.neuro.template` - NeuroCode template files
+- **Primary**: `.aether` - Standard NeuroCode source files
+- **Configuration**: `.aether.config` - NeuroCode configuration files
+- **Data**: `.aether.data` - NeuroCode data files
+- **Template**: `.aether.template` - NeuroCode template files
 
 ## File Structure
 
@@ -45,7 +45,7 @@ analyze system.current_state
 
 ### Complete File Example
 
-**File**: `example_app.neuro`
+**File**: `example_app.aether`
 
 ```neurocode
 #!/usr/bin/env neurocode
@@ -113,14 +113,14 @@ agent.add_goal("maintain conversation context", priority="medium")
 when user.message_received:
     think about user.message
     analyze user.intent
-    
+
     if user.intent == "question":
         investigate user.topic
         suggest relevant_information
     else:
         process user.request
     end
-    
+
     remember(user.interaction) as "conversation_history"
 end
 
@@ -223,23 +223,23 @@ end
 
 ### File Names
 
-- Use snake_case: `user_interface.neuro`
-- Descriptive names: `memory_consolidation.neuro`
+- Use snake_case: `user_interface.aether`
+- Descriptive names: `memory_consolidation.aether`
 - Avoid spaces: Use underscores instead
 - Keep reasonable length: Under 50 characters
 
 ### Examples
 
 **Good:**
-- `main_application.neuro`
-- `user_interaction_handler.neuro`
-- `memory_system.neuro`
-- `ai_personality_config.neuro`
+- `main_application.aether`
+- `user_interaction_handler.aether`
+- `memory_system.aether`
+- `ai_personality_config.aether`
 
 **Avoid:**
-- `Main Application.neuro` (spaces)
-- `app.neuro` (too generic)
-- `very_long_descriptive_filename_that_exceeds_reasonable_limits.neuro` (too long)
+- `Main Application.aether` (spaces)
+- `app.aether` (too generic)
+- `very_long_descriptive_filename_that_exceeds_reasonable_limits.aether` (too long)
 
 ## Directory Structure
 
@@ -247,21 +247,21 @@ end
 
 ```
 project_name/
-├── main.neuro                 # Main application file
+├── main.aether                 # Main application file
 ├── config/
-│   ├── identity.neuro        # Identity configuration
-│   ├── goals.neuro           # Goals definition
-│   └── memory.neuro          # Memory setup
+│   ├── identity.aether        # Identity configuration
+│   ├── goals.aether           # Goals definition
+│   └── memory.aether          # Memory setup
 ├── modules/
-│   ├── user_interface.neuro  # UI handling
-│   ├── data_processor.neuro  # Data processing
-│   └── ai_logic.neuro        # AI reasoning
+│   ├── user_interface.aether  # UI handling
+│   ├── data_processor.aether  # Data processing
+│   └── ai_logic.aether        # AI reasoning
 ├── agents/
-│   ├── assistant_agent.neuro # Assistant agent
-│   └── monitor_agent.neuro   # Monitoring agent
+│   ├── assistant_agent.aether # Assistant agent
+│   └── monitor_agent.aether   # Monitoring agent
 ├── data/
-│   ├── training_data.neuro.data
-│   └── memory_store.neuro.data
+│   ├── training_data.aether.data
+│   └── memory_store.aether.data
 └── docs/
     └── README.md
 ```
@@ -317,8 +317,8 @@ When files exceed 500 lines, consider splitting by:
 NeuroCode files should validate against the formal grammar:
 
 ```bash
-neurocode validate filename.neuro
-neurocode lint filename.neuro
+neurocode validate filename.aether
+neurocode lint filename.aether
 ```
 
 ### Common Issues
@@ -362,7 +362,7 @@ neurocode lint filename.neuro
 
 ### Basic Application Template
 
-**File**: `templates/basic_app.neuro.template`
+**File**: `templates/basic_app.aether.template`
 
 ```neurocode
 #!/usr/bin/env neurocode
@@ -387,7 +387,7 @@ end
 
 ### Agent Template
 
-**File**: `templates/agent.neuro.template`
+**File**: `templates/agent.aether.template`
 
 ```neurocode
 #!/usr/bin/env neurocode

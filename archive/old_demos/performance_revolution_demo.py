@@ -24,8 +24,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # Import NeuroCode systems
 try:
     from core.advanced_performance_engine import get_performance_engine
-    from core.interpreter import NeuroCodeInterpreter
-    from core.memory import NeuroMemory
+    from core.interpreter import AetherraInterpreter
+    from core.aetherra_memory import AetherraMemory
     from core.speed_enhancement_suite import SpeedBooster, enable_turbo_mode, get_performance_status
 
     NEUROCODE_AVAILABLE = True
@@ -84,7 +84,7 @@ def demo_memory_performance():
         print("❌ NeuroCode not available for memory demo")
         return
 
-    memory = NeuroMemory()
+    memory = AetherraMemory()
 
     # Test memory storage performance
     def store_memories():
@@ -118,7 +118,7 @@ def demo_interpreter_performance():
         print("❌ NeuroCode not available for interpreter demo")
         return
 
-    interpreter = NeuroCodeInterpreter()
+    interpreter = AetherraInterpreter()
 
     # Test command processing performance
     def process_commands():

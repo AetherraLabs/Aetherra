@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Local AI Engine for NeuroCode
+Local AI Engine for Aetherra
 Provides local model inference to reduce API dependency and increase performance
 """
 
@@ -63,7 +63,9 @@ class LocalAIEngine:
 
             result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
             if result.returncode == 0:
-                models = [line.split()[0] for line in result.stdout.strip().split("\n")[1:]]
+                models = [
+                    line.split()[0] for line in result.stdout.strip().split("\n")[1:]
+                ]
                 if models:
                     self.local_models["ollama"] = models
                     return True
@@ -84,7 +86,10 @@ class LocalAIEngine:
                         model_path = os.path.join(models_dir, file)
                         try:
                             model = Llama(
-                                model_path=model_path, n_ctx=2048, n_threads=4, verbose=False
+                                model_path=model_path,
+                                n_ctx=2048,
+                                n_threads=4,
+                                verbose=False,
                             )
                             self.local_models[f"llama_cpp_{file}"] = model
                             print(f"✅ Loaded {file}")
@@ -120,7 +125,9 @@ class LocalAIEngine:
                 if model_name.startswith("ollama"):
                     response = self._ollama_generate(prompt, max_tokens, temperature)
                 elif model_name.startswith("llama_cpp"):
-                    response = self._llama_cpp_generate(model, prompt, max_tokens, temperature)
+                    response = self._llama_cpp_generate(
+                        model, prompt, max_tokens, temperature
+                    )
                 elif model_name == "mock":
                     response = self._mock_ai_response(prompt)
                 else:
@@ -155,14 +162,18 @@ class LocalAIEngine:
         import subprocess
 
         # Use first available model
-        model = self.local_models["ollama"][0] if self.local_models["ollama"] else "llama2"
+        model = (
+            self.local_models["ollama"][0] if self.local_models["ollama"] else "llama2"
+        )
 
         cmd = ["ollama", "run", model, "--num-ctx", str(max_tokens * 2), prompt]
 
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
         return result.stdout.strip()
 
-    def _llama_cpp_generate(self, model, prompt: str, max_tokens: int, temperature: float) -> str:
+    def _llama_cpp_generate(
+        self, model, prompt: str, max_tokens: int, temperature: float
+    ) -> str:
         """Generate using llama-cpp-python"""
         response = model(
             prompt,
@@ -224,7 +235,9 @@ class LocalAIEngine:
 
         # Keep only last 100 measurements
         if len(self.performance_metrics[model_name]) > 100:
-            self.performance_metrics[model_name] = self.performance_metrics[model_name][-100:]
+            self.performance_metrics[model_name] = self.performance_metrics[model_name][
+                -100:
+            ]
 
     def get_best_model(self) -> str:
         """Get the best performing model based on metrics"""
@@ -254,6 +267,21 @@ class LocalAIEngine:
         }
         return status
 
+    def is_available(self) -> bool:
+        """Check if any local AI models are available (excluding mock)."""
+        return any(model != "mock" for model in self.local_models)
+
+    def intent_to_code(self, intent: str) -> str:
+        """Converts a natural language intent to Aetherra code using a local model."""
+        if not self.is_available():
+            return f"# [Local AI unavailable] Could not convert intent: {intent}"
+
+        # This is a mock implementation.
+        if "rest api" in intent.lower():
+            return "http.server port: 8080, route: /api"
+        else:
+            return f"# TODO: Implement intent-to-code for: {intent}"
+
 
 # Global instance
 local_ai = LocalAIEngine()
@@ -264,7 +292,7 @@ def get_local_ai() -> LocalAIEngine:
     return local_ai
 
 
-# Convenience functions for NeuroCode integration
+# Convenience functions for Aetherra integration
 def local_ask_ai(prompt: str, max_tokens: int = 512, temperature: float = 0.7) -> str:
     """Ask local AI - convenience function"""
     response = local_ai.generate_response(prompt, max_tokens, temperature)
@@ -323,7 +351,7 @@ if __name__ == "__main__":
     print(f"Embeddings available: {status['embedding_available']}")
 
     # Test generation
-    test_prompt = "Explain what makes NeuroCode revolutionary"
+    test_prompt = "Explain what makes Aetherra revolutionary"
     response = engine.generate_response(test_prompt)
 
     print("\nTest Response:")
@@ -331,4 +359,4 @@ if __name__ == "__main__":
     print(f"Time: {response.processing_time:.2f}s")
     print(f"Content: {response.content[:200]}...")
 
-    print("\n✅ Local AI Engine ready for NeuroCode integration!")
+    print("\n✅ Local AI Engine ready for Aetherra integration!")

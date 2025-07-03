@@ -2,9 +2,9 @@
 # Only the absolute essentials for NeuroCode to function
 
 # === CORE PARSER ===
-lark>=1.1.7                      # Grammar parser for .neuro files
+lark>=1.1.7                      # Grammar parser for .aether files
 
-# === SYSTEM MONITORING ===  
+# === SYSTEM MONITORING ===
 psutil>=5.9.0                    # System resource monitoring
 
 # === AI PROVIDER (Choose one) ===
@@ -22,7 +22,7 @@ psutil>=5.9.0                    # System resource monitoring
 # 2. Add an AI provider (recommended):
 #    pip install openai
 #    - OR -
-#    pip install anthropic  
+#    pip install anthropic
 #    - OR -
 #    pip install ollama (for local models)
 #

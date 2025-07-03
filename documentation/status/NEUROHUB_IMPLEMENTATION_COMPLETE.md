@@ -17,7 +17,7 @@ NeuroHub - The AI-native package manager for consciousness programming - has bee
 ### 🔧 Backend API Server
 - **Express.js REST API**: Complete CRUD operations for plugins
 - **User Management**: Registration, authentication, and API key generation
-- **Plugin Publishing**: File upload handling for .neuroplug packages
+- **Plugin Publishing**: File upload handling for .aetherplug packages
 - **Search & Analytics**: Advanced search with filtering and statistics
 - **Security Features**: Rate limiting, file validation, authentication middleware
 
@@ -141,7 +141,7 @@ await neuroHub.downloadAndSave('plugin-name');
 
 ### Plugin Publishing Workflow
 1. **Create Account** via web interface or API
-2. **Package Plugin** as .neuroplug file
+2. **Package Plugin** as .aetherplug file
 3. **Upload via UI** with metadata form
 4. **Automatic Processing** and validation
 5. **Live in Marketplace** immediately available
@@ -164,7 +164,7 @@ await neuroHub.downloadAndSave('plugin-name');
 ## 🌟 Key Improvements Made
 
 ### Fixed Misleading Claims
-- Removed "world's first" language 
+- Removed "world's first" language
 - Updated to accurate "AI-native" descriptions
 - Honest marketing without exaggeration
 

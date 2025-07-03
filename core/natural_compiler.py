@@ -29,57 +29,50 @@ class NaturalLanguageCompiler:
             "remember": [
                 r"remember (?:that )?(.+)",
                 r"(?:save|store) (.+) (?:as|to) memory",
-                r"(?:keep|retain) (.+) for later"
+                r"(?:keep|retain) (.+) for later",
             ],
-
             # Goal setting
             "goal": [
                 r"(?:my goal is to|i want to|help me) (.+)",
                 r"(?:set goal|objective|target) (?:to )?(.+)",
-                r"(?:achieve|accomplish|complete) (.+)"
+                r"(?:achieve|accomplish|complete) (.+)",
             ],
-
             # Analysis and reasoning
             "analyze": [
                 r"(?:analyze|examine|study|investigate) (.+)",
                 r"(?:what can you tell me about|tell me about) (.+)",
-                r"(?:look at|review|check) (.+)"
+                r"(?:look at|review|check) (.+)",
             ],
-
             # Decision making
             "decide": [
                 r"(?:decide|choose|select|pick) (?:the best )?(.+)",
                 r"(?:what should i|help me) (?:choose|pick|select) (.+)",
-                r"(?:recommend|suggest) (.+)"
+                r"(?:recommend|suggest) (.+)",
             ],
-
             # Learning and adaptation
             "learn": [
                 r"learn (?:from |about )?(.+)",
                 r"(?:study|understand|figure out) (.+)",
-                r"(?:adapt|adjust) (?:to |based on )?(.+)"
+                r"(?:adapt|adjust) (?:to |based on )?(.+)",
             ],
-
             # Collaboration
             "collaborate": [
                 r"(?:work with|collaborate with|team up with) (.+)",
                 r"(?:get help from|ask) (.+) (?:to help|for assistance)",
-                r"(?:connect to|join) (.+)"
+                r"(?:connect to|join) (.+)",
             ],
-
             # System operations
             "system": [
                 r"(?:monitor|check|watch) (?:the )?system",
                 r"(?:optimize|improve|enhance) performance",
-                r"(?:fix|repair|debug) (?:any )?(?:issues|problems|errors)"
+                r"(?:fix|repair|debug) (?:any )?(?:issues|problems|errors)",
             ],
-
             # Data operations
             "data": [
                 r"(?:process|handle|work with) (?:the )?data (?:from |in )?(.+)?",
                 r"(?:read|load|import) (?:data from )?(.+)",
-                r"(?:save|export|write) (?:data to )?(.+)"
-            ]
+                r"(?:save|export|write) (?:data to )?(.+)",
+            ],
         }
 
     def compile_natural_language(self, text: str) -> str:
@@ -96,10 +89,9 @@ class NaturalLanguageCompiler:
         text = text.lower().strip()
 
         # Track context
-        self.context_memory.append({
-            "input": text,
-            "timestamp": datetime.now().isoformat()
-        })
+        self.context_memory.append(
+            {"input": text, "timestamp": datetime.now().isoformat()}
+        )
 
         # Parse intent and generate NeuroCode
         neurocode = self._parse_intent(text)
@@ -123,7 +115,9 @@ class NaturalLanguageCompiler:
         # If no specific pattern matches, use general reasoning
         return self._generate_general_neurocode(text)
 
-    def _generate_neurocode(self, intent: str, groups: Tuple, original_text: str) -> str:
+    def _generate_neurocode(
+        self, intent: str, groups: Tuple, original_text: str
+    ) -> str:
         """Generate NeuroCode based on recognized intent"""
 
         if intent == "remember":
@@ -144,28 +138,28 @@ class NaturalLanguageCompiler:
 
         elif intent == "learn":
             subject = groups[0] if groups else "new_information"
-            return f'learn from {subject}\nadapt knowledge_base\nupdate understanding'
+            return f"learn from {subject}\nadapt knowledge_base\nupdate understanding"
 
         elif intent == "collaborate":
             partner = groups[0] if groups else "ai_network"
-            return f'collaborate with {partner}\nshare current_context\nsync insights'
+            return f"collaborate with {partner}\nshare current_context\nsync insights"
 
         elif intent == "system":
             if "monitor" in original_text:
-                return 'use sysmon to check_system_health\nmonitor performance_metrics'
+                return "use sysmon to check_system_health\nmonitor performance_metrics"
             elif "optimize" in original_text:
-                return 'use optimizer to analyze_performance\nimplement suggestions'
+                return "use optimizer to analyze_performance\nimplement suggestions"
             elif "fix" in original_text:
-                return 'use selfrepair to detect_issues\nauto_fix problems'
+                return "use selfrepair to detect_issues\nauto_fix problems"
 
         elif intent == "data":
             source = groups[0] if groups else "current_data"
             if "process" in original_text:
-                return f'load_data from {source}\nprocess according_to_requirements\nsave results'
+                return f"load_data from {source}\nprocess according_to_requirements\nsave results"
             elif "read" in original_text:
-                return f'read_data from {source}\nstore in memory'
+                return f"read_data from {source}\nstore in memory"
             elif "save" in original_text:
-                return f'export_data to {source}'
+                return f"export_data to {source}"
 
         return self._generate_general_neurocode(original_text)
 
@@ -176,8 +170,13 @@ class NaturalLanguageCompiler:
     def _needs_context(self, text: str) -> bool:
         """Determine if the statement needs additional context"""
         context_indicators = [
-            "based on", "considering", "taking into account",
-            "remember", "previous", "earlier", "before"
+            "based on",
+            "considering",
+            "taking into account",
+            "remember",
+            "previous",
+            "earlier",
+            "before",
         ]
         return any(indicator in text for indicator in context_indicators)
 
@@ -186,16 +185,18 @@ class NaturalLanguageCompiler:
         context_code = "recall relevant_context from memory\n"
         return context_code + neurocode
 
-    def generate_neuro_workflow(self, description: str, complexity: str = "standard") -> str:
+    def generate_neuro_workflow(
+        self, description: str, complexity: str = "standard"
+    ) -> str:
         """
-        Generate a complete .neuro workflow file from natural language description
+        Generate a complete .aether workflow file from natural language description
 
         Args:
             description: Natural language description of desired workflow
             complexity: "simple", "standard", or "advanced"
 
         Returns:
-            Complete .neuro workflow content
+            Complete .aether workflow content
         """
         # Parse the description into workflow components
         workflow_components = self._analyze_workflow_components(description)
@@ -225,7 +226,7 @@ class NaturalLanguageCompiler:
             "outputs": [],
             "conditions": [],
             "loops": [],
-            "collaborations": []
+            "collaborations": [],
         }
 
         # Identify goals
@@ -246,7 +247,14 @@ class NaturalLanguageCompiler:
                 components["data_sources"].extend(matches)
 
         # Identify processing steps
-        process_keywords = ["process", "analyze", "transform", "calculate", "generate", "create"]
+        process_keywords = [
+            "process",
+            "analyze",
+            "transform",
+            "calculate",
+            "generate",
+            "create",
+        ]
         for keyword in process_keywords:
             if keyword in description_lower:
                 process_pattern = rf"{keyword}[:\s]+([^.!?]+)"
@@ -292,7 +300,7 @@ class NaturalLanguageCompiler:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         header = f"""# NeuroCode Workflow
-# Generated from: {description[:100]}{'...' if len(description) > 100 else ''}
+# Generated from: {description[:100]}{"..." if len(description) > 100 else ""}
 # Complexity: {complexity}
 # Created: {timestamp}
 #
@@ -300,7 +308,7 @@ class NaturalLanguageCompiler:
 # by the NeuroCode Natural Language Compiler
 
 # === WORKFLOW INITIALIZATION ===
-remember "Starting workflow: {description[:50]}{'...' if len(description) > 50 else ''}"
+remember "Starting workflow: {description[:50]}{"..." if len(description) > 50 else ""}"
 set_goal "Complete workflow successfully"
 
 """
@@ -345,7 +353,7 @@ set_goal "Complete workflow successfully"
                 execution += f'process "{step_clean}"\n'
 
             if complexity in ["standard", "advanced"]:
-                execution += 'use performance_monitor to track_progress\n'
+                execution += "use performance_monitor to track_progress\n"
             execution += 'remember "Processing phase completed"\n\n'
 
         # Phase 3: Conditional Logic
@@ -353,9 +361,9 @@ set_goal "Complete workflow successfully"
             execution += "# Phase 3: Conditional Processing\n"
             for condition in components["conditions"][:3]:
                 condition_clean = condition.strip()
-                execution += f'if {condition_clean}:\n'
+                execution += f"if {condition_clean}:\n"
                 execution += f'    remember "Condition met: {condition_clean}"\n'
-                execution += '    adapt strategy based on condition\n'
+                execution += "    adapt strategy based on condition\n"
             execution += "\n"
 
         # Phase 4: Iterative Processing
@@ -363,8 +371,8 @@ set_goal "Complete workflow successfully"
             execution += "# Phase 4: Iterative Processing\n"
             for loop in components["loops"][:2]:
                 loop_clean = loop.strip()
-                execution += f'for_each item in {loop_clean}:\n'
-                execution += '    process current_item\n'
+                execution += f"for_each item in {loop_clean}:\n"
+                execution += "    process current_item\n"
                 execution += f'    remember "Processed item in {loop_clean}"\n'
             execution += "\n"
 
@@ -373,9 +381,9 @@ set_goal "Complete workflow successfully"
             execution += "# Phase 5: Collaboration\n"
             for collab in components["collaborations"][:3]:
                 collab_clean = collab.strip()
-                execution += f'collaborate with {collab_clean}\n'
+                execution += f"collaborate with {collab_clean}\n"
                 if complexity == "advanced":
-                    execution += f'synchronize results with {collab_clean}\n'
+                    execution += f"synchronize results with {collab_clean}\n"
             execution += "\n"
 
         return execution
@@ -394,7 +402,7 @@ set_goal "Complete workflow successfully"
         # Performance summary
         cleanup += "\n# Performance Summary\n"
         cleanup += "use performance_monitor to generate_report\n"
-        cleanup += "think about \"workflow efficiency and results\"\n"
+        cleanup += 'think about "workflow efficiency and results"\n'
 
         # Final memory update
         cleanup += "\n# Final Status\n"
@@ -409,6 +417,7 @@ set_goal "Complete workflow successfully"
         cleanup += "\n# === WORKFLOW COMPLETE ===\n"
 
         return cleanup
+
 
 class NeuroCodeIDE:
     """
@@ -425,11 +434,13 @@ class NeuroCodeIDE:
         neurocode = self.compiler.compile_natural_language(natural_language)
 
         # Store in session history
-        self.session_history.append({
-            "natural": natural_language,
-            "neurocode": neurocode,
-            "timestamp": datetime.now().isoformat()
-        })
+        self.session_history.append(
+            {
+                "natural": natural_language,
+                "neurocode": neurocode,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
 
         return neurocode
 
@@ -447,7 +458,7 @@ class NeuroCodeIDE:
                     print("\n\n👋 Input stream closed. Session ended.")
                     break
 
-                if user_input.lower() in ['exit', 'quit', 'bye']:
+                if user_input.lower() in ["exit", "quit", "bye"]:
                     print("👋 Goodbye! Keep thinking in NeuroCode!")
                     break
 
@@ -464,12 +475,14 @@ class NeuroCodeIDE:
 
                 # Ask if user wants to execute with EOF handling
                 try:
-                    execute = input("\n▶️  Execute this NeuroCode? (y/n): ").strip().lower()
+                    execute = (
+                        input("\n▶️  Execute this NeuroCode? (y/n): ").strip().lower()
+                    )
                 except EOFError:
                     print("\n\n👋 Input stream closed. Session ended.")
                     break
 
-                if execute in ['y', 'yes']:
+                if execute in ["y", "yes"]:
                     print("🚀 Executing NeuroCode...")
                     # Here we would integrate with the NeuroCode runtime
                     print("✅ Execution complete!")
@@ -482,17 +495,24 @@ class NeuroCodeIDE:
             except Exception as e:
                 print(f"❌ Error: {e}")
 
+
 def main():
     """Main entry point for natural language compilation"""
     import argparse
 
     parser = argparse.ArgumentParser(description="NeuroCode Natural Language Compiler")
-    parser.add_argument("--interactive", "-i", action="store_true",
-                       help="Start interactive programming session")
-    parser.add_argument("--compile", "-c", type=str,
-                       help="Compile natural language text to NeuroCode")
-    parser.add_argument("--file", "-f", type=str,
-                       help="Compile natural language file to NeuroCode")
+    parser.add_argument(
+        "--interactive",
+        "-i",
+        action="store_true",
+        help="Start interactive programming session",
+    )
+    parser.add_argument(
+        "--compile", "-c", type=str, help="Compile natural language text to NeuroCode"
+    )
+    parser.add_argument(
+        "--file", "-f", type=str, help="Compile natural language file to NeuroCode"
+    )
 
     args = parser.parse_args()
 
@@ -507,19 +527,20 @@ def main():
     elif args.file:
         compiler = NaturalLanguageCompiler()
         try:
-            with open(args.file, 'r') as f:
+            with open(args.file, "r") as f:
                 natural_text = f.read()
             neurocode = compiler.compile_natural_language(natural_text)
 
-            # Save to .neuro file
-            output_file = args.file.replace('.txt', '.neuro').replace('.md', '.neuro')
-            with open(output_file, 'w') as f:
+            # Save to .aether file
+            output_file = args.file.replace(".txt", ".aether").replace(".md", ".aether")
+            with open(output_file, "w") as f:
                 f.write(neurocode)
             print(f"✅ Compiled to {output_file}")
         except Exception as e:
             print(f"❌ Error processing file: {e}")
     else:
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()

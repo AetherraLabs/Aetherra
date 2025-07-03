@@ -25,9 +25,9 @@ from typing import Any, Callable, Dict, List, Optional
 
 # Core NeuroCode imports
 try:
-    from core.memory import NeuroMemory
+    from core.aetherra_memory import AetherraMemory
 except ImportError:
-    NeuroMemory = None
+    AetherraMemory = None
 
 try:
     from core.goal_system import GoalSystem
@@ -40,9 +40,9 @@ except ImportError:
     PluginManager = None
 
 try:
-    from core.interpreter import NeuroCodeInterpreter
+    from core.interpreter import AetherraInterpreter
 except ImportError:
-    NeuroCodeInterpreter = None
+    AetherraInterpreter = None
 
 try:
     from core.syntax_tree import analyze_syntax_tree, parse_neurocode
@@ -105,14 +105,16 @@ class EnhancedNeuroAgent:
 
     def __init__(
         self,
-        memory: Optional["NeuroMemory"] = None,
+        memory: Optional["AetherraMemory"] = None,
         goal_system: Optional["GoalSystem"] = None,
-        interpreter: Optional["NeuroCodeInterpreter"] = None,
+        interpreter: Optional["AetherraInterpreter"] = None,
     ):
         # Core components
-        self.memory = memory or (NeuroMemory() if NeuroMemory else None)
+        self.memory = memory or (AetherraMemory() if AetherraMemory else None)
         self.goal_system = goal_system or (GoalSystem() if GoalSystem else None)
-        self.interpreter = interpreter or (NeuroCodeInterpreter() if NeuroCodeInterpreter else None)
+        self.interpreter = interpreter or (
+            AetherraInterpreter() if AetherraInterpreter else None
+        )
 
         # Agent state
         self.state = AgentState.IDLE
@@ -215,7 +217,9 @@ class EnhancedNeuroAgent:
         while self.is_running:
             try:
                 current_time = datetime.now()
-                self.context.active_session_time = (current_time - startup_time).total_seconds()
+                self.context.active_session_time = (
+                    current_time - startup_time
+                ).total_seconds()
 
                 # Process events from queue
                 self._process_event_queue()
@@ -235,9 +239,9 @@ class EnhancedNeuroAgent:
                     last_goal_check = current_time
 
                 # Pattern analysis
-                if (current_time - last_pattern_analysis).total_seconds() >= self.config[
-                    "pattern_analysis_interval"
-                ]:
+                if (
+                    current_time - last_pattern_analysis
+                ).total_seconds() >= self.config["pattern_analysis_interval"]:
                     self._analyze_patterns()
                     last_pattern_analysis = current_time
 
@@ -291,7 +295,7 @@ class EnhancedNeuroAgent:
                 )
 
             # Suggest improvements to Neuroplex if active
-            if self.context.neuroplex_active:
+            if self.context.aetherplex_active:
                 self._suggest_neuroplex_improvements(insights, patterns)
 
             self.stats["reflections_generated"] += 1
@@ -408,7 +412,7 @@ class EnhancedNeuroAgent:
 
     def _setup_neuroplex_integration(self):
         """Setup integration hooks with Neuroplex"""
-        self.neuroplex_hooks = {
+        self.aetherplex_hooks = {
             "on_user_action": self._on_neuroplex_user_action,
             "on_code_execution": self._on_neuroplex_code_execution,
             "on_goal_update": self._on_neuroplex_goal_update,
@@ -462,7 +466,7 @@ class EnhancedNeuroAgent:
             "context": {
                 "current_goals": len(self.context.current_goals),
                 "user_presence": self.context.user_presence,
-                "neuroplex_active": self.context.neuroplex_active,
+                "neuroplex_active": self.context.aetherplex_active,
                 "last_interaction": self.context.last_interaction.isoformat()
                 if self.context.last_interaction
                 else None,
@@ -564,7 +568,9 @@ class EnhancedNeuroAgent:
                     self._queue_action(trigger_id, trigger.action)
                     self.stats["actions_triggered"] += 1
             except Exception as e:
-                self._log_agent_event("trigger_error", {"trigger_id": trigger_id, "error": str(e)})
+                self._log_agent_event(
+                    "trigger_error", {"trigger_id": trigger_id, "error": str(e)}
+                )
 
     def _queue_action(self, action_id: str, action: Callable):
         """Queue an action for execution"""
@@ -630,9 +636,7 @@ class EnhancedNeuroAgent:
                 themes[tag] = themes.get(tag, 0) + 1
 
         top_themes = sorted(themes.items(), key=lambda x: x[1], reverse=True)[:3]
-        return (
-            f"Recent focus areas: {', '.join([f'{theme}({count})' for theme, count in top_themes])}"
-        )
+        return f"Recent focus areas: {', '.join([f'{theme}({count})' for theme, count in top_themes])}"
 
     def _detect_learning_patterns(self) -> Dict[str, Any]:
         """Detect patterns that indicate learning opportunities"""
@@ -700,9 +704,13 @@ class EnhancedNeuroAgent:
         return "System optimization performed"
 
 
-def create_enhanced_agent(memory=None, goal_system=None, interpreter=None) -> EnhancedNeuroAgent:
+def create_enhanced_agent(
+    memory=None, goal_system=None, interpreter=None
+) -> EnhancedNeuroAgent:
     """Factory function to create an enhanced agent"""
-    return EnhancedNeuroAgent(memory=memory, goal_system=goal_system, interpreter=interpreter)
+    return EnhancedNeuroAgent(
+        memory=memory, goal_system=goal_system, interpreter=interpreter
+    )
 
 
 def main():

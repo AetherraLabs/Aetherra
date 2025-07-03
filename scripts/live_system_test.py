@@ -16,10 +16,10 @@ def test_memory_operations():
     print("-" * 30)
 
     try:
-        from core.memory import NeuroMemory
+        from core.aetherra_memory import AetherraMemory
 
         # Test memory creation and operations
-        memory = NeuroMemory()
+        memory = AetherraMemory()
 
         # Test remembering
         test_memory = f"System test executed at {sys.version}"
@@ -82,10 +82,10 @@ def test_interpreter_basic():
     print("-" * 30)
 
     try:
-        from core.interpreter import NeuroCodeInterpreter
+        from core.interpreter import AetherraInterpreter
 
         # Test interpreter creation
-        interpreter = NeuroCodeInterpreter()
+        interpreter = AetherraInterpreter()
 
         # Test simple expression
         result = interpreter.execute("2 + 2")

@@ -1,6 +1,6 @@
 ---
 name: 🧬 Revolutionary Enhancement
-about: Suggest a breakthrough feature that advances NeuroCode toward AGI-level programming
+about: Suggest a breakthrough feature that advances Aetherra toward AGI-level programming
 title: '[REVOLUTIONARY] '
 labels: enhancement, revolutionary, cognitive-pattern
 assignees: ''
@@ -19,11 +19,11 @@ assignees: ''
 **Describe the breakthrough concept that could fundamentally change how developers interact with AI-driven code.**
 
 ## 🌟 Why This Changes Everything
-**Explain how this enhancement moves NeuroCode closer to becoming the dominant AI-native programming language.**
+**Explain how this enhancement moves Aetherra closer to becoming the dominant AI-native programming language.**
 
 ## 🎯 Expected Impact
 - [ ] **Developer Productivity**: How much faster will development become?
-- [ ] **AI Intelligence**: How much smarter will NeuroCode become?
+- [ ] **AI Intelligence**: How much smarter will Aetherra become?
 - [ ] **Adoption Acceleration**: How will this drive mass adoption?
 - [ ] **Industry Transformation**: How will this change programming forever?
 
@@ -39,7 +39,7 @@ assignees: ''
 
 ### Success Metrics:
 - [ ] Performance benchmarks
-- [ ] Accuracy measurements  
+- [ ] Accuracy measurements
 - [ ] Adoption indicators
 - [ ] Developer experience scores
 
@@ -47,8 +47,8 @@ assignees: ''
 **Describe how we could prototype and validate this revolutionary enhancement.**
 
 ## 🌍 Long-term Vision
-**How does this contribute to NeuroCode becoming the universal AI programming standard by 2026?**
+**How does this contribute to Aetherra becoming the universal AI programming standard by 2026?**
 
 ---
 
-**Remember**: NeuroCode aims to be the language where humans express intent and AI handles implementation. Every enhancement should move us closer to that vision! 🧬✨
+**Remember**: Aetherra aims to be the language where humans express intent and AI handles implementation. Every enhancement should move us closer to that vision! 🧬✨

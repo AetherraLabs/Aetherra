@@ -3,7 +3,7 @@ print('Testing OpenAI client initialization fix...')
 print('=' * 50)
 
 # Import multiple modules that use ai_runtime
-from core.enhanced_interpreter import EnhancedNeuroCodeInterpreter
+from core.enhanced_interpreter import EnhancedAetherraInterpreter
 print('Enhanced interpreter loaded')
 
 from core.agent import NeuroAgent  

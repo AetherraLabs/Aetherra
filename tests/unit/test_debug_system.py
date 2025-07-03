@@ -9,7 +9,7 @@ import os
 sys.path.append('.')
 
 from core.debug_system import NeuroDebugSystem
-from core.memory import NeuroMemory
+from core.aetherra_memory import AetherraMemory
 
 def test_debug_system():
     """Test the automatic debug and self-correction system"""
@@ -17,7 +17,7 @@ def test_debug_system():
     print("=" * 50)
     
     # Initialize system
-    memory = NeuroMemory()
+    memory = AetherraMemory()
     debug_system = NeuroDebugSystem(memory)
     
     # Test 1: Error Detection

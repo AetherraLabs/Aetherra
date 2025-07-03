@@ -82,11 +82,11 @@ def analyze_core_modules():
     print("\n🔬 Analyzing Core Modules...")
 
     core_modules = {
-        "core/interpreter.py": "NeuroCodeInterpreter",
-        "core/memory.py": "NeuroMemory",
+        "core/interpreter.py": "AetherraInterpreter",
+        "core/memory.py": "AetherraMemory",
         "core/functions.py": "NeuroFunctions",
         "core/agent.py": "NeuroAgent",
-        "core/chat_router.py": "NeuroCodeChatRouter",
+        "core/chat_router.py": "AetherraChatRouter",
         "ui/neuroplex_gui.py": "NeuroplexGUI",
     }
 

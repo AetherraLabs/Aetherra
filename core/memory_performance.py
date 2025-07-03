@@ -45,7 +45,7 @@ class StringInterningPool:
 
     def __init__(self):
         # Common NeuroCode keywords
-        self.neurocode_keywords = {
+        self.aethercode_keywords = {
             "goal",
             "remember",
             "recall",
@@ -87,7 +87,7 @@ class StringInterningPool:
 
         # Intern common strings
         self.interned_strings = {
-            keyword: sys.intern(keyword) for keyword in self.neurocode_keywords
+            keyword: sys.intern(keyword) for keyword in self.aethercode_keywords
         }
         self.intern_cache = {}
         self.usage_count = defaultdict(int)
@@ -111,8 +111,10 @@ class StringInterningPool:
         """Get interning statistics"""
         return {
             "total_interned": len(self.interned_strings),
-            "keywords_interned": len(self.neurocode_keywords),
-            "most_used": sorted(self.usage_count.items(), key=lambda x: x[1], reverse=True)[:10],
+            "keywords_interned": len(self.aethercode_keywords),
+            "most_used": sorted(
+                self.usage_count.items(), key=lambda x: x[1], reverse=True
+            )[:10],
         }
 
 
@@ -172,7 +174,8 @@ class ObjectPool:
             "in_use": len(self.in_use),
             "created": self.created_count,
             "reused": self.reused_count,
-            "reuse_ratio": self.reused_count / max(1, self.created_count + self.reused_count),
+            "reuse_ratio": self.reused_count
+            / max(1, self.created_count + self.reused_count),
         }
 
 
@@ -340,7 +343,9 @@ class MemoryProfiler:
         self.snapshots.append(snapshot)
         return snapshot
 
-    def get_memory_diff(self, start_snapshot: Optional[MemorySnapshot] = None) -> Dict[str, Any]:
+    def get_memory_diff(
+        self, start_snapshot: Optional[MemorySnapshot] = None
+    ) -> Dict[str, Any]:
         """Get memory difference between snapshots"""
         end_snapshot = self.take_snapshot()
         start = start_snapshot or self.baseline_snapshot
@@ -352,7 +357,8 @@ class MemoryProfiler:
             "memory_diff_mb": end_snapshot.total_memory_mb - start.total_memory_mb,
             "heap_diff_mb": end_snapshot.heap_size_mb - start.heap_size_mb,
             "gc_collections_diff": tuple(
-                end - start for end, start in zip(end_snapshot.gc_collections, start.gc_collections)
+                end - start
+                for end, start in zip(end_snapshot.gc_collections, start.gc_collections)
             ),
             "duration_seconds": end_snapshot.timestamp - start.timestamp,
         }
@@ -494,7 +500,9 @@ class MemoryProfiled:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         memory_diff = memory_optimizer.profiler.get_memory_diff(self.start_snapshot)
-        print(f"🧠 {self.operation_name}: {memory_diff['memory_diff_mb']:.2f}MB memory change")
+        print(
+            f"🧠 {self.operation_name}: {memory_diff['memory_diff_mb']:.2f}MB memory change"
+        )
 
 
 # Backward compatibility alias

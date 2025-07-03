@@ -14,13 +14,13 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 import subprocess
 
-from .memory import NeuroMemory
+from .aetherra_memory import AetherraMemory
 from .ai_runtime import ask_ai
 
 class NeuroDebugSystem:
     """Automatic error detection, analysis, and self-correction system"""
     
-    def __init__(self, memory: NeuroMemory):
+    def __init__(self, memory: AetherraMemory):
         self.memory = memory
         self.error_history = []
         self.fix_confidence_threshold = 80

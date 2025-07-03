@@ -72,10 +72,10 @@ def test_code_execution():
     code = """
     # Simple NeuroCode test
     goal: Test runtime execution
-    
+
     x = 42
     y = "hello world"
-    
+
     remember("Test execution completed")
     """
 
@@ -102,7 +102,7 @@ def test_function_execution():
         assistant: "Hello " + name
         remember("Greeted " + name)
     end
-    
+
     run greet("World")
     """
 
@@ -262,7 +262,7 @@ end
 run file_test()
 """
 
-    test_file = "test_runtime_file.neuro"
+    test_file = "test_runtime_file.aether"
     with open(test_file, "w", encoding="utf-8") as f:
         f.write(test_code)
 

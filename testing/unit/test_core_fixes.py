@@ -17,7 +17,7 @@ total_tests = 6
 
 # Test 1: Core imports
 try:
-    from neurocode import CLI_AVAILABLE, create_interpreter, create_parser
+    from aetherra import CLI_AVAILABLE, create_interpreter, create_parser
 
     print("✅ 1. Core imports successful")
     success_count += 1
@@ -42,9 +42,9 @@ except Exception as e:
 
 # Test 4: Enhanced interpreter
 try:
-    from neurocode.core.interpreter.enhanced import EnhancedNeuroCodeInterpreter
+    from neurocode.core.interpreter.enhanced import EnhancedAetherraInterpreter
 
-    enhanced = EnhancedNeuroCodeInterpreter()
+    enhanced = EnhancedAetherraInterpreter()
     print("✅ 4. Enhanced interpreter creation successful")
     success_count += 1
 except Exception as e:

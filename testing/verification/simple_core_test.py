@@ -20,15 +20,15 @@ except Exception as e:
 
 try:
     print("Testing interpreter import...")
-    print("✅ EnhancedNeuroCodeInterpreter imported")
+    print("✅ EnhancedAetherraInterpreter imported")
 except Exception as e:
-    print(f"❌ EnhancedNeuroCodeInterpreter failed: {e}")
+    print(f"❌ EnhancedAetherraInterpreter failed: {e}")
 
 try:
     print("Testing parser import...")
-    print("✅ NeuroCodeParser imported")
+    print("✅ AetherraParser imported")
 except Exception as e:
-    print(f"❌ NeuroCodeParser failed: {e}")
+    print(f"❌ AetherraParser failed: {e}")
 
 try:
     print("Testing memory import...")

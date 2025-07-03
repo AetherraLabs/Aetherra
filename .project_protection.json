@@ -12,8 +12,8 @@
         "SUCCESS_SUMMARY.md",
         "FINAL_ORGANIZATION_STATUS.md",
         ".project_protection.json",
-        "neuroplex.bat",
-        "neurocode_launcher.py"
+        "lyrixa.bat",
+        "aetherra_launcher.py"
     ],
     "protected_directories": [
         "core/",
@@ -31,7 +31,7 @@
     ],
     "critical_extensions": [
         ".py",
-        ".neuro",
+        ".aether",
         ".md",
         ".json",
         ".toml",
@@ -46,5 +46,5 @@
     "protection_enabled": true,
     "created_date": "2025-07-01",
     "system_version": "v2.1",
-    "description": "NeuroCode Project Protection Configuration - Prevents accidental deletion of critical files"
+    "description": "Aetherra Project Protection Configuration - Prevents accidental deletion of critical files"
 }

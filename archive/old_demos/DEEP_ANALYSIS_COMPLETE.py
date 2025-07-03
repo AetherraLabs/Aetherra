@@ -61,7 +61,7 @@ def main():
     print("1. CLI Mode: python -m neurocode.cli.main")
     print("2. GUI Mode: python neurocode_launcher.py (if Qt available)")
     print("3. Enhanced: python launchers/launch_enhanced_neuroplex.py")
-    print("4. Direct: from core.interpreter import NeuroCodeInterpreter")
+    print("4. Direct: from core.interpreter import AetherraInterpreter")
 
     print("\n🎉 MISSION ACCOMPLISHED!")
     print("=" * 60)

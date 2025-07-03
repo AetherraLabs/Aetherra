@@ -14,44 +14,48 @@ print("🧪 Testing NeuroCode GUI imports...")
 
 try:
     print("1. Testing Qt imports...")
-    from ui.neuroplex_gui import QT_AVAILABLE, QT_BACKEND
+    from ui.aetherplex_gui import QT_AVAILABLE, QT_BACKEND
+
     print(f"   ✅ Qt available: {QT_AVAILABLE} using {QT_BACKEND}")
-    
+
     print("2. Testing NeuroCode component imports...")
-    from ui.neuroplex_gui import (
+    from ui.aetherplex_gui import (
         NEUROCODE_AVAILABLE,
-        NeuroCodeChatRouter,
-        NeuroCodeInterpreter,
-        NeuroMemory,
+        AetherraChatRouter,
+        AetherraInterpreter,
+        AetherraMemory,
     )
+
     print(f"   ✅ NeuroCode components: {NEUROCODE_AVAILABLE}")
-    print(f"   - Interpreter: {'✅' if NeuroCodeInterpreter else '❌'}")
-    print(f"   - Memory: {'✅' if NeuroMemory else '❌'}")
-    print(f"   - Chat Router: {'✅' if NeuroCodeChatRouter else '❌'}")
-    
+    print(f"   - Interpreter: {'✅' if AetherraInterpreter else '❌'}")
+    print(f"   - Memory: {'✅' if AetherraMemory else '❌'}")
+    print(f"   - Chat Router: {'✅' if AetherraChatRouter else '❌'}")
+
     print("3. Testing GUI class imports...")
-    from ui.neuroplex_gui import NeuroplexMainWindow, NeuroTheme
+    from ui.aetherplex_gui import NeuroplexMainWindow, NeuroTheme
+
     print("   ✅ GUI classes imported successfully")
-    
+
     print("4. Testing NeuroCode interpreter instantiation...")
-    if NeuroCodeInterpreter:
+    if AetherraInterpreter:
         try:
-            interpreter = NeuroCodeInterpreter()
+            interpreter = AetherraInterpreter()
             print("   ✅ Interpreter created successfully")
-            
+
             # Test basic execution
             result = interpreter.execute("remember('test') as 'demo'")
             print(f"   ✅ Basic execution test: {result}")
-            
+
         except Exception as e:
             print(f"   ⚠️ Interpreter creation failed: {e}")
     else:
         print("   ⚠️ Interpreter not available (demo mode)")
-    
+
     print("\n🎉 All GUI import tests completed successfully!")
     print("   You can now run: python ui/neuroplex_gui.py")
-    
+
 except Exception as e:
     print(f"❌ Import test failed: {e}")
     import traceback
+
     traceback.print_exc()

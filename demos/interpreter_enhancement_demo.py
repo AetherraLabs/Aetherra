@@ -15,7 +15,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root / "core"))
 
 try:
-    from core.interpreter import NeuroCodeInterpreter
+    from core.interpreter import AetherraInterpreter
 
     HAS_INTERPRETER = True
 except ImportError:
@@ -23,7 +23,7 @@ except ImportError:
     HAS_INTERPRETER = False
 
     # Demo fallback
-    class NeuroCodeInterpreter:
+    class AetherraInterpreter:
         def __init__(self):
             self.memory = type("obj", (object,), {"remember": lambda *args: "Demo memory"})()
             self.functions = type(
@@ -47,7 +47,7 @@ class EnhancedInterpreterDemo:
     """
 
     def __init__(self):
-        self.base_interpreter = NeuroCodeInterpreter()
+        self.base_interpreter = AetherraInterpreter()
         self.block_buffer = []
         self.in_block = False
         self.block_type = None

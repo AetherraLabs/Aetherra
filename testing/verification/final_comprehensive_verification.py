@@ -17,7 +17,7 @@ def test_src_folder_imports():
 
     # Test 1: Core NeuroCode functionality
     try:
-        from neurocode import create_interpreter, create_parser
+        from aetherra import create_interpreter, create_parser
 
         print("✅ Core imports working")
     except Exception as e:
@@ -51,9 +51,9 @@ def test_src_folder_imports():
 
     # Test 5: Enhanced interpreter (optional features)
     try:
-        from neurocode.core.interpreter.enhanced import EnhancedNeuroCodeInterpreter
+        from neurocode.core.interpreter.enhanced import EnhancedAetherraInterpreter
 
-        enhanced = EnhancedNeuroCodeInterpreter()
+        enhanced = EnhancedAetherraInterpreter()
         result = enhanced.execute('say "Enhanced mode active!"')
         print(f"✅ Enhanced interpreter working: {result[:50]}...")
     except Exception as e:
@@ -62,7 +62,7 @@ def test_src_folder_imports():
 
     # Test 6: CLI functionality (optional)
     try:
-        from neurocode import CLI_AVAILABLE
+        from aetherra import CLI_AVAILABLE
 
         print(f"✅ CLI available: {CLI_AVAILABLE}")
         if CLI_AVAILABLE:

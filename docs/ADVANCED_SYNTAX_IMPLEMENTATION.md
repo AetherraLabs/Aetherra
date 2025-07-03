@@ -217,12 +217,12 @@ end
 ```neurocode
 define advanced_maintenance()
     remember("Starting maintenance") as "system"
-    
+
     # Data collection phase
     for data_type in ["performance", "errors", "usage"]
         learn from data_type + "_metrics.json"
     end
-    
+
     # Analysis phase
     critical_issues = 0
     for issue in ["memory_leak", "disk_full", "high_cpu"]
@@ -230,7 +230,7 @@ define advanced_maintenance()
             critical_issues = critical_issues + 1
         end
     end
-    
+
     # Response phase
     if critical_issues > 2
         agent: on
@@ -242,7 +242,7 @@ define advanced_maintenance()
     else
         remember("System healthy") as "status"
     end
-    
+
     reflective loop
 end
 
@@ -261,17 +261,17 @@ define code_quality_workflow(filename)
     # Self-editing integration
     load filename
     analyze filename
-    
+
     # Pattern-based decision making
     if memory.pattern("code_smell", frequency="weekly")
         refactor filename "code_quality"
         backup filename
-        
+
         # Goal-driven improvement
         goal: improve code quality metrics: maintainability=90
         agent: on
     end
-    
+
     # Meta-plugin integration
     meta: system_optimizer code_analysis
     remember("Code quality check completed") as "code_management"
@@ -316,7 +316,7 @@ end
 
 ## 🎯 **Demo Files Created**
 
-1. **`advanced_syntax_demo.neuro`**
+1. **`advanced_syntax_demo.aether`**
    - Comprehensive examples of all new features
    - Real-world usage scenarios
    - Integration demonstrations
@@ -330,7 +330,7 @@ end
 
 **Neuroplex now features:**
 - 🔥 **Complete Advanced Syntax**: Functions, loops, conditionals, simulation
-- 🧠 **Self-Editing System**: AI-powered code analysis and modification  
+- 🧠 **Self-Editing System**: AI-powered code analysis and modification
 - 🎯 **Goal-Driven Execution**: Autonomous agent with reflective loop
 - 🔍 **Pattern Recognition**: Memory-driven conditional execution
 - 🏷️ **Tagged Memory**: Sophisticated knowledge management

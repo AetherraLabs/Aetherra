@@ -15,7 +15,7 @@ try:
 
     # Test import
     print("📦 Importing modules...")
-    from ui.neuroplex_gui_v2 import QT_AVAILABLE, ModernNeuroplexWindow, QApplication
+    from ui.aetherplex_gui_v2 import QT_AVAILABLE, ModernNeuroplexWindow, QApplication
 
     print(f"✅ Qt Available: {QT_AVAILABLE}")
 

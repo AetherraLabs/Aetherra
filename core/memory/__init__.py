@@ -18,7 +18,7 @@ from .storage import (
 from .vector import EnhancedSemanticMemory, VectorMemory
 
 # Backward compatibility alias
-NeuroMemory = BasicMemory
+AetherraMemory = BasicMemory
 
 __all__ = [
     # Core models
@@ -41,7 +41,7 @@ __all__ = [
     "DailyReflectionManager",
     "PatternAnalyzer",
     # Backward compatibility
-    "NeuroMemory",
+    "AetherraMemory",
 ]
 
 # Version info

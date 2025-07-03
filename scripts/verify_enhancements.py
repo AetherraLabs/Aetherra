@@ -140,11 +140,11 @@ print("\n4️⃣ Testing Enhanced Interpreter (core/enhanced_interpreter.py)")
 print("-" * 50)
 
 try:
-    from core.enhanced_interpreter import EnhancedNeuroCodeInterpreter
+    from core.enhanced_interpreter import EnhancedAetherraInterpreter
 
     # Initialize enhanced interpreter
-    interpreter = EnhancedNeuroCodeInterpreter()
-    print("✅ EnhancedNeuroCodeInterpreter initialized successfully")
+    interpreter = EnhancedAetherraInterpreter()
+    print("✅ EnhancedAetherraInterpreter initialized successfully")
 
     # Test unified interface
     print("✅ Unified interface available")

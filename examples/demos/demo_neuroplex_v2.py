@@ -78,7 +78,7 @@ def main():
     # Launch demo
     print("\n🚀 Launching Neuroplex v2.0 Demo...")
     try:
-        from ui.neuroplex_gui_v2 import main as launch_gui
+        from ui.aetherplex_gui_v2 import main as launch_gui
 
         launch_gui()
     except Exception as e:

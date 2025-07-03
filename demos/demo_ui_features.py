@@ -26,7 +26,7 @@ def demonstrate_ui_features():
     print("\n🎭 1. Modern Theme System")
     print("-" * 30)
     try:
-        from ui.neuro_ui import NeuroTheme
+        from ui.aether_ui import NeuroTheme
 
         print("✅ Theme system loaded")
         print(f"   Primary Color: {NeuroTheme.PRIMARY}")
@@ -40,18 +40,21 @@ def demonstrate_ui_features():
     print("\n🧠 2. Visual Memory Reflection Browser")
     print("-" * 40)
     try:
-        from memory import NeuroMemory
+        from memory import AetherraMemory
 
         # Create memory instance
-        memory = NeuroMemory()
+        memory = AetherraMemory()
 
         # Add some test memories
-        memory.remember("Python is a versatile programming language", ["programming", "python"])
+        memory.remember(
+            "Python is a versatile programming language", ["programming", "python"]
+        )
         memory.remember(
             "NeuroCode bridges human cognition and AI", ["neurocode", "ai", "cognition"]
         )
         memory.remember(
-            "Memory systems enable temporal reasoning", ["memory", "temporal", "reasoning"]
+            "Memory systems enable temporal reasoning",
+            ["memory", "temporal", "reasoning"],
         )
 
         print("✅ Memory reflection viewer available")

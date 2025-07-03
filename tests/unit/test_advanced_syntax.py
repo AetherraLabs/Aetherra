@@ -8,14 +8,14 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from core.interpreter import NeuroCodeInterpreter
+from core.interpreter import AetherraInterpreter
 
 def test_advanced_syntax():
     """Test all advanced syntax features"""
     print("🧠 Testing Neuroplex Advanced Syntax Features")
     print("=" * 50)
     
-    interpreter = NeuroCodeInterpreter()
+    interpreter = AetherraInterpreter()
     
     # Test 1: User-defined functions
     print("\n1. Testing User-Defined Functions...")

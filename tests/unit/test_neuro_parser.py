@@ -3,7 +3,7 @@
 🧬 NeuroCode File Parser Test
 ===========================
 
-Test the NeuroCode parser with .neuro files to demonstrate
+Test the NeuroCode parser with .aether files to demonstrate
 that NeuroCode is now a true programming language.
 """
 
@@ -12,11 +12,11 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.neurocode_grammar import create_neurocode_parser
+from core.aethercode_grammar import create_neurocode_parser
 
 
 def test_neuro_file(file_path: str):
-    """Test parsing a .neuro file"""
+    """Test parsing a .aether file"""
     parser = create_neurocode_parser()
 
     try:
@@ -50,7 +50,7 @@ def test_neuro_file(file_path: str):
 
 
 if __name__ == "__main__":
-    test_file = "examples/test.neuro"
+    test_file = "examples/test.aether"
 
     if len(sys.argv) > 1:
         test_file = sys.argv[1]
@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     if success:
         print("\n🚀 SUCCESS: NeuroCode language implementation is complete!")
-        print("📝 NeuroCode files (.neuro) can now be parsed with formal grammar!")
+        print("📝 NeuroCode files (.aether) can now be parsed with formal grammar!")
         print("🎯 NeuroCode is now syntax-native, not Python-wrapped!")
     else:
         print("\n🔧 Parser needs refinement for complex syntax.")

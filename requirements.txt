@@ -1,8 +1,8 @@
-# NeuroCode v1.0.0 - AI-Native Programming Language Requirements
+# aetherra v1.0.0 - AI-Native Programming Language Requirements
 # Production-ready dependencies for the world's first AI-native language
 
 # === CORE REQUIREMENTS (ALWAYS NEEDED) ===
-lark>=1.1.7                      # Grammar parser for .neuro files (used in multiple parsers)
+lark>=1.1.7                      # Grammar parser for .aether files (used in multiple parsers)
 
 # === SYSTEM MONITORING ===
 psutil>=5.9.0                    # System resource monitoring (used in performance modules)
@@ -18,7 +18,7 @@ openai>=1.0.0,<2.0.0            # OpenAI GPT models (used in ai_runtime.py)
 # llama-cpp-python>=0.2.0       # Direct GGUF model loading
 
 # === WEB INTERFACE (OPTIONAL) ===
-# streamlit>=1.28.0              # Interactive playground interface (src/neurocode/ui/playground)
+# streamlit>=1.28.0              # Interactive playground interface (src/aetherra/ui/playground)
 
 # === PLUGIN SYSTEM (OPTIONAL) ===
 # requests>=2.31.0               # HTTP client for plugin registry
@@ -77,7 +77,7 @@ numpy>=1.24.0                    # Fast numerical operations (used in enhanced_m
 # ===============================================================================
 # INSTALLATION GUIDE:
 # ===============================================================================
-# 
+#
 # MINIMAL INSTALL (Core functionality only):
 #   pip install lark psutil
 #
@@ -95,12 +95,12 @@ numpy>=1.24.0                    # Fast numerical operations (used in enhanced_m
 # ===============================================================================
 #
 # REQUIRED:
-# - lark: Parses .neuro files using grammar definitions
+# - lark: Parses .aether files using grammar definitions
 # - psutil: System monitoring for performance optimization
 #
 # AI PROVIDERS (Choose at least one):
 # - openai: GPT-3.5/GPT-4 integration via OpenAI API
-# - anthropic: Claude AI integration via Anthropic API  
+# - anthropic: Claude AI integration via Anthropic API
 # - google-generativeai: Gemini AI integration via Google API
 # - ollama: Local model server for privacy-focused AI
 # - llama-cpp-python: Direct GGUF model loading

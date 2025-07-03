@@ -25,7 +25,9 @@ def test_component_imports():
         # Test Qt imports
         from neurocode.ui.components.utils.qt_imports import QT_AVAILABLE, QT_BACKEND
 
-        print(f"✅ Qt imports: {QT_BACKEND} ({'Available' if QT_AVAILABLE else 'Not Available'})")
+        print(
+            f"✅ Qt imports: {QT_BACKEND} ({'Available' if QT_AVAILABLE else 'Not Available'})"
+        )
 
         # Test theme
         from neurocode.ui.components.theme import ModernTheme
@@ -127,12 +129,12 @@ def test_modular_architecture():
 
     try:
         # Test main modular window import
-        from neurocode.ui.neuroplex_fully_modular import FullyModularNeuroplexWindow
+        from neurocode.ui.aetherplex_fully_modular import FullyModularNeuroplexWindow
 
         print("✅ Fully modular main window imported successfully")
 
         # Test enhanced neuroplex import (our integrated version)
-        from neurocode.ui.enhanced_neuroplex import EnhancedNeuroplexWindow
+        from aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
 
         print("✅ Enhanced Neuroplex (with chat integration) imported successfully")
 
@@ -144,7 +146,8 @@ def test_modular_architecture():
 
         # Try to test what we do have
         try:
-            from neurocode.ui.enhanced_neuroplex import EnhancedNeuroplexWindow
+            from aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
+
             print("✅ Enhanced Neuroplex (chat integration) is available")
             return True
         except ImportError:

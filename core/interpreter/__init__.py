@@ -15,7 +15,7 @@ Components:
 - fallback_systems.py - Fallback class implementations
 
 Main API:
-- NeuroCodeInterpreter - Main interpreter class
+- AetherraInterpreter - Main interpreter class
 - ExecutionResult - Result wrapper
 - parse_command - Command parsing utility
 """
@@ -30,11 +30,11 @@ try:
     from .line_processor import LineProcessor
 
     # Main interpreter class
-    from .main import NeuroCodeInterpreter
+    from .main import AetherraInterpreter
 
     # Export the main API
     __all__ = [
-        "NeuroCodeInterpreter",
+        "AetherraInterpreter",
         "NeuroCodeInterpreterBase",
         "CommandParser",
         "ExecutionEngine",
@@ -48,14 +48,14 @@ except ImportError as e:
     # Fallback implementation
     print(f"Warning: Some interpreter components not available: {e}")
 
-    class NeuroCodeInterpreter:
+    class AetherraInterpreter:
         def __init__(self):
             print("Using fallback interpreter implementation")
 
         def execute(self, line):
             return f"Fallback interpreter processed: {line}"
 
-    __all__ = ["NeuroCodeInterpreter"]
+    __all__ = ["AetherraInterpreter"]
 
 # Version and metadata
 __version__ = "2.0.0"

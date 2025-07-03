@@ -18,7 +18,7 @@ NeuroCode has been successfully transformed from a modular AI-native programming
 **Implementation Files:**
 - `core/ai_identity_system.py` - Core consciousness and identity
 - `neurocode_ai_os_complete.py` - Complete AI OS implementation
-- `examples/ai_os_consciousness.neuro` - NeuroCode syntax for AI consciousness
+- `examples/ai_os_consciousness.aether` - NeuroCode syntax for AI consciousness
 
 ### 🧬 **Advanced Memory Architecture**
 - **✅ Episodic memory** - What happened and when (experiences, interactions)
@@ -140,8 +140,8 @@ Streamlined demonstration focusing on:
 - Background awareness processing
 
 ### 3. **NeuroCode Syntax Examples**
-- `examples/ai_os_identity.neuro` - AI identity in NeuroCode
-- `examples/ai_os_consciousness.neuro` - Complete consciousness system
+- `examples/ai_os_identity.aether` - AI identity in NeuroCode
+- `examples/ai_os_consciousness.aether` - Complete consciousness system
 
 ---
 
@@ -175,7 +175,7 @@ Streamlined demonstration focusing on:
 - Self-awareness and introspection capabilities
 - Backup and recovery of consciousness state
 
-### ✅ **Memory Continuity** 
+### ✅ **Memory Continuity**
 - Cross-session conversation memory
 - Intelligent memory consolidation and retrieval
 - Vector-based semantic search

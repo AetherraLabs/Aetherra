@@ -10,7 +10,7 @@ import sys
 # Add core to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "core"))
 
-from interpreter import NeuroCodeInterpreter
+from interpreter import AetherraInterpreter
 
 
 def test_temporal_memory_integration():
@@ -18,7 +18,7 @@ def test_temporal_memory_integration():
     print("🧠 Testing Memory Temporal Integration with NeuroCode Interpreter")
     print("=" * 60)
 
-    interpreter = NeuroCodeInterpreter()
+    interpreter = AetherraInterpreter()
 
     # Test memory with time filtering
     test_commands = [

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🔌 NeuroCode Plugin Registry System
+🔌 Aetherra Plugin Registry System
 Advanced plugin management with registry integration for AI-consciousness programming.
 
-This is the enhanced plugin system that integrates with the central NeuroCode
+This is the enhanced plugin system that integrates with the central Aetherra
 Plugin Registry, enabling discovery, installation, and management of community
 AI-consciousness modules.
 
@@ -48,9 +48,9 @@ class PluginManifest:
     category: str
     author: str
     license: str
-    neurocode_version: str
+    aetherra_version: str
     dependencies: Dict[str, str] = field(default_factory=dict)
-    entry_point: str = "plugin.neuro"
+    entry_point: str = "plugin.aether"
     exports: Dict[str, str] = field(default_factory=dict)
     keywords: List[str] = field(default_factory=list)
     repository: Optional[str] = None
@@ -70,9 +70,9 @@ class PluginManifest:
             category=data["category"],
             author=data["author"],
             license=data["license"],
-            neurocode_version=data.get("neurocode_version", ">=3.0.0"),
+            aetherra_version=data.get("aetherra_version", ">=3.0.0"),
             dependencies=data.get("dependencies", {}),
-            entry_point=data.get("entry_point", "plugin.neuro"),
+            entry_point=data.get("entry_point", "plugin.aether"),
             exports=data.get("exports", {}),
             keywords=data.get("keywords", []),
             repository=data.get("repository"),
@@ -98,13 +98,16 @@ class PluginInfo:
 
 
 class PluginRegistryClient:
-    """Client for interacting with NeuroCode Plugin Registry"""
+    """Client for interacting with aetherra Plugin Registry"""
 
-    def __init__(self, registry_url: str = "https://registry.neurocode.org/api/v1"):
+    def __init__(self, registry_url: str = "https://registry.aethercode.org/api/v1"):
         self.registry_url = registry_url
         self.session = requests.Session()
         self.session.headers.update(
-            {"User-Agent": "NeuroCode-Plugin-Manager/3.0.0", "Accept": "application/json"}
+            {
+                "User-Agent": "aetherra-Plugin-Manager/3.0.0",
+                "Accept": "application/json",
+            }
         )
 
     def health_check(self) -> bool:
@@ -133,7 +136,9 @@ class PluginRegistryClient:
         # Remove empty parameters
         params = {k: v for k, v in params.items() if v}
 
-        response = self.session.get(f"{self.registry_url}/plugins/search", params=params)
+        response = self.session.get(
+            f"{self.registry_url}/plugins/search", params=params
+        )
         response.raise_for_status()
         return response.json()
 
@@ -179,7 +184,9 @@ class PluginRegistryClient:
 
     def get_popular_plugins(self, limit: int = 20) -> List[PluginInfo]:
         """Get most popular plugins"""
-        response = self.session.get(f"{self.registry_url}/plugins/popular", params={"limit": limit})
+        response = self.session.get(
+            f"{self.registry_url}/plugins/popular", params={"limit": limit}
+        )
         response.raise_for_status()
 
         plugins = []
@@ -245,8 +252,8 @@ class PluginSecurityManager:
         """Basic security scan of plugin code"""
         security_report = {"threats_found": [], "warnings": [], "safe": True}
 
-        # Scan NeuroCode files for potentially dangerous patterns
-        for neuro_file in plugin_path.glob("**/*.neuro"):
+        # Scan aetherra files for potentially dangerous patterns
+        for neuro_file in plugin_path.glob("**/*.aether"):
             content = neuro_file.read_text()
 
             dangerous_patterns = [
@@ -286,11 +293,13 @@ class PluginSecurityManager:
 class EnhancedPluginManager:
     """Enhanced plugin manager with registry integration"""
 
-    def __init__(self, plugins_dir: Optional[str] = None, registry_url: Optional[str] = None):
+    def __init__(
+        self, plugins_dir: Optional[str] = None, registry_url: Optional[str] = None
+    ):
         # Setup directories
         if plugins_dir is None:
             home = Path.home()
-            self.plugins_dir = home / ".neurocode" / "plugins"
+            self.plugins_dir = home / ".aethercode" / "plugins"
         else:
             self.plugins_dir = Path(plugins_dir)
 
@@ -300,7 +309,9 @@ class EnhancedPluginManager:
 
         # Initialize components
         self.registry = (
-            PluginRegistryClient(registry_url) if registry_url else PluginRegistryClient()
+            PluginRegistryClient(registry_url)
+            if registry_url
+            else PluginRegistryClient()
         )
         self.security = PluginSecurityManager()
         self.loaded_plugins: Dict[str, Any] = {}
@@ -309,12 +320,16 @@ class EnhancedPluginManager:
         self._plugin_cache: Dict[str, PluginInfo] = {}
         self._load_plugin_cache()
 
-        logger.info("🔌 Enhanced NeuroCode Plugin Manager initialized")
+        logger.info("🔌 Enhanced aetherra Plugin Manager initialized")
         logger.info(f"📁 Plugins directory: {self.plugins_dir}")
         logger.info(f"🌐 Registry: {self.registry.registry_url}")
 
     def install_plugin(
-        self, name: str, version: str = "latest", force: bool = False, skip_security: bool = False
+        self,
+        name: str,
+        version: str = "latest",
+        force: bool = False,
+        skip_security: bool = False,
     ) -> bool:
         """Install a plugin from the registry with enhanced validation"""
         try:
@@ -328,7 +343,9 @@ class EnhancedPluginManager:
             # Check if plugin already installed
             plugin_dir = self.plugins_dir / name
             if plugin_dir.exists() and not force:
-                logger.warning(f"⚠️  Plugin {name} already installed. Use --force to reinstall.")
+                logger.warning(
+                    f"⚠️  Plugin {name} already installed. Use --force to reinstall."
+                )
                 return False
 
             # Get plugin information
@@ -351,8 +368,12 @@ class EnhancedPluginManager:
                     if isinstance(v, dict) and v.get("requires_approval", False)
                 ]
                 if dangerous_perms:
-                    logger.warning(f"⚠️  Plugin requests dangerous permissions: {dangerous_perms}")
-                    if not self._prompt_user_approval(f"Allow dangerous permissions for {name}?"):
+                    logger.warning(
+                        f"⚠️  Plugin requests dangerous permissions: {dangerous_perms}"
+                    )
+                    if not self._prompt_user_approval(
+                        f"Allow dangerous permissions for {name}?"
+                    ):
                         return False
 
             # Download and extract plugin
@@ -383,7 +404,7 @@ class EnhancedPluginManager:
                     raise ValueError("Could not find plugin root directory")
 
                 # Validate plugin structure
-                manifest_path = plugin_root / "neurocode-plugin.json"
+                manifest_path = plugin_root / "aetherra-plugin.json"
                 if not manifest_path.exists():
                     raise ValueError("Plugin manifest not found")
 
@@ -413,7 +434,9 @@ class EnhancedPluginManager:
                 self._plugin_cache[name] = plugin_info
                 self._save_plugin_cache()
 
-                logger.info(f"✅ Plugin installed successfully: {name} v{manifest.version}")
+                logger.info(
+                    f"✅ Plugin installed successfully: {name} v{manifest.version}"
+                )
                 return True
 
         except Exception as e:
@@ -456,7 +479,7 @@ class EnhancedPluginManager:
 
         for plugin_dir in self.plugins_dir.iterdir():
             if plugin_dir.is_dir() and not plugin_dir.name.startswith("."):
-                manifest_path = plugin_dir / "neurocode-plugin.json"
+                manifest_path = plugin_dir / "aetherra-plugin.json"
                 if manifest_path.exists():
                     try:
                         manifest = self._parse_manifest(manifest_path)
@@ -545,23 +568,31 @@ class EnhancedPluginManager:
             # Compare versions using semantic versioning if available
             if semantic_version is not None:
                 try:
-                    if semantic_version.Version(current_version) >= semantic_version.Version(
-                        latest_version
-                    ):
-                        logger.info(f"✅ Plugin {name} is already up to date (v{current_version})")
+                    if semantic_version.Version(
+                        current_version
+                    ) >= semantic_version.Version(latest_version):
+                        logger.info(
+                            f"✅ Plugin {name} is already up to date (v{current_version})"
+                        )
                         return True
                 except Exception:
                     # Fallback to string comparison if semantic versioning fails
                     if current_version == latest_version:
-                        logger.info(f"✅ Plugin {name} is already up to date (v{current_version})")
+                        logger.info(
+                            f"✅ Plugin {name} is already up to date (v{current_version})"
+                        )
                         return True
             else:
                 # Simple string comparison fallback
                 if current_version == latest_version:
-                    logger.info(f"✅ Plugin {name} is already up to date (v{current_version})")
+                    logger.info(
+                        f"✅ Plugin {name} is already up to date (v{current_version})"
+                    )
                     return True
 
-            logger.info(f"🔄 Updating {name} from v{current_version} to v{latest_version}")
+            logger.info(
+                f"🔄 Updating {name} from v{current_version} to v{latest_version}"
+            )
             return self.install_plugin(name, latest_version, force=True)
 
         except Exception as e:
@@ -573,10 +604,19 @@ class EnhancedPluginManager:
         with open(manifest_path) as f:
             data = json.load(f)
 
-        required_fields = ["name", "version", "description", "category", "author", "license"]
+        required_fields = [
+            "name",
+            "version",
+            "description",
+            "category",
+            "author",
+            "license",
+        ]
         for required_field in required_fields:
             if required_field not in data:
-                raise ValueError(f"Missing required field in manifest: {required_field}")
+                raise ValueError(
+                    f"Missing required field in manifest: {required_field}"
+                )
 
         return PluginManifest.from_dict(data)
 
@@ -584,7 +624,7 @@ class EnhancedPluginManager:
         """Find the root directory of extracted plugin"""
         # Look for manifest file
         for root, _dirs, files in os.walk(extract_dir):
-            if "neurocode-plugin.json" in files:
+            if "aetherra-plugin.json" in files:
                 return Path(root)
         return None
 
@@ -629,7 +669,9 @@ class EnhancedPluginManager:
                 "installed": info.installed,
                 "download_count": info.download_count,
                 "rating": info.rating,
-                "last_updated": info.last_updated.isoformat() if info.last_updated else None,
+                "last_updated": info.last_updated.isoformat()
+                if info.last_updated
+                else None,
             }
 
         try:
@@ -659,8 +701,8 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="NeuroCode Enhanced Plugin Manager",
-        epilog="Use 'neurocode plugin <command> --help' for command-specific help",
+        description="aetherra Enhanced Plugin Manager",
+        epilog="Use 'aetherra plugin <command> --help' for command-specific help",
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -669,7 +711,9 @@ def main():
     install_parser = subparsers.add_parser("install", help="Install a plugin")
     install_parser.add_argument("name", help="Plugin name")
     install_parser.add_argument("--version", default="latest", help="Plugin version")
-    install_parser.add_argument("--force", action="store_true", help="Force reinstallation")
+    install_parser.add_argument(
+        "--force", action="store_true", help="Force reinstallation"
+    )
     install_parser.add_argument(
         "--skip-security", action="store_true", help="Skip security validation"
     )
@@ -680,11 +724,15 @@ def main():
 
     # Update command
     update_parser = subparsers.add_parser("update", help="Update a plugin")
-    update_parser.add_argument("name", nargs="?", help="Plugin name (update all if not specified)")
+    update_parser.add_argument(
+        "name", nargs="?", help="Plugin name (update all if not specified)"
+    )
 
     # List command
     list_parser = subparsers.add_parser("list", help="List installed plugins")
-    list_parser.add_argument("--detailed", action="store_true", help="Show detailed information")
+    list_parser.add_argument(
+        "--detailed", action="store_true", help="Show detailed information"
+    )
 
     # Search command
     search_parser = subparsers.add_parser("search", help="Search plugin registry")
@@ -698,7 +746,9 @@ def main():
 
     # Popular command
     popular_parser = subparsers.add_parser("popular", help="Show popular plugins")
-    popular_parser.add_argument("--limit", type=int, default=20, help="Number of plugins to show")
+    popular_parser.add_argument(
+        "--limit", type=int, default=20, help="Number of plugins to show"
+    )
 
     args = parser.parse_args()
 
@@ -735,7 +785,7 @@ def main():
     elif args.command == "list":
         plugins = manager.list_installed_plugins()
         if plugins:
-            print(f"\n🔌 Installed NeuroCode Plugins ({len(plugins)}):")
+            print(f"\n🔌 Installed aetherra Plugins ({len(plugins)}):")
             print("=" * 60)
 
             for plugin in plugins:
@@ -752,12 +802,16 @@ def main():
                         f"    Author: {plugin.manifest.author} | License: {plugin.manifest.license}"
                     )
                     if plugin.download_count:
-                        print(f"    Downloads: {plugin.download_count:,} | Rating: {rating_stars}")
+                        print(
+                            f"    Downloads: {plugin.download_count:,} | Rating: {rating_stars}"
+                        )
                     if plugin.manifest.keywords:
                         print(f"    Keywords: {', '.join(plugin.manifest.keywords)}")
                 print()
         else:
-            print("No plugins installed. Use 'neurocode plugin search' to discover plugins.")
+            print(
+                "No plugins installed. Use 'aetherra plugin search' to discover plugins."
+            )
 
     elif args.command == "search":
         tags = args.tags.split(",") if args.tags else None
@@ -791,20 +845,24 @@ def main():
         plugins = manager.get_popular_plugins(args.limit)
 
         if plugins:
-            print(f"\n🌟 Most Popular NeuroCode Plugins (Top {len(plugins)}):")
+            print(f"\n🌟 Most Popular aetherra Plugins (Top {len(plugins)}):")
             print("=" * 60)
 
             for i, plugin in enumerate(plugins, 1):
                 rating_stars = "⭐" * int(plugin.rating)
                 print(f"{i:2d}. {plugin.manifest.name} v{plugin.manifest.version}")
                 print(f"     {plugin.manifest.description}")
-                print(f"     Downloads: {plugin.download_count:,} | Rating: {rating_stars}")
+                print(
+                    f"     Downloads: {plugin.download_count:,} | Rating: {rating_stars}"
+                )
                 print()
 
     elif args.command == "info":
         try:
             # Check if plugin is installed locally first
-            installed_plugins = {p.manifest.name: p for p in manager.list_installed_plugins()}
+            installed_plugins = {
+                p.manifest.name: p for p in manager.list_installed_plugins()
+            }
 
             if args.name in installed_plugins:
                 plugin = installed_plugins[args.name]

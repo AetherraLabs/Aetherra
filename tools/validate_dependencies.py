@@ -106,7 +106,9 @@ def validate_optional_dependencies():
         print("⚠️ PyQt6: Not available")
 
     if not gui_available:
-        print("ℹ️ No GUI frameworks available - install PySide6 or PyQt6 for GUI features")
+        print(
+            "ℹ️ No GUI frameworks available - install PySide6 or PyQt6 for GUI features"
+        )
 
     # Local AI models
     try:
@@ -126,7 +128,7 @@ def validate_imports():
     sys.path.insert(0, str(project_root))
 
     try:
-        from core.neurocode_grammar import create_neurocode_parser
+        from core.aethercode_grammar import create_neurocode_parser
 
         parser = create_neurocode_parser()
         print("✅ NeuroCode Grammar Parser: Working")

@@ -82,19 +82,19 @@ class CommandRegistry:
             ),
             Command(
                 name="run",
-                category=CommandCategory.NEUROCODE,
+                category=CommandCategory.aetherCODE,
                 description="Execute NeuroCode program",
-                usage="run <file.neuro> [args...]",
-                examples=["run hello.neuro", "run demo.neuro --verbose"],
+                usage="run <file.aether> [args...]",
+                examples=["run hello.aether", "run demo.aether --verbose"],
                 aliases=["execute", "exec"],
                 shortcuts=["Ctrl+R"],
             ),
             Command(
                 name="parse",
-                category=CommandCategory.NEUROCODE,
+                category=CommandCategory.aetherCODE,
                 description="Parse NeuroCode file and show AST",
-                usage="parse <file.neuro>",
-                examples=["parse hello.neuro"],
+                usage="parse <file.aether>",
+                examples=["parse hello.aether"],
                 aliases=["ast"],
                 shortcuts=["Ctrl+P"],
             ),
@@ -137,8 +137,8 @@ class CommandRegistry:
                 name="debug",
                 category=CommandCategory.DEBUG,
                 description="Debug NeuroCode programs",
-                usage="debug <file.neuro> [breakpoints...]",
-                examples=["debug test.neuro", "debug app.neuro 10 25"],
+                usage="debug <file.aether> [breakpoints...]",
+                examples=["debug test.aether", "debug app.aether 10 25"],
                 aliases=["dbg"],
                 shortcuts=["F5"],
             ),
@@ -255,7 +255,9 @@ class CommandSuggestions:
         if len(self.usage_history) > self.max_history:
             self.usage_history.pop(0)
 
-    def get_suggestions(self, partial_input: str, max_suggestions: int = 10) -> List[Suggestion]:
+    def get_suggestions(
+        self, partial_input: str, max_suggestions: int = 10
+    ) -> List[Suggestion]:
         """Get command suggestions for partial input"""
         suggestions = []
 
@@ -272,12 +274,19 @@ class CommandSuggestions:
         unique_suggestions = {}
         for suggestion in suggestions:
             key = suggestion.command.name
-            if key not in unique_suggestions or suggestion.score > unique_suggestions[key].score:
+            if (
+                key not in unique_suggestions
+                or suggestion.score > unique_suggestions[key].score
+            ):
                 unique_suggestions[key] = suggestion
 
         sorted_suggestions = sorted(
             unique_suggestions.values(),
-            key=lambda s: (s.score, s.context_match, self._get_popularity_score(s.command.name)),
+            key=lambda s: (
+                s.score,
+                s.context_match,
+                self._get_popularity_score(s.command.name),
+            ),
             reverse=True,
         )
 
@@ -378,7 +387,9 @@ class CommandSuggestions:
             command_counts[base_cmd] += 1
 
         # Get top commands
-        popular_commands = sorted(command_counts.items(), key=lambda x: x[1], reverse=True)
+        popular_commands = sorted(
+            command_counts.items(), key=lambda x: x[1], reverse=True
+        )
 
         for cmd_name, freq in popular_commands[:count]:
             command = self.registry.get_command(cmd_name)
@@ -398,7 +409,9 @@ class CommandSuggestions:
                 command = self.registry.get_command(cmd_name)
                 if command:
                     suggestions.append(
-                        Suggestion(command=command, score=0.5, reason="Default popular command")
+                        Suggestion(
+                            command=command, score=0.5, reason="Default popular command"
+                        )
                     )
 
         return suggestions
@@ -409,7 +422,9 @@ class CommandSuggestions:
         count = sum(1 for cmd in recent_history if cmd.startswith(command_name))
         return count / len(recent_history) if recent_history else 0
 
-    def get_parameter_suggestions(self, command_name: str, current_params: List[str]) -> List[str]:
+    def get_parameter_suggestions(
+        self, command_name: str, current_params: List[str]
+    ) -> List[str]:
         """Get parameter suggestions for a specific command"""
         command = self.registry.get_command(command_name)
         if not command or not command.parameters:

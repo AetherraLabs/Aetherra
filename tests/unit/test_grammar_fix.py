@@ -3,7 +3,7 @@
 Quick test to verify the multi-LLM grammar fix
 """
 
-from core.neurocode_grammar import create_neurocode_parser
+from core.aethercode_grammar import create_neurocode_parser
 
 
 def test_grammar_fix():

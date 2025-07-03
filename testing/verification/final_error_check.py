@@ -46,7 +46,7 @@ def check_cli_modules():
 
     try:
         # Check if CLI is available
-        from neurocode import CLI_AVAILABLE
+        from aetherra import CLI_AVAILABLE
 
         print(f"✅ CLI availability status: {CLI_AVAILABLE}")
 
