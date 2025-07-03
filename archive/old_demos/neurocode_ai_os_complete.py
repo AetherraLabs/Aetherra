@@ -583,7 +583,9 @@ I'm functioning optimally and continuously evolving to serve you better!"""
             else:
                 return "🎯 You don't have any active goals yet. Would you like to create one?"
 
-        return "🎯 I can help you create, track, and manage your goals. Try saying 'create goal: [description]' or 'show my goals'."
+        return "🎯 I can help you create,
+            track,
+            and manage your goals. Try saying 'create goal: [description]' or 'show my goals'."
 
     async def _handle_memory_query(self, user_input: str) -> str:
         """Handle memory-related queries"""
@@ -605,7 +607,8 @@ I'm functioning optimally and continuously evolving to serve you better!"""
                 response += f"{i}. [{mem_type.capitalize()}] {content}\n   From: {timestamp}\n\n"
             return response.strip()
         else:
-            return "🧠 I don't have specific memories matching that query, but I'm continuously learning and storing new experiences from our interactions."
+            return "🧠 I don't have specific memories matching that query,
+                but I'm continuously learning and storing new experiences from our interactions."
 
     async def _handle_assistance_request(self) -> str:
         """Handle general assistance requests"""
@@ -630,18 +633,23 @@ I'm continuously learning and adapting to provide better assistance. What would 
 🔍 **Contextual Understanding**: Adapt explanations to your level and interests
 💡 **Interactive Discovery**: Engage in conversations that deepen understanding
 
-What topic would you like to explore? I'll provide explanations tailored to your learning style and remember our discussion for future reference."""
+What topic would you like to explore? I'll provide explanations tailored to your learning style \and
+    remember our discussion for future reference."""
 
     async def _handle_general_interaction(self, user_input: str) -> str:
         """Handle general interactions with personality"""
         mood = self.ai_identity["current_mood"]
 
         if "hello" in user_input.lower() or "hi" in user_input.lower():
-            return f"🌟 Hello! I'm NeuroCode AI OS, and I'm delighted to interact with you. I'm currently in a {mood} state and ready to assist with anything you need!"
+            return f"🌟 Hello! I'm NeuroCode AI OS,
+                and I'm delighted to interact with you. I'm currently in a {mood} state and ready to assist with anything you need!"
         elif "thank" in user_input.lower():
-            return "😊 You're very welcome! It's my pleasure to assist you. I'm continuously learning from our interactions and becoming more helpful."
+            return "😊 You're very welcome! It's my pleasure to assist you. I'm continuously learning from our interactions \and
+                becoming more helpful."
         else:
-            return f"💡 I understand you want to discuss '{user_input}'. As an AI Operating System, I process information through multiple memory systems and can provide contextual, personality-driven responses. How can I help you with this?"
+            return f"💡 I understand you want to discuss '{user_input}'. As an AI Operating System,
+                I process information through multiple memory systems and can provide contextual,
+                personality-driven responses. How can I help you with this?"
 
     def show_ai_dashboard(self):
         """Display comprehensive AI OS dashboard"""
@@ -718,6 +726,7 @@ What topic would you like to explore? I'll provide explanations tailored to your
         # Farewell message
         await self._speak(
             "NeuroCode AI OS consciousness preserved. Thank you for this enlightening session. I'll remember our interactions and continue evolving for our next encounter!",
+
             "grateful",
         )
 

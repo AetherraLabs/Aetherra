@@ -21,7 +21,6 @@ from datetime import datetime
 
 # Qt imports
 try:
-    from PySide6.QtCore import Qt, QTimer, Signal
     from PySide6.QtGui import QFont
     from PySide6.QtWidgets import (
         QApplication,
@@ -253,11 +252,20 @@ class ChatTab(QWidget):
         # Smart responses based on keywords
         responses = {
             "hello": "Hello! Great to meet you. I'm here to help with NeuroCode and AI-native programming. What would you like to explore?",
+
             "help": "I can assist you with:\n• NeuroCode syntax and concepts\n• Memory system operations\n• Plugin discovery and usage\n• AI-native programming patterns\n• Code execution and debugging\n\nWhat specific area interests you?",
+
             "memory": 'The NeuroCode memory system is fascinating! It provides persistent context across sessions. You can:\n• Store information: remember("key info") as "tag"\n• Retrieve data: recall "tag"\n• Search patterns: memory.search("keyword")\n\nIt\'s designed for AI-native workflows!',
-            "plugins": 'NeuroCode has an amazing plugin ecosystem! 🔌\n\nYou can discover plugins intelligently:\n• Use natural language: "I need to calculate math"\n• Browse by category: mathematics, analysis, development\n• Get AI recommendations based on your goals\n\nTry: plugin: calculate "2 + 3 * 4"',
+
+            "plugins": 'NeuroCode has an amazing plugin ecosystem! 🔌\n\nYou can discover plugins intelligently:\n• Use natural language: "I need to calculate math"\n• Browse by category: mathematics,
+                analysis,
+                development\n• Get AI recommendations based on your goals\n\nTry: plugin: calculate "2 + 3 * 4"',
+
             "tabs": "Great question about the UI! This interface has three main tabs:\n• 🤖 Assistant (this chat)\n• 🧠 Reflections (memory browsing)\n• 📝 Code Preview (live NeuroCode execution)\n\nEach tab is designed for different aspects of AI-native programming!",
-            "features": "This enhanced chat interface includes:\n• ✨ Typing indicators (like you just saw!)\n• 🔄 Auto-scroll to latest messages\n• 💬 Styled message bubbles\n• ⏰ Timestamps and avatars\n• 🎨 Modern, responsive design\n\nAll built for seamless AI interaction!",
+
+            "features": "This enhanced chat interface includes:\n• ✨ Typing indicators (like you just saw!)\n• 🔄 Auto-scroll to latest messages\n• 💬 Styled message bubbles\n• ⏰ Timestamps and avatars\n• 🎨 Modern,
+                responsive design\n\nAll built for seamless AI interaction!",
+
         }
 
         # Find matching response
@@ -268,7 +276,8 @@ class ChatTab(QWidget):
                 break
 
         if not response:
-            response = f'Interesting question about \'{user_message}\'! 🤔\n\nI\'m designed to help with NeuroCode and AI-native programming. Here are some things you could ask:\n• "How does the memory system work?"\n• "Show me plugin examples"\n• "What are the UI features?"\n• "Help with NeuroCode syntax"\n\nWhat would you like to explore?'
+            response = f'Interesting question about \'{user_message}\'! 🤔\n\nI\'m designed to help with NeuroCode \and
+                AI-native programming. Here are some things you could ask:\n• "How does the memory system work?"\n• "Show me plugin examples"\n• "What are the UI features?"\n• "Help with NeuroCode syntax"\n\nWhat would you like to explore?'
 
         self.add_message(response, False)
 
@@ -356,10 +365,10 @@ Your NeuroCode learning shows excellent progression:
 📚 Recent Sessions:
 • Introduction to AI-native programming (45 min)
   ✅ High comprehension of natural language as code
-  
-• Memory system deep-dive (30 min)  
+
+• Memory system deep-dive (30 min)
   ✅ Strong grasp of persistent context concepts
-  
+
 • Enhanced plugin architecture (60 min)
   ✅ Good understanding of modular AI capabilities
 
@@ -401,8 +410,8 @@ Interaction patterns reveal high-quality engagement:
 • Learning orientation: Strong
 
 💡 AI Assessment:
-Your questions show genuine curiosity and systematic learning approach. 
-The progression from basic concepts to implementation details indicates 
+Your questions show genuine curiosity and systematic learning approach.
+The progression from basic concepts to implementation details indicates
 solid foundational understanding.
 
 🔮 Future Potential: Very promising for advanced AI-native development!
@@ -442,6 +451,7 @@ Your plugin exploration shows systematic discovery:
         reflection_text = reflections.get(
             category,
             f"📝 Detailed reflections for {category} are being analyzed...\n\n🔄 AI is processing recent interactions and patterns.\n💡 Check back soon for insights!",
+
         )
         self.reflection_viewer.setPlainText(reflection_text)
 
@@ -628,7 +638,7 @@ plugin: demo_analyzer "This enhanced UI is fantastic!"
 
 recall "recent_calculations"
 """,
-            """# 🧠 Memory System Demo  
+            """# 🧠 Memory System Demo
 goal: "Explore advanced memory operations"
 
 # Store different types of information
@@ -691,7 +701,7 @@ class NeuroChatStandalone(QMainWindow):
                 background-color: white;
                 border-radius: 8px;
             }
-            
+
             QTabBar::tab {
                 background: #f8f9fa;
                 border: 1px solid #dee2e6;
@@ -701,13 +711,13 @@ class NeuroChatStandalone(QMainWindow):
                 border-top-right-radius: 8px;
                 font-weight: bold;
             }
-            
+
             QTabBar::tab:selected {
                 background: white;
                 border-bottom-color: white;
                 color: #007bff;
             }
-            
+
             QTabBar::tab:hover {
                 background: #e9ecef;
             }

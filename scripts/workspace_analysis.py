@@ -5,7 +5,6 @@ Analyzes project structure, imports, dependencies, and configuration
 """
 
 import ast
-import importlib.util
 import json
 import os
 import sys

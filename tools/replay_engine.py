@@ -508,17 +508,17 @@ class InteractiveReplayDebugger:
         session_id = self.replay_engine.start_replay_session(agent_name, decision_trace)
         self.current_session = session_id
 
-        print(f"🎬 Started debug session for agent '{agent_name}'")
+#         print(f"🎬 Started debug session for agent '{agent_name}'")
         print(f"📋 Session ID: {session_id}")
         print(f"🎯 Total decisions: {len(decision_trace)}")
-        print("\nUse debug commands: step, back, breakpoint, inspect, analyze, help")
+#         print("\nUse debug commands: step, back, breakpoint, inspect, analyze, help")
 
         return session_id
 
     def debug_command(self, command: str, *args) -> Any:
         """Execute debug command"""
         if not self.current_session:
-            print("❌ No active debug session. Start one first.")
+#             print("❌ No active debug session. Start one first.")
             return
 
         try:
@@ -640,7 +640,7 @@ class InteractiveReplayDebugger:
 
     def _show_help(self):
         """Show help information"""
-        print("\n🆘 Debug Commands:")
+#         print("\n🆘 Debug Commands:")
         print("  step [n]        - Step forward n positions (default: 1)")
         print("  back [n]        - Step backward n positions (default: 1)")
         print("  breakpoint <pos> - Set breakpoint at position")
@@ -694,7 +694,7 @@ if __name__ == "__main__":
 
     # Test interactive debugger
     debugger = InteractiveReplayDebugger(engine)
-    print("\n🎬 Testing interactive debugger...")
+#     print("\n🎬 Testing interactive debugger...")
     debugger.start_debug_session("TestAgent", sample_decisions)
 
-    print("🎯 Use debugger.debug_command('step') to test commands")
+#     print("🎯 Use debugger.debug_command('step') to test commands")

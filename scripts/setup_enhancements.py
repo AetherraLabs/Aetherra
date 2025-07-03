@@ -244,19 +244,19 @@ from enhanced_interpreter import create_enhanced_interpreter
 def run_demo():
     print("🧬 NeuroCode Enhancement Demo")
     print("=" * 50)
-    
+
     interpreter = create_enhanced_interpreter()
-    
+
     # Show status
     status = interpreter.get_enhancement_status()
     print(f"🚀 Enhancements Available: {status['enhancements_available']}")
-    
+
     if not status['enhancements_available']:
         print("❌ Enhancements not available. Run setup_enhancements.py first.")
         return
-    
+
     print("\\n🎯 Demo Commands:")
-    
+
     demo_commands = [
         ("Natural Language", "Create a REST API for user authentication"),
         ("AI Query", "ai: What are the benefits of NeuroCode?"),
@@ -264,17 +264,17 @@ def run_demo():
         ("Local AI Status", "local_ai status"),
         ("Pattern Analysis", "analyze_patterns")
     ]
-    
+
     for description, command in demo_commands:
         print(f"\\n📝 {description}:")
         print(f"   Command: {command}")
-        
+
         try:
             result = interpreter.execute_neurocode(command)
             print(f"   Result: {result[:150]}..." if len(result) > 150 else f"   Result: {result}")
         except Exception as e:
             print(f"   Error: {e}")
-    
+
     print("\\n✅ Demo completed! NeuroCode is ready for the future!")
 
 if __name__ == "__main__":

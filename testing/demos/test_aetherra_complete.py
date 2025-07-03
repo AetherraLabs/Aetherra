@@ -298,14 +298,12 @@ def test_ui_system():
 
         # Test QApplication availability (without actually launching)
         try:
-            from PySide6.QtWidgets import QApplication
 
             print("  ✅ PySide6 Qt framework available")
             test_results["qt_framework"] = "✅ SUCCESS"
         except ImportError:
             print("  ⚠️ PySide6 not available, checking PySide2...")
             try:
-                from PySide2.QtWidgets import QApplication
 
                 print("  ✅ PySide2 Qt framework available")
                 test_results["qt_framework"] = "✅ SUCCESS (PySide2)"
@@ -528,7 +526,7 @@ def main():
     """Run the complete NeuroCode test suite."""
     print("🧬 NEUROCODE COMPREHENSIVE TESTING SUITE")
     print("=" * 50)
-    print("Testing NeuroCode as a complete AI-native programming language...")
+#     print("Testing NeuroCode as a complete AI-native programming language...")
 
     all_results = {}
 

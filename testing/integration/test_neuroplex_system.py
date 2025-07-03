@@ -7,7 +7,6 @@ Comprehensive testing of the Neuroplex system to ensure all components
 work together correctly.
 """
 
-import importlib.util
 import sys
 import traceback
 from pathlib import Path
@@ -56,7 +55,6 @@ def test_neurocode_launcher():
 
     try:
         # Test import
-        import aetherra_launcher
 
         print("  ✅ neurocode_launcher.py: Import successful")
 
@@ -232,7 +230,7 @@ def main():
     """Run comprehensive Neuroplex test suite"""
     print("🧪 Neuroplex System Test Suite")
     print("=" * 50)
-    print("Testing all Neuroplex components and integrations...\n")
+#     print("Testing all Neuroplex components and integrations...\n")
 
     tests = [
         ("Neuroplex Imports", test_neuroplex_imports),

@@ -15,8 +15,6 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from core.modern_parser import ASTNodeType, NeuroCodeModernParser
-    from core.syntax_tree import AetherraParser, NodeType
 
     MODERN_PARSER_AVAILABLE = True
 except ImportError as e:

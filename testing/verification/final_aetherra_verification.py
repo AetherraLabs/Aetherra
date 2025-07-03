@@ -175,7 +175,7 @@ def main():
     """Run all final verification tests"""
     print("🧬 NEUROCODE FINAL VERIFICATION")
     print("=" * 50)
-    print("Testing NeuroCode as a complete AI-native programming system...")
+#     print("Testing NeuroCode as a complete AI-native programming system...")
 
     test_results = []
 

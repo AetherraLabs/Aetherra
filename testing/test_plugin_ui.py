@@ -36,7 +36,7 @@ def test_plugin_manager_integration():
         print()
 
         # Test UI plugin manager
-        print("Testing UI Plugin Manager integration...")
+#         print("Testing UI Plugin Manager integration...")
 
         # Mock Qt imports for testing
         class MockWidget:

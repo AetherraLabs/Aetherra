@@ -250,7 +250,7 @@ git commit -m "🧬 Initial commit: NeuroCode - The First AI-Native Programming 
 
 ✨ Features:
 - Revolutionary cognitive programming paradigm
-- AI-powered interpreter with self-awareness  
+- AI-powered interpreter with self-awareness
 - Advanced memory and goal systems
 - Self-editing and auto-debug capabilities
 - Modern GUI with real-time visualization

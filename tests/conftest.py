@@ -13,7 +13,6 @@ sys.path.insert(0, str(project_root))
 
 # Try to import Qt for testing
 try:
-    from PySide6.QtCore import Qt
     from PySide6.QtWidgets import QApplication
 
     QT_AVAILABLE = True

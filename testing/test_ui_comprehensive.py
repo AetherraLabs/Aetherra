@@ -21,7 +21,6 @@ def test_fallback_implementations():
     print("\n=== Testing Qt Fallback Implementations ===")
 
     try:
-        from src.aethercode.ui.qt_fallbacks import (
             QApplication,
             QLabel,
             QMainWindow,
@@ -124,7 +123,6 @@ def test_neuroplex_fixed():
 
     try:
         # Import without actually running the GUI
-        import importlib.util
 
         spec = importlib.util.spec_from_file_location(
             "neuroplex_fixed", "src/neurocode/ui/neuroplex_fixed.py"
@@ -241,7 +239,7 @@ def run_comprehensive_test():
 
     # Summary
     print("\n" + "=" * 60)
-    print("TEST SUMMARY")
+#     print("TEST SUMMARY")
     print("=" * 60)
 
     passed = 0

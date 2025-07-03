@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Test modified files to ensure they can be imported."""
 
-import importlib.util
 import os
 import sys
 

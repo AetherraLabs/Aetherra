@@ -52,7 +52,7 @@ class NeuroDebugSystem:
         self.memory.remember(error_description, tags=["debug", "error"], category="debugging")
         self.error_history.append(error_info)
 
-        print(f"🐛 [Debug] Error detected and stored: {error_description}")
+#         print(f"🐛 [Debug] Error detected and stored: {error_description}")
         return error_info
 
     def _extract_line_number(self, error: Exception) -> Optional[int]:
@@ -72,7 +72,7 @@ class NeuroDebugSystem:
 
     def suggest_fix(self, error_info: Dict) -> Dict:
         """Step 2: AI-Driven Fix Suggestion"""
-        print("🔧 [Debug] Analyzing error and suggesting fix...")
+#         print("🔧 [Debug] Analyzing error and suggesting fix...")
 
         # Get relevant context
         file_content = ""
@@ -138,7 +138,7 @@ CODE:
         )
         self.memory.remember(fix_summary, tags=["debug", "fix", "suggestion"], category="debugging")
 
-        print(f"🤖 [Debug] Fix suggested with {fix_suggestion.get('confidence', 0)}% confidence")
+#         print(f"🤖 [Debug] Fix suggested with {fix_suggestion.get('confidence', 0)}% confidence")
         return fix_suggestion
 
     def _parse_fix_response(self, ai_response: str) -> Dict:
@@ -197,7 +197,7 @@ CODE:
 
         # Check if we should apply automatically
         if not force and not self.auto_apply_enabled:
-            print("⚠️ [Debug] Auto-apply disabled. Use 'apply fix force' to apply manually.")
+#             print("⚠️ [Debug] Auto-apply disabled. Use 'apply fix force' to apply manually.")
             return False
 
         if not force and confidence < self.fix_confidence_threshold:
@@ -207,24 +207,24 @@ CODE:
             return False
 
         if not force and risk == "high":
-            print("⚠️ [Debug] High risk fix detected. Use 'apply fix force' to override.")
+#             print("⚠️ [Debug] High risk fix detected. Use 'apply fix force' to override.")
             return False
 
         error_info = fix_suggestion["original_error"]
         file_path = error_info["file_path"]
 
         if not file_path or not os.path.exists(file_path):
-            print(f"❌ [Debug] Cannot apply fix - file not found: {file_path}")
+#             print(f"❌ [Debug] Cannot apply fix - file not found: {file_path}")
             return False
 
         if not fix_suggestion.get("code"):
-            print("❌ [Debug] No code provided in fix suggestion")
+#             print("❌ [Debug] No code provided in fix suggestion")
             return False
 
         try:
             # Create backup
             backup_path = self._create_backup(file_path)
-            print(f"💾 [Debug] Backup created: {backup_path}")
+#             print(f"💾 [Debug] Backup created: {backup_path}")
 
             # Apply fix
             with open(file_path, "w", encoding="utf-8") as f:
@@ -238,16 +238,16 @@ CODE:
                     tags=["debug", "fix", "success"],
                     category="debugging",
                 )
-                print(f"✅ [Debug] Fix applied successfully to {file_path}")
+#                 print(f"✅ [Debug] Fix applied successfully to {file_path}")
                 return True
             else:
                 # Restore backup if validation fails
                 shutil.copy2(backup_path, file_path)
-                print("❌ [Debug] Fix validation failed - backup restored")
+#                 print("❌ [Debug] Fix validation failed - backup restored")
                 return False
 
         except Exception as e:
-            print(f"❌ [Debug] Error applying fix: {e}")
+#             print(f"❌ [Debug] Error applying fix: {e}")
             return False
 
     def _create_backup(self, file_path: str) -> str:
@@ -272,15 +272,15 @@ CODE:
 
             return True
         except SyntaxError as e:
-            print(f"⚠️ [Debug] Syntax error in fixed file: {e}")
+#             print(f"⚠️ [Debug] Syntax error in fixed file: {e}")
             return False
         except Exception as e:
-            print(f"⚠️ [Debug] Validation error: {e}")
+#             print(f"⚠️ [Debug] Validation error: {e}")
             return False
 
     def auto_debug_loop(self, error: Exception, context: str = "", file_path: str = "") -> bool:
         """Complete automatic debug loop"""
-        print("🔄 [Debug] Starting auto-debug loop...")
+#         print("🔄 [Debug] Starting auto-debug loop...")
 
         # Step 1: Detect and store error
         error_info = self.detect_and_store_error(error, context, file_path)
@@ -292,7 +292,7 @@ CODE:
         if fix_suggestion.get("confidence", 0) >= self.fix_confidence_threshold:
             return self.apply_fix(fix_suggestion)
         else:
-            print("🤔 [Debug] Confidence too low for auto-apply. Manual review needed.")
+#             print("🤔 [Debug] Confidence too low for auto-apply. Manual review needed.")
             return False
 
     def set_auto_apply(self, enabled: bool, confidence_threshold: int = 80):
@@ -301,7 +301,7 @@ CODE:
         self.fix_confidence_threshold = confidence_threshold
 
         status = "enabled" if enabled else "disabled"
-        print(f"🔧 [Debug] Auto-apply {status} (confidence threshold: {confidence_threshold}%)")
+#         print(f"🔧 [Debug] Auto-apply {status} (confidence threshold: {confidence_threshold}%)")
 
         # Store setting in memory
         self.memory.remember(
@@ -327,7 +327,7 @@ CODE:
         """Display current debug system status"""
         stats = self.get_debug_stats()
 
-        print("🐛 DEBUG SYSTEM STATUS")
+#         print("🐛 DEBUG SYSTEM STATUS")
         print("=" * 30)
         print(f"Auto-apply: {'✅ Enabled' if stats['auto_apply_enabled'] else '❌ Disabled'}")
         print(f"Confidence threshold: {stats['confidence_threshold']}%")

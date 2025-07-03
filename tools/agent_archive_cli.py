@@ -43,22 +43,22 @@ class AgentArchiveCLI:
 Examples:
   # Export current agent state
   neurocode agent export MyAgent --version 1.0 --description "Production optimizer"
-  
+
   # Import agent archive
   neurocode agent import MyAgent_v1.0.nse --merge-mode replace
-  
+
   # Merge two agents
   neurocode agent merge agent1.nse agent2.nse --output merged_agent.nse
-  
+
   # List available archives
   neurocode agent list
-  
+
   # Preview archive contents
   neurocode agent preview MyAgent_v1.0.nse
-  
+
   # Start replay session
   neurocode agent replay MyAgent_v1.0.nse --interactive
-  
+
   # Analyze decision patterns
   neurocode agent analyze MyAgent_v1.0.nse
             """,
@@ -402,7 +402,7 @@ Examples:
                 debugger = InteractiveReplayDebugger(self.replay_engine)
                 session_id = debugger.start_debug_session(agent_name, filtered_traces)
 
-                print("\n🎮 Interactive Debug Mode")
+#                 print("\n🎮 Interactive Debug Mode")
                 print("Enter commands (type 'help' for available commands):")
 
                 while True:
@@ -421,7 +421,7 @@ Examples:
                         debugger.debug_command(command, *args)
 
                     except KeyboardInterrupt:
-                        print("\n👋 Exiting debug session...")
+#                         print("\n👋 Exiting debug session...")
                         break
                     except EOFError:
                         break

@@ -144,7 +144,7 @@ class RevolutionaryPersonaCLI:
         while True:
             print("\n" + "─" * 50)
             print("🎯 Choose a scenario to see contextual adaptation:")
-            print("1. 🐛 Debug a critical production error")
+#             print("1. 🐛 Debug a critical production error")
             print("2. 🎨 Create a new prototype feature")
             print("3. 📚 Learn about machine learning")
             print("4. 🚨 Emergency system outage")
@@ -183,11 +183,11 @@ class RevolutionaryPersonaCLI:
 
     def _demo_debugging_scenario(self):
         """Demo debugging scenario with Guardian persona adaptation"""
-        print("\n🐛 DEBUGGING SCENARIO")
+#         print("\n🐛 DEBUGGING SCENARIO")
         print("=" * 30)
         print("Context: Production database connection failing")
         print("Error: 'Connection timeout after 30 seconds'")
-        print("User command: 'help me debug this database issue'")
+#         print("User command: 'help me debug this database issue'")
 
         # Detect context
         situation = self._safe_detect_context(
@@ -513,7 +513,8 @@ class RevolutionaryPersonaCLI:
             if self.persona_engine:
                 self.persona_engine.set_persona(archetype)
                 print(
-                    f"\n✅ Switched to {archetype.title() if isinstance(archetype, str) else archetype.value.title()} persona!"
+                    f"\n✅ Switched to {archetype.title() if isinstance(archetype,
+                        str) else archetype.value.title()} persona!"
                 )
                 self._show_current_persona()
             else:
@@ -565,13 +566,17 @@ class RevolutionaryPersonaCLI:
 
         # Base response based on context
         if context_type == ContextType.DEBUGGING:
-            base_response = "I'll help you systematically debug this issue. Let's start by examining the error patterns and checking the most likely causes first."
+            base_response = "I'll help you systematically debug this issue. Let's start by examining the error patterns \and
+                checking the most likely causes first."
         elif context_type == ContextType.CREATING:
-            base_response = "Exciting! I love helping with creative projects. Let's explore some innovative approaches and build something amazing together."
+            base_response = "Exciting! I love helping with creative projects. Let's explore some innovative approaches \and
+                build something amazing together."
         elif context_type == ContextType.LEARNING:
-            base_response = "Great question! I'll explain this step-by-step, building on what you already know and providing practical examples."
+            base_response = "Great question! I'll explain this step-by-step,
+                building on what you already know and providing practical examples."
         elif context_type == ContextType.EMERGENCY:
-            base_response = "I understand this is urgent. Let's focus on immediate stabilization first, then identify the root cause."
+            base_response = "I understand this is urgent. Let's focus on immediate stabilization first,
+                then identify the root cause."
         else:
             base_response = "I'm here to help you with this task. Let's break it down and tackle it together."
 

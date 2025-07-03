@@ -21,6 +21,7 @@ from core.plugin_manager import register_plugin
         "gathering reference material"
     ],
     ai_description="Performs privacy-focused web searches using DuckDuckGo. Returns relevant search results for research and information gathering.",
+
     example_usage="plugin: search_query 'latest AI research papers'",
     confidence_boost=1.2,
 )

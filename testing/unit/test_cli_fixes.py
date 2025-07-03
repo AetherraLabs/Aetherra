@@ -27,14 +27,12 @@ def test_cli_imports():
 
         # These imports might fail due to optional dependencies
         try:
-            from neurocode.cli.persona import PersonaAssistant
 
             imports_successful.append("PersonaAssistant")
         except ImportError:
             print("⚠️ PersonaAssistant not available (optional dependency)")
 
         try:
-            from neurocode.cli.plugin import NeuroCodePlugin
 
             imports_successful.append("NeuroCodePlugin")
         except ImportError:

@@ -241,7 +241,7 @@ except ImportError:
                 self.auto_apply_enabled = False
 
             def debug(self, msg):
-                print(f"Debug: {msg}")
+#                 print(f"Debug: {msg}")
 
             def detect_and_store_error(self, error, context, filename=None):
                 pass
@@ -256,7 +256,7 @@ except ImportError:
                 self.auto_apply_enabled = enabled
 
             def show_debug_status(self):
-                print("Debug system: demo mode")
+#                 print("Debug system: demo mode")
 
         # Fallback functions with exact signatures to match imports
         def ask_ai(prompt: str, temperature: float = 0.2) -> str:
@@ -661,7 +661,7 @@ class AetherraInterpreter:
                 confidence = int(parts[3]) if len(parts) > 3 else 80
                 self.debug_system.set_auto_apply(enabled, confidence)
             else:
-                print("Usage: set auto_debug on/off [confidence_threshold]")
+#                 print("Usage: set auto_debug on/off [confidence_threshold]")
 
         elif line.startswith("suggest fix"):
             # Handle manual fix suggestion
@@ -902,7 +902,8 @@ class AetherraInterpreter:
         """Handle assistant queries"""
         query = line.split("assistant:", 1)[-1].strip()
         context = "\n".join(self.memory.recall())
-        prompt = f"You are NeuroAssistant, a helpful AI embedded in the NeuroCode runtime. Here is your memory:\n{context}\n\nAnswer this: {query}"
+        prompt = f"You are NeuroAssistant,
+            a helpful AI embedded in the NeuroCode runtime. Here is your memory:\n{context}\n\nAnswer this: {query}"
         response = ask_ai(prompt)
         return f"[NeuroAssistant] {response}"
 
@@ -1385,7 +1386,8 @@ class AetherraInterpreter:
         patterns = self.memory.detect_recurring_patterns(min_frequency, timeframe)
 
         if not patterns["phrases"]:
-            return f"[Pattern Detection] No recurring patterns found (min frequency: {min_frequency}, timeframe: {timeframe} days)"
+            return f"[Pattern Detection] No recurring patterns found (min frequency: {min_frequency},
+                timeframe: {timeframe} days)"
 
         result = f"[Pattern Detection] Found {len(patterns['phrases'])} recurring patterns:\n"
 
@@ -1480,7 +1482,8 @@ class AetherraInterpreter:
 
         elif stripped_line.startswith("agent:"):
             self.block_type = "agent"
-            return "🤖 Started agent configuration block\n   🎯 Define agent behavior and capabilities, use 'end' to complete"
+            return "🤖 Started agent configuration block\n   🎯 Define agent behavior and capabilities,
+                use 'end' to complete"
 
         elif stripped_line.startswith("if "):
             self.block_type = "conditional"
@@ -1712,7 +1715,7 @@ class AetherraInterpreter:
 
                     # Auto-suggest fix if enabled
                     if self.debug_system.auto_apply_enabled:
-                        print("🔄 [Auto-Debug] Analyzing syntax error...")
+#                         print("🔄 [Auto-Debug] Analyzing syntax error...")
                         error_info = {
                             "type": "SyntaxError",
                             "message": str(e),

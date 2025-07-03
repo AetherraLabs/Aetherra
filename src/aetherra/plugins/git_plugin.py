@@ -22,7 +22,10 @@ from core.plugin_manager import register_plugin
         "managing version control",
         "development workflow automation"
     ],
-    ai_description="Provides Git repository status information including tracked files, untracked files, and pending changes. Helps manage version control workflow.",
+    ai_description="Provides Git repository status information including tracked files,
+        untracked files,
+        and pending changes. Helps manage version control workflow.",
+
     example_usage="plugin: git_status",
     confidence_boost=1.2,
 )
@@ -100,6 +103,7 @@ def git_status() -> Dict[str, Any]:
         "maintaining project history"
     ],
     ai_description="Creates Git commits with descriptive messages. Automatically stages changes and commits them to the repository.",
+
     example_usage="plugin: git_commit 'Add new feature implementation'",
     confidence_boost=1.1,
 )
@@ -169,7 +173,10 @@ def git_commit(message: str, add_all: bool = True) -> Dict[str, Any]:
         "reviewing development progress",
         "investigating code changes"
     ],
-    ai_description="Displays Git commit history with commit messages, authors, and timestamps. Shows the evolution of the project.",
+    ai_description="Displays Git commit history with commit messages,
+        authors,
+        and timestamps. Shows the evolution of the project.",
+
     example_usage="plugin: git_log 10",
     confidence_boost=1.0,
 )

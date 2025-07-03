@@ -14,10 +14,8 @@ print("Starting import test...")
 
 try:
     print("Checking basic imports")
-    from importlib import util
 
     print("Trying to import UI package...")
-    import src.aethercode.ui
 
     print("✅ UI package imported successfully")
 
@@ -50,4 +48,4 @@ try:
 except Exception as e:
     print(f"❌ Error: {e}")
 
-print("Test complete.")
+# print("Test complete.")

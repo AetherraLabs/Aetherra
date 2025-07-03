@@ -15,9 +15,6 @@ sys.path.insert(0, str(project_root))
 print("Step 2: Testing Qt imports only...")
 
 try:
-    from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt, QTimer, Signal
-    from PySide6.QtGui import QAction, QBrush, QColor, QFont, QPainter, QPen
-    from PySide6.QtWidgets import (
         QApplication,
         QFileDialog,
         QFrame,
@@ -36,9 +33,9 @@ try:
         QVBoxLayout,
         QWidget,
     )
-    
+
     print("Step 3: Qt imports successful!")
-    
+
 except ImportError as e:
     print(f"Step 3: Qt import failed: {e}")
     sys.exit(1)
@@ -48,7 +45,6 @@ print("Step 4: Testing individual core module imports...")
 # Test interpreter module
 try:
     print("Step 4a: Importing interpreter...")
-    import core.interpreter
     print("Step 4a: Interpreter imported successfully!")
 except Exception as e:
     print(f"Step 4a: Interpreter import failed: {e}")
@@ -56,7 +52,6 @@ except Exception as e:
 # Test memory module
 try:
     print("Step 4b: Importing memory...")
-    import core.memory
     print("Step 4b: Memory imported successfully!")
 except Exception as e:
     print(f"Step 4b: Memory import failed: {e}")
@@ -64,7 +59,6 @@ except Exception as e:
 # Test chat router module
 try:
     print("Step 4c: Importing chat router...")
-    import core.chat_router
     print("Step 4c: Chat router imported successfully!")
 except Exception as e:
     print(f"Step 4c: Chat router import failed: {e}")

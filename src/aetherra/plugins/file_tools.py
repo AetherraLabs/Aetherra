@@ -23,6 +23,7 @@ from core.plugin_manager import register_plugin
         "writing documentation files"
     ],
     ai_description="Creates new files with optional initial content. Automatically creates parent directories if needed.",
+
     example_usage="plugin: create_file 'src/utils.py' 'def hello():\\n    print(\"Hello World\")'",
     confidence_boost=1.2,
 )
@@ -256,6 +257,7 @@ def list_files(directory: str = ".", pattern: str = "*", include_hidden: bool = 
         "file management"
     ],
     ai_description="Safely deletes files or directories with backup creation and confirmation. Includes safety checks for important files.",
+
     example_usage="plugin: delete_file 'temp.txt' true",
     confidence_boost=0.8,  # Lower confidence due to destructive nature
 )

@@ -134,17 +134,17 @@ goal: "Build a weather app"
     remember: "Need to fetch weather data"
     think: "Which API should we use?"
     learn: "OpenWeatherMap API is reliable"
-    
+
     step: "Setup API connection"
         code: connect_to_weather_api()
-        
-    step: "Process user input" 
+
+    step: "Process user input"
         code: location = get_user_location()
-        
+
     step: "Fetch and display weather"
         code: weather = get_weather(location)
         code: display(weather)
-        
+
     complete: "Weather app is ready!"
 """
     print(neurocode_example1)
@@ -173,14 +173,14 @@ adapt: interface_complexity = "advanced"
 # Self-reflective NeuroCode program
 reflect: "How well did the last feature work?"
     metrics: user_satisfaction_score()
-    
+
     if satisfaction < 0.7:
         think: "What went wrong?"
         analyze: error_patterns()
         improve: fix_identified_issues()
     else:
         celebrate: "Feature is working well!"
-        
+
 evolve: "Learn from this experience"
     remember: lessons_learned()
     apply: improvements_to_future_features()

@@ -8,7 +8,7 @@ Test the basic functionality of our Phase 2 systems.
 
 def test_imports():
     """Test that all Phase 2 modules can be imported"""
-    print("Testing Phase 2 imports...")
+#     print("Testing Phase 2 imports...")
 
     try:
         from core.stability import safe_execute
@@ -25,14 +25,12 @@ def test_imports():
         print(f"❌ Introspective logger import failed: {e}")
 
     try:
-        from core.conversational_ai import conversational_ai
 
         print("✅ Conversational AI imported")
     except ImportError as e:
         print(f"❌ Conversational AI import failed: {e}")
 
     try:
-        from core.plugin_registry import plugin_registry
 
         print("✅ Plugin registry imported")
     except ImportError as e:

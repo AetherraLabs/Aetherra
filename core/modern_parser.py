@@ -25,8 +25,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 try:
-    from lark import Lark, Token, Transformer, Tree
-    from lark.exceptions import LarkError, LexError, ParseError
 
     LARK_AVAILABLE = True
 except ImportError:
@@ -341,27 +339,27 @@ class NeuroCodeModernParser:
         """Embedded minimal grammar for fallback"""
         return """
         start: statement_list
-        
+
         statement_list: statement*
-        
+
         statement: goal_statement
                  | assignment
                  | function_call
                  | intent_action
-        
+
         goal_statement: "goal" ":" ESCAPED_STRING priority_clause?
-        
+
         priority_clause: "priority" ":" priority_level
         priority_level: "critical" | "high" | "medium" | "low"
-        
+
         assignment: IDENTIFIER "=" ESCAPED_STRING
-        
+
         function_call: "run" IDENTIFIER "(" ")"
-        
+
         intent_action: intent_verb intent_target?
         intent_verb: "think" | "analyze" | "optimize"
         intent_target: "about" ESCAPED_STRING
-        
+
         %import common.ESCAPED_STRING
         %import common.CNAME -> IDENTIFIER
         %import common.WS
@@ -470,12 +468,12 @@ if __name__ == "__main__":
 
         test_code = """
         goal: "test the modern parser" priority: high
-        
+
         identity {
             name: "TestBot"
             version: "1.0"
         }
-        
+
         remember("parser test")
         think about "syntax trees"
         """

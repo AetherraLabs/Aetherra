@@ -13,31 +13,31 @@ print("🧪 Simple import test for src/neurocode/core")
 print("=" * 50)
 
 try:
-    print("Testing basic core import...")
+#     print("Testing basic core import...")
     print("✅ neurocode.core imported")
 except Exception as e:
     print(f"❌ neurocode.core failed: {e}")
 
 try:
-    print("Testing interpreter import...")
+#     print("Testing interpreter import...")
     print("✅ EnhancedAetherraInterpreter imported")
 except Exception as e:
     print(f"❌ EnhancedAetherraInterpreter failed: {e}")
 
 try:
-    print("Testing parser import...")
+#     print("Testing parser import...")
     print("✅ AetherraParser imported")
 except Exception as e:
     print(f"❌ AetherraParser failed: {e}")
 
 try:
-    print("Testing memory import...")
+#     print("Testing memory import...")
     print("✅ Memory system imported")
 except Exception as e:
     print(f"❌ Memory system failed: {e}")
 
 try:
-    print("Testing AI modules...")
+#     print("Testing AI modules...")
     print("✅ AI collaboration imported")
 except Exception as e:
     print(f"❌ AI collaboration failed: {e}")

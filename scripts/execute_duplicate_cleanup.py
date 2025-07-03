@@ -48,7 +48,7 @@ def phase1_website_duplicates():
 
 def phase2_empty_scripts():
     """Remove empty debug script files."""
-    print("\n🔧 PHASE 2: Removing empty debug scripts...")
+#     print("\n🔧 PHASE 2: Removing empty debug scripts...")
 
     empty_scripts = [
         "scripts/parse_debug.py",

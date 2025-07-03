@@ -1,5 +1,4 @@
 import os
-import sys
 
 print("Checking UI files for syntax errors...")
 ui_dir = "src/neurocode/ui"

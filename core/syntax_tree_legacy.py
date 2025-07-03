@@ -19,7 +19,6 @@ and backward compatibility. The new modular system is in core/syntax/.
 # - core/syntax/__init__.py - Main API
 
 # For backward compatibility, import from the new modular system:
-from .syntax import (
     AetherraParser,
     NodeType,
     SyntaxNode,

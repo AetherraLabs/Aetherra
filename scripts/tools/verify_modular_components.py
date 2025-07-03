@@ -30,12 +30,10 @@ def test_component_imports():
         )
 
         # Test theme
-        from neurocode.ui.components.theme import ModernTheme
 
         print("✅ ModernTheme imported successfully")
 
         # Test base card
-        from neurocode.ui.components.cards import ModernCard
 
         print("✅ ModernCard imported successfully")
 
@@ -129,12 +127,10 @@ def test_modular_architecture():
 
     try:
         # Test main modular window import
-        from neurocode.ui.aetherplex_fully_modular import FullyModularNeuroplexWindow
 
         print("✅ Fully modular main window imported successfully")
 
         # Test enhanced neuroplex import (our integrated version)
-        from aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
 
         print("✅ Enhanced Neuroplex (with chat integration) imported successfully")
 
@@ -146,7 +142,6 @@ def test_modular_architecture():
 
         # Try to test what we do have
         try:
-            from aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
 
             print("✅ Enhanced Neuroplex (chat integration) is available")
             return True

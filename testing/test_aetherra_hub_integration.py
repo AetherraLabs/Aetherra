@@ -73,7 +73,6 @@ def test_webengine_availability():
     """Test if WebEngine is available"""
     print("🔍 Testing WebEngine availability...")
     try:
-        from PySide6.QtWebEngineWidgets import QWebEngineView
 
         print("✅ WebEngine available for embedded browser")
         return True

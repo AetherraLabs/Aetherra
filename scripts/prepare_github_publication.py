@@ -139,6 +139,7 @@ def main():
         ),
         (
             "python -c \"import sys; sys.path.append('ui'); from neuroplex_gui import NeuroplexMainWindow; print('✅ Neuroplex GUI imports successfully')\"",
+
             "Neuroplex GUI",
         ),
         (

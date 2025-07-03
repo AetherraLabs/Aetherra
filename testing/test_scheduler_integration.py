@@ -25,7 +25,6 @@ def test_task_scheduler_import():
     """Test that task scheduler can be imported"""
     print("🔍 Testing task scheduler import...")
     try:
-        from core.task_scheduler import (
             BackgroundTaskScheduler,
             TaskPriority,
             TaskStatus,

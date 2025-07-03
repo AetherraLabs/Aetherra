@@ -18,11 +18,11 @@ def test_basic_parsing():
     code = """
     # Simple NeuroCode test
     goal: Complete the project
-    
+
     define hello_world()
         assistant: "Hello, World!"
     end
-    
+
     remember("This is a test")
     recall "test_memory"
     """
@@ -37,17 +37,17 @@ def test_analysis():
     """Test syntax tree analysis"""
     code = """
     goal: Test analysis priority: high
-    
+
     define factorial(n)
         if n <= 1:
             return 1
         else:
             return n * factorial(n-1)
     end
-    
+
     x = 5
     result = factorial(x)
-    
+
     remember("Calculated factorial") as "math_result"
     agent.mode = "active"
     agent.add_goal("Calculate more factorials")
@@ -90,10 +90,10 @@ def test_advanced_analysis():
     """Test advanced analysis features"""
     code = """
     goal: Complex program test
-    
+
     define process_data(input_file, output_file)
         data = load_file(input_file)
-        
+
         for item in data:
             if item.valid:
                 result = transform(item)
@@ -101,14 +101,14 @@ def test_advanced_analysis():
             else:
                 assistant: "Invalid item found"
         end
-        
+
         save_file(output_file, results)
     end
-    
+
     x = "input.txt"
     y = "output.txt"
     run process_data(x, y)
-    
+
     agent.start()
     memory.search("processed_data")
     """

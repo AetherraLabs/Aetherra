@@ -153,7 +153,7 @@ def demo_interpreter_performance():
             end
             remember("System optimization completed") as "maintenance"
         end
-        
+
         run optimize_system()
         """
 

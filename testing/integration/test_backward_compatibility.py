@@ -5,7 +5,7 @@ from core.syntax_tree import analyze_syntax_tree, parse_neurocode
 
 
 def main():
-    print("Testing backward compatibility...")
+#     print("Testing backward compatibility...")
 
     code = """
     goal: Test backward compatibility

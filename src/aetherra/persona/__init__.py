@@ -3,9 +3,6 @@ NeuroCode Persona System
 AI personality and emotional intelligence for NeuroCode.
 """
 
-from .contextual_adaptation import ContextualAdaptationSystem
-from .emotional_memory import EmotionalMemorySystem
-from .engine import (
     PersonaArchetype,
     PersonaEngine,
     get_persona_engine,

@@ -46,7 +46,7 @@ remember("Multi-LLM parsing works correctly") as "test_results"
 agent: "test_coordinator"
 """
 
-        print("Testing NeuroCode:")
+#         print("Testing NeuroCode:")
         print(multi_llm_code)
         print("-" * 50)
 
@@ -189,7 +189,7 @@ def main():
     """Run all multi-LLM tests"""
     print("🧬 NeuroCode Multi-LLM Integration Test Suite")
     print("=" * 60)
-    print("Testing NeuroCode's new multi-LLM capabilities...")
+#     print("Testing NeuroCode's new multi-LLM capabilities...")
     print()
 
     tests = [

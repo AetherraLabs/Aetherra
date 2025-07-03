@@ -17,7 +17,6 @@ This file maintains backward compatibility with existing code.
 """
 
 # Import everything from the new modular system
-from .syntax import (
     AetherraParser,
     NodeType,
     SyntaxNode,

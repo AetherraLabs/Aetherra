@@ -13,7 +13,6 @@ Final comprehensive test of the complete Neuroplex system including:
 """
 
 import sys
-import time
 from pathlib import Path
 
 # Add project paths

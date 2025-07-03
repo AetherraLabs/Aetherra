@@ -58,7 +58,7 @@ def demo_ui_system():
     sample_neurocode = """
     think "Starting NeuroCode program"
     goal analyze_data
-    
+
     function process_data(input) {
         remember "Processing: " + input
         if input.valid {
@@ -67,7 +67,7 @@ def demo_ui_system():
             return error("Invalid input")
         }
     }
-    
+
     agent data_processor {
         task: process_data
         memory: shared
@@ -109,7 +109,7 @@ def demo_ui_system():
 # NeuroCode Features
 ## Core Capabilities
 - **Memory Management**: Advanced logging and retrieval
-- **AI Integration**: Seamless AI collaboration  
+- **AI Integration**: Seamless AI collaboration
 - **Rich UI**: Beautiful, themed interface
 - **Plugin System**: Extensible architecture
 

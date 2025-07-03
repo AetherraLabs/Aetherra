@@ -16,7 +16,6 @@ from datetime import datetime, timedelta
 
 # Import speed enhancement suite for memory optimization
 try:
-    from .speed_enhancement_suite import (
         lightning_fast_data,
         optimize_memory_system,
         ultra_fast,

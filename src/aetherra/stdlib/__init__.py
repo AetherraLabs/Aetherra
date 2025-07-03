@@ -4,7 +4,6 @@
 Manages built-in plugins for NeuroCode
 """
 
-import importlib.util
 from pathlib import Path
 
 

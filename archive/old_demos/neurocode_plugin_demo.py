@@ -316,12 +316,12 @@ def demo_plugin_development():
        init() {
            log "🚀 My Custom Plugin initialized!"
        }
-       
+
        export my_function(input) {
            # Your custom functionality
            return process_input(input)
        }
-       
+
        cleanup() {
            log "💾 Saving plugin state..."
        }

@@ -11,14 +11,9 @@ For new code, consider using the modular interfaces directly:
 - core.memory.UnifiedMemoryInterface for all capabilities
 """
 
-import json
-import os
-import re
-from collections import defaultdict
 from datetime import datetime, timedelta
 
 # Import the new modular memory system
-from .memory import BasicMemory, get_unified_memory_interface
 
 # Performance monitoring integration available (for future use)
 
@@ -28,11 +23,11 @@ MEMORY_FILE = "memory_store.json"
 class AetherraMemory:
     """
     Legacy AetherraMemory interface - now powered by the modular memory system
-    
+
     This class maintains backward compatibility while using the new modular
     memory architecture under the hood.
     """
-    
+
     def __init__(self):
         from .memory import BasicMemory
         self._memory_system = BasicMemory()
@@ -180,11 +175,11 @@ class AetherraMemory:
         try:
             from .memory import PatternAnalyzer
             analyzer = PatternAnalyzer()
-            
+
             # Get memories matching the pattern
             cutoff_date = datetime.now() - timedelta(days=timeframe_days)
             memories = self._memory_system.storage.load_memories()
-            
+
             matching_memories = []
             for memory in memories:
                 try:
@@ -238,10 +233,10 @@ class AetherraMemory:
         try:
             from .memory import PatternAnalyzer
             analyzer = PatternAnalyzer()
-            
+
             # Use the new pattern detection system
             patterns = analyzer.detect_text_patterns(min_frequency, timeframe_days)
-            
+
             # Convert to legacy format
             recurring = {
                 "phrases": {},
@@ -249,12 +244,12 @@ class AetherraMemory:
                 "timeframe_days": timeframe_days,
                 "min_frequency": min_frequency,
             }
-            
+
             for pattern in patterns:
                 if pattern.metadata.get('pattern_type') in ['text_phrase', 'text_word']:
                     phrase = pattern.pattern_name.replace('phrase_', '').replace('word_', '').replace('_', ' ')
                     recurring["phrases"][phrase] = pattern.frequency
-            
+
             return recurring
         except ImportError:
             # Fallback to basic implementation

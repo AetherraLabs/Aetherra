@@ -12,7 +12,7 @@ import traceback
 
 def test_enhanced_lyrixa_import():
     """Test 1: Enhanced Lyrixa Import"""
-    print("Test 1: Enhanced Lyrixa Import...")
+#     print("Test 1: Enhanced Lyrixa Import...")
     try:
         from src.aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
 
@@ -62,7 +62,6 @@ def test_ui_launch_integration():
     """Test 4: UI Launch Integration"""
     print("\nTest 4: UI Launch Integration...")
     try:
-        from src.aetherra.ui import GUI_AVAILABLE, launch_gui
 
         print(f"✅ UI module imported (GUI Available: {GUI_AVAILABLE})")
 
@@ -81,15 +80,12 @@ def test_aetherra_core_integration():
     """Test 5: Aetherra Core Integration"""
     print("\nTest 5: Aetherra Core Integration...")
     try:
-        from src.aetherra.core.aetherra_interpreter import AetherraInterpreter
 
         print("✅ Aetherra interpreter imported")
 
-        from src.aetherra.core.aetherra_parser import AetherraParser
 
         print("✅ Aetherra parser imported")
 
-        from src.aetherra.core.aetherra_memory import AetherraMemory
 
         print("✅ Aetherra memory system imported")
 

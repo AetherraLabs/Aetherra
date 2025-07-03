@@ -1,5 +1,4 @@
 # core/plugin_manager.py
-import importlib.util
 import os
 import re
 from dataclasses import dataclass, field

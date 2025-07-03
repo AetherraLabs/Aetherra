@@ -31,7 +31,7 @@ def test_temporal_memory_integration():
         "memory_stats",
     ]
 
-    print("Testing temporal memory commands:")
+#     print("Testing temporal memory commands:")
     for cmd in test_commands:
         print(f"\n📝 Command: {cmd}")
         try:

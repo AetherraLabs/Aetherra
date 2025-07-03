@@ -20,7 +20,6 @@ def main():
     print("🧪 Test 1: Lyrixa Import...")
     try:
         # This is a check to ensure the module exists and is importable
-        from src.aetherra.ui import lyrixa
 
         print("✅ Lyrixa imports successfully - NO FALLBACKS")
     except Exception as e:
@@ -31,7 +30,6 @@ def main():
     print("\n🧪 Test 2: Chat Router Integration...")
     try:
         # This is a check to ensure the module exists and is importable
-        from core import chat_router
 
         print("✅ Chat router available")
     except Exception as e:

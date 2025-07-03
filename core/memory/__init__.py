@@ -4,18 +4,15 @@ Modular memory system with semantic search, pattern analysis, and reflection cap
 """
 
 from .basic import BasicMemory
-from .models import DailyReflection, MemoryEntry, MemoryPattern, SessionMemory, VectorMemoryEntry
 from .patterns import PatternAnalyzer
 from .reflection import DailyReflectionManager
 from .session import SessionManager
-from .storage import (
     DailyReflectionStorage,
     FileMemoryStorage,
     MemoryStorage,
     PatternStorage,
     SessionStorage,
 )
-from .vector import EnhancedSemanticMemory, VectorMemory
 
 # Backward compatibility alias
 AetherraMemory = BasicMemory

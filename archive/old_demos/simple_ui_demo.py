@@ -86,7 +86,7 @@ agent greeter {
 
 ## ✅ Completed Features
 - **Theme System**: Multiple themes with hot-swapping
-- **Visual Feedback**: Loading, thinking, status indicators  
+- **Visual Feedback**: Loading, thinking, status indicators
 - **Rich Display**: Code highlighting, tables, markdown
 - **Command System**: Auto-suggestions and shortcuts
 

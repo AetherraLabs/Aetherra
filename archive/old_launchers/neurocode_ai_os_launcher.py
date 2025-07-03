@@ -245,7 +245,9 @@ class NeuroCodeAIOS:
         print("\n5. 🌐 Environmental Awareness:")
         system_metrics = self.identity.environment.get_system_metrics()
         print(
-            f"   ✓ CPU: {system_metrics.get('cpu_usage', 0):.1f}% | Memory: {system_metrics.get('memory_usage', 0):.1f}%"
+            f"   ✓ CPU: {system_metrics.get('cpu_usage',
+                0):.1f}% | Memory: {system_metrics.get('memory_usage',
+                0):.1f}%"
         )
 
         # 6. Cross-System Learning
@@ -355,10 +357,10 @@ class NeuroCodeAIOS:
 📚 Memory Commands:
    remember <text>     - Store information in semantic memory
    search <query>      - Search memories semantically
-   
+
 🎯 Goal Commands:
    goal <description>  - Create a new goal
-   
+
 📊 System Commands:
    status             - Show system status
    personality        - Show personality traits
@@ -428,7 +430,8 @@ class NeuroCodeAIOS:
         if is_request:
             response += "I'm here to assist you with whatever you need. What specifically would you like help with?"
         else:
-            response += "That's interesting! I'm learning more about your preferences and will remember this for future interactions."
+            response += "That's interesting! I'm learning more about your preferences \and
+                will remember this for future interactions."
 
         return response
 

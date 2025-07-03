@@ -26,7 +26,6 @@ from typing import Any, Dict, Optional
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.aethercode_grammar import NeuroCodeAST, create_neurocode_parser
-from core.llm_integration import aetherra_llm_integration
 from core.multi_llm_manager import llm_manager
 
 

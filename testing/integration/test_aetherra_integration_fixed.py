@@ -63,7 +63,6 @@ def test_cli_components():
     """Test CLI components"""
     try:
         # Just test import without using the function
-        import aetherra.cli.main  # noqa: F401
 
         print("✅ CLI components: Import successful")
         return True

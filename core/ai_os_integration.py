@@ -684,7 +684,7 @@ class NeuroCodeAIOS:
         personality_state = self.voice.personality["traits"]
 
         response = f"""🧬 NeuroCode AI OS Status:
-        
+
 💚 System Health: {system_health}%
 🧠 Memory: {memory_stats["total_memories"]} memories stored
 🎯 Goals: {active_goals} active objectives
@@ -707,7 +707,11 @@ All systems operational and learning continuously."""
             response = "I'm happy to assist you. "
 
         if context == "technical":
-            response += "For technical issues, I can help with debugging, code analysis, system optimization, and more. "
+            response += "For technical issues,
+                I can help with debugging,
+                code analysis,
+                system optimization,
+                and more. "
         else:
             response += "I can help with goals, memory queries, system status, learning, and general assistance. "
 
@@ -716,7 +720,9 @@ All systems operational and learning continuously."""
         if recent_memories:
             common_topics = self._extract_common_topics(recent_memories)
             if common_topics:
-                response += f"Based on our recent interactions, I can especially help with: {', '.join(common_topics[:3])}."
+                response += f"Based on our recent interactions,
+                    I can especially help with: {',
+                    '.join(common_topics[:3])}."
 
         return response
 
@@ -745,7 +751,8 @@ All systems operational and learning continuously."""
                     response += f"• {content}\n"
                 response += "\nWould you like me to elaborate on any of these aspects?"
             else:
-                response = f"I'd be happy to help you learn about {topic}. Let me gather information and provide a comprehensive explanation."
+                response = f"I'd be happy to help you learn about {topic}. Let me gather information \and
+                    provide a comprehensive explanation."
                 # Store learning request for future enhancement
                 self.memory.store_semantic_memory(
                     concept=f"learning_request: {topic}",

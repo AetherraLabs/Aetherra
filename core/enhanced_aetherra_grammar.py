@@ -28,7 +28,7 @@ ENHANCED_NEUROCODE_GRAMMAR = r"""
     program: statement*
 
     ?statement: goal_statement
-              | agent_statement  
+              | agent_statement
               | memory_statement
               | plugin_statement
               | function_definition
@@ -80,7 +80,7 @@ ENHANCED_NEUROCODE_GRAMMAR = r"""
 
     // Memory System (Enhanced)
     memory_statement: remember_stmt
-                   | recall_stmt  
+                   | recall_stmt
                    | forget_stmt
                    | reflect_stmt
                    | memory_pattern_stmt
@@ -129,13 +129,13 @@ ENHANCED_NEUROCODE_GRAMMAR = r"""
     // Control Flow (Enhanced)
     control_statement: when_statement
                     | if_statement
-                    | for_statement  
+                    | for_statement
                     | while_statement
                     | try_statement
                     | with_statement
 
     when_statement: "when" condition ":" NEWLINE statement_block "end"
-    
+
     if_statement: "if" condition ":" NEWLINE statement_block else_part? "end"
     else_part: "else" ":" NEWLINE statement_block
              | "elif" condition ":" NEWLINE statement_block else_part?

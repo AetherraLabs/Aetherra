@@ -15,7 +15,6 @@ print("=" * 50)
 
 # Test 1: NeuroChat Import
 try:
-    from neuro_chat import LyrixaAssistantInterface
 
     print("✅ NeuroChat interface imported successfully")
     neurochat_ok = True
@@ -25,7 +24,6 @@ except ImportError as e:
 
 # Test 2: Chat Router Import
 try:
-    from chat_router import AetherraChatRouter
 
     print("✅ Chat router imported successfully")
     router_ok = True

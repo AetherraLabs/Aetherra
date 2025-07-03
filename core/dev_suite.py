@@ -12,19 +12,15 @@ Features:
 """
 
 import json
-import os
 import sys
-import threading
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 # Add core modules to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from ecosystem_manager import NeuroCodeEcosystemManager
-from natural_compiler import NaturalLanguageCompiler, NeuroCodeIDE
 
 
 class NeuroCodeLinter:
@@ -270,7 +266,7 @@ class NeuroCodeDebugger:
 
     def _show_debug_info(self, context: Dict):
         """Show debug information at breakpoint"""
-        print("\n📊 Debug Information:")
+#         print("\n📊 Debug Information:")
         print(f"Current line: {self.current_line}")
         print(f"Memory entries: {len(context.get('memory', []))}")
         print(f"Active goals: {len(context.get('goals', []))}")
@@ -395,7 +391,7 @@ class NeuroCodeDevSuite:
                 print("🛠️  Development Options:")
                 print("1. Natural Language Programming")
                 print("2. Code Analysis & Linting")
-                print("3. Debug NeuroCode Program")
+#                 print("3. Debug NeuroCode Program")
                 print("4. Performance Profiling")
                 print("5. Ecosystem Management")
                 print("6. Exit")
@@ -474,12 +470,12 @@ class NeuroCodeDevSuite:
 
     def _debugging_session(self):
         """Debugging session"""
-        print("\n🐛 Debug Mode")
-        print("Debugging features:")
+#         print("\n🐛 Debug Mode")
+#         print("Debugging features:")
         print("- Set breakpoints")
         print("- Watch variables")
         print("- Step through execution")
-        print("(Full debugging integration coming soon)")
+#         print("(Full debugging integration coming soon)")
 
     def _profiling_session(self):
         """Profiling session"""

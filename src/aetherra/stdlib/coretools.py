@@ -13,7 +13,6 @@ import pathlib
 import re
 import shutil
 import tempfile
-import urllib.parse
 import zipfile
 from datetime import datetime
 from typing import Any, Dict, List, Optional

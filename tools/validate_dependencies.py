@@ -14,7 +14,6 @@ def validate_core_dependencies():
 
     # Test lark (grammar parser)
     try:
-        from lark import Lark, Transformer
 
         print("✅ lark: Available")
     except ImportError as e:
@@ -51,7 +50,6 @@ def validate_core_dependencies():
         print("⚠️ openai: Not available")
 
     try:
-        import anthropic
 
         print("✅ anthropic: Available")
         ai_available = True
@@ -59,7 +57,6 @@ def validate_core_dependencies():
         print("⚠️ anthropic: Not available")
 
     try:
-        import google.generativeai
 
         print("✅ google-generativeai: Available")
         ai_available = True
@@ -67,7 +64,6 @@ def validate_core_dependencies():
         print("⚠️ google-generativeai: Not available")
 
     try:
-        import ollama
 
         print("✅ ollama: Available")
         ai_available = True
@@ -90,7 +86,6 @@ def validate_optional_dependencies():
     # GUI frameworks
     gui_available = False
     try:
-        import PySide6
 
         print("✅ PySide6: Available")
         gui_available = True
@@ -98,7 +93,6 @@ def validate_optional_dependencies():
         print("⚠️ PySide6: Not available")
 
     try:
-        import PyQt6
 
         print("✅ PyQt6: Available")
         gui_available = True
@@ -112,7 +106,6 @@ def validate_optional_dependencies():
 
     # Local AI models
     try:
-        import llama_cpp
 
         print("✅ llama-cpp-python: Available")
     except ImportError:

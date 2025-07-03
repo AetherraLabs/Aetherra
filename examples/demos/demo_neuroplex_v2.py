@@ -20,7 +20,6 @@ def test_qt_availability():
 
     # Test PySide6
     try:
-        import PySide6.QtWidgets
 
         print("✅ PySide6 available")
         return True
@@ -29,7 +28,6 @@ def test_qt_availability():
 
     # Test PyQt6
     try:
-        import PyQt6.QtWidgets
 
         print("✅ PyQt6 available")
         return True

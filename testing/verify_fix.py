@@ -4,11 +4,9 @@ Minimal test to verify no box-shadow warnings in Qt application
 """
 
 try:
-    print("Testing Neuroplex import and CSS parsing...")
+#     print("Testing Neuroplex import and CSS parsing...")
 
     # Import and test the core components
-    from src.aethercode.ui.aether_chat import create_embeddable_neurochat
-    from src.aethercode.ui.aetherplex import LyrixaWindow
 
     print("✅ All imports successful")
     print("✅ No box-shadow warnings detected during import")

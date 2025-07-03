@@ -316,7 +316,7 @@ if __name__ == "__main__":
         return "Success!"
 
     # Test successful operation
-    print("Testing successful operation:")
+#     print("Testing successful operation:")
     result = risky_operation(False)
     print(f"Result: {result}")
 

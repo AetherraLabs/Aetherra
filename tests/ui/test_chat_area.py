@@ -12,7 +12,6 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from PySide6.QtCore import Qt
     from PySide6.QtWidgets import (
         QFrame,
         QLabel,

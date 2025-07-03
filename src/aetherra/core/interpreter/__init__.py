@@ -7,8 +7,6 @@ Handles code execution, debugging, and runtime management.
 """
 
 from .base import AetherraInterpreter
-from .block_executor import BlockExecutor
-from .debug_system import NeuroDebugSystem
 from .enhanced import EnhancedAetherraInterpreter
 
 __all__ = [

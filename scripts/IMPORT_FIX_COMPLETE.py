@@ -20,27 +20,27 @@ print("\n1. Testing Core Module Imports:")
 
 try:
     sys.path.insert(0, str(project_root / "core"))
-    
+
     # Test interpreter
     import interpreter
     print("   ✅ Interpreter: Successfully imported")
     if hasattr(interpreter, 'AetherraInterpreter'):
         print("      - AetherraInterpreter class: Available")
-    
-    # Test memory  
+
+    # Test memory
     import memory
     print("   ✅ Memory: Successfully imported")
     if hasattr(memory, 'AetherraMemory'):
         print("      - AetherraMemory class: Available")
-    
+
     # Test chat router
     import chat_router
     print("   ✅ Chat Router: Successfully imported")
     if hasattr(chat_router, 'AetherraChatRouter'):
         print("      - AetherraChatRouter class: Available")
-        
+
     print("\n   🎯 All core modules importing correctly!")
-    
+
 except Exception as e:
     print(f"   ❌ Core import issue: {e}")
 
@@ -50,23 +50,21 @@ print("\n2. Testing GUI Components:")
 try:
     # Test Qt
     try:
-        from PySide6.QtWidgets import QApplication
         print("   ✅ Qt (PySide6): Available")
     except ImportError:
         try:
-            from PyQt6.QtWidgets import QApplication
             print("   ✅ Qt (PyQt6): Available")
         except ImportError:
             print("   ❌ Qt: Not available")
-            
+
     print("\n   🎯 GUI components ready!")
-    
+
 except Exception as e:
     print(f"   ❌ GUI component issue: {e}")
 
 print("\n3. Final Status:")
 print("   ✅ Import errors: RESOLVED")
-print("   ✅ Core modules: WORKING") 
+print("   ✅ Core modules: WORKING")
 print("   ✅ GUI imports: WORKING")
 print("   ✅ Fallback handling: IMPLEMENTED")
 

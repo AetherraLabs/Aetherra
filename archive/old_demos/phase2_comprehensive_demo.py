@@ -305,7 +305,7 @@ class Phase2Demo:
         print("\n3. Context-Based Plugin Suggestions:")
 
         coding_suggestions = get_plugin_suggestions("debugging Python code")
-        print(f"   Debugging context: {len(coding_suggestions)} suggestions")
+#         print(f"   Debugging context: {len(coding_suggestions)} suggestions")
         for suggestion in coding_suggestions[:2]:
             print(f"     • {suggestion['name']}: {suggestion['description'][:50]}...")
 

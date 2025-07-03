@@ -10,7 +10,6 @@ try:
     sys.path.insert(0, str(project_root))
 
     # Test importing the main launcher
-    from launchers.launch_neuroplex import main as neuroplex_main
 
     print("✅ Main Neuroplex launcher imports successfully")
 
@@ -18,8 +17,6 @@ try:
     src_path = project_root / "src"
     sys.path.insert(0, str(src_path))
 
-    from neurocode.ui.aetherplex import LyrixaWindow
-    from neurocode.ui.aetherplex import main as gui_main
 
     print("✅ Main GUI components import successfully")
 

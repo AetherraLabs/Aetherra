@@ -26,7 +26,7 @@ REFINED_NEUROCODE_GRAMMAR = r"""
     program: statement*
 
     ?statement: goal_statement
-              | agent_statement  
+              | agent_statement
               | memory_statement
               | plugin_statement
               | function_definition
@@ -61,7 +61,7 @@ REFINED_NEUROCODE_GRAMMAR = r"""
 
     // Memory System
     memory_statement: remember_stmt
-                   | recall_stmt  
+                   | recall_stmt
                    | forget_stmt
                    | reflect_stmt
                    | memory_pattern_stmt
@@ -85,7 +85,7 @@ REFINED_NEUROCODE_GRAMMAR = r"""
     // Control Flow
     control_statement: when_statement
                     | if_statement
-                    | for_statement  
+                    | for_statement
                     | while_statement
 
     when_statement: "when" condition ":" NEWLINE statement_block "end"
@@ -97,7 +97,7 @@ REFINED_NEUROCODE_GRAMMAR = r"""
 
     // Intent Actions
     intent_action: action_verb (target_expression)?
-    action_verb: "analyze" | "optimize" | "learn" | "adapt" | "evolve" 
+    action_verb: "analyze" | "optimize" | "learn" | "adapt" | "evolve"
                | "investigate" | "suggest" | "apply" | "monitor" | "predict"
                | "transcribe" | "summarize" | "refactor" | "self_edit" | "simulate"
     target_expression: quoted_string | "for" quoted_string | "on" quoted_string

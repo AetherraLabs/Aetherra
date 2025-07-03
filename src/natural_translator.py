@@ -46,6 +46,7 @@ class NaturalToNeuroTranslator:
         return {
             # Memory operations
             r"remember (?:this |that |the )?(.+?)(?:\s+as\s+(.+))?": lambda m: f'remember("{m.group(1)}") as "{m.group(2) or "general"}"',
+
             r"(?:recall|find|get) (?:memories )?(?:about |with |tagged )?(.+)": lambda m: f'recall tag: "{m.group(1)}"',
             r"forget (?:about )?(.+)": lambda m: f'forget tag: "{m.group(1)}"',
             # Pattern detection
@@ -54,21 +55,29 @@ class NaturalToNeuroTranslator:
             r"(?:analyze|examine|study) (?:my )?(?:memory|memories|data)": lambda m: "memory summary; detect patterns",
             # Problem solving
             r"fix (?:any )?(?:recurring )?(.+?)(?:\s+errors?)?": lambda m: f'if memory.pattern("{m.group(1)} error"): suggest fix; apply fix',
+
             r"solve (?:the )?(.+?)(?:\s+problem)?": lambda m: f'analyze problem: "{m.group(1)}"; suggest solution; execute solution',
+
             r"debug (?:the )?(.+)": lambda m: f'debug "{m.group(1)}"; suggest fix',
             # Learning and improvement
-            r"learn (?:from )?(.+)": lambda m: f'remember("{m.group(1)}") as "learning,experience"; reflect on tags="learning"',
+            r"learn (?:from )?(.+)": lambda m: f'remember("{m.group(1)}") as "learning,
+                experience"; reflect on tags="learning"',
+
             r"improve (?:my )?(.+)": lambda m: f'analyze "{m.group(1)}"; suggest improvements; apply improvements',
             # Reflection and analysis
             r"(?:think about|reflect on|consider) (.+)": lambda m: f'reflect on tags="{m.group(1)}"',
             r"what (?:do I know|have I learned) about (.+)": lambda m: f'recall tag: "{m.group(1)}"; memory summary',
             r"show me (?:my )?(?:memories about |everything about )?(.+)": lambda m: f'recall tag: "{m.group(1)}"; display results',
+
             # Automation and actions
             r"automatically (.+)": lambda m: f"auto_execute: {self._translate_action(m.group(1))}",
-            r"when (.+?) (?:happens|occurs), (.+)": lambda m: f'when "{m.group(1)}": {self._translate_action(m.group(2))}',
+            r"when (.+?) (?:happens|occurs),
+                (.+)": lambda m: f'when "{m.group(1)}": {self._translate_action(m.group(2))}',
+
             r"if (.+?), (?:then )?(.+)": lambda m: f'if "{m.group(1)}": {self._translate_action(m.group(2))}',
             # Plugin operations
             r"use (?:the )?(.+?) plugin (?:to )?(.+)": lambda m: f'call plugin: "{m.group(1)}" with task: "{m.group(2)}"',
+
             r"calculate (.+)": lambda m: f'call plugin: "math_plugin" with expression: "{m.group(1)}"',
             # Meta-operations
             r"explain (?:what )?(?:you )?(?:just )?did": lambda m: "memory summary; reflection_summary",

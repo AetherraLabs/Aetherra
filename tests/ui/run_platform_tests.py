@@ -7,7 +7,6 @@ It should be run on each target platform to collect reference images and results
 """
 
 import argparse
-import os
 import platform
 import sys
 import time

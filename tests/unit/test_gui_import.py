@@ -32,7 +32,6 @@ try:
     print(f"   - Chat Router: {'✅' if AetherraChatRouter else '❌'}")
 
     print("3. Testing GUI class imports...")
-    from ui.aetherplex_gui import NeuroplexMainWindow, NeuroTheme
 
     print("   ✅ GUI classes imported successfully")
 

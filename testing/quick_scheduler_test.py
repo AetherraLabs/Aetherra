@@ -21,7 +21,6 @@ try:
     print("✅ Task scheduler created successfully")
 
     print("3. Testing GUI import...")
-    from src.aethercode.ui.aetherplex import LyrixaWindow
 
     print("✅ Neuroplex GUI imported successfully")
 

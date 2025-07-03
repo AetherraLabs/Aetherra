@@ -167,7 +167,11 @@ class ExampleWindow(QMainWindow):
         self.add_chat_message(
             message_layout,
             "Assistant",
-            "Yes, the styling is now consistent! We've removed chat bubbles, standardized spacing, and ensured proper contrast for accessibility.",
+            "Yes,
+                the styling is now consistent! We've removed chat bubbles,
+                standardized spacing,
+                and ensured proper contrast for accessibility.",
+
         )
 
         # Set message container as scroll area widget

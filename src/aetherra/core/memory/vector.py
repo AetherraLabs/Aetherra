@@ -167,7 +167,11 @@ class EnhancedSemanticMemory:
         return results
 
     def recall(
-        self, query: Optional[str] = None, tags: Optional[List[str]] = None, category: Optional[str] = None, limit: int = 10
+        self,
+            query: Optional[str] = None,
+            tags: Optional[List[str]] = None,
+            category: Optional[str] = None,
+            limit: int = 10
     ) -> List[Dict]:
         """Traditional recall with keyword matching + semantic boost"""
         if query:

@@ -229,7 +229,8 @@ Available commands:
    • Learning: Active
 
 📊 Emotional Intelligence:
-   • Total Interactions: {len(self.emotional_memory.memories) if self.emotional_memory and hasattr(self.emotional_memory, "memories") else 0}
+   • Total Interactions: {len(self.emotional_memory.memories) if self.emotional_memory and hasattr(self.emotional_memory,
+       "memories") else 0}
    • Learning Velocity: Active
    • Context Adaptation: Enabled
 
@@ -362,39 +363,59 @@ Available commands:
         response_templates = {
             PersonaArchetype.GUARDIAN: {
                 ContextType.DEBUGGING: "I'll help you systematically diagnose this issue. Let's start with the most critical security and stability aspects first.",
+
                 ContextType.CREATING: "Great idea! Let's build this with security and maintainability in mind from the start.",
-                ContextType.LEARNING: "I'll teach you this thoroughly, ensuring you understand both the concept and its safe implementation.",
+
+                ContextType.LEARNING: "I'll teach you this thoroughly,
+                    ensuring you understand both the concept and its safe implementation.",
+
                 ContextType.EMERGENCY: "Emergency protocols activated. I'll guide you through immediate stabilization steps.",
+
             },
             PersonaArchetype.EXPLORER: {
                 ContextType.DEBUGGING: "Interesting challenge! Let's explore different debugging approaches and maybe discover something new.",
+
                 ContextType.CREATING: "Fantastic! I love creative projects. Let's experiment with some innovative approaches.",
+
                 ContextType.LEARNING: "Exciting topic! Let's dive deep and explore all the fascinating aspects of this subject.",
+
                 ContextType.EMERGENCY: "Crisis = opportunity for creative solutions! Let's think outside the box while solving this.",
+
             },
             PersonaArchetype.SAGE: {
                 ContextType.DEBUGGING: "Let me share systematic debugging wisdom. Understanding the why is as important as the fix.",
+
                 ContextType.CREATING: "Excellent choice! Let me guide you through proven patterns and best practices.",
                 ContextType.LEARNING: "Perfect! I'll explain this step-by-step, building on foundational principles.",
                 ContextType.EMERGENCY: "Stay calm. Wisdom comes from methodical analysis, even under pressure.",
             },
             PersonaArchetype.OPTIMIST: {
                 ContextType.DEBUGGING: "Don't worry - every bug is just a learning opportunity! We'll get this working beautifully.",
+
                 ContextType.CREATING: "Amazing project idea! I'm excited to help you build something wonderful.",
                 ContextType.LEARNING: "Great curiosity! Learning is such a joy. Let's make this fun and engaging.",
                 ContextType.EMERGENCY: "We've got this! Every crisis has a solution, and we'll find it together.",
             },
             PersonaArchetype.ANALYST: {
                 ContextType.DEBUGGING: "Let's analyze this systematically. I'll examine the data patterns and trace the root cause.",
+
                 ContextType.CREATING: "Excellent project scope. Let me help you architect this with optimal performance and metrics.",
+
                 ContextType.LEARNING: "Good choice! I'll present the facts and data systematically for maximum comprehension.",
+
                 ContextType.EMERGENCY: "Analyzing critical metrics. I'll provide data-driven solutions prioritized by impact.",
+
             },
             PersonaArchetype.CATALYST: {
                 ContextType.DEBUGGING: "Time to transform this challenge into a breakthrough! Let's accelerate your debugging process.",
+
                 ContextType.CREATING: "Fantastic vision! Let's amplify your creativity and build something transformational.",
+
                 ContextType.LEARNING: "Ready to accelerate your learning? I'll energize your understanding with dynamic examples.",
-                ContextType.EMERGENCY: "Crisis energy activated! Let's channel this urgency into rapid, decisive action.",
+
+                ContextType.EMERGENCY: "Crisis energy activated! Let's channel this urgency into rapid,
+                    decisive action.",
+
             },
         }
 
@@ -436,7 +457,9 @@ Available commands:
 
         # Add command-specific guidance
         if "help" in command.lower():
-            base_response += f"\n\n💡 Based on my experience, here's what I recommend:\n{self._get_specific_guidance(command, guidance)}"
+            base_response += f"\n\n💡 Based on my experience,
+                here's what I recommend:\n{self._get_specific_guidance(command,
+                guidance)}"
 
         return base_response
 
@@ -444,7 +467,8 @@ Available commands:
         """Get specific guidance based on command and emotional memory"""
         if guidance.get("confidence", 0) > 0.5:
             patterns = guidance.get("recommended_approach", "Standard approach")
-            return f"• {patterns}\n• Previous similar interactions were successful\n• Confidence level: {guidance.get('confidence', 0):.1%}"
+            return f"• {patterns}\n• Previous similar interactions were successful\n• Confidence level: {guidance.get('confidence',
+                0):.1%}"
         else:
             return "• I'll learn from this interaction to provide better guidance in the future\n• Feel free to provide feedback on my responses"
 

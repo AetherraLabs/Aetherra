@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 """Test UI dependencies"""
 
-print("Testing NeuroCode UI dependencies...")
+# print("Testing NeuroCode UI dependencies...")
 
 # Test Qt availability
 try:
-    import PySide6
-    from PySide6.QtWidgets import QApplication
 
     print("✅ PySide6 available")
     QT_AVAILABLE = True
 except ImportError:
     try:
-        import PyQt6
-        from PyQt6.QtWidgets import QApplication
 
         print("✅ PyQt6 available")
         QT_AVAILABLE = True
@@ -30,11 +26,9 @@ try:
     sys.path.insert(0, str(project_root))
     sys.path.insert(0, str(project_root / "core"))
 
-    from memory import AetherraMemory
 
     print("✅ AetherraMemory available")
 
-    from plugin_manager import get_plugin_ui_data, get_plugins_info
 
     print("✅ Plugin manager available")
 

@@ -21,35 +21,35 @@ This file maintains backward compatibility with existing code.
 # Import everything from the new modular system
 try:
     from .interpreter import AetherraInterpreter
-    
+
     # Legacy function compatibility
     def create_interpreter():
         """Create a new NeuroCode interpreter instance"""
         return AetherraInterpreter()
-    
+
     # Export the same API as the original monolithic module
     __all__ = [
         "AetherraInterpreter",
         "create_interpreter",
     ]
-    
+
 except ImportError:
     # Fallback to inline implementation if modular system not available
     print("Warning: Modular interpreter system not available, using fallback")
-    
+
     # Include original implementation as fallback
     # (The original implementation would be here for compatibility)
-    
+
     class AetherraInterpreter:
         def __init__(self):
             print("Using fallback interpreter implementation")
-            
+
         def execute(self, line):
             return f"Fallback interpreter processed: {line}"
-    
+
     def create_interpreter():
         return AetherraInterpreter()
-    
+
     __all__ = ["AetherraInterpreter", "create_interpreter"]
             auto_tag_content,
             reflect_on_memories,
@@ -210,7 +210,7 @@ except ImportError:
                 self.auto_apply_enabled = False
 
             def debug(self, msg):
-                print(f"Debug: {msg}")
+#                 print(f"Debug: {msg}")
 
             def detect_and_store_error(self, error, context, filename=None):
                 pass
@@ -225,7 +225,7 @@ except ImportError:
                 self.auto_apply_enabled = enabled
 
             def show_debug_status(self):
-                print("Debug system: demo mode")
+#                 print("Debug system: demo mode")
 
         # Fallback functions with exact signatures to match imports
         def ask_ai(prompt: str, temperature: float = 0.2) -> str:
@@ -649,7 +649,7 @@ class AetherraInterpreter:
                 confidence = int(parts[3]) if len(parts) > 3 else 80
                 self.debug_system.set_auto_apply(enabled, confidence)
             else:
-                print("Usage: set auto_debug on/off [confidence_threshold]")
+#                 print("Usage: set auto_debug on/off [confidence_threshold]")
 
         elif line.startswith("suggest fix"):
             # Handle manual fix suggestion
@@ -863,7 +863,8 @@ class AetherraInterpreter:
         """Handle assistant queries"""
         query = line.split("assistant:", 1)[-1].strip()
         context = "\n".join(self.memory.recall())
-        prompt = f"You are NeuroAssistant, a helpful AI embedded in the NeuroCode runtime. Here is your memory:\n{context}\n\nAnswer this: {query}"
+        prompt = f"You are NeuroAssistant,
+            a helpful AI embedded in the NeuroCode runtime. Here is your memory:\n{context}\n\nAnswer this: {query}"
         response = ask_ai(prompt)
         return f"[NeuroAssistant] {response}"
 
@@ -1331,7 +1332,8 @@ class AetherraInterpreter:
         patterns = self.memory.detect_recurring_patterns(min_frequency, timeframe)
 
         if not patterns["phrases"]:
-            return f"[Pattern Detection] No recurring patterns found (min frequency: {min_frequency}, timeframe: {timeframe} days)"
+            return f"[Pattern Detection] No recurring patterns found (min frequency: {min_frequency},
+                timeframe: {timeframe} days)"
 
         result = f"[Pattern Detection] Found {len(patterns['phrases'])} recurring patterns:\n"
 
@@ -1424,7 +1426,8 @@ class AetherraInterpreter:
 
         elif stripped_line.startswith("agent:"):
             self.block_type = "agent"
-            return "🤖 Started agent configuration block\n   🎯 Define agent behavior and capabilities, use 'end' to complete"
+            return "🤖 Started agent configuration block\n   🎯 Define agent behavior and capabilities,
+                use 'end' to complete"
 
         elif stripped_line.startswith("if "):
             self.block_type = "conditional"
@@ -1660,7 +1663,7 @@ class AetherraInterpreter:
 
                     # Auto-suggest fix if enabled
                     if self.debug_system.auto_apply_enabled:
-                        print("🔄 [Auto-Debug] Analyzing syntax error...")
+#                         print("🔄 [Auto-Debug] Analyzing syntax error...")
                         error_info = {
                             "type": "SyntaxError",
                             "message": str(e),
@@ -1805,7 +1808,8 @@ class NeuroExecutionVisitor:
             frequency = node.value.get("frequency", "weekly")
 
             analysis = self.interpreter.memory.pattern_analysis(pattern, frequency)
-            return f"📊 Pattern analysis for '{pattern}': {analysis['matches']} matches, threshold: {analysis['meets_threshold']}"
+            return f"📊 Pattern analysis for '{pattern}': {analysis['matches']} matches,
+                threshold: {analysis['meets_threshold']}"
 
         return f"Memory operation: {action}"
 

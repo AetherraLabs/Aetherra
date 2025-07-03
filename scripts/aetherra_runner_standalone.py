@@ -251,7 +251,8 @@ class StandaloneNeuroRunner:
             matching = [m for m in self.memory_store if tag in m["tags"]]
             if matching:
                 memories = [m["text"] for m in matching]
-                return f"🧠 Recalled {len(memories)} memories: {', '.join(memories[:3])}{'...' if len(memories) > 3 else ''}"
+                return f"🧠 Recalled {len(memories)} memories: {',
+                    '.join(memories[:3])}{'...' if len(memories) > 3 else ''}"
             else:
                 return f"🧠 No memories found for tag: {tag}"
         return "🧠 Recall executed"

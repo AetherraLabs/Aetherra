@@ -12,9 +12,7 @@ This example demonstrates integration of all UI enhancements:
 Run this file to see all UI enhancements in action.
 """
 
-import os
 import sys
-import time
 from pathlib import Path
 
 # Add project root to path
@@ -23,7 +21,6 @@ sys.path.insert(0, str(project_root))
 
 try:
     from PySide6.QtCore import Qt, QTimer
-    from PySide6.QtWidgets import (
         QApplication,
         QHBoxLayout,
         QLabel,
@@ -48,9 +45,7 @@ try:
         StyledTextField,
         TabPanel,
     )
-    from src.aethercode.ui.dark_mode_provider import apply_dark_mode, dark_mode
     from src.aethercode.ui.enhancement_controller import ui_enhancer
-    from src.aethercode.ui.performance_optimizer import (
         measure_performance,
         optimize_widget,
         performance_monitor,
@@ -292,7 +287,11 @@ class ComponentShowcaseWindow(QMainWindow):
         message_layout.addWidget(
             ChatMessageWidget(
                 sender="Assistant",
-                message="Yes, the styling is now consistent! We've removed chat bubbles, standardized spacing, and ensured proper contrast for accessibility. All components are using our dark mode provider for consistent colors.",
+                message="Yes,
+                    the styling is now consistent! We've removed chat bubbles,
+                    standardized spacing,
+                    and ensured proper contrast for accessibility. All components are using our dark mode provider for consistent colors.",
+
                 timestamp="10:48 AM",
             )
         )

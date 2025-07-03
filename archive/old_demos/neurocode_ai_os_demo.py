@@ -431,7 +431,8 @@ I'm operating optimally and continuously evolving!"""
                 timestamp = memory.get("timestamp", "Unknown time")
                 response += f"{i}. {content[:60]}... (from {timestamp})\n"
         else:
-            response = f"{prefix}I don't have specific memories matching that query, but I'm continuously learning and storing new experiences."
+            response = f"{prefix}I don't have specific memories matching that query,
+                but I'm continuously learning and storing new experiences."
 
         return response.strip()
 
@@ -470,7 +471,7 @@ I'm operating optimally and continuously evolving!"""
         return f"""{prefix}I'm NeuroCode AI OS - your intelligent operating system companion! Here's how I can help:
 
 🧠 **Memory**: I remember our conversations and learn from every interaction
-🎯 **Goals**: I can help you set, track, and achieve your objectives  
+🎯 **Goals**: I can help you set, track, and achieve your objectives
 🗣️ **Voice**: I communicate with emotional intelligence and personality
 📊 **Status**: I monitor system health and provide insights
 🔍 **Search**: I can recall past conversations and knowledge
@@ -501,9 +502,12 @@ I'm continuously evolving and adapting to assist you better. What would you like
                     }
                 )
 
-                return f"{prefix}I'd be happy to help you learn about {topic_name}! While I'm continuously expanding my knowledge, I can share insights and help you explore concepts. What specific aspect interests you most?"
+                return f"{prefix}I'd be happy to help you learn about {topic_name}! While I'm continuously expanding my knowledge,
+                    I can share insights and help you explore concepts. What specific aspect interests you most?"
 
-        return f"{prefix}I'm excited to help you learn! I can explain concepts, provide insights, and guide your learning journey. What topic are you curious about?"
+        return f"{prefix}I'm excited to help you learn! I can explain concepts,
+            provide insights,
+            and guide your learning journey. What topic are you curious about?"
 
     async def _handle_general_interaction(
         self, user_input: str, prefix: str = "", analysis: Dict[str, Any] = None
@@ -527,7 +531,8 @@ I'm continuously evolving and adapting to assist you better. What would you like
         elif "hello" in user_input.lower() or "hi" in user_input.lower():
             return f"{response_base}Hello! I'm NeuroCode AI OS, and I'm ready to assist you with anything you need."
         else:
-            return f"{response_base}I understand you want to discuss '{user_input}'. Let me process this and provide the most helpful response I can."
+            return f"{response_base}I understand you want to discuss '{user_input}'. Let me process this \and
+                provide the most helpful response I can."
 
     def show_consciousness_state(self):
         """Display current consciousness state"""

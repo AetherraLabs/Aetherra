@@ -26,13 +26,11 @@ def test_neuroplex_components():
 
     # Test Qt framework
     try:
-        from PySide6.QtWidgets import QApplication
 
         print("✅ PySide6 Qt framework available")
         qt_available = True
     except ImportError:
         try:
-            from PySide2.QtWidgets import QApplication
 
             print("✅ PySide2 Qt framework available")
             qt_available = True

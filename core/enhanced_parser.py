@@ -744,7 +744,7 @@ if __name__ == "__main__":
     # NeuroCode with enhanced parsing
     remember("Python is object-oriented") as "programming,paradigm"
     goal: "learn advanced NeuroCode" priority: high
-    
+
     define fibonacci(n)
         if n <= 1
             return n
@@ -752,7 +752,7 @@ if __name__ == "__main__":
             return fibonacci(n-1) + fibonacci(n-2)
         end
     end
-    
+
     recall tag: "programming"
     think "about the fibonacci sequence"
     """

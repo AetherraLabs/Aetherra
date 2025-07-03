@@ -8,7 +8,7 @@ Test Phase 2 features without file dependencies.
 
 def test_basic_stability():
     """Test basic stability features without file I/O"""
-    print("Testing basic stability...")
+#     print("Testing basic stability...")
 
     try:
         # Test the decorator pattern

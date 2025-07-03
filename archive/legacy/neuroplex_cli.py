@@ -91,24 +91,24 @@ EXAMPLES:
         neuroplex run monitor.neuro
         neuroplex run examples/basic_memory.neuro
         neuroplex run advanced_syntax_demo.neuro --verbose
-    
+
     🗣️ Natural Language Translation:
         neuroplex translate "Remember this conversation"
         neuroplex translate "Fix any recurring errors" --execute
         neuroplex chat
-    
+
     🎨 Launch UI:
         neuroplex ui
-    
+
     📚 Get help:
         neuroplex help
 
 FILE RUNNER OPTIONS:
     --verbose, -v       Show detailed execution trace
-    
+
 TRANSLATION OPTIONS:
     --execute, -e       Execute the translated NeuroCode
-    
+
 AVAILABLE .NEURO FILES:
 """
 
@@ -132,12 +132,12 @@ NEUROCODE LANGUAGE FEATURES:
     🤖 Agents: agent: on/off
     ⚙️ Functions: define name() ... end
     🔀 Control: if/when/for/while statements
-    
+
 GETTING STARTED:
     1. Create a .neuro file with NeuroCode syntax
     2. Run it: neuroplex run your_file.neuro
     3. Explore the UI: neuroplex ui
-    
+
 For more information, visit the NeuroCode documentation.
 """)
 

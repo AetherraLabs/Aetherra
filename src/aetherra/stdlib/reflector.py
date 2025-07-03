@@ -459,12 +459,14 @@ class ReflectorPlugin:
                 context = kwargs.get("context", "default")
                 action_log = kwargs.get("action_log", [])
                 result = self.analyze_behavior(context, action_log)
-                return f"Behavior analysis complete for context '{context}'. Found {len(result.get('patterns', {}))} patterns."
+                return f"Behavior analysis complete for context '{context}'. Found {len(result.get('patterns',
+                    {}))} patterns."
 
             elif action == "reflect" or action == "reflect_on_performance":
                 timeframe = kwargs.get("timeframe_hours", 24)
                 result = self.reflect_on_performance(timeframe)
-                return f"Performance reflection complete for {timeframe}h timeframe. Overall efficiency: {result.get('overall_efficiency', 'unknown')}"
+                return f"Performance reflection complete for {timeframe}h timeframe. Overall efficiency: {result.get('overall_efficiency',
+                    'unknown')}"
 
             elif action == "patterns" or action == "pattern_analysis":
                 action_log = kwargs.get("action_log", [])
@@ -477,7 +479,8 @@ class ReflectorPlugin:
                 return f"Usage insights generated for {timeframe}h period."
 
             elif action == "status":
-                return f"Reflector plugin active. {len(self.behavior_log)} logged behaviors, {len(self.reflection_data)} reflection contexts."
+                return f"Reflector plugin active. {len(self.behavior_log)} logged behaviors,
+                    {len(self.reflection_data)} reflection contexts."
 
             else:
                 available = ", ".join(self.available_actions)

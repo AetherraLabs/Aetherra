@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def test_memory_models():
     """Test core memory models"""
-    print("Testing memory models...")
+#     print("Testing memory models...")
 
     from core.memory.models import MemoryEntry
 
@@ -39,7 +39,7 @@ def test_memory_models():
 
 def test_basic_memory():
     """Test basic memory system"""
-    print("Testing basic memory system...")
+#     print("Testing basic memory system...")
 
     from core.memory.basic import BasicMemory
     from core.memory.storage import FileMemoryStorage
@@ -80,7 +80,7 @@ def test_basic_memory():
 
 def test_vector_memory():
     """Test vector memory system"""
-    print("Testing vector memory system...")
+#     print("Testing vector memory system...")
 
     from core.memory.vector import VectorMemory
 
@@ -108,7 +108,7 @@ def test_vector_memory():
 
 def test_session_management():
     """Test session management"""
-    print("Testing session management...")
+#     print("Testing session management...")
 
     from core.memory.models import MemoryEntry
     from core.memory.session import SessionManager
@@ -141,7 +141,7 @@ def test_session_management():
 
 def test_daily_reflection():
     """Test daily reflection system"""
-    print("Testing daily reflection system...")
+#     print("Testing daily reflection system...")
 
     from core.memory.models import MemoryEntry
     from core.memory.reflection import DailyReflectionManager
@@ -186,7 +186,7 @@ def test_daily_reflection():
 
 def test_pattern_analysis():
     """Test pattern analysis system"""
-    print("Testing pattern analysis system...")
+#     print("Testing pattern analysis system...")
 
     from core.memory.models import MemoryEntry
     from core.memory.patterns import PatternAnalyzer
@@ -241,7 +241,7 @@ def test_pattern_analysis():
 
 def test_unified_interface():
     """Test unified memory interface"""
-    print("Testing unified memory interface...")
+#     print("Testing unified memory interface...")
 
     from core.memory import UnifiedMemoryInterface
 
@@ -278,7 +278,7 @@ def test_unified_interface():
 
 def test_backward_compatibility():
     """Test backward compatibility with original AetherraMemory"""
-    print("Testing backward compatibility...")
+#     print("Testing backward compatibility...")
 
     from core.aetherra_memory import AetherraMemory
 
@@ -319,7 +319,7 @@ def test_backward_compatibility():
 
 def test_legacy_memory_compatibility():
     """Test that legacy memory.py still works"""
-    print("Testing legacy memory module...")
+#     print("Testing legacy memory module...")
 
     try:
         # Test import of legacy functions

@@ -194,7 +194,7 @@ class FallbackSystemManager:
                 self.auto_apply_enabled = False
 
             def debug(self, msg):
-                print(f"Debug: {msg}")
+#                 print(f"Debug: {msg}")
 
             def detect_and_store_error(self, error, context, filename=None):
                 pass

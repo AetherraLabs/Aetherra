@@ -6,7 +6,6 @@ Centralized parser functionality for the NeuroCode language.
 This module provides a clean API for all parsing operations.
 """
 
-from .grammar import NEUROCODE_GRAMMAR, NeuroCodeTransformer
 from .parser import AetherraLexer, AetherraParser
 
 __all__ = [

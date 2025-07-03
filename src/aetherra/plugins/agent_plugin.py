@@ -19,7 +19,10 @@ from core.plugin_manager import register_plugin
         "examining problem-solving approaches",
         "meta-cognitive analysis"
     ],
-    ai_description="Provides AI-powered reflection and analysis capabilities for deep thinking about topics, problems, and experiences.",
+    ai_description="Provides AI-powered reflection and analysis capabilities for deep thinking about topics,
+        problems,
+        and experiences.",
+
     example_usage="plugin: agent_reflect 'project development approach'",
     confidence_boost=1.3,
 )
@@ -36,8 +39,16 @@ def agent_reflect(topic: str, depth: str = "medium") -> Dict[str, Any]:
         # Placeholder reflection - in real implementation would use AI models
         reflections = {
             "shallow": f"Initial thoughts on {topic}: This appears to be an important area requiring attention.",
-            "medium": f"Analyzing {topic}: This involves multiple interconnected factors that should be considered systematically. Key aspects include planning, execution, and evaluation phases.",
-            "deep": f"Deep reflection on {topic}: This complex topic requires careful examination of underlying assumptions, potential outcomes, and long-term implications. Multiple perspectives should be considered, including technical, practical, and strategic viewpoints."
+            "medium": f"Analyzing {topic}: This involves multiple interconnected factors that should be considered systematically. Key aspects include planning,
+                execution,
+                and evaluation phases.",
+
+            "deep": f"Deep reflection on {topic}: This complex topic requires careful examination of underlying assumptions,
+                potential outcomes,
+                and long-term implications. Multiple perspectives should be considered,
+                including technical,
+                practical,
+                and strategic viewpoints."
         }
 
         return {

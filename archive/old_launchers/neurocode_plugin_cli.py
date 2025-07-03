@@ -381,26 +381,26 @@ Commands:
         --version=VERSION       Specify plugin version (default: latest)
         --force                 Force reinstallation
         --skip-security         Skip security validation (not recommended)
-    
+
     uninstall <name>            Uninstall a plugin
-    
+
     list                        List installed plugins
         --detailed, -d          Show detailed information
-    
+
     search [query]              Search plugin registry
         --category=NAME         Filter by category
         --tags=TAG1,TAG2        Filter by tags
-    
+
     info <name>                 Get detailed plugin information
-    
+
     update [name]               Update plugin(s) to latest version
                                 (updates all if no name specified)
-    
+
     popular                     Show popular plugins
         --limit=N               Number of plugins to show (default: 20)
-    
+
     categories                  List available plugin categories
-    
+
     help                        Show this help message
 
 Examples:

@@ -79,7 +79,8 @@ def analyze_memory_patterns(memories, tag_frequency, category_frequency):
     recent_memories = [m["text"] for m in memories[-10:]]  # Last 10 memories
     content_context = "\n".join(recent_memories)
 
-    prompt = f"""Analyze these recent memories for patterns and suggest 3 specific behaviors or workflows the user should adopt:
+    prompt = f"""Analyze these recent memories for patterns \and
+        suggest 3 specific behaviors or workflows the user should adopt:
 
 Memories:
 {content_context}

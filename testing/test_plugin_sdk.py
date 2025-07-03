@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Test script for NeuroCode Plugin SDK"""
 
-import os
 import sys
 
 # Add paths
@@ -15,7 +14,6 @@ print(f"Initial registry state: {PLUGIN_REGISTRY}")
 
 # Import example plugin to trigger registration
 try:
-    import example
     print("✅ Example plugin imported successfully")
     print(f"Registry after import: {PLUGIN_REGISTRY}")
 except Exception as e:
@@ -39,7 +37,7 @@ def test_plugin_system():
 
     # Test calling functions directly through registry
     if 'example' in PLUGIN_REGISTRY:
-        print("Testing example plugin functions:")
+#         print("Testing example plugin functions:")
 
         # Test hello_world
         if 'hello_world' in PLUGIN_REGISTRY['example']:

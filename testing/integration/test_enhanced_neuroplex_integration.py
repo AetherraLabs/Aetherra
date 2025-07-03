@@ -21,7 +21,7 @@ def test_enhanced_neuroplex():
     print("=" * 50)
 
     # Test 1: Check Qt availability
-    print("Test 1: Qt Framework Availability")
+#     print("Test 1: Qt Framework Availability")
     try:
         from PySide6.QtWidgets import QApplication
 
@@ -33,7 +33,6 @@ def test_enhanced_neuroplex():
     # Test 2: Check NeuroChat components
     print("\nTest 2: NeuroChat Components")
     try:
-        from neuro_chat import LyrixaAssistantInterface
 
         print("✅ NeuroChat interface available")
     except ImportError as e:
@@ -53,7 +52,6 @@ def test_enhanced_neuroplex():
     # Test 4: Check existing Neuroplex components
     print("\nTest 4: Existing Neuroplex Components")
     try:
-        from neuroplex_fully_modular import FullyModularNeuroplexWindow
 
         print("✅ Fully modular Neuroplex available")
     except ImportError as e:

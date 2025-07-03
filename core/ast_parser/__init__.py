@@ -12,10 +12,7 @@ This module provides the complete AST infrastructure for NeuroCode, including:
 This is the modularized version of the legacy syntax_tree.py for better maintainability.
 """
 
-from .analysis import analyze_syntax_tree
-from .nodes import NodeType, SyntaxNode
 from .parser import AetherraParser
-from .visitor import SyntaxTreeVisitor
 
 
 # Main API functions

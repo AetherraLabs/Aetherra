@@ -24,7 +24,7 @@ def test_core_imports():
 
         print("✅ BaseInterpreter imported successfully")
 
-        print("✅ DebugSystem imported successfully")
+#         print("✅ DebugSystem imported successfully")
 
         print("✅ BlockExecutor imported successfully")
 
@@ -92,7 +92,7 @@ def test_core_functionality():
         test_code = """
         def greet(name):
             return f"Hello, {name}!"
-        
+
         result = greet("NeuroCode")
         """
 

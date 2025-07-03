@@ -16,7 +16,6 @@ sys.path.insert(0, str(project_root / "core"))
 def test_neurochat_import():
     """Test if NeuroChat can be imported"""
     try:
-        from src.aethercode.ui.aether_chat import (
             LyrixaAssistantInterface,
             create_embeddable_neurochat,
         )
@@ -53,7 +52,6 @@ def test_neuroplex_integration():
         sys.path.insert(0, str(project_root / "src" / "neurocode" / "ui"))
 
         # Test the import pattern used in neuroplex.py
-        from neuro_chat import LyrixaAssistantInterface, create_embeddable_neurochat
 
         print("✅ Neuroplex-style import successful")
         return True

@@ -129,7 +129,6 @@ Examples:
         except ImportError:
             # Fallback to original plugin CLI
             try:
-                import aetherra_plugin_cli
 
                 neurocode_plugin_cli.main()
             except ImportError:

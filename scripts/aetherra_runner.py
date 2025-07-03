@@ -255,7 +255,8 @@ class NeuroCodeFileRunner:
                 if self.memory:
                     memories = self.memory.recall(tags=[tag])
                     if memories:
-                        return f"🧠 Recalled {len(memories)} memories: {', '.join(memories[:3])}{'...' if len(memories) > 3 else ''}"
+                        return f"🧠 Recalled {len(memories)} memories: {',
+                            '.join(memories[:3])}{'...' if len(memories) > 3 else ''}"
                     else:
                         return f"🧠 No memories found for tag: {tag}"
                 else:

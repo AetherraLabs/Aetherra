@@ -5,7 +5,7 @@ from core.runtime import ExecutionMode, RuntimeServices
 
 
 def main():
-    print("Testing NeuroCode Modular Runtime System...")
+#     print("Testing NeuroCode Modular Runtime System...")
 
     # Create runtime services
     runtime = RuntimeServices()

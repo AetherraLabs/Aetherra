@@ -181,7 +181,7 @@ def main():
     """Main test execution"""
     print("🚀 NeuroCode & Neuroplex Phase 2 System Verification")
     print("=" * 60)
-    print("Testing all Phase 2 systems for import and basic functionality...")
+#     print("Testing all Phase 2 systems for import and basic functionality...")
 
     # Test imports
     results = test_phase2_imports()

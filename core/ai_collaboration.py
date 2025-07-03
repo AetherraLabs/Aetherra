@@ -453,7 +453,7 @@ class AICollaborationFramework:
         task.context["optimized_code"] = optimization_response.solution
 
         # Stage 3: Debugging and Validation
-        print("🔍 Stage 3: Debugging and Validation")
+#         print("🔍 Stage 3: Debugging and Validation")
         debugger_agent = self.ai_agents[AgentRole.DEBUGGER]
         task.context["code"] = optimization_response.solution
         debug_response = await debugger_agent.process_task(task)

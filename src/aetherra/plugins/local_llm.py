@@ -21,6 +21,7 @@ from core.plugin_manager import register_plugin
         "development without internet"
     ],
     ai_description="Provides access to local LLM models through Ollama. Enables offline AI assistance and code generation with privacy-focused local inference.",
+
     example_usage="plugin: ollama_chat 'llama2' 'Explain how async/await works in Python'",
     confidence_boost=1.2,
 )
@@ -167,7 +168,10 @@ def ollama_list_models() -> Dict[str, Any]:
         "local model inference",
         "privacy-focused AI"
     ],
-    ai_description="Runs Hugging Face transformer models locally for text generation, classification, and other NLP tasks.",
+    ai_description="Runs Hugging Face transformer models locally for text generation,
+        classification,
+        and other NLP tasks.",
+
     example_usage="plugin: huggingface_local 'microsoft/DialoGPT-medium' 'Hello, how are you?'",
     confidence_boost=1.1,
 )
@@ -232,6 +236,7 @@ def huggingface_local(model_name: str, text: str, max_length: int = 100) -> Dict
         "lightweight model serving"
     ],
     ai_description="Provides CPU-optimized local LLM inference using llama.cpp Python bindings. Ideal for environments without GPU acceleration.",
+
     example_usage="plugin: llamacpp_chat 'path/to/model.gguf' 'Explain Python decorators'",
     confidence_boost=1.0,
 )

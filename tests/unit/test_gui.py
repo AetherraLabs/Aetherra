@@ -55,7 +55,6 @@ def test_gui_classes():
     ]
 
     try:
-        from ui.aetherplex_gui import (
             GoalTracker,
             LiveConsole,
             MemoryVisualization,
@@ -91,7 +90,6 @@ def test_neurocode_integration():
 
         # Try importing core components
         try:
-            from core.interpreter import AetherraInterpreter
 
             print("✅ NeuroCode interpreter import successful")
             interpreter_ok = True
@@ -100,7 +98,6 @@ def test_neurocode_integration():
             interpreter_ok = False
 
         try:
-            from core.aetherra_memory import AetherraMemory
 
             print("✅ NeuroCode memory import successful")
             memory_ok = True
@@ -109,7 +106,6 @@ def test_neurocode_integration():
             memory_ok = False
 
         try:
-            from core.chat_router import AetherraChatRouter
 
             print("✅ NeuroCode chat router import successful")
             chat_ok = True

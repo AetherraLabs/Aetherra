@@ -358,7 +358,7 @@ def main():
     """Run comprehensive NeuroCode test suite"""
     print("🧪 NeuroCode Comprehensive Test Suite")
     print("=" * 60)
-    print("Testing all major components...\n")
+#     print("Testing all major components...\n")
 
     test_results = []
 

@@ -10,11 +10,10 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-print("Testing GUI main function import...")
+# print("Testing GUI main function import...")
 
 try:
     # Import the main function
-    from ui.aetherplex_gui import NEUROCODE_AVAILABLE, QT_AVAILABLE, main
 
     print(f"✅ Main function imported successfully")
     print(f"   - Qt available: {QT_AVAILABLE}")

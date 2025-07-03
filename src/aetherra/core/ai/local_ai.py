@@ -186,7 +186,10 @@ class LocalAIEngine:
             if key in prompt.lower():
                 return response
 
-        return "I understand your request. As a local AI model, I can help with code analysis, optimization suggestions, and general programming guidance."
+        return "I understand your request. As a local AI model,
+            I can help with code analysis,
+            optimization suggestions,
+            and general programming guidance."
 
     def create_embeddings(self, texts: List[str]) -> List[List[float]]:
         """Create embeddings for semantic search"""

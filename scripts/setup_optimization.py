@@ -4,7 +4,6 @@
 Automatically installs essential packages for optimal performance
 """
 
-import os
 import subprocess
 import sys
 from pathlib import Path

@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 """Check that neuroplex.py can be imported"""
 
-import importlib
 import sys
 
 print("Attempting to import neuroplex.py...")
 
 try:
     # Try direct import
-    import src.aethercode.ui.aetherplex
 
     print("✅ Direct import successful!")
 

@@ -6,7 +6,6 @@ Comprehensive cleanup and organization of the Aetherra project.
 """
 
 import hashlib
-import os
 import shutil
 from collections import defaultdict
 from pathlib import Path

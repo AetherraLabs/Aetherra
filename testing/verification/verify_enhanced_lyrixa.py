@@ -141,7 +141,7 @@ def run_enhanced_verification():
     """Run enhanced verification focused on working components"""
     print("🧬 ENHANCED NEUROCODE VERIFICATION")
     print("=" * 50)
-    print("Testing components that are integrated and working...")
+#     print("Testing components that are integrated and working...")
 
     tests = [
         ("Core Integration", test_core_integration),

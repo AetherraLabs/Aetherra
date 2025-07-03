@@ -93,6 +93,7 @@ class SyntaxHighlighter:
             },
             CodeLanguage.PYTHON: {
                 "keywords": r"\b(def|class|if|else|elif|for|while|try|except|finally|import|from|return|yield|with|as|lambda|and|or|not|in|is|None|True|False)\b",
+
                 "strings": r'(["\'])(?:(?=(\\?))\2.)*?\1',
                 "comments": r"#.*$",
                 "numbers": r"\b\d+\.?\d*\b",
@@ -103,6 +104,7 @@ class SyntaxHighlighter:
             },
             CodeLanguage.JAVASCRIPT: {
                 "keywords": r"\b(function|const|let|var|if|else|for|while|try|catch|finally|return|class|extends|import|export|async|await|this|new|typeof|instanceof)\b",
+
                 "strings": r'(["\'])(?:(?=(\\?))\2.)*?\1',
                 "comments": r"//.*$|/\*[\s\S]*?\*/",
                 "numbers": r"\b\d+\.?\d*\b",

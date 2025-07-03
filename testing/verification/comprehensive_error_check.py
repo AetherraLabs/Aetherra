@@ -8,7 +8,6 @@ and report all potential errors, import issues, and functionality problems.
 """
 
 import ast
-import importlib.util
 from pathlib import Path
 from typing import Any, Dict
 

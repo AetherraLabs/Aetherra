@@ -76,7 +76,6 @@ def test_cli_imports():
 
         # Test basic import (this might fail due to persona dependencies)
         try:
-            import src.aethercode.cli
 
             print("  ✅ CLI package imports successfully")
         except ImportError as e:

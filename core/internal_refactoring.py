@@ -251,22 +251,22 @@ class DocumentationGenerator:
         self.docstring_templates = {
             "function": '''"""
     {summary}
-    
+
     Args:
         {args}
-        
+
     Returns:
         {returns}
-        
+
     Example:
         >>> {example}
     """''',
             "class": '''"""
     {summary}
-    
+
     Attributes:
         {attributes}
-        
+
     Example:
         >>> {example}
     """''',

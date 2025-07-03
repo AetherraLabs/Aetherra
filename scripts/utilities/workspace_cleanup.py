@@ -9,8 +9,6 @@ This script will clean up and organize the cluttered root directory by:
 3. Creating a clean, navigable structure
 """
 
-import json
-import os
 import shutil
 from pathlib import Path
 

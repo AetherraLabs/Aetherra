@@ -22,7 +22,7 @@ def test_import(module_name, description=""):
 
 def main():
     """Run comprehensive import tests."""
-    print("Testing NeuroCode imports...")
+#     print("Testing NeuroCode imports...")
     print("=" * 50)
 
     # Test main package

@@ -274,6 +274,52 @@ Aetherra is released under the [GPL-3.0 License](LICENSE). We believe in open so
 
 ---
 
+## ⚖️ **Legal Disclaimer**
+
+**IMPORTANT LEGAL NOTICES - PLEASE READ CAREFULLY**
+
+### Software Disclaimer
+Aetherra is provided "AS IS" without warranty of any kind, express or implied. The developers and contributors make no warranties regarding:
+- **Functionality**: Software performance, accuracy, or reliability
+- **Security**: Protection against vulnerabilities or data breaches  
+- **Compatibility**: Operation with specific systems or software
+- **Data Safety**: Prevention of data loss or corruption
+
+### AI-Generated Content Notice
+Aetherra utilizes artificial intelligence models that may:
+- Generate content that is inaccurate, biased, or inappropriate
+- Produce code that contains bugs, security vulnerabilities, or inefficiencies
+- Create outputs that may infringe on intellectual property rights
+- Return results that do not reflect the views or opinions of the project maintainers
+
+**Users are solely responsible for reviewing, validating, and testing all AI-generated content before use in production environments.**
+
+### Limitation of Liability
+In no event shall the authors, contributors, or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
+
+### Third-Party Services
+Aetherra integrates with external AI services (OpenAI, Anthropic, Google, etc.). Users are responsible for:
+- Complying with third-party terms of service
+- Understanding data sharing implications
+- Managing API costs and usage limits
+- Ensuring appropriate use of external services
+
+### Data Privacy
+While Aetherra includes local processing capabilities, some features may transmit data to external services. Users should:
+- Review privacy policies of integrated AI providers
+- Understand data retention and processing practices
+- Implement appropriate data protection measures
+- Comply with applicable privacy regulations (GDPR, CCPA, etc.)
+
+### Professional Use
+For commercial, enterprise, or mission-critical applications:
+- Conduct thorough testing and validation
+- Implement appropriate security measures
+- Consider professional support and legal review
+- Ensure compliance with industry regulations
+
+---
+
 ## 🙏 **Acknowledgments**
 
 Special thanks to:
@@ -360,46 +406,6 @@ Human → Describe Intent → AI Understands → AI Implements → AI Learns →
 - **Exponential Productivity**: AI handles implementation while you focus on vision
 - **Continuous Evolution**: The system gets smarter with every interaction
 - **Enterprise Reliability**: Production-grade stability with intelligent error handling
-
-### 📊 **Aetherra vs Existing Systems**
-
-| Feature                  | Aetherra & Lyrixa                     | Python                     | AutoGPT              | LangChain             |
-| ------------------------ | ------------------------------------- | -------------------------- | -------------------- | --------------------- |
-| **Programming Paradigm** | 🧠 Intent-driven cognitive             | 📝 Imperative syntax        | 🤖 Task automation    | 🔗 LLM orchestration   |
-| **Learning Curve**       | ⚡ Zero (natural language)             | 📚 Weeks to months          | 📖 Days to weeks      | 📘 Moderate complexity |
-| **AI Integration**       | 🎯 Native & seamless                   | 🔌 Library-dependent        | 🛠️ Agent-focused      | 🔧 Chain-based         |
-| **Self-Awareness**       | ✅ Full introspection                  | ❌ No self-monitoring       | ⚠️ Limited feedback   | ❌ No awareness        |
-| **Memory System**        | 🧩 Persistent learning                 | 📊 Manual data handling     | 💾 Basic persistence  | 📁 Context windows     |
-| **Error Handling**       | 🛡️ Self-healing + graceful degradation | ⚠️ Exception-based          | 🔄 Retry mechanisms   | ⚠️ Chain failures      |
-| **Multi-AI Support**     | 👥 7 distinct personalities            | 🔀 Single model integration | 🤖 Single agent focus | 🔗 Model-agnostic      |
-| **Real-time Adaptation** | 🎭 Dynamic personality switching       | ❌ Static behavior          | ⚙️ Limited adaptation | 📋 Template-based      |
-| **Development Speed**    | 🚀 **5x faster** (AI-assisted)         | 1x baseline                | 2x automation gains  | 1.5x chain efficiency |
-| **Enterprise Ready**     | ✅ Production-grade stability          | ✅ Mature ecosystem         | ⚠️ Experimental       | ✅ Growing adoption    |
-| **Natural Language**     | 💬 Full conversational interface       | 📝 Code-only                | 🗣️ Task descriptions  | 📝 Prompt templates    |
-| **Continuous Evolution** | 🌱 Self-improving system               | 📈 Manual optimization      | 🔄 Agent iterations   | 🔧 Manual tuning       |
-
-**🎯 Quantified Advantages:**
-
-- **5x Development Speed**: Intent-driven programming eliminates syntax complexity
-- **90% Faster Debugging**: Self-aware systems identify and fix issues automatically
-- **Zero Setup Time**: Natural language interface requires no prior programming knowledge
-- **100% Context Retention**: Persistent memory system learns from every interaction
-- **Enterprise Reliability**: 99.9% uptime with intelligent error recovery
-
-**💡 Why Choose Aetherra?**
-
-- **For Beginners**: Start building immediately with natural language - no syntax to learn
-- **For Developers**: Focus on architecture and vision while AI handles implementation
-- **For Enterprises**: Deploy self-optimizing systems that improve without maintenance
-- **For Innovation**: Push boundaries with AI-native capabilities impossible in traditional languages
-
-### 🌍 **Real-World Impact**
-
-**For Developers**: Transform from code writers to vision architects. Let AI handle syntax, debugging, and optimization while you focus on solving real problems.
-
-**For Businesses**: Deploy AI systems that understand business logic, adapt to changing requirements, and optimize themselves without constant maintenance.
-
-**For Everyone**: Computing becomes as natural as conversation. Express your needs in plain language and watch AI systems bring your ideas to life.
 
 ---
 

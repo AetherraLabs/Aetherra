@@ -7,7 +7,6 @@ ratings, and comprehensive plugin lifecycle management.
 """
 
 import importlib
-import importlib.util
 import json
 from dataclasses import asdict, dataclass
 from datetime import datetime

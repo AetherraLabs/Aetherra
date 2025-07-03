@@ -95,7 +95,7 @@ NEUROCODE_PRODUCTION_GRAMMAR = r"""
 
     // Intent Actions (standalone action verbs)
     intent_action: action_verb target_spec?
-    action_verb: "analyze" | "optimize" | "adapt" | "evolve" 
+    action_verb: "analyze" | "optimize" | "adapt" | "evolve"
                | "investigate" | "suggest" | "apply" | "monitor" | "predict"
                | "transcribe" | "summarize" | "refactor" | "self_edit" | "simulate"
     target_spec: string_value | "for" string_value | "on" string_value

@@ -14,9 +14,9 @@ def test_advanced_syntax():
     """Test all advanced syntax features"""
     print("🧠 Testing Neuroplex Advanced Syntax Features")
     print("=" * 50)
-    
+
     interpreter = AetherraInterpreter()
-    
+
     # Test 1: User-defined functions
     print("\n1. Testing User-Defined Functions...")
     commands = [
@@ -24,15 +24,15 @@ def test_advanced_syntax():
         'remember("Function executed") as "test"',
         'end'
     ]
-    
+
     for cmd in commands:
         result = interpreter.execute(cmd)
         print(f"   {cmd} -> {result}")
-    
+
     # Call the function
     result = interpreter.execute('run test_function()')
     print(f"   run test_function() -> {result}")
-    
+
     # Test 2: For loops
     print("\n2. Testing For Loops...")
     commands = [
@@ -40,11 +40,11 @@ def test_advanced_syntax():
         'remember("Loop iteration " + i) as "loop_test"',
         'end'
     ]
-    
+
     for cmd in commands:
         result = interpreter.execute(cmd)
         print(f"   {cmd} -> {result}")
-    
+
     # Test 3: Conditionals
     print("\n3. Testing Conditionals...")
     commands = [
@@ -55,11 +55,11 @@ def test_advanced_syntax():
         'remember("Condition not met") as "conditional_test"',
         'end'
     ]
-    
+
     for cmd in commands:
         result = interpreter.execute(cmd)
         print(f"   {cmd} -> {result}")
-    
+
     # Test 4: While loops
     print("\n4. Testing While Loops...")
     commands = [
@@ -69,11 +69,11 @@ def test_advanced_syntax():
         'remember("While loop " + counter) as "while_test"',
         'end'
     ]
-    
+
     for cmd in commands:
         result = interpreter.execute(cmd)
         print(f"   {cmd} -> {result}")
-    
+
     # Test 5: Simulation mode
     print("\n5. Testing Simulation Mode...")
     commands = [
@@ -81,11 +81,11 @@ def test_advanced_syntax():
         'remember("This is simulated") as "sim_test"',
         'end'
     ]
-    
+
     for cmd in commands:
         result = interpreter.execute(cmd)
         print(f"   {cmd} -> {result}")
-    
+
     # Test 6: Complex function with all features
     print("\n6. Testing Complex Function...")
     commands = [
@@ -99,23 +99,23 @@ def test_advanced_syntax():
         'end',
         'end'
     ]
-    
+
     for cmd in commands:
         result = interpreter.execute(cmd)
         print(f"   {cmd} -> {result}")
-    
+
     # Execute the complex function
     result = interpreter.execute('run complex_test()')
     print(f"   run complex_test() -> {result}")
-    
+
     # Test 7: Memory integration
     print("\n7. Testing Memory Integration...")
     result = interpreter.execute('memory summary')
     print(f"   memory summary -> {result}")
-    
+
     result = interpreter.execute('list functions')
     print(f"   list functions -> {result}")
-    
+
     print("\n✅ All Advanced Syntax Tests Completed!")
     print("🎉 Neuroplex is now a fully Turing-complete AI-native programming environment!")
 

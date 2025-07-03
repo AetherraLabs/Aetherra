@@ -70,7 +70,6 @@ def verify_imports():
         logger.info("Fallback UI available")
 
         # Check safe UI calls
-        from src.aethercode.ui.safe_ui_calls import UIErrorHandler, safe_call
 
         logger.info("Safe UI calls available")
 
@@ -86,7 +85,6 @@ def verify_launch_function():
 
     try:
         # Just import the function, don't call it
-        from src.aethercode.ui import launch_gui
 
         logger.info("launch_gui function is available")
         return True

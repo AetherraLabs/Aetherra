@@ -434,7 +434,8 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
         # Store reflection results in memory
         if self.memory:
             try:
-                summary_text = f"Reflection cycle #{self.reflection_count}: {len(insights)} insights, {len(suggestions)} suggestions (avg confidence: {cycle_stats['confidence_avg']:.2f})"
+                summary_text = f"Reflection cycle #{self.reflection_count}: {len(insights)} insights,
+                    {len(suggestions)} suggestions (avg confidence: {cycle_stats['confidence_avg']:.2f})"
                 self.memory.remember(
                     summary_text,
                     ["agent_reflection", "meta_learning"],

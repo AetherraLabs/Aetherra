@@ -540,7 +540,12 @@ end
 
 ## Overview
 
-The {safe_name.replace('_', ' ')} plugin demonstrates NeuroCode's revolutionary approach to intelligent, self-adapting system components. Built with AI-native principles, this plugin learns from interactions, adapts its behavior, and integrates seamlessly with NeuroCode's consciousness framework.
+The {safe_name.replace('_',
+    ' ')} plugin demonstrates NeuroCode's revolutionary approach to intelligent,
+    self-adapting system components. Built with AI-native principles,
+    this plugin learns from interactions,
+    adapts its behavior,
+    and integrates seamlessly with NeuroCode's consciousness framework.
 
 ## Features
 

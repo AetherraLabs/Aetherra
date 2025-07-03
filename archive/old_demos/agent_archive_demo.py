@@ -24,7 +24,6 @@ try:
     from tools.agent_archive_cli import AgentArchiveCLI
     from tools.agent_archiver import AgentArchiver, export_agent
     from tools.agent_importer import AgentImporter, import_agent, merge_agents
-    from tools.replay_engine import InteractiveReplayDebugger, ReplayEngine
 except ImportError as e:
     logger.error(f"Failed to import archive system modules: {e}")
     logger.error("Make sure all archive system files are in the tools/ directory")
@@ -543,13 +542,13 @@ class ArchiveSystemDemo:
             print("✅ State import/export: Working")
             print("✅ Agent merging: Working")
             print("✅ Decision replay: Working")
-            print("✅ Interactive debugging: Working")
+#             print("✅ Interactive debugging: Working")
             print("✅ CLI integration: Working")
 
             print("\n🌟 Revolutionary Features Demonstrated:")
             print("  🧠 Persistent AI consciousness across sessions")
             print("  🤝 Agent knowledge sharing and collaboration")
-            print("  🎬 Complete decision process replay and debugging")
+#             print("  🎬 Complete decision process replay and debugging")
             print("  🔀 Intelligent merging of agent capabilities")
             print("  📊 Advanced pattern analysis and insights")
             print("  🚀 Developer-friendly CLI and API")
@@ -557,7 +556,7 @@ class ArchiveSystemDemo:
             print("\n🎯 Impact:")
             print("  • Never lose trained agent knowledge again")
             print("  • Share expert agent capabilities across teams")
-            print("  • Debug agent decisions with perfect clarity")
+#             print("  • Debug agent decisions with perfect clarity")
             print("  • Build collective intelligence networks")
             print("  • Accelerate AI development through reuse")
 

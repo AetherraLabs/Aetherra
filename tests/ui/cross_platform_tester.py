@@ -6,19 +6,15 @@ This module provides utilities for testing the UI across different platforms
 to ensure consistency and proper appearance regardless of operating system.
 """
 
-import os
 import platform
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from PySide6.QtCore import QSize, QSysInfo, Qt
-    from PySide6.QtGui import QImage, QPixmap, QScreen
     from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
 
     QT_AVAILABLE = True

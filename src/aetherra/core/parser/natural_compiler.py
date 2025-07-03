@@ -7,10 +7,8 @@ This revolutionary compiler bridges the gap between human thought
 and AI execution, making programming as natural as conversation.
 """
 
-import json
 import re
 from datetime import datetime
-from typing import Dict, List, Tuple
 
 
 class NaturalLanguageCompiler:

@@ -21,7 +21,11 @@ from core.plugin_manager import register_plugin
         "processing audio interviews",
         "creating text from audio content"
     ],
-    ai_description="Transcribes audio files to text using OpenAI Whisper. Supports various audio formats including MP3, WAV, M4A, and more.",
+    ai_description="Transcribes audio files to text using OpenAI Whisper. Supports various audio formats including MP3,
+        WAV,
+        M4A,
+        and more.",
+
     example_usage="plugin: whisper_transcribe 'meeting.wav'",
     confidence_boost=1.3,
 )
@@ -86,6 +90,7 @@ def whisper_transcribe(audio_file: str, model: str = "base", language: Optional[
         "hands-free programming"
     ],
     ai_description="Processes voice commands and converts them to actionable instructions. Can simulate voice processing when actual audio hardware is not available.",
+
     example_usage="plugin: whisper_voice_command 'remember to refactor the database module'",
     confidence_boost=1.1,
 )

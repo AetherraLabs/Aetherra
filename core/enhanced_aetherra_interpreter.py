@@ -7,7 +7,6 @@ Integrates new AI capabilities with existing interpreter
 import os
 import sys
 import time
-from typing import Any, Dict
 
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(__file__))
@@ -107,14 +106,12 @@ try:
     from .ai_collaboration import AICollaborationFramework
     from .ai_runtime import ask_ai
     from .intent_parser import IntentToCodeParser, parse_natural_intent
-    from .local_ai import LocalAIEngine, local_analyze_code, local_ask_ai
 except ImportError:
     # Fallback to absolute imports for standalone execution
     from aetherra_interpreter import AetherraInterpreter
     from ai_collaboration import AICollaborationFramework
     from ai_runtime import ask_ai
     from intent_parser import IntentToCodeParser, parse_natural_intent
-    from local_ai import LocalAIEngine, local_analyze_code, local_ask_ai
 
 
 class EnhancedAetherraInterpreter(AetherraInterpreter):
@@ -221,7 +218,9 @@ class EnhancedAetherraInterpreter(AetherraInterpreter):
 
     def refactor_code(self, code: str, model: str) -> str:
         """Use AI to refactor and improve a piece of code"""
-        prompt = f"Refactor the following Aetherra code to improve its clarity, efficiency, and adherence to best practices:\n\n{code}"
+        prompt = f"Refactor the following Aetherra code to improve its clarity,
+            efficiency,
+            and adherence to best practices:\n\n{code}"
         return ask_ai(prompt, model=model)
 
     def generate_code(self, description: str, model: str) -> str:

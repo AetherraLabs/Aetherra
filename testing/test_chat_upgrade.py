@@ -77,7 +77,7 @@ if __name__ == "__main__":
         print("  ✅ Rich context injection")
         print("  ✅ Enhanced fallback responses")
         print("  ✅ Conversation history tracking")
-        print("  ✅ Debug logging for troubleshooting")
+#         print("  ✅ Debug logging for troubleshooting")
         print("  ✅ Graceful error handling")
     else:
         print("\n❌ Tests failed. Check errors above.")

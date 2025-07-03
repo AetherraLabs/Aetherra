@@ -202,7 +202,9 @@ class PatternAnalyzer:
 
                 pattern = self._create_pattern(
                     pattern_name=f"category_{category}",
-                    description=f"Category '{category}' usage pattern (avg length: {avg_length:.0f}, common tags: {tag_description})",
+                    description=f"Category '{category}' usage pattern (avg length: {avg_length:.0f},
+                        common tags: {tag_description})",
+
                     frequency=analysis["count"],
                     examples=[m.text[:100] for m in analysis["memories"][:3]],
                     pattern_type="category_usage",

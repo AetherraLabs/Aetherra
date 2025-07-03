@@ -57,21 +57,21 @@ agent: on
 # Define API structure
 define create_{api_name}_api()
     remember("Creating {api_name} API") as "development"
-    
+
     # Setup requirements
     {requirements}
-    
+
     # Implementation goals
     goal: ensure security > 95%
     goal: optimize performance > 90%
     goal: maintain uptime > 99%
-    
+
     when request_received:
         validate input_data
         process request
         return response
     end
-    
+
     remember("API {api_name} created successfully") as "achievements"
 end
 
@@ -83,20 +83,20 @@ agent: on
 # Data pipeline definition
 define process_{data_type}_data()
     remember("Starting data processing pipeline") as "operations"
-    
+
     # Load and validate data
     load data from "{data_source}"
     validate data_integrity
-    
+
     # Processing steps
     {processing_steps}
-    
+
     # Quality assurance
     when data_quality < 95%:
         suggest fix for "data quality issues"
         apply fix if confidence > 80%
     end
-    
+
     # Save results
     save processed_data to "{output_destination}"
     remember("Data processing completed successfully") as "operations"
@@ -110,11 +110,11 @@ agent: on
 # Automation workflow
 define automate_{task_name}()
     remember("Starting automation: {task_name}") as "automation"
-    
+
     # Setup monitoring
     when trigger_condition:
         {automation_steps}
-        
+
         if success_rate > 90%:
             remember("Automation successful") as "achievements"
         else:
@@ -122,7 +122,7 @@ define automate_{task_name}()
             suggest improvements
         end
     end
-    
+
     # Continuous improvement
     learn from execution_logs
     optimize for efficiency
@@ -137,16 +137,16 @@ agent: on
 # Optimization strategy
 define optimize_{target}()
     remember("Starting optimization: {target}") as "optimization"
-    
+
     # Baseline measurement
     measure current_{target}_performance
-    
+
     # Apply optimization techniques
     {optimization_techniques}
-    
+
     # Validation
     measure new_{target}_performance
-    
+
     if improvement > {improvement_target}:
         apply optimization_permanently
         remember("Optimization successful: {improvement}% improvement") as "achievements"
@@ -164,21 +164,21 @@ agent: on
 # Monitoring setup
 define monitor_{system}()
     remember("Setting up monitoring for {system}") as "monitoring"
-    
+
     # Define monitoring parameters
     {monitoring_parameters}
-    
+
     # Alert conditions
     when {alert_condition}:
         analyze {system}_metrics
         suggest fix for "performance degradation"
-        
+
         if critical_issue_detected:
             alert operations_team
             apply emergency_measures
         end
     end
-    
+
     # Continuous learning
     learn from {system}_patterns
     adapt monitoring_thresholds based_on historical_data
@@ -192,14 +192,14 @@ agent: on
 # Learning framework
 define learn_from_{data_source}()
     remember("Starting learning process from {data_source}") as "learning"
-    
+
     # Data ingestion
     analyze {data_source}
     extract patterns
-    
+
     # Learning objectives
     {learning_objectives}
-    
+
     # Knowledge application
     when new_pattern_discovered:
         validate pattern_significance
@@ -208,7 +208,7 @@ define learn_from_{data_source}()
             update behavioral_models
         end
     end
-    
+
     # Continuous improvement
     evolve learning_algorithms based_on feedback
 end
@@ -508,7 +508,7 @@ when task_initiated:
     analyze requirements
     implement solution
     validate results
-    
+
     if success_achieved:
         remember("Task completed successfully") as "achievements"
     else:

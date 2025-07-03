@@ -36,7 +36,9 @@ content = re.sub(
 )
 content = re.sub(
     r"len\(self\.emotional_memory\.memories\)",
-    'len(self.emotional_memory.memories) if self.emotional_memory and hasattr(self.emotional_memory, "memories") else 0',
+    'len(self.emotional_memory.memories) if self.emotional_memory and hasattr(self.emotional_memory,
+        "memories") else 0',
+
     content,
 )
 content = re.sub(

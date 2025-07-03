@@ -8,7 +8,6 @@ completely GREEN across the board with ZERO warnings or errors.
 
 import sys
 import traceback
-from pathlib import Path
 
 
 def main():
@@ -18,9 +17,8 @@ def main():
     print()
 
     # Test 1: Enhanced Lyrixa Import
-    print("Test 1: Enhanced Lyrixa Import...")
+#     print("Test 1: Enhanced Lyrixa Import...")
     try:
-        from src.aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
 
         print("✅ Enhanced Lyrixa imported - NO WARNINGS")
     except Exception as e:

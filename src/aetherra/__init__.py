@@ -11,12 +11,9 @@ License: MIT
 """
 
 # Core functionality (always available)
-from .core import create_interpreter, create_memory_system, create_parser
-from .ui import launch_gui
 
 # Optional CLI functionality
 try:
-    from .cli.main import main as cli_main
 
     CLI_AVAILABLE = True
 except ImportError:

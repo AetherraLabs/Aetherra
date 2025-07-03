@@ -25,7 +25,6 @@ try:
 
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-    from core.interpreter import AetherraInterpreter
     from core.aetherra_memory import AetherraMemory
     from core.performance_integration import (
         auto_tune_performance,

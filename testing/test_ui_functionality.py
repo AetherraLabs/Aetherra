@@ -9,9 +9,8 @@ import sys
 # Add the project root to the Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-print("Testing UI module imports...")
+# print("Testing UI module imports...")
 try:
-    from src.aethercode.ui.aether_chat import (
         LyrixaAssistantInterface,
         create_embeddable_neurochat,
     )

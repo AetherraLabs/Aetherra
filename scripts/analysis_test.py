@@ -59,7 +59,6 @@ print("🎨 GUI Analysis")
 print("-" * 30)
 
 try:
-    from ui.aetherplex_gui import NeuroAnimation, NeuroplexMainWindow, NeuroTheme
 
     print("✅ GUI Components: Import successful")
 

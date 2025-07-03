@@ -666,9 +666,13 @@ class {name.title().replace("_", "")}Component(QWidget):
 """ + "\\n".join([f"• {{k}}: {{v}}" for k, v in self.user_preferences.items()]) + f"""
 
 📈 Recent Interaction Patterns:
-• Average Input Length: {{sum(h.get('length_preference', 0) for h in self.interaction_history[-10:]) // max(1, len(self.interaction_history[-10:]))}}
-• Question Style Usage: {{sum(1 for h in self.interaction_history[-10:] if h.get('question_style')) / max(1, len(self.interaction_history[-10:])) * 100:.1f}}%
-• Command Style Usage: {{sum(1 for h in self.interaction_history[-10:] if h.get('command_style')) / max(1, len(self.interaction_history[-10:])) * 100:.1f}}%
+• Average Input Length: {{sum(h.get('length_preference',
+    0) for h in self.interaction_history[-10:]) // max(1,
+    len(self.interaction_history[-10:]))}}
+• Question Style Usage: {{sum(1 for h in self.interaction_history[-10:] if h.get('question_style')) / max(1,
+    len(self.interaction_history[-10:])) * 100:.1f}}%
+• Command Style Usage: {{sum(1 for h in self.interaction_history[-10:] if h.get('command_style')) / max(1,
+    len(self.interaction_history[-10:])) * 100:.1f}}%
 
 🎯 Active Learning Goals:
 """ + "\\n".join([f"• {{goal.replace('_', ' ').title()}}" for goal in self.learning_goals])

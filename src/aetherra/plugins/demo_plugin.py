@@ -19,7 +19,10 @@ from core.plugin_manager import register_plugin
         "extracting keywords from content",
         "getting text statistics and insights",
     ],
-    ai_description="Provides comprehensive text analysis including word count, sentiment analysis, and keyword extraction. Perfect for understanding content tone and extracting meaningful insights from text data.",
+    ai_description="Provides comprehensive text analysis including word count,
+        sentiment analysis,
+        and keyword extraction. Perfect for understanding content tone and extracting meaningful insights from text data.",
+
     example_usage="plugin: demo_analyzer 'This is amazing text to analyze!'",
     confidence_boost=1.2,
 )
@@ -79,7 +82,10 @@ def analyze_text(text):
         "standardizing code style across projects",
         "improving code readability and organization",
     ],
-    ai_description="Automatically formats and beautifies code with proper indentation, spacing, and style conventions. Supports multiple programming languages and intelligent bracket matching.",
+    ai_description="Automatically formats and beautifies code with proper indentation,
+        spacing,
+        and style conventions. Supports multiple programming languages and intelligent bracket matching.",
+
     example_usage="plugin: code_formatter 'def func():\\nprint(\"hello\")' python",
     confidence_boost=1.1,
 )
