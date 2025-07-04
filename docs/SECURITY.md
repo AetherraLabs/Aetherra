@@ -2,7 +2,7 @@
 
 ## 🛡️ **Security & Vulnerability Reporting**
 
-**aetherra & Neuroplex** takes security seriously. As an AI operating system with autonomous capabilities, we maintain strict security standards and encourage responsible disclosure of vulnerabilities.
+**Aetherra & Lyrixa** takes security seriously. As an AI operating system with autonomous capabilities, we maintain strict security standards and encourage responsible disclosure of vulnerabilities.
 
 ## 📋 **Supported Versions**
 
