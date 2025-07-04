@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2025 Aetherra & Lyrixa Contributors
 -->
 
 <p align="center">
-  <img src="assets\branding\Aetherra Banner2.png" alt="Aetherra Banner" width="800"/>
+  <img src="assets/branding/Aetherra_Banner_Transparent.png" alt="Aetherra Banner" width="800"/>
 </p>
 
 <h1 align="center">🌟 Aetherra — Code Awakened</h1>
