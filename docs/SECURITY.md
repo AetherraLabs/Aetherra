@@ -175,4 +175,4 @@ In case of a security incident:
 
 ---
 
-**🛡️ Security is a shared responsibility. Thank you for helping keep aetherra & Neuroplex secure for everyone.**
+**🛡️ Security is a shared responsibility. Thank you for helping keep Aetherra & Lyrixa secure for everyone.**
