@@ -2,7 +2,7 @@
 
 ## 🤝 **Our Pledge**
 
-We as members, contributors, and leaders pledge to make participation in our **NeuroCode & Neuroplex** community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, caste, color, religion, or sexual identity and orientation.
+We as members, contributors, and leaders pledge to make participation in our **Aetherra & Lyrixa** community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, caste, color, religion, or sexual identity and orientation.
 
 We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community focused on advancing AI-native computing for the benefit of all.
 
@@ -90,7 +90,7 @@ Community leaders will follow these Community Impact Guidelines in determining t
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement:
 
-* **📧 Email**: conduct@neurocode.dev (if available)
+* **📧 Email**: aetherra.project@gmail.com (if available)
 * **📝 GitHub Issues**: Use the "Code of Conduct" issue template
 * **💬 Private Message**: Contact maintainers directly through GitHub
 * **🔒 Anonymous Reporting**: Use our anonymous reporting form (link in repository)
