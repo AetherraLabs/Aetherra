@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2025 Aetherra & Lyrixa Contributors
 -->
 
 <p align="center">
-  <img src="assets/branding/Aetherra_banner2.png" alt="Aetherra Banner" width="800"/>
+  <img src="assets\branding\Aetherra Banner2.png" alt="Aetherra Banner" width="800"/>
 </p>
 
 <h1 align="center">🌟 Aetherra — Code Awakened</h1>
@@ -949,7 +949,7 @@ lyrixa developer examples --category data-science
 - 📚 **Contribute documentation** - help others discover Aetherra's potential
 - 🎯 **Build something amazing** - create the first Aetherra unicorn!
 
-**Repository**: [GitHub - Aetherra](https://github.com/Zyonic88/Aetherra) | **Website**: [aetherra.dev](https://aetherra.dev)
+**Repository**: [GitHub - Aetherra](https://github.com/Zyonic88/Aetherra) | **Website**: [aetherra.dev](https://zyonic88.github.io/Aetherra/)
 
 **Let's redefine what software can be — together.** 🚀
 
