@@ -54,7 +54,7 @@ def main():
     # Test 3: Enhanced Lyrixa integration
     total_tests += 1
     try:
-        from src.aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
+        from lyrixa.gui.enhanced_lyrixa import EnhancedLyrixaWindow
 
         window = EnhancedLyrixaWindow()
 

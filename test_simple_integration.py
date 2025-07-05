@@ -30,7 +30,7 @@ def test_simple_integration():
 
         # Import and create GUI
         print("\n2️⃣ Testing GUI import and creation...")
-        from src.aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
+        from lyrixa.gui.enhanced_lyrixa import EnhancedLyrixaWindow
 
         window = EnhancedLyrixaWindow()
         print("✅ Enhanced Lyrixa Window created successfully")

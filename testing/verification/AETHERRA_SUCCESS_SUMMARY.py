@@ -51,7 +51,7 @@ def main():
 
     # Test import to prove it works
     try:
-        from src.aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
+        from lyrixa.gui.enhanced_lyrixa import EnhancedLyrixaWindow
 
         print("✅ FINAL VERIFICATION: Enhanced Lyrixa imports successfully")
 

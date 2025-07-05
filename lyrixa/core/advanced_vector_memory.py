@@ -249,7 +249,7 @@ class AdvancedMemorySystem:
                 sql += " AND memory_type = ?"
                 params.append(memory_type)
 
-            cursor.execute(sql)
+            cursor.execute(sql, params)
             all_memories = cursor.fetchall()
             conn.close()
 

@@ -85,6 +85,11 @@ class LyrixaConversationalEngine:
         self.topic_expertise = {}
         self.emotional_patterns = {}
 
+        # Initialize Project Knowledge Responder
+        self.knowledge_responder = None
+        if self.memory_system:
+            self._initialize_knowledge_responder()
+
         print("💬 Lyrixa Conversational Engine initialized")
 
     def _initialize_personalities(self) -> Dict[PersonalityType, PersonalityProfile]:
@@ -168,10 +173,14 @@ class LyrixaConversationalEngine:
 
         # Load previous relationship data if available
         if self.memory_system:
-            relationship_memories = await self.memory_system.recall_memories(
-                f"relationship {session_id}", limit=5
-            )
-            relationship_stage = "familiar" if relationship_memories else "new"
+            try:
+                relationship_memories = await self.memory_system.semantic_search(
+                    f"relationship {session_id}", top_k=5
+                )
+                relationship_stage = "familiar" if relationship_memories else "new"
+            except Exception as e:
+                print(f"⚠️ Error loading relationship data: {e}")
+                relationship_stage = "new"
         else:
             relationship_stage = "new"
 
@@ -229,21 +238,23 @@ class LyrixaConversationalEngine:
 
         # Store in memory system
         if self.memory_system:
-            await self.memory_system.store_memory(
-                content={
-                    "conversation_turn": turn_data,
-                    "relationship_data": {
-                        "stage": self.conversation_state.relationship_stage,
-                        "user_preferences": user_analysis.get("preferences", {}),
+            try:
+                # Convert conversation data to string for storage
+                memory_content = f"Conversation turn {turn_data['turn']}: User said '{user_input}', Lyrixa responded with context from {self.current_personality.value} personality."
+
+                await self.memory_system.store_memory(
+                    content=memory_content,
+                    memory_type="conversation",
+                    tags=["conversation", "relationship", user_analysis["mood"]],
+                    confidence=0.6 if user_analysis["engagement"] > 0.7 else 0.4,
+                    context={
+                        "session_id": self.conversation_state.session_id,
+                        "personality": self.current_personality.value,
+                        "turn_data": turn_data,
                     },
-                },
-                context={
-                    "session_id": self.conversation_state.session_id,
-                    "personality": self.current_personality.value,
-                },
-                tags=["conversation", "relationship", user_analysis["mood"]],
-                importance=0.6 if user_analysis["engagement"] > 0.7 else 0.4,
-            )
+                )
+            except Exception as e:
+                print(f"⚠️ Error storing conversation memory: {e}")
 
         return response
 
@@ -343,6 +354,32 @@ class LyrixaConversationalEngine:
             "adaptation_notes": [],
         }
 
+        # 🧠 KNOWLEDGE RESPONDER ROUTING - Check if this is a factual/project query
+        if (
+            self.knowledge_responder
+            and self.knowledge_responder.is_factual_or_project_query(user_input)
+        ):
+            try:
+                knowledge_answer = await self.knowledge_responder.answer_question(
+                    user_input
+                )
+                if (
+                    knowledge_answer
+                    and knowledge_answer
+                    != "I'm still learning, but I don't have an answer to that yet."
+                ):
+                    # Use knowledge responder answer with personality touch
+                    response["text"] = self._add_personality_to_knowledge_response(
+                        knowledge_answer, personality
+                    )
+                    response["adaptation_notes"].append(
+                        "Used Project Knowledge Responder"
+                    )
+                    return response
+            except Exception as e:
+                print(f"   ⚠️ Knowledge Responder error: {e}")
+                # Fall through to normal conversation flow
+
         # Adapt emotional state based on user mood
         if user_analysis["mood"] == "frustrated":
             self.conversation_state.emotional_state = "supportive"
@@ -366,7 +403,7 @@ class LyrixaConversationalEngine:
             )
         elif user_analysis["mood"] == "frustrated":
             response["text"] = (
-                f"I can sense you're having a tough time. Don't worry, we'll figure this out together! "
+                "I can sense you're having a tough time. Don't worry, we'll figure this out together! "
             )
         else:
             response["text"] = response_template.format(topic=topic)
@@ -483,6 +520,66 @@ class LyrixaConversationalEngine:
         ]
 
         return reflection
+
+    def _add_personality_to_knowledge_response(
+        self, knowledge_answer: str, personality
+    ) -> str:
+        """Add personality touches to a knowledge responder answer"""
+
+        # Add personality-appropriate intro/outro based on available attributes
+        if (
+            hasattr(personality, "formality_level")
+            and personality.formality_level < 0.5
+        ):
+            intros = [
+                "Here's what I know about that: ",
+                "Great question! ",
+                "I'm happy to help with that! ",
+                "Let me share what I've learned: ",
+            ]
+            knowledge_answer = random.choice(intros) + knowledge_answer
+
+        # Add encouraging touches based on personality
+        if (
+            hasattr(personality, "encouragement_level")
+            and personality.encouragement_level > 0.6
+        ):
+            outros = [
+                " Hope this helps!",
+                " Let me know if you need more details!",
+                " Feel free to ask if anything needs clarification!",
+            ]
+            knowledge_answer += random.choice(outros)
+
+        # Add humor based on personality
+        if (
+            hasattr(personality, "humor_level")
+            and personality.humor_level > 0.5
+            and random.random() < 0.2
+        ):
+            humor_additions = [
+                " 😊",
+                " (I love these kinds of questions!)",
+                " 🎯",
+            ]
+            knowledge_answer += random.choice(humor_additions)
+
+        return knowledge_answer
+
+    def _initialize_knowledge_responder(self):
+        """Initialize the Project Knowledge Responder for factual queries."""
+        try:
+            if not self.memory_system:
+                print("   ⚠️ No memory system available for Knowledge Responder")
+                return
+
+            from .project_knowledge_responder import ProjectKnowledgeResponder
+
+            self.knowledge_responder = ProjectKnowledgeResponder(self.memory_system)
+            print("   ✅ Project Knowledge Responder integrated")
+        except ImportError as e:
+            print(f"   ⚠️ Could not load Project Knowledge Responder: {e}")
+            self.knowledge_responder = None
 
 
 # Example usage

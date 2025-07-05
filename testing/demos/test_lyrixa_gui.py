@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test Lyrixa GUI Launch
+Test Neuroplex GUI Launch
 """
 
 import os
@@ -13,8 +13,8 @@ sys.path.insert(0, project_root)
 sys.path.insert(0, src_path)
 
 
-def test_aetherra_components():
-    print("🖥️ TESTING LYRIXA GUI COMPONENTS")
+def test_aetherplex_components():
+    print("🖥️ TESTING NEUROPLEX GUI COMPONENTS")
     print("=" * 45)
 
     # Test UI imports
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     print("🖥️ NEUROPLEX GUI TESTING SUITE")
     print("=" * 50)
 
-    test1 = test_aetherra_components()
+    test1 = test_aetherplex_components()
     test2 = test_launcher_scripts()
     test3 = demonstration_launch_simulation()
 

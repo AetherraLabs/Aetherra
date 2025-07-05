@@ -28,7 +28,7 @@ def test_phase1_gui_simple():
         app = QApplication([])
         print("✅ QApplication created successfully")
 
-        from src.aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
+        from lyrixa.gui.enhanced_lyrixa import EnhancedLyrixaWindow
 
         print("✅ EnhancedLyrixaWindow imported successfully")
 

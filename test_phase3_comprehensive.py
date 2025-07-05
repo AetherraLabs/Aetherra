@@ -305,7 +305,7 @@ def test_enhanced_lyrixa_integration():
     print("\n🎙️ Testing Enhanced Lyrixa GUI Integration...")
 
     try:
-        from src.aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
+        from lyrixa.gui.enhanced_lyrixa import EnhancedLyrixaWindow
 
         # Test initialization with Phase 3 components
         window = EnhancedLyrixaWindow()

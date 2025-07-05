@@ -12,7 +12,7 @@ IMPORT_MAPPINGS = {
     # Module path mappings - from imports
     r"from\s+src\.Aetherra\.ui\.Lyrixa\s+import": "from src.aetherra.ui.lyrixa import",
     r"from\s+src\.Aetherra\.ui\.aether_chat\s+import": "from src.aetherra.ui.lyrixa_assistant import",
-    r"from\s+src\.Aetherra\.ui\.enhanced_Lyrixa\s+import": "from src.aetherra.ui.enhanced_lyrixa import",
+    r"from\s+src\.Aetherra\.ui\.enhanced_Lyrixa\s+import": "from lyrixa.gui.enhanced_lyrixa import",
     r"from\s+src\.Aetherra\.core\.interpreter\s+import": "from src.aetherra.core.aetherra_interpreter import",
     r"from\s+src\.Aetherra\.core\.memory\s+import": "from src.aetherra.core.aetherra_memory import",
     r"from\s+src\.Aetherra\.core\.Aetherra_parser\s+import": "from src.aetherra.core.aetherra_parser import",

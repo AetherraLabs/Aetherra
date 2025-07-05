@@ -445,3 +445,80 @@ processor -> output"""
         print(f"📢 Expecting feedback: {feedback['expect']}")
         if "if no_response" in feedback:
             print(f"🚨 Escalating: {feedback['if no_response']}")
+
+    async def execute(
+        self, code: str, context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Execute .aether code directly
+
+        This is the main execution method called by Lyrixa GUI.
+        It parses the code and executes the resulting workflow.
+
+        Args:
+            code: The .aether code to execute
+            context: Optional execution context
+
+        Returns:
+            Dictionary containing execution results and status
+        """
+        try:
+            # Parse the .aether code into a workflow
+            workflow = await self.parse_aether_code(code)
+
+            # Execute the parsed workflow
+            result = await self.execute_workflow(workflow, context)
+
+            return {
+                "success": True,
+                "result": result,
+                "message": "Code executed successfully",
+                "workflow_name": workflow.name,
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "message": f"Execution failed: {str(e)}",
+                "code": code[:100] + "..." if len(code) > 100 else code,
+            }
+
+    def execute_sync(
+        self, code: str, context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Synchronous wrapper for execute method
+
+        For compatibility with GUI components that can't handle async calls.
+        """
+        import asyncio
+
+        try:
+            # Run the async execute method
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If we're already in an event loop, create a new one in a thread
+                import concurrent.futures
+
+                def run_in_thread():
+                    new_loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(new_loop)
+                    try:
+                        return new_loop.run_until_complete(self.execute(code, context))
+                    finally:
+                        new_loop.close()
+
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(run_in_thread)
+                    return future.result()
+            else:
+                return loop.run_until_complete(self.execute(code, context))
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "message": f"Sync execution failed: {str(e)}",
+                "code": code[:100] + "..." if len(code) > 100 else code,
+            }
