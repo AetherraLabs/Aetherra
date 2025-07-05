@@ -11,15 +11,15 @@ Integrates with the Enhanced Lyrixa GUI and Anticipation Engine.
 """
 
 from .analytics_dashboard import AnalyticsDashboard
-from .suggestion_notifications import SuggestionNotificationSystem
 from .configuration_manager import ConfigurationManager
 from .performance_monitor import PerformanceMonitor
+from .suggestion_notifications import SuggestionNotificationSystem
 
 __all__ = [
-    'AnalyticsDashboard',
-    'SuggestionNotificationSystem', 
-    'ConfigurationManager',
-    'PerformanceMonitor'
+    "AnalyticsDashboard",
+    "SuggestionNotificationSystem",
+    "ConfigurationManager",
+    "PerformanceMonitor",
 ]
 
 __version__ = "3.0.0"

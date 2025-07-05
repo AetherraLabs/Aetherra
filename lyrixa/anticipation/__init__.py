@@ -10,11 +10,7 @@ __version__ = "2.0.0"
 __author__ = "Aetherra AI Systems"
 
 from .context_analyzer import ContextAnalyzer
-from .suggestion_generator import SuggestionGenerator  
 from .proactive_assistant import ProactiveAssistant
+from .suggestion_generator import SuggestionGenerator
 
-__all__ = [
-    "ContextAnalyzer",
-    "SuggestionGenerator", 
-    "ProactiveAssistant"
-]
+__all__ = ["ContextAnalyzer", "SuggestionGenerator", "ProactiveAssistant"]

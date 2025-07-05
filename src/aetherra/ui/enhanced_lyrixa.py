@@ -19,9 +19,10 @@ try:
     # Import GUI components from the lyrixa.gui package
     sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "lyrixa"))
     from lyrixa.gui.analytics_dashboard import AnalyticsDashboard
-    from lyrixa.gui.suggestion_notifications import SuggestionNotificationSystem
     from lyrixa.gui.configuration_manager import ConfigurationManager
     from lyrixa.gui.performance_monitor import PerformanceMonitor
+    from lyrixa.gui.suggestion_notifications import SuggestionNotificationSystem
+
     PHASE3_GUI_AVAILABLE = True
 except ImportError as e:
     print(f"Phase 3 GUI components not available: {e}")
@@ -30,6 +31,7 @@ except ImportError as e:
 # Import anticipation engine
 try:
     from lyrixa.core.anticipation_engine import AnticipationEngine
+
     ANTICIPATION_ENGINE_AVAILABLE = True
 except ImportError as e:
     print(f"Anticipation engine not available: {e}")
@@ -74,7 +76,7 @@ class EnhancedLyrixaWindow:
 
         # Initialize AI and memory systems
         self._initialize_lyrixa_ai()
-        
+
         # Initialize Phase 3 components
         self._initialize_phase3_components()
 
@@ -193,32 +195,32 @@ class EnhancedLyrixaWindow:
             if ANTICIPATION_ENGINE_AVAILABLE:
                 self.anticipation_engine = AnticipationEngine()
                 print("🔮 Anticipation Engine initialized")
-            
+
             # Initialize Phase 3 GUI components if available
             if PHASE3_GUI_AVAILABLE:
                 try:
                     # Analytics Dashboard
                     self.analytics_dashboard = AnalyticsDashboard()
                     print("📊 Analytics Dashboard initialized")
-                    
+
                     # Suggestion Notification System
                     self.notification_system = SuggestionNotificationSystem()
                     print("💡 Suggestion Notification System initialized")
-                    
+
                     # Configuration Manager
                     self.config_manager = ConfigurationManager()
                     print("⚙️ Configuration Manager initialized")
-                    
+
                     # Performance Monitor
                     self.performance_monitor = PerformanceMonitor()
                     print("⚡ Performance Monitor initialized")
-                    
+
                     # Connect anticipation engine to notification system
                     if self.anticipation_engine and self.notification_system:
                         self._connect_anticipation_to_notifications()
-                    
+
                     print("✅ Phase 3 components integrated successfully")
-                    
+
                 except Exception as e:
                     print(f"⚠️ Error initializing Phase 3 GUI components: {e}")
                     # Set components to None if initialization fails
@@ -228,24 +230,24 @@ class EnhancedLyrixaWindow:
                     self.performance_monitor = None
             else:
                 print("ℹ️ Phase 3 GUI components not available")
-                
+
         except Exception as e:
             print(f"⚠️ Error in Phase 3 initialization: {e}")
-    
+
     def _connect_anticipation_to_notifications(self):
         """Connect the anticipation engine to the notification system."""
         try:
             # This would integrate the anticipation engine with notifications
             # For now, we'll set up basic connectivity
             print("🔗 Connecting anticipation engine to notification system")
-            
+
             # In a full implementation, we would:
             # 1. Connect anticipation engine suggestion generation to notification display
             # 2. Set up callback handlers for user feedback
             # 3. Integrate with analytics for suggestion effectiveness tracking
-            
+
             print("✅ Anticipation engine connected to notifications")
-            
+
         except Exception as e:
             print(f"⚠️ Error connecting anticipation to notifications: {e}")
 
@@ -256,7 +258,7 @@ class EnhancedLyrixaWindow:
             self.analytics_dashboard.raise_()
         else:
             print("Analytics dashboard not available")
-    
+
     def show_configuration_manager(self):
         """Show the configuration manager."""
         if self.config_manager:
@@ -264,7 +266,7 @@ class EnhancedLyrixaWindow:
             self.config_manager.raise_()
         else:
             print("Configuration manager not available")
-    
+
     def show_performance_monitor(self):
         """Show the performance monitor."""
         if self.performance_monitor:
@@ -272,7 +274,7 @@ class EnhancedLyrixaWindow:
             self.performance_monitor.raise_()
         else:
             print("Performance monitor not available")
-    
+
     def toggle_suggestions(self):
         """Toggle the suggestion notification system."""
         if self.notification_system:
