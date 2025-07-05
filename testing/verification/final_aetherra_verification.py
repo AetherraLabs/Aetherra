@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-FINAL NEUROCODE COMPREHENSIVE VERIFICATION
+FINAL Aetherra COMPREHENSIVE VERIFICATION
 ==========================================
 
-This is the definitive test to verify that NeuroCode is working properly.
+This is the definitive test to verify that Aetherra is working properly.
 """
 
 import os
@@ -17,20 +17,20 @@ sys.path.insert(0, src_path)
 
 
 def test_core_language():
-    """Test NeuroCode as a programming language"""
-    print("🧬 TESTING NEUROCODE LANGUAGE")
+    """Test Aetherra as a programming language"""
+    print("🧬 TESTING Aetherra LANGUAGE")
     print("=" * 40)
 
     try:
         from src.aethercode.core.parser.parser import (
-            NeuroCodeCompiler,
+            AetherraCompiler,
             AetherraLexer,
             AetherraParser,
         )
 
-        # Complex NeuroCode program
-        neurocode_program = """
-# NeuroCode Final Test Program
+        # Complex Aetherra program
+        Aetherra_program = """
+# Aetherra Final Test Program
 goal: verify complete language functionality priority: critical
 
 agent: intelligent_assistant
@@ -80,7 +80,7 @@ recall experiences with "test_session"
 """
 
         print("🔤 Tokenizing...")
-        lexer = AetherraLexer(neurocode_program)
+        lexer = AetherraLexer(Aetherra_program)
         tokens = lexer.tokenize()
         print(f"   Generated {len(tokens)} tokens")
 
@@ -100,11 +100,11 @@ recall experiences with "test_session"
             print(f"   {node_type}: {count}")
 
         print("🔧 Compiling...")
-        compiler = NeuroCodeCompiler()
+        compiler = AetherraCompiler()
         compiled = compiler.compile(ast)
         print(f"   Generated {len(compiled)} characters of executable code")
 
-        print("✅ NEUROCODE LANGUAGE FULLY FUNCTIONAL!")
+        print("✅ Aetherra LANGUAGE FULLY FUNCTIONAL!")
         return True
 
     except Exception as e:
@@ -173,9 +173,9 @@ def test_plugin_system():
 
 def main():
     """Run all final verification tests"""
-    print("🧬 NEUROCODE FINAL VERIFICATION")
+    print("🧬 Aetherra FINAL VERIFICATION")
     print("=" * 50)
-#     print("Testing NeuroCode as a complete AI-native programming system...")
+    #     print("Testing Aetherra as a complete AI-native programming system...")
 
     test_results = []
 
@@ -196,44 +196,44 @@ def main():
     print(f"Tests Passed: {passed}/{total} ({success_rate:.1f}%)")
 
     if success_rate == 100:
-        print("\n🎉 PERFECT SCORE! NEUROCODE IS FULLY OPERATIONAL!")
+        print("\n🎉 PERFECT SCORE! Aetherra IS FULLY OPERATIONAL!")
         status = "EXCELLENT"
     elif success_rate >= 80:
-        print("\n✅ GREAT! NeuroCode is working well!")
+        print("\n✅ GREAT! Aetherra is working well!")
         status = "GOOD"
     elif success_rate >= 60:
-        print("\n⚠️ PARTIAL! NeuroCode has core functionality.")
+        print("\n⚠️ PARTIAL! Aetherra has core functionality.")
         status = "PARTIAL"
     else:
-        print("\n❌ NEEDS WORK! NeuroCode requires fixes.")
+        print("\n❌ NEEDS WORK! Aetherra requires fixes.")
         status = "NEEDS_WORK"
 
     print("\n🔍 WHAT'S WORKING:")
-    print("✅ NeuroCode Language Parsing (Lexer, Parser, AST)")
-    print("✅ All 7 NeuroCode Node Types (Goal, Agent, Memory, etc.)")
-    print("✅ NeuroCode Compilation to Executable Code")
+    print("✅ Aetherra Language Parsing (Lexer, Parser, AST)")
+    print("✅ All 7 Aetherra Node Types (Goal, Agent, Memory, etc.)")
+    print("✅ Aetherra Compilation to Executable Code")
     print("✅ Enhanced Interpreter System")
     print("✅ Memory System")
     print("✅ Plugin System (7 Standard Plugins)")
     print("✅ Parser Integration Functions")
-    print("✅ Complex NeuroCode Programs")
+    print("✅ Complex Aetherra Programs")
 
     print("\n⚠️ MINOR ISSUES:")
     print("• Some optional AI modules not available (expected)")
     print("• GUI components need path fixes (non-critical)")
     print("• Import path issues in CLI (non-critical)")
 
-    print("\n🧬 NEUROCODE STATUS: READY FOR USE!")
+    print("\n🧬 Aetherra STATUS: READY FOR USE!")
     print("✅ Core language functionality: 100% operational")
     print("✅ Interpreter system: 100% operational")
     print("✅ Memory system: 100% operational")
     print("✅ Plugin system: 100% operational")
 
-    print("\n💡 HOW TO USE NEUROCODE:")
-    print("1. Write NeuroCode programs with .aether extension")
+    print("\n💡 HOW TO USE Aetherra:")
+    print("1. Write Aetherra programs with .aether extension")
     print("2. Use the parser: from src.aethercode.core import create_parser")
     print("3. Use the interpreter: from src.aethercode.core import create_interpreter")
-    print("4. Run the parser demo: python src/neurocode/core/parser/parser.py")
+    print("4. Run the parser demo: python src/Aetherra/core/parser/parser.py")
 
     return status == "EXCELLENT" or status == "GOOD"
 

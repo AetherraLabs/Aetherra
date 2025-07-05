@@ -3,7 +3,7 @@
 ====================================
 
 Comprehensive error handling, graceful degradation, and stability improvements
-for the NeuroCode & Neuroplex system.
+for the AetherraCode & Neuroplex system.
 """
 
 import functools

@@ -55,19 +55,19 @@ def test_basic_functionality():
         test_results["core_modules"] = core_exists > len(core_files) // 2
 
     # Test 3: Neuroplex launchers
-    neuroplex_files = ["neuroplex.bat", "neuroplex"]
-    neuroplex_exists = 0
+    aetherplex_files = ["aetherplex.bat", "aetherplex"]
+    aetherplex_exists = 0
 
-    for file in neuroplex_files:
+    for file in aetherplex_files:
         if (project_root / file).exists():
-            neuroplex_exists += 1
+            aetherplex_exists += 1
 
-    if neuroplex_exists > 0:
-        print(f"✅ Neuroplex Launchers: {neuroplex_exists} launcher(s) found")
-        test_results["neuroplex"] = True
+    if aetherplex_exists > 0:
+        print(f"✅ Neuroplex Launchers: {aetherplex_exists} launcher(s) found")
+        test_results["aetherplex"] = True
     else:
         print("❌ Neuroplex Launchers: No launchers found")
-        test_results["neuroplex"] = False
+        test_results["aetherplex"] = False
 
     # Test 4: Data files
     data_files = ["goals_store.json", "memory_store.json"]

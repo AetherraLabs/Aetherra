@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚀 Simple NeuroCode UI Demo
+🚀 Simple AetherraCode UI Demo
 ===========================
 
 Quick demonstration of the UI system implementation.
@@ -17,14 +17,14 @@ from core.ui import CodeLanguage, NeuroplexUI, UITheme
 
 
 def main():
-    print("🧬 NeuroCode UI System Demo")
+    print("🧬 AetherraCode UI System Demo")
     print("=" * 40)
 
     # Create UI instance
     ui = NeuroplexUI()
 
     # Test basic functionality
-    ui.show_info("Welcome to NeuroCode UI Demo!")
+    ui.show_info("Welcome to AetherraCode UI Demo!")
 
     # Test theme switching
     ui.show_text("\n🎨 Testing Themes:")
@@ -39,7 +39,7 @@ def main():
 
     # Code highlighting
     sample_code = """
-think "Hello NeuroCode!"
+think "Hello AetherraCode!"
 goal create_ai_os
 
 function greet(name) {
@@ -91,7 +91,7 @@ agent greeter {
 - **Command System**: Auto-suggestions and shortcuts
 
 ## 🎯 Ready for Integration
-The UI system is ready to be integrated with the main NeuroCode engine!
+The UI system is ready to be integrated with the main AetherraCode engine!
 """
     ui.show_markdown(markdown)
 

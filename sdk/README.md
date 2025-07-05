@@ -1,10 +1,10 @@
-# NeuroCode Plugin SDK
+# Aetherra Plugin SDK
 
-The NeuroCode Plugin SDK lets you extend the language with intelligent, modular capabilities — from voice transcription to Git commits, search queries, file operations, and more.
+The Aetherra Plugin SDK lets you extend the language with intelligent, modular capabilities — from voice transcription to Git commits, search queries, file operations, and more.
 
 ## 🚀 What Is a Plugin?
 
-A plugin is a Python file that registers new commands into the NeuroCode runtime. These commands can be called from `.aether` files like:
+A plugin is a Python file that registers new commands into the Aetherra runtime. These commands can be called from `.aether` files like:
 
 ```neuro
 plugin: whisper.transcribe "meeting.wav"
@@ -59,7 +59,7 @@ import datetime
     description="An advanced plugin demonstrating full SDK capabilities",
     capabilities=["processing", "analysis", "reporting"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="utilities",
     dependencies=["requests", "json"],
 
@@ -165,7 +165,7 @@ plugin: file.read "data.txt"
 plugin: file.backup "/important/files"
 
 # Search operations
-plugin: search.web "NeuroCode programming language"
+plugin: search.web "Aetherra programming language"
 plugin: search.local "TODO comments" "*.py"
 
 # Local AI
@@ -292,4 +292,4 @@ Want to contribute a plugin?
 
 ## 📝 License
 
-NeuroCode Plugin SDK is MIT licensed. See `LICENSE` for details.
+Aetherra Plugin SDK is MIT licensed. See `LICENSE` for details.

@@ -1,9 +1,9 @@
 # core/interpreter/command_parser.py
 """
-Command Parser for NeuroCode Interpreter
+Command Parser for AetherraCode Interpreter
 ========================================
 
-Handles parsing and routing of NeuroCode commands.
+Handles parsing and routing of AetherraCode commands.
 """
 
 import re
@@ -13,7 +13,7 @@ from .base import ParseResult
 
 
 class CommandParser:
-    """Parses NeuroCode commands into structured components"""
+    """Parses AetherraCode commands into structured components"""
 
     def __init__(self):
         self.command_patterns = {

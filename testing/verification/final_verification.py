@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Final verification script for NeuroCode v2.0
+Final verification script for AetherraCode v2.0
 Tests all major components after reorganization
 """
 
@@ -12,7 +12,7 @@ sys.path.insert(0, os.getcwd())
 
 
 def test_core_components():
-    """Test core NeuroCode components"""
+    """Test core AetherraCode components"""
     print("🔬 Testing Core Components...")
 
     try:
@@ -69,7 +69,7 @@ def test_launcher():
 
 def main():
     """Run all verification tests"""
-    print("🧬 NeuroCode v2.0 Final Verification")
+    print("🧬 AetherraCode v2.0 Final Verification")
     print("=" * 50)
 
     tests = [test_core_components, test_cli_interface, test_launcher]
@@ -85,7 +85,7 @@ def main():
     print(f"📊 Results: {passed}/{total} tests passed")
 
     if passed == total:
-        print("🎉 All tests passed! NeuroCode v2.0 is working correctly.")
+        print("🎉 All tests passed! AetherraCode v2.0 is working correctly.")
         return True
     else:
         print("❌ Some tests failed. Please check the errors above.")

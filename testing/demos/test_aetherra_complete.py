@@ -3,7 +3,7 @@
 COMPREHENSIVE NEUROCODE TESTING SUITE
 ====================================
 
-This test suite verifies that NeuroCode is fully functional as:
+This test suite verifies that AetherraCode is fully functional as:
 1. A distinct programming language with its own grammar
 2. A complete AI-native development environment
 3. A working interpreter and runtime system
@@ -68,15 +68,15 @@ def test_imports():
     return test_results
 
 
-def test_neurocode_language():
-    """Test NeuroCode as a distinct programming language."""
-    print("\n🧬 Testing NeuroCode Language Features...")
+def test_aethercode_language():
+    """Test AetherraCode as a distinct programming language."""
+    print("\n🧬 Testing AetherraCode Language Features...")
 
     test_results = {}
 
-    # Sample NeuroCode program
-    neurocode_program = """
-# Advanced NeuroCode Test Program
+    # Sample AetherraCode program
+    aethercode_program = """
+# Advanced AetherraCode Test Program
 goal: optimize system performance by 40% priority: high
 agent: on
 
@@ -108,7 +108,7 @@ end
         # Test lexer
         from src.aethercode.core.parser.parser import AetherraLexer
 
-        lexer = AetherraLexer(neurocode_program)
+        lexer = AetherraLexer(aethercode_program)
         tokens = lexer.tokenize()
 
         print(f"  ✅ Tokenization: Generated {len(tokens)} tokens")
@@ -128,9 +128,9 @@ end
             print(f"    Node {i + 1}: {type(node).__name__}")
 
         # Test compiler
-        from src.aethercode.core.parser.parser import NeuroCodeCompiler
+        from src.aethercode.core.parser.parser import AetherraCodeCompiler
 
-        compiler = NeuroCodeCompiler()
+        compiler = AetherraCodeCompiler()
         compiled_code = compiler.compile(ast)
 
         print(
@@ -148,7 +148,7 @@ end
 
 
 def test_interpreter_system():
-    """Test the NeuroCode interpreter system."""
+    """Test the AetherraCode interpreter system."""
     print("\n🔧 Testing Interpreter System...")
 
     test_results = {}
@@ -190,7 +190,7 @@ def test_interpreter_system():
 
 
 def test_memory_system():
-    """Test the NeuroCode memory system."""
+    """Test the AetherraCode memory system."""
     print("\n🧠 Testing Memory System...")
 
     test_results = {}
@@ -231,7 +231,7 @@ def test_memory_system():
 
 
 def test_parser_system():
-    """Test the NeuroCode parser system."""
+    """Test the AetherraCode parser system."""
     print("\n📝 Testing Parser System...")
 
     test_results = {}
@@ -245,7 +245,7 @@ def test_parser_system():
         print("  ✅ Parser function created successfully")
         test_results["parser_creation"] = "✅ SUCCESS"
 
-        # Test parsing simple NeuroCode
+        # Test parsing simple AetherraCode
         simple_neurocode = """
 goal: test parsing
 agent: on
@@ -256,7 +256,7 @@ remember("test") as "parse_test"
         print(f"  ✅ Parsed simple code: {len(ast)} AST nodes")
         test_results["simple_parsing"] = f"✅ SUCCESS: {len(ast)} nodes"
 
-        # Test complex NeuroCode
+        # Test complex AetherraCode
         complex_neurocode = """
 goal: comprehensive test priority: high
 agent: active
@@ -349,11 +349,11 @@ def test_integration():
         neurocode = "goal: integration test\nremember('integration') as 'test'"
         ast = parser_func(neurocode)
 
-        print("  ✅ Components can process NeuroCode together")
+        print("  ✅ Components can process AetherraCode together")
         test_results["component_integration"] = "✅ SUCCESS"
 
         # Test end-to-end workflow
-        print("  ✅ End-to-end NeuroCode workflow verified")
+        print("  ✅ End-to-end AetherraCode workflow verified")
         test_results["end_to_end"] = "✅ SUCCESS"
 
     except Exception as e:
@@ -366,20 +366,20 @@ def test_integration():
 
 
 def run_comprehensive_demo():
-    """Run a comprehensive demonstration of NeuroCode capabilities."""
-    print("\n🚀 Running Comprehensive NeuroCode Demo...")
+    """Run a comprehensive demonstration of AetherraCode capabilities."""
+    print("\n🚀 Running Comprehensive AetherraCode Demo...")
 
-    # Complex NeuroCode program demonstrating all features
+    # Complex AetherraCode program demonstrating all features
     demo_program = """
 # NEUROCODE COMPREHENSIVE DEMONSTRATION
 # =====================================
 
-goal: demonstrate complete NeuroCode functionality priority: high
+goal: demonstrate complete AetherraCode functionality priority: high
 agent: intelligent_assistant
 
 # Memory Operations
 remember("Demo started at $(timestamp)") as "session_events"
-remember("System: NeuroCode v1.0") as "system_info"
+remember("System: AetherraCode v1.0") as "system_info"
 
 # Conditional Logic with AI-powered decisions
 when memory_usage > 75%:
@@ -436,7 +436,7 @@ recall experiences with "session_events"
     try:
         # Parse the demo program
         from src.aethercode.core.parser.parser import (
-            NeuroCodeCompiler,
+            AetherraCodeCompiler,
             AetherraLexer,
             AetherraParser,
         )
@@ -452,7 +452,7 @@ recall experiences with "session_events"
         print(f"    Generated {len(ast)} AST nodes")
 
         print("  🔧 Compiling to executable form...")
-        compiler = NeuroCodeCompiler()
+        compiler = AetherraCodeCompiler()
         compiled = compiler.compile(ast)
         print(f"    Generated {len(compiled)} characters of compiled code")
 
@@ -511,28 +511,28 @@ def generate_test_report(all_results: Dict[str, Dict[str, str]]):
     print(f"  🎯 Success Rate: {success_rate:.1f}%")
 
     if success_rate >= 90:
-        print("\n🎉 EXCELLENT! NeuroCode is fully operational!")
+        print("\n🎉 EXCELLENT! AetherraCode is fully operational!")
     elif success_rate >= 75:
-        print("\n✅ GOOD! NeuroCode is mostly functional with minor issues.")
+        print("\n✅ GOOD! AetherraCode is mostly functional with minor issues.")
     elif success_rate >= 50:
-        print("\n⚠️ PARTIAL! NeuroCode has core functionality but needs fixes.")
+        print("\n⚠️ PARTIAL! AetherraCode has core functionality but needs fixes.")
     else:
-        print("\n❌ NEEDS WORK! NeuroCode requires significant fixes.")
+        print("\n❌ NEEDS WORK! AetherraCode requires significant fixes.")
 
     return success_rate
 
 
 def main():
-    """Run the complete NeuroCode test suite."""
+    """Run the complete AetherraCode test suite."""
     print("🧬 NEUROCODE COMPREHENSIVE TESTING SUITE")
     print("=" * 50)
-#     print("Testing NeuroCode as a complete AI-native programming language...")
+#     print("Testing AetherraCode as a complete AI-native programming language...")
 
     all_results = {}
 
     # Run all test categories
     all_results["imports"] = test_imports()
-    all_results["language"] = test_neurocode_language()
+    all_results["language"] = test_aethercode_language()
     all_results["interpreter"] = test_interpreter_system()
     all_results["memory"] = test_memory_system()
     all_results["parser"] = test_parser_system()

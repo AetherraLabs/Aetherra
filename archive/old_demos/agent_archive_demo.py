@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🎭 NeuroCode Agent Archive & Replay System Demo
+🎭 AetherraCode Agent Archive & Replay System Demo
 Complete demonstration of the revolutionary agent consciousness preservation system.
 
 This script showcases the full capabilities of the Agent Archive & Replay System,
-demonstrating how NeuroCode agents can preserve, share, and replay their consciousness.
+demonstrating how AetherraCode agents can preserve, share, and replay their consciousness.
 """
 
 import logging
@@ -32,8 +32,8 @@ except ImportError as e:
 
 class MockNeuroCodeAgent:
     """
-    Mock NeuroCode agent for demonstration purposes.
-    In a real implementation, this would be the actual NeuroCode agent class.
+    Mock AetherraCode agent for demonstration purposes.
+    In a real implementation, this would be the actual AetherraCode agent class.
     """
 
     def __init__(self, agent_id: str, specialization: str = "general"):
@@ -505,7 +505,7 @@ class ArchiveSystemDemo:
     def run_complete_demo(self):
         """Run the complete demonstration"""
         print("🎭" + "=" * 60)
-        print("🧠 NeuroCode Agent Archive & Replay System Demo")
+        print("🧠 AetherraCode Agent Archive & Replay System Demo")
         print("   Revolutionary AI Consciousness Preservation")
         print("=" * 63)
 
@@ -575,7 +575,7 @@ class ArchiveSystemDemo:
 
 def main():
     """Main entry point for the demo"""
-    print("🎭 NeuroCode Agent Archive & Replay System")
+    print("🎭 AetherraCode Agent Archive & Replay System")
     print("   🚀 Starting comprehensive demonstration...")
 
     try:

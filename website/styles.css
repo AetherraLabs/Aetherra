@@ -824,32 +824,32 @@ body {
 }
 
 /* Syntax Highlighting */
-.language-neuro .keyword {
+.language-aether .keyword {
     color: #c792ea;
 }
 
-.language-neuro .string {
+.language-aether .string {
     color: #c3e88d;
 }
 
-.language-neuro .comment {
+.language-aether .comment {
     color: #676e95;
     font-style: italic;
 }
 
-.language-neuro .number {
+.language-aether .number {
     color: #f78c6c;
 }
 
-.language-neuro .operator {
+.language-aether .operator {
     color: #89ddff;
 }
 
-.language-neuro .function {
+.language-aether .function {
     color: #82aaff;
 }
 
-.language-neuro .variable {
+.language-aether .variable {
     color: #eeffff;
 }
 

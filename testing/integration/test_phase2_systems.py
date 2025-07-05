@@ -11,14 +11,14 @@ def test_imports():
 #     print("Testing Phase 2 imports...")
 
     try:
-        from core.stability import safe_execute
+        from Aetherra.core.stability import safe_execute
 
         print("✅ Stability system imported")
     except ImportError as e:
         print(f"❌ Stability import failed: {e}")
 
     try:
-        from core.introspective_logger import introspective_logger
+        from Aetherra.core.introspective_logger import introspective_logger
 
         print("✅ Introspective logger imported")
     except ImportError as e:
@@ -42,7 +42,7 @@ def test_stability_system():
     print("\nTesting stability system...")
 
     try:
-        from core.stability import ErrorSeverity, safe_execute
+        from Aetherra.core.stability import ErrorSeverity, safe_execute
 
         @safe_execute(component="test", severity=ErrorSeverity.LOW)
         def test_function():
@@ -60,7 +60,7 @@ def test_introspective_logging():
     print("\nTesting introspective logging...")
 
     try:
-        from core.introspective_logger import PerformanceMetrics, introspective_logger
+        from Aetherra.core.introspective_logger import PerformanceMetrics, introspective_logger
 
         reflection_id = introspective_logger.log_execution(
             operation="test_operation",
@@ -80,7 +80,7 @@ def test_conversational_ai():
     print("\nTesting conversational AI...")
 
     try:
-        from core.conversational_ai import get_available_personas
+        from Aetherra.core.conversational_ai import get_available_personas
 
         personas = get_available_personas()
         print(f"✅ Found {len(personas)} personas")
@@ -97,7 +97,7 @@ def test_plugin_registry():
     print("\nTesting plugin registry...")
 
     try:
-        from core.plugin_registry import get_plugin_catalog
+        from Aetherra.core.plugin_registry import get_plugin_catalog
 
         catalog = get_plugin_catalog()
         print("✅ Plugin catalog loaded")

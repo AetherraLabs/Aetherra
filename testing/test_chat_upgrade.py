@@ -5,7 +5,7 @@ Test script for the upgraded Neuroplex chat system
 
 def test_chat_router(demo_mode=True):
     try:
-        from core.chat_router import AetherraChatRouter
+        from Aetherra.core.chat_router import AetherraChatRouter
         print('✅ Chat router imported successfully')
 
         chat_router = AetherraChatRouter(demo_mode=demo_mode)
@@ -15,7 +15,7 @@ def test_chat_router(demo_mode=True):
         # Test different types of messages
         test_messages = [
             'Hello there!',
-            'Can you help me learn NeuroCode?',
+            'Can you help me learn AetherraCode?',
             'I want to create a memory system for my project',
             'What can you do?',
             'How do I use the memory features?',
@@ -38,7 +38,7 @@ def test_chat_router(demo_mode=True):
 
                     # Show additional info
                     if response.get('neurocode'):
-                        print(f'🧬 NeuroCode: {response["neurocode"]}')
+                        print(f'🧬 AetherraCode: {response["neurocode"]}')
                     if response.get('suggestions'):
                         print(f'💡 Suggestions: {response["suggestions"]}')
                 else:

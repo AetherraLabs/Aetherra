@@ -1,6 +1,6 @@
 # core/interpreter/base.py
 """
-NeuroCode Interpreter Base Classes
+AetherraCode Interpreter Base Classes
 =================================
 
 Core interfaces and base classes for the modular interpreter system.
@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional, Union
 
 @dataclass
 class ExecutionResult:
-    """Result of executing a NeuroCode command"""
+    """Result of executing a AetherraCode command"""
 
     success: bool
     output: str
@@ -26,7 +26,7 @@ class ExecutionResult:
 
 @dataclass
 class ParseResult:
-    """Result of parsing a NeuroCode command"""
+    """Result of parsing a AetherraCode command"""
 
     command_type: str
     command_name: str
@@ -35,9 +35,9 @@ class ParseResult:
     enhanced: bool = False
 
 
-class NeuroCodeInterpreterBase(ABC):
+class AetherraCodeInterpreterBase(ABC):
     """
-    Abstract base class for NeuroCode interpreters
+    Abstract base class for AetherraCode interpreters
 
     Defines the core interface that all interpreter implementations must follow.
     """
@@ -49,7 +49,7 @@ class NeuroCodeInterpreterBase(ABC):
 
     @abstractmethod
     def execute(self, line: str) -> Union[str, ExecutionResult]:
-        """Execute a single line of NeuroCode"""
+        """Execute a single line of AetherraCode"""
         pass
 
     @abstractmethod

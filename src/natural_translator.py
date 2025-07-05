@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🧠 Natural-to-NeuroCode Translator
+🧠 Natural-to-AetherraCode Translator
 =================================
 
 Revolutionary AI-powered translator that converts natural language
-into executable NeuroCode, making AI-native programming accessible
+into executable AetherraCode, making AI-native programming accessible
 to everyone.
 
 Examples:
@@ -34,7 +34,7 @@ except ImportError:
 
 
 class NaturalToNeuroTranslator:
-    """Translates natural language to NeuroCode"""
+    """Translates natural language to AetherraCode"""
 
     def __init__(self):
         self.memory = AetherraMemory() if AetherraMemory else None
@@ -42,7 +42,7 @@ class NaturalToNeuroTranslator:
         self.context_memory = []  # Store conversation context
 
     def _load_translation_patterns(self) -> Dict[str, Union[str, Callable]]:
-        """Load patterns for natural language to NeuroCode translation"""
+        """Load patterns for natural language to AetherraCode translation"""
         return {
             # Memory operations
             r"remember (?:this |that |the )?(.+?)(?:\s+as\s+(.+))?": lambda m: f'remember("{m.group(1)}") as "{m.group(2) or "general"}"',
@@ -85,7 +85,7 @@ class NaturalToNeuroTranslator:
         }
 
     def _translate_action(self, action: str) -> str:
-        """Translate a natural language action to NeuroCode"""
+        """Translate a natural language action to AetherraCode"""
         # Simple action translations
         action_map = {
             "remember": "remember(this)",
@@ -105,7 +105,7 @@ class NaturalToNeuroTranslator:
         return f'execute: "{action}"'
 
     def translate(self, natural_input: str) -> str:
-        """Translate natural language to NeuroCode with comprehensive error handling"""
+        """Translate natural language to AetherraCode with comprehensive error handling"""
         # Input validation
         if not natural_input or not isinstance(natural_input, str):
             raise ValueError("Input must be a non-empty string")
@@ -133,7 +133,7 @@ class NaturalToNeuroTranslator:
                         else:
                             neurocode = str(transformer)
 
-                        # Validate generated NeuroCode
+                        # Validate generated AetherraCode
                         if not neurocode or len(neurocode.strip()) == 0:
                             continue  # Try next pattern
 
@@ -172,9 +172,9 @@ class NaturalToNeuroTranslator:
         concepts = self._extract_concepts(input_text)
 
         if not concepts:
-            return f'# Natural input: "{input_text}"\n# TODO: Add specific NeuroCode translation'
+            return f'# Natural input: "{input_text}"\n# TODO: Add specific AetherraCode translation'
 
-        # Build NeuroCode based on concepts
+        # Build AetherraCode based on concepts
         if "remember" in concepts or "save" in concepts or "store" in concepts:
             return f'remember("{input_text}") as "general"'
         elif "find" in concepts or "search" in concepts or "recall" in concepts:
@@ -182,7 +182,7 @@ class NaturalToNeuroTranslator:
         elif "analyze" in concepts or "pattern" in concepts:
             return "detect patterns; memory summary"
         else:
-            return f'# Natural input: "{input_text}"\n# Suggested NeuroCode:\nremember("{input_text}") as "general"'
+            return f'# Natural input: "{input_text}"\n# Suggested AetherraCode:\nremember("{input_text}") as "general"'
 
     def _extract_concepts(self, text: str) -> List[str]:
         """Extract key concepts from natural language"""
@@ -228,9 +228,9 @@ class NaturalToNeuroTranslator:
 
     def interactive_translate(self):
         """Interactive translation session"""
-        print("🧠 Natural-to-NeuroCode Translator")
+        print("🧠 Natural-to-AetherraCode Translator")
         print("=" * 50)
-        print("Type natural language and I'll convert it to NeuroCode!")
+        print("Type natural language and I'll convert it to AetherraCode!")
         print("Examples:")
         print("  • 'Remember this conversation'")
         print("  • 'Fix any recurring memory errors'")
@@ -249,10 +249,10 @@ class NaturalToNeuroTranslator:
                     continue
 
                 neurocode = self.translate(user_input)
-                print(f"🧬 NeuroCode: {neurocode}")
+                print(f"🧬 AetherraCode: {neurocode}")
 
                 # Ask if user wants to execute
-                execute = input("🚀 Execute this NeuroCode? (y/n): ").strip().lower()
+                execute = input("🚀 Execute this AetherraCode? (y/n): ").strip().lower()
                 if execute in ["y", "yes"]:
                     self._execute_neurocode(neurocode)
 
@@ -265,7 +265,7 @@ class NaturalToNeuroTranslator:
                 print(f"❌ Error: {e}")
 
     def _execute_neurocode(self, neurocode: str):
-        """Execute the generated NeuroCode"""
+        """Execute the generated AetherraCode"""
         try:
             # Import the standalone runner
             from scripts.aether_runner_standalone import StandaloneNeuroRunner
@@ -313,7 +313,7 @@ def main():
     """Main function for CLI usage"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Natural-to-NeuroCode Translator")
+    parser = argparse.ArgumentParser(description="Natural-to-AetherraCode Translator")
     parser.add_argument(
         "--interactive",
         "-i",
@@ -327,7 +327,7 @@ def main():
         "--batch", "-b", type=str, help="Batch translate from file (one input per line)"
     )
     parser.add_argument(
-        "--execute", "-e", action="store_true", help="Execute the translated NeuroCode"
+        "--execute", "-e", action="store_true", help="Execute the translated AetherraCode"
     )
 
     args = parser.parse_args()
@@ -338,7 +338,7 @@ def main():
         translator.interactive_translate()
     elif args.translate:
         neurocode = translator.translate(args.translate)
-        print(f"🧬 NeuroCode: {neurocode}")
+        print(f"🧬 AetherraCode: {neurocode}")
         if args.execute:
             translator._execute_neurocode(neurocode)
     elif args.batch:
@@ -353,7 +353,7 @@ def main():
         except FileNotFoundError:
             print(f"❌ File not found: {args.batch}")
     else:
-        print("🧠 Natural-to-NeuroCode Translator")
+        print("🧠 Natural-to-AetherraCode Translator")
         print("Use --help for options or --interactive for live translation")
 
 

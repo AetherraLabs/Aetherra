@@ -1,5 +1,5 @@
 """
-NeuroCode Core Module
+AetherraCode Core Module
 """
 
 # Make key classes available at package level

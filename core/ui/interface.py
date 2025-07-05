@@ -251,7 +251,7 @@ class NeuroplexUI:
             TextStyle(bold=True, color=self.current_theme.colors.primary),
         )
         self.rich_display.print_text(
-            f"Theme: {self.current_theme.name} | NeuroCode Engine Ready",
+            f"Theme: {self.current_theme.name} | AetherraCode Engine Ready",
             TextStyle(color=self.current_theme.colors.text_secondary),
         )
         self.rich_display.print_separator("═", 60)
@@ -339,7 +339,7 @@ class NeuroplexUI:
         elif command in ["exit", "quit", "q"]:
             self._cmd_exit()
         else:
-            # Command not handled by UI - would delegate to NeuroCode engine
+            # Command not handled by UI - would delegate to AetherraCode engine
             self.show_warning(f"Command '{command}' not recognized by UI layer")
             return False
 
@@ -374,7 +374,7 @@ Type any command name followed by arguments. Use Tab for auto-completion.
 
 ### Core Commands
 - `help [command]` - Show help information
-- `run <file.aether>` - Execute NeuroCode program
+- `run <file.aether>` - Execute AetherraCode program
 - `chat [message]` - Start AI chat session
 - `memory <action>` - Manage AI memory
 

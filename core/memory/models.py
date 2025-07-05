@@ -1,6 +1,6 @@
 """
 Memory Models and Data Structures
-Core data models for the NeuroCode memory system
+Core data models for the AetherraCode memory system
 """
 
 import time

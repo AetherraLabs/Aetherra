@@ -21,7 +21,7 @@ def test_plugin_manager_integration():
 
     try:
         # Test core plugin manager
-        from core.plugin_manager import get_plugin_metadata, list_plugins
+        from Aetherra.core.plugin_manager import get_plugin_metadata, list_plugins
 
         plugins = list_plugins()
         print(f"✅ Core system loaded {len(plugins)} plugins:")
@@ -131,7 +131,7 @@ def test_plugin_manager_integration():
         )
 
         # Now test the plugin manager
-        from src.aethercode.ui.components.panels.plugin_manager import (
+        from Lyrixa.ui.components.panels.plugin_manager import (
             PluginManagerPanel,
         )
 

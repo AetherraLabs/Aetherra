@@ -7,51 +7,55 @@ Main entry point for the Lyrixa interpreter
 import os
 import sys
 
-# Add the current directory to the Python path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add the project root to the Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(project_root, "src"))
+sys.path.insert(0, project_root)
 
 # Use Enhanced Interpreter for best AI-native experience
 try:
-    from core.enhanced_interpreter import EnhancedAetherraInterpreter
+    from lyrixa.core.aether_interpreter import AetherInterpreter
 
     use_enhanced = True
 except ImportError:
-    from core.interpreter import AetherraInterpreter
-
-    use_enhanced = False
+    print(
+        "❌ Error: Could not import AetherInterpreter from lyrixa.core.aether_interpreter."
+    )
+    print(
+        "Please ensure all dependencies are installed and PYTHONPATH is set correctly."
+    )
+    sys.exit(1)
 
 
 def main():
     """Main entry point for Lyrixa"""
+    print("🧠 Lyrixa - AI-Native Programming Language")
     if use_enhanced:
-        print("🔮 Lyrixa - Enhanced AI-Native Programming Language")
         print("🚀 Enhanced mode: Natural language programming enabled!")
-        interpreter = EnhancedAetherraInterpreter()
     else:
-        print("🧠 Lyrixa - AI-Native Programming Language")
         print("⚠️  Basic mode: Enhanced features not available")
-        interpreter = AetherraInterpreter()
+
+    interpreter = AetherInterpreter()
 
     print("=" * 50)
     print("Type commands or 'help' for assistance")
-    print("Type 'exit' or press Ctrl+C to quit")
     if use_enhanced:
-        print("💡 Try: 'create a REST API' or 'ai: explain Aetherra'")
-    print("=" * 50)
+        print("🚀 Enhanced mode: Natural language programming enabled!")
+
+    interpreter = AetherInterpreter()
 
     while True:
         try:
-            try:
-                code = input("🔮 >> ")
-            except EOFError:
-                print("\n🚀 Input stream closed. Thanks for using Lyrixa!")
-                break
+            code = input("🔮 >> ")
+        except EOFError:
+            print("\n🚀 Input stream closed. Thanks for using Lyrixa!")
+            break
 
-            if code.lower() in ["exit", "quit", "q"]:
-                print("🚀 Thanks for using Lyrixa!")
-                break
-            elif code.lower() in ["help", "?"]:
-                print("""
+        if code.lower() in ["exit", "quit", "q"]:
+            print("🚀 Thanks for using Lyrixa!")
+            break
+        elif code.lower() in ["help", "?"]:
+            print("""
 📋 Lyrixa Commands:
   remember('text') as 'tag'    - Store memory with tag
   recall tag: 'tag'            - Recall memories by tag
@@ -62,25 +66,27 @@ def main():
   simulate ... end             - Simulation mode
   help                         - Show this help
   exit                         - Quit interpreter
-                """)
-                continue
-            elif code.strip() == "":
-                continue
+            """)
+            continue
+        elif code.strip() == "":
+            continue
 
-            # Execute based on interpreter type
-            if use_enhanced:
-                result = interpreter.execute_aether(code)
-            else:
-                result = interpreter.execute(code)
+        # Execute the code
+        try:
+            import asyncio
 
-            if result:
-                print(result)
-        except KeyboardInterrupt:
-            print("\n🚀 Thanks for using Lyrixa!")
-            break
-        except Exception as e:
-            print(f"❌ Error: {e}")
+            # Parse the input code into a workflow using the interpreter
+            workflow = asyncio.run(interpreter.parse_aether_code(code))
 
+            # Execute the workflow
+            result = asyncio.run(interpreter.execute_workflow(workflow))
+            print(f"✅ Execution completed: {result.get('status', 'unknown')}")
 
-if __name__ == "__main__":
-    main()
+            # Show any outputs or errors
+            if result.get("outputs"):
+                print(f"📤 Outputs: {result['outputs']}")
+            if result.get("errors"):
+                print(f"❌ Errors: {result['errors']}")
+
+        except Exception as exec_error:
+            print(f"❌ Execution error: {exec_error}")

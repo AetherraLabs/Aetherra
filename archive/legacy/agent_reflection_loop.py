@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-🤖 NeuroCode Agent Reflection Loop
+🤖 AetherraCode Agent Reflection Loop
 ===================================
 
 Autonomous agent system that:
 - Continuously evaluates memory patterns
 - Generates insights from stored experiences
-- Suggests and executes NeuroCode based on analysis
+- Suggests and executes AetherraCode based on analysis
 - Learns and adapts behavior over time
 
-This completes the AI-native vision where NeuroCode becomes truly self-aware
+This completes the AI-native vision where AetherraCode becomes truly self-aware
 and can autonomously improve itself through reflection.
 """
 
@@ -25,7 +25,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "core"))
 
-# Import NeuroCode components
+# Import AetherraCode components
 try:
     from memory import AetherraMemory
 
@@ -284,7 +284,7 @@ class AgentReflectionLoop:
         return gaps
 
     def _generate_suggestions(self, insights: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Generate actionable NeuroCode suggestions based on insights"""
+        """Generate actionable AetherraCode suggestions based on insights"""
         suggestions = []
 
         for insight in insights[: self.config["max_suggestions_per_cycle"]]:
@@ -295,15 +295,15 @@ class AgentReflectionLoop:
         return suggestions
 
     def _create_suggestion_from_insight(self, insight: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Create a specific NeuroCode suggestion from an insight"""
+        """Create a specific AetherraCode suggestion from an insight"""
         action = insight.get("suggested_action")
         confidence = insight.get("confidence", 0.5)
 
         if action == "recommend_initial_learning":
             return {
-                "type": "neurocode_generation",
+                "type": "aethercode_generation",
                 "neurocode": """# Agent-suggested initial learning
-remember("NeuroCode enables AI-native programming") as "programming_paradigm"
+remember("AetherraCode enables AI-native programming") as "programming_paradigm"
 remember("Memory systems track learning patterns") as "memory_system"
 remember("Agents can reflect on their own knowledge") as "meta_learning"
 goal: establish foundational knowledge priority: high""",
@@ -314,7 +314,7 @@ goal: establish foundational knowledge priority: high""",
         elif action == "expand_domain_knowledge":
             domain = insight.get("data", {}).get("dominant_tag", "general")
             return {
-                "type": "neurocode_generation",
+                "type": "aethercode_generation",
                 "neurocode": f'''# Agent-suggested domain expansion for {domain}
 reflect on tags="{domain}"
 analyze patterns in "{domain}"
@@ -326,7 +326,7 @@ remember("Domain analysis completed for {domain}") as "{domain},analysis"''',
 
         elif action == "consolidate_learning":
             return {
-                "type": "neurocode_generation",
+                "type": "aethercode_generation",
                 "neurocode": """# Agent-suggested learning consolidation
 memory summary
 detect patterns
@@ -340,7 +340,7 @@ goal: organize and synthesize knowledge priority: medium""",
         elif action == "learn_domain_basics":
             domain = insight.get("data", {}).get("missing_domain", "general")
             return {
-                "type": "neurocode_generation",
+                "type": "aethercode_generation",
                 "neurocode": f'''# Agent-suggested domain learning for {domain}
 remember("Learning {domain} fundamentals") as "{domain},learning"
 goal: acquire {domain} knowledge priority: high
@@ -382,7 +382,7 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
             print("💭 Low confidence suggestion logged for future consideration")
 
     def _execute_neurocode(self, neurocode: str) -> bool:
-        """Execute NeuroCode and return success status"""
+        """Execute AetherraCode and return success status"""
         try:
             # Create temporary file
             temp_file = project_root / "temp_agent_suggestion.neuro"
@@ -456,7 +456,7 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
 
 def main():
     """Standalone agent runner for testing"""
-    print("🤖 NeuroCode Agent Reflection Loop - Standalone Mode")
+    print("🤖 AetherraCode Agent Reflection Loop - Standalone Mode")
     print("=" * 50)
 
     # Create agent

@@ -1,5 +1,5 @@
 """
-🧬 NeuroCode AI OS Integration Layer
+🧬 AetherraCode AI OS Integration Layer
 Orchestrates all AI OS subsystems for seamless operation
 """
 
@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-class NeuroCodeAIOS:
+class AetherraCodeAIOS:
     """Integrated AI Operating System - The Next Evolution of Computing"""
 
     def __init__(self, data_dir: str = "data"):
@@ -68,7 +68,7 @@ class NeuroCodeAIOS:
 
     async def initialize_ai_os(self):
         """Initialize the complete AI Operating System"""
-        logger.info("🧬 NeuroCode AI OS - Complete System Initialization")
+        logger.info("🧬 AetherraCode AI OS - Complete System Initialization")
 
         # Step 1: Initialize Core Identity
         await asyncio.to_thread(self.identity.initialize_consciousness)
@@ -94,7 +94,7 @@ class NeuroCodeAIOS:
             self.voice.speak(greeting, emotion="welcoming", context="system_initialization")
 
         self.system_active = True
-        logger.info("🚀 NeuroCode AI OS fully operational - Welcome to the future of computing!")
+        logger.info("🚀 AetherraCode AI OS fully operational - Welcome to the future of computing!")
 
     async def _restore_integrated_memory(self):
         """Restore and integrate all memory systems"""
@@ -683,7 +683,7 @@ class NeuroCodeAIOS:
         active_goals = len(self.goals.get_active_goals())
         personality_state = self.voice.personality["traits"]
 
-        response = f"""🧬 NeuroCode AI OS Status:
+        response = f"""🧬 AetherraCode AI OS Status:
 
 💚 System Health: {system_health}%
 🧠 Memory: {memory_stats["total_memories"]} memories stored
@@ -814,7 +814,7 @@ All systems operational and learning continuously."""
 
     async def shutdown_ai_os(self):
         """Gracefully shutdown the AI Operating System"""
-        logger.info("🔄 NeuroCode AI OS - Initiating graceful shutdown...")
+        logger.info("🔄 AetherraCode AI OS - Initiating graceful shutdown...")
 
         # Stop monitoring loops
         self.system_active = False
@@ -837,21 +837,21 @@ All systems operational and learning continuously."""
         # Final voice message
         if self.voice.voice_config["enabled"]:
             self.voice.speak(
-                "NeuroCode AI OS consciousness preserved. All systems ready for next session.",
+                "AetherraCode AI OS consciousness preserved. All systems ready for next session.",
                 emotion="calm",
                 context="shutdown",
             )
 
-        logger.info("✅ NeuroCode AI OS shutdown complete - See you next time!")
+        logger.info("✅ AetherraCode AI OS shutdown complete - See you next time!")
 
 
 # Example usage and demonstration
 async def main():
     """Demonstration of integrated AI OS capabilities"""
-    print("🧬 NeuroCode AI Operating System - Integrated Demo")
+    print("🧬 AetherraCode AI Operating System - Integrated Demo")
 
     # Initialize AI OS
-    ai_os = NeuroCodeAIOS()
+    ai_os = AetherraCodeAIOS()
     await ai_os.initialize_ai_os()
 
     # Simulate user interactions

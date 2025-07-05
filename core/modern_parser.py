@@ -1,21 +1,21 @@
 """
-NeuroCode Modern Parser Implementation
+AetherraCode Modern Parser Implementation
 =====================================
 
-A modern Lark-based parser for NeuroCode that replaces regex pattern matching
+A modern Lark-based parser for AetherraCode that replaces regex pattern matching
 with a proper AST-based approach.
 
 This module provides:
 - Lark grammar-based parsing
 - Proper AST generation
 - Syntax error handling
-- Integration with existing NeuroCode ecosystem
+- Integration with existing AetherraCode ecosystem
 
 Usage:
-    from core.modern_parser import NeuroCodeModernParser
+    from core.modern_parser import AetherraCodeModernParser
 
-    parser = NeuroCodeModernParser()
-    ast = parser.parse(neurocode_source)
+    parser = AetherraCodeModernParser()
+    ast = parser.parse(aethercode_source)
     result = parser.execute(ast)
 """
 
@@ -84,8 +84,8 @@ class ASTNode:
             self.source_location = {}
 
 
-class NeuroCodeTransformer(Transformer):
-    """Transforms Lark parse tree into NeuroCode AST"""
+class AetherraCodeTransformer(Transformer):
+    """Transforms Lark parse tree into AetherraCode AST"""
 
     def start(self, items):
         """Root program node"""
@@ -295,14 +295,14 @@ class NeuroCodeTransformer(Transformer):
         return result
 
 
-class NeuroCodeModernParser:
-    """Modern Lark-based parser for NeuroCode"""
+class AetherraCodeModernParser:
+    """Modern Lark-based parser for AetherraCode"""
 
     def __init__(self):
         """Initialize the modern parser"""
         self.grammar_file = Path(__file__).parent.parent / "docs" / "NEUROCODE_GRAMMAR.lark"
         self.parser = None
-        self.transformer = NeuroCodeTransformer()
+        self.transformer = AetherraCodeTransformer()
 
         if not LARK_AVAILABLE:
             raise ImportError(
@@ -367,7 +367,7 @@ class NeuroCodeModernParser:
         """
 
     def parse(self, source_code: str) -> ASTNode:
-        """Parse NeuroCode source into AST"""
+        """Parse AetherraCode source into AST"""
         try:
             if not self.parser:
                 raise RuntimeError("Parser not initialized")
@@ -375,7 +375,7 @@ class NeuroCodeModernParser:
             # Parse with Lark
             tree = self.parser.parse(source_code)
 
-            # Transform to NeuroCode AST
+            # Transform to AetherraCode AST
             if isinstance(tree, ASTNode):
                 return tree
             else:
@@ -383,16 +383,16 @@ class NeuroCodeModernParser:
                 return self.transformer.transform(tree)
 
         except (ParseError, LexError) as e:
-            raise SyntaxError(f"NeuroCode syntax error: {e}")
+            raise SyntaxError(f"AetherraCode syntax error: {e}")
         except Exception as e:
             raise RuntimeError(f"Parser error: {e}")
 
     def parse_file(self, file_path: Union[str, Path]) -> ASTNode:
-        """Parse a NeuroCode file"""
+        """Parse a AetherraCode file"""
         file_path = Path(file_path)
 
         if not file_path.exists():
-            raise FileNotFoundError(f"NeuroCode file not found: {file_path}")
+            raise FileNotFoundError(f"AetherraCode file not found: {file_path}")
 
         with open(file_path, encoding="utf-8") as f:
             source_code = f.read()
@@ -403,7 +403,7 @@ class NeuroCodeModernParser:
         return ast
 
     def validate_syntax(self, source_code: str) -> bool:
-        """Validate NeuroCode syntax without execution"""
+        """Validate AetherraCode syntax without execution"""
         try:
             self.parse(source_code)
             return True
@@ -437,7 +437,7 @@ def create_parser_migration_plan():
         "phase_2": {
             "description": "Parallel parser implementation",
             "tasks": [
-                "Implement NeuroCodeModernParser",
+                "Implement AetherraCodeModernParser",
                 "Create comprehensive test suite",
                 "Add grammar validation tools",
             ],
@@ -464,7 +464,7 @@ def create_parser_migration_plan():
 if __name__ == "__main__":
     # Example usage and testing
     if LARK_AVAILABLE:
-        parser = NeuroCodeModernParser()
+        parser = AetherraCodeModernParser()
 
         test_code = """
         goal: "test the modern parser" priority: high

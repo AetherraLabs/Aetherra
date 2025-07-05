@@ -1,6 +1,6 @@
 # core/interpreter/execution_engine.py
 """
-Execution Engine for NeuroCode Interpreter
+Execution Engine for AetherraCode Interpreter
 ==========================================
 
 Handles command execution and routing to appropriate handlers.
@@ -13,7 +13,7 @@ from .base import ExecutionResult, ParseResult
 
 
 class ExecutionEngine:
-    """Main execution engine for NeuroCode commands"""
+    """Main execution engine for AetherraCode commands"""
 
     def __init__(self, components: Dict[str, Any]):
         self.components = components

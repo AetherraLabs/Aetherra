@@ -1,6 +1,6 @@
 # core/interpreter.py
 """
-NeuroCode Interpreter (Modular Interface)
+AetherraCode Interpreter (Modular Interface)
 ==========================================
 
 This module provides a compatibility interface to the new modular interpreter system.
@@ -24,7 +24,7 @@ try:
 
     # Legacy function compatibility
     def create_interpreter():
-        """Create a new NeuroCode interpreter instance"""
+        """Create a new AetherraCode interpreter instance"""
         return AetherraInterpreter()
 
     # Export the same API as the original monolithic module
@@ -56,8 +56,8 @@ except ImportError:
             suggest_next_actions,
         )
         from block_executor import BlockExecutor  # type: ignore
-        from debug_system import NeuroDebugSystem  # type: ignore
-        from functions import NeuroFunctions  # type: ignore
+        from debug_system import AetherraDebugSystem  # type: ignore
+        from functions import AetherraFunctions  # type: ignore
         from goal_system import GoalSystem  # type: ignore
         from memory import AetherraMemory  # type: ignore
         from meta_plugins import MetaPluginSystem  # type: ignore
@@ -107,7 +107,7 @@ except ImportError:
             def clear(self):
                 pass
 
-        class NeuroFunctions:
+        class AetherraFunctions:
             def __init__(self):
                 self.functions = {}
 
@@ -126,7 +126,7 @@ except ImportError:
             def delete_function(self, name):
                 return f"Demo function deleted: {name}"
 
-        class NeuroAgent:
+        class AetherraAgent:
             def __init__(self, memory=None, functions=None, command_history=None):
                 self.active = False
                 self.memory = memory
@@ -204,7 +204,7 @@ except ImportError:
             def execute_block(self, block, executor):
                 return "Demo block executed"
 
-        class NeuroDebugSystem:
+        class AetherraDebugSystem:
             def __init__(self, *args):
                 self.error_history = []
                 self.auto_apply_enabled = False
@@ -273,15 +273,15 @@ except ImportError:
 
 class AetherraInterpreter:
     """
-    Core NeuroCode interpreter - handles line-by-line parsing and execution flow
+    Core AetherraCode interpreter - handles line-by-line parsing and execution flow
     Delegates specific functionality to specialized modules
     """
 
     def __init__(self):
         self.memory = AetherraMemory()
-        self.functions = NeuroFunctions()
+        self.functions = AetherraFunctions()
         self.command_history = []  # Track command usage patterns
-        self.agent = NeuroAgent(self.memory, self.functions, self.command_history)
+        self.agent = AetherraAgent(self.memory, self.functions, self.command_history)
         self.goal_system = GoalSystem(self.memory, self)  # New goal system
         self.meta_plugins = MetaPluginSystem(
             self.memory, self, self.goal_system
@@ -300,7 +300,7 @@ class AetherraInterpreter:
         self.block_type = None
 
         # Debug system
-        self.debug_system = NeuroDebugSystem(self.memory)
+        self.debug_system = AetherraDebugSystem(self.memory)
 
         # Standard library manager
         self.stdlib = stdlib_manager
@@ -308,7 +308,7 @@ class AetherraInterpreter:
         # Enhanced parsing with SyntaxTree
         self.use_enhanced_parser = parse_neurocode is not None
         if self.use_enhanced_parser:
-            self.syntax_visitor = NeuroExecutionVisitor(self)
+            self.syntax_visitor = AetherraExecutionVisitor(self)
 
         # Create backup directory if it doesn't exist
         if not os.path.exists(self.backup_dir):
@@ -337,7 +337,7 @@ class AetherraInterpreter:
         return result
 
     def _try_enhanced_parsing(self, line):
-        """Try enhanced parsing patterns for better NeuroCode support"""
+        """Try enhanced parsing patterns for better AetherraCode support"""
 
         # Enhanced remember() parsing with multiple tags and metadata
         if "remember(" in line and " as " in line:
@@ -838,9 +838,9 @@ class AetherraInterpreter:
             self.memory.remember(f"Learned from {file}: {summary}", tags=tags, category="learning")
             result = f"[Learned] Summary stored to memory with tags: {', '.join(tags)}\n"
 
-            # Auto-suggest NeuroCode based on learning
+            # Auto-suggest AetherraCode based on learning
             suggestion = suggest_next_actions(summary)
-            result += f"[Auto-Suggested NeuroCode]\n{suggestion}"
+            result += f"[Auto-Suggested AetherraCode]\n{suggestion}"
             return result
         else:
             return f"[Learn] File not found: {file}"
@@ -863,10 +863,10 @@ class AetherraInterpreter:
         """Handle assistant queries"""
         query = line.split("assistant:", 1)[-1].strip()
         context = "\n".join(self.memory.recall())
-        prompt = f"You are NeuroAssistant,
-            a helpful AI embedded in the NeuroCode runtime. Here is your memory:\n{context}\n\nAnswer this: {query}"
+        prompt = f"You are AetherraAssistant,
+            a helpful AI embedded in the AetherraCode runtime. Here is your memory:\n{context}\n\nAnswer this: {query}"
         response = ask_ai(prompt)
-        return f"[NeuroAssistant] {response}"
+        return f"[AetherraAssistant] {response}"
 
     def _handle_plugin(self, line):
         """Handle plugin execution - supports both legacy and stdlib plugins"""
@@ -1377,11 +1377,11 @@ class AetherraInterpreter:
         return f"[Pattern Frequency] Pattern '{pattern}' found {frequency} times in the last {timeframe} days"
 
     def _is_block_start(self, line):
-        """Check if line starts a multi-line block - Enhanced for NeuroCode"""
+        """Check if line starts a multi-line block - Enhanced for AetherraCode"""
         # Standard block starters
         block_starters = ["define ", "if ", "for ", "while ", "simulate "]
 
-        # NeuroCode-specific block starters
+        # AetherraCode-specific block starters
         neuro_block_starters = [
             "agent:",
             "with agent:",
@@ -1400,7 +1400,7 @@ class AetherraInterpreter:
         if any(stripped_line.startswith(starter) for starter in block_starters):
             return True
 
-        # Check NeuroCode blocks
+        # Check AetherraCode blocks
         if any(stripped_line.startswith(starter) for starter in neuro_block_starters):
             return True
 
@@ -1413,7 +1413,7 @@ class AetherraInterpreter:
         return False
 
     def _start_block(self, line):
-        """Start a new block - Enhanced for NeuroCode constructs"""
+        """Start a new block - Enhanced for AetherraCode constructs"""
         self.in_block = True
         self.block_buffer = [line]
         stripped_line = line.strip()
@@ -1449,7 +1449,7 @@ class AetherraInterpreter:
         ):
             self.block_type = "neuro_block"
             block_name = stripped_line.split("{")[0].strip()
-            return f"🧬 Started NeuroCode {block_name} block\n   💭 Enter AI-native operations, use '{{}}' to complete"
+            return f"🧬 Started AetherraCode {block_name} block\n   💭 Enter AI-native operations, use '{{}}' to complete"
 
         elif stripped_line.startswith("simulate "):
             self.block_type = "simulation"
@@ -1484,7 +1484,7 @@ class AetherraInterpreter:
             elif self.block_type == "agent":
                 return f"  🤖 Added agent directive: {line}"
             elif self.block_type == "neuro_block":
-                return f"  🧬 Added NeuroCode operation: {line}"
+                return f"  🧬 Added AetherraCode operation: {line}"
             else:
                 return f"  📝 Added to {self.block_type} block: {line}"
 
@@ -1496,7 +1496,7 @@ class AetherraInterpreter:
             return line == "end" or line.endswith("end")
 
     def _execute_block(self):
-        """Execute the current block - Enhanced for NeuroCode"""
+        """Execute the current block - Enhanced for AetherraCode"""
         if not self.in_block or not self.block_buffer:
             return "❌ No block to execute"
 
@@ -1590,10 +1590,10 @@ class AetherraInterpreter:
         return response
 
     def _execute_neuro_block(self):
-        """Execute NeuroCode AI-native block"""
+        """Execute AetherraCode AI-native block"""
         if len(self.block_buffer) < 2:
             self._reset_block_state()
-            return "❌ Empty NeuroCode block"
+            return "❌ Empty AetherraCode block"
 
         # Determine block type and execute accordingly
         header = self.block_buffer[0].strip()
@@ -1624,7 +1624,7 @@ class AetherraInterpreter:
                     results.append(f"   {result}")
 
         else:
-            results.append("🧬 NeuroCode Block Execution:")
+            results.append("🧬 AetherraCode Block Execution:")
             for op in operations:
                 if op.strip():
                     result = self.execute(op.strip())
@@ -1716,8 +1716,8 @@ class AetherraInterpreter:
             return f"Syntax tree execution failed: {e}"
 
 
-class NeuroExecutionVisitor:
-    """Execution visitor that runs NeuroCode syntax tree nodes"""
+class AetherraExecutionVisitor:
+    """Execution visitor that runs AetherraCode syntax tree nodes"""
 
     def __init__(self, interpreter):
         self.interpreter = interpreter

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🧪 NeuroCode Integration Test Suite
+🧪 AetherraCode Integration Test Suite
 =================================
 
-Comprehensive test to verify all major NeuroCode components work together
-and that both NeuroCode and Neuroplex function properly.
+Comprehensive test to verify all major AetherraCode components work together
+and that both AetherraCode and Neuroplex function properly.
 """
 
 import sys
@@ -13,7 +13,7 @@ import sys
 def test_interpreter_system():
     """Test basic interpreter functionality"""
     try:
-        from core.interpreter import AetherraInterpreter
+        from Aetherra.core.interpreter import AetherraInterpreter
 
         interpreter = AetherraInterpreter()
 
@@ -29,7 +29,7 @@ def test_interpreter_system():
 def test_enhanced_interpreter():
     """Test enhanced interpreter functionality"""
     try:
-        from core.enhanced_interpreter import EnhancedAetherraInterpreter
+        from Aetherra.core.enhanced_interpreter import EnhancedAetherraInterpreter
 
         interpreter = EnhancedAetherraInterpreter()
 
@@ -45,7 +45,7 @@ def test_enhanced_interpreter():
 def test_memory_system():
     """Test memory system"""
     try:
-        from core.aetherra_memory import AetherraMemory
+        from Aetherra.core.aetherra_memory import AetherraMemory
 
         memory = AetherraMemory()
 
@@ -75,7 +75,7 @@ def test_gui_components():
     """Test GUI component imports"""
     try:
         # Test if Qt components are available
-        from src.aethercode.ui.components.utils.qt_imports import is_qt_available
+        from Lyrixa.ui.components.utils.qt_imports import is_qt_available
 
         qt_status = is_qt_available()
 
@@ -110,15 +110,15 @@ def test_parser_system():
 def test_agent_system():
     """Test agent functionality"""
     try:
-        from core.agent import NeuroAgent
-        from core.functions import NeuroFunctions
-        from core.aetherra_memory import AetherraMemory
+        from Aetherra.core.agent import AetherraAgent
+        from Aetherra.core.functions import AetherraFunctions
+        from Aetherra.core.aetherra_memory import AetherraMemory
 
         memory = AetherraMemory()
-        functions = NeuroFunctions()
+        functions = AetherraFunctions()
         command_history = []
 
-        NeuroAgent(memory, functions, command_history)
+        AetherraAgent(memory, functions, command_history)
         print("✅ Agent system: Agent initialization working")
         return True
     except Exception as e:
@@ -148,8 +148,8 @@ def test_launcher_systems():
         # Test various launchers
         launchers = [
             "launchers.main",
-            "launchers.launch_enhanced_neuroplex",
-            "launchers.launch_fully_modular_neuroplex",
+            "launchers.launch_enhanced_aetherplex",
+            "launchers.launch_fully_modular_aetherplex",
         ]
 
         working_launchers = 0
@@ -175,7 +175,7 @@ def test_ui_systems():
         # Test various UI components
         ui_modules = [
             "src.aethercode.ui.aetherplex_gui",
-            "src.aethercode.ui.enhanced_neuroplex",
+            "src.aethercode.ui.enhanced_aetherplex",
             "src.aethercode.ui.aetherplex_gui_v2",
             "src.aethercode.ui.aetherplex_fully_modular",
         ]
@@ -197,7 +197,7 @@ def test_ui_systems():
 
 def main():
     """Run all integration tests"""
-    print("🧪 NeuroCode Integration Test Suite")
+    print("🧪 AetherraCode Integration Test Suite")
     print("=" * 50)
 
     tests = [
@@ -233,7 +233,7 @@ def main():
     print(f"📈 Success Rate: {passed / (passed + failed) * 100:.1f}%")
 
     if failed == 0:
-        print("\n🎉 All tests passed! NeuroCode and Neuroplex are ready to use!")
+        print("\n🎉 All tests passed! AetherraCode and Neuroplex are ready to use!")
         return 0
     else:
         print(f"\n⚠️  {failed} test(s) failed. Please check the issues above.")

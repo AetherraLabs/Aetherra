@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Analysis - Import and Function Verification
+🧬 AetherraCode Analysis - Import and Function Verification
 """
 
 import sys
@@ -11,7 +11,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "core"))
 
-print("🧬 NeuroCode Analysis - Import and Function Verification")
+print("🧬 AetherraCode Analysis - Import and Function Verification")
 print("=" * 60)
 
 # Test core modules
@@ -63,7 +63,7 @@ try:
     print("✅ GUI Components: Import successful")
 
     # Test theme system
-    theme = NeuroTheme.get_stylesheet()
+    theme = AetherraTheme.get_stylesheet()
     print(f"   → Theme system: {'✅ Success' if theme else '❌ Failed'}")
 
 except Exception as e:

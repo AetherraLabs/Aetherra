@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-💫 NeuroCode Chat Enhancement System
+💫 AetherraCode Chat Enhancement System
 ==================================
 
 Advanced chat features including streaming responses, rich formatting,
@@ -14,7 +14,7 @@ Features:
 - Export and search capabilities
 - Conversation continuity and context preservation
 
-Author: NeuroCode Development Team
+Author: AetherraCode Development Team
 Date: June 30, 2025
 """
 

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-🧬 Enhanced NeuroCode Demo
+🧬 Enhanced AetherraCode Demo
 Shows your basic_memory.aether example working with enhanced interpreter features
 """
 
 
 def demonstrate_enhanced_features():
-    """Show off the enhanced NeuroCode capabilities"""
+    """Show off the enhanced AetherraCode capabilities"""
 
-    print("🧬 NeuroCode Enhanced Interpreter Demo")
+    print("🧬 AetherraCode Enhanced Interpreter Demo")
     print("=" * 60)
     print("Your basic_memory.aether example, now with enhanced parsing!")
     print()
@@ -18,7 +18,7 @@ def demonstrate_enhanced_features():
         "# Enhanced Memory Operations",
         'remember("Python is procedural") as "programming_paradigm"',
         'remember("JavaScript can be functional") as "programming_paradigm"',
-        'remember("NeuroCode is cognitive") as "programming_paradigm,revolutionary"',
+        'remember("AetherraCode is cognitive") as "programming_paradigm,revolutionary"',
         "",
         "# Enhanced Recall with Better Feedback",
         'recall tag: "programming_paradigm"',
@@ -36,7 +36,7 @@ def demonstrate_enhanced_features():
         "detect patterns",
         "",
         "# Enhanced Goal Setting",
-        'goal: "master NeuroCode memory patterns" priority: high deadline: "this week"',
+        'goal: "master AetherraCode memory patterns" priority: high deadline: "this week"',
         "",
         "# Agent Specialization",
         'agent: on specialization: "memory analysis and pattern recognition"',
@@ -49,7 +49,7 @@ def demonstrate_enhanced_features():
     return "analysis complete"
 end""",
         "",
-        "# NeuroCode AI-Native Block",
+        "# AetherraCode AI-Native Block",
         """think {
     "How can memory patterns guide learning?"
     "What insights emerge from stored knowledge?"
@@ -70,7 +70,7 @@ end""",
         "memory tags",
     ]
 
-    print("📋 **Enhanced NeuroCode Program:**")
+    print("📋 **Enhanced AetherraCode Program:**")
     print()
     for line in enhanced_examples:
         if line.strip():
@@ -96,7 +96,7 @@ end""",
 
     print()
     print("=" * 60)
-    print("🎯 **Ready for Advanced NeuroCode Development!**")
+    print("🎯 **Ready for Advanced AetherraCode Development!**")
 
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🏗️ NeuroCode Internal Refactoring System
+🏗️ AetherraCode Internal Refactoring System
 ========================================
 
-Advanced code quality and maintainability tools for the NeuroCode codebase.
+Advanced code quality and maintainability tools for the AetherraCode codebase.
 Handles import organization, documentation generation, logging infrastructure,
 and code quality standards enforcement.
 
@@ -15,7 +15,7 @@ Features:
 - Type hint enforcement and validation
 - Performance monitoring integration
 
-Author: NeuroCode Development Team
+Author: AetherraCode Development Team
 Date: June 30, 2025
 """
 
@@ -275,7 +275,7 @@ class DocumentationGenerator:
 
 {description}
 
-Author: NeuroCode Development Team
+Author: AetherraCode Development Team
 Date: {date}
 """''',
         }
@@ -354,7 +354,7 @@ Date: {date}
 
 
 class LoggingInfrastructure:
-    """Structured logging infrastructure for NeuroCode"""
+    """Structured logging infrastructure for AetherraCode"""
 
     def __init__(self, log_level: int = logging.INFO):
         self.log_level = log_level
@@ -570,7 +570,7 @@ class CodeQualityAnalyzer:
 
     def generate_quality_report(self, reports: Dict[str, CodeQualityReport]) -> str:
         """Generate a comprehensive quality report"""
-        lines = ["📊 NeuroCode Project Quality Report", "=" * 50, ""]
+        lines = ["📊 AetherraCode Project Quality Report", "=" * 50, ""]
 
         # Overall statistics
         total_files = len(reports)

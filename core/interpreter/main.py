@@ -1,6 +1,6 @@
 # core/interpreter/main.py
 """
-Main NeuroCode Interpreter Implementation
+Main AetherraCode Interpreter Implementation
 ========================================
 
 The main modular interpreter that combines all components.
@@ -9,7 +9,7 @@ The main modular interpreter that combines all components.
 import os
 from typing import Any, Dict, Union
 
-from .base import ExecutionResult, NeuroCodeInterpreterBase
+from .base import ExecutionResult, AetherraCodeInterpreterBase
 from .command_parser import CommandParser
 from .enhanced_features import EnhancedFeatureParser
 from .execution_engine import ExecutionEngine
@@ -17,9 +17,9 @@ from .fallback_systems import FallbackSystemManager
 from .line_processor import LineProcessor
 
 
-class AetherraInterpreter(NeuroCodeInterpreterBase):
+class AetherraInterpreter(AetherraCodeInterpreterBase):
     """
-    Main NeuroCode Interpreter
+    Main AetherraCode Interpreter
 
     Combines all modular components into a cohesive interpreter system.
     """
@@ -67,7 +67,7 @@ class AetherraInterpreter(NeuroCodeInterpreterBase):
         # First pass: Create basic components with no dependencies
         for name, component_class in components.items():
             try:
-                if name in ["AetherraMemory", "NeuroFunctions"]:
+                if name in ["AetherraMemory", "AetherraFunctions"]:
                     key = name.lower().replace("neuro", "").replace("system", "")
                     instantiated[key] = component_class()
             except Exception as e:
@@ -84,7 +84,7 @@ class AetherraInterpreter(NeuroCodeInterpreterBase):
                     else:
                         print(f"Warning: Skipping {name} - memory system not available")
 
-                elif name == "NeuroDebugSystem":
+                elif name == "AetherraDebugSystem":
                     # Debug system needs memory
                     memory = instantiated.get("memory")
                     if memory:
@@ -107,7 +107,7 @@ class AetherraInterpreter(NeuroCodeInterpreterBase):
         # Third pass: Create components that depend on multiple others
         for name, component_class in components.items():
             try:
-                if name == "NeuroAgent":
+                if name == "AetherraAgent":
                     # Agent needs memory, functions, and other components
                     memory = instantiated.get("memory")
                     functions = instantiated.get("functions")
@@ -144,17 +144,17 @@ class AetherraInterpreter(NeuroCodeInterpreterBase):
 
         try:
             # Functions system
-            from ..functions import NeuroFunctions
+            from ..functions import AetherraFunctions
 
-            components["NeuroFunctions"] = NeuroFunctions
+            components["AetherraFunctions"] = AetherraFunctions
         except ImportError:
             pass
 
         try:
             # Agent system
-            from ..agent import NeuroAgent
+            from ..agent import AetherraAgent
 
-            components["NeuroAgent"] = NeuroAgent
+            components["AetherraAgent"] = AetherraAgent
         except ImportError:
             pass
 
@@ -168,9 +168,9 @@ class AetherraInterpreter(NeuroCodeInterpreterBase):
 
         try:
             # Debug system
-            from ..debug_system import NeuroDebugSystem
+            from ..debug_system import AetherraDebugSystem
 
-            components["NeuroDebugSystem"] = NeuroDebugSystem
+            components["AetherraDebugSystem"] = AetherraDebugSystem
         except ImportError:
             pass
 
@@ -297,7 +297,7 @@ class AetherraInterpreter(NeuroCodeInterpreterBase):
 
     def get_help(self) -> str:
         """Get comprehensive help text"""
-        help_text = "🎯 NeuroCode Interpreter Help\n\n"
+        help_text = "🎯 AetherraCode Interpreter Help\n\n"
         help_text += "📋 Basic Commands:\n"
         help_text += '• remember("content") - Store memory\n'
         help_text += '• recall "query" - Search memories\n'

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🤖 Multi-Agent Framework for NeuroCode
+🤖 Multi-Agent Framework for AetherraCode
 Orchestrates specialized AI agents for complex tasks
 
 This system enables collaborative AI processing through specialized agents
@@ -827,7 +827,7 @@ async def demo_multi_agent_system():
             "role": "planner",
             "description": "Plan a code optimization project",
             "context": {
-                "objective": "Optimize NeuroCode performance and add new features",
+                "objective": "Optimize AetherraCode performance and add new features",
                 "complexity": "high"
             }
         },

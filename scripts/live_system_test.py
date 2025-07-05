@@ -16,10 +16,10 @@ def test_memory_operations():
     print("-" * 30)
 
     try:
-        from core.memory import NeuroMemory
+        from core.memory import AetherraMemory
 
         # Test memory creation and operations
-        memory = NeuroMemory()
+        memory = AetherraMemory()
 
         # Test remembering
         test_memory = f"System test executed at {sys.version}"
@@ -133,21 +133,21 @@ def test_data_persistence():
         return False
 
 
-def test_neuroplex_components():
+def test_aetherplex_components():
     """Test Neuroplex launcher components."""
     print("\n🚀 Testing Neuroplex Components")
     print("-" * 30)
 
     try:
         # Test batch launcher exists
-        batch_launcher = Path("neuroplex.bat")
+        batch_launcher = Path("aetherplex.bat")
         if batch_launcher.exists():
             print("✅ Neuroplex batch launcher found")
         else:
             print("⚠️ Neuroplex batch launcher missing")
 
         # Test script launcher exists
-        script_launcher = Path("neuroplex")
+        script_launcher = Path("aetherplex")
         if script_launcher.exists():
             print("✅ Neuroplex script launcher found")
         else:
@@ -170,7 +170,7 @@ def main():
         ("Goal Operations", test_goal_operations),
         ("Basic Interpreter", test_interpreter_basic),
         ("Data Persistence", test_data_persistence),
-        ("Neuroplex Components", test_neuroplex_components),
+        ("Neuroplex Components", test_aetherplex_components),
     ]
 
     results = {}

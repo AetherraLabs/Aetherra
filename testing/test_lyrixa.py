@@ -1,5 +1,5 @@
 """
-Test script to verify the functionality of neuroplex.py in a real application context.
+Test script to verify the functionality of aetherplex.py in a real application context.
 """
 
 import os
@@ -8,9 +8,9 @@ import sys
 # Add the project root to the Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# print("Testing neuroplex.py module imports...")
+# print("Testing aetherplex.py module imports...")
 try:
-    from src.aethercode.ui.aetherplex import LyrixaWindow
+    from Lyrixa.ui.aetherplex import LyrixaWindow
 
     print("✓ Successfully imported LyrixaWindow")
 
@@ -35,6 +35,6 @@ try:
     except Exception as e:
         print(f"✗ Error creating LyrixaWindow instance: {e}")
 except Exception as e:
-    print(f"✗ Error importing from neuroplex.py: {e}")
+    print(f"✗ Error importing from aetherplex.py: {e}")
 
 print("\nNeuroplex testing complete.")

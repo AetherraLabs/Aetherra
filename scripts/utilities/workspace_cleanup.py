@@ -162,10 +162,10 @@ def move_test_files():
     integration_tests = [
         "test_agent_integration.py",
         "test_backward_compatibility.py",
-        "test_enhanced_neuroplex_integration.py",
+        "test_enhanced_aetherplex_integration.py",
         "test_aetherra_integration.py",
         "test_aetherra_integration_fixed.py",
-        "test_neuroplex_system.py",
+        "test_aetherplex_system.py",
         "test_phase2_systems.py",
         "test_phase2_verification.py",
         "test_syntax_integration.py",
@@ -193,12 +193,12 @@ def move_test_files():
 
     # Demo/verification tests
     demo_tests = [
-        "test_and_launch_neuroplex.py",
+        "test_and_launch_aetherplex.py",
         "test_comprehensive_parsing.py",
         "test_aetherra_complete.py",
         "test_aetherra_comprehensive.py",
-        "test_neuroplex_final.py",
-        "test_neuroplex_gui.py",
+        "test_aetherplex_final.py",
+        "test_aetherplex_gui.py",
         "test_neuro_chat.py",
         "test_phase2_basic.py",
     ]
@@ -449,7 +449,7 @@ def main():
     print("- LICENSE")
     print("- requirements.txt (main)")
     print("- aetherra_launcher.py (main launcher)")
-    print("- neuroplex.bat / neuroplex.ico")
+    print("- aetherplex.bat / aetherplex.ico")
     print("- Core folders: src/, core/, data/, etc.")
 
 

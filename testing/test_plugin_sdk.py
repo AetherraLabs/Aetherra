@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test script for NeuroCode Plugin SDK"""
+"""Test script for AetherraCode Plugin SDK"""
 
 import sys
 
@@ -8,7 +8,7 @@ sys.path.append('src')
 sys.path.append('sdk/plugins')
 
 # Import plugin API first
-from core.plugin_api import PLUGIN_REGISTRY
+from Aetherra.core.plugin_api import PLUGIN_REGISTRY
 
 print(f"Initial registry state: {PLUGIN_REGISTRY}")
 
@@ -22,7 +22,7 @@ except Exception as e:
     traceback.print_exc()
 
 def test_plugin_system():
-    print("=== NeuroCode Plugin SDK Test ===")
+    print("=== AetherraCode Plugin SDK Test ===")
     print()
 
     print(f"PLUGIN_REGISTRY contents: {list(PLUGIN_REGISTRY.keys())}")

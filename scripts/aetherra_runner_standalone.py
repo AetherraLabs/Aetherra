@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🧬 Standalone NeuroCode Runner
+🧬 Standalone AetherraCode Runner
 =============================
 
 Standalone executor for .aether files with comprehensive error handling.
@@ -17,7 +17,7 @@ from typing import Any, Dict, Union
 
 
 class StandaloneNeuroRunner:
-    """Standalone NeuroCode file runner without complex dependencies"""
+    """Standalone AetherraCode file runner without complex dependencies"""
 
     def __init__(self, verbose: bool = False):
         self.verbose = verbose
@@ -41,7 +41,7 @@ class StandaloneNeuroRunner:
 
             # Input validation
             if not file_path.exists():
-                raise FileNotFoundError(f"NeuroCode file not found: {file_path}")
+                raise FileNotFoundError(f"AetherraCode file not found: {file_path}")
 
             if file_path.suffix != ".aether":
                 raise ValueError(f"Expected .aether file, got: {file_path.suffix}")
@@ -51,7 +51,7 @@ class StandaloneNeuroRunner:
                     f"File too large: {file_path.stat().st_size} bytes (max 10MB)"
                 )
 
-            print(f"🧬 Executing NeuroCode file: {file_path.name}")
+            print(f"🧬 Executing AetherraCode file: {file_path.name}")
             print("=" * 50)
 
             # Read and validate content
@@ -142,7 +142,7 @@ class StandaloneNeuroRunner:
     def _print_execution_summary(self, results: Dict[str, Any]):
         """Print comprehensive execution summary"""
         print("=" * 50)
-        print("🧬 NeuroCode Execution Summary")
+        print("🧬 AetherraCode Execution Summary")
         print("=" * 50)
 
         status = "✅ SUCCESS" if results["success"] else "❌ FAILED"
@@ -158,10 +158,10 @@ class StandaloneNeuroRunner:
                 for error in results["errors"]:
                     print(f"   • {error}")
 
-        print("🎉 NeuroCode file execution complete!")
+        print("🎉 AetherraCode file execution complete!")
 
     def _execute_line(self, line: str, line_num: int) -> str:
-        """Execute a single NeuroCode line"""
+        """Execute a single AetherraCode line"""
 
         # Memory operations
         if line.startswith("remember("):
@@ -353,7 +353,7 @@ class StandaloneNeuroRunner:
     def _print_summary(self, results: Dict[str, Any]):
         """Print execution summary"""
         print("\n" + "=" * 50)
-        print("🧬 NeuroCode Execution Summary")
+        print("🧬 AetherraCode Execution Summary")
         print("=" * 50)
 
         stats = self.execution_stats
@@ -370,20 +370,20 @@ class StandaloneNeuroRunner:
         if stats["errors"] > 0:
             print(f"❌ Errors: {stats['errors']}")
 
-        print("\n🎉 NeuroCode file execution complete!")
+        print("\n🎉 AetherraCode file execution complete!")
 
 
 def main():
     """Command line interface"""
     parser = argparse.ArgumentParser(
-        description="🧬 Standalone NeuroCode File Runner",
+        description="🧬 Standalone AetherraCode File Runner",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   python neuro_runner_standalone.py monitor.aether
   python neuro_runner_standalone.py examples/basic_memory.aether --verbose
 
-This is the foundation for: neuroplex run monitor.aether
+This is the foundation for: aetherplex run monitor.aether
         """,
     )
 

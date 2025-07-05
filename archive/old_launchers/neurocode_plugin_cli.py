@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🔌 NeuroCode Plugin CLI
-Command-line interface for the NeuroCode Plugin Registry System.
+🔌 AetherraCode Plugin CLI
+Command-line interface for the AetherraCode Plugin Registry System.
 
-This provides an easy-to-use command-line interface for managing NeuroCode plugins,
+This provides an easy-to-use command-line interface for managing AetherraCode plugins,
 integrating with the enhanced plugin management system.
 
 Usage:
@@ -32,8 +32,8 @@ sys.path.insert(0, str(core_dir))
 try:
     from enhanced_plugin_manager import EnhancedPluginManager
 except ImportError:
-    print("❌ Error: Could not import NeuroCode plugin management system")
-    print("   Make sure you're running this from the NeuroCode project directory")
+    print("❌ Error: Could not import AetherraCode plugin management system")
+    print("   Make sure you're running this from the AetherraCode project directory")
     sys.exit(1)
 
 
@@ -43,7 +43,7 @@ def format_plugin_list(plugins, detailed=False):
         return "No plugins found."
 
     output = []
-    output.append(f"\n🔌 NeuroCode Plugins ({len(plugins)}):")
+    output.append(f"\n🔌 AetherraCode Plugins ({len(plugins)}):")
     output.append("=" * 70)
 
     for plugin in plugins:
@@ -330,7 +330,7 @@ def cmd_popular(args, manager):
         plugins = manager.get_popular_plugins(limit)
 
         if plugins:
-            print(f"\n🌟 Most Popular NeuroCode Plugins (Top {len(plugins)}):")
+            print(f"\n🌟 Most Popular AetherraCode Plugins (Top {len(plugins)}):")
             print("=" * 70)
 
             for i, plugin in enumerate(plugins, 1):
@@ -371,7 +371,7 @@ def cmd_categories(args, manager):
 def show_help():
     """Show help information"""
     help_text = """
-🔌 NeuroCode Plugin Manager
+🔌 AetherraCode Plugin Manager
 
 Usage:
     neurocode plugin <command> [options]

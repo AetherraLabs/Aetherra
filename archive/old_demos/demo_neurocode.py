@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Language Demo
+🧬 AetherraCode Language Demo
 =========================
 
-Demonstrates NeuroCode language features and syntax.
+Demonstrates AetherraCode language features and syntax.
 """
 
 import sys
@@ -15,9 +15,9 @@ src_path = project_root / "src"
 sys.path.insert(0, str(src_path))
 
 
-def demo_neurocode_concepts():
-    """Demonstrate core NeuroCode concepts"""
-    print("🧬 NeuroCode Language Concepts Demo")
+def demo_aethercode_concepts():
+    """Demonstrate core AetherraCode concepts"""
+    print("🧬 AetherraCode Language Concepts Demo")
     print("=" * 50)
 
     # 1. Memory System Demo
@@ -30,8 +30,8 @@ def demo_neurocode_concepts():
 
         # Demonstrate memory operations
         if hasattr(memory, "add"):
-            memory.add("Learning NeuroCode is exciting!")
-            print("  ✅ Added memory: 'Learning NeuroCode is exciting!'")
+            memory.add("Learning AetherraCode is exciting!")
+            print("  ✅ Added memory: 'Learning AetherraCode is exciting!'")
 
         if hasattr(memory, "save"):
             memory.save()
@@ -121,15 +121,15 @@ def demo_neurocode_concepts():
         print(f"  ❌ AI demo failed: {e}")
 
 
-def demo_neurocode_syntax():
-    """Demonstrate NeuroCode syntax examples"""
-    print("\n📝 NeuroCode Syntax Examples")
+def demo_aethercode_syntax():
+    """Demonstrate AetherraCode syntax examples"""
+    print("\n📝 AetherraCode Syntax Examples")
     print("=" * 50)
 
     # Example 1: Goal-driven programming
     print("\n📋 Example 1: Goal-Driven Programming")
-    neurocode_example1 = """
-# Goal-driven NeuroCode program
+    aethercode_example1 = """
+# Goal-driven AetherraCode program
 goal: "Build a weather app"
     remember: "Need to fetch weather data"
     think: "Which API should we use?"
@@ -147,12 +147,12 @@ goal: "Build a weather app"
 
     complete: "Weather app is ready!"
 """
-    print(neurocode_example1)
+    print(aethercode_example1)
 
     # Example 2: Memory-aware programming
     print("\n📋 Example 2: Memory-Aware Programming")
-    neurocode_example2 = """
-# Memory-aware NeuroCode program
+    aethercode_example2 = """
+# Memory-aware AetherraCode program
 remember: "User prefers dark theme"
 remember: "Last calculation was 42"
 
@@ -165,12 +165,12 @@ think: "What should I optimize today?"
 learn: "User clicked on advanced options"
 adapt: interface_complexity = "advanced"
 """
-    print(neurocode_example2)
+    print(aethercode_example2)
 
     # Example 3: Self-reflective programming
     print("\n📋 Example 3: Self-Reflective Programming")
-    neurocode_example3 = """
-# Self-reflective NeuroCode program
+    aethercode_example3 = """
+# Self-reflective AetherraCode program
 reflect: "How well did the last feature work?"
     metrics: user_satisfaction_score()
 
@@ -185,12 +185,12 @@ evolve: "Learn from this experience"
     remember: lessons_learned()
     apply: improvements_to_future_features()
 """
-    print(neurocode_example3)
+    print(aethercode_example3)
 
 
 def demo_interactive_features():
-    """Demonstrate interactive NeuroCode features"""
-    print("\n🎮 Interactive NeuroCode Features")
+    """Demonstrate interactive AetherraCode features"""
+    print("\n🎮 Interactive AetherraCode Features")
     print("=" * 50)
 
     try:
@@ -199,8 +199,8 @@ def demo_interactive_features():
         if is_qt_available():
             print("  ✅ GUI components available")
             print("  🖥️ You can launch the visual interface:")
-            print("    • python neurocode_launcher.py")
-            print("    • python launchers/launch_fully_modular_neuroplex.py")
+            print("    • python aethercode_launcher.py")
+            print("    • python launchers/launch_fully_modular_aetherplex.py")
         else:
             print("  ⚠️ GUI components not available")
 
@@ -222,24 +222,24 @@ def demo_interactive_features():
 
 
 def main():
-    """Run the complete NeuroCode demo"""
-    print("🚀 Welcome to NeuroCode!")
+    """Run the complete AetherraCode demo"""
+    print("🚀 Welcome to AetherraCode!")
     print("The AI-Native Programming Language")
     print("=" * 60)
 
     # Run demos
-    demo_neurocode_concepts()
-    demo_neurocode_syntax()
+    demo_aethercode_concepts()
+    demo_aethercode_syntax()
     demo_interactive_features()
 
     print("\n" + "=" * 60)
-    print("🎉 NeuroCode Demo Complete!")
+    print("🎉 AetherraCode Demo Complete!")
     print("\nNext Steps:")
-    print("  1. 🖥️ Launch the GUI: python neurocode_launcher.py")
+    print("  1. 🖥️ Launch the GUI: python aethercode_launcher.py")
     print("  2. 📚 Explore the examples in the examples/ directory")
-    print("  3. 🧪 Run comprehensive tests: python test_neurocode_comprehensive.py")
-    print("  4. 🔧 Start building with NeuroCode!")
-    print("\n✨ Happy coding with NeuroCode! ✨")
+    print("  3. 🧪 Run comprehensive tests: python test_aethercode_comprehensive.py")
+    print("  4. 🔧 Start building with AetherraCode!")
+    print("\n✨ Happy coding with AetherraCode! ✨")
 
 
 if __name__ == "__main__":

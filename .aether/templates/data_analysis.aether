@@ -1,0 +1,30 @@
+plugin "data_analysis":
+  description: "Performs data analysis on a given dataset and generates a report"
+
+  trigger:
+    schedule: weekly on "Monday"
+    if memory.has("new_data")
+
+  memory:
+    retrieve:
+      from: "datasets.recent"
+      limit: 1
+    store:
+      into: "analysis.reports"
+
+  ai:
+    goal: "Analyze the dataset and generate insights"
+    model: gpt-4o
+    constraints:
+      - include statistical summaries
+      - generate visualizations
+    output: analysis_report
+
+  actions:
+    - memory.save("analysis.reports", analysis_report)
+    - notify(user: "analysis_ready", content: analysis_report)
+
+  feedback:
+    expect: user review within 3d
+    if no_response:
+      escalate_to("data_team")

@@ -1,7 +1,7 @@
 import os
 
 print("Checking UI files for syntax errors...")
-ui_dir = "src/neurocode/ui"
+ui_dir = "src/Aetherra/ui"
 for f in os.listdir(ui_dir):
     if f.endswith(".py"):
         file_path = f"{ui_dir}/{f}"

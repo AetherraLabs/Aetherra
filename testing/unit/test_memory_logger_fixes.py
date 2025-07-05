@@ -26,7 +26,7 @@ def test_memory_logger_imports():
 def test_enhanced_memory_entry():
     """Test EnhancedMemoryEntry functionality"""
     try:
-        from core.memory.logger import EnhancedMemoryEntry
+        from Aetherra.core.memory.logger import EnhancedMemoryEntry
 
         # Test creating entry from dict with None values
         test_data = {
@@ -65,7 +65,7 @@ def test_enhanced_memory_entry():
 def test_memory_logger():
     """Test basic MemoryLogger functionality"""
     try:
-        from core.memory.logger import MemoryLogger, MemoryType
+        from Aetherra.core.memory.logger import MemoryLogger, MemoryType
 
         # Create a logger instance
         logger = MemoryLogger()

@@ -6,7 +6,7 @@
 Final comprehensive test of the complete Neuroplex system including:
 - Unified GUI with all tabs
 - Task Scheduler integration
-- NeuroHub package manager integration
+- AetherraHub package manager integration
 - Chat Router with advanced features
 - Memory system integration
 - All core components working together
@@ -34,7 +34,7 @@ def test_complete_system_startup():
             app = QApplication(sys.argv)
 
         # Import and create Neuroplex window
-        from src.aethercode.ui.aetherplex import LyrixaWindow
+        from Lyrixa.ui.aetherplex import LyrixaWindow
 
         window = LyrixaWindow()
         print("✅ Neuroplex window created successfully")
@@ -45,7 +45,7 @@ def test_complete_system_startup():
             and window.chat_router is not None,
             "Task Scheduler": hasattr(window, "task_scheduler")
             and window.task_scheduler is not None,
-            "NeuroHub Process": hasattr(window, "neurohub_process"),
+            "AetherraHub Process": hasattr(window, "neurohub_process"),
         }
 
         print("\n📊 Component Status:")
@@ -86,7 +86,7 @@ def test_complete_system_startup():
                 return "Quick test completed"
 
             try:
-                from core.task_scheduler import TaskPriority
+                from Aetherra.core.task_scheduler import TaskPriority
 
                 task_id = window.task_scheduler.schedule_task(
                     function=quick_test,
@@ -121,11 +121,11 @@ def test_feature_completeness():
     print("🔍 Testing feature completeness...")
 
     completed_features = {
-        "✅ Unified GUI": "Single neuroplex.py with dark mode",
+        "✅ Unified GUI": "Single aetherplex.py with dark mode",
         "✅ Advanced Chat": "Chat router with personalities and memory",
         "✅ Task Scheduler": "Background task management with priority/retry",
         "✅ Memory Timeline": "GUI memory visualization and management",
-        "✅ NeuroHub Integration": "Package manager tab with server management",
+        "✅ AetherraHub Integration": "Package manager tab with server management",
         "✅ Plugin System": "Plugin tab and management interface",
         "✅ Multi-LLM Support": "Multiple AI provider integration",
         "✅ Self-Correction": "Error handling and retry logic",
@@ -183,7 +183,7 @@ def generate_system_summary():
 ===============================================
 
 ARCHITECTURE:
-• Single unified GUI (src/neurocode/ui/neuroplex.py)
+• Single unified GUI (src/Aetherra/ui/aetherplex.py)
 • Modular core system (core/*.py)
 • Plugin-based extensibility (plugins/)
 • Background task processing (core/task_scheduler.py)
@@ -194,7 +194,7 @@ MAIN FEATURES:
 • 🤖 Multi-personality AI chat with memory
 • ⚙️ Background task management
 • 🧠 Memory timeline visualization
-• 🌐 NeuroHub package manager integration
+• 🌐 AetherraHub package manager integration
 • 🔌 Plugin system with management UI
 • 🔄 Self-correction and error recovery
 • 📊 Performance monitoring and statistics
@@ -206,7 +206,7 @@ DEVELOPMENT TABS:
 • 🔌 Plugins - Plugin discovery and management
 • 🧠 Memory - AI memory timeline and management
 • ⚙️ Tasks - Background task monitoring
-• 🌐 NeuroHub - Package manager and marketplace
+• 🌐 AetherraHub - Package manager and marketplace
 
 AI CAPABILITIES:
 • Multiple LLM provider support (OpenAI, Gemini, etc.)
@@ -225,7 +225,7 @@ TECHNICAL STACK:
 • Modular plugin architecture
 
 LAUNCH COMMAND:
-python launchers/launch_neuroplex.py
+python launchers/launch_aetherplex.py
 
 STATUS: ✅ PRODUCTION READY
 """)
@@ -283,7 +283,7 @@ seamlessly:
 ✅ Unified GUI with dark mode
 ✅ Advanced AI chat with memory
 ✅ Background task scheduler
-✅ NeuroHub package manager
+✅ AetherraHub package manager
 ✅ Plugin system integration
 ✅ Robust error handling
 ✅ Clean resource management

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Development Suite
-Complete development environment for NeuroCode programming
+🧬 AetherraCode Development Suite
+Complete development environment for AetherraCode programming
 
 Features:
 - Intelligent code completion
@@ -20,12 +20,12 @@ from pathlib import Path
 # Add core modules to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from ecosystem_manager import NeuroCodeEcosystemManager
+from ecosystem_manager import AetherraCodeEcosystemManager
 
 
-class NeuroCodeLinter:
+class AetherraCodeLinter:
     """
-    Advanced linter for NeuroCode syntax and best practices
+    Advanced linter for AetherraCode syntax and best practices
     """
 
     def __init__(self):
@@ -33,7 +33,7 @@ class NeuroCodeLinter:
         self.performance_patterns = self._load_performance_patterns()
 
     def _load_linting_rules(self) -> Dict:
-        """Load NeuroCode linting rules"""
+        """Load AetherraCode linting rules"""
         return {
             "syntax_rules": [
                 {
@@ -77,7 +77,7 @@ class NeuroCodeLinter:
             "plugin_optimization": [
                 "Load plugins only when needed",
                 "Cache plugin results when appropriate",
-                "Use native NeuroCode features before plugins",
+                "Use native AetherraCode features before plugins",
             ],
             "reasoning_optimization": [
                 "Structure thinking processes logically",
@@ -88,7 +88,7 @@ class NeuroCodeLinter:
 
     def lint_code(self, neurocode: str) -> Dict:
         """
-        Perform comprehensive linting of NeuroCode
+        Perform comprehensive linting of AetherraCode
         """
         issues = []
         suggestions = []
@@ -206,9 +206,9 @@ class NeuroCodeLinter:
         return max(0.0, base_score - penalty_per_line)
 
 
-class NeuroCodeDebugger:
+class AetherraCodeDebugger:
     """
-    Interactive debugger for NeuroCode programs
+    Interactive debugger for AetherraCode programs
     """
 
     def __init__(self):
@@ -289,9 +289,9 @@ class NeuroCodeDebugger:
         return self.execution_trace
 
 
-class NeuroCodeProfiler:
+class AetherraCodeProfiler:
     """
-    Performance profiler for NeuroCode programs
+    Performance profiler for AetherraCode programs
     """
 
     def __init__(self):
@@ -347,21 +347,21 @@ class NeuroCodeProfiler:
         return suggestions
 
 
-class NeuroCodeDevSuite:
+class AetherraCodeDevSuite:
     """
-    Complete development suite for NeuroCode
+    Complete development suite for AetherraCode
     """
 
     def __init__(self):
-        self.linter = NeuroCodeLinter()
-        self.debugger = NeuroCodeDebugger()
-        self.profiler = NeuroCodeProfiler()
-        self.ide = NeuroCodeIDE()
-        self.ecosystem = NeuroCodeEcosystemManager()
+        self.linter = AetherraCodeLinter()
+        self.debugger = AetherraCodeDebugger()
+        self.profiler = AetherraCodeProfiler()
+        self.ide = AetherraCodeIDE()
+        self.ecosystem = AetherraCodeEcosystemManager()
 
     def analyze_code(self, neurocode: str) -> Dict:
         """Comprehensive code analysis"""
-        print("🔍 Analyzing NeuroCode...")
+        print("🔍 Analyzing AetherraCode...")
 
         # Lint the code
         lint_results = self.linter.lint_code(neurocode)
@@ -379,8 +379,8 @@ class NeuroCodeDevSuite:
 
     def interactive_development(self):
         """Start interactive development environment"""
-        print("🧬 NeuroCode Development Suite")
-        print("Advanced development environment for NeuroCode programming\n")
+        print("🧬 AetherraCode Development Suite")
+        print("Advanced development environment for AetherraCode programming\n")
 
         # Initialize ecosystem
         self.ecosystem.initialize_ecosystem()
@@ -391,7 +391,7 @@ class NeuroCodeDevSuite:
                 print("🛠️  Development Options:")
                 print("1. Natural Language Programming")
                 print("2. Code Analysis & Linting")
-#                 print("3. Debug NeuroCode Program")
+#                 print("3. Debug AetherraCode Program")
                 print("4. Performance Profiling")
                 print("5. Ecosystem Management")
                 print("6. Exit")
@@ -414,13 +414,13 @@ class NeuroCodeDevSuite:
                 elif choice == "5":
                     self._ecosystem_session()
                 elif choice == "6":
-                    print("👋 Goodbye! Keep building the future with NeuroCode!")
+                    print("👋 Goodbye! Keep building the future with AetherraCode!")
                     break
                 else:
                     print("❌ Invalid option. Please try again.")
 
             except KeyboardInterrupt:
-                print("\n\n👋 Development session ended. Keep thinking in NeuroCode!")
+                print("\n\n👋 Development session ended. Keep thinking in AetherraCode!")
                 break
             except Exception as e:
                 print(f"❌ Error: {e}")
@@ -435,7 +435,7 @@ class NeuroCodeDevSuite:
         print("\n🔍 Code Analysis Mode")
 
         try:
-            file_path = input("Enter NeuroCode file path (.aether): ").strip()
+            file_path = input("Enter AetherraCode file path (.aether): ").strip()
         except EOFError:
             print("\n👋 Input stream closed. Analysis session ended.")
             return
@@ -517,19 +517,19 @@ def main():
     """Main entry point for development suite"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="NeuroCode Development Suite")
+    parser = argparse.ArgumentParser(description="AetherraCode Development Suite")
     parser.add_argument(
         "--interactive",
         "-i",
         action="store_true",
         help="Start interactive development environment",
     )
-    parser.add_argument("--analyze", "-a", type=str, help="Analyze NeuroCode file")
-    parser.add_argument("--lint", "-l", type=str, help="Lint NeuroCode file")
+    parser.add_argument("--analyze", "-a", type=str, help="Analyze AetherraCode file")
+    parser.add_argument("--lint", "-l", type=str, help="Lint AetherraCode file")
 
     args = parser.parse_args()
 
-    dev_suite = NeuroCodeDevSuite()
+    dev_suite = AetherraCodeDevSuite()
 
     if args.interactive:
         dev_suite.interactive_development()

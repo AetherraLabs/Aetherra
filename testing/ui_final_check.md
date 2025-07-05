@@ -51,30 +51,30 @@ No issues found.
 | aetherra_playground.py                    | 79   | `padding: 16px;`                                     |
 | aetherra_playground.py                    | 81   | `margin: 16px 0;`                                    |
 | aetherra_playground.py                    | 88   | `padding: 16px;`                                     |
-| neuroplex.py                              | 450  | `padding: 4px 8px;`                                  |
-| neuroplex.py                              | 481  | `padding: 8px;`                                      |
-| neuroplex.py                              | 491  | `padding: 8px 16px;`                                 |
-| neuroplex.py                              | 522  | `padding: 8px;`                                      |
-| neuroplex.py                              | 538  | `padding: 8px;`                                      |
-| neuroplex.py                              | 558  | `padding: 8px 16px;`                                 |
-| neuroplex.py                              | 583  | `padding: 8px;`                                      |
-| neuroplex.py                              | 589  | `padding: 8px 12px;`                                 |
-| neuroplex.py                              | 591  | `margin: 1px;`                                       |
-| neuroplex.py                              | 609  | `padding: 8px 12px;`                                 |
-| neuroplex.py                              | 650  | `margin: 0;`                                         |
-| neuroplex.py                              | 657  | `margin: 2px;`                                       |
-| neuroplex.py                              | 672  | `margin: 0;`                                         |
-| neuroplex.py                              | 679  | `margin: 2px;`                                       |
-| neuroplex.py                              | 693  | `margin: 2px;`                                       |
-| neuroplex.py                              | 721  | `padding: 8px 0px;`                                  |
-| neuroplex.py                              | 728  | `padding: 4px 0px;`                                  |
-| neuroplex.py                              | 769  | `padding: 8px 16px;`                                 |
-| neuroplex.py                              | 913  | `padding: 8px !important;`                           |
-| neuroplex.py                              | 923  | `padding: 10px 12px !important;`                     |
-| neuroplex.py                              | 931  | `padding: 8px 16px !important;`                      |
-| neuroplex.py                              | 949  | `padding: 8px 16px !important;`                      |
-| neuroplex.py                              | 1002 | `padding: 8px 16px !important;`                      |
-| neuroplex.py                              | 1022 | `padding: 8px !important;`                           |
+| Lyrixa.py                                 | 450  | `padding: 4px 8px;`                                  |
+| Lyrixa.py                                 | 481  | `padding: 8px;`                                      |
+| Lyrixa.py                                 | 491  | `padding: 8px 16px;`                                 |
+| Lyrixa.py                                 | 522  | `padding: 8px;`                                      |
+| Lyrixa.py                                 | 538  | `padding: 8px;`                                      |
+| Lyrixa.py                                 | 558  | `padding: 8px 16px;`                                 |
+| Lyrixa.py                                 | 583  | `padding: 8px;`                                      |
+| Lyrixa.py                                 | 589  | `padding: 8px 12px;`                                 |
+| Lyrixa.py                                 | 591  | `margin: 1px;`                                       |
+| Lyrixa.py                                 | 609  | `padding: 8px 12px;`                                 |
+| Lyrixa.py                                 | 650  | `margin: 0;`                                         |
+| Lyrixa.py                                 | 657  | `margin: 2px;`                                       |
+| Lyrixa.py                                 | 672  | `margin: 0;`                                         |
+| Lyrixa.py                                 | 679  | `margin: 2px;`                                       |
+| Lyrixa.py                                 | 693  | `margin: 2px;`                                       |
+| Lyrixa.py                                 | 721  | `padding: 8px 0px;`                                  |
+| Lyrixa.py                                 | 728  | `padding: 4px 0px;`                                  |
+| Lyrixa.py                                 | 769  | `padding: 8px 16px;`                                 |
+| Lyrixa.py                                 | 913  | `padding: 8px !important;`                           |
+| Lyrixa.py                                 | 923  | `padding: 10px 12px !important;`                     |
+| Lyrixa.py                                 | 931  | `padding: 8px 16px !important;`                      |
+| Lyrixa.py                                 | 949  | `padding: 8px 16px !important;`                      |
+| Lyrixa.py                                 | 1002 | `padding: 8px 16px !important;`                      |
+| Lyrixa.py                                 | 1022 | `padding: 8px !important;`                           |
 | neuroplex.py                              | 1033 | `padding: 8px 12px !important;`                      |
 | neuroplex.py                              | 1047 | `margin: 2px !important;`                            |
 | neuroplex.py                              | 1053 | `padding: 6px 8px !important;`                       |

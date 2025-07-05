@@ -71,7 +71,7 @@ class ComponentShowcaseWindow(QMainWindow):
         """Initialize the showcase window."""
         super().__init__()
 
-        self.setWindowTitle("NeuroCode UI Enhancement Showcase")
+        self.setWindowTitle("AetherraCode UI Enhancement Showcase")
         self.resize(1024, 768)
 
         # Create central widget
@@ -82,7 +82,7 @@ class ComponentShowcaseWindow(QMainWindow):
         main_layout = QVBoxLayout(central_widget)
 
         # Add header
-        header = QLabel("NeuroCode UI Components")
+        header = QLabel("AetherraCode UI Components")
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
         header.setStyleSheet(f"""
             QLabel {{

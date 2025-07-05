@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🧪 NeuroCode Comprehensive Test Suite
+🧪 AetherraCode Comprehensive Test Suite
 ====================================
 
-Production-ready test suite covering all NeuroCode components:
+Production-ready test suite covering all AetherraCode components:
 - Unit tests for core functionality
 - Integration tests for system interactions
 - Performance benchmarks
@@ -11,7 +11,7 @@ Production-ready test suite covering all NeuroCode components:
 - Memory leak detection
 - Regression testing
 
-This ensures NeuroCode maintains high quality and reliability.
+This ensures AetherraCode maintains high quality and reliability.
 """
 
 import sys
@@ -30,8 +30,8 @@ try:
 
     from agent_reflection_loop import AgentReflectionLoop
     from natural_translator import NaturalToNeuroTranslator
-    from neuro_runner_standalone import StandaloneNeuroRunner
-    from performance_monitor import NeuroLogger, PerformanceMonitor
+    from aetherra_runner_standalone import StandaloneNeuroRunner
+    from performance_monitor import AetherraLogger, PerformanceMonitor
 except ImportError as e:
     print(f"⚠️ Some test dependencies not available: {e}")
 
@@ -208,14 +208,14 @@ class TestNaturalTranslator(unittest.TestCase):
 
 
 class TestNeuroCodeRunner(unittest.TestCase):
-    """Test the NeuroCode file runner"""
+    """Test the AetherraCode file runner"""
 
     def setUp(self):
         """Set up test environment"""
         self.runner = StandaloneNeuroRunner(verbose=False)
 
     def test_file_execution(self):
-        """Test NeuroCode file execution"""
+        """Test AetherraCode file execution"""
         # Create temporary test file
         with tempfile.NamedTemporaryFile(mode="w", suffix=".neuro", delete=False) as f:
             f.write('remember("Test execution") as "test"\n')
@@ -272,7 +272,7 @@ class TestPerformanceMonitoring(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment"""
-        self.logger = NeuroLogger(enable_performance=True)
+        self.logger = AetherraLogger(enable_performance=True)
 
     def test_operation_monitoring(self):
         """Test operation performance monitoring"""
@@ -370,7 +370,7 @@ class TestSystemIntegration(unittest.TestCase):
 
     def test_performance_monitoring_integration(self):
         """Test performance monitoring with other components"""
-        logger = NeuroLogger()
+        logger = AetherraLogger()
 
         with PerformanceMonitor(logger, "memory_operation"):
             memory = AetherraMemory()
@@ -382,10 +382,10 @@ class TestSystemIntegration(unittest.TestCase):
 
 def run_benchmark_suite():
     """Run performance benchmarks"""
-    print("🏃‍♂️ Running NeuroCode Performance Benchmarks")
+    print("🏃‍♂️ Running AetherraCode Performance Benchmarks")
     print("-" * 50)
 
-    logger = NeuroLogger()
+    logger = AetherraLogger()
 
     # Memory performance benchmark
     print("📊 Memory Operations Benchmark")
@@ -428,7 +428,7 @@ def run_benchmark_suite():
 
 def main():
     """Main test runner"""
-    print("🧪 NeuroCode Comprehensive Test Suite")
+    print("🧪 AetherraCode Comprehensive Test Suite")
     print("=" * 50)
 
     # Run unit tests

@@ -60,8 +60,8 @@ def test_cli_imports():
     try:
         # Try importing CLI main without running it
 
-        cli_demo_path = os.path.join(project_root, "src", "neurocode", "cli", "demo.py")
-        cli_main_path = os.path.join(project_root, "src", "neurocode", "cli", "main.py")
+        cli_demo_path = os.path.join(project_root, "src", "Aetherra", "cli", "demo.py")
+        cli_main_path = os.path.join(project_root, "src", "Aetherra", "cli", "main.py")
 
         # Test if files exist
         if os.path.exists(cli_demo_path):
@@ -76,7 +76,6 @@ def test_cli_imports():
 
         # Test basic import (this might fail due to persona dependencies)
         try:
-
             print("  ✅ CLI package imports successfully")
         except ImportError as e:
             print(f"  ⚠️ CLI import issue (expected): {e}")
@@ -97,12 +96,12 @@ def test_ui_imports():
 
         # Test availability of UI modules
         ui_modules = [
-            "neuroplex_fully_modular.py",
-            "neuroplex_gui_v2.py",
+            "Lyrixa_fully_modular.py",
+            "Lyrixa_gui_v2.py",
             "neuro_ui.py",
         ]
 
-        ui_dir = os.path.join(project_root, "src", "neurocode", "ui")
+        ui_dir = os.path.join(project_root, "src", "Aetherra", "ui")
         available_modules = []
 
         for module in ui_modules:
@@ -124,7 +123,7 @@ def test_parser_system():
 
     try:
         from src.aethercode.core.parser.parser import (
-            NeuroCodeCompiler,
+            AetherraCompiler,
             AetherraLexer,
             AetherraParser,
         )
@@ -159,7 +158,7 @@ suggest fix for "optimization"
         print(f"  ✅ Parser: {len(ast)} AST nodes generated")
 
         # Test compiler
-        compiler = NeuroCodeCompiler()
+        compiler = AetherraCompiler()
         compiled = compiler.compile(ast)
         print(f"  ✅ Compiler: {len(compiled)} chars of code generated")
 

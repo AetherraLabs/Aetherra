@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Enhanced NeuroCode Component Verification
+Enhanced AetherraCode Component Verification
 ========================================
 
 Verifies the components that are actually integrated and working,
-focusing on the Enhanced Neuroplex with chat router integration.
+focusing on the Enhanced Lyrixa with chat router integration.
 """
 
 import sys
@@ -18,13 +18,15 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(src_path))
 sys.path.insert(0, str(core_path))
 
+
 def test_core_integration():
-    """Test core NeuroCode integration"""
-    print("🧬 Testing Core NeuroCode Integration...")
+    """Test core AetherraCode integration"""
+    print("🧬 Testing Core AetherraCode Integration...")
 
     try:
         # Test chat router - our main integration
         from chat_router import AetherraChatRouter
+
         print("✅ Enhanced Chat Router imported successfully")
 
         # Test initialization
@@ -43,6 +45,7 @@ def test_core_integration():
         print(f"❌ Core integration error: {e}")
         return False
 
+
 def test_gui_integration():
     """Test GUI integration"""
     print("\n🖥️ Testing GUI Integration...")
@@ -50,19 +53,21 @@ def test_gui_integration():
     try:
         # Test PySide6 availability
         from PySide6.QtWidgets import QApplication
+
         print("✅ PySide6 available")
 
-        # Test Enhanced Neuroplex
+        # Test Enhanced Lyrixa
         from aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
-        print("✅ Enhanced Neuroplex imported successfully")
+
+        print("✅ Enhanced Lyrixa imported successfully")
 
         # Test that it can be instantiated
         app = QApplication.instance() or QApplication([])
         window = EnhancedLyrixaWindow()
-        print("✅ Enhanced Neuroplex window created successfully")
+        print("✅ Enhanced Lyrixa window created successfully")
 
         # Test chat router integration in GUI
-        if hasattr(window, 'chat_router') and window.chat_router:
+        if hasattr(window, "chat_router") and window.chat_router:
             print("✅ Chat Router integrated in GUI")
         else:
             print("⚠️ Chat Router not found in GUI (but GUI works)")
@@ -77,25 +82,26 @@ def test_gui_integration():
         print(f"❌ GUI integration error: {e}")
         return False
 
+
 def test_launcher_integration():
     """Test launcher integration"""
     print("\n🚀 Testing Launcher Integration...")
 
     try:
         # Check if main launcher exists
-        launcher_path = project_root / "neurocode_launcher.py"
+        launcher_path = project_root / "aethercode_launcher.py"
         if launcher_path.exists():
-            print("✅ Main launcher (neurocode_launcher.py) exists")
+            print("✅ Main launcher (aethercode_launcher.py) exists")
         else:
             print("❌ Main launcher not found")
             return False
 
-        # Check if enhanced neuroplex launcher exists
-        enhanced_launcher = project_root / "launchers" / "launch_enhanced_neuroplex.py"
+        # Check if enhanced Lyrixa launcher exists
+        enhanced_launcher = project_root / "launchers" / "launch_enhanced_Lyrixa.py"
         if enhanced_launcher.exists():
-            print("✅ Enhanced Neuroplex launcher exists")
+            print("✅ Enhanced Lyrixa launcher exists")
         else:
-            print("❌ Enhanced Neuroplex launcher not found")
+            print("❌ Enhanced Lyrixa launcher not found")
             return False
 
         print("✅ Launcher integration complete")
@@ -104,6 +110,7 @@ def test_launcher_integration():
     except Exception as e:
         print(f"❌ Launcher integration error: {e}")
         return False
+
 
 def test_ai_features():
     """Test AI features"""
@@ -118,14 +125,14 @@ def test_ai_features():
         # Test message processing
         test_messages = [
             "Hello!",
-            "How do I create NeuroCode?",
+            "How do I create AetherraCode?",
             "What are my goals?",
-            "Help me with debugging"
+            "Help me with debugging",
         ]
 
         for msg in test_messages:
             response = chat_router.process_message(msg)
-            if response.get('text'):
+            if response.get("text"):
                 print(f"✅ Processed: '{msg[:20]}...' -> {len(response['text'])} chars")
             else:
                 print(f"⚠️ No response for: '{msg[:20]}...'")
@@ -137,11 +144,12 @@ def test_ai_features():
         print(f"❌ AI features error: {e}")
         return False
 
+
 def run_enhanced_verification():
     """Run enhanced verification focused on working components"""
     print("🧬 ENHANCED NEUROCODE VERIFICATION")
     print("=" * 50)
-#     print("Testing components that are integrated and working...")
+    #     print("Testing components that are integrated and working...")
 
     tests = [
         ("Core Integration", test_core_integration),
@@ -164,10 +172,10 @@ def run_enhanced_verification():
     print(f"📊 Results: {passed}/{total} tests passed")
 
     if passed >= 3:  # Allow some flexibility
-        print("🎉 ENHANCED NEUROPLEX IS READY!")
+        print("🎉 ENHANCED Lyrixa IS READY!")
         print("\n🚀 Ready to launch:")
-        print("   python neurocode_launcher.py")
-        print("   Select option 1: Enhanced Neuroplex (Integrated NeuroChat)")
+        print("   python aethercode_launcher.py")
+        print("   Select option 1: Enhanced Lyrixa (Integrated AetherraChat)")
         print("\n✨ Features available:")
         print("   • AI-powered chat assistant")
         print("   • Swappable personalities")
@@ -178,6 +186,7 @@ def run_enhanced_verification():
         print("⚠️ Some components need attention - but core features may still work")
 
     return passed >= 3
+
 
 if __name__ == "__main__":
     success = run_enhanced_verification()

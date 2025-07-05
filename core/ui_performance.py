@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🚀 NeuroCode UI Performance Optimizer
+🚀 AetherraCode UI Performance Optimizer
 =====================================
 
-Advanced UI performance optimization for NeuroCode & Neuroplex GUI components.
+Advanced UI performance optimization for AetherraCode & Neuroplex GUI components.
 This module enhances responsiveness, reduces memory usage, and improves
 rendering performance across all UI components.
 
@@ -419,7 +419,7 @@ def get_ui_performance_report() -> Dict[str, Any]:
 
 if __name__ == "__main__":
     # Example usage
-    print("🎨 NeuroCode UI Performance Optimizer")
+    print("🎨 AetherraCode UI Performance Optimizer")
     print("=" * 50)
 
     # Test UI optimization

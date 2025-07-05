@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Persona Command Interface
+AetherraCode Persona Command Interface
 Live demonstration of contextual persona adaptation in action.
 
 Usage examples:
@@ -23,7 +23,7 @@ from emotional_memory import get_emotional_memory_system
 from persona_engine import PersonaArchetype, get_persona_engine
 
 
-class NeuroCodePersonaInterface:
+class AetherraCodePersonaInterface:
     """CLI that demonstrates persona adaptation in real-time"""
 
     def __init__(self):
@@ -70,7 +70,7 @@ class NeuroCodePersonaInterface:
         persona = self.persona_engine.current_persona
 
         status = f"""
-🤖 NeuroCode Persona Status
+🤖 AetherraCode Persona Status
 ═══════════════════════════════════════════
 
 🎭 Current Archetype: {persona["archetype"].value.title()}
@@ -318,10 +318,10 @@ class NeuroCodePersonaInterface:
 
 def main():
     """Main CLI entry point for the persona interface"""
-    interface = NeuroCodePersonaInterface()
+    interface = AetherraCodePersonaInterface()
 
     parser = argparse.ArgumentParser(
-        description="NeuroCode Persona Command Interface",
+        description="AetherraCode Persona Command Interface",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -345,7 +345,7 @@ Examples:
         return
 
     if args.interactive:
-        print("🧠 NeuroCode Persona Interactive Mode")
+        print("🧠 AetherraCode Persona Interactive Mode")
         print("Type commands or 'quit' to exit")
         print("=" * 50)
 
@@ -388,7 +388,7 @@ Examples:
         print("─" * 50)
 
         response = interface.process_command(command_text)
-        print(f"\n🤖 NeuroCode Response:\n{response}")
+        print(f"\n🤖 AetherraCode Response:\n{response}")
 
         # Show brief adaptation info
         situation = interface.contextual_adaptation.current_situation

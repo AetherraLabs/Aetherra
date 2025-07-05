@@ -83,7 +83,7 @@ class CommandRegistry:
             Command(
                 name="run",
                 category=CommandCategory.aetherCODE,
-                description="Execute NeuroCode program",
+                description="Execute AetherraCode program",
                 usage="run <file.aether> [args...]",
                 examples=["run hello.aether", "run demo.aether --verbose"],
                 aliases=["execute", "exec"],
@@ -92,7 +92,7 @@ class CommandRegistry:
             Command(
                 name="parse",
                 category=CommandCategory.aetherCODE,
-                description="Parse NeuroCode file and show AST",
+                description="Parse AetherraCode file and show AST",
                 usage="parse <file.aether>",
                 examples=["parse hello.aether"],
                 aliases=["ast"],
@@ -136,7 +136,7 @@ class CommandRegistry:
             Command(
                 name="debug",
                 category=CommandCategory.DEBUG,
-                description="Debug NeuroCode programs",
+                description="Debug AetherraCode programs",
                 usage="debug <file.aether> [breakpoints...]",
                 examples=["debug test.aether", "debug app.aether 10 25"],
                 aliases=["dbg"],

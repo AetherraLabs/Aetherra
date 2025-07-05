@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Input Utilities
-Robust input handling with EOF protection for all NeuroCode interfaces
+🧬 AetherraCode Input Utilities
+Robust input handling with EOF protection for all AetherraCode interfaces
 """
 
 import sys
@@ -116,7 +116,7 @@ def get_yes_no(prompt: str, default: bool = False) -> bool:
 
 if __name__ == "__main__":
     # Demo of the utility functions
-    print("🧬 NeuroCode Input Utilities Demo")
+    print("🧬 AetherraCode Input Utilities Demo")
     print("=" * 40)
 
     def demo_processor(text):

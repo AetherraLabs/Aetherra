@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-🔌 NeuroCode Plugin Registry Demo
-Demonstrates the NeuroCode Plugin System functionality.
+🔌 AetherraCode Plugin Registry Demo
+Demonstrates the AetherraCode Plugin System functionality.
 
 This demo showcases:
 - Plugin discovery and search
@@ -24,7 +24,7 @@ class MockPluginRegistry:
                 "version": "1.2.3",
                 "description": "Enhanced episodic and semantic memory with vector search",
                 "category": "memory",
-                "author": "NeuroCode Community",
+                "author": "AetherraCode Community",
                 "license": "GPL-3.0",
                 "keywords": ["memory", "vector", "semantic", "episodic"],
                 "download_count": 15420,
@@ -220,19 +220,19 @@ def demo_plugin_management():
 
 
 def demo_plugin_usage():
-    """Demonstrate how plugins would be used in NeuroCode"""
-    print_header("Plugin Usage in NeuroCode Demo")
+    """Demonstrate how plugins would be used in AetherraCode"""
+    print_header("Plugin Usage in AetherraCode Demo")
 
     print("🧠 Example: Using Advanced Memory System Plugin")
     print("""
-# Import and use plugin in NeuroCode
+# Import and use plugin in AetherraCode
 use plugin "advanced-memory-system" as memory
 
 # Store a memory with context and importance
 memory_id = memory.remember_advanced(
     "Important project deadline next Friday",
     context={
-        "project": "NeuroCode Plugin Registry",
+        "project": "AetherraCode Plugin Registry",
         "priority": "high",
         "user_stress_level": 7.5
     },
@@ -290,7 +290,7 @@ def demo_plugin_development():
 1. Plugin Structure:
    my-custom-plugin/
    ├── neurocode-plugin.json    # Plugin manifest
-   ├── plugin.neuro             # Main NeuroCode implementation
+   ├── plugin.neuro             # Main AetherraCode implementation
    ├── plugin_core.py           # Python backend (optional)
    ├── README.md                # Documentation
    ├── tests/                   # Unit tests
@@ -300,7 +300,7 @@ def demo_plugin_development():
    {
      "name": "my-custom-plugin",
      "version": "1.0.0",
-     "description": "My awesome NeuroCode plugin",
+     "description": "My awesome AetherraCode plugin",
      "category": "tools",
      "author": "My Name",
      "license": "GPL-3.0",
@@ -336,9 +336,9 @@ def demo_plugin_development():
 
 def main():
     """Run the complete plugin registry demo"""
-    print("🔌 NeuroCode Plugin Registry System Demo")
+    print("🔌 AetherraCode Plugin Registry System Demo")
     print("=" * 50)
-    print("Welcome to the NeuroCode Plugin Registry demonstration!")
+    print("Welcome to the AetherraCode Plugin Registry demonstration!")
     print("This showcases the first standardized plugin system for AI-consciousness programming.")
     print(
         "\nNote: This is a demonstration with mock data. The actual registry is under development."
@@ -353,14 +353,14 @@ def main():
     demo_plugin_development()
 
     print_header("Demo Complete!")
-    print("🎉 NeuroCode Plugin Registry Demo completed successfully!")
+    print("🎉 AetherraCode Plugin Registry Demo completed successfully!")
     print("\n🔗 Learn More:")
     print("   Documentation: https://docs.neurocode.org/plugins")
     print("   Registry: https://registry.neurocode.org")
     print("   GitHub: https://github.com/neurocode/plugin-registry")
     print("\n💡 Next Steps:")
     print("   1. Read the plugin development guide")
-    print("   2. Create your first NeuroCode plugin")
+    print("   2. Create your first AetherraCode plugin")
     print("   3. Join the plugin developer community")
     print("   4. Contribute to the ecosystem!")
 

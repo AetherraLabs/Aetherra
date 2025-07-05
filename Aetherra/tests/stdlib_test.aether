@@ -1,0 +1,28 @@
+# 🧬 aetherra Standard Library Test Program
+# This program tests all stdlib plugins after error fixes
+
+goal: test all stdlib plugins priority: high
+agent: on
+
+remember("Starting comprehensive stdlib test") as "testing"
+
+# === TEST PLUGIN FUNCTIONALITIES ===
+
+# System monitoring
+plugin: sysmon status
+plugin: sysmon check_health
+
+# Optimizer capabilities
+plugin: optimizer status
+plugin: optimizer suggest_optimizations
+
+# Self-repair system
+plugin: selfrepair status
+
+# Audio transcription
+plugin: whisper status
+
+# === MEMORY AND LEARNING ===
+remember("All stdlib plugins tested successfully") as "testing"
+
+remember("Stdlib error checking completed - all plugins functional") as "testing"

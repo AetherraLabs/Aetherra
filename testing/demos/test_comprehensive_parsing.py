@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 """
-Test comprehensive NeuroCode parsing with the production grammar
+Test comprehensive AetherraCode parsing with the production grammar
 """
 
-from core.production_neurocode_grammar import NeuroCodeProductionParser
+from Aetherra.core.production_aethercode_grammar import AetherraCodeProductionParser
 
 
 def test_comprehensive_neurocode():
-    """Test the parser with a comprehensive NeuroCode program"""
+    """Test the parser with a comprehensive AetherraCode program"""
 
-    parser = NeuroCodeProductionParser()
+    parser = AetherraCodeProductionParser()
 
-    # Comprehensive NeuroCode program
-    neurocode_program = """# Advanced NeuroCode Program
+    # Comprehensive AetherraCode program
+    aethercode_program = """# Advanced AetherraCode Program
 goal: "Build an intelligent system" priority: high
 agent: on
 
 model: "gpt-4"
-assistant: "Help me develop NeuroCode"
+assistant: "Help me develop AetherraCode"
 
-remember("NeuroCode is a cognitive programming language") as "core_concept"
+remember("AetherraCode is a cognitive programming language") as "core_concept"
 recall "core_concept"
 
 define process_data(input_data):
@@ -40,13 +40,13 @@ optimize "performance"
 debug "System working correctly"
 """
 
-    print("🧬 Testing Comprehensive NeuroCode Program")
+    print("🧬 Testing Comprehensive AetherraCode Program")
     print("=" * 50)
-    print(f"Program length: {len(neurocode_program)} characters")
+    print(f"Program length: {len(aethercode_program)} characters")
     print()
 
     try:
-        ast = parser.parse(neurocode_program)
+        ast = parser.parse(aethercode_program)
         print(f"✓ Successfully parsed program with {len(ast.children)} top-level statements")
 
         # Print AST structure

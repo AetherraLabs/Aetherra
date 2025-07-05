@@ -41,7 +41,7 @@ def test_task_scheduler_basic_functionality():
     """Test basic task scheduler functionality"""
     print("🔍 Testing task scheduler basic functionality...")
     try:
-        from core.task_scheduler import BackgroundTaskScheduler, TaskPriority
+        from Aetherra.core.task_scheduler import BackgroundTaskScheduler, TaskPriority
 
         # Create scheduler
         scheduler = BackgroundTaskScheduler(max_workers=2)
@@ -93,7 +93,7 @@ def test_gui_integration():
             app = QApplication(sys.argv)
 
         # Import Neuroplex
-        from src.aethercode.ui.aetherplex import LyrixaWindow
+        from Lyrixa.ui.aetherplex import LyrixaWindow
 
         # Create main window
         window = LyrixaWindow()

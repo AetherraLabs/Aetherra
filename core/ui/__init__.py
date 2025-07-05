@@ -1,5 +1,5 @@
 """
-🎭 NeuroCode UI System
+🎭 AetherraCode UI System
 =====================
 
 Advanced UI components for the Neuroplex AI OS interface.

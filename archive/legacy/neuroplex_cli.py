@@ -3,13 +3,13 @@
 🚀 Neuroplex Command-Line Interface
 ==================================
 
-Enhanced neuroplex command with support for running .neuro files:
-- neuroplex run monitor.neuro
-- neuroplex run examples/basic_memory.neuro
-- neuroplex ui (launch GUI)
-- neuroplex help
+Enhanced aetherplex command with support for running .neuro files:
+- aetherplex run monitor.neuro
+- aetherplex run examples/basic_memory.neuro
+- aetherplex ui (launch GUI)
+- aetherplex help
 
-This completes the vision of NeuroCode as a standalone programming language.
+This completes the vision of AetherraCode as a standalone programming language.
 """
 
 import subprocess
@@ -28,7 +28,7 @@ def run_neuro_file(file_path: str, verbose: bool = False) -> int:
 
     if not runner_path.exists():
         print(
-            "❌ NeuroCode runner not found. Please ensure scripts/neuro_runner_standalone.py exists."
+            "❌ AetherraCode runner not found. Please ensure scripts/neuro_runner_standalone.py exists."
         )
         return 1
 
@@ -42,16 +42,16 @@ def run_neuro_file(file_path: str, verbose: bool = False) -> int:
         result = subprocess.run(cmd, capture_output=False)
         return result.returncode
     except Exception as e:
-        print(f"❌ Failed to execute NeuroCode file: {e}")
+        print(f"❌ Failed to execute AetherraCode file: {e}")
         return 1
 
 
 def launch_ui() -> int:
-    """Launch the NeuroCode UI"""
+    """Launch the AetherraCode UI"""
 
     ui_paths = [
         project_root / "ui" / "neuro_ui.py",
-        project_root / "ui" / "neuroplex_gui.py",
+        project_root / "ui" / "aetherplex_gui.py",
         project_root / "launch_neuro_ui.py",
     ]
 
@@ -59,55 +59,55 @@ def launch_ui() -> int:
     for ui_path in ui_paths:
         if ui_path.exists():
             try:
-                print(f"🚀 Launching NeuroCode UI: {ui_path.name}")
+                print(f"🚀 Launching AetherraCode UI: {ui_path.name}")
                 result = subprocess.run([sys.executable, str(ui_path)])
                 return result.returncode
             except Exception as e:
                 print(f"⚠️ Failed to launch {ui_path.name}: {e}")
                 continue
 
-    print("❌ No NeuroCode UI found. Please ensure UI files exist.")
+    print("❌ No AetherraCode UI found. Please ensure UI files exist.")
     return 1
 
 
 def show_help():
     """Show comprehensive help"""
     help_text = """
-🧬 Neuroplex - NeuroCode Command-Line Interface
+🧬 Neuroplex - AetherraCode Command-Line Interface
 ==============================================
 
 USAGE:
-    neuroplex <command> [options]
+    aetherplex <command> [options]
 
 COMMANDS:
     run <file>          Execute a .neuro file
-    ui                  Launch the NeuroCode user interface
-    translate <text>    Translate natural language to NeuroCode
+    ui                  Launch the AetherraCode user interface
+    translate <text>    Translate natural language to AetherraCode
     chat                Interactive natural language translation
     help                Show this help message
 
 EXAMPLES:
-    🧬 Run NeuroCode files:
-        neuroplex run monitor.neuro
-        neuroplex run examples/basic_memory.neuro
-        neuroplex run advanced_syntax_demo.neuro --verbose
+    🧬 Run AetherraCode files:
+        aetherplex run monitor.neuro
+        aetherplex run examples/basic_memory.neuro
+        aetherplex run advanced_syntax_demo.neuro --verbose
 
     🗣️ Natural Language Translation:
-        neuroplex translate "Remember this conversation"
-        neuroplex translate "Fix any recurring errors" --execute
-        neuroplex chat
+        aetherplex translate "Remember this conversation"
+        aetherplex translate "Fix any recurring errors" --execute
+        aetherplex chat
 
     🎨 Launch UI:
-        neuroplex ui
+        aetherplex ui
 
     📚 Get help:
-        neuroplex help
+        aetherplex help
 
 FILE RUNNER OPTIONS:
     --verbose, -v       Show detailed execution trace
 
 TRANSLATION OPTIONS:
-    --execute, -e       Execute the translated NeuroCode
+    --execute, -e       Execute the translated AetherraCode
 
 AVAILABLE .NEURO FILES:
 """
@@ -134,16 +134,16 @@ NEUROCODE LANGUAGE FEATURES:
     🔀 Control: if/when/for/while statements
 
 GETTING STARTED:
-    1. Create a .neuro file with NeuroCode syntax
-    2. Run it: neuroplex run your_file.neuro
-    3. Explore the UI: neuroplex ui
+    1. Create a .neuro file with AetherraCode syntax
+    2. Run it: aetherplex run your_file.neuro
+    3. Explore the UI: aetherplex ui
 
-For more information, visit the NeuroCode documentation.
+For more information, visit the AetherraCode documentation.
 """)
 
 
 def translate_natural(natural_input: str, execute: bool = False) -> int:
-    """Translate natural language to NeuroCode"""
+    """Translate natural language to AetherraCode"""
     try:
         from natural_translator import NaturalToNeuroTranslator
 
@@ -151,10 +151,10 @@ def translate_natural(natural_input: str, execute: bool = False) -> int:
         neurocode = translator.translate(natural_input)
 
         print(f"🗣️  Natural: {natural_input}")
-        print(f"🧬 NeuroCode: {neurocode}")
+        print(f"🧬 AetherraCode: {neurocode}")
 
         if execute:
-            print("⚡ Executing translated NeuroCode...")
+            print("⚡ Executing translated AetherraCode...")
             translator._execute_neurocode(neurocode)
 
         return 0
@@ -191,7 +191,7 @@ def main():
 
     if command == "run":
         if len(sys.argv) < 3:
-            print("❌ Usage: neuroplex run <file>")
+            print("❌ Usage: aetherplex run <file>")
             return 1
 
         file_path = sys.argv[2]
@@ -220,7 +220,7 @@ def main():
 
     else:
         print(f"❌ Unknown command: {command}")
-        print("Use 'neuroplex help' for available commands.")
+        print("Use 'aetherplex help' for available commands.")
         return 1
 
 

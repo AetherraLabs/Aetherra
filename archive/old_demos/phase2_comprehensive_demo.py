@@ -26,7 +26,7 @@ from core.introspective_logger import (
     PerformanceMetrics,
     get_activity_dashboard,
     introspective_logger,
-    log_neurocode_execution,
+    log_aethercode_execution,
 )
 from core.plugin_registry import (
     get_plugin_catalog,
@@ -46,7 +46,7 @@ from core.stability import (
 )
 
 # Also import existing UI system from Phase 1
-from core.ui.interface import InterfaceConfig, NeuroPlexInterface
+from core.ui.interface import InterfaceConfig, AetherraPlexInterface
 from core.ui.themes import UITheme
 
 
@@ -54,7 +54,7 @@ class Phase2Demo:
     """Comprehensive demonstration of Phase 2 features"""
 
     def __init__(self):
-        self.ui = NeuroPlexInterface(
+        self.ui = AetherraPlexInterface(
             InterfaceConfig(
                 theme=UITheme.CYBERPUNK,
                 auto_suggestions=True,
@@ -66,7 +66,7 @@ class Phase2Demo:
         # Start a conversational session
         conversational_ai.start_new_session()
 
-        print("🚀 Phase 2 NeuroCode & Neuroplex Enhancement Demo")
+        print("🚀 Phase 2 AetherraCode & Neuroplex Enhancement Demo")
         print("=" * 60)
 
     def demo_stability_system(self):
@@ -139,17 +139,17 @@ class Phase2Demo:
         print("\n🔍 INTROSPECTIVE LOGGING DEMO")
         print("-" * 40)
 
-        # Demo 1: Log some NeuroCode executions
-        print("1. Logging NeuroCode Executions:")
+        # Demo 1: Log some AetherraCode executions
+        print("1. Logging AetherraCode Executions:")
 
         # Simulate successful execution
         start_time = time.time()
-        neurocode_1 = "think 'Hello, NeuroCode world!'"
-        result_1 = "Hello, NeuroCode world!"
+        aethercode_1 = "think 'Hello, AetherraCode world!'"
+        result_1 = "Hello, AetherraCode world!"
         execution_time_1 = time.time() - start_time
 
-        reflection_id_1 = log_neurocode_execution(
-            neurocode_1,
+        reflection_id_1 = log_aethercode_execution(
+            aethercode_1,
             result_1,
             execution_time_1,
             context={"user_intent": "greeting", "complexity": "simple"},
@@ -158,12 +158,12 @@ class Phase2Demo:
 
         # Simulate execution with error
         start_time = time.time()
-        neurocode_2 = "calculate sqrt(-1)"
+        aethercode_2 = "calculate sqrt(-1)"
         result_2 = Exception("Math domain error: negative square root")
         execution_time_2 = time.time() - start_time
 
-        reflection_id_2 = log_neurocode_execution(
-            neurocode_2,
+        reflection_id_2 = log_aethercode_execution(
+            aethercode_2,
             result_2,
             execution_time_2,
             context={"user_intent": "calculation", "complexity": "error"},
@@ -418,13 +418,13 @@ class Phase2Demo:
         print("1. Complete Error Handling Scenario:")
 
         @safe_execute(
-            component="neurocode_parser",
-            user_message="NeuroCode parsing failed",
+            component="aethercode_parser",
+            user_message="AetherraCode parsing failed",
             severity=ErrorSeverity.HIGH,
         )
         def parse_neurocode(code):
             if "invalid" in code:
-                raise SyntaxError("Invalid NeuroCode syntax")
+                raise SyntaxError("Invalid AetherraCode syntax")
             return {"ast": "parsed_successfully", "nodes": 5}
 
         # Parse valid code
@@ -432,7 +432,7 @@ class Phase2Demo:
         if valid_result:
             # Log successful execution
             introspective_logger.log_execution(
-                operation="neurocode_parsing",
+                operation="aethercode_parsing",
                 code="think 'hello world'",
                 result=valid_result,
                 activity_type=ActivityType.EXECUTION,

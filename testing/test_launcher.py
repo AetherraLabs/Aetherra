@@ -17,14 +17,13 @@ try:
     src_path = project_root / "src"
     sys.path.insert(0, str(src_path))
 
-
     print("✅ Main GUI components import successfully")
 
     print("🎉 All launcher components are working!")
     print("🚀 You can now launch Neuroplex using:")
-    print("   python launchers/launch_neuroplex.py")
+    print("   python launchers/launch_aetherplex.py")
     print("   OR")
-    print("   python neurocode_launcher.py (then choose option 1)")
+    print("   python Aetherra_launcher.py (then choose option 1)")
 
 except ImportError as e:
     print(f"❌ Import error: {e}")

@@ -16,7 +16,7 @@ def test_chat_router_fixes():
     print("🔍 Testing chat router fixes...")
 
     try:
-        from core.chat_router import AetherraChatRouter
+        from Aetherra.core.chat_router import AetherraChatRouter
         print("✅ Chat router imported successfully")
 
         # Create chat router instance

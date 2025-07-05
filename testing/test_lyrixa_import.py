@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple test script to see if neuroplex.py is fixed
+Simple test script to see if aetherplex.py is fixed
 """
 
 import sys
@@ -19,27 +19,27 @@ try:
 
     print("✅ UI package imported successfully")
 
-    print("Trying direct import of neuroplex.py...")
+    print("Trying direct import of aetherplex.py...")
     try:
-        from src.aethercode.ui import neuroplex
+        from Lyrixa.ui import aetherplex
 
-        print("✅ neuroplex.py imported successfully")
-        if hasattr(neuroplex, "LyrixaWindow"):
+        print("✅ aetherplex.py imported successfully")
+        if hasattr(aetherplex, "LyrixaWindow"):
             print("✅ LyrixaWindow class is available")
         else:
             print("❌ LyrixaWindow class not found")
     except Exception as e:
-        print(f"❌ Could not import neuroplex.py directly: {e}")
+        print(f"❌ Could not import aetherplex.py directly: {e}")
 
-    print("Trying to check neuroplex.py file...")
+    print("Trying to check aetherplex.py file...")
     try:
-        file_path = Path("src/neurocode/ui/neuroplex.py").resolve()
+        file_path = Path("src/Aetherra/ui/aetherplex.py").resolve()
         print(f"Checking file at: {file_path}")
         if file_path.exists():
             with open(file_path, "r") as f:
                 code = f.read()
                 compile(code, str(file_path), "exec")
-                print("✅ neuroplex.py compiles successfully")
+                print("✅ aetherplex.py compiles successfully")
         else:
             print(f"❌ File does not exist: {file_path}")
     except Exception as e:

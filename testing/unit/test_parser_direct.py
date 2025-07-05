@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Direct NeuroCode Parser Test
+Direct AetherraCode Parser Test
 """
 
 import os
@@ -20,7 +20,7 @@ def test_parser_directly():
     # Test the parser components directly
     from src.aethercode.core.parser.parser import AetherraLexer, AetherraParser
 
-    neurocode_sample = """
+    aethercode_sample = """
 goal: test the parser directly
 agent: on
 remember("direct test") as "test_session"
@@ -30,11 +30,11 @@ end
 """
 
     print("📝 Testing code:")
-    print(neurocode_sample)
+    print(aethercode_sample)
 
     # Step 1: Tokenize
     print("\n🔤 Step 1: Tokenization")
-    lexer = AetherraLexer(neurocode_sample)
+    lexer = AetherraLexer(aethercode_sample)
     tokens = lexer.tokenize()
     print(f"Generated {len(tokens)} tokens")
 
@@ -65,12 +65,12 @@ def test_wrapper_function():
     try:
         from src.aethercode.core.parser import parse_code
 
-        neurocode_sample = """
+        aethercode_sample = """
 goal: test wrapper function
 agent: active
 """
 
-        ast = parse_code(neurocode_sample)
+        ast = parse_code(aethercode_sample)
         print(f"✅ Wrapper function works: {len(ast)} nodes")
         for node in ast:
             print(f"   - {type(node).__name__}")
@@ -88,9 +88,9 @@ def run_comprehensive_language_test():
     print("\n🚀 COMPREHENSIVE LANGUAGE TEST")
     print("=" * 40)
 
-    # Complex NeuroCode program
+    # Complex AetherraCode program
     complex_program = """
-# Advanced NeuroCode Features Test
+# Advanced AetherraCode Features Test
 goal: demonstrate all language features priority: high
 
 agent: intelligent_system
@@ -140,7 +140,7 @@ recall experiences with "test_log"
 
     try:
         from src.aethercode.core.parser.parser import (
-            NeuroCodeCompiler,
+            AetherraCodeCompiler,
             AetherraLexer,
             AetherraParser,
         )
@@ -166,7 +166,7 @@ recall experiences with "test_log"
             print(f"   {node_type}: {count}")
 
         print("🔧 Compiling to executable code...")
-        compiler = NeuroCodeCompiler()
+        compiler = AetherraCodeCompiler()
         compiled = compiler.compile(ast)
         print(f"   {len(compiled)} characters of compiled code")
 
@@ -191,14 +191,14 @@ if __name__ == "__main__":
 
     if all([test1, test2, test3]):
         print("\n🎉 ALL PARSER TESTS PASSED!")
-        print("🧬 NeuroCode parser is fully operational!")
+        print("🧬 AetherraCode parser is fully operational!")
     else:
         print("\n⚠️ Some parser tests had issues")
 
     print("\n🔍 FINAL VERIFICATION:")
-    print("✅ NeuroCode tokenization works")
-    print("✅ NeuroCode AST generation works")
-    print("✅ NeuroCode compilation works")
+    print("✅ AetherraCode tokenization works")
+    print("✅ AetherraCode AST generation works")
+    print("✅ AetherraCode compilation works")
     print("✅ All 7 node types supported")
     print("✅ Complex programs parse correctly")
     print("\n🧬 NEUROCODE IS A WORKING PROGRAMMING LANGUAGE!")

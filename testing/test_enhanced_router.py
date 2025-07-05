@@ -6,12 +6,12 @@ Test the enhanced chat router with multi-agent and advanced features
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'core'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "core"))
 
 try:
     from chat_router import AetherraChatRouter
 
-    print("🧬 Testing Enhanced NeuroCode Chat Router")
+    print("🧬 Testing Enhanced Aetherra Chat Router")
     print("=" * 50)
 
     # Initialize router
@@ -50,4 +50,5 @@ try:
 except Exception as e:
     print(f"❌ Error: {e}")
     import traceback
+
     traceback.print_exc()

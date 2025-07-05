@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-NeuroCode Parser - The First AI-Native Language Parser
+AetherraCode Parser - The First AI-Native Language Parser
 
-This parser defines NeuroCode as a distinct programming language with its own grammar,
-completely separate from Python syntax. It establishes NeuroCode as a new class of
+This parser defines AetherraCode as a distinct programming language with its own grammar,
+completely separate from Python syntax. It establishes AetherraCode as a new class of
 AI-native programming language.
 
 Grammar Features:
@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 class TokenType(Enum):
-    # Core NeuroCode tokens
+    # Core AetherraCode tokens
     GOAL = "GOAL"
     AGENT = "AGENT"
     REMEMBER = "REMEMBER"
@@ -64,53 +64,53 @@ class Token:
     column: int
 
 @dataclass
-class NeuroCodeNode:
-    """Base class for all NeuroCode AST nodes"""
+class AetherraCodeNode:
+    """Base class for all AetherraCode AST nodes"""
     type: str
     line: int
 
 @dataclass
-class GoalNode(NeuroCodeNode):
+class GoalNode(AetherraCodeNode):
     objective: str
     priority: Optional[str] = None
 
 @dataclass
-class AgentNode(NeuroCodeNode):
+class AgentNode(AetherraCodeNode):
     command: str
     task: Optional[str] = None
 
 @dataclass
-class MemoryNode(NeuroCodeNode):
+class MemoryNode(AetherraCodeNode):
     operation: str  # remember, recall, pattern
     data: str
     tag: Optional[str] = None
     criteria: Optional[Dict] = None
 
 @dataclass
-class IntentNode(NeuroCodeNode):
+class IntentNode(AetherraCodeNode):
     action: str
     target: str
     modifier: Optional[str] = None
 
 @dataclass
-class ConditionalNode(NeuroCodeNode):
+class ConditionalNode(AetherraCodeNode):
     condition: str
-    body: List[NeuroCodeNode]
-    else_body: Optional[List[NeuroCodeNode]] = None
+    body: List[AetherraCodeNode]
+    else_body: Optional[List[AetherraCodeNode]] = None
 
 @dataclass
-class PluginNode(NeuroCodeNode):
+class PluginNode(AetherraCodeNode):
     plugin_name: str
-    actions: List[NeuroCodeNode]
+    actions: List[AetherraCodeNode]
 
 @dataclass
-class SelfModificationNode(NeuroCodeNode):
+class SelfModificationNode(AetherraCodeNode):
     operation: str  # suggest, apply, refactor
     target: str
     condition: Optional[str] = None
 
 class AetherraLexer:
-    """Lexical analyzer for NeuroCode"""
+    """Lexical analyzer for AetherraCode"""
 
     def __init__(self, source: str):
         self.source = source
@@ -119,7 +119,7 @@ class AetherraLexer:
         self.column = 1
         self.tokens = []
 
-        # NeuroCode keywords
+        # AetherraCode keywords
         self.keywords = {
             'goal': TokenType.GOAL,
             'agent': TokenType.AGENT,
@@ -278,7 +278,7 @@ class AetherraLexer:
         return self.tokens
 
 class AetherraParser:
-    """Parser for NeuroCode - converts tokens to AST"""
+    """Parser for AetherraCode - converts tokens to AST"""
 
     def __init__(self, tokens: List[Token]):
         self.tokens = tokens
@@ -494,8 +494,8 @@ class AetherraParser:
 
         return PluginNode(type="plugin", line=line, plugin_name=plugin_name, actions=actions)
 
-    def parse_statement(self) -> Optional[NeuroCodeNode]:
-        """Parse a single NeuroCode statement"""
+    def parse_statement(self) -> Optional[AetherraCodeNode]:
+        """Parse a single AetherraCode statement"""
         if not self.current_token:
             return None
 
@@ -551,8 +551,8 @@ class AetherraParser:
             self.advance()
             return None
 
-    def parse(self) -> List[NeuroCodeNode]:
-        """Parse the entire NeuroCode program"""
+    def parse(self) -> List[AetherraCodeNode]:
+        """Parse the entire AetherraCode program"""
         statements = []
 
         while self.current_token and self.current_token.type != TokenType.EOF:
@@ -563,8 +563,8 @@ class AetherraParser:
 
         return statements
 
-class NeuroCodeCompiler:
-    """Converts NeuroCode AST to executable form"""
+class AetherraCodeCompiler:
+    """Converts AetherraCode AST to executable form"""
 
     def __init__(self):
         self.output = []
@@ -608,7 +608,7 @@ class NeuroCodeCompiler:
         actions_str = "\\n".join(actions_code)
         return f"interpreter.load_plugin('{node.plugin_name}', '''{actions_str}''')"
 
-    def compile_node(self, node: NeuroCodeNode) -> str:
+    def compile_node(self, node: AetherraCodeNode) -> str:
         if isinstance(node, GoalNode):
             return self.compile_goal(node)
         elif isinstance(node, AgentNode):
@@ -626,10 +626,10 @@ class NeuroCodeCompiler:
         else:
             return f"# Unknown node type: {type(node)}"
 
-    def compile(self, ast: List[NeuroCodeNode]) -> str:
-        """Compile NeuroCode AST to executable Python"""
+    def compile(self, ast: List[AetherraCodeNode]) -> str:
+        """Compile AetherraCode AST to executable Python"""
         output = [
-            "# Generated from NeuroCode",
+            "# Generated from AetherraCode",
             "from core.interpreter import AetherraInterpreter",
             "interpreter = AetherraInterpreter()",
             ""
@@ -640,24 +640,24 @@ class NeuroCodeCompiler:
 
         return "\n".join(output)
 
-def parse_neurocode(source: str) -> List[NeuroCodeNode]:
-    """Parse NeuroCode source code to AST"""
+def parse_neurocode(source: str) -> List[AetherraCodeNode]:
+    """Parse AetherraCode source code to AST"""
     lexer = AetherraLexer(source)
     tokens = lexer.tokenize()
     parser = AetherraParser(tokens)
     return parser.parse()
 
 def compile_neurocode(source: str) -> str:
-    """Compile NeuroCode source to executable Python"""
+    """Compile AetherraCode source to executable Python"""
     ast = parse_neurocode(source)
-    compiler = NeuroCodeCompiler()
+    compiler = AetherraCodeCompiler()
     return compiler.compile(ast)
 
 # Example usage and testing
 if __name__ == "__main__":
-    # Example NeuroCode program
-    neurocode_source = '''
-# NeuroCode Example Program
+    # Example AetherraCode program
+    aethercode_source = '''
+# AetherraCode Example Program
 goal: reduce memory usage by 30% priority: high
 agent: on
 
@@ -688,22 +688,22 @@ end
     print("=" * 50)
 
     print("📝 Source Code:")
-    print(neurocode_source)
+    print(aethercode_source)
 
     print("\n🔤 Tokenization:")
-    lexer = AetherraLexer(neurocode_source)
+    lexer = AetherraLexer(aethercode_source)
     tokens = lexer.tokenize()
     for token in tokens[:20]:  # Show first 20 tokens
         print(f"  {token.type.value}: '{token.value}'")
 
     print("\n🌳 Abstract Syntax Tree:")
-    ast = parse_neurocode(neurocode_source)
+    ast = parse_neurocode(aethercode_source)
     for node in ast:
         print(f"  {type(node).__name__}: {node.__dict__}")
 
     print("\n🔧 Compiled Output:")
-    compiled = compile_neurocode(neurocode_source)
+    compiled = compile_neurocode(aethercode_source)
     print(compiled)
 
-    print("\n✅ NeuroCode is now a distinct programming language!")
+    print("\n✅ AetherraCode is now a distinct programming language!")
     print("🧬 Complete with its own lexer, parser, and compiler!")

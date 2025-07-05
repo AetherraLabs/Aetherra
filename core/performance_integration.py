@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-⚡ NeuroCode Performance Integration System
+⚡ AetherraCode Performance Integration System
 ==========================================
 
-Comprehensive performance optimization integration for NeuroCode & Neuroplex.
+Comprehensive performance optimization integration for AetherraCode & Neuroplex.
 This module provides easy-to-use performance enhancements that integrate with
 all existing systems while maintaining backward compatibility.
 
@@ -374,8 +374,8 @@ def fast_startup():
 
 
 # Utility functions
-def optimize_neurocode_startup() -> Dict[str, Any]:
-    """Optimize NeuroCode startup performance"""
+def optimize_aethercode_startup() -> Dict[str, Any]:
+    """Optimize AetherraCode startup performance"""
     return performance_manager.auto_optimize()
 
 
@@ -411,12 +411,12 @@ def auto_tune_performance() -> Dict[str, Any]:
     return performance_manager.auto_optimize()
 
 
-# Integration functions for existing NeuroCode components
+# Integration functions for existing AetherraCode components
 def optimize_interpreter_startup():
-    """Optimize NeuroCode interpreter startup"""
+    """Optimize AetherraCode interpreter startup"""
     with fast_startup():
         if performance_manager.memory_optimizer:
-            # Pre-intern common NeuroCode keywords
+            # Pre-intern common AetherraCode keywords
             keywords = ["goal", "remember", "think", "agent", "when", "if", "else", "end"]
             for keyword in keywords:
                 performance_manager.memory_optimizer.optimize_string(keyword)
@@ -448,7 +448,7 @@ def optimize_ui_components(ui_system):
 
 if __name__ == "__main__":
     # Example usage and testing
-    print("⚡ NeuroCode Performance Integration System")
+    print("⚡ AetherraCode Performance Integration System")
     print("=" * 60)
 
     # Test performance optimization

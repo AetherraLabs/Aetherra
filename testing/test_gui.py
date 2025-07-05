@@ -12,7 +12,7 @@ src_path = project_root / "src"
 sys.path.insert(0, str(src_path))
 
 try:
-    from neurocode.ui.aetherplex import LyrixaWindow
+    from Aetherra.ui.aetherplex import LyrixaWindow
 
     print("✅ GUI classes loaded successfully")
 

@@ -1,5 +1,5 @@
 """
-Test script to verify the functionality of neuro_chat.py and neuroplex.py in a real application context.
+Test script to verify the functionality of neuro_chat.py and Lyrixa.py in a real application context.
 This script attempts to import and initialize the key UI components from both modules.
 """
 
@@ -12,10 +12,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # print("Testing UI module imports...")
 try:
         LyrixaAssistantInterface,
-        create_embeddable_neurochat,
+        create_embeddable_aetherchat,
     )
 
-    print("✓ Successfully imported LyrixaAssistantInterface and create_embeddable_neurochat")
+    print("✓ Successfully imported LyrixaAssistantInterface and create_embeddable_aetherchat")
 
     # Try to create a LyrixaAssistantInterface instance (will only work if PySide6 is available)
     try:
@@ -29,10 +29,10 @@ try:
     except Exception as e:
         print(f"✗ Error creating LyrixaAssistantInterface instance: {e}")
 except Exception as e:
-    print(f"✗ Error importing from neuro_chat.py: {e}")
+    print(f"✗ Error importing from aetherra_chat.py: {e}")
 
 try:
-    from src.aethercode.ui.aetherplex import LyrixaWindow
+    from Lyrixa.ui.aetherplex import LyrixaWindow
 
     print("✓ Successfully imported LyrixaWindow")
 
@@ -48,6 +48,6 @@ try:
     except Exception as e:
         print(f"✗ Error creating LyrixaWindow instance: {e}")
 except Exception as e:
-    print(f"✗ Error importing from neuroplex.py: {e}")
+    print(f"✗ Error importing from Lyrixa.py: {e}")
 
 print("\nUI module testing complete.")

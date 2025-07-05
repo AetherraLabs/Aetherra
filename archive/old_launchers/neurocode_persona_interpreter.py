@@ -1,5 +1,5 @@
 """
-NeuroCode Enhanced Interpreter with Persona Integration
+AetherraCode Enhanced Interpreter with Persona Integration
 Provides AI consciousness programming with unique persona-driven interactions.
 """
 
@@ -24,8 +24,8 @@ except ImportError:
         return None
 
 
-class NeuroCodePersonaInterpreter:
-    """Enhanced NeuroCode interpreter with persona-driven AI interactions"""
+class AetherraCodePersonaInterpreter:
+    """Enhanced AetherraCode interpreter with persona-driven AI interactions"""
 
     def __init__(self, installation_path: Optional[str] = None):
         self.installation_path = installation_path or str(Path.home() / ".neurocode")
@@ -48,12 +48,12 @@ class NeuroCodePersonaInterpreter:
 
         try:
             status = self.persona_engine.get_persona_status()
-            print(f"🤖 {status['emoji']} NeuroCode {status['archetype']} ready!")
+            print(f"🤖 {status['emoji']} AetherraCode {status['archetype']} ready!")
             print(f"   Mindprint: {status['mindprint_id'][:8]}...")
 
             # Generate greeting based on persona
             greeting = self.persona_engine.generate_response(
-                "Starting NeuroCode session", "Hello", "greeting"
+                "Starting AetherraCode session", "Hello", "greeting"
             )
             print(f"   {greeting}")
             print()
@@ -61,11 +61,11 @@ class NeuroCodePersonaInterpreter:
             pass  # Silently continue if persona greeting fails
 
     def execute_neurocode(self, code: str, context: Dict[str, Any] | None = None) -> Any:
-        """Execute NeuroCode with persona-aware interactions"""
+        """Execute AetherraCode with persona-aware interactions"""
         context = context or {}
 
         try:
-            # Parse NeuroCode syntax
+            # Parse AetherraCode syntax
             parsed_code = self._parse_neurocode(code)
 
             # Execute with persona context
@@ -88,7 +88,7 @@ class NeuroCodePersonaInterpreter:
             raise e
 
     def _parse_neurocode(self, code: str) -> Dict:
-        """Parse NeuroCode syntax into executable structure"""
+        """Parse AetherraCode syntax into executable structure"""
         # Basic parsing for consciousness blocks and persona directives
         parsed = {
             "type": "consciousness_block",
@@ -223,7 +223,7 @@ class NeuroCodePersonaInterpreter:
         return execution_result["result"]
 
     def _execute_general_code(self, parsed_code: Dict, context: Dict, approach: str) -> Any:
-        """Execute general NeuroCode with persona awareness"""
+        """Execute general AetherraCode with persona awareness"""
         code = parsed_code["consciousness_code"]
 
         # Persona-influenced execution
@@ -241,7 +241,7 @@ class NeuroCodePersonaInterpreter:
 
         # Execute the code (simplified for demo)
         try:
-            # This would integrate with the actual NeuroCode parser/executor
+            # This would integrate with the actual AetherraCode parser/executor
             result = f"Executed: {code[:50]}... (Approach: {approach})"
             return result
 
@@ -320,8 +320,8 @@ class NeuroCodePersonaInterpreter:
             pass  # Silently continue if response generation fails
 
     def interactive_session(self):
-        """Start an interactive NeuroCode session with persona"""
-        print("🧠 NeuroCode Interactive Session")
+        """Start an interactive AetherraCode session with persona"""
+        print("🧠 AetherraCode Interactive Session")
         print("Type 'exit' to quit, 'persona status' for persona info")
         print()
 
@@ -353,7 +353,7 @@ class NeuroCodePersonaInterpreter:
                 if not user_input:
                     continue
 
-                # Execute NeuroCode
+                # Execute AetherraCode
                 result = self.execute_neurocode(user_input)
                 print(f"Result: {result}")
                 print()
@@ -398,7 +398,7 @@ class NeuroCodePersonaInterpreter:
 
 def main():
     """Main entry point for the enhanced interpreter"""
-    interpreter = NeuroCodePersonaInterpreter()
+    interpreter = AetherraCodePersonaInterpreter()
 
     if len(sys.argv) > 1:
         # Execute file

@@ -1,6 +1,6 @@
 # core/interpreter/fallback_systems.py
 """
-Fallback System Manager for NeuroCode Interpreter
+Fallback System Manager for AetherraCode Interpreter
 =================================================
 
 Provides fallback implementations when core components are not available.
@@ -64,9 +64,9 @@ class FallbackSystemManager:
         return AetherraMemory
 
     def create_fallback_functions(self):
-        """Create fallback NeuroFunctions implementation"""
+        """Create fallback AetherraFunctions implementation"""
 
-        class NeuroFunctions:
+        class AetherraFunctions:
             def __init__(self):
                 self.functions = {}
 
@@ -85,12 +85,12 @@ class FallbackSystemManager:
             def delete_function(self, name):
                 return f"Demo function deleted: {name}"
 
-        return NeuroFunctions
+        return AetherraFunctions
 
     def create_fallback_agent(self):
-        """Create fallback NeuroAgent implementation"""
+        """Create fallback AetherraAgent implementation"""
 
-        class NeuroAgent:
+        class AetherraAgent:
             def __init__(self, memory=None, functions=None, command_history=None):
                 self.active = False
                 self.memory = memory
@@ -125,7 +125,7 @@ class FallbackSystemManager:
             def justify_self_editing(self, filename, target):
                 return "Demo justification"
 
-        return NeuroAgent
+        return AetherraAgent
 
     def create_fallback_goal_system(self):
         """Create fallback GoalSystem implementation"""
@@ -186,9 +186,9 @@ class FallbackSystemManager:
         return BlockExecutor
 
     def create_fallback_debug_system(self):
-        """Create fallback NeuroDebugSystem implementation"""
+        """Create fallback AetherraDebugSystem implementation"""
 
-        class NeuroDebugSystem:
+        class AetherraDebugSystem:
             def __init__(self, *args):
                 self.error_history = []
                 self.auto_apply_enabled = False
@@ -205,18 +205,18 @@ class FallbackSystemManager:
             def apply_fix(self, fix_suggestion, force=False):
                 return False
 
-        return NeuroDebugSystem
+        return AetherraDebugSystem
 
     def get_fallback_components(self) -> Dict[str, Any]:
         """Get all fallback components"""
         return {
             "AetherraMemory": self.create_fallback_memory(),
-            "NeuroFunctions": self.create_fallback_functions(),
-            "NeuroAgent": self.create_fallback_agent(),
+            "AetherraFunctions": self.create_fallback_functions(),
+            "AetherraAgent": self.create_fallback_agent(),
             "GoalSystem": self.create_fallback_goal_system(),
             "MetaPluginSystem": self.create_fallback_meta_plugins(),
             "BlockExecutor": self.create_fallback_block_executor(),
-            "NeuroDebugSystem": self.create_fallback_debug_system(),
+            "AetherraDebugSystem": self.create_fallback_debug_system(),
         }
 
     def enable_demo_mode(self):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple validation script for NeuroChat integration
+Simple validation script for AetherraChat integration
 """
 
 # Test 1: Basic import
@@ -12,22 +12,22 @@ try:
     project_root = Path(__file__).parent
     sys.path.insert(0, str(project_root / "src"))
 
-    print("🧪 Testing NeuroChat Integration")
+    print("🧪 Testing AetherraChat Integration")
     print("=" * 40)
 
     # Test import
-    from neurocode.ui.aether_chat import create_embeddable_neurochat
+    from Aetherra.ui.aether_chat import create_embeddable_aetherchat
 
     print("✅ Import successful")
 
     # Test function exists
-    if callable(create_embeddable_neurochat):
+    if callable(create_embeddable_aetherchat):
         print("✅ Factory function is callable")
     else:
         print("❌ Factory function is not callable")
 
-    print("\n🎉 NeuroChat integration validation passed!")
-    print("🔗 NeuroChat should integrate properly with Neuroplex")
+    print("\n🎉 AetherraChat integration validation passed!")
+    print("🔗 AetherraChat should integrate properly with Lyrixa")
 
 except Exception as e:
     print(f"❌ Validation failed: {e}")

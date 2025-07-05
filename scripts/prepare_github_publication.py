@@ -56,7 +56,7 @@ def main():
         ("requirements.txt", "Python dependencies"),
         ("main.py", "Main aetherra interpreter"),
         ("aetherra.py", "Core aetherra module"),
-        ("ui/neuroplex_gui.py", "Neuroplex GUI"),
+        ("ui/aetherplex_gui.py", "Neuroplex GUI"),
         ("DOCUMENTATION.md", "Complete documentation"),
         ("TUTORIAL.md", "Tutorial guide"),
         ("examples/EXAMPLES_GUIDE.md", "Examples guide"),
@@ -116,7 +116,7 @@ def main():
     test_files = [
         "main.py",
         "aetherra.py",
-        "ui/neuroplex_gui.py",
+        "ui/aetherplex_gui.py",
         "core/local_ai.py",
         "core/vector_memory.py",
         "core/intent_parser.py",
@@ -138,7 +138,7 @@ def main():
             "aetherra core",
         ),
         (
-            "python -c \"import sys; sys.path.append('ui'); from neuroplex_gui import NeuroplexMainWindow; print('✅ Neuroplex GUI imports successfully')\"",
+            "python -c \"import sys; sys.path.append('ui'); from aetherplex_gui import NeuroplexMainWindow; print('✅ Neuroplex GUI imports successfully')\"",
             "Neuroplex GUI",
         ),
         (

@@ -25,7 +25,7 @@ from core.plugin_api import register_plugin
     description="Perform mathematical calculations and operations",
     capabilities=["arithmetic", "trigonometry", "algebra"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="AetherraCode Team",
     category="utilities",
     intent_purpose="mathematical calculations and problem solving",
     intent_triggers=["calculate", "math", "compute", "solve"],

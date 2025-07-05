@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Duplicate Cleanup Script
+AetherraCode Duplicate Cleanup Script
 
 This script executes the planned cleanup of confirmed duplicate files.
 Executes in phases for safety.
@@ -148,7 +148,7 @@ def show_cleanup_summary():
 
 def main():
     """Execute the cleanup phases."""
-    print("🧹 NeuroCode Duplicate Cleanup")
+    print("🧹 AetherraCode Duplicate Cleanup")
     print("================================")
 
     # Create archive structure

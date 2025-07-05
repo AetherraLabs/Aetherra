@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Comprehensive NeuroCode Project Error Analysis
+Comprehensive AetherraCode Project Error Analysis
 ==============================================
 
-This script performs a deep analysis of the NeuroCode project to identify
+This script performs a deep analysis of the AetherraCode project to identify
 and report all potential errors, import issues, and functionality problems.
 """
 
@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Any, Dict
 
 
-class NeuroCodeErrorAnalyzer:
-    """Comprehensive error analysis for NeuroCode project"""
+class AetherraCodeErrorAnalyzer:
+    """Comprehensive error analysis for AetherraCode project"""
 
     def __init__(self):
         self.project_root = Path(__file__).parent
@@ -30,10 +30,14 @@ class NeuroCodeErrorAnalyzer:
             ast.parse(content)
             return True
         except SyntaxError as e:
-            self.syntax_errors.append({"file": str(file_path), "error": str(e), "line": e.lineno})
+            self.syntax_errors.append(
+                {"file": str(file_path), "error": str(e), "line": e.lineno}
+            )
             return False
         except Exception as e:
-            self.errors.append({"file": str(file_path), "error": f"Could not read file: {e}"})
+            self.errors.append(
+                {"file": str(file_path), "error": f"Could not read file: {e}"}
+            )
             return False
 
     def test_import(self, module_path: str, file_path: Path) -> bool:
@@ -54,16 +58,20 @@ class NeuroCodeErrorAnalyzer:
     def check_key_entry_points(self) -> Dict[str, Any]:
         """Check all key entry points for functionality"""
         entry_points = {
-            "neurocode_launcher.py": self.project_root / "neurocode_launcher.py",
-            "neurocode_cli.py": self.project_root / "neurocode_cli.py",
+            "aethercode_launcher.py": self.project_root / "aethercode_launcher.py",
+            "aethercode_cli.py": self.project_root / "aethercode_cli.py",
             "main CLI": self.project_root / "src" / "neurocode" / "cli" / "main.py",
             "launchers/main.py": self.project_root / "launchers" / "main.py",
-            "neuroplex_gui.py": self.project_root / "src" / "neurocode" / "ui" / "neuroplex_gui.py",
-            "enhanced_neuroplex.py": self.project_root
+            "Lyrixa_gui.py": self.project_root
             / "src"
             / "neurocode"
             / "ui"
-            / "enhanced_neuroplex.py",
+            / "Lyrixa_gui.py",
+            "enhanced_Lyrixa.py": self.project_root
+            / "src"
+            / "neurocode"
+            / "ui"
+            / "enhanced_Lyrixa.py",
         }
 
         results = {}
@@ -78,28 +86,37 @@ class NeuroCodeErrorAnalyzer:
                         "import": "OK" if import_ok else "FAILED",
                     }
                 else:
-                    results[name] = {"exists": True, "syntax": "FAILED", "import": "N/A"}
+                    results[name] = {
+                        "exists": True,
+                        "syntax": "FAILED",
+                        "import": "N/A",
+                    }
             else:
                 results[name] = {"exists": False, "syntax": "N/A", "import": "N/A"}
 
         return results
 
     def check_core_modules(self) -> Dict[str, Any]:
-        """Check core NeuroCode modules"""
+        """Check core AetherraCode modules"""
         core_modules = {
             "interpreter.py": self.project_root / "core" / "interpreter.py",
-            "enhanced_interpreter.py": self.project_root / "core" / "enhanced_interpreter.py",
+            "enhanced_interpreter.py": self.project_root
+            / "core"
+            / "enhanced_interpreter.py",
             "memory.py": self.project_root / "core" / "memory.py",
             "functions.py": self.project_root / "core" / "functions.py",
             "agent.py": self.project_root / "core" / "agent.py",
-            "neurocode_parser.py": self.project_root / "core" / "neurocode_parser.py",
+            "aethercode_parser.py": self.project_root / "core" / "aethercode_parser.py",
         }
 
         results = {}
         for name, path in core_modules.items():
             if path.exists():
                 syntax_ok = self.check_syntax(path)
-                results[name] = {"exists": True, "syntax": "OK" if syntax_ok else "FAILED"}
+                results[name] = {
+                    "exists": True,
+                    "syntax": "OK" if syntax_ok else "FAILED",
+                }
             else:
                 results[name] = {"exists": False, "syntax": "N/A"}
 
@@ -108,22 +125,25 @@ class NeuroCodeErrorAnalyzer:
     def test_launchers(self) -> Dict[str, Any]:
         """Test launcher functionality"""
         launchers = {
-            "launch_fully_modular_neuroplex.py": self.project_root
+            "launch_fully_modular_Lyrixa.py": self.project_root
             / "launchers"
-            / "launch_fully_modular_neuroplex.py",
-            "launch_enhanced_neuroplex.py": self.project_root
+            / "launch_fully_modular_Lyrixa.py",
+            "launch_enhanced_Lyrixa.py": self.project_root
             / "launchers"
-            / "launch_enhanced_neuroplex.py",
-            "launch_modular_neuroplex.py": self.project_root
+            / "launch_enhanced_Lyrixa.py",
+            "launch_modular_Lyrixa.py": self.project_root
             / "launchers"
-            / "launch_modular_neuroplex.py",
+            / "launch_modular_Lyrixa.py",
         }
 
         results = {}
         for name, path in launchers.items():
             if path.exists():
                 syntax_ok = self.check_syntax(path)
-                results[name] = {"exists": True, "syntax": "OK" if syntax_ok else "FAILED"}
+                results[name] = {
+                    "exists": True,
+                    "syntax": "OK" if syntax_ok else "FAILED",
+                }
             else:
                 results[name] = {"exists": False, "syntax": "N/A"}
 
@@ -132,14 +152,16 @@ class NeuroCodeErrorAnalyzer:
     def generate_report(self) -> str:
         """Generate comprehensive error report"""
         report = []
-        report.append("🔍 NeuroCode Project - Comprehensive Error Analysis")
+        report.append("🔍 AetherraCode Project - Comprehensive Error Analysis")
         report.append("=" * 60)
 
         # Check entry points
         entry_results = self.check_key_entry_points()
         report.append("\n📍 Key Entry Points Analysis:")
         for name, result in entry_results.items():
-            status = "✅" if result["syntax"] == "OK" and result["import"] == "OK" else "❌"
+            status = (
+                "✅" if result["syntax"] == "OK" and result["import"] == "OK" else "❌"
+            )
             report.append(
                 f"  {status} {name}: Exists={result['exists']}, Syntax={result['syntax']}, Import={result['import']}"
             )
@@ -166,7 +188,9 @@ class NeuroCodeErrorAnalyzer:
         if self.syntax_errors:
             report.append("\n🚨 Syntax Errors Found:")
             for error in self.syntax_errors:
-                report.append(f"  ❌ {error['file']}:{error['line']} - {error['error']}")
+                report.append(
+                    f"  ❌ {error['file']}:{error['line']} - {error['error']}"
+                )
 
         # Report import issues
         if self.import_issues:
@@ -194,7 +218,9 @@ class NeuroCodeErrorAnalyzer:
         )
 
         if total_syntax_errors + total_import_issues + total_errors == 0:
-            report.append("\n🎉 No critical errors found! NeuroCode project appears healthy.")
+            report.append(
+                "\n🎉 No critical errors found! AetherraCode project appears healthy."
+            )
         else:
             report.append(
                 f"\n🔧 Found {total_syntax_errors + total_import_issues + total_errors} issues that need attention."
@@ -205,9 +231,9 @@ class NeuroCodeErrorAnalyzer:
 
 def main():
     """Run comprehensive error analysis"""
-    print("🔍 Starting NeuroCode Project Error Analysis...")
+    print("🔍 Starting AetherraCode Project Error Analysis...")
 
-    analyzer = NeuroCodeErrorAnalyzer()
+    analyzer = AetherraCodeErrorAnalyzer()
     report = analyzer.generate_report()
 
     print(report)

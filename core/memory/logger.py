@@ -2,7 +2,7 @@
 📝 Advanced Memory Logger
 ========================
 
-Enhanced logging system for NeuroCode memory with structured storage,
+Enhanced logging system for AetherraCode memory with structured storage,
 automatic categorization, and real-time memory insights.
 """
 

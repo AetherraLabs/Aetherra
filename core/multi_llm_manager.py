@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🧠 NeuroCode Multi-LLM Backend Manager
+🧠 AetherraCode Multi-LLM Backend Manager
 =====================================
 
 Unified LLM interface supporting multiple backends:
@@ -11,7 +11,7 @@ Unified LLM interface supporting multiple backends:
 - Google Gemini
 - Azure OpenAI
 
-This enables NeuroCode to work with any LLM backend,
+This enables AetherraCode to work with any LLM backend,
 making it truly independent and privacy-focused.
 """
 
@@ -57,7 +57,7 @@ class LLMConfig:
 
 
 class MultiLLMManager:
-    """Manages multiple LLM backends for NeuroCode"""
+    """Manages multiple LLM backends for AetherraCode"""
 
     def __init__(self):
         self.providers = {}
@@ -229,7 +229,7 @@ class MultiLLMManager:
         return models
 
     def set_model(self, model_name: str, **kwargs) -> bool:
-        """Set the current model for NeuroCode"""
+        """Set the current model for AetherraCode"""
         if model_name not in self.model_configs:
             logger.error(f"❌ Model '{model_name}' not found in configurations")
             return False
@@ -505,8 +505,8 @@ class GeminiProvider:
             raise Exception(f"Gemini error: {e}") from e
 
 
-# Global instance for NeuroCode integration
+# Global instance for AetherraCode integration
 llm_manager = MultiLLMManager()
 
-# Plugin registration for NeuroCode
+# Plugin registration for AetherraCode
 PLUGIN_CLASS = None  # This is a core component, not a plugin

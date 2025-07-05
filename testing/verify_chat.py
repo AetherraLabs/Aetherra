@@ -8,48 +8,46 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "core"))
-sys.path.insert(0, str(project_root / "src" / "neurocode" / "ui"))
+sys.path.insert(0, str(project_root / "src" / "Aetherra" / "ui"))
 
-print("🧪 Testing Advanced NeuroChat Integration")
+print("🧪 Testing Advanced AetherraChat Integration")
 print("=" * 50)
 
-# Test 1: NeuroChat Import
+# Test 1: AetherraChat Import
 try:
-
-    print("✅ NeuroChat interface imported successfully")
-    neurochat_ok = True
+    print("✅ AetherraChat interface imported successfully")
+    aetherchat_ok = True
 except ImportError as e:
-    print(f"❌ Failed to import NeuroChat interface: {e}")
-    neurochat_ok = False
+    print(f"❌ Failed to import AetherraChat interface: {e}")
+    aetherchat_ok = False
 
 # Test 2: Chat Router Import
 try:
-
     print("✅ Chat router imported successfully")
     router_ok = True
 except ImportError as e:
     print(f"❌ Failed to import chat router: {e}")
     router_ok = False
 
-# Test 3: Neuroplex Integration
+# Test 3: Lyrixa Integration
 try:
-    import neuroplex
+    import Lyrixa
 
-    print("✅ Neuroplex module loaded successfully")
-    if hasattr(neuroplex, "NEUROCHAT_AVAILABLE") and neuroplex.aetherCHAT_AVAILABLE:
-        print("✅ Advanced NeuroChat interface is AVAILABLE in Neuroplex")
-        neuroplex_ok = True
+    print("✅ Lyrixa module loaded successfully")
+    if hasattr(Lyrixa, "NEUROCHAT_AVAILABLE") and Lyrixa.aetherCHAT_AVAILABLE:
+        print("✅ Advanced AetherraChat interface is AVAILABLE in Lyrixa")
+        Lyrixa_ok = True
     else:
-        print("❌ Advanced NeuroChat interface is NOT available in Neuroplex")
-        neuroplex_ok = False
+        print("❌ Advanced AetherraChat interface is NOT available in Lyrixa")
+        Lyrixa_ok = False
 except Exception as e:
-    print(f"❌ Failed to load Neuroplex: {e}")
-    neuroplex_ok = False
+    print(f"❌ Failed to load Lyrixa: {e}")
+    Lyrixa_ok = False
 
 print()
 print("=" * 50)
-if neurochat_ok and router_ok and neuroplex_ok:
-    print("🎉 ALL TESTS PASSED! Advanced NeuroChat is fully integrated!")
+if aetherchat_ok and router_ok and Lyrixa_ok:
+    print("🎉 ALL TESTS PASSED! Advanced AetherraChat is fully integrated!")
     print("💬 The system is using the advanced chat interface, NOT built-in fallback.")
 else:
     print("⚠️  Some tests failed. Check above for details.")

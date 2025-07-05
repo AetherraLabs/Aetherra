@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Quick test of core NeuroCode functionality
+Quick test of core AetherraCode functionality
 """
 
 import sys
@@ -10,12 +10,12 @@ from pathlib import Path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
-print("🧪 Testing NeuroCode Core Functionality...")
+print("🧪 Testing AetherraCode Core Functionality...")
 
 try:
     from aetherra import create_interpreter, create_parser
 
-    print("✅ All core NeuroCode functionality imports successfully!")
+    print("✅ All core AetherraCode functionality imports successfully!")
 
     parser = create_parser()
     print("✅ Parser created successfully!")
@@ -23,7 +23,7 @@ try:
     interpreter = create_interpreter()
     print("✅ Interpreter created successfully!")
 
-    result = interpreter.execute('say "NeuroCode is working!"')
+    result = interpreter.execute('say "AetherraCode is working!"')
     print(f"✅ Code execution successful: {result[:50]}...")
 
     print("🎉 NEUROCODE PROJECT FULLY OPERATIONAL!")

@@ -33,7 +33,7 @@ def test_basic_conversational():
     print("\nTesting conversational AI structures...")
 
     try:
-        from core.conversational_ai import ConversationContext, PersonaMode
+        from Aetherra.core.conversational_ai import ConversationContext, PersonaMode
 
         # Test enum values
         personas = list(PersonaMode)
@@ -54,7 +54,7 @@ def test_basic_plugin_structures():
     print("\nTesting plugin registry structures...")
 
     try:
-        from core.plugin_registry import PluginCategory, PluginStatus
+        from Aetherra.core.plugin_registry import PluginCategory, PluginStatus
 
         # Test enum values
         statuses = list(PluginStatus)
@@ -74,7 +74,7 @@ def test_basic_introspective_structures():
     print("\nTesting introspective logging structures...")
 
     try:
-        from core.introspective_logger import ActivityType, ExecutionStatus
+        from Aetherra.core.introspective_logger import ActivityType, ExecutionStatus
 
         # Test enum values
         activities = list(ActivityType)
@@ -93,10 +93,10 @@ def test_integration_concepts():
 
     try:
         # Import key classes without instantiating file-dependent ones
-        from core.conversational_ai import PersonaMode
-        from core.introspective_logger import ActivityType
-        from core.plugin_registry import PluginCategory
-        from core.stability import ErrorSeverity, RecoveryStrategy
+        from Aetherra.core.conversational_ai import PersonaMode
+        from Aetherra.core.introspective_logger import ActivityType
+        from Aetherra.core.plugin_registry import PluginCategory
+        from Aetherra.core.stability import ErrorSeverity, RecoveryStrategy
 
         # Test that we can create a mock integration scenario
         scenario = {

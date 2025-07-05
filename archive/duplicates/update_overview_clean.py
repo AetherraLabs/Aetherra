@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Project Overview Update System
+AetherraCode Project Overview Update System
 
 This script intelligently updates the PROJECT_OVERVIEW.md file by:
 1. Scanning the project structure for changes
@@ -173,7 +173,7 @@ class OverviewUpdater:
             (
                 "🔗 **GitHub Integration**",
                 "✅ **COMPLETE**",
-                "All links updated to Zyonic88/NeuroCode",
+                "All links updated to Zyonic88/AetherraCode",
             ),
         ]
 

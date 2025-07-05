@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚀 NeuroCode Performance Revolution Demo
+🚀 AetherraCode Performance Revolution Demo
 =======================================
 
 Comprehensive demonstration showing the dramatic performance improvements
@@ -21,7 +21,7 @@ import time
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Import NeuroCode systems
+# Import AetherraCode systems
 try:
     from core.advanced_performance_engine import get_performance_engine
     from core.interpreter import AetherraInterpreter
@@ -30,7 +30,7 @@ try:
 
     NEUROCODE_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️ NeuroCode modules not available: {e}")
+    print(f"⚠️ AetherraCode modules not available: {e}")
     NEUROCODE_AVAILABLE = False
 
 
@@ -81,7 +81,7 @@ def demo_memory_performance():
     print("=" * 50)
 
     if not NEUROCODE_AVAILABLE:
-        print("❌ NeuroCode not available for memory demo")
+        print("❌ AetherraCode not available for memory demo")
         return
 
     memory = AetherraMemory()
@@ -115,7 +115,7 @@ def demo_interpreter_performance():
     print("=" * 50)
 
     if not NEUROCODE_AVAILABLE:
-        print("❌ NeuroCode not available for interpreter demo")
+        print("❌ AetherraCode not available for interpreter demo")
         return
 
     interpreter = AetherraInterpreter()
@@ -333,7 +333,7 @@ def show_overall_performance_gains():
 
 def main():
     """Main performance demonstration"""
-    print("🚀 NeuroCode Performance Revolution Demo")
+    print("🚀 AetherraCode Performance Revolution Demo")
     print("=" * 60)
     print("Demonstrating dramatic performance improvements across all systems")
 
@@ -362,7 +362,7 @@ def main():
             pass
 
         print("\n🎉 PERFORMANCE REVOLUTION COMPLETE!")
-        print("   NeuroCode & Neuroplex are now running at maximum speed!")
+        print("   AetherraCode & Neuroplex are now running at maximum speed!")
         print("   All systems optimized for fluid, responsive operation!")
 
     except Exception as e:

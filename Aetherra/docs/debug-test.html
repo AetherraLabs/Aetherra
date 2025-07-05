@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Link Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+
+        .test-link {
+            display: block;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border-left: 4px solid #007acc;
+        }
+
+        .correct {
+            border-left-color: #28a745;
+        }
+
+        .test-result {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 GitHub Link Debug Test</h1>
+    <p>This page will help us identify which links are working correctly.</p>
+
+    <h2>Test Links</h2>
+
+    <div class="test-link correct">
+        <strong>Test 1: Direct Repository Link</strong><br>
+        <a href="https://github.com/Zyonic88/NeuroCode" target="_blank" onclick="logClick('Direct Repo')">
+            https://github.com/Zyonic88/NeuroCode
+        </a>
+    </div>
+
+    <div class="test-link correct">
+        <strong>Test 2: Issues Link</strong><br>
+        <a href="https://github.com/Zyonic88/NeuroCode/issues" target="_blank" onclick="logClick('Issues')">
+            https://github.com/Zyonic88/NeuroCode/issues
+        </a>
+    </div>
+
+    <div class="test-link correct">
+        <strong>Test 3: Documentation Link</strong><br>
+        <a href="https://github.com/Zyonic88/NeuroCode/blob/main/docs/TUTORIAL.md" target="_blank"
+            onclick="logClick('Tutorial')">
+            https://github.com/Zyonic88/NeuroCode/blob/main/docs/TUTORIAL.md
+        </a>
+    </div>
+
+    <div class="test-link correct">
+        <strong>Test 4: Contributing Guide</strong><br>
+        <a href="https://github.com/Zyonic88/NeuroCode/blob/main/docs/guides/CONTRIBUTING.md" target="_blank"
+            onclick="logClick('Contributing')">
+            https://github.com/Zyonic88/NeuroCode/blob/main/docs/guides/CONTRIBUTING.md
+        </a>
+    </div>
+
+    <h2>Debug Information</h2>
+    <div id="debug-info">
+        <p><strong>Current URL:</strong> <span id="current-url"></span></p>
+        <p><strong>User Agent:</strong> <span id="user-agent"></span></p>
+        <p><strong>Referrer:</strong> <span id="referrer"></span></p>
+    </div>
+
+    <h2>Click Log</h2>
+    <div id="click-log">
+        <p>Click the links above to test them. Results will appear here.</p>
+    </div>
+
+    <script>
+        // Display debug information
+        document.getElementById('current-url').textContent = window.location.href;
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+        document.getElementById('referrer').textContent = document.referrer || '(none)';
+
+        // Log clicks
+        function logClick(linkName) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<strong>${timestamp}:</strong> Clicked "${linkName}" link`;
+            document.getElementById('click-log').appendChild(logEntry);
+        }
+
+        // Monitor for any URL changes or redirects
+        window.addEventListener('beforeunload', function (e) {
+            console.log('Page is being unloaded');
+        });
+
+        // Check for any global variables that might affect links
+        console.log('GitHub-related global variables:', {
+            github: window.github || 'undefined',
+            GITHUB_URL: window.GITHUB_URL || 'undefined',
+            BASE_URL: window.BASE_URL || 'undefined'
+        });
+    </script>
+</body>
+
+</html>

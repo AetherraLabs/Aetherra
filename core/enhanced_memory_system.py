@@ -1,5 +1,5 @@
 """
-🧠 NeuroCode Enhanced Memory System
+🧠 AetherraCode Enhanced Memory System
 Advanced memory architecture with vector embeddings and semantic search
 """
 
@@ -675,7 +675,7 @@ class GoalTrackingSystem:
 
 # Example usage
 if __name__ == "__main__":
-    print("🧠 NeuroCode Enhanced Memory System - Demonstration")
+    print("🧠 AetherraCode Enhanced Memory System - Demonstration")
 
     # Initialize memory system
     data_dir = Path("data")

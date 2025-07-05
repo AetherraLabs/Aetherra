@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Complete Grammar & Parser
+🧬 AetherraCode Complete Grammar & Parser
 =====================================
 
-A comprehensive, working formal grammar definition for NeuroCode using Lark parser.
+A comprehensive, working formal grammar definition for AetherraCode using Lark parser.
 This version fixes all grammar conflicts and provides a complete language specification.
 
 Features:
 - Complete formal grammar definition
 - Conflict-free Lark grammar
 - Comprehensive AST generation
-- Full NeuroCode language support
+- Full AetherraCode language support
 - Production-ready parser
 """
 
@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Union
 from lark import Lark, Token, Transformer, Tree
 from lark.exceptions import LexError, ParseError
 
-# Complete NeuroCode Grammar Definition
+# Complete AetherraCode Grammar Definition
 NEUROCODE_GRAMMAR = r"""
     ?start: program
 
@@ -163,15 +163,15 @@ NEUROCODE_GRAMMAR = r"""
 
 
 @dataclass
-class NeuroCodeAST:
-    """NeuroCode Abstract Syntax Tree node with complete structure"""
+class AetherraCodeAST:
+    """AetherraCode Abstract Syntax Tree node with complete structure"""
 
     node_type: str
     value: Any = None
-    children: List["NeuroCodeAST"] = field(default_factory=list)
+    children: List["AetherraCodeAST"] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-    def add_child(self, child: "NeuroCodeAST") -> None:
+    def add_child(self, child: "AetherraCodeAST") -> None:
         """Add a child node"""
         if child is not None:
             self.children.append(child)
@@ -195,16 +195,16 @@ class NeuroCodeAST:
         return self.__str__()
 
 
-class NeuroCodeTransformer(Transformer):
-    """Complete transformer for NeuroCode AST generation"""
+class AetherraCodeTransformer(Transformer):
+    """Complete transformer for AetherraCode AST generation"""
 
-    def _extract_value(self, item: Union[Token, Tree, NeuroCodeAST, str, Any]) -> Any:
+    def _extract_value(self, item: Union[Token, Tree, AetherraCodeAST, str, Any]) -> Any:
         """Extract value from various node types"""
         if isinstance(item, Token):
             return str(item.value)
         elif isinstance(item, Tree):
             return str(item.children[0]) if item.children else str(item)
-        elif isinstance(item, NeuroCodeAST):
+        elif isinstance(item, AetherraCodeAST):
             return item.value
         elif isinstance(item, str):
             return item.strip("\"'")
@@ -214,34 +214,34 @@ class NeuroCodeTransformer(Transformer):
     def program(self, statements):
         """Transform program node"""
         children = [stmt for stmt in statements if stmt is not None]
-        return NeuroCodeAST("program", children=children)
+        return AetherraCodeAST("program", children=children)
 
     # AI Statements
     def model_statement(self, args):
         """Transform model statement"""
         model_name = self._extract_value(args[0]) if args else "default"
-        return NeuroCodeAST("model", value=model_name)
+        return AetherraCodeAST("model", value=model_name)
 
     def assistant_statement(self, args):
         """Transform assistant statement"""
         task = self._extract_value(args[0]) if args else "assist"
-        return NeuroCodeAST("assistant", value=task)
+        return AetherraCodeAST("assistant", value=task)
 
     def think_statement(self, args):
         """Transform think statement"""
         thought = self._extract_value(args[0]) if args else ""
-        return NeuroCodeAST("think", value=thought)
+        return AetherraCodeAST("think", value=thought)
 
     def learn_statement(self, args):
         """Transform learn statement"""
         source = self._extract_value(args[0]) if args else ""
-        return NeuroCodeAST("learn", value=source)
+        return AetherraCodeAST("learn", value=source)
 
     # Goal System
     def goal_statement(self, args):
         """Transform goal statement"""
         goal = self._extract_value(args[0]) if args else ""
-        node = NeuroCodeAST("goal", value=goal)
+        node = AetherraCodeAST("goal", value=goal)
         if len(args) > 1:
             priority = self._extract_value(args[1])
             node.metadata["priority"] = priority
@@ -259,7 +259,7 @@ class NeuroCodeTransformer(Transformer):
     def agent_statement(self, args):
         """Transform agent statement"""
         mode = self._extract_value(args[0]) if args else "on"
-        return NeuroCodeAST("agent", value=mode)
+        return AetherraCodeAST("agent", value=mode)
 
     def agent_mode(self, args):
         """Transform agent mode"""
@@ -269,7 +269,7 @@ class NeuroCodeTransformer(Transformer):
     def remember_stmt(self, args):
         """Transform remember statement"""
         content = self._extract_value(args[0]) if args else ""
-        node = NeuroCodeAST("remember", value=content)
+        node = AetherraCodeAST("remember", value=content)
         if len(args) > 1:
             tag = self._extract_value(args[1])
             node.metadata["tag"] = tag
@@ -278,29 +278,29 @@ class NeuroCodeTransformer(Transformer):
     def recall_stmt(self, args):
         """Transform recall statement"""
         target = self._extract_value(args[0]) if args else ""
-        return NeuroCodeAST("recall", value=target)
+        return AetherraCodeAST("recall", value=target)
 
     def forget_stmt(self, args):
         """Transform forget statement"""
         target = self._extract_value(args[0]) if args else ""
-        return NeuroCodeAST("forget", value=target)
+        return AetherraCodeAST("forget", value=target)
 
     def reflect_stmt(self, args):
         """Transform reflect statement"""
         target = self._extract_value(args[0]) if args else ""
-        return NeuroCodeAST("reflect", value=target)
+        return AetherraCodeAST("reflect", value=target)
 
     def memory_pattern_stmt(self, args):
         """Transform memory pattern statement"""
         pattern = self._extract_value(args[0]) if args else ""
         frequency = self._extract_value(args[1]) if len(args) > 1 else ""
-        return NeuroCodeAST("memory_pattern", value=pattern, metadata={"frequency": frequency})
+        return AetherraCodeAST("memory_pattern", value=pattern, metadata={"frequency": frequency})
 
     # Plugin System
     def plugin_statement(self, args):
         """Transform plugin statement"""
         plugin_name = self._extract_value(args[0]) if args else ""
-        node = NeuroCodeAST("plugin", value=plugin_name)
+        node = AetherraCodeAST("plugin", value=plugin_name)
         if len(args) > 1:
             args_value = self._extract_value(args[1])
             node.metadata["args"] = args_value
@@ -313,7 +313,7 @@ class NeuroCodeTransformer(Transformer):
         params = args[1] if len(args) > 1 and isinstance(args[1], list) else []
         body = args[-1] if args else []
 
-        return NeuroCodeAST(
+        return AetherraCodeAST(
             "function",
             value=func_name,
             children=body if isinstance(body, list) else [body],
@@ -333,7 +333,7 @@ class NeuroCodeTransformer(Transformer):
         """Transform when statement"""
         condition = args[0] if args else None
         block = args[1] if len(args) > 1 else []
-        return NeuroCodeAST(
+        return AetherraCodeAST(
             "when", value=condition, children=block if isinstance(block, list) else [block]
         )
 
@@ -346,12 +346,12 @@ class NeuroCodeTransformer(Transformer):
         children = if_block if isinstance(if_block, list) else [if_block]
         if else_block:
             children.append(
-                NeuroCodeAST(
+                AetherraCodeAST(
                     "else", children=else_block if isinstance(else_block, list) else [else_block]
                 )
             )
 
-        return NeuroCodeAST("if", value=condition, children=children)
+        return AetherraCodeAST("if", value=condition, children=children)
 
     def for_statement(self, args):
         """Transform for statement"""
@@ -359,7 +359,7 @@ class NeuroCodeTransformer(Transformer):
         iterable = args[1] if len(args) > 1 else None
         block = args[2] if len(args) > 2 else []
 
-        return NeuroCodeAST(
+        return AetherraCodeAST(
             "for",
             value=variable,
             children=block if isinstance(block, list) else [block],
@@ -370,7 +370,7 @@ class NeuroCodeTransformer(Transformer):
         """Transform while statement"""
         condition = args[0] if args else None
         block = args[1] if len(args) > 1 else []
-        return NeuroCodeAST(
+        return AetherraCodeAST(
             "while", value=condition, children=block if isinstance(block, list) else [block]
         )
 
@@ -383,7 +383,7 @@ class NeuroCodeTransformer(Transformer):
         """Transform intent action"""
         action = self._extract_value(args[0]) if args else ""
         target = self._extract_value(args[1]) if len(args) > 1 else ""
-        return NeuroCodeAST("intent", value=action, metadata={"target": target})
+        return AetherraCodeAST("intent", value=action, metadata={"target": target})
 
     def action_verb(self, args):
         """Transform action verb"""
@@ -397,7 +397,7 @@ class NeuroCodeTransformer(Transformer):
     def debug_statement(self, args):
         """Transform debug statement"""
         message = self._extract_value(args[0]) if args else ""
-        return NeuroCodeAST("debug", value=message)
+        return AetherraCodeAST("debug", value=message)
 
     # Conditions and Expressions
     def condition(self, args):
@@ -410,27 +410,27 @@ class NeuroCodeTransformer(Transformer):
             left = args[0]
             op = self._extract_value(args[1])
             right = args[2]
-            return NeuroCodeAST("comparison", value=op, children=[left, right])
+            return AetherraCodeAST("comparison", value=op, children=[left, right])
         return args[0] if args else None
 
     def memory_condition(self, args):
         """Transform memory condition"""
         pattern = self._extract_value(args[0]) if args else ""
         frequency = self._extract_value(args[1]) if len(args) > 1 else ""
-        return NeuroCodeAST("memory_condition", value=pattern, metadata={"frequency": frequency})
+        return AetherraCodeAST("memory_condition", value=pattern, metadata={"frequency": frequency})
 
     # Expressions
     def logical_or(self, args):
         """Transform logical OR"""
         if len(args) == 1:
             return args[0]
-        return NeuroCodeAST("logical_or", children=args)
+        return AetherraCodeAST("logical_or", children=args)
 
     def logical_and(self, args):
         """Transform logical AND"""
         if len(args) == 1:
             return args[0]
-        return NeuroCodeAST("logical_and", children=args)
+        return AetherraCodeAST("logical_and", children=args)
 
     def addition(self, args):
         """Transform addition/subtraction"""
@@ -441,7 +441,7 @@ class NeuroCodeTransformer(Transformer):
             op = self._extract_value(args[i])
             right = args[i + 1] if i + 1 < len(args) else None
             if right:
-                result = NeuroCodeAST("binary_op", value=op, children=[result, right])
+                result = AetherraCodeAST("binary_op", value=op, children=[result, right])
         return result
 
     def multiplication(self, args):
@@ -453,7 +453,7 @@ class NeuroCodeTransformer(Transformer):
             op = self._extract_value(args[i])
             right = args[i + 1] if i + 1 < len(args) else None
             if right:
-                result = NeuroCodeAST("binary_op", value=op, children=[result, right])
+                result = AetherraCodeAST("binary_op", value=op, children=[result, right])
         return result
 
     def unary(self, args):
@@ -462,7 +462,7 @@ class NeuroCodeTransformer(Transformer):
             return args[0]
         op = self._extract_value(args[0])
         operand = args[1]
-        return NeuroCodeAST("unary_op", value=op, children=[operand])
+        return AetherraCodeAST("unary_op", value=op, children=[operand])
 
     def primary(self, args):
         """Transform primary expression"""
@@ -475,7 +475,7 @@ class NeuroCodeTransformer(Transformer):
         method_name = self._extract_value(args[1]) if len(args) > 1 else ""
         arguments = args[2] if len(args) > 2 else []
 
-        return NeuroCodeAST(
+        return AetherraCodeAST(
             "method_call",
             value=f"{object_name}.{method_name}",
             children=arguments if isinstance(arguments, list) else [arguments] if arguments else [],
@@ -485,7 +485,7 @@ class NeuroCodeTransformer(Transformer):
     def array_literal(self, args):
         """Transform array literal"""
         elements = args[0] if args else []
-        return NeuroCodeAST(
+        return AetherraCodeAST(
             "array",
             children=elements if isinstance(elements, list) else [elements] if elements else [],
         )
@@ -503,12 +503,12 @@ class NeuroCodeTransformer(Transformer):
         """Transform assignment"""
         variable = self._extract_value(args[0]) if args else ""
         value = args[1] if len(args) > 1 else None
-        return NeuroCodeAST("assignment", value=variable, children=[value] if value else [])
+        return AetherraCodeAST("assignment", value=variable, children=[value] if value else [])
 
     # Expression statement
     def expression_stmt(self, args):
         """Transform expression statement"""
-        return NeuroCodeAST("expression_stmt", children=[args[0]] if args else [])
+        return AetherraCodeAST("expression_stmt", children=[args[0]] if args else [])
 
     # Basic types
     def literal(self, args):
@@ -518,12 +518,12 @@ class NeuroCodeTransformer(Transformer):
     def string_literal(self, args):
         """Transform string literal"""
         value = self._extract_value(args[0]) if args else ""
-        return NeuroCodeAST("string", value=value)
+        return AetherraCodeAST("string", value=value)
 
     def identifier(self, args):
         """Transform identifier"""
         name = self._extract_value(args[0]) if args else ""
-        return NeuroCodeAST("identifier", value=name)
+        return AetherraCodeAST("identifier", value=name)
 
     def number(self, args):
         """Transform number"""
@@ -536,25 +536,25 @@ class NeuroCodeTransformer(Transformer):
                 value = int(value)
         except ValueError:
             value = 0
-        return NeuroCodeAST("number", value=value)
+        return AetherraCodeAST("number", value=value)
 
     def boolean(self, args):
         """Transform boolean"""
         value = self._extract_value(args[0]) if args else "false"
-        return NeuroCodeAST("boolean", value=value.lower() == "true")
+        return AetherraCodeAST("boolean", value=value.lower() == "true")
 
     def null_literal(self, args):
         """Transform null literal"""
-        return NeuroCodeAST("null", value=None)
+        return AetherraCodeAST("null", value=None)
 
     def comment(self, args):
         """Transform comment"""
         text = self._extract_value(args[0]) if args else ""
-        return NeuroCodeAST("comment", value=text)
+        return AetherraCodeAST("comment", value=text)
 
 
 class AetherraParser:
-    """Complete NeuroCode parser with comprehensive language support"""
+    """Complete AetherraCode parser with comprehensive language support"""
 
     def __init__(self):
         """Initialize the parser"""
@@ -562,33 +562,33 @@ class AetherraParser:
             self.parser = Lark(
                 NEUROCODE_GRAMMAR,
                 parser="lalr",
-                transformer=NeuroCodeTransformer(),
+                transformer=AetherraCodeTransformer(),
                 start="program",
             )
         except Exception as e:
-            raise Exception(f"Failed to initialize NeuroCode parser: {e}")
+            raise Exception(f"Failed to initialize AetherraCode parser: {e}")
 
-    def parse(self, code: str) -> NeuroCodeAST:
-        """Parse NeuroCode and return AST"""
+    def parse(self, code: str) -> AetherraCodeAST:
+        """Parse AetherraCode and return AST"""
         try:
             return self.parser.parse(code)
         except ParseError as e:
-            raise ParseError(f"NeuroCode parse error: {e}")
+            raise ParseError(f"AetherraCode parse error: {e}")
         except LexError as e:
-            raise LexError(f"NeuroCode lexical error: {e}")
+            raise LexError(f"AetherraCode lexical error: {e}")
         except Exception as e:
-            raise Exception(f"NeuroCode parsing failed: {e}")
+            raise Exception(f"AetherraCode parsing failed: {e}")
 
-    def parse_file(self, filename: str) -> NeuroCodeAST:
-        """Parse NeuroCode file and return AST"""
+    def parse_file(self, filename: str) -> AetherraCodeAST:
+        """Parse AetherraCode file and return AST"""
         try:
             with open(filename, encoding="utf-8") as f:
                 code = f.read()
             return self.parse(code)
         except FileNotFoundError:
-            raise FileNotFoundError(f"NeuroCode file not found: {filename}")
+            raise FileNotFoundError(f"AetherraCode file not found: {filename}")
         except Exception as e:
-            raise Exception(f"Failed to parse NeuroCode file {filename}: {e}")
+            raise Exception(f"Failed to parse AetherraCode file {filename}: {e}")
 
     def validate_grammar(self) -> bool:
         """Validate the grammar for conflicts"""
@@ -613,10 +613,10 @@ class AetherraParser:
 
 
 def main():
-    """Test the NeuroCode parser"""
+    """Test the AetherraCode parser"""
     parser = AetherraParser()
 
-    print("🧬 NeuroCode Complete Grammar Parser")
+    print("🧬 AetherraCode Complete Grammar Parser")
     print("=" * 50)
 
     # Validate grammar

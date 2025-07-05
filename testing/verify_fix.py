@@ -4,7 +4,7 @@ Minimal test to verify no box-shadow warnings in Qt application
 """
 
 try:
-#     print("Testing Neuroplex import and CSS parsing...")
+    #     print("Testing Lyrixa import and CSS parsing...")
 
     # Import and test the core components
 

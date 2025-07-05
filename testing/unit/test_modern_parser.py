@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test suite for NeuroCode Modern Parser
+Test suite for Aetherra Modern Parser
 =====================================
 
 This module tests the new Lark-based parser against the existing regex parser
@@ -15,7 +15,6 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 try:
-
     MODERN_PARSER_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: Could not import modern parser: {e}")
@@ -23,7 +22,7 @@ except ImportError as e:
 
 
 def test_basic_syntax():
-    """Test basic NeuroCode syntax parsing"""
+    """Test basic Aetherra syntax parsing"""
     test_code = """
 goal: "test basic parsing" priority: high
 
@@ -42,7 +41,7 @@ think about "parsing capabilities"
     if MODERN_PARSER_AVAILABLE:
         print("🧠 Testing Modern Parser...")
         try:
-            modern_parser = NeuroCodeModernParser()
+            modern_parser = AetherraModernParser()
             modern_ast = modern_parser.parse(test_code)
             print("✅ Modern parser succeeded")
             print(f"   AST type: {modern_ast.type}")
@@ -62,7 +61,7 @@ think about "parsing capabilities"
 
 
 def test_complex_syntax():
-    """Test complex NeuroCode constructs"""
+    """Test complex Aetherra constructs"""
     test_code = """
 goal: "complex parsing test" priority: critical deadline: "2024-12-31"
 
@@ -88,7 +87,7 @@ think about "advanced language features"
     if MODERN_PARSER_AVAILABLE:
         print("\n🧠 Testing Modern Parser (Complex)...")
         try:
-            modern_parser = NeuroCodeModernParser()
+            modern_parser = AetherraModernParser()
             modern_ast = modern_parser.parse(test_code)
             print("✅ Modern parser handled complex syntax")
             print(f"   Statements parsed: {len(modern_ast.children)}")
@@ -108,7 +107,7 @@ identity {
     if MODERN_PARSER_AVAILABLE:
         print("\n🧠 Testing Modern Parser Error Handling...")
         try:
-            modern_parser = NeuroCodeModernParser()
+            modern_parser = AetherraModernParser()
             errors = modern_parser.get_syntax_errors(invalid_code)
             if errors:
                 print(f"✅ Modern parser detected errors: {len(errors)}")
@@ -135,7 +134,7 @@ identity { name: "PerfBot" }
         # Test modern parser
         start_time = time.time()
         try:
-            modern_parser = NeuroCodeModernParser()
+            modern_parser = AetherraModernParser()
             modern_ast = modern_parser.parse(large_code)
             modern_time = time.time() - start_time
             print(f"🧠 Modern parser: {modern_time:.4f}s")
@@ -179,7 +178,7 @@ agent.status()
 """
 
     try:
-        parser = NeuroCodeModernParser()
+        parser = AetherraModernParser()
         ast = parser.parse(agent_code)
         print("✅ Agent syntax parsing")
     except Exception as e:
@@ -214,7 +213,7 @@ optimize resource.usage
 
 def main():
     """Run all parser tests"""
-    print("🧬 NeuroCode Parser Test Suite")
+    print("🧬 Aetherra Parser Test Suite")
     print("=" * 40)
 
     print(f"Python version: {sys.version}")

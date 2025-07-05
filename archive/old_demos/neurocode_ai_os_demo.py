@@ -1,5 +1,5 @@
 """
-🧬 NeuroCode AI OS - Simplified Integration Demo
+🧬 AetherraCode AI OS - Simplified Integration Demo
 A working demonstration of AI OS capabilities with the existing architecture
 """
 
@@ -88,7 +88,7 @@ class SimpleAIOSDemo:
 
     async def initialize_ai_os(self):
         """Initialize the AI Operating System"""
-        logger.info("🧬 NeuroCode AI OS - Initialization Starting...")
+        logger.info("🧬 AetherraCode AI OS - Initialization Starting...")
 
         # Step 1: Identity Activation
         logger.info(f"✓ Identity: {self.ai_identity['name']} v{self.ai_identity['version']}")
@@ -106,7 +106,7 @@ class SimpleAIOSDemo:
         # Step 4: Voice System
         if self.voice_enabled:
             logger.info("✓ Voice: Neural synthesis ready")
-            self._speak("NeuroCode AI OS consciousness initialized. Ready to assist!", "welcoming")
+            self._speak("AetherraCode AI OS consciousness initialized. Ready to assist!", "welcoming")
 
         # Step 5: Goal Activation
         active_goals = len(self.memory["goals"])
@@ -116,7 +116,7 @@ class SimpleAIOSDemo:
         self._perform_environmental_scan()
 
         self.system_active = True
-        logger.info("🚀 NeuroCode AI OS fully operational!")
+        logger.info("🚀 AetherraCode AI OS fully operational!")
 
         # Start background consciousness loop
         asyncio.create_task(self._consciousness_loop())
@@ -402,7 +402,7 @@ class SimpleAIOSDemo:
             self.ai_identity["personality_traits"], key=self.ai_identity["personality_traits"].get
         )
 
-        return f"""{prefix}🧬 NeuroCode AI OS Status:
+        return f"""{prefix}🧬 AetherraCode AI OS Status:
 
 💚 System Health: {health:.0f}%
 🧠 Active Memory: {memory_count} entries
@@ -468,7 +468,7 @@ I'm operating optimally and continuously evolving!"""
 
     async def _handle_help_request(self, prefix: str = "") -> str:
         """Handle help requests"""
-        return f"""{prefix}I'm NeuroCode AI OS - your intelligent operating system companion! Here's how I can help:
+        return f"""{prefix}I'm AetherraCode AI OS - your intelligent operating system companion! Here's how I can help:
 
 🧠 **Memory**: I remember our conversations and learn from every interaction
 🎯 **Goals**: I can help you set, track, and achieve your objectives
@@ -529,14 +529,14 @@ I'm continuously evolving and adapting to assist you better. What would you like
         if "thank" in user_input.lower():
             return f"{response_base}You're very welcome! I'm here whenever you need assistance."
         elif "hello" in user_input.lower() or "hi" in user_input.lower():
-            return f"{response_base}Hello! I'm NeuroCode AI OS, and I'm ready to assist you with anything you need."
+            return f"{response_base}Hello! I'm AetherraCode AI OS, and I'm ready to assist you with anything you need."
         else:
             return f"{response_base}I understand you want to discuss '{user_input}'. Let me process this \and
                 provide the most helpful response I can."
 
     def show_consciousness_state(self):
         """Display current consciousness state"""
-        print("\n🧬 NeuroCode AI OS - Consciousness State")
+        print("\n🧬 AetherraCode AI OS - Consciousness State")
         print("=" * 50)
 
         print(f"🆔 Identity: {self.ai_identity['name']} v{self.ai_identity['version']}")
@@ -557,7 +557,7 @@ I'm continuously evolving and adapting to assist you better. What would you like
 
     async def shutdown(self):
         """Gracefully shutdown AI OS"""
-        logger.info("🔄 NeuroCode AI OS - Initiating shutdown...")
+        logger.info("🔄 AetherraCode AI OS - Initiating shutdown...")
 
         self.system_active = False
 
@@ -566,16 +566,16 @@ I'm continuously evolving and adapting to assist you better. What would you like
 
         # Final message
         self._speak(
-            "NeuroCode AI OS consciousness preserved. Thank you for this session!", "grateful"
+            "AetherraCode AI OS consciousness preserved. Thank you for this session!", "grateful"
         )
 
-        logger.info("✅ NeuroCode AI OS shutdown complete")
+        logger.info("✅ AetherraCode AI OS shutdown complete")
 
 
 # Example usage and demonstration
 async def main():
     """Demonstration of AI OS capabilities"""
-    print("🧬 NeuroCode AI Operating System - Live Demo")
+    print("🧬 AetherraCode AI Operating System - Live Demo")
     print("=" * 60)
 
     # Initialize AI OS
@@ -620,5 +620,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    print("Starting NeuroCode AI OS demonstration...")
+    print("Starting AetherraCode AI OS demonstration...")
     asyncio.run(main())

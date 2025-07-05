@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode File Runner - Execute .aether Files
+🧬 AetherraCode File Runner - Execute .aether Files
 ==============================================
 
-A comprehensive runner for NeuroCode .aether files that enables:
+A comprehensive runner for AetherraCode .aether files that enables:
 - Command line execution: `python neuro_runner.py monitor.aether`
 - Programmatic execution: `runner.run_file("monitor.aether")`
-- Integration with neuroplex: `neuroplex run monitor.aether`
+- Integration with aetherplex: `aetherplex run monitor.aether`
 
-This bridges the gap between NeuroCode syntax and practical file execution,
-making NeuroCode a true standalone programming language.
+This bridges the gap between AetherraCode syntax and practical file execution,
+making AetherraCode a true standalone programming language.
 """
 
 import argparse
@@ -23,17 +23,17 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "core"))
 
-# Import NeuroCode components
+# Import AetherraCode components
 try:
     from core.enhanced_interpreter import EnhancedAetherraInterpreter
     from core.aetherra_memory import AetherraMemory
     # Note: PluginManager is not a class but a collection of functions
 except ImportError as e:
-    print(f"⚠️ Some NeuroCode components not available: {e}")
+    print(f"⚠️ Some AetherraCode components not available: {e}")
 
 
-class NeuroCodeFileRunner:
-    """Runner for executing .aether files with full NeuroCode capabilities"""
+class AetherraCodeFileRunner:
+    """Runner for executing .aether files with full AetherraCode capabilities"""
 
     def __init__(self, verbose: bool = False):
         self.verbose = verbose
@@ -51,11 +51,11 @@ class NeuroCodeFileRunner:
         self._initialize_components()
 
     def _initialize_components(self):
-        """Initialize NeuroCode runtime components"""
+        """Initialize AetherraCode runtime components"""
         try:
             self.interpreter = EnhancedAetherraInterpreter()
             if self.verbose:
-                print("✅ NeuroCode interpreter initialized")
+                print("✅ AetherraCode interpreter initialized")
         except Exception as e:
             print(f"⚠️ Interpreter initialization warning: {e}")
 
@@ -89,12 +89,12 @@ class NeuroCodeFileRunner:
 
         # Validate file
         if not file_path_obj.exists():
-            raise FileNotFoundError(f"NeuroCode file not found: {file_path_obj}")
+            raise FileNotFoundError(f"AetherraCode file not found: {file_path_obj}")
 
         if file_path_obj.suffix != ".aether":
             raise ValueError(f"Expected .aether file, got: {file_path_obj.suffix}")
 
-        print(f"🧬 Executing NeuroCode file: {file_path_obj.name}")
+        print(f"🧬 Executing AetherraCode file: {file_path_obj.name}")
         print("=" * 50)
 
         # Read file content
@@ -167,7 +167,7 @@ class NeuroCodeFileRunner:
         return results
 
     def _execute_line(self, line: str, line_num: int) -> Optional[str]:
-        """Execute a single line of NeuroCode"""
+        """Execute a single line of AetherraCode"""
 
         # Memory operations
         if line.startswith("remember("):
@@ -365,7 +365,7 @@ class NeuroCodeFileRunner:
     def _print_execution_summary(self, results: Dict[str, Any]):
         """Print execution summary"""
         print("\\n" + "=" * 50)
-        print("🧬 NeuroCode Execution Summary")
+        print("🧬 AetherraCode Execution Summary")
         print("=" * 50)
 
         stats = results["stats"]
@@ -384,13 +384,13 @@ class NeuroCodeFileRunner:
         if stats["warnings"] > 0:
             print(f"⚠️ Warnings: {stats['warnings']}")
 
-        print("\\n🎉 NeuroCode execution complete!")
+        print("\\n🎉 AetherraCode execution complete!")
 
 
 def main():
-    """Command line interface for NeuroCode file runner"""
+    """Command line interface for AetherraCode file runner"""
     parser = argparse.ArgumentParser(
-        description="🧬 NeuroCode File Runner - Execute .aether files",
+        description="🧬 AetherraCode File Runner - Execute .aether files",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -398,7 +398,7 @@ Examples:
   python neuro_runner.py examples/basic_memory.aether --verbose
   python neuro_runner.py advanced_syntax_demo.aether -v
 
-This enables the vision of: neuroplex run monitor.aether
+This enables the vision of: aetherplex run monitor.aether
         """,
     )
 
@@ -417,7 +417,7 @@ This enables the vision of: neuroplex run monitor.aether
 
     try:
         # Create and run the file
-        runner = NeuroCodeFileRunner(verbose=args.verbose)
+        runner = AetherraCodeFileRunner(verbose=args.verbose)
         results = runner.run_file(args.file)
 
         # Optional detailed stats

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-🧠 NeuroCode Memory Performance Optimizer
+🧠 AetherraCode Memory Performance Optimizer
 =========================================
 
-Advanced memory management and optimization for NeuroCode operations.
+Advanced memory management and optimization for AetherraCode operations.
 Optimizes memory usage, reduces garbage collection overhead, and provides
-intelligent caching for NeuroCode syntax parsing, AI operations, and data processing.
+intelligent caching for AetherraCode syntax parsing, AI operations, and data processing.
 
 Features:
 - Smart memory pooling for frequent operations
-- Efficient string interning for NeuroCode keywords
+- Efficient string interning for AetherraCode keywords
 - Optimized data structures for parsing and AST operations
 - Memory-mapped file operations for large datasets
 - Garbage collection optimization and monitoring
@@ -41,10 +41,10 @@ class MemorySnapshot:
 
 
 class StringInterningPool:
-    """Efficient string interning for NeuroCode keywords and common patterns"""
+    """Efficient string interning for AetherraCode keywords and common patterns"""
 
     def __init__(self):
-        # Common NeuroCode keywords
+        # Common AetherraCode keywords
         self.aethercode_keywords = {
             "goal",
             "remember",
@@ -223,7 +223,7 @@ class MemoryMappedFileHandler:
 
 
 class GarbageCollectionOptimizer:
-    """Optimize garbage collection for NeuroCode operations"""
+    """Optimize garbage collection for AetherraCode operations"""
 
     def __init__(self):
         # Get current GC thresholds
@@ -231,11 +231,11 @@ class GarbageCollectionOptimizer:
         self.gc_stats = []
         self.last_collection = time.time()
 
-        # Optimize for NeuroCode workloads
+        # Optimize for AetherraCode workloads
         self._optimize_gc_settings()
 
     def _optimize_gc_settings(self) -> None:
-        """Optimize GC settings for typical NeuroCode usage patterns"""
+        """Optimize GC settings for typical AetherraCode usage patterns"""
         # Increase thresholds for generation 0 (temporary objects)
         # This reduces frequent collections of short-lived parsing objects
         threshold0, threshold1, threshold2 = self.original_thresholds
@@ -289,7 +289,7 @@ class GarbageCollectionOptimizer:
 
 
 class MemoryProfiler:
-    """Advanced memory profiling for NeuroCode operations"""
+    """Advanced memory profiling for AetherraCode operations"""
 
     def __init__(self):
         self.snapshots = deque(maxlen=100)
@@ -364,8 +364,8 @@ class MemoryProfiler:
         }
 
 
-class NeuroCodeMemoryOptimizer:
-    """Main memory optimizer for NeuroCode operations"""
+class AetherraCodeMemoryOptimizer:
+    """Main memory optimizer for AetherraCode operations"""
 
     def __init__(self):
         self.string_pool = StringInterningPool()
@@ -482,7 +482,7 @@ class NeuroCodeMemoryOptimizer:
 
 
 # Global memory optimizer instance
-memory_optimizer = NeuroCodeMemoryOptimizer()
+memory_optimizer = AetherraCodeMemoryOptimizer()
 
 
 # Context manager for memory profiling
@@ -538,8 +538,8 @@ def memory_optimized(intern_strings: bool = True, use_pools: bool = True):
 
 
 # Utility functions
-def optimize_neurocode_memory() -> Dict[str, Any]:
-    """Optimize memory for NeuroCode operations"""
+def optimize_aethercode_memory() -> Dict[str, Any]:
+    """Optimize memory for AetherraCode operations"""
     return memory_optimizer.optimize_memory()
 
 
@@ -550,7 +550,7 @@ def get_memory_status() -> Dict[str, Any]:
 
 if __name__ == "__main__":
     # Example usage
-    print("🧠 NeuroCode Memory Optimizer")
+    print("🧠 AetherraCode Memory Optimizer")
     print("=" * 50)
 
     # Test string interning

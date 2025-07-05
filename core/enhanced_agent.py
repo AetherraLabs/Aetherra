@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-🤖 Enhanced NeuroCode Agent System
+🤖 Enhanced AetherraCode Agent System
 ==================================
 
 Advanced autonomous agent with:
 - Background threading for continuous operation
 - Goal-monitoring reflection loop with intelligent state tracking
 - Periodic triggers for context-aware actions
-- Deep integration with NeuroCode (blood) and Neuroplex (face)
+- Deep integration with AetherraCode (blood) and Neuroplex (face)
 - Real-time collaboration with user workflow
 
 The agent operates as the autonomous intelligence layer of the AI OS,
@@ -23,7 +23,7 @@ from enum import Enum
 from queue import Empty, Queue
 from typing import Any, Callable, Dict, List, Optional
 
-# Core NeuroCode imports
+# Core AetherraCode imports
 try:
     from core.aetherra_memory import AetherraMemory
 except ImportError:
@@ -84,7 +84,7 @@ class AgentContext:
     user_presence: bool = True
     active_session_time: float = 0.0
     last_interaction: Optional[datetime] = None
-    neuroplex_active: bool = False
+    aetherplex_active: bool = False
 
 
 @dataclass
@@ -101,7 +101,7 @@ class AgentTrigger:
 
 
 class EnhancedNeuroAgent:
-    """Enhanced autonomous agent for NeuroCode/Neuroplex integration"""
+    """Enhanced autonomous agent for AetherraCode/Neuroplex integration"""
 
     def __init__(
         self,
@@ -147,12 +147,12 @@ class EnhancedNeuroAgent:
             "actions_triggered": 0,
             "patterns_detected": 0,
             "reflections_generated": 0,
-            "neuroplex_interactions": 0,
+            "aetherplex_interactions": 0,
         }
 
         # Initialize triggers
         self._setup_default_triggers()
-        self._setup_neuroplex_integration()
+        self._setup_aetherplex_integration()
 
     def start(self):
         """Start the agent background process"""
@@ -296,7 +296,7 @@ class EnhancedNeuroAgent:
 
             # Suggest improvements to Neuroplex if active
             if self.context.aetherplex_active:
-                self._suggest_neuroplex_improvements(insights, patterns)
+                self._suggest_aetherplex_improvements(insights, patterns)
 
             self.stats["reflections_generated"] += 1
 
@@ -345,7 +345,7 @@ class EnhancedNeuroAgent:
             # Analyze user behavior patterns
             behavior_patterns = self._analyze_behavior_patterns()
 
-            # Analyze NeuroCode usage patterns
+            # Analyze AetherraCode usage patterns
             code_patterns = self._analyze_code_patterns()
 
             # Combine insights
@@ -410,13 +410,13 @@ class EnhancedNeuroAgent:
             cooldown_seconds=600,
         )
 
-    def _setup_neuroplex_integration(self):
+    def _setup_aetherplex_integration(self):
         """Setup integration hooks with Neuroplex"""
         self.aetherplex_hooks = {
-            "on_user_action": self._on_neuroplex_user_action,
-            "on_code_execution": self._on_neuroplex_code_execution,
-            "on_goal_update": self._on_neuroplex_goal_update,
-            "on_memory_operation": self._on_neuroplex_memory_operation,
+            "on_user_action": self._on_aetherplex_user_action,
+            "on_code_execution": self._on_aetherplex_code_execution,
+            "on_goal_update": self._on_aetherplex_goal_update,
+            "on_memory_operation": self._on_aetherplex_memory_operation,
         }
 
     def add_trigger(
@@ -466,7 +466,7 @@ class EnhancedNeuroAgent:
             "context": {
                 "current_goals": len(self.context.current_goals),
                 "user_presence": self.context.user_presence,
-                "neuroplex_active": self.context.aetherplex_active,
+                "aetherplex_active": self.context.aetherplex_active,
                 "last_interaction": self.context.last_interaction.isoformat()
                 if self.context.last_interaction
                 else None,
@@ -497,16 +497,16 @@ class EnhancedNeuroAgent:
         self.context.current_goals.append(goal)
 
     # Neuroplex Integration Methods
-    def _on_neuroplex_user_action(self, action_data: Dict[str, Any]):
+    def _on_aetherplex_user_action(self, action_data: Dict[str, Any]):
         """Handle user actions from Neuroplex"""
         self.context.last_interaction = datetime.now()
         self.context.user_presence = True
-        self.stats["neuroplex_interactions"] += 1
+        self.stats["aetherplex_interactions"] += 1
 
         # Analyze action for learning
         self._learn_from_user_action(action_data)
 
-    def _suggest_neuroplex_improvements(self, insights: str, patterns: Dict[str, Any]):
+    def _suggest_aetherplex_improvements(self, insights: str, patterns: Dict[str, Any]):
         """Suggest improvements to Neuroplex interface"""
         suggestions = {
             "insights": insights,
@@ -518,7 +518,7 @@ class EnhancedNeuroAgent:
         # Store suggestions for Neuroplex to retrieve
         self.memory.remember(
             f"Neuroplex improvement suggestions: {json.dumps(suggestions)}",
-            tags=["neuroplex_suggestions", "ui_improvements"],
+            tags=["aetherplex_suggestions", "ui_improvements"],
             category="interface_optimization",
         )
 
@@ -715,7 +715,7 @@ def create_enhanced_agent(
 
 def main():
     """Demo of the enhanced agent system"""
-    print("🤖 Enhanced NeuroCode Agent System Demo")
+    print("🤖 Enhanced AetherraCode Agent System Demo")
     print("=" * 50)
 
     # Create agent

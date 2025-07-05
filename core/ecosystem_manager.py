@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Ecosystem Manager
+🧬 AetherraCode Ecosystem Manager
 Advanced plugin discovery, AI network coordination, and deployment management
 
-This system establishes NeuroCode as the universal standard by providing:
+This system establishes AetherraCode as the universal standard by providing:
 - Dynamic plugin ecosystem
 - AI network coordination
 - Cross-platform deployment
@@ -175,7 +175,7 @@ class PluginEcosystem:
             else:
                 # Install from marketplace
                 print(f"🔍 Searching marketplace for {plugin_name}...")
-                # This would connect to the NeuroCode plugin marketplace
+                # This would connect to the AetherraCode plugin marketplace
                 print(f"⚠️  Marketplace not yet implemented. Use local installation.")
                 return False
 
@@ -223,7 +223,7 @@ class PluginEcosystem:
 
 class AINetworkCoordinator:
     """
-    Coordinates NeuroCode execution across AI networks
+    Coordinates AetherraCode execution across AI networks
     """
 
     def __init__(self):
@@ -345,7 +345,7 @@ class AINetworkCoordinator:
 
 class UniversalDeploymentManager:
     """
-    Manages NeuroCode deployment across different platforms and environments
+    Manages AetherraCode deployment across different platforms and environments
     """
 
     def __init__(self):
@@ -359,7 +359,7 @@ class UniversalDeploymentManager:
     def deploy_neurocode(
         self, program_path: str, target: str, config: Optional[Dict] = None
     ) -> Dict:
-        """Deploy NeuroCode program to specified target"""
+        """Deploy AetherraCode program to specified target"""
         if target not in self.deployment_targets:
             return {"status": "error", "message": f"Unknown target: {target}"}
 
@@ -367,7 +367,7 @@ class UniversalDeploymentManager:
             deployment_handler = self.deployment_targets[target]
             result = deployment_handler.deploy(program_path, config or {})
 
-            print(f"🚀 NeuroCode deployed to {target}: {result['status']}")
+            print(f"🚀 AetherraCode deployed to {target}: {result['status']}")
             return result
 
         except Exception as e:
@@ -404,9 +404,9 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from neuroplex import NeuroCodeRuntime
+from aetherplex import AetherraCodeRuntime
 
-runtime = NeuroCodeRuntime()
+runtime = AetherraCodeRuntime()
 runtime.run_file("{program_name}.aether")
 """)
 
@@ -447,9 +447,9 @@ class MobileDeployment:
         return {"status": "not_implemented", "message": "Mobile deployment coming soon"}
 
 
-class NeuroCodeEcosystemManager:
+class AetherraCodeEcosystemManager:
     """
-    Central manager for the entire NeuroCode ecosystem
+    Central manager for the entire AetherraCode ecosystem
     """
 
     def __init__(self):
@@ -458,8 +458,8 @@ class NeuroCodeEcosystemManager:
         self.deployment_manager = UniversalDeploymentManager()
 
     def initialize_ecosystem(self):
-        """Initialize the complete NeuroCode ecosystem"""
-        print("🧬 Initializing NeuroCode Ecosystem...")
+        """Initialize the complete AetherraCode ecosystem"""
+        print("🧬 Initializing AetherraCode Ecosystem...")
 
         # Discover plugins
         plugins = self.plugin_ecosystem.discover_plugins()
@@ -472,7 +472,7 @@ class NeuroCodeEcosystemManager:
             "localhost:8000",
         )
 
-        print("✅ NeuroCode Ecosystem initialized successfully!")
+        print("✅ AetherraCode Ecosystem initialized successfully!")
 
     def get_ecosystem_status(self) -> Dict:
         """Get comprehensive ecosystem status"""
@@ -497,23 +497,23 @@ def main():
     """Main entry point for ecosystem management"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="NeuroCode Ecosystem Manager")
+    parser = argparse.ArgumentParser(description="AetherraCode Ecosystem Manager")
     parser.add_argument("--init", action="store_true", help="Initialize ecosystem")
     parser.add_argument("--status", action="store_true", help="Show ecosystem status")
     parser.add_argument("--discover", action="store_true", help="Discover plugins")
     parser.add_argument("--install-plugin", type=str, help="Install plugin")
-    parser.add_argument("--deploy", type=str, help="Deploy NeuroCode program")
+    parser.add_argument("--deploy", type=str, help="Deploy AetherraCode program")
     parser.add_argument("--target", type=str, default="local", help="Deployment target")
 
     args = parser.parse_args()
 
-    manager = NeuroCodeEcosystemManager()
+    manager = AetherraCodeEcosystemManager()
 
     if args.init:
         manager.initialize_ecosystem()
     elif args.status:
         status = manager.get_ecosystem_status()
-        print("🧬 NeuroCode Ecosystem Status:")
+        print("🧬 AetherraCode Ecosystem Status:")
         print(json.dumps(status, indent=2))
     elif args.discover:
         plugins = manager.plugin_ecosystem.discover_plugins()

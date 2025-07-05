@@ -1,0 +1,7278 @@
+{
+  "timestamp": "2025-07-03T16:31:09.110343",
+  "files_analyzed": 476,
+  "total_warnings": 1037,
+  "severity_breakdown": {
+    "low": 1008,
+    "medium": 29,
+    "high": 0
+  },
+  "category_breakdown": {
+    "debug_print": 901,
+    "long_line": 104,
+    "global_variable": 8,
+    "bare_except": 21,
+    "todo_comment": 3
+  },
+  "detailed_warnings": [
+    {
+      "file": "aetherra_housekeeping.py",
+      "line": 119,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "aetherra_housekeeping.py",
+      "line": 177,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "aetherra_launcher.py",
+      "line": 60,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "final_aetherra_cleanup.py",
+      "line": 92,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "final_aetherra_cleanup.py",
+      "line": 158,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "warning_fixer.py",
+      "line": 331,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "website_enhancement_finalizer.py",
+      "line": 279,
+      "type": "long_line",
+      "message": "Line too long (138 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\advanced_performance_engine.py",
+      "line": 485,
+      "type": "global_variable",
+      "message": "Global variable usage",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\advanced_performance_engine.py",
+      "line": 600,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\advanced_performance_engine.py",
+      "line": 610,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\aetherra_grammar.py",
+      "line": 622,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\ai_identity_system.py",
+      "line": 568,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\ai_os_integration.py",
+      "line": 790,
+      "type": "long_line",
+      "message": "Line too long (136 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\block_executor.py",
+      "line": 333,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\chat_enhancements.py",
+      "line": 630,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\debug_system.py",
+      "line": 164,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\ecosystem_manager.py",
+      "line": 98,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\enhanced_aetherra_grammar.py",
+      "line": 821,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\enhanced_aetherra_grammar.py",
+      "line": 901,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\enhanced_aetherra_grammar.py",
+      "line": 928,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\enhanced_aetherra_grammar.py",
+      "line": 930,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\enhanced_aetherra_grammar.py",
+      "line": 933,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\enhanced_aetherra_grammar.py",
+      "line": 941,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\enhanced_aetherra_grammar.py",
+      "line": 943,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\enhanced_aetherra_interpreter.py",
+      "line": 256,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\enhanced_parser.py",
+      "line": 760,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\goal_system.py",
+      "line": 178,
+      "type": "long_line",
+      "message": "Line too long (121 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\intent_parser.py",
+      "line": 697,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\interpreter_original.py",
+      "line": 1104,
+      "type": "long_line",
+      "message": "Line too long (178 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\interpreter_original.py",
+      "line": 1294,
+      "type": "long_line",
+      "message": "Line too long (129 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\interpreter_original.py",
+      "line": 1305,
+      "type": "long_line",
+      "message": "Line too long (151 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\interpreter_original.py",
+      "line": 1308,
+      "type": "long_line",
+      "message": "Line too long (124 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\local_ai.py",
+      "line": 286,
+      "type": "todo_comment",
+      "message": "TODO/FIXME comment: return f\"# TODO: Implement intent-to-code for: {intent}\"",
+      "severity": "low"
+    },
+    {
+      "file": "core\\local_ai.py",
+      "line": 346,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\local_ai.py",
+      "line": 360,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\meta_plugins.py",
+      "line": 54,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\meta_plugins.py",
+      "line": 128,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\meta_plugins.py",
+      "line": 295,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\multi_agent_manager.py",
+      "line": 217,
+      "type": "long_line",
+      "message": "Line too long (121 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\multi_agent_manager.py",
+      "line": 393,
+      "type": "long_line",
+      "message": "Line too long (120 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\persona_engine.py",
+      "line": 511,
+      "type": "global_variable",
+      "message": "Global variable usage",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\persona_engine.py",
+      "line": 521,
+      "type": "global_variable",
+      "message": "Global variable usage",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\plugin_manager.py",
+      "line": 320,
+      "type": "global_variable",
+      "message": "Global variable usage",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\production_aetherra_grammar.py",
+      "line": 633,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\production_aetherra_grammar.py",
+      "line": 650,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\refined_aetherra_grammar.py",
+      "line": 628,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\refined_aetherra_grammar.py",
+      "line": 705,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\refined_aetherra_grammar.py",
+      "line": 728,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\refined_aetherra_grammar.py",
+      "line": 730,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\refined_aetherra_grammar.py",
+      "line": 733,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\refined_aetherra_grammar.py",
+      "line": 740,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\speed_enhancement_suite.py",
+      "line": 337,
+      "type": "global_variable",
+      "message": "Global variable usage",
+      "severity": "medium"
+    },
+    {
+      "file": "core\\speed_enhancement_suite.py",
+      "line": 431,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\speed_enhancement_suite.py",
+      "line": 454,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\stability.py",
+      "line": 324,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\stability.py",
+      "line": 329,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\stability.py",
+      "line": 335,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\universal_ai.py",
+      "line": 104,
+      "type": "long_line",
+      "message": "Line too long (169 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\universal_ai.py",
+      "line": 119,
+      "type": "long_line",
+      "message": "Line too long (133 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\universal_ai.py",
+      "line": 125,
+      "type": "long_line",
+      "message": "Line too long (140 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\vector_memory.py",
+      "line": 448,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\vector_memory.py",
+      "line": 472,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 32,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 41,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 51,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 56,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 67,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 70,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 75,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 84,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 87,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 90,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 109,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 124,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 127,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 144,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 150,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 157,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 160,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 166,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 181,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\comprehensive_demo.py",
+      "line": 200,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\demo_ui_features.py",
+      "line": 73,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "demos\\interpreter_enhancement_demo.py",
+      "line": 398,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\interpreter_enhancement_demo.py",
+      "line": 400,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "demos\\plugin_metadata_demo.py",
+      "line": 206,
+      "type": "long_line",
+      "message": "Line too long (127 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "examples\\ui_enhancement_showcase.py",
+      "line": 99,
+      "type": "long_line",
+      "message": "Line too long (137 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "examples\\ui_enhancement_showcase.py",
+      "line": 293,
+      "type": "long_line",
+      "message": "Line too long (139 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\analysis_test.py",
+      "line": 26,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\analysis_test.py",
+      "line": 53,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\analysis_test.py",
+      "line": 75,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\analyze_duplicates.py",
+      "line": 138,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\analyze_duplicates.py",
+      "line": 152,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\analyze_duplicates.py",
+      "line": 350,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\cleanup_test_duplicates.py",
+      "line": 20,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\cleanup_test_duplicates.py",
+      "line": 49,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\cleanup_test_duplicates.py",
+      "line": 53,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\cleanup_test_duplicates.py",
+      "line": 64,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\cleanup_test_duplicates.py",
+      "line": 65,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\cleanup_test_duplicates.py",
+      "line": 92,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\cleanup_test_duplicates.py",
+      "line": 107,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\cleanup_test_duplicates.py",
+      "line": 133,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\cleanup_test_duplicates.py",
+      "line": 140,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 38,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 45,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 83,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 118,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 156,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 192,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 252,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 295,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 333,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 367,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 369,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 397,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 407,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\comprehensive_system_test.py",
+      "line": 425,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\IMPORT_FIX_COMPLETE.py",
+      "line": 19,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\IMPORT_FIX_COMPLETE.py",
+      "line": 48,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\IMPORT_FIX_COMPLETE.py",
+      "line": 75,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\IMPORT_FIX_COMPLETE.py",
+      "line": 76,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\IMPORT_FIX_COMPLETE.py",
+      "line": 77,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\live_system_test.py",
+      "line": 15,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\live_system_test.py",
+      "line": 33,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\live_system_test.py",
+      "line": 46,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\live_system_test.py",
+      "line": 81,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\live_system_test.py",
+      "line": 107,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\live_system_test.py",
+      "line": 138,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\live_system_test.py",
+      "line": 165,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\live_system_test.py",
+      "line": 181,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\live_system_test.py",
+      "line": 186,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\live_system_test.py",
+      "line": 194,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\live_system_test.py",
+      "line": 196,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\performance_monitor.py",
+      "line": 346,
+      "type": "global_variable",
+      "message": "Global variable usage",
+      "severity": "medium"
+    },
+    {
+      "file": "scripts\\prepare_github_publication.py",
+      "line": 113,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\prepare_github_publication.py",
+      "line": 130,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\prepare_github_publication.py",
+      "line": 134,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\prepare_github_publication.py",
+      "line": 141,
+      "type": "long_line",
+      "message": "Line too long (156 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\quick_duplicate_cleanup.py",
+      "line": 48,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "scripts\\quick_duplicate_cleanup.py",
+      "line": 80,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "scripts\\quick_duplicate_cleanup.py",
+      "line": 157,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\quick_functionality_test.py",
+      "line": 14,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\quick_functionality_test.py",
+      "line": 85,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "scripts\\quick_functionality_test.py",
+      "line": 131,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\quick_functionality_test.py",
+      "line": 136,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\quick_functionality_test.py",
+      "line": 138,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\quick_functionality_test.py",
+      "line": 141,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\resolve_dependencies.py",
+      "line": 30,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\resolve_dependencies.py",
+      "line": 59,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "scripts\\setup_enhancements.py",
+      "line": 179,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\setup_enhancements.py",
+      "line": 219,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\setup_enhancements.py",
+      "line": 226,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\setup_optimization.py",
+      "line": 131,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\setup_vscode_extensions.py",
+      "line": 143,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\setup_vscode_extensions.py",
+      "line": 145,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\simple_duplicate_check.py",
+      "line": 17,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "scripts\\verify_ai_enhancements_complete.py",
+      "line": 16,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_ai_enhancements_complete.py",
+      "line": 43,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_ai_enhancements_complete.py",
+      "line": 78,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_ai_enhancements_complete.py",
+      "line": 102,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_ai_enhancements_complete.py",
+      "line": 148,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_ai_enhancements_complete.py",
+      "line": 159,
+      "type": "long_line",
+      "message": "Line too long (120 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_ai_enhancements_complete.py",
+      "line": 169,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_cleanup.py",
+      "line": 34,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_cleanup.py",
+      "line": 40,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_cleanup.py",
+      "line": 41,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_cleanup.py",
+      "line": 44,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_cleanup.py",
+      "line": 46,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 12,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 42,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 48,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 88,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 94,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 124,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 133,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 139,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 169,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 175,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 195,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\verify_enhancements.py",
+      "line": 198,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\view_overview.py",
+      "line": 126,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\workspace_analysis.py",
+      "line": 222,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\workspace_analysis.py",
+      "line": 355,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 32,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 41,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 51,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 56,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 67,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 70,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 75,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 84,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 87,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 90,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 109,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 124,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 127,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 144,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 150,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 157,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 160,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 166,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 181,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\comprehensive_demo.py",
+      "line": 200,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\natural_translator.py",
+      "line": 48,
+      "type": "long_line",
+      "message": "Line too long (138 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\natural_translator.py",
+      "line": 50,
+      "type": "long_line",
+      "message": "Line too long (120 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\natural_translator.py",
+      "line": 57,
+      "type": "long_line",
+      "message": "Line too long (142 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\natural_translator.py",
+      "line": 59,
+      "type": "long_line",
+      "message": "Line too long (133 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\natural_translator.py",
+      "line": 70,
+      "type": "long_line",
+      "message": "Line too long (132 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\natural_translator.py",
+      "line": 79,
+      "type": "long_line",
+      "message": "Line too long (122 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\natural_translator.py",
+      "line": 164,
+      "type": "long_line",
+      "message": "Line too long (138 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\natural_translator.py",
+      "line": 175,
+      "type": "todo_comment",
+      "message": "TODO/FIXME comment: return f'# Natural input: \"{input_text}\"\\n# TODO: Add specific NeuroCode translation'",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demo_advanced_neuroplex.py",
+      "line": 56,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demo_advanced_neuroplex.py",
+      "line": 67,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demo_integration.py",
+      "line": 28,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demo_integration.py",
+      "line": 43,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\final_verification.py",
+      "line": 20,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\final_verification.py",
+      "line": 47,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\final_verification.py",
+      "line": 90,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\final_verification.py",
+      "line": 122,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\final_verification.py",
+      "line": 125,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\final_verification.py",
+      "line": 127,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\quick_scheduler_test.py",
+      "line": 14,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\quick_scheduler_test.py",
+      "line": 19,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\quick_scheduler_test.py",
+      "line": 23,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\quick_scheduler_test.py",
+      "line": 27,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\quick_scheduler_test.py",
+      "line": 31,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\quick_scheduler_test.py",
+      "line": 34,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\simple_check.py",
+      "line": 8,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_advanced_chat.py",
+      "line": 9,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_advanced_chat.py",
+      "line": 16,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_advanced_chat.py",
+      "line": 33,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_advanced_chat.py",
+      "line": 46,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_advanced_chat.py",
+      "line": 50,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 26,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 50,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 74,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 87,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 139,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 148,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 171,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 184,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 189,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 191,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 196,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 204,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 206,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 220,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "line": 223,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_chat_router_fixes.py",
+      "line": 16,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_chat_router_fixes.py",
+      "line": 27,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_chat_router_fixes.py",
+      "line": 38,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_chat_router_fixes.py",
+      "line": 46,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_chat_upgrade.py",
+      "line": 25,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_chat_upgrade.py",
+      "line": 29,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_chat_upgrade.py",
+      "line": 52,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_chat_upgrade.py",
+      "line": 67,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_chat_upgrade.py",
+      "line": 83,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 26,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 80,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 96,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 98,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 101,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 112,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 121,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 157,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 170,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 236,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 247,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 252,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 254,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 262,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 270,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 272,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "line": 295,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_enhanced_router.py",
+      "line": 14,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_enhanced_router.py",
+      "line": 22,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_enhanced_router.py",
+      "line": 27,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_enhanced_router.py",
+      "line": 32,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_enhanced_router.py",
+      "line": 37,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_enhanced_router.py",
+      "line": 42,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_enhanced_router.py",
+      "line": 47,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_imports.py",
+      "line": 55,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_integration.py",
+      "line": 20,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_integration.py",
+      "line": 78,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_integration.py",
+      "line": 91,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_integration.py",
+      "line": 98,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_integration.py",
+      "line": 121,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_integration.py",
+      "line": 124,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_integration.py",
+      "line": 126,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_lyrixa.py",
+      "line": 40,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_lyrixa_assistant.py",
+      "line": 41,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_lyrixa_assistant_integration.py",
+      "line": 44,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_lyrixa_assistant_integration.py",
+      "line": 64,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_lyrixa_assistant_integration.py",
+      "line": 72,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_lyrixa_assistant_integration.py",
+      "line": 73,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_lyrixa_assistant_integration.py",
+      "line": 74,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_lyrixa_assistant_integration.py",
+      "line": 75,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_lyrixa_assistant_integration.py",
+      "line": 78,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_lyrixa_assistant_integration.py",
+      "line": 80,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_lyrixa_import.py",
+      "line": 13,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_no_warnings.py",
+      "line": 44,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_no_warnings.py",
+      "line": 65,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_no_warnings.py",
+      "line": 68,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugins.py",
+      "line": 9,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugins.py",
+      "line": 13,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugins.py",
+      "line": 18,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugins.py",
+      "line": 26,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugins.py",
+      "line": 31,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugins.py",
+      "line": 38,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugins.py",
+      "line": 42,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugin_sdk.py",
+      "line": 25,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugin_sdk.py",
+      "line": 46,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugin_sdk.py",
+      "line": 66,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugin_ui.py",
+      "line": 19,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugin_ui.py",
+      "line": 153,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugin_ui.py",
+      "line": 157,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_plugin_ui.py",
+      "line": 171,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler.py",
+      "line": 10,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler.py",
+      "line": 27,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 26,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 42,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 79,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 85,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 122,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 128,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 139,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 144,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 146,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 151,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 159,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 161,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 164,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "line": 167,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 21,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 62,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 97,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 122,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 167,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 193,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 218,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 237,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 250,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 254,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 257,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "line": 260,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\test_ui_functionality.py",
+      "line": 53,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\validate_integration.py",
+      "line": 15,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verify_chat.py",
+      "line": 13,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verify_chat.py",
+      "line": 52,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verify_chat.py",
+      "line": 55,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\integration_test.py",
+      "line": 14,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\integration_test.py",
+      "line": 34,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\integration_test.py",
+      "line": 53,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\agent_archiver.py",
+      "line": 448,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\agent_archiver.py",
+      "line": 456,
+      "type": "long_line",
+      "message": "Line too long (120 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\agent_importer.py",
+      "line": 667,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\agent_importer.py",
+      "line": 682,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\agent_importer.py",
+      "line": 684,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\agent_importer.py",
+      "line": 686,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\developer_cli.py",
+      "line": 617,
+      "type": "long_line",
+      "message": "Line too long (125 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\developer_cli.py",
+      "line": 990,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\developer_cli.py",
+      "line": 999,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\developer_cli.py",
+      "line": 1004,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\plugin_scaffolder.py",
+      "line": 959,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\plugin_scaffolder.py",
+      "line": 977,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\plugin_scaffolder.py",
+      "line": 978,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\plugin_scaffolder.py",
+      "line": 979,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\quickstart.py",
+      "line": 110,
+      "type": "long_line",
+      "message": "Line too long (150 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\replay_engine.py",
+      "line": 685,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\setup_multi_llm.py",
+      "line": 78,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tools\\status_check.py",
+      "line": 51,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "tools\\status_check.py",
+      "line": 56,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "tools\\status_check.py",
+      "line": 61,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "tests\\ui\\cross_platform_tester.py",
+      "line": 23,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\ui\\cross_platform_tester.py",
+      "line": 313,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\ui\\cross_platform_tester.py",
+      "line": 324,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\ui\\cross_platform_tester.py",
+      "line": 367,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\ui\\run_platform_tests.py",
+      "line": 33,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\ui\\run_platform_tests.py",
+      "line": 146,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\ui\\run_platform_tests.py",
+      "line": 149,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\ui\\run_platform_tests.py",
+      "line": 196,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\ui\\run_platform_tests.py",
+      "line": 212,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "line": 15,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "line": 21,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "line": 34,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "line": 37,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "line": 49,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "line": 64,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "line": 78,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "line": 90,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "line": 109,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "line": 112,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "line": 119,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 17,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 29,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 39,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 58,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 93,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 116,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 134,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 139,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 158,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 160,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 163,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "line": 169,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_core_fixes.py",
+      "line": 6,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_debug_system.py",
+      "line": 24,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_debug_system.py",
+      "line": 35,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_debug_system.py",
+      "line": 62,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_debug_system.py",
+      "line": 76,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "tests\\unit\\test_enhanced_interpreter.py",
+      "line": 28,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_enhanced_interpreter.py",
+      "line": 31,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_enhanced_interpreter.py",
+      "line": 83,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_enhanced_interpreter.py",
+      "line": 85,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_enhanced_interpreter.py",
+      "line": 100,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_enhanced_interpreter.py",
+      "line": 116,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_enhanced_interpreter.py",
+      "line": 159,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_enhancements.py",
+      "line": 15,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_enhancements.py",
+      "line": 72,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_enhancements.py",
+      "line": 93,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_enhancements.py",
+      "line": 130,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_fixes.py",
+      "line": 14,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_fixes.py",
+      "line": 17,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_fixes.py",
+      "line": 22,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_fixes.py",
+      "line": 33,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_grammar_fix.py",
+      "line": 11,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_grammar_fix.py",
+      "line": 31,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_grammar_fix.py",
+      "line": 32,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 12,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 81,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 97,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 105,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 113,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 119,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 139,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 154,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 158,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 160,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 162,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 165,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 169,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "line": 172,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui_import.py",
+      "line": 13,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui_import.py",
+      "line": 16,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui_import.py",
+      "line": 21,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui_import.py",
+      "line": 34,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui_import.py",
+      "line": 38,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui_import.py",
+      "line": 46,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui_import.py",
+      "line": 53,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_gui_import.py",
+      "line": 57,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_import_fix.py",
+      "line": 14,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_import_fix.py",
+      "line": 53,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_import_fix.py",
+      "line": 61,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_import_fix.py",
+      "line": 91,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_interpreter_errors.py",
+      "line": 13,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_interpreter_errors.py",
+      "line": 17,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_interpreter_errors.py",
+      "line": 21,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_interpreter_errors.py",
+      "line": 27,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_launch.py",
+      "line": 14,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_memory_reflection.py",
+      "line": 22,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_memory_reflection.py",
+      "line": 52,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_memory_reflection.py",
+      "line": 90,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_memory_reflection.py",
+      "line": 136,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "line": 22,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "line": 89,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "line": 121,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "line": 157,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "line": 177,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "line": 190,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "line": 209,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "line": 213,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "line": 216,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "line": 224,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "line": 227,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_neuro_parser.py",
+      "line": 26,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_neuro_parser.py",
+      "line": 48,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 16,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 21,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 26,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 31,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 39,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 44,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 49,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 54,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 62,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 67,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 72,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 80,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 94,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 97,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "line": 100,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_simple_import.py",
+      "line": 9,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_simple_import.py",
+      "line": 15,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_simple_import.py",
+      "line": 43,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_simple_import.py",
+      "line": 66,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_stdlib_integration.py",
+      "line": 19,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_stdlib_integration.py",
+      "line": 63,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_stdlib_integration.py",
+      "line": 90,
+      "type": "long_line",
+      "message": "Line too long (120 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_stdlib_integration.py",
+      "line": 95,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_stdlib_integration.py",
+      "line": 104,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_stdlib_integration.py",
+      "line": 107,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_suite.py",
+      "line": 36,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_suite.py",
+      "line": 431,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_suite.py",
+      "line": 435,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_suite.py",
+      "line": 458,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_suite.py",
+      "line": 459,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_suite.py",
+      "line": 463,
+      "type": "long_line",
+      "message": "Line too long (122 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_suite.py",
+      "line": 470,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_suite.py",
+      "line": 477,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_suite.py",
+      "line": 486,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_suite.py",
+      "line": 488,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_temporal_features.py",
+      "line": 19,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_temporal_features.py",
+      "line": 53,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_temporal_features.py",
+      "line": 56,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_temporal_features.py",
+      "line": 63,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_temporal_features.py",
+      "line": 70,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_temporal_features.py",
+      "line": 77,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_temporal_features.py",
+      "line": 84,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_temporal_features.py",
+      "line": 89,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_temporal_features.py",
+      "line": 93,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_temporal_memory_integration.py",
+      "line": 18,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "tests\\unit\\test_temporal_memory_integration.py",
+      "line": 43,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 32,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 73,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 152,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 180,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 194,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 235,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 289,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 329,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 480,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 491,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 501,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 502,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 503,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 504,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "line": 527,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 21,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 38,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 60,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 69,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 97,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 106,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 126,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 135,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 159,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 168,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 199,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 205,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 234,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 243,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 263,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 269,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 295,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 299,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 305,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 317,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 334,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 349,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 353,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 359,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 379,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 387,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 392,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 398,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "line": 405,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "line": 14,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "line": 28,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "line": 34,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "line": 46,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "line": 102,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "line": 107,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "line": 111,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "line": 121,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "line": 130,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_comprehensive_parsing.py",
+      "line": 43,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_comprehensive_parsing.py",
+      "line": 64,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_comprehensive_parsing.py",
+      "line": 69,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 17,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 20,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 23,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 26,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 29,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 32,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 55,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 67,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 84,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 85,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 98,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 102,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 107,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_final.py",
+      "line": 118,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "line": 17,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "line": 51,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "line": 113,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "line": 121,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "line": 125,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "line": 132,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "line": 133,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "line": 134,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuro_chat.py",
+      "line": 35,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuro_chat.py",
+      "line": 59,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuro_chat.py",
+      "line": 120,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_neuro_chat.py",
+      "line": 131,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 28,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 33,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 49,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 54,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 69,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 74,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 87,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 92,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 115,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 119,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 128,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "line": 138,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration.py",
+      "line": 153,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration.py",
+      "line": 175,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration.py",
+      "line": 178,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration.py",
+      "line": 181,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration.py",
+      "line": 184,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration_fixed.py",
+      "line": 200,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration_fixed.py",
+      "line": 220,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration_fixed.py",
+      "line": 227,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration_fixed.py",
+      "line": 230,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration_fixed.py",
+      "line": 236,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration_fixed.py",
+      "line": 239,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_agent_integration.py",
+      "line": 24,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_agent_integration.py",
+      "line": 57,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_agent_integration.py",
+      "line": 93,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_agent_integration.py",
+      "line": 136,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_agent_integration.py",
+      "line": 153,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_agent_integration.py",
+      "line": 156,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_agent_integration.py",
+      "line": 159,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_agent_integration.py",
+      "line": 169,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_backward_compatibility.py",
+      "line": 29,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "line": 20,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "line": 34,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "line": 43,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "line": 53,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "line": 61,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "line": 77,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 17,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 54,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 80,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 109,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 139,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 161,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 184,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 211,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 220,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 231,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 250,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 258,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 260,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 264,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 267,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 270,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 272,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "line": 275,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 42,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 52,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 55,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 60,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 72,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 75,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 80,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 92,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 97,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 108,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 112,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "line": 121,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 18,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 48,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 63,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 75,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 85,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 95,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 105,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 115,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 120,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 147,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 152,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 158,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "line": 198,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_cli_fixes.py",
+      "line": 16,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_cli_fixes.py",
+      "line": 22,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_cli_fixes.py",
+      "line": 52,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_cli_fixes.py",
+      "line": 97,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_cli_fixes.py",
+      "line": 125,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_cli_fixes.py",
+      "line": 132,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_cli_fixes.py",
+      "line": 151,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_cli_fixes.py",
+      "line": 154,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_cli_fixes.py",
+      "line": 157,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_core_fixes.py",
+      "line": 13,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_core_fixes.py",
+      "line": 65,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_core_fixes.py",
+      "line": 67,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_core_fixes.py",
+      "line": 78,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_enhanced_interpreter.py",
+      "line": 20,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_enhanced_interpreter.py",
+      "line": 60,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_enhanced_interpreter.py",
+      "line": 88,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_grammar_parser.py",
+      "line": 28,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_grammar_parser.py",
+      "line": 32,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_logger_fixes.py",
+      "line": 87,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_logger_fixes.py",
+      "line": 100,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_logger_fixes.py",
+      "line": 104,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_logger_fixes.py",
+      "line": 106,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_logger_fixes.py",
+      "line": 108,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_logger_fixes.py",
+      "line": 110,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_logger_fixes.py",
+      "line": 116,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_modular.py",
+      "line": 350,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_modular.py",
+      "line": 373,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_modular.py",
+      "line": 378,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_modular.py",
+      "line": 381,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_memory_modular.py",
+      "line": 385,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "line": 43,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "line": 53,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "line": 89,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "line": 109,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "line": 120,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "line": 133,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "line": 168,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "line": 171,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "line": 217,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "line": 242,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "line": 247,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 19,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 33,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 48,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 76,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 80,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 86,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 114,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 118,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 124,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 152,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 156,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 162,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 178,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 182,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 188,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 212,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 216,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 222,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 244,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 251,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 257,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 274,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 278,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 284,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 306,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 308,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 312,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 315,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 317,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_interpreter.py",
+      "line": 319,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_syntax.py",
+      "line": 33,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_syntax.py",
+      "line": 69,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_syntax.py",
+      "line": 86,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_syntax.py",
+      "line": 145,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_syntax.py",
+      "line": 167,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_syntax.py",
+      "line": 204,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_syntax.py",
+      "line": 208,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_syntax.py",
+      "line": 220,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_modular_syntax.py",
+      "line": 223,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_parser_direct.py",
+      "line": 17,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_parser_direct.py",
+      "line": 32,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_parser_direct.py",
+      "line": 61,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_parser_direct.py",
+      "line": 88,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_parser_direct.py",
+      "line": 177,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_parser_direct.py",
+      "line": 193,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_parser_direct.py",
+      "line": 196,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_performance_fixes.py",
+      "line": 115,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_performance_fixes.py",
+      "line": 129,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_performance_fixes.py",
+      "line": 133,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_performance_fixes.py",
+      "line": 135,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_performance_fixes.py",
+      "line": 137,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_performance_fixes.py",
+      "line": 139,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_performance_fixes.py",
+      "line": 145,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_plugin_discovery.py",
+      "line": 23,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_plugin_discovery.py",
+      "line": 44,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_plugin_discovery.py",
+      "line": 74,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_plugin_discovery.py",
+      "line": 136,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_plugin_discovery.py",
+      "line": 175,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_plugin_discovery.py",
+      "line": 180,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 32,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 60,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 92,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 119,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 139,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 161,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 181,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 206,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 245,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 273,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 283,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 299,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_runtime_system.py",
+      "line": 302,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_core_fixes.py",
+      "line": 16,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_core_fixes.py",
+      "line": 70,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_core_fixes.py",
+      "line": 115,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_core_fixes.py",
+      "line": 136,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_core_fixes.py",
+      "line": 143,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_core_fixes.py",
+      "line": 162,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_core_fixes.py",
+      "line": 165,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_core_fixes.py",
+      "line": 168,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_folder.py",
+      "line": 21,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_folder.py",
+      "line": 49,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_folder.py",
+      "line": 58,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_folder.py",
+      "line": 87,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_folder.py",
+      "line": 93,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_folder.py",
+      "line": 117,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_folder.py",
+      "line": 123,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_folder.py",
+      "line": 169,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_folder.py",
+      "line": 191,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_src_folder.py",
+      "line": 196,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_syntax_tree.py",
+      "line": 89,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_syntax_tree.py",
+      "line": 117,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_syntax_tree.py",
+      "line": 130,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_syntax_tree.py",
+      "line": 147,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_syntax_tree.py",
+      "line": 152,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_syntax_tree.py",
+      "line": 168,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\unit\\test_syntax_tree.py",
+      "line": 172,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_CLEAN_VERIFICATION.py",
+      "line": 20,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_CLEAN_VERIFICATION.py",
+      "line": 30,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_CLEAN_VERIFICATION.py",
+      "line": 40,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_CLEAN_VERIFICATION.py",
+      "line": 63,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_CLEAN_VERIFICATION.py",
+      "line": 72,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_GREEN_VERIFICATION.py",
+      "line": 30,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_GREEN_VERIFICATION.py",
+      "line": 35,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_GREEN_VERIFICATION.py",
+      "line": 39,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_GREEN_VERIFICATION.py",
+      "line": 43,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_GREEN_VERIFICATION.py",
+      "line": 47,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 29,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 41,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 57,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 63,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 75,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 81,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 94,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 99,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 101,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 126,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 132,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 135,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "line": 147,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_aetherra_verification.py",
+      "line": 21,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_aetherra_verification.py",
+      "line": 111,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_aetherra_verification.py",
+      "line": 117,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_aetherra_verification.py",
+      "line": 139,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_aetherra_verification.py",
+      "line": 142,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_aetherra_verification.py",
+      "line": 148,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_aetherra_verification.py",
+      "line": 154,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_aetherra_verification.py",
+      "line": 170,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_aetherra_verification.py",
+      "line": 196,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_comprehensive_verification.py",
+      "line": 16,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_comprehensive_verification.py",
+      "line": 88,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_comprehensive_verification.py",
+      "line": 105,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_comprehensive_verification.py",
+      "line": 141,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification.py",
+      "line": 16,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification.py",
+      "line": 36,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification.py",
+      "line": 40,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification.py",
+      "line": 46,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification.py",
+      "line": 54,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification.py",
+      "line": 60,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification.py",
+      "line": 66,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification.py",
+      "line": 85,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification.py",
+      "line": 88,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification.py",
+      "line": 91,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification_test.py",
+      "line": 15,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification_test.py",
+      "line": 46,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification_test.py",
+      "line": 92,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification_test.py",
+      "line": 122,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification_test.py",
+      "line": 143,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\final_verification_test.py",
+      "line": 166,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_memory_validation.py",
+      "line": 19,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_memory_validation.py",
+      "line": 29,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_memory_validation.py",
+      "line": 38,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_memory_validation.py",
+      "line": 46,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_memory_validation.py",
+      "line": 55,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_runtime_test.py",
+      "line": 39,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_test.py",
+      "line": 13,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_test_aetherra.py",
+      "line": 17,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_test_aetherra.py",
+      "line": 45,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_test_aetherra.py",
+      "line": 160,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_test_aetherra.py",
+      "line": 167,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\quick_test_aetherra.py",
+      "line": 170,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\simple_core_test.py",
+      "line": 12,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\simple_core_test.py",
+      "line": 45,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\simple_memory_test.py",
+      "line": 19,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\simple_memory_test.py",
+      "line": 29,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\simple_memory_test.py",
+      "line": 38,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\simple_memory_test.py",
+      "line": 48,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\simple_plugin_test.py",
+      "line": 66,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\simple_syntax_test.py",
+      "line": 38,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\simple_syntax_test.py",
+      "line": 43,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\simple_syntax_test.py",
+      "line": 46,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\verify_enhanced_lyrixa.py",
+      "line": 23,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\verify_enhanced_lyrixa.py",
+      "line": 48,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\verify_enhanced_lyrixa.py",
+      "line": 82,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\verify_enhanced_lyrixa.py",
+      "line": 110,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\verify_enhanced_lyrixa.py",
+      "line": 159,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\verify_enhanced_lyrixa.py",
+      "line": 161,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "testing\\verification\\verify_enhanced_lyrixa.py",
+      "line": 164,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\demo.py",
+      "line": 569,
+      "type": "long_line",
+      "message": "Line too long (124 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\demo.py",
+      "line": 572,
+      "type": "long_line",
+      "message": "Line too long (123 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\demo.py",
+      "line": 670,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 232,
+      "type": "long_line",
+      "message": "Line too long (121 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 365,
+      "type": "long_line",
+      "message": "Line too long (164 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 367,
+      "type": "long_line",
+      "message": "Line too long (127 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 372,
+      "type": "long_line",
+      "message": "Line too long (126 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 376,
+      "type": "long_line",
+      "message": "Line too long (143 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 378,
+      "type": "long_line",
+      "message": "Line too long (127 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 380,
+      "type": "long_line",
+      "message": "Line too long (129 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 382,
+      "type": "long_line",
+      "message": "Line too long (134 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 386,
+      "type": "long_line",
+      "message": "Line too long (133 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 393,
+      "type": "long_line",
+      "message": "Line too long (133 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 400,
+      "type": "long_line",
+      "message": "Line too long (133 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 402,
+      "type": "long_line",
+      "message": "Line too long (134 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 404,
+      "type": "long_line",
+      "message": "Line too long (127 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 406,
+      "type": "long_line",
+      "message": "Line too long (127 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 410,
+      "type": "long_line",
+      "message": "Line too long (136 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 412,
+      "type": "long_line",
+      "message": "Line too long (126 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 414,
+      "type": "long_line",
+      "message": "Line too long (131 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 470,
+      "type": "long_line",
+      "message": "Line too long (131 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 473,
+      "type": "long_line",
+      "message": "Line too long (145 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "line": 564,
+      "type": "long_line",
+      "message": "Line too long (121 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\persona\\engine.py",
+      "line": 511,
+      "type": "global_variable",
+      "message": "Global variable usage",
+      "severity": "medium"
+    },
+    {
+      "file": "src\\aetherra\\persona\\engine.py",
+      "line": 521,
+      "type": "global_variable",
+      "message": "Global variable usage",
+      "severity": "medium"
+    },
+    {
+      "file": "src\\aetherra\\plugins\\agent_plugin.py",
+      "line": 42,
+      "type": "long_line",
+      "message": "Line too long (160 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\plugins\\agent_plugin.py",
+      "line": 46,
+      "type": "long_line",
+      "message": "Line too long (124 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\plugins\\demo_plugin.py",
+      "line": 24,
+      "type": "long_line",
+      "message": "Line too long (123 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\plugins\\file_tools.py",
+      "line": 25,
+      "type": "long_line",
+      "message": "Line too long (122 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\plugins\\file_tools.py",
+      "line": 259,
+      "type": "long_line",
+      "message": "Line too long (140 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\plugins\\git_plugin.py",
+      "line": 105,
+      "type": "long_line",
+      "message": "Line too long (133 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\plugins\\local_llm.py",
+      "line": 23,
+      "type": "long_line",
+      "message": "Line too long (161 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\plugins\\local_llm.py",
+      "line": 238,
+      "type": "long_line",
+      "message": "Line too long (146 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\plugins\\math_plugin.py",
+      "line": 126,
+      "type": "long_line",
+      "message": "Line too long (122 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\plugins\\search_plugin.py",
+      "line": 23,
+      "type": "long_line",
+      "message": "Line too long (149 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\plugins\\whisper.py",
+      "line": 92,
+      "type": "long_line",
+      "message": "Line too long (167 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\reflector.py",
+      "line": 468,
+      "type": "long_line",
+      "message": "Line too long (138 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\selfrepair.py",
+      "line": 106,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\sysmon.py",
+      "line": 38,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\sysmon.py",
+      "line": 80,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "src\\aetherra\\core\\ai\\local_ai.py",
+      "line": 318,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\core\\ai\\local_ai.py",
+      "line": 332,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\base.py",
+      "line": 1158,
+      "type": "long_line",
+      "message": "Line too long (178 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\base.py",
+      "line": 1348,
+      "type": "long_line",
+      "message": "Line too long (129 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\base.py",
+      "line": 1359,
+      "type": "long_line",
+      "message": "Line too long (151 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\base.py",
+      "line": 1362,
+      "type": "long_line",
+      "message": "Line too long (124 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\block_executor.py",
+      "line": 333,
+      "type": "bare_except",
+      "message": "Bare except clause",
+      "severity": "medium"
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\enhanced.py",
+      "line": 634,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\core\\memory\\vector.py",
+      "line": 448,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\core\\memory\\vector.py",
+      "line": 472,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\enhanced_parser.py",
+      "line": 760,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\grammar.py",
+      "line": 622,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\intent_parser.py",
+      "line": 697,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\tools\\verify_modular_components.py",
+      "line": 22,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\tools\\verify_modular_components.py",
+      "line": 65,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\tools\\verify_modular_components.py",
+      "line": 74,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\tools\\verify_modular_components.py",
+      "line": 126,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\tools\\verify_modular_components.py",
+      "line": 172,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\tools\\verify_modular_components.py",
+      "line": 175,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\tools\\verify_modular_components.py",
+      "line": 177,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\tools\\verify_modular_components.py",
+      "line": 180,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\tools\\verify_modular_components.py",
+      "line": 183,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\tools\\verify_modular_components.py",
+      "line": 187,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\utilities\\organize_workspace.py",
+      "line": 142,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\utilities\\organize_workspace.py",
+      "line": 308,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\utilities\\workspace_cleanup.py",
+      "line": 227,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\utilities\\workspace_cleanup.py",
+      "line": 232,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\utilities\\workspace_cleanup.py",
+      "line": 237,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\utilities\\workspace_cleanup.py",
+      "line": 242,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\utilities\\workspace_cleanup.py",
+      "line": 399,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "scripts\\utilities\\workspace_cleanup.py",
+      "line": 428,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "examples\\demos\\demo_neuroplex_v2.py",
+      "line": 19,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "core\\ui\\display.py",
+      "line": 95,
+      "type": "long_line",
+      "message": "Line too long (162 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "core\\ui\\display.py",
+      "line": 106,
+      "type": "long_line",
+      "message": "Line too long (170 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\duplicates\\test_suite_old.py",
+      "line": 36,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\duplicates\\test_suite_old.py",
+      "line": 431,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\duplicates\\test_suite_old.py",
+      "line": 435,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\duplicates\\test_suite_old.py",
+      "line": 458,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\duplicates\\test_suite_old.py",
+      "line": 459,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\duplicates\\test_suite_old.py",
+      "line": 463,
+      "type": "long_line",
+      "message": "Line too long (122 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\duplicates\\test_suite_old.py",
+      "line": 470,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\duplicates\\test_suite_old.py",
+      "line": 477,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\duplicates\\test_suite_old.py",
+      "line": 486,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\duplicates\\test_suite_old.py",
+      "line": 488,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\agent_archive_demo.py",
+      "line": 346,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\agent_archive_demo.py",
+      "line": 423,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\DEEP_ANALYSIS_COMPLETE.py",
+      "line": 26,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\DEEP_ANALYSIS_COMPLETE.py",
+      "line": 76,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\demo_neurocode.py",
+      "line": 240,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "line": 263,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "line": 645,
+      "type": "long_line",
+      "message": "Line too long (132 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "line": 647,
+      "type": "long_line",
+      "message": "Line too long (127 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "line": 728,
+      "type": "long_line",
+      "message": "Line too long (173 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_ai_os_demo.py",
+      "line": 505,
+      "type": "long_line",
+      "message": "Line too long (130 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_persona_demo.py",
+      "line": 443,
+      "type": "long_line",
+      "message": "Line too long (124 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_persona_demo.py",
+      "line": 446,
+      "type": "long_line",
+      "message": "Line too long (123 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_persona_demo.py",
+      "line": 536,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_plugin_demo.py",
+      "line": 106,
+      "type": "long_line",
+      "message": "Line too long (127 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neuro_chat_standalone.py",
+      "line": 254,
+      "type": "long_line",
+      "message": "Line too long (140 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neuro_chat_standalone.py",
+      "line": 256,
+      "type": "long_line",
+      "message": "Line too long (239 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neuro_chat_standalone.py",
+      "line": 258,
+      "type": "long_line",
+      "message": "Line too long (296 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neuro_chat_standalone.py",
+      "line": 260,
+      "type": "long_line",
+      "message": "Line too long (199 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neuro_chat_standalone.py",
+      "line": 264,
+      "type": "long_line",
+      "message": "Line too long (266 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neuro_chat_standalone.py",
+      "line": 266,
+      "type": "long_line",
+      "message": "Line too long (212 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neuro_chat_standalone.py",
+      "line": 280,
+      "type": "long_line",
+      "message": "Line too long (240 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\neuro_chat_standalone.py",
+      "line": 453,
+      "type": "long_line",
+      "message": "Line too long (164 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\performance_revolution_demo.py",
+      "line": 237,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\phase2_comprehensive_demo.py",
+      "line": 475,
+      "type": "long_line",
+      "message": "Line too long (135 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\phase2_final_demo.py",
+      "line": 70,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\phase2_final_demo.py",
+      "line": 89,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\phase2_final_demo.py",
+      "line": 101,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\phase2_final_demo.py",
+      "line": 188,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\phase2_final_demo.py",
+      "line": 201,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_demos\\phase2_final_demo.py",
+      "line": 496,
+      "type": "debug_print",
+      "message": "Debug print statement",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 210,
+      "type": "long_line",
+      "message": "Line too long (164 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 212,
+      "type": "long_line",
+      "message": "Line too long (127 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 217,
+      "type": "long_line",
+      "message": "Line too long (126 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 221,
+      "type": "long_line",
+      "message": "Line too long (143 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 223,
+      "type": "long_line",
+      "message": "Line too long (127 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 225,
+      "type": "long_line",
+      "message": "Line too long (129 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 227,
+      "type": "long_line",
+      "message": "Line too long (134 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 231,
+      "type": "long_line",
+      "message": "Line too long (133 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 238,
+      "type": "long_line",
+      "message": "Line too long (133 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 245,
+      "type": "long_line",
+      "message": "Line too long (133 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 247,
+      "type": "long_line",
+      "message": "Line too long (134 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 249,
+      "type": "long_line",
+      "message": "Line too long (127 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 251,
+      "type": "long_line",
+      "message": "Line too long (127 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 255,
+      "type": "long_line",
+      "message": "Line too long (136 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 257,
+      "type": "long_line",
+      "message": "Line too long (126 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 259,
+      "type": "long_line",
+      "message": "Line too long (131 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 313,
+      "type": "long_line",
+      "message": "Line too long (131 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "line": 316,
+      "type": "long_line",
+      "message": "Line too long (145 characters)",
+      "severity": "low"
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode_persona_cli.py",
+      "line": 59,
+      "type": "todo_comment",
+      "message": "TODO/FIXME comment: # TODO: Implement true blending in persona_engine.py",
+      "severity": "low"
+    }
+  ]
+}

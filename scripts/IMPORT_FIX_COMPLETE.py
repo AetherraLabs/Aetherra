@@ -32,8 +32,8 @@ try:
     import memory
 
     print("   ✅ Memory: Successfully imported")
-    if hasattr(memory, "NeuroMemory"):
-        print("      - NeuroMemory class: Available")
+    if hasattr(memory, "AetherraMemory"):
+        print("      - AetherraMemory class: Available")
 
     # Test chat router
     import chat_router
@@ -78,7 +78,7 @@ print("   ✅ Fallback handling: IMPLEMENTED")
 print("\n" + "=" * 50)
 print("🧬 aetherra is ready!")
 print("\nTo run the GUI:")
-print("   python ui/neuroplex_gui.py")
+print("   python ui/aetherplex_gui.py")
 print("\nTo test individual components:")
 print("   python test_core_features.py")
 print("   python analysis_test.py")

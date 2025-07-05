@@ -14,7 +14,7 @@ import traceback
 def test_performance_integration():
     """Test performance_integration module"""
     try:
-        from core.performance_integration import (
+        from Aetherra.core.performance_integration import (
             PerformanceConfig,
             PerformanceManager,
             performance_optimized,
@@ -46,7 +46,7 @@ def test_performance_integration():
 def test_speed_enhancement_suite():
     """Test speed_enhancement_suite module"""
     try:
-        from core.speed_enhancement_suite import SpeedEnhancementSuite
+        from Aetherra.core.speed_enhancement_suite import SpeedEnhancementSuite
 
         print("✅ speed_enhancement_suite: All imports successful")
 
@@ -70,7 +70,7 @@ def test_speed_enhancement_suite():
 def test_ui_performance():
     """Test ui_performance module"""
     try:
-        from core.ui_performance import UIOptimizer
+        from Aetherra.core.ui_performance import UIOptimizer
 
         print("✅ ui_performance: All imports successful")
 
@@ -94,8 +94,8 @@ def test_ui_performance():
 def test_integration():
     """Test integration between modules"""
     try:
-        from core.speed_enhancement_suite import SpeedEnhancementSuite
-        from core.ui_performance import UIOptimizer
+        from Aetherra.core.speed_enhancement_suite import SpeedEnhancementSuite
+        from Aetherra.core.ui_performance import UIOptimizer
 
         # Test that components can work together
         suite = SpeedEnhancementSuite()

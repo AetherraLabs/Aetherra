@@ -4,7 +4,7 @@ Comprehensive UI Testing Script
 =============================
 
 This script tests all the UI components we've implemented to ensure
-they work correctly and NeuroCode/Neuroplex function as intended.
+they work correctly and AetherraCode/Neuroplex function as intended.
 """
 
 import logging
@@ -63,8 +63,8 @@ def test_safe_ui_calls():
 
     try:
         # Test safe widget creation
-        from src.aethercode.ui.qt_fallbacks import QPushButton
-        from src.aethercode.ui.safe_ui_calls import (
+        from Lyrixa.ui.qt_fallbacks import QPushButton
+        from Lyrixa.ui.safe_ui_calls import (
             UIErrorHandler,
             ensure_qt_application,
             safe_call,
@@ -97,7 +97,7 @@ def test_fallback_ui():
     print("\n=== Testing Fallback UI Implementation ===")
 
     try:
-        from src.aethercode.ui.fallback_ui import BasicNeuroUI, FallbackUI
+        from Lyrixa.ui.fallback_ui import BasicNeuroUI, FallbackUI
 
         # Test FallbackUI creation
         fallback = FallbackUI()
@@ -117,7 +117,7 @@ def test_fallback_ui():
         return False
 
 
-def test_neuroplex_fixed():
+def test_aetherplex_fixed():
     """Test the fixed Neuroplex implementation."""
     print("\n=== Testing Fixed Neuroplex Implementation ===")
 
@@ -125,19 +125,19 @@ def test_neuroplex_fixed():
         # Import without actually running the GUI
 
         spec = importlib.util.spec_from_file_location(
-            "neuroplex_fixed", "src/neurocode/ui/neuroplex_fixed.py"
+            "aetherplex_fixed", "src/neurocode/ui/aetherplex_fixed.py"
         )
-        neuroplex_module = importlib.util.module_from_spec(spec)
+        aetherplex_module = importlib.util.module_from_spec(spec)
 
         # Set __file__ to avoid NameError
-        neuroplex_module.__file__ = str(
-            Path("src/neurocode/ui/neuroplex_fixed.py").absolute()
+        aetherplex_module.__file__ = str(
+            Path("src/neurocode/ui/aetherplex_fixed.py").absolute()
         )
 
-        spec.loader.exec_module(neuroplex_module)
+        spec.loader.exec_module(aetherplex_module)
 
         # Test window creation (without showing)
-        window = neuroplex_module.aetherplexWindow()
+        window = aetherplex_module.aetherplexWindow()
         if window:
             print("✓ Neuroplex window created successfully")
 
@@ -167,7 +167,7 @@ def test_ui_init():
     print("\n=== Testing UI Package Initialization ===")
 
     try:
-        from src.aethercode.ui import QT_AVAILABLE, get_chat_interface, get_main_window
+        from Lyrixa.ui import QT_AVAILABLE, get_chat_interface, get_main_window
 
         print(f"✓ Qt available: {QT_AVAILABLE}")
 
@@ -222,7 +222,7 @@ def run_comprehensive_test():
         ("Qt Fallback Implementations", test_fallback_implementations),
         ("Safe UI Call Utilities", test_safe_ui_calls),
         ("Fallback UI Implementation", test_fallback_ui),
-        ("Fixed Neuroplex Implementation", test_neuroplex_fixed),
+        ("Fixed Neuroplex Implementation", test_aetherplex_fixed),
         ("UI Package Initialization", test_ui_init),
         ("Import Safety", test_import_safety),
     ]
@@ -254,7 +254,7 @@ def run_comprehensive_test():
     print(f"\nResults: {passed}/{total} tests passed")
 
     if passed == total:
-        print("🎉 ALL TESTS PASSED! NeuroCode UI is working correctly.")
+        print("🎉 ALL TESTS PASSED! AetherraCode UI is working correctly.")
         return 0
     else:
         print("⚠️  Some tests failed. See details above.")

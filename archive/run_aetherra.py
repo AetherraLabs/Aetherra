@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-NeuroCode File Runner
+AetherraCode File Runner
 ====================
 
 Simple command-line runner for executing .aether files.
-Supports plugin execution and basic NeuroCode commands.
+Supports plugin execution and basic AetherraCode commands.
 
 Usage:
     python run_neuro.py examples/plugin_demo_corrected.aether
@@ -117,7 +117,7 @@ def run_neuro_file(file_path):
         print(f"❌ Error: File '{file_path}' not found")
         return False
 
-    print(f"🚀 Running NeuroCode file: {file_path}")
+    print(f"🚀 Running AetherraCode file: {file_path}")
     print("=" * 60)
 
     try:
@@ -150,7 +150,7 @@ def run_neuro_file(file_path):
                     print(f"❌ Line {line_num}: Invalid plugin command format")
                     print(f"   Command: {line}")
             else:
-                # Handle other NeuroCode commands here in the future
+                # Handle other AetherraCode commands here in the future
                 print(f"⚠️ Line {line_num}: Unrecognized command: {line}")
 
         print("\n" + "=" * 60)
@@ -172,7 +172,7 @@ def main():
 
     file_path = sys.argv[1]
 
-    print("🧬 NeuroCode File Runner")
+    print("🧬 AetherraCode File Runner")
     print("========================")
 
     success = run_neuro_file(file_path)

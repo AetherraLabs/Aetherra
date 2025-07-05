@@ -1,6 +1,6 @@
 # core/interpreter/line_processor.py
 """
-Line Processor for NeuroCode Interpreter
+Line Processor for AetherraCode Interpreter
 ========================================
 
 Handles line-by-line processing and multi-line block management.
@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Union
 
 
 class LineProcessor:
-    """Processes NeuroCode lines and manages multi-line blocks"""
+    """Processes AetherraCode lines and manages multi-line blocks"""
 
     def __init__(self):
         self.block_buffer: List[str] = []

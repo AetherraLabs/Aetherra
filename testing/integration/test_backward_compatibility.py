@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Test backward compatibility with legacy syntax_tree.py interface"""
 
-from core.syntax_tree import analyze_syntax_tree, parse_neurocode
+from Aetherra.core.syntax_tree import analyze_syntax_tree, parse_neurocode
 
 
 def main():

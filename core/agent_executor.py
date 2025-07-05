@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🤖 NeuroCode Agent Executor
+🤖 AetherraCode Agent Executor
 ===========================
 
-Execution engine for agent-related NeuroCode syntax, enabling direct
-control of the agent system through NeuroCode commands.
+Execution engine for agent-related AetherraCode syntax, enabling direct
+control of the agent system through AetherraCode commands.
 
 Supported Agent Commands:
 - agent.mode = "state"       # Set agent mode/state
@@ -29,7 +29,7 @@ except ImportError:
 
 
 class AgentExecutor:
-    """Executor for agent-related NeuroCode commands"""
+    """Executor for agent-related AetherraCode commands"""
 
     def __init__(self, agent: Optional[EnhancedNeuroAgent] = None):
         self.agent = agent
@@ -151,7 +151,7 @@ class AgentExecutor:
                 goal_dict = {
                     "text": goal_text,
                     "priority": priority,
-                    "created": "NeuroCode execution",
+                    "created": "AetherraCode execution",
                 }
                 self.agent.add_goal(goal_dict)
                 return {

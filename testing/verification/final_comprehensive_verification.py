@@ -110,9 +110,9 @@ def test_launchers():
 
         try:
             # Test that we can import launcher modules
-            print("✅ Neuroplex launcher import working")
+            print("✅ Lyrixa launcher import working")
         except Exception as e:
-            print(f"⚠️ Neuroplex launcher: {e}")
+            print(f"⚠️ Lyrixa launcher: {e}")
 
     return True
 
@@ -148,7 +148,7 @@ def main():
     print("\n📋 FINAL STATUS:")
     print("• Core aetherra language: ✅ Working")
     print("• Enhanced interpreter: ⚠️ Partial (missing optional AI modules)")
-    print("• Neuroplex GUI: ✅ Working")
+    print("• Lyrixa GUI: ✅ Working")
     print("• CLI interface: ⚠️ Partial (persona dependencies)")
     print("• Parser & AST: ✅ Working")
     print("• Memory system: ✅ Working")

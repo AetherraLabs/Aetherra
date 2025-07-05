@@ -22,7 +22,7 @@ def test_chat_router_integration():
 
     # Test 1: Import chat router
     try:
-        from core.chat_router import AetherraChatRouter
+        from Aetherra.core.chat_router import AetherraChatRouter
 
         print("✅ Chat router import successful")
     except ImportError as e:
@@ -51,7 +51,7 @@ def test_chat_router_integration():
     try:
         test_messages = [
             "Hello!",
-            "How do I create a NeuroCode plugin?",
+            "How do I create a Aetherra plugin?",
             "What are my current goals?",
             "Help me debug this code",
         ]
@@ -68,7 +68,7 @@ def test_chat_router_integration():
 
     # Test 5: Test enhanced Neuroplex import
     try:
-        from src.aethercode.ui.enhanced_neuroplex import EnhancedLyrixaWindow
+        from Lyrixa.ui.enhanced_aetherplex import EnhancedLyrixaWindow
 
         print("✅ Enhanced Neuroplex import successful")
     except ImportError as e:
@@ -93,7 +93,7 @@ def test_gui_integration():
     try:
         from PySide6.QtWidgets import QApplication
 
-        from src.aethercode.ui.enhanced_neuroplex import EnhancedLyrixaWindow
+        from Lyrixa.ui.enhanced_aetherplex import EnhancedLyrixaWindow
 
         print("✅ PySide6 available - GUI test possible")
 
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     if success:
         print("\n🎯 INTEGRATION READY!")
         print(
-            "Run 'python neurocode_launcher.py' and select option 1 to use Enhanced Neuroplex"
+            "Run 'python Aetherra_launcher.py' and select option 1 to use Enhanced Neuroplex"
         )
     else:
         print("\n❌ Integration issues detected - check error messages above")

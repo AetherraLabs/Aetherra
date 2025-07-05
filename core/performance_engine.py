@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-🚀 NeuroCode Performance Engine - Comprehensive Performance Optimization System
+🚀 AetherraCode Performance Engine - Comprehensive Performance Optimization System
 ================================================================================
 
 Advanced performance optimization engine that provides real-time monitoring,
 intelligent caching, parallel processing, and adaptive performance tuning
-across all NeuroCode & Neuroplex components.
+across all AetherraCode & Neuroplex components.
 
 Features:
 - Real-time performance monitoring and profiling
@@ -622,8 +622,8 @@ def parallel_processing(use_processes: bool = False):
 
 
 # Utility functions
-def optimize_neurocode_startup(modules: Optional[List[str]] = None) -> Dict[str, Any]:
-    """Optimize NeuroCode startup performance"""
+def optimize_aethercode_startup(modules: Optional[List[str]] = None) -> Dict[str, Any]:
+    """Optimize AetherraCode startup performance"""
     default_modules = [
         "core.interpreter",
         "core.memory",
@@ -647,7 +647,7 @@ def clear_performance_cache() -> None:
 
 if __name__ == "__main__":
     # Example usage and testing
-    print("🚀 NeuroCode Performance Engine")
+    print("🚀 AetherraCode Performance Engine")
     print("=" * 50)
 
     # Test performance profiling

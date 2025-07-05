@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🎭 NeuroChat Standalone - Enhanced UI Demo
+🎭 AetherraChat Standalone - Enhanced UI Demo
 ==========================================
 
-Standalone version of the enhanced NeuroChat interface to showcase the UI features
-without dependencies on the full NeuroCode system.
+Standalone version of the enhanced AetherraChat interface to showcase the UI features
+without dependencies on the full AetherraCode system.
 
 Features:
 - Tabbed interface: Assistant / Reflections / Code Preview
@@ -113,7 +113,7 @@ class MessageWidget(QFrame):
         header = QHBoxLayout()
 
         avatar = "👤" if self.is_user else "🤖"
-        name = "You" if self.is_user else "NeuroAI"
+        name = "You" if self.is_user else "AetherraAI"
 
         avatar_label = QLabel(avatar)
         avatar_label.setFont(QFont("Arial", 14))
@@ -207,7 +207,7 @@ class ChatTab(QWidget):
 
         # Add welcome message
         self.add_message(
-            "Hello! I'm NeuroAI, your AI programming assistant. Try asking me about NeuroCode features!",
+            "Hello! I'm AetherraAI, your AI programming assistant. Try asking me about AetherraCode features!",
             False,
         )
 
@@ -251,17 +251,17 @@ class ChatTab(QWidget):
 
         # Smart responses based on keywords
         responses = {
-            "hello": "Hello! Great to meet you. I'm here to help with NeuroCode and AI-native programming. What would you like to explore?",
+            "hello": "Hello! Great to meet you. I'm here to help with AetherraCode and AI-native programming. What would you like to explore?",
 
-            "help": "I can assist you with:\n• NeuroCode syntax and concepts\n• Memory system operations\n• Plugin discovery and usage\n• AI-native programming patterns\n• Code execution and debugging\n\nWhat specific area interests you?",
+            "help": "I can assist you with:\n• AetherraCode syntax and concepts\n• Memory system operations\n• Plugin discovery and usage\n• AI-native programming patterns\n• Code execution and debugging\n\nWhat specific area interests you?",
 
-            "memory": 'The NeuroCode memory system is fascinating! It provides persistent context across sessions. You can:\n• Store information: remember("key info") as "tag"\n• Retrieve data: recall "tag"\n• Search patterns: memory.search("keyword")\n\nIt\'s designed for AI-native workflows!',
+            "memory": 'The AetherraCode memory system is fascinating! It provides persistent context across sessions. You can:\n• Store information: remember("key info") as "tag"\n• Retrieve data: recall "tag"\n• Search patterns: memory.search("keyword")\n\nIt\'s designed for AI-native workflows!',
 
-            "plugins": 'NeuroCode has an amazing plugin ecosystem! 🔌\n\nYou can discover plugins intelligently:\n• Use natural language: "I need to calculate math"\n• Browse by category: mathematics,
+            "plugins": 'AetherraCode has an amazing plugin ecosystem! 🔌\n\nYou can discover plugins intelligently:\n• Use natural language: "I need to calculate math"\n• Browse by category: mathematics,
                 analysis,
                 development\n• Get AI recommendations based on your goals\n\nTry: plugin: calculate "2 + 3 * 4"',
 
-            "tabs": "Great question about the UI! This interface has three main tabs:\n• 🤖 Assistant (this chat)\n• 🧠 Reflections (memory browsing)\n• 📝 Code Preview (live NeuroCode execution)\n\nEach tab is designed for different aspects of AI-native programming!",
+            "tabs": "Great question about the UI! This interface has three main tabs:\n• 🤖 Assistant (this chat)\n• 🧠 Reflections (memory browsing)\n• 📝 Code Preview (live AetherraCode execution)\n\nEach tab is designed for different aspects of AI-native programming!",
 
             "features": "This enhanced chat interface includes:\n• ✨ Typing indicators (like you just saw!)\n• 🔄 Auto-scroll to latest messages\n• 💬 Styled message bubbles\n• ⏰ Timestamps and avatars\n• 🎨 Modern,
                 responsive design\n\nAll built for seamless AI interaction!",
@@ -276,8 +276,8 @@ class ChatTab(QWidget):
                 break
 
         if not response:
-            response = f'Interesting question about \'{user_message}\'! 🤔\n\nI\'m designed to help with NeuroCode \and
-                AI-native programming. Here are some things you could ask:\n• "How does the memory system work?"\n• "Show me plugin examples"\n• "What are the UI features?"\n• "Help with NeuroCode syntax"\n\nWhat would you like to explore?'
+            response = f'Interesting question about \'{user_message}\'! 🤔\n\nI\'m designed to help with AetherraCode \and
+                AI-native programming. Here are some things you could ask:\n• "How does the memory system work?"\n• "Show me plugin examples"\n• "What are the UI features?"\n• "Help with AetherraCode syntax"\n\nWhat would you like to explore?'
 
         self.add_message(response, False)
 
@@ -360,7 +360,7 @@ class ReflectionsTab(QWidget):
             "🎓 Learning Progress": """
 📈 Learning Trajectory Analysis
 
-Your NeuroCode learning shows excellent progression:
+Your AetherraCode learning shows excellent progression:
 
 📚 Recent Sessions:
 • Introduction to AI-native programming (45 min)
@@ -382,7 +382,7 @@ Your NeuroCode learning shows excellent progression:
 • Continue hands-on experimentation
 • Explore advanced memory patterns
 • Try building custom plugins
-• Practice complex NeuroCode scenarios
+• Practice complex AetherraCode scenarios
 
 📊 Overall Progress: Outstanding! 🌟
             """,
@@ -457,7 +457,7 @@ Your plugin exploration shows systematic discovery:
 
 
 class CodePreviewTab(QWidget):
-    """Live NeuroCode preview and execution"""
+    """Live AetherraCode preview and execution"""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -467,7 +467,7 @@ class CodePreviewTab(QWidget):
         layout = QVBoxLayout(self)
 
         # Header
-        header = QLabel("📝 Live NeuroCode Preview & Execution")
+        header = QLabel("📝 Live AetherraCode Preview & Execution")
         header.setFont(QFont("Arial", 16, QFont.Weight.Bold))
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(header)
@@ -479,15 +479,15 @@ class CodePreviewTab(QWidget):
         code_container = QWidget()
         code_layout = QVBoxLayout(code_container)
 
-        code_layout.addWidget(QLabel("💻 NeuroCode Editor"))
+        code_layout.addWidget(QLabel("💻 AetherraCode Editor"))
 
         self.code_editor = QTextEdit()
         self.code_editor.setFont(QFont("Consolas", 11))
-        self.code_editor.setPlainText("""# 🎭 NeuroCode Enhanced UI Demo
+        self.code_editor.setPlainText("""# 🎭 AetherraCode Enhanced UI Demo
 goal: "Demonstrate the new chat interface features"
 
 # 🧠 Memory operations
-remember("NeuroChat has typing indicators and auto-scroll") as "ui_feature"
+remember("AetherraChat has typing indicators and auto-scroll") as "ui_feature"
 remember("Three tabs: Assistant, Reflections, Code Preview") as "tab_structure"
 
 # 🤖 AI assistant interaction
@@ -511,7 +511,7 @@ goal: "Continue exploring AI-native programming patterns"
         # Execution controls
         controls = QHBoxLayout()
 
-        self.run_button = QPushButton("▶️ Execute NeuroCode")
+        self.run_button = QPushButton("▶️ Execute AetherraCode")
         self.run_button.clicked.connect(self.execute_code)
 
         self.clear_button = QPushButton("🗑️ Clear Output")
@@ -549,7 +549,7 @@ goal: "Continue exploring AI-native programming patterns"
         layout.addWidget(splitter)
 
     def execute_code(self):
-        """Execute the NeuroCode with realistic simulation"""
+        """Execute the AetherraCode with realistic simulation"""
         code = self.code_editor.toPlainText()
 
         if not code.strip():
@@ -567,15 +567,15 @@ goal: "Continue exploring AI-native programming patterns"
         """Show realistic execution result"""
         self.progress_bar.setVisible(False)
 
-        output = f"""🚀 NeuroCode Execution - Enhanced UI Demo
+        output = f"""🚀 AetherraCode Execution - Enhanced UI Demo
 ⏰ Timestamp: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 🎭 Session: Enhanced Chat Interface Testing
 
-📋 Parsing NeuroCode...
+📋 Parsing AetherraCode...
 ✅ Goal registered: "Demonstrate the new chat interface features"
 
 🧠 Memory Operations:
-✅ Stored: "NeuroChat has typing indicators..." → ui_feature
+✅ Stored: "AetherraChat has typing indicators..." → ui_feature
 ✅ Stored: "Three tabs: Assistant, Reflections..." → tab_structure
 
 🤖 AI Assistant Response:
@@ -598,7 +598,7 @@ This creates a more natural AI-native programming experience!"
    Analysis: Consistently high performance metrics
 
 🧠 Memory Recall:
-✅ Retrieved: "NeuroChat has typing indicators and auto-scroll"
+✅ Retrieved: "AetherraChat has typing indicators and auto-scroll"
 
 ✅ Final Goal: "Continue exploring AI-native programming patterns"
 
@@ -610,7 +610,7 @@ This creates a more natural AI-native programming experience!"
 • AI responses: 1
 • Runtime: 0.31 seconds
 
-💡 Next Steps: Explore more advanced NeuroCode patterns!
+💡 Next Steps: Explore more advanced AetherraCode patterns!
 🌟 Status: Ready for enhanced AI-native development
 """
 
@@ -642,7 +642,7 @@ recall "recent_calculations"
 goal: "Explore advanced memory operations"
 
 # Store different types of information
-remember("NeuroCode supports natural language programming") as "core_concept"
+remember("AetherraCode supports natural language programming") as "core_concept"
 remember("Plugin system uses intent-based discovery") as "architecture"
 remember("UI has three main tabs for different workflows") as "interface_design"
 
@@ -653,17 +653,17 @@ memory.pattern("learning", frequency="daily")
 # Contextual recall
 recall "core_concept" since "today" in category "fundamentals"
 
-goal: "Build comprehensive understanding of NeuroCode"
+goal: "Build comprehensive understanding of AetherraCode"
 """,
             """# 🔄 AI Interaction Demo
 goal: "Showcase AI assistant capabilities"
 
 assistant: "Explain the difference between memory.search() and recall"
-assistant: "What are the best practices for NeuroCode development?"
+assistant: "What are the best practices for AetherraCode development?"
 assistant: "How does the enhanced UI improve the programming experience?"
 
 # Store AI insights
-remember("AI provides contextual help for NeuroCode features") as "ai_benefit"
+remember("AI provides contextual help for AetherraCode features") as "ai_benefit"
 
 # Test plugin recommendations
 assistant: "I want to do some statistical analysis"
@@ -679,15 +679,15 @@ goal: "Become proficient in AI-native programming"
         self.code_editor.setPlainText(demo_code)
 
 
-class NeuroChatStandalone(QMainWindow):
-    """Standalone NeuroChat interface demonstrating enhanced features"""
+class AetherraChatStandalone(QMainWindow):
+    """Standalone AetherraChat interface demonstrating enhanced features"""
 
     def __init__(self):
         super().__init__()
         self.setup_ui()
 
     def setup_ui(self):
-        self.setWindowTitle("🎭 NeuroChat Enhanced - Standalone Demo")
+        self.setWindowTitle("🎭 AetherraChat Enhanced - Standalone Demo")
         self.setGeometry(100, 100, 1400, 900)
 
         # Create central tab widget
@@ -728,7 +728,7 @@ class NeuroChatStandalone(QMainWindow):
 
         # Enhanced status bar
         self.statusBar().showMessage(
-            "🎭 NeuroChat Enhanced UI - All features active! Try the typing indicators and auto-scroll."
+            "🎭 AetherraChat Enhanced UI - All features active! Try the typing indicators and auto-scroll."
         )
 
     def create_tabs(self):
@@ -747,7 +747,7 @@ class NeuroChatStandalone(QMainWindow):
 
 
 def main():
-    """Main entry point for standalone NeuroChat demo"""
+    """Main entry point for standalone AetherraChat demo"""
     if not QT_AVAILABLE:
         print("❌ Qt not available. Install with: pip install PySide6")
         return
@@ -757,10 +757,10 @@ def main():
         app = QApplication(sys.argv)
 
     # Create and show the enhanced chat interface
-    print("🎭 Launching NeuroChat Enhanced UI...")
+    print("🎭 Launching AetherraChat Enhanced UI...")
     print("✨ Features: Typing indicators, auto-scroll, tabbed interface")
 
-    chat_interface = NeuroChatStandalone()
+    chat_interface = AetherraChatStandalone()
     chat_interface.show()
 
     sys.exit(app.exec())

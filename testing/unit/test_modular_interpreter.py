@@ -1,6 +1,6 @@
 # test_modular_interpreter.py
 """
-Test Suite for Modular NeuroCode Interpreter
+Test Suite for Modular AetherraCode Interpreter
 ============================================
 
 Comprehensive tests for the new modular interpreter system.
@@ -19,7 +19,7 @@ def test_import_modular_interpreter():
     print("🧪 Testing Modular Interpreter Import...")
 
     try:
-        from core.interpreter import AetherraInterpreter
+        from Aetherra.core.interpreter import AetherraInterpreter
 
         print("✅ Successfully imported AetherraInterpreter")
         return True
@@ -33,7 +33,7 @@ def test_interpreter_initialization():
     print("🧪 Testing Interpreter Initialization...")
 
     try:
-        from core.interpreter import AetherraInterpreter
+        from Aetherra.core.interpreter import AetherraInterpreter
 
         interpreter = AetherraInterpreter()
         print("✅ Successfully initialized interpreter")
@@ -48,7 +48,7 @@ def test_basic_commands():
     print("🧪 Testing Basic Commands...")
 
     try:
-        from core.interpreter import AetherraInterpreter
+        from Aetherra.core.interpreter import AetherraInterpreter
 
         interpreter = AetherraInterpreter()
 
@@ -86,7 +86,7 @@ def test_enhanced_commands():
     print("🧪 Testing Enhanced Commands...")
 
     try:
-        from core.interpreter import AetherraInterpreter
+        from Aetherra.core.interpreter import AetherraInterpreter
 
         interpreter = AetherraInterpreter()
 
@@ -124,7 +124,7 @@ def test_block_processing():
     print("🧪 Testing Block Processing...")
 
     try:
-        from core.interpreter import AetherraInterpreter
+        from Aetherra.core.interpreter import AetherraInterpreter
 
         interpreter = AetherraInterpreter()
 
@@ -162,7 +162,7 @@ def test_system_status():
     print("🧪 Testing System Status...")
 
     try:
-        from core.interpreter import AetherraInterpreter
+        from Aetherra.core.interpreter import AetherraInterpreter
 
         interpreter = AetherraInterpreter()
 
@@ -189,9 +189,9 @@ def test_component_separation():
 
     try:
         # Test individual components
-        from core.interpreter.command_parser import CommandParser
-        from core.interpreter.enhanced_features import EnhancedFeatureParser
-        from core.interpreter.line_processor import LineProcessor
+        from Aetherra.core.interpreter.command_parser import CommandParser
+        from Aetherra.core.interpreter.enhanced_features import EnhancedFeatureParser
+        from Aetherra.core.interpreter.line_processor import LineProcessor
 
         parser = CommandParser()
         processor = LineProcessor()
@@ -222,7 +222,7 @@ def test_performance():
     print("🧪 Testing Performance...")
 
     try:
-        from core.interpreter import AetherraInterpreter
+        from Aetherra.core.interpreter import AetherraInterpreter
 
         interpreter = AetherraInterpreter()
 
@@ -258,7 +258,7 @@ def test_backward_compatibility():
 
     try:
         # Test that old import patterns still work
-        from core.interpreter import AetherraInterpreter, create_interpreter
+        from Aetherra.core.interpreter import AetherraInterpreter, create_interpreter
 
         # Test old-style instantiation
         interpreter1 = AetherraInterpreter()
@@ -281,7 +281,7 @@ def test_backward_compatibility():
 
 def run_all_tests():
     """Run all test suites"""
-    print("🚀 NeuroCode Modular Interpreter Test Suite")
+    print("🚀 AetherraCode Modular Interpreter Test Suite")
     print("=" * 50)
 
     tests = [

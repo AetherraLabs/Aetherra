@@ -5,24 +5,25 @@ import os
 import sys
 
 # Add paths
-sys.path.append('src')
-sys.path.append('sdk/plugins')
+sys.path.append("src")
+sys.path.append("sdk/plugins")
+
 
 def test_plugin_imports():
-    print("=== NeuroCode Plugin Demo Validation ===")
+    print("=== Aetherra Plugin Demo Validation ===")
     print()
 
     plugins_to_test = [
         ("example", "sdk/plugins/example.py"),
-        ("git_plugin", "src/neurocode/plugins/git_plugin.py"),
-        ("whisper", "src/neurocode/plugins/whisper.py"),
-        ("search_plugin", "src/neurocode/plugins/search_plugin.py"),
-        ("memory_plugin", "src/neurocode/plugins/memory_plugin.py"),
-        ("file_tools", "src/neurocode/plugins/file_tools.py"),
-        ("agent_plugin", "src/neurocode/plugins/agent_plugin.py"),
-        ("system_plugin", "src/neurocode/plugins/system_plugin.py"),
-        ("math_plugin", "src/neurocode/plugins/math_plugin.py"),
-        ("greet_plugin", "src/neurocode/plugins/greet_plugin.py"),
+        ("git_plugin", "src/Aetherra/plugins/git_plugin.py"),
+        ("whisper", "src/Aetherra/plugins/whisper.py"),
+        ("search_plugin", "src/Aetherra/plugins/search_plugin.py"),
+        ("memory_plugin", "src/Aetherra/plugins/memory_plugin.py"),
+        ("file_tools", "src/Aetherra/plugins/file_tools.py"),
+        ("agent_plugin", "src/Aetherra/plugins/agent_plugin.py"),
+        ("system_plugin", "src/Aetherra/plugins/system_plugin.py"),
+        ("math_plugin", "src/Aetherra/plugins/math_plugin.py"),
+        ("greet_plugin", "src/Aetherra/plugins/greet_plugin.py"),
     ]
 
     for plugin_name, plugin_path in plugins_to_test:
@@ -59,6 +60,7 @@ def test_plugin_imports():
     print()
     print("=== Demo Validation Complete ===")
     print("All required plugins are created and should work with the demo!")
+
 
 if __name__ == "__main__":
     test_plugin_imports()

@@ -1,6 +1,6 @@
 """
 Basic Memory Interface
-Simple memory operations for the NeuroCode system
+Simple memory operations for the AetherraCode system
 """
 
 import re

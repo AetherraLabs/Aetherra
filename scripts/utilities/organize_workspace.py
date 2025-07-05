@@ -91,10 +91,10 @@ def main():
     create_directory_if_not_exists(launchers_dir)
 
     launcher_files = [
-        "launch_fully_modular_neuroplex.py",
-        "launch_modular_neuroplex.py",
-        "launch_neuroplex.py",
-        "launch_neuroplex_v2.py",
+        "launch_fully_modular_aetherplex.py",
+        "launch_modular_aetherplex.py",
+        "launch_aetherplex.py",
+        "launch_aetherplex_v2.py",
         "launch_gui.py",
         "launch_neuro_ui.py",
         "launch_playground.py",
@@ -202,7 +202,7 @@ def main():
 
     demo_files = [
         "demo_code.py",
-        "demo_neuroplex_v2.py",
+        "demo_aetherplex_v2.py",
         "demo_ui_features.py",
         "comprehensive_demo.py",
         "debug_demo.py",
@@ -270,7 +270,7 @@ def main():
         "aetherra.py",  # Old main file
         "aetherra_engine.py",
         "aetherra_playground.py",
-        "neuroplex.py",  # Old monolithic GUI
+        "aetherplex.py",  # Old monolithic GUI
         "neuro_runner.py",
         "neuro_runner_standalone.py",
         "natural_translator.py",
@@ -278,7 +278,7 @@ def main():
         "quick_debug_test.py",
         "quick_verify.py",
         "agent_reflection_loop.py",
-        "neuroplex_cli.py",
+        "aetherplex_cli.py",
         "performance_monitor.py",
         "tokenize_debug.py",
         "parse_debug.py",

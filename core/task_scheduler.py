@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🔄 NeuroCode Background Task Scheduler
+🔄 AetherraCode Background Task Scheduler
 =====================================
 
-Advanced task scheduling system for NeuroCode with support for:
+Advanced task scheduling system for AetherraCode with support for:
 - Background task execution
 - Priority-based scheduling
 - Automatic retry logic
@@ -65,7 +65,7 @@ class ScheduledTask:
 
 
 class BackgroundTaskScheduler:
-    """Advanced background task scheduler for NeuroCode"""
+    """Advanced background task scheduler for AetherraCode"""
 
     def __init__(self, max_workers: int = 4, enable_logging: bool = True):
         self.max_workers = max_workers
@@ -110,7 +110,7 @@ class BackgroundTaskScheduler:
         for i in range(self.max_workers):
             worker = threading.Thread(
                 target=self._worker_loop,
-                name=f"NeuroScheduler-Worker-{i+1}",
+                name=f"AetherraScheduler-Worker-{i+1}",
                 daemon=True
             )
             worker.start()
@@ -119,7 +119,7 @@ class BackgroundTaskScheduler:
         # Start scheduler thread
         scheduler_thread = threading.Thread(
             target=self._scheduler_loop,
-            name="NeuroScheduler-Main",
+            name="AetherraScheduler-Main",
             daemon=True
         )
         scheduler_thread.start()
@@ -527,7 +527,7 @@ def example_failing_task() -> str:
 
 if __name__ == "__main__":
     # Demo the background scheduler
-    print("🧬 NeuroCode Background Task Scheduler Demo")
+    print("🧬 AetherraCode Background Task Scheduler Demo")
     print("=" * 50)
 
     scheduler = BackgroundTaskScheduler(max_workers=2)

@@ -1,16 +1,16 @@
 # test_syntax_tree.py
 """
-Test script for the enhanced NeuroCode syntax tree parser
+Test script for the enhanced Aetherra syntax tree parser
 """
 
-from core.syntax_tree import SyntaxTreeVisitor, analyze_syntax_tree, parse_neurocode
+from Aetherra.core.syntax_tree import SyntaxTreeVisitor, analyze_syntax_tree, parse_Aetherra
 
 
 def test_basic_parsing():
-    """Test basic NeuroCode parsing"""
+    """Test basic Aetherra parsing"""
 
     code = """
-# This is a test NeuroCode program
+# This is a test Aetherra program
 goal: optimize system performance priority: high
 
 # Memory operations
@@ -42,8 +42,8 @@ threshold = 85
 """
 
     # Parse the code
-    print("🔄 Parsing NeuroCode...")
-    tree = parse_neurocode(code)
+    print("🔄 Parsing Aetherra...")
+    tree = parse_Aetherra(code)
 
     # Analyze the tree
     print("📊 Analyzing syntax tree...")
@@ -87,7 +87,7 @@ end
 """
 
     print("\n🔄 Testing function definition...")
-    tree = parse_neurocode(code)
+    tree = parse_Aetherra(code)
     visitor = SyntaxTreeVisitor()
     results = visitor.visit(tree)
 
@@ -115,7 +115,7 @@ end
 """
 
     print("\n🔄 Testing nested blocks...")
-    tree = parse_neurocode(code)
+    tree = parse_Aetherra(code)
     stats = analyze_syntax_tree(tree)
 
     print("📈 Nested structure stats:")
@@ -133,7 +133,7 @@ def test_enhanced_memory_operations():
 recall "maintenance" since "today" in category "system"
 memory.pattern("performance", frequency="daily")"""
 
-    tree = parse_neurocode(enhanced_memory_code)
+    tree = parse_Aetherra(enhanced_memory_code)
     visitor = SyntaxTreeVisitor()
 
     print("📝 Enhanced memory operations:")
@@ -149,7 +149,7 @@ memory.pattern("performance", frequency="daily")"""
 
 
 if __name__ == "__main__":
-    print("🧬 NeuroCode Syntax Tree Parser Test")
+    print("🧬 Aetherra Syntax Tree Parser Test")
     print("=" * 50)
 
     try:

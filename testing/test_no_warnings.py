@@ -8,7 +8,7 @@ import sys
 from contextlib import redirect_stderr
 
 
-def test_neuroplex_no_warnings():
+def test_aetherplex_no_warnings():
     """Test that Neuroplex launches without box-shadow warnings"""
 
     # Capture stderr to check for warnings
@@ -17,7 +17,7 @@ def test_neuroplex_no_warnings():
     with redirect_stderr(captured_output):
         try:
             # Import the main window
-            from src.aethercode.ui.aetherplex import LyrixaWindow
+            from Lyrixa.ui.aetherplex import LyrixaWindow
 
             print("✅ LyrixaWindow imported successfully")
 
@@ -60,7 +60,7 @@ def test_neuroplex_no_warnings():
 
 
 if __name__ == "__main__":
-    success = test_neuroplex_no_warnings()
+    success = test_aetherplex_no_warnings()
     if success:
         print("\n🎉 TEST PASSED: No box-shadow warnings detected!")
         sys.exit(0)

@@ -1,18 +1,27 @@
 """
-NeuroCode Memory System
+AetherraCode Memory System
 Modular memory system with semantic search, pattern analysis, and reflection capabilities
 """
 
 from .basic import BasicMemory
+from .models import (
+    DailyReflection,
+    MemoryEntry,
+    MemoryPattern,
+    SessionMemory,
+    VectorMemoryEntry,
+)
 from .patterns import PatternAnalyzer
 from .reflection import DailyReflectionManager
 from .session import SessionManager
+from .storage import (
     DailyReflectionStorage,
     FileMemoryStorage,
     MemoryStorage,
     PatternStorage,
     SessionStorage,
 )
+from .vector import VectorMemory
 
 # Backward compatibility alias
 AetherraMemory = BasicMemory
@@ -33,7 +42,6 @@ __all__ = [
     # Memory systems
     "BasicMemory",
     "VectorMemory",
-    "EnhancedSemanticMemory",
     "SessionManager",
     "DailyReflectionManager",
     "PatternAnalyzer",
@@ -43,8 +51,8 @@ __all__ = [
 
 # Version info
 __version__ = "1.0.0"
-__author__ = "NeuroCode Project"
-__description__ = "Modular memory system for the NeuroCode programming language"
+__author__ = "AetherraCode Project"
+__description__ = "Modular memory system for the AetherraCode programming language"
 
 
 def create_memory_system(memory_type: str = "basic", **kwargs):
@@ -105,11 +113,15 @@ class UnifiedMemoryInterface:
         return self.basic_memory.recall(tags, category, limit, time_filter)
 
     # Semantic search operations
-    def semantic_remember(self, content: str, tags=None, category: str = "general", metadata=None):
+    def semantic_remember(
+        self, content: str, tags=None, category: str = "general", metadata=None
+    ):
         """Store a memory with semantic embedding"""
         return self.vector_memory.remember(content, tags, category, metadata)
 
-    def semantic_recall(self, query: str, limit: int = 5, similarity_threshold: float = 0.3):
+    def semantic_recall(
+        self, query: str, limit: int = 5, similarity_threshold: float = 0.3
+    ):
         """Recall memories using semantic similarity"""
         return self.vector_memory.semantic_recall(query, limit, similarity_threshold)
 

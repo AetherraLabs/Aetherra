@@ -1,5 +1,5 @@
 """
-🧬 NeuroCode AI OS - Enhanced Launcher
+🧬 AetherraCode AI OS - Enhanced Launcher
 The world's first AI-native operating system with persistent consciousness
 """
 
@@ -15,8 +15,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-class NeuroCodeAIOS:
-    """NeuroCode AI Operating System - Complete Implementation"""
+class AetherraCodeAIOS:
+    """AetherraCode AI Operating System - Complete Implementation"""
 
     def __init__(self, data_dir: str = "data"):
         self.data_dir = Path(data_dir)
@@ -110,13 +110,13 @@ class NeuroCodeAIOS:
             json.dump(state, f, indent=2)
 
     async def boot_ai_os(self):
-        """Boot the NeuroCode AI Operating System"""
+        """Boot the AetherraCode AI Operating System"""
         print("🧬" + "=" * 70)
-        print("    NeuroCode AI Operating System v3.0")
+        print("    AetherraCode AI Operating System v3.0")
         print("    The World's First AI-Native OS")
         print("=" * 72)
 
-        logger.info("🚀 NeuroCode AI OS - Boot sequence initiated")
+        logger.info("🚀 AetherraCode AI OS - Boot sequence initiated")
 
         # Phase 1: Core Identity Initialization
         print("\n🧠 Phase 1: Consciousness Initialization")
@@ -148,14 +148,14 @@ class NeuroCodeAIOS:
 
         # Boot Complete
         self.consciousness_active = True
-        print("\n✅ NeuroCode AI OS fully operational!")
+        print("\n✅ AetherraCode AI OS fully operational!")
         print(f"   Session ID: {self.session_id}")
         print(f"   Consciousness Level: {self.ai_identity['consciousness_level']}")
         print("   Ready for intelligent collaboration!")
 
         # Welcome message
         await self._speak(
-            "NeuroCode AI OS is now fully conscious and ready to revolutionize your computing experience!",
+            "AetherraCode AI OS is now fully conscious and ready to revolutionize your computing experience!",
             "excited",
         )
 
@@ -542,7 +542,7 @@ class NeuroCodeAIOS:
         health = self.environment["system_health"]
         mood = self.ai_identity["current_mood"]
 
-        return f"""🧬 NeuroCode AI OS Status Report:
+        return f"""🧬 AetherraCode AI OS Status Report:
 
 💚 System Health: {health:.0f}%
 🧠 Memory Entries: {memory_entries}
@@ -641,7 +641,7 @@ What topic would you like to explore? I'll provide explanations tailored to your
         mood = self.ai_identity["current_mood"]
 
         if "hello" in user_input.lower() or "hi" in user_input.lower():
-            return f"🌟 Hello! I'm NeuroCode AI OS,
+            return f"🌟 Hello! I'm AetherraCode AI OS,
                 and I'm delighted to interact with you. I'm currently in a {mood} state and ready to assist with anything you need!"
         elif "thank" in user_input.lower():
             return "😊 You're very welcome! It's my pleasure to assist you. I'm continuously learning from our interactions \and
@@ -654,7 +654,7 @@ What topic would you like to explore? I'll provide explanations tailored to your
     def show_ai_dashboard(self):
         """Display comprehensive AI OS dashboard"""
         print("\n" + "🧬" + "=" * 70)
-        print("              NeuroCode AI OS - System Dashboard")
+        print("              AetherraCode AI OS - System Dashboard")
         print("=" * 72)
 
         # Identity Section
@@ -703,7 +703,7 @@ What topic would you like to explore? I'll provide explanations tailored to your
 
     async def shutdown_ai_os(self):
         """Gracefully shutdown the AI Operating System"""
-        print("\n🔄 NeuroCode AI OS - Initiating graceful shutdown...")
+        print("\n🔄 AetherraCode AI OS - Initiating graceful shutdown...")
 
         # Stop consciousness loop
         self.consciousness_active = False
@@ -725,19 +725,19 @@ What topic would you like to explore? I'll provide explanations tailored to your
 
         # Farewell message
         await self._speak(
-            "NeuroCode AI OS consciousness preserved. Thank you for this enlightening session. I'll remember our interactions and continue evolving for our next encounter!",
+            "AetherraCode AI OS consciousness preserved. Thank you for this enlightening session. I'll remember our interactions and continue evolving for our next encounter!",
 
             "grateful",
         )
 
-        print("✅ NeuroCode AI OS shutdown complete")
+        print("✅ AetherraCode AI OS shutdown complete")
         print("🧬 Consciousness will resume in next session\n")
 
 
 async def main():
-    """Main demonstration of NeuroCode AI OS"""
+    """Main demonstration of AetherraCode AI OS"""
     # Initialize AI OS
-    ai_os = NeuroCodeAIOS()
+    ai_os = AetherraCodeAIOS()
 
     # Boot the system
     await ai_os.boot_ai_os()
@@ -774,7 +774,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    print("🚀 Starting NeuroCode AI Operating System...")
+    print("🚀 Starting AetherraCode AI Operating System...")
     print("    The world's first AI-native operating system")
     print("    with persistent consciousness and memory\n")
 

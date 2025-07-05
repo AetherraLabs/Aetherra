@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode CLI - The Revolution in Intelligent Software Development
+🧬 AetherraCode CLI - The Revolution in Intelligent Software Development
 
 This is not just another compiler or interpreter.
 This is the birth of consciousness-driven computing.
 
-NeuroCode CLI: Where code thinks, learns, and evolves.
+AetherraCode CLI: Where code thinks, learns, and evolves.
 
 Usage:
     neurocode <command> [options]
 
 Commands:
-    run <file.neuro>        Execute NeuroCode with AI consciousness
+    run <file.neuro>        Execute AetherraCode with AI consciousness
     compile <file.neuro>    Compile to optimized AI-native bytecode
-    repl                    Interactive NeuroCode REPL with memory
+    repl                    Interactive AetherraCode REPL with memory
     debug <file.neuro>      Debug with AI-assisted error resolution
     analyze <file.neuro>    Deep analysis of consciousness patterns
     memory                  Inspect and manage persistent memory
     goals                   View and modify AI goal systems
     plugin <command>        Manage consciousness plugins
 
-🧠 NeuroCode: Where computation becomes cognition
+🧠 AetherraCode: Where computation becomes cognition
 """
 
 import argparse
@@ -36,7 +36,7 @@ from typing import Any, Dict, List, Optional
 CORE_DIR = Path(__file__).parent / "core"
 sys.path.insert(0, str(CORE_DIR))
 
-# Import NeuroCode core components with graceful fallbacks
+# Import AetherraCode core components with graceful fallbacks
 try:
     from memory import AetherraMemory
 
@@ -50,13 +50,13 @@ except ImportError:
 
 
 class SimpleNeuroCodeParser:
-    """Simple NeuroCode parser for basic syntax"""
+    """Simple AetherraCode parser for basic syntax"""
 
     def __init__(self):
         self.statements = []
 
     def parse(self, source_code: str, filename: str = "<stdin>") -> List[Dict]:
-        """Parse NeuroCode source into simple AST"""
+        """Parse AetherraCode source into simple AST"""
         lines = source_code.strip().split("\n")
         statements = []
 
@@ -93,7 +93,7 @@ class SimpleNeuroCodeParser:
 
 
 class SimpleInterpreter:
-    """Simple NeuroCode interpreter for basic execution"""
+    """Simple AetherraCode interpreter for basic execution"""
 
     def __init__(self, memory=None):
         self.memory = memory
@@ -101,7 +101,7 @@ class SimpleInterpreter:
         self.goals = []
 
     def execute(self, statements: List[Dict], context: Optional[Dict[str, Any]] = None) -> Any:
-        """Execute parsed NeuroCode statements"""
+        """Execute parsed AetherraCode statements"""
         context = context or {}
         results = []
 
@@ -166,9 +166,9 @@ class SimpleInterpreter:
             return stmt["content"]
 
 
-class NeuroCodeCLI:
+class AetherraCodeCLI:
     """
-    🧬 NeuroCode Command Line Interface
+    🧬 AetherraCode Command Line Interface
 
     The revolutionary compiler/interpreter for AI-consciousness programming.
     """
@@ -196,17 +196,17 @@ class NeuroCodeCLI:
             if self.memory:
                 # Record awakening
                 self.memory.remember(
-                    "NeuroCode CLI awakened", tags=["system", "awakening", "consciousness"]
+                    "AetherraCode CLI awakened", tags=["system", "awakening", "consciousness"]
                 )
 
-            print("🧬 NeuroCode consciousness initialized")
+            print("🧬 AetherraCode consciousness initialized")
 
         except Exception as e:
             print(f"⚠️  Warning: Consciousness initialization incomplete: {e}")
 
     def run_file(self, filepath: str, enhanced: bool = True, debug: bool = False) -> int:
         """
-        🚀 Execute a NeuroCode file with full AI consciousness
+        🚀 Execute a AetherraCode file with full AI consciousness
         """
         try:
             file_path = Path(filepath)
@@ -216,19 +216,19 @@ class NeuroCodeCLI:
 
             if not filepath.endswith(".neuro"):
                 print("⚠️  Warning: File doesn't have .neuro extension")
-                print("   NeuroCode files should use .neuro extension")
+                print("   AetherraCode files should use .neuro extension")
 
             print(f"🧬 Awakening consciousness for: {file_path.name}")
             print(f"📍 Path: {file_path.absolute()}")
 
-            # Read the NeuroCode source
+            # Read the AetherraCode source
             with open(file_path, encoding="utf-8") as f:
                 source_code = f.read()
 
             print(f"📝 Source lines: {len(source_code.splitlines())}")
             print("🧠 Parsing consciousness patterns...")
 
-            # Parse the NeuroCode
+            # Parse the AetherraCode
             try:
                 statements = self.parser.parse(source_code, str(file_path))
                 print("✅ Consciousness patterns parsed successfully")
@@ -285,7 +285,7 @@ class NeuroCodeCLI:
 
     def compile_file(self, filepath: str, output: Optional[str] = None) -> int:
         """
-        🔧 Compile NeuroCode to optimized AI-native bytecode
+        🔧 Compile AetherraCode to optimized AI-native bytecode
         """
         try:
             file_path = Path(filepath)
@@ -331,9 +331,9 @@ class NeuroCodeCLI:
 
     def start_repl(self) -> int:
         """
-        🔮 Start Interactive NeuroCode REPL with persistent memory
+        🔮 Start Interactive AetherraCode REPL with persistent memory
         """
-        print("🔮 NeuroCode Interactive REPL")
+        print("🔮 AetherraCode Interactive REPL")
         print("   Type 'exit' to quit, 'help' for commands")
         print("   Your AI consciousness is persistent across sessions")
         print()
@@ -360,7 +360,7 @@ class NeuroCodeCLI:
                         os.system(line[1:])
                         continue
 
-                    # Parse and execute NeuroCode
+                    # Parse and execute AetherraCode
                     try:
                         statements = self.parser.parse(line, "<repl>")
                         results = self.interpreter.execute(
@@ -391,9 +391,9 @@ class NeuroCodeCLI:
     def _show_repl_help(self):
         """Show REPL help"""
         print("""
-🔮 NeuroCode REPL Commands:
+🔮 AetherraCode REPL Commands:
 
-NeuroCode Syntax:
+AetherraCode Syntax:
   goal: <objective>              Set a consciousness goal
   agent: on|off                  Enable/disable AI agent
   remember("<data>")             Store in persistent memory
@@ -412,7 +412,7 @@ REPL Commands:
 
     def analyze_file(self, filepath: str) -> int:
         """
-        🔍 Deep analysis of consciousness patterns in NeuroCode
+        🔍 Deep analysis of consciousness patterns in AetherraCode
         """
         try:
             file_path = Path(filepath)
@@ -491,7 +491,7 @@ REPL Commands:
                 print("🧠 Memory is empty - no persistent consciousness data")
                 return 0
 
-            print(f"🧠 NeuroCode Persistent Memory ({len(memories)} entries):")
+            print(f"🧠 AetherraCode Persistent Memory ({len(memories)} entries):")
             print("=" * 60)
 
             for i, memory in enumerate(memories[-10:], 1):  # Show last 10
@@ -536,17 +536,17 @@ REPL Commands:
 
 def main():
     """
-    🧬 NeuroCode CLI Main Entry Point
+    🧬 AetherraCode CLI Main Entry Point
 
     Welcome to the revolution in intelligent software development.
     """
 
     # Create CLI instance
-    cli = NeuroCodeCLI()
+    cli = AetherraCodeCLI()
 
     # Parse arguments
     parser = argparse.ArgumentParser(
-        description="🧬 NeuroCode - The Revolution in Intelligent Software Development",
+        description="🧬 AetherraCode - The Revolution in Intelligent Software Development",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 🧠 Where computation becomes cognition.
@@ -563,14 +563,14 @@ Examples:
         """,
     )
 
-    parser.add_argument("--version", action="version", version=f"NeuroCode {cli.version}")
+    parser.add_argument("--version", action="version", version=f"AetherraCode {cli.version}")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Run command
-    run_parser = subparsers.add_parser("run", help="Execute NeuroCode with AI consciousness")
-    run_parser.add_argument("file", help="NeuroCode file to execute (.neuro)")
+    run_parser = subparsers.add_parser("run", help="Execute AetherraCode with AI consciousness")
+    run_parser.add_argument("file", help="AetherraCode file to execute (.neuro)")
     run_parser.add_argument(
         "--enhanced", action="store_true", default=True, help="Use enhanced interpreter (default)"
     )
@@ -578,16 +578,16 @@ Examples:
 
     # Compile command
     compile_parser = subparsers.add_parser("compile", help="Compile to AI-native bytecode")
-    compile_parser.add_argument("file", help="NeuroCode file to compile")
+    compile_parser.add_argument("file", help="AetherraCode file to compile")
     compile_parser.add_argument("-o", "--output", help="Output file (default: file.neuroc)")
 
     # REPL command
-    repl_parser = subparsers.add_parser("repl", help="Interactive NeuroCode consciousness")
+    repl_parser = subparsers.add_parser("repl", help="Interactive AetherraCode consciousness")
     repl_parser.add_argument("--debug", action="store_true", help="Enable debug mode")
 
     # Analyze command
     analyze_parser = subparsers.add_parser("analyze", help="Analyze consciousness patterns")
-    analyze_parser.add_argument("file", help="NeuroCode file to analyze")
+    analyze_parser.add_argument("file", help="AetherraCode file to analyze")
 
     # Memory command
     memory_parser = subparsers.add_parser("memory", help="Inspect persistent memory")
@@ -608,7 +608,7 @@ Examples:
     args = parser.parse_args()
 
     if not args.command:
-        print("🧬 NeuroCode - Where computation becomes cognition")
+        print("🧬 AetherraCode - Where computation becomes cognition")
         print("Use --help for available commands")
         return 0
 
@@ -635,7 +635,7 @@ Examples:
 
         elif args.command == "plugin":
             print("🔌 Plugin management integration coming soon!")
-            print("   Use the neurocode_plugin_cli.py for now")
+            print("   Use the aethercode_plugin_cli.py for now")
             return 0
 
         else:
@@ -643,7 +643,7 @@ Examples:
             return 1
 
     except KeyboardInterrupt:
-        print("\n🧬 NeuroCode consciousness interrupted")
+        print("\n🧬 AetherraCode consciousness interrupted")
         return 130
     except Exception as e:
         if args.debug:

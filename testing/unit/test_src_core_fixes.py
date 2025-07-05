@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify all fixes in src/neurocode/core directory
+Test script to verify all fixes in src/Aetherra/core directory
 """
 
 import os
@@ -17,14 +17,14 @@ def test_core_imports():
 
     try:
         # Test main core module
-        print("✅ neurocode.core imported successfully")
+        print("✅ Aetherra.core imported successfully")
 
         # Test interpreter modules
         print("✅ EnhancedAetherraInterpreter imported successfully")
 
         print("✅ BaseInterpreter imported successfully")
 
-#         print("✅ DebugSystem imported successfully")
+        #         print("✅ DebugSystem imported successfully")
 
         print("✅ BlockExecutor imported successfully")
 
@@ -52,7 +52,7 @@ def test_core_imports():
         print("✅ LocalAIEngine imported successfully")
 
         # Test AST modules
-        print("✅ NeuroASTParser imported successfully")
+        print("✅ AetherraASTParser imported successfully")
 
         # Test utils
         print("✅ Utils functions imported successfully")
@@ -77,7 +77,7 @@ def test_core_functionality():
         print("✅ EnhancedAetherraInterpreter created successfully")
 
         # Test parser creation
-        from neurocode.core.parser import AetherraParser
+        from Aetherra.core.parser import AetherraParser
 
         parser = AetherraParser()
         print("✅ AetherraParser created successfully")
@@ -93,7 +93,7 @@ def test_core_functionality():
         def greet(name):
             return f"Hello, {name}!"
 
-        result = greet("NeuroCode")
+        result = greet("Aetherra")
         """
 
         result = interpreter.execute(test_code)

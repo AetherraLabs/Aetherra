@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🚀 NeuroCode Advanced Performance Engine
+🚀 AetherraCode Advanced Performance Engine
 =======================================
 
-Ultra-fast performance optimization system designed to make NeuroCode & Neuroplex
+Ultra-fast performance optimization system designed to make AetherraCode & Neuroplex
 fluid, fast, and responsive across all operations.
 
 Key Features:
@@ -586,7 +586,7 @@ def optimize_data_processing(
 
 if __name__ == "__main__":
     # Demo and testing
-    print("🚀 NeuroCode Advanced Performance Engine")
+    print("🚀 AetherraCode Advanced Performance Engine")
     print("=" * 50)
 
     engine = get_performance_engine()

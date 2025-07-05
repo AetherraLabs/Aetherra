@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Final comprehensive error check for all NeuroCode modules
+Final comprehensive error check for all AetherraCode modules
 """
 
 import os
@@ -51,9 +51,9 @@ def check_cli_modules():
         print(f"✅ CLI availability status: {CLI_AVAILABLE}")
 
         if CLI_AVAILABLE:
-            from neurocode.cli.main import NeuroCodePersonaInterface
+            from neurocode.cli.main import AetherraCodePersonaInterface
 
-            interface = NeuroCodePersonaInterface()
+            interface = AetherraCodePersonaInterface()
             print("✅ CLI interface creation successful")
         else:
             print("ℹ️  CLI not available due to dependencies")
@@ -71,7 +71,7 @@ def check_main_launcher():
 
     try:
         # Test that the main launcher exists and can be imported
-        launcher_path = Path("neurocode_launcher.py")
+        launcher_path = Path("aethercode_launcher.py")
         if launcher_path.exists():
             print("✅ Main launcher file exists")
         else:
@@ -86,7 +86,7 @@ def check_main_launcher():
 
 def main():
     """Run all checks"""
-    print("🧪 Final NeuroCode Error Check")
+    print("🧪 Final AetherraCode Error Check")
     print("=" * 50)
 
     checks = [check_core_modules, check_cli_modules, check_main_launcher]
@@ -105,7 +105,7 @@ def main():
     print(f"📊 Final Results: {passed}/{total} checks passed")
 
     if passed == total:
-        print("🎉 All checks passed! NeuroCode is ready to use.")
+        print("🎉 All checks passed! AetherraCode is ready to use.")
     else:
         print("⚠️  Some checks failed. Please review the output above.")
 

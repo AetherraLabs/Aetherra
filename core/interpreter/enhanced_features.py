@@ -1,9 +1,9 @@
 # core/interpreter/enhanced_features.py
 """
-Enhanced Feature Parser for NeuroCode Interpreter
+Enhanced Feature Parser for AetherraCode Interpreter
 =================================================
 
-Handles advanced parsing features and NeuroCode extensions.
+Handles advanced parsing features and AetherraCode extensions.
 """
 
 import re
@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional
 
 
 class EnhancedFeatureParser:
-    """Parser for enhanced NeuroCode features"""
+    """Parser for enhanced AetherraCode features"""
 
     def __init__(self):
         self.feature_patterns = {
@@ -162,7 +162,7 @@ class EnhancedFeatureParser:
 
     def get_feature_help(self) -> str:
         """Get help text for enhanced features"""
-        help_text = "🎯 Enhanced NeuroCode Features:\n\n"
+        help_text = "🎯 Enhanced AetherraCode Features:\n\n"
         help_text += "• use syntax_tree - Enable syntax tree parsing\n"
         help_text += "• use enhanced_parser - Enable enhanced parser\n"
         help_text += "• auto_tag: on/off - Toggle auto-tagging\n"

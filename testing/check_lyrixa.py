@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Check that neuroplex.py can be imported"""
+"""Check that aetherplex.py can be imported"""
 
 import sys
 
-print("Attempting to import neuroplex.py...")
+print("Attempting to import aetherplex.py...")
 
 try:
     # Try direct import
@@ -14,7 +14,7 @@ try:
     if hasattr(src.aethercode.ui.aetherplex, "LyrixaWindow"):
         print("✅ LyrixaWindow class found!")
     else:
-        print("❌ LyrixaWindow class not found in neuroplex.py")
+        print("❌ LyrixaWindow class not found in aetherplex.py")
 
 except Exception as e:
     print(f"❌ Import error: {e}")

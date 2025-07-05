@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Real-Time Performance Optimization for NeuroCode
+Real-Time Performance Optimization for AetherraCode
 Monitors execution patterns and provides AI-powered optimization suggestions
 """
 
@@ -39,7 +39,7 @@ class OptimizationSuggestion:
 
 class PerformanceOptimizer:
     """
-    Real-time performance monitoring and optimization for NeuroCode
+    Real-time performance monitoring and optimization for AetherraCode
     """
 
     def __init__(self, metrics_file: str = "performance_metrics.json"):
@@ -287,7 +287,7 @@ class PerformanceOptimizer:
 
     def apply_optimization(self, command: str, optimization_type: str) -> bool:
         """Apply specific optimization to command"""
-        # This would integrate with the NeuroCode interpreter to apply optimizations
+        # This would integrate with the AetherraCode interpreter to apply optimizations
         print(f"🔧 Applying {optimization_type} optimization to '{command}'")
 
         # For now, just mark as optimized
@@ -364,7 +364,7 @@ def generate_performance_report() -> Dict[str, Any]:
 
 if __name__ == "__main__":
     # Example usage
-    print("🚀 NeuroCode Performance Optimizer")
+    print("🚀 AetherraCode Performance Optimizer")
 
     # Simulate some command executions
     optimizer = PerformanceOptimizer()

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🧪 NeuroCode Comprehensive Test Suite
+🧪 AetherraCode Comprehensive Test Suite
 ====================================
 
-Tests all major components of NeuroCode to ensure everything works correctly.
+Tests all major components of AetherraCode to ensure everything works correctly.
 """
 
 import sys
@@ -50,7 +50,7 @@ def test_interpreter_functionality():
 
         # Test basic code execution (if execute method exists)
         if hasattr(interpreter, "execute"):
-            result = interpreter.execute("print('Hello NeuroCode!')")
+            result = interpreter.execute("print('Hello AetherraCode!')")
             print("  ✅ Basic code execution works")
         else:
             print("  ⚠️ Execute method not available (this is normal)")
@@ -245,10 +245,10 @@ def test_launchers():
     try:
         launcher_dir = project_root / "launchers"
         launcher_files = [
-            "launch_fully_modular_neuroplex.py",
-            "launch_modular_neuroplex.py",
-            "launch_enhanced_neuroplex.py",
-            "launch_neuroplex_v2.py",
+            "launch_fully_modular_aetherplex.py",
+            "launch_modular_aetherplex.py",
+            "launch_enhanced_aetherplex.py",
+            "launch_aetherplex_v2.py",
         ]
 
         for launcher_file in launcher_files:
@@ -264,20 +264,20 @@ def test_launchers():
         return False
 
 
-def test_neurocode_syntax():
-    """Test NeuroCode language syntax handling"""
-    print("\n🧬 Testing NeuroCode Language Syntax...")
+def test_aethercode_syntax():
+    """Test AetherraCode language syntax handling"""
+    print("\n🧬 Testing AetherraCode Language Syntax...")
 
     try:
-        # Test if we can create basic NeuroCode constructs
+        # Test if we can create basic AetherraCode constructs
         sample_neurocode = """
-        # Sample NeuroCode syntax test
-        goal: "Test NeuroCode functionality"
+        # Sample AetherraCode syntax test
+        goal: "Test AetherraCode functionality"
         remember: "This is a test"
         think: "Testing syntax parsing"
         """
 
-        print("  ✅ NeuroCode syntax string created")
+        print("  ✅ AetherraCode syntax string created")
 
         # If parser is available, test parsing
         try:
@@ -288,15 +288,15 @@ def test_neurocode_syntax():
                 # This might fail, but we test the structure
                 try:
                     result = parser.parse(sample_neurocode)
-                    print("  ✅ NeuroCode syntax parsed successfully")
+                    print("  ✅ AetherraCode syntax parsed successfully")
                 except Exception:
-                    print("  ⚠️ NeuroCode parsing not fully implemented (expected)")
+                    print("  ⚠️ AetherraCode parsing not fully implemented (expected)")
         except Exception:
             print("  ⚠️ Parser not available for syntax testing")
 
         return True
     except Exception as e:
-        print(f"  ❌ NeuroCode syntax test failed: {e}")
+        print(f"  ❌ AetherraCode syntax test failed: {e}")
         return False
 
 
@@ -321,11 +321,11 @@ def run_basic_gui_test():
 
         # Create a simple test window
         window = QWidget()
-        window.setWindowTitle("NeuroCode Test - Success!")
+        window.setWindowTitle("AetherraCode Test - Success!")
         window.setGeometry(100, 100, 400, 200)
 
         layout = QVBoxLayout()
-        label = QLabel("🎉 NeuroCode GUI Test Successful!\n\nAll components are working correctly.")
+        label = QLabel("🎉 AetherraCode GUI Test Successful!\n\nAll components are working correctly.")
         label.setStyleSheet("font-size: 14px; padding: 20px; text-align: center;")
         layout.addWidget(label)
         window.setLayout(layout)
@@ -355,8 +355,8 @@ def run_basic_gui_test():
 
 
 def main():
-    """Run comprehensive NeuroCode test suite"""
-    print("🧪 NeuroCode Comprehensive Test Suite")
+    """Run comprehensive AetherraCode test suite"""
+    print("🧪 AetherraCode Comprehensive Test Suite")
     print("=" * 60)
 #     print("Testing all major components...\n")
 
@@ -371,7 +371,7 @@ def main():
     test_results.append(("StdLib Plugins", test_stdlib_plugins()))
     test_results.append(("Performance Engine", test_performance_engine()))
     test_results.append(("Launchers", test_launchers()))
-    test_results.append(("NeuroCode Syntax", test_neurocode_syntax()))
+    test_results.append(("AetherraCode Syntax", test_aethercode_syntax()))
     test_results.append(("Basic GUI", run_basic_gui_test()))
 
     # Print summary
@@ -395,11 +395,11 @@ def main():
     print(f"Success Rate: {(passed / total) * 100:.1f}%")
 
     if passed == total:
-        print("\n🎉 ALL TESTS PASSED! NeuroCode is fully functional! 🎉")
+        print("\n🎉 ALL TESTS PASSED! AetherraCode is fully functional! 🎉")
         print("\nYou can now:")
-        print("  • Launch the GUI: python neurocode_launcher.py")
-        print("  • Use NeuroCode components programmatically")
-        print("  • Develop with the NeuroCode language")
+        print("  • Launch the GUI: python aethercode_launcher.py")
+        print("  • Use AetherraCode components programmatically")
+        print("  • Develop with the AetherraCode language")
         return True
     else:
         print(f"\n⚠️ {total - passed} tests failed. Check the output above for details.")

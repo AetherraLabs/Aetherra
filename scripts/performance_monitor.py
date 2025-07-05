@@ -42,7 +42,7 @@ class PerformanceMetrics:
     metadata: Optional[Dict[str, Any]] = None
 
 
-class NeuroLogger:
+class AetherraLogger:
     """Advanced logging system for aetherra operations"""
 
     def __init__(self, log_dir: str = "logs", enable_performance: bool = True):
@@ -333,7 +333,7 @@ class PerformanceMonitor:
 
     def __init__(
         self,
-        logger: NeuroLogger,
+        logger: AetherraLogger,
         operation: str,
         metadata: Optional[Dict[str, Any]] = None,
     ):
@@ -358,14 +358,14 @@ class PerformanceMonitor:
 
 
 # Global logger instance
-_global_logger: Optional[NeuroLogger] = None
+_global_logger: Optional[AetherraLogger] = None
 
 
-def get_logger() -> NeuroLogger:
+def get_logger() -> AetherraLogger:
     """Get the global logger instance"""
     global _global_logger
     if _global_logger is None:
-        _global_logger = NeuroLogger()
+        _global_logger = AetherraLogger()
     return _global_logger
 
 
@@ -385,7 +385,7 @@ def monitor_operation(operation: str, metadata: Optional[Dict[str, Any]] = None)
 
 if __name__ == "__main__":
     # Demo usage
-    logger = NeuroLogger()
+    logger = AetherraLogger()
 
     print("🔍 aetherra Performance Monitor Demo")
     print("-" * 40)

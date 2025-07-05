@@ -1,6 +1,6 @@
 # core/interpreter.py
 """
-NeuroCode Interpreter (Modular Interface)
+AetherraCode Interpreter (Modular Interface)
 ==========================================
 
 This module provides a compatibility interface to the new modular interpreter system.
@@ -24,7 +24,7 @@ try:
 
     # Legacy function compatibility
     def create_interpreter():
-        """Create a new NeuroCode interpreter instance"""
+        """Create a new AetherraCode interpreter instance"""
         return AetherraInterpreter()
 
     # Export the same API as the original monolithic module

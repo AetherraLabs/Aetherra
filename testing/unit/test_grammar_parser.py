@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """
-Test the NeuroCode grammar parser
+Test the AetherraCode grammar parser
 """
 
 import sys
 
 sys.path.append(".")
 
-from core.refined_neurocode_grammar import RefinedNeuroCodeParser
+from Aetherra.core.refined_aethercode_grammar import RefinedNeuroCodeParser
 
 
 def test_parser():
-    """Test the refined parser with basic NeuroCode constructs"""
+    """Test the refined parser with basic AetherraCode constructs"""
 
     parser = RefinedNeuroCodeParser()
 
-    # Test basic NeuroCode constructs
+    # Test basic AetherraCode constructs
     test_cases = [
         'goal: "Create a secure system" priority: high',
         "agent: on",
@@ -25,7 +25,7 @@ def test_parser():
         'if x > 10:\n    remember("Large value")\nend',
     ]
 
-    print("🧬 Testing NeuroCode Grammar Parser")
+    print("🧬 Testing AetherraCode Grammar Parser")
     print("=" * 40)
 
     for i, test in enumerate(test_cases):

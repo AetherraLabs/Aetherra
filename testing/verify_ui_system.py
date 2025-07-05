@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode UI Verification Script
+Aetherra UI Verification Script
 ===============================
 
 This script verifies that the UI subsystem works correctly with
@@ -26,7 +26,7 @@ sys.path.insert(0, str(project_dir))
 def check_syntax():
     """Check syntax of all UI files"""
     logger.info("Checking syntax of UI files...")
-    ui_dir = "src/neurocode/ui"
+    ui_dir = "src/Aetherra/ui"
     errors = 0
     for f in os.listdir(ui_dir):
         if f.endswith(".py"):
@@ -49,12 +49,12 @@ def verify_imports():
     try:
         from src.aethercode.ui import (
             BASIC_UI_AVAILABLE,
-            NEUROPLEX_AVAILABLE,
             QT_AVAILABLE,
+            Lyrixa_AVAILABLE,
         )
 
         logger.info(f"Qt Available: {QT_AVAILABLE}")
-        logger.info(f"Neuroplex Available: {NEUROPLEX_AVAILABLE}")
+        logger.info(f"Lyrixa Available: {Lyrixa_AVAILABLE}")
         logger.info(f"Basic UI Available: {BASIC_UI_AVAILABLE}")
 
         # Check that we can get a window
@@ -94,7 +94,7 @@ def verify_launch_function():
 
 
 def main():
-    logger.info("=== NeuroCode UI Verification ===")
+    logger.info("=== Aetherra UI Verification ===")
 
     # Run verification tests
     syntax_ok = check_syntax()

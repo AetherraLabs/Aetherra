@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🎉 Natural-to-NeuroCode Translation Revolution Demo
+🎉 Natural-to-AetherraCode Translation Revolution Demo
 =================================================
 
-This demonstrates the breakthrough feature that makes NeuroCode truly accessible:
+This demonstrates the breakthrough feature that makes AetherraCode truly accessible:
 Natural Language Programming through AI-powered translation.
 
 No more learning syntax - just speak your intent and watch it become executable code!
@@ -20,7 +20,7 @@ sys.path.insert(0, str(project_root))
 def main():
     print("🎉 NATURAL-TO-NEUROCODE TRANSLATION REVOLUTION")
     print("=" * 60)
-    print("🗣️  Speak naturally → 🧬 Execute as NeuroCode")
+    print("🗣️  Speak naturally → 🧬 Execute as AetherraCode")
     print()
 
     # Natural language examples that showcase the power
@@ -43,7 +43,7 @@ def main():
         ("Automatically save insights from conversations", "Automated capture"),
     ]
 
-    print("🚀 DEMONSTRATION: Natural Language → NeuroCode")
+    print("🚀 DEMONSTRATION: Natural Language → AetherraCode")
     print("-" * 60)
 
     # Import translator
@@ -58,7 +58,7 @@ def main():
 
             # Translate
             neurocode = translator.translate(natural_input)
-            print(f"🧬 NeuroCode: {neurocode}")
+            print(f"🧬 AetherraCode: {neurocode}")
 
             # Show the power - this natural language becomes executable code!
             print("⚡ Result: Executable AI-native code generated!")
@@ -72,14 +72,14 @@ def main():
         print()
 
         print("🌟 LIVE DEMONSTRATION:")
-        print("   Try: python neuroplex_cli.py translate 'Remember this demo'")
-        print("   Try: python neuroplex_cli.py chat  # Interactive mode")
-        print("   Try: python neuroplex_cli.py translate 'Fix my bugs' --execute")
+        print("   Try: python aetherplex_cli.py translate 'Remember this demo'")
+        print("   Try: python aetherplex_cli.py chat  # Interactive mode")
+        print("   Try: python aetherplex_cli.py translate 'Fix my bugs' --execute")
         print()
 
         print("💡 THE FUTURE IS HERE:")
         print("   Anyone can now program AI-native systems using natural language!")
-        print("   NeuroCode bridges the gap between human intent and AI execution.")
+        print("   AetherraCode bridges the gap between human intent and AI execution.")
         print("   This is the beginning of true human-AI symbiosis.")
 
     except Exception as e:

@@ -44,7 +44,7 @@ def main():
         sys.exit(1)
 
     # Check if we're in the right directory
-    if not Path("ui/neuroplex_gui.py").exists():
+    if not Path("ui/aetherplex_gui.py").exists():
         print("❌ Please run this script from the aetherra project root directory")
         sys.exit(1)
 
@@ -125,7 +125,7 @@ def main():
     print("\\n📚 Next steps:")
     print("1. Install VS Code extensions (see COMPLETE_OPTIMIZATION_GUIDE.md)")
     print("2. Run: python check_qt.py (to verify GUI)")
-    print("3. Run: python ui/neuroplex_gui.py (to launch GUI)")
+    print("3. Run: python ui/aetherplex_gui.py (to launch GUI)")
     print("4. Check COMPLETE_OPTIMIZATION_GUIDE.md for advanced features")
 
     # Test GUI import

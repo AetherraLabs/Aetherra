@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-NeuroCode & Neuroplex Comprehensive System Test
+AetherraCode & Neuroplex Comprehensive System Test
 
-This script performs a full system test of both NeuroCode and Neuroplex
+This script performs a full system test of both AetherraCode and Neuroplex
 to ensure all components are functioning properly after our cleanup.
 
 Test Coverage:
-1. Core NeuroCode functionality
+1. Core AetherraCode functionality
 2. Neuroplex launcher systems
 3. Agent archive and replay
 4. Memory and goal systems
@@ -79,12 +79,12 @@ class SystemTester:
             return False
 
     def test_core_files(self) -> bool:
-        """Test that core NeuroCode files exist and are readable."""
+        """Test that core AetherraCode files exist and are readable."""
         print("\n📁 TESTING CORE FILES")
         print("=" * 50)
 
         critical_files = [
-            "neurocode_launcher.py",
+            "aethercode_launcher.py",
             "core/__init__.py",
             "core/agent.py",
             "core/memory.py",
@@ -113,8 +113,8 @@ class SystemTester:
 
         return all_present
 
-    def test_neurocode_import(self) -> bool:
-        """Test importing core NeuroCode modules."""
+    def test_aethercode_import(self) -> bool:
+        """Test importing core AetherraCode modules."""
         print("\n🧬 TESTING NEUROCODE IMPORTS")
         print("=" * 50)
 
@@ -148,18 +148,18 @@ class SystemTester:
             return success_count >= len(core_modules) // 2  # At least half should work
 
         except Exception as e:
-            self.log_test("NeuroCode Imports", "FAIL", "Import test failed", str(e))
+            self.log_test("AetherraCode Imports", "FAIL", "Import test failed", str(e))
             return False
 
     def test_launcher_systems(self) -> bool:
-        """Test NeuroCode and Neuroplex launchers."""
+        """Test AetherraCode and Neuroplex launchers."""
         print("\n🚀 TESTING LAUNCHER SYSTEMS")
         print("=" * 50)
 
         launchers = [
-            ("neurocode_launcher.py", "Main NeuroCode launcher"),
-            ("neuroplex.bat", "Neuroplex batch launcher"),
-            ("neuroplex", "Neuroplex script launcher"),
+            ("aethercode_launcher.py", "Main AetherraCode launcher"),
+            ("aetherplex.bat", "Neuroplex batch launcher"),
+            ("aetherplex", "Neuroplex script launcher"),
         ]
 
         working_launchers = 0
@@ -374,7 +374,7 @@ class SystemTester:
         test_suites = [
             ("Python Environment", self.test_python_environment),
             ("Core Files", self.test_core_files),
-            ("NeuroCode Imports", self.test_neurocode_import),
+            ("AetherraCode Imports", self.test_aethercode_import),
             ("Launcher Systems", self.test_launcher_systems),
             ("Data Systems", self.test_data_systems),
             ("Website Deployment", self.test_website_deployment),

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Persona CLI - Command-line interface for persona management
+AetherraCode Persona CLI - Command-line interface for persona management
 """
 
 import argparse
@@ -14,7 +14,7 @@ from persona_engine import PersonaArchetype, PersonaEngine, VoiceConfiguration, 
 
 
 class PersonaCLI:
-    """Command-line interface for NeuroCode persona management"""
+    """Command-line interface for AetherraCode persona management"""
 
     def __init__(self):
         self.engine = None
@@ -113,7 +113,7 @@ class PersonaCLI:
             engine = self._get_engine()
             status = engine.get_persona_status()
 
-            print("🤖 NeuroCode Persona Status")
+            print("🤖 AetherraCode Persona Status")
             print("=" * 40)
             print(f"Mindprint ID: {status['mindprint_id']}")
             print(f"Archetype: {status['emoji']} {status['archetype']}")
@@ -208,7 +208,7 @@ class PersonaCLI:
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
-        description="NeuroCode Persona Management CLI",
+        description="AetherraCode Persona Management CLI",
         epilog="Examples:\n"
         "  neurocode persona set guardian\n"
         "  neurocode persona blend guardian:0.7 sage:0.3\n"

@@ -1,0 +1,23 @@
+// Holiday Greeting Plugin for Aetherra
+// Demonstrates simple plugin functionality
+
+function holidayGreeting(holiday) {
+    ask_ai("Generate a festive " + holiday + " greeting message") -> greeting
+
+    return {
+        message: greeting,
+        timestamp: now(),
+        holiday: holiday
+    }
+}
+
+function getUpcomingHolidays() {
+    ask_ai("What holidays are coming up in the next month?") -> holidays
+    return holidays
+}
+
+// Export plugin functions
+export {
+    holidayGreeting,
+    getUpcomingHolidays
+}

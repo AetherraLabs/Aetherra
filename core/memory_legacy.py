@@ -1,6 +1,6 @@
 # core/memory.py - Compatibility Layer
 """
-NeuroCode Memory System - Backward Compatibility Layer
+AetherraCode Memory System - Backward Compatibility Layer
 
 This module provides backward compatibility for the original AetherraMemory interface
 while using the new modular memory system under the hood.

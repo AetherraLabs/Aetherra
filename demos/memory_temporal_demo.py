@@ -4,7 +4,7 @@ Memory Temporal Filtering Enhancement Demo
 ==========================================
 
 This demo showcases the new temporal filtering and reflection capabilities
-added to the NeuroCode memory system.
+added to the AetherraCode memory system.
 
 Features demonstrated:
 - Time-based memory recall
@@ -55,7 +55,7 @@ def create_test_memories(memory):
 
     test_memories = [
         {
-            "text": "Started working on the NeuroCode memory system enhancement",
+            "text": "Started working on the AetherraCode memory system enhancement",
             "tags": ["development", "memory", "enhancement"],
             "category": "work",
             "time_offset": timedelta(hours=2),
@@ -85,13 +85,13 @@ def create_test_memories(memory):
             "time_offset": timedelta(minutes=5),
         },
         {
-            "text": "Thinking about future roadmap for NeuroCode",
+            "text": "Thinking about future roadmap for AetherraCode",
             "tags": ["planning", "future", "roadmap"],
             "category": "strategy",
             "time_offset": timedelta(days=1),
         },
         {
-            "text": "Initial concept for NeuroCode language",
+            "text": "Initial concept for AetherraCode language",
             "tags": ["concept", "language", "initial"],
             "category": "research",
             "time_offset": timedelta(days=7),
@@ -119,7 +119,7 @@ def create_test_memories(memory):
 
 def demo_temporal_filtering():
     """Demonstrate temporal filtering capabilities"""
-    print_section("🧠 NeuroCode Memory Temporal Enhancement Demo")
+    print_section("🧠 AetherraCode Memory Temporal Enhancement Demo")
 
     # Initialize memory system
     memory = AetherraMemory()

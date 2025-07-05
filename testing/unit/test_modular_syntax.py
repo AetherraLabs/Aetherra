@@ -1,22 +1,26 @@
 # test_modular_syntax.py
 """
-Test Suite for Modular NeuroCode Syntax System
+Test Suite for Modular AetherraCode Syntax System
 ==============================================
 
 This test validates that the modular syntax system works correctly
 and maintains compatibility with the legacy syntax_tree.py.
 """
 
-from core.syntax import SyntaxTreeVisitor, analyze_syntax_tree, parse_neurocode
-from core.syntax.analysis import extract_functions, generate_summary_report, validate_syntax_tree
-from core.syntax.nodes import NodeType
-from core.syntax.visitor import SyntaxTreeAnalyzer
+from Aetherra.core.syntax import SyntaxTreeVisitor, analyze_syntax_tree, parse_neurocode
+from Aetherra.core.syntax.analysis import (
+    extract_functions,
+    generate_summary_report,
+    validate_syntax_tree,
+)
+from Aetherra.core.syntax.nodes import NodeType
+from Aetherra.core.syntax.visitor import SyntaxTreeAnalyzer
 
 
 def test_basic_parsing():
     """Test basic parsing functionality"""
     code = """
-    # Simple NeuroCode test
+    # Simple AetherraCode test
     goal: Complete the project
 
     define hello_world()
@@ -148,7 +152,7 @@ def test_advanced_analysis():
 def test_compatibility():
     """Test compatibility with legacy usage patterns"""
     # Test the same interface as the old syntax_tree.py
-    from core.syntax import parse_neurocode as new_parse
+    from Aetherra.core.syntax import parse_neurocode as new_parse
 
     code = """
     goal: Test compatibility
@@ -169,7 +173,7 @@ def test_compatibility():
 
 def test_performance():
     """Test performance with larger code samples"""
-    # Generate a larger NeuroCode sample
+    # Generate a larger AetherraCode sample
     lines = []
     lines.append("goal: Performance test")
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🔬 NeuroCode Final Verification Test
+🔬 Aetherra Final Verification Test
 ===================================
 
-Final check to ensure NeuroCode and Neuroplex are working correctly.
+Final check to ensure Aetherra and Lyrixa are working correctly.
 This tests all the main functionality that would be used by end users.
 """
 
@@ -14,16 +14,16 @@ def test_main_launchers():
     """Test that main launchers can be imported and initialized"""
     print("🚀 Testing Main Launchers...")
 
-    # Test neurocode_launcher.py
+    # Test Aetherra_launcher.py
     try:
-        with open("neurocode_launcher.py") as f:
+        with open("Aetherra_launcher.py") as f:
             content = f.read()
-        if "from neurocode.cli.main import main" in content:
-            print("  ✅ neurocode_launcher.py: Import path correct")
+        if "from Aetherra.cli.main import main" in content:
+            print("  ✅ Aetherra_launcher.py: Import path correct")
         else:
-            print("  ❌ neurocode_launcher.py: Import issue")
+            print("  ❌ Aetherra_launcher.py: Import issue")
     except FileNotFoundError:
-        print("  ⚠️  neurocode_launcher.py: File not found")
+        print("  ⚠️  Aetherra_launcher.py: File not found")
 
     # Test CLI main
     try:
@@ -32,7 +32,7 @@ def test_main_launchers():
         print(f"  ❌ CLI main: {e}")
 
     # Test various launchers
-    launchers = ["launchers.main", "launchers.launch_enhanced_neuroplex"]
+    launchers = ["launchers.main", "launchers.launch_enhanced_Lyrixa"]
     for launcher in launchers:
         try:
             __import__(launcher)
@@ -75,16 +75,16 @@ def test_core_systems():
 
     # Test agent
     try:
-        from core.agent import NeuroAgent
-        from core.functions import NeuroFunctions
         from core.aetherra_memory import AetherraMemory
+        from core.agent import AetherraAgent
+        from core.functions import AetherraFunctions
 
         memory = AetherraMemory()
-        functions = NeuroFunctions()
-        agent = NeuroAgent(memory, functions, [])
-        print("  ✅ NeuroAgent: Initialization successful")
+        functions = AetherraFunctions()
+        agent = AetherraAgent(memory, functions, [])
+        print("  ✅ AetherraAgent: Initialization successful")
     except Exception as e:
-        print(f"  ❌ NeuroAgent: {e}")
+        print(f"  ❌ AetherraAgent: {e}")
 
 
 def test_ui_systems():
@@ -106,7 +106,7 @@ def test_ui_systems():
     # Test main GUI modules
     ui_modules = [
         "src.aethercode.ui.aetherplex_gui",
-        "src.aethercode.ui.enhanced_neuroplex",
+        "src.aethercode.ui.enhanced_Lyrixa",
     ]
 
     for module in ui_modules:
@@ -156,14 +156,14 @@ def test_parser_system():
 
         lexer = AetherraLexer("goal: test")
         tokens = lexer.tokenize()
-        print("  ✅ NeuroCode Lexer: Tokenization working")
+        print("  ✅ Aetherra Lexer: Tokenization working")
     except Exception as e:
-        print(f"  ❌ NeuroCode Lexer: {e}")
+        print(f"  ❌ Aetherra Lexer: {e}")
 
 
 def main():
     """Run final verification"""
-    print("🔬 NeuroCode Final Verification Test")
+    print("🔬 Aetherra Final Verification Test")
     print("=" * 50)
 
     test_main_launchers()
@@ -175,12 +175,12 @@ def main():
     print("\n🎯 Final Status:")
     print("✅ Core systems are operational")
     print("✅ No critical errors in main components")
-    print("✅ NeuroCode and Neuroplex are ready for use")
+    print("✅ Aetherra and Lyrixa are ready for use")
 
     print("\n📋 Usage Instructions:")
-    print("🔸 Run CLI: python -m neurocode.cli.main")
-    print("🔸 Launch GUI: python neurocode_launcher.py")
-    print("🔸 Use Enhanced: python launchers/launch_enhanced_neuroplex.py")
+    print("🔸 Run CLI: python -m Aetherra.cli.main")
+    print("🔸 Launch GUI: python Aetherra_launcher.py")
+    print("🔸 Use Enhanced: python launchers/launch_enhanced_Lyrixa.py")
 
     return 0
 

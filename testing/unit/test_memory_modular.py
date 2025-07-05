@@ -17,7 +17,7 @@ def test_memory_models():
     """Test core memory models"""
 #     print("Testing memory models...")
 
-    from core.memory.models import MemoryEntry
+    from Aetherra.core.memory.models import MemoryEntry
 
     # Test MemoryEntry
     memory = MemoryEntry(text="Test memory", tags=["test"], category="testing")
@@ -41,8 +41,8 @@ def test_basic_memory():
     """Test basic memory system"""
 #     print("Testing basic memory system...")
 
-    from core.memory.basic import BasicMemory
-    from core.memory.storage import FileMemoryStorage
+    from Aetherra.core.memory.basic import BasicMemory
+    from Aetherra.core.memory.storage import FileMemoryStorage
 
     # Use temporary file for testing
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
@@ -82,7 +82,7 @@ def test_vector_memory():
     """Test vector memory system"""
 #     print("Testing vector memory system...")
 
-    from core.memory.vector import VectorMemory
+    from Aetherra.core.memory.vector import VectorMemory
 
     # Use temporary directory for testing
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -110,8 +110,8 @@ def test_session_management():
     """Test session management"""
 #     print("Testing session management...")
 
-    from core.memory.models import MemoryEntry
-    from core.memory.session import SessionManager
+    from Aetherra.core.memory.models import MemoryEntry
+    from Aetherra.core.memory.session import SessionManager
 
     # Use temporary directory for testing
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -143,9 +143,9 @@ def test_daily_reflection():
     """Test daily reflection system"""
 #     print("Testing daily reflection system...")
 
-    from core.memory.models import MemoryEntry
-    from core.memory.reflection import DailyReflectionManager
-    from core.memory.storage import FileMemoryStorage
+    from Aetherra.core.memory.models import MemoryEntry
+    from Aetherra.core.memory.reflection import DailyReflectionManager
+    from Aetherra.core.memory.storage import FileMemoryStorage
 
     # Use temporary directories for testing
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -188,9 +188,9 @@ def test_pattern_analysis():
     """Test pattern analysis system"""
 #     print("Testing pattern analysis system...")
 
-    from core.memory.models import MemoryEntry
-    from core.memory.patterns import PatternAnalyzer
-    from core.memory.storage import FileMemoryStorage
+    from Aetherra.core.memory.models import MemoryEntry
+    from Aetherra.core.memory.patterns import PatternAnalyzer
+    from Aetherra.core.memory.storage import FileMemoryStorage
 
     # Use temporary directory for testing
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -243,7 +243,7 @@ def test_unified_interface():
     """Test unified memory interface"""
 #     print("Testing unified memory interface...")
 
-    from core.memory import UnifiedMemoryInterface
+    from Aetherra.core.memory import UnifiedMemoryInterface
 
     # Use temporary directory to avoid conflicts
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -280,7 +280,7 @@ def test_backward_compatibility():
     """Test backward compatibility with original AetherraMemory"""
 #     print("Testing backward compatibility...")
 
-    from core.aetherra_memory import AetherraMemory
+    from Aetherra.core.aetherra_memory import AetherraMemory
 
     # Use temporary directory
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -323,7 +323,7 @@ def test_legacy_memory_compatibility():
 
     try:
         # Test import of legacy functions
-        from core.memory_legacy import AetherraMemory as LegacyNeuroMemory
+        from Aetherra.core.memory_legacy import AetherraMemory as LegacyNeuroMemory
 
         # Use temporary directory
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -347,7 +347,7 @@ def test_legacy_memory_compatibility():
 
 def run_all_tests():
     """Run all memory system tests"""
-    print("🧪 Running NeuroCode Memory System Tests")
+    print("🧪 Running AetherraCode Memory System Tests")
     print("=" * 50)
 
     test_functions = [

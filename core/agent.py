@@ -2,7 +2,7 @@
                             suggest_system_evolution, provide_adaptive_suggestions,
                             memory_driven_code_suggestion, justify_self_editing_decision)
 
-class NeuroAgent:
+class AetherraAgent:
     """Manages autonomous behavior, pattern detection, and long-term goals"""
 
     def __init__(self, memory, functions, command_history):

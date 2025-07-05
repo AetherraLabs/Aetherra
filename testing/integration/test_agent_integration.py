@@ -5,7 +5,7 @@
 
 Test script to verify that the agent behavior improvements are working correctly:
 - Agent syntax parsing
-- Agent control through NeuroCode
+- Agent control through AetherraCode
 - Agent mode and goal management
 - UI integration
 """
@@ -20,10 +20,10 @@ sys.path.insert(0, str(project_root / "core"))
 
 
 def test_agent_syntax_parsing():
-    """Test agent syntax parsing in NeuroCode"""
+    """Test agent syntax parsing in AetherraCode"""
     print("🧪 Testing Agent Syntax Parsing...")
 
-    from core.syntax_tree import SyntaxTreeVisitor, parse_neurocode
+    from Aetherra.core.syntax_tree import SyntaxTreeVisitor, parse_neurocode
 
     # Test agent syntax
     test_code = """
@@ -57,9 +57,9 @@ def test_agent_executor():
     print("\n🧪 Testing Agent Executor...")
 
     try:
-        from core.agent_executor import AgentExecutor
-        from core.enhanced_agent import EnhancedNeuroAgent
-        from core.syntax_tree import NodeType, parse_neurocode
+        from Aetherra.core.agent_executor import AgentExecutor
+        from Aetherra.core.enhanced_agent import EnhancedNeuroAgent
+        from Aetherra.core.syntax_tree import NodeType, parse_neurocode
 
         # Create agent and executor
         agent = EnhancedNeuroAgent()
@@ -93,7 +93,7 @@ def test_agent_state_management():
     print("\n🧪 Testing Agent State Management...")
 
     try:
-        from core.enhanced_agent import EnhancedNeuroAgent
+        from Aetherra.core.enhanced_agent import EnhancedNeuroAgent
 
         # Create agent
         agent = EnhancedNeuroAgent()
@@ -158,12 +158,12 @@ def main():
     if passed == total:
         print("🎉 All agent integration tests passed!")
         print("\n✅ Agent Behavior Implementation Complete:")
-        print("   • Agent syntax support in NeuroCode")
+        print("   • Agent syntax support in AetherraCode")
         print("   • Background thread with reflection loop")
         print("   • Periodic triggers for state-based actions")
         print("   • Goal monitoring and management")
         print("   • Agent mode setting and control")
-        print("   • Deep integration with NeuroCode/Neuroplex")
+        print("   • Deep integration with AetherraCode/Neuroplex")
         return 0
     else:
         print("⚠️ Some tests failed. Check the implementation.")

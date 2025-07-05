@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Natural Language Compiler
-Translates human intent into executable NeuroCode
+🧬 AetherraCode Natural Language Compiler
+Translates human intent into executable AetherraCode
 
 This revolutionary compiler bridges the gap between human thought
 and AI execution, making programming as natural as conversation.
@@ -14,7 +14,7 @@ from typing import Dict, Tuple
 
 class NaturalLanguageCompiler:
     """
-    Compiles natural language descriptions into executable NeuroCode
+    Compiles natural language descriptions into executable AetherraCode
     """
 
     def __init__(self):
@@ -77,13 +77,13 @@ class NaturalLanguageCompiler:
 
     def compile_natural_language(self, text: str) -> str:
         """
-        Compile natural language into NeuroCode
+        Compile natural language into AetherraCode
 
         Args:
             text: Natural language description
 
         Returns:
-            Executable NeuroCode
+            Executable AetherraCode
         """
         # Normalize input
         text = text.lower().strip()
@@ -93,7 +93,7 @@ class NaturalLanguageCompiler:
             {"input": text, "timestamp": datetime.now().isoformat()}
         )
 
-        # Parse intent and generate NeuroCode
+        # Parse intent and generate AetherraCode
         neurocode = self._parse_intent(text)
 
         # Add context and memory if needed
@@ -103,7 +103,7 @@ class NaturalLanguageCompiler:
         return neurocode
 
     def _parse_intent(self, text: str) -> str:
-        """Parse human intent and generate corresponding NeuroCode"""
+        """Parse human intent and generate corresponding AetherraCode"""
 
         # Check each intent pattern
         for intent, patterns in self.intent_patterns.items():
@@ -118,7 +118,7 @@ class NaturalLanguageCompiler:
     def _generate_neurocode(
         self, intent: str, groups: Tuple, original_text: str
     ) -> str:
-        """Generate NeuroCode based on recognized intent"""
+        """Generate AetherraCode based on recognized intent"""
 
         if intent == "remember":
             content = groups[0] if groups else original_text
@@ -164,7 +164,7 @@ class NaturalLanguageCompiler:
         return self._generate_general_neurocode(original_text)
 
     def _generate_general_neurocode(self, text: str) -> str:
-        """Generate general NeuroCode for unrecognized patterns"""
+        """Generate general AetherraCode for unrecognized patterns"""
         return f'think about "{text}"\nreason from context and memory\nexecute appropriate_actions'
 
     def _needs_context(self, text: str) -> bool:
@@ -181,7 +181,7 @@ class NaturalLanguageCompiler:
         return any(indicator in text for indicator in context_indicators)
 
     def _add_context(self, neurocode: str) -> str:
-        """Add context retrieval to NeuroCode"""
+        """Add context retrieval to AetherraCode"""
         context_code = "recall relevant_context from memory\n"
         return context_code + neurocode
 
@@ -299,13 +299,13 @@ class NaturalLanguageCompiler:
         """Generate workflow file header"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        header = f"""# NeuroCode Workflow
+        header = f"""# AetherraCode Workflow
 # Generated from: {description[:100]}{"..." if len(description) > 100 else ""}
 # Complexity: {complexity}
 # Created: {timestamp}
 #
 # This workflow was automatically generated from natural language
-# by the NeuroCode Natural Language Compiler
+# by the AetherraCode Natural Language Compiler
 
 # === WORKFLOW INITIALIZATION ===
 remember "Starting workflow: {description[:50]}{"..." if len(description) > 50 else ""}"
@@ -419,9 +419,9 @@ set_goal "Complete workflow successfully"
         return cleanup
 
 
-class NeuroCodeIDE:
+class AetherraCodeIDE:
     """
-    Intelligent Development Environment for NeuroCode
+    Intelligent Development Environment for AetherraCode
     Provides natural language programming interface
     """
 
@@ -430,7 +430,7 @@ class NeuroCodeIDE:
         self.session_history = []
 
     def natural_to_neuro(self, natural_language: str) -> str:
-        """Convert natural language to NeuroCode"""
+        """Convert natural language to AetherraCode"""
         neurocode = self.compiler.compile_natural_language(natural_language)
 
         # Store in session history
@@ -446,8 +446,8 @@ class NeuroCodeIDE:
 
     def interactive_programming(self):
         """Interactive natural language programming session"""
-        print("🧬 NeuroCode Natural Language IDE")
-        print("Speak your intent, and I'll translate it to NeuroCode!\n")
+        print("🧬 AetherraCode Natural Language IDE")
+        print("Speak your intent, and I'll translate it to AetherraCode!\n")
 
         while True:
             try:
@@ -459,16 +459,16 @@ class NeuroCodeIDE:
                     break
 
                 if user_input.lower() in ["exit", "quit", "bye"]:
-                    print("👋 Goodbye! Keep thinking in NeuroCode!")
+                    print("👋 Goodbye! Keep thinking in AetherraCode!")
                     break
 
                 if not user_input:
                     continue
 
-                # Compile to NeuroCode
+                # Compile to AetherraCode
                 neurocode = self.natural_to_neuro(user_input)
 
-                print("\n🧬 Generated NeuroCode:")
+                print("\n🧬 Generated AetherraCode:")
                 print("=" * 40)
                 print(neurocode)
                 print("=" * 40)
@@ -476,21 +476,21 @@ class NeuroCodeIDE:
                 # Ask if user wants to execute with EOF handling
                 try:
                     execute = (
-                        input("\n▶️  Execute this NeuroCode? (y/n): ").strip().lower()
+                        input("\n▶️  Execute this AetherraCode? (y/n): ").strip().lower()
                     )
                 except EOFError:
                     print("\n\n👋 Input stream closed. Session ended.")
                     break
 
                 if execute in ["y", "yes"]:
-                    print("🚀 Executing NeuroCode...")
-                    # Here we would integrate with the NeuroCode runtime
+                    print("🚀 Executing AetherraCode...")
+                    # Here we would integrate with the AetherraCode runtime
                     print("✅ Execution complete!")
 
                 print("\n" + "-" * 50 + "\n")
 
             except KeyboardInterrupt:
-                print("\n\n👋 Session ended. Keep thinking in NeuroCode!")
+                print("\n\n👋 Session ended. Keep thinking in AetherraCode!")
                 break
             except Exception as e:
                 print(f"❌ Error: {e}")
@@ -500,7 +500,7 @@ def main():
     """Main entry point for natural language compilation"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="NeuroCode Natural Language Compiler")
+    parser = argparse.ArgumentParser(description="AetherraCode Natural Language Compiler")
     parser.add_argument(
         "--interactive",
         "-i",
@@ -508,21 +508,21 @@ def main():
         help="Start interactive programming session",
     )
     parser.add_argument(
-        "--compile", "-c", type=str, help="Compile natural language text to NeuroCode"
+        "--compile", "-c", type=str, help="Compile natural language text to AetherraCode"
     )
     parser.add_argument(
-        "--file", "-f", type=str, help="Compile natural language file to NeuroCode"
+        "--file", "-f", type=str, help="Compile natural language file to AetherraCode"
     )
 
     args = parser.parse_args()
 
     if args.interactive:
-        ide = NeuroCodeIDE()
+        ide = AetherraCodeIDE()
         ide.interactive_programming()
     elif args.compile:
         compiler = NaturalLanguageCompiler()
         neurocode = compiler.compile_natural_language(args.compile)
-        print("🧬 Generated NeuroCode:")
+        print("🧬 Generated AetherraCode:")
         print(neurocode)
     elif args.file:
         compiler = NaturalLanguageCompiler()

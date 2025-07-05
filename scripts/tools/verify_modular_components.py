@@ -130,7 +130,7 @@ def test_modular_architecture():
 
         print("✅ Fully modular main window imported successfully")
 
-        # Test enhanced neuroplex import (our integrated version)
+        # Test enhanced aetherplex import (our integrated version)
 
         print("✅ Enhanced Neuroplex (with chat integration) imported successfully")
 
@@ -182,7 +182,7 @@ def run_verification():
     if passed == total:
         print("🎉 ALL TESTS PASSED - Modular architecture is working perfectly!")
         print("\n🚀 You can now run the modular Neuroplex with confidence:")
-        print("   python launch_fully_modular_neuroplex.py")
+        print("   python launch_fully_modular_aetherplex.py")
     else:
         print("⚠️ Some tests failed - please check the error messages above")
 

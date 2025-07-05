@@ -24,14 +24,14 @@ def check_module(module_path):
 neuro_chat_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "src",
-    "neurocode",
+    "Aetherra",
     "ui",
     "neuro_chat.py",
 )
 check_module(neuro_chat_path)
 
-# Test neuroplex.py
-neuroplex_path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "src", "neurocode", "ui", "neuroplex.py"
+# Test aetherplex.py
+aetherplex_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "src", "Aetherra", "ui", "aetherplex.py"
 )
-check_module(neuroplex_path)
+check_module(aetherplex_path)

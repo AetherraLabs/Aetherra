@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🎨 NeuroCode Enhanced UI Demonstration
+🎨 AetherraCode Enhanced UI Demonstration
 =====================================
 
 This script demonstrates the new tabbed interface and visual memory reflection
-features of the NeuroCode Enhanced UI without launching the full GUI.
+features of the AetherraCode Enhanced UI without launching the full GUI.
 """
 
 import sys
@@ -19,19 +19,19 @@ sys.path.insert(0, str(project_root / "core"))
 def demonstrate_ui_features():
     """Demonstrate the enhanced UI features"""
 
-    print("🎨 NeuroCode Enhanced UI - Feature Demonstration")
+    print("🎨 AetherraCode Enhanced UI - Feature Demonstration")
     print("=" * 60)
 
     # 1. Test Theme System
     print("\n🎭 1. Modern Theme System")
     print("-" * 30)
     try:
-        from ui.aether_ui import NeuroTheme
+        from ui.aether_ui import AetherraTheme
 
         print("✅ Theme system loaded")
-        print(f"   Primary Color: {NeuroTheme.PRIMARY}")
-        print(f"   Background: {NeuroTheme.BACKGROUND}")
-        print(f"   Accent: {NeuroTheme.ACCENT}")
+        print(f"   Primary Color: {AetherraTheme.PRIMARY}")
+        print(f"   Background: {AetherraTheme.BACKGROUND}")
+        print(f"   Accent: {AetherraTheme.ACCENT}")
         print("   🎨 Modern dark theme with cyan/pink/green accents")
     except Exception as e:
         print(f"❌ Theme error: {e}")
@@ -50,7 +50,7 @@ def demonstrate_ui_features():
             "Python is a versatile programming language", ["programming", "python"]
         )
         memory.remember(
-            "NeuroCode bridges human cognition and AI", ["neurocode", "ai", "cognition"]
+            "AetherraCode bridges human cognition and AI", ["neurocode", "ai", "cognition"]
         )
         memory.remember(
             "Memory systems enable temporal reasoning",
@@ -112,11 +112,11 @@ def demonstrate_ui_features():
     try:
         print("✅ Code editor tab available")
         print("   📋 Features:")
-        print("     • Syntax highlighting for NeuroCode")
+        print("     • Syntax highlighting for AetherraCode")
         print("     • Real-time code execution")
         print("     • Built-in examples and templates")
         print("     • Output display with error handling")
-        print("     • Integration with NeuroCode interpreter")
+        print("     • Integration with AetherraCode interpreter")
     except Exception as e:
         print(f"❌ Code editor error: {e}")
 
@@ -127,7 +127,7 @@ def demonstrate_ui_features():
         print("✅ AI chat tab available")
         print("   📋 Features:")
         print("     • Natural language interaction")
-        print("     • NeuroCode help and documentation")
+        print("     • AetherraCode help and documentation")
         print("     • Context-aware responses")
         print("     • Memory and plugin assistance")
     except Exception as e:
@@ -151,7 +151,7 @@ def demonstrate_ui_features():
     print("✅ Modern tabbed interface implemented")
     print("✅ Visual memory reflection browser with timeline")
     print("✅ Plugin transparency and management UI")
-    print("✅ Enhanced code editor with NeuroCode support")
+    print("✅ Enhanced code editor with AetherraCode support")
     print("✅ AI chat assistant integration")
     print("✅ Responsive dark theme with modern aesthetics")
     print("✅ All features maintain backward compatibility")

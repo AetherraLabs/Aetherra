@@ -1,15 +1,15 @@
 # test_runtime_system.py
 """
-Test Suite for NeuroCode Runtime System
+Test Suite for Aetherra Runtime System
 =======================================
 
 This test validates the modular runtime system including execution context,
 code executor, and runtime services.
 """
 
-from core.runtime import ExecutionContext, ExecutionMode, RuntimeServices
-from core.runtime.context import RuntimeEnvironment
-from core.runtime.executor import ExecutionStatus
+from Aetherra.core.runtime import ExecutionContext, ExecutionMode, RuntimeServices
+from Aetherra.core.runtime.context import RuntimeEnvironment
+from Aetherra.core.runtime.executor import ExecutionStatus
 
 
 def test_runtime_environment():
@@ -70,7 +70,7 @@ def test_code_execution():
 
     # Test simple code execution
     code = """
-    # Simple NeuroCode test
+    # Simple Aetherra test
     goal: Test runtime execution
 
     x = 42
@@ -211,7 +211,7 @@ def test_performance():
     runtime = RuntimeServices()
     context = runtime.create_execution_context(ExecutionMode.BATCH)
 
-    # Generate a larger NeuroCode program
+    # Generate a larger Aetherra program
     lines = []
     lines.append("goal: Performance test priority: high")
 
@@ -249,7 +249,7 @@ def test_file_execution():
     """Test file execution functionality"""
     runtime = RuntimeServices()
 
-    # Create a test NeuroCode file
+    # Create a test Aetherra file
     test_code = """
 # Test file execution
 goal: File execution test
@@ -280,7 +280,7 @@ run file_test()
 
 
 if __name__ == "__main__":
-    print("Running NeuroCode Runtime System Tests")
+    print("Running Aetherra Runtime System Tests")
     print("=" * 50)
 
     try:

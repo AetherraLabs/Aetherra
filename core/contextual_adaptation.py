@@ -1,5 +1,5 @@
 """
-NeuroCode Contextual Adaptation System
+AetherraCode Contextual Adaptation System
 Automatically adapts persona based on user context, project type, and situation.
 """
 

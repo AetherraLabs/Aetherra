@@ -1,10 +1,10 @@
 # sdk/plugins/example.py
 """
-Example NeuroCode Plugin
+Example AetherraCode Plugin
 ========================
 
 Demonstrates basic plugin functionality including greetings, calculations,
-and proper plugin registration following NeuroCode SDK best practices.
+and proper plugin registration following AetherraCode SDK best practices.
 """
 
 import os
@@ -29,9 +29,9 @@ except ImportError:
     description="Simple example plugin demonstrating basic functionality",
     capabilities=["greetings", "calculations", "examples"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="AetherraCode Team",
     category="examples",
-    example_usage="plugin: example.hello_world 'NeuroCode'",
+    example_usage="plugin: example.hello_world 'AetherraCode'",
     ai_description="Example plugin for demonstrations and testing"
 )
 def hello_world(args: str = ""):
@@ -72,7 +72,7 @@ def greet(name: str = "World"):
     if not name:
         name = "World"
 
-    return f"Hello, {name}! Welcome to NeuroCode plugins!"
+    return f"Hello, {name}! Welcome to AetherraCode plugins!"
 
 @register_plugin(
     name="example",

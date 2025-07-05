@@ -1,6 +1,6 @@
 # core/syntax_tree_legacy.py
 """
-Legacy NeuroCode Syntax Tree Parser (Backup)
+Legacy AetherraCode Syntax Tree Parser (Backup)
 ============================================
 
 This is the original monolithic syntax_tree.py preserved for reference

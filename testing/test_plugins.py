@@ -3,7 +3,7 @@
 Test the enhanced plugin system
 """
 
-from core.plugin_manager import discover_plugins_by_intent, execute_plugin_command
+from Aetherra.core.plugin_manager import discover_plugins_by_intent, execute_plugin_command
 
 # Test plugin command execution
 print("🧪 Testing Plugin System")

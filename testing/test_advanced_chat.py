@@ -5,7 +5,7 @@ Advanced test script for the tuned Neuroplex chat system
 
 def test_advanced_features():
     try:
-        from core.chat_router import AetherraChatRouter
+        from Aetherra.core.chat_router import AetherraChatRouter
         print('🧬 Testing Advanced Neuroplex Features')
         print('=' * 50)
 

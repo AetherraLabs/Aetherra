@@ -6,7 +6,7 @@ Advanced pattern detection and analysis for memory data
 import re
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from .models import MemoryEntry, MemoryPattern
 from .storage import FileMemoryStorage, PatternStorage
@@ -77,7 +77,9 @@ class PatternAnalyzer:
                 detected_patterns.append(pattern)
 
         for word, memory_list in word_patterns.items():
-            if len(memory_list) >= min_frequency * 2:  # Higher threshold for single words
+            if (
+                len(memory_list) >= min_frequency * 2
+            ):  # Higher threshold for single words
                 pattern = self._create_pattern(
                     pattern_name=f"word_{word}",
                     description=f"Recurring word: '{word}'",
@@ -119,7 +121,9 @@ class PatternAnalyzer:
 
         # Peak activity hours
         if hourly_activity:
-            peak_hours = sorted(hourly_activity.items(), key=lambda x: len(x[1]), reverse=True)[:3]
+            peak_hours = sorted(
+                hourly_activity.items(), key=lambda x: len(x[1]), reverse=True
+            )[:3]
             for hour, hour_memories in peak_hours:
                 if len(hour_memories) >= 5:  # Minimum threshold
                     pattern = self._create_pattern(
@@ -132,9 +136,19 @@ class PatternAnalyzer:
                     detected_patterns.append(pattern)
 
         # Peak activity days
-        day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        day_names = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ]
         if daily_activity:
-            peak_days = sorted(daily_activity.items(), key=lambda x: len(x[1]), reverse=True)[:3]
+            peak_days = sorted(
+                daily_activity.items(), key=lambda x: len(x[1]), reverse=True
+            )[:3]
             for day_num, day_memories in peak_days:
                 if len(day_memories) >= 10:  # Minimum threshold
                     day_name = day_names[day_num]
@@ -154,15 +168,16 @@ class PatternAnalyzer:
         cutoff_date = datetime.now() - timedelta(days=timeframe_days)
         memories = self._get_memories_since(cutoff_date)
 
-        category_analysis = defaultdict(
-            lambda: {
+        def create_category_analysis():
+            return {
                 "count": 0,
                 "memories": [],
-                "avg_length": 0,
+                "avg_length": 0.0,
                 "common_tags": defaultdict(int),
                 "time_distribution": defaultdict(int),
             }
-        )
+
+        category_analysis = defaultdict(create_category_analysis)
 
         for memory in memories:
             category = memory.category
@@ -202,9 +217,10 @@ class PatternAnalyzer:
 
                 pattern = self._create_pattern(
                     pattern_name=f"category_{category}",
-                    description=f"Category '{category}' usage pattern (avg length: {avg_length:.0f},
-                        common tags: {tag_description})",
-
+                    description=(
+                        f"Category '{category}' usage pattern (avg length: {avg_length:.0f}, "
+                        f"common tags: {tag_description})"
+                    ),
                     frequency=analysis["count"],
                     examples=[m.text[:100] for m in analysis["memories"][:3]],
                     pattern_type="category_usage",
@@ -242,7 +258,9 @@ class PatternAnalyzer:
         detected_patterns = []
 
         # Frequent tags
-        frequent_tags = [(tag, count) for tag, count in tag_frequency.items() if count >= 5]
+        frequent_tags = [
+            (tag, count) for tag, count in tag_frequency.items() if count >= 5
+        ]
         for tag, count in frequent_tags:
             pattern = self._create_pattern(
                 pattern_name=f"tag_{tag}",
@@ -272,7 +290,7 @@ class PatternAnalyzer:
 
         return detected_patterns
 
-    def analyze_memory_evolution(self, timeframe_days: int = 30) -> Dict[str, any]:
+    def analyze_memory_evolution(self, timeframe_days: int = 30) -> Dict[str, Any]:
         """Analyze how memory patterns evolve over time"""
         cutoff_date = datetime.now() - timedelta(days=timeframe_days)
         memories = self._get_memories_since(cutoff_date)
@@ -289,7 +307,9 @@ class PatternAnalyzer:
                 m
                 for m in memories
                 if period_start
-                <= datetime.fromisoformat(m.timestamp.replace("Z", "+00:00").split("+")[0])
+                <= datetime.fromisoformat(
+                    m.timestamp.replace("Z", "+00:00").split("+")[0]
+                )
                 < period_end
             ]
 
@@ -350,7 +370,7 @@ class PatternAnalyzer:
             metadata=metadata or {"pattern_type": pattern_type},
         )
 
-    def _analyze_memory_period(self, memories: List[MemoryEntry]) -> Dict[str, any]:
+    def _analyze_memory_period(self, memories: List[MemoryEntry]) -> Dict[str, Any]:
         """Analyze a specific period of memories"""
         if not memories:
             return {
@@ -375,7 +395,9 @@ class PatternAnalyzer:
 
         avg_length = total_length / len(memories)
 
-        top_categories = sorted(categories.items(), key=lambda x: x[1], reverse=True)[:5]
+        top_categories = sorted(categories.items(), key=lambda x: x[1], reverse=True)[
+            :5
+        ]
         top_tags = sorted(tags.items(), key=lambda x: x[1], reverse=True)[:5]
 
         return {
@@ -427,7 +449,9 @@ class PatternAnalyzer:
                 emerging.append(f"New category emerging: '{category}'")
 
         # New tags
-        new_tags = set(recent_analysis["tags"].keys()) - set(earlier_analysis["tags"].keys())
+        new_tags = set(recent_analysis["tags"].keys()) - set(
+            earlier_analysis["tags"].keys()
+        )
         for tag in new_tags:
             if recent_analysis["tags"][tag] >= 3:
                 emerging.append(f"New tag pattern: '{tag}'")
@@ -465,15 +489,19 @@ class PatternAnalyzer:
         """Get all stored patterns"""
         return self.pattern_storage.list_patterns()
 
-    def run_full_analysis(self, timeframe_days: int = 30) -> Dict[str, any]:
+    def run_full_analysis(self, timeframe_days: int = 30) -> Dict[str, Any]:
         """Run comprehensive pattern analysis"""
         text_patterns = self.detect_text_patterns(timeframe_days=timeframe_days)
         temporal_patterns = self.detect_temporal_patterns(timeframe_days=timeframe_days)
         category_patterns = self.detect_category_patterns(timeframe_days=timeframe_days)
         tag_patterns = self.detect_tag_patterns(timeframe_days=timeframe_days)
-        evolution_analysis = self.analyze_memory_evolution(timeframe_days=timeframe_days)
+        evolution_analysis = self.analyze_memory_evolution(
+            timeframe_days=timeframe_days
+        )
 
-        all_patterns = text_patterns + temporal_patterns + category_patterns + tag_patterns
+        all_patterns = (
+            text_patterns + temporal_patterns + category_patterns + tag_patterns
+        )
 
         return {
             "text_patterns": text_patterns,

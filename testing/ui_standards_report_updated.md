@@ -6,99 +6,99 @@ Total issues found: 370
 
 | File                                      | Line | Content                                                 |
 | ----------------------------------------- | ---- | ------------------------------------------------------- |
-| neuroplex.py                              | 1764 | `├── src/`                                              |
-| neuroplex.py                              | 1765 | `│   ├── aetherra/`                                     |
-| neuroplex.py                              | 1766 | `│   │   ├── core/`                                     |
-| neuroplex.py                              | 1767 | `│   │   ├── ui/`                                       |
-| neuroplex.py                              | 1768 | `│   │   └── __init__.py`                               |
-| neuroplex.py                              | 1769 | `├── core/`                                             |
-| neuroplex.py                              | 1770 | `│   ├── chat_router.py`                                |
-| neuroplex.py                              | 1771 | `│   └── functions.py`                                  |
-| neuroplex.py                              | 1772 | `├── aetherra_launcher.py`                              |
-| neuroplex.py                              | 1773 | `└── README.md""")`                                     |
-| neuroplex.py                              | 2503 | `• Plugin Discovery - Browse and install NeuroCo...`    |
-| neuroplex.py                              | 2504 | `• AI Model Hub - Download and manage AI models`        |
-| neuroplex.py                              | 2505 | `• Tool Integration - Find tools and utilities`         |
-| neuroplex.py                              | 2506 | `• Package Management - Install, update, and rem...`    |
-| neuroplex.py                              | 2507 | `• Community Sharing - Share your own plugins an...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 1    | `# 🚀 aetherra Workspace - Next-Generation Analy...`     |
-| NEUROPLEX_GUI_STATUS.md                   | 3    | `## 🎯 **OVERALL STATUS: ✅ EXCELLENT - PRODUCTION...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 9    | `## 📊 **Workspace Statistics**`                         |
-| NEUROPLEX_GUI_STATUS.md                   | 11   | `- **🐍 Python Files**: 68 (professionally organi...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 12   | `- **⚙️ Config Files**: 9 (comprehensive configu...`     |
-| NEUROPLEX_GUI_STATUS.md                   | 13   | `- **📚 Documentation**: 36 files (well-documented)`     |
-| NEUROPLEX_GUI_STATUS.md                   | 14   | `- **📁 Total Files**: 125 (clean and organized)`        |
-| NEUROPLEX_GUI_STATUS.md                   | 18   | `📂 Project Root:     35 files  (main scripts & c...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 19   | `📂 core/            21 files  (core interpreter ...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 20   | `📂 docs/            36 files  (comprehensive doc...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 21   | `📂 ui/               5 files  (user interface co...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 22   | `📂 stdlib/           5 files  (standard library)`       |
-| NEUROPLEX_GUI_STATUS.md                   | 23   | `📂 plugins/          2 files  (plugin system)`          |
-| NEUROPLEX_GUI_STATUS.md                   | 24   | `📂 .vscode/          9 files  (VS Code configura...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 29   | `## ✅ **Analysis Results Summary**`                     |
-| NEUROPLEX_GUI_STATUS.md                   | 33   | `\| **Project Structure** \| ✅ PASS \| All critical...` |
-| NEUROPLEX_GUI_STATUS.md                   | 34   | `\| **Core Modules** \| ✅ PASS \| All syntax valida...` |
-| NEUROPLEX_GUI_STATUS.md                   | 35   | `\| **VS Code Config** \| ✅ PASS \| Modern Ruff set...` |
-| NEUROPLEX_GUI_STATUS.md                   | 36   | `\| **Dependencies** \| ✅ PASS \| Properly configur...` |
-| NEUROPLEX_GUI_STATUS.md                   | 40   | `## 🔧 **Configuration Excellence**`                     |
-| NEUROPLEX_GUI_STATUS.md                   | 42   | `### **✅ VS Code Extensions (13 Installed)**`           |
-| NEUROPLEX_GUI_STATUS.md                   | 53   | `### **✅ Modern Ruff Configuration**`                   |
-| NEUROPLEX_GUI_STATUS.md                   | 54   | `- **Migrated from legacy**: Old ruff-lsp → Mode...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 59   | `### **✅ Python Environment**`                          |
-| NEUROPLEX_GUI_STATUS.md                   | 67   | `## 🧬 **aetherra Core Architecture**`                   |
-| NEUROPLEX_GUI_STATUS.md                   | 69   | `### **Core Modules Status**: ✅ ALL OPERATIONAL`        |
-| NEUROPLEX_GUI_STATUS.md                   | 73   | `\| `core/interpreter.py` \| ✅ **Flawless** \| Main...` |
-| NEUROPLEX_GUI_STATUS.md                   | 74   | `\| `core/memory.py` \| ✅ **Perfect** \| Advanced m...` |
-| NEUROPLEX_GUI_STATUS.md                   | 75   | `\| `core/functions.py` \| ✅ **Optimal** \| Dynamic...` |
-| NEUROPLEX_GUI_STATUS.md                   | 76   | `\| `core/agent.py` \| ✅ **Ready** \| AI agent inte...` |
-| NEUROPLEX_GUI_STATUS.md                   | 77   | `\| `core/chat_router.py` \| ✅ **Active** \| Chat r...` |
-| NEUROPLEX_GUI_STATUS.md                   | 78   | `\| `ui/neuroplex_gui.py` \| ✅ **Functional** \| Ne...` |
-| NEUROPLEX_GUI_STATUS.md                   | 80   | `### **Import Resolution**: ✅ **FLAWLESS**`             |
-| NEUROPLEX_GUI_STATUS.md                   | 88   | `## 🎭 **Next-Generation Features Ready**`               |
-| NEUROPLEX_GUI_STATUS.md                   | 90   | `### **✅ Advanced Capabilities Operational**`           |
-| NEUROPLEX_GUI_STATUS.md                   | 91   | `- **🧠 AI-Powered Interpreter**: Self-aware code...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 92   | `- **💾 Intelligent Memory**: Pattern recognition...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 93   | `- **🔌 Plugin Ecosystem**: Extensible architecture`     |
-| NEUROPLEX_GUI_STATUS.md                   | 94   | `- **🎨 Modern UI**: Neuroplex GUI with advanced ...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 95   | `- **🔧 Self-Editing**: Code can modify itself sa...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 96   | `- **📊 Debug System**: Advanced error detection ...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 97   | `- **🎯 Goal System**: Autonomous goal tracking a...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 99   | `### **✅ Enterprise-Grade Setup**`                      |
-| NEUROPLEX_GUI_STATUS.md                   | 109  | `## 🚀 **Production Readiness Score: 10/10**`            |
-| NEUROPLEX_GUI_STATUS.md                   | 112  | `1. **📁 Perfect Structure**: All directories and...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 113  | `2. **🔧 Modern Tooling**: Latest Ruff, Pylance, ...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 114  | `3. **🧠 Advanced Features**: AI-driven capabilit...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 115  | `4. **📊 Comprehensive**: 68 Python files, well-t...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 116  | `5. **⚡ Performance**: Optimized imports and mod...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 117  | `6. **🛡️ Robust**: Fallback systems and error ha...`     |
-| NEUROPLEX_GUI_STATUS.md                   | 118  | `7. **🎨 UI/UX**: Professional interface with mod...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 121  | `- **🌟 Next-Generation**: Cutting-edge AI integr...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 122  | `- **🔄 Self-Improving**: Code can analyze and en...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 123  | `- **🧬 Adaptive**: Learning from user patterns a...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 124  | `- **🎯 Goal-Oriented**: Autonomous task completi...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 128  | `## 🎯 **Recommendations for Continued Excellence**`     |
-| NEUROPLEX_GUI_STATUS.md                   | 130  | `### **🔥 Already Implemented**`                         |
-| NEUROPLEX_GUI_STATUS.md                   | 131  | `- ✅ Modern Ruff configuration (completed today)`       |
-| NEUROPLEX_GUI_STATUS.md                   | 132  | `- ✅ Comprehensive VS Code setup`                       |
-| NEUROPLEX_GUI_STATUS.md                   | 133  | `- ✅ All core modules operational`                      |
-| NEUROPLEX_GUI_STATUS.md                   | 134  | `- ✅ Clean project structure`                           |
-| NEUROPLEX_GUI_STATUS.md                   | 135  | `- ✅ Production-ready imports`                          |
-| NEUROPLEX_GUI_STATUS.md                   | 137  | `### **🚀 Optional Enhancements**`                       |
-| NEUROPLEX_GUI_STATUS.md                   | 138  | `1. **📈 Automated Testing**: Add GitHub Actions ...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 139  | `2. **📦 Package Distribution**: Prepare for PyPI...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 140  | `3. **🔒 Security**: Add pre-commit hooks for sec...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 141  | `4. **📖 API Documentation**: Generate automatic ...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 142  | `5. **🌐 Web Interface**: Consider web-based GUI ...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 146  | `## 🎉 **Final Verdict**`                                |
-| NEUROPLEX_GUI_STATUS.md                   | 148  | `**🌟 EXCEPTIONAL - NEXT-GENERATION READY 🌟**`           |
-| NEUROPLEX_GUI_STATUS.md                   | 152  | `- ✅ **Flawless architecture** with 68 perfectly...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 153  | `- ✅ **Cutting-edge AI integration** with self-a...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 154  | `- ✅ **Modern tooling** using the latest Ruff, C...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 155  | `- ✅ **Production-grade quality** with comprehen...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 156  | `- ✅ **Zero critical issues** - everything is op...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 157  | `- ✅ **Innovation at its finest** - truly next-g...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 159  | `**🚀 Ready for deployment, scaling, and pushing ...`    |
-| NEUROPLEX_GUI_STATUS.md                   | 164  | `*Status: 🏆 **WORLD-CLASS DEVELOPMENT ENVIRONMEN...`    |
+| Lyrixa.py                                 | 1764 | `├── src/`                                              |
+| Lyrixa.py                                 | 1765 | `│   ├── aetherra/`                                     |
+| Lyrixa.py                                 | 1766 | `│   │   ├── core/`                                     |
+| Lyrixa.py                                 | 1767 | `│   │   ├── ui/`                                       |
+| Lyrixa.py                                 | 1768 | `│   │   └── __init__.py`                               |
+| Lyrixa.py                                 | 1769 | `├── core/`                                             |
+| Lyrixa.py                                 | 1770 | `│   ├── chat_router.py`                                |
+| Lyrixa.py                                 | 1771 | `│   └── functions.py`                                  |
+| Lyrixa.py                                 | 1772 | `├── aetherra_launcher.py`                              |
+| Lyrixa.py                                 | 1773 | `└── README.md""")`                                     |
+| Lyrixa.py                                 | 2503 | `• Plugin Discovery - Browse and install NeuroCo...`    |
+| Lyrixa.py                                 | 2504 | `• AI Model Hub - Download and manage AI models`        |
+| Lyrixa.py                                 | 2505 | `• Tool Integration - Find tools and utilities`         |
+| Lyrixa.py                                 | 2506 | `• Package Management - Install, update, and rem...`    |
+| Lyrixa.py                                 | 2507 | `• Community Sharing - Share your own plugins an...`    |
+| Lyrixa_GUI_STATUS.md                      | 1    | `# 🚀 aetherra Workspace - Next-Generation Analy...`     |
+| Lyrixa_GUI_STATUS.md                      | 3    | `## 🎯 **OVERALL STATUS: ✅ EXCELLENT - PRODUCTION...`    |
+| Lyrixa_GUI_STATUS.md                      | 9    | `## 📊 **Workspace Statistics**`                         |
+| Lyrixa_GUI_STATUS.md                      | 11   | `- **🐍 Python Files**: 68 (professionally organi...`    |
+| Lyrixa_GUI_STATUS.md                      | 12   | `- **⚙️ Config Files**: 9 (comprehensive configu...`     |
+| Lyrixa_GUI_STATUS.md                      | 13   | `- **📚 Documentation**: 36 files (well-documented)`     |
+| Lyrixa_GUI_STATUS.md                      | 14   | `- **📁 Total Files**: 125 (clean and organized)`        |
+| Lyrixa_GUI_STATUS.md                      | 18   | `📂 Project Root:     35 files  (main scripts & c...`    |
+| Lyrixa_GUI_STATUS.md                      | 19   | `📂 core/            21 files  (core interpreter ...`    |
+| Lyrixa_GUI_STATUS.md                      | 20   | `📂 docs/            36 files  (comprehensive doc...`    |
+| Lyrixa_GUI_STATUS.md                      | 21   | `📂 ui/               5 files  (user interface co...`    |
+| Lyrixa_GUI_STATUS.md                      | 22   | `📂 stdlib/           5 files  (standard library)`       |
+| Lyrixa_GUI_STATUS.md                      | 23   | `📂 plugins/          2 files  (plugin system)`          |
+| Lyrixa_GUI_STATUS.md                      | 24   | `📂 .vscode/          9 files  (VS Code configura...`    |
+| Lyrixa_GUI_STATUS.md                      | 29   | `## ✅ **Analysis Results Summary**`                     |
+| Lyrixa_GUI_STATUS.md                      | 33   | `\| **Project Structure** \| ✅ PASS \| All critical...` |
+| Lyrixa_GUI_STATUS.md                      | 34   | `\| **Core Modules** \| ✅ PASS \| All syntax valida...` |
+| Lyrixa_GUI_STATUS.md                      | 35   | `\| **VS Code Config** \| ✅ PASS \| Modern Ruff set...` |
+| Lyrixa_GUI_STATUS.md                      | 36   | `\| **Dependencies** \| ✅ PASS \| Properly configur...` |
+| Lyrixa_GUI_STATUS.md                      | 40   | `## 🔧 **Configuration Excellence**`                     |
+| Lyrixa_GUI_STATUS.md                      | 42   | `### **✅ VS Code Extensions (13 Installed)**`           |
+| Lyrixa_GUI_STATUS.md                      | 53   | `### **✅ Modern Ruff Configuration**`                   |
+| Lyrixa_GUI_STATUS.md                      | 54   | `- **Migrated from legacy**: Old ruff-lsp → Mode...`    |
+| Lyrixa_GUI_STATUS.md                      | 59   | `### **✅ Python Environment**`                          |
+| Lyrixa_GUI_STATUS.md                      | 67   | `## 🧬 **aetherra Core Architecture**`                   |
+| Lyrixa_GUI_STATUS.md                      | 69   | `### **Core Modules Status**: ✅ ALL OPERATIONAL`        |
+| Lyrixa_GUI_STATUS.md                      | 73   | `\| `core/interpreter.py` \| ✅ **Flawless** \| Main...` |
+| Lyrixa_GUI_STATUS.md                      | 74   | `\| `core/memory.py` \| ✅ **Perfect** \| Advanced m...` |
+| Lyrixa_GUI_STATUS.md                      | 75   | `\| `core/functions.py` \| ✅ **Optimal** \| Dynamic...` |
+| Lyrixa_GUI_STATUS.md                      | 76   | `\| `core/agent.py` \| ✅ **Ready** \| AI agent inte...` |
+| Lyrixa_GUI_STATUS.md                      | 77   | `\| `core/chat_router.py` \| ✅ **Active** \| Chat r...` |
+| Lyrixa_GUI_STATUS.md                      | 78   | `\| `ui/Lyrixa_gui.py` \| ✅ **Functional** \| Ne...`    |
+| Lyrixa_GUI_STATUS.md                      | 80   | `### **Import Resolution**: ✅ **FLAWLESS**`             |
+| Lyrixa_GUI_STATUS.md                      | 88   | `## 🎭 **Next-Generation Features Ready**`               |
+| Lyrixa_GUI_STATUS.md                      | 90   | `### **✅ Advanced Capabilities Operational**`           |
+| Lyrixa_GUI_STATUS.md                      | 91   | `- **🧠 AI-Powered Interpreter**: Self-aware code...`    |
+| Lyrixa_GUI_STATUS.md                      | 92   | `- **💾 Intelligent Memory**: Pattern recognition...`    |
+| Lyrixa_GUI_STATUS.md                      | 93   | `- **🔌 Plugin Ecosystem**: Extensible architecture`     |
+| Lyrixa_GUI_STATUS.md                      | 94   | `- **🎨 Modern UI**: Lyrixa GUI with advanced ...`       |
+| Lyrixa_GUI_STATUS.md                      | 95   | `- **🔧 Self-Editing**: Code can modify itself sa...`    |
+| Lyrixa_GUI_STATUS.md                      | 96   | `- **📊 Debug System**: Advanced error detection ...`    |
+| Lyrixa_GUI_STATUS.md                      | 97   | `- **🎯 Goal System**: Autonomous goal tracking a...`    |
+| Lyrixa_GUI_STATUS.md                      | 99   | `### **✅ Enterprise-Grade Setup**`                      |
+| Lyrixa_GUI_STATUS.md                      | 109  | `## 🚀 **Production Readiness Score: 10/10**`            |
+| Lyrixa_GUI_STATUS.md                      | 112  | `1. **📁 Perfect Structure**: All directories and...`    |
+| Lyrixa_GUI_STATUS.md                      | 113  | `2. **🔧 Modern Tooling**: Latest Ruff, Pylance, ...`    |
+| Lyrixa_GUI_STATUS.md                      | 114  | `3. **🧠 Advanced Features**: AI-driven capabilit...`    |
+| Lyrixa_GUI_STATUS.md                      | 115  | `4. **📊 Comprehensive**: 68 Python files, well-t...`    |
+| Lyrixa_GUI_STATUS.md                      | 116  | `5. **⚡ Performance**: Optimized imports and mod...`    |
+| Lyrixa_GUI_STATUS.md                      | 117  | `6. **🛡️ Robust**: Fallback systems and error ha...`     |
+| Lyrixa_GUI_STATUS.md                      | 118  | `7. **🎨 UI/UX**: Professional interface with mod...`    |
+| Lyrixa_GUI_STATUS.md                      | 121  | `- **🌟 Next-Generation**: Cutting-edge AI integr...`    |
+| Lyrixa_GUI_STATUS.md                      | 122  | `- **🔄 Self-Improving**: Code can analyze and en...`    |
+| Lyrixa_GUI_STATUS.md                      | 123  | `- **🧬 Adaptive**: Learning from user patterns a...`    |
+| Lyrixa_GUI_STATUS.md                      | 124  | `- **🎯 Goal-Oriented**: Autonomous task completi...`    |
+| Lyrixa_GUI_STATUS.md                      | 128  | `## 🎯 **Recommendations for Continued Excellence**`     |
+| Lyrixa_GUI_STATUS.md                      | 130  | `### **🔥 Already Implemented**`                         |
+| Lyrixa_GUI_STATUS.md                      | 131  | `- ✅ Modern Ruff configuration (completed today)`       |
+| Lyrixa_GUI_STATUS.md                      | 132  | `- ✅ Comprehensive VS Code setup`                       |
+| Lyrixa_GUI_STATUS.md                      | 133  | `- ✅ All core modules operational`                      |
+| Lyrixa_GUI_STATUS.md                      | 134  | `- ✅ Clean project structure`                           |
+| Lyrixa_GUI_STATUS.md                      | 135  | `- ✅ Production-ready imports`                          |
+| Lyrixa_GUI_STATUS.md                      | 137  | `### **🚀 Optional Enhancements**`                       |
+| Lyrixa_GUI_STATUS.md                      | 138  | `1. **📈 Automated Testing**: Add GitHub Actions ...`    |
+| Lyrixa_GUI_STATUS.md                      | 139  | `2. **📦 Package Distribution**: Prepare for PyPI...`    |
+| Lyrixa_GUI_STATUS.md                      | 140  | `3. **🔒 Security**: Add pre-commit hooks for sec...`    |
+| Lyrixa_GUI_STATUS.md                      | 141  | `4. **📖 API Documentation**: Generate automatic ...`    |
+| Lyrixa_GUI_STATUS.md                      | 142  | `5. **🌐 Web Interface**: Consider web-based GUI ...`    |
+| Lyrixa_GUI_STATUS.md                      | 146  | `## 🎉 **Final Verdict**`                                |
+| Lyrixa_GUI_STATUS.md                      | 148  | `**🌟 EXCEPTIONAL - NEXT-GENERATION READY 🌟**`           |
+| Lyrixa_GUI_STATUS.md                      | 152  | `- ✅ **Flawless architecture** with 68 perfectly...`    |
+| Lyrixa_GUI_STATUS.md                      | 153  | `- ✅ **Cutting-edge AI integration** with self-a...`    |
+| Lyrixa_GUI_STATUS.md                      | 154  | `- ✅ **Modern tooling** using the latest Ruff, C...`    |
+| Lyrixa_GUI_STATUS.md                      | 155  | `- ✅ **Production-grade quality** with comprehen...`    |
+| Lyrixa_GUI_STATUS.md                      | 156  | `- ✅ **Zero critical issues** - everything is op...`    |
+| Lyrixa_GUI_STATUS.md                      | 157  | `- ✅ **Innovation at its finest** - truly next-g...`    |
+| Lyrixa_GUI_STATUS.md                      | 159  | `**🚀 Ready for deployment, scaling, and pushing ...`    |
+| Lyrixa_GUI_STATUS.md                      | 164  | `*Status: 🏆 **WORLD-CLASS DEVELOPMENT ENVIRONMEN...`    |
 | neuro_chat.py                             | 885  | `• Session 1: Introduction to AI-native programming`    |
 | neuro_chat.py                             | 890  | `• Session 2: Memory system exploration`                |
 | neuro_chat.py                             | 895  | `• Session 3: Plugin architecture deep-dive`            |
@@ -219,8 +219,8 @@ Total issues found: 370
 | components\panels\plugin_manager.py       | 138  | `self.refresh_btn = QPushButton("🔍 Scan")`              |
 | components\panels\plugin_manager.py       | 276  | `status_icon = "✅" if plugin.get("enabled") else...`    |
 | components\panels\plugin_manager.py       | 277  | `install_icon = "📦" if plugin.get("status") == "...`    |
-| components\utils\qt_imports.py            | 69   | `print(f"🎨 Using {QT_BACKEND} for Neuroplex GUI ...`    |
-| components\utils\qt_imports.py            | 125  | `print(f"🎨 Using {QT_BACKEND} for Neuroplex GUI ...`    |
+| components\utils\qt_imports.py            | 69   | `print(f"🎨 Using {QT_BACKEND} for Lyrixa GUI ...`       |
+| components\utils\qt_imports.py            | 125  | `print(f"🎨 Using {QT_BACKEND} for Lyrixa GUI ...`       |
 | components\utils\qt_imports.py            | 128  | `print("❌ No Qt library available. Please instal...`    |
 
 ## Unsupported Css Issues: 0
@@ -229,11 +229,11 @@ No issues found.
 
 ## Chat Bubble Issues: 3
 
-| File         | Line | Content                                             |
-| ------------ | ---- | --------------------------------------------------- |
-| neuroplex.py | 1057 | `.message, .message-bubble, .chat-bubble, .bubble,` |
-| neuroplex.py | 1472 | `.message, .message-bubble, .chat-bubble, .bubble,` |
-| neuroplex.py | 1569 | `.message, .message-bubble, .chat-bubble, .bubble,` |
+| File      | Line | Content                                             |
+| --------- | ---- | --------------------------------------------------- |
+| Lyrixa.py | 1057 | `.message, .message-bubble, .chat-bubble, .bubble,` |
+| Lyrixa.py | 1472 | `.message, .message-bubble, .chat-bubble, .bubble,` |
+| Lyrixa.py | 1569 | `.message, .message-bubble, .chat-bubble, .bubble,` |
 
 ## Inconsistent Spacing Issues: 151
 
@@ -272,81 +272,81 @@ No issues found.
 | aetherra_playground.py                    | 79   | `padding: 1rem;`                                     |
 | aetherra_playground.py                    | 81   | `margin: 1rem 0;`                                    |
 | aetherra_playground.py                    | 88   | `padding: 1rem;`                                     |
-| neuroplex.py                              | 450  | `padding: 4px 8px;`                                  |
-| neuroplex.py                              | 481  | `padding: 8px;`                                      |
-| neuroplex.py                              | 491  | `padding: 8px 16px;`                                 |
-| neuroplex.py                              | 522  | `padding: 8px;`                                      |
-| neuroplex.py                              | 538  | `padding: 8px;`                                      |
-| neuroplex.py                              | 558  | `padding: 8px 16px;`                                 |
-| neuroplex.py                              | 583  | `padding: 8px;`                                      |
-| neuroplex.py                              | 589  | `padding: 8px 12px;`                                 |
-| neuroplex.py                              | 591  | `margin: 1px;`                                       |
-| neuroplex.py                              | 609  | `padding: 8px 12px;`                                 |
-| neuroplex.py                              | 650  | `margin: 0;`                                         |
-| neuroplex.py                              | 657  | `margin: 2px;`                                       |
-| neuroplex.py                              | 672  | `margin: 0;`                                         |
-| neuroplex.py                              | 679  | `margin: 2px;`                                       |
-| neuroplex.py                              | 693  | `margin: 2px;`                                       |
-| neuroplex.py                              | 721  | `padding: 8px 0px;`                                  |
-| neuroplex.py                              | 728  | `padding: 4px 0px;`                                  |
-| neuroplex.py                              | 769  | `padding: 8px 16px;`                                 |
-| neuroplex.py                              | 913  | `padding: 8px !important;`                           |
-| neuroplex.py                              | 923  | `padding: 10px 12px !important;`                     |
-| neuroplex.py                              | 931  | `padding: 8px 16px !important;`                      |
-| neuroplex.py                              | 949  | `padding: 8px 16px !important;`                      |
-| neuroplex.py                              | 1002 | `padding: 8px 16px !important;`                      |
-| neuroplex.py                              | 1022 | `padding: 8px !important;`                           |
-| neuroplex.py                              | 1033 | `padding: 8px 12px !important;`                      |
-| neuroplex.py                              | 1047 | `margin: 2px !important;`                            |
-| neuroplex.py                              | 1053 | `padding: 6px 8px !important;`                       |
-| neuroplex.py                              | 1063 | `margin: 8px 0px !important;`                        |
-| neuroplex.py                              | 1064 | `padding: 8px !important;`                           |
-| neuroplex.py                              | 1074 | `margin: 8px 0px !important;`                        |
-| neuroplex.py                              | 1075 | `padding: 8px !important;`                           |
-| neuroplex.py                              | 1083 | `margin: 2px !important;`                            |
-| neuroplex.py                              | 1084 | `padding: 2px !important;`                           |
-| neuroplex.py                              | 1092 | `padding: 8px 16px !important;`                      |
-| neuroplex.py                              | 1095 | `margin: 2px !important;`                            |
-| neuroplex.py                              | 1126 | `padding: 8px !important;`                           |
-| neuroplex.py                              | 1128 | `margin: 1px !important;`                            |
-| neuroplex.py                              | 1218 | `padding: 8px 12px !important;`                      |
-| neuroplex.py                              | 1319 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1320 | `padding: 2px !important;`                           |
-| neuroplex.py                              | 1342 | `padding: 6px 10px !important;`                      |
-| neuroplex.py                              | 1345 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1361 | `padding: 6px 12px !important;`                      |
-| neuroplex.py                              | 1364 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1446 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1447 | `padding: 2px !important;`                           |
-| neuroplex.py                              | 1455 | `padding: 6px 10px !important;`                      |
-| neuroplex.py                              | 1458 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1465 | `padding: 6px !important;`                           |
-| neuroplex.py                              | 1467 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1478 | `margin: 1px !important;`                            |
-| neuroplex.py                              | 1479 | `padding: 2px !important;`                           |
-| neuroplex.py                              | 1486 | `margin: 1px !important;`                            |
-| neuroplex.py                              | 1487 | `padding: 1px !important;`                           |
-| neuroplex.py                              | 1512 | `padding: 2px !important;`                           |
-| neuroplex.py                              | 1513 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1531 | `padding: 6px 10px !important;`                      |
-| neuroplex.py                              | 1534 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1548 | `padding: 6px !important;`                           |
-| neuroplex.py                              | 1550 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1560 | `padding: 6px 12px !important;`                      |
-| neuroplex.py                              | 1563 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1575 | `margin: 8px 0px !important;`                        |
-| neuroplex.py                              | 1576 | `padding: 8px 0px !important;`                       |
-| neuroplex.py                              | 1586 | `margin: 4px 0px !important;`                        |
-| neuroplex.py                              | 1587 | `padding: 4px 0px !important;`                       |
-| neuroplex.py                              | 1598 | `margin: 8px 0px !important;`                        |
-| neuroplex.py                              | 1599 | `padding: 8px 0px !important;`                       |
-| neuroplex.py                              | 1625 | `padding: 8px !important;`                           |
-| neuroplex.py                              | 1635 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1660 | `padding: 6px 10px !important;`                      |
-| neuroplex.py                              | 1663 | `margin: 0px !important;`                            |
-| neuroplex.py                              | 1684 | `padding: 8px 16px !important;`                      |
-| neuroplex.py                              | 2460 | `padding: 50px;`                                     |
-| neuroplex.py                              | 2513 | `info_label.setStyleSheet("color: #cccccc; font-...` |
+| Lyrixa.py                                 | 450  | `padding: 4px 8px;`                                  |
+| Lyrixa.py                                 | 481  | `padding: 8px;`                                      |
+| Lyrixa.py                                 | 491  | `padding: 8px 16px;`                                 |
+| Lyrixa.py                                 | 522  | `padding: 8px;`                                      |
+| Lyrixa.py                                 | 538  | `padding: 8px;`                                      |
+| Lyrixa.py                                 | 558  | `padding: 8px 16px;`                                 |
+| Lyrixa.py                                 | 583  | `padding: 8px;`                                      |
+| Lyrixa.py                                 | 589  | `padding: 8px 12px;`                                 |
+| Lyrixa.py                                 | 591  | `margin: 1px;`                                       |
+| Lyrixa.py                                 | 609  | `padding: 8px 12px;`                                 |
+| Lyrixa.py                                 | 650  | `margin: 0;`                                         |
+| Lyrixa.py                                 | 657  | `margin: 2px;`                                       |
+| Lyrixa.py                                 | 672  | `margin: 0;`                                         |
+| Lyrixa.py                                 | 679  | `margin: 2px;`                                       |
+| Lyrixa.py                                 | 693  | `margin: 2px;`                                       |
+| Lyrixa.py                                 | 721  | `padding: 8px 0px;`                                  |
+| Lyrixa.py                                 | 728  | `padding: 4px 0px;`                                  |
+| Lyrixa.py                                 | 769  | `padding: 8px 16px;`                                 |
+| Lyrixa.py                                 | 913  | `padding: 8px !important;`                           |
+| Lyrixa.py                                 | 923  | `padding: 10px 12px !important;`                     |
+| Lyrixa.py                                 | 931  | `padding: 8px 16px !important;`                      |
+| Lyrixa.py                                 | 949  | `padding: 8px 16px !important;`                      |
+| Lyrixa.py                                 | 1002 | `padding: 8px 16px !important;`                      |
+| Lyrixa.py                                 | 1022 | `padding: 8px !important;`                           |
+| Lyrixa.py                                 | 1033 | `padding: 8px 12px !important;`                      |
+| Lyrixa.py                                 | 1047 | `margin: 2px !important;`                            |
+| Lyrixa.py                                 | 1053 | `padding: 6px 8px !important;`                       |
+| Lyrixa.py                                 | 1063 | `margin: 8px 0px !important;`                        |
+| Lyrixa.py                                 | 1064 | `padding: 8px !important;`                           |
+| Lyrixa.py                                 | 1074 | `margin: 8px 0px !important;`                        |
+| Lyrixa.py                                 | 1075 | `padding: 8px !important;`                           |
+| Lyrixa.py                                 | 1083 | `margin: 2px !important;`                            |
+| Lyrixa.py                                 | 1084 | `padding: 2px !important;`                           |
+| Lyrixa.py                                 | 1092 | `padding: 8px 16px !important;`                      |
+| Lyrixa.py                                 | 1095 | `margin: 2px !important;`                            |
+| Lyrixa.py                                 | 1126 | `padding: 8px !important;`                           |
+| Lyrixa.py                                 | 1128 | `margin: 1px !important;`                            |
+| Lyrixa.py                                 | 1218 | `padding: 8px 12px !important;`                      |
+| Lyrixa.py                                 | 1319 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1320 | `padding: 2px !important;`                           |
+| Lyrixa.py                                 | 1342 | `padding: 6px 10px !important;`                      |
+| Lyrixa.py                                 | 1345 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1361 | `padding: 6px 12px !important;`                      |
+| Lyrixa.py                                 | 1364 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1446 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1447 | `padding: 2px !important;`                           |
+| Lyrixa.py                                 | 1455 | `padding: 6px 10px !important;`                      |
+| Lyrixa.py                                 | 1458 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1465 | `padding: 6px !important;`                           |
+| Lyrixa.py                                 | 1467 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1478 | `margin: 1px !important;`                            |
+| Lyrixa.py                                 | 1479 | `padding: 2px !important;`                           |
+| Lyrixa.py                                 | 1486 | `margin: 1px !important;`                            |
+| Lyrixa.py                                 | 1487 | `padding: 1px !important;`                           |
+| Lyrixa.py                                 | 1512 | `padding: 2px !important;`                           |
+| Lyrixa.py                                 | 1513 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1531 | `padding: 6px 10px !important;`                      |
+| Lyrixa.py                                 | 1534 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1548 | `padding: 6px !important;`                           |
+| Lyrixa.py                                 | 1550 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1560 | `padding: 6px 12px !important;`                      |
+| Lyrixa.py                                 | 1563 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1575 | `margin: 8px 0px !important;`                        |
+| Lyrixa.py                                 | 1576 | `padding: 8px 0px !important;`                       |
+| Lyrixa.py                                 | 1586 | `margin: 4px 0px !important;`                        |
+| Lyrixa.py                                 | 1587 | `padding: 4px 0px !important;`                       |
+| Lyrixa.py                                 | 1598 | `margin: 8px 0px !important;`                        |
+| Lyrixa.py                                 | 1599 | `padding: 8px 0px !important;`                       |
+| Lyrixa.py                                 | 1625 | `padding: 8px !important;`                           |
+| Lyrixa.py                                 | 1635 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1660 | `padding: 6px 10px !important;`                      |
+| Lyrixa.py                                 | 1663 | `margin: 0px !important;`                            |
+| Lyrixa.py                                 | 1684 | `padding: 8px 16px !important;`                      |
+| Lyrixa.py                                 | 2460 | `padding: 50px;`                                     |
+| Lyrixa.py                                 | 2513 | `info_label.setStyleSheet("color: #cccccc; font-...` |
 | neuro_chat.py                             | 513  | `padding: 2px !important;`                           |
 | neuro_chat.py                             | 514  | `margin: 0px !important;`                            |
 | neuro_chat.py                             | 606  | `margin: 8px 0px !important;`                        |

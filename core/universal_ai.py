@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Advanced AI Features
+🧬 AetherraCode Advanced AI Features
 Next-generation capabilities for universal AI adoption
 """
 
@@ -10,7 +10,7 @@ import hashlib
 
 class UniversalAIInterpreter(AetherraInterpreter):
     """
-    Extended NeuroCode interpreter with next-generation AI features
+    Extended AetherraCode interpreter with next-generation AI features
     for universal AI adoption and collaboration
     """
 
@@ -45,7 +45,7 @@ class UniversalAIInterpreter(AetherraInterpreter):
         elif line.startswith("connect to"):
             return self._handle_network_connection(line)
         else:
-            # Fall back to standard NeuroCode execution
+            # Fall back to standard AetherraCode execution
             return super().execute(line)
 
     def _handle_ai_reasoning(self, line):
@@ -146,7 +146,7 @@ class UniversalAIInterpreter(AetherraInterpreter):
             'memories': len(self.memory.memory),
             'insights': self.memory.recall(tags=['insights'])[:5],  # Share top insights
             'timestamp': datetime.now().isoformat(),
-            'source_ai': 'neurocode_ai'
+            'source_ai': 'aethercode_ai'
         }
 
         sharing_result = self.ai_network.share_knowledge(network, knowledge_package)

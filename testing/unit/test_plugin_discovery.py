@@ -9,7 +9,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from core.plugin_manager import (
+from Aetherra.core.plugin_manager import (
     discover_plugins_by_intent,
     get_ai_plugin_recommendations,
     get_plugin_discovery_stats,
@@ -96,7 +96,9 @@ def test_ai_recommendations():
         print(f"\nScenario: {goal}")
         print(f"Context: {context}")
 
-        recommendations = get_ai_plugin_recommendations(goal, context, include_examples=True)
+        recommendations = get_ai_plugin_recommendations(
+            goal, context, include_examples=True
+        )
 
         print(f"Summary: {recommendations['summary']}")
 
@@ -161,7 +163,7 @@ def test_advanced_scenarios():
 
 def main():
     """Run all plugin discovery tests"""
-    print("🚀 NEUROCODE ENHANCED PLUGIN DISCOVERY DEMO")
+    print("🚀 Aetherra ENHANCED PLUGIN DISCOVERY DEMO")
     print("=" * 60)
     print()
 
@@ -173,8 +175,12 @@ def main():
         test_advanced_scenarios()
 
         print("\n✅ All tests completed successfully!")
-        print("\nThe enhanced plugin system with intent-based discovery is working perfectly!")
-        print("Plugins can now be intelligently discovered based on user goals and context.")
+        print(
+            "\nThe enhanced plugin system with intent-based discovery is working perfectly!"
+        )
+        print(
+            "Plugins can now be intelligently discovered based on user goals and context."
+        )
 
     except Exception as e:
         print(f"\n❌ Error during testing: {e}")

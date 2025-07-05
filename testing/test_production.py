@@ -1,4 +1,4 @@
-from core.chat_router import AetherraChatRouter
+from Aetherra.core.chat_router import AetherraChatRouter
 
 # print("Testing Production Mode (no debug)...")
 

@@ -158,7 +158,7 @@ def main():
     print("=" * 50)
 
     # Check if we're in the right directory
-    if not Path("ui/neuroplex_gui.py").exists():
+    if not Path("ui/aetherplex_gui.py").exists():
         print("❌ Please run this script from the aetherra project root directory")
         sys.exit(1)
 

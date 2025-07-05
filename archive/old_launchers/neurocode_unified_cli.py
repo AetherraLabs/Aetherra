@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode - Unified Command Line Interface
+AetherraCode - Unified Command Line Interface
 The AI-native programming language with revolutionary persona system.
 """
 
@@ -12,26 +12,26 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 try:
     from neurocode.cli.demo import main as run_demo
-    from neurocode.cli.main import NeuroCodePersonaInterface as NeuroCodeCLI
+    from neurocode.cli.main import AetherraCodePersonaInterface as AetherraCodeCLI
     from neurocode.cli.persona import PersonaCLI
     # Plugin CLI functions will be imported separately
 except ImportError:
     # Fallback for development mode
     sys.path.insert(0, str(Path(__file__).parent))
-    from neurocode_persona_cli import PersonaCLI
-    from neurocode_persona_demo import main as run_demo
+    from aethercode_persona_cli import PersonaCLI
+    from aethercode_persona_demo import main as run_demo
 
     # Add more fallback imports as needed
-    NeuroCodeCLI = None
+    AetherraCodeCLI = None
 
 
 def main():
-    """Main entry point for NeuroCode CLI"""
+    """Main entry point for AetherraCode CLI"""
     import argparse
 
     parser = argparse.ArgumentParser(
         prog="neurocode",
-        description="NeuroCode - AI-native programming language with persona system",
+        description="AetherraCode - AI-native programming language with persona system",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -130,7 +130,7 @@ Examples:
             # Fallback to original plugin CLI
             try:
 
-                neurocode_plugin_cli.main()
+                aethercode_plugin_cli.main()
             except ImportError:
                 print("Plugin CLI not available")
                 return
@@ -141,16 +141,16 @@ Examples:
 
     else:
         # Default: Start interactive REPL or fallback
-        if NeuroCodeCLI is not None:
+        if AetherraCodeCLI is not None:
             try:
                 # Import and call the main function directly
                 from neurocode.cli.main import main as cli_main
 
                 cli_main()
             except Exception as e:
-                print(f"Error starting NeuroCode CLI: {e}")
+                print(f"Error starting AetherraCode CLI: {e}")
         else:
-            print("🤖 NeuroCode Interactive REPL")
+            print("🤖 AetherraCode Interactive REPL")
             print("Type 'help' for commands or 'exit' to quit")
             print()
 
@@ -165,7 +165,7 @@ Examples:
                         print("  persona - Manage AI persona")
                         print("  plugin  - Manage plugins")
                         print("  demo    - Run demonstrations")
-                        print("  exit    - Exit NeuroCode")
+                        print("  exit    - Exit AetherraCode")
                     else:
                         print(f"Executing: {user_input}")
                 except KeyboardInterrupt:

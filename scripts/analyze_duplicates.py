@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Duplicate File Analyzer
+AetherraCode Duplicate File Analyzer
 
 This script scans the entire project to identify:
 1. Exact duplicate files (same content)
@@ -419,7 +419,7 @@ class DuplicateAnalyzer:
 
     def run_analysis(self) -> Dict:
         """Run the complete duplicate analysis."""
-        print("🧬 NeuroCode Duplicate File Analysis")
+        print("🧬 AetherraCode Duplicate File Analysis")
         print("=" * 50)
 
         # Run all analyses

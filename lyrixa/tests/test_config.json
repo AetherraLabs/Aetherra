@@ -1,0 +1,13 @@
+{
+  "test_personalities": [
+    "default",
+    "mentor",
+    "developer"
+  ],
+  "test_conversations": [
+    "Hello Lyrixa, how are you?",
+    "Can you help me write a function?",
+    "Explain how memory works in programming",
+    "What do you remember about our conversation?"
+  ]
+}

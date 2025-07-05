@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify all fixes in src/neurocode/cli directory
+Test script to verify all fixes in src/Aetherra/cli directory
 """
 
 import os
@@ -21,22 +21,20 @@ def test_cli_imports():
         # Test main CLI modules
         print("✅ Testing basic CLI imports...")
 
-        imports_successful.append("NeuroCodePersonaInterface")
+        imports_successful.append("AetherraPersonaInterface")
 
         imports_successful.append("RevolutionaryPersonaCLI")
 
         # These imports might fail due to optional dependencies
         try:
-
             imports_successful.append("PersonaAssistant")
         except ImportError:
             print("⚠️ PersonaAssistant not available (optional dependency)")
 
         try:
-
-            imports_successful.append("NeuroCodePlugin")
+            imports_successful.append("AetherraPlugin")
         except ImportError:
-            print("⚠️ NeuroCodePlugin not available (optional dependency)")
+            print("⚠️ AetherraPlugin not available (optional dependency)")
 
         print(f"✅ Successfully imported: {', '.join(imports_successful)}")
         return True
@@ -53,13 +51,13 @@ def test_cli_functionality():
 
     try:
         # Test persona interface creation and use it
-        from neurocode.cli.main import NeuroCodePersonaInterface
+        from Aetherra.cli.main import AetherraPersonaInterface
 
-        interface = NeuroCodePersonaInterface()
-        print("✅ NeuroCodePersonaInterface created successfully")
+        interface = AetherraPersonaInterface()
+        print("✅ AetherraPersonaInterface created successfully")
 
         # Test demo CLI creation and use it
-        from neurocode.cli.demo import RevolutionaryPersonaCLI
+        from Aetherra.cli.demo import RevolutionaryPersonaCLI
 
         demo_cli = RevolutionaryPersonaCLI()
         print("✅ RevolutionaryPersonaCLI created successfully")
@@ -97,9 +95,9 @@ def test_error_handling():
     print("\n🧪 Testing error handling...")
 
     try:
-        from neurocode.cli.main import NeuroCodePersonaInterface
+        from Aetherra.cli.main import AetherraPersonaInterface
 
-        interface = NeuroCodePersonaInterface()
+        interface = AetherraPersonaInterface()
 
         # Test with various inputs to ensure no crashes
         test_commands = [
@@ -129,7 +127,7 @@ def test_error_handling():
 
 def main():
     """Main test function"""
-    print("🚀 Testing src/neurocode/cli fixes")
+    print("🚀 Testing src/Aetherra/cli fixes")
     print("=" * 50)
 
     # Track test results
@@ -151,7 +149,7 @@ def main():
     print(f"📊 Test Results: {tests_passed}/{total_tests} tests passed")
 
     if tests_passed == total_tests:
-        print("🎉 All tests passed! src/neurocode/cli is working correctly.")
+        print("🎉 All tests passed! src/Aetherra/cli is working correctly.")
         return True
     else:
         print("⚠️  Some tests failed. Please check the output above.")

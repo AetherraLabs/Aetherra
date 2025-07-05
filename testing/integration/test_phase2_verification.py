@@ -6,7 +6,7 @@
 Simple test to verify that all Phase 2 systems can be imported
 and basic functionality works correctly.
 
-Author: NeuroCode Development Team
+Author: AetherraCode Development Team
 Date: June 30, 2025
 """
 
@@ -67,7 +67,7 @@ def test_basic_functionality(results):
         try:
             conv_ai = results["Conversational AI"]["instance"]
             # Test persona system
-            from core.conversational_ai import PersonaMode
+            from Aetherra.core.conversational_ai import PersonaMode
 
             conv_ai.set_persona(PersonaMode.ASSISTANT)
             print("  ✅ Conversational AI: Persona system works")
@@ -121,8 +121,8 @@ def test_integration():
 
     try:
         # Test that systems can work together
-        from core.introspective_logger import IntrospectiveLogger
-        from core.stability import StabilityManager
+        from Aetherra.core.introspective_logger import IntrospectiveLogger
+        from Aetherra.core.stability import StabilityManager
 
         stability = StabilityManager()
         logger = IntrospectiveLogger()
@@ -168,7 +168,7 @@ def generate_test_report(results):
 
     if successful_systems == total_systems:
         print("\n🎉 ALL PHASE 2 SYSTEMS OPERATIONAL!")
-        print("✅ NeuroCode & Neuroplex Phase 2 is ready for production use")
+        print("✅ AetherraCode & Neuroplex Phase 2 is ready for production use")
     else:
         print("\n⚠️ Some systems need attention")
         print(f"✅ {successful_systems}/{total_systems} systems are operational")
@@ -179,7 +179,7 @@ def generate_test_report(results):
 
 def main():
     """Main test execution"""
-    print("🚀 NeuroCode & Neuroplex Phase 2 System Verification")
+    print("🚀 AetherraCode & Neuroplex Phase 2 System Verification")
     print("=" * 60)
 #     print("Testing all Phase 2 systems for import and basic functionality...")
 

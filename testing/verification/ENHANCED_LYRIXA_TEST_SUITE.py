@@ -14,7 +14,7 @@ def test_enhanced_lyrixa_import():
     """Test 1: Enhanced Lyrixa Import"""
 #     print("Test 1: Enhanced Lyrixa Import...")
     try:
-        from src.aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
+        from Aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
 
         print("✅ Enhanced Lyrixa imported successfully")
         return True, EnhancedLyrixaWindow

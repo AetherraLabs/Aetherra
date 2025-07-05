@@ -1,5 +1,5 @@
 """
-🧬 NeuroCode AI OS - Complete Integration Launcher
+🧬 AetherraCode AI OS - Complete Integration Launcher
 The world's first AI Operating System with persistent identity, voice, memory, and environmental awareness
 """
 
@@ -27,7 +27,7 @@ except ImportError as e:
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("logs/neurocode_ai_os.log"), logging.StreamHandler()],
+    handlers=[logging.FileHandler("logs/aethercode_ai_os.log"), logging.StreamHandler()],
 )
 
 # Create logs directory
@@ -35,9 +35,9 @@ Path("logs").mkdir(exist_ok=True)
 logger = logging.getLogger(__name__)
 
 
-class NeuroCodeAIOS:
+class AetherraCodeAIOS:
     """
-    The complete NeuroCode AI Operating System
+    The complete AetherraCode AI Operating System
     Integrating identity, memory, voice, personality, and environmental awareness
     """
 
@@ -61,7 +61,7 @@ class NeuroCodeAIOS:
         self.voice = None
         self.goals = None
 
-        logger.info("🧬 NeuroCode AI OS initializing...")
+        logger.info("🧬 AetherraCode AI OS initializing...")
 
     async def boot_ai_os(self):
         """Boot the AI Operating System with full consciousness"""
@@ -273,7 +273,7 @@ class NeuroCodeAIOS:
 
         while self.is_running:
             try:
-                user_input = input("\n🧬 NeuroCode AI OS > ").strip()
+                user_input = input("\n🧬 AetherraCode AI OS > ").strip()
 
                 if not user_input:
                     continue
@@ -543,11 +543,11 @@ class NeuroCodeAIOS:
 
 
 async def main():
-    """Main entry point for NeuroCode AI OS"""
-    print("🧬 Starting NeuroCode AI Operating System...")
+    """Main entry point for AetherraCode AI OS"""
+    print("🧬 Starting AetherraCode AI Operating System...")
 
     # Initialize AI OS
-    ai_os = NeuroCodeAIOS()
+    ai_os = AetherraCodeAIOS()
 
     # Boot the AI OS
     boot_success = await ai_os.boot_ai_os()

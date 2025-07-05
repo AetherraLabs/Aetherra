@@ -545,13 +545,13 @@ introspective_logger = IntrospectiveLogger()
 
 
 # Convenience functions
-def log_neurocode_execution(
+def log_aethercode_execution(
     code: str, result: Any, execution_time: float, context: Optional[Dict[str, Any]] = None
 ) -> str:
-    """Log NeuroCode execution with reflection"""
+    """Log AetherraCode execution with reflection"""
     performance = PerformanceMetrics(execution_time=execution_time)
     return introspective_logger.log_execution(
-        operation="neurocode_execution",
+        operation="aethercode_execution",
         code=code,
         result=result,
         activity_type=ActivityType.EXECUTION,

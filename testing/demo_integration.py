@@ -28,7 +28,7 @@ def demo_integration():
     print("\n🎭 Testing personality switching:")
 
     personalities = ["default", "mentor", "sassy", "dev_focused"]
-    test_message = "How do I optimize my NeuroCode?"
+    test_message = "How do I optimize my AetherraCode?"
 
     for personality in personalities:
         print(f"\n--- {personality.upper()} Personality ---")
@@ -43,7 +43,7 @@ def demo_integration():
     print("\n🧠 Testing context awareness:")
 
     conversation = [
-        "I'm new to NeuroCode",
+        "I'm new to AetherraCode",
         "I want to build a memory system",
         "How do I track my progress?",
         "What should I do next?"
@@ -66,7 +66,7 @@ def demo_integration():
     print("   ✅ Memory integration")
 
     print("\n🎯 Ready for GUI launch!")
-    print("Run: python neurocode_launcher.py → Option 1")
+    print("Run: python aethercode_launcher.py → Option 1")
 
 if __name__ == "__main__":
     demo_integration()

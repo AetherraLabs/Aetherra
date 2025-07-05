@@ -1,0 +1,1912 @@
+{
+  "timestamp": "2025-07-03T16:30:40.949677",
+  "files_processed": 208,
+  "total_fixes_applied": 2135,
+  "backup_location": "backups\\auto_fixes",
+  "fixes_by_type": {
+    "unused_imports": 230,
+    "line_length": 155,
+    "trailing_whitespace": 1619,
+    "debug_prints": 131
+  },
+  "detailed_fixes": [
+    {
+      "file": "aetherra_housekeeping.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        8
+      ]
+    },
+    {
+      "file": "analyze_warnings.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        6,
+        10
+      ]
+    },
+    {
+      "file": "analyze_warnings.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "analyze_warnings.py",
+      "type": "trailing_whitespace",
+      "count": 53
+    },
+    {
+      "file": "quick_analyze.py",
+      "type": "trailing_whitespace",
+      "count": 23
+    },
+    {
+      "file": "warning_fixer.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        6
+      ]
+    },
+    {
+      "file": "warning_fixer.py",
+      "type": "trailing_whitespace",
+      "count": 57
+    },
+    {
+      "file": "website_enhancement_finalizer.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "core\\aetherra_memory.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        18
+      ]
+    },
+    {
+      "file": "core\\aetherra_parser.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        18,
+        20
+      ]
+    },
+    {
+      "file": "core\\aetherra_parser.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "core\\aetherra_parser.py",
+      "type": "trailing_whitespace",
+      "count": 113
+    },
+    {
+      "file": "core\\agent.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        1,
+        2
+      ]
+    },
+    {
+      "file": "core\\agent.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "core\\agent.py",
+      "type": "trailing_whitespace",
+      "count": 39
+    },
+    {
+      "file": "core\\ai_collaboration.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "core\\ai_os_integration.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "core\\ai_os_integration.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "core\\ai_runtime.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "core\\ast_parser.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        8
+      ]
+    },
+    {
+      "file": "core\\ast_parser.py",
+      "type": "trailing_whitespace",
+      "count": 85
+    },
+    {
+      "file": "core\\block_executor.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "core\\block_executor.py",
+      "type": "trailing_whitespace",
+      "count": 75
+    },
+    {
+      "file": "core\\chat_router.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        19
+      ]
+    },
+    {
+      "file": "core\\complete_aetherra_grammar.py",
+      "type": "trailing_whitespace",
+      "count": 8
+    },
+    {
+      "file": "core\\debug_system.py",
+      "type": "unused_imports",
+      "count": 4,
+      "lines_removed": [
+        7,
+        10,
+        13,
+        14
+      ]
+    },
+    {
+      "file": "core\\debug_system.py",
+      "type": "debug_prints",
+      "count": 18
+    },
+    {
+      "file": "core\\debug_system.py",
+      "type": "trailing_whitespace",
+      "count": 48
+    },
+    {
+      "file": "core\\dev_suite.py",
+      "type": "unused_imports",
+      "count": 4,
+      "lines_removed": [
+        14,
+        16,
+        20,
+        26
+      ]
+    },
+    {
+      "file": "core\\dev_suite.py",
+      "type": "debug_prints",
+      "count": 5
+    },
+    {
+      "file": "core\\ecosystem_manager.py",
+      "type": "unused_imports",
+      "count": 6,
+      "lines_removed": [
+        13,
+        15,
+        16,
+        17,
+        20,
+        172
+      ]
+    },
+    {
+      "file": "core\\enhanced_aetherra_grammar.py",
+      "type": "trailing_whitespace",
+      "count": 4
+    },
+    {
+      "file": "core\\enhanced_aetherra_interpreter.py",
+      "type": "unused_imports",
+      "count": 3,
+      "lines_removed": [
+        9,
+        109,
+        116
+      ]
+    },
+    {
+      "file": "core\\enhanced_aetherra_interpreter.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "core\\enhanced_parser.py",
+      "type": "trailing_whitespace",
+      "count": 2
+    },
+    {
+      "file": "core\\functions.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        3
+      ]
+    },
+    {
+      "file": "core\\functions.py",
+      "type": "trailing_whitespace",
+      "count": 20
+    },
+    {
+      "file": "core\\goal_system.py",
+      "type": "trailing_whitespace",
+      "count": 46
+    },
+    {
+      "file": "core\\input_utils.py",
+      "type": "trailing_whitespace",
+      "count": 22
+    },
+    {
+      "file": "core\\intent_parser.py",
+      "type": "trailing_whitespace",
+      "count": 24
+    },
+    {
+      "file": "core\\internal_refactoring.py",
+      "type": "trailing_whitespace",
+      "count": 5
+    },
+    {
+      "file": "core\\interpreter_original.py",
+      "type": "debug_prints",
+      "count": 4
+    },
+    {
+      "file": "core\\interpreter_original.py",
+      "type": "line_length",
+      "count": 4
+    },
+    {
+      "file": "core\\interpreter_original.py",
+      "type": "trailing_whitespace",
+      "count": 8
+    },
+    {
+      "file": "core\\local_ai.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "core\\memory_legacy.py",
+      "type": "unused_imports",
+      "count": 5,
+      "lines_removed": [
+        13,
+        14,
+        15,
+        16,
+        20
+      ]
+    },
+    {
+      "file": "core\\memory_legacy.py",
+      "type": "trailing_whitespace",
+      "count": 8
+    },
+    {
+      "file": "core\\meta_plugins.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        2
+      ]
+    },
+    {
+      "file": "core\\meta_plugins.py",
+      "type": "trailing_whitespace",
+      "count": 48
+    },
+    {
+      "file": "core\\modern_parser.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        27,
+        28
+      ]
+    },
+    {
+      "file": "core\\modern_parser.py",
+      "type": "trailing_whitespace",
+      "count": 10
+    },
+    {
+      "file": "core\\multi_llm_manager.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        18
+      ]
+    },
+    {
+      "file": "core\\performance_engine.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        21
+      ]
+    },
+    {
+      "file": "core\\plugin_manager.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        1
+      ]
+    },
+    {
+      "file": "core\\plugin_registry.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        9
+      ]
+    },
+    {
+      "file": "core\\production_aetherra_grammar.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "core\\refined_aetherra_grammar.py",
+      "type": "trailing_whitespace",
+      "count": 4
+    },
+    {
+      "file": "core\\stability.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "core\\syntax_tree.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        19
+      ]
+    },
+    {
+      "file": "core\\syntax_tree_legacy.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        21
+      ]
+    },
+    {
+      "file": "core\\universal_ai.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        8
+      ]
+    },
+    {
+      "file": "core\\universal_ai.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "core\\universal_ai.py",
+      "type": "trailing_whitespace",
+      "count": 51
+    },
+    {
+      "file": "core\\vector_memory.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "core\\__init__.py",
+      "type": "unused_imports",
+      "count": 3,
+      "lines_removed": [
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "file": "demos\\plugin_metadata_demo.py",
+      "type": "trailing_whitespace",
+      "count": 12
+    },
+    {
+      "file": "examples\\ui_enhancement_example.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "examples\\ui_enhancement_example.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "examples\\ui_enhancement_showcase.py",
+      "type": "unused_imports",
+      "count": 5,
+      "lines_removed": [
+        14,
+        16,
+        25,
+        50,
+        52
+      ]
+    },
+    {
+      "file": "examples\\ui_enhancement_showcase.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "examples\\ui_enhancement_showcase.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "scripts\\aetherra_runner.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "scripts\\aetherra_runner_standalone.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "scripts\\agent_reflection_loop.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "scripts\\analysis_test.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        61
+      ]
+    },
+    {
+      "file": "scripts\\execute_duplicate_cleanup.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "scripts\\IMPORT_FIX_COMPLETE.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        52,
+        56
+      ]
+    },
+    {
+      "file": "scripts\\IMPORT_FIX_COMPLETE.py",
+      "type": "trailing_whitespace",
+      "count": 9
+    },
+    {
+      "file": "scripts\\prepare_for_github.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "scripts\\prepare_github_publication.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "scripts\\prepare_github_publication.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "scripts\\quick_verify.py",
+      "type": "unused_imports",
+      "count": 5,
+      "lines_removed": [
+        3,
+        5,
+        7,
+        9,
+        11
+      ]
+    },
+    {
+      "file": "scripts\\setup_enhancements.py",
+      "type": "trailing_whitespace",
+      "count": 8
+    },
+    {
+      "file": "scripts\\setup_optimization.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        6
+      ]
+    },
+    {
+      "file": "scripts\\setup_vscode_extensions.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        8,
+        9
+      ]
+    },
+    {
+      "file": "scripts\\setup_vscode_extensions.py",
+      "type": "trailing_whitespace",
+      "count": 30
+    },
+    {
+      "file": "scripts\\verify_ai_enhancements_complete.py",
+      "type": "line_length",
+      "count": 5
+    },
+    {
+      "file": "scripts\\verify_ai_enhancements_complete.py",
+      "type": "trailing_whitespace",
+      "count": 35
+    },
+    {
+      "file": "scripts\\workspace_analysis.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        7
+      ]
+    },
+    {
+      "file": "src\\aetherra_engine.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        28
+      ]
+    },
+    {
+      "file": "src\\natural_translator.py",
+      "type": "line_length",
+      "count": 7
+    },
+    {
+      "file": "src\\natural_translator.py",
+      "type": "trailing_whitespace",
+      "count": 7
+    },
+    {
+      "file": "testing\\check_lyrixa.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        3,
+        10
+      ]
+    },
+    {
+      "file": "testing\\check_ui_files.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        1
+      ]
+    },
+    {
+      "file": "testing\\quick_scheduler_test.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        23
+      ]
+    },
+    {
+      "file": "testing\\quick_test.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\test_aetherra_hub_integration.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        75
+      ]
+    },
+    {
+      "file": "testing\\test_chat_upgrade.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\test_complete_integration.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        15
+      ]
+    },
+    {
+      "file": "testing\\test_imports.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\test_launcher.py",
+      "type": "unused_imports",
+      "count": 3,
+      "lines_removed": [
+        12,
+        20,
+        21
+      ]
+    },
+    {
+      "file": "testing\\test_lyrixa.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\test_lyrixa_assistant.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\test_lyrixa_assistant_integration.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        18,
+        55
+      ]
+    },
+    {
+      "file": "testing\\test_lyrixa_import.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        16,
+        19
+      ]
+    },
+    {
+      "file": "testing\\test_lyrixa_import.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\test_modified_files.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        3
+      ]
+    },
+    {
+      "file": "testing\\test_plugin_sdk.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        3,
+        17
+      ]
+    },
+    {
+      "file": "testing\\test_plugin_sdk.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\test_plugin_ui.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\test_production.py",
+      "type": "debug_prints",
+      "count": 3
+    },
+    {
+      "file": "testing\\test_scheduler_integration.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        27
+      ]
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        23,
+        126
+      ]
+    },
+    {
+      "file": "testing\\test_ui_comprehensive.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\test_ui_functionality.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        13
+      ]
+    },
+    {
+      "file": "testing\\test_ui_functionality.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\verify_chat.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        17,
+        27
+      ]
+    },
+    {
+      "file": "testing\\verify_fix.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        9,
+        10
+      ]
+    },
+    {
+      "file": "testing\\verify_fix.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\verify_ui_system.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        72,
+        88
+      ]
+    },
+    {
+      "file": "tests\\conftest.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        15
+      ]
+    },
+    {
+      "file": "tools\\agent_archive_cli.py",
+      "type": "debug_prints",
+      "count": 2
+    },
+    {
+      "file": "tools\\agent_archive_cli.py",
+      "type": "trailing_whitespace",
+      "count": 6
+    },
+    {
+      "file": "tools\\developer_cli.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "tools\\plugin_scaffolder.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "tools\\replay_engine.py",
+      "type": "debug_prints",
+      "count": 6
+    },
+    {
+      "file": "tools\\validate_dependencies.py",
+      "type": "unused_imports",
+      "count": 7,
+      "lines_removed": [
+        16,
+        53,
+        61,
+        69,
+        92,
+        100,
+        114
+      ]
+    },
+    {
+      "file": "tools\\analysis\\fix_all_imports.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        6
+      ]
+    },
+    {
+      "file": "tests\\ui\\cross_platform_tester.py",
+      "type": "unused_imports",
+      "count": 4,
+      "lines_removed": [
+        8,
+        12,
+        19,
+        20
+      ]
+    },
+    {
+      "file": "tests\\ui\\run_platform_tests.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        9
+      ]
+    },
+    {
+      "file": "tests\\ui\\test_chat_area.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        14
+      ]
+    },
+    {
+      "file": "tests\\ui\\test_dark_mode.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        14,
+        15
+      ]
+    },
+    {
+      "file": "tests\\unit\\test_advanced_syntax.py",
+      "type": "trailing_whitespace",
+      "count": 18
+    },
+    {
+      "file": "tests\\unit\\test_core_features.py",
+      "type": "trailing_whitespace",
+      "count": 31
+    },
+    {
+      "file": "tests\\unit\\test_core_fixes.py",
+      "type": "trailing_whitespace",
+      "count": 7
+    },
+    {
+      "file": "tests\\unit\\test_debug_system.py",
+      "type": "debug_prints",
+      "count": 7
+    },
+    {
+      "file": "tests\\unit\\test_debug_system.py",
+      "type": "trailing_whitespace",
+      "count": 19
+    },
+    {
+      "file": "tests\\unit\\test_final_import.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        16
+      ]
+    },
+    {
+      "file": "tests\\unit\\test_final_import.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "tests\\unit\\test_gui.py",
+      "type": "unused_imports",
+      "count": 4,
+      "lines_removed": [
+        57,
+        93,
+        102,
+        111
+      ]
+    },
+    {
+      "file": "tests\\unit\\test_gui_import.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        34
+      ]
+    },
+    {
+      "file": "tests\\unit\\test_interpreter_errors.py",
+      "type": "trailing_whitespace",
+      "count": 6
+    },
+    {
+      "file": "tests\\unit\\test_multi_llm_integration.py",
+      "type": "debug_prints",
+      "count": 2
+    },
+    {
+      "file": "tests\\unit\\test_new_enhancements.py",
+      "type": "trailing_whitespace",
+      "count": 19
+    },
+    {
+      "file": "tests\\unit\\test_openai_fix.py",
+      "type": "unused_imports",
+      "count": 3,
+      "lines_removed": [
+        5,
+        8,
+        11
+      ]
+    },
+    {
+      "file": "tests\\unit\\test_openai_fix.py",
+      "type": "debug_prints",
+      "count": 2
+    },
+    {
+      "file": "tests\\unit\\test_simple_import.py",
+      "type": "unused_imports",
+      "count": 6,
+      "lines_removed": [
+        17,
+        18,
+        19,
+        50,
+        58,
+        66
+      ]
+    },
+    {
+      "file": "tests\\unit\\test_simple_import.py",
+      "type": "trailing_whitespace",
+      "count": 2
+    },
+    {
+      "file": "tests\\unit\\test_temporal_memory_integration.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "tests\\unit\\test_ui_deps.py",
+      "type": "unused_imports",
+      "count": 6,
+      "lines_removed": [
+        7,
+        8,
+        14,
+        15,
+        32,
+        36
+      ]
+    },
+    {
+      "file": "tests\\unit\\test_ui_deps.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        300,
+        307
+      ]
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_complete.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\demos\\test_aetherra_comprehensive.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        17,
+        56
+      ]
+    },
+    {
+      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        28,
+        34
+      ]
+    },
+    {
+      "file": "testing\\demos\\test_phase2_basic.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\integration\\test_aetherra_integration_fixed.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        65
+      ]
+    },
+    {
+      "file": "testing\\integration\\test_backward_compatibility.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        35,
+        55
+      ]
+    },
+    {
+      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        9,
+        58
+      ]
+    },
+    {
+      "file": "testing\\integration\\test_neuroplex_system.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        27,
+        34
+      ]
+    },
+    {
+      "file": "testing\\integration\\test_phase2_systems.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\integration\\test_phase2_verification.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\unit\\test_cli_fixes.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        29,
+        36
+      ]
+    },
+    {
+      "file": "testing\\unit\\test_memory_modular.py",
+      "type": "debug_prints",
+      "count": 9
+    },
+    {
+      "file": "testing\\unit\\test_modern_parser.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        17,
+        18
+      ]
+    },
+    {
+      "file": "testing\\unit\\test_modular_syntax.py",
+      "type": "trailing_whitespace",
+      "count": 10
+    },
+    {
+      "file": "testing\\unit\\test_src_core_fixes.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\unit\\test_src_core_fixes.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "testing\\unit\\test_src_folder.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        78
+      ]
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_CLEAN_VERIFICATION.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        22,
+        33
+      ]
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_GREEN_VERIFICATION.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        10,
+        22
+      ]
+    },
+    {
+      "file": "testing\\verification\\AETHERRA_GREEN_VERIFICATION.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\verification\\comprehensive_error_check.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        10
+      ]
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "type": "unused_imports",
+      "count": 4,
+      "lines_removed": [
+        64,
+        83,
+        87,
+        91
+      ]
+    },
+    {
+      "file": "testing\\verification\\ENHANCED_LYRIXA_TEST_SUITE.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\verification\\final_aetherra_verification.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\verification\\quick_interpreter_test.py",
+      "type": "debug_prints",
+      "count": 4
+    },
+    {
+      "file": "testing\\verification\\quick_runtime_test.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "testing\\verification\\simple_core_test.py",
+      "type": "debug_prints",
+      "count": 5
+    },
+    {
+      "file": "testing\\verification\\verify_enhanced_lyrixa.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "src\\aetherra\\__init__.py",
+      "type": "unused_imports",
+      "count": 3,
+      "lines_removed": [
+        13,
+        14,
+        18
+      ]
+    },
+    {
+      "file": "src\\aetherra\\cli\\demo.py",
+      "type": "debug_prints",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\cli\\demo.py",
+      "type": "line_length",
+      "count": 5
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "type": "line_length",
+      "count": 21
+    },
+    {
+      "file": "src\\aetherra\\cli\\main.py",
+      "type": "trailing_whitespace",
+      "count": 18
+    },
+    {
+      "file": "src\\aetherra\\core\\__init__.py",
+      "type": "unused_imports",
+      "count": 4,
+      "lines_removed": [
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "file": "src\\aetherra\\persona\\__init__.py",
+      "type": "unused_imports",
+      "count": 3,
+      "lines_removed": [
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "file": "src\\aetherra\\plugins\\agent_plugin.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\plugins\\agent_plugin.py",
+      "type": "trailing_whitespace",
+      "count": 2
+    },
+    {
+      "file": "src\\aetherra\\plugins\\demo_plugin.py",
+      "type": "line_length",
+      "count": 2
+    },
+    {
+      "file": "src\\aetherra\\plugins\\demo_plugin.py",
+      "type": "trailing_whitespace",
+      "count": 2
+    },
+    {
+      "file": "src\\aetherra\\plugins\\file_tools.py",
+      "type": "line_length",
+      "count": 2
+    },
+    {
+      "file": "src\\aetherra\\plugins\\file_tools.py",
+      "type": "trailing_whitespace",
+      "count": 2
+    },
+    {
+      "file": "src\\aetherra\\plugins\\git_plugin.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\plugins\\git_plugin.py",
+      "type": "trailing_whitespace",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\plugins\\local_llm.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\plugins\\local_llm.py",
+      "type": "trailing_whitespace",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\plugins\\math_plugin.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\plugins\\math_plugin.py",
+      "type": "trailing_whitespace",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\plugins\\search_plugin.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "src\\aetherra\\plugins\\search_plugin.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "src\\aetherra\\plugins\\whisper.py",
+      "type": "line_length",
+      "count": 2
+    },
+    {
+      "file": "src\\aetherra\\plugins\\whisper.py",
+      "type": "trailing_whitespace",
+      "count": 2
+    },
+    {
+      "file": "src\\aetherra\\plugins\\__init__.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        5
+      ]
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\coretools.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        15
+      ]
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\optimizer.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        6,
+        7
+      ]
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\optimizer.py",
+      "type": "trailing_whitespace",
+      "count": 32
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\reflector.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\selfrepair.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        6,
+        9
+      ]
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\selfrepair.py",
+      "type": "trailing_whitespace",
+      "count": 37
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\sysmon.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        6,
+        8
+      ]
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\sysmon.py",
+      "type": "trailing_whitespace",
+      "count": 15
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\whisper.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        7
+      ]
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\whisper.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\whisper.py",
+      "type": "trailing_whitespace",
+      "count": 17
+    },
+    {
+      "file": "src\\aetherra\\stdlib\\__init__.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        6
+      ]
+    },
+    {
+      "file": "src\\aetherra\\core\\ai\\collaboration.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "src\\aetherra\\core\\ai\\local_ai.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "src\\aetherra\\core\\ai\\multi_llm_manager.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        18
+      ]
+    },
+    {
+      "file": "src\\aetherra\\core\\ai\\runtime.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "src\\aetherra\\core\\ai\\__init__.py",
+      "type": "unused_imports",
+      "count": 3,
+      "lines_removed": [
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\base.py",
+      "type": "debug_prints",
+      "count": 4
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\base.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\block_executor.py",
+      "type": "line_length",
+      "count": 3
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\block_executor.py",
+      "type": "trailing_whitespace",
+      "count": 75
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\debug_system.py",
+      "type": "debug_prints",
+      "count": 17
+    },
+    {
+      "file": "src\\aetherra\\core\\interpreter\\__init__.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        9,
+        10
+      ]
+    },
+    {
+      "file": "src\\aetherra\\core\\memory\\vector.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "src\\aetherra\\core\\neuro_ast\\parser.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        8
+      ]
+    },
+    {
+      "file": "src\\aetherra\\core\\neuro_ast\\parser.py",
+      "type": "trailing_whitespace",
+      "count": 85
+    },
+    {
+      "file": "src\\aetherra\\core\\neuro_ast\\__init__.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        9
+      ]
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\enhanced_parser.py",
+      "type": "trailing_whitespace",
+      "count": 2
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\intent_parser.py",
+      "type": "trailing_whitespace",
+      "count": 24
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\natural_compiler.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        9,
+        12
+      ]
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\neurocode.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        18,
+        20
+      ]
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\neurocode.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\neurocode.py",
+      "type": "trailing_whitespace",
+      "count": 113
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\parser.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        18,
+        20
+      ]
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\parser.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\parser.py",
+      "type": "trailing_whitespace",
+      "count": 113
+    },
+    {
+      "file": "src\\aetherra\\core\\parser\\__init__.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        8
+      ]
+    },
+    {
+      "file": "src\\aetherra\\core\\utils\\functions.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        3
+      ]
+    },
+    {
+      "file": "src\\aetherra\\core\\utils\\functions.py",
+      "type": "trailing_whitespace",
+      "count": 20
+    },
+    {
+      "file": "src\\aetherra\\core\\utils\\__init__.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        7
+      ]
+    },
+    {
+      "file": "scripts\\tools\\verify_modular_components.py",
+      "type": "unused_imports",
+      "count": 5,
+      "lines_removed": [
+        32,
+        37,
+        131,
+        136,
+        148
+      ]
+    },
+    {
+      "file": "scripts\\utilities\\fix_demo.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "scripts\\utilities\\fix_demo.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "scripts\\utilities\\workspace_cleanup.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        11,
+        12
+      ]
+    },
+    {
+      "file": "examples\\demos\\demo_neuroplex_v2.py",
+      "type": "unused_imports",
+      "count": 2,
+      "lines_removed": [
+        22,
+        31
+      ]
+    },
+    {
+      "file": "core\\ast_parser\\__init__.py",
+      "type": "unused_imports",
+      "count": 3,
+      "lines_removed": [
+        14,
+        15,
+        17
+      ]
+    },
+    {
+      "file": "core\\interpreter\\fallback_systems.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "core\\interpreter\\__init__.py",
+      "type": "unused_imports",
+      "count": 7,
+      "lines_removed": [
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        32
+      ]
+    },
+    {
+      "file": "core\\memory\\patterns.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "core\\memory\\patterns.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "core\\memory\\__init__.py",
+      "type": "unused_imports",
+      "count": 3,
+      "lines_removed": [
+        6,
+        10,
+        17
+      ]
+    },
+    {
+      "file": "core\\runtime\\__init__.py",
+      "type": "unused_imports",
+      "count": 3,
+      "lines_removed": [
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "file": "core\\syntax\\__init__.py",
+      "type": "unused_imports",
+      "count": 3,
+      "lines_removed": [
+        14,
+        15,
+        17
+      ]
+    },
+    {
+      "file": "core\\ui\\display.py",
+      "type": "line_length",
+      "count": 2
+    },
+    {
+      "file": "core\\ui\\display.py",
+      "type": "trailing_whitespace",
+      "count": 2
+    },
+    {
+      "file": "core\\ui\\__init__.py",
+      "type": "unused_imports",
+      "count": 5,
+      "lines_removed": [
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    {
+      "file": "archive\\legacy\\agent_reflection_loop.py",
+      "type": "line_length",
+      "count": 1
+    },
+    {
+      "file": "archive\\legacy\\neuroplex_cli.py",
+      "type": "trailing_whitespace",
+      "count": 7
+    },
+    {
+      "file": "archive\\old_demos\\agent_archive_demo.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        26
+      ]
+    },
+    {
+      "file": "archive\\old_demos\\agent_archive_demo.py",
+      "type": "debug_prints",
+      "count": 3
+    },
+    {
+      "file": "archive\\old_demos\\demo_neurocode.py",
+      "type": "trailing_whitespace",
+      "count": 7
+    },
+    {
+      "file": "archive\\old_demos\\implementation_demo.py",
+      "type": "trailing_whitespace",
+      "count": 3
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "type": "line_length",
+      "count": 7
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_ai_os_demo.py",
+      "type": "line_length",
+      "count": 4
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_ai_os_demo.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_persona_demo.py",
+      "type": "debug_prints",
+      "count": 3
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_persona_demo.py",
+      "type": "line_length",
+      "count": 4
+    },
+    {
+      "file": "archive\\old_demos\\neurocode_plugin_demo.py",
+      "type": "trailing_whitespace",
+      "count": 2
+    },
+    {
+      "file": "archive\\old_demos\\neuro_chat_standalone.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        23
+      ]
+    },
+    {
+      "file": "archive\\old_demos\\neuro_chat_standalone.py",
+      "type": "line_length",
+      "count": 8
+    },
+    {
+      "file": "archive\\old_demos\\neuro_chat_standalone.py",
+      "type": "trailing_whitespace",
+      "count": 16
+    },
+    {
+      "file": "archive\\old_demos\\performance_enhancement_demo.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        27
+      ]
+    },
+    {
+      "file": "archive\\old_demos\\performance_revolution_demo.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "archive\\old_demos\\phase2_comprehensive_demo.py",
+      "type": "debug_prints",
+      "count": 1
+    },
+    {
+      "file": "archive\\old_demos\\simple_ui_demo.py",
+      "type": "trailing_whitespace",
+      "count": 1
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "type": "line_length",
+      "count": 20
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode.py",
+      "type": "trailing_whitespace",
+      "count": 18
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode_ai_os_launcher.py",
+      "type": "line_length",
+      "count": 2
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode_ai_os_launcher.py",
+      "type": "trailing_whitespace",
+      "count": 2
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode_plugin_cli.py",
+      "type": "trailing_whitespace",
+      "count": 8
+    },
+    {
+      "file": "archive\\old_launchers\\neurocode_unified_cli.py",
+      "type": "unused_imports",
+      "count": 1,
+      "lines_removed": [
+        131
+      ]
+    }
+  ]
+}

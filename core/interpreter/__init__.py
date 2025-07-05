@@ -1,9 +1,9 @@
 # core/interpreter/__init__.py
 """
-NeuroCode Interpreter System (Modular)
+AetherraCode Interpreter System (Modular)
 ======================================
 
-This module provides the modular NeuroCode interpreter system.
+This module provides the modular AetherraCode interpreter system.
 The interpreter is split into focused components for better maintainability.
 
 Components:
@@ -28,7 +28,7 @@ try:
     # Export the main API
     __all__ = [
         "AetherraInterpreter",
-        "NeuroCodeInterpreterBase",
+        "AetherraCodeInterpreterBase",
         "CommandParser",
         "ExecutionEngine",
         "LineProcessor",
@@ -52,5 +52,5 @@ except ImportError as e:
 
 # Version and metadata
 __version__ = "2.0.0"
-__author__ = "NeuroCode Team"
-__description__ = "Modular NeuroCode Interpreter System"
+__author__ = "AetherraCode Team"
+__description__ = "Modular AetherraCode Interpreter System"

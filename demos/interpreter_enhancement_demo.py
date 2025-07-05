@@ -3,7 +3,7 @@
 🚀 Quick Interpreter Enhancement Demo
 Shows immediate improvements to current interpreter.py
 
-This demonstrates your insights about making NeuroCode parsing more robust
+This demonstrates your insights about making AetherraCode parsing more robust
 while keeping the existing flexibility.
 """
 
@@ -361,7 +361,7 @@ class EnhancedInterpreterDemo:
 def demo_enhancements():
     """Demonstrate the enhanced interpreter capabilities"""
 
-    print("🧬 NeuroCode Enhanced Interpreter Demo")
+    print("🧬 AetherraCode Enhanced Interpreter Demo")
     print("=" * 50)
     print("Demonstrating your insights about token/grammar parsing!")
     print()
@@ -371,7 +371,7 @@ def demo_enhancements():
     # Test cases based on your current memory example
     test_cases = [
         # Enhanced memory operations
-        'remember("NeuroCode revolutionizes programming") as "ai,paradigm,innovation" category: "insights"',
+        'remember("AetherraCode revolutionizes programming") as "ai,paradigm,innovation" category: "insights"',
         # Enhanced goal setting
         'goal: "master enhanced parsing" priority: high deadline: "next sprint"',
         # Enhanced agent commands

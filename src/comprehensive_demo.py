@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🎉 NeuroCode Comprehensive Demonstration
+🎉 AetherraCode Comprehensive Demonstration
 ========================================
 
-Complete showcase of NeuroCode's AI-native capabilities:
+Complete showcase of AetherraCode's AI-native capabilities:
 - Enhanced memory system with temporal filtering
 - Advanced plugin architecture with rich metadata
 - Modern tabbed UI with visual memory browsing
@@ -25,7 +25,7 @@ sys.path.insert(0, str(project_root / "core"))
 
 
 def main():
-    print("🎉 NeuroCode Comprehensive Demonstration")
+    print("🎉 AetherraCode Comprehensive Demonstration")
     print("=" * 60)
 
     # Test 1: Memory System Enhancement
@@ -45,7 +45,7 @@ def main():
         memory.remember(
             "Temporal filtering reveals patterns over time", ["patterns", "time"]
         )
-        memory.remember("NeuroCode bridges human and AI cognition", ["ai", "cognition"])
+        memory.remember("AetherraCode bridges human and AI cognition", ["ai", "cognition"])
 
         # Test recall with temporal filtering
         print("✅ Testing temporal recall...")
@@ -86,8 +86,8 @@ def main():
     except Exception as e:
         print(f"❌ Plugin test failed: {e}")
 
-    # Test 3: NeuroCode File Runner
-    print("\n📍 TEST 3: NeuroCode File Execution")
+    # Test 3: AetherraCode File Runner
+    print("\n📍 TEST 3: AetherraCode File Execution")
     print("-" * 40)
 
     try:
@@ -95,7 +95,7 @@ def main():
 
         # Create a test .aether file
         test_file = project_root / "test_demo.aether"
-        test_content = """# Test NeuroCode Demo
+        test_content = """# Test AetherraCode Demo
 remember("Demo test completed successfully") as "demo,test"
 remember("System integration working") as "system,integration"
 recall tag: "demo"
@@ -165,7 +165,7 @@ memory summary
 
         print("✅ Testing CLI help...")
         result = subprocess.run(
-            [sys.executable, "neuroplex_cli.py", "help"],
+            [sys.executable, "aetherplex_cli.py", "help"],
             capture_output=True,
             text=True,
             timeout=10,
@@ -182,7 +182,7 @@ memory summary
             result = subprocess.run(
                 [
                     sys.executable,
-                    "neuroplex_cli.py",
+                    "aetherplex_cli.py",
                     "run",
                     "examples/basic_memory.aether",
                 ],
@@ -202,17 +202,17 @@ memory summary
     # Summary
     print("\n🎉 DEMONSTRATION COMPLETE")
     print("=" * 60)
-    print("🚀 NeuroCode System Status:")
+    print("🚀 AetherraCode System Status:")
     print("   ✅ Enhanced memory system with temporal features")
     print("   ✅ Advanced plugin architecture with rich metadata")
     print("   ✅ Standalone .aether file execution")
     print("   ✅ Agent Reflection Loop for autonomous operation")
-    print("   ✅ Modern tabbed UI (launch with: python neuroplex_cli.py ui)")
-    print("   ✅ Command-line interface (neuroplex run/ui/help)")
+    print("   ✅ Modern tabbed UI (launch with: python aetherplex_cli.py ui)")
+    print("   ✅ Command-line interface (aetherplex run/ui/help)")
 
     print("\n💡 Next Steps:")
-    print("   • Launch UI: python neuroplex_cli.py ui")
-    print("   • Run examples: neuroplex run examples/basic_memory.aether")
+    print("   • Launch UI: python aetherplex_cli.py ui")
+    print("   • Run examples: aetherplex run examples/basic_memory.aether")
     print("   • Explore agent: Enable Agent tab in UI")
     print("   • Create .aether files and experiment!")
 

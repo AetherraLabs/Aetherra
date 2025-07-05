@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 
 # Import speed enhancement suite for memory optimization
 try:
+    from core.speed_enhancement_suite import (
         lightning_fast_data,
         optimize_memory_system,
         ultra_fast,
@@ -37,6 +38,10 @@ except ImportError:
             return func
 
         return decorator
+
+    def optimize_memory_system(memory_system):
+        """Fallback when speed enhancement is not available"""
+        pass
 
 
 MEMORY_FILE = "memory_store.json"

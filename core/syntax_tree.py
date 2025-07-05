@@ -1,6 +1,6 @@
 # core/syntax_tree.py
 """
-NeuroCode Syntax Tree Parser (Modular Interface)
+AetherraCode Syntax Tree Parser (Modular Interface)
 ================================================
 
 This module provides a compatibility interface to the new modular syntax system.

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Refined Grammar & Parser
+🧬 AetherraCode Refined Grammar & Parser
 ====================================
 
-A refined, conflict-free formal grammar definition for NeuroCode using Lark parser.
+A refined, conflict-free formal grammar definition for AetherraCode using Lark parser.
 This version resolves grammar conflicts and provides a clean, unambiguous language definition.
 
 Key improvements:
@@ -19,7 +19,7 @@ from typing import Any, Dict, List
 from lark import Lark, Token, Transformer
 from lark.exceptions import LarkError, LexError, ParseError
 
-# Refined NeuroCode Grammar Definition - Conflict-free
+# Refined AetherraCode Grammar Definition - Conflict-free
 REFINED_NEUROCODE_GRAMMAR = r"""
     ?start: program
 
@@ -154,7 +154,7 @@ REFINED_NEUROCODE_GRAMMAR = r"""
 
 @dataclass
 class RefinedASTNode:
-    """Refined NeuroCode AST node with clear structure"""
+    """Refined AetherraCode AST node with clear structure"""
 
     node_type: str
     value: Any = None
@@ -497,7 +497,7 @@ class RefinedNeuroCodeTransformer(Transformer):
 
 
 class RefinedNeuroCodeParser:
-    """Refined NeuroCode parser with clean, conflict-free grammar"""
+    """Refined AetherraCode parser with clean, conflict-free grammar"""
 
     def __init__(self):
         """Initialize the refined parser"""
@@ -511,16 +511,16 @@ class RefinedNeuroCodeParser:
 
     def parse(self, source_code: str) -> RefinedASTNode:
         """
-        Parse NeuroCode source into refined AST
+        Parse AetherraCode source into refined AST
 
         Args:
-            source_code: Raw NeuroCode source
+            source_code: Raw AetherraCode source
 
         Returns:
             RefinedASTNode: Parsed abstract syntax tree
 
         Raises:
-            NeuroCodeSyntaxError: On parsing errors
+            AetherraCodeSyntaxError: On parsing errors
         """
         try:
             # Preprocess source
@@ -533,9 +533,9 @@ class RefinedNeuroCodeParser:
             return ast
 
         except (LarkError, ParseError, LexError) as e:
-            raise NeuroCodeSyntaxError(f"Syntax error: {e}") from e
+            raise AetherraCodeSyntaxError(f"Syntax error: {e}") from e
         except Exception as e:
-            raise NeuroCodeSyntaxError(f"Parse error: {e}") from e
+            raise AetherraCodeSyntaxError(f"Parse error: {e}") from e
 
     def _preprocess_source(self, source: str) -> str:
         """Preprocess source code"""
@@ -557,7 +557,7 @@ class RefinedNeuroCodeParser:
 
     def validate_syntax(self, source_code: str) -> Dict[str, Any]:
         """
-        Validate NeuroCode syntax
+        Validate AetherraCode syntax
 
         Returns:
             Dictionary with validation results
@@ -570,7 +570,7 @@ class RefinedNeuroCodeParser:
                 "errors": [],
                 "statistics": self._generate_statistics(ast),
             }
-        except NeuroCodeSyntaxError as e:
+        except AetherraCodeSyntaxError as e:
             return {"valid": False, "ast": None, "errors": [str(e)], "statistics": {}}
 
     def _generate_statistics(self, ast: RefinedASTNode) -> Dict[str, Any]:
@@ -612,20 +612,20 @@ class RefinedNeuroCodeParser:
         return stats
 
 
-class NeuroCodeSyntaxError(Exception):
-    """NeuroCode syntax error"""
+class AetherraCodeSyntaxError(Exception):
+    """AetherraCode syntax error"""
 
     pass
 
 
 def create_refined_parser() -> RefinedNeuroCodeParser:
-    """Create a new refined NeuroCode parser instance"""
+    """Create a new refined AetherraCode parser instance"""
     return RefinedNeuroCodeParser()
 
 
 # Example usage and testing
 if __name__ == "__main__":
-    print("🧬 Refined NeuroCode Grammar & Parser Test Suite")
+    print("🧬 Refined AetherraCode Grammar & Parser Test Suite")
     print("=" * 60)
 
     parser = create_refined_parser()
@@ -730,8 +730,8 @@ agent: on
     print(f"\n🎯 Test Results: {passed_tests}/{total_tests} tests passed")
 
     if passed_tests == total_tests:
-        print("🎉 All tests passed! Refined NeuroCode grammar is working perfectly!")
-        print("🚀 NeuroCode now has a clean, conflict-free formal grammar!")
+        print("🎉 All tests passed! Refined AetherraCode grammar is working perfectly!")
+        print("🚀 AetherraCode now has a clean, conflict-free formal grammar!")
         print("   • No reduce/reduce conflicts")
         print("   • Clear syntax rules")
         print("   • Comprehensive language coverage")
@@ -739,4 +739,4 @@ agent: on
     else:
         print(f"⚠️  {total_tests - passed_tests} tests need attention")
 
-    print("\n✨ Refined NeuroCode Grammar Complete!")
+    print("\n✨ Refined AetherraCode Grammar Complete!")

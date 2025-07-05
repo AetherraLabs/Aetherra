@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-NeuroCode Functional Integration Test
+AetherraCode Functional Integration Test
 =====================================
 
-Tests key functionality to ensure NeuroCode and Neuroplex work properly.
+Tests key functionality to ensure AetherraCode and Neuroplex work properly.
 """
 
 import sys
@@ -19,7 +19,7 @@ sys.path.insert(0, str(project_root / "core"))
 def test_core_interpreter():
     """Test basic interpreter functionality"""
     try:
-        from core.interpreter import AetherraInterpreter
+        from Aetherra.core.interpreter import AetherraInterpreter
 
         interpreter = AetherraInterpreter()
 
@@ -35,7 +35,7 @@ def test_core_interpreter():
 def test_enhanced_interpreter():
     """Test enhanced interpreter functionality"""
     try:
-        from core.enhanced_interpreter import EnhancedAetherraInterpreter
+        from Aetherra.core.enhanced_interpreter import EnhancedAetherraInterpreter
 
         interpreter = EnhancedAetherraInterpreter()
 
@@ -53,7 +53,7 @@ def test_enhanced_interpreter():
 def test_memory_system():
     """Test memory system"""
     try:
-        from core.aetherra_memory import AetherraMemory
+        from Aetherra.core.aetherra_memory import AetherraMemory
 
         memory = AetherraMemory()
 
@@ -81,7 +81,7 @@ def test_gui_components():
     """Test GUI component imports"""
     try:
         # Test if Qt components are available
-        from src.aethercode.ui.components.utils.qt_imports import is_qt_available
+        from Lyrixa.ui.components.utils.qt_imports import is_qt_available
 
         qt_status = is_qt_available()
 
@@ -116,15 +116,15 @@ def test_parser_system():
 def test_agent_system():
     """Test agent functionality"""
     try:
-        from core.agent import NeuroAgent
-        from core.functions import NeuroFunctions
-        from core.aetherra_memory import AetherraMemory
+        from Aetherra.core.agent import AetherraAgent
+        from Aetherra.core.functions import AetherraFunctions
+        from Aetherra.core.aetherra_memory import AetherraMemory
 
         memory = AetherraMemory()
-        functions = NeuroFunctions()
+        functions = AetherraFunctions()
         command_history = []
 
-        NeuroAgent(memory, functions, command_history)
+        AetherraAgent(memory, functions, command_history)
         print("✅ Agent system: Agent initialization working")
         return True
     except Exception as e:
@@ -150,7 +150,7 @@ def test_plugin_system():
 
 def run_functional_tests():
     """Run all functional tests"""
-    print("🧬 NeuroCode Functional Integration Test")
+    print("🧬 AetherraCode Functional Integration Test")
     print("=" * 50)
 
     tests = [
@@ -178,7 +178,7 @@ def run_functional_tests():
     print(f"📊 Test Results: {passed}/{total} tests passed")
 
     if passed == total:
-        print("🎉 All tests passed! NeuroCode is fully functional.")
+        print("🎉 All tests passed! AetherraCode is fully functional.")
         return True
     else:
         print(f"⚠️ {total - passed} tests failed. Some functionality may be limited.")

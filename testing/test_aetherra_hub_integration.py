@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-🧪 Test Script: NeuroHub Integration
+🧪 Test Script: AetherraHub Integration
 ===================================
 
-Test the integration of NeuroHub package manager into the Neuroplex GUI.
+Test the integration of AetherraHub package manager into the Neuroplex GUI.
 This script verifies that:
-1. NeuroHub tab is created successfully
+1. AetherraHub tab is created successfully
 2. WebEngine support is detected correctly
-3. NeuroHub server management works
+3. AetherraHub server management works
 4. GUI integration is functional
 """
 
@@ -22,12 +22,12 @@ sys.path.insert(0, str(project_root / "core"))
 
 
 def test_neurohub_directory():
-    """Test that NeuroHub directory exists"""
-    print("🔍 Testing NeuroHub directory...")
+    """Test that AetherraHub directory exists"""
+    print("🔍 Testing AetherraHub directory...")
     try:
         neurohub_path = project_root / "neurohub"
         if neurohub_path.exists():
-            print(f"✅ NeuroHub directory found: {neurohub_path}")
+            print(f"✅ AetherraHub directory found: {neurohub_path}")
 
             # Check for key files
             key_files = ["package.json", "server.js", "README.md"]
@@ -38,10 +38,10 @@ def test_neurohub_directory():
                     print(f"⚠️  Missing {file}")
             return True
         else:
-            print(f"❌ NeuroHub directory not found: {neurohub_path}")
+            print(f"❌ AetherraHub directory not found: {neurohub_path}")
             return False
     except Exception as e:
-        print(f"❌ Error checking NeuroHub directory: {e}")
+        print(f"❌ Error checking AetherraHub directory: {e}")
         return False
 
 
@@ -78,13 +78,13 @@ def test_webengine_availability():
         return True
     except ImportError as e:
         print(f"⚠️  WebEngine not available: {e}")
-        print("ℹ️  NeuroHub will use external browser mode")
+        print("ℹ️  AetherraHub will use external browser mode")
         return False
 
 
 def test_gui_neurohub_integration():
-    """Test that the GUI can load with NeuroHub integration"""
-    print("🔍 Testing GUI NeuroHub integration...")
+    """Test that the GUI can load with AetherraHub integration"""
+    print("🔍 Testing GUI AetherraHub integration...")
     try:
         # Import Qt first
         from PySide6.QtWidgets import QApplication
@@ -95,25 +95,25 @@ def test_gui_neurohub_integration():
             app = QApplication(sys.argv)
 
         # Import Neuroplex
-        from src.aethercode.ui.aetherplex import LyrixaWindow
+        from Lyrixa.ui.aetherplex import LyrixaWindow
 
         # Create main window
         window = LyrixaWindow()
         print("✅ Neuroplex window created successfully")
 
-        # Check if NeuroHub tab method exists
+        # Check if AetherraHub tab method exists
         if hasattr(window, "create_neurohub_tab"):
-            print("✅ NeuroHub tab method available")
+            print("✅ AetherraHub tab method available")
         else:
-            print("❌ NeuroHub tab method missing")
+            print("❌ AetherraHub tab method missing")
 
-        # Check if NeuroHub process attribute exists
+        # Check if AetherraHub process attribute exists
         if hasattr(window, "neurohub_process"):
-            print("✅ NeuroHub process management available")
+            print("✅ AetherraHub process management available")
         else:
-            print("❌ NeuroHub process management missing")
+            print("❌ AetherraHub process management missing")
 
-        # Check if NeuroHub server methods exist
+        # Check if AetherraHub server methods exist
         methods_to_check = [
             "start_neurohub_server",
             "stop_neurohub_server",
@@ -136,7 +136,7 @@ def test_gui_neurohub_integration():
         return True
 
     except Exception as e:
-        print(f"❌ GUI NeuroHub integration test failed: {e}")
+        print(f"❌ GUI AetherraHub integration test failed: {e}")
         import traceback
 
         traceback.print_exc()
@@ -144,12 +144,12 @@ def test_gui_neurohub_integration():
 
 
 def test_neurohub_npm_setup():
-    """Test NeuroHub npm setup"""
-    print("🔍 Testing NeuroHub npm setup...")
+    """Test AetherraHub npm setup"""
+    print("🔍 Testing AetherraHub npm setup...")
     try:
         neurohub_path = project_root / "neurohub"
         if not neurohub_path.exists():
-            print("❌ NeuroHub directory not found")
+            print("❌ AetherraHub directory not found")
             return False
 
         # Check if node_modules exists or can be created
@@ -162,21 +162,21 @@ def test_neurohub_npm_setup():
             return True  # This is expected for a fresh setup
 
     except Exception as e:
-        print(f"❌ Error checking NeuroHub npm setup: {e}")
+        print(f"❌ Error checking AetherraHub npm setup: {e}")
         return False
 
 
 def main():
-    """Run all NeuroHub integration tests"""
-    print("🚀 Starting NeuroHub Integration Tests")
+    """Run all AetherraHub integration tests"""
+    print("🚀 Starting AetherraHub Integration Tests")
     print("=" * 50)
 
     tests = [
-        ("NeuroHub Directory", test_neurohub_directory),
+        ("AetherraHub Directory", test_neurohub_directory),
         ("Node.js Availability", test_nodejs_availability),
         ("WebEngine Availability", test_webengine_availability),
-        ("GUI NeuroHub Integration", test_gui_neurohub_integration),
-        ("NeuroHub NPM Setup", test_neurohub_npm_setup),
+        ("GUI AetherraHub Integration", test_gui_neurohub_integration),
+        ("AetherraHub NPM Setup", test_neurohub_npm_setup),
     ]
 
     results = []
@@ -209,7 +209,7 @@ def main():
     print("\n📝 RECOMMENDATIONS:")
 
     if not any(name == "Node.js Availability" and result for name, result in results):
-        print("⚠️  Install Node.js to enable NeuroHub server functionality")
+        print("⚠️  Install Node.js to enable AetherraHub server functionality")
 
     if not any(name == "WebEngine Availability" and result for name, result in results):
         print(
@@ -217,7 +217,7 @@ def main():
         )
 
     if passed == total:
-        print("🎉 All tests passed! NeuroHub integration is ready.")
+        print("🎉 All tests passed! AetherraHub integration is ready.")
         return True
     else:
         print("⚠️  Some tests failed. Check the output above for details.")

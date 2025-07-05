@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode UI Foundation Implementation
+🧬 AetherraCode UI Foundation Implementation
 =======================================
 
 This module demonstrates how to implement the UI foundation system
-for the NeuroCode & Neuroplex AI OS.
+for the AetherraCode & Neuroplex AI OS.
 
 This is the first step in our implementation checklist:
 Phase 1 -> UI Polish -> Neuroplex Interface Enhancement
@@ -233,7 +233,7 @@ class ErrorHandler:
             "memory_not_found": "Try using 'recall' to search for similar memories",
             "plugin_not_loaded": "Use 'plugin: plugin_name' to load the required plugin",
             "model_unavailable": "Check your AI model configuration with 'model: \"model_name\"'",
-            "syntax_error": 'Check NeuroCode syntax - common patterns: goal: "text", agent: on',
+            "syntax_error": 'Check AetherraCode syntax - common patterns: goal: "text", agent: on',
             "permission_denied": "Check file permissions or run with appropriate privileges",
         }
 
@@ -277,7 +277,7 @@ class NeuroplexUI:
         dashboard_data = self.status_display.get_dashboard()
 
         dashboard = f"""
-🧬 NeuroCode AI OS Dashboard
+🧬 AetherraCode AI OS Dashboard
 {"=" * 40}
 🤖 AI Model: {dashboard_data["status"]["ai_model"]}
 💾 Memory: {dashboard_data["status"]["memory_usage"]}
@@ -338,7 +338,7 @@ class NeuroplexUI:
 
 def demo_ui_foundation():
     """Demonstrate the UI foundation system"""
-    print("🧬 NeuroCode UI Foundation Demo")
+    print("🧬 AetherraCode UI Foundation Demo")
     print("=" * 50)
 
     # Initialize UI system

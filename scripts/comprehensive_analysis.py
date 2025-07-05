@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Workspace Comprehensive Analysis
+AetherraCode Workspace Comprehensive Analysis
 Complete analysis of project structure, configuration, and code quality
 """
 
@@ -84,10 +84,10 @@ def analyze_core_modules():
     core_modules = {
         "core/interpreter.py": "AetherraInterpreter",
         "core/memory.py": "AetherraMemory",
-        "core/functions.py": "NeuroFunctions",
-        "core/agent.py": "NeuroAgent",
+        "core/functions.py": "AetherraFunctions",
+        "core/agent.py": "AetherraAgent",
         "core/chat_router.py": "AetherraChatRouter",
-        "ui/neuroplex_gui.py": "NeuroplexGUI",
+        "ui/aetherplex_gui.py": "NeuroplexGUI",
     }
 
     module_status = {}
@@ -322,7 +322,7 @@ def count_and_categorize_files():
 
 def main():
     """Run comprehensive workspace analysis"""
-    print("🚀 NeuroCode Workspace Comprehensive Analysis")
+    print("🚀 AetherraCode Workspace Comprehensive Analysis")
     print("=" * 60)
 
     # Run all analysis components
@@ -369,7 +369,7 @@ def main():
 
     if all_passed:
         print(
-            "\n🎉 NeuroCode workspace is perfectly structured and ready for next-generation development!"
+            "\n🎉 AetherraCode workspace is perfectly structured and ready for next-generation development!"
         )
         print("🚀 All systems are operational and optimized.")
     else:
@@ -381,7 +381,7 @@ def main():
     # Save detailed report
     report_path = Path("NEUROPLEX_ANALYSIS_REPORT.md")
     with open(report_path, "w", encoding="utf-8") as f:
-        f.write("# NeuroCode Workspace Analysis Report\n\n")
+        f.write("# AetherraCode Workspace Analysis Report\n\n")
         f.write(
             f"**Generated:** {__import__('datetime').datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
         )

@@ -196,7 +196,7 @@ Focus on {focus_area} optimization.
 Suggest:
 1. Immediate performance improvements
 2. Long-term optimization strategies
-3. Specific NeuroCode commands to run
+3. Specific AetherraCode commands to run
 4. System configuration changes
 5. Monitoring recommendations
 
@@ -269,7 +269,7 @@ Detected patterns:
 {system_context}
 
 Generate a plan to improve {target} including:
-1. Specific NeuroCode commands to execute
+1. Specific AetherraCode commands to execute
 2. Goals to set or modify
 3. System configuration changes
 4. Monitoring strategies

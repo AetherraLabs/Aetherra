@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify NeuroChat integration with Neuroplex
+Test script to verify AetherraChat integration with Neuroplex
 """
 
 import sys
@@ -13,27 +13,27 @@ sys.path.insert(0, str(project_root / "src"))
 sys.path.insert(0, str(project_root / "core"))
 
 
-def test_neurochat_import():
-    """Test if NeuroChat can be imported"""
+def test_aetherchat_import():
+    """Test if AetherraChat can be imported"""
     try:
             LyrixaAssistantInterface,
-            create_embeddable_neurochat,
+            create_embeddable_aetherchat,
         )
 
-        print("✅ NeuroChat imports successful")
+        print("✅ AetherraChat imports successful")
         return True
     except ImportError as e:
-        print(f"❌ NeuroChat import failed: {e}")
+        print(f"❌ AetherraChat import failed: {e}")
         return False
 
 
-def test_neurochat_factory():
+def test_aetherchat_factory():
     """Test if the embeddable factory function works"""
     try:
-        from src.aethercode.ui.aether_chat import create_embeddable_neurochat
+        from Lyrixa.ui.aether_chat import create_embeddable_aetherchat
 
         # Test without creating QApplication (this will fail but shows the function exists)
-        widget = create_embeddable_neurochat()
+        widget = create_embeddable_aetherchat()
         if widget is None:
             print("✅ Factory function exists and handles Qt unavailability gracefully")
             return True
@@ -45,13 +45,13 @@ def test_neurochat_factory():
         return False
 
 
-def test_neuroplex_integration():
-    """Test if Neuroplex can import NeuroChat components"""
+def test_aetherplex_integration():
+    """Test if Neuroplex can import AetherraChat components"""
     try:
         # Add the paths that Neuroplex uses
-        sys.path.insert(0, str(project_root / "src" / "neurocode" / "ui"))
+        sys.path.insert(0, str(project_root / "src" / "Aetherra" / "ui"))
 
-        # Test the import pattern used in neuroplex.py
+        # Test the import pattern used in aetherplex.py
 
         print("✅ Neuroplex-style import successful")
         return True
@@ -61,13 +61,13 @@ def test_neuroplex_integration():
 
 
 def main():
-    print("🧪 Testing NeuroChat Integration with Neuroplex")
+    print("🧪 Testing AetherraChat Integration with Neuroplex")
     print("=" * 50)
 
     # Run tests
-    test1 = test_neurochat_import()
-    test2 = test_neurochat_factory()
-    test3 = test_neuroplex_integration()
+    test1 = test_aetherchat_import()
+    test2 = test_aetherchat_factory()
+    test3 = test_aetherplex_integration()
 
     print("\n📊 Test Results:")
     print(f"  Import Test: {'✅ PASS' if test1 else '❌ FAIL'}")
@@ -75,7 +75,7 @@ def main():
     print(f"  Integration Test: {'✅ PASS' if test3 else '❌ FAIL'}")
 
     if all([test1, test2, test3]):
-        print("\n🎉 All tests passed! NeuroChat should work with Neuroplex.")
+        print("\n🎉 All tests passed! AetherraChat should work with Neuroplex.")
     else:
         print("\n⚠️  Some tests failed. Check the issues above.")
 

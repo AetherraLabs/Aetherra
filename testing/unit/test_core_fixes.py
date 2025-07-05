@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Quick test to verify core NeuroCode functionality works after fixes
+Quick test to verify core AetherraCode functionality works after fixes
 """
 
 import sys
@@ -10,7 +10,7 @@ from pathlib import Path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
-print("🧪 Testing NeuroCode Core Functionality After Fixes...")
+print("🧪 Testing AetherraCode Core Functionality After Fixes...")
 
 success_count = 0
 total_tests = 6
@@ -68,7 +68,7 @@ print(f"\n📊 RESULTS: {success_count}/{total_tests} tests passed")
 
 if success_count == total_tests:
     print("🎉 ALL CORE FUNCTIONALITY WORKING!")
-    print("✅ NeuroCode main errors have been successfully fixed")
+    print("✅ AetherraCode main errors have been successfully fixed")
 elif success_count >= 4:
     print("✅ CORE FUNCTIONALITY WORKING!")
     print("⚠️ Some optional features may have minor issues")
@@ -79,7 +79,7 @@ print("\n🔍 Quick functionality test:")
 try:
     result = interpreter.execute('say "Test successful!"')
     print(f"   Code execution: {result[:50]}...")
-    print("✅ Basic NeuroCode execution working")
+    print("✅ Basic AetherraCode execution working")
 except Exception as e:
     print(f"⚠️ Code execution issue: {e}")
 

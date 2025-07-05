@@ -1,5 +1,5 @@
 """
-🗣️ NeuroCode Voice & Personality System
+🗣️ AetherraCode Voice & Personality System
 Advanced voice synthesis with adaptive personality expression
 """
 
@@ -604,7 +604,7 @@ class VoicePersonalitySystem:
 
 # Example usage and demonstration
 if __name__ == "__main__":
-    print("🗣️ NeuroCode Voice & Personality System - Demonstration")
+    print("🗣️ AetherraCode Voice & Personality System - Demonstration")
 
     # Initialize voice personality system
     data_dir = Path("data")
