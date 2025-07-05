@@ -800,8 +800,11 @@ class PerformanceMonitor(QWidget if PYSIDE6_AVAILABLE else object):
     def __del__(self):
         """Cleanup when object is destroyed."""
         try:
-            if hasattr(self, 'metrics_collector') and self.metrics_collector:
-                if hasattr(self.metrics_collector, 'running') and self.metrics_collector.running:
+            if hasattr(self, "metrics_collector") and self.metrics_collector:
+                if (
+                    hasattr(self.metrics_collector, "running")
+                    and self.metrics_collector.running
+                ):
                     self.metrics_collector.stop_collection()
         except Exception:
             pass  # Ignore cleanup errors

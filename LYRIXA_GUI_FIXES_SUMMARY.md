@@ -57,7 +57,7 @@ def closeEvent(self, event):
 
 ✅ **All GUI Components Working**
 - Performance Monitor: ✅ Functional
-- Analytics Dashboard: ✅ Functional  
+- Analytics Dashboard: ✅ Functional
 - Configuration Manager: ✅ Functional
 - Suggestion Notifications: ✅ Functional
 

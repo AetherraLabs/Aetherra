@@ -1,12 +1,15 @@
 """
-Analytics Dashboard for Lyrixa AI Assistant
+Advanced Analytics Dashboard for Lyrixa AI Assistant
 
 Provides comprehensive analytics and visualization for:
-- User productivity metrics
-- Pattern analysis and insights
-- Suggestion effectiveness
-- Performance trends
-- Behavioral analytics
+- User productivity metrics and trends
+- Pattern analysis and behavioral insights
+- Suggestion effectiveness and optimization
+- Performance trends and forecasting
+- Advanced behavioral analytics with mood tracking
+- Daily/weekly insights with actionable recommendations
+- Agent usage metrics and efficiency analysis
+- Real-time dashboard with live updates
 """
 
 import asyncio
@@ -15,31 +18,21 @@ import logging
 import sys
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from enum import Enum
+import random
+import statistics
 
 try:
-    from PySide6.QtCore import QDate, Qt, QThread, QTimer, Signal
-    from PySide6.QtGui import QColor, QFont, QPalette
+    from PySide6.QtCore import QDate, Qt, QThread, QTimer, Signal, QPropertyAnimation, QEasingCurve
+    from PySide6.QtGui import QColor, QFont, QPalette, QPainter, QLinearGradient
     from PySide6.QtWidgets import (
-        QComboBox,
-        QDateEdit,
-        QFrame,
-        QGridLayout,
-        QGroupBox,
-        QHBoxLayout,
-        QLabel,
-        QMessageBox,
-        QProgressBar,
-        QPushButton,
-        QScrollArea,
-        QSplitter,
-        QTableWidget,
-        QTableWidgetItem,
-        QTabWidget,
-        QTextEdit,
-        QVBoxLayout,
-        QWidget,
+        QComboBox, QDateEdit, QFrame, QGridLayout, QGroupBox, QHBoxLayout,
+        QLabel, QMessageBox, QProgressBar, QPushButton, QScrollArea,
+        QSplitter, QTableWidget, QTableWidgetItem, QTabWidget, QTextEdit,
+        QVBoxLayout, QWidget, QSlider, QCheckBox, QListWidget, QListWidgetItem,
+        QTreeWidget, QTreeWidgetItem, QSpinBox
     )
-
     PYSIDE6_AVAILABLE = True
 except ImportError:
     PYSIDE6_AVAILABLE = False
@@ -47,6 +40,128 @@ except ImportError:
     # Mock classes for when PySide6 is not available
     class QWidget:
         pass
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class AnalyticsTimeRange(Enum):
+    """Time range options for analytics."""
+    LAST_HOUR = "last_hour"
+    TODAY = "today"
+    YESTERDAY = "yesterday"
+    LAST_WEEK = "last_week"
+    LAST_MONTH = "last_month"
+    LAST_QUARTER = "last_quarter"
+    CUSTOM = "custom"
+
+@dataclass
+class DailyInsight:
+    """Daily insight data structure."""
+    date: datetime
+    productivity_score: float
+    mood_trend: str
+    top_activities: List[str]
+    achievements: List[str]
+    suggestions: List[str]
+    focus_time: float
+    break_time: float
+    efficiency_rating: float
+
+@dataclass
+class WeeklyInsight:
+    """Weekly insight data structure."""
+    week_start: datetime
+    week_end: datetime
+    productivity_trend: str
+    mood_pattern: Dict[str, float]
+    goal_completion: float
+    patterns_identified: List[str]
+    recommendations: List[str]
+    peak_performance_time: str
+    improvement_areas: List[str]
+
+class MoodTracker:
+    """Tracks and analyzes user mood patterns."""
+    
+    def __init__(self):
+        self.mood_history = []
+        self.mood_predictions = []
+    
+    def track_mood(self, mood: str, confidence: float, context: Dict[str, Any]):
+        """Track a mood event."""
+        mood_event = {
+            "timestamp": datetime.now(),
+            "mood": mood,
+            "confidence": confidence,
+            "context": context
+        }
+        self.mood_history.append(mood_event)
+    
+    def analyze_mood_patterns(self) -> Dict[str, Any]:
+        """Analyze mood patterns and trends."""
+        if not self.mood_history:
+            return {"status": "insufficient_data"}
+        
+        recent_moods = self.mood_history[-50:]  # Last 50 mood events
+        mood_counts = {}
+        
+        for event in recent_moods:
+            mood = event["mood"]
+            mood_counts[mood] = mood_counts.get(mood, 0) + 1
+        
+        dominant_mood = max(mood_counts.items(), key=lambda x: x[1])[0]
+        
+        return {
+            "dominant_mood": dominant_mood,
+            "mood_distribution": mood_counts,
+            "trend": self._calculate_mood_trend(),
+            "stability": self._calculate_mood_stability()
+        }
+    
+    def _calculate_mood_trend(self) -> str:
+        """Calculate overall mood trend."""
+        if len(self.mood_history) < 10:
+            return "insufficient_data"
+        
+        recent = self.mood_history[-10:]
+        older = self.mood_history[-20:-10] if len(self.mood_history) >= 20 else []
+        
+        # Simple sentiment scoring
+        mood_scores = {
+            "happy": 5, "focused": 4, "productive": 4, "calm": 3,
+            "neutral": 2, "confused": 1, "stressed": 0, "frustrated": 0
+        }
+        
+        recent_score = sum(mood_scores.get(event["mood"], 2) for event in recent) / len(recent)
+        older_score = sum(mood_scores.get(event["mood"], 2) for event in older) / len(older) if older else recent_score
+        
+        if recent_score > older_score + 0.5:
+            return "improving"
+        elif recent_score < older_score - 0.5:
+            return "declining"
+        else:
+            return "stable"
+    
+    def _calculate_mood_stability(self) -> float:
+        """Calculate mood stability score (0-1)."""
+        if len(self.mood_history) < 5:
+            return 0.5
+        
+        recent = self.mood_history[-20:]
+        mood_scores = {
+            "happy": 5, "focused": 4, "productive": 4, "calm": 3,
+            "neutral": 2, "confused": 1, "stressed": 0, "frustrated": 0
+        }
+        
+        scores = [mood_scores.get(event["mood"], 2) for event in recent]
+        if len(scores) < 2:
+            return 0.5
+        
+        variance = statistics.variance(scores)
+        # Convert variance to stability score (lower variance = higher stability)
+        stability = max(0, min(1, 1 - (variance / 10)))
+        return stability
 
     class Signal:
         pass
