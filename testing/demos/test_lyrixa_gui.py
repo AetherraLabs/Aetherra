@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test Neuroplex GUI Launch
+Test Lyrixa GUI Launch
 """
 
 import os
@@ -13,8 +13,8 @@ sys.path.insert(0, project_root)
 sys.path.insert(0, src_path)
 
 
-def test_aetherplex_components():
-    print("🖥️ TESTING NEUROPLEX GUI COMPONENTS")
+def test_aetherra_components():
+    print("🖥️ TESTING LYRIXA GUI COMPONENTS")
     print("=" * 45)
 
     # Test UI imports
@@ -26,12 +26,10 @@ def test_aetherplex_components():
 
     # Test Qt framework
     try:
-
         print("✅ PySide6 Qt framework available")
         qt_available = True
     except ImportError:
         try:
-
             print("✅ PySide2 Qt framework available")
             qt_available = True
         except ImportError:
@@ -113,7 +111,7 @@ if __name__ == "__main__":
     print("🖥️ NEUROPLEX GUI TESTING SUITE")
     print("=" * 50)
 
-    test1 = test_aetherplex_components()
+    test1 = test_aetherra_components()
     test2 = test_launcher_scripts()
     test3 = demonstration_launch_simulation()
 

@@ -7,12 +7,13 @@ import sys
 from pathlib import Path
 
 # Add project paths
-project_root = Path(__file__).parent
+project_root = Path(__file__).parent.parent
 src_path = project_root / "src"
+sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(src_path))
 
 try:
-    from Aetherra.ui.aetherplex import LyrixaWindow
+    from src.aetherra.ui.enhanced_lyrixa import EnhancedLyrixaWindow
 
     print("✅ GUI classes loaded successfully")
 
@@ -20,7 +21,7 @@ try:
     from PySide6.QtWidgets import QApplication
 
     app = QApplication([])
-    window = LyrixaWindow()
+    window = EnhancedLyrixaWindow()
     print("✅ GUI window initialized successfully")
     print("🧠 Memory timeline feature added")
     print("🚀 Ready to launch GUI")
