@@ -5,8 +5,8 @@ import os
 import sys
 import traceback
 
-# Add the current directory to path so we can import Aetherra
-sys.path.insert(0, os.path.dirname(__file__))
+# Add src to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 
 def test_import(module_name, description=""):
@@ -28,27 +28,30 @@ def main():
     print("=" * 50)
 
     # Test main package
-    test_import("Aetherra", "Main package")
+    test_import("aetherra", "Main package")
 
     # Test core modules
-    test_import("Aetherra.core", "Core module")
-    test_import("Aetherra.core.aetherra_parser", "Parser module")
-    test_import("Aetherra.core.aetherra_interpreter", "Interpreter module")
-    test_import("Aetherra.core.ai", "AI module")
-    test_import("Aetherra.core.memory", "Memory module")
-    test_import("Aetherra.core.chat_router", "Chat router module")
+    test_import("aetherra.core", "Core module")
+    test_import("aetherra.core.parser", "Parser module")
+    test_import("aetherra.core.interpreter", "Interpreter module")
+    test_import("aetherra.core.ai", "AI module")
+    test_import("aetherra.core.memory", "Memory module")
+    test_import("aetherra.core.utils", "Utils module")
 
     # Test UI modules
-    test_import("Aetherra.ui", "UI module")
+    test_import("aetherra.ui", "UI module")
+
+    # Test CLI modules
+    test_import("aetherra.cli", "CLI module")
 
     # Test plugins
-    test_import("Aetherra.plugins", "Plugins module")
+    test_import("aetherra.plugins", "Plugins module")
 
     # Test specific components
-    test_import("Aetherra.core.aetherra_parser", "Core parser")
-    test_import("Aetherra.core.interpreter.base", "Base interpreter")
-    test_import("Aetherra.core.ai.multi_llm_manager", "Multi LLM manager")
-    test_import("Aetherra.core.plugin_manager", "Plugin manager")
+    test_import("aetherra.core.parser.parser", "Core parser")
+    test_import("aetherra.core.interpreter.base", "Base interpreter")
+    test_import("aetherra.core.ai.runtime", "AI runtime")
+    test_import("aetherra.plugins.manager", "Plugin manager")
 
     print("=" * 50)
     print("Import testing complete.")

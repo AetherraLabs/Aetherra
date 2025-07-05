@@ -9,7 +9,7 @@ sys.path.append("src")
 sys.path.append("sdk/plugins")
 
 # Import plugin API first
-from Aetherra.core.plugin_api import PLUGIN_REGISTRY
+from core.plugin_api import PLUGIN_REGISTRY
 
 print(f"Initial registry state: {PLUGIN_REGISTRY}")
 

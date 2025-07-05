@@ -49,12 +49,12 @@ def verify_imports():
     try:
         from src.aethercode.ui import (
             BASIC_UI_AVAILABLE,
+            NEUROPLEX_AVAILABLE,
             QT_AVAILABLE,
-            Lyrixa_AVAILABLE,
         )
 
         logger.info(f"Qt Available: {QT_AVAILABLE}")
-        logger.info(f"Lyrixa Available: {Lyrixa_AVAILABLE}")
+        logger.info(f"Neuroplex Available: {NEUROPLEX_AVAILABLE}")
         logger.info(f"Basic UI Available: {BASIC_UI_AVAILABLE}")
 
         # Check that we can get a window

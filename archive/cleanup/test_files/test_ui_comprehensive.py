@@ -4,7 +4,7 @@ Comprehensive UI Testing Script
 =============================
 
 This script tests all the UI components we've implemented to ensure
-they work correctly and aetherra/Lyrixa function as intended.
+they work correctly and aetherra/Neuroplex function as intended.
 """
 
 import logging
@@ -21,7 +21,7 @@ def test_fallback_implementations():
     print("\n=== Testing Qt Fallback Implementations ===")
 
     try:
-        from Lyrixa.ui.qt_fallbacks import (
+        from src.aethercode.ui.qt_fallbacks import (
             QApplication,
             QLabel,
             QMainWindow,
@@ -64,8 +64,8 @@ def test_safe_ui_calls():
 
     try:
         # Test safe widget creation
-        from Lyrixa.ui.qt_fallbacks import QPushButton
-        from Lyrixa.ui.safe_ui_calls import (
+        from src.aethercode.ui.qt_fallbacks import QPushButton
+        from src.aethercode.ui.safe_ui_calls import (
             UIErrorHandler,
             ensure_qt_application,
             safe_call,
@@ -98,7 +98,7 @@ def test_fallback_ui():
     print("\n=== Testing Fallback UI Implementation ===")
 
     try:
-        from Lyrixa.ui.fallback_ui import BasicNeuroUI, FallbackUI
+        from src.aethercode.ui.fallback_ui import BasicNeuroUI, FallbackUI
 
         # Test FallbackUI creation
         fallback = FallbackUI()
@@ -118,28 +118,30 @@ def test_fallback_ui():
         return False
 
 
-def test_Lyrixa_fixed():
-    """Test the fixed Lyrixa implementation."""
-    print("\n=== Testing Fixed Lyrixa Implementation ===")
+def test_neuroplex_fixed():
+    """Test the fixed Neuroplex implementation."""
+    print("\n=== Testing Fixed Neuroplex Implementation ===")
 
     try:
         # Import without actually running the GUI
         import importlib.util
 
         spec = importlib.util.spec_from_file_location(
-            "Lyrixa_fixed", "src/aetherra/ui/Lyrixa_fixed.py"
+            "neuroplex_fixed", "src/aetherra/ui/neuroplex_fixed.py"
         )
-        Lyrixa_module = importlib.util.module_from_spec(spec)
+        neuroplex_module = importlib.util.module_from_spec(spec)
 
         # Set __file__ to avoid NameError
-        Lyrixa_module.__file__ = str(Path("src/aetherra/ui/Lyrixa_fixed.py").absolute())
+        neuroplex_module.__file__ = str(
+            Path("src/aetherra/ui/neuroplex_fixed.py").absolute()
+        )
 
-        spec.loader.exec_module(Lyrixa_module)
+        spec.loader.exec_module(neuroplex_module)
 
         # Test window creation (without showing)
-        window = Lyrixa_module.aetherplexWindow()
+        window = neuroplex_module.aetherplexWindow()
         if window:
-            print("✓ Lyrixa window created successfully")
+            print("✓ Neuroplex window created successfully")
 
             # Test that it has the expected attributes
             if hasattr(window, "chat_router"):
@@ -151,11 +153,11 @@ def test_Lyrixa_fixed():
             if hasattr(window, "chat_widget"):
                 print("✓ Chat widget attribute present")
 
-        print("✓ Fixed Lyrixa implementation working")
+        print("✓ Fixed Neuroplex implementation working")
         return True
 
     except Exception as e:
-        print(f"✗ Fixed Lyrixa failed: {e}")
+        print(f"✗ Fixed Neuroplex failed: {e}")
         import traceback
 
         traceback.print_exc()
@@ -167,7 +169,7 @@ def test_ui_init():
     print("\n=== Testing UI Package Initialization ===")
 
     try:
-        from Lyrixa.ui import QT_AVAILABLE, get_chat_interface, get_main_window
+        from src.aethercode.ui import QT_AVAILABLE, get_chat_interface, get_main_window
 
         print(f"✓ Qt available: {QT_AVAILABLE}")
 
@@ -222,7 +224,7 @@ def run_comprehensive_test():
         ("Qt Fallback Implementations", test_fallback_implementations),
         ("Safe UI Call Utilities", test_safe_ui_calls),
         ("Fallback UI Implementation", test_fallback_ui),
-        ("Fixed Lyrixa Implementation", test_Lyrixa_fixed),
+        ("Fixed Neuroplex Implementation", test_neuroplex_fixed),
         ("UI Package Initialization", test_ui_init),
         ("Import Safety", test_import_safety),
     ]

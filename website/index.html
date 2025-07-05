@@ -3,6 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="Aetherra svg.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="Aetherra svg.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aetherra — Code Awakened | AI-Native Development Environment</title>
     <meta name="description"
@@ -12,15 +17,15 @@
 
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://aetherra.dev/">
+    <meta property="og:url" content="https://zyonic88.github.io/Aetherra/">
     <meta property="og:title" content="Aetherra — Code Awakened | AI-Native Development Environment">
     <meta property="og:description"
         content="The next-generation AI-native development environment with Lyrixa assistant. Where intelligence meets creativity, and code comes alive.">
-    <meta property="og:image" content="https://aetherra.dev/assets/aetherra-social.png">
+    <meta property="og:image" content="https://zyonic88.github.io/Aetherra/assets/aetherra-social.png">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="icon" type="image/png" href="favicon.png">
+
+
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -45,17 +50,18 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
-                <img src="favicon.svg" alt="Aetherra" class="nav-logo">
+                <img src="Aetherra svg.svg" alt="Aetherra" class="nav-logo">
                 <span class="nav-title">Aetherra</span>
                 <span class="nav-subtitle">Code Awakened</span>
             </div>
             <div class="nav-links">
                 <a href="#home" class="nav-link">Home</a>
                 <a href="#features" class="nav-link">Features</a>
-                <a href="#lyrixa" class="nav-link">Lyrixa AI</a>
+                <a href="#lyrixa" onclick="showLyrixaDemo(); return false;" class="nav-link">Lyrixa AI</a>
                 <a href="#docs" class="nav-link">Docs</a>
-                <a href="#download" class="nav-link">Download</a>
-                <a href="https://github.com/your-username/Aetherra" class="nav-link" target="_blank">GitHub</a>
+                <a href="https://github.com/Zyonic88/Aetherra/archive/refs/heads/main.zip"
+                    download="Aetherra-latest.zip" class="nav-link">Download</a>
+                <a href="https://github.com/Zyonic88/Aetherra" class="nav-link" target="_blank">GitHub</a>
             </div>
             <div class="nav-toggle">
                 <span></span>
@@ -84,13 +90,14 @@
                     <div class="feature-pill">🚀 Production Ready</div>
                 </div>
                 <div class="hero-buttons">
-                    <a href="#download" class="btn btn-primary">
+                    <a href="https://github.com/Zyonic88/Aetherra/archive/refs/heads/main.zip"
+                        download="Aetherra-latest.zip" class="btn btn-primary">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                         </svg>
                         Download Aetherra
                     </a>
-                    <a href="https://github.com/your-username/Aetherra" class="btn btn-secondary" target="_blank">
+                    <a href="https://github.com/Zyonic88/Aetherra" class="btn btn-secondary" target="_blank">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
                             <path
                                 d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
@@ -135,11 +142,23 @@ interact with lyrixa:
                     </div>
                 </div>
 
-                TASK "creative_brainstorm" {
-                INPUT: user_idea
-                PROCESS: analyze_and_expand(user_idea)
-                OUTPUT: enhanced_concepts
-                }</code></pre>
+                <div class="terminal-window">
+                    <div class="terminal-header">
+                        <div class="terminal-buttons">
+                            <span class="btn-red"></span>
+                            <span class="btn-yellow"></span>
+                            <span class="btn-green"></span>
+                        </div>
+                        <span class="terminal-title">aetherra-demo.neuro</span>
+                    </div>
+                    <div class="terminal-content">
+                        <pre><code>TASK "creative_brainstorm" {
+    INPUT: user_idea
+    PROCESS: analyze_and_expand(user_idea)
+    OUTPUT: enhanced_concepts
+}</code></pre>
+                    </div>
+                </div>
             </div>
         </div>
         </div>
@@ -385,7 +404,7 @@ interact with lyrixa:
                 <div class="start-card">
                     <h3>1. Installation</h3>
                     <div class="code-block">
-                        <code>git clone https://github.com/Zyonic88/aetherra.git
+                        <code>git clone https://github.com/Zyonic88/Aetherra.git
 cd aetherra
 pip install -r requirements.txt</code>
                     </div>
@@ -412,35 +431,35 @@ pip install -r requirements.txt</code>
         <div class="container">
             <h2 class="section-title">Documentation</h2>
             <div class="docs-grid">
-                <a href="https://github.com/Zyonic88/aetherra/blob/main/README.md" class="doc-link" target="_blank">
+                <a href="https://github.com/Zyonic88/Aetherra/blob/main/README.md" class="doc-link" target="_blank">
                     <h3>📖 Getting Started</h3>
                     <p>Complete introduction and setup guide</p>
                 </a>
 
-                <a href="https://github.com/Zyonic88/aetherra/blob/main/docs/TUTORIAL.md" class="doc-link"
+                <a href="https://github.com/Zyonic88/Aetherra/blob/main/docs/TUTORIAL.md" class="doc-link"
                     target="_blank">
                     <h3>🎓 Tutorial</h3>
                     <p>Step-by-step learning guide</p>
                 </a>
 
-                <a href="https://github.com/Zyonic88/aetherra/blob/main/docs/aetherra_LANGUAGE_SPECIFICATION.md"
+                <a href="https://github.com/Zyonic88/Aetherra/blob/main/docs/aetherra_LANGUAGE_SPECIFICATION.md"
                     class="doc-link" target="_blank">
                     <h3>📋 Language Specification</h3>
                     <p>Complete language reference</p>
                 </a>
 
-                <a href="https://github.com/Zyonic88/aetherra/blob/main/docs/aetherra_PLUGIN_REGISTRY_SPECIFICATION.md"
+                <a href="https://github.com/Zyonic88/Aetherra/blob/main/docs/aetherra_PLUGIN_REGISTRY_SPECIFICATION.md"
                     class="doc-link" target="_blank">
                     <h3>🔧 Plugin System</h3>
                     <p>Plugin development guide</p>
                 </a>
 
-                <a href="https://github.com/Zyonic88/aetherra/tree/main/examples" class="doc-link" target="_blank">
+                <a href="https://github.com/Zyonic88/Aetherra/tree/main/examples" class="doc-link" target="_blank">
                     <h3>💡 Examples</h3>
                     <p>Code samples and demos</p>
                 </a>
 
-                <a href="https://github.com/Zyonic88/aetherra/blob/main/docs/AI_OS_MANIFESTO.md" class="doc-link"
+                <a href="https://github.com/Zyonic88/Aetherra/blob/main/docs/AI_OS_MANIFESTO.md" class="doc-link"
                     target="_blank">
                     <h3>🚀 AI OS Vision</h3>
                     <p>The future of AI operating systems</p>
@@ -454,7 +473,7 @@ pip install -r requirements.txt</code>
         <div class="container">
             <div class="footer-content">
                 <div class="footer-brand">
-                    <img src="favicon.svg" alt="aetherra" class="footer-logo">
+                    <img src="Aetherra svg.svg" alt="aetherra" class="footer-logo">
                     <span class="footer-title">aetherra</span>
                     <p class="footer-tagline">Where Computation Becomes Cognition</p>
                 </div>
@@ -462,25 +481,25 @@ pip install -r requirements.txt</code>
                 <div class="footer-links">
                     <div class="footer-section">
                         <h4>Project</h4>
-                        <a href="https://github.com/Zyonic88/aetherra" target="_blank">GitHub</a>
-                        <a href="https://github.com/Zyonic88/aetherra/issues" target="_blank">Issues</a>
-                        <a href="https://github.com/Zyonic88/aetherra/discussions" target="_blank">Discussions</a>
+                        <a href="https://github.com/Zyonic88/Aetherra" target="_blank">GitHub</a>
+                        <a href="https://github.com/Zyonic88/Aetherra/issues" target="_blank">Issues</a>
+                        <a href="https://github.com/Zyonic88/Aetherra/discussions" target="_blank">Discussions</a>
                     </div>
 
                     <div class="footer-section">
                         <h4>Documentation</h4>
-                        <a href="https://github.com/Zyonic88/aetherra/blob/main/README.md" target="_blank">Getting
+                        <a href="https://github.com/Zyonic88/Aetherra/blob/main/README.md" target="_blank">Getting
                             Started</a>
-                        <a href="https://github.com/Zyonic88/aetherra/blob/main/docs/TUTORIAL.md"
+                        <a href="https://github.com/Zyonic88/Aetherra/blob/main/docs/TUTORIAL.md"
                             target="_blank">Tutorial</a>
-                        <a href="https://github.com/Zyonic88/aetherra/tree/main/examples" target="_blank">Examples</a>
+                        <a href="https://github.com/Zyonic88/Aetherra/tree/main/examples" target="_blank">Examples</a>
                     </div>
 
                     <div class="footer-section">
                         <h4>Community</h4>
-                        <a href="https://github.com/Zyonic88/aetherra/blob/main/docs/guides/CONTRIBUTING.md"
+                        <a href="https://github.com/Zyonic88/Aetherra/blob/main/docs/guides/CONTRIBUTING.md"
                             target="_blank">Contributing</a>
-                        <a href="https://github.com/Zyonic88/aetherra/blob/main/LICENSE" target="_blank">License</a>
+                        <a href="https://github.com/Zyonic88/Aetherra/blob/main/LICENSE" target="_blank">License</a>
                         <a href="mailto:contact@aetherra.dev">Contact</a>
                     </div>
                 </div>

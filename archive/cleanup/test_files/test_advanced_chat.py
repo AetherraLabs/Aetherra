@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-Advanced test script for the tuned Lyrixa chat system
+Advanced test script for the tuned Neuroplex chat system
 """
 
 
 def test_advanced_features():
     try:
-        from Aetherra.core.chat_router import AetherraChatRouter
+        from core.chat_router import aetherraChatRouter
 
-        print("🧬 Testing Advanced Lyrixa Features")
+        print("🧬 Testing Advanced Neuroplex Features")
         print("=" * 50)
 
         # Test with different personalities
@@ -17,7 +17,7 @@ def test_advanced_features():
         for personality in personalities:
             print(f"\n🎭 Testing {personality.upper()} personality:")
 
-            chat_router = AetherraChatRouter(demo_mode=True, debug_mode=True)
+            chat_router = aetherraChatRouter(demo_mode=True, debug_mode=True)
             chat_router.set_personality(personality)
 
             # Test message
@@ -42,7 +42,7 @@ def test_advanced_features():
             "Random question",
         ]
 
-        chat_router = AetherraChatRouter(demo_mode=True, debug_mode=True)
+        chat_router = aetherraChatRouter(demo_mode=True, debug_mode=True)
 
         for msg in ambiguous_messages:
             print(f'\nTesting: "{msg}"')

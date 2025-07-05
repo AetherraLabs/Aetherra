@@ -31,8 +31,8 @@ neuro_chat_path = os.path.join(
 )
 check_module(neuro_chat_path)
 
-# Test Lyrixa.py
-Lyrixa_path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "src", "aetherra", "ui", "Lyrixa.py"
+# Test neuroplex.py
+neuroplex_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "src", "aetherra", "ui", "neuroplex.py"
 )
-check_module(Lyrixa_path)
+check_module(neuroplex_path)

@@ -17,12 +17,12 @@ def test_chat_router_fixes():
     print("🔍 Testing chat router fixes...")
 
     try:
-        from Aetherra.core.chat_router import AetherraChatRouter
+        from core.chat_router import aetherraChatRouter
 
         print("✅ Chat router imported successfully")
 
         # Create chat router instance
-        router = AetherraChatRouter(demo_mode=True, debug_mode=False)
+        router = aetherraChatRouter(demo_mode=True, debug_mode=False)
         print("✅ Chat router instance created")
 
         # Test the fixed plugin loading method

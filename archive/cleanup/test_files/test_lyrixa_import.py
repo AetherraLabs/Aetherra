@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple test script to see if Lyrixa.py is fixed
+Simple test script to see if neuroplex.py is fixed
 """
 
 import sys
@@ -16,23 +16,36 @@ try:
     print("Checking basic imports")
     from importlib import util
 
-    print("Trying to import Lyrixa package...")
-    import Lyrixa
+    print("Trying to import UI package...")
+    import src.aethercode.ui
 
-    print("✅ Lyrixa package imported successfully")
+    print("✅ UI package imported successfully")
 
-    print("Trying to import models...")
+    print("Trying direct import of neuroplex.py...")
     try:
-        from Lyrixa.models.local_model import LocalModel
+        from src.aethercode.ui import neuroplex
 
-        print("✅ LocalModel imported successfully")
-
-        # Test basic functionality
-        model = LocalModel()
-        print(f"✅ LocalModel instance created: {type(model)}")
-
+        print("✅ neuroplex.py imported successfully")
+        if hasattr(neuroplex, "NeuroplexWindow"):
+            print("✅ NeuroplexWindow class is available")
+        else:
+            print("❌ NeuroplexWindow class not found")
     except Exception as e:
-        print(f"❌ LocalModel error: {e}")
+        print(f"❌ Could not import neuroplex.py directly: {e}")
+
+    print("Trying to check neuroplex.py file...")
+    try:
+        file_path = Path("src/aetherra/ui/neuroplex.py").resolve()
+        print(f"Checking file at: {file_path}")
+        if file_path.exists():
+            with open(file_path, "r") as f:
+                code = f.read()
+                compile(code, str(file_path), "exec")
+                print("✅ neuroplex.py compiles successfully")
+        else:
+            print(f"❌ File does not exist: {file_path}")
+    except Exception as e:
+        print(f"❌ Compilation failed: {e}")
 
 except Exception as e:
     print(f"❌ Error: {e}")

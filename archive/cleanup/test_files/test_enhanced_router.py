@@ -9,13 +9,13 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "core"))
 
 try:
-    from chat_router import AetherraChatRouter
+    from chat_router import aetherraChatRouter
 
     print("🧬 Testing Enhanced aetherra Chat Router")
     print("=" * 50)
 
     # Initialize router
-    router = AetherraChatRouter(demo_mode=True, debug_mode=True)
+    router = aetherraChatRouter(demo_mode=True, debug_mode=True)
     print("✅ Router initialized successfully")
 
     # Test basic conversation

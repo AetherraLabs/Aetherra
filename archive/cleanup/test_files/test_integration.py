@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Integration Test - Enhanced Lyrixa with Chat Router
+Integration Test - Enhanced Neuroplex with Chat Router
 =====================================================
 
-Tests the integration of the enhanced chat router with the Lyrixa GUI
+Tests the integration of the enhanced chat router with the Neuroplex GUI
 """
 
 import sys
@@ -17,12 +17,12 @@ sys.path.insert(0, str(project_root / "core"))
 
 def test_chat_router_integration():
     """Test the chat router integration"""
-    print("🧪 Testing Enhanced Lyrixa Chat Router Integration")
+    print("🧪 Testing Enhanced Neuroplex Chat Router Integration")
     print("=" * 60)
 
     # Test 1: Import chat router
     try:
-        from Aetherra.core.chat_router import AetherraChatRouter
+        from core.chat_router import aetherraChatRouter
 
         print("✅ Chat router import successful")
     except ImportError as e:
@@ -31,7 +31,7 @@ def test_chat_router_integration():
 
     # Test 2: Initialize chat router
     try:
-        chat_router = AetherraChatRouter(demo_mode=True, debug_mode=False)
+        chat_router = aetherraChatRouter(demo_mode=True, debug_mode=False)
         print("✅ Chat router initialization successful")
     except Exception as e:
         print(f"❌ Chat router initialization failed: {e}")
@@ -66,17 +66,17 @@ def test_chat_router_integration():
         print(f"❌ Message processing failed: {e}")
         return False
 
-    # Test 5: Test enhanced Lyrixa import
+    # Test 5: Test enhanced Neuroplex import
     try:
-        from Lyrixa.ui.enhanced_lyrixa import EnhancedLyrixaWindow
+        from src.aethercode.ui.enhanced_neuroplex import EnhancedNeuroplexWindow
 
-        print("✅ Enhanced Lyrixa import successful")
+        print("✅ Enhanced Neuroplex import successful")
     except ImportError as e:
-        print(f"⚠️ Enhanced Lyrixa import failed: {e}")
+        print(f"⚠️ Enhanced Neuroplex import failed: {e}")
         print("   This is expected if PySide6 is not installed")
 
     print("\n🎉 Integration test completed successfully!")
-    print("🚀 Enhanced Lyrixa is ready with:")
+    print("🚀 Enhanced Neuroplex is ready with:")
     print("   • AI-powered chat responses")
     print("   • Swappable personalities")
     print("   • Context-aware conversations")
@@ -93,7 +93,7 @@ def test_gui_integration():
     try:
         from PySide6.QtWidgets import QApplication
 
-        from Lyrixa.ui.enhanced_lyrixa import EnhancedLyrixaWindow
+        from src.aethercode.ui.enhanced_neuroplex import EnhancedNeuroplexWindow
 
         print("✅ PySide6 available - GUI test possible")
 
@@ -103,8 +103,8 @@ def test_gui_integration():
             app = QApplication([])
 
         # Test window creation
-        window = EnhancedLyrixaWindow()
-        print("✅ Enhanced Lyrixa window created successfully")
+        window = EnhancedNeuroplexWindow()
+        print("✅ Enhanced Neuroplex window created successfully")
 
         # Test chat router integration
         if hasattr(window, "chat_router") and window.chat_router:
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     if success:
         print("\n🎯 INTEGRATION READY!")
         print(
-            "Run 'python aetherra_launcher.py' and select option 1 to use Enhanced Lyrixa"
+            "Run 'python aetherra_launcher.py' and select option 1 to use Enhanced Neuroplex"
         )
     else:
         print("\n❌ Integration issues detected - check error messages above")

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-🎯 Complete Lyrixa System Integration Test
+🎯 Complete Neuroplex System Integration Test
 ============================================
 
-Final comprehensive test of the complete Lyrixa system including:
+Final comprehensive test of the complete Neuroplex system including:
 - Unified GUI with all tabs
 - Task Scheduler integration
-- AetherraHub package manager integration
+- NeuroHub package manager integration
 - Chat Router with advanced features
 - Memory system integration
 - All core components working together
@@ -34,11 +34,11 @@ def test_complete_system_startup():
         if app is None:
             app = QApplication(sys.argv)
 
-        # Import and create Lyrixa window
-        from Lyrixa.ui.aetherplex import LyrixaWindow
+        # Import and create Neuroplex window
+        from src.aethercode.ui.aetherplex import NeuroplexWindow
 
-        window = LyrixaWindow()
-        print("✅ Lyrixa window created successfully")
+        window = NeuroplexWindow()
+        print("✅ Neuroplex window created successfully")
 
         # Check all major components
         components = {
@@ -46,7 +46,7 @@ def test_complete_system_startup():
             and window.chat_router is not None,
             "Task Scheduler": hasattr(window, "task_scheduler")
             and window.task_scheduler is not None,
-            "AetherraHub Process": hasattr(window, "neurohub_process"),
+            "NeuroHub Process": hasattr(window, "neurohub_process"),
         }
 
         print("\n📊 Component Status:")
@@ -87,7 +87,7 @@ def test_complete_system_startup():
                 return "Quick test completed"
 
             try:
-                from Aetherra.core.task_scheduler import TaskPriority
+                from core.task_scheduler import TaskPriority
 
                 task_id = window.task_scheduler.schedule_task(
                     function=quick_test,
@@ -122,11 +122,11 @@ def test_feature_completeness():
     print("🔍 Testing feature completeness...")
 
     completed_features = {
-        "✅ Unified GUI": "Single Lyrixa.py with dark mode",
+        "✅ Unified GUI": "Single neuroplex.py with dark mode",
         "✅ Advanced Chat": "Chat router with personalities and memory",
         "✅ Task Scheduler": "Background task management with priority/retry",
         "✅ Memory Timeline": "GUI memory visualization and management",
-        "✅ AetherraHub Integration": "Package manager tab with server management",
+        "✅ NeuroHub Integration": "Package manager tab with server management",
         "✅ Plugin System": "Plugin tab and management interface",
         "✅ Multi-LLM Support": "Multiple AI provider integration",
         "✅ Self-Correction": "Error handling and retry logic",
@@ -176,15 +176,15 @@ def test_system_robustness():
 def generate_system_summary():
     """Generate a comprehensive system summary"""
     print("\n" + "=" * 60)
-    print("🎯 Lyrixa SYSTEM SUMMARY")
+    print("🎯 NEUROPLEX SYSTEM SUMMARY")
     print("=" * 60)
 
     print("""
-🧬 Lyrixa - AI-NATIVE DEVELOPMENT ENVIRONMENT
+🧬 NEUROPLEX - AI-NATIVE DEVELOPMENT ENVIRONMENT
 ===============================================
 
 ARCHITECTURE:
-• Single unified GUI (src/aetherra/ui/Lyrixa.py)
+• Single unified GUI (src/aetherra/ui/neuroplex.py)
 • Modular core system (core/*.py)
 • Plugin-based extensibility (plugins/)
 • Background task processing (core/task_scheduler.py)
@@ -195,7 +195,7 @@ MAIN FEATURES:
 • 🤖 Multi-personality AI chat with memory
 • ⚙️ Background task management
 • 🧠 Memory timeline visualization
-• 🌐 AetherraHub package manager integration
+• 🌐 NeuroHub package manager integration
 • 🔌 Plugin system with management UI
 • 🔄 Self-correction and error recovery
 • 📊 Performance monitoring and statistics
@@ -207,7 +207,7 @@ DEVELOPMENT TABS:
 • 🔌 Plugins - Plugin discovery and management
 • 🧠 Memory - AI memory timeline and management
 • ⚙️ Tasks - Background task monitoring
-• 🌐 AetherraHub - Package manager and marketplace
+• 🌐 NeuroHub - Package manager and marketplace
 
 AI CAPABILITIES:
 • Multiple LLM provider support (OpenAI, Gemini, etc.)
@@ -226,7 +226,7 @@ TECHNICAL STACK:
 • Modular plugin architecture
 
 LAUNCH COMMAND:
-python launchers/launch_Lyrixa.py
+python launchers/launch_neuroplex.py
 
 STATUS: ✅ PRODUCTION READY
 """)
@@ -234,7 +234,7 @@ STATUS: ✅ PRODUCTION READY
 
 def main():
     """Run comprehensive system integration test"""
-    print("🚀 Starting Complete Lyrixa System Integration Test")
+    print("🚀 Starting Complete Neuroplex System Integration Test")
     print("=" * 60)
 
     tests = [
@@ -277,14 +277,14 @@ def main():
 🎉 INTEGRATION COMPLETE!
 ========================
 
-The Lyrixa AI-native development environment is now fully integrated
+The Neuroplex AI-native development environment is now fully integrated
 and ready for production use. All major components are working together
 seamlessly:
 
 ✅ Unified GUI with dark mode
 ✅ Advanced AI chat with memory
 ✅ Background task scheduler
-✅ AetherraHub package manager
+✅ NeuroHub package manager
 ✅ Plugin system integration
 ✅ Robust error handling
 ✅ Clean resource management
