@@ -41,7 +41,11 @@ class AdvancedMemorySystem:
 
         # Vector search setup
         if VECTOR_SUPPORT:
+            print("   🤖 Initializing embedding model...")
             self.embedding_model = SentenceTransformer(model_name)  # type: ignore
+            print("   ✅ Vector embeddings enabled")
+            print("   ✅ Confidence modeling active")
+            print("   ✅ Reflexive analysis ready")
             self.embedding_dim = 384  # all-MiniLM-L6-v2 dimension
             self.index = faiss.IndexFlatIP(  # type: ignore
                 self.embedding_dim
@@ -714,4 +718,6 @@ async def test_advanced_memory():
 
 
 if __name__ == "__main__":
-    asyncio.run(test_advanced_memory())
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "--test":
+        asyncio.run(test_advanced_memory())

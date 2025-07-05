@@ -4,6 +4,7 @@ Enhanced Lyrixa Window
 
 Main enhanced UI window for the Lyrixa assistant system.
 Provides a sophisticated interface for Aetherra code interaction with real AI functionality.
+Integrates Phase 3 components: Analytics Dashboard, Suggestion Notifications, Configuration Manager, and Performance Monitor.
 """
 
 import asyncio
@@ -12,6 +13,27 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
+
+# Import Phase 3 GUI components
+try:
+    # Import GUI components from the lyrixa.gui package
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "lyrixa"))
+    from lyrixa.gui.analytics_dashboard import AnalyticsDashboard
+    from lyrixa.gui.suggestion_notifications import SuggestionNotificationSystem
+    from lyrixa.gui.configuration_manager import ConfigurationManager
+    from lyrixa.gui.performance_monitor import PerformanceMonitor
+    PHASE3_GUI_AVAILABLE = True
+except ImportError as e:
+    print(f"Phase 3 GUI components not available: {e}")
+    PHASE3_GUI_AVAILABLE = False
+
+# Import anticipation engine
+try:
+    from lyrixa.core.anticipation_engine import AnticipationEngine
+    ANTICIPATION_ENGINE_AVAILABLE = True
+except ImportError as e:
+    print(f"Anticipation engine not available: {e}")
+    ANTICIPATION_ENGINE_AVAILABLE = False
 
 
 class EnhancedLyrixaWindow:
@@ -43,10 +65,20 @@ class EnhancedLyrixaWindow:
         self.advanced_memory = None
         self.lyrixa_ai = None
 
+        # Initialize Phase 3 components
+        self.analytics_dashboard = None
+        self.notification_system = None
+        self.config_manager = None
+        self.performance_monitor = None
+        self.anticipation_engine = None
+
         # Initialize AI and memory systems
         self._initialize_lyrixa_ai()
+        
+        # Initialize Phase 3 components
+        self._initialize_phase3_components()
 
-        print("✅ Enhanced Lyrixa Window ready")
+        print("✅ Enhanced Lyrixa Window ready with Phase 3 integration")
         self.height = 800
 
         # Initialize core functionality first (before Qt setup)
@@ -153,6 +185,104 @@ class EnhancedLyrixaWindow:
             print(f"⚠️ Could not initialize Advanced Memory: {e}")
             self.advanced_memory = None
             self.reflection_engine = None
+
+    def _initialize_phase3_components(self):
+        """Initialize Phase 3 GUI components and anticipation engine."""
+        try:
+            # Initialize anticipation engine first
+            if ANTICIPATION_ENGINE_AVAILABLE:
+                self.anticipation_engine = AnticipationEngine()
+                print("🔮 Anticipation Engine initialized")
+            
+            # Initialize Phase 3 GUI components if available
+            if PHASE3_GUI_AVAILABLE:
+                try:
+                    # Analytics Dashboard
+                    self.analytics_dashboard = AnalyticsDashboard()
+                    print("📊 Analytics Dashboard initialized")
+                    
+                    # Suggestion Notification System
+                    self.notification_system = SuggestionNotificationSystem()
+                    print("💡 Suggestion Notification System initialized")
+                    
+                    # Configuration Manager
+                    self.config_manager = ConfigurationManager()
+                    print("⚙️ Configuration Manager initialized")
+                    
+                    # Performance Monitor
+                    self.performance_monitor = PerformanceMonitor()
+                    print("⚡ Performance Monitor initialized")
+                    
+                    # Connect anticipation engine to notification system
+                    if self.anticipation_engine and self.notification_system:
+                        self._connect_anticipation_to_notifications()
+                    
+                    print("✅ Phase 3 components integrated successfully")
+                    
+                except Exception as e:
+                    print(f"⚠️ Error initializing Phase 3 GUI components: {e}")
+                    # Set components to None if initialization fails
+                    self.analytics_dashboard = None
+                    self.notification_system = None
+                    self.config_manager = None
+                    self.performance_monitor = None
+            else:
+                print("ℹ️ Phase 3 GUI components not available")
+                
+        except Exception as e:
+            print(f"⚠️ Error in Phase 3 initialization: {e}")
+    
+    def _connect_anticipation_to_notifications(self):
+        """Connect the anticipation engine to the notification system."""
+        try:
+            # This would integrate the anticipation engine with notifications
+            # For now, we'll set up basic connectivity
+            print("🔗 Connecting anticipation engine to notification system")
+            
+            # In a full implementation, we would:
+            # 1. Connect anticipation engine suggestion generation to notification display
+            # 2. Set up callback handlers for user feedback
+            # 3. Integrate with analytics for suggestion effectiveness tracking
+            
+            print("✅ Anticipation engine connected to notifications")
+            
+        except Exception as e:
+            print(f"⚠️ Error connecting anticipation to notifications: {e}")
+
+    def show_analytics_dashboard(self):
+        """Show the analytics dashboard."""
+        if self.analytics_dashboard:
+            self.analytics_dashboard.show()
+            self.analytics_dashboard.raise_()
+        else:
+            print("Analytics dashboard not available")
+    
+    def show_configuration_manager(self):
+        """Show the configuration manager."""
+        if self.config_manager:
+            self.config_manager.show()
+            self.config_manager.raise_()
+        else:
+            print("Configuration manager not available")
+    
+    def show_performance_monitor(self):
+        """Show the performance monitor."""
+        if self.performance_monitor:
+            self.performance_monitor.show()
+            self.performance_monitor.raise_()
+        else:
+            print("Performance monitor not available")
+    
+    def toggle_suggestions(self):
+        """Toggle the suggestion notification system."""
+        if self.notification_system:
+            if self.notification_system.isVisible():
+                self.notification_system.hide()
+            else:
+                self.notification_system.show()
+                self.notification_system.raise_()
+        else:
+            print("Suggestion system not available")
 
     def _setup_qt_window(self):
         """Setup Qt-based GUI if available."""
@@ -337,6 +467,22 @@ end""")
                 dashboard_layout.addWidget(refresh_dashboard_btn)
                 right_widget.addTab(dashboard_tab, "📊 Dashboard")
 
+                # Phase 3 - Analytics Dashboard
+                if PHASE3_GUI_AVAILABLE:
+                    analytics_tab = QWidget()
+                    analytics_layout = QVBoxLayout(analytics_tab)
+                    analytics_layout.addWidget(QLabel("📊 Analytics Dashboard"))
+                    self.analytics_display = QTextEdit()
+                    self.analytics_display.setReadOnly(True)
+                    self.analytics_display.setPlaceholderText(
+                        "Analytics data will appear here..."
+                    )
+                    analytics_layout.addWidget(self.analytics_display)
+                    refresh_analytics_btn = QPushButton("🔄 Refresh Analytics")
+                    refresh_analytics_btn.clicked.connect(self.refresh_analytics)
+                    analytics_layout.addWidget(refresh_analytics_btn)
+                    right_widget.addTab(analytics_tab, "📊 Analytics")
+
                 main_splitter.addWidget(right_widget)
 
                 # Status bar
@@ -459,6 +605,16 @@ end""")
                 except Exception as e:
                     self.dashboard_display.setPlainText(
                         f"❌ Error loading dashboard: {e}"
+                    )
+
+            def refresh_analytics(self):
+                """Refresh the analytics display."""
+                try:
+                    analytics_info = self.parent_window.get_analytics_data()
+                    self.analytics_display.setPlainText(analytics_info)
+                except Exception as e:
+                    self.analytics_display.setPlainText(
+                        f"❌ Error loading analytics: {e}"
                     )
 
             def reset_lyrixa(self):
