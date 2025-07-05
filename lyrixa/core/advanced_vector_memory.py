@@ -13,7 +13,7 @@ import logging
 import sqlite3
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 try:
     import faiss
@@ -41,13 +41,14 @@ class AdvancedMemorySystem:
 
         # Vector search setup
         if VECTOR_SUPPORT:
-            self.embedding_model = SentenceTransformer(model_name)
+            self.embedding_model = SentenceTransformer(model_name)  # type: ignore
             self.embedding_dim = 384  # all-MiniLM-L6-v2 dimension
-            self.index = faiss.IndexFlatIP(
+            self.index = faiss.IndexFlatIP(  # type: ignore
                 self.embedding_dim
             )  # Inner product for similarity
         else:
             self.embedding_model = None
+            self.index = None
             self.index = None
 
         # Memory storage
@@ -136,9 +137,9 @@ class AdvancedMemorySystem:
         self,
         content: str,
         memory_type: str = "general",
-        tags: List[str] = None,
+        tags: Optional[List[str]] = None,
         confidence: float = 1.0,
-        context: Dict[str, Any] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Store memory with vector embedding and confidence analysis"""
 
@@ -149,13 +150,13 @@ class AdvancedMemorySystem:
 
         # Generate embedding if vector support is available
         embedding_vector = None
-        if VECTOR_SUPPORT and self.embedding_model:
+        if VECTOR_SUPPORT and self.embedding_model and self.index is not None:
             try:
                 embedding = self.embedding_model.encode([content])[0]
                 embedding_vector = json.dumps(embedding.tolist())
 
                 # Add to FAISS index
-                self.index.add(np.array([embedding]))
+                self.index.add(np.array([embedding]))  # type: ignore
 
             except Exception as e:
                 print(f"Warning: Could not generate embedding: {e}")
@@ -222,7 +223,7 @@ class AdvancedMemorySystem:
     ) -> List[Dict[str, Any]]:
         """Find semantically similar memories using vector embeddings"""
 
-        if not VECTOR_SUPPORT or not self.embedding_model:
+        if not VECTOR_SUPPORT or not self.embedding_model or self.index is None:
             return await self._fallback_search(query, top_k, memory_type)
 
         try:
@@ -230,7 +231,7 @@ class AdvancedMemorySystem:
             query_embedding = self.embedding_model.encode([query])
 
             # Search FAISS index
-            scores, indices = self.index.search(query_embedding, top_k)
+            scores, indices = self.index.search(query_embedding, top_k)  # type: ignore
 
             # Get corresponding memories from database
             conn = sqlite3.connect(self.db_path)
@@ -238,7 +239,7 @@ class AdvancedMemorySystem:
 
             # Build query with filters
             sql = "SELECT * FROM advanced_memories WHERE confidence >= ?"
-            params = [min_confidence]
+            params: List[Any] = [min_confidence]
 
             if memory_type:
                 sql += " AND memory_type = ?"
@@ -281,7 +282,7 @@ class AdvancedMemorySystem:
         cursor = conn.cursor()
 
         sql = "SELECT * FROM advanced_memories WHERE content LIKE ?"
-        params = [f"%{query}%"]
+        params: List[Any] = [f"%{query}%"]
 
         if memory_type:
             sql += " AND memory_type = ?"
@@ -692,11 +693,11 @@ async def test_advanced_memory():
     # Test daily reflection
     print("\n4. Testing daily reflection...")
     reflection = await reflection_engine.daily_reflection()
-    print(f"   🧠 Reflection insights:")
+    print("   🧠 Reflection insights:")
     for insight in reflection["insights"]:
         print(f"      • {insight}")
     if reflection["suggestions"]:
-        print(f"   💡 Suggestions:")
+        print("   💡 Suggestions:")
         for suggestion in reflection["suggestions"]:
             print(f"      • {suggestion}")
 
