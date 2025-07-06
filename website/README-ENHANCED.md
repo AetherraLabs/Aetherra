@@ -171,6 +171,20 @@ To contribute to the website:
 4. Test across different browsers
 5. Submit a pull request
 
+## 🌐 Community & Social
+
+Stay connected with the Aetherra community:
+
+- 🐦 **X/Twitter**: [@AetherraProject](https://x.com/AetherraProject) - Latest updates and news
+- 📁 **GitHub**: [Zyonic88/Aetherra](https://github.com/Zyonic88/Aetherra) - Source code and discussions
+- 🌐 **Website**: [zyonic88.github.io/Aetherra](https://zyonic88.github.io/Aetherra/) - Live project site
+
+Follow us for:
+- 🚀 Release announcements
+- 💡 Feature previews
+- 🤖 AI development insights
+- 👥 Community highlights
+
 ## 📄 License
 
 This enhanced website is part of the Aetherra Project and follows the same licensing terms.

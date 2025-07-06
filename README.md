@@ -250,11 +250,17 @@ Aetherra's visual identity embodies clarity and intelligence:
 
 Join the Aetherra community and help shape the future of AI-native development:
 
-- 🌟 **[Star us on GitHub](https://github.com/your-username/Aetherra)** - Help others discover Aetherra
-- 💬 **[Join Discussions](https://github.com/your-username/Aetherra/discussions)** - Share ideas and get help
-- 🐛 **[Report Issues](https://github.com/your-username/Aetherra/issues)** - Help us improve
+- 🌟 **[Star us on GitHub](https://github.com/Zyonic88/Aetherra)** - Help others discover Aetherra
+- 💬 **[Join Discussions](https://github.com/Zyonic88/Aetherra/discussions)** - Share ideas and get help
+- 🐛 **[Report Issues](https://github.com/Zyonic88/Aetherra/issues)** - Help us improve
 - 🔧 **[Contribute Code](docs/contributing.md)** - Build the future with us
 - 📚 **[Write Documentation](docs/docs-guide.md)** - Help others learn
+- 🐦 **[Follow us on X/Twitter](https://x.com/AetherraProject)** - Latest updates and news
+
+### **Stay Connected**
+- 🌐 **Website**: [zyonic88.github.io/Aetherra](https://zyonic88.github.io/Aetherra/)
+- 🐦 **X/Twitter**: [@AetherraProject](https://x.com/AetherraProject)
+- 📁 **GitHub**: [Zyonic88/Aetherra](https://github.com/Zyonic88/Aetherra)
 
 ### **Community Guidelines**
 - 🤖 **AI-Friendly**: We embrace AI assistance in all contributions
