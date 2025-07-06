@@ -40,11 +40,14 @@
     <meta name="apple-mobile-web-app-title" content="Aetherra">
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
+    <!-- Using system fonts for faster loading -->
+    <style>
+        :root {
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+            --font-display: var(--font-family);
+        }
+    </style>
 
     <!-- Enhanced Styles -->
     <link rel="stylesheet" href="styles-enhanced.css">
@@ -392,6 +395,7 @@
                             Try Lyrixa Now
                         </button>
                         <a href="#demo" class="btn btn-outline">View Examples</a>
+                        <a href="https://github.com/Zyonic88/Aetherra" class="btn btn-secondary" target="_blank">Lyrixa Online</a>
                     </div>
                 </div>
 
@@ -442,8 +446,6 @@
                     </div>
                 </div>
 
-                <div class="phase-connector"></div>
-
                 <div class="phase-card phase-2">
                     <div class="phase-number">02</div>
                     <div class="phase-content">
@@ -453,8 +455,6 @@
                     </div>
                 </div>
 
-                <div class="phase-connector"></div>
-
                 <div class="phase-card phase-3">
                     <div class="phase-number">03</div>
                     <div class="phase-content">
@@ -463,8 +463,6 @@
                         <div class="phase-status">✅ Complete</div>
                     </div>
                 </div>
-
-                <div class="phase-connector"></div>
 
                 <div class="phase-card phase-4">
                     <div class="phase-number">04</div>
@@ -482,7 +480,7 @@
                     <div class="stat-label">Files Consolidated</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">14,279</div>
+                    <div class="stat-number">14.3K+</div>
                     <div class="stat-label">Lines of Code</div>
                 </div>
                 <div class="stat-card">
@@ -716,11 +714,11 @@ pip install -r requirements.txt</code>
                     <p>Browse source code and docs</p>
                 </a>
 
-                <button class="option-card" onclick="showInstallationGuide()">
+                <a href="https://github.com/Zyonic88/Aetherra/blob/main/README.md#installation" class="option-card" target="_blank">
                     <div class="option-icon">🔧</div>
                     <h4>Installation Guide</h4>
                     <p>Detailed setup instructions</p>
-                </button>
+                </a>
             </div>
         </div>
     </section>
@@ -915,7 +913,7 @@ pip install -r requirements.txt</code>
     </div>
 
     <!-- Scripts -->
-    <script src="script-enhanced.js"></script>
+    <script src="script-enhanced-fixed.js"></script>
 </body>
 
 </html>

@@ -6,7 +6,7 @@
 
 # Files required for GitHub Pages:
 ✅ index.html (present)
-✅ .nojekyll (present) 
+✅ .nojekyll (present)
 ✅ manifest.json (present)
 ✅ styles-enhanced.css (present)
 ✅ script-enhanced.js (present)
