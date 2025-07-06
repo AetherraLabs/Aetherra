@@ -183,8 +183,8 @@ This website is part of the Aetherra project and follows the same licensing term
 ## 🔗 Links
 
 - **Main Project**: [Aetherra Repository](https://github.com/your-username/aetherra)
-- **Documentation**: [docs.aetherra.dev](https://docs.aetherra.dev)
-- **Live Website**: [aetherra.dev](https://aetherra.dev)
+- **Documentation**: [GitHub Repository](https://github.com/Zyonic88/Aetherra)
+- **Live Website**: [zyonic88.github.io/Aetherra](https://zyonic88.github.io/Aetherra/)
 
 ---
 

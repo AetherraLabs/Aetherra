@@ -47,27 +47,27 @@ check_file() {
 # Function to validate HTML
 validate_html() {
     print_status "Validating HTML structure..."
-    
+
     # Basic HTML validation
     if ! grep -q "<!DOCTYPE html>" "$1"; then
         print_warning "Missing DOCTYPE declaration"
     fi
-    
+
     if ! grep -q "<html lang=" "$1"; then
         print_warning "Missing language attribute"
     fi
-    
+
     if ! grep -q "<meta charset=" "$1"; then
         print_warning "Missing charset declaration"
     fi
-    
+
     print_success "HTML validation completed"
 }
 
 # Function to validate CSS
 validate_css() {
     print_status "Validating CSS..."
-    
+
     # Check for CSS syntax errors (basic)
     if grep -q "}" "$1" && grep -q "{" "$1"; then
         print_success "CSS structure looks valid"
@@ -79,7 +79,7 @@ validate_css() {
 # Function to validate JavaScript
 validate_js() {
     print_status "Validating JavaScript..."
-    
+
     # Basic JS validation
     if command -v node >/dev/null 2>&1; then
         if node -c "$1" 2>/dev/null; then
@@ -95,10 +95,10 @@ validate_js() {
 # Function to optimize files
 optimize_files() {
     print_status "Optimizing files for production..."
-    
+
     # Create build directory
     mkdir -p "$BUILD_DIR"
-    
+
     # Copy and process files
     for file in "${ENHANCED_FILES[@]}"; do
         if [ -f "$file" ]; then
@@ -106,20 +106,20 @@ optimize_files() {
             print_success "Copied: $file"
         fi
     done
-    
+
     # Copy additional assets
     if [ -d "assets" ]; then
         cp -r "assets" "$BUILD_DIR/"
         print_success "Copied: assets directory"
     fi
-    
+
     print_success "File optimization completed"
 }
 
 # Function to generate deployment manifest
 generate_manifest() {
     print_status "Generating deployment manifest..."
-    
+
     cat > "$BUILD_DIR/deployment-manifest.txt" << EOF
 Aetherra Enhanced Website Deployment Manifest
 ============================================
@@ -137,7 +137,7 @@ EOF
             echo "- $file ($size bytes)" >> "$BUILD_DIR/deployment-manifest.txt"
         fi
     done
-    
+
     cat >> "$BUILD_DIR/deployment-manifest.txt" << EOF
 
 Deployment Notes:
@@ -160,10 +160,10 @@ EOF
 # Function to run tests
 run_tests() {
     print_status "Running deployment tests..."
-    
+
     local test_count=0
     local pass_count=0
-    
+
     # Test 1: Check file sizes
     test_count=$((test_count + 1))
     html_size=$(stat -f%z "$BUILD_DIR/index-enhanced.html" 2>/dev/null || stat -c%s "$BUILD_DIR/index-enhanced.html" 2>/dev/null || echo "0")
@@ -173,7 +173,7 @@ run_tests() {
     else
         print_error "HTML file too small: $html_size bytes"
     fi
-    
+
     # Test 2: Check CSS file
     test_count=$((test_count + 1))
     if [ -f "$BUILD_DIR/styles-enhanced.css" ]; then
@@ -187,7 +187,7 @@ run_tests() {
     else
         print_error "CSS file missing"
     fi
-    
+
     # Test 3: Check JavaScript file
     test_count=$((test_count + 1))
     if [ -f "$BUILD_DIR/script-enhanced.js" ]; then
@@ -201,7 +201,7 @@ run_tests() {
     else
         print_error "JavaScript file missing"
     fi
-    
+
     # Test 4: Check service worker
     test_count=$((test_count + 1))
     if [ -f "$BUILD_DIR/sw.js" ]; then
@@ -210,7 +210,7 @@ run_tests() {
     else
         print_error "Service worker missing"
     fi
-    
+
     # Test 5: Check manifest
     test_count=$((test_count + 1))
     if [ -f "$BUILD_DIR/manifest.json" ]; then
@@ -219,9 +219,9 @@ run_tests() {
     else
         print_error "Web app manifest missing"
     fi
-    
+
     print_status "Tests completed: $pass_count/$test_count passed"
-    
+
     if [ "$pass_count" -eq "$test_count" ]; then
         print_success "All tests passed! Ready for deployment."
         return 0
@@ -234,11 +234,11 @@ run_tests() {
 # Function to create deployment package
 create_package() {
     print_status "Creating deployment package..."
-    
+
     cd "$BUILD_DIR"
     zip -r "../aetherra-enhanced-website.zip" . >/dev/null 2>&1
     cd "$WEBSITE_DIR"
-    
+
     if [ -f "aetherra-enhanced-website.zip" ]; then
         package_size=$(stat -f%z "aetherra-enhanced-website.zip" 2>/dev/null || stat -c%s "aetherra-enhanced-website.zip" 2>/dev/null || echo "Unknown")
         print_success "Deployment package created: aetherra-enhanced-website.zip ($package_size bytes)"
@@ -251,14 +251,14 @@ create_package() {
 # Main deployment process
 main() {
     print_status "Starting enhanced website deployment process..."
-    
+
     # Step 1: Validate environment
     print_status "Step 1: Validating environment..."
     if [ ! -d "$WEBSITE_DIR" ]; then
         print_error "Website directory not found: $WEBSITE_DIR"
         exit 1
     fi
-    
+
     # Step 2: Check required files
     print_status "Step 2: Checking required files..."
     missing_files=0
@@ -267,36 +267,36 @@ main() {
             missing_files=$((missing_files + 1))
         fi
     done
-    
+
     if [ $missing_files -gt 0 ]; then
         print_error "$missing_files required files are missing"
         exit 1
     fi
-    
+
     # Step 3: Validate files
     print_status "Step 3: Validating file content..."
     validate_html "index-enhanced.html"
     validate_css "styles-enhanced.css"
     validate_js "script-enhanced.js"
-    
+
     # Step 4: Optimize for production
     print_status "Step 4: Optimizing for production..."
     optimize_files
-    
+
     # Step 5: Generate deployment manifest
     print_status "Step 5: Generating deployment documentation..."
     generate_manifest
-    
+
     # Step 6: Run tests
     print_status "Step 6: Running deployment tests..."
     if ! run_tests; then
         print_warning "Tests failed, but continuing with deployment preparation"
     fi
-    
+
     # Step 7: Create deployment package
     print_status "Step 7: Creating deployment package..."
     create_package
-    
+
     # Final summary
     echo ""
     print_success "🎉 Enhanced website deployment preparation completed!"

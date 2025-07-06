@@ -42,7 +42,7 @@ const CACHE_FIRST = [
 
 self.addEventListener('install', event => {
     console.log('🚀 Aetherra Service Worker installing...');
-    
+
     event.waitUntil(
         caches.open(STATIC_CACHE).then(cache => {
             console.log('📦 Caching core files...');
@@ -62,7 +62,7 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
     console.log('🔄 Aetherra Service Worker activating...');
-    
+
     event.waitUntil(
         Promise.all([
             // Clean up old caches
@@ -76,7 +76,7 @@ self.addEventListener('activate', event => {
                     })
                 );
             }),
-            
+
             // Take control of all clients
             self.clients.claim()
         ]).then(() => {
@@ -91,17 +91,17 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
     const { request } = event;
-    
+
     // Skip non-HTTP requests
     if (!request.url.startsWith('http')) {
         return;
     }
-    
+
     // Skip POST requests
     if (request.method !== 'GET') {
         return;
     }
-    
+
     // Apply different caching strategies based on resource type
     if (NETWORK_FIRST.some(pattern => request.url.includes(pattern))) {
         event.respondWith(networkFirst(request));
@@ -122,12 +122,12 @@ self.addEventListener('fetch', event => {
 async function networkFirst(request) {
     try {
         const networkResponse = await fetch(request);
-        
+
         if (networkResponse.ok) {
             const cache = await caches.open(DYNAMIC_CACHE);
             cache.put(request, networkResponse.clone());
         }
-        
+
         return networkResponse;
     } catch (error) {
         const cachedResponse = await caches.match(request);
@@ -138,19 +138,19 @@ async function networkFirst(request) {
 // Cache first strategy (for static assets)
 async function cacheFirst(request) {
     const cachedResponse = await caches.match(request);
-    
+
     if (cachedResponse) {
         return cachedResponse;
     }
-    
+
     try {
         const networkResponse = await fetch(request);
-        
+
         if (networkResponse.ok) {
             const cache = await caches.open(STATIC_CACHE);
             cache.put(request, networkResponse.clone());
         }
-        
+
         return networkResponse;
     } catch (error) {
         throw error;
@@ -161,7 +161,7 @@ async function cacheFirst(request) {
 async function documentStrategy(request) {
     try {
         const networkResponse = await fetch(request);
-        
+
         if (networkResponse.ok) {
             const cache = await caches.open(DYNAMIC_CACHE);
             cache.put(request, networkResponse.clone());
@@ -170,23 +170,23 @@ async function documentStrategy(request) {
     } catch (error) {
         // Network failed, try cache
     }
-    
+
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
         return cachedResponse;
     }
-    
+
     // Fallback to enhanced index
-    return caches.match('/index-enhanced.html') || 
-           caches.match('/') ||
-           new Response(`
+    return caches.match('/index-enhanced.html') ||
+        caches.match('/') ||
+        new Response(`
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <title>Aetherra - Offline</title>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <style>
-                        body { 
+                        body {
                             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                             background: linear-gradient(135deg, #0891b2, #8b5cf6);
                             color: white;
@@ -211,20 +211,20 @@ async function documentStrategy(request) {
                 </body>
                 </html>
             `, {
-                headers: { 'Content-Type': 'text/html' }
-            });
+            headers: { 'Content-Type': 'text/html' }
+        });
 }
 
 // Generic strategy (for other resources)
 async function genericStrategy(request) {
     try {
         const networkResponse = await fetch(request);
-        
+
         if (networkResponse.ok) {
             const cache = await caches.open(DYNAMIC_CACHE);
             cache.put(request, networkResponse.clone());
         }
-        
+
         return networkResponse;
     } catch (error) {
         const cachedResponse = await caches.match(request);

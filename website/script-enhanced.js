@@ -1,7 +1,7 @@
 // Enhanced Aetherra Project Website JavaScript
 // Advanced interactive features for the AI-native development environment showcase
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Initialize all enhanced features
     initializeNavigation();
     initializeHeroAnimations();
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeScrollAnimations();
     initializeInteractiveElements();
     initializeServiceWorker();
-    
+
     console.log('🚀 Aetherra Enhanced Website Loaded');
 });
 
@@ -28,7 +28,7 @@ function initializeNavigation() {
     // Scroll-based navbar styling
     window.addEventListener('scroll', () => {
         const currentScrollY = window.scrollY;
-        
+
         if (currentScrollY > 100) {
             navbar.classList.add('navbar-scrolled');
         } else {
@@ -41,7 +41,7 @@ function initializeNavigation() {
         } else {
             navbar.classList.remove('navbar-hidden');
         }
-        
+
         lastScrollY = currentScrollY;
     });
 
@@ -53,18 +53,18 @@ function initializeNavigation() {
 
     // Smooth scrolling for navigation links
     document.querySelectorAll('.nav-link[href^="#"]').forEach(link => {
-        link.addEventListener('click', function(e) {
+        link.addEventListener('click', function (e) {
             e.preventDefault();
             const targetId = this.getAttribute('href');
             const targetElement = document.querySelector(targetId);
-            
+
             if (targetElement) {
                 const offsetTop = targetElement.offsetTop - 80;
                 window.scrollTo({
                     top: offsetTop,
                     behavior: 'smooth'
                 });
-                
+
                 // Close mobile menu if open
                 navLinks.classList.remove('nav-links-active');
                 navToggle.classList.remove('nav-toggle-active');
@@ -84,7 +84,7 @@ function initializeHeroAnimations() {
         const text = heroTagline.textContent;
         heroTagline.textContent = '';
         heroTagline.style.borderRight = '2px solid var(--primary)';
-        
+
         let i = 0;
         const typeWriter = () => {
             if (i < text.length) {
@@ -97,7 +97,7 @@ function initializeHeroAnimations() {
                 }, 1000);
             }
         };
-        
+
         setTimeout(typeWriter, 2000);
     }
 
@@ -126,7 +126,7 @@ function animateCounter(element) {
     const timer = setInterval(() => {
         current += increment;
         element.textContent = Math.round(current);
-        
+
         if (current >= target) {
             element.textContent = target;
             clearInterval(timer);
@@ -154,13 +154,13 @@ function initializeDemoWindows() {
 
 function animateLauncherStartup() {
     const statusLines = document.querySelectorAll('.launcher-demo .status-line');
-    
+
     statusLines.forEach((line, index) => {
         setTimeout(() => {
             line.style.opacity = '0';
             line.style.transform = 'translateX(-10px)';
             line.style.transition = 'all 0.3s ease';
-            
+
             setTimeout(() => {
                 line.style.opacity = '1';
                 line.style.transform = 'translateX(0)';
@@ -172,7 +172,7 @@ function animateLauncherStartup() {
 function animateLyrixaResponse() {
     const typingIndicator = document.querySelector('.typing-indicator');
     const dots = document.querySelectorAll('.typing-indicator .dots span');
-    
+
     if (typingIndicator && dots.length > 0) {
         // Animate typing dots
         let dotIndex = 0;
@@ -234,7 +234,7 @@ if __name__ == '__main__':
 
 function initializeLyrixaChat() {
     // This will be used for the live demo section
-    window.showLyrixaDemo = function() {
+    window.showLyrixaDemo = function () {
         createLyrixaModal();
     };
 }
@@ -270,16 +270,16 @@ function createLyrixaModal() {
                     </div>
                 </div>
                 <div class="lyrixa-input-container">
-                    <input type="text" id="lyrixaInput" placeholder="Ask Lyrixa anything..." 
+                    <input type="text" id="lyrixaInput" placeholder="Ask Lyrixa anything..."
                            onkeypress="handleLyrixaInput(event)">
                     <button onclick="sendLyrixaMessage()">Send</button>
                 </div>
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
+
     // Add CSS for modal if not already present
     if (!document.getElementById('lyrixa-modal-styles')) {
         const styles = document.createElement('style');
@@ -298,7 +298,7 @@ function createLyrixaModal() {
                 z-index: 10000;
                 animation: fadeIn 0.3s ease;
             }
-            
+
             .lyrixa-modal-content {
                 background: var(--bg-card);
                 border-radius: var(--radius-xl);
@@ -310,7 +310,7 @@ function createLyrixaModal() {
                 box-shadow: var(--shadow-2xl);
                 border: 1px solid var(--border-primary);
             }
-            
+
             .lyrixa-modal-header {
                 display: flex;
                 align-items: center;
@@ -318,7 +318,7 @@ function createLyrixaModal() {
                 border-bottom: 1px solid var(--border-primary);
                 gap: var(--space-3);
             }
-            
+
             .lyrixa-avatar {
                 font-size: 2rem;
                 width: 50px;
@@ -329,17 +329,17 @@ function createLyrixaModal() {
                 align-items: center;
                 justify-content: center;
             }
-            
+
             .lyrixa-info h3 {
                 color: var(--text-primary);
                 margin-bottom: var(--space-1);
             }
-            
+
             .lyrixa-info p {
                 color: var(--text-muted);
                 font-size: var(--text-sm);
             }
-            
+
             .lyrixa-close {
                 margin-left: auto;
                 background: none;
@@ -351,18 +351,18 @@ function createLyrixaModal() {
                 border-radius: var(--radius-md);
                 transition: all 0.2s ease;
             }
-            
+
             .lyrixa-close:hover {
                 background: var(--bg-hover);
                 color: var(--text-primary);
             }
-            
+
             .lyrixa-chat-container {
                 flex: 1;
                 display: flex;
                 flex-direction: column;
             }
-            
+
             .lyrixa-messages {
                 flex: 1;
                 padding: var(--space-4);
@@ -371,13 +371,13 @@ function createLyrixaModal() {
                 flex-direction: column;
                 gap: var(--space-4);
             }
-            
+
             .lyrixa-message {
                 display: flex;
                 gap: var(--space-3);
                 animation: slideIn 0.3s ease;
             }
-            
+
             .lyrixa-message .message-avatar {
                 width: 32px;
                 height: 32px;
@@ -388,15 +388,15 @@ function createLyrixaModal() {
                 font-size: 1.2rem;
                 flex-shrink: 0;
             }
-            
+
             .lyrixa-message.assistant .message-avatar {
                 background: var(--gradient-primary);
             }
-            
+
             .lyrixa-message.user .message-avatar {
                 background: var(--gradient-secondary);
             }
-            
+
             .lyrixa-message .message-text {
                 background: var(--bg-tertiary);
                 padding: var(--space-3);
@@ -404,24 +404,24 @@ function createLyrixaModal() {
                 color: var(--text-primary);
                 flex: 1;
             }
-            
+
             .lyrixa-message .message-text ul {
                 margin: var(--space-2) 0;
                 padding-left: var(--space-4);
             }
-            
+
             .lyrixa-message .message-text li {
                 margin: var(--space-1) 0;
                 color: var(--text-secondary);
             }
-            
+
             .lyrixa-input-container {
                 padding: var(--space-4);
                 border-top: 1px solid var(--border-primary);
                 display: flex;
                 gap: var(--space-2);
             }
-            
+
             .lyrixa-input-container input {
                 flex: 1;
                 background: var(--bg-tertiary);
@@ -431,13 +431,13 @@ function createLyrixaModal() {
                 color: var(--text-primary);
                 font-family: var(--font-family);
             }
-            
+
             .lyrixa-input-container input:focus {
                 outline: none;
                 border-color: var(--primary);
                 box-shadow: 0 0 0 2px var(--primary)20;
             }
-            
+
             .lyrixa-input-container button {
                 background: var(--gradient-primary);
                 border: none;
@@ -448,17 +448,17 @@ function createLyrixaModal() {
                 cursor: pointer;
                 transition: all 0.2s ease;
             }
-            
+
             .lyrixa-input-container button:hover {
                 transform: translateY(-1px);
                 box-shadow: var(--shadow-lg);
             }
-            
+
             @keyframes fadeIn {
                 from { opacity: 0; }
                 to { opacity: 1; }
             }
-            
+
             @keyframes slideIn {
                 from { opacity: 0; transform: translateY(10px); }
                 to { opacity: 1; transform: translateY(0); }
@@ -466,14 +466,14 @@ function createLyrixaModal() {
         `;
         document.head.appendChild(styles);
     }
-    
+
     // Focus input
     setTimeout(() => {
         document.getElementById('lyrixaInput')?.focus();
     }, 100);
 }
 
-window.closeLyrixaModal = function() {
+window.closeLyrixaModal = function () {
     const modal = document.querySelector('.lyrixa-modal');
     if (modal) {
         modal.style.animation = 'fadeOut 0.3s ease';
@@ -481,21 +481,21 @@ window.closeLyrixaModal = function() {
     }
 };
 
-window.handleLyrixaInput = function(event) {
+window.handleLyrixaInput = function (event) {
     if (event.key === 'Enter') {
         sendLyrixaMessage();
     }
 };
 
-window.sendLyrixaMessage = function() {
+window.sendLyrixaMessage = function () {
     const input = document.getElementById('lyrixaInput');
     const messages = document.getElementById('lyrixaMessages');
-    
+
     if (!input || !messages || !input.value.trim()) return;
-    
+
     const userMessage = input.value.trim();
     input.value = '';
-    
+
     // Add user message
     const userDiv = document.createElement('div');
     userDiv.className = 'lyrixa-message user';
@@ -504,10 +504,10 @@ window.sendLyrixaMessage = function() {
         <div class="message-text">${userMessage}</div>
     `;
     messages.appendChild(userDiv);
-    
+
     // Scroll to bottom
     messages.scrollTop = messages.scrollHeight;
-    
+
     // Simulate AI response
     setTimeout(() => {
         const response = generateLyrixaResponse(userMessage);
@@ -524,10 +524,10 @@ window.sendLyrixaMessage = function() {
 
 function generateLyrixaResponse(userMessage) {
     const message = userMessage.toLowerCase();
-    
+
     if (message.includes('web') || message.includes('server')) {
         return `I'll help you create a web server! Here's a modern Flask setup with authentication:
-        
+
 <pre><code>from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager
 
@@ -544,7 +544,7 @@ if __name__ == '__main__':
 
 Would you like me to add database integration or API endpoints?`;
     }
-    
+
     if (message.includes('react') || message.includes('frontend')) {
         return `Great choice! Here's a modern React component with hooks:
 
@@ -579,7 +579,7 @@ export default Dashboard;</code></pre>
 
 Need help with state management or API integration?`;
     }
-    
+
     if (message.includes('python') || message.includes('script')) {
         return `Perfect! Here's a robust Python script template:
 
@@ -601,9 +601,9 @@ def main():
     parser = argparse.ArgumentParser(description='Your script description')
     parser.add_argument('--input', required=True, help='Input file path')
     parser.add_argument('--output', help='Output file path')
-    
+
     args = parser.parse_args()
-    
+
     # Your logic here
     logging.info(f"Processing {args.input}")
 
@@ -613,11 +613,11 @@ if __name__ == '__main__':
 
 What specific functionality would you like to add?`;
     }
-    
+
     return `I'd be happy to help with that! Based on your request about "${userMessage}", I can assist with:
 
 • Code generation and optimization
-• Architecture recommendations  
+• Architecture recommendations
 • Best practices and patterns
 • Testing strategies
 • Documentation
@@ -645,18 +645,18 @@ function initializeParticleSystem() {
     canvas.style.pointerEvents = 'none';
     canvas.style.zIndex = '-1';
     canvas.style.opacity = '0.6';
-    
+
     document.body.appendChild(canvas);
-    
+
     const ctx = canvas.getContext('2d');
     let particles = [];
     let animationId;
-    
+
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
-    
+
     function createParticle() {
         return {
             x: Math.random() * canvas.width,
@@ -668,7 +668,7 @@ function initializeParticleSystem() {
             color: Math.random() > 0.5 ? '#0891b2' : '#8b5cf6'
         };
     }
-    
+
     function initParticles() {
         particles = [];
         const particleCount = Math.min(50, Math.floor(canvas.width * canvas.height / 15000));
@@ -676,35 +676,35 @@ function initializeParticleSystem() {
             particles.push(createParticle());
         }
     }
-    
+
     function updateParticles() {
         particles.forEach(particle => {
             particle.x += particle.vx;
             particle.y += particle.vy;
-            
+
             if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
             if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
         });
     }
-    
+
     function drawParticles() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         particles.forEach(particle => {
             ctx.beginPath();
             ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
             ctx.fillStyle = particle.color + Math.floor(particle.opacity * 255).toString(16).padStart(2, '0');
             ctx.fill();
         });
-        
+
         // Draw connections
         particles.forEach((particle, i) => {
             particles.slice(i + 1).forEach(otherParticle => {
                 const distance = Math.sqrt(
-                    Math.pow(particle.x - otherParticle.x, 2) + 
+                    Math.pow(particle.x - otherParticle.x, 2) +
                     Math.pow(particle.y - otherParticle.y, 2)
                 );
-                
+
                 if (distance < 100) {
                     ctx.beginPath();
                     ctx.moveTo(particle.x, particle.y);
@@ -716,22 +716,22 @@ function initializeParticleSystem() {
             });
         });
     }
-    
+
     function animate() {
         updateParticles();
         drawParticles();
         animationId = requestAnimationFrame(animate);
     }
-    
+
     resizeCanvas();
     initParticles();
     animate();
-    
+
     window.addEventListener('resize', () => {
         resizeCanvas();
         initParticles();
     });
-    
+
     // Pause animation when page is not visible
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
@@ -752,7 +752,7 @@ function initializeScrollAnimations() {
         rootMargin: '0px',
         threshold: 0.1
     };
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -760,7 +760,7 @@ function initializeScrollAnimations() {
             }
         });
     }, observerOptions);
-    
+
     // Observe all animatable elements
     document.querySelectorAll('.feature-card, .demo-window, .phase-card, .btn').forEach(el => {
         observer.observe(el);
@@ -774,32 +774,32 @@ function initializeScrollAnimations() {
 function initializeInteractiveElements() {
     // Add click effects to buttons
     document.querySelectorAll('.btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        btn.addEventListener('click', function (e) {
             const ripple = document.createElement('span');
             ripple.className = 'btn-ripple';
-            
+
             const rect = this.getBoundingClientRect();
             const size = Math.max(rect.width, rect.height);
             const x = e.clientX - rect.left - size / 2;
             const y = e.clientY - rect.top - size / 2;
-            
+
             ripple.style.width = ripple.style.height = size + 'px';
             ripple.style.left = x + 'px';
             ripple.style.top = y + 'px';
-            
+
             this.appendChild(ripple);
-            
+
             setTimeout(() => ripple.remove(), 600);
         });
     });
-    
+
     // Add hover effects to feature cards
     document.querySelectorAll('.feature-card').forEach(card => {
-        card.addEventListener('mouseenter', function() {
+        card.addEventListener('mouseenter', function () {
             this.style.transform = 'translateY(-8px) scale(1.02)';
         });
-        
-        card.addEventListener('mouseleave', function() {
+
+        card.addEventListener('mouseleave', function () {
             this.style.transform = 'translateY(0) scale(1)';
         });
     });
@@ -830,7 +830,7 @@ function initializeServiceWorker() {
 // Throttle function for performance
 function throttle(func, limit) {
     let inThrottle;
-    return function() {
+    return function () {
         const args = arguments;
         const context = this;
         if (!inThrottle) {
@@ -844,9 +844,9 @@ function throttle(func, limit) {
 // Debounce function for performance
 function debounce(func, wait, immediate) {
     let timeout;
-    return function() {
+    return function () {
         const context = this, args = arguments;
-        const later = function() {
+        const later = function () {
             timeout = null;
             if (!immediate) func.apply(context, args);
         };
@@ -863,7 +863,7 @@ additionalStyles.textContent = `
     .animate-in {
         animation: fadeInUp 0.6s ease forwards;
     }
-    
+
     @keyframes fadeInUp {
         from {
             opacity: 0;
@@ -874,7 +874,7 @@ additionalStyles.textContent = `
             transform: translateY(0);
         }
     }
-    
+
     .btn-ripple {
         position: absolute;
         border-radius: 50%;
@@ -883,33 +883,33 @@ additionalStyles.textContent = `
         animation: ripple 0.6s linear;
         pointer-events: none;
     }
-    
+
     @keyframes ripple {
         to {
             transform: scale(4);
             opacity: 0;
         }
     }
-    
+
     .navbar-scrolled {
         background: rgba(15, 15, 35, 0.98) !important;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
         backdrop-filter: blur(10px);
     }
-    
+
     .navbar-hidden {
         transform: translateY(-100%);
         transition: transform 0.3s ease;
     }
-    
+
     .feature-card, .demo-window {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    
+
     .feature-card:hover {
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     }
-    
+
     /* Code syntax highlighting for demos */
     .code-preview pre {
         background: var(--bg-tertiary);
@@ -920,11 +920,11 @@ additionalStyles.textContent = `
         font-size: var(--text-sm);
         line-height: 1.5;
     }
-    
+
     .code-preview code {
         color: var(--text-primary);
     }
-    
+
     /* Responsive improvements */
     @media (max-width: 768px) {
         .nav-links-active {
@@ -939,15 +939,15 @@ additionalStyles.textContent = `
             box-shadow: var(--shadow-lg);
             z-index: 1000;
         }
-        
+
         .nav-toggle-active span:nth-child(1) {
             transform: rotate(45deg) translate(5px, 5px);
         }
-        
+
         .nav-toggle-active span:nth-child(2) {
             opacity: 0;
         }
-        
+
         .nav-toggle-active span:nth-child(3) {
             transform: rotate(-45deg) translate(7px, -6px);
         }
