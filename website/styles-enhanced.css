@@ -212,8 +212,8 @@ body {
 }
 
 .nav-logo {
-    width: 2rem;
-    height: 2rem;
+    width: 4rem;
+    height: 4rem;
     border-radius: var(--radius-md);
 }
 
@@ -1737,8 +1737,8 @@ body {
 }
 
 .footer-logo {
-    width: 2rem;
-    height: 2rem;
+    width: 4rem;
+    height: 4rem;
 }
 
 .footer-text h4 {
