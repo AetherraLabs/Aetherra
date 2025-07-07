@@ -42,6 +42,9 @@ class SafetyAnalysis:
         'pickle.loads', 'pickle.load',  # Unsafe deserialization
         'ctypes', 'cffi',  # Low-level system access
         'threading.Thread', 'multiprocessing',  # Threading concerns
+        'os',  # Any os import should be flagged
+        'subprocess',  # Any subprocess import should be flagged
+        'pickle',  # Any pickle import should be flagged
     }
     
     UNSAFE_PATTERNS = [
@@ -197,6 +200,19 @@ class SafetyAnalysis:
                             'line': node.lineno
                         })
                         safety_report['safety_score'] -= 25.0
+                
+                # Check for dangerous attribute calls like os.system
+                elif isinstance(node.func, ast.Attribute):
+                    if isinstance(node.func.value, ast.Name):
+                        call_pattern = f"{node.func.value.id}.{node.func.attr}"
+                        if call_pattern in ['os.system', 'os.popen', 'subprocess.call', 'subprocess.run']:
+                            safety_report['issues'].append({
+                                'type': 'SYSTEM_EXECUTION',
+                                'severity': 'CRITICAL',
+                                'message': f"System command execution detected: {call_pattern}",
+                                'line': node.lineno
+                            })
+                            safety_report['safety_score'] -= 30.0
     
     def _calculate_cyclomatic_complexity(self, tree: ast.AST) -> int:
         """Calculate cyclomatic complexity of the code."""
@@ -603,10 +619,16 @@ def should_block_plugin_execution(risk_level: str, confidence_score: float,
                                  user_override: bool = False) -> bool:
     """Determine if plugin execution should be blocked."""
     
-    if risk_level in ['CRITICAL'] and not user_override:
+    if user_override:
+        return False
+    
+    if risk_level in ['CRITICAL']:
         return True
     
-    if risk_level == 'HIGH' and confidence_score < 0.3 and not user_override:
+    if risk_level == 'HIGH':
+        return True  # Block all HIGH risk plugins
+    
+    if confidence_score < 0.3:  # Block very low confidence plugins
         return True
     
     return False
