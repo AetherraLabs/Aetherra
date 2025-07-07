@@ -5,15 +5,53 @@
 
 Launch the new Python-based Lyrixa AI Assistant for Aetherra.
 Enhanced with Aether Runtime integration for AI OS capabilities.
+Features modern dark theme GUI with Aetherra green accents.
 """
 
 import asyncio
+import json
 import sys
+from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 # Add the project root to the Python path
 project_root = Path(__file__).parent.parent  # Go up one level to project root
 sys.path.insert(0, str(project_root))
+
+# Try to import GUI dependencies
+GUI_AVAILABLE = False
+try:
+    from PySide6.QtCore import Qt, QTimer
+    from PySide6.QtGui import QColor, QTextCharFormat, QTextCursor
+    from PySide6.QtWidgets import (
+        QApplication,
+        QFrame,
+        QGridLayout,
+        QGroupBox,
+        QHBoxLayout,
+        QLabel,
+        QLineEdit,
+        QListWidget,
+        QMainWindow,
+        QProgressBar,
+        QPushButton,
+        QSplitter,
+        QStatusBar,
+        QTableWidget,
+        QTableWidgetItem,
+        QTabWidget,
+        QTextEdit,
+        QVBoxLayout,
+        QWidget,
+    )
+
+    GUI_AVAILABLE = True
+    print("✅ GUI dependencies loaded successfully")
+except ImportError as e:
+    print(f"⚠️ GUI dependencies not available: {e}")
+    print("To use GUI mode, install PySide6: pip install PySide6")
+    GUI_AVAILABLE = False
 
 try:
     from Aetherra.runtime.aether_runtime import AetherRuntime
@@ -24,8 +62,638 @@ except ImportError as e:
     sys.exit(1)
 
 
+class LyrixaLauncherGUI(QMainWindow):
+    """Modern Dark Theme GUI for Lyrixa AI Assistant"""
+
+    def __init__(self):
+        super().__init__()
+        self.lyrixa = None
+        self.aether_runtime = None
+        self.setup_ui()
+        self.setup_theme()
+        self.setup_connections()
+
+    def setup_ui(self):
+        """Setup the user interface"""
+        self.setWindowTitle("🎙️ Lyrixa AI Assistant - Aetherra OS")
+        self.setGeometry(100, 100, 1200, 800)
+
+        # Central widget
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        # Main layout
+        main_layout = QHBoxLayout(central_widget)
+
+        # Create splitter for resizable sections
+        splitter = QSplitter(Qt.Horizontal)
+        main_layout.addWidget(splitter)
+
+        # Left panel (System Overview)
+        self.setup_left_panel(splitter)
+
+        # Right panel (Chat)
+        self.setup_chat_panel(splitter)
+
+        # Set splitter proportions (70% left, 30% right)
+        splitter.setStretchFactor(0, 70)
+        splitter.setStretchFactor(1, 30)
+
+        # Status bar
+        self.setup_status_bar()
+
+        # Menu bar
+        self.setup_menu_bar()
+
+    def setup_left_panel(self, splitter):
+        """Setup the left panel with system tabs"""
+        left_widget = QWidget()
+        left_layout = QVBoxLayout(left_widget)
+
+        # System header
+        header_label = QLabel("🚀 Aetherra AI OS - System Control")
+        header_label.setObjectName("header")
+        left_layout.addWidget(header_label)
+
+        # Tab widget for system functions
+        self.system_tabs = QTabWidget()
+        left_layout.addWidget(self.system_tabs)
+
+        # Add system tabs
+        self.setup_dashboard_tab()
+        self.setup_plugins_tab()
+        self.setup_agents_tab()
+        self.setup_tasks_tab()
+        self.setup_logs_tab()
+
+        splitter.addWidget(left_widget)
+
+    def setup_chat_panel(self, splitter):
+        """Setup the dedicated chat panel"""
+        chat_widget = QWidget()
+        chat_layout = QVBoxLayout(chat_widget)
+
+        # Chat header
+        chat_header = QLabel("💬 Lyrixa AI Chat")
+        chat_header.setObjectName("chat_header")
+        chat_layout.addWidget(chat_header)
+
+        # Chat display area
+        self.chat_display = QTextEdit()
+        self.chat_display.setObjectName("chat_display")
+        self.chat_display.setReadOnly(True)
+        chat_layout.addWidget(self.chat_display)
+
+        # Chat input area
+        input_frame = QFrame()
+        input_layout = QHBoxLayout(input_frame)
+
+        self.chat_input = QLineEdit()
+        self.chat_input.setObjectName("chat_input")
+        self.chat_input.setPlaceholderText("Ask Lyrixa anything...")
+        input_layout.addWidget(self.chat_input)
+
+        self.send_button = QPushButton("Send")
+        self.send_button.setObjectName("send_button")
+        input_layout.addWidget(self.send_button)
+
+        chat_layout.addWidget(input_frame)
+
+        # Add welcome message
+        self.add_chat_message(
+            "Lyrixa",
+            "Hello! I'm Lyrixa, your AI assistant for Aetherra. How can I help you today?",
+            is_system=True,
+        )
+
+        splitter.addWidget(chat_widget)
+
+    def setup_dashboard_tab(self):
+        """Setup the system dashboard tab"""
+        dashboard_widget = QWidget()
+        dashboard_layout = QVBoxLayout(dashboard_widget)
+
+        # System health section
+        health_group = QGroupBox("System Health")
+        health_layout = QGridLayout(health_group)
+
+        # Health indicators
+        self.plugin_health = QProgressBar()
+        self.plugin_health.setValue(85)
+        health_layout.addWidget(QLabel("Plugin Health:"), 0, 0)
+        health_layout.addWidget(self.plugin_health, 0, 1)
+
+        self.memory_usage = QProgressBar()
+        self.memory_usage.setValue(60)
+        health_layout.addWidget(QLabel("Memory Usage:"), 1, 0)
+        health_layout.addWidget(self.memory_usage, 1, 1)
+
+        self.system_load = QProgressBar()
+        self.system_load.setValue(40)
+        health_layout.addWidget(QLabel("System Load:"), 2, 0)
+        health_layout.addWidget(self.system_load, 2, 1)
+
+        dashboard_layout.addWidget(health_group)
+
+        # Recent events
+        events_group = QGroupBox("Recent Events")
+        events_layout = QVBoxLayout(events_group)
+
+        self.events_list = QListWidget()
+        self.events_list.addItem("🔄 Plugin watchdog: All plugins healthy")
+        self.events_list.addItem("🧠 Memory cleanser: Cleaned 45 old entries")
+        self.events_list.addItem("🎯 Goal autopilot: 3 goals completed")
+        self.events_list.addItem("👥 Agent sync: All agents synchronized")
+        events_layout.addWidget(self.events_list)
+
+        dashboard_layout.addWidget(events_group)
+
+        self.system_tabs.addTab(dashboard_widget, "Dashboard")
+
+    def setup_plugins_tab(self):
+        """Setup the plugins management tab"""
+        plugins_widget = QWidget()
+        plugins_layout = QVBoxLayout(plugins_widget)
+
+        # Plugin list
+        self.plugins_table = QTableWidget()
+        self.plugins_table.setColumnCount(4)
+        self.plugins_table.setHorizontalHeaderLabels(
+            ["Plugin", "Status", "Health", "Actions"]
+        )
+
+        # Add sample plugins
+        plugins_data = [
+            ("goal_autopilot", "Active", "Healthy", "Disable"),
+            ("memory_cleanser", "Active", "Healthy", "Configure"),
+            ("plugin_watchdog", "Active", "Healthy", "View Logs"),
+            ("daily_reflector", "Active", "Healthy", "Run Now"),
+            ("agent_sync", "Active", "Healthy", "Sync Now"),
+        ]
+
+        self.plugins_table.setRowCount(len(plugins_data))
+        for row, (name, status, health, action) in enumerate(plugins_data):
+            self.plugins_table.setItem(row, 0, QTableWidgetItem(name))
+            self.plugins_table.setItem(row, 1, QTableWidgetItem(status))
+            self.plugins_table.setItem(row, 2, QTableWidgetItem(health))
+            self.plugins_table.setItem(row, 3, QTableWidgetItem(action))
+
+        plugins_layout.addWidget(self.plugins_table)
+
+        self.system_tabs.addTab(plugins_widget, "Plugins")
+
+    def setup_agents_tab(self):
+        """Setup the agents management tab"""
+        agents_widget = QWidget()
+        agents_layout = QVBoxLayout(agents_widget)
+
+        # Agent list
+        self.agents_table = QTableWidget()
+        self.agents_table.setColumnCount(4)
+        self.agents_table.setHorizontalHeaderLabels(
+            ["Agent", "Role", "Status", "Tasks"]
+        )
+
+        # Add sample agents
+        agents_data = [
+            ("core_agent", "Core System", "Active", "2 tasks"),
+            ("escalation_mgr", "Escalation", "Active", "1 task"),
+            ("reflection_ai", "Reflection", "Idle", "0 tasks"),
+        ]
+
+        self.agents_table.setRowCount(len(agents_data))
+        for row, (name, role, status, tasks) in enumerate(agents_data):
+            self.agents_table.setItem(row, 0, QTableWidgetItem(name))
+            self.agents_table.setItem(row, 1, QTableWidgetItem(role))
+            self.agents_table.setItem(row, 2, QTableWidgetItem(status))
+            self.agents_table.setItem(row, 3, QTableWidgetItem(tasks))
+
+        agents_layout.addWidget(self.agents_table)
+
+        self.system_tabs.addTab(agents_widget, "Agents")
+
+    def setup_tasks_tab(self):
+        """Setup the tasks monitoring tab"""
+        tasks_widget = QWidget()
+        tasks_layout = QVBoxLayout(tasks_widget)
+
+        # Task list
+        self.tasks_table = QTableWidget()
+        self.tasks_table.setColumnCount(5)
+        self.tasks_table.setHorizontalHeaderLabels(
+            ["Task", "Status", "Progress", "Started", "ETA"]
+        )
+
+        # Add sample tasks
+        tasks_data = [
+            ("Memory Analysis", "Running", 75, "14:30", "2 min"),
+            ("Plugin Health Check", "Completed", 100, "14:25", "Done"),
+            ("Goal Processing", "Running", 45, "14:32", "5 min"),
+        ]
+
+        self.tasks_table.setRowCount(len(tasks_data))
+        for row, (name, status, progress, started, eta) in enumerate(tasks_data):
+            self.tasks_table.setItem(row, 0, QTableWidgetItem(name))
+            self.tasks_table.setItem(row, 1, QTableWidgetItem(status))
+
+            # Progress bar
+            progress_bar = QProgressBar()
+            progress_bar.setValue(progress)
+            self.tasks_table.setCellWidget(row, 2, progress_bar)
+
+            self.tasks_table.setItem(row, 3, QTableWidgetItem(started))
+            self.tasks_table.setItem(row, 4, QTableWidgetItem(eta))
+
+        tasks_layout.addWidget(self.tasks_table)
+
+        self.system_tabs.addTab(tasks_widget, "Tasks")
+
+    def setup_logs_tab(self):
+        """Setup the logs viewing tab"""
+        logs_widget = QWidget()
+        logs_layout = QVBoxLayout(logs_widget)
+
+        # Log display
+        self.logs_display = QTextEdit()
+        self.logs_display.setReadOnly(True)
+        self.logs_display.setObjectName("logs_display")
+
+        # Add sample log entries
+        sample_logs = [
+            "2025-07-07 14:30:15 [INFO] Plugin watchdog: All plugins healthy",
+            "2025-07-07 14:25:32 [INFO] Memory cleanser: Cleaned 45 old entries",
+            "2025-07-07 14:20:45 [SUCCESS] Goal autopilot: Goal #123 completed",
+            "2025-07-07 14:15:12 [INFO] Agent sync: Synchronized 3 agents",
+            "2025-07-07 14:10:30 [INFO] Daily reflector: Reflection generated",
+        ]
+
+        self.logs_display.setPlainText("\n".join(sample_logs))
+
+        logs_layout.addWidget(self.logs_display)
+
+        self.system_tabs.addTab(logs_widget, "Logs")
+
+    def setup_status_bar(self):
+        """Setup the status bar"""
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+        self.status_bar.showMessage("🚀 Lyrixa AI Assistant - Ready")
+
+    def setup_menu_bar(self):
+        """Setup the menu bar"""
+        menubar = self.menuBar()
+
+        # File menu
+        file_menu = menubar.addMenu("File")
+        file_menu.addAction("New Session")
+        file_menu.addAction("Save Chat")
+        file_menu.addSeparator()
+        file_menu.addAction("Exit")
+
+        # System menu
+        system_menu = menubar.addMenu("System")
+        system_menu.addAction("Refresh Status")
+        system_menu.addAction("Run Diagnostics")
+        system_menu.addAction("Export Logs")
+
+        # Help menu
+        help_menu = menubar.addMenu("Help")
+        help_menu.addAction("About Lyrixa")
+        help_menu.addAction("Documentation")
+
+    def setup_theme(self):
+        """Apply dark theme with Aetherra green accents"""
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: #1e1e1e;
+                color: #ffffff;
+            }
+
+            QWidget {
+                background-color: #1e1e1e;
+                color: #ffffff;
+            }
+
+            QLabel#header {
+                font-size: 16px;
+                font-weight: bold;
+                color: #22c55e;
+                padding: 10px;
+                background-color: #2d2d2d;
+                border-radius: 5px;
+                margin-bottom: 10px;
+            }
+
+            QLabel#chat_header {
+                font-size: 14px;
+                font-weight: bold;
+                color: #22c55e;
+                padding: 8px;
+                background-color: #2d2d2d;
+                border-radius: 5px;
+                margin-bottom: 5px;
+            }
+
+            QTabWidget::pane {
+                border: 1px solid #3d3d3d;
+                background-color: #2d2d2d;
+            }
+
+            QTabBar::tab {
+                background-color: #3d3d3d;
+                color: #ffffff;
+                padding: 8px 16px;
+                margin-right: 2px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+            }
+
+            QTabBar::tab:selected {
+                background-color: #22c55e;
+                color: #000000;
+            }
+
+            QTabBar::tab:hover {
+                background-color: #4ade80;
+                color: #000000;
+            }
+
+            QTextEdit#chat_display {
+                background-color: #2d2d2d;
+                border: 1px solid #3d3d3d;
+                border-radius: 8px;
+                padding: 10px;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 12px;
+                line-height: 1.4;
+            }
+
+            QTextEdit#logs_display {
+                background-color: #1a1a1a;
+                border: 1px solid #3d3d3d;
+                border-radius: 8px;
+                padding: 10px;
+                font-family: 'Courier New', monospace;
+                font-size: 11px;
+                color: #cccccc;
+            }
+
+            QLineEdit#chat_input {
+                background-color: #2d2d2d;
+                border: 2px solid #3d3d3d;
+                border-radius: 20px;
+                padding: 8px 15px;
+                font-size: 12px;
+                color: #ffffff;
+            }
+
+            QLineEdit#chat_input:focus {
+                border-color: #22c55e;
+            }
+
+            QPushButton#send_button {
+                background-color: #22c55e;
+                color: #000000;
+                border: none;
+                border-radius: 20px;
+                padding: 8px 20px;
+                font-weight: bold;
+                font-size: 12px;
+            }
+
+            QPushButton#send_button:hover {
+                background-color: #4ade80;
+            }
+
+            QPushButton#send_button:pressed {
+                background-color: #16a34a;
+            }
+
+            QTableWidget {
+                background-color: #2d2d2d;
+                alternate-background-color: #3d3d3d;
+                color: #ffffff;
+                border: 1px solid #3d3d3d;
+                border-radius: 5px;
+                gridline-color: #3d3d3d;
+            }
+
+            QTableWidget::item {
+                padding: 8px;
+                border: none;
+            }
+
+            QTableWidget::item:selected {
+                background-color: #22c55e;
+                color: #000000;
+            }
+
+            QListWidget {
+                background-color: #2d2d2d;
+                border: 1px solid #3d3d3d;
+                border-radius: 5px;
+                color: #ffffff;
+                padding: 5px;
+            }
+
+            QListWidget::item {
+                padding: 5px;
+                border-bottom: 1px solid #3d3d3d;
+            }
+
+            QListWidget::item:selected {
+                background-color: #22c55e;
+                color: #000000;
+            }
+
+            QProgressBar {
+                background-color: #3d3d3d;
+                border: 1px solid #3d3d3d;
+                border-radius: 5px;
+                text-align: center;
+                color: #ffffff;
+            }
+
+            QProgressBar::chunk {
+                background-color: #22c55e;
+                border-radius: 5px;
+            }
+
+            QGroupBox {
+                font-weight: bold;
+                border: 2px solid #3d3d3d;
+                border-radius: 5px;
+                margin-top: 10px;
+                padding-top: 10px;
+            }
+
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px 0 5px;
+                color: #22c55e;
+            }
+
+            QStatusBar {
+                background-color: #3d3d3d;
+                color: #ffffff;
+                border-top: 1px solid #22c55e;
+            }
+
+            QMenuBar {
+                background-color: #2d2d2d;
+                color: #ffffff;
+                border-bottom: 1px solid #3d3d3d;
+            }
+
+            QMenuBar::item {
+                background-color: transparent;
+                padding: 4px 8px;
+            }
+
+            QMenuBar::item:selected {
+                background-color: #22c55e;
+                color: #000000;
+            }
+
+            QMenu {
+                background-color: #2d2d2d;
+                color: #ffffff;
+                border: 1px solid #3d3d3d;
+            }
+
+            QMenu::item:selected {
+                background-color: #22c55e;
+                color: #000000;
+            }
+
+            QSplitter::handle {
+                background-color: #3d3d3d;
+                width: 3px;
+            }
+
+            QSplitter::handle:hover {
+                background-color: #22c55e;
+            }
+        """)
+
+    def setup_connections(self):
+        """Setup signal connections"""
+        self.send_button.clicked.connect(self.send_chat_message)
+        self.chat_input.returnPressed.connect(self.send_chat_message)
+
+    def send_chat_message(self):
+        """Send a chat message"""
+        message = self.chat_input.text().strip()
+        if not message:
+            return
+
+        # Add user message
+        self.add_chat_message("You", message, is_user=True)
+        self.chat_input.clear()
+
+        # Simulate AI response (replace with actual Lyrixa integration)
+        self.simulate_ai_response(message)
+
+    def add_chat_message(self, sender, message, is_user=False, is_system=False):
+        """Add a message to the chat display"""
+        cursor = self.chat_display.textCursor()
+        cursor.movePosition(QTextCursor.End)
+
+        # Format message
+        if is_system:
+            formatted_message = f"🤖 {sender}: {message}\n\n"
+            color = "#22c55e"
+        elif is_user:
+            formatted_message = f"👤 {sender}: {message}\n\n"
+            color = "#4ade80"
+        else:
+            formatted_message = f"🎙️ {sender}: {message}\n\n"
+            color = "#ffffff"
+
+        # Apply formatting
+        format = QTextCharFormat()
+        format.setForeground(QColor(color))
+        cursor.setCharFormat(format)
+        cursor.insertText(formatted_message)
+
+        # Auto-scroll to bottom
+        self.chat_display.moveCursor(QTextCursor.End)
+        self.chat_display.ensureCursorVisible()
+
+    def simulate_ai_response(self, user_message):
+        """Simulate AI response (replace with actual Lyrixa integration)"""
+        # Simple responses for demonstration
+        responses = {
+            "hello": "Hello! I'm Lyrixa, your AI assistant. How can I help you today?",
+            "status": "All systems are running smoothly! Plugin health is at 85%, memory usage is optimal.",
+            "help": "I can help you with:\n• System monitoring\n• Plugin management\n• Task scheduling\n• Memory optimization\n• And much more!",
+            "plugins": "Currently monitoring 5 active plugins. All are healthy and functioning properly.",
+            "agents": "3 agents are active: core_agent, escalation_mgr, and reflection_ai.",
+        }
+
+        message_lower = user_message.lower()
+        response = "I'm processing your request. This is a demo response - full integration coming soon!"
+
+        for key, value in responses.items():
+            if key in message_lower:
+                response = value
+                break
+
+        # Add AI response with a slight delay for realism
+        QTimer.singleShot(1000, lambda: self.add_chat_message("Lyrixa", response))
+
+    async def initialize_lyrixa(self):
+        """Initialize Lyrixa AI system"""
+        try:
+            self.status_bar.showMessage("🚀 Initializing Lyrixa AI...")
+
+            # Initialize Lyrixa
+            workspace_path = str(project_root)
+            self.lyrixa = LyrixaAI(workspace_path=workspace_path)
+            await self.lyrixa.initialize()
+
+            # Initialize Aether Runtime
+            self.aether_runtime = AetherRuntime()
+            self.aether_runtime.register_context(
+                memory=getattr(self.lyrixa, "memory_system", None),
+                plugins=getattr(self.lyrixa, "plugin_manager", None),
+                agents=getattr(self.lyrixa, "agent_system", None),
+            )
+
+            self.status_bar.showMessage("✅ Lyrixa AI - Ready")
+            self.add_chat_message(
+                "System", "Lyrixa AI system initialized successfully!", is_system=True
+            )
+
+        except Exception as e:
+            self.status_bar.showMessage(f"❌ Initialization failed: {str(e)}")
+            self.add_chat_message(
+                "System", f"Failed to initialize: {str(e)}", is_system=True
+            )
+
+
+def run_gui():
+    """Run the GUI version of Lyrixa"""
+    if not GUI_AVAILABLE:
+        print("❌ GUI dependencies not available. Please install PySide6:")
+        print("pip install PySide6")
+        return False
+
+    app = QApplication(sys.argv)
+    app.setStyle("Fusion")  # Use Fusion style for better dark theme support
+
+    launcher = LyrixaLauncherGUI()
+    launcher.show()
+
+    # Initialize Lyrixa in the background
+    QTimer.singleShot(500, lambda: asyncio.create_task(launcher.initialize_lyrixa()))
+
+    return app.exec()
+
+
 async def main():
-    """Main entry point for Lyrixa AI Assistant with Aether Runtime integration"""
+    """Original console-based main function"""
     print("🎙️ Starting Lyrixa AI Assistant for Aetherra...")
     print("🚀 Initializing AI OS Kernel...")
 
@@ -315,16 +983,29 @@ Reasoning steps: {len(analysis["reasoning_steps"])}
 
 def run_lyrixa():
     """Synchronous wrapper for running Lyrixa"""
-    try:
-        if sys.platform == "win32":
-            # Windows-specific event loop policy
-            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+    import argparse
 
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("\n👋 Goodbye!")
-    except Exception as e:
-        print(f"❌ Failed to run Lyrixa: {e}")
+    parser = argparse.ArgumentParser(description="🎙️ Lyrixa AI Assistant Launcher")
+    parser.add_argument("--gui", action="store_true", help="Launch with GUI interface")
+    parser.add_argument("--console", action="store_true", help="Launch in console mode")
+    args = parser.parse_args()
+
+    # Default to GUI if available, otherwise console
+    if args.gui or (not args.console and GUI_AVAILABLE):
+        print("🎙️ Starting Lyrixa AI Assistant with GUI...")
+        return run_gui()
+    else:
+        print("🎙️ Starting Lyrixa AI Assistant in console mode...")
+        try:
+            if sys.platform == "win32":
+                # Windows-specific event loop policy
+                asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
+            asyncio.run(main())
+        except KeyboardInterrupt:
+            print("\n👋 Goodbye!")
+        except Exception as e:
+            print(f"❌ Failed to run Lyrixa: {e}")
 
 
 if __name__ == "__main__":
