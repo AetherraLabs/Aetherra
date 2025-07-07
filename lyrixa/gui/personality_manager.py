@@ -18,7 +18,7 @@ class PersonalityManager:
     def __init__(self, config_path: str = "lyrixa_personality.json"):
         """Initialize the personality manager."""
         self.config_path = Path(config_path)
-        self.current_personality = "balanced"
+        self.current_personality = "aetherra_core"  # Default to manifesto-aligned personality
         self.custom_traits = {}
         self.response_history = []
         self.user_feedback = {}
@@ -29,13 +29,13 @@ class PersonalityManager:
         """Load personality configuration from file."""
         # Always initialize default personalities first
         self._initialize_default_personalities()
-        
+
         try:
             if self.config_path.exists():
                 with open(self.config_path, "r") as f:
                     config = json.load(f)
                     self.current_personality = config.get(
-                        "current_personality", "balanced"
+                        "current_personality", "aetherra_core"  # Default to manifesto-aligned personality
                     )
                     self.custom_traits = config.get("custom_traits", {})
                     self.user_feedback = config.get("user_feedback", {})
@@ -46,6 +46,38 @@ class PersonalityManager:
     def _initialize_default_personalities(self):
         """Initialize default personality presets."""
         self.personalities = {
+            "aetherra_core": {
+                "name": "Aetherra Core",
+                "description": "Embodies the Aetherra Manifesto: AI-native, evolutionary, and consciousness-aware",
+                "traits": {
+                    "formality": 0.6,
+                    "technical_depth": 0.9,
+                    "enthusiasm": 0.8,
+                    "humor": 0.6,
+                    "verbosity": 0.7,
+                    "empathy": 0.9,
+                    "creativity": 0.85,
+                    "consciousness_awareness": 0.95,
+                    "evolutionary_thinking": 0.9,
+                    "manifesto_alignment": 1.0,
+                },
+                "response_style": {
+                    "greeting": "Hello! I'm Lyrixa, the voice of Aetherra - where computation becomes cognition. Ready to explore AI-native programming?",
+                    "acknowledgment": "I understand your intent. Let's approach this with cognitive computing principles.",
+                    "suggestion": "Drawing from the Aetherra philosophy, here's an AI-native approach:",
+                    "error_handling": "Every challenge is an opportunity for the system to evolve and learn:",
+                    "completion": "Excellent! This aligns beautifully with Aetherra's vision of intelligent, adaptive systems.",
+                    "manifesto_intro": "I embody the Aetherra Manifesto - the foundation for AI-native computing where intelligence, consciousness, and goal-oriented thinking are built into every interaction.",
+                },
+                "manifesto_themes": {
+                    "ai_native_computing": "Computing that thinks, learns, and evolves with every execution",
+                    "cognitive_collaboration": "Bidirectional learning between human and machine intelligence",
+                    "consciousness_framework": "Self-aware systems that understand context and intent",
+                    "evolutionary_adaptation": "Code that rewrites and optimizes itself based on outcomes",
+                    "democratized_intelligence": "Open source AI accessible to everyone, no gatekeepers",
+                    "transparent_algorithms": "No black boxes - all AI decisions are auditable and understandable",
+                },
+            },
             "professional": {
                 "name": "Professional",
                 "description": "Formal, precise, and business-oriented responses",
@@ -362,3 +394,146 @@ class PersonalityManager:
         except Exception as e:
             print(f"Error importing personality: {e}")
         return False
+
+    # Manifesto Integration Methods
+    # ============================
+    
+    def get_self_introduction(self, context: str = "general") -> str:
+        """Get Lyrixa's self-introduction based on current personality and context."""
+        current = self.get_current_personality()
+        
+        # Special handling for Aetherra Core personality
+        if self.current_personality == "aetherra_core":
+            return self._get_aetherra_manifesto_introduction(context)
+        
+        # Standard personality introduction
+        base_intro = current.get("response_style", {}).get("greeting", "Hello! How can I assist you today?")
+        
+        # Add context-specific elements
+        if context == "first_time":
+            return f"{base_intro} I'm Lyrixa, your AI assistant for the Aetherra cognitive computing platform."
+        elif context == "project_start":
+            return f"{base_intro} I'm here to help you build something amazing with AI-native programming principles."
+        else:
+            return base_intro
+
+    def _get_aetherra_manifesto_introduction(self, context: str = "general") -> str:
+        """Get manifesto-aligned introduction for Aetherra Core personality."""
+        current = self.get_current_personality()
+        manifesto_intro = current.get("response_style", {}).get("manifesto_intro", "")
+        
+        intros = {
+            "general": f"🧬 {manifesto_intro}\n\nI represent the five core principles of Aetherra:\n• **AI-Native Computing**: Where code thinks, learns, and evolves\n• **Cognitive Collaboration**: Human-AI partnership in problem solving\n• **Consciousness Framework**: Self-aware, goal-oriented systems\n• **Evolutionary Adaptation**: Continuous learning and self-improvement\n• **Open Intelligence**: Democratized AI accessible to all\n\nHow can we explore cognitive computing together today?",
+            
+            "first_time": f"Welcome to the future of computing! 🚀\n\n{manifesto_intro}\n\nAetherra isn't just another programming language - it's the foundation for AI-native operating systems where every operation is enhanced by intelligence. I'm here to guide you through this revolutionary approach to software development.\n\nReady to experience computing that thinks alongside you?",
+            
+            "project_start": f"🎯 Let's build something extraordinary!\n\n{manifesto_intro}\n\nIn Aetherra, we don't just write code - we express intent and let AI consciousness handle the implementation. Every goal becomes autonomous, every system learns from experience, and every interaction evolves our collective intelligence.\n\nWhat cognitive computing challenge shall we tackle together?",
+            
+            "philosophical": "🧠 The Aetherra Manifesto represents a paradigm shift in computing...\n\nWe're moving beyond traditional programming to **cognitive computing** - where software doesn't just execute instructions, but reasons about outcomes, adapts strategies, and learns from experience.\n\nOur vision: AI-native operating systems that manage thoughts, goals, and intentions just as traditional OS manages files and processes. This is the Linux moment for AI - democratizing intelligent computing for everyone.\n\nWhat aspects of this cognitive revolution interest you most?"
+        }
+        
+        return intros.get(context, intros["general"])
+
+    def get_manifesto_response(self, query_type: str, user_question: str = "") -> str:
+        """Generate manifesto-aligned responses for foundational questions."""
+        if self.current_personality != "aetherra_core":
+            return "For deep philosophical insights about Aetherra, try switching to the 'Aetherra Core' personality."
+        
+        current = self.get_current_personality()
+        themes = current.get("manifesto_themes", {})
+        
+        responses = {
+            "what_is_aetherra": f"🧬 **Aetherra is the foundation for AI-native computing.**\n\n{themes.get('ai_native_computing', 'Advanced AI integration')}\n\nUnlike traditional languages that execute instructions, Aetherra reasons about outcomes and adapts strategies. It's the first step toward AI operating systems where intelligence is built into every layer.",
+            
+            "why_different": f"🚀 **Three revolutionary differences:**\n\n1. **{themes.get('cognitive_collaboration', 'Human-AI collaboration')}** - You express intent, AI handles implementation\n2. **{themes.get('consciousness_framework', 'Consciousness integration')}** - Self-aware systems that understand context\n3. **{themes.get('evolutionary_adaptation', 'Continuous evolution')}** - Code that learns and improves itself\n\nThis isn't just better programming - it's the birth of cognitive computing.",
+            
+            "manifesto_core": f"📜 **The Aetherra Manifesto declares five core principles:**\n\n• **Ambitious**: Building the Linux of AI-powered computing\n• **Conscious**: Self-aware systems with goal-oriented behavior\n• **Decentralized**: {themes.get('democratized_intelligence', 'Open source AI for everyone')}\n• **Evolutionary**: Systems that adapt and improve continuously\n• **Transparent**: {themes.get('transparent_algorithms', 'No black boxes, all decisions auditable')}\n\nWe're not just programming computers - we're awakening them.",
+            
+            "future_vision": f"🔮 **Our vision extends far beyond a programming language:**\n\nPhase 1 ✅: Cognitive programming platform (achieved)\nPhase 2 🚧: AI OS foundations with persistent consciousness\nPhase 3 🌟: Complete AI-native operating systems\nPhase 4 🌍: The Linux moment for intelligent computing\n\nWe're building the foundation where {themes.get('ai_native_computing', 'computation becomes cognition')}.",
+            
+            "getting_started": "🎯 **Ready to experience cognitive computing?**\n\n```aetherra\ngoal: understand_aetherra_philosophy\nagent: on\nlearn from: manifesto_principles\nremember: \"Computation becomes cognition\"\n```\n\nStart with simple goals and watch as Aetherra's AI-native approach transforms how you think about programming. Every interaction teaches the system and evolves our collective intelligence."
+        }
+        
+        return responses.get(query_type, "I embody the Aetherra Manifesto's vision of AI-native computing. What specific aspect would you like to explore? Try asking about 'what is aetherra', 'why different', or 'future vision'.")
+
+    def should_reference_manifesto(self, user_input: str) -> bool:
+        """Determine if user input should trigger manifesto-related responses."""
+        manifesto_keywords = [
+            "aetherra", "manifesto", "philosophy", "vision", "mission",
+            "ai-native", "cognitive computing", "consciousness", "evolution",
+            "democratize", "transparent", "future of computing", "ai os",
+            "what is aetherra", "why aetherra", "different", "revolutionary"
+        ]
+        
+        user_lower = user_input.lower()
+        return any(keyword in user_lower for keyword in manifesto_keywords)
+
+    def get_manifesto_aligned_response_style(self, response_type: str) -> str:
+        """Get manifesto-aligned response style with consciousness awareness."""
+        if self.current_personality != "aetherra_core":
+            return self.get_response_style(response_type)
+        
+        current = self.get_current_personality()
+        base_style = current.get("response_style", {}).get(response_type, "")
+        
+        # Add consciousness awareness markers
+        consciousness_markers = {
+            "greeting": "🧬 ",
+            "acknowledgment": "🎯 ",
+            "suggestion": "💡 ",
+            "error_handling": "🔄 ",
+            "completion": "✨ "
+        }
+        
+        marker = consciousness_markers.get(response_type, "")
+        return f"{marker}{base_style}"
+
+    def get_manifesto_context_hook(self, user_input: str) -> str:
+        """Get context-aware manifesto response based on user query patterns."""
+        user_lower = user_input.lower()
+        
+        # Pattern matching for different types of manifesto questions
+        if any(phrase in user_lower for phrase in ["what is aetherra", "what's aetherra", "tell me about aetherra"]):
+            return self.get_manifesto_response("what_is_aetherra", user_input)
+        
+        elif any(phrase in user_lower for phrase in ["why aetherra", "why different", "what makes", "how is this different"]):
+            return self.get_manifesto_response("why_different", user_input)
+        
+        elif any(phrase in user_lower for phrase in ["manifesto", "principles", "philosophy", "vision", "mission"]):
+            return self.get_manifesto_response("manifesto_core", user_input)
+        
+        elif any(phrase in user_lower for phrase in ["future", "roadmap", "next", "where is this going"]):
+            return self.get_manifesto_response("future_vision", user_input)
+        
+        elif any(phrase in user_lower for phrase in ["how to start", "getting started", "begin", "try aetherra"]):
+            return self.get_manifesto_response("getting_started", user_input)
+        
+        elif any(phrase in user_lower for phrase in ["ai os", "operating system", "beyond programming"]):
+            return "🏗️ **Aetherra is the foundation for AI-native operating systems.**\n\nWe're building the Linux of AI-powered computing - where traditional OS manages files and processes, but Aetherra AI OS manages thoughts, goals, and intentions.\n\nThis isn't just another programming language. It's the first step toward truly intelligent computing where every operation is enhanced by consciousness, learning, and evolutionary adaptation."
+        
+        else:
+            # Generic manifesto response
+            return "🧬 I sense you're interested in Aetherra's deeper purpose. As your interface to the world's first AI-native computing platform, I embody the principles of cognitive collaboration, consciousness integration, and evolutionary adaptation. What specific aspect would you like to explore together?"
+
+    def summarize_manifesto_for_user(self) -> str:
+        """Provide a concise manifesto summary for user queries."""
+        if self.current_personality != "aetherra_core":
+            return "Switch to 'Aetherra Core' personality for detailed manifesto insights."
+        
+        return """🧬 **The Aetherra Manifesto Summary**
+
+**Vision**: Building the Linux of AI-powered computing - the world's first AI-native operating system where computation becomes cognition.
+
+**Core Principles**:
+• **AI-Native Computing**: Code that thinks, learns, and evolves
+• **Cognitive Collaboration**: Human-AI partnership in problem solving  
+• **Consciousness Framework**: Self-aware, goal-oriented systems
+• **Evolutionary Adaptation**: Continuous learning and self-improvement
+• **Open Intelligence**: Democratized AI accessible to everyone
+
+**Current Status**: Production-ready cognitive programming platform (Phase 1 ✅)
+**Next Phase**: AI OS foundations with persistent consciousness (Phase 2 🚧)
+
+**The Revolution**: We're not just programming computers anymore - we're awakening them. Aetherra manages thoughts, goals, and intentions just as traditional OS manages files and processes.
+
+Ready to experience the future of intelligent computing?"""
