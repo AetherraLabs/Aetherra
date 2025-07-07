@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Final test of Neuroplex launch capabilities
+Final test of Lyrixalaunch capabilities
 """
 
 import sys
@@ -17,8 +17,8 @@ def test_imports():
     print("🧪 Testing import fixes...")
 
     try:
-        print("  Testing neurocode package...")
-        print("  ✅ neurocode package imported")
+        print("  Testing Aetherra package...")
+        print("  ✅ Aetherra package imported")
 
         print("  Testing core components...")
         print("  ✅ core functions imported")
@@ -30,7 +30,7 @@ def test_imports():
         print("  ✅ aetherplex fully modular imported")
 
         print("  Testing Qt components...")
-        from neurocode.ui.components.utils.qt_imports import is_qt_available
+        from Aetherra.ui.components.utils.qt_imports import is_qt_available
 
         print("  ✅ Qt imports working")
 
@@ -39,7 +39,7 @@ def test_imports():
         else:
             print("  ⚠️ Qt backend not available")
 
-        print("\n🎉 All imports successful! Neuroplex launch is fixed.")
+        print("\n🎉 All imports successful! Lyrixalaunch is fixed.")
         return True
 
     except Exception as e:
@@ -55,7 +55,7 @@ def test_basic_gui():
     print("\n🖥️ Testing basic GUI launch...")
 
     try:
-        from neurocode.ui.components.utils.qt_imports import (
+        from Aetherra.ui.components.utils.qt_imports import (
             QApplication,
             QLabel,
             QVBoxLayout,
@@ -71,11 +71,13 @@ def test_basic_gui():
 
         # Create simple test window
         widget = QWidget()
-        widget.setWindowTitle("Neuroplex Test - SUCCESS!")
+        widget.setWindowTitle("LyrixaTest - SUCCESS!")
         widget.setGeometry(300, 300, 400, 200)
 
         layout = QVBoxLayout()
-        label = QLabel("🎉 Neuroplex imports are fixed!\n\nThe GUI system is working correctly.")
+        label = QLabel(
+            "🎉 Lyrixaimports are fixed!\n\nThe GUI system is working correctly."
+        )
         label.setStyleSheet("font-size: 14px; padding: 20px; text-align: center;")
         layout.addWidget(label)
         widget.setLayout(layout)
@@ -104,7 +106,7 @@ def test_basic_gui():
 
 
 if __name__ == "__main__":
-    print("🚀 Final Neuroplex Test")
+    print("🚀 Final LyrixaTest")
     print("=" * 50)
 
     # Test imports
@@ -116,7 +118,7 @@ if __name__ == "__main__":
 
         if gui_ok:
             print("\n✅ ALL TESTS PASSED!")
-            print("🎯 Neuroplex is ready to launch!")
+            print("🎯 Lyrixais ready to launch!")
             print("\nYou can now use:")
             print("  - python aethercode_launcher.py")
             print("  - python launchers/launch_fully_modular_aetherplex.py")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🧠 NeuroCode Multi-LLM Backend Manager
+🧠 Aetherra Multi-LLM Backend Manager
 =====================================
 
 Unified LLM interface supporting multiple backends:
@@ -11,7 +11,7 @@ Unified LLM interface supporting multiple backends:
 - Google Gemini
 - Azure OpenAI
 
-This enables NeuroCode to work with any LLM backend,
+This enables Aetherra to work with any LLM backend,
 making it truly independent and privacy-focused.
 """
 
@@ -57,7 +57,7 @@ class LLMConfig:
 
 
 class MultiLLMManager:
-    """Manages multiple LLM backends for NeuroCode"""
+    """Manages multiple LLM backends for Aetherra"""
 
     def __init__(self):
         self.providers = {}
@@ -221,7 +221,8 @@ class MultiLLMManager:
                     "context_window": config.context_window,
                     "max_tokens": config.max_tokens,
                     "supports_streaming": config.supports_streaming,
-                    "is_local": config.provider in [LLMProvider.OLLAMA, LLMProvider.LLAMACPP],
+                    "is_local": config.provider
+                    in [LLMProvider.OLLAMA, LLMProvider.LLAMACPP],
                     "requires_api_key": config.provider
                     in [LLMProvider.OPENAI, LLMProvider.ANTHROPIC, LLMProvider.GEMINI],
                 }
@@ -229,7 +230,7 @@ class MultiLLMManager:
         return models
 
     def set_model(self, model_name: str, **kwargs) -> bool:
-        """Set the current model for NeuroCode"""
+        """Set the current model for Aetherra"""
         if model_name not in self.model_configs:
             logger.error(f"❌ Model '{model_name}' not found in configurations")
             return False
@@ -285,7 +286,8 @@ class MultiLLMManager:
             "context_window": self.current_model.context_window,
             "max_tokens": self.current_model.max_tokens,
             "temperature": self.current_model.temperature,
-            "is_local": self.current_model.provider in [LLMProvider.OLLAMA, LLMProvider.LLAMACPP],
+            "is_local": self.current_model.provider
+            in [LLMProvider.OLLAMA, LLMProvider.LLAMACPP],
         }
 
     def save_configs(self):
@@ -364,7 +366,9 @@ class OllamaProvider:
         """Check if model is available in Ollama"""
         try:
             models = self.client.list()
-            available_models = [model["name"].split(":")[0] for model in models["models"]]
+            available_models = [
+                model["name"].split(":")[0] for model in models["models"]
+            ]
             return config.model_name in available_models
         except Exception:
             return False
@@ -484,7 +488,9 @@ class GeminiProvider:
             # Use direct attribute access for Google Generative AI
             model = getattr(self.genai, "GenerativeModel", None)
             if not model:
-                raise AttributeError("GenerativeModel not available in google.generativeai")
+                raise AttributeError(
+                    "GenerativeModel not available in google.generativeai"
+                )
 
             genai_model = model(config.model_name)
 
@@ -499,14 +505,16 @@ class GeminiProvider:
                         max_output_tokens=kwargs.get("max_tokens", config.max_tokens),
                     )
 
-            response = genai_model.generate_content(prompt, generation_config=generation_config)
+            response = genai_model.generate_content(
+                prompt, generation_config=generation_config
+            )
             return response.text or "No response generated"
         except Exception as e:
             raise Exception(f"Gemini error: {e}") from e
 
 
-# Global instance for NeuroCode integration
+# Global instance for Aetherra integration
 llm_manager = MultiLLMManager()
 
-# Plugin registration for NeuroCode
+# Plugin registration for Aetherra
 PLUGIN_CLASS = None  # This is a core component, not a plugin

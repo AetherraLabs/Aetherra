@@ -1,15 +1,15 @@
 # Box-Shadow Warning Fix - Summary
 
 ## Problem
-The Neuroplex AI Assistant was showing "Unknown property box-shadow" warnings because Qt's QSS (Qt Style Sheets) doesn't support the CSS `box-shadow` property.
+The LyrixaAI Assistant was showing "Unknown property box-shadow" warnings because Qt's QSS (Qt Style Sheets) doesn't support the CSS `box-shadow` property.
 
 ## Solution Applied
 Successfully removed all instances of `box-shadow` properties from the Qt stylesheets in:
-- `c:\Users\enigm\Desktop\NeuroCode Project\src\neurocode\ui\neuroplex.py`
+- `c:\Users\enigm\Desktop\aetherra Project\src\aetherra\ui\Lyrixa.py`
 
 ## Changes Made
 - **Total instances removed**: 21 `box-shadow: none !important;` properties
-- **Files modified**: 1 (neuroplex.py)
+- **Files modified**: 1 (Lyrixa.py)
 - **Methods affected**:
   - `apply_dark_theme_to_neurochat()`
   - `apply_dark_theme_recursive()`
@@ -31,13 +31,13 @@ The following files still contain `box-shadow` properties but are NOT used by th
 These files are for web use only and do not affect the desktop Qt application.
 
 ## Result
-🎉 **SUCCESS**: The "Unknown property box-shadow" warnings have been completely eliminated from the Neuroplex AI Assistant while preserving all functionality and dark theme styling.
+🎉 **SUCCESS**: The "Unknown property box-shadow" warnings have been completely eliminated from the LyrixaAI Assistant while preserving all functionality and dark theme styling.
 
 The NeuroChat interface remains:
 - ✅ Fully dark mode
 - ✅ No chat bubbles
 - ✅ Compact, professional spacing
-- ✅ Seamless embedding in Neuroplex
+- ✅ Seamless embedding in Lyrixa
 - ✅ No CSS warnings or terminal spam
 
 ## Test Status

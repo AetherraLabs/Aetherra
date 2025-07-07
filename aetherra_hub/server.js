@@ -42,7 +42,7 @@ let plugins = [
         size: '2.3MB',
         license: 'MIT',
         repository: 'https://github.com/neuro_audio_team/transcriber',
-        dependencies: ['neurocode-core>=2.0.0'],
+        dependencies: ['aetherra-core>=2.0.0'],
         featured: true
     },
     {
@@ -59,7 +59,7 @@ let plugins = [
         size: '1.8MB',
         license: 'Apache-2.0',
         repository: 'https://github.com/quantum_dev/optimizer',
-        dependencies: ['neurocode-core>=1.8.0'],
+        dependencies: ['aetherra-core>=1.8.0'],
         featured: true
     },
     {
@@ -76,7 +76,7 @@ let plugins = [
         size: '3.1MB',
         license: 'GPL-3.0',
         repository: 'https://github.com/consciousness_lab/reflector',
-        dependencies: ['neurocode-core>=2.1.0', 'neuro-analytics>=1.0.0'],
+        dependencies: ['aetherra-core>=2.1.0', 'neuro-analytics>=1.0.0'],
         featured: true
     },
     {
@@ -93,7 +93,7 @@ let plugins = [
         size: '2.7MB',
         license: 'MIT',
         repository: 'https://github.com/memory_architects/memory-palace',
-        dependencies: ['neurocode-core>=2.0.0'],
+        dependencies: ['aetherra-core>=2.0.0'],
         featured: false
     },
     {
@@ -110,7 +110,7 @@ let plugins = [
         size: '4.2MB',
         license: 'MIT',
         repository: 'https://github.com/emotional_ai/emotion-engine',
-        dependencies: ['neurocode-core>=2.0.0', 'sentiment-analyzer>=1.5.0'],
+        dependencies: ['aetherra-core>=2.0.0', 'sentiment-analyzer>=1.5.0'],
         featured: true
     },
     {
@@ -127,7 +127,7 @@ let plugins = [
         size: '5.8MB',
         license: 'Apache-2.0',
         repository: 'https://github.com/vision_systems/vision-processor',
-        dependencies: ['neurocode-core>=2.1.0', 'cv-toolkit>=2.0.0'],
+        dependencies: ['aetherra-core>=2.1.0', 'cv-toolkit>=2.0.0'],
         featured: true
     },
     {
@@ -144,7 +144,7 @@ let plugins = [
         size: '1.9MB',
         license: 'MIT',
         repository: 'https://github.com/planning_ai/goal-tracker',
-        dependencies: ['neurocode-core>=1.9.0'],
+        dependencies: ['aetherra-core>=1.9.0'],
         featured: false
     },
     {
@@ -161,7 +161,7 @@ let plugins = [
         size: '3.4MB',
         license: 'BSD-3-Clause',
         repository: 'https://github.com/learning_lab/learning-accelerator',
-        dependencies: ['neurocode-core>=2.0.0', 'ml-toolkit>=1.2.0'],
+        dependencies: ['aetherra-core>=2.0.0', 'ml-toolkit>=1.2.0'],
         featured: false
     }
 ];
@@ -456,7 +456,7 @@ app.get('/api/v1/plugins/:name/download', (req, res) => {
     });
 
     // For demo purposes, send a placeholder
-    res.send(`# ${plugin.name} v${plugin.version}\n# NeuroCode Plugin Package\n# Download simulated for demo`);
+    res.send(`# ${plugin.name} v${plugin.version}\n# aetherra Plugin Package\n# Download simulated for demo`);
 });
 
 app.get('/api/v1/plugins/:name/stats', (req, res) => {

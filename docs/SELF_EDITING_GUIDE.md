@@ -1,31 +1,31 @@
-# Neuroplex Self-Editing Capabilities
+# LyrixaSelf-Editing Capabilities
 
-Neuroplex now has the ability to read, analyze, correct, and evolve its own codebase through NeuroCode commands. This creates a closed learning loop where the system becomes a living program that rewrites and improves itself.
+Lyrixanow has the ability to read, analyze, correct, and evolve its own codebase through aetherra commands. This creates a closed learning loop where the system becomes a living program that rewrites and improves itself.
 
 ## Core Self-Editing Commands
 
 ### 1. File Loading and Analysis
-```neurocode
+```aetherra
 load "filename.py"                    # Load a file for analysis
 analyze "filename.py"                 # Deep analysis of loaded code
 ```
 
 ### 2. AI-Powered Refactoring
-```neurocode
+```aetherra
 refactor "filename.py" "target"       # Suggest improvements for specific target
 refactor "core/memory.py" "performance optimization"
 refactor "ui/neuro_ui.py" "better error handling"
 ```
 
 ### 3. Review and Apply Changes
-```neurocode
+```aetherra
 diff fix_id                          # Review proposed changes
 apply fix fix_id                     # Apply changes after review
 backup "filename.py"                 # Create backup before changes
 ```
 
 ### 4. Safety Controls
-```neurocode
+```aetherra
 set self_edit_mode on                # Enable self-editing (required for apply)
 set self_edit_mode off               # Disable for safety
 ```
@@ -34,7 +34,7 @@ set self_edit_mode off               # Disable for safety
 
 The system uses its memory to justify self-editing decisions:
 
-```neurocode
+```aetherra
 # Pattern-based suggestions
 if memory.pattern("recurring plugin error"):
     assistant: improve plugin loading logic
@@ -53,7 +53,7 @@ self edit opportunities               # Analyze memory for self-editing opportun
 
 ## Example Workflow
 
-```neurocode
+```aetherra
 # Step 1: Load and analyze code
 load "demo_code.py"
 analyze "demo_code.py"
@@ -88,4 +88,4 @@ remember("Improved demo_code.py with better iteration patterns", tags="refactor,
 - Approval workflows with multiple options
 - Integration with version control systems
 
-This self-editing capability transforms Neuroplex from a static system into a living, evolving codebase that learns and improves itself based on usage patterns and accumulated knowledge.
+This self-editing capability transforms Lyrixafrom a static system into a living, evolving codebase that learns and improves itself based on usage patterns and accumulated knowledge.

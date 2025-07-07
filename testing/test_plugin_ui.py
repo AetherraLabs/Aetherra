@@ -36,7 +36,7 @@ def test_plugin_manager_integration():
         print()
 
         # Test UI plugin manager
-#         print("Testing UI Plugin Manager integration...")
+        #         print("Testing UI Plugin Manager integration...")
 
         # Mock Qt imports for testing
         class MockWidget:
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     success = test_plugin_manager_integration()
     if success:
         print(
-            "\n🎉 All tests passed! The plugin manager should now show your plugins in Neuroplex."
+            "\n🎉 All tests passed! The plugin manager should now show your plugins in Lyrixa."
         )
     else:
         print("\n💥 Tests failed. There may be integration issues.")

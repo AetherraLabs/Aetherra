@@ -12,7 +12,7 @@ from core.plugin_manager import register_plugin
     description="Get comprehensive system status and performance information",
     capabilities=["system_monitoring", "performance", "diagnostics"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="system",
     dependencies=["psutil"],
     intent_purpose="system monitoring and status reporting",
@@ -21,7 +21,7 @@ from core.plugin_manager import register_plugin
         "checking system health",
         "monitoring performance",
         "diagnosing issues",
-        "system resource analysis"
+        "system resource analysis",
     ],
     ai_description="Provides comprehensive system status including CPU, memory, disk usage, and platform information.",
     example_usage="plugin: system_status",
@@ -43,7 +43,7 @@ def system_status() -> Dict[str, Any]:
         try:
             cpu_percent = psutil.cpu_percent(interval=1)
             memory = psutil.virtual_memory()
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
 
             performance = {
                 "cpu_usage_percent": cpu_percent,
@@ -52,13 +52,13 @@ def system_status() -> Dict[str, Any]:
                 "memory_percent": memory.percent,
                 "disk_total_gb": round(disk.total / (1024**3), 2),
                 "disk_used_gb": round(disk.used / (1024**3), 2),
-                "disk_percent": round((disk.used / disk.total) * 100, 1)
+                "disk_percent": round((disk.used / disk.total) * 100, 1),
             }
         except ImportError:
             performance = {
                 "cpu_usage_percent": "N/A (psutil not available)",
                 "memory_info": "N/A (psutil not available)",
-                "disk_info": "N/A (psutil not available)"
+                "disk_info": "N/A (psutil not available)",
             }
 
         return {
@@ -66,7 +66,7 @@ def system_status() -> Dict[str, Any]:
             "system_info": system_info,
             "performance": performance,
             "timestamp": "2025-07-01T15:30:00Z",
-            "neurocode_status": "Active and running"
+            "Aetherra_status": "Active and running",
         }
 
     except Exception as e:
@@ -78,10 +78,10 @@ def system_status() -> Dict[str, Any]:
     description="Get basic system and platform information",
     capabilities=["system_info", "platform", "environment"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="system",
     example_usage="plugin: system_info",
-    ai_description="Provides basic system and platform information"
+    ai_description="Provides basic system and platform information",
 )
 def system_info() -> Dict[str, Any]:
     """Get basic system information"""
@@ -94,7 +94,7 @@ def system_info() -> Dict[str, Any]:
             "machine": platform.machine(),
             "processor": platform.processor(),
             "python_version": platform.python_version(),
-            "platform": platform.platform()
+            "platform": platform.platform(),
         }
 
     except Exception as e:

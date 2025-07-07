@@ -87,7 +87,7 @@ def analyze_core_modules():
         "core/functions.py": "AetherraFunctions",
         "core/agent.py": "AetherraAgent",
         "core/chat_router.py": "AetherraChatRouter",
-        "ui/aetherplex_gui.py": "NeuroplexGUI",
+        "ui/aetherplex_gui.py": "LyrixaGUI",
     }
 
     module_status = {}
@@ -166,7 +166,9 @@ def analyze_vscode_configuration():
                     config_data = json.load(f)
 
                 status["status"] = "✅ Valid"
-                status["keys"] = list(config_data.keys()) if isinstance(config_data, dict) else []
+                status["keys"] = (
+                    list(config_data.keys()) if isinstance(config_data, dict) else []
+                )
 
                 # Check important settings for settings.json
                 if config_file == ".vscode/settings.json":
@@ -280,7 +282,9 @@ def count_and_categorize_files():
     for root, dirs, files in os.walk("."):
         # Skip certain directories
         dirs[:] = [
-            d for d in dirs if d not in {".git", "__pycache__", "venv", ".venv", "node_modules"}
+            d
+            for d in dirs
+            if d not in {".git", "__pycache__", "venv", ".venv", "node_modules"}
         ]
 
         for file in files:
@@ -379,7 +383,7 @@ def main():
                 print(f"  • {check_name}: Review the detailed output above")
 
     # Save detailed report
-    report_path = Path("NEUROPLEX_ANALYSIS_REPORT.md")
+    report_path = Path("Lyrixa_ANALYSIS_REPORT.md")
     with open(report_path, "w", encoding="utf-8") as f:
         f.write("# AetherraCode Workspace Analysis Report\n\n")
         f.write(

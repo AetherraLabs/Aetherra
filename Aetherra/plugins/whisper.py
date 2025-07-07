@@ -151,7 +151,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
     category="audio",
     dependencies=[],
 )
-def voice_to_neurocode(voice_input):
+def voice_to_aetherra(voice_input):
     """Convert voice input to AetherraCode commands"""
     voice_input = voice_input.lower().strip()
 

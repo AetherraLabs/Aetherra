@@ -54,7 +54,7 @@ def test_basic_functionality():
         print(f"⚠️ Core Modules: {core_exists}/{len(core_files)} modules present")
         test_results["core_modules"] = core_exists > len(core_files) // 2
 
-    # Test 3: Neuroplex launchers
+    # Test 3: Lyrixalaunchers
     aetherplex_files = ["aetherplex.bat", "aetherplex"]
     aetherplex_exists = 0
 
@@ -63,10 +63,10 @@ def test_basic_functionality():
             aetherplex_exists += 1
 
     if aetherplex_exists > 0:
-        print(f"✅ Neuroplex Launchers: {aetherplex_exists} launcher(s) found")
+        print(f"✅ LyrixaLaunchers: {aetherplex_exists} launcher(s) found")
         test_results["aetherplex"] = True
     else:
-        print("❌ Neuroplex Launchers: No launchers found")
+        print("❌ LyrixaLaunchers: No launchers found")
         test_results["aetherplex"] = False
 
     # Test 4: Data files

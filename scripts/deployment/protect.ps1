@@ -1,23 +1,23 @@
-# NeuroCode Project Protection Manager
+# Aetherra Project Protection Manager
 # PowerShell script for managing project file protection
 
 param(
-    [Parameter(Position=0)]
+    [Parameter(Position = 0)]
     [string]$Command = "help",
-    
-    [Parameter(Position=1)]
+
+    [Parameter(Position = 1)]
     [string]$FilePath = "",
-    
-    [Parameter(Position=2)]
+
+    [Parameter(Position = 2)]
     [string]$Reason = "Manual operation"
 )
 
 function Show-Help {
-    Write-Host "NeuroCode Project Protection Manager" -ForegroundColor Cyan
+    Write-Host "Aetherra Project Protection Manager" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "Commands:" -ForegroundColor Yellow
     Write-Host "  status           - Show protection status"
-    Write-Host "  backup           - Create backups of critical files" 
+    Write-Host "  backup           - Create backups of critical files"
     Write-Host "  restore <file>   - Restore file from backup"
     Write-Host "  enable           - Enable file protection"
     Write-Host "  disable          - Disable file protection"
@@ -34,11 +34,13 @@ function Test-PythonAvailable {
     try {
         $null = Get-Command python -ErrorAction Stop
         return $true
-    } catch {
+    }
+    catch {
         try {
             $null = Get-Command python3 -ErrorAction Stop
             return $true
-        } catch {
+        }
+        catch {
             Write-Host "Python not found. Please install Python 3.8+." -ForegroundColor Red
             return $false
         }
@@ -49,33 +51,35 @@ function Get-PythonCommand {
     try {
         $null = Get-Command python -ErrorAction Stop
         return "python"
-    } catch {
+    }
+    catch {
         return "python3"
     }
 }
 
 function Invoke-ProtectionCommand {
     param([string]$Cmd, [string]$File = "", [string]$ReasonText = "")
-    
+
     if (-not (Test-PythonAvailable)) {
         return $false
     }
-    
+
     $python = Get-PythonCommand
     $args = @("scripts\project_protection.py", $Cmd)
-    
+
     if ($File -ne "") {
         $args += $File
     }
-    
+
     if ($ReasonText -ne "") {
         $args += $ReasonText
     }
-    
+
     try {
         & $python @args
         return $true
-    } catch {
+    }
+    catch {
         Write-Host "Error running protection command: $_" -ForegroundColor Red
         return $false
     }
@@ -86,17 +90,17 @@ switch ($Command.ToLower()) {
     "help" {
         Show-Help
     }
-    
+
     "status" {
         Write-Host "Checking project protection status..." -ForegroundColor Cyan
         Invoke-ProtectionCommand "status"
     }
-    
+
     "backup" {
         Write-Host "Creating backups of critical files..." -ForegroundColor Cyan
         Invoke-ProtectionCommand "backup"
     }
-    
+
     "restore" {
         if ($FilePath -eq "") {
             Write-Host "Please specify a file to restore" -ForegroundColor Red
@@ -106,7 +110,7 @@ switch ($Command.ToLower()) {
         Write-Host "Restoring file: $FilePath" -ForegroundColor Cyan
         Invoke-ProtectionCommand "restore" $FilePath
     }
-    
+
     "enable" {
         Write-Host "Enabling project protection..." -ForegroundColor Green
         if (Test-Path ".project_protection.json") {
@@ -114,16 +118,17 @@ switch ($Command.ToLower()) {
             $config.protection_enabled = $true
             $config | ConvertTo-Json -Depth 10 | Set-Content ".project_protection.json"
             Write-Host "Protection enabled" -ForegroundColor Green
-        } else {
+        }
+        else {
             Write-Host "Protection config not found. Run 'install' first." -ForegroundColor Yellow
         }
     }
-    
+
     "disable" {
         Write-Host "Disabling project protection..." -ForegroundColor Yellow
         Write-Host "Are you sure? This will disable all file protection safeguards." -ForegroundColor Red
         $confirm = Read-Host "Type 'yes' to confirm"
-        
+
         if ($confirm -eq "yes") {
             if (Test-Path ".project_protection.json") {
                 $config = Get-Content ".project_protection.json" | ConvertFrom-Json
@@ -131,11 +136,12 @@ switch ($Command.ToLower()) {
                 $config | ConvertTo-Json -Depth 10 | Set-Content ".project_protection.json"
                 Write-Host "Protection disabled" -ForegroundColor Yellow
             }
-        } else {
+        }
+        else {
             Write-Host "Operation cancelled" -ForegroundColor Gray
         }
     }
-    
+
     default {
         Write-Host "Unknown command: $Command" -ForegroundColor Red
         Show-Help

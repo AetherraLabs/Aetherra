@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Standard Library - Whisper Plugin
-Built-in plugin for NeuroCode to handle audio transcription
+🧬 Aetherra Standard Library - Whisper Plugin
+Built-in plugin for Aetherra to handle audio transcription
 """
 
 import os
 from datetime import datetime
 
 class WhisperPlugin:
-    """Audio transcription capabilities for NeuroCode"""
+    """Audio transcription capabilities for Aetherra"""
 
     def __init__(self):
         self.name = "whisper"
@@ -88,7 +88,7 @@ class WhisperPlugin:
         }
 
     def execute_action(self, action, memory_system=None, **kwargs):
-        """Execute whisper actions for NeuroCode"""
+        """Execute whisper actions for Aetherra"""
         action_parts = action.split()
         main_action = action_parts[0] if action_parts else action
 

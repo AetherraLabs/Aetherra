@@ -14,12 +14,12 @@
 
 ### Final Structure Verification
 ```
-NeuroCode Language Project/
+Aetherra Language Project/
 ├── 📁 core/                    # Core interpreter and AI engine
 ├── 📁 ui/                      # Modern GUI interface  
 ├── 📁 plugins/                 # Plugin ecosystem
 ├── 📁 stdlib/                  # Standard library
-├── 📁 examples/                # Example NeuroCode programs
+├── 📁 examples/                # Example Aetherra programs
 ├── 📁 docs/                    # Documentation
 ├── 📁 .github/                 # GitHub templates
 ├── 📁 backups/                 # Runtime files backup

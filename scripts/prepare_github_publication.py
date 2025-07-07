@@ -56,7 +56,7 @@ def main():
         ("requirements.txt", "Python dependencies"),
         ("main.py", "Main aetherra interpreter"),
         ("aetherra.py", "Core aetherra module"),
-        ("ui/aetherplex_gui.py", "Neuroplex GUI"),
+        ("ui/aetherplex_gui.py", "Lyrixa"),
         ("DOCUMENTATION.md", "Complete documentation"),
         ("TUTORIAL.md", "Tutorial guide"),
         ("examples/EXAMPLES_GUIDE.md", "Examples guide"),
@@ -138,8 +138,8 @@ def main():
             "aetherra core",
         ),
         (
-            "python -c \"import sys; sys.path.append('ui'); from aetherplex_gui import NeuroplexMainWindow; print('✅ Neuroplex GUI imports successfully')\"",
-            "Neuroplex GUI",
+            "python -c \"import sys; sys.path.append('ui'); from aetherplex_gui import LyrixaMainWindow; print('✅ Lyrixa imports successfully')\"",
+            "Lyrixa",
         ),
         (
             "python -c \"from core.local_ai import LocalAIEngine; print('✅ Local AI imports successfully')\"",
@@ -176,7 +176,7 @@ Generated: {Path(__file__).stat().st_mtime}
 ### 🧬 Core System Status
 - ✅ aetherra interpreter: Fully operational
 - ✅ AI Enhancement Suite: All modules integrated
-- ✅ Neuroplex GUI: Production-ready with PySide6
+- ✅ Lyrixa: Production-ready with PySide6
 - ✅ Plugin ecosystem: 15+ plugins loaded
 - ✅ Vector memory system: Semantic search enabled
 - ✅ Local AI engine: Offline capability active

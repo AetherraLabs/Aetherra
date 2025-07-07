@@ -1,4 +1,4 @@
-# NeuroCode - Production-Ready Dependencies with Conflict Resolution
+# aetherra - Production-Ready Dependencies with Conflict Resolution
 # Carefully curated versions to avoid protobuf/gRPC conflicts
 
 # === CORE AI FUNCTIONALITY ===

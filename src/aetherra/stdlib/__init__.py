@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Standard Library Manager
-Manages built-in plugins for NeuroCode
+🧬 Aetherra Standard Library Manager
+Manages built-in plugins for Aetherra
 """
 
 from pathlib import Path
 
 
 class StandardLibraryManager:
-    """Manages NeuroCode standard library plugins"""
+    """Manages Aetherra standard library plugins"""
 
     def __init__(self):
         self.stdlib_path = Path(__file__).parent
@@ -86,7 +86,9 @@ class StandardLibraryManager:
         return {
             "name": plugin.name,
             "description": plugin.description,
-            "available_actions": getattr(plugin, "available_actions", ["execute_action"]),
+            "available_actions": getattr(
+                plugin, "available_actions", ["execute_action"]
+            ),
             "loaded": True,
         }
 

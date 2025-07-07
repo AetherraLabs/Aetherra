@@ -30,7 +30,7 @@
 
 ## Files Modified
 
-1. `src/neurocode/ui/neuroplex.py`
+1. `src/aetherra/ui/Lyrixa.py`
    - Updated QTabWidget pane styling
    - Modified QTabBar tab styling
    - Updated QTextEdit styling

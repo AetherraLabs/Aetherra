@@ -3,10 +3,10 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "neurocode"
+name = "aetherra"
 version = "1.0.0"
-description = "NeuroCode - The First AI-Native Programming Language"
-authors = [{name = "NeuroCode Team", email = "info@neurocode.dev"}]
+description = "aetherra - The First AI-Native Programming Language"
+authors = [{name = "aetherra Team", email = "info@aetherra.dev"}]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.8"
@@ -32,9 +32,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Zyonic88/neurocode"
-Repository = "https://github.com/Zyonic88/neurocode"
-Issues = "https://github.com/Zyonic88/neurocode/issues"
+Homepage = "https://github.com/Zyonic88/aetherra"
+Repository = "https://github.com/Zyonic88/aetherra"
+Issues = "https://github.com/Zyonic88/aetherra/issues"
 
 [project.optional-dependencies]
 ai = [
@@ -65,7 +65,7 @@ dev = [
     "ruff>=0.0.280",
 ]
 all = [
-    "neurocode[ai,enhanced,gui]",
+    "aetherra[ai,enhanced,gui]",
 ]
 
 [tool.ruff]

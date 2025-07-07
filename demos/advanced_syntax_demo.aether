@@ -1,4 +1,4 @@
-# Advanced Syntax Demo for Neuroplex
+# Advanced Syntax Demo for Lyrixa
 # Demonstrates the new user-defined functions, loops, conditionals, and simulation features
 
 # ==== 1. USER-DEFINED FUNCTIONS ====
@@ -104,16 +104,16 @@ end
 simulate agent for 24h
     goal: optimize system performance priority: high
     agent: on
-    
+
     for component in ["cpu", "memory", "disk", "network"]
         run system_health_check(component)
-        
+
         if memory.pattern(component + "_issue", frequency="daily")
             suggest fix for component + " optimization"
             optimize for component + " performance"
         end
     end
-    
+
     autonomous monitoring
     reflective loop
     meta: autonomous_improver full_scan
@@ -124,13 +124,13 @@ simulate emergency_response
     if memory.pattern("critical_failure")
         agent: on
         goal: restore system stability priority: critical
-        
+
         for system in ["database", "api", "frontend", "backend"]
             backup system + "_config"
             analyze system + "_logs"
             suggest fix for system + " issues"
         end
-        
+
         meta: system_optimizer emergency_mode
         remember("Emergency protocol executed") as "emergency"
     end
@@ -139,18 +139,18 @@ end
 # Simulate learning from multiple data sources
 simulate data_learning_pipeline
     data_sources = ["logs", "metrics", "events", "alerts"]
-    
+
     for source in data_sources
         learn from source + ".json"
         detect recurring patterns min_frequency=3 timeframe=7
-        
+
         patterns_found = pattern frequency "anomaly" timeframe=7
         if patterns_found > 5
             run analyze_logs("anomaly")
             suggest fix for "anomaly detection"
         end
     end
-    
+
     remember("Data learning pipeline simulation complete") as "simulation"
 end
 
@@ -159,13 +159,13 @@ end
 # Complex workflow combining all features
 define advanced_system_maintenance()
     remember("Starting advanced maintenance workflow") as "maintenance"
-    
+
     # Phase 1: Data Collection
     for data_type in ["performance", "errors", "usage"]
         learn from data_type + "_metrics.json"
         pattern frequency data_type timeframe=30
     end
-    
+
     # Phase 2: Analysis and Decision Making
     critical_issues = 0
     for issue_type in ["memory_leak", "disk_full", "high_cpu"]
@@ -174,12 +174,12 @@ define advanced_system_maintenance()
             suggest fix for issue_type
         end
     end
-    
+
     # Phase 3: Conditional Response
     if critical_issues > 2
         agent: on
         goal: resolve critical system issues priority: high
-        
+
         while critical_issues > 0
             autonomous monitoring
             meta: system_optimizer aggressive_mode
@@ -190,7 +190,7 @@ define advanced_system_maintenance()
         remember("System health is acceptable") as "status"
         run optimize_network()
     end
-    
+
     # Phase 4: Reporting and Memory Update
     reflective loop
     remember("Advanced maintenance completed") as "maintenance"
@@ -206,7 +206,7 @@ define code_quality_check(filename)
     load filename
     analyze filename
     refactor filename "code_quality"
-    
+
     if memory.pattern("refactor_success")
         remember("Code quality improved for " + filename) as "code_quality"
     else
@@ -219,7 +219,7 @@ define comprehensive_analysis()
     meta: memory_analyzer detailed_scan
     meta: system_optimizer performance_check
     meta: goal_tracker analyze
-    
+
     for plugin_result in ["memory_health", "system_performance", "goal_progress"]
         if memory.pattern(plugin_result + "_issue")
             suggest fix for plugin_result
@@ -231,19 +231,19 @@ end
 define goal_driven_optimization()
     goal: achieve 99% uptime priority: high metrics: uptime=99,response_time=100
     agent: on
-    
+
     monitoring_cycles = 0
     while monitoring_cycles < 24 and goal_progress < 95
         autonomous monitoring
         reflective loop
         monitoring_cycles = monitoring_cycles + 1
-        
+
         if memory.pattern("downtime", frequency="hourly")
             run system_health_check("availability")
             optimize for "uptime"
         end
     end
-    
+
     check goal
     remember("Goal-driven optimization cycle completed") as "goal_optimization"
 end

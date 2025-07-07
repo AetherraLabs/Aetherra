@@ -10,7 +10,7 @@ from core.plugin_manager import register_plugin
     description="Safely evaluate mathematical expressions with basic operations",
     capabilities=["arithmetic", "expression_evaluation", "safe_math"],
     version="1.1.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="mathematics",
     dependencies=["math", "re"],
     # Enhanced intent-based discovery
@@ -49,7 +49,7 @@ def calculate(expression):
     description="Apply mathematical functions like sqrt, sin, cos, etc.",
     capabilities=["trigonometry", "square_root", "mathematical_functions"],
     version="1.1.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="mathematics",
     dependencies=["math"],
     # Enhanced intent-based discovery
@@ -101,7 +101,7 @@ def math_function(func_name, value):
     description="Calculate basic statistics for a list of numbers",
     capabilities=["statistics", "mean", "median", "standard_deviation", "data_analysis"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="mathematics",
     dependencies=["math"],
     # Enhanced intent-based discovery

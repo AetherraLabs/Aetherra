@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script for the upgraded Neuroplex chat system
+Test script for the upgraded Aetherra chat system
 """
 
 
@@ -24,7 +24,7 @@ def test_chat_router(demo_mode=True):
             "Create a function to analyze data patterns",
         ]
 
-        print(f"\n🧬 Testing Neuroplex Chat Upgrade ({mode_str})")
+        print(f"\n🧬 Testing Aetherra Chat Upgrade ({mode_str})")
         print("=" * 60)
 
         for i, message in enumerate(test_messages, 1):
@@ -69,7 +69,7 @@ def test_chat_router(demo_mode=True):
 
 
 if __name__ == "__main__":
-    print("🧬 Neuroplex Chat System Upgrade Test")
+    print("🧬 Aetherra Chat System Upgrade Test")
     print("=" * 50)
 
     # Test in demo mode first (no AI calls)

@@ -21,7 +21,7 @@ from lark import Lark, Token, Transformer, Tree
 from lark.exceptions import LexError, ParseError
 
 # Production AetherraCode Grammar Definition - Conflict-Free
-NEUROCODE_PRODUCTION_GRAMMAR = r"""
+aetherra_PRODUCTION_GRAMMAR = r"""
     ?start: program
 
     program: statement*
@@ -192,7 +192,9 @@ class AetherraCodeAST:
 class AetherraCodeProductionTransformer(Transformer):
     """Production transformer for AetherraCode AST generation"""
 
-    def _extract_value(self, item: Union[Token, Tree, AetherraCodeAST, str, Any]) -> str:
+    def _extract_value(
+        self, item: Union[Token, Tree, AetherraCodeAST, str, Any]
+    ) -> str:
         """Extract string value from various node types"""
         if isinstance(item, Token):
             return str(item.value).strip("\"'")
@@ -325,11 +327,16 @@ class AetherraCodeProductionTransformer(Transformer):
         if_block = args[1] if len(args) > 1 else []
         else_block = args[2] if len(args) > 2 else None
 
-        children = if_block if isinstance(if_block, list) else [if_block] if if_block else []
+        children = (
+            if_block if isinstance(if_block, list) else [if_block] if if_block else []
+        )
         if else_block:
             children.append(
                 AetherraCodeAST(
-                    "else", children=else_block if isinstance(else_block, list) else [else_block]
+                    "else",
+                    children=else_block
+                    if isinstance(else_block, list)
+                    else [else_block],
                 )
             )
 
@@ -413,7 +420,9 @@ class AetherraCodeProductionTransformer(Transformer):
             if i + 1 < len(args):
                 op = self._extract_value(args[i])
                 right = args[i + 1]
-                result = AetherraCodeAST("binary_op", value=op, children=[result, right])
+                result = AetherraCodeAST(
+                    "binary_op", value=op, children=[result, right]
+                )
                 i += 2
             else:
                 break
@@ -430,7 +439,9 @@ class AetherraCodeProductionTransformer(Transformer):
             if i + 1 < len(args):
                 op = self._extract_value(args[i])
                 right = args[i + 1]
-                result = AetherraCodeAST("binary_op", value=op, children=[result, right])
+                result = AetherraCodeAST(
+                    "binary_op", value=op, children=[result, right]
+                )
                 i += 2
             else:
                 break
@@ -458,7 +469,11 @@ class AetherraCodeProductionTransformer(Transformer):
         return AetherraCodeAST(
             "method_call",
             value=f"{object_name}.{method_name}",
-            children=arguments if isinstance(arguments, list) else [arguments] if arguments else [],
+            children=arguments
+            if isinstance(arguments, list)
+            else [arguments]
+            if arguments
+            else [],
             metadata={"object": object_name, "method": method_name},
         )
 
@@ -467,7 +482,11 @@ class AetherraCodeProductionTransformer(Transformer):
         elements = args[0] if args else []
         return AetherraCodeAST(
             "array",
-            children=elements if isinstance(elements, list) else [elements] if elements else [],
+            children=elements
+            if isinstance(elements, list)
+            else [elements]
+            if elements
+            else [],
         )
 
     def array_elements(self, elements):
@@ -483,7 +502,9 @@ class AetherraCodeProductionTransformer(Transformer):
         """Transform assignment"""
         variable = self._extract_value(args[0]) if args else ""
         value = args[1] if len(args) > 1 else None
-        return AetherraCodeAST("assignment", value=variable, children=[value] if value else [])
+        return AetherraCodeAST(
+            "assignment", value=variable, children=[value] if value else []
+        )
 
     # Expression statement
     def expression_stmt(self, args):
@@ -539,7 +560,7 @@ class AetherraCodeProductionParser:
         """Initialize the parser"""
         try:
             self.parser = Lark(
-                NEUROCODE_PRODUCTION_GRAMMAR,
+                aetherra_PRODUCTION_GRAMMAR,
                 parser="lalr",
                 transformer=AetherraCodeProductionTransformer(),
                 start="program",
@@ -627,7 +648,10 @@ def main():
         ("Debug statement", 'debug "Testing parser"'),
         ("Plugin usage", "plugin: math_tools"),
         ("Function definition", "define calculate(x, y):\n    result = x + y\nend"),
-        ("Complex expression", 'if (x > 0) and (y < 100):\n    optimize "performance"\nend'),
+        (
+            "Complex expression",
+            'if (x > 0) and (y < 100):\n    optimize "performance"\nend',
+        ),
     ]
 
     print(f"\nTesting {len(test_cases)} AetherraCode constructs:")

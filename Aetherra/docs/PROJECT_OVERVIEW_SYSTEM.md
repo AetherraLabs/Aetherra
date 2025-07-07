@@ -2,7 +2,7 @@
 
 ## 🎯 **OVERVIEW**
 
-The NeuroCode Project Overview System provides a comprehensive, automated way to maintain and access up-to-date information about the project's current state, goals, achievements, and metrics.
+The Aetherra Project Overview System provides a comprehensive, automated way to maintain and access up-to-date information about the project's current state, goals, achievements, and metrics.
 
 ## 🏗️ **SYSTEM COMPONENTS**
 
@@ -98,7 +98,7 @@ Checks for key deployment indicators:
 
 ### 🏆 **Main Sections**
 
-1. **What is NeuroCode?** - Project description and breakthrough achievements
+1. **What is Aetherra?** - Project description and breakthrough achievements
 2. **Project Status Dashboard** - Completed milestones and current goals
 3. **Architecture Overview** - Core structure and engine components
 4. **Key Features & Capabilities** - Feature highlights and systems
@@ -219,4 +219,4 @@ For issues with the overview system:
 
 ---
 
-*This documentation is part of the NeuroCode Project Overview System. Keep this guide updated as the system evolves.*
+*This documentation is part of the Aetherra Project Overview System. Keep this guide updated as the system evolves.*

@@ -1,4 +1,4 @@
-# 🚀 NeuroCode + Neuroplex Development Roadmap
+# 🚀 aetherra + LyrixaDevelopment Roadmap
 
 > **Vision**: Building the world's first truly AI-native programming environment where code thinks, learns, and evolves.
 
@@ -6,13 +6,13 @@
 
 ## 🎯 Current Status (July 2025)
 
-Welcome to the official development roadmap for **NeuroCode** and **Neuroplex** — the world’s first AI-native programming language and assistant platform. Below, you'll find our milestone plan, feature roadmap, and goals to build the most intelligent developer environment ever conceived.
+Welcome to the official development roadmap for **aetherra** and **Lyrixa** — the world’s first AI-native programming language and assistant platform. Below, you'll find our milestone plan, feature roadmap, and goals to build the most intelligent developer environment ever conceived.
 
 ### ✅ Foundation Complete
 - ✅ **Advanced AI Chat System** - Multi-LLM support (OpenAI, Claude, Ollama, local models)
 - ✅ **Swappable AI Personalities** - Default, Mentor, Sassy, Dev-Focused
 - ✅ **Plugin Ecosystem** - 32+ plugins with full SDK and registration system
-- ✅ **NeuroCode Language** - AST-based parser with .aether file support
+- ✅ **aetherra Language** - AST-based parser with .aether file support
 - ✅ **Memory Management** - Vector memory with context-aware conversations
 - ✅ **Modern Dark UI** - PySide6-based unified development environment
 - ✅ **Smart Intent Routing** - AI-assisted command interpretation
@@ -98,7 +98,7 @@ Welcome to the official development roadmap for **NeuroCode** and **Neuroplex** 
 
 ### 📦 NeuroHub Plugin Marketplace
 - [ ] **Live Plugin Marketplace**
-  - Integrated plugin browser and installer within Neuroplex
+  - Integrated plugin browser and installer within Lyrixa
   - Community-driven plugin repository with ratings and reviews
   - Automated security scanning and verification
   - Version management and update notifications
@@ -110,8 +110,8 @@ Welcome to the official development roadmap for **NeuroCode** and **Neuroplex** 
   - Community contribution and collaboration features
 
 ### 🔌 IDE Integration
-- [ ] **VS Code Extension (Neuroplex IDE)**
-  - Full Neuroplex integration within VS Code
+- [ ] **VS Code Extension (LyrixaIDE)**
+  - Full Lyrixaintegration within VS Code
   - Sidebar chat interface with context awareness
   - Inline code generation and refactoring
   - Project-wide AI assistance and analysis
@@ -163,7 +163,7 @@ Welcome to the official development roadmap for **NeuroCode** and **Neuroplex** 
    - Autonomous system monitoring
 
 2. **NeuroHub Integration**
-   - Plugin marketplace within Neuroplex
+   - Plugin marketplace within Lyrixa
    - Community features and collaboration
    - Security and verification systems
 
@@ -201,7 +201,7 @@ Welcome to the official development roadmap for **NeuroCode** and **Neuroplex** 
 
 ### Resources
 - 📚 **Documentation**: Complete plugin SDK and development guides
-- 🎓 **Tutorials**: Step-by-step NeuroCode programming tutorials
+- 🎓 **Tutorials**: Step-by-step aetherra programming tutorials
 - 💬 **Community**: Discord server for real-time collaboration
 - 🐛 **Issues**: GitHub issue tracker for bug reports and features
 
@@ -216,16 +216,16 @@ Welcome to the official development roadmap for **NeuroCode** and **Neuroplex** 
 - **Collaborative AI Teams**: Human-AI partnerships in software development
 
 ### Industry Impact Goals
-- Establish NeuroCode as the standard for AI-native programming
+- Establish aetherra as the standard for AI-native programming
 - Demonstrate 10x productivity improvements in software development
 - Pioneer new paradigms in human-AI collaboration
 - Build the foundation for truly autonomous software systems
 
 ---
 
-> **NeuroCode**: *Where code thinks, learns, and evolves.*
+> **aetherra**: *Where code thinks, learns, and evolves.*
 >
-> **Neuroplex**: *Your AI-native assistant, powered by the future.*
+> **Lyrixa**: *Your AI-native assistant, powered by the future.*
 
 ---
 

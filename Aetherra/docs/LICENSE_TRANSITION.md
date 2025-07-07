@@ -1,4 +1,4 @@
-# NeuroCode License Transition: MIT → GPL-3.0
+# Aetherra License Transition: MIT → GPL-3.0
 
 ## Strategic License Change
 
@@ -9,7 +9,7 @@
 ## Why We Made This Change
 
 ### 🎯 **Following the Linux Model**
-Just as Linux kernel uses GPL-2.0 (GPL-3.0 is the modern version), NeuroCode adopts GPL-3.0 to:
+Just as Linux kernel uses GPL-2.0 (GPL-3.0 is the modern version), Aetherra adopts GPL-3.0 to:
 - Ensure all AI OS improvements benefit the entire community
 - Prevent fragmentation of the AI OS ecosystem
 - Create strong incentives for collaborative development
@@ -22,7 +22,7 @@ Just as Linux kernel uses GPL-2.0 (GPL-3.0 is the modern version), NeuroCode ado
 - **Democratic AI**: Keeps AI operating systems accessible to everyone
 
 ### 🌍 **Vision Alignment**
-Our README states: *"Just as Linux democratized server computing, NeuroCode AI OS will democratize intelligent computing."*
+Our README states: *"Just as Linux democratized server computing, Aetherra AI OS will democratize intelligent computing."*
 
 Using GPL-3.0 ensures we follow the exact licensing strategy that made Linux the most successful open-source project in history.
 
@@ -34,7 +34,7 @@ Using GPL-3.0 ensures we follow the exact licensing strategy that made Linux the
 - No risk of your work being used in proprietary systems
 
 ### ✅ **For Users**
-- NeuroCode remains completely free and open source
+- Aetherra remains completely free and open source
 - No changes to usage, modification, or distribution rights
 - Stronger guarantee that the AI OS stays community-driven
 
@@ -47,11 +47,11 @@ Using GPL-3.0 ensures we follow the exact licensing strategy that made Linux the
 
 ### Compatible Licenses
 - GPL-2.0, GPL-3.0, AGPL-3.0
-- Most major open-source projects can integrate with NeuroCode
+- Most major open-source projects can integrate with Aetherra
 
 ### Incompatible Licenses
 - MIT, Apache 2.0, BSD (for derivative works)
-- Proprietary/closed-source systems cannot incorporate NeuroCode
+- Proprietary/closed-source systems cannot incorporate Aetherra
 
 ## Implementation
 
@@ -62,7 +62,7 @@ Using GPL-3.0 ensures we follow the exact licensing strategy that made Linux the
 
 ## The Future
 
-This license change positions NeuroCode to become a comprehensive foundation for open-source AI operating systems. By following the proven Linux model, we ensure that:
+This license change positions Aetherra to become a comprehensive foundation for open-source AI operating systems. By following the proven Linux model, we ensure that:
 
 1. **Innovation flourishes** within an open ecosystem
 2. **Community benefits** from all improvements

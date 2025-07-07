@@ -1,8 +1,8 @@
-# NeuroCode AI OS Licensing Analysis
+# Aetherra AI OS Licensing Analysis
 
 ## Current Status: MIT License
 
-NeuroCode currently uses the MIT License, which is extremely permissive. Given our evolution into an AI Operating System foundation, we need to consider whether this aligns with our strategic goals.
+Aetherra currently uses the MIT License, which is extremely permissive. Given our evolution into an AI Operating System foundation, we need to consider whether this aligns with our strategic goals.
 
 ## License Options for AI OS
 
@@ -59,7 +59,7 @@ NeuroCode currently uses the MIT License, which is extremely permissive. Given o
 ## Strategic Considerations
 
 ### The "Linux Model" Question
-You've positioned NeuroCode as "the Linux moment for AI." Linux uses GPL-2.0, which:
+You've positioned Aetherra as "the Linux moment for AI." Linux uses GPL-2.0, which:
 - Ensures all kernel improvements are shared back
 - Has created the world's most successful open-source ecosystem
 - Prevents proprietary forks of the core system
@@ -90,7 +90,7 @@ You've positioned NeuroCode as "the Linux moment for AI." Linux uses GPL-2.0, wh
 
 ### Option D: Stay MIT + Strong Governance
 - Keep MIT but establish strong project governance
-- Trademark protection for "NeuroCode AI OS"
+- Trademark protection for "Aetherra AI OS"
 - Community standards and certification programs
 
 ## Decision Framework

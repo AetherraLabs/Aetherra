@@ -26,7 +26,7 @@ try:
     result = interpreter.execute('say "AetherraCode is working!"')
     print(f"✅ Code execution successful: {result[:50]}...")
 
-    print("🎉 NEUROCODE PROJECT FULLY OPERATIONAL!")
+    print("🎉 Aetherra PROJECT FULLY OPERATIONAL!")
 
 except Exception as e:
     print(f"❌ Error: {e}")

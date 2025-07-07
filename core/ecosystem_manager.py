@@ -25,7 +25,7 @@ class PluginEcosystem:
         self.plugin_registry = {}
         self.active_plugins = {}
         self.plugin_dependencies = {}
-        self.marketplace_url = "https://neurocode.ai/plugins"
+        self.marketplace_url = "https://aetherra.ai/plugins"
 
     def discover_plugins(
         self, scan_paths: Optional[List[str]] = None
@@ -38,7 +38,7 @@ class PluginEcosystem:
                 "./plugins",
                 "./stdlib",
                 "~/.aethercode/plugins",
-                "/usr/local/neurocode/plugins",
+                "/usr/local/aetherra/plugins",
             ]
 
         discovered = {}
@@ -356,7 +356,7 @@ class UniversalDeploymentManager:
             "mobile": MobileDeployment(),
         }
 
-    def deploy_neurocode(
+    def deploy_aetherra(
         self, program_path: str, target: str, config: Optional[Dict] = None
     ) -> Dict:
         """Deploy AetherraCode program to specified target"""
@@ -467,7 +467,7 @@ class AetherraCodeEcosystemManager:
 
         # Register local AI node
         self.ai_coordinator.register_ai_node(
-            "local_neurocode",
+            "local_aetherra",
             ["reasoning", "memory", "goal_setting", "plugin_execution"],
             "localhost:8000",
         )
@@ -525,7 +525,7 @@ def main():
         else:
             print(f"❌ Failed to install plugin {args.install_plugin}")
     elif args.deploy:
-        result = manager.deployment_manager.deploy_neurocode(args.deploy, args.target)
+        result = manager.deployment_manager.deploy_aetherra(args.deploy, args.target)
         print(f"🚀 Deployment result: {result}")
     else:
         parser.print_help()

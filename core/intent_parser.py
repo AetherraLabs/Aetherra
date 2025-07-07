@@ -288,7 +288,7 @@ run learn_from_{data_source}()""",
         parameters = self._extract_parameters(description, intent_type)
 
         # Generate code
-        generated_code = self._generate_neurocode(
+        generated_code = self._generate_aetherra(
             intent_type, primary_goal, constraints, technologies, parameters
         )
 
@@ -332,13 +332,20 @@ run learn_from_{data_source}()""",
             scores[intent_name] = score
 
         # Special case handling
-        if any(word in description for word in ["api", "endpoint", "service", "server"]):
+        if any(
+            word in description for word in ["api", "endpoint", "service", "server"]
+        ):
             scores["api_creation"] = scores.get("api_creation", 0) + 3
 
-        if any(word in description for word in ["data", "dataset", "analyze", "process"]):
+        if any(
+            word in description for word in ["data", "dataset", "analyze", "process"]
+        ):
             scores["data_processing"] = scores.get("data_processing", 0) + 3
 
-        if any(word in description for word in ["optimize", "faster", "improve", "performance"]):
+        if any(
+            word in description
+            for word in ["optimize", "faster", "improve", "performance"]
+        ):
             scores["optimization"] = scores.get("optimization", 0) + 3
 
         # Return highest scoring intent type
@@ -415,12 +422,16 @@ run learn_from_{data_source}()""",
 
         # Add implied technologies based on context
         if any(word in description for word in ["api", "web", "service"]):
-            if not any(tech in technologies for tech in ["fastapi", "flask", "express"]):
+            if not any(
+                tech in technologies for tech in ["fastapi", "flask", "express"]
+            ):
                 technologies.append("fastapi")  # Default API framework
 
         return list(set(technologies))  # Remove duplicates
 
-    def _extract_parameters(self, description: str, intent_type: IntentType) -> Dict[str, Any]:
+    def _extract_parameters(
+        self, description: str, intent_type: IntentType
+    ) -> Dict[str, Any]:
         """Extract specific parameters based on intent type"""
         parameters = {}
 
@@ -449,7 +460,7 @@ run learn_from_{data_source}()""",
 
         return parameters
 
-    def _generate_neurocode(
+    def _generate_aetherra(
         self,
         intent_type: IntentType,
         primary_goal: str,
@@ -468,7 +479,9 @@ run learn_from_{data_source}()""",
         elif intent_type == IntentType.TASK_AUTOMATION:
             template_key = "automation"
 
-        template = self.code_templates.get(template_key, self.code_templates["automation"])
+        template = self.code_templates.get(
+            template_key, self.code_templates["automation"]
+        )
 
         # Prepare template variables
         template_vars = {
@@ -485,7 +498,9 @@ run learn_from_{data_source}()""",
             "requirements": self._generate_requirements(technologies, constraints),
             "processing_steps": self._generate_processing_steps(technologies),
             "automation_steps": self._generate_automation_steps(primary_goal),
-            "optimization_techniques": self._generate_optimization_techniques(technologies),
+            "optimization_techniques": self._generate_optimization_techniques(
+                technologies
+            ),
             "monitoring_parameters": self._generate_monitoring_parameters(primary_goal),
             "alert_condition": self._generate_alert_condition(primary_goal),
             "learning_objectives": self._generate_learning_objectives(primary_goal),
@@ -554,7 +569,9 @@ optimize for {", ".join(constraints) if constraints else "efficiency"}"""
 
         return "data_source"
 
-    def _generate_requirements(self, technologies: List[str], constraints: List[str]) -> str:
+    def _generate_requirements(
+        self, technologies: List[str], constraints: List[str]
+    ) -> str:
         """Generate requirements section"""
         reqs = []
 
@@ -573,12 +590,18 @@ optimize for {", ".join(constraints) if constraints else "efficiency"}"""
 
     def _generate_processing_steps(self, technologies: List[str]) -> str:
         """Generate processing steps"""
-        steps = ["    clean data", "    transform data_format", "    validate data_quality"]
+        steps = [
+            "    clean data",
+            "    transform data_format",
+            "    validate data_quality",
+        ]
 
         if any(tech in technologies for tech in ["pandas", "numpy"]):
             steps.append("    apply statistical_analysis")
 
-        if any(tech in technologies for tech in ["tensorflow", "pytorch", "scikit-learn"]):
+        if any(
+            tech in technologies for tech in ["tensorflow", "pytorch", "scikit-learn"]
+        ):
             steps.append("    run machine_learning_analysis")
 
         return "\n".join(steps)
@@ -657,9 +680,7 @@ optimize for {", ".join(constraints) if constraints else "efficiency"}"""
         technologies: List[str],
     ) -> str:
         """Generate human-readable explanation"""
-        explanation = (
-            f"Generated AetherraCode for {intent_type.value.replace('_', ' ')}: {primary_goal}"
-        )
+        explanation = f"Generated AetherraCode for {intent_type.value.replace('_', ' ')}: {primary_goal}"
 
         if constraints:
             explanation += f"\nConstraints: {', '.join(constraints)}"
@@ -667,7 +688,9 @@ optimize for {", ".join(constraints) if constraints else "efficiency"}"""
         if technologies:
             explanation += f"\nTechnologies: {', '.join(technologies)}"
 
-        explanation += "\n\nThis code will create an autonomous AetherraCode program that:"
+        explanation += (
+            "\n\nThis code will create an autonomous AetherraCode program that:"
+        )
         explanation += "\n- Sets clear goals and objectives"
         explanation += "\n- Uses AI agents for execution"
         explanation += "\n- Includes error handling and optimization"

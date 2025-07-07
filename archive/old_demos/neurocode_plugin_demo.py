@@ -212,11 +212,11 @@ def demo_plugin_management():
         print_plugin(plugin_data, installed=True, loaded=is_loaded)
 
     print("💡 Plugin Management Commands:")
-    print("   neurocode plugin install <name>     - Install a plugin")
-    print("   neurocode plugin uninstall <name>   - Uninstall a plugin")
-    print("   neurocode plugin list               - List installed plugins")
-    print("   neurocode plugin search <query>     - Search registry")
-    print("   neurocode plugin update             - Update all plugins")
+    print("   Aetherra plugin install <name>     - Install a plugin")
+    print("   Aetherra plugin uninstall <name>   - Uninstall a plugin")
+    print("   Aetherra plugin list               - List installed plugins")
+    print("   Aetherra plugin search <query>     - Search registry")
+    print("   Aetherra plugin update             - Update all plugins")
 
 
 def demo_plugin_usage():
@@ -289,14 +289,14 @@ def demo_plugin_development():
     print("""
 1. Plugin Structure:
    my-custom-plugin/
-   ├── neurocode-plugin.json    # Plugin manifest
+   ├── Aetherra-plugin.json    # Plugin manifest
    ├── plugin.neuro             # Main AetherraCode implementation
    ├── plugin_core.py           # Python backend (optional)
    ├── README.md                # Documentation
    ├── tests/                   # Unit tests
    └── examples/                # Usage examples
 
-2. Plugin Manifest (neurocode-plugin.json):
+2. Plugin Manifest (Aetherra-plugin.json):
    {
      "name": "my-custom-plugin",
      "version": "1.0.0",
@@ -328,9 +328,9 @@ def demo_plugin_development():
    }
 
 4. Publishing to Registry:
-   neurocode plugin validate      # Validate plugin structure
-   neurocode plugin test          # Run tests
-   neurocode plugin publish       # Submit to registry
+   Aetherra plugin validate      # Validate plugin structure
+   Aetherra plugin test          # Run tests
+   Aetherra plugin publish       # Submit to registry
 """)
 
 
@@ -355,9 +355,9 @@ def main():
     print_header("Demo Complete!")
     print("🎉 AetherraCode Plugin Registry Demo completed successfully!")
     print("\n🔗 Learn More:")
-    print("   Documentation: https://docs.neurocode.org/plugins")
-    print("   Registry: https://registry.neurocode.org")
-    print("   GitHub: https://github.com/neurocode/plugin-registry")
+    print("   Documentation: https://docs.Aetherra.org/plugins")
+    print("   Registry: https://registry.Aetherra.org")
+    print("   GitHub: https://github.com/Aetherra/plugin-registry")
     print("\n💡 Next Steps:")
     print("   1. Read the plugin development guide")
     print("   2. Create your first AetherraCode plugin")

@@ -7,7 +7,7 @@ from core.plugin_manager import register_plugin
     description="Analyze text and provide insights with AI-powered capabilities",
     capabilities=["text_analysis", "sentiment_detection", "keyword_extraction", "ai_insights"],
     version="2.0.0",
-    author="NeuroCode AI Team",
+    author="Aetherra AI Team",
     category="analysis",
     dependencies=["re", "collections"],
     # Enhanced intent-based discovery
@@ -70,7 +70,7 @@ def analyze_text(text):
     description="Format and beautify code with intelligent indentation and styling",
     capabilities=["code_formatting", "syntax_highlighting", "style_validation"],
     version="1.5.0",
-    author="NeuroCode DevTools",
+    author="Aetherra DevTools",
     category="development",
     dependencies=["re"],
     # Enhanced intent-based discovery

@@ -37,4 +37,4 @@ try:
 except Exception as e:
     print(f"✗ Error importing from aetherplex.py: {e}")
 
-print("\nNeuroplex testing complete.")
+print("\nLyrixatesting complete.")

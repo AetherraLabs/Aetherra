@@ -20,7 +20,7 @@
     {
       "type": "memory",
       "line": 11,
-      "content": "remember(\"NeuroCode enables AI-consciousness programming\")",
+      "content": "remember(\"aetherra enables AI-consciousness programming\")",
       "filename": "examples\\consciousness_demo.aether",
       "operation": "remember"
     },
@@ -58,7 +58,7 @@
     {
       "type": "statement",
       "line": 26,
-      "content": "print(\"\ud83e\uddec NeuroCode consciousness awakening complete!\")",
+      "content": "print(\"\ud83e\uddec aetherra consciousness awakening complete!\")",
       "filename": "examples\\consciousness_demo.aether"
     }
   ],

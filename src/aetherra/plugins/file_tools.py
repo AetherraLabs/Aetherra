@@ -1,4 +1,4 @@
-# src/neurocode/plugins/file_tools.py - File Management Plugin
+# src/Aetherra/plugins/file_tools.py - File Management Plugin
 import shutil
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -11,7 +11,7 @@ from core.plugin_manager import register_plugin
     description="Create a new file with optional content",
     capabilities=["file_creation", "file_management", "workspace"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="file_management",
     dependencies=["pathlib"],
     intent_purpose="file creation and workspace management",
@@ -20,10 +20,9 @@ from core.plugin_manager import register_plugin
         "creating new source files",
         "generating configuration files",
         "setting up project structure",
-        "writing documentation files"
+        "writing documentation files",
     ],
     ai_description="Creates new files with optional initial content. Automatically creates parent directories if needed.",
-
     example_usage="plugin: create_file 'src/utils.py' 'def hello():\\n    print(\"Hello World\")'",
     confidence_boost=1.2,
 )
@@ -39,18 +38,18 @@ def create_file(filepath: str, content: str = "") -> Dict[str, Any]:
         if path.exists():
             return {
                 "error": f"File '{filepath}' already exists",
-                "suggestion": "Use 'write_file' to overwrite or 'append_file' to add content"
+                "suggestion": "Use 'write_file' to overwrite or 'append_file' to add content",
             }
 
         # Create the file
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(content)
 
         return {
             "success": True,
             "filepath": str(path.absolute()),
             "size": len(content),
-            "created": True
+            "created": True,
         }
 
     except Exception as e:
@@ -62,7 +61,7 @@ def create_file(filepath: str, content: str = "") -> Dict[str, Any]:
     description="Read the contents of a file",
     capabilities=["file_reading", "content_access", "workspace"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="file_management",
     dependencies=["pathlib"],
     intent_purpose="file content reading and access",
@@ -71,7 +70,7 @@ def create_file(filepath: str, content: str = "") -> Dict[str, Any]:
         "reading source code",
         "viewing configuration files",
         "accessing documentation",
-        "inspecting file contents"
+        "inspecting file contents",
     ],
     ai_description="Reads and returns the contents of text files. Supports various text encodings.",
     example_usage="plugin: read_file 'config.json'",
@@ -89,14 +88,14 @@ def read_file(filepath: str, max_lines: Optional[int] = None) -> Dict[str, Any]:
             return {"error": f"'{filepath}' is not a file"}
 
         # Read file content
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             if max_lines:
                 lines = []
                 for i, line in enumerate(f):
                     if i >= max_lines:
                         break
-                    lines.append(line.rstrip('\n'))
-                content = '\n'.join(lines)
+                    lines.append(line.rstrip("\n"))
+                content = "\n".join(lines)
                 truncated = i + 1 >= max_lines
             else:
                 content = f.read()
@@ -107,8 +106,8 @@ def read_file(filepath: str, max_lines: Optional[int] = None) -> Dict[str, Any]:
             "filepath": str(path.absolute()),
             "content": content,
             "size": len(content),
-            "lines": content.count('\n') + 1 if content else 0,
-            "truncated": truncated
+            "lines": content.count("\n") + 1 if content else 0,
+            "truncated": truncated,
         }
 
     except UnicodeDecodeError:
@@ -122,7 +121,7 @@ def read_file(filepath: str, max_lines: Optional[int] = None) -> Dict[str, Any]:
     description="Write content to a file (overwrites existing content)",
     capabilities=["file_writing", "content_modification", "workspace"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="file_management",
     dependencies=["pathlib"],
     intent_purpose="file content writing and modification",
@@ -131,7 +130,7 @@ def read_file(filepath: str, max_lines: Optional[int] = None) -> Dict[str, Any]:
         "updating source code",
         "modifying configuration files",
         "saving generated content",
-        "writing documentation"
+        "writing documentation",
     ],
     ai_description="Writes content to files, overwriting existing content. Creates parent directories if needed.",
     example_usage="plugin: write_file 'config.json' '{\"debug\": true}'",
@@ -148,12 +147,12 @@ def write_file(filepath: str, content: str) -> Dict[str, Any]:
         # Backup existing file if it exists
         backup_created = False
         if path.exists():
-            backup_path = path.with_suffix(path.suffix + '.backup')
+            backup_path = path.with_suffix(path.suffix + ".backup")
             shutil.copy2(path, backup_path)
             backup_created = True
 
         # Write the file
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(content)
 
         return {
@@ -161,7 +160,7 @@ def write_file(filepath: str, content: str) -> Dict[str, Any]:
             "filepath": str(path.absolute()),
             "size": len(content),
             "backup_created": backup_created,
-            "overwritten": backup_created
+            "overwritten": backup_created,
         }
 
     except Exception as e:
@@ -173,7 +172,7 @@ def write_file(filepath: str, content: str) -> Dict[str, Any]:
     description="List files and directories in a given path",
     capabilities=["directory_listing", "file_discovery", "workspace"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="file_management",
     dependencies=["pathlib"],
     intent_purpose="directory exploration and file discovery",
@@ -182,13 +181,15 @@ def write_file(filepath: str, content: str) -> Dict[str, Any]:
         "exploring project structure",
         "finding source files",
         "browsing directories",
-        "workspace navigation"
+        "workspace navigation",
     ],
     ai_description="Lists files and directories in a specified path with optional filtering by extensions.",
     example_usage="plugin: list_files 'src' '*.py'",
     confidence_boost=1.0,
 )
-def list_files(directory: str = ".", pattern: str = "*", include_hidden: bool = False) -> Dict[str, Any]:
+def list_files(
+    directory: str = ".", pattern: str = "*", include_hidden: bool = False
+) -> Dict[str, Any]:
     """List files and directories in a given path"""
     try:
         path = Path(directory)
@@ -207,7 +208,7 @@ def list_files(directory: str = ".", pattern: str = "*", include_hidden: bool = 
 
         # Filter hidden files if requested
         if not include_hidden:
-            items = [item for item in items if not item.name.startswith('.')]
+            items = [item for item in items if not item.name.startswith(".")]
 
         # Categorize items
         files = []
@@ -218,7 +219,7 @@ def list_files(directory: str = ".", pattern: str = "*", include_hidden: bool = 
                 "name": item.name,
                 "path": str(item.absolute()),
                 "size": item.stat().st_size if item.is_file() else None,
-                "modified": item.stat().st_mtime
+                "modified": item.stat().st_mtime,
             }
 
             if item.is_file():
@@ -233,7 +234,7 @@ def list_files(directory: str = ".", pattern: str = "*", include_hidden: bool = 
             "files": files,
             "directories": directories,
             "total_files": len(files),
-            "total_directories": len(directories)
+            "total_directories": len(directories),
         }
 
     except Exception as e:
@@ -245,7 +246,7 @@ def list_files(directory: str = ".", pattern: str = "*", include_hidden: bool = 
     description="Delete a file or directory (with safety confirmation)",
     capabilities=["file_deletion", "cleanup", "workspace"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="file_management",
     dependencies=["pathlib", "shutil"],
     intent_purpose="file and directory deletion with safety checks",
@@ -254,14 +255,15 @@ def list_files(directory: str = ".", pattern: str = "*", include_hidden: bool = 
         "cleaning up temporary files",
         "removing unused files",
         "workspace cleanup",
-        "file management"
+        "file management",
     ],
     ai_description="Safely deletes files or directories with backup creation and confirmation. Includes safety checks for important files.",
-
     example_usage="plugin: delete_file 'temp.txt' true",
     confidence_boost=0.8,  # Lower confidence due to destructive nature
 )
-def delete_file(filepath: str, confirm: bool = False, create_backup: bool = True) -> Dict[str, Any]:
+def delete_file(
+    filepath: str, confirm: bool = False, create_backup: bool = True
+) -> Dict[str, Any]:
     """Delete a file or directory (with safety confirmation)"""
     try:
         path = Path(filepath)
@@ -270,22 +272,27 @@ def delete_file(filepath: str, confirm: bool = False, create_backup: bool = True
             return {"error": f"'{filepath}' does not exist"}
 
         # Safety check - prevent deletion of important files
-        important_files = ['.git', '.project_protection.json', 'README.md', 'requirements.txt']
+        important_files = [
+            ".git",
+            ".project_protection.json",
+            "README.md",
+            "requirements.txt",
+        ]
         if path.name in important_files:
             return {
                 "error": f"Cannot delete important file '{path.name}'",
-                "suggestion": "This file is protected from deletion"
+                "suggestion": "This file is protected from deletion",
             }
 
         if not confirm:
             return {
                 "error": "Deletion requires confirmation",
-                "suggestion": "Set confirm=true to proceed with deletion"
+                "suggestion": "Set confirm=true to proceed with deletion",
             }
 
         backup_path = None
         if create_backup and path.is_file():
-            backup_path = path.with_suffix(path.suffix + '.deleted.backup')
+            backup_path = path.with_suffix(path.suffix + ".deleted.backup")
             shutil.copy2(path, backup_path)
 
         # Delete the file/directory
@@ -299,7 +306,7 @@ def delete_file(filepath: str, confirm: bool = False, create_backup: bool = True
             "deleted": str(path.absolute()),
             "type": "file" if path.is_file() else "directory",
             "backup_created": backup_path is not None,
-            "backup_path": str(backup_path) if backup_path else None
+            "backup_path": str(backup_path) if backup_path else None,
         }
 
     except Exception as e:

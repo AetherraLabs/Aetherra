@@ -1,10 +1,10 @@
-# 📦 NeuroCode Dependencies Guide
+# 📦 Aetherra Dependencies Guide
 
-This guide explains the different dependency files and installation options for NeuroCode v1.0.0.
+This guide explains the different dependency files and installation options for Aetherra v1.0.0.
 
 ## 🎯 **Quick Start - Choose Your Installation**
 
-### **Minimal Installation** (Basic NeuroCode functionality)
+### **Minimal Installation** (Basic Aetherra functionality)
 ```bash
 pip install -r requirements_minimal.txt
 ```
@@ -67,7 +67,7 @@ pip install -r requirements.txt
 pip install prometheus-client grafana-api
 ```
 
-### **👨‍💻 Contributing to NeuroCode**
+### **👨‍💻 Contributing to Aetherra**
 Setting up a development environment:
 ```bash
 pip install -r requirements_dev.txt
@@ -78,7 +78,7 @@ pre-commit install  # Set up git hooks
 
 ## 🤖 **AI Provider Setup**
 
-NeuroCode supports multiple AI providers. Choose based on your needs:
+Aetherra supports multiple AI providers. Choose based on your needs:
 
 ### **OpenAI (Recommended for beginners)**
 ```bash
@@ -203,10 +203,10 @@ pip install transformers accelerate
 ### **Environment Management**
 ```bash
 # Create virtual environment
-python -m venv neurocode-env
-source neurocode-env/bin/activate  # Linux/Mac
+python -m venv Aetherra-env
+source Aetherra-env/bin/activate  # Linux/Mac
 # or
-neurocode-env\Scripts\activate     # Windows
+Aetherra-env\Scripts\activate     # Windows
 
 # Install dependencies
 pip install -r requirements.txt

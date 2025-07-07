@@ -1,6 +1,6 @@
 # 🔗 GitHub Link Redirect Issue - Troubleshooting Guide
 
-**Issue**: Clicking GitHub links on the website redirects to `VirtualVerse-Corporation/NeuroCode` instead of `Zyonic88/NeuroCode`
+**Issue**: Clicking GitHub links on the website redirects to `VirtualVerse-Corporation/aetherra` instead of `Zyonic88/aetherra`
 
 **Status**: All website files have correct links - this appears to be a caching issue.
 
@@ -9,8 +9,8 @@
 ## ✅ **VERIFICATION COMPLETE**
 
 All GitHub links in the website files are CORRECT:
-- ✅ `website/index.html` - All 17 GitHub links point to `Zyonic88/NeuroCode`
-- ✅ `neurohub/index.html` - All GitHub links point to `Zyonic88/NeuroCode`
+- ✅ `website/index.html` - All 17 GitHub links point to `Zyonic88/aetherra`
+- ✅ `neurohub/index.html` - All GitHub links point to `Zyonic88/aetherra`
 - ✅ No redirect JavaScript found
 - ✅ No .htaccess or CNAME files causing redirects
 - ✅ All changes committed and pushed (commit 6862dd8)
@@ -48,12 +48,12 @@ ipconfig /flushdns
 ### **4. Test with Direct URL**
 Open a new browser tab and go directly to:
 ```
-https://github.com/Zyonic88/NeuroCode
+https://github.com/Zyonic88/aetherra
 ```
 
 ### **5. Check if GitHub has URL Redirects**
 The old repository might have a redirect set up. Try:
-- Go to: https://github.com/VirtualVerse-Corporation/NeuroCode
+- Go to: https://github.com/VirtualVerse-Corporation/aetherra
 - See if it automatically redirects to the new repository
 
 ---
@@ -72,9 +72,9 @@ The issue is most likely one of these:
 
 **Try this right now:**
 1. Open an **incognito/private window** in your browser
-2. Navigate to your website 
+2. Navigate to your website
 3. Click the GitHub links
-4. They should go to the correct repository: `Zyonic88/NeuroCode`
+4. They should go to the correct repository: `Zyonic88/aetherra`
 
 If the links work correctly in incognito mode, the issue is definitely browser cache.
 
@@ -82,11 +82,11 @@ If the links work correctly in incognito mode, the issue is definitely browser c
 
 ## 📋 **VERIFICATION CHECKLIST**
 
-✅ **Website Files Checked**: All GitHub links are correct  
-✅ **JavaScript Checked**: No redirect code found  
-✅ **Configuration Files**: No .htaccess or redirect files  
-✅ **Git Status**: All fixes committed and pushed  
-✅ **Repository**: Accessible at https://github.com/Zyonic88/NeuroCode  
+✅ **Website Files Checked**: All GitHub links are correct
+✅ **JavaScript Checked**: No redirect code found
+✅ **Configuration Files**: No .htaccess or redirect files
+✅ **Git Status**: All fixes committed and pushed
+✅ **Repository**: Accessible at https://github.com/Zyonic88/aetherra
 
 **Next Step**: Clear browser cache and test again.
 

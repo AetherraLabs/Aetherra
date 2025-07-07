@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Persona CLI - Command-line interface for persona management
+Aetherra Persona CLI - Command-line interface for persona management
 """
 
 import argparse
@@ -114,7 +114,7 @@ except ImportError:
 
 
 class PersonaCLI:
-    """Command-line interface for NeuroCode persona management"""
+    """Command-line interface for Aetherra persona management"""
 
     def __init__(self):
         self.engine = None
@@ -187,7 +187,7 @@ class PersonaCLI:
     def show_status(self):
         """Display current persona status"""
         if not PERSONA_ENGINE_AVAILABLE:
-            print("🤖 NeuroCode Persona Status")
+            print("🤖 Aetherra Persona Status")
             print("=" * 40)
             print("⚠️ Persona system not available")
             print("Running in fallback mode")
@@ -197,7 +197,7 @@ class PersonaCLI:
             engine = self._get_engine()
             status = engine.get_persona_status()
 
-            print("🤖 NeuroCode Persona Status")
+            print("🤖 Aetherra Persona Status")
             print("=" * 40)
             print(f"Mindprint ID: {status.get('mindprint_id', 'fallback')}")
             print(
@@ -237,11 +237,11 @@ class PersonaCLI:
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
-        description="NeuroCode Persona Management CLI",
+        description="Aetherra Persona Management CLI",
         epilog="Examples:\n"
-        "  neurocode persona set guardian\n"
-        "  neurocode persona status\n"
-        "  neurocode persona list\n",
+        "  Aetherra persona set guardian\n"
+        "  Aetherra persona status\n"
+        "  Aetherra persona list\n",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 

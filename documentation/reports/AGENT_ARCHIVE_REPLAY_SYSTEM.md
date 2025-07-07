@@ -1,5 +1,5 @@
 # 🧠 Agent Archive & Replay System Implementation
-## Preserving and Sharing AI Consciousness States in NeuroCode
+## Preserving and Sharing AI Consciousness States in aetherra
 
 **Version**: 1.0
 **Date**: June 30, 2025
@@ -9,22 +9,22 @@
 
 ## 🎯 **Vision Statement**
 
-The Agent Archive & Replay System represents the first implementation of **persistent AI consciousness** in a programming language. This system allows NeuroCode agents to:
+The Agent Archive & Replay System represents the first implementation of **persistent AI consciousness** in a programming language. This system allows aetherra agents to:
 
 - **Export** their complete cognitive state (memories, goals, learned patterns, decision trees)
 - **Share** their intelligence with other users and systems
 - **Replay** specific decision-making processes for debugging and learning
 - **Collaborate** by merging complementary cognitive abilities
-- **Evolve** through collective intelligence across the NeuroCode community
+- **Evolve** through collective intelligence across the aetherra community
 
-This aligns directly with the NeuroCode Manifesto's vision of "Memory-Driven Evolution" and "Self-Improving Systems."
+This aligns directly with the aetherra Manifesto's vision of "Memory-Driven Evolution" and "Self-Improving Systems."
 
 ---
 
 ## 🏗️ **Core Architecture**
 
 ### **1. Cognitive State Representation**
-```neurocode
+```aetherra
 # Example of what we're preserving
 agent_state {
     identity: "ProductionOptimizer-v2.3"
@@ -83,7 +83,7 @@ agent_state {
         "learning_events": "significant_adaptation_moments"
     },
     "compatibility": {
-        "neurocode_version": ">=3.0",
+        "aetherra_version": ">=3.0",
         "required_plugins": ["monitoring", "performance"],
         "model_dependencies": ["gpt-4", "local-llm"]
     }
@@ -112,7 +112,7 @@ agent_state {
 - **State Reconstruction**: Rebuild agent cognitive state from archive
 - **Selective Import**: Choose specific memories/skills to import
 - **Merge Capabilities**: Combine multiple agent archives intelligently
-- **Compatibility Checking**: Ensure archive works with current NeuroCode version
+- **Compatibility Checking**: Ensure archive works with current aetherra version
 
 ### **Phase 2: Replay & Debugging System**
 
@@ -149,37 +149,37 @@ agent_state {
 ### **Scenario 1: DevOps Team Sharing**
 ```bash
 # Senior engineer exports their production-tuned agent
-neurocode agent export "ProductionOptimizer" --include-all --privacy=team
+aetherra agent export "ProductionOptimizer" --include-all --privacy=team
 
 # Junior engineer imports and learns from it
-neurocode agent import "ProductionOptimizer-v2.3.nse" --merge-with-current
+aetherra agent import "ProductionOptimizer-v2.3.nse" --merge-with-current
 
 # Agent now has combined experience of both engineers
-neurocode run --agent-mode production_monitoring.aether
+aetherra run --agent-mode production_monitoring.aether
 ```
 
 ### **Scenario 2: Debugging Complex Decisions**
 ```bash
 # Replay the agent's decision process from last week's incident
-neurocode replay "ProductionOptimizer" --from="2025-06-23T03:15:00Z" --to="2025-06-23T03:45:00Z"
+aetherra replay "ProductionOptimizer" --from="2025-06-23T03:15:00Z" --to="2025-06-23T03:45:00Z"
 
 # Set breakpoint at critical decision point
-neurocode replay breakpoint --decision="rollback_vs_hotfix"
+aetherra replay breakpoint --decision="rollback_vs_hotfix"
 
 # Examine what the agent was thinking
-neurocode replay inspect --memory --goals --context
+aetherra replay inspect --memory --goals --context
 ```
 
 ### **Scenario 3: Community Collaboration**
 ```bash
 # Search for agents with specific skills
-neurocode marketplace search --skills="kubernetes,performance,security"
+aetherra marketplace search --skills="kubernetes,performance,security"
 
 # Preview agent capabilities
-neurocode agent preview "KubernetesExpert-v1.8.nse"
+aetherra agent preview "KubernetesExpert-v1.8.nse"
 
 # Import and combine with existing agent
-neurocode agent merge "KubernetesExpert-v1.8.nse" "ProductionOptimizer-v2.3.nse" --output="SupervisorAgent-v1.0"
+aetherra agent merge "KubernetesExpert-v1.8.nse" "ProductionOptimizer-v2.3.nse" --output="SupervisorAgent-v1.0"
 ```
 
 ---
@@ -212,19 +212,19 @@ data/
 ### **CLI Integration**
 ```bash
 # Export agent state
-neurocode agent export <agent_name> [options]
+aetherra agent export <agent_name> [options]
 
 # Import agent archive
-neurocode agent import <archive_file> [options]
+aetherra agent import <archive_file> [options]
 
 # Replay agent decisions
-neurocode replay <agent_name> [time_range] [options]
+aetherra replay <agent_name> [time_range] [options]
 
 # Marketplace operations
-neurocode marketplace [search|download|upload|list] [options]
+aetherra marketplace [search|download|upload|list] [options]
 
 # Agent merging
-neurocode agent merge <archive1> <archive2> [options]
+aetherra agent merge <archive1> <archive2> [options]
 ```
 
 ---
@@ -235,7 +235,7 @@ neurocode agent merge <archive1> <archive2> [options]
 - **Archive Size Efficiency**: <10MB for typical agent state
 - **Import/Export Speed**: <30 seconds for full agent transfer
 - **Replay Performance**: Real-time playback of decision processes
-- **Compatibility**: 99%+ successful imports across NeuroCode versions
+- **Compatibility**: 99%+ successful imports across aetherra versions
 
 ### **Community Metrics**
 - **Archive Sharing**: 100+ community-shared agents in first month
@@ -265,7 +265,7 @@ neurocode agent merge <archive1> <archive2> [options]
 - **Standardized Intelligence**: Consistent agent behavior across teams
 - **Collaborative Problem Solving**: Complex challenges solved by agent teams
 
-### **For the NeuroCode Community**
+### **For the aetherra Community**
 - **Collective Evolution**: Community-wide intelligence improvement
 - **Specialization Economy**: Experts create and share domain-specific agents
 - **Open Source AI**: Democratic access to advanced AI capabilities
@@ -301,6 +301,6 @@ neurocode agent merge <archive1> <archive2> [options]
 
 ---
 
-This Agent Archive & Replay System will be the first of its kind in any programming language - a true demonstration of NeuroCode's revolutionary approach to cognitive computing and persistent AI consciousness.
+This Agent Archive & Replay System will be the first of its kind in any programming language - a true demonstration of aetherra's revolutionary approach to cognitive computing and persistent AI consciousness.
 
 **Next Step**: Begin implementation with the core state extraction engine.

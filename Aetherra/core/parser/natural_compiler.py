@@ -93,13 +93,13 @@ class NaturalLanguageCompiler:
         )
 
         # Parse intent and generate AetherraCode
-        neurocode = self._parse_intent(text)
+        aetherra = self._parse_intent(text)
 
         # Add context and memory if needed
         if self._needs_context(text):
-            neurocode = self._add_context(neurocode)
+            aetherra = self._add_context(aetherra)
 
-        return neurocode
+        return aetherra
 
     def _parse_intent(self, text: str) -> str:
         """Parse human intent and generate corresponding AetherraCode"""
@@ -109,14 +109,12 @@ class NaturalLanguageCompiler:
             for pattern in patterns:
                 match = re.search(pattern, text, re.IGNORECASE)
                 if match:
-                    return self._generate_neurocode(intent, match.groups(), text)
+                    return self._generate_aetherra(intent, match.groups(), text)
 
         # If no specific pattern matches, use general reasoning
-        return self._generate_general_neurocode(text)
+        return self._generate_general_aetherra(text)
 
-    def _generate_neurocode(
-        self, intent: str, groups: Tuple, original_text: str
-    ) -> str:
+    def _generate_aetherra(self, intent: str, groups: Tuple, original_text: str) -> str:
         """Generate AetherraCode based on recognized intent"""
 
         if intent == "remember":
@@ -160,9 +158,9 @@ class NaturalLanguageCompiler:
             elif "save" in original_text:
                 return f"export_data to {source}"
 
-        return self._generate_general_neurocode(original_text)
+        return self._generate_general_aetherra(original_text)
 
-    def _generate_general_neurocode(self, text: str) -> str:
+    def _generate_general_aetherra(self, text: str) -> str:
         """Generate general AetherraCode for unrecognized patterns"""
         return f'think about "{text}"\nreason from context and memory\nexecute appropriate_actions'
 
@@ -179,10 +177,10 @@ class NaturalLanguageCompiler:
         ]
         return any(indicator in text for indicator in context_indicators)
 
-    def _add_context(self, neurocode: str) -> str:
+    def _add_context(self, aetherra: str) -> str:
         """Add context retrieval to AetherraCode"""
         context_code = "recall relevant_context from memory\n"
-        return context_code + neurocode
+        return context_code + aetherra
 
 
 class AetherraCodeIDE:
@@ -197,18 +195,18 @@ class AetherraCodeIDE:
 
     def natural_to_neuro(self, natural_language: str) -> str:
         """Convert natural language to AetherraCode"""
-        neurocode = self.compiler.compile_natural_language(natural_language)
+        aetherra = self.compiler.compile_natural_language(natural_language)
 
         # Store in session history
         self.session_history.append(
             {
                 "natural": natural_language,
-                "neurocode": neurocode,
+                "aetherra": aetherra,
                 "timestamp": datetime.now().isoformat(),
             }
         )
 
-        return neurocode
+        return aetherra
 
     def interactive_programming(self):
         """Interactive natural language programming session"""
@@ -232,11 +230,11 @@ class AetherraCodeIDE:
                     continue
 
                 # Compile to AetherraCode
-                neurocode = self.natural_to_neuro(user_input)
+                aetherra = self.natural_to_neuro(user_input)
 
                 print(f"\n🧬 Generated AetherraCode:")
                 print("=" * 40)
-                print(neurocode)
+                print(aetherra)
                 print("=" * 40)
 
                 # Ask if user wants to execute with EOF handling
@@ -266,7 +264,9 @@ def main():
     """Main entry point for natural language compilation"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="AetherraCode Natural Language Compiler")
+    parser = argparse.ArgumentParser(
+        description="AetherraCode Natural Language Compiler"
+    )
     parser.add_argument(
         "--interactive",
         "-i",
@@ -274,7 +274,10 @@ def main():
         help="Start interactive programming session",
     )
     parser.add_argument(
-        "--compile", "-c", type=str, help="Compile natural language text to AetherraCode"
+        "--compile",
+        "-c",
+        type=str,
+        help="Compile natural language text to AetherraCode",
     )
     parser.add_argument(
         "--file", "-f", type=str, help="Compile natural language file to AetherraCode"
@@ -287,20 +290,20 @@ def main():
         ide.interactive_programming()
     elif args.compile:
         compiler = NaturalLanguageCompiler()
-        neurocode = compiler.compile_natural_language(args.compile)
+        aetherra = compiler.compile_natural_language(args.compile)
         print("🧬 Generated AetherraCode:")
-        print(neurocode)
+        print(aetherra)
     elif args.file:
         compiler = NaturalLanguageCompiler()
         try:
             with open(args.file, "r") as f:
                 natural_text = f.read()
-            neurocode = compiler.compile_natural_language(natural_text)
+            aetherra = compiler.compile_natural_language(natural_text)
 
             # Save to .aether file
             output_file = args.file.replace(".txt", ".aether").replace(".md", ".aether")
             with open(output_file, "w") as f:
-                f.write(neurocode)
+                f.write(aetherra)
             print(f"✅ Compiled to {output_file}")
         except Exception as e:
             print(f"❌ Error processing file: {e}")

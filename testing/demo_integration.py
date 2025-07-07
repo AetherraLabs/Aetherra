@@ -3,7 +3,7 @@
 🚀 Integration Demonstration
 ===========================
 
-Quick demo showing the Enhanced Neuroplex with integrated chat router in action.
+Quick demo showing the Enhanced Lyrixawith integrated chat router in action.
 """
 
 import sys
@@ -13,9 +13,10 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root / "core"))
 
+
 def demo_integration():
     """Demonstrate the integrated features"""
-    print("🚀 NEUROPLEX INTEGRATION DEMONSTRATION")
+    print("🚀 LyrixaINTEGRATION DEMONSTRATION")
     print("=" * 50)
 
     # Import and initialize
@@ -37,7 +38,7 @@ def demo_integration():
         response = chat_router.process_message(test_message)
         print(f"Response: {response['text'][:100]}...")
 
-        if response.get('proactive_suggestions'):
+        if response.get("proactive_suggestions"):
             print(f"Suggestions: {response['proactive_suggestions']}")
 
     print("\n🧠 Testing context awareness:")
@@ -46,7 +47,7 @@ def demo_integration():
         "I'm new to AetherraCode",
         "I want to build a memory system",
         "How do I track my progress?",
-        "What should I do next?"
+        "What should I do next?",
     ]
 
     for msg in conversation:
@@ -57,7 +58,7 @@ def demo_integration():
     print(f"\n📚 Conversation history: {len(chat_router.chat_history)} exchanges")
 
     print("\n🎉 INTEGRATION DEMO COMPLETE!")
-    print("🚀 Enhanced Neuroplex features:")
+    print("🚀 Enhanced Lyrixafeatures:")
     print("   ✅ AI-powered responses")
     print("   ✅ Swappable personalities")
     print("   ✅ Context-aware conversations")
@@ -67,6 +68,7 @@ def demo_integration():
 
     print("\n🎯 Ready for GUI launch!")
     print("Run: python aethercode_launcher.py → Option 1")
+
 
 if __name__ == "__main__":
     demo_integration()

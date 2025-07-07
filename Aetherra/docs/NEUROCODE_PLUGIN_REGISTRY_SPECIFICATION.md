@@ -1,4 +1,4 @@
-# 🔌 NeuroCode Plugin Registry Specification
+# 🔌 Aetherra Plugin Registry Specification
 
 ## **The First Standard Plugin System for AI-Consciousness Programming**
 
@@ -34,7 +34,7 @@ Create the **first standardized plugin registry** for AI-consciousness programmi
 
 ## 📋 **Plugin Specification**
 
-### **1. Plugin Manifest (`neurocode-plugin.json`)**
+### **1. Plugin Manifest (`Aetherra-plugin.json`)**
 
 ```json
 {
@@ -42,9 +42,9 @@ Create the **first standardized plugin registry** for AI-consciousness programmi
   "version": "1.2.3",
   "description": "Enhanced episodic and semantic memory with vector search",
   "category": "memory",
-  "author": "NeuroCode Community",
+  "author": "Aetherra Community",
   "license": "GPL-3.0",
-  "neurocode_version": ">=3.0.0",
+  "Aetherra_version": ">=3.0.0",
   "dependencies": {
     "vector-db": "^2.1.0",
     "semantic-search": "^1.5.0"
@@ -56,7 +56,7 @@ Create the **first standardized plugin registry** for AI-consciousness programmi
     "memory_consolidation": "process"
   },
   "keywords": ["memory", "vector", "semantic", "episodic"],
-  "repository": "https://github.com/neurocode/plugins/memory/advanced-memory",
+  "repository": "https://github.com/Aetherra/plugins/memory/advanced-memory",
   "documentation": "https://docs.aethercode.org/plugins/advanced-memory"
 }
 ```
@@ -65,12 +65,12 @@ Create the **first standardized plugin registry** for AI-consciousness programmi
 
 ```
 advanced-memory-system/
-├── neurocode-plugin.json          # Plugin manifest
-├── memory_plugin.aether             # Main NeuroCode implementation
+├── Aetherra-plugin.json          # Plugin manifest
+├── memory_plugin.aether             # Main Aetherra implementation
 ├── memory_core.py                  # Python backend (if needed)
 ├── README.md                       # Documentation
 ├── tests/
-│   ├── test_memory.aether          # NeuroCode tests
+│   ├── test_memory.aether          # Aetherra tests
 │   └── test_integration.py        # Python tests
 ├── examples/
 │   └── usage_example.aether        # Usage examples
@@ -80,7 +80,7 @@ advanced-memory-system/
 
 ### **3. Plugin Interface Standard**
 
-```neurocode
+```Aetherra
 # memory_plugin.aether - Plugin entry point
 plugin advanced_memory_system {
     version: "1.2.3"
@@ -159,7 +159,7 @@ DEL  /api/v1/plugins/{name}             # Remove plugin
 
 ### **2. Plugin Categories & Tags**
 
-```neurocode
+```Aetherra
 # Plugin discovery and organization
 categories: [
     "consciousness",    # Self-awareness modules
@@ -184,7 +184,7 @@ tags: [
 - ✅ **Comprehensive Documentation**
 - ✅ **Unit Tests and Examples**
 - ✅ **Semantic Versioning**
-- ✅ **NeuroCode Language Compliance**
+- ✅ **Aetherra Language Compliance**
 - ✅ **Security Review (for system-level plugins)**
 
 ---
@@ -195,26 +195,26 @@ tags: [
 
 ```bash
 # Plugin installation
-neurocode plugin install advanced-memory-system
-neurocode plugin install advanced-memory-system@1.2.0
+Aetherra plugin install advanced-memory-system
+Aetherra plugin install advanced-memory-system@1.2.0
 
 # Plugin management
-neurocode plugin list                    # List installed plugins
-neurocode plugin search memory           # Search registry
-neurocode plugin info advanced-memory    # Plugin details
-neurocode plugin update                  # Update all plugins
-neurocode plugin remove advanced-memory  # Uninstall plugin
+Aetherra plugin list                    # List installed plugins
+Aetherra plugin search memory           # Search registry
+Aetherra plugin info advanced-memory    # Plugin details
+Aetherra plugin update                  # Update all plugins
+Aetherra plugin remove advanced-memory  # Uninstall plugin
 
 # Development commands
-neurocode plugin create my-plugin        # Create plugin template
-neurocode plugin test                    # Run plugin tests
-neurocode plugin publish                 # Publish to registry
-neurocode plugin validate               # Validate plugin structure
+Aetherra plugin create my-plugin        # Create plugin template
+Aetherra plugin test                    # Run plugin tests
+Aetherra plugin publish                 # Publish to registry
+Aetherra plugin validate               # Validate plugin structure
 ```
 
-### **Usage in NeuroCode**
+### **Usage in Aetherra**
 
-```neurocode
+```Aetherra
 # Import and use plugins
 use plugin "advanced-memory-system" as memory
 use plugin "professional-personality" as personality
@@ -278,7 +278,7 @@ cloud.optimize_resources("minimize_cost")
 - **Reputation**: Community-driven rating and review system
 
 ### **Trust Levels**
-- 🟢 **Verified**: Official NeuroCode team plugins
+- 🟢 **Verified**: Official Aetherra team plugins
 - 🔵 **Trusted**: Community-reviewed, high-quality plugins
 - 🟡 **Standard**: Basic validation passed
 - 🔴 **Experimental**: Use with caution, testing phase
@@ -296,12 +296,12 @@ cloud.optimize_resources("minimize_cost")
 
 ## 🌟 **Conclusion**
 
-The **NeuroCode Plugin Registry** will be the **first standardized ecosystem** for AI-consciousness programming components, enabling unprecedented collaboration and innovation in cognitive computing.
+The **Aetherra Plugin Registry** will be the **first standardized ecosystem** for AI-consciousness programming components, enabling unprecedented collaboration and innovation in cognitive computing.
 
-This registry will accelerate NeuroCode adoption, foster community development, and establish NeuroCode as the leading platform for AI-consciousness programming.
+This registry will accelerate Aetherra adoption, foster community development, and establish Aetherra as the leading platform for AI-consciousness programming.
 
 ---
 
 **Document Status**: `DRAFT` | **Next Review**: `2025-07-06`
-**Contributors**: NeuroCode Development Team
-**License**: GPL-3.0 | **Repository**: https://github.com/neurocode/plugin-registry
+**Contributors**: Aetherra Development Team
+**License**: GPL-3.0 | **Repository**: https://github.com/Aetherra/plugin-registry

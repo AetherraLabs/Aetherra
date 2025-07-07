@@ -1,4 +1,4 @@
-# 🧬 NeuroCode Language Specification
+# 🧬 Aetherra Language Specification
 **Version 1.0.0** | **AI-Native Programming Language**
 
 ---
@@ -22,7 +22,7 @@
 
 ## Language Overview
 
-NeuroCode is the world's first **AI-native programming language** designed for cognitive computing and AI-human collaboration. Unlike traditional programming languages that focus on explicit instructions, NeuroCode emphasizes **intentions**, **goals**, and **AI-assisted problem solving**.
+Aetherra is the world's first **AI-native programming language** designed for cognitive computing and AI-human collaboration. Unlike traditional programming languages that focus on explicit instructions, Aetherra emphasizes **intentions**, **goals**, and **AI-assisted problem solving**.
 
 ### Key Principles
 - **Intent-driven**: Express what you want to achieve, not how to achieve it
@@ -32,14 +32,14 @@ NeuroCode is the world's first **AI-native programming language** designed for c
 - **Self-reflective**: Code that can analyze and improve itself
 
 ### File Extension
-NeuroCode programs use the `.aether` file extension.
+Aetherra programs use the `.aether` file extension.
 
 ---
 
 ## Basic Syntax
 
 ### Comments
-```neurocode
+```Aetherra
 # This is a single-line comment
 
 # Multi-line comments use multiple # symbols
@@ -48,9 +48,9 @@ NeuroCode programs use the `.aether` file extension.
 ```
 
 ### Statements
-Statements in NeuroCode end with newlines. No semicolons required.
+Statements in Aetherra end with newlines. No semicolons required.
 
-```neurocode
+```Aetherra
 goal: "improve system performance"
 remember("optimization completed") as "performance"
 agent: on
@@ -60,12 +60,12 @@ agent: on
 
 ## Data Types
 
-NeuroCode supports the following data types:
+Aetherra supports the following data types:
 
 ### Primitives
-```neurocode
+```Aetherra
 # Strings (quoted)
-name = "NeuroCode"
+name = "Aetherra"
 description = "AI-native programming language"
 
 # Numbers (integers and floats)
@@ -82,7 +82,7 @@ priorities = [1, 2, 3, 4, 5]
 ```
 
 ### Special Types
-```neurocode
+```Aetherra
 # Goals (intent expressions)
 goal: "optimize database queries" priority: high
 
@@ -98,7 +98,7 @@ agent: "performance_monitor"
 ## Variables and Assignments
 
 ### Basic Assignment
-```neurocode
+```Aetherra
 # Simple assignment
 x = 42
 name = "neural_network"
@@ -110,7 +110,7 @@ scores = [0.95, 0.87, 0.92]
 ```
 
 ### Variable References
-```neurocode
+```Aetherra
 # Use variables in expressions
 current_model = models[0]
 total_score = scores[0] + scores[1]
@@ -124,7 +124,7 @@ message = "Using model: " + current_model
 ## Control Flow
 
 ### Conditional Statements
-```neurocode
+```Aetherra
 # Basic if statement
 if performance < 80%:
     suggest fix for "performance issues"
@@ -145,7 +145,7 @@ end
 ```
 
 ### Loops
-```neurocode
+```Aetherra
 # For loop with list
 for model in ["gpt-4", "mistral", "llama2"]:
     test model_performance with model
@@ -164,7 +164,7 @@ end
 ```
 
 ### Pattern Matching
-```neurocode
+```Aetherra
 # Memory pattern matching
 if memory.pattern("crash", frequency="daily"):
     goal: "eliminate daily crashes" priority: high
@@ -183,7 +183,7 @@ end
 ## Functions
 
 ### Function Definition
-```neurocode
+```Aetherra
 # Basic function
 define greet(name)
     return "Hello, " + name + "!"
@@ -211,9 +211,9 @@ end
 ```
 
 ### Function Calls
-```neurocode
+```Aetherra
 # Simple function call
-greeting = greet("NeuroCode")
+greeting = greet("Aetherra")
 
 # Function call with multiple arguments
 final_performance = optimize_system(95.0, 10)
@@ -229,7 +229,7 @@ end
 ## AI Integration
 
 ### Model Selection
-```neurocode
+```Aetherra
 # Switch AI models
 model: "gpt-4"              # OpenAI GPT-4
 model: "mistral"            # Local Mistral via Ollama
@@ -242,7 +242,7 @@ model: "gpt-4" temperature: 0.7 max_tokens: 1000
 ```
 
 ### Assistant Interactions
-```neurocode
+```Aetherra
 # Basic assistant request
 assistant: "explain this algorithm"
 
@@ -261,7 +261,7 @@ end
 ```
 
 ### AI-Powered Operations
-```neurocode
+```Aetherra
 # Code analysis
 analyze "myfile.py"
 suggest fix for "performance bottleneck"
@@ -280,7 +280,7 @@ learn from "error_reports.json"
 ## Memory System
 
 ### Storing Memories
-```neurocode
+```Aetherra
 # Basic memory storage
 remember("user prefers dark theme") as "preferences"
 remember("optimization improved speed by 40%") as "performance"
@@ -291,7 +291,7 @@ remember("user workflow: login -> dashboard -> reports") as "behavior"
 ```
 
 ### Retrieving Memories
-```neurocode
+```Aetherra
 # Simple recall
 user_prefs = recall "preferences"
 
@@ -301,7 +301,7 @@ crash_patterns = memory.pattern("crash", frequency="weekly")
 ```
 
 ### Memory Queries
-```neurocode
+```Aetherra
 # Check memory contents
 if memory.contains("optimization"):
     apply_learned_optimization()
@@ -317,7 +317,7 @@ last_optimization = memory.last("performance")
 ## Goal System
 
 ### Goal Definition
-```neurocode
+```Aetherra
 # Basic goal
 goal: "improve system performance"
 
@@ -332,7 +332,7 @@ goal: "optimize database" if load > 80% priority: medium
 ```
 
 ### Goal Management
-```neurocode
+```Aetherra
 # Check goal status
 if goal.status("improve performance") == "active":
     continue optimization_process
@@ -348,7 +348,7 @@ archive goal "legacy_cleanup"
 ## Agent System
 
 ### Agent Activation
-```neurocode
+```Aetherra
 # Basic agent
 agent: on
 
@@ -365,7 +365,7 @@ end
 ```
 
 ### Agent Configuration
-```neurocode
+```Aetherra
 # Agent with parameters
 agent: "monitor" interval: 30s actions: ["alert", "optimize"]
 
@@ -380,7 +380,7 @@ agent: restart "web_server"
 ## Standard Library
 
 ### System Monitoring (sysmon)
-```neurocode
+```Aetherra
 # System performance
 cpu_usage = sysmon.cpu()
 memory_usage = sysmon.memory()
@@ -392,7 +392,7 @@ top_processes = sysmon.top(5)
 ```
 
 ### Optimizer
-```neurocode
+```Aetherra
 # Performance optimization
 optimizer.cpu_optimize()
 optimizer.memory_cleanup()
@@ -404,7 +404,7 @@ optimizer.suggest_improvements("algorithm.py")
 ```
 
 ### Self-Repair (selfrepair)
-```neurocode
+```Aetherra
 # Automatic debugging
 selfrepair.scan_errors()
 selfrepair.suggest_fixes()
@@ -416,7 +416,7 @@ selfrepair.auto_repair()
 ```
 
 ### Audio Processing (whisper)
-```neurocode
+```Aetherra
 # Speech transcription
 text = whisper.transcribe("audio.wav")
 real_time_text = whisper.live_transcribe()
@@ -430,10 +430,10 @@ confidence = whisper.confidence_score()
 
 ## Multi-LLM Support
 
-NeuroCode supports seamless switching between multiple AI models within the same program:
+Aetherra supports seamless switching between multiple AI models within the same program:
 
 ### Supported Providers
-```neurocode
+```Aetherra
 # OpenAI Models
 model: "gpt-4"
 model: "gpt-3.5-turbo"
@@ -457,7 +457,7 @@ model: "local_model.gguf"
 ```
 
 ### Multi-Model Workflows
-```neurocode
+```Aetherra
 # Privacy-first analysis with local model
 model: "mistral"
 assistant: "analyze this sensitive data locally"
@@ -476,7 +476,7 @@ assistant: "review and validate the complete solution"
 ```
 
 ### Model-Specific Features
-```neurocode
+```Aetherra
 # Model with configuration
 model: "gpt-4" temperature: 0.3 max_tokens: 2000
 model: "mistral" context_length: 8192
@@ -494,7 +494,7 @@ end
 
 ## Grammar Definition
 
-NeuroCode uses a formal EBNF grammar implemented with the Lark parser. Here are the key grammar rules:
+Aetherra uses a formal EBNF grammar implemented with the Lark parser. Here are the key grammar rules:
 
 ### Core Program Structure
 ```ebnf
@@ -558,10 +558,10 @@ COMMENT: /#[^\n]*/
 
 ## Error Handling
 
-NeuroCode includes built-in error handling and self-correction capabilities:
+Aetherra includes built-in error handling and self-correction capabilities:
 
 ### Automatic Error Detection
-```neurocode
+```Aetherra
 # Syntax errors are caught by the parser
 # Runtime errors trigger the self-repair system
 if error_detected:
@@ -573,7 +573,7 @@ end
 ```
 
 ### Manual Error Handling
-```neurocode
+```Aetherra
 try:
     risky_operation()
 catch error:
@@ -587,7 +587,7 @@ end
 ## Best Practices
 
 ### Code Organization
-```neurocode
+```Aetherra
 # Start with goals
 goal: "process user data efficiently" priority: high
 
@@ -608,7 +608,7 @@ remember(result) as "processing_results"
 ```
 
 ### AI Collaboration
-```neurocode
+```Aetherra
 # Use different models for different tasks
 model: "mistral"          # Privacy-sensitive analysis
 assistant: "analyze user behavior patterns"
@@ -621,7 +621,7 @@ assistant: "implement the recommended optimizations"
 ```
 
 ### Memory Management
-```neurocode
+```Aetherra
 # Store important insights
 remember("users prefer mobile interface") as "ux_insights"
 remember("authentication bug fixed") as "bug_fixes"
@@ -645,4 +645,4 @@ end
 
 ---
 
-*NeuroCode: Where code thinks, learns, and evolves* 🧬✨
+*Aetherra: Where code thinks, learns, and evolves* 🧬✨

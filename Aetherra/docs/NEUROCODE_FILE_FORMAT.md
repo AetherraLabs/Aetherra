@@ -1,28 +1,28 @@
-# NeuroCode File Format Specification (.aether)
+# Aetherra File Format Specification (.aether)
 
 **Version**: 3.0 | **Date**: 2024-12-27 | **Status**: Production Ready
 
 ## Overview
 
-The `.aether` file format is the standard file extension for NeuroCode source files. This document defines the structure, conventions, and requirements for NeuroCode files.
+The `.aether` file format is the standard file extension for Aetherra source files. This document defines the structure, conventions, and requirements for Aetherra files.
 
 ## File Extension
 
-- **Primary**: `.aether` - Standard NeuroCode source files
-- **Configuration**: `.aether.config` - NeuroCode configuration files
-- **Data**: `.aether.data` - NeuroCode data files
-- **Template**: `.aether.template` - NeuroCode template files
+- **Primary**: `.aether` - Standard Aetherra source files
+- **Configuration**: `.aether.config` - Aetherra configuration files
+- **Data**: `.aether.data` - Aetherra data files
+- **Template**: `.aether.template` - Aetherra template files
 
 ## File Structure
 
 ### Basic Structure
 
-```neurocode
+```Aetherra
 # File header (optional but recommended)
-# Project: Example NeuroCode Application
+# Project: Example Aetherra Application
 # Version: 1.0
 # Author: AI Developer
-# Purpose: Demonstrate NeuroCode syntax
+# Purpose: Demonstrate Aetherra syntax
 
 # Identity declaration (recommended for main files)
 identity {
@@ -47,9 +47,9 @@ analyze system.current_state
 
 **File**: `example_app.aether`
 
-```neurocode
-#!/usr/bin/env neurocode
-# NeuroCode Example Application
+```Aetherra
+#!/usr/bin/env Aetherra
+# Aetherra Example Application
 # Version: 1.0.0
 # License: GPL-3.0
 
@@ -58,7 +58,7 @@ analyze system.current_state
 #===============================================
 
 identity {
-    name: "NeuroCode Assistant"
+    name: "Aetherra Assistant"
     version: "1.0.0"
     personality: {
         helpful: 0.95
@@ -156,8 +156,8 @@ end
 
 ### 1. File Header (Optional)
 
-```neurocode
-#!/usr/bin/env neurocode
+```Aetherra
+#!/usr/bin/env Aetherra
 # Project Name
 # Version: X.Y.Z
 # Author: Name
@@ -167,15 +167,15 @@ end
 
 ### 2. Imports and Dependencies (Future)
 
-```neurocode
+```Aetherra
 # Future syntax for imports
-import neurocode.stdlib
+import Aetherra.stdlib
 import custom.memory_modules
 ```
 
 ### 3. Configuration Section
 
-```neurocode
+```Aetherra
 identity { ... }
 consciousness { ... }
 voice { ... }
@@ -183,28 +183,28 @@ voice { ... }
 
 ### 4. Goals Declaration
 
-```neurocode
+```Aetherra
 goal: "primary objective" priority: critical
 goal: "secondary objective" priority: high
 ```
 
 ### 5. Memory Setup
 
-```neurocode
+```Aetherra
 remember("initialization data")
 recall "previous_session_data"
 ```
 
 ### 6. Agent Configuration
 
-```neurocode
+```Aetherra
 agent.mode = "autonomous"
 agent.add_goal("specific task")
 ```
 
 ### 7. Main Logic
 
-```neurocode
+```Aetherra
 # Main program execution
 when condition:
     # logic here
@@ -213,7 +213,7 @@ end
 
 ### 8. Function Definitions
 
-```neurocode
+```Aetherra
 define function_name(parameters):
     # function body
 end
@@ -300,7 +300,7 @@ When files exceed 500 lines, consider splitting by:
 
 ### Comments
 
-```neurocode
+```Aetherra
 # Single line comment
 /* Multi-line
    comment */
@@ -314,11 +314,11 @@ When files exceed 500 lines, consider splitting by:
 
 ### Syntax Validation
 
-NeuroCode files should validate against the formal grammar:
+Aetherra files should validate against the formal grammar:
 
 ```bash
-neurocode validate filename.aether
-neurocode lint filename.aether
+Aetherra validate filename.aether
+Aetherra lint filename.aether
 ```
 
 ### Common Issues
@@ -364,8 +364,8 @@ neurocode lint filename.aether
 
 **File**: `templates/basic_app.aether.template`
 
-```neurocode
-#!/usr/bin/env neurocode
+```Aetherra
+#!/usr/bin/env Aetherra
 # {{PROJECT_NAME}}
 # Version: {{VERSION}}
 # Author: {{AUTHOR}}
@@ -389,8 +389,8 @@ end
 
 **File**: `templates/agent.aether.template`
 
-```neurocode
-#!/usr/bin/env neurocode
+```Aetherra
+#!/usr/bin/env Aetherra
 # {{AGENT_NAME}} Agent
 # Purpose: {{AGENT_PURPOSE}}
 
@@ -425,7 +425,7 @@ end
 
 ## See Also
 
-- [NeuroCode Language Specification](NEUROCODE_LANGUAGE_SPECIFICATION.md)
-- [NeuroCode Grammar (EBNF)](NEUROCODE_GRAMMAR.ebnf)
-- [NeuroCode Grammar (Lark)](NEUROCODE_GRAMMAR.lark)
-- [Reserved Keywords Specification](NEUROCODE_RESERVED_KEYWORDS.md)
+- [Aetherra Language Specification](Aetherra_LANGUAGE_SPECIFICATION.md)
+- [Aetherra Grammar (EBNF)](Aetherra_GRAMMAR.ebnf)
+- [Aetherra Grammar (Lark)](Aetherra_GRAMMAR.lark)
+- [Reserved Keywords Specification](Aetherra_RESERVED_KEYWORDS.md)

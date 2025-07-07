@@ -3,7 +3,7 @@
 ====================================
 
 Comprehensive error handling, graceful degradation, and stability improvements
-for the AetherraCode & Neuroplex system.
+for the AetherraCode & Lyrixasystem.
 """
 
 import functools
@@ -80,7 +80,9 @@ class StabilityManager:
 class CircuitBreaker:
     """Circuit breaker pattern for component isolation"""
 
-    def __init__(self, component: str, failure_threshold: int = 5, recovery_timeout: int = 60):
+    def __init__(
+        self, component: str, failure_threshold: int = 5, recovery_timeout: int = 60
+    ):
         self.component = component
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
@@ -197,7 +199,9 @@ def safe_execute(
                             try:
                                 return fallback(*args, **kwargs)
                             except Exception as fallback_error:
-                                stability_manager.logger.error(f"Fallback failed: {fallback_error}")
+                                stability_manager.logger.error(
+                                    f"Fallback failed: {fallback_error}"
+                                )
 
                         # Final failure - return None or raise based on severity
                         if severity == ErrorSeverity.CRITICAL:
@@ -248,7 +252,9 @@ class GracefulDegradation:
             self.current_degradations[component] = []
         if feature not in self.current_degradations[component]:
             self.current_degradations[component].append(feature)
-            stability_manager.logger.warning(f"Degraded {component}: disabled {feature}")
+            stability_manager.logger.warning(
+                f"Degraded {component}: disabled {feature}"
+            )
 
     def is_feature_available(self, component: str, feature: str) -> bool:
         """Check if a feature is currently available"""
@@ -260,7 +266,9 @@ class GracefulDegradation:
         if component in self.current_degradations:
             if feature in self.current_degradations[component]:
                 self.current_degradations[component].remove(feature)
-                stability_manager.logger.info(f"Restored {component}: enabled {feature}")
+                stability_manager.logger.info(
+                    f"Restored {component}: enabled {feature}"
+                )
 
 
 # Global degradation manager
@@ -309,14 +317,16 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     # Example of safe execution
-    @safe_execute(component="test_component", user_message="Test operation failed", max_retries=2)
+    @safe_execute(
+        component="test_component", user_message="Test operation failed", max_retries=2
+    )
     def risky_operation(should_fail: bool = False):
         if should_fail:
             raise ValueError("Simulated failure")
         return "Success!"
 
     # Test successful operation
-#     print("Testing successful operation:")
+    #     print("Testing successful operation:")
     result = risky_operation(False)
     print(f"Result: {result}")
 

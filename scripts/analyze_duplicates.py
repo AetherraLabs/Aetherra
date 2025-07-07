@@ -73,7 +73,7 @@ class DuplicateAnalyzer:
         elif file_path.suffix == ".py":
             return "python"
         elif file_path.suffix == ".aether":
-            return "neurocode"
+            return "Aetherra"
         elif file_path.suffix == ".md":
             return "markdown"
         else:

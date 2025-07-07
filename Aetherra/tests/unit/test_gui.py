@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test the Neuroplex GUI functionality and verify it's working properly
+Test the Lyrixa functionality and verify it's working properly
 """
 
 import os
@@ -9,7 +9,7 @@ import sys
 # Add the current directory to Python path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-print("🧬 Testing Neuroplex GUI Components...")
+print("🧬 Testing Lyrixa Components...")
 
 
 def test_qt_backend():
@@ -51,7 +51,7 @@ def test_gui_classes():
         "GoalTracker",
         "SystemMonitor",
         "LiveConsole",
-        "NeuroplexMainWindow",
+        "LyrixaMainWindow",
     ]
 
     try:
@@ -60,7 +60,7 @@ def test_gui_classes():
             MemoryVisualization,
             AetherraAnimation,
             AetherraEditor,
-            NeuroplexMainWindow,
+            LyrixaMainWindow,
             PulsingWidget,
             SystemMonitor,
         )
@@ -136,7 +136,7 @@ def test_gui_launch():
 def main():
     """Run all tests"""
     print("🧬" + "=" * 60)
-    print("   NEUROPLEX GUI COMPONENT TEST SUITE")
+    print("   Lyrixa COMPONENT TEST SUITE")
     print("🧬" + "=" * 60)
 
     tests = [
@@ -166,7 +166,7 @@ def main():
     print("🧬" + "=" * 60)
 
     if passed == total:
-        print("🎉 ALL TESTS PASSED! Neuroplex GUI is ready to use!")
+        print("🎉 ALL TESTS PASSED! Lyrixa is ready to use!")
         print("💡 To launch the GUI, run: python launch_gui.py")
     else:
         print("⚠️ Some tests failed, but the GUI may still be functional")

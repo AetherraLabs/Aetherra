@@ -22,7 +22,7 @@ from lark import Lark, Token, Transformer, Tree
 from lark.exceptions import LarkError, LexError, ParseError
 
 # Enhanced AetherraCode Formal Grammar Definition
-ENHANCED_NEUROCODE_GRAMMAR = r"""
+ENHANCED_aetherra_GRAMMAR = r"""
     ?start: program
 
     program: statement*
@@ -291,7 +291,7 @@ class AetherraCodeASTNode:
         }
 
 
-class EnhancedNeuroCodeTransformer(Transformer):
+class EnhancedaetherraTransformer(Transformer):
     """Enhanced transformer for AetherraCode AST generation"""
 
     def __init__(self):
@@ -308,14 +308,20 @@ class EnhancedNeuroCodeTransformer(Transformer):
         """Transform model statement"""
         model_spec = args[0] if args else None
         if model_spec:
-            return AetherraCodeASTNode("model", value=model_spec.value, metadata=model_spec.metadata)
+            return AetherraCodeASTNode(
+                "model", value=model_spec.value, metadata=model_spec.metadata
+            )
         return AetherraCodeASTNode("model", value="default")
 
     def model_spec(self, args):
         """Transform model specification"""
         model_name = self._extract_value(args[0]) if args else "default"
-        config = args[1].metadata if len(args) > 1 and hasattr(args[1], "metadata") else {}
-        return AetherraCodeASTNode("model_spec", value=model_name, metadata={"config": config})
+        config = (
+            args[1].metadata if len(args) > 1 and hasattr(args[1], "metadata") else {}
+        )
+        return AetherraCodeASTNode(
+            "model_spec", value=model_name, metadata={"config": config}
+        )
 
     def model_config(self, args):
         """Transform model configuration"""
@@ -336,7 +342,9 @@ class EnhancedNeuroCodeTransformer(Transformer):
         if len(args) >= 2:
             key = self._extract_value(args[0])
             value = self._extract_value(args[1])
-            return AetherraCodeASTNode("model_param", metadata={"key": key, "value": value})
+            return AetherraCodeASTNode(
+                "model_param", metadata={"key": key, "value": value}
+            )
         return AetherraCodeASTNode("model_param")
 
     def assistant_statement(self, args):
@@ -361,7 +369,9 @@ class EnhancedNeuroCodeTransformer(Transformer):
         priority = args[1] if len(args) > 1 else None
 
         if goal_spec:
-            goal_node = AetherraCodeASTNode("goal", value=goal_spec.value, metadata=goal_spec.metadata)
+            goal_node = AetherraCodeASTNode(
+                "goal", value=goal_spec.value, metadata=goal_spec.metadata
+            )
             if priority:
                 goal_node.metadata["priority"] = self._extract_value(priority)
             return goal_node
@@ -463,7 +473,9 @@ class EnhancedNeuroCodeTransformer(Transformer):
         if_block = args[1] if len(args) > 1 else []
         else_part = args[2] if len(args) > 2 else None
 
-        children = if_block if isinstance(if_block, list) else [if_block] if if_block else []
+        children = (
+            if_block if isinstance(if_block, list) else [if_block] if if_block else []
+        )
         if else_part:
             children.append(AetherraCodeASTNode("else_block", children=[else_part]))
 
@@ -527,20 +539,28 @@ class EnhancedNeuroCodeTransformer(Transformer):
         if len(args) >= 2:
             target = self._extract_value(args[0])
             value = args[1]
-            return AetherraCodeASTNode("assignment", value=target, children=[value] if value else [])
+            return AetherraCodeASTNode(
+                "assignment", value=target, children=[value] if value else []
+            )
         return AetherraCodeASTNode("assignment")
 
     def expression_statement(self, args):
         """Transform expression statement"""
         expr = args[0] if args else None
-        return AetherraCodeASTNode("expression_statement", children=[expr] if expr else [])
+        return AetherraCodeASTNode(
+            "expression_statement", children=[expr] if expr else []
+        )
 
     def array_literal(self, args):
         """Transform array literal"""
         elements = args[0] if args else []
         return AetherraCodeASTNode(
             "array",
-            children=elements if isinstance(elements, list) else [elements] if elements else [],
+            children=elements
+            if isinstance(elements, list)
+            else [elements]
+            if elements
+            else [],
         )
 
     def array_elements(self, args):
@@ -609,15 +629,15 @@ class EnhancedNeuroCodeTransformer(Transformer):
         )
 
 
-class EnhancedNeuroCodeParser:
+class EnhancedaetherraParser:
     """Enhanced AetherraCode parser with comprehensive grammar support"""
 
     def __init__(self):
         """Initialize the enhanced parser"""
         self.parser = Lark(
-            ENHANCED_NEUROCODE_GRAMMAR,
+            ENHANCED_aetherra_GRAMMAR,
             parser="lalr",
-            transformer=EnhancedNeuroCodeTransformer(),
+            transformer=EnhancedaetherraTransformer(),
             start="program",
             propagate_positions=True,
         )
@@ -760,7 +780,13 @@ class EnhancedNeuroCodeParser:
                 stats["functions"] += 1
             elif node_type == "goal":
                 stats["goals"] += 1
-            elif node_type in ["remember", "recall", "forget", "reflect", "memory_pattern"]:
+            elif node_type in [
+                "remember",
+                "recall",
+                "forget",
+                "reflect",
+                "memory_pattern",
+            ]:
                 stats["memory_operations"] += 1
             elif node_type == "agent":
                 stats["agent_statements"] += 1
@@ -785,7 +811,12 @@ class EnhancedNeuroCodeParser:
     def get_ast_info(self) -> Dict[str, Any]:
         """Get comprehensive information about the last parsed AST"""
         if not self.last_ast:
-            return {"ast": None, "statistics": {}, "errors": self.errors, "warnings": self.warnings}
+            return {
+                "ast": None,
+                "statistics": {},
+                "errors": self.errors,
+                "warnings": self.warnings,
+            }
 
         return {
             "ast": self.last_ast,
@@ -798,7 +829,9 @@ class EnhancedNeuroCodeParser:
 class AetherraCodeSyntaxError(Exception):
     """Enhanced AetherraCode-specific syntax error"""
 
-    def __init__(self, message: str, line: Optional[int] = None, column: Optional[int] = None):
+    def __init__(
+        self, message: str, line: Optional[int] = None, column: Optional[int] = None
+    ):
         super().__init__(message)
         self.line = line
         self.column = column
@@ -811,9 +844,9 @@ class AetherraCodeSyntaxError(Exception):
 
 
 # Factory function for easy access
-def create_enhanced_parser() -> EnhancedNeuroCodeParser:
+def create_enhanced_parser() -> EnhancedaetherraParser:
     """Create a new enhanced AetherraCode parser instance"""
-    return EnhancedNeuroCodeParser()
+    return EnhancedaetherraParser()
 
 
 # Example usage and comprehensive testing
@@ -930,7 +963,9 @@ end
     print(f"\n🎯 Test Results: {passed_tests}/{total_tests} tests passed")
 
     if passed_tests == total_tests:
-        print("🎉 All tests passed! Enhanced AetherraCode grammar is working perfectly!")
+        print(
+            "🎉 All tests passed! Enhanced AetherraCode grammar is working perfectly!"
+        )
         print("🚀 AetherraCode is now a fully-featured programming language with:")
         print("   • Comprehensive formal grammar (150+ rules)")
         print("   • Robust AST generation")

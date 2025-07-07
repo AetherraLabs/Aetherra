@@ -10,7 +10,7 @@ for the AetherraCode execution environment.
 import logging
 from typing import Any, Dict, Optional
 
-from ..syntax import parse_neurocode
+from ..syntax import parse_aetherra
 from .context import ExecutionContext, ExecutionMode, RuntimeEnvironment
 from .executor import CodeExecutor, ExecutionResult, ExecutionStatus
 
@@ -20,14 +20,16 @@ class RuntimeServices:
 
     def __init__(self):
         self.environment = RuntimeEnvironment()
-        self.logger = logging.getLogger("neurocode.runtime")
+        self.logger = logging.getLogger("aetherra.runtime")
         self._setup_logging()
 
     def _setup_logging(self) -> None:
         """Set up runtime logging"""
         if not self.logger.handlers:
             handler = logging.StreamHandler()
-            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
@@ -86,7 +88,7 @@ class RuntimeServices:
         try:
             # Parse the code
             self.logger.debug(f"Parsing code in context {context.session_id}")
-            syntax_tree = parse_neurocode(code)
+            syntax_tree = parse_aetherra(code)
 
             # Execute the syntax tree
             self.logger.debug(f"Executing syntax tree in context {context.session_id}")
@@ -105,7 +107,9 @@ class RuntimeServices:
 
         except Exception as e:
             self.logger.error(f"Execution error: {e}")
-            return ExecutionResult(status=ExecutionStatus.ERROR, error=str(e), execution_time=0.0)
+            return ExecutionResult(
+                status=ExecutionStatus.ERROR, error=str(e), execution_time=0.0
+            )
 
     def execute_file(
         self, file_path: str, context: Optional[ExecutionContext] = None

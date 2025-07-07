@@ -1,4 +1,4 @@
-// NeuroCode Website JavaScript
+// Aetherra Website JavaScript
 
 document.addEventListener('DOMContentLoaded', function () {
     // Navigation scroll effect
@@ -98,10 +98,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // Code syntax highlighting (simple version)
     const codeBlocks = document.querySelectorAll('code.language-neuro');
     codeBlocks.forEach(block => {
-        highlightNeuroCode(block);
+        highlightAetherra(block);
     });
 
-    function highlightNeuroCode(block) {
+    function highlightAetherra(block) {
         let html = block.innerHTML;
 
         // Keywords

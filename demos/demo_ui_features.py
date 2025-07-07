@@ -50,7 +50,8 @@ def demonstrate_ui_features():
             "Python is a versatile programming language", ["programming", "python"]
         )
         memory.remember(
-            "AetherraCode bridges human cognition and AI", ["neurocode", "ai", "cognition"]
+            "AetherraCode bridges human cognition and AI",
+            ["aetherra", "ai", "cognition"],
         )
         memory.remember(
             "Memory systems enable temporal reasoning",

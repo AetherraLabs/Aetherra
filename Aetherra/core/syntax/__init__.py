@@ -26,7 +26,7 @@ def parse_aetherra(code: str) -> SyntaxNode:
 
 
 # Legacy alias for backward compatibility
-parse_neurocode = parse_aetherra
+parse_aetherra = parse_aetherra
 
 
 __all__ = [
@@ -36,5 +36,5 @@ __all__ = [
     "SyntaxTreeVisitor",
     "analyze_syntax_tree",
     "parse_aetherra",
-    "parse_neurocode",  # Legacy alias
+    "parse_aetherra",  # Legacy alias
 ]

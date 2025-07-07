@@ -147,7 +147,7 @@ def test_ai_features():
 
 def run_enhanced_verification():
     """Run enhanced verification focused on working components"""
-    print("🧬 ENHANCED NEUROCODE VERIFICATION")
+    print("🧬 ENHANCED Aetherra VERIFICATION")
     print("=" * 50)
     #     print("Testing components that are integrated and working...")
 

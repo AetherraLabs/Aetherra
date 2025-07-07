@@ -384,7 +384,7 @@ class PluginManager {
                 console.log(`  📄 ${plugin.description}`);
                 console.log(`  📦 ${plugin.downloads} downloads`);
                 console.log(`  ⭐ ${plugin.rating}/5.0 rating`);
-                console.log(`  💻 neurocode install ${plugin.name}`);
+                console.log(`  💻 aetherra install ${plugin.name}`);
                 console.log('');
             }
         } catch (error) {
@@ -397,7 +397,7 @@ class PluginManager {
         // Implementation for extracting .aetherplug files
         // This would handle ZIP extraction and validation
         return {
-            manifest: {}, // Parsed neurocode-plugin.json
+            manifest: {}, // Parsed aetherra-plugin.json
             files: {}     // Extracted files
         };
     }

@@ -4,7 +4,7 @@ Comprehensive UI Testing Script
 =============================
 
 This script tests all the UI components we've implemented to ensure
-they work correctly and AetherraCode/Neuroplex function as intended.
+they work correctly and AetherraCode/Lyrixafunction as intended.
 """
 
 import logging
@@ -118,20 +118,20 @@ def test_fallback_ui():
 
 
 def test_aetherplex_fixed():
-    """Test the fixed Neuroplex implementation."""
-    print("\n=== Testing Fixed Neuroplex Implementation ===")
+    """Test the fixed Lyrixaimplementation."""
+    print("\n=== Testing Fixed LyrixaImplementation ===")
 
     try:
         # Import without actually running the GUI
 
         spec = importlib.util.spec_from_file_location(
-            "aetherplex_fixed", "src/neurocode/ui/aetherplex_fixed.py"
+            "aetherplex_fixed", "src/Aetherra/ui/aetherplex_fixed.py"
         )
         aetherplex_module = importlib.util.module_from_spec(spec)
 
         # Set __file__ to avoid NameError
         aetherplex_module.__file__ = str(
-            Path("src/neurocode/ui/aetherplex_fixed.py").absolute()
+            Path("src/Aetherra/ui/aetherplex_fixed.py").absolute()
         )
 
         spec.loader.exec_module(aetherplex_module)
@@ -139,7 +139,7 @@ def test_aetherplex_fixed():
         # Test window creation (without showing)
         window = aetherplex_module.aetherplexWindow()
         if window:
-            print("✓ Neuroplex window created successfully")
+            print("✓ Lyrixawindow created successfully")
 
             # Test that it has the expected attributes
             if hasattr(window, "chat_router"):
@@ -151,11 +151,11 @@ def test_aetherplex_fixed():
             if hasattr(window, "chat_widget"):
                 print("✓ Chat widget attribute present")
 
-        print("✓ Fixed Neuroplex implementation working")
+        print("✓ Fixed Lyrixaimplementation working")
         return True
 
     except Exception as e:
-        print(f"✗ Fixed Neuroplex failed: {e}")
+        print(f"✗ Fixed Lyrixafailed: {e}")
         import traceback
 
         traceback.print_exc()
@@ -215,14 +215,14 @@ def test_import_safety():
 def run_comprehensive_test():
     """Run all tests and report results."""
     print("=" * 60)
-    print("NEUROCODE UI COMPREHENSIVE TEST SUITE")
+    print("LYRIXA UI COMPREHENSIVE TEST SUITE")
     print("=" * 60)
 
     tests = [
         ("Qt Fallback Implementations", test_fallback_implementations),
         ("Safe UI Call Utilities", test_safe_ui_calls),
         ("Fallback UI Implementation", test_fallback_ui),
-        ("Fixed Neuroplex Implementation", test_aetherplex_fixed),
+        ("Fixed LyrixaImplementation", test_aetherplex_fixed),
         ("UI Package Initialization", test_ui_init),
         ("Import Safety", test_import_safety),
     ]

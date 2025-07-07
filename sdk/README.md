@@ -13,7 +13,7 @@ plugin: example.calculate "2 + 3 * 4"
 plugin: file.create "README.md" "# My Project"
 ```
 
-Each plugin defines one or more functions that perform tasks, return results, and optionally update Neuroplex's memory.
+Each plugin defines one or more functions that perform tasks, return results, and optionally update Lyrixa's memory.
 
 ## 📁 Plugin File Structure
 

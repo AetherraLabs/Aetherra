@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Revolutionary Persona CLI
+Aetherra Revolutionary Persona CLI
 Demonstrates contextual adaptation and emotional intelligence in action.
 """
 
@@ -133,9 +133,9 @@ class RevolutionaryPersonaCLI:
 
     def run_interactive_demo(self):
         """Run an interactive demo showing contextual adaptation"""
-        print("🧠 NeuroCode Revolutionary Persona System")
+        print("🧠 Aetherra Revolutionary Persona System")
         print("=" * 50)
-        print("This demo shows how NeuroCode adapts its personality based on context.")
+        print("This demo shows how Aetherra adapts its personality based on context.")
         print("Each interaction is remembered and influences future responses.\n")
 
         # Show current persona
@@ -211,7 +211,7 @@ class RevolutionaryPersonaCLI:
         guidance = self._safe_get_guidance("database debugging production")
         ai_response = self._generate_contextual_response(situation, guidance)
 
-        print("\n🤖 NeuroCode Response:")
+        print("\n🤖 Aetherra Response:")
         print(f"📝 {ai_response}")
 
         # Record the interaction
@@ -248,7 +248,7 @@ class RevolutionaryPersonaCLI:
         guidance = self._safe_get_guidance("creative prototyping features")
         ai_response = self._generate_contextual_response(situation, guidance)
 
-        print("\n🤖 NeuroCode Response:")
+        print("\n🤖 Aetherra Response:")
         print(f"✨ {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
@@ -284,7 +284,7 @@ class RevolutionaryPersonaCLI:
         guidance = self._safe_get_guidance("learning machine learning concepts")
         ai_response = self._generate_contextual_response(situation, guidance)
 
-        print("\n🤖 NeuroCode Response:")
+        print("\n🤖 Aetherra Response:")
         print(f"🎓 {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
@@ -326,7 +326,7 @@ class RevolutionaryPersonaCLI:
         guidance = self._safe_get_guidance("emergency server crash production")
         ai_response = self._generate_contextual_response(situation, guidance)
 
-        print("\n🤖 NeuroCode Response:")
+        print("\n🤖 Aetherra Response:")
         print(f"🆘 {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
@@ -362,7 +362,7 @@ class RevolutionaryPersonaCLI:
         guidance = self._safe_get_guidance("refactoring legacy code")
         ai_response = self._generate_contextual_response(situation, guidance)
 
-        print("\n🤖 NeuroCode Response:")
+        print("\n🤖 Aetherra Response:")
         print(f"🔧 {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
@@ -398,7 +398,7 @@ class RevolutionaryPersonaCLI:
         guidance = self._safe_get_guidance("writing documentation")
         ai_response = self._generate_contextual_response(situation, guidance)
 
-        print("\n🤖 NeuroCode Response:")
+        print("\n🤖 Aetherra Response:")
         print(f"📝 {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
@@ -434,7 +434,7 @@ class RevolutionaryPersonaCLI:
         guidance = self._safe_get_guidance("team collaboration code review")
         ai_response = self._generate_contextual_response(situation, guidance)
 
-        print("\n🤖 NeuroCode Response:")
+        print("\n🤖 Aetherra Response:")
         print(f"🤝 {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
@@ -627,7 +627,7 @@ class RevolutionaryPersonaCLI:
         """Show farewell message with session summary"""
         session_duration = (time.time() - self.session_start) / 60  # minutes
 
-        print("\n👋 Thank you for exploring NeuroCode's Revolutionary Persona System!")
+        print("\n👋 Thank you for exploring Aetherra's Revolutionary Persona System!")
         print("📊 Session Summary:")
         print(f"   • Duration: {session_duration:.1f} minutes")
         print(f"   • Interactions: {self.interaction_count}")
@@ -645,13 +645,13 @@ class RevolutionaryPersonaCLI:
                 )
 
         print("\n🌟 This is just the beginning of AI-consciousness collaboration.")
-        print("🚀 Every NeuroCode installation becomes a unique thinking partner!")
+        print("🚀 Every Aetherra installation becomes a unique thinking partner!")
 
 
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
-        description="NeuroCode Revolutionary Persona System Demo"
+        description="Aetherra Revolutionary Persona System Demo"
     )
     parser.add_argument("--demo", action="store_true", help="Run interactive demo")
     parser.add_argument(

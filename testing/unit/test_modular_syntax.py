@@ -7,7 +7,7 @@ This test validates that the modular syntax system works correctly
 and maintains compatibility with the legacy syntax_tree.py.
 """
 
-from Aetherra.core.syntax import SyntaxTreeVisitor, analyze_syntax_tree, parse_neurocode
+from Aetherra.core.syntax import SyntaxTreeVisitor, analyze_syntax_tree, parse_Aetherra
 from Aetherra.core.syntax.analysis import (
     extract_functions,
     generate_summary_report,
@@ -31,7 +31,7 @@ def test_basic_parsing():
     recall "test_memory"
     """
 
-    tree = parse_neurocode(code)
+    tree = parse_Aetherra(code)
     assert tree.type == NodeType.PROGRAM
     assert tree.has_children()
     print("✓ Basic parsing test passed")
@@ -57,7 +57,7 @@ def test_analysis():
     agent.add_goal("Calculate more factorials")
     """
 
-    tree = parse_neurocode(code)
+    tree = parse_Aetherra(code)
     analysis = analyze_syntax_tree(tree)
 
     print("Analysis Results:")
@@ -82,7 +82,7 @@ def test_visitor_pattern():
     end
     """
 
-    tree = parse_neurocode(code)
+    tree = parse_Aetherra(code)
     visitor = SyntaxTreeVisitor()
 
     result = visitor.visit(tree)
@@ -117,7 +117,7 @@ def test_advanced_analysis():
     memory.search("processed_data")
     """
 
-    tree = parse_neurocode(code)
+    tree = parse_Aetherra(code)
 
     # Test validation
     validation = validate_syntax_tree(tree)
@@ -152,7 +152,7 @@ def test_advanced_analysis():
 def test_compatibility():
     """Test compatibility with legacy usage patterns"""
     # Test the same interface as the old syntax_tree.py
-    from Aetherra.core.syntax import parse_neurocode as new_parse
+    from Aetherra.core.syntax import parse_Aetherra as new_parse
 
     code = """
     goal: Test compatibility
@@ -190,7 +190,7 @@ def test_performance():
     import time
 
     start_time = time.time()
-    tree = parse_neurocode(code)
+    tree = parse_Aetherra(code)
     parse_time = time.time() - start_time
 
     start_time = time.time()

@@ -3,7 +3,7 @@
 ============================
 
 Provides intelligent command suggestions, auto-completion, and keyboard shortcuts
-for the Neuroplex interface.
+for the Lyrixainterface.
 """
 
 import difflib
@@ -17,7 +17,7 @@ class CommandCategory(Enum):
     """Categories of commands"""
 
     CORE = "core"
-    NEUROCODE = "neurocode"
+    aetherra = "aetherra"
     MEMORY = "memory"
     PLUGIN = "plugin"
     SYSTEM = "system"
@@ -162,7 +162,7 @@ class CommandRegistry:
             Command(
                 name="exit",
                 category=CommandCategory.SYSTEM,
-                description="Exit Neuroplex",
+                description="Exit Lyrixa",
                 usage="exit",
                 examples=["exit"],
                 aliases=["quit", "q"],

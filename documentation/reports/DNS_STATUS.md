@@ -4,15 +4,15 @@
 
 ### 🔧 **Setup Progress**
 - ✅ **GitHub Pages**: Configured and ready
-- ✅ **CNAME Files**: Properly set to `neurocode.dev`
+- ✅ **CNAME Files**: Properly set to `aetherra.dev`
 - ✅ **Repository**: All changes committed and pushed
 - 🔄 **Cloudflare DNS**: Updating records to GitHub Pages IPs
 - ⏳ **DNS Propagation**: Waiting for global propagation (24-48 hours)
 
 ### 🎯 **Target Configuration**
-**Primary Domain**: `neurocode.dev`
+**Primary Domain**: `aetherra.dev`
 **GitHub Pages Source**: `main` branch, `/` root folder
-**Custom Domain**: `neurocode.dev`
+**Custom Domain**: `aetherra.dev`
 
 ### 📋 **DNS Records (Cloudflare)**
 ```
@@ -26,16 +26,16 @@ Type: CNAME, Name: www, Content: zyonic88.github.io, Proxy: DNS only
 ### 🕐 **Timeline**
 - **June 30, 2025 - 3:00 PM**: DNS records updated in Cloudflare
 - **Expected Resolution**: Within 24-48 hours
-- **Fallback**: `httpsneurocode.dev` remains operational
+- **Fallback**: `httpsaetherra.dev` remains operational
 
 ### 🧪 **Testing Commands**
 ```bash
 # Check DNS propagation
-nslookup neurocode.dev
+nslookup aetherra.dev
 nslookup www.aethercode.dev
 
 # Test website accessibility
-curl -I https://neurocode.dev
+curl -I https://aetherra.dev
 curl -I https://www.aethercode.dev
 ```
 

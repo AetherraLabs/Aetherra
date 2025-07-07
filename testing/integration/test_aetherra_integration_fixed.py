@@ -4,7 +4,7 @@
 =================================
 
 Comprehensive test to verify all major AetherraCode components work together
-and that both AetherraCode and Neuroplex function properly.
+and that both AetherraCode and Lyrixafunction properly.
 """
 
 import sys
@@ -34,7 +34,7 @@ def test_enhanced_interpreter():
         interpreter = EnhancedAetherraInterpreter()
 
         # Test enhanced execution
-        interpreter.execute_neurocode("remember('enhanced test') as 'enhanced_tag'")
+        interpreter.execute_Aetherra("remember('enhanced test') as 'enhanced_tag'")
         print("✅ Enhanced interpreter: Advanced execution working")
         return True
     except Exception as e:
@@ -110,9 +110,9 @@ def test_parser_system():
 def test_agent_system():
     """Test agent functionality"""
     try:
+        from Aetherra.core.aetherra_memory import AetherraMemory
         from Aetherra.core.agent import AetherraAgent
         from Aetherra.core.functions import AetherraFunctions
-        from Aetherra.core.aetherra_memory import AetherraMemory
 
         memory = AetherraMemory()
         functions = AetherraFunctions()
@@ -233,7 +233,7 @@ def main():
     print(f"📈 Success Rate: {passed / (passed + failed) * 100:.1f}%")
 
     if failed == 0:
-        print("\n🎉 All tests passed! AetherraCode and Neuroplex are ready to use!")
+        print("\n🎉 All tests passed! AetherraCode and Lyrixaare ready to use!")
         return 0
     else:
         print(f"\n⚠️  {failed} test(s) failed. Please check the issues above.")

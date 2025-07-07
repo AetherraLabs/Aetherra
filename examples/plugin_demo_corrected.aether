@@ -1,8 +1,8 @@
-# 📄 NeuroCode Plugin Demo - Corrected Version
+# 📄 aetherra Plugin Demo - Corrected Version
 # Demonstrates real usage of available registered plugins
 
 # Example plugin functions
-plugin: example.hello_world "NeuroCode Developer"
+plugin: example.hello_world "aetherra Developer"
 
 # Git operations (available)
 plugin: git_commit "Updated plugin registry and refactored memory core"
@@ -20,7 +20,7 @@ plugin: memory_clear "short_term"
 plugin: read_file "docs/Plugin_SDK.md"
 
 # Agent reflection (newly created)
-plugin: agent_reflect "NeuroCode plugin memory"
+plugin: agent_reflect "aetherra plugin memory"
 
 # System status (newly created)
 plugin: system_status ""

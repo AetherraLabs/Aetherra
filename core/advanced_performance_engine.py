@@ -3,7 +3,7 @@
 🚀 AetherraCode Advanced Performance Engine
 =======================================
 
-Ultra-fast performance optimization system designed to make AetherraCode & Neuroplex
+Ultra-fast performance optimization system designed to make AetherraCode & Lyrixa
 fluid, fast, and responsive across all operations.
 
 Key Features:
@@ -103,7 +103,9 @@ class IntelligentCache:
             return
 
         # Find LRU item based on access time and frequency
-        lru_key = min(self.access_times.items(), key=lambda x: (x[1], self.access_counts[x[0]]))[0]
+        lru_key = min(
+            self.access_times.items(), key=lambda x: (x[1], self.access_counts[x[0]])
+        )[0]
 
         del self.cache[lru_key]
         del self.access_times[lru_key]
@@ -181,8 +183,12 @@ class AdaptivePerformanceEngine:
         self.metrics: Dict[str, PerformanceMetrics] = defaultdict(PerformanceMetrics)
 
         # Thread pools for async operations
-        self.thread_pool = ThreadPoolExecutor(max_workers=self.settings.thread_pool_size)
-        self.process_pool = ProcessPoolExecutor(max_workers=self.settings.process_pool_size)
+        self.thread_pool = ThreadPoolExecutor(
+            max_workers=self.settings.thread_pool_size
+        )
+        self.process_pool = ProcessPoolExecutor(
+            max_workers=self.settings.process_pool_size
+        )
 
         # Performance monitoring
         self.operation_count = 0
@@ -191,7 +197,9 @@ class AdaptivePerformanceEngine:
 
         # Auto-optimization tracking
         self.optimization_suggestions: Dict[str, List[str]] = defaultdict(list)
-        self.performance_trends: Dict[str, deque] = defaultdict(lambda: deque(maxlen=50))
+        self.performance_trends: Dict[str, deque] = defaultdict(
+            lambda: deque(maxlen=50)
+        )
 
         # System monitoring
         self.monitor_lock = threading.Lock()
@@ -246,7 +254,9 @@ class AdaptivePerformanceEngine:
         self.cache.max_size = max(100, self.cache.max_size // 2)
         self.cache.clear()
 
-    def optimize_operation(self, operation_name: str, func: Callable, *args, **kwargs) -> Any:
+    def optimize_operation(
+        self, operation_name: str, func: Callable, *args, **kwargs
+    ) -> Any:
         """Optimize any operation with intelligent caching and monitoring"""
         start_time = time.time()
         operation_hash = None
@@ -259,7 +269,9 @@ class AdaptivePerformanceEngine:
                 try:
                     # Create safe hash for caching
                     arg_str = str(args) + str(sorted(kwargs.items()))
-                    operation_hash = hashlib.md5(f"{operation_name}:{arg_str}".encode()).hexdigest()
+                    operation_hash = hashlib.md5(
+                        f"{operation_name}:{arg_str}".encode()
+                    ).hexdigest()
 
                     # Check cache first
                     cached_result = self.cache.get(operation_hash)
@@ -314,9 +326,13 @@ class AdaptivePerformanceEngine:
 
         finally:
             execution_time = time.time() - start_time
-            self._record_performance(f"{operation_name}_parallel", execution_time, False)
+            self._record_performance(
+                f"{operation_name}_parallel", execution_time, False
+            )
 
-    async def optimize_async(self, operation_name: str, func: Callable, *args, **kwargs) -> Any:
+    async def optimize_async(
+        self, operation_name: str, func: Callable, *args, **kwargs
+    ) -> Any:
         """Optimize operations with async execution"""
         start_time = time.time()
 
@@ -326,7 +342,9 @@ class AdaptivePerformanceEngine:
             else:
                 # Run sync function in thread pool
                 loop = asyncio.get_event_loop()
-                result = await loop.run_in_executor(self.thread_pool, func, *args, **kwargs)
+                result = await loop.run_in_executor(
+                    self.thread_pool, func, *args, **kwargs
+                )
 
             return result
 
@@ -358,7 +376,9 @@ class AdaptivePerformanceEngine:
         # Generate optimization suggestions
         self._analyze_performance_trends(operation_name, metrics)
 
-    def _analyze_performance_trends(self, operation_name: str, metrics: PerformanceMetrics) -> None:
+    def _analyze_performance_trends(
+        self, operation_name: str, metrics: PerformanceMetrics
+    ) -> None:
         """Analyze performance trends and generate suggestions"""
         if metrics.operation_count < 10:
             return  # Need more data
@@ -375,15 +395,21 @@ class AdaptivePerformanceEngine:
             second_avg = sum(second_half) / len(second_half)
 
             if second_avg > first_avg * 1.2:  # 20% slower
-                suggestions.append("Performance degrading - consider caching or optimization")
+                suggestions.append(
+                    "Performance degrading - consider caching or optimization"
+                )
 
         # Check cache effectiveness
         if metrics.cache_misses > metrics.cache_hits * 2:
-            suggestions.append("Low cache hit rate - consider larger cache or better keys")
+            suggestions.append(
+                "Low cache hit rate - consider larger cache or better keys"
+            )
 
         # Check if operation is slow
         if recent_avg > 1.0:  # Operations taking more than 1 second
-            suggestions.append("Slow operation - consider parallel processing or chunking")
+            suggestions.append(
+                "Slow operation - consider parallel processing or chunking"
+            )
 
         if suggestions:
             self.optimization_suggestions[operation_name] = suggestions
@@ -393,7 +419,9 @@ class AdaptivePerformanceEngine:
         total_operations = sum(m.operation_count for m in self.metrics.values())
         total_time = sum(m.total_time for m in self.metrics.values())
         total_cache_hits = sum(m.cache_hits for m in self.metrics.values())
-        total_cache_accesses = sum(m.cache_hits + m.cache_misses for m in self.metrics.values())
+        total_cache_accesses = sum(
+            m.cache_hits + m.cache_misses for m in self.metrics.values()
+        )
 
         uptime = time.time() - self.startup_time
 
@@ -411,7 +439,9 @@ class AdaptivePerformanceEngine:
                     "count": m.operation_count,
                     "avg_time": m.avg_time,
                     "total_time": m.total_time,
-                    "cache_hit_rate": (m.cache_hits / (m.cache_hits + m.cache_misses) * 100)
+                    "cache_hit_rate": (
+                        m.cache_hits / (m.cache_hits + m.cache_misses) * 100
+                    )
                     if (m.cache_hits + m.cache_misses) > 0
                     else 0,
                 }
@@ -435,7 +465,8 @@ class AdaptivePerformanceEngine:
                 {
                     "cpu_percent": psutil.cpu_percent(),
                     "memory_percent": psutil.virtual_memory().percent,
-                    "available_memory_gb": psutil.virtual_memory().available / (1024**3),
+                    "available_memory_gb": psutil.virtual_memory().available
+                    / (1024**3),
                     "cpu_count": psutil.cpu_count(),
                 }
             )
@@ -506,7 +537,9 @@ def performance_optimized(operation_name: Optional[str] = None):
     return decorator
 
 
-def parallel_optimized(operation_name: Optional[str] = None, max_workers: Optional[int] = None):
+def parallel_optimized(
+    operation_name: Optional[str] = None, max_workers: Optional[int] = None
+):
     """Decorator to automatically parallelize function over lists"""
 
     def decorator(func: Callable) -> Callable:
@@ -518,7 +551,9 @@ def parallel_optimized(operation_name: Optional[str] = None, max_workers: Option
             if args or kwargs:
                 # Create partial function for additional arguments
                 partial_func = functools.partial(func, *args, **kwargs)
-                return engine.optimize_parallel(name, partial_func, data_list, max_workers)
+                return engine.optimize_parallel(
+                    name, partial_func, data_list, max_workers
+                )
             else:
                 return engine.optimize_parallel(name, func, data_list, max_workers)
 

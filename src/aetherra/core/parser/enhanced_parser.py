@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-🧬 Enhanced NeuroCode Parser
-Token/Grammar-based parsing system for advanced NeuroCode constructs
+🧬 Enhanced Aetherra Parser
+Token/Grammar-based parsing system for advanced Aetherra constructs
 
 This enhances the current interpreter.py with:
 1. Token-based parsing instead of regex matching
@@ -17,7 +17,7 @@ from typing import Any, List, Optional
 
 
 class TokenType(Enum):
-    """NeuroCode token types"""
+    """Aetherra token types"""
 
     # Core language tokens
     KEYWORD = "KEYWORD"  # remember, recall, goal, agent, etc.
@@ -37,7 +37,7 @@ class TokenType(Enum):
     EOF = "EOF"  # end of file
     COMMENT = "COMMENT"  # # comments
 
-    # NeuroCode specific
+    # Aetherra specific
     MEMORY_TAG = "MEMORY_TAG"  # tags in memory operations
     GOAL_PRIORITY = "GOAL_PRIORITY"  # high, medium, low
     AGENT_SPEC = "AGENT_SPEC"  # specialization specifications
@@ -69,9 +69,9 @@ class ASTNode:
 
 
 class AetherraLexer:
-    """Tokenizes NeuroCode source into tokens"""
+    """Tokenizes Aetherra source into tokens"""
 
-    # NeuroCode keywords
+    # Aetherra keywords
     KEYWORDS = {
         "remember",
         "recall",
@@ -111,7 +111,7 @@ class AetherraLexer:
         "autonomous",
     }
 
-    # NeuroCode operators and delimiters
+    # Aetherra operators and delimiters
     OPERATORS = {
         "as",
         "on",
@@ -136,7 +136,7 @@ class AetherraLexer:
         self.text = ""
 
     def tokenize(self, text: str) -> List[Token]:
-        """Tokenize NeuroCode source text"""
+        """Tokenize Aetherra source text"""
         self.text = text
         self.position = 0
         self.current_line = 1
@@ -147,7 +147,9 @@ class AetherraLexer:
             self._scan_token()
 
         # Add EOF token
-        self.tokens.append(Token(TokenType.EOF, "", self.current_line, self.current_column))
+        self.tokens.append(
+            Token(TokenType.EOF, "", self.current_line, self.current_column)
+        )
 
         return self.tokens
 
@@ -287,7 +289,9 @@ class AetherraLexer:
 
     def _add_token(self, token_type: TokenType, value: str):
         """Add a token to the list"""
-        self.tokens.append(Token(token_type, value, self.current_line, self.current_column))
+        self.tokens.append(
+            Token(token_type, value, self.current_line, self.current_column)
+        )
 
 
 class AetherraParser:
@@ -360,7 +364,11 @@ class AetherraParser:
     def _parse_remember(self) -> ASTNode:
         """Parse remember statement: remember("content") as "tags" """
         node = ASTNode(
-            "REMEMBER", None, [], self._current_token().line, self._current_token().column
+            "REMEMBER",
+            None,
+            [],
+            self._current_token().line,
+            self._current_token().column,
         )
 
         self._advance()  # Skip 'remember'
@@ -399,7 +407,9 @@ class AetherraParser:
 
     def _parse_recall(self) -> ASTNode:
         """Parse recall statement"""
-        node = ASTNode("RECALL", None, [], self._current_token().line, self._current_token().column)
+        node = ASTNode(
+            "RECALL", None, [], self._current_token().line, self._current_token().column
+        )
 
         self._advance()  # Skip 'recall'
 
@@ -421,7 +431,9 @@ class AetherraParser:
 
     def _parse_goal(self) -> ASTNode:
         """Parse goal statement: goal: "objective" priority: high"""
-        node = ASTNode("GOAL", None, [], self._current_token().line, self._current_token().column)
+        node = ASTNode(
+            "GOAL", None, [], self._current_token().line, self._current_token().column
+        )
 
         self._advance()  # Skip 'goal'
 
@@ -457,7 +469,11 @@ class AetherraParser:
     def _parse_function_definition(self) -> ASTNode:
         """Parse function definition: define function_name(params) ... end"""
         node = ASTNode(
-            "FUNCTION_DEF", None, [], self._current_token().line, self._current_token().column
+            "FUNCTION_DEF",
+            None,
+            [],
+            self._current_token().line,
+            self._current_token().column,
         )
 
         self._advance()  # Skip 'define'
@@ -477,7 +493,11 @@ class AetherraParser:
             # Parse parameters if present
             if self._match_operator("("):
                 params_node = ASTNode(
-                    "PARAMETERS", None, [], self._current_token().line, self._current_token().column
+                    "PARAMETERS",
+                    None,
+                    [],
+                    self._current_token().line,
+                    self._current_token().column,
                 )
 
                 while not self._match_operator(")") and not self._at_end():
@@ -500,7 +520,11 @@ class AetherraParser:
 
             # Parse function body until 'end'
             body_node = ASTNode(
-                "FUNCTION_BODY", None, [], self._current_token().line, self._current_token().column
+                "FUNCTION_BODY",
+                None,
+                [],
+                self._current_token().line,
+                self._current_token().column,
             )
 
             while (
@@ -591,7 +615,10 @@ class AetherraParser:
 
     def _at_end(self) -> bool:
         """Check if at end of tokens"""
-        return self.current >= len(self.tokens) or self._current_token().type == TokenType.EOF
+        return (
+            self.current >= len(self.tokens)
+            or self._current_token().type == TokenType.EOF
+        )
 
     def _match_operator(self, expected: str) -> bool:
         """Check if current token matches expected operator"""
@@ -611,7 +638,7 @@ class EnhancedAetherraInterpreter:
         self.parser = None
 
     def execute_enhanced(self, source: str) -> str:
-        """Execute NeuroCode using enhanced parsing"""
+        """Execute Aetherra using enhanced parsing"""
         try:
             # Tokenize
             tokens = self.lexer.tokenize(source)
@@ -720,7 +747,9 @@ class EnhancedAetherraInterpreter:
                     body.append(self._reconstruct_command(stmt))
 
         if func_name:
-            result = self.base_interpreter.functions.define_function(func_name, params, body)
+            result = self.base_interpreter.functions.define_function(
+                func_name, params, body
+            )
             return f"🔧 Function defined: {func_name}({', '.join(params)})"
 
         return "❌ Invalid function definition"
@@ -731,7 +760,9 @@ class EnhancedAetherraInterpreter:
             parts = [node.value]
             for child in node.children:
                 if child.type == "ARGUMENT":
-                    parts.append(f'"{child.value}"' if " " in child.value else child.value)
+                    parts.append(
+                        f'"{child.value}"' if " " in child.value else child.value
+                    )
             return " ".join(parts)
 
         return str(node.value)
@@ -741,9 +772,9 @@ class EnhancedAetherraInterpreter:
 if __name__ == "__main__":
     # Test the enhanced parser
     sample_code = """
-    # NeuroCode with enhanced parsing
+    # Aetherra with enhanced parsing
     remember("Python is object-oriented") as "programming,paradigm"
-    goal: "learn advanced NeuroCode" priority: high
+    goal: "learn advanced Aetherra" priority: high
 
     define fibonacci(n)
         if n <= 1
@@ -757,7 +788,7 @@ if __name__ == "__main__":
     think "about the fibonacci sequence"
     """
 
-    print("🧬 Testing Enhanced NeuroCode Parser")
+    print("🧬 Testing Enhanced Aetherra Parser")
     print("=" * 50)
 
     # Tokenize

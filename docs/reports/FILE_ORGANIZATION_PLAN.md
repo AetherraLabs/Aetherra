@@ -1,5 +1,5 @@
-# 🗂️ NeuroCode File Organization Plan
-**Date**: June 29, 2025  
+# 🗂️ aetherra File Organization Plan
+**Date**: June 29, 2025
 **Goal**: Clean, professional structure for v1.0 release
 
 ---
@@ -17,20 +17,20 @@
 ## 🎯 Target Structure
 
 ```
-NeuroCode/
+aetherra/
 ├── 📁 core/                    # Core language infrastructure
-│   ├── neurocode_grammar.py    # Lark grammar parser
+│   ├── aetherra_grammar.py    # Lark grammar parser
 │   ├── multi_llm_manager.py    # Multi-LLM backend
 │   ├── llm_integration.py      # LLM interpreter integration
 │   └── [other core modules]
 ├── 📁 src/                     # Main source code
-│   ├── neurocode_engine.py     # Main engine
-│   ├── neurocode.py            # Core module
+│   ├── aetherra_engine.py     # Main engine
+│   ├── aetherra.py            # Core module
 │   ├── natural_translator.py   # Natural language translator
 │   └── comprehensive_demo.py   # Main demo
 ├── 📁 ui/                      # User interfaces
-│   ├── neurocode_playground.py # Streamlit playground
-│   ├── neuroplex_gui.py        # Desktop GUI
+│   ├── aetherra_playground.py # Streamlit playground
+│   ├── Lyrixa_gui.py        # Desktop GUI
 │   └── [other UI components]
 ├── 📁 stdlib/                  # Standard library
 ├── 📁 plugins/                 # Plugin system
@@ -85,15 +85,15 @@ NeuroCode/
 ## 📦 Priority Files to Organize
 
 ### **High Priority (Core Functionality)**
-1. `neurocode_engine.py` → `src/`
-2. `neurocode.py` → `src/`
-3. `neurocode_playground.py` → `ui/`
+1. `aetherra_engine.py` → `src/`
+2. `aetherra.py` → `src/`
+3. `aetherra_playground.py` → `ui/`
 4. `launch_playground.py` → `tools/`
 5. `quickstart.py` → `tools/`
 6. `status_check.py` → `tools/`
 
 ### **Medium Priority (Documentation)**
-1. `NEUROCODE_LANGUAGE_SPEC.md` → `docs/`
+1. `aetherra_LANGUAGE_SPEC.md` → `docs/`
 2. `TUTORIAL.md` → `docs/`
 3. `ARCHITECTURE.md` → `docs/`
 4. Current `README.md` → consolidate
@@ -108,14 +108,14 @@ NeuroCode/
 ## 🧹 Files to Archive
 
 Moving to `archive/historical/`:
-- `NEUROCODE_V1_ACHIEVEMENT_REPORT.md`
+- `aetherra_V1_ACHIEVEMENT_REPORT.md`
 - `CONTINUATION_SUMMARY.md`
 - `MULTI_LLM_ACHIEVEMENT.md`
 - `LANGUAGE_ACHIEVEMENT.txt`
-- `NEUROCODE_FOUNDATION_ESTABLISHED.md`
-- `NEUROCODE_LANGUAGE_COMPLETE.md`
-- `NEUROCODE_PLAYGROUND_COMPLETE.md`
-- `NEUROCODE_STDLIB_COMPLETE.md`
+- `aetherra_FOUNDATION_ESTABLISHED.md`
+- `aetherra_LANGUAGE_COMPLETE.md`
+- `aetherra_PLAYGROUND_COMPLETE.md`
+- `aetherra_STDLIB_COMPLETE.md`
 - `REVOLUTION_ACHIEVED.md`
 - `LANGUAGE_INDEPENDENCE_ACHIEVED.md`
 
@@ -127,7 +127,7 @@ Moving to `archive/historical/`:
    - Playground launches correctly
    - All import paths work
    - Tests pass
-   
+
 2. **Update Documentation**
    - Fix file path references
    - Update installation instructions

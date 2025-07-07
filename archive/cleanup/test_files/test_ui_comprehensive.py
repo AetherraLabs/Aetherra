@@ -4,7 +4,7 @@ Comprehensive UI Testing Script
 =============================
 
 This script tests all the UI components we've implemented to ensure
-they work correctly and aetherra/Neuroplex function as intended.
+they work correctly and aetherra/Aetherra function as intended.
 """
 
 import logging
@@ -118,30 +118,30 @@ def test_fallback_ui():
         return False
 
 
-def test_neuroplex_fixed():
-    """Test the fixed Neuroplex implementation."""
-    print("\n=== Testing Fixed Neuroplex Implementation ===")
+def test_Aetherra_fixed():
+    """Test the fixed Aetherra implementation."""
+    print("\n=== Testing Fixed Aetherra Implementation ===")
 
     try:
         # Import without actually running the GUI
         import importlib.util
 
         spec = importlib.util.spec_from_file_location(
-            "neuroplex_fixed", "src/aetherra/ui/neuroplex_fixed.py"
+            "Aetherra_fixed", "src/aetherra/ui/Aetherra_fixed.py"
         )
-        neuroplex_module = importlib.util.module_from_spec(spec)
+        Aetherra_module = importlib.util.module_from_spec(spec)
 
         # Set __file__ to avoid NameError
-        neuroplex_module.__file__ = str(
-            Path("src/aetherra/ui/neuroplex_fixed.py").absolute()
+        Aetherra_module.__file__ = str(
+            Path("src/aetherra/ui/Aetherra_fixed.py").absolute()
         )
 
-        spec.loader.exec_module(neuroplex_module)
+        spec.loader.exec_module(Aetherra_module)
 
         # Test window creation (without showing)
-        window = neuroplex_module.aetherplexWindow()
+        window = Aetherra_module.aetherplexWindow()
         if window:
-            print("✓ Neuroplex window created successfully")
+            print("✓ Aetherra window created successfully")
 
             # Test that it has the expected attributes
             if hasattr(window, "chat_router"):
@@ -153,11 +153,11 @@ def test_neuroplex_fixed():
             if hasattr(window, "chat_widget"):
                 print("✓ Chat widget attribute present")
 
-        print("✓ Fixed Neuroplex implementation working")
+        print("✓ Fixed Aetherra implementation working")
         return True
 
     except Exception as e:
-        print(f"✗ Fixed Neuroplex failed: {e}")
+        print(f"✗ Fixed Aetherra failed: {e}")
         import traceback
 
         traceback.print_exc()
@@ -224,7 +224,7 @@ def run_comprehensive_test():
         ("Qt Fallback Implementations", test_fallback_implementations),
         ("Safe UI Call Utilities", test_safe_ui_calls),
         ("Fallback UI Implementation", test_fallback_ui),
-        ("Fixed Neuroplex Implementation", test_neuroplex_fixed),
+        ("Fixed Aetherra Implementation", test_Aetherra_fixed),
         ("UI Package Initialization", test_ui_init),
         ("Import Safety", test_import_safety),
     ]

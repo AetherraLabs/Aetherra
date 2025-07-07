@@ -3,7 +3,7 @@
 🚀 AetherraCode UI Performance Optimizer
 =====================================
 
-Advanced UI performance optimization for AetherraCode & Neuroplex GUI components.
+Advanced UI performance optimization for AetherraCode & Lyrixa components.
 This module enhances responsiveness, reduces memory usage, and improves
 rendering performance across all UI components.
 
@@ -75,7 +75,9 @@ class UIOptimizer:
             return widget_class(*args, **kwargs)
 
         # Generate cache key
-        cache_key = f"{widget_class.__name__}:{hash((args, tuple(sorted(kwargs.items()))))}"
+        cache_key = (
+            f"{widget_class.__name__}:{hash((args, tuple(sorted(kwargs.items()))))}"
+        )
 
         # Check cache
         if cache_key in self.widget_cache:
@@ -95,7 +97,9 @@ class UIOptimizer:
 
         return widget
 
-    def debounce_event(self, event_name: str, callback: Callable, delay_ms: int = 100) -> bool:
+    def debounce_event(
+        self, event_name: str, callback: Callable, delay_ms: int = 100
+    ) -> bool:
         """Debounce UI events to prevent excessive calls"""
         current_time = time.time() * 1000
         last_time = self.event_debounce.get(event_name, 0)
@@ -106,7 +110,9 @@ class UIOptimizer:
             return True
         return False
 
-    def optimize_render_operation(self, operation_name: str, render_func: Callable) -> Any:
+    def optimize_render_operation(
+        self, operation_name: str, render_func: Callable
+    ) -> Any:
         """Optimize rendering operations with caching"""
         if not self.optimization_enabled:
             return render_func()
@@ -219,7 +225,9 @@ class UIOptimizer:
 
         # Widget count optimization
         if latest.widget_count > 1000:
-            suggestions.append("Consider widget virtualization - high widget count detected")
+            suggestions.append(
+                "Consider widget virtualization - high widget count detected"
+            )
 
         # Memory optimization
         if latest.memory_usage > self.memory_threshold_mb:
@@ -231,7 +239,9 @@ class UIOptimizer:
 
         # Cache optimization
         if len(self.render_cache) > 100:
-            suggestions.append("Large render cache - consider clearing old cached renders")
+            suggestions.append(
+                "Large render cache - consider clearing old cached renders"
+            )
 
         if not suggestions:
             suggestions.append("UI performance is optimal")
@@ -268,7 +278,9 @@ class UIOptimizer:
         # Clean up widget cache
         dead_keys = []
         for key, widget in self.widget_cache.items():
-            if widget is None or (hasattr(widget, "isVisible") and not widget.isVisible()):
+            if widget is None or (
+                hasattr(widget, "isVisible") and not widget.isVisible()
+            ):
                 dead_keys.append(key)
 
         for key in dead_keys:
@@ -295,7 +307,11 @@ class ResponsiveUIManager:
         if metrics.fps < 20 and self.performance_mode != "performance":
             self.performance_mode = "performance"
             adaptations["mode_change"] = "performance"
-        elif metrics.fps > 50 and metrics.memory_usage < 50 and self.performance_mode != "quality":
+        elif (
+            metrics.fps > 50
+            and metrics.memory_usage < 50
+            and self.performance_mode != "quality"
+        ):
             self.performance_mode = "quality"
             adaptations["mode_change"] = "quality"
 
@@ -347,11 +363,15 @@ def ui_optimized(cache_renders: bool = False, debounce_ms: int = 0):
         def wrapper(*args, **kwargs):
             if debounce_ms > 0:
                 event_name = f"{func.__name__}:{id(func)}"
-                if not ui_optimizer.debounce_event(event_name, lambda: None, debounce_ms):
+                if not ui_optimizer.debounce_event(
+                    event_name, lambda: None, debounce_ms
+                ):
                     return  # Event was debounced
 
             if cache_renders:
-                operation_name = f"{func.__name__}:{hash((args, tuple(sorted(kwargs.items()))))}"
+                operation_name = (
+                    f"{func.__name__}:{hash((args, tuple(sorted(kwargs.items()))))}"
+                )
                 return ui_optimizer.optimize_render_operation(
                     operation_name, lambda: func(*args, **kwargs)
                 )
@@ -371,7 +391,9 @@ def batch_ui_operation(batch_size: int = 10):
             if not isinstance(items, list):
                 return func(items, *args, **kwargs)
 
-            operations = [lambda item=item: func(item, *args, **kwargs) for item in items]
+            operations = [
+                lambda item=item: func(item, *args, **kwargs) for item in items
+            ]
             ui_optimizer.batch_ui_updates(operations, batch_size)
 
         return wrapper
@@ -432,7 +454,9 @@ if __name__ == "__main__":
 
         # Test performance measurement
         metrics = ui_optimizer.measure_ui_performance()
-        print(f"📊 Current metrics: {metrics.widget_count} widgets, {metrics.memory_usage:.1f}MB")
+        print(
+            f"📊 Current metrics: {metrics.widget_count} widgets, {metrics.memory_usage:.1f}MB"
+        )
 
         # Get optimization suggestions
         suggestions = ui_optimizer.get_optimization_suggestions()

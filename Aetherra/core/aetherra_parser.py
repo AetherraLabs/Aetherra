@@ -721,8 +721,8 @@ def compile_aetherra(source: str) -> str:
 
 
 # Legacy aliases for backward compatibility
-parse_neurocode = parse_aetherra
-compile_neurocode = compile_aetherra
+parse_aetherra = parse_aetherra
+compile_aetherra = compile_aetherra
 
 
 # Example usage and testing

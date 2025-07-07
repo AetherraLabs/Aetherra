@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test Neuroplex GUI Launch
+Test Lyrixa Launch
 """
 
 import os
@@ -14,7 +14,7 @@ sys.path.insert(0, src_path)
 
 
 def test_aetherplex_components():
-    print("🖥️ TESTING NEUROPLEX GUI COMPONENTS")
+    print("🖥️ TESTING Lyrixa COMPONENTS")
     print("=" * 45)
 
     # Test UI imports
@@ -41,12 +41,12 @@ def test_aetherplex_components():
         return False
 
     # Test that we can instantiate the main window (without showing it)
-    print("✅ Neuroplex ready to launch")
+    print("✅ Lyrixaready to launch")
     return True
 
 
 def test_launcher_scripts():
-    print("\n🚀 TESTING NEUROPLEX LAUNCHERS")
+    print("\n🚀 TESTING LyrixaLAUNCHERS")
     print("=" * 45)
 
     launchers = [
@@ -75,10 +75,10 @@ def test_launcher_scripts():
 
 
 def demonstration_launch_simulation():
-    print("\n🎭 NEUROPLEX LAUNCH SIMULATION")
+    print("\n🎭 LyrixaLAUNCH SIMULATION")
     print("=" * 45)
 
-    print("Simulating Neuroplex launch sequence...")
+    print("Simulating Lyrixalaunch sequence...")
 
     # Simulate the launch process without actually showing the GUI
     try:
@@ -94,8 +94,8 @@ def demonstration_launch_simulation():
         print("🖥️ Initializing main window...")
         # Note: We don't actually show the window to avoid blocking the test
 
-        print("✅ All Neuroplex components initialized successfully!")
-        print("🎉 Neuroplex is ready to launch!")
+        print("✅ All Lyrixacomponents initialized successfully!")
+        print("🎉 Lyrixais ready to launch!")
 
         return True
 
@@ -108,7 +108,7 @@ def demonstration_launch_simulation():
 
 
 if __name__ == "__main__":
-    print("🖥️ NEUROPLEX GUI TESTING SUITE")
+    print("🖥️ Lyrixa TESTING SUITE")
     print("=" * 50)
 
     test1 = test_aetherplex_components()
@@ -116,22 +116,22 @@ if __name__ == "__main__":
     test3 = demonstration_launch_simulation()
 
     print("\n" + "=" * 50)
-    print("📋 NEUROPLEX TEST SUMMARY")
+    print("📋 LyrixaTEST SUMMARY")
     print("=" * 50)
 
     if all([test1, test2, test3]):
-        print("🎉 ALL NEUROPLEX TESTS PASSED!")
-        print("🖥️ Neuroplex is fully operational!")
+        print("🎉 ALL LyrixaTESTS PASSED!")
+        print("🖥️ Lyrixais fully operational!")
         print("🚀 Ready to launch GUI interface!")
     else:
-        print("⚠️ Some Neuroplex components need attention")
+        print("⚠️ Some Lyrixacomponents need attention")
 
-    print("\n🔍 NEUROPLEX STATUS:")
+    print("\n🔍 LyrixaSTATUS:")
     print("✅ GUI components available" if test1 else "❌ GUI components missing")
     print("✅ Launcher scripts available" if test2 else "❌ Launcher scripts missing")
     print("✅ Launch simulation successful" if test3 else "❌ Launch simulation failed")
 
-    print("\n💡 TO LAUNCH NEUROPLEX:")
+    print("\n💡 TO LAUNCH Lyrixa:")
     print("   python launchers/launch_fully_modular_aetherplex.py")
     print("   OR")
     print('   python -c "from Lyrixa.ui import launch_gui; launch_gui()"')

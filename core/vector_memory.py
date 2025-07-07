@@ -168,10 +168,10 @@ class EnhancedSemanticMemory:
 
     def recall(
         self,
-            query: Optional[str] = None,
-            tags: Optional[List[str]] = None,
-            category: Optional[str] = None,
-            limit: int = 10
+        query: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        category: Optional[str] = None,
+        limit: int = 10,
     ) -> List[Dict]:
         """Traditional recall with keyword matching + semantic boost"""
         if query:
@@ -236,7 +236,9 @@ class EnhancedSemanticMemory:
                 if other_memory.id in processed:
                     continue
 
-                similarity = self._cosine_similarity(memory.embedding, other_memory.embedding)
+                similarity = self._cosine_similarity(
+                    memory.embedding, other_memory.embedding
+                )
                 if similarity >= min_similarity:
                     cluster.append(other_memory)
                     processed.add(other_memory.id)
@@ -297,7 +299,9 @@ class EnhancedSemanticMemory:
             "total_memories": len(self.memories),
             "unique_tags": len(tag_freq),
             "unique_categories": len(category_freq),
-            "most_common_tags": sorted(tag_freq.items(), key=lambda x: x[1], reverse=True)[:5],
+            "most_common_tags": sorted(
+                tag_freq.items(), key=lambda x: x[1], reverse=True
+            )[:5],
             "most_common_categories": sorted(
                 category_freq.items(), key=lambda x: x[1], reverse=True
             )[:5],
@@ -321,7 +325,9 @@ class EnhancedSemanticMemory:
 
         return dot_product / (magnitude1 * magnitude2)
 
-    def _find_similar_memories(self, memory: VectorMemory, limit: int = 3) -> List[Dict]:
+    def _find_similar_memories(
+        self, memory: VectorMemory, limit: int = 3
+    ) -> List[Dict]:
         """Find memories similar to the given memory"""
         similarities = []
 
@@ -329,7 +335,9 @@ class EnhancedSemanticMemory:
             if other_memory.id == memory.id:
                 continue
 
-            similarity = self._cosine_similarity(memory.embedding, other_memory.embedding)
+            similarity = self._cosine_similarity(
+                memory.embedding, other_memory.embedding
+            )
             similarities.append((similarity, other_memory))
 
         similarities.sort(key=lambda x: x[0], reverse=True)
@@ -435,7 +443,9 @@ class EnhancedSemanticMemory:
             "unique_tags": len(self.tag_index),
             "unique_categories": len(self.category_index),
             "memory_file": self.memory_file,
-            "embedding_model": "SentenceTransformers" if self.embedding_model else "Hash-based",
+            "embedding_model": "SentenceTransformers"
+            if self.embedding_model
+            else "Hash-based",
             "avg_memory_size": sum(len(m.content) for m in self.memories)
             / max(1, len(self.memories)),
             "oldest_memory": min((m.timestamp for m in self.memories), default=0),
@@ -452,12 +462,20 @@ if __name__ == "__main__":
 
     # Test memories
     test_memories = [
-        ("AetherraCode is an AI-native programming language", ["ai", "programming"], "technology"),
-        ("Python is good for data science and machine learning", ["python", "data"], "programming"),
+        (
+            "AetherraCode is an AI-native programming language",
+            ["ai", "programming"],
+            "technology",
+        ),
+        (
+            "Python is good for data science and machine learning",
+            ["python", "data"],
+            "programming",
+        ),
         ("Machine learning models require large datasets", ["ml", "data"], "ai"),
         (
             "AetherraCode supports goal-driven programming paradigms",
-            ["neurocode", "goals"],
+            ["aetherra", "goals"],
             "technology",
         ),
         ("Data preprocessing is crucial for ML success", ["data", "ml"], "ai"),
@@ -481,7 +499,9 @@ if __name__ == "__main__":
         results = memory.semantic_recall(query, limit=2)
         print(f"\nQuery: '{query}'")
         for result in results:
-            print(f"  📝 {result['content'][:50]}... (similarity: {result['similarity']:.3f})")
+            print(
+                f"  📝 {result['content'][:50]}... (similarity: {result['similarity']:.3f})"
+            )
 
     # Test pattern analysis
     print("\n🔍 Pattern Analysis:")

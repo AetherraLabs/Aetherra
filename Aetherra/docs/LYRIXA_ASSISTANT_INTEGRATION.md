@@ -1,4 +1,4 @@
-# NeuroChat Integration with Neuroplex
+# NeuroChat Integration with Lyrixa
 
 ## ✅ INTEGRATION STATUS: COMPLETE
 
@@ -15,25 +15,25 @@
 - Added `get_neurochat_interface_from_widget()` helper function
 - Provides simple one-line integration for other applications
 
-#### **3. Updated Neuroplex Integration**
+#### **3. Updated LyrixaIntegration**
 - Modified import statements to include factory function
 - Updated `create_ai_chat_panel()` to use the new factory function
 - Improved error handling and fallback mechanisms
 
 ### 🎯 Integration Flow:
 
-1. **Neuroplex starts** → Tries to import NeuroChat
+1. **Lyrixastarts** → Tries to import NeuroChat
 2. **NeuroChat available** → Uses `create_embeddable_neurochat()`
 3. **Factory function** → Creates NeuroChat interface and applies embedded styling
 4. **Returns widget** → Embeddable QTabWidget with full NeuroChat functionality
-5. **Neuroplex embeds** → Adds widget to chat panel layout
+5. **Lyrixaembeds** → Adds widget to chat panel layout
 
 ### 🌟 Features:
 
 #### **Dark Theme Integration**
 - ✅ Comprehensive dark theme applied automatically when embedded
 - ✅ All components (tabs, chat, input, buttons) use consistent dark colors
-- ✅ Matches Neuroplex's existing dark theme perfectly
+- ✅ Matches Lyrixa's existing dark theme perfectly
 
 #### **No Chat Bubbles**
 - ✅ Completely flat message design
@@ -51,7 +51,7 @@
 - ✅ Memory exploration and insights
 - ✅ Live code execution environment
 
-### 🔗 Usage in Neuroplex:
+### 🔗 Usage in Lyrixa:
 
 ```python
 # In create_ai_chat_panel() method:
@@ -66,7 +66,7 @@ if NEUROCHAT_AVAILABLE:
 
 To test the integration:
 
-1. **Run Neuroplex**: `python launchers\launch_neuroplex.py`
+1. **Run Lyrixa**: `python launchers\launch_Lyrixa.py`
 2. **Check console**: Should see "✅ Advanced NeuroChat interface integrated with dark theme"
 3. **Verify UI**: AI Assistant panel should show NeuroChat tabs
 4. **Test chat**: Type messages in the Assistant tab
@@ -88,7 +88,7 @@ All NeuroChat components now use:
 
 ### 🚀 Result:
 
-NeuroChat now integrates seamlessly with Neuroplex providing:
+NeuroChat now integrates seamlessly with Lyrixaproviding:
 - **Unified dark theme** across all components
 - **No chat bubbles** anywhere in the interface
 - **Compact, professional spacing** throughout

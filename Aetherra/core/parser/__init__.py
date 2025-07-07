@@ -9,7 +9,7 @@ This module provides a clean API for all parsing operations.
 from .parser import AetherraLexer, AetherraParser
 
 __all__ = [
-    "NEUROCODE_GRAMMAR",
+    "aetherra_GRAMMAR",
     "AetherraCodeTransformer",
     "AetherraParser",
     "AetherraLexer",

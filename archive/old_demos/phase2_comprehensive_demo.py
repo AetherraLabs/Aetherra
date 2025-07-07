@@ -66,7 +66,7 @@ class Phase2Demo:
         # Start a conversational session
         conversational_ai.start_new_session()
 
-        print("🚀 Phase 2 AetherraCode & Neuroplex Enhancement Demo")
+        print("🚀 Phase 2 AetherraCode & Aetherra Enhancement Demo")
         print("=" * 60)
 
     def demo_stability_system(self):
@@ -422,13 +422,13 @@ class Phase2Demo:
             user_message="AetherraCode parsing failed",
             severity=ErrorSeverity.HIGH,
         )
-        def parse_neurocode(code):
+        def parse_Aetherra(code):
             if "invalid" in code:
                 raise SyntaxError("Invalid AetherraCode syntax")
             return {"ast": "parsed_successfully", "nodes": 5}
 
         # Parse valid code
-        valid_result = parse_neurocode("think 'hello world'")
+        valid_result = parse_Aetherra("think 'hello world'")
         if valid_result:
             # Log successful execution
             introspective_logger.log_execution(
@@ -441,7 +441,7 @@ class Phase2Demo:
             print("   ✅ Valid code parsed and logged")
 
         # Parse invalid code (triggers error handling)
-        invalid_result = parse_neurocode("invalid syntax here")
+        invalid_result = parse_Aetherra("invalid syntax here")
         if not invalid_result:
             print("   ❌ Invalid code handled gracefully")
 

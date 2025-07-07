@@ -66,9 +66,9 @@ except ImportError:
 
         # Calculate correct path to root core directory
         current_file = Path(__file__)  # base.py
-        src_neurocode_core = current_file.parent.parent  # src/neurocode/core/
-        src_neurocode = src_neurocode_core.parent  # src/neurocode/
-        src_dir = src_neurocode.parent  # src/
+        src_Aetherra_core = current_file.parent.parent  # src/Aetherra/core/
+        src_Aetherra = src_Aetherra_core.parent  # src/Aetherra/
+        src_dir = src_Aetherra.parent  # src/
         project_root = src_dir.parent  # project root
         legacy_core_path = project_root / "core"
 
@@ -278,7 +278,7 @@ try:
     from src.aethercode.stdlib import stdlib_manager
 except ImportError:
     try:
-        from neurocode.stdlib import stdlib_manager
+        from Aetherra.stdlib import stdlib_manager
     except ImportError:
         print("⚠️ Standard library manager not available")
         stdlib_manager = None
@@ -286,7 +286,7 @@ except ImportError:
 
 class AetherraInterpreter:
     """
-    Core NeuroCode interpreter - handles line-by-line parsing and execution flow
+    Core Aetherra interpreter - handles line-by-line parsing and execution flow
     Delegates specific functionality to specialized modules
     """
 
@@ -349,7 +349,7 @@ class AetherraInterpreter:
         return result
 
     def _try_enhanced_parsing(self, line):
-        """Try enhanced parsing patterns for better NeuroCode support"""
+        """Try enhanced parsing patterns for better Aetherra support"""
 
         # Enhanced remember() parsing with multiple tags and metadata
         if "remember(" in line and " as " in line:
@@ -873,9 +873,9 @@ class AetherraInterpreter:
                 f"[Learned] Summary stored to memory with tags: {', '.join(tags)}\n"
             )
 
-            # Auto-suggest NeuroCode based on learning
+            # Auto-suggest Aetherra based on learning
             suggestion = suggest_next_actions(summary)
-            result += f"[Auto-Suggested NeuroCode]\n{suggestion}"
+            result += f"[Auto-Suggested Aetherra]\n{suggestion}"
             return result
         else:
             return f"[Learn] File not found: {file}"
@@ -903,7 +903,7 @@ class AetherraInterpreter:
         query = line.split("assistant:", 1)[-1].strip()
         context = "\n".join(self.memory.recall())
         prompt = f"You are NeuroAssistant,
-            a helpful AI embedded in the NeuroCode runtime. Here is your memory:\n{context}\n\nAnswer this: {query}"
+            a helpful AI embedded in the Aetherra runtime. Here is your memory:\n{context}\n\nAnswer this: {query}"
         response = ask_ai(prompt)
         return f"[NeuroAssistant] {response}"
 
@@ -1433,11 +1433,11 @@ class AetherraInterpreter:
         return f"[Pattern Frequency] Pattern '{pattern}' found {frequency} times in the last {timeframe} days"
 
     def _is_block_start(self, line):
-        """Check if line starts a multi-line block - Enhanced for NeuroCode"""
+        """Check if line starts a multi-line block - Enhanced for Aetherra"""
         # Standard block starters
         block_starters = ["define ", "if ", "for ", "while ", "simulate "]
 
-        # NeuroCode-specific block starters
+        # Aetherra-specific block starters
         neuro_block_starters = [
             "agent:",
             "with agent:",
@@ -1456,7 +1456,7 @@ class AetherraInterpreter:
         if any(stripped_line.startswith(starter) for starter in block_starters):
             return True
 
-        # Check NeuroCode blocks
+        # Check Aetherra blocks
         if any(stripped_line.startswith(starter) for starter in neuro_block_starters):
             return True
 
@@ -1469,7 +1469,7 @@ class AetherraInterpreter:
         return False
 
     def _start_block(self, line):
-        """Start a new block - Enhanced for NeuroCode constructs"""
+        """Start a new block - Enhanced for Aetherra constructs"""
         self.in_block = True
         self.block_buffer = [line]
         stripped_line = line.strip()
@@ -1503,7 +1503,7 @@ class AetherraInterpreter:
         ):
             self.block_type = "neuro_block"
             block_name = stripped_line.split("{")[0].strip()
-            return f"🧬 Started NeuroCode {block_name} block\n   💭 Enter AI-native operations, use '{{}}' to complete"
+            return f"🧬 Started Aetherra {block_name} block\n   💭 Enter AI-native operations, use '{{}}' to complete"
 
         elif stripped_line.startswith("simulate "):
             self.block_type = "simulation"
@@ -1536,7 +1536,7 @@ class AetherraInterpreter:
             elif self.block_type == "agent":
                 return f"  🤖 Added agent directive: {line}"
             elif self.block_type == "neuro_block":
-                return f"  🧬 Added NeuroCode operation: {line}"
+                return f"  🧬 Added Aetherra operation: {line}"
             else:
                 return f"  📝 Added to {self.block_type} block: {line}"
 
@@ -1548,7 +1548,7 @@ class AetherraInterpreter:
             return line == "end" or line.endswith("end")
 
     def _execute_block(self):
-        """Execute the current block - Enhanced for NeuroCode"""
+        """Execute the current block - Enhanced for Aetherra"""
         if not self.in_block or not self.block_buffer:
             return "❌ No block to execute"
 
@@ -1642,10 +1642,10 @@ class AetherraInterpreter:
         return response
 
     def _execute_neuro_block(self):
-        """Execute NeuroCode AI-native block"""
+        """Execute Aetherra AI-native block"""
         if len(self.block_buffer) < 2:
             self._reset_block_state()
-            return "❌ Empty NeuroCode block"
+            return "❌ Empty Aetherra block"
 
         # Determine block type and execute accordingly
         header = self.block_buffer[0].strip()
@@ -1676,7 +1676,7 @@ class AetherraInterpreter:
                     results.append(f"   {result}")
 
         else:
-            results.append("🧬 NeuroCode Block Execution:")
+            results.append("🧬 Aetherra Block Execution:")
             for op in operations:
                 if op.strip():
                     result = self.execute(op.strip())

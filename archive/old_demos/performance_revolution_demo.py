@@ -28,10 +28,10 @@ try:
     from core.aetherra_memory import AetherraMemory
     from core.speed_enhancement_suite import SpeedBooster, enable_turbo_mode, get_performance_status
 
-    NEUROCODE_AVAILABLE = True
+    Aetherra_AVAILABLE = True
 except ImportError as e:
     print(f"⚠️ AetherraCode modules not available: {e}")
-    NEUROCODE_AVAILABLE = False
+    Aetherra_AVAILABLE = False
 
 
 def benchmark_operation(name: str, operation_func, iterations: int = 10):
@@ -80,7 +80,7 @@ def demo_memory_performance():
     print("\n🧠 MEMORY SYSTEM PERFORMANCE DEMO")
     print("=" * 50)
 
-    if not NEUROCODE_AVAILABLE:
+    if not Aetherra_AVAILABLE:
         print("❌ AetherraCode not available for memory demo")
         return
 
@@ -114,7 +114,7 @@ def demo_interpreter_performance():
     print("\n🔧 INTERPRETER PERFORMANCE DEMO")
     print("=" * 50)
 
-    if not NEUROCODE_AVAILABLE:
+    if not Aetherra_AVAILABLE:
         print("❌ AetherraCode not available for interpreter demo")
         return
 
@@ -362,7 +362,7 @@ def main():
             pass
 
         print("\n🎉 PERFORMANCE REVOLUTION COMPLETE!")
-        print("   AetherraCode & Neuroplex are now running at maximum speed!")
+        print("   AetherraCode & Aetherra are now running at maximum speed!")
         print("   All systems optimized for fluid, responsive operation!")
 
     except Exception as e:

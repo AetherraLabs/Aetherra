@@ -1,4 +1,4 @@
-# NeuroCode Test File - Demonstrating Language Syntax
+# aetherra Test File - Demonstrating Language Syntax
 
 # Basic goal statement
 goal: "improve system performance" priority: high
@@ -19,6 +19,6 @@ optimize for "speed"
 learn from "user_feedback"
 
 # Comments are supported
-# This demonstrates NeuroCode as a true programming language
+# This demonstrates aetherra as a true programming language
 
 # End of test file

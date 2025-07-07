@@ -404,7 +404,7 @@ class EnhancedPluginManager:
                     raise ValueError("Could not find plugin root directory")
 
                 # Validate plugin structure
-                manifest_path = plugin_root / "neurocode-plugin.json"
+                manifest_path = plugin_root / "aetherra-plugin.json"
                 if not manifest_path.exists():
                     raise ValueError("Plugin manifest not found")
 
@@ -479,7 +479,7 @@ class EnhancedPluginManager:
 
         for plugin_dir in self.plugins_dir.iterdir():
             if plugin_dir.is_dir() and not plugin_dir.name.startswith("."):
-                manifest_path = plugin_dir / "neurocode-plugin.json"
+                manifest_path = plugin_dir / "aetherra-plugin.json"
                 if manifest_path.exists():
                     try:
                         manifest = self._parse_manifest(manifest_path)
@@ -624,7 +624,7 @@ class EnhancedPluginManager:
         """Find the root directory of extracted plugin"""
         # Look for manifest file
         for root, _dirs, files in os.walk(extract_dir):
-            if "neurocode-plugin.json" in files:
+            if "aetherra-plugin.json" in files:
                 return Path(root)
         return None
 
@@ -702,7 +702,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="AetherraCode Enhanced Plugin Manager",
-        epilog="Use 'neurocode plugin <command> --help' for command-specific help",
+        epilog="Use 'aetherra plugin <command> --help' for command-specific help",
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -810,7 +810,7 @@ def main():
                 print()
         else:
             print(
-                "No plugins installed. Use 'neurocode plugin search' to discover plugins."
+                "No plugins installed. Use 'aetherra plugin search' to discover plugins."
             )
 
     elif args.command == "search":

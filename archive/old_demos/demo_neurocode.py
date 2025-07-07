@@ -23,7 +23,7 @@ def demo_aethercode_concepts():
     # 1. Memory System Demo
     print("\n🧠 1. Memory System Demo")
     try:
-        from neurocode.core import create_memory_system
+        from Aetherra.core import create_memory_system
 
         memory = create_memory_system()
         print("  ✅ Memory system created")
@@ -194,7 +194,7 @@ def demo_interactive_features():
     print("=" * 50)
 
     try:
-        from neurocode.ui.components.utils.qt_imports import is_qt_available
+        from Aetherra.ui.components.utils.qt_imports import is_qt_available
 
         if is_qt_available():
             print("  ✅ GUI components available")

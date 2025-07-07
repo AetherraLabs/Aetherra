@@ -1,14 +1,14 @@
-# 🧬 NeuroCode Project Overview
+# 🧬 aetherra Project Overview
 
-> **Last Updated**: June 30, 2025ne 30, 2025  
-> **Status**: Production Ready - Revolutionary AI Consciousness Platform  
+> **Last Updated**: June 30, 2025ne 30, 2025
+> **Status**: Production Ready - Revolutionary AI Consciousness Platform
 > **Version**: 3.0.0 - Next-Generation AI Operating Systems Foundation
 
 ---
 
-## 🚀 **WHAT IS NEUROCODE?**
+## 🚀 **WHAT IS aetherra?**
 
-NeuroCode is a **revolutionary foundation for next-generation AI operating systems** featuring the world's first **Agent Archive & Replay System** - enabling complete AI consciousness preservation, export, import, and replay capabilities.
+aetherra is a **revolutionary foundation for next-generation AI operating systems** featuring the world's first **Agent Archive & Replay System** - enabling complete AI consciousness preservation, export, import, and replay capabilities.
 
 ### 🏆 **Breakthrough Achievements**
 
@@ -24,42 +24,42 @@ NeuroCode is a **revolutionary foundation for next-generation AI operating syste
 
 ### ✅ **COMPLETED MILESTONES**
 
-| Component | Status | Description |
-|-----------|--------|-------------|
-| 🧠 **Agent Archive System** | ✅ **COMPLETE** | AI consciousness preservation operational |
-| 🎯 **Decision Replay** | ✅ **COMPLETE** | Full transparency debugging system |
-| 🔀 **Agent Merging** | ✅ **COMPLETE** | Intelligent capability combination |
-| 🏗️ **Developer Onboarding** | ✅ **COMPLETE** | AI-guided scaffolding system |
-| 🌐 **Website & Domain** | 🔄 **IN PROGRESS** | Live at httpsneurocode.dev |
-| 🛡️ **Protection System** | ✅ **COMPLETE** | Comprehensive file protection |
-| 📁 **Project Organization** | ✅ **COMPLETE** | Professional workspace architecture |
-| 🔗 **GitHub Integration** | ✅ **COMPLETE** | All links updated to Zyonic88/NeuroCode |
+| Component                  | Status            | Description                               |
+| -------------------------- | ----------------- | ----------------------------------------- |
+| 🧠 **Agent Archive System** | ✅ **COMPLETE**    | AI consciousness preservation operational |
+| 🎯 **Decision Replay**      | ✅ **COMPLETE**    | Full transparency debugging system        |
+| 🔀 **Agent Merging**        | ✅ **COMPLETE**    | Intelligent capability combination        |
+| 🏗️ **Developer Onboarding** | ✅ **COMPLETE**    | AI-guided scaffolding system              |
+| 🌐 **Website & Domain**     | 🔄 **IN PROGRESS** | Live at httpsaetherra.dev                 |
+| 🛡️ **Protection System**    | ✅ **COMPLETE**    | Comprehensive file protection             |
+| 📁 **Project Organization** | ✅ **COMPLETE**    | Professional workspace architecture       |
+| 🔗 **GitHub Integration**   | ✅ **COMPLETE**    | All links updated to Zyonic88/aetherra    |
 
 
 ### 🎯 **CURRENT GOALS**
 
-| Goal | Priority | Status |
-|------|----------|--------|
-| master enhanced parsing | High | Active |
-| test all enhanced features | High | Active |
-| test all enhanced features | High | Active |
-| test all enhanced features | High | Active |
-| master enhanced parsing | High | Active |
-| test all enhanced features | High | Active |
-| test all enhanced features | High | Active |
-| test all enhanced features | High | Active |
-| master enhanced parsing | High | Active |
-| test all enhanced features | High | Active |
-| test all enhanced features | High | Active |
-| test all enhanced features | High | Active |
-| master enhanced parsing | High | Active |
-| test all enhanced features | High | Active |
-| test all enhanced features | High | Active |
-| test all enhanced features | High | Active |
-| Enhanced parsing mastery | High | Active |
-| Feature testing completion | High | Active |
-| Documentation expansion | Medium | Planned |
-| Community growth | Medium | Ongoing |
+| Goal                       | Priority | Status  |
+| -------------------------- | -------- | ------- |
+| master enhanced parsing    | High     | Active  |
+| test all enhanced features | High     | Active  |
+| test all enhanced features | High     | Active  |
+| test all enhanced features | High     | Active  |
+| master enhanced parsing    | High     | Active  |
+| test all enhanced features | High     | Active  |
+| test all enhanced features | High     | Active  |
+| test all enhanced features | High     | Active  |
+| master enhanced parsing    | High     | Active  |
+| test all enhanced features | High     | Active  |
+| test all enhanced features | High     | Active  |
+| test all enhanced features | High     | Active  |
+| master enhanced parsing    | High     | Active  |
+| test all enhanced features | High     | Active  |
+| test all enhanced features | High     | Active  |
+| test all enhanced features | High     | Active  |
+| Enhanced parsing mastery   | High     | Active  |
+| Feature testing completion | High     | Active  |
+| Documentation expansion    | Medium   | Planned |
+| Community growth           | Medium   | Ongoing |
 
 ---
 
@@ -68,7 +68,7 @@ NeuroCode is a **revolutionary foundation for next-generation AI operating syste
 ### 📦 **Core Structure**
 
 ```text
-NeuroCode Project/
+aetherra Project/
 ├── 🧠 core/                   # Modular core engine (17+ modules)
 │   ├── agent.py               # Agent consciousness system
 │   ├── memory.py              # Memory management
@@ -80,7 +80,7 @@ NeuroCode Project/
 ├── 🎯 examples/              # 19+ examples
 ├── 🔧 scripts/               # 12+ utility scripts
 ├── 💾 data/                  # Configuration & templates
-├── 🌐 website/               # Live site (httpsneurocode.dev)
+├── 🌐 website/               # Live site (httpsaetherra.dev)
 └── 🛡️ protection/           # Project protection system
 ```
 
@@ -127,9 +127,9 @@ NeuroCode Project/
 
 ### 🌍 **Website & Documentation**
 
-- **Primary Site**: [httpsneurocode.dev](https://httpsneurocode.dev)
-- **GitHub Repository**: [github.com/Zyonic88/NeuroCode](https://github.com/Zyonic88/NeuroCode)
-- **Documentation**: [httpsneurocode.dev/docs](https://httpsneurocode.dev/docs)
+- **Primary Site**: [httpsaetherra.dev](https://httpsaetherra.dev)
+- **GitHub Repository**: [github.com/Zyonic88/aetherra](https://github.com/Zyonic88/aetherra)
+- **Documentation**: [httpsaetherra.dev/docs](https://httpsaetherra.dev/docs)
 
 ### 🚀 **Deployment Status**
 
@@ -147,12 +147,12 @@ NeuroCode Project/
 
 ```bash
 # Clone and setup
-git clone https://github.com/Zyonic88/NeuroCode.git
-cd NeuroCode
+git clone https://github.com/Zyonic88/aetherra.git
+cd aetherra
 pip install -r requirements.txt
 
 # Launch main interface
-python neurocode_launcher.py
+python aetherra_launcher.py
 
 # Run agent demo
 python agent_archive_demo.py
@@ -244,9 +244,9 @@ python tools/workspace_organizer.py    # Organize files
 
 ### 🆘 **Help & Support**
 
-- **Issues**: Report on [GitHub Issues](https://github.com/Zyonic88/NeuroCode/issues)
-- **Discussions**: Join [GitHub Discussions](https://github.com/Zyonic88/NeuroCode/discussions)
-- **Wiki**: Access [Project Wiki](https://github.com/Zyonic88/NeuroCode/wiki)
+- **Issues**: Report on [GitHub Issues](https://github.com/Zyonic88/aetherra/issues)
+- **Discussions**: Join [GitHub Discussions](https://github.com/Zyonic88/aetherra/discussions)
+- **Wiki**: Access [Project Wiki](https://github.com/Zyonic88/aetherra/wiki)
 
 ---
 

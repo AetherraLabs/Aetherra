@@ -142,12 +142,37 @@ class EnhancedLyrixaWindow:
             self.lyrixa_ai = LyrixaAI(workspace_path=workspace_path)
             print("✅ Real Lyrixa AI system initialized")
 
+            # Initialize debug console widget
+            self._initialize_debug_console()
+
             # Initialize Phase 1 Advanced Memory System
             self._initialize_advanced_memory()
 
         except Exception as e:
             print(f"⚠️ Could not initialize Lyrixa AI: {e}")
             self.lyrixa_ai = None
+
+    def _initialize_debug_console(self):
+        """Initialize debug console widget."""
+        try:
+            from .debug_console_widget import create_debug_widget
+
+            # Get debug console from Lyrixa AI if available
+            debug_console = None
+            if self.lyrixa_ai and hasattr(self.lyrixa_ai, "debug_console"):
+                debug_console = self.lyrixa_ai.debug_console
+
+            # Create debug console widget
+            self.debug_console_widget = create_debug_widget(debug_console)
+
+            print("🐛 Debug Console widget initialized")
+            print("   ✅ Real-time cognitive state monitoring")
+            print("   ✅ Thought process introspection")
+            print("   ✅ Decision matrix analysis")
+
+        except Exception as e:
+            print(f"⚠️ Could not initialize Debug Console: {e}")
+            self.debug_console_widget = None
 
     def _initialize_advanced_memory(self):
         """Initialize Phase 1 Advanced Memory System."""
@@ -270,6 +295,19 @@ class EnhancedLyrixaWindow:
             self.performance_monitor.raise_()
         else:
             print("Performance monitor not available")
+
+    def show_debug_console(self):
+        """Show the debug console widget."""
+        if hasattr(self, "debug_console_widget") and self.debug_console_widget:
+            if hasattr(self.debug_console_widget, "show"):
+                self.debug_console_widget.show()
+                if hasattr(self.debug_console_widget, "raise_"):
+                    self.debug_console_widget.raise_()
+            else:
+                # For headless mode, show CLI status
+                self.debug_console_widget.show_status()
+        else:
+            print("🐛 Debug console not available")
 
     def toggle_suggestions(self):
         """Toggle the suggestion notification system."""
@@ -885,7 +923,8 @@ class EnhancedLyrixaWindow:
 
         print("✅ Enhanced Lyrixa Window closed")
 
-    # ...existing code...
+
+# Archived legacy file from lyrixa/gui/enhanced_lyrixa.py
 
 
 def launch_enhanced_lyrixa():

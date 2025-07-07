@@ -1,8 +1,8 @@
 """
-NeuroCode AI Integration Subsystem
+Aetherra AI Integration Subsystem
 =================================
 
-AI and LLM integration components for NeuroCode.
+AI and LLM integration components for Aetherra.
 Handles multi-LLM management, collaboration, and runtime.
 """
 

@@ -26,7 +26,7 @@ class RevolutionaryPersonaCLI:
     """Revolutionary CLI that adapts its personality based on context"""
 
     def __init__(self):
-        self.installation_path = Path.home() / ".neurocode"
+        self.installation_path = Path.home() / ".Aetherra"
         self.persona_engine = get_persona_engine(str(self.installation_path))
         self.emotional_memory = get_emotional_memory_system(self.installation_path)
         self.contextual_adaptation = get_contextual_adaptation_system(

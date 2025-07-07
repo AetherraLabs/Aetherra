@@ -1,4 +1,4 @@
-# 🔌 NeuroCode Plugin Registry Roadmap
+# 🔌 aetherra Plugin Registry Roadmap
 
 ## **The First Standard Plugin Ecosystem for AI-Consciousness Programming**
 
@@ -22,7 +22,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 ### ✅ **Phase 1: Foundation (COMPLETE)**
 
 - ✅ **Plugin Specification Design**
-  - Comprehensive plugin manifest schema (`neurocode-plugin.json`)
+  - Comprehensive plugin manifest schema (`aetherra-plugin.json`)
   - Plugin structure and organization standards
   - Security permission model
   - GPL-3.0 compatibility requirements
@@ -31,7 +31,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
   - Enhanced Plugin Manager (`enhanced_plugin_manager.py`)
   - Plugin Registry Client with full API support
   - Security validation and sandboxing framework
-  - Command-line interface (`neurocode_plugin_cli.py`)
+  - Command-line interface (`aetherra_plugin_cli.py`)
 
 - ✅ **Documentation & Examples**
   - Complete plugin registry specification
@@ -87,7 +87,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 
 **🎯 Goal**: Develop essential plugins to bootstrap the ecosystem
 
-#### **Official NeuroCode Plugins**
+#### **Official aetherra Plugins**
 - 🔄 **Advanced Memory Systems**
   - Vector-based semantic memory
   - Episodic memory with context
@@ -187,7 +187,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 ### **Plugin Distribution**
 ```
 📦 Plugin Package (.npkg)
-├── 📋 neurocode-plugin.json    # Manifest
+├── 📋 aetherra-plugin.json    # Manifest
 ├── 🧠 plugin.aether             # Main implementation
 ├── 🐍 python/                  # Python backends
 ├── 📚 docs/                    # Documentation
@@ -196,7 +196,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 ```
 
 ### **Integration Points**
-- **NeuroCode Core**: Native plugin loading and execution
+- **aetherra Core**: Native plugin loading and execution
 - **AI OS Layer**: Plugin integration with consciousness systems
 - **Development Tools**: IDE plugins and debugging support
 - **Registry API**: Centralized discovery and distribution
@@ -206,7 +206,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 ## 🔒 **Security & Trust Framework**
 
 ### **Plugin Security Levels**
-- 🟢 **Verified**: Official NeuroCode team plugins
+- 🟢 **Verified**: Official aetherra team plugins
 - 🔵 **Trusted**: Community-reviewed, high-quality plugins
 - 🟡 **Standard**: Basic validation passed, community feedback
 - 🔴 **Experimental**: Unvetted, use with caution
@@ -263,7 +263,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 - ✅ **First AI-consciousness plugin ecosystem**
 - ✅ **Comprehensive cognitive module support**
 - ✅ **GPL-3.0 protection ensures community benefit**
-- ✅ **Integration with NeuroCode AI OS foundation**
+- ✅ **Integration with aetherra AI OS foundation**
 
 ### **Technical Innovation**
 - **Native consciousness integration**
@@ -320,7 +320,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 ## 🎉 **Launch Strategy**
 
 ### **Soft Launch (September 1-15)**
-- 🎯 **Target Audience**: NeuroCode core community (50 developers)
+- 🎯 **Target Audience**: aetherra core community (50 developers)
 - 🎯 **Goals**: Validate functionality, gather feedback
 - 🎯 **Metrics**: 20+ plugins published, 100+ installations
 
@@ -339,9 +339,9 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 ## 📞 **Contact & Contribution**
 
 ### **Development Team**
-- **Lead**: NeuroCode Core Team
+- **Lead**: aetherra Core Team
 - **Contributors**: Open to community participation
-- **Repository**: https://github.com/neurocode/plugin-registry
+- **Repository**: https://github.com/aetherra/plugin-registry
 
 ### **How to Contribute**
 1. **Plugin Development**: Create and submit plugins
@@ -351,17 +351,17 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 5. **Community**: Mentoring and support
 
 ### **Communication Channels**
-- **Discord**: NeuroCode Plugin Developers
+- **Discord**: aetherra Plugin Developers
 - **GitHub**: Issues and discussions
 - **Forum**: Community discussions and support
-- **Email**: plugin-team@neurocode.org
+- **Email**: plugin-team@aetherra.org
 
 ---
 
-**🔌 NeuroCode Plugin Registry: Empowering the future of AI-consciousness development, one plugin at a time!**
+**🔌 aetherra Plugin Registry: Empowering the future of AI-consciousness development, one plugin at a time!**
 
 ---
 
 **Document Status**: `ACTIVE ROADMAP` | **Next Review**: `2025-07-15`
 **Version**: `1.0.0` | **Last Updated**: `2025-06-29`
-**License**: GPL-3.0 | **Contributors**: NeuroCode Development Team
+**License**: GPL-3.0 | **Contributors**: aetherra Development Team

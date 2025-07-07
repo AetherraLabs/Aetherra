@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode CLI - Simple command-line interface
+Aetherra CLI - Simple command-line interface
 Basic CLI without persona dependencies for now.
 """
 
@@ -8,8 +8,8 @@ import argparse
 
 
 def show_basic_status():
-    """Show basic NeuroCode status"""
-    print("🤖 NeuroCode CLI Status")
+    """Show basic Aetherra status"""
+    print("🤖 Aetherra CLI Status")
     print("=" * 40)
     print("✅ Core CLI functionality available")
     print("⚠️ Persona features disabled (missing dependencies)")
@@ -19,18 +19,20 @@ def show_basic_status():
     print("  --version   Show version")
     print("  --help      Show help")
 
+
 def show_version():
     """Show version information"""
-    print("NeuroCode CLI v1.0.0")
+    print("Aetherra CLI v1.0.0")
     print("Core functionality ready")
+
 
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
-        description="NeuroCode Command-Line Interface",
+        description="Aetherra Command-Line Interface",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Basic NeuroCode CLI - Core functionality only.
+Basic Aetherra CLI - Core functionality only.
 For full features, ensure all dependencies are installed.
         """,
     )
@@ -55,6 +57,7 @@ For full features, ensure all dependencies are installed.
         print(f"🎯 Processing: {command_text}")
         print("⚠️ Full command processing requires persona modules")
         print("Command logged for future processing")
+
 
 if __name__ == "__main__":
     main()

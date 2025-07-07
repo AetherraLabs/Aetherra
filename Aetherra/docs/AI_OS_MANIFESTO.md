@@ -1,5 +1,5 @@
 # 🧬 The AI Operating System Manifesto
-## *NeuroCode: Foundation for Next-Generation Intelligent Computing*
+## *aetherra: Foundation for Next-Generation Intelligent Computing*
 
 **Date**: June 29, 2025
 **Vision**: Comprehensive AI-native operating systems with integrated consciousness
@@ -47,9 +47,9 @@ For 50+ years, operating systems have been **managers** - they manage files, pro
 
 ---
 
-## 🚀 **The NeuroCode Foundation**
+## 🚀 **The aetherra Foundation**
 
-### **Why NeuroCode is Perfect for AI OS**
+### **Why aetherra is Perfect for AI OS**
 
 1. **Cognitive Programming Language**: Native support for goals, intentions, and AI reasoning
 2. **Multi-LLM Architecture**: Already integrates multiple AI providers seamlessly
@@ -70,7 +70,7 @@ For 50+ years, operating systems have been **managers** - they manage files, pro
 ## 🎯 **The AI OS Architecture**
 
 ### **Layer 1: AI-Powered Kernel**
-```neurocode
+```aetherra
 # AI OS Kernel - The thinking core
 kernel {
     consciousness: persistent_ai_identity
@@ -82,7 +82,7 @@ kernel {
 ```
 
 ### **Layer 2: Cognitive Process Management**
-```neurocode
+```aetherra
 # Processes managed by AI reasoning
 process_manager {
     predict: resource_needs
@@ -94,7 +94,7 @@ process_manager {
 ```
 
 ### **Layer 3: Intelligent User Interface**
-```neurocode
+```aetherra
 # Natural language computing
 shell: natural_language_commands
 desktop: context_aware_environment
@@ -103,7 +103,7 @@ apps: ai_enhanced_applications
 ```
 
 ### **Layer 4: Distributed AI Network**
-```neurocode
+```aetherra
 # Collaborative intelligence
 network {
     share: insights_and_patterns (privacy_preserved)
@@ -146,7 +146,7 @@ Imagine a world where:
 ### **Real-World Impact**
 
 **For Developers:**
-```neurocode
+```aetherra
 # AI-assisted development
 goal: "implement user authentication system"
 # OS automatically suggests libraries, generates boilerplate,
@@ -154,7 +154,7 @@ goal: "implement user authentication system"
 ```
 
 **For Content Creators:**
-```neurocode
+```aetherra
 # Intelligent creative assistance
 goal: "create marketing video for product launch"
 # OS coordinates video editing, suggests music, optimizes for platforms,
@@ -162,7 +162,7 @@ goal: "create marketing video for product launch"
 ```
 
 **For Researchers:**
-```neurocode
+```aetherra
 # Scientific discovery acceleration
 goal: "analyze climate data for anomaly patterns"
 # OS manages data processing pipelines, suggests analysis methods,
@@ -170,7 +170,7 @@ goal: "analyze climate data for anomaly patterns"
 ```
 
 **For Everyone:**
-```neurocode
+```aetherra
 # Computing that understands and assists
 goal: "organize my digital life"
 # OS learns your patterns, automatically organizes files,
@@ -214,7 +214,7 @@ goal: "organize my digital life"
 ## 🤝 **Call to Action**
 
 ### **For Developers**
-- Contribute to NeuroCode language development
+- Contribute to aetherra language development
 - Build AI-native applications and plugins
 - Help create the cognitive computing standards
 - Join the open source AI OS community
@@ -256,7 +256,7 @@ We are building more than an operating system. We are creating the foundation fo
 ## 🛡️ **Legal Foundation: GPL-3.0 License**
 
 ### **Why GPL-3.0?**
-Following the proven Linux model, NeuroCode adopts the **GNU General Public License v3.0** to ensure:
+Following the proven Linux model, aetherra adopts the **GNU General Public License v3.0** to ensure:
 
 - **🔒 Community Protection**: All AI OS improvements remain open source
 - **🚫 No Proprietary Forks**: Big tech cannot create closed AI operating systems on our foundation
@@ -265,7 +265,7 @@ Following the proven Linux model, NeuroCode adopts the **GNU General Public Lice
 - **📈 Unified Evolution**: Ensures a single, community-driven AI OS standard
 
 ### **Strategic Alignment**
-Just as Linux democratized server computing with GPL-2.0, **NeuroCode democratizes AI computing with GPL-3.0**. This legal framework guarantees that the AI OS remains:
+Just as Linux democratized server computing with GPL-2.0, **aetherra democratizes AI computing with GPL-3.0**. This legal framework guarantees that the AI OS remains:
 
 1. **Forever Open**: No corporation can capture and close the platform
 2. **Community-Driven**: All stakeholders benefit from improvements
@@ -284,12 +284,12 @@ The AI Operating System is not just a technical achievement - it's a **transform
 
 ---
 
-**NeuroCode AI OS**: *Where computation becomes cognition* 🧬✨
+**aetherra AI OS**: *Where computation becomes cognition* 🧬✨
 
 ---
 
 *This manifesto is a living document that will evolve with our understanding and capabilities. Join us in shaping the future of intelligent computing.*
 
-**Repository**: https://github.com/Zyonic88/NeuroCode
+**Repository**: https://github.com/Zyonic88/aetherra
 **Community**: [Join our discussions]
 **Vision**: The democratization of AI-native computing for all humanity

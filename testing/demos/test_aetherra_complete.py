@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-COMPREHENSIVE NEUROCODE TESTING SUITE
+COMPREHENSIVE Aetherra TESTING SUITE
 ====================================
 
 This test suite verifies that AetherraCode is fully functional as:
 1. A distinct programming language with its own grammar
 2. A complete AI-native development environment
 3. A working interpreter and runtime system
-4. A functional GUI application (Neuroplex)
+4. A functional GUI application (Lyrixa)
 
 This test confirms all major components work together seamlessly.
 """
@@ -246,18 +246,18 @@ def test_parser_system():
         test_results["parser_creation"] = "✅ SUCCESS"
 
         # Test parsing simple AetherraCode
-        simple_neurocode = """
+        simple_Aetherra = """
 goal: test parsing
 agent: on
 remember("test") as "parse_test"
 """
 
-        ast = parser_func(simple_neurocode)
+        ast = parser_func(simple_Aetherra)
         print(f"  ✅ Parsed simple code: {len(ast)} AST nodes")
         test_results["simple_parsing"] = f"✅ SUCCESS: {len(ast)} nodes"
 
         # Test complex AetherraCode
-        complex_neurocode = """
+        complex_Aetherra = """
 goal: comprehensive test priority: high
 agent: active
 
@@ -271,7 +271,7 @@ plugin: monitoring
 end
 """
 
-        complex_ast = parser_func(complex_neurocode)
+        complex_ast = parser_func(complex_Aetherra)
         print(f"  ✅ Parsed complex code: {len(complex_ast)} AST nodes")
         test_results["complex_parsing"] = f"✅ SUCCESS: {len(complex_ast)} nodes"
 
@@ -285,7 +285,7 @@ end
 
 
 def test_ui_system():
-    """Test the Neuroplex UI system."""
+    """Test the LyrixaUI system."""
     print("\n🖥️ Testing UI System...")
 
     test_results = {}
@@ -298,13 +298,11 @@ def test_ui_system():
 
         # Test QApplication availability (without actually launching)
         try:
-
             print("  ✅ PySide6 Qt framework available")
             test_results["qt_framework"] = "✅ SUCCESS"
         except ImportError:
             print("  ⚠️ PySide6 not available, checking PySide2...")
             try:
-
                 print("  ✅ PySide2 Qt framework available")
                 test_results["qt_framework"] = "✅ SUCCESS (PySide2)"
             except ImportError:
@@ -346,8 +344,8 @@ def test_integration():
         test_results["component_creation"] = "✅ SUCCESS"
 
         # Test that they can work together
-        neurocode = "goal: integration test\nremember('integration') as 'test'"
-        ast = parser_func(neurocode)
+        Aetherra = "goal: integration test\nremember('integration') as 'test'"
+        ast = parser_func(Aetherra)
 
         print("  ✅ Components can process AetherraCode together")
         test_results["component_integration"] = "✅ SUCCESS"
@@ -371,7 +369,7 @@ def run_comprehensive_demo():
 
     # Complex AetherraCode program demonstrating all features
     demo_program = """
-# NEUROCODE COMPREHENSIVE DEMONSTRATION
+# Aetherra COMPREHENSIVE DEMONSTRATION
 # =====================================
 
 goal: demonstrate complete AetherraCode functionality priority: high
@@ -477,7 +475,7 @@ recall experiences with "session_events"
 def generate_test_report(all_results: Dict[str, Dict[str, str]]):
     """Generate a comprehensive test report."""
     print("\n" + "=" * 60)
-    print("🧬 NEUROCODE COMPREHENSIVE TEST REPORT")
+    print("🧬 Aetherra COMPREHENSIVE TEST REPORT")
     print("=" * 60)
 
     total_tests = 0
@@ -524,9 +522,9 @@ def generate_test_report(all_results: Dict[str, Dict[str, str]]):
 
 def main():
     """Run the complete AetherraCode test suite."""
-    print("🧬 NEUROCODE COMPREHENSIVE TESTING SUITE")
+    print("🧬 Aetherra COMPREHENSIVE TESTING SUITE")
     print("=" * 50)
-#     print("Testing AetherraCode as a complete AI-native programming language...")
+    #     print("Testing AetherraCode as a complete AI-native programming language...")
 
     all_results = {}
 
@@ -550,7 +548,7 @@ def main():
     success_rate = generate_test_report(all_results)
 
     print("\n" + "=" * 60)
-    print("🧬 NEUROCODE STATUS: READY FOR USE!")
+    print("🧬 Aetherra STATUS: READY FOR USE!")
     print("=" * 60)
 
     return success_rate >= 75

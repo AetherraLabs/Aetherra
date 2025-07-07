@@ -10,22 +10,22 @@ try:
     sys.path.insert(0, str(project_root))
 
     # Test importing the main launcher
-    from launchers.launch_neuroplex import main as neuroplex_main
+    from launchers.launch_Aetherra import main as Aetherra_main
 
-    print("✅ Main Neuroplex launcher imports successfully")
+    print("✅ Main Aetherra launcher imports successfully")
 
     # Test importing the GUI components
     src_path = project_root / "src"
     sys.path.insert(0, str(src_path))
 
-    from aetherra.ui.aetherplex import NeuroplexWindow
+    from aetherra.ui.aetherplex import AetherraWindow
     from aetherra.ui.aetherplex import main as gui_main
 
     print("✅ Main GUI components import successfully")
 
     print("🎉 All launcher components are working!")
-    print("🚀 You can now launch Neuroplex using:")
-    print("   python launchers/launch_neuroplex.py")
+    print("🚀 You can now launch Aetherra using:")
+    print("   python launchers/launch_Aetherra.py")
     print("   OR")
     print("   python aetherra_launcher.py (then choose option 1)")
 

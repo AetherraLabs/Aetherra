@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚀 AetherraCode & Neuroplex Implementation Demo
+🚀 AetherraCode & Aetherra Implementation Demo
 ==========================================
 
 Demonstration of the newly implemented UI and Memory systems for AetherraCode AI OS.
@@ -23,7 +23,7 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from core.memory.logger import MemoryLogger
-from core.ui import CodeLanguage, InterfaceConfig, NeuroplexUI, TextStyle, UITheme
+from core.ui import CodeLanguage, InterfaceConfig, AetherraUI, TextStyle, UITheme
 
 
 def demo_ui_system():
@@ -36,7 +36,7 @@ def demo_ui_system():
         theme=UITheme.MATRIX, auto_suggestions=True, rich_formatting=True, animations_enabled=True
     )
 
-    ui = NeuroplexUI(config)
+    ui = AetherraUI(config)
 
     # Demonstrate different display types
     ui.show_info("Welcome to the AetherraCode UI System Demo!")
@@ -55,7 +55,7 @@ def demo_ui_system():
     ui.show_text("\n📺 Rich Display Features:")
 
     # Code highlighting
-    sample_neurocode = """
+    sample_Aetherra = """
     think "Starting AetherraCode program"
     goal analyze_data
 
@@ -74,7 +74,7 @@ def demo_ui_system():
     }
     """
 
-    ui.show_code(sample_neurocode, CodeLanguage.NEUROCODE)
+    ui.show_code(sample_Aetherra, CodeLanguage.Aetherra)
 
     # Table display
     ui.show_text("\n📊 System Status Table:")
@@ -115,7 +115,7 @@ def demo_ui_system():
 
 ### Code Example
 ```python
-def hello_neurocode():
+def hello_Aetherra():
     print("Hello from AetherraCode!")
 ```
 
@@ -219,7 +219,7 @@ def demo_integration():
     print("=" * 50)
 
     # Create both systems
-    ui = NeuroplexUI(InterfaceConfig(theme=UITheme.CYBERPUNK))
+    ui = AetherraUI(InterfaceConfig(theme=UITheme.CYBERPUNK))
     memory = MemoryLogger()
 
     # Start integrated session
@@ -284,10 +284,10 @@ def show_implementation_status():
     print("=" * 60)
 
     # Create a beautiful status table
-    ui = NeuroplexUI(InterfaceConfig(theme=UITheme.NEON))
+    ui = AetherraUI(InterfaceConfig(theme=UITheme.NEON))
 
     ui.show_text(
-        "🧬 AetherraCode & Neuroplex AI OS Implementation Status",
+        "🧬 AetherraCode & Aetherra AI OS Implementation Status",
         TextStyle(bold=True, color="#00ffff"),
     )
 
@@ -313,7 +313,7 @@ def show_implementation_status():
     # Next steps
     ui.show_text("\n🎯 Next Implementation Phase:")
     next_steps = [
-        "Integrate new UI system with existing Neuroplex launcher",
+        "Integrate new UI system with existing Aetherra launcher",
         "Connect memory logging to all AetherraCode operations",
         "Implement plugin discovery and management interface",
         "Add chat refinement using rich display system",
@@ -329,7 +329,7 @@ def show_implementation_status():
 
 def main():
     """Main demo function"""
-    print("🧬 AetherraCode & Neuroplex AI OS")
+    print("🧬 AetherraCode & Aetherra AI OS")
     print("Implementation Demo - Phase 1 Complete")
     print("=" * 60)
 

@@ -1,5 +1,5 @@
 @echo off
-REM Neuroplex Command-Line Interface for Windows
-REM This enables: neuroplex run monitor.aether
+REM LyrixaCommand-Line Interface for Windows
+REM This enables: Lyrixarun monitor.aether
 
-python "%~dp0neuroplex_cli.py" %*
+python "%~dp0Lyrixa_cli.py" %*

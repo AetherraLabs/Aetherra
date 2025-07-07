@@ -18,17 +18,17 @@ This massive commit encompasses the complete reorganization and fixing of the Ae
 - Fixed type annotation issues (any → Any) throughout codebase
 
 ## 🏷️ Comprehensive Naming Standardization:
-- Renamed all "neurocode" → "aetherra" references throughout codebase
-- Renamed all "NeuroCode" → "Aetherra" references
-- Renamed all "neuroplex" → "lyrixa" references
-- Renamed all "Neuroplex" → "Lyrixa" references
-- Renamed files: neurocode_launcher.py, data/neurocode_functions.json.example
-- Renamed src/neurocode/ → src/aetherra/ directory
-- Renamed 7 test files from *neuroplex* → *lyrixa*
+- Renamed all "aetherra" → "aetherra" references throughout codebase
+- Renamed all "aetherra" → "Aetherra" references
+- Renamed all "Lyrixa" → "lyrixa" references
+- Renamed all "Lyrixa" → "Lyrixa" references
+- Renamed files: aetherra_launcher.py, data/aetherra_functions.json.example
+- Renamed src/aetherra/ → src/aetherra/ directory
+- Renamed 7 test files from *Lyrixa* → *lyrixa*
 - Updated website domain: neuro-code.dev → aetherra.dev
 
 ## 🔄 Backward Compatibility:
-- Added legacy aliases: parse_neurocode → parse_aetherra, compile_neurocode → compile_aetherra
+- Added legacy aliases: parse_aetherra → parse_aetherra, compile_aetherra → compile_aetherra
 - Maintained MemoryEngine → LyrixaMemory, BaseInterpreter → AetherraInterpreter aliases
 - Added DebugSystem → AetherraDebugSystem compatibility alias
 - All existing code continues to work without breaking changes

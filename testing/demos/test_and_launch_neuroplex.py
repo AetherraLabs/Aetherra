@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 """
-🚀 Neuroplex Quick Test & Launch
+🚀 LyrixaQuick Test & Launch
 ===============================
 
-Simple test and launch script for Neuroplex to verify it works.
+Simple test and launch script for Lyrixato verify it works.
 """
 
 import sys
 
 
-def test_neuroplex_basic():
-    """Test basic Neuroplex functionality"""
-    print("🔍 Testing Basic Neuroplex Functionality...")
+def test_Lyrixa_basic():
+    """Test basic Lyrixafunctionality"""
+    print("🔍 Testing Basic LyrixaFunctionality...")
 
     try:
         # Test the main launcher
 
-        print("  ✅ NeuroCode Launcher: Import successful")
+        print("  ✅ Aetherra Launcher: Import successful")
 
         # Test that we can access the main components
-        if hasattr(neurocode_launcher, "main"):
+        if hasattr(Aetherra_launcher, "main"):
             print("  ✅ Main function: Available")
 
         return True
@@ -29,16 +29,16 @@ def test_neuroplex_basic():
         return False
 
 
-def test_neuroplex_ui():
-    """Test Neuroplex UI components"""
-    print("\n🔍 Testing Neuroplex UI Components...")
+def test_Lyrixa_ui():
+    """Test LyrixaUI components"""
+    print("\n🔍 Testing LyrixaUI Components...")
 
     try:
         # Test the fully modular version (most stable)
-        print("  ✅ Fully Modular Neuroplex: Import successful")
+        print("  ✅ Fully Modular Lyrixa: Import successful")
 
         # Test GUI v2
-        print("  ✅ Neuroplex GUI v2: Import successful")
+        print("  ✅ Lyrixa v2: Import successful")
 
         return True
 
@@ -47,14 +47,14 @@ def test_neuroplex_ui():
         return False
 
 
-def launch_neuroplex_demo():
-    """Launch Neuroplex in demo mode"""
-    print("\n🚀 Launching Neuroplex Demo...")
+def launch_Lyrixa_demo():
+    """Launch Lyrixain demo mode"""
+    print("\n🚀 Launching LyrixaDemo...")
 
     try:
         # Import the launcher
 
-        print("  🎯 Neuroplex is ready to launch!")
+        print("  🎯 Lyrixais ready to launch!")
         print("  📋 Available options:")
         print("    1. GUI Mode (Recommended)")
         print("    2. CLI Mode")
@@ -68,24 +68,24 @@ def launch_neuroplex_demo():
         elif choice == "1":
             print("  🎨 Launching GUI Mode...")
             # Launch GUI mode
-            if hasattr(neurocode_launcher, "launch_gui"):
-                neurocode_launcher.launch_gui()
+            if hasattr(Aetherra_launcher, "launch_gui"):
+                Aetherra_launcher.launch_gui()
             else:
-                neurocode_launcher.main()
+                Aetherra_launcher.main()
         elif choice == "2":
             print("  💻 Launching CLI Mode...")
             # Launch CLI mode
-            if hasattr(neurocode_launcher, "launch_cli"):
-                neurocode_launcher.launch_cli()
+            if hasattr(Aetherra_launcher, "launch_cli"):
+                Aetherra_launcher.launch_cli()
             else:
-                neurocode_launcher.main()
+                Aetherra_launcher.main()
         elif choice == "3":
             print("  🧪 Running Demo Mode...")
             # Just show that it can initialize
             print("  ✅ Demo completed successfully!")
         else:
             print("  ⚠️ Invalid choice, launching default mode...")
-            neurocode_launcher.main()
+            Aetherra_launcher.main()
 
         return True
 
@@ -99,26 +99,28 @@ def launch_neuroplex_demo():
 
 def main():
     """Main test and launch function"""
-    print("🚀 Neuroplex Quick Test & Launch")
+    print("🚀 LyrixaQuick Test & Launch")
     print("=" * 40)
 
     # Run basic tests
-    if not test_neuroplex_basic():
+    if not test_Lyrixa_basic():
         print("❌ Basic tests failed. Cannot proceed.")
         return False
 
-    if not test_neuroplex_ui():
+    if not test_Lyrixa_ui():
         print("⚠️ UI tests failed, but proceeding with basic functionality.")
 
-    print("\n✅ Neuroplex is functional!")
+    print("\n✅ Lyrixais functional!")
 
     # Ask if user wants to launch
-    launch_choice = input("\n🚀 Would you like to launch Neuroplex now? (y/n): ").strip().lower()
+    launch_choice = (
+        input("\n🚀 Would you like to launch Lyrixanow? (y/n): ").strip().lower()
+    )
 
     if launch_choice in ["y", "yes", ""]:
-        return launch_neuroplex_demo()
+        return launch_Lyrixa_demo()
     else:
-        print("👋 Neuroplex test completed. You can launch it anytime!")
+        print("👋 Lyrixatest completed. You can launch it anytime!")
         return True
 
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🧪 Neuroplex System Test Suite
+🧪 LyrixaSystem Test Suite
 =============================
 
-Comprehensive testing of the Neuroplex system to ensure all components
+Comprehensive testing of the Lyrixasystem to ensure all components
 work together correctly.
 """
 
@@ -12,22 +12,22 @@ import traceback
 from pathlib import Path
 
 
-def test_neuroplex_imports():
-    """Test that all Neuroplex modules can be imported"""
-    print("🔍 Testing Neuroplex Imports...")
+def test_Lyrixa_imports():
+    """Test that all Lyrixamodules can be imported"""
+    print("🔍 Testing LyrixaImports...")
 
-    neuroplex_files = [
-        "src/neurocode/ui/neuroplex_fully_modular.py",
-        "src/neurocode/ui/neuroplex_modular.py",
-        "src/neurocode/ui/neuroplex_gui_v2.py",
-        "src/neurocode/ui/neuroplex_gui.py",
-        "src/neurocode/ui/neuroplex_agent_integration.py",
+    Lyrixa_files = [
+        "src/Aetherra/ui/Lyrixa_fully_modular.py",
+        "src/Aetherra/ui/Lyrixa_modular.py",
+        "src/Aetherra/ui/Lyrixa_gui_v2.py",
+        "src/Aetherra/ui/Lyrixa_gui.py",
+        "src/Aetherra/ui/Lyrixa_agent_integration.py",
     ]
 
     passed = 0
-    total = len(neuroplex_files)
+    total = len(Lyrixa_files)
 
-    for file_path in neuroplex_files:
+    for file_path in Lyrixa_files:
         try:
             full_path = Path(file_path)
             if full_path.exists():
@@ -49,38 +49,38 @@ def test_neuroplex_imports():
     return passed, total
 
 
-def test_neurocode_launcher():
-    """Test the main NeuroCode launcher"""
-    print("\n🔍 Testing NeuroCode Launcher...")
+def test_Aetherra_launcher():
+    """Test the main Aetherra launcher"""
+    print("\n🔍 Testing Aetherra Launcher...")
 
     try:
         # Test import
 
-        print("  ✅ neurocode_launcher.py: Import successful")
+        print("  ✅ Aetherra_launcher.py: Import successful")
 
         # Check for main components
-        if hasattr(neurocode_launcher, "main"):
+        if hasattr(Aetherra_launcher, "main"):
             print("  ✅ main() function found")
 
-        if hasattr(neurocode_launcher, "NeuroCodeLauncher"):
-            print("  ✅ NeuroCodeLauncher class found")
-        elif hasattr(neurocode_launcher, "launch_neurocode"):
-            print("  ✅ launch_neurocode function found")
+        if hasattr(Aetherra_launcher, "AetherraLauncher"):
+            print("  ✅ AetherraLauncher class found")
+        elif hasattr(Aetherra_launcher, "launch_Aetherra"):
+            print("  ✅ launch_Aetherra function found")
 
         return True
 
     except Exception as e:
-        print(f"  ❌ NeuroCode Launcher failed: {e}")
+        print(f"  ❌ Aetherra Launcher failed: {e}")
         traceback.print_exc()
         return False
 
 
 def test_core_components():
-    """Test core NeuroCode components"""
+    """Test core Aetherra components"""
     print("\n🔍 Testing Core Components...")
 
     components = [
-        ("core.interpreter", "NeuroCode Interpreter"),
+        ("core.interpreter", "Aetherra Interpreter"),
         ("core.memory", "Memory System"),
         ("core.agent", "Agent System"),
         ("core.parser", "Parser System"),
@@ -206,15 +206,15 @@ def test_integration():
         return False
 
 
-def run_neuroplex_demo():
-    """Attempt to run a simple Neuroplex demo"""
-    print("\n🔍 Testing Neuroplex Demo...")
+def run_Lyrixa_demo():
+    """Attempt to run a simple Lyrixademo"""
+    print("\n🔍 Testing LyrixaDemo...")
 
     try:
         # Try to run the launcher in demo mode
 
         # Check if we can initialize without errors
-        print("  ✅ Neuroplex Demo: Initialization successful")
+        print("  ✅ LyrixaDemo: Initialization successful")
 
         # Note: We don't actually launch the GUI to avoid blocking the test
         print("  ℹ️ Note: GUI launch skipped in automated test")
@@ -222,25 +222,25 @@ def run_neuroplex_demo():
         return True
 
     except Exception as e:
-        print(f"  ❌ Neuroplex Demo failed: {e}")
+        print(f"  ❌ LyrixaDemo failed: {e}")
         return False
 
 
 def main():
-    """Run comprehensive Neuroplex test suite"""
-    print("🧪 Neuroplex System Test Suite")
+    """Run comprehensive Lyrixatest suite"""
+    print("🧪 LyrixaSystem Test Suite")
     print("=" * 50)
-#     print("Testing all Neuroplex components and integrations...\n")
+    #     print("Testing all Lyrixacomponents and integrations...\n")
 
     tests = [
-        ("Neuroplex Imports", test_neuroplex_imports),
-        ("NeuroCode Launcher", test_neurocode_launcher),
+        ("LyrixaImports", test_Lyrixa_imports),
+        ("Aetherra Launcher", test_Aetherra_launcher),
         ("Core Components", test_core_components),
         ("Performance System", test_performance_system),
         ("Memory System", test_memory_system),
         ("UI System", test_ui_system),
         ("System Integration", test_integration),
-        ("Neuroplex Demo", run_neuroplex_demo),
+        ("LyrixaDemo", run_Lyrixa_demo),
     ]
 
     total_passed = 0
@@ -272,13 +272,13 @@ def main():
     print(f"\n📊 Final Results: {total_passed}/{total_tests} tests passed")
 
     if total_passed == total_tests:
-        print("🎉 All Neuroplex tests passed! System is working correctly!")
+        print("🎉 All Lyrixatests passed! System is working correctly!")
         return True
     elif total_passed >= total_tests * 0.8:  # 80% pass rate
-        print("✅ Neuroplex is mostly functional with minor issues.")
+        print("✅ Lyrixais mostly functional with minor issues.")
         return True
     else:
-        print("❌ Neuroplex has significant issues that need attention.")
+        print("❌ Lyrixahas significant issues that need attention.")
         return False
 
 

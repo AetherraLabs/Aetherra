@@ -38,7 +38,7 @@ def test_interpreter_functionality():
     print("\n🚀 Testing Interpreter Functionality...")
 
     try:
-        from neurocode.core import create_interpreter
+        from Aetherra.core import create_interpreter
 
         # Test basic interpreter
         interpreter = create_interpreter(enhanced=False)
@@ -69,7 +69,7 @@ def test_memory_system():
     print("\n🧠 Testing Memory System...")
 
     try:
-        from neurocode.core import create_memory_system
+        from Aetherra.core import create_memory_system
 
         # Test basic memory system
         memory = create_memory_system(vector_enabled=False)
@@ -106,7 +106,7 @@ def test_parser_functionality():
     print("\n📝 Testing Parser System...")
 
     try:
-        from neurocode.core import create_parser
+        from Aetherra.core import create_parser
 
         parser = create_parser()
         print("  ✅ Parser created")
@@ -137,7 +137,10 @@ def test_ui_components():
     try:
         print("  ✅ UI launch function imported")
 
-        from neurocode.ui.components.utils.qt_imports import QApplication, is_qt_available
+        from Aetherra.ui.components.utils.qt_imports import (
+            QApplication,
+            is_qt_available,
+        )
 
         print("  ✅ Qt imports working")
 
@@ -170,7 +173,7 @@ def test_stdlib_plugins():
     try:
         # The plugins should have loaded during import
         # Check for plugin files
-        stdlib_path = project_root / "src" / "neurocode" / "stdlib"
+        stdlib_path = project_root / "src" / "Aetherra" / "stdlib"
         if stdlib_path.exists():
             plugins = list(stdlib_path.glob("*.py"))
             print(f"  ✅ Found {len(plugins)} stdlib files")
@@ -209,7 +212,10 @@ def test_performance_engine():
         performance_path = project_root / "core" / "advanced_performance_engine.py"
         if performance_path.exists():
             sys.path.insert(0, str(project_root / "core"))
-            from advanced_performance_engine import get_performance_engine, performance_optimized
+            from advanced_performance_engine import (
+                get_performance_engine,
+                performance_optimized,
+            )
 
             engine = get_performance_engine()
             print("  ✅ Performance engine created")
@@ -270,7 +276,7 @@ def test_aethercode_syntax():
 
     try:
         # Test if we can create basic AetherraCode constructs
-        sample_neurocode = """
+        sample_Aetherra = """
         # Sample AetherraCode syntax test
         goal: "Test AetherraCode functionality"
         remember: "This is a test"
@@ -281,13 +287,13 @@ def test_aethercode_syntax():
 
         # If parser is available, test parsing
         try:
-            from neurocode.core import create_parser
+            from Aetherra.core import create_parser
 
             parser = create_parser()
             if hasattr(parser, "parse"):
                 # This might fail, but we test the structure
                 try:
-                    result = parser.parse(sample_neurocode)
+                    result = parser.parse(sample_Aetherra)
                     print("  ✅ AetherraCode syntax parsed successfully")
                 except Exception:
                     print("  ⚠️ AetherraCode parsing not fully implemented (expected)")
@@ -305,7 +311,7 @@ def run_basic_gui_test():
     print("\n🖼️ Testing Basic GUI Functionality...")
 
     try:
-        from neurocode.ui.components.utils.qt_imports import (
+        from Aetherra.ui.components.utils.qt_imports import (
             QApplication,
             QLabel,
             QVBoxLayout,
@@ -325,7 +331,9 @@ def run_basic_gui_test():
         window.setGeometry(100, 100, 400, 200)
 
         layout = QVBoxLayout()
-        label = QLabel("🎉 AetherraCode GUI Test Successful!\n\nAll components are working correctly.")
+        label = QLabel(
+            "🎉 AetherraCode GUI Test Successful!\n\nAll components are working correctly."
+        )
         label.setStyleSheet("font-size: 14px; padding: 20px; text-align: center;")
         layout.addWidget(label)
         window.setLayout(layout)
@@ -358,7 +366,7 @@ def main():
     """Run comprehensive AetherraCode test suite"""
     print("🧪 AetherraCode Comprehensive Test Suite")
     print("=" * 60)
-#     print("Testing all major components...\n")
+    #     print("Testing all major components...\n")
 
     test_results = []
 

@@ -1,4 +1,4 @@
-# NeuroCode Parser Migration Guide
+# aetherra Parser Migration Guide
 
 **From Regex to Modern AST-Based Parsing**
 
@@ -16,7 +16,7 @@ This document outlines the migration plan from the current regex-based parser (`
 - Zero external dependencies
 - Fast pattern matching for simple constructs
 - Working implementation with 520 lines of code
-- Handles basic NeuroCode syntax
+- Handles basic aetherra syntax
 
 **Limitations:**
 - Regex-based approach limits language evolution
@@ -80,7 +80,7 @@ This document outlines the migration plan from the current regex-based parser (`
 
 **Tasks:**
 
-1. **Complete `NeuroCodeModernParser` implementation**
+1. **Complete `aetherraModernParser` implementation**
    - Finish all grammar rules
    - Implement all AST node types
    - Add error handling and recovery
@@ -98,7 +98,7 @@ This document outlines the migration plan from the current regex-based parser (`
    ```
 
 **Success Criteria:**
-- [ ] All NeuroCode constructs parse correctly
+- [ ] All aetherra constructs parse correctly
 - [ ] Test coverage > 90%
 - [ ] Performance acceptable (< 2x regression)
 
@@ -116,7 +116,7 @@ This document outlines the migration plan from the current regex-based parser (`
 1. **Add parser selection mechanism**
    ```python
    # In core/interpreter.py or main parser interface
-   USE_MODERN_PARSER = os.getenv('NEUROCODE_MODERN_PARSER', 'false').lower() == 'true'
+   USE_MODERN_PARSER = os.getenv('aetherra_MODERN_PARSER', 'false').lower() == 'true'
    ```
 
 2. **Run regression tests**
@@ -155,7 +155,7 @@ This document outlines the migration plan from the current regex-based parser (`
    ```python
    # Add deprecation warnings to syntax_tree.py
    import warnings
-   warnings.warn("NeuroCodeParser is deprecated, use NeuroCodeModernParser", DeprecationWarning)
+   warnings.warn("aetherraParser is deprecated, use aetherraModernParser", DeprecationWarning)
    ```
 
 3. **Update documentation**
@@ -174,8 +174,8 @@ This document outlines the migration plan from the current regex-based parser (`
 
 ```
 docs/
-├── NEUROCODE_GRAMMAR.ebnf     # Formal EBNF grammar
-├── NEUROCODE_GRAMMAR.lark     # Lark parser grammar
+├── aetherra_GRAMMAR.ebnf     # Formal EBNF grammar
+├── aetherra_GRAMMAR.lark     # Lark parser grammar
 └── PARSER_MIGRATION_GUIDE.md  # This document
 ```
 
@@ -185,13 +185,13 @@ The modern parser maintains API compatibility:
 
 ```python
 # Old interface (still works)
-from core.syntax_tree import NeuroCodeParser
-parser = NeuroCodeParser()
+from core.syntax_tree import aetherraParser
+parser = aetherraParser()
 ast = parser.parse(code)
 
 # New interface
-from core.modern_parser import NeuroCodeModernParser
-parser = NeuroCodeModernParser()
+from core.modern_parser import aetherraModernParser
+parser = aetherraModernParser()
 ast = parser.parse(code)
 ```
 
@@ -218,7 +218,7 @@ class ASTNode:
    - Error handling
 
 2. **Integration Tests**
-   - Full NeuroCode programs
+   - Full aetherra programs
    - Complex nested structures
    - Error recovery scenarios
 
@@ -242,7 +242,7 @@ tests/
 │   ├── test_parser_comparison.py  # Compare old vs new
 │   └── test_error_handling.py     # Error scenarios
 ├── integration_tests/
-│   ├── test_full_programs.py      # Complete NeuroCode programs
+│   ├── test_full_programs.py      # Complete aetherra programs
 │   └── test_complex_syntax.py     # Complex nested structures
 └── benchmark/
     └── parser_performance.py      # Performance comparison
@@ -333,7 +333,7 @@ pytest-cov          # Coverage reporting
 ### Files to Update
 
 1. **README.md** - Add parser information
-2. **NEUROCODE_LANGUAGE_SPECIFICATION.md** - Reference formal grammar
+2. **aetherra_LANGUAGE_SPECIFICATION.md** - Reference formal grammar
 3. **CONTRIBUTING.md** - Parser development guidelines
 4. **API_REFERENCE.md** - Parser API documentation
 
@@ -367,15 +367,15 @@ With formal grammar, future language features become easier:
 
 For questions about the parser migration:
 
-- **Technical Lead**: NeuroCode Development Team
+- **Technical Lead**: aetherra Development Team
 - **Documentation**: See `docs/` directory
 - **Issues**: GitHub issue tracker
-- **Discussions**: NeuroCode community channels
+- **Discussions**: aetherra community channels
 
 ---
 
 **Status Legend:**
 - ⏳ Planned
-- 🔄 In Progress  
+- 🔄 In Progress
 - ✅ Complete
 - ❌ Blocked

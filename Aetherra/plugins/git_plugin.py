@@ -1,4 +1,4 @@
-# src/neurocode/plugins/git_plugin.py - Git Integration Plugin
+# src/aetherra/plugins/git_plugin.py - Git Integration Plugin
 import os
 import subprocess
 from typing import Any, Dict

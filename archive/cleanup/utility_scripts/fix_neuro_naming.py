@@ -8,7 +8,7 @@ import re
 # Define replacement patterns
 replacements = [
     (r"\bNeuroAgent\b", "AetherraAgent"),
-    (r"\bNeuroCode\b", "AetherraCode"),
+    (r"\bAetherra\b", "AetherraCode"),
     (r"\bNeuroDebug\b", "AetherraDebug"),
     (r"\bNeuroUI\b", "AetherraUI"),
     (r"\bNeuroChat\b", "AetherraChat"),

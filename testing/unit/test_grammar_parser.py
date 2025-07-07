@@ -7,13 +7,13 @@ import sys
 
 sys.path.append(".")
 
-from Aetherra.core.refined_aethercode_grammar import RefinedNeuroCodeParser
+from Aetherra.core.refined_aethercode_grammar import RefinedAetherraParser
 
 
 def test_parser():
     """Test the refined parser with basic AetherraCode constructs"""
 
-    parser = RefinedNeuroCodeParser()
+    parser = RefinedAetherraParser()
 
     # Test basic AetherraCode constructs
     test_cases = [

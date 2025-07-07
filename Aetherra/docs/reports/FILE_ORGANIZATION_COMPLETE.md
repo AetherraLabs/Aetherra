@@ -4,13 +4,13 @@
 
 ### **Root Directory (Clean & Essential)**
 ```
-📁 New Neurocode Language/
+📁 New Aetherra Language/
 ├── 🚀 main.py                      # Main entry point
-├── 🧠 neurocode.py                 # Core NeuroCode language
-├── ⚙️ neurocode_engine.py          # Language engine
-├── 🎛️ neuroplex.py                 # Neuroplex system
-├── 📟 neuroplex_cli.py             # Command line interface
-├── 🏃 neuro_runner.py              # NeuroCode runner
+├── 🧠 Aetherra.py                 # Core Aetherra language
+├── ⚙️ Aetherra_engine.py          # Language engine
+├── 🎛️ Lyrixa.py                 # Lyrixasystem
+├── 📟 Lyrixa_cli.py             # Command line interface
+├── 🏃 neuro_runner.py              # Aetherra runner
 ├── 🏃 neuro_runner_standalone.py   # Standalone runner
 ├── 🌐 natural_translator.py        # Natural language translator
 ├── 🚀 startup.py                   # System startup
@@ -23,7 +23,7 @@
 
 #### **📂 `/launchers/` - GUI & App Launchers**
 - `launch_gui.py`
-- `launch_neuroplex.py`
+- `launch_Lyrixa.py`
 - `launch_neuro_ui.py`
 - `simple_gui_launcher.py`
 - `safe_launcher.py`
@@ -38,10 +38,10 @@
 
 #### **📂 `/ui/` - User Interface Components**
 - `neuro_ui.py` (main enhanced UI)
-- `neuroplex_gui.py` (Neuroplex GUI)
+- `Lyrixa_gui.py` (Lyrixa)
 - `neuro_chat.py`, `neuro_chat_console.py`
 
-#### **📂 `/examples/` - NeuroCode Examples**
+#### **📂 `/examples/` - Aetherra Examples**
 - `basic_memory.aether`
 - `advanced_syntax_demo.aether`
 - `ai_collaboration.aether`
@@ -55,14 +55,14 @@
 - `test_enhanced_interpreter.py`
 - `test_memory_reflection.py`
 - `integration_test.py`
-- Test NeuroCode files (`*.aether`)
+- Test Aetherra files (`*.aether`)
 
 #### **📂 `/demos/` - Demo Files**
 - `comprehensive_demo.py`
-- `enhanced_neurocode_demo.py`
+- `enhanced_Aetherra_demo.py`
 - `natural_translation_demo.py`
 - `memory_temporal_demo.py`
-- Demo NeuroCode files
+- Demo Aetherra files
 
 #### **📂 `/scripts/` - Utility & Setup Scripts**
 - `setup_*.py` - Setup and configuration scripts
@@ -75,8 +75,8 @@
 
 #### **📂 `/docs/` - Documentation**
 - `ARCHITECTURE.md`
-- `NEUROCODE_LANGUAGE_SPEC.md`
-- `NEUROCODE_MANIFESTO.md`
+- `Aetherra_LANGUAGE_SPEC.md`
+- `Aetherra_MANIFESTO.md`
 - `SELF_EDITING_GUIDE.md`
 - Implementation plans and analysis docs
 
@@ -88,7 +88,7 @@
 - Plugin modules and extensions
 
 #### **📂 `/stdlib/` - Standard Library**
-- NeuroCode standard library modules
+- Aetherra standard library modules
 
 #### **📂 `/temp/` - Temporary Files**
 - `parse_debug*.py` - Old debug files
@@ -130,7 +130,7 @@
 
 ## 🎯 Result
 
-The NeuroCode workspace now has a **professional, organized structure** that:
+The Aetherra workspace now has a **professional, organized structure** that:
 - Makes development more efficient
 - Improves code discoverability
 - Separates concerns appropriately

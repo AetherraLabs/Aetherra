@@ -1,5 +1,5 @@
 """
-NeuroCode Persona System - Core Implementation
+Aetherra Persona System - Core Implementation
 Provides unique AI identities and adaptive personalities for each installation.
 """
 

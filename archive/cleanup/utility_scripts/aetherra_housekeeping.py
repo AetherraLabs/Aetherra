@@ -141,7 +141,7 @@ def move_assets():
 
     for pattern in asset_patterns:
         for file in Path(".").glob(pattern):
-            if file.name.startswith("Aetherra") or file.name.startswith("Neuroplex"):
+            if file.name.startswith("Aetherra") or file.name.startswith("Aetherra"):
                 dest = Path("assets/branding") / file.name
                 shutil.move(file, dest)
                 print(f"🎨 Moved {file} → assets/branding/")

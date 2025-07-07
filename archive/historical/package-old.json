@@ -24,7 +24,7 @@
     "eslint": "^8.57.0"
   },
   "keywords": [
-    "neurocode",
+    "Aetherra",
     "ai",
     "consciousness",
     "package-manager",
@@ -32,15 +32,15 @@
     "plugins",
     "neuroplug"
   ],
-  "author": "NeuroCode Team",
+  "author": "Aetherra Team",
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/VirtualVerse-Corporation/NeuroCode.git",
+    "url": "https://github.com/VirtualVerse-Corporation/Aetherra.git",
     "directory": "neurohub"
   },
   "bugs": {
-    "url": "https://github.com/VirtualVerse-Corporation/NeuroCode/issues"
+    "url": "https://github.com/VirtualVerse-Corporation/Aetherra/issues"
   },
   "homepage": "https://neurohub.dev",
   "engines": {

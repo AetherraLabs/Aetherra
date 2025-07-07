@@ -1,6 +1,6 @@
 from core.chat_router import aetherraChatRouter
 
-print("Testing Neuroplex Chat Upgrade...")
+print("Testing Aetherra Chat Upgrade...")
 
 # Test demo mode
 cr = aetherraChatRouter(demo_mode=True)

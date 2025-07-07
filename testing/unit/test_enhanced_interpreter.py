@@ -26,7 +26,7 @@ def test_enhanced_interpreter():
     # Test data
     test_scripts = [
         {
-            "name": "Basic NeuroCode",
+            "name": "Basic Aetherra",
             "code": """goal: optimize system performance priority: high
 remember("system optimized") as "maintenance"
 assistant: "analyze current system bottlenecks"
@@ -90,14 +90,14 @@ end""",
     # Test syntax tree analysis
     print("\n📊 Syntax Tree Analysis:")
     if interpreter.use_enhanced_parser:
-        from core.syntax_tree import analyze_syntax_tree, parse_neurocode
+        from core.syntax_tree import analyze_syntax_tree, parse_Aetherra
 
         sample_code = '''goal: test parsing priority: medium
 remember("test data") as "testing"
 assistant: "help with analysis"'''
 
         try:
-            tree = parse_neurocode(sample_code)
+            tree = parse_Aetherra(sample_code)
             stats = analyze_syntax_tree(tree)
             print(f"   📈 Tree Statistics: {stats}")
         except Exception as e:

@@ -17,7 +17,11 @@ def check_core_modules():
 
     try:
         # Test core functionality
-        from neurocode.core import create_interpreter, create_memory_system, create_parser
+        from Aetherra.core import (
+            create_interpreter,
+            create_memory_system,
+            create_parser,
+        )
 
         print("✅ Core module imports successful")
 
@@ -51,7 +55,7 @@ def check_cli_modules():
         print(f"✅ CLI availability status: {CLI_AVAILABLE}")
 
         if CLI_AVAILABLE:
-            from neurocode.cli.main import AetherraCodePersonaInterface
+            from Aetherra.cli.main import AetherraCodePersonaInterface
 
             interface = AetherraCodePersonaInterface()
             print("✅ CLI interface creation successful")

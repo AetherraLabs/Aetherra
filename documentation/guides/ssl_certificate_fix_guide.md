@@ -18,7 +18,7 @@ Based on your setup, the SSL certificate issue is likely caused by:
 
 **Current Issue**: You have conflicting CNAME files:
 - `CNAME` (root): `neuro-code.dev`
-- `website/CNAME`: `neurocode.dev` (missing hyphen)
+- `website/CNAME`: `aetherra.dev` (missing hyphen)
 
 **Action Required**: Choose one domain and update all CNAME files consistently.
 
@@ -66,10 +66,10 @@ Values:
 echo "neuro-code.dev" > website/CNAME
 ```
 
-**Option B**: Use `neurocode.dev` (no hyphen)
+**Option B**: Use `aetherra.dev` (no hyphen)
 ```bash
 # Update root CNAME to match website CNAME
-echo "neurocode.dev" > CNAME
+echo "aetherra.dev" > CNAME
 ```
 
 ### Commit Changes:
@@ -145,7 +145,7 @@ After implementing these fixes:
 
 ## 📋 Next Steps
 
-1. **Choose your preferred domain** (`neuro-code.dev` or `neurocode.dev`)
+1. **Choose your preferred domain** (`neuro-code.dev` or `aetherra.dev`)
 2. **Update CNAME files** to use consistent domain
 3. **Commit and push changes**
 4. **Check GitHub Pages settings** in repository
@@ -154,4 +154,4 @@ After implementing these fixes:
 
 ---
 
-*This guide should resolve your SSL certificate issue and get your NeuroCode website accessible with HTTPS.*
+*This guide should resolve your SSL certificate issue and get your aetherra website accessible with HTTPS.*

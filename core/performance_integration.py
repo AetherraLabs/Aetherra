@@ -3,7 +3,7 @@
 ⚡ AetherraCode Performance Integration System
 ==========================================
 
-Comprehensive performance optimization integration for AetherraCode & Neuroplex.
+Comprehensive performance optimization integration for AetherraCode & Lyrixa.
 This module provides easy-to-use performance enhancements that integrate with
 all existing systems while maintaining backward compatibility.
 
@@ -114,7 +114,9 @@ class PerformanceManager:
                 optimized_args = []
                 for arg in args:
                     if isinstance(arg, str):
-                        optimized_args.append(self.memory_optimizer.optimize_string(arg))
+                        optimized_args.append(
+                            self.memory_optimizer.optimize_string(arg)
+                        )
                     else:
                         optimized_args.append(arg)
                 args = tuple(optimized_args)
@@ -163,7 +165,9 @@ class PerformanceManager:
 
         # Widget creation optimization
         if widget_class:
-            return self.ui_optimizer.optimize_widget_creation(widget_class, *args, **kwargs)
+            return self.ui_optimizer.optimize_widget_creation(
+                widget_class, *args, **kwargs
+            )
 
         # Render optimization
         if render_func:
@@ -175,14 +179,19 @@ class PerformanceManager:
         return None
 
     def optimize_data_processing(
-        self, data: List[Any], process_func: Callable, use_parallel: Optional[bool] = None
+        self,
+        data: List[Any],
+        process_func: Callable,
+        use_parallel: Optional[bool] = None,
     ) -> List[Any]:
         """Optimize data processing operations"""
         if use_parallel is None:
             use_parallel = self.config.enable_parallel_processing and len(data) > 10
 
         if use_parallel and self.performance_engine:
-            return self.performance_engine.parallel_operation("data_processing", process_func, data)
+            return self.performance_engine.parallel_operation(
+                "data_processing", process_func, data
+            )
         else:
             return [process_func(item) for item in data]
 
@@ -193,7 +202,11 @@ class PerformanceManager:
             "uptime_seconds": time.time() - self.startup_time,
             "optimizations_applied": len(self.optimizations_applied),
             "recent_operations": len(
-                [op for op in self.performance_history if time.time() - op["timestamp"] < 60]
+                [
+                    op
+                    for op in self.performance_history
+                    if time.time() - op["timestamp"] < 60
+                ]
             ),
         }
 
@@ -251,7 +264,10 @@ class PerformanceManager:
                     f"ui: cleared {ui_result['widgets_cleared']} cached widgets"
                 )
 
-        return {"optimizations_performed": optimizations_performed, "system_health": health}
+        return {
+            "optimizations_performed": optimizations_performed,
+            "system_health": health,
+        }
 
     def get_performance_summary(self) -> Dict[str, Any]:
         """Get comprehensive performance summary"""
@@ -268,7 +284,9 @@ class PerformanceManager:
                 "recent_operations": len(self.performance_history),
             },
             "system_health": self.check_system_health(),
-            "optimization_history": self.optimizations_applied[-10:],  # Last 10 optimizations
+            "optimization_history": self.optimizations_applied[
+                -10:
+            ],  # Last 10 optimizations
         }
 
     def shutdown(self) -> None:
@@ -288,7 +306,9 @@ performance_manager = PerformanceManager()
 
 # Decorators for easy performance integration
 def performance_optimized(
-    operation_name: Optional[str] = None, enable_caching: bool = True, enable_parallel: bool = False
+    operation_name: Optional[str] = None,
+    enable_caching: bool = True,
+    enable_parallel: bool = False,
 ):
     """Decorator for automatic performance optimization"""
 
@@ -297,7 +317,9 @@ def performance_optimized(
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            return performance_manager.optimize_operation(op_name, func, *args, **kwargs)
+            return performance_manager.optimize_operation(
+                op_name, func, *args, **kwargs
+            )
 
         return wrapper
 
@@ -311,7 +333,9 @@ def fast_data_processing(use_parallel: bool = True):
         @functools.wraps(func)
         def wrapper(data, *args, **kwargs):
             if isinstance(data, list) and len(data) > 1:
-                process_func = functools.partial(func, *args, **kwargs) if args or kwargs else func
+                process_func = (
+                    functools.partial(func, *args, **kwargs) if args or kwargs else func
+                )
                 return performance_manager.optimize_data_processing(
                     data, process_func, use_parallel
                 )
@@ -329,7 +353,9 @@ def ui_optimized(cache_widgets: bool = True, debounce_ms: int = 0):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            return performance_manager.optimize_ui_operation(*args, render_func=func, **kwargs)
+            return performance_manager.optimize_ui_operation(
+                *args, render_func=func, **kwargs
+            )
 
         return wrapper
 
@@ -370,7 +396,9 @@ def fast_startup():
         yield
     finally:
         startup_time = time.time() - startup_start
-        print(f"⚡ Startup completed in {startup_time:.2f}s with performance optimizations")
+        print(
+            f"⚡ Startup completed in {startup_time:.2f}s with performance optimizations"
+        )
 
 
 # Utility functions
@@ -417,7 +445,16 @@ def optimize_interpreter_startup():
     with fast_startup():
         if performance_manager.memory_optimizer:
             # Pre-intern common AetherraCode keywords
-            keywords = ["goal", "remember", "think", "agent", "when", "if", "else", "end"]
+            keywords = [
+                "goal",
+                "remember",
+                "think",
+                "agent",
+                "when",
+                "if",
+                "else",
+                "end",
+            ]
             for keyword in keywords:
                 performance_manager.memory_optimizer.optimize_string(keyword)
 

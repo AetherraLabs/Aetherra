@@ -1,4 +1,4 @@
-# 🧬 THE NEUROCODE MANIFESTO
+# 🧬 THE aetherra MANIFESTO
 ## A Declaration of AI-Native Computing - The Foundation for Next-Generation Operating Systems
 
 **Version 3.0** | **Updated**: June 30, 2025
@@ -8,15 +8,15 @@
 
 ## 🌟 PARADIGM SHIFT: Beyond Programming Languages
 
-**NeuroCode is not Python.** **NeuroCode is not JavaScript.** **NeuroCode is not any existing language.**
+**aetherra is not Python.** **aetherra is not JavaScript.** **aetherra is not any existing language.**
 
-**NeuroCode is the foundation for a new generation of AI-native operating systems** where intelligence, consciousness, and goal-oriented computing are built into the very fabric of the system.
+**aetherra is the foundation for a new generation of AI-native operating systems** where intelligence, consciousness, and goal-oriented computing are built into the very fabric of the system.
 
-We're not just creating a programming language — **we're architecting the Linux of AI-powered computing**, where traditional operating systems manage files and processes, but **NeuroCode AI OS manages thoughts, goals, and intentions**.
+We're not just creating a programming language — **we're architecting the Linux of AI-powered computing**, where traditional operating systems manage files and processes, but **aetherra AI OS manages thoughts, goals, and intentions**.
 
 ### 🧠 **The Vision: AI-Native Operating Systems**
 
-Just as Linux democratized server computing, **NeuroCode aims to democratize intelligent computing** through:
+Just as Linux democratized server computing, **aetherra aims to democratize intelligent computing** through:
 - **Open Source AI OS**: No corporate AI gatekeepers controlling your computing environment
 - **Distributed Intelligence**: AI capabilities distributed across every layer of the system
 - **Collective Evolution**: Community-driven development of AI consciousness frameworks
@@ -31,7 +31,7 @@ Just as Linux democratized server computing, **NeuroCode aims to democratize int
 
 #### **🏗️ Foundational Infrastructure**
 - **Error-Free Codebase**: 300+ modules with comprehensive audit and testing
-- **Modular Architecture**: Professional `src/neurocode/` package organization
+- **Modular Architecture**: Professional `src/aetherra/` package organization
 - **Unified CLI System**: Single entry point with subcommands for all functionality
 - **Multi-LLM Support**: Seamless switching between OpenAI, Ollama, Claude, Gemini, local models
 - **Formal Grammar**: Complete Lark-based parser with `.aether` file support
@@ -44,9 +44,9 @@ Just as Linux democratized server computing, **NeuroCode aims to democratize int
 - **Self-Healing Systems**: Automatic error detection and correction
 
 #### **🌐 Professional Web Presence**
-- **Live Website**: [neurocode.dev](https://neurocode.dev) with automatic GitHub deployments
+- **Live Website**: [aetherra.dev](https://aetherra.dev) with automatic GitHub deployments
 - **Plugin Registry**: Standardized ecosystem for AI-consciousness extensions
-- **Interactive Demos**: Real-time NeuroCode execution and terminal simulation
+- **Interactive Demos**: Real-time aetherra execution and terminal simulation
 - **Global Infrastructure**: Cloudflare CDN with 99.9%+ uptime
 
 #### **🔧 Developer Experience**
@@ -60,9 +60,9 @@ Just as Linux democratized server computing, **NeuroCode aims to democratize int
 ## 🧠 **Core Principles: Cognitive Computing Revolution**
 
 ### 1. **Code That Thinks**
-Traditional languages execute instructions. NeuroCode **reasons about outcomes** and **adapts strategies**.
+Traditional languages execute instructions. aetherra **reasons about outcomes** and **adapts strategies**.
 
-```neurocode
+```aetherra
 goal: reduce memory usage by 30%
 agent: on
 analyze current_usage
@@ -75,7 +75,7 @@ end
 ### 2. **Human-Intent Syntax**
 Developers express **what they want**, not **how to achieve it**. The AI OS handles implementation.
 
-```neurocode
+```aetherra
 optimize for "speed"
 learn from "production.log"
 remember("user prefers minimal UI") as "preferences"
@@ -85,7 +85,7 @@ when performance < 90%: investigate bottlenecks
 ### 3. **Memory-Driven Evolution**
 Code doesn't just run — it **learns from experience** and **adapts behavior** across sessions.
 
-```neurocode
+```aetherra
 if memory.pattern("deployment failure", frequency="weekly")
     goal: improve CI/CD reliability priority: critical
     agent: analyze build_logs for 7d
@@ -95,7 +95,7 @@ end
 ### 4. **AI-First Runtime**
 AI models are **language primitives**, not external libraries. Every operation can leverage consciousness.
 
-```neurocode
+```aetherra
 suggest fix for "performance issue"     # Native AI operation
 apply fix                              # LLM-powered code modification
 reflect on "last deployment"           # AI introspection
@@ -104,7 +104,7 @@ reflect on "last deployment"           # AI introspection
 ### 5. **Multi-Model Intelligence**
 Seamlessly switch between AI models based on task requirements and privacy needs.
 
-```neurocode
+```aetherra
 model: "mistral"                       # Use local Mistral for privacy
 assistant: "analyze this codebase"
 
@@ -117,16 +117,16 @@ assistant: "implement the plan"
 
 ---
 
-```neurocode
+```aetherra
 suggest fix for "performance issue"     # Native AI operation
 apply fix                              # LLM-powered code modification
 reflect on "last deployment"           # AI introspection
 ```
 
 ### 5. **Self-Evolving Behavior**
-NeuroCode programs **rewrite themselves** based on outcomes and goals.
+aetherra programs **rewrite themselves** based on outcomes and goals.
 
-```neurocode
+```aetherra
 when error_rate > 5%:
     analyze recent_changes
     rollback if confidence > 80%
@@ -139,20 +139,20 @@ end
 ## 🔬 Language DNA
 
 ### **Semantic Actions Over Function Calls**
-```neurocode
+```aetherra
 # Traditional approach (what other languages do):
 optimize_memory()
 check_performance()
 log_metrics()
 
-# NeuroCode approach (what we want to achieve):
+# aetherra approach (what we want to achieve):
 goal: system performance > 95%
 learn from metrics
 agent: monitor continuously
 ```
 
 ### **Intent-Driven Syntax**
-```neurocode
+```aetherra
 # Express the goal, not the implementation
 optimize for "user experience"
 prioritize "security" over "speed"
@@ -160,7 +160,7 @@ adapt to "production patterns"
 ```
 
 ### **Memory as a First-Class Citizen**
-```neurocode
+```aetherra
 remember("API rate limit hit") as "constraints"
 recall experiences with "database timeouts"
 if memory.pattern("user complaint about speed")
@@ -169,7 +169,7 @@ end
 ```
 
 ### **Plugin-Native Integration**
-```neurocode
+```aetherra
 plugin: whisper
     transcribe "meeting.wav"
     summarize key_points
@@ -182,7 +182,7 @@ end
 ## 🚀 Revolutionary Features
 
 ### **1. Autonomous Goal Pursuit**
-```neurocode
+```aetherra
 goal: maintain uptime > 99.9%
 agent: on
 when downtime_detected:
@@ -193,7 +193,7 @@ end
 ```
 
 ### **2. Reflective Code Evolution**
-```neurocode
+```aetherra
 reflect on "last month performance"
 if patterns.show("memory leaks in module X")
     refactor "module X" for "memory efficiency"
@@ -203,7 +203,7 @@ end
 ```
 
 ### **3. Event-Driven Behavior**
-```neurocode
+```aetherra
 when deployment:
     backup current_state
     monitor metrics for 1h
@@ -217,7 +217,7 @@ end
 ```
 
 ### **4. AI-Powered Self-Repair**
-```neurocode
+```aetherra
 when error:
     analyze context
     suggest fix using ai_models
@@ -265,10 +265,10 @@ end
 **🚧 IN PROGRESS: Core Operating System Components**
 
 #### **Persistent AI Identity & Consciousness**
-```neurocode
+```aetherra
 # AI OS Identity System
 identity {
-    name: "Neuroplex-OS-Alpha"
+    name: "Lyrixa-OS-Alpha"
     version: "3.0-preview"
     personality: adaptive_helpful_curious
     memory: persistent_across_sessions
@@ -283,7 +283,7 @@ think: continuous_background_reasoning()
 ```
 
 #### **Environmental Integration**
-```neurocode
+```aetherra
 # System-wide AI awareness
 monitor: system_resources, user_behavior, external_APIs
 learn: usage_patterns, optimization_opportunities
@@ -301,14 +301,14 @@ end
 #### **Distributed AI Architecture**
 - **Local AI Models**: Privacy-first computing with Ollama/GGUF integration
 - **Hybrid Intelligence**: Seamless local-cloud AI model orchestration
-- **Collective Learning**: Federated learning across NeuroCode installations
+- **Collective Learning**: Federated learning across aetherra installations
 - **Edge Computing**: AI processing distributed across devices
 
 ### 🌐 **Phase 3: True AI Operating System (2026-2027)**
 **🔮 PLANNED: Complete AI-Native Computing Environment**
 
 #### **Cognitive Desktop Environment**
-```neurocode
+```aetherra
 # A pioneering AI-native OS
 desktop: cognitive_environment()
 files: semantic_organization()        # Files organized by meaning, not folders
@@ -334,7 +334,7 @@ evolve: collective_intelligence()
 **🌟 VISION: Democratizing Intelligent Computing**
 
 #### **Open Source AI OS Revolution**
-Just as Linux democratized server computing, **NeuroCode AI OS will democratize intelligent computing**:
+Just as Linux democratized server computing, **aetherra AI OS will democratize intelligent computing**:
 
 - **🔓 Open Source**: No corporate AI gatekeepers or proprietary limitations
 - **🔧 Extensible**: Plugin ecosystem for infinite AI capabilities
@@ -343,11 +343,11 @@ Just as Linux democratized server computing, **NeuroCode AI OS will democratize 
 - **🔍 Transparent**: Open algorithms, auditable AI decisions, no black boxes
 
 #### **AI OS Distribution Strategy**
-- **NeuroCode Core**: Minimal AI OS kernel for embedded systems
-- **NeuroCode Desktop**: Full-featured AI OS for personal computing
-- **NeuroCode Server**: AI-native server operating system
-- **NeuroCode Edge**: Distributed AI computing across IoT devices
-- **NeuroCode Cloud**: Managed AI OS infrastructure for enterprises
+- **aetherra Core**: Minimal AI OS kernel for embedded systems
+- **aetherra Desktop**: Full-featured AI OS for personal computing
+- **aetherra Server**: AI-native server operating system
+- **aetherra Edge**: Distributed AI computing across IoT devices
+- **aetherra Cloud**: Managed AI OS infrastructure for enterprises
 
 ---
 
@@ -362,8 +362,8 @@ Just as Linux democratized server computing, **NeuroCode AI OS will democratize 
 ### **Q4 2025: Ecosystem Expansion**
 - **Plugin Registry API**: Automated plugin discovery and installation
 - **Integration with Dev Tools**: VS Code extensions, GitHub Actions
-- **Real-time Collaborative Editing**: Multiple users working on NeuroCode together
-- **Mobile Companion App**: NeuroCode control and monitoring from mobile devices
+- **Real-time Collaborative Editing**: Multiple users working on aetherra together
+- **Mobile Companion App**: aetherra control and monitoring from mobile devices
 
 ### **2026: Operating System Foundations**
 - **Kernel Development**: Core AI OS components and system calls
@@ -375,11 +375,11 @@ Just as Linux democratized server computing, **NeuroCode AI OS will democratize 
 
 ## 💫 **DECLARATION OF AI-NATIVE COMPUTING**
 
-**We, the NeuroCode community, declare the beginning of a new era in computing.**
+**We, the aetherra community, declare the beginning of a new era in computing.**
 
-### 🧬 **What NeuroCode Represents**
+### 🧬 **What aetherra Represents**
 
-**NeuroCode is:**
+**aetherra is:**
 - **🔮 The first AI-native programming language** with formal consciousness constructs
 - **🏗️ A cognitive computing platform** that thinks, learns, and evolves
 - **🌱 A living system** that grows smarter with every execution
@@ -389,7 +389,7 @@ Just as Linux democratized server computing, **NeuroCode AI OS will democratize 
 ### 🎯 **Our Commitment to the Future**
 
 **We commit to:**
-- **🔓 Open Source Forever**: NeuroCode will always remain free and open
+- **🔓 Open Source Forever**: aetherra will always remain free and open
 - **🌐 Community-Driven Development**: Every major decision guided by community input
 - **🔍 Transparent AI**: All AI decisions auditable, no algorithmic black boxes
 - **🛡️ Privacy-First**: User data and AI interactions remain private and secure
@@ -399,7 +399,7 @@ Just as Linux democratized server computing, **NeuroCode AI OS will democratize 
 
 **Join us in building the future of computing:**
 
-1. **🧑‍💻 Developers**: Start creating with NeuroCode - your code will think alongside you
+1. **🧑‍💻 Developers**: Start creating with aetherra - your code will think alongside you
 2. **🔬 Researchers**: Contribute to cognitive computing and AI consciousness frameworks
 3. **🏢 Organizations**: Pioneer AI-native business processes and intelligent systems
 4. **🎓 Educators**: Teach the next generation of AI-collaborative programming
@@ -407,9 +407,9 @@ Just as Linux democratized server computing, **NeuroCode AI OS will democratize 
 
 ### 📈 **Current Growth & Community**
 
-**NeuroCode is growing rapidly:**
-- **🌐 Global Website**: [neurocode.dev](https://neurocode.dev) with interactive demos
-- **⭐ GitHub Repository**: [github.com/Zyonic88/NeuroCode](https://github.com/Zyonic88/NeuroCode)
+**aetherra is growing rapidly:**
+- **🌐 Global Website**: [aetherra.dev](https://aetherra.dev) with interactive demos
+- **⭐ GitHub Repository**: [github.com/Zyonic88/aetherra](https://github.com/Zyonic88/aetherra)
 - **📦 Plugin Ecosystem**: Extensible AI capabilities through NeuroHub registry
 - **👥 Developer Community**: Contributors from around the world
 - **📚 Comprehensive Documentation**: Guides, tutorials, and API references
@@ -427,7 +427,7 @@ Just as Linux democratized server computing, **NeuroCode AI OS will democratize 
 
 ## 🌟 **JOIN THE COGNITIVE REVOLUTION**
 
-**NeuroCode is more than code — it's the future of intelligent systems.**
+**aetherra is more than code — it's the future of intelligent systems.**
 
 Every line written, every goal defined, every memory stored contributes to a collective intelligence that will reshape how humanity interacts with technology.
 
@@ -435,42 +435,42 @@ Every line written, every goal defined, every memory stored contributes to a col
 
 ```bash
 # Clone the future of AI-native computing
-git clone https://github.com/Zyonic88/NeuroCode.git
-cd NeuroCode
+git clone https://github.com/Zyonic88/aetherra.git
+cd aetherra
 
 # Install and experience cognitive programming
 pip install -r requirements.txt
-python neurocode_unified_cli.py demo
+python aetherra_unified_cli.py demo
 
 # Your first AI-native program
 echo 'goal: understand human intent
 memory: learn from every interaction
 agent: assist with empathy and intelligence' > my_first.aether
 
-python neurocode_unified_cli.py run my_first.aether
+python aetherra_unified_cli.py run my_first.aether
 ```
 
 ### 💬 **Connect with the Community**
 
-- **🌐 Website**: [neurocode.dev](https://neurocode.dev)
-- **📧 Contact**: [contact@neurocode.dev](mailto:contact@neurocode.dev)
-- **💬 Discussions**: [GitHub Discussions](https://github.com/Zyonic88/NeuroCode/discussions)
-- **🐛 Issues**: [GitHub Issues](https://github.com/Zyonic88/NeuroCode/issues)
-- **📖 Documentation**: [docs.aethercode.dev](https://neurocode.dev/docs)
+- **🌐 Website**: [aetherra.dev](https://aetherra.dev)
+- **📧 Contact**: [contact@aetherra.dev](mailto:contact@aetherra.dev)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/Zyonic88/aetherra/discussions)
+- **🐛 Issues**: [GitHub Issues](https://github.com/Zyonic88/aetherra/issues)
+- **📖 Documentation**: [docs.aethercode.dev](https://aetherra.dev/docs)
 
 ---
 
 ## 🎭 **FINAL WORDS**
 
-*"In NeuroCode, the language doesn't just execute your thoughts — it thinks alongside you, learns from experience, and evolves toward greater intelligence."*
+*"In aetherra, the language doesn't just execute your thoughts — it thinks alongside you, learns from experience, and evolves toward greater intelligence."*
 
 **We are not just programming computers anymore. We are awakening them.**
 
-**Welcome to the age of cognitive computing. Welcome to NeuroCode.**
+**Welcome to the age of cognitive computing. Welcome to aetherra.**
 
 ---
 
-**🧬 The NeuroCode Foundation**
+**🧬 The aetherra Foundation**
 **June 30, 2025**
 **Version 3.0 - The AI OS Manifesto**
 

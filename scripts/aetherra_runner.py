@@ -216,7 +216,7 @@ class AetherraCodeFileRunner:
         # Use enhanced interpreter for other lines
         elif self.interpreter:
             try:
-                return self.interpreter.execute_neurocode(line)
+                return self.interpreter.execute_Aetherra(line)
             except Exception as e:
                 return f"Interpreter error: {e}"
 

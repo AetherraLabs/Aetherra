@@ -88,6 +88,10 @@ I'm your AI assistant for Aetherra development. Here's what I can do:
 
 **System Commands:**
 • `status` - Show system status
+• `debug` - Show debug console state
+• `debug thoughts` - Show recent thought processes
+• `debug export` - Export debug session to file
+• `debug level <LEVEL>` - Change debug level (MINIMAL, STANDARD, DETAILED, VERBOSE, TRACE)
 • `help` - Show this help
 • `quit` - Exit Lyrixa
 
@@ -99,8 +103,74 @@ I'm your AI assistant for Aetherra development. Here's what I can do:
 🤖 Agent Orchestration - Coordinate specialized AI agents
 📁 Project Intelligence - Understand and navigate your codebase
 
-Just talk to me naturally - I'll figure out what you want to accomplish!
+🐛 **Debug Console Features:**
+• See what Lyrixa perceives in real-time
+• View her reasoning process and decision making
+• Understand why she picks specific suggestions
+• Export debug sessions for analysis
 """)
+                    continue
+
+                # Handle debug console commands
+                elif user_input.lower().startswith("debug"):
+                    parts = user_input.lower().split()
+
+                    if len(parts) == 1:  # Just "debug"
+                        debug_state = lyrixa.debug_console.show_current_state()
+                        print(f"""
+🐛 **DEBUG CONSOLE STATE**
+Current cognitive state: {debug_state["cognitive_state"]}
+Debug level: {debug_state["debug_level"]}
+Recent decisions: {debug_state["recent_decision_count"]}
+Average decision time: {debug_state["avg_decision_time"]:.1f}ms
+Average confidence: {debug_state["avg_confidence"]:.2f}
+""")
+
+                    elif len(parts) >= 2 and parts[1] == "thoughts":
+                        analysis = lyrixa.debug_console.get_thought_analysis()
+                        if "error" in analysis:
+                            print(f"🐛 {analysis['error']}")
+                        else:
+                            print(f"""
+🐛 **LATEST THOUGHT PROCESS**
+ID: {analysis["thought_id"]}
+Duration: {analysis["execution_time_ms"]:.1f}ms
+Reasoning steps: {len(analysis["reasoning_steps"])}
+
+🧠 **Reasoning Process:**""")
+                            for i, step in enumerate(analysis["reasoning_steps"], 1):
+                                print(f"   {i}. {step}")
+
+                            if analysis["final_decision"]:
+                                print(
+                                    f"\n✅ Final Decision: {analysis['final_decision']}"
+                                )
+
+                    elif len(parts) >= 2 and parts[1] == "export":
+                        filepath = lyrixa.debug_console.export_debug_session()
+                        print(f"🐛 Debug session exported to: {filepath}")
+
+                    elif len(parts) >= 3 and parts[1] == "level":
+                        level_name = parts[2].upper()
+                        try:
+                            from lyrixa.core.debug_console import DebugLevel
+
+                            level = DebugLevel[level_name]
+                            lyrixa.debug_console.toggle_debug_level(level)
+                            print(f"🐛 Debug level changed to: {level.name}")
+                        except KeyError:
+                            print(f"🐛 Invalid debug level: {level_name}")
+                            print(
+                                "Valid levels: MINIMAL, STANDARD, DETAILED, VERBOSE, TRACE"
+                            )
+
+                    else:
+                        print("🐛 Debug commands:")
+                        print("   debug - Show current state")
+                        print("   debug thoughts - Show recent thought processes")
+                        print("   debug export - Export session to file")
+                        print("   debug level <LEVEL> - Change debug level")
+
                     continue
 
                 # Process natural language input

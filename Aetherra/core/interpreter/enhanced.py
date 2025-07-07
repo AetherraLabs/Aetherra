@@ -23,7 +23,11 @@ class AIModelRouter:
     def __init__(self):
         self.model_capabilities = {
             "gpt-4": {
-                "strengths": ["complex_reasoning", "code_generation", "architecture_design"],
+                "strengths": [
+                    "complex_reasoning",
+                    "code_generation",
+                    "architecture_design",
+                ],
                 "speed": "medium",
                 "cost": "high",
                 "privacy": "cloud",
@@ -49,14 +53,19 @@ class AIModelRouter:
         }
 
     def select_best_model(
-        self, task_type: str, privacy_required: bool = False, speed_priority: bool = False
+        self,
+        task_type: str,
+        privacy_required: bool = False,
+        speed_priority: bool = False,
     ) -> str:
         """Select the optimal AI model for a specific task"""
 
         # Privacy-first selection
         if privacy_required:
             local_models = {
-                k: v for k, v in self.model_capabilities.items() if v["privacy"] == "local"
+                k: v
+                for k, v in self.model_capabilities.items()
+                if v["privacy"] == "local"
             }
             if not local_models:
                 return "ollama_llama"  # Default local fallback
@@ -69,7 +78,9 @@ class AIModelRouter:
 
         # Speed-first selection
         if speed_priority:
-            fast_models = {k: v for k, v in self.model_capabilities.items() if v["speed"] == "fast"}
+            fast_models = {
+                k: v for k, v in self.model_capabilities.items() if v["speed"] == "fast"
+            }
             for model, caps in fast_models.items():
                 if task_type in caps["strengths"]:
                     return model
@@ -148,11 +159,17 @@ class EnhancedAetherraInterpreter:
         try:
             self.local_ai = LocalAIEngine() if LocalAIEngine else None
             self.vector_memory = (
-                EnhancedSemanticMemory("enhanced_memory.json") if EnhancedSemanticMemory else None
+                EnhancedSemanticMemory("enhanced_memory.json")
+                if EnhancedSemanticMemory
+                else None
             )
             self.intent_parser = IntentToCodeParser() if IntentToCodeParser else None
-            self.performance_optimizer = PerformanceOptimizer() if PerformanceOptimizer else None
-            self.ai_collaboration = AICollaborationFramework() if AICollaborationFramework else None
+            self.performance_optimizer = (
+                PerformanceOptimizer() if PerformanceOptimizer else None
+            )
+            self.ai_collaboration = (
+                AICollaborationFramework() if AICollaborationFramework else None
+            )
 
             if all(
                 [
@@ -163,9 +180,13 @@ class EnhancedAetherraInterpreter:
                     self.ai_collaboration,
                 ]
             ):
-                print("🚀 Enhanced AetherraCode Interpreter initialized with AI capabilities")
+                print(
+                    "🚀 Enhanced AetherraCode Interpreter initialized with AI capabilities"
+                )
             else:
-                print("⚠️  Enhanced AetherraCode Interpreter initialized with partial AI capabilities")
+                print(
+                    "⚠️  Enhanced AetherraCode Interpreter initialized with partial AI capabilities"
+                )
         except Exception as e:
             print(f"⚠️  Enhancement initialization failed: {e}")
             self.local_ai = None
@@ -186,9 +207,9 @@ class EnhancedAetherraInterpreter:
 
     def execute(self, code: str) -> str:
         """Execute AetherraCode with enhanced AI capabilities (compatibility method)"""
-        return self.execute_neurocode(code)
+        return self.execute_aetherra(code)
 
-    def execute_neurocode(self, code: str) -> str:
+    def execute_aetherra(self, code: str) -> str:
         """Execute AetherraCode with enhanced AI capabilities"""
         self.performance_metrics["commands_processed"] += 1
 
@@ -394,7 +415,9 @@ Generated AetherraCode:
                 response += f"{i}. {pattern['theme']} (size: {pattern['size']})\n"
 
             response += f"\n📊 Most Common Tags: {insights['most_common_tags'][:3]}\n"
-            response += f"📊 Most Common Categories: {insights['most_common_categories'][:3]}\n"
+            response += (
+                f"📊 Most Common Categories: {insights['most_common_categories'][:3]}\n"
+            )
 
             return response
 
@@ -443,8 +466,12 @@ Generated AetherraCode:
             metrics = self.performance_optimizer.get_performance_report()
             response = "⚡ Performance Optimization Status\n\n"
             response += f"Commands monitored: {len(metrics.get('commands', {}))}\n"
-            response += f"Optimization suggestions: {len(metrics.get('suggestions', {}))}\n"
-            response += f"Average execution time: {metrics.get('avg_execution_time', 0):.3f}s\n"
+            response += (
+                f"Optimization suggestions: {len(metrics.get('suggestions', {}))}\n"
+            )
+            response += (
+                f"Average execution time: {metrics.get('avg_execution_time', 0):.3f}s\n"
+            )
             return response
 
         elif command.startswith("analyze"):
@@ -454,9 +481,13 @@ Generated AetherraCode:
             response = "📊 Performance Analysis\n\n"
             if "suggestions" in report and report["suggestions"]:
                 response += "🔧 Recent Optimization Suggestions:\n"
-                for suggestion in list(report["suggestions"].values())[:3]:  # Top 3 suggestions
+                for suggestion in list(report["suggestions"].values())[
+                    :3
+                ]:  # Top 3 suggestions
                     response += f"• Command: {suggestion['command']}\n"
-                    response += f"  Suggestion: {suggestion['suggested_optimization']}\n"
+                    response += (
+                        f"  Suggestion: {suggestion['suggested_optimization']}\n"
+                    )
             else:
                 response += "✅ No performance issues detected\n"
 
@@ -482,14 +513,14 @@ Generated AetherraCode:
                     context={"result_length": len(str(result))},
                 )
 
-                return f"⏱️ Profiled execution in {execution_time:.3f}s\nResult: {result}"
+                return (
+                    f"⏱️ Profiled execution in {execution_time:.3f}s\nResult: {result}"
+                )
             except Exception as e:
                 return f"[Profile Error] {e}"
 
         else:
-            return (
-                "[Error] Unknown optimization command. Available: status, analyze, profile <code>"
-            )
+            return "[Error] Unknown optimization command. Available: status, analyze, profile <code>"
 
     def _handle_collaboration_command(self, code: str) -> str:
         """Handle AI collaboration commands"""
@@ -503,7 +534,9 @@ Generated AetherraCode:
             stats = self.ai_collaboration.get_collaboration_stats()
             response = "🤝 AI Collaboration Status\n\n"
             response += f"Active tasks: {stats.get('active_tasks', 0)}\n"
-            response += f"Total collaborations: {stats.get('total_collaborations', 0)}\n"
+            response += (
+                f"Total collaborations: {stats.get('total_collaborations', 0)}\n"
+            )
             response += f"Available agents: {stats.get('available_agents', 0)}\n"
             response += f"Success rate: {stats.get('success_rate', 0)}%\n"
             return response
@@ -518,7 +551,9 @@ Generated AetherraCode:
             import asyncio
 
             try:
-                result = asyncio.run(self.ai_collaboration.quick_solve(task_description))
+                result = asyncio.run(
+                    self.ai_collaboration.quick_solve(task_description)
+                )
                 return f"🚀 Collaborative solution:\n{result}"
             except Exception as e:
                 return f"[Collaboration Error] {e}"
@@ -652,7 +687,7 @@ if __name__ == "__main__":
 
     while True:
         try:
-            user_input = input("\nNeuroCode> ").strip()
+            user_input = input("\naetherra> ").strip()
 
             if user_input.lower() in ["quit", "exit"]:
                 break
@@ -660,10 +695,14 @@ if __name__ == "__main__":
                 print(interpreter.demonstrate_enhancements())
             elif user_input.lower() == "status":
                 status = interpreter.get_enhancement_status()
-                print(f"Enhanced features available: {status['enhancements_available']}")
-                print(f"Commands processed: {status['performance_metrics']['commands_processed']}")
+                print(
+                    f"Enhanced features available: {status['enhancements_available']}"
+                )
+                print(
+                    f"Commands processed: {status['performance_metrics']['commands_processed']}"
+                )
             elif user_input:
-                result = interpreter.execute_neurocode(user_input)
+                result = interpreter.execute_aetherra(user_input)
                 print(result)
 
         except KeyboardInterrupt:

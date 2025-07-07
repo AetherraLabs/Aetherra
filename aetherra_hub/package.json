@@ -24,7 +24,7 @@
     "eslint": "^8.57.0"
   },
   "keywords": [
-    "neurocode",
+    "aetherra",
     "ai",
     "consciousness",
     "package-manager",
@@ -32,17 +32,17 @@
     "plugins",
     "neuroplug"
   ],
-  "author": "NeuroCode Team",
+  "author": "aetherra Team",
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Zyonic88/NeuroCode.git",
+    "url": "https://github.com/Zyonic88/aetherra.git",
     "directory": "neurohub"
   },
   "bugs": {
-    "url": "https://github.com/Zyonic88/NeuroCode/issues"
+    "url": "https://github.com/Zyonic88/aetherra/issues"
   },
-  "homepage": "https://neurocode.dev/neurohub",
+  "homepage": "https://aetherra.dev/neurohub",
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-AetherraCode & Neuroplex Comprehensive System Test
+AetherraCode & LyrixaComprehensive System Test
 
-This script performs a full system test of both AetherraCode and Neuroplex
+This script performs a full system test of both AetherraCode and Lyrixa
 to ensure all components are functioning properly after our cleanup.
 
 Test Coverage:
 1. Core AetherraCode functionality
-2. Neuroplex launcher systems
+2. Lyrixalauncher systems
 3. Agent archive and replay
 4. Memory and goal systems
 5. Parser and interpreter
@@ -30,9 +30,15 @@ class SystemTester:
         self.errors = []
         self.warnings = []
 
-    def log_test(self, test_name: str, status: str, message: str = "", details: str = ""):
+    def log_test(
+        self, test_name: str, status: str, message: str = "", details: str = ""
+    ):
         """Log test results."""
-        self.test_results[test_name] = {"status": status, "message": message, "details": details}
+        self.test_results[test_name] = {
+            "status": status,
+            "message": message,
+            "details": details,
+        }
 
         status_icon = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
         print(f"{status_icon} {test_name}: {message}")
@@ -75,7 +81,9 @@ class SystemTester:
             return True
 
         except Exception as e:
-            self.log_test("Python Environment", "FAIL", "Environment test failed", str(e))
+            self.log_test(
+                "Python Environment", "FAIL", "Environment test failed", str(e)
+            )
             return False
 
     def test_core_files(self) -> bool:
@@ -102,10 +110,14 @@ class SystemTester:
                     with open(full_path, encoding="utf-8") as f:
                         content = f.read()
                     self.log_test(
-                        f"File {file_path}", "PASS", f"Exists and readable ({len(content)} chars)"
+                        f"File {file_path}",
+                        "PASS",
+                        f"Exists and readable ({len(content)} chars)",
                     )
                 except Exception as e:
-                    self.log_test(f"File {file_path}", "FAIL", "Exists but not readable", str(e))
+                    self.log_test(
+                        f"File {file_path}", "FAIL", "Exists but not readable", str(e)
+                    )
                     all_present = False
             else:
                 self.log_test(f"File {file_path}", "FAIL", "File missing")
@@ -115,7 +127,7 @@ class SystemTester:
 
     def test_aethercode_import(self) -> bool:
         """Test importing core AetherraCode modules."""
-        print("\n🧬 TESTING NEUROCODE IMPORTS")
+        print("\n🧬 TESTING Aetherra IMPORTS")
         print("=" * 50)
 
         try:
@@ -140,10 +152,18 @@ class SystemTester:
                     success_count += 1
                 except ImportError as e:
                     self.log_test(
-                        f"Import {module_name}", "WARN", f"{description} - Import failed", str(e)
+                        f"Import {module_name}",
+                        "WARN",
+                        f"{description} - Import failed",
+                        str(e),
                     )
                 except Exception as e:
-                    self.log_test(f"Import {module_name}", "FAIL", f"{description} - Error", str(e))
+                    self.log_test(
+                        f"Import {module_name}",
+                        "FAIL",
+                        f"{description} - Error",
+                        str(e),
+                    )
 
             return success_count >= len(core_modules) // 2  # At least half should work
 
@@ -152,14 +172,14 @@ class SystemTester:
             return False
 
     def test_launcher_systems(self) -> bool:
-        """Test AetherraCode and Neuroplex launchers."""
+        """Test AetherraCode and Lyrixalaunchers."""
         print("\n🚀 TESTING LAUNCHER SYSTEMS")
         print("=" * 50)
 
         launchers = [
             ("aethercode_launcher.py", "Main AetherraCode launcher"),
-            ("aetherplex.bat", "Neuroplex batch launcher"),
-            ("aetherplex", "Neuroplex script launcher"),
+            ("aetherplex.bat", "Lyrixabatch launcher"),
+            ("aetherplex", "Lyrixascript launcher"),
         ]
 
         working_launchers = 0
@@ -172,18 +192,26 @@ class SystemTester:
                         with open(launcher_path, encoding="utf-8") as f:
                             content = f.read()
                         compile(content, launcher_path, "exec")
-                        self.log_test(f"Launcher {launcher}", "PASS", f"{description} - Syntax OK")
+                        self.log_test(
+                            f"Launcher {launcher}", "PASS", f"{description} - Syntax OK"
+                        )
                         working_launchers += 1
                     else:
                         # For other files, just check they exist and are readable
                         with open(launcher_path, encoding="utf-8") as f:
                             content = f.read()
-                        self.log_test(f"Launcher {launcher}", "PASS", f"{description} - File OK")
+                        self.log_test(
+                            f"Launcher {launcher}", "PASS", f"{description} - File OK"
+                        )
                         working_launchers += 1
                 except Exception as e:
-                    self.log_test(f"Launcher {launcher}", "FAIL", f"{description} - Error", str(e))
+                    self.log_test(
+                        f"Launcher {launcher}", "FAIL", f"{description} - Error", str(e)
+                    )
             else:
-                self.log_test(f"Launcher {launcher}", "WARN", f"{description} - Not found")
+                self.log_test(
+                    f"Launcher {launcher}", "WARN", f"{description} - Not found"
+                )
 
         return working_launchers > 0
 
@@ -209,7 +237,9 @@ class SystemTester:
                     return False
             else:
                 self.log_test(
-                    "Goals Store", "WARN", "File not found - will be created on first use"
+                    "Goals Store",
+                    "WARN",
+                    "File not found - will be created on first use",
                 )
 
             # Test memory system
@@ -228,7 +258,9 @@ class SystemTester:
                     return False
             else:
                 self.log_test(
-                    "Memory Store", "WARN", "File not found - will be created on first use"
+                    "Memory Store",
+                    "WARN",
+                    "File not found - will be created on first use",
                 )
 
             # Test data directory
@@ -236,7 +268,9 @@ class SystemTester:
             if data_dir.exists() and data_dir.is_dir():
                 data_files = list(data_dir.glob("*.json"))
                 self.log_test(
-                    "Data Directory", "PASS", f"Directory exists with {len(data_files)} JSON files"
+                    "Data Directory",
+                    "PASS",
+                    f"Directory exists with {len(data_files)} JSON files",
                 )
             else:
                 self.log_test("Data Directory", "WARN", "Data directory not found")
@@ -266,10 +300,14 @@ class SystemTester:
                 if not missing_files:
                     self.log_test("Website Files", "PASS", "All required files present")
                 else:
-                    self.log_test("Website Files", "FAIL", f"Missing files: {missing_files}")
+                    self.log_test(
+                        "Website Files", "FAIL", f"Missing files: {missing_files}"
+                    )
                     return False
             else:
-                self.log_test("Website Directory", "FAIL", "Website directory not found")
+                self.log_test(
+                    "Website Directory", "FAIL", "Website directory not found"
+                )
                 return False
 
             # Test CNAME file
@@ -305,10 +343,14 @@ class SystemTester:
                     subdir_path = archive_dir / subdir
                     if subdir_path.exists():
                         file_count = len(list(subdir_path.iterdir()))
-                        self.log_test(f"Archive {subdir}", "PASS", f"{file_count} files archived")
+                        self.log_test(
+                            f"Archive {subdir}", "PASS", f"{file_count} files archived"
+                        )
                         existing_subdirs.append(subdir)
                     else:
-                        self.log_test(f"Archive {subdir}", "WARN", "Directory not found")
+                        self.log_test(
+                            f"Archive {subdir}", "WARN", "Directory not found"
+                        )
 
                 if existing_subdirs:
                     self.log_test(
@@ -318,10 +360,14 @@ class SystemTester:
                     )
                     return True
                 else:
-                    self.log_test("Archive Structure", "WARN", "No archive subdirectories found")
+                    self.log_test(
+                        "Archive Structure", "WARN", "No archive subdirectories found"
+                    )
                     return False
             else:
-                self.log_test("Archive Directory", "WARN", "Archive directory not found")
+                self.log_test(
+                    "Archive Directory", "WARN", "Archive directory not found"
+                )
                 return False
 
         except Exception as e:
@@ -341,18 +387,24 @@ class SystemTester:
                         content = f.read()
                     # Basic syntax check
                     compile(content, protection_script, "exec")
-                    self.log_test("Protection Script", "PASS", "Script exists and syntax OK")
+                    self.log_test(
+                        "Protection Script", "PASS", "Script exists and syntax OK"
+                    )
                 except SyntaxError as e:
                     self.log_test("Protection Script", "FAIL", "Syntax error", str(e))
                     return False
             else:
-                self.log_test("Protection Script", "WARN", "Protection script not found")
+                self.log_test(
+                    "Protection Script", "WARN", "Protection script not found"
+                )
 
             # Test backup directories
             backups_dir = self.project_root / "backups"
             if backups_dir.exists():
                 backup_count = len(list(backups_dir.glob("*.json")))
-                self.log_test("Backup System", "PASS", f"{backup_count} backup files found")
+                self.log_test(
+                    "Backup System", "PASS", f"{backup_count} backup files found"
+                )
             else:
                 self.log_test("Backup System", "WARN", "Backups directory not found")
 
@@ -364,7 +416,7 @@ class SystemTester:
 
     def run_comprehensive_test(self) -> Dict[str, Any]:
         """Run all system tests and return comprehensive results."""
-        print("🧪 NEUROCODE & NEUROPLEX COMPREHENSIVE SYSTEM TEST")
+        print("🧪 Aetherra & LyrixaCOMPREHENSIVE SYSTEM TEST")
         print("=" * 60)
         print(f"📍 Testing from: {self.project_root}")
         print(f"🐍 Python: {sys.version}")
@@ -420,7 +472,11 @@ class SystemTester:
         print("\n📋 DETAILED RESULTS:")
         for test_name, result in self.test_results.items():
             status_icon = (
-                "✅" if result["status"] == "PASS" else "❌" if result["status"] == "FAIL" else "⚠️"
+                "✅"
+                if result["status"] == "PASS"
+                else "❌"
+                if result["status"] == "FAIL"
+                else "⚠️"
             )
             print(f"   {status_icon} {test_name}: {result['message']}")
 

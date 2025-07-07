@@ -13,7 +13,7 @@ import time
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from core.ui import CodeLanguage, NeuroplexUI, UITheme
+from core.ui import CodeLanguage, AetherraUI, UITheme
 
 
 def main():
@@ -21,7 +21,7 @@ def main():
     print("=" * 40)
 
     # Create UI instance
-    ui = NeuroplexUI()
+    ui = AetherraUI()
 
     # Test basic functionality
     ui.show_info("Welcome to AetherraCode UI Demo!")
@@ -52,7 +52,7 @@ agent greeter {
     memory: persistent
 }
 """
-    ui.show_code(sample_code, CodeLanguage.NEUROCODE)
+    ui.show_code(sample_code, CodeLanguage.Aetherra)
 
     # Table display
     ui.show_text("\n📊 System Status:")

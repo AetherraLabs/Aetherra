@@ -249,7 +249,7 @@ from pathlib import Path
 # Add paths for relative imports
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
-sys.path.insert(0, str(project_root / "src" / "neurocode"))
+sys.path.insert(0, str(project_root / "src" / "aetherra"))
 
 try:
     from stdlib import stdlib_manager
@@ -259,13 +259,13 @@ except ImportError:
 
 # Import the enhanced syntax tree parser
 try:
-    from .syntax_tree import NodeType, SyntaxNode, SyntaxTreeVisitor, parse_neurocode
+    from .syntax_tree import NodeType, SyntaxNode, SyntaxTreeVisitor, parse_aetherra
 except ImportError:
     try:
-        from syntax_tree import NodeType, SyntaxNode, SyntaxTreeVisitor, parse_neurocode
+        from syntax_tree import NodeType, SyntaxNode, SyntaxTreeVisitor, parse_aetherra
     except ImportError:
         # Fallback if syntax tree not available
-        parse_neurocode = None
+        parse_aetherra = None
         SyntaxTreeVisitor = object  # Use object as base class if SyntaxTreeVisitor not available
         SyntaxNode = None
         NodeType = None
@@ -306,7 +306,7 @@ class AetherraInterpreter:
         self.stdlib = stdlib_manager
 
         # Enhanced parsing with SyntaxTree
-        self.use_enhanced_parser = parse_neurocode is not None
+        self.use_enhanced_parser = parse_aetherra is not None
         if self.use_enhanced_parser:
             self.syntax_visitor = AetherraExecutionVisitor(self)
 
@@ -1690,12 +1690,12 @@ class AetherraInterpreter:
 
     def execute_enhanced(self, code):
         """Enhanced execution using SyntaxTree parser - separates parsing from execution"""
-        if not self.use_enhanced_parser or parse_neurocode is None:
+        if not self.use_enhanced_parser or parse_aetherra is None:
             return "Enhanced parser not available, falling back to standard execution"
 
         try:
             # Parse the code into a syntax tree
-            syntax_tree = parse_neurocode(code)
+            syntax_tree = parse_aetherra(code)
 
             # Execute using the visitor pattern
             result = self.syntax_visitor.visit(syntax_tree)

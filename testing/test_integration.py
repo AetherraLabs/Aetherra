@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Integration Test - Enhanced Neuroplex with Chat Router
+Integration Test - Enhanced Lyrixawith Chat Router
 =====================================================
 
-Tests the integration of the enhanced chat router with the Neuroplex GUI
+Tests the integration of the enhanced chat router with the Lyrixa
 """
 
 import sys
@@ -17,7 +17,7 @@ sys.path.insert(0, str(project_root / "core"))
 
 def test_chat_router_integration():
     """Test the chat router integration"""
-    print("🧪 Testing Enhanced Neuroplex Chat Router Integration")
+    print("🧪 Testing Enhanced LyrixaChat Router Integration")
     print("=" * 60)
 
     # Test 1: Import chat router
@@ -66,17 +66,17 @@ def test_chat_router_integration():
         print(f"❌ Message processing failed: {e}")
         return False
 
-    # Test 5: Test enhanced Neuroplex import
+    # Test 5: Test enhanced Lyrixaimport
     try:
         from Lyrixa.ui.enhanced_aetherplex import EnhancedLyrixaWindow
 
-        print("✅ Enhanced Neuroplex import successful")
+        print("✅ Enhanced Lyrixaimport successful")
     except ImportError as e:
-        print(f"⚠️ Enhanced Neuroplex import failed: {e}")
+        print(f"⚠️ Enhanced Lyrixaimport failed: {e}")
         print("   This is expected if PySide6 is not installed")
 
     print("\n🎉 Integration test completed successfully!")
-    print("🚀 Enhanced Neuroplex is ready with:")
+    print("🚀 Enhanced Lyrixais ready with:")
     print("   • AI-powered chat responses")
     print("   • Swappable personalities")
     print("   • Context-aware conversations")
@@ -104,7 +104,7 @@ def test_gui_integration():
 
         # Test window creation
         window = EnhancedLyrixaWindow()
-        print("✅ Enhanced Neuroplex window created successfully")
+        print("✅ Enhanced Lyrixawindow created successfully")
 
         # Test chat router integration
         if hasattr(window, "chat_router") and window.chat_router:
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     if success:
         print("\n🎯 INTEGRATION READY!")
         print(
-            "Run 'python Aetherra_launcher.py' and select option 1 to use Enhanced Neuroplex"
+            "Run 'python Aetherra_launcher.py' and select option 1 to use Enhanced Lyrixa"
         )
     else:
         print("\n❌ Integration issues detected - check error messages above")

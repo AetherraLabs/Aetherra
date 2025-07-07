@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify AetherraChat integration with Neuroplex
+Test script to verify AetherraChat integration with Lyrixa
 """
 
 import sys
@@ -46,22 +46,22 @@ def test_aetherchat_factory():
 
 
 def test_aetherplex_integration():
-    """Test if Neuroplex can import AetherraChat components"""
+    """Test if Lyrixacan import AetherraChat components"""
     try:
-        # Add the paths that Neuroplex uses
+        # Add the paths that Lyrixauses
         sys.path.insert(0, str(project_root / "src" / "Aetherra" / "ui"))
 
         # Test the import pattern used in aetherplex.py
 
-        print("✅ Neuroplex-style import successful")
+        print("✅ Lyrixa-style import successful")
         return True
     except ImportError as e:
-        print(f"❌ Neuroplex-style import failed: {e}")
+        print(f"❌ Lyrixa-style import failed: {e}")
         return False
 
 
 def main():
-    print("🧪 Testing AetherraChat Integration with Neuroplex")
+    print("🧪 Testing AetherraChat Integration with Lyrixa")
     print("=" * 50)
 
     # Run tests
@@ -75,7 +75,7 @@ def main():
     print(f"  Integration Test: {'✅ PASS' if test3 else '❌ FAIL'}")
 
     if all([test1, test2, test3]):
-        print("\n🎉 All tests passed! AetherraChat should work with Neuroplex.")
+        print("\n🎉 All tests passed! AetherraChat should work with Lyrixa.")
     else:
         print("\n⚠️  Some tests failed. Check the issues above.")
 

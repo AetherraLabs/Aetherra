@@ -19,7 +19,7 @@ We have successfully implemented a comprehensive and powerful plugin system for 
 
 ### **Icon System**
 - ✅ **ICO Conversion**: `assets/images/aetherra-icon.ico` created from PNG
-- ✅ **GUI Integration**: Icon integrated into `neuroplex_gui_v2.py`
+- ✅ **GUI Integration**: Icon integrated into `Lyrixa_gui_v2.py`
 - ✅ **Plugin Branding**: Icon available in plugin manager UI
 
 ### **Enhanced Plugin SDK**

@@ -1,8 +1,8 @@
 """
-NeuroCode Interpreter Subsystem
+Aetherra Interpreter Subsystem
 ==============================
 
-Core interpretation and execution engine for NeuroCode.
+Core interpretation and execution engine for Aetherra.
 Handles code execution, debugging, and runtime management.
 """
 
@@ -18,13 +18,13 @@ __all__ = [
 
 
 def create_interpreter(enhanced=True):
-    """Create a NeuroCode interpreter instance."""
+    """Create a Aetherra interpreter instance."""
     if enhanced:
         return EnhancedAetherraInterpreter()
     return AetherraInterpreter()
 
 
 def execute_code(code: str, enhanced=True):
-    """Execute NeuroCode source code."""
+    """Execute Aetherra source code."""
     interpreter = create_interpreter(enhanced)
     return interpreter.execute(code)

@@ -1,4 +1,4 @@
-# src/neurocode/plugins/local_llm.py - Local LLM Integration Plugin
+# src/Aetherra/plugins/local_llm.py - Local LLM Integration Plugin
 from typing import Any, Dict
 
 from core.plugin_manager import register_plugin
@@ -9,7 +9,7 @@ from core.plugin_manager import register_plugin
     description="Chat with local LLM models using Ollama",
     capabilities=["local_llm", "chat", "code_generation", "offline_ai"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="ai",
     dependencies=["requests"],
     intent_purpose="local LLM inference and chat interactions",
@@ -86,7 +86,7 @@ def ollama_chat(model: str, prompt: str, temperature: float = 0.7) -> Dict[str, 
     description="List available local LLM models in Ollama",
     capabilities=["model_discovery", "ollama", "local_llm"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="ai",
     dependencies=["requests"],
     intent_purpose="discovering available local LLM models",
@@ -157,7 +157,7 @@ def ollama_list_models() -> Dict[str, Any]:
     description="Run Hugging Face models locally (requires transformers)",
     capabilities=["huggingface", "local_inference", "transformers"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="ai",
     dependencies=["transformers", "torch"],
     intent_purpose="local Hugging Face model inference",
@@ -224,7 +224,7 @@ def huggingface_local(model_name: str, text: str, max_length: int = 100) -> Dict
     description="Chat using llama.cpp Python bindings (CPU-optimized)",
     capabilities=["llamacpp", "cpu_inference", "local_chat"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="ai",
     dependencies=["llama-cpp-python"],
     intent_purpose="CPU-optimized local LLM inference",

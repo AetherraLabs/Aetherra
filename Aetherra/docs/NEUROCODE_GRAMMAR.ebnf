@@ -1,5 +1,5 @@
-# NeuroCode Formal Grammar Specification
-# EBNF (Extended Backus-Naur Form) Grammar for NeuroCode Language
+# Aetherra Formal Grammar Specification
+# EBNF (Extended Backus-Naur Form) Grammar for Aetherra Language
 # Version: 3.0
 # Date: 2024-12-27
 
@@ -12,7 +12,7 @@ program := statement_list EOF
 statement_list := statement*
 
 statement := goal_statement
-           | identity_statement  
+           | identity_statement
            | memory_statement
            | consciousness_statement
            | voice_statement

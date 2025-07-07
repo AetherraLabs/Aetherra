@@ -1,5 +1,5 @@
-# 🧬 NeuroCode Standard Library Demo
-# This example demonstrates all core plugins in the NeuroCode Standard Library
+# 🧬 Aetherra Standard Library Demo
+# This example demonstrates all core plugins in the Aetherra Standard Library
 
 # Goal: Demonstrate comprehensive standard library usage
 goal: "demonstrate_stdlib_capabilities" priority: high
@@ -14,12 +14,12 @@ remember("stdlib_plugins_loaded") as "plugin_status"
 analyze for "system_health"
 use plugin: "sysmon.status"
 
-# Performance optimization with optimizer plugin  
+# Performance optimization with optimizer plugin
 optimize for "performance"
 use plugin: "optimizer.analyze_performance"
 
 # File operations with coretools plugin
-create file: "demo_output.txt" 
+create file: "demo_output.txt"
 use plugin: "coretools.write_file"
 use plugin: "coretools.list_files"
 
@@ -51,11 +51,11 @@ output_format = "json"
 
 # Memory operations for results
 remember("stdlib_demo_complete") as "demo_status"
-recall("plugin_status") 
+recall("plugin_status")
 
 # Plugin status checks
 sysmon_status = plugin("sysmon.status")
-optimizer_status = plugin("optimizer.status") 
+optimizer_status = plugin("optimizer.status")
 coretools_status = plugin("coretools.status")
 executor_status = plugin("executor.status")
 reflector_status = plugin("reflector.status")
@@ -66,4 +66,4 @@ whisper_status = plugin("whisper.status")
 analyze for "stdlib_effectiveness"
 learn from "plugin_usage_patterns"
 
-# End of NeuroCode Standard Library Demo
+# End of Aetherra Standard Library Demo

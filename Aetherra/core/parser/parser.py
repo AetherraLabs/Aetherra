@@ -705,7 +705,7 @@ class AetherraCodeCompiler:
         return "\n".join(output)
 
 
-def parse_neurocode(source: str) -> List[AetherraCodeNode]:
+def parse_aetherra(source: str) -> List[AetherraCodeNode]:
     """Parse AetherraCode source code to AST"""
     lexer = AetherraLexer(source)
     tokens = lexer.tokenize()
@@ -713,9 +713,9 @@ def parse_neurocode(source: str) -> List[AetherraCodeNode]:
     return parser.parse()
 
 
-def compile_neurocode(source: str) -> str:
+def compile_aetherra(source: str) -> str:
     """Compile AetherraCode source to executable Python"""
-    ast = parse_neurocode(source)
+    ast = parse_aetherra(source)
     compiler = AetherraCodeCompiler()
     return compiler.compile(ast)
 
@@ -751,7 +751,7 @@ plugin: monitoring
 end
 """
 
-    print("🧬 NEUROCODE PARSER DEMONSTRATION")
+    print("🧬 aetherra PARSER DEMONSTRATION")
     print("=" * 50)
 
     print("📝 Source Code:")
@@ -764,12 +764,12 @@ end
         print(f"  {token.type.value}: '{token.value}'")
 
     print("\n🌳 Abstract Syntax Tree:")
-    ast = parse_neurocode(aethercode_source)
+    ast = parse_aetherra(aethercode_source)
     for node in ast:
         print(f"  {type(node).__name__}: {node.__dict__}")
 
     print("\n🔧 Compiled Output:")
-    compiled = compile_neurocode(aethercode_source)
+    compiled = compile_aetherra(aethercode_source)
     print(compiled)
 
     print("\n✅ AetherraCode is now a distinct programming language!")

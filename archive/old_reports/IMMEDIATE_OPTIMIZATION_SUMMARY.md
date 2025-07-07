@@ -1,11 +1,11 @@
-# 🚀 NeuroCode/Neuroplex: Essential Imports, Plugins & Extensions Summary
+# 🚀 Aetherra/Aetherra: Essential Imports, Plugins & Extensions Summary
 
 ## 📊 Current Status Assessment
 
 ✅ **WORKING PERFECTLY:**
 - PySide6 & PyQt6 (GUI frameworks)
 - OpenAI API integration
-- Core NeuroCode interpreter
+- Core Aetherra interpreter
 - Plugin system (math_plugin, whisper)
 - Error-free codebase
 
@@ -56,7 +56,7 @@ pip install openai-whisper speechrecognition pyttsx3
 - `yzhang.markdown-all-in-one` - Markdown support
 - `gruntfuggly.todo-tree` - TODO tracking
 
-### **3. NeuroCode Plugin Enhancements:**
+### **3. Aetherra Plugin Enhancements:**
 
 **Create these plugin files in `plugins/` directory:**
 
@@ -139,11 +139,11 @@ def speak_response(text):
 # Verify GUI functionality
 python check_qt.py
 
-# Test NeuroCode interpreter
-python -c "from core.interpreter import NeuroCodeInterpreter; print('✅ Interpreter working')"
+# Test Aetherra interpreter
+python -c "from core.interpreter import AetherraInterpreter; print('✅ Interpreter working')"
 
 # Launch GUI (if display available)
-python ui/neuroplex_gui.py
+python ui/Aetherra_gui.py
 ```
 
 ### **Install Essential Packages:**
@@ -193,7 +193,7 @@ After implementing these recommendations:
 - [ ] Python packages installed without errors
 - [ ] VS Code extensions loaded and working
 - [ ] GUI launches successfully
-- [ ] NeuroCode interpreter executes code
+- [ ] Aetherra interpreter executes code
 - [ ] Plugin system loads all plugins
 - [ ] AI integration responds correctly
 
@@ -224,4 +224,4 @@ After implementing these recommendations:
 2. Add voice command processing
 3. Create professional development environment
 
-This roadmap will transform NeuroCode/Neuroplex into a truly intelligent, production-ready AI-native programming environment! 🧬✨
+This roadmap will transform Aetherra/Aetherra into a truly intelligent, production-ready AI-native programming environment! 🧬✨

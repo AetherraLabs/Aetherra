@@ -201,13 +201,13 @@ class TestNaturalTranslator(unittest.TestCase):
         results = self.translator.batch_translate(inputs)
         self.assertEqual(len(results), 3)
 
-        for input_text, neurocode in results:
+        for input_text, Aetherra in results:
             self.assertIsInstance(input_text, str)
-            self.assertIsInstance(neurocode, str)
-            self.assertTrue(len(neurocode) > 0)
+            self.assertIsInstance(Aetherra, str)
+            self.assertTrue(len(Aetherra) > 0)
 
 
-class TestNeuroCodeRunner(unittest.TestCase):
+class TestAetherraRunner(unittest.TestCase):
     """Test the AetherraCode file runner"""
 
     def setUp(self):
@@ -340,12 +340,12 @@ class TestSystemIntegration(unittest.TestCase):
         runner = StandaloneNeuroRunner(verbose=False)
 
         # Translate natural language
-        neurocode = translator.translate("Remember this integration test")
-        self.assertIn("remember", neurocode.lower())
+        Aetherra = translator.translate("Remember this integration test")
+        self.assertIn("remember", Aetherra.lower())
 
         # Execute translated code
         with tempfile.NamedTemporaryFile(mode="w", suffix=".neuro", delete=False) as f:
-            f.write(neurocode)
+            f.write(Aetherra)
             temp_file = f.name
 
         try:
@@ -441,7 +441,7 @@ def main():
         TestMemorySystem,
         TestAgentReflectionLoop,
         TestNaturalTranslator,
-        TestNeuroCodeRunner,
+        TestAetherraRunner,
         TestPerformanceMonitoring,
         TestSystemIntegration,
     ]

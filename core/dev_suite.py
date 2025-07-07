@@ -86,14 +86,14 @@ class AetherraCodeLinter:
             ],
         }
 
-    def lint_code(self, neurocode: str) -> Dict:
+    def lint_code(self, aetherra: str) -> Dict:
         """
         Perform comprehensive linting of AetherraCode
         """
         issues = []
         suggestions = []
 
-        lines = neurocode.split("\n")
+        lines = aetherra.split("\n")
 
         for line_num, line in enumerate(lines, 1):
             line = line.strip()
@@ -266,7 +266,7 @@ class AetherraCodeDebugger:
 
     def _show_debug_info(self, context: Dict):
         """Show debug information at breakpoint"""
-#         print("\n📊 Debug Information:")
+        #         print("\n📊 Debug Information:")
         print(f"Current line: {self.current_line}")
         print(f"Memory entries: {len(context.get('memory', []))}")
         print(f"Active goals: {len(context.get('goals', []))}")
@@ -359,12 +359,12 @@ class AetherraCodeDevSuite:
         self.ide = AetherraCodeIDE()
         self.ecosystem = AetherraCodeEcosystemManager()
 
-    def analyze_code(self, neurocode: str) -> Dict:
+    def analyze_code(self, aetherra: str) -> Dict:
         """Comprehensive code analysis"""
         print("🔍 Analyzing AetherraCode...")
 
         # Lint the code
-        lint_results = self.linter.lint_code(neurocode)
+        lint_results = self.linter.lint_code(aetherra)
 
         # Performance analysis (would need execution data)
         performance_report = self.profiler.get_performance_report()
@@ -391,7 +391,7 @@ class AetherraCodeDevSuite:
                 print("🛠️  Development Options:")
                 print("1. Natural Language Programming")
                 print("2. Code Analysis & Linting")
-#                 print("3. Debug AetherraCode Program")
+                #                 print("3. Debug AetherraCode Program")
                 print("4. Performance Profiling")
                 print("5. Ecosystem Management")
                 print("6. Exit")
@@ -420,7 +420,9 @@ class AetherraCodeDevSuite:
                     print("❌ Invalid option. Please try again.")
 
             except KeyboardInterrupt:
-                print("\n\n👋 Development session ended. Keep thinking in AetherraCode!")
+                print(
+                    "\n\n👋 Development session ended. Keep thinking in AetherraCode!"
+                )
                 break
             except Exception as e:
                 print(f"❌ Error: {e}")
@@ -444,9 +446,9 @@ class AetherraCodeDevSuite:
 
         try:
             with open(file_path, "r") as f:
-                neurocode = f.read()
+                aetherra = f.read()
 
-            analysis = self.analyze_code(neurocode)
+            analysis = self.analyze_code(aetherra)
 
             print("\n📊 Analysis Results:")
             print(f"Code Quality Score: {analysis['lint_results']['score']:.1f}/100")
@@ -470,12 +472,13 @@ class AetherraCodeDevSuite:
 
     def _debugging_session(self):
         """Debugging session"""
-#         print("\n🐛 Debug Mode")
-#         print("Debugging features:")
+        #         print("\n🐛 Debug Mode")
+        #         print("Debugging features:")
         print("- Set breakpoints")
         print("- Watch variables")
         print("- Step through execution")
-#         print("(Full debugging integration coming soon)")
+
+    #         print("(Full debugging integration coming soon)")
 
     def _profiling_session(self):
         """Profiling session"""

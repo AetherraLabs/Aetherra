@@ -1,6 +1,6 @@
-# 🎯 NeuroCode Examples Guide
+# 🎯 aetherra Examples Guide
 
-Welcome to the NeuroCode Examples Collection! This guide showcases the power of AI-native programming through real-world applications.
+Welcome to the aetherra Examples Collection! This guide showcases the power of AI-native programming through real-world applications.
 
 ## 📁 Example Categories
 
@@ -31,8 +31,8 @@ Welcome to the NeuroCode Examples Collection! This guide showcases the power of 
 
 ## 🚀 Running Examples
 
-### Using Neuroplex GUI
-1. Launch Neuroplex: `python launch_neuroplex.py`
+### Using Lyrixa
+1. Launch Lyrixa: `python launch_Lyrixa.py`
 2. Click **File > Load Examples**
 3. Select any example to see it in action
 4. Use **Execute** button or `Ctrl+Enter` to run
@@ -51,11 +51,11 @@ python main.py --interactive examples/goal_setting.aether
 
 ## 🧬 Example Walkthrough: Basic Memory
 
-Let's explore how memory works in NeuroCode:
+Let's explore how memory works in aetherra:
 
-```neurocode
-# 🧠 Memory is a first-class citizen in NeuroCode
-remember("NeuroCode revolutionizes programming") as "core_insight"
+```aetherra
+# 🧠 Memory is a first-class citizen in aetherra
+remember("aetherra revolutionizes programming") as "core_insight"
 remember("AI agents enhance human creativity") as "collaboration_principle"
 remember("Memory enables learning and adaptation") as "architectural_foundation"
 
@@ -69,12 +69,12 @@ memory: analyze patterns in "architectural" concepts
 memory: suggest related topics for "learning"
 
 # Goal-driven learning
-goal: understand NeuroCode memory system priority: high
+goal: understand aetherra memory system priority: high
 agent: on specialization: "education"
 
 # AI analysis and suggestions
 analyze "my understanding of memory concepts"
-suggest "next steps for mastering NeuroCode"
+suggest "next steps for mastering aetherra"
 
 # Continuous learning loop
 when new_insight_gained:
@@ -95,7 +95,7 @@ end
 
 See how multiple AI agents work together:
 
-```neurocode
+```aetherra
 # 🤝 Multi-Agent Architecture Design
 goal: design scalable microservices system priority: critical
 constraints: [high_availability, security, performance]
@@ -150,7 +150,7 @@ suggest "process improvements for future projects"
 
 AI-powered data insights in action:
 
-```neurocode
+```aetherra
 # 📊 Intelligent Data Analysis
 goal: extract actionable insights from customer data priority: high
 agent: on specialization: "data_science"
@@ -195,7 +195,7 @@ improve: "analysis_methodology" over_time
 
 Building modern web applications with AI assistance:
 
-```neurocode
+```aetherra
 # 🌐 AI-Assisted Web Development
 goal: create secure web application priority: critical
 goal: ensure excellent user experience priority: high
@@ -283,18 +283,18 @@ suggest: "feature_improvements" based_on "user_feedback"
 ## 🔧 Advanced Techniques
 
 ### **Intent-to-Code Generation**
-```neurocode
+```aetherra
 intent: "Create a recommendation engine that learns user preferences"
 constraints: [privacy_preserving, real_time, scalable]
 technology_preferences: [machine_learning, microservices]
 generate: implementation_plan
 
-# NeuroCode AI generates appropriate code structure
+# aetherra AI generates appropriate code structure
 # Continuous refinement based on feedback
 ```
 
 ### **Adaptive System Behavior**
-```neurocode
+```aetherra
 # Systems that evolve based on real-world usage
 monitor: system_performance continuously
 when performance_degrades:
@@ -306,7 +306,7 @@ end
 ```
 
 ### **Cross-Language Integration**
-```neurocode
+```aetherra
 # Integrate with existing codebases
 python_integration: |
     import pandas as pd
@@ -315,7 +315,7 @@ python_integration: |
 |
 
 remember(python_results) as "external_analysis"
-enhance: with_neurocode_intelligence
+enhance: with_aetherra_intelligence
 ```
 
 ## 🚀 Next Steps
@@ -324,14 +324,14 @@ enhance: with_neurocode_intelligence
 2. **Experiment**: Modify examples to explore different approaches
 3. **Build Projects**: Use examples as templates for your own applications
 4. **Share Knowledge**: Contribute your own examples to the community
-5. **Join Community**: Connect with other NeuroCode developers
+5. **Join Community**: Connect with other aetherra developers
 
 ## 📚 Additional Resources
 
 - **[Complete Tutorial](../TUTORIAL.md)** - Step-by-step learning guide
 - **[Language Documentation](../DOCUMENTATION.md)** - Comprehensive reference
 - **[API Reference](../docs/api.md)** - Core classes and functions
-- **[Community Examples](https://github.com/neurocode-community/examples)** - User-contributed programs
+- **[Community Examples](https://github.com/aetherra-community/examples)** - User-contributed programs
 
 ---
 

@@ -42,7 +42,7 @@ except Exception as e:
 
 # Test 4: Enhanced interpreter
 try:
-    from neurocode.core.interpreter.enhanced import EnhancedAetherraInterpreter
+    from Aetherra.core.interpreter.enhanced import EnhancedAetherraInterpreter
 
     enhanced = EnhancedAetherraInterpreter()
     print("✅ 4. Enhanced interpreter creation successful")
@@ -59,7 +59,9 @@ except Exception as e:
 
 # Test 6: CLI availability
 try:
-    print(f"✅ 6. CLI system: {'Available' if CLI_AVAILABLE else 'Not available (expected)'}")
+    print(
+        f"✅ 6. CLI system: {'Available' if CLI_AVAILABLE else 'Not available (expected)'}"
+    )
     success_count += 1
 except Exception as e:
     print(f"❌ 6. CLI test failed: {e}")

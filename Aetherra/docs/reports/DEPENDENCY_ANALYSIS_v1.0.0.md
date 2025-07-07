@@ -1,4 +1,4 @@
-# 🔍 NeuroCode v1.0.0 - Dependency Analysis Report
+# 🔍 Aetherra v1.0.0 - Dependency Analysis Report
 
 **Analysis Date:** June 29, 2025
 **Version:** 1.0.0
@@ -8,15 +8,15 @@
 
 ## 📊 **Analysis Summary**
 
-Comprehensive analysis of all import statements and dependencies across the NeuroCode codebase to ensure `requirements.txt` and related dependency files accurately reflect actual usage.
+Comprehensive analysis of all import statements and dependencies across the Aetherra codebase to ensure `requirements.txt` and related dependency files accurately reflect actual usage.
 
 ---
 
 ## ✅ **Verified Core Dependencies**
 
 ### **Required for Basic Functionality**
-- **`lark>=1.1.7`** - ✅ Used in `core/neurocode_grammar.py` for .aether file parsing
-- **`streamlit>=1.28.0`** - ✅ Used in `ui/neurocode_playground.py` and `neurocode_playground.py`
+- **`lark>=1.1.7`** - ✅ Used in `core/Aetherra_grammar.py` for .aether file parsing
+- **`streamlit>=1.28.0`** - ✅ Used in `ui/Aetherra_playground.py` and `Aetherra_playground.py`
 - **`openai>=1.0.0`** - ✅ Used in `core/multi_llm_manager.py` for GPT model integration
 - **`psutil>=5.9.0`** - ✅ Used in `core/performance_optimizer.py` for system monitoring
 
@@ -27,8 +27,8 @@ Comprehensive analysis of all import statements and dependencies across the Neur
 - **`llama-cpp-python>=0.2.0`** - ✅ Used in `core/multi_llm_manager.py` (optional import)
 
 ### **Optional UI Frameworks**
-- **`PySide6>=6.5.0`** - ✅ Used in `ui/neuroplex_gui.py` and `ui/neuro_ui.py` (optional import)
-- **`PyQt6>=6.5.0`** - ✅ Used as fallback in `ui/neuroplex_gui.py` (optional import)
+- **`PySide6>=6.5.0`** - ✅ Used in `ui/Lyrixa_gui.py` and `ui/neuro_ui.py` (optional import)
+- **`PyQt6>=6.5.0`** - ✅ Used as fallback in `ui/Lyrixa_gui.py` (optional import)
 
 ---
 
@@ -80,16 +80,16 @@ Comprehensive analysis of all import statements and dependencies across the Neur
 
 | Package               | Used In                         | Purpose                  | Status     |
 | --------------------- | ------------------------------- | ------------------------ | ---------- |
-| `lark`                | `core/neurocode_grammar.py`     | .aether file parsing     | ✅ Required |
-| `streamlit`           | `ui/neurocode_playground.py`    | Interactive playground   | ✅ Required |
+| `lark`                | `core/Aetherra_grammar.py`     | .aether file parsing     | ✅ Required |
+| `streamlit`           | `ui/Aetherra_playground.py`    | Interactive playground   | ✅ Required |
 | `openai`              | `core/multi_llm_manager.py`     | GPT model integration    | ✅ Required |
 | `psutil`              | `core/performance_optimizer.py` | System monitoring        | ✅ Required |
 | `anthropic`           | `core/multi_llm_manager.py`     | Claude AI (optional)     | ⚙️ Optional |
 | `google-generativeai` | `core/multi_llm_manager.py`     | Gemini AI (optional)     | ⚙️ Optional |
 | `ollama`              | `core/multi_llm_manager.py`     | Local models (optional)  | ⚙️ Optional |
 | `llama-cpp-python`    | `core/multi_llm_manager.py`     | GGUF models (optional)   | ⚙️ Optional |
-| `PySide6`             | `ui/neuroplex_gui.py`           | GUI framework (optional) | 🎨 Optional |
-| `PyQt6`               | `ui/neuroplex_gui.py`           | GUI fallback (optional)  | 🎨 Optional |
+| `PySide6`             | `ui/Lyrixa_gui.py`              | GUI framework (optional) | 🎨 Optional |
+| `PyQt6`               | `ui/Lyrixa_gui.py`              | GUI fallback (optional)  | 🎨 Optional |
 
 ---
 
@@ -154,4 +154,4 @@ pip install -r requirements_dev.txt
 
 ---
 
-**Analysis completed successfully** - NeuroCode v1.0.0 dependencies are optimized and production-ready! 🎯
+**Analysis completed successfully** - Aetherra v1.0.0 dependencies are optimized and production-ready! 🎯

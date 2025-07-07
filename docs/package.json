@@ -1,7 +1,7 @@
 {
-  "name": "neurocode-website",
+  "name": "aetherra-website",
   "version": "1.0.0",
-  "description": "Official website for NeuroCode - Where Computation Becomes Cognition",
+  "description": "Official website for aetherra - Where Computation Becomes Cognition",
   "main": "index.html",
   "scripts": {
     "dev": "npx live-server --host=localhost --port=3000 --open=/",
@@ -12,19 +12,19 @@
     "lighthouse": "npx lighthouse http://localhost:3000 --output html --output-path ./lighthouse-report.html"
   },
   "keywords": [
-    "neurocode",
+    "aetherra",
     "ai-programming",
     "consciousness-programming",
     "ai-os",
     "artificial-intelligence",
     "cognitive-computing"
   ],
-  "author": "NeuroCode Project",
+  "author": "aetherra Project",
   "license": "MIT",
-  "homepage": "https://neurocode.dev",
+  "homepage": "https://aetherra.dev",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Zyonic88/NeuroCode.git"
+    "url": "https://github.com/Zyonic88/aetherra.git"
   },
   "devDependencies": {
     "live-server": "^1.2.2",

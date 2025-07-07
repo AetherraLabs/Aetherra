@@ -60,16 +60,16 @@ class AetherraCodeErrorAnalyzer:
         entry_points = {
             "aethercode_launcher.py": self.project_root / "aethercode_launcher.py",
             "aethercode_cli.py": self.project_root / "aethercode_cli.py",
-            "main CLI": self.project_root / "src" / "neurocode" / "cli" / "main.py",
+            "main CLI": self.project_root / "src" / "Aetherra" / "cli" / "main.py",
             "launchers/main.py": self.project_root / "launchers" / "main.py",
             "Lyrixa_gui.py": self.project_root
             / "src"
-            / "neurocode"
+            / "Aetherra"
             / "ui"
             / "Lyrixa_gui.py",
             "enhanced_Lyrixa.py": self.project_root
             / "src"
-            / "neurocode"
+            / "Aetherra"
             / "ui"
             / "enhanced_Lyrixa.py",
         }

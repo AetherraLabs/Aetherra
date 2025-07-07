@@ -2,7 +2,7 @@
 
 ## 🤝 **Our Pledge**
 
-We as members, contributors, and leaders pledge to make participation in our **NeuroCode & Neuroplex** community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, caste, color, religion, or sexual identity and orientation.
+We as members, contributors, and leaders pledge to make participation in our **aetherra & Lyrixa** community a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, caste, color, religion, or sexual identity and orientation.
 
 We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community focused on advancing AI-native computing for the benefit of all.
 
@@ -26,7 +26,7 @@ We pledge to act and interact in ways that contribute to an open, welcoming, div
 * **📧 Public or private harassment** including unwelcome sexual attention
 * **🔒 Publishing others' private information** without explicit permission
 * **🎭 Impersonation** of other community members or project maintainers
-* **💰 Spam, advertising, or self-promotion** unrelated to NeuroCode development
+* **💰 Spam, advertising, or self-promotion** unrelated to aetherra development
 * **⚖️ Any conduct which could reasonably be considered inappropriate** in a professional setting
 * **🤖 Malicious use of AI capabilities** to harm others or the community
 
@@ -53,8 +53,8 @@ This Code of Conduct applies within all community spaces, and also applies when 
 * **📱 Posting via official social media accounts**
 * **🎤 Acting as an appointed representative** at online or offline events
 * **📝 Contributing to project repositories** and discussions
-* **🎯 Participating in NeuroCode community forums** and chat channels
-* **🏢 Representing NeuroCode at conferences** or meetups
+* **🎯 Participating in aetherra community forums** and chat channels
+* **🏢 Representing aetherra at conferences** or meetups
 
 ## 📋 **Enforcement Guidelines**
 
@@ -90,7 +90,7 @@ Community leaders will follow these Community Impact Guidelines in determining t
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement:
 
-* **📧 Email**: conduct@neurocode.dev (if available)
+* **📧 Email**: conduct@aetherra.dev (if available)
 * **📝 GitHub Issues**: Use the "Code of Conduct" issue template
 * **💬 Private Message**: Contact maintainers directly through GitHub
 * **🔒 Anonymous Reporting**: Use our anonymous reporting form (link in repository)
@@ -144,7 +144,7 @@ Recognition for significant contributions:
 
 ### **🚀 Active Initiatives**
 * **👥 Mentorship Programs**: Pairing experienced developers with newcomers
-* **🌐 Translation Efforts**: Making NeuroCode accessible in multiple languages
+* **🌐 Translation Efforts**: Making aetherra accessible in multiple languages
 * **📚 Educational Resources**: Creating learning materials for different skill levels
 * **🎓 Workshop Series**: Regular community learning sessions
 * **🤝 Outreach Programs**: Connecting with underrepresented communities

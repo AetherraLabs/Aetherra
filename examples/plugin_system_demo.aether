@@ -9,7 +9,7 @@ plugin: git_log 5
 # File management
 plugin: create_file "temp/example.py" "print('Hello from plugin!')"
 plugin: read_file "temp/example.py"
-plugin: list_files "src/neurocode/plugins" "*.py"
+plugin: list_files "src/aetherra/plugins" "*.py"
 
 # Voice/Audio transcription
 plugin: whisper_transcribe "meeting_recording.wav"
@@ -27,7 +27,7 @@ plugin: calculate "2 + 3 * 4 - (5 / 2)"
 plugin: write_file "config.json" '{"debug": true, "version": "2.0"}'
 plugin: delete_file "temp/old_file.txt" true
 
-# Memory operations (using existing NeuroCode syntax)
+# Memory operations (using existing aetherra syntax)
 remember("The new plugin system supports .aether code syntax") as "plugin_enhancement"
 recall tag: "plugin_enhancement"
 

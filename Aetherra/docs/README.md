@@ -1,9 +1,9 @@
-# NeuroCode Website
+# Aetherra Website
 
-The official website for NeuroCode - Where Computation Becomes Cognition.
+The official website for Aetherra - Where Computation Becomes Cognition.
 
 ## 🌐 Live Site
-- **Production**: https://neurocode.dev
+- **Production**: https://Aetherra.dev
 - **Development**: http://localhost:3000
 
 ## 🚀 Quick Start
@@ -55,7 +55,7 @@ website/
 ├── index.html          # Main HTML file
 ├── styles.css          # CSS styles
 ├── script.js           # JavaScript functionality
-├── favicon.svg         # NeuroCode logo/favicon
+├── favicon.svg         # Aetherra logo/favicon
 ├── package.json        # Node.js configuration
 └── README.md          # This file
 ```
@@ -87,7 +87,7 @@ website/
 ## 🔗 Key Sections
 
 1. **Hero**: Main value proposition and code demo
-2. **Features**: Core NeuroCode capabilities
+2. **Features**: Core Aetherra capabilities
 3. **Plugin Registry**: Plugin ecosystem showcase
 4. **CLI**: Standalone compiler/interpreter
 5. **Getting Started**: Installation and quick start
@@ -109,7 +109,7 @@ website/
    - Root directory: `website`
 
 3. **Custom Domain**:
-   - Add `neurocode.dev` as custom domain
+   - Add `Aetherra.dev` as custom domain
    - Configure DNS in Cloudflare
 
 4. **Environment Variables** (if needed):
@@ -120,7 +120,7 @@ website/
 ```
 Type    Name    Content                     TTL
 A       @       [Cloudflare Pages IP]       Auto
-CNAME   www     neurocode.dev              Auto
+CNAME   www     Aetherra.dev              Auto
 ```
 
 ## 📈 Analytics & Monitoring
@@ -166,10 +166,10 @@ CNAME   www     neurocode.dev              Auto
 
 ## 📞 Contact
 
-- **Website**: https://neurocode.dev
-- **GitHub**: https://github.com/Zyonic88/NeuroCode
-- **Email**: contact@neurocode.dev
+- **Website**: https://Aetherra.dev
+- **GitHub**: https://github.com/Zyonic88/Aetherra
+- **Email**: contact@Aetherra.dev
 
 ---
 
-**NeuroCode: Where Computation Becomes Cognition** 🧬🚀
+**Aetherra: Where Computation Becomes Cognition** 🧬🚀

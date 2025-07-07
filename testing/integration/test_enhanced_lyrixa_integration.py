@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Enhanced Neuroplex Integration Test
+Enhanced LyrixaIntegration Test
 ==================================
 
-Test script to verify the integration between Neuroplex and AetherraChat works correctly.
+Test script to verify the integration between Lyrixaand AetherraChat works correctly.
 """
 
 import sys
@@ -12,16 +12,16 @@ from pathlib import Path
 # Add project paths
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
-sys.path.insert(0, str(project_root / "src" / "neurocode" / "ui"))
+sys.path.insert(0, str(project_root / "src" / "Aetherra" / "ui"))
 
 
 def test_enhanced_aetherplex():
-    """Test the enhanced Neuroplex integration"""
-    print("🧪 Testing Enhanced Neuroplex Integration")
+    """Test the enhanced Lyrixaintegration"""
+    print("🧪 Testing Enhanced LyrixaIntegration")
     print("=" * 50)
 
     # Test 1: Check Qt availability
-#     print("Test 1: Qt Framework Availability")
+    #     print("Test 1: Qt Framework Availability")
     try:
         from PySide6.QtWidgets import QApplication
 
@@ -33,29 +33,27 @@ def test_enhanced_aetherplex():
     # Test 2: Check AetherraChat components
     print("\nTest 2: AetherraChat Components")
     try:
-
         print("✅ AetherraChat interface available")
     except ImportError as e:
         print(f"⚠️ AetherraChat interface not available: {e}")
         print("   (This is OK - fallback will be used)")
 
-    # Test 3: Check Enhanced Neuroplex
-    print("\nTest 3: Enhanced Neuroplex Module")
+    # Test 3: Check Enhanced Lyrixa
+    print("\nTest 3: Enhanced LyrixaModule")
     try:
         from enhanced_aetherplex import EnhancedLyrixaWindow
 
-        print("✅ Enhanced Neuroplex module available")
+        print("✅ Enhanced Lyrixamodule available")
     except ImportError as e:
-        print(f"❌ Enhanced Neuroplex module not available: {e}")
+        print(f"❌ Enhanced Lyrixamodule not available: {e}")
         return False
 
-    # Test 4: Check existing Neuroplex components
-    print("\nTest 4: Existing Neuroplex Components")
+    # Test 4: Check existing Lyrixacomponents
+    print("\nTest 4: Existing LyrixaComponents")
     try:
-
-        print("✅ Fully modular Neuroplex available")
+        print("✅ Fully modular Lyrixaavailable")
     except ImportError as e:
-        print(f"⚠️ Fully modular Neuroplex not available: {e}")
+        print(f"⚠️ Fully modular Lyrixanot available: {e}")
 
     # Test 5: Test window creation (without showing)
     print("\nTest 5: Window Creation Test")
@@ -65,7 +63,7 @@ def test_enhanced_aetherplex():
             app = QApplication(sys.argv)
 
         window = EnhancedLyrixaWindow()
-        print("✅ Enhanced Neuroplex window created successfully")
+        print("✅ Enhanced Lyrixawindow created successfully")
 
         # Don't show the window, just test creation
         window.close()
@@ -74,8 +72,8 @@ def test_enhanced_aetherplex():
         print(f"❌ Window creation failed: {e}")
         return False
 
-    print("\n🎉 All tests passed! Enhanced Neuroplex integration is ready.")
-    print("\n🚀 To launch Enhanced Neuroplex:")
+    print("\n🎉 All tests passed! Enhanced Lyrixaintegration is ready.")
+    print("\n🚀 To launch Enhanced Lyrixa:")
     print("   Option 1: python launchers/launch_enhanced_aetherplex.py")
     print("   Option 2: python aethercode_launcher.py (choose option 1)")
 
@@ -84,10 +82,10 @@ def test_enhanced_aetherplex():
 
 def show_integration_summary():
     """Show summary of the integration"""
-    print("\n📋 Enhanced Neuroplex Integration Summary")
+    print("\n📋 Enhanced LyrixaIntegration Summary")
     print("=" * 50)
     print("🎭 What's New:")
-    print("   • Enhanced Neuroplex combines the full development environment")
+    print("   • Enhanced Lyrixacombines the full development environment")
     print("     with the sophisticated AetherraChat interface")
     print("   • Replaces basic chat with advanced features:")
     print("     - Tabbed interface (Assistant/Reflections/Code Preview)")
@@ -103,7 +101,7 @@ def show_integration_summary():
     print()
     print("🔧 Fallback Strategy:")
     print("   • If AetherraChat components aren't available, uses basic chat")
-    print("   • If Enhanced Neuroplex fails, falls back to standard Neuroplex")
+    print("   • If Enhanced Lyrixafails, falls back to standard Lyrixa")
     print("   • Graceful degradation ensures functionality")
 
 
@@ -116,7 +114,7 @@ def main():
         print("\n🎯 Ready to continue? (y/n): ", end="")
         response = input().strip().lower()
         if response in ["y", "yes"]:
-            print("🚀 Launching Enhanced Neuroplex...")
+            print("🚀 Launching Enhanced Lyrixa...")
             try:
                 from enhanced_aetherplex import main as enhanced_main
 

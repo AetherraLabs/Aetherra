@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Standard Library - Reflector Plugin
+🧬 Aetherra Standard Library - Reflector Plugin
 Built-in plugin for behavior analysis and self-reflection
 """
 
@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 
 
 class ReflectorPlugin:
-    """Self-reflection and behavior analysis capabilities for NeuroCode"""
+    """Self-reflection and behavior analysis capabilities for Aetherra"""
 
     def __init__(self):
         self.name = "reflector"

@@ -1,4 +1,4 @@
-# NeuroCode v1.0.0 - Enhanced Dependencies
+# aetherra v1.0.0 - Enhanced Dependencies
 # Advanced features for AI research, enterprise use, and development
 
 # === BASE REQUIREMENTS ===

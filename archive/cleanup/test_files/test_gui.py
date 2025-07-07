@@ -12,7 +12,7 @@ src_path = project_root / "src"
 sys.path.insert(0, str(src_path))
 
 try:
-    from aetherra.ui.aetherplex import NeuroplexWindow
+    from aetherra.ui.aetherplex import AetherraWindow
 
     print("✅ GUI classes loaded successfully")
 
@@ -20,7 +20,7 @@ try:
     from PySide6.QtWidgets import QApplication
 
     app = QApplication([])
-    window = NeuroplexWindow()
+    window = AetherraWindow()
     print("✅ GUI window initialized successfully")
     print("🧠 Memory timeline feature added")
     print("🚀 Ready to launch GUI")

@@ -1,5 +1,5 @@
 @echo off
-REM NeuroCode Project Overview - Quick Access Script
+REM Aetherra Project Overview - Quick Access Script
 REM Usage: overview.bat [update] [view] [stats]
 
 cd /d "%~dp0"
@@ -23,7 +23,7 @@ if "%1"=="full" (
 )
 
 REM Default action - show quick view
-echo 🧬 NeuroCode Project Overview
+echo 🧬 Aetherra Project Overview
 python scripts\view_overview.py
 
 :end

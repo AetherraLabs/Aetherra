@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test Neuroplex GUI Launch
+Test Lyrixa Launch
 """
 
 import os
@@ -13,8 +13,8 @@ sys.path.insert(0, project_root)
 sys.path.insert(0, src_path)
 
 
-def test_neuroplex_components():
-    print("🖥️ TESTING NEUROPLEX GUI COMPONENTS")
+def test_Lyrixa_components():
+    print("🖥️ TESTING Lyrixa COMPONENTS")
     print("=" * 45)
 
     # Test UI imports
@@ -26,12 +26,10 @@ def test_neuroplex_components():
 
     # Test Qt framework
     try:
-
         print("✅ PySide6 Qt framework available")
         qt_available = True
     except ImportError:
         try:
-
             print("✅ PySide2 Qt framework available")
             qt_available = True
         except ImportError:
@@ -43,19 +41,19 @@ def test_neuroplex_components():
         return False
 
     # Test that we can instantiate the main window (without showing it)
-    print("✅ Neuroplex ready to launch")
+    print("✅ Lyrixaready to launch")
     return True
 
 
 def test_launcher_scripts():
-    print("\n🚀 TESTING NEUROPLEX LAUNCHERS")
+    print("\n🚀 TESTING LyrixaLAUNCHERS")
     print("=" * 45)
 
     launchers = [
-        "launchers/launch_fully_modular_neuroplex.py",
-        "launchers/launch_modular_neuroplex.py",
-        "launchers/launch_enhanced_neuroplex.py",
-        "launchers/launch_neuroplex_v2.py",
+        "launchers/launch_fully_modular_Lyrixa.py",
+        "launchers/launch_modular_Lyrixa.py",
+        "launchers/launch_enhanced_Lyrixa.py",
+        "launchers/launch_Lyrixa_v2.py",
     ]
 
     working_launchers = 0
@@ -77,17 +75,17 @@ def test_launcher_scripts():
 
 
 def demonstration_launch_simulation():
-    print("\n🎭 NEUROPLEX LAUNCH SIMULATION")
+    print("\n🎭 LyrixaLAUNCH SIMULATION")
     print("=" * 45)
 
-    print("Simulating Neuroplex launch sequence...")
+    print("Simulating Lyrixalaunch sequence...")
 
     # Simulate the launch process without actually showing the GUI
     try:
         from src.aethercode.core import create_interpreter, create_memory_system
 
         # Create core components
-        print("🧬 Creating NeuroCode interpreter...")
+        print("🧬 Creating Aetherra interpreter...")
         interpreter = create_interpreter(enhanced=True)
 
         print("🧠 Creating memory system...")
@@ -96,8 +94,8 @@ def demonstration_launch_simulation():
         print("🖥️ Initializing main window...")
         # Note: We don't actually show the window to avoid blocking the test
 
-        print("✅ All Neuroplex components initialized successfully!")
-        print("🎉 Neuroplex is ready to launch!")
+        print("✅ All Lyrixacomponents initialized successfully!")
+        print("🎉 Lyrixais ready to launch!")
 
         return True
 
@@ -110,30 +108,30 @@ def demonstration_launch_simulation():
 
 
 if __name__ == "__main__":
-    print("🖥️ NEUROPLEX GUI TESTING SUITE")
+    print("🖥️ Lyrixa TESTING SUITE")
     print("=" * 50)
 
-    test1 = test_neuroplex_components()
+    test1 = test_Lyrixa_components()
     test2 = test_launcher_scripts()
     test3 = demonstration_launch_simulation()
 
     print("\n" + "=" * 50)
-    print("📋 NEUROPLEX TEST SUMMARY")
+    print("📋 LyrixaTEST SUMMARY")
     print("=" * 50)
 
     if all([test1, test2, test3]):
-        print("🎉 ALL NEUROPLEX TESTS PASSED!")
-        print("🖥️ Neuroplex is fully operational!")
+        print("🎉 ALL LyrixaTESTS PASSED!")
+        print("🖥️ Lyrixais fully operational!")
         print("🚀 Ready to launch GUI interface!")
     else:
-        print("⚠️ Some Neuroplex components need attention")
+        print("⚠️ Some Lyrixacomponents need attention")
 
-    print("\n🔍 NEUROPLEX STATUS:")
+    print("\n🔍 LyrixaSTATUS:")
     print("✅ GUI components available" if test1 else "❌ GUI components missing")
     print("✅ Launcher scripts available" if test2 else "❌ Launcher scripts missing")
     print("✅ Launch simulation successful" if test3 else "❌ Launch simulation failed")
 
-    print("\n💡 TO LAUNCH NEUROPLEX:")
-    print("   python launchers/launch_fully_modular_neuroplex.py")
+    print("\n💡 TO LAUNCH Lyrixa:")
+    print("   python launchers/launch_fully_modular_Lyrixa.py")
     print("   OR")
     print('   python -c "from src.aethercode.ui import launch_gui; launch_gui()"')

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script for Neuroplex Debug System
+Test script for LyrixaDebug System
 Demonstrates automatic error detection, fix suggestion, and self-correction
 """
 
@@ -15,7 +15,7 @@ from Aetherra.core.debug_system import AetherraDebugSystem
 
 def test_debug_system():
     """Test the automatic debug and self-correction system"""
-    #     print("🧠 NEUROPLEX DEBUG SYSTEM TEST")
+    #     print("🧠 LyrixaDEBUG SYSTEM TEST")
     print("=" * 50)
 
     # Initialize system
@@ -146,14 +146,14 @@ def get_command_description(cmd):
 
 
 if __name__ == "__main__":
-    #     print("🧠 NEUROPLEX AUTOMATIC DEBUG & SELF-CORRECTION SYSTEM")
+    #     print("🧠 LyrixaAUTOMATIC DEBUG & SELF-CORRECTION SYSTEM")
     print("🔄 Detects errors → Suggests fixes → Applies corrections")
     print()
 
     test_debug_system()
     demo_Aetherra_debug()
 
-    print("\n💡 TO USE IN NEUROPLEX:")
+    print("\n💡 TO USE IN Lyrixa:")
     print("   1. Run: python main.py")
     #     print("   2. Enable: set auto_debug on 80")
     print('   3. Load files: load "your_file.py"')

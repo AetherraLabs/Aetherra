@@ -1,5 +1,5 @@
-# NeuroCode v1.0.0 - Interactive Playground Requirements
-# Minimal dependencies specifically for the NeuroCode Playground
+# aetherra v1.0.0 - Interactive Playground Requirements
+# Minimal dependencies specifically for the aetherra Playground
 
 # === CORE PLAYGROUND FUNCTIONALITY ===
 streamlit>=1.28.0,<2.0.0        # Interactive web interface (REQUIRED)
@@ -15,5 +15,5 @@ openai>=1.0.0,<2.0.0            # OpenAI GPT models (recommended)
 # colorama>=0.4.6,<1.0.0         # Colored terminal output (not currently used)
 
 # === INSTALLATION NOTES ===
-# To run the playground: streamlit run ui/neurocode_playground.py
+# To run the playground: streamlit run ui/aetherra_playground.py
 # Or use the launcher: python tools/launch_playground.py

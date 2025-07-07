@@ -1,10 +1,10 @@
-# NeuroCode Plugin SDK
+# Aetherra Plugin SDK
 
-The NeuroCode Plugin SDK lets you extend the language with intelligent, modular capabilities — from voice transcription to Git commits, search queries, file operations, and more.
+The Aetherra Plugin SDK lets you extend the language with intelligent, modular capabilities — from voice transcription to Git commits, search queries, file operations, and more.
 
 ## 🚀 What Is a Plugin?
 
-A plugin is a Python file that registers new commands into the NeuroCode runtime. These commands can be called from `.aether` files like:
+A plugin is a Python file that registers new commands into the Aetherra runtime. These commands can be called from `.aether` files like:
 
 ```neuro
 plugin: whisper.transcribe "meeting.wav"
@@ -12,7 +12,7 @@ plugin: git.commit "Refactored memory engine"
 plugin: example.calculate "2 + 3 * 4"
 ```
 
-Each plugin defines one or more functions that perform tasks, return results, and optionally update Neuroplex's memory.
+Each plugin defines one or more functions that perform tasks, return results, and optionally update Lyrixa's memory.
 
 ## 📁 Plugin File Structure
 
@@ -47,7 +47,7 @@ from core.plugin_api import register_plugin
 @register_plugin(
     name="example",
     description="Simple example plugin",
-    example_usage="plugin: example.hello_world 'NeuroCode'"
+    example_usage="plugin: example.hello_world 'Aetherra'"
 )
 def hello_world(args=""):
     return f"Hello from example plugin! Args: {args}"
@@ -55,7 +55,7 @@ def hello_world(args=""):
 
 Use in `.aether`:
 ```neuro
-plugin: example.hello_world "NeuroCode"
+plugin: example.hello_world "Aetherra"
 ```
 
 ## ⚙️ Plugin Registration
@@ -83,7 +83,7 @@ Each function becomes available as `plugin_name.function_name`.
     description="Mathematical operations and calculations",
     capabilities=["arithmetic", "algebra", "trigonometry"],
     version="1.2.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="utilities",
     example_usage="plugin: math.calculate '2 + 3 * sin(45)'",
     ai_description="Performs safe mathematical calculations"
@@ -215,7 +215,7 @@ plugin: example.calculate "5 + 3"
 plugin: example.status
 ```
 
-Run with NeuroCode to test functionality.
+Run with Aetherra to test functionality.
 
 ## 🤝 Contributing Plugins
 
@@ -268,4 +268,4 @@ def analyze_text(text: str):
 
 ---
 
-**Let Neuroplex evolve — one plugin at a time.** 🚀
+**Let Lyrixaevolve — one plugin at a time.** 🚀

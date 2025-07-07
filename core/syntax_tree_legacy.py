@@ -24,7 +24,7 @@ and backward compatibility. The new modular system is in core/syntax/.
     SyntaxNode,
     SyntaxTreeVisitor,
     analyze_syntax_tree,
-    parse_neurocode,
+    parse_aetherra,
 )
 
 
@@ -42,6 +42,6 @@ __all__ = [
     "SyntaxNode",
     "AetherraParser",
     "SyntaxTreeVisitor",
-    "parse_neurocode",
+    "parse_aetherra",
     "analyze_syntax_tree",
 ]

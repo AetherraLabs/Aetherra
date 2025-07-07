@@ -1,9 +1,9 @@
-# 🧠 Natural-to-NeuroCode Translator Demo
+# 🧠 Natural-to-aetherra Translator Demo
 # Test various natural language inputs
 
 # Memory operations in natural language
 "Remember this conversation about AI development"
-"Store my learning about NeuroCode syntax"
+"Store my learning about aetherra syntax"
 "Save this insight about consciousness"
 
 # Pattern detection and analysis

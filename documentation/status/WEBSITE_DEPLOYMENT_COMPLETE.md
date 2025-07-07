@@ -1,9 +1,9 @@
-# 🌐 NeuroCode Website Deployment Complete!
+# 🌐 aetherra Website Deployment Complete!
 
 ## ✅ **MISSION ACCOMPLISHED: Professional Website Ready**
 
 **Date**: June 29, 2025
-**Domain**: https://neurocode.dev (Cloudflare registered) ✅
+**Domain**: https://aetherra.dev (Cloudflare registered) ✅
 **Status**: **READY FOR DEPLOYMENT** 🚀
 
 ---
@@ -19,7 +19,7 @@
 
 ### **Key Sections Built**
 1. ✅ **Hero Section** - "Where Computation Becomes Cognition"
-2. ✅ **Features Showcase** - 6 core NeuroCode capabilities
+2. ✅ **Features Showcase** - 6 core aetherra capabilities
 3. ✅ **Plugin Registry** - Interactive terminal demo
 4. ✅ **CLI Section** - Standalone compiler showcase
 5. ✅ **Getting Started** - Installation and quick start
@@ -27,8 +27,8 @@
 7. ✅ **Professional Footer** - Contact, links, branding
 
 ### **Technical Features**
-- ✅ **Custom NeuroCode Logo/Favicon** - Neural network SVG design
-- ✅ **Syntax Highlighting** - NeuroCode language support
+- ✅ **Custom aetherra Logo/Favicon** - Neural network SVG design
+- ✅ **Syntax Highlighting** - aetherra language support
 - ✅ **Interactive Elements** - Hover effects, animations, typing effects
 - ✅ **Code Examples** - Live consciousness_demo.aether showcase
 - ✅ **Terminal Simulation** - Plugin CLI demonstration
@@ -43,7 +43,7 @@
 #### **Step 1: Connect Repository**
 ```bash
 # Go to: https://pages.cloudflare.com/
-# Click "Connect to Git" → Select your NeuroCode repository
+# Click "Connect to Git" → Select your aetherra repository
 # Build settings:
 Build command: echo "Static site - no build needed"
 Build output directory: /
@@ -55,7 +55,7 @@ Environment variables: (none needed)
 ```bash
 # In Cloudflare Pages:
 # 1. Go to your site → Custom domains
-# 2. Add "neurocode.dev"
+# 2. Add "aetherra.dev"
 # 3. Add "www.aethercode.dev" (optional)
 # 4. Cloudflare will auto-configure DNS
 ```
@@ -98,7 +98,7 @@ website/
 ├── index.html          # Main page (19KB)
 ├── styles.css          # CSS styles (17KB)
 ├── script.js           # JavaScript (9KB)
-├── favicon.svg         # NeuroCode logo (2KB)
+├── favicon.svg         # aetherra logo (2KB)
 ├── package.json        # Node.js config
 └── README.md          # Documentation
 Total: ~50KB (ultra-fast loading)
@@ -148,7 +148,7 @@ Total: ~50KB (ultra-fast loading)
 
 ### **Quick Start**
 ```bash
-cd "C:\Users\enigm\Desktop\NeuroCode Project\website"
+cd "C:\Users\enigm\Desktop\aetherra Project\website"
 
 # Option 1: Python server
 python -m http.server 3000
@@ -162,7 +162,7 @@ npm run dev
 
 ### **Testing URLs**
 - **Local**: http://localhost:3000
-- **Production**: https://neurocode.dev (after deployment)
+- **Production**: https://aetherra.dev (after deployment)
 
 ---
 
@@ -176,9 +176,9 @@ npm run dev
 
 ### **Social Media Preview**
 ```
-Title: NeuroCode - Where Computation Becomes Cognition
+Title: aetherra - Where Computation Becomes Cognition
 Description: A pioneering AI-consciousness programming language with native memory, goals, and environmental awareness.
-Image: (NeuroCode logo/screenshot)
+Image: (aetherra logo/screenshot)
 ```
 
 ---
@@ -201,7 +201,7 @@ Image: (NeuroCode logo/screenshot)
 
 ## ✅ **Deployment Checklist**
 
-- ✅ Domain registered (neurocode.dev via Cloudflare)
+- ✅ Domain registered (aetherra.dev via Cloudflare)
 - ✅ Website files created and tested
 - ✅ Repository updated with website code
 - ✅ SEO optimization complete
@@ -217,14 +217,14 @@ Image: (NeuroCode logo/screenshot)
 ## 🎯 **Final Steps**
 
 1. **Deploy Now**: Connect your GitHub repo to Cloudflare Pages
-2. **Test Live**: Verify https://neurocode.dev works perfectly
+2. **Test Live**: Verify https://aetherra.dev works perfectly
 3. **Share**: Update social media, README, and documentation
 4. **Monitor**: Check analytics and performance metrics
 5. **Iterate**: Add community feedback and enhancements
 
 ---
 
-**🧬 NeuroCode: Where Computation Becomes Cognition**
-**🌐 Ready for the world at https://neurocode.dev** 🚀
+**🧬 aetherra: Where Computation Becomes Cognition**
+**🌐 Ready for the world at https://aetherra.dev** 🚀
 
 **Status**: ✅ **DEPLOYMENT READY** - Launch when you're ready!

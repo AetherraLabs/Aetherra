@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-NeuroCode Persona Command Interface
+Aetherra Persona Command Interface
 Live demonstration of contextual persona adaptation in action.
 
 Usage examples:
-  neurocode persona: guardian voice: neutral
-  neurocode debug "database connection failing"
-  neurocode create "AI chatbot feature"
-  neurocode learn "explain neural networks"
-  neurocode emergency "server crashed!"
+  Aetherra persona: guardian voice: neutral
+  Aetherra debug "database connection failing"
+  Aetherra create "AI chatbot feature"
+  Aetherra learn "explain neural networks"
+  Aetherra emergency "server crashed!"
 """
 
 import argparse
@@ -93,7 +93,7 @@ except ImportError:
         return None
 
 
-class NeuroCodePersonaInterface:
+class AetherraPersonaInterface:
     """CLI that demonstrates persona adaptation in real-time"""
 
     def __init__(self):
@@ -160,14 +160,14 @@ class NeuroCodePersonaInterface:
         """Show current persona configuration"""
         if not PERSONA_AVAILABLE or not self.persona_engine:
             return """
-🤖 NeuroCode Persona Status
+🤖 Aetherra Persona Status
 ═══════════════════════════════════════════
 
 ⚠️ Persona system not available
 🔧 Running in basic CLI mode
 
 Available commands:
-• Basic NeuroCode execution
+• Basic Aetherra execution
 • Standard help and information
 • Limited functionality without persona features
 """
@@ -213,7 +213,7 @@ Available commands:
             return "⚠️ Error accessing persona information"
 
         status = f"""
-🤖 NeuroCode Persona Status
+🤖 Aetherra Persona Status
 ═══════════════════════════════════════════
 
 🎭 Current Archetype: {str(archetype_name).title()}
@@ -235,11 +235,11 @@ Available commands:
    • Context Adaptation: Enabled
 
 🎯 Available Commands:
-   neurocode persona: <archetype> voice: <tone>
-   neurocode debug "<problem>"
-   neurocode create "<project>"
-   neurocode learn "<topic>"
-   neurocode emergency "<crisis>"
+   Aetherra persona: <archetype> voice: <tone>
+   Aetherra debug "<problem>"
+   Aetherra create "<project>"
+   Aetherra learn "<topic>"
+   Aetherra emergency "<crisis>"
 """
         return status
 
@@ -475,10 +475,10 @@ Available commands:
 
 def main() -> None:
     """Main CLI entry point for the persona interface"""
-    interface = NeuroCodePersonaInterface()
+    interface = AetherraPersonaInterface()
 
     parser = argparse.ArgumentParser(
-        description="NeuroCode Persona Command Interface",
+        description="Aetherra Persona Command Interface",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -508,13 +508,13 @@ Examples:
         return
 
     if args.interactive:
-        print("🧠 NeuroCode Persona Interactive Mode")
+        print("🧠 Aetherra Persona Interactive Mode")
         print("Type commands or 'quit' to exit")
         print("=" * 50)
 
         while True:
             try:
-                user_input = input("\nneurocode> ").strip()
+                user_input = input("\nAetherra> ").strip()
                 if user_input.lower() in ["quit", "exit", "q"]:
                     print(
                         "👋 Farewell! The persona remembers our interaction for next time."
@@ -553,7 +553,7 @@ Examples:
         print("─" * 50)
 
         response = interface.process_command(command_text)
-        print(f"\n🤖 NeuroCode Response:\n{response}")
+        print(f"\n🤖 Aetherra Response:\n{response}")
 
         # Show brief adaptation info
         if interface.contextual_adaptation and hasattr(

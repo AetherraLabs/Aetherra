@@ -24,7 +24,7 @@ class AetherraCodeAIOS:
 
         # Core AI OS Components
         self.ai_identity = {
-            "name": "Neuroplex-AI-OS",
+            "name": "Aetherra-AI-OS",
             "version": "3.0-stable",
             "birth_time": datetime.now().isoformat(),
             "personality": {

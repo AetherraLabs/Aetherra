@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """
-Core feature test for Neuroplex without AI dependencies
+Core feature test for Lyrixawithout AI dependencies
 Tests basic memory, function, and block execution features
 """
 
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from Aetherra.core.aetherra_memory import AetherraMemory
-from Aetherra.core.functions import AetherraFunctions
 from Aetherra.core.block_executor import BlockExecutor
+from Aetherra.core.functions import AetherraFunctions
+
 
 def test_memory_system():
     """Test basic memory functionality"""
@@ -34,6 +36,7 @@ def test_memory_system():
 
     return True
 
+
 def test_function_system():
     """Test user-defined functions"""
     print("\n🔧 Testing Function System")
@@ -53,6 +56,7 @@ def test_function_system():
 
     return True
 
+
 def test_block_executor():
     """Test block execution system"""
     print("\n⚡ Testing Block Executor")
@@ -66,27 +70,22 @@ def test_block_executor():
     lines = ["x = 5", "y = 10"]
     result = executor.execute_block(lines, lambda x: f"Executed: {x}")
     print(f"✅ Variable assignment: {result}")
-    print(f"   Variables: x={executor.variables.get('x')}, y={executor.variables.get('y')}")
+    print(
+        f"   Variables: x={executor.variables.get('x')}, y={executor.variables.get('y')}"
+    )
 
     # Test simple conditional
-    lines = [
-        "if x == 5",
-        "remember('Condition worked', tags=['test'])",
-        "end"
-    ]
+    lines = ["if x == 5", "remember('Condition worked', tags=['test'])", "end"]
     result = executor.execute_block(lines, lambda x: f"Executed: {x}")
     print(f"✅ Conditional execution: {result}")
 
     # Test simple loop
-    lines = [
-        "for i in 1..3",
-        "remember('Loop ' + i, tags=['loop'])",
-        "end"
-    ]
+    lines = ["for i in 1..3", "remember('Loop ' + i, tags=['loop'])", "end"]
     result = executor.execute_block(lines, lambda x: f"Executed: {x}")
     print(f"✅ Loop execution: {result}")
 
     return True
+
 
 def test_syntax_discrepancies():
     """Test for documented vs implemented syntax differences"""
@@ -96,7 +95,7 @@ def test_syntax_discrepancies():
     memory = AetherraMemory()
 
     # Check for 'pattern()' method that was documented but missing
-    has_pattern_method = hasattr(memory, 'pattern')
+    has_pattern_method = hasattr(memory, "pattern")
     print(f"✅ memory.pattern() method exists: {has_pattern_method}")
 
     if has_pattern_method:
@@ -106,10 +105,11 @@ def test_syntax_discrepancies():
         print(f"✅ memory.pattern() works: {result}")
 
     # Check what pattern methods do exist
-    pattern_methods = [method for method in dir(memory) if 'pattern' in method.lower()]
+    pattern_methods = [method for method in dir(memory) if "pattern" in method.lower()]
     print(f"✅ Available pattern methods: {pattern_methods}")
 
     return True
+
 
 def test_new_tagged_syntax():
     """Test the newly implemented tagged memory syntax"""
@@ -119,6 +119,7 @@ def test_new_tagged_syntax():
     # Test this without importing interpreter to avoid AI dependency issues
     try:
         from Aetherra.core.interpreter import AetherraInterpreter
+
         interpreter = AetherraInterpreter()
 
         # Test new tagged syntax
@@ -134,9 +135,10 @@ def test_new_tagged_syntax():
         print(f"⚠️  Tagged syntax test skipped due to AI dependency: {str(e)[:100]}...")
         return True
 
+
 def main():
     """Run all tests"""
-    print("🚀 Neuroplex Core Features Test")
+    print("🚀 LyrixaCore Features Test")
     print("=" * 50)
 
     tests = [
@@ -144,7 +146,7 @@ def main():
         test_function_system,
         test_block_executor,
         test_syntax_discrepancies,
-        test_new_tagged_syntax
+        test_new_tagged_syntax,
     ]
 
     passed = 0
@@ -167,6 +169,7 @@ def main():
         print("   ✅ Updated block executor to use new pattern method")
     else:
         print("\n⚠️  Some issues may remain - check individual test results")
+
 
 if __name__ == "__main__":
     main()

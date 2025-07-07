@@ -23,14 +23,14 @@ def test_core_components():
         print("✅ Memory system initialized")
 
         # Test grammar system
-        from core.aethercode_grammar import NEUROCODE_GRAMMAR
+        from core.aethercode_grammar import Aetherra_GRAMMAR
 
         print("✅ Grammar system loaded")
 
         # Test parser with Lark
         from lark import Lark
 
-        parser = Lark(NEUROCODE_GRAMMAR, start="program")
+        parser = Lark(Aetherra_GRAMMAR, start="program")
         test_code = 'goal "test parsing"\nremember "verification complete"'
         tree = parser.parse(test_code)
         print("✅ Parser successfully parsed test code")

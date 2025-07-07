@@ -11,7 +11,7 @@ try:
 
     # Test importing the main launcher
 
-    print("✅ Main Neuroplex launcher imports successfully")
+    print("✅ Main Lyrixalauncher imports successfully")
 
     # Test importing the GUI components
     src_path = project_root / "src"
@@ -20,7 +20,7 @@ try:
     print("✅ Main GUI components import successfully")
 
     print("🎉 All launcher components are working!")
-    print("🚀 You can now launch Neuroplex using:")
+    print("🚀 You can now launch Lyrixausing:")
     print("   python launchers/launch_aetherplex.py")
     print("   OR")
     print("   python Aetherra_launcher.py (then choose option 1)")

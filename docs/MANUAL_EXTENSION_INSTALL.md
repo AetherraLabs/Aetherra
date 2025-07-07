@@ -7,7 +7,7 @@ Since the automated script had issues finding VS Code in PATH, here are alternat
 
 **Must-Have Extensions:**
 - `ms-python.python` - Python language support
-- `ms-python.vscode-pylance` - Advanced IntelliSense  
+- `ms-python.vscode-pylance` - Advanced IntelliSense
 - `github.copilot` - AI coding assistant
 - `eamodio.gitlens` - Enhanced Git integration
 - `ms-toolsai.jupyter` - Jupyter notebook support
@@ -27,7 +27,7 @@ Since the automated script had issues finding VS Code in PATH, here are alternat
 ## 🔧 **METHOD 1: VS Code UI Installation (Recommended)**
 
 1. **Open VS Code in this project:**
-   - Navigate to your NeuroCode folder
+   - Navigate to your Aetherra folder
    - Right-click → "Open with Code" (if available)
    - Or open VS Code and use File → Open Folder
 
@@ -101,7 +101,7 @@ To enable the `code` command in terminal:
 After installing extensions:
 
 1. **Restart VS Code**
-2. **Open this NeuroCode project folder**
+2. **Open this Aetherra project folder**
 3. **Check that extensions are working:**
    - Python files show syntax highlighting
    - IntelliSense works (hover over variables)
@@ -124,7 +124,7 @@ After installing extensions:
    - Type "Python: Select Interpreter"
    - Choose your Python installation
 
-4. **Test NeuroCode functionality:**
+4. **Test Aetherra functionality:**
    ```bash
    python check_qt.py
    ```
@@ -133,11 +133,11 @@ After installing extensions:
 
 ## 🚀 **YOU'RE ALL SET!**
 
-Once the extensions are installed, your NeuroCode development environment will have:
+Once the extensions are installed, your Aetherra development environment will have:
 
-✨ **AI-Powered Development** - Copilot + Continue.dev  
-🔧 **Professional Tooling** - Linting, formatting, debugging  
-🎨 **Beautiful Interface** - Dracula theme + icons  
-🧬 **NeuroCode Optimized** - Custom settings for AI-native programming  
+✨ **AI-Powered Development** - Copilot + Continue.dev
+🔧 **Professional Tooling** - Linting, formatting, debugging
+🎨 **Beautiful Interface** - Dracula theme + icons
+🧬 **Aetherra Optimized** - Custom settings for AI-native programming
 
 The `.vscode/` folder already contains all the optimized settings - you just need the extensions installed!

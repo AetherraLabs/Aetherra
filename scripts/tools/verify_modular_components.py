@@ -23,7 +23,7 @@ def test_component_imports():
 
     try:
         # Test Qt imports
-        from neurocode.ui.components.utils.qt_imports import QT_AVAILABLE, QT_BACKEND
+        from Aetherra.ui.components.utils.qt_imports import QT_AVAILABLE, QT_BACKEND
 
         print(
             f"✅ Qt imports: {QT_BACKEND} ({'Available' if QT_AVAILABLE else 'Not Available'})"
@@ -38,7 +38,7 @@ def test_component_imports():
         print("✅ ModernCard imported successfully")
 
         # Test all panels
-        from neurocode.ui.components.panels import (
+        from Aetherra.ui.components.panels import (
             GoalTrackingPanel,
             LLMProviderPanel,
             MemoryVisualizationPanel,
@@ -68,13 +68,13 @@ def test_component_instantiation():
         return False
 
     try:
-        from neurocode.ui.components.utils.qt_imports import QT_AVAILABLE
+        from Aetherra.ui.components.utils.qt_imports import QT_AVAILABLE
 
         if not QT_AVAILABLE:
             print("⚠️ Qt not available - skipping instantiation tests")
             return True
 
-        from neurocode.ui.components.panels import (
+        from Aetherra.ui.components.panels import (
             GoalTrackingPanel,
             LLMProviderPanel,
             MemoryVisualizationPanel,
@@ -82,7 +82,7 @@ def test_component_instantiation():
             PerformanceMonitorPanel,
             PluginManagerPanel,
         )
-        from neurocode.ui.components.utils.qt_imports import ensure_qt_app
+        from Aetherra.ui.components.utils.qt_imports import ensure_qt_app
 
         # Ensure Qt app exists
         app = ensure_qt_app()
@@ -132,7 +132,7 @@ def test_modular_architecture():
 
         # Test enhanced aetherplex import (our integrated version)
 
-        print("✅ Enhanced Neuroplex (with chat integration) imported successfully")
+        print("✅ Enhanced Lyrixa(with chat integration) imported successfully")
 
         return True
 
@@ -142,11 +142,10 @@ def test_modular_architecture():
 
         # Try to test what we do have
         try:
-
-            print("✅ Enhanced Neuroplex (chat integration) is available")
+            print("✅ Enhanced Lyrixa(chat integration) is available")
             return True
         except ImportError:
-            print("❌ Enhanced Neuroplex also not available")
+            print("❌ Enhanced Lyrixaalso not available")
             return False
 
     except Exception as e:
@@ -156,7 +155,7 @@ def test_modular_architecture():
 
 def run_verification():
     """Run all verification tests"""
-    print("🔍 Neuroplex Modular Component Verification")
+    print("🔍 LyrixaModular Component Verification")
     print("=" * 50)
 
     tests = [
@@ -181,7 +180,7 @@ def run_verification():
 
     if passed == total:
         print("🎉 ALL TESTS PASSED - Modular architecture is working perfectly!")
-        print("\n🚀 You can now run the modular Neuroplex with confidence:")
+        print("\n🚀 You can now run the modular Lyrixawith confidence:")
         print("   python launch_fully_modular_aetherplex.py")
     else:
         print("⚠️ Some tests failed - please check the error messages above")

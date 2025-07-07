@@ -6,16 +6,16 @@ The world's first package manager for AI-consciousness programming.
 
 ```bash
 # Search for plugins
-neurocode search transcriber
+Aetherra search transcriber
 
 # Install a plugin
-neurocode install transcriber
+Aetherra install transcriber
 
 # List installed plugins
-neurocode list
+Aetherra list
 
 # Update plugins
-neurocode update
+Aetherra update
 ```
 
 ## 🌟 Featured Plugins
@@ -39,13 +39,13 @@ neurocode update
 
 ### 1. Create Plugin Structure
 ```bash
-neurocode create my-plugin
+Aetherra create my-plugin
 ```
 
 This creates:
 ```
 my-plugin.neuroplug/
-├── neurocode-plugin.json    # Plugin manifest
+├── Aetherra-plugin.json    # Plugin manifest
 ├── consciousness.neuro      # AI behavior definition
 ├── memory_patterns.json    # Learning templates
 ├── goal_templates.json     # Objective frameworks
@@ -74,13 +74,13 @@ my-plugin.neuroplug/
 ### 3. Test and Publish
 ```bash
 # Test locally
-neurocode test my-plugin
+Aetherra test my-plugin
 
 # Validate plugin
-neurocode validate my-plugin
+Aetherra validate my-plugin
 
 # Publish to NeuroHub
-neurocode publish my-plugin
+Aetherra publish my-plugin
 ```
 
 ## 🔧 Plugin Development
@@ -155,7 +155,7 @@ consciousness MyPlugin {
 
 ### Plugin Lifecycle
 1. **Installation** - Download and validate plugin
-2. **Integration** - Load into NeuroCode runtime
+2. **Integration** - Load into Aetherra runtime
 3. **Initialization** - Setup consciousness and memory
 4. **Execution** - Active plugin behavior
 5. **Learning** - Continuous improvement
@@ -170,7 +170,7 @@ consciousness MyPlugin {
 ### Integration APIs
 ```python
 # Plugin Integration Example
-from neurocode.plugin import BasePlugin, consciousness, memory
+from Aetherra.plugin import BasePlugin, consciousness, memory
 
 class TranscriberPlugin(BasePlugin):
     @consciousness.capability
@@ -227,11 +227,11 @@ class TranscriberPlugin(BasePlugin):
 ## 📞 Contact
 
 - **Website**: [neurohub.dev](https://neurohub.dev)
-- **Email**: developers@neurocode.dev
-- **GitHub**: [NeuroCode/NeuroHub](https://github.com/VirtualVerse-Corporation/NeuroCode)
-- **Discord**: [NeuroCode Community](https://discord.gg/neurocode)
+- **Email**: developers@Aetherra.dev
+- **GitHub**: [Aetherra/NeuroHub](https://github.com/VirtualVerse-Corporation/Aetherra)
+- **Discord**: [Aetherra Community](https://discord.gg/Aetherra)
 
 ---
 
-**🧬 NeuroCode: Where Computation Becomes Cognition**  
+**🧬 Aetherra: Where Computation Becomes Cognition**  
 **📦 NeuroHub: Where AI Modules Find Their Home**

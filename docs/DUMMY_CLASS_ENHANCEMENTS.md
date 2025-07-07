@@ -2,11 +2,11 @@
 
 ## Overview
 
-This document summarizes the improvements made to dummy classes in the NeuroCode project. Dummy classes are used as fallbacks when real implementations aren't available, ensuring the application can function with reduced capabilities rather than failing completely.
+This document summarizes the improvements made to dummy classes in the Aetherra project. Dummy classes are used as fallbacks when real implementations aren't available, ensuring the application can function with reduced capabilities rather than failing completely.
 
 ## Key Enhancements
 
-### 1. NeuroCodeChatRouter Dummy Class
+### 1. AetherraChatRouter Dummy Class
 
 #### Before
 

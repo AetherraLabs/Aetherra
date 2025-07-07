@@ -1,4 +1,4 @@
-# 🧬 NeuroCode Standard Library Simple Demo
+# 🧬 aetherra Standard Library Simple Demo
 
 # Basic goal using stdlib
 goal: "test_stdlib" priority: high
@@ -9,7 +9,7 @@ agent: "stdlib_manager"
 # Test system monitoring
 check_system = plugin("sysmon.status")
 
-# Test file operations  
+# Test file operations
 file_list = plugin("coretools.list_files")
 
 # Test command execution

@@ -1,4 +1,4 @@
-# 🌐 Web Development with NeuroCode
+# 🌐 Web Development with Aetherra
 # Build a modern web application using AI-native programming
 
 # Set development goals
@@ -40,7 +40,7 @@ end
 
 # Security implementation
 implement: "input validation middleware"
-implement: "JWT token authentication" 
+implement: "JWT token authentication"
 implement: "password hashing with bcrypt"
 implement: "HTTPS enforcement"
 implement: "CORS configuration"

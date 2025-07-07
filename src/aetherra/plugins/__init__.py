@@ -1,8 +1,7 @@
 """
-NeuroCode Plugin System
-Modular plugin architecture for extending NeuroCode functionality.
+Aetherra Plugin System
+Modular plugin architecture for extending Aetherra functionality.
 """
-
 
 __all__ = [
     "EnhancedPluginManager",

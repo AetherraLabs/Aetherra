@@ -1,10 +1,10 @@
-# GitHub Upload Commands for NeuroCode
+# GitHub Upload Commands for Aetherra
 
 ## Windows Commands (PowerShell/CMD)
 
 ```powershell
 # Navigate to your project directory
-cd "c:\Users\enigm\Desktop\New Neurocode Language"
+cd "c:\Users\enigm\Desktop\New Aetherra Language"
 
 # Initialize Git repository
 git init
@@ -13,7 +13,7 @@ git init
 git add .
 
 # Create initial commit
-git commit -m "Initial commit: NeuroCode - The First AI-Native Programming Language
+git commit -m "Initial commit: Aetherra - The First AI-Native Programming Language
 
 Features:
 - Revolutionary cognitive programming paradigm
@@ -27,13 +27,13 @@ Features:
 git branch -M main
 
 # Add GitHub remote (replace YOUR_USERNAME with your GitHub username)
-git remote add origin https://github.com/YOUR_USERNAME/neurocode.git
+git remote add origin https://github.com/YOUR_USERNAME/Aetherra.git
 
 # Push to GitHub
 git push -u origin main
 
 # Create first release tag
-git tag -a v1.0.0 -m "NeuroCode v1.0.0 - Revolutionary AI-Native Language"
+git tag -a v1.0.0 -m "Aetherra v1.0.0 - Revolutionary AI-Native Language"
 git push origin v1.0.0
 ```
 
@@ -68,7 +68,7 @@ git push origin v1.0.0
 ## Repository Structure After Preparation
 
 ```
-neurocode/
+Aetherra/
 ├── README.md                    # Main project description
 ├── LICENSE                      # MIT License
 ├── CONTRIBUTING.md              # Contribution guidelines  
@@ -80,11 +80,11 @@ neurocode/
 ├── ui/                         # GUI interface
 ├── plugins/                    # Plugin system
 ├── stdlib/                     # Standard library
-├── examples/                   # Sample NeuroCode programs
+├── examples/                   # Sample Aetherra programs
 ├── docs/                       # Documentation
 ├── .github/                    # GitHub templates
 │   └── ISSUE_TEMPLATE/
 └── backups/                    # Backed up runtime files
 ```
 
-Your NeuroCode project is now ready for GitHub! 🚀
+Your Aetherra project is now ready for GitHub! 🚀

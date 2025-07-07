@@ -140,7 +140,7 @@ def test_error_handling():
 
 def main():
     """Main test function"""
-    print("🚀 Testing src/neurocode/core fixes")
+    print("🚀 Testing src/Aetherra/core fixes")
     print("=" * 50)
 
     # Track test results
@@ -162,7 +162,7 @@ def main():
     print(f"📊 Test Results: {tests_passed}/{total_tests} tests passed")
 
     if tests_passed == total_tests:
-        print("🎉 All tests passed! src/neurocode/core is working correctly.")
+        print("🎉 All tests passed! src/Aetherra/core is working correctly.")
         return True
     else:
         print("⚠️  Some tests failed. Please check the output above.")

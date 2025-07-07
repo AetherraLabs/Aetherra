@@ -26,7 +26,7 @@ We pledge to act and interact in ways that contribute to an open, welcoming, div
 * **📧 Public or private harassment** including unwelcome sexual attention
 * **🔒 Publishing others' private information** without explicit permission
 * **🎭 Impersonation** of other community members or project maintainers
-* **💰 Spam, advertising, or self-promotion** unrelated to NeuroCode development
+* **💰 Spam, advertising, or self-promotion** unrelated to Aetherra development
 * **⚖️ Any conduct which could reasonably be considered inappropriate** in a professional setting
 * **🤖 Malicious use of AI capabilities** to harm others or the community
 
@@ -53,8 +53,8 @@ This Code of Conduct applies within all community spaces, and also applies when 
 * **📱 Posting via official social media accounts**
 * **🎤 Acting as an appointed representative** at online or offline events
 * **📝 Contributing to project repositories** and discussions
-* **🎯 Participating in NeuroCode community forums** and chat channels
-* **🏢 Representing NeuroCode at conferences** or meetups
+* **🎯 Participating in Aetherra community forums** and chat channels
+* **🏢 Representing Aetherra at conferences** or meetups
 
 ## 📋 **Enforcement Guidelines**
 
@@ -144,7 +144,7 @@ Recognition for significant contributions:
 
 ### **🚀 Active Initiatives**
 * **👥 Mentorship Programs**: Pairing experienced developers with newcomers
-* **🌐 Translation Efforts**: Making NeuroCode accessible in multiple languages
+* **🌐 Translation Efforts**: Making Aetherra accessible in multiple languages
 * **📚 Educational Resources**: Creating learning materials for different skill levels
 * **🎓 Workshop Series**: Regular community learning sessions
 * **🤝 Outreach Programs**: Connecting with underrepresented communities

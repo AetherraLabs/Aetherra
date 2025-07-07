@@ -1,13 +1,13 @@
-# Contributing to NeuroCode
+# Contributing to aetherra
 
-Thank you for your interest in contributing to NeuroCode, the world's first AI-native programming language! 🧬
+Thank you for your interest in contributing to aetherra, the world's first AI-native programming language! 🧬
 
 ## 🌟 How to Contribute
 
 ### 🐛 Reporting Bugs
 - Use GitHub Issues to report bugs
-- Include NeuroCode version, OS, and steps to reproduce
-- Provide sample NeuroCode code that demonstrates the issue
+- Include aetherra version, OS, and steps to reproduce
+- Provide sample aetherra code that demonstrates the issue
 
 ### 💡 Suggesting Features
 - Open a GitHub Issue with the "enhancement" label
@@ -18,8 +18,8 @@ Thank you for your interest in contributing to NeuroCode, the world's first AI-n
 
 #### Setting Up Development Environment
 ```bash
-git clone https://github.com/YOUR_USERNAME/neurocode.git
-cd neurocode
+git clone https://github.com/YOUR_USERNAME/aetherra.git
+cd aetherra
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -36,7 +36,7 @@ python comprehensive_analysis.py
 - Follow PEP 8 style guidelines (enforced by Ruff)
 - Add comprehensive docstrings to new functions
 - Include test cases for new features
-- Update documentation when adding new NeuroCode syntax
+- Update documentation when adding new aetherra syntax
 
 ### 🧠 Areas We Need Help With
 
@@ -47,7 +47,7 @@ python comprehensive_analysis.py
 - **Real-time Compilation**: JIT optimization for production speed
 
 #### **🧬 Cognitive Programming Features**
-- **Intent Translation**: Natural language → executable NeuroCode
+- **Intent Translation**: Natural language → executable aetherra
 - **Pattern Recognition**: Automatic abstraction discovery
 - **Meta-Programming**: Self-modifying and evolving code
 - **Adaptive Functions**: Code that learns from usage patterns
@@ -65,7 +65,7 @@ python comprehensive_analysis.py
 - **Innovation Discovery**: AI-discovered programming techniques
 
 #### **📚 Traditional Areas (Still Important)**
-- **Language Features**: New NeuroCode syntax patterns
+- **Language Features**: New aetherra syntax patterns
 - **AI Integration**: Better natural language processing
 - **Performance**: Optimization of the interpreter engine
 - **Documentation**: Examples, tutorials, and guides
@@ -80,7 +80,7 @@ python comprehensive_analysis.py
 5. Open a Pull Request
 
 ### 💭 Philosophy
-Remember that NeuroCode is about **cognitive programming** - expressing intentions rather than implementations. When contributing, think about:
+Remember that aetherra is about **cognitive programming** - expressing intentions rather than implementations. When contributing, think about:
 - How does this make programming more intuitive?
 - Does this help developers express **what** they want rather than **how** to do it?
 - Can AI understand and act on this pattern?

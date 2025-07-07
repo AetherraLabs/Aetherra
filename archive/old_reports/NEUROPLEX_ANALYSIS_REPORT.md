@@ -1,4 +1,4 @@
-# NeuroCode Workspace Analysis Report
+# Aetherra Workspace Analysis Report
 
 **Generated:** 2025-06-28 16:39:01
 

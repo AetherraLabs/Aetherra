@@ -2,23 +2,23 @@
 # ====================================================
 
 ## 🔥 URGENT PROJECT NAME TRANSITION 🔥
-**CRITICAL:** NeuroCode has been PERMANENTLY ABANDONED for **AETHERRA**
-- ❌ Old name: NeuroCode (DEAD, FORBIDDEN, DO NOT USE)
+**CRITICAL:** Aetherra has been PERMANENTLY ABANDONED for **AETHERRA**
+- ❌ Old name: Aetherra (DEAD, FORBIDDEN, DO NOT USE)
 - ✅ New name: **AETHERRA** (ONLY CORRECT NAME)
 - This transition is PERMANENT and IRREVERSIBLE
 
 ## 🚫 ABSOLUTE PROHIBITIONS:
-- **NEVER CREATE**: neurocode_launcher.py, neurocode.py, or ANY NeuroCode files
-- **NEVER REFERENCE**: NeuroCode in code, comments, or documentation
-- **NEVER USE**: "NeuroCode UI", "NeuroCode Launcher", etc. in tasks or configs
-- **IMMEDIATELY DELETE**: Any NeuroCode files found
-- **IMMEDIATELY RENAME**: Any NeuroCode references to Aetherra
+- **NEVER CREATE**: Aetherra_launcher.py, Aetherra.py, or ANY Aetherra files
+- **NEVER REFERENCE**: Aetherra in code, comments, or documentation
+- **NEVER USE**: "Aetherra UI", "Aetherra Launcher", etc. in tasks or configs
+- **IMMEDIATELY DELETE**: Any Aetherra files found
+- **IMMEDIATELY RENAME**: Any Aetherra references to Aetherra
 
 ## ✅ MANDATORY RULES:
 - **AETHERRA ONLY**: All references must be "Aetherra"
 - **CORRECT LAUNCHER**: Use `aetherra_launcher.py` EXCLUSIVELY
-- **CORRECT TASKS**: "Verify Aetherra UI" NOT "Verify NeuroCode UI"
-- **LYRIXA**: The AI assistant works with Aetherra (not NeuroCode)
+- **CORRECT TASKS**: "Verify Aetherra UI" NOT "Verify Aetherra UI"
+- **LYRIXA**: The AI assistant works with Aetherra (not Aetherra)
 
 ## ARCHITECTURE TRANSFORMATION COMPLETED:
 ✅ JavaScript-based Lyrixa → Python-based Lyrixa AI Assistant
@@ -38,12 +38,12 @@
 
 **🌌 AETHERRA + 🎙️ LYRIXA = The Complete AI Development Environment**
 
-**NEVER** refer to NeuroCode again - it no longer exists!
+**NEVER** refer to Aetherra again - it no longer exists!
 
 This is the **FINAL** word on naming:
 - ✅ **AETHERRA** = The development platform
 - ✅ **LYRIXA** = The AI assistant
-- ❌ **NEUROCODE** = DEAD, FORBIDDEN, EXTINCT
+- ❌ **Aetherra** = DEAD, FORBIDDEN, EXTINCT
 
 ---
 🚨 **This file exists to prevent confusion and ensure consistency.** 🚨

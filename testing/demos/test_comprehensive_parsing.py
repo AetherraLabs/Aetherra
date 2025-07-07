@@ -6,7 +6,7 @@ Test comprehensive AetherraCode parsing with the production grammar
 from Aetherra.core.production_aethercode_grammar import AetherraCodeProductionParser
 
 
-def test_comprehensive_neurocode():
+def test_comprehensive_Aetherra():
     """Test the parser with a comprehensive AetherraCode program"""
 
     parser = AetherraCodeProductionParser()
@@ -47,7 +47,9 @@ debug "System working correctly"
 
     try:
         ast = parser.parse(aethercode_program)
-        print(f"✓ Successfully parsed program with {len(ast.children)} top-level statements")
+        print(
+            f"✓ Successfully parsed program with {len(ast.children)} top-level statements"
+        )
 
         # Print AST structure
         print("\nAST Structure:")
@@ -70,4 +72,4 @@ debug "System working correctly"
 
 
 if __name__ == "__main__":
-    test_comprehensive_neurocode()
+    test_comprehensive_Aetherra()

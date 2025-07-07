@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🧪 Neuroplex System Test Suite
+🧪 LyrixaSystem Test Suite
 =============================
 
-Comprehensive testing of the Neuroplex system to ensure all components
+Comprehensive testing of the Lyrixasystem to ensure all components
 work together correctly.
 """
 
@@ -13,15 +13,15 @@ from pathlib import Path
 
 
 def test_aetherplex_imports():
-    """Test that all Neuroplex modules can be imported"""
-    print("🔍 Testing Neuroplex Imports...")
+    """Test that all Lyrixamodules can be imported"""
+    print("🔍 Testing LyrixaImports...")
 
     aetherplex_files = [
-        "src/neurocode/ui/aetherplex_fully_modular.py",
-        "src/neurocode/ui/aetherplex_modular.py",
-        "src/neurocode/ui/aetherplex_gui_v2.py",
-        "src/neurocode/ui/aetherplex_gui.py",
-        "src/neurocode/ui/aetherplex_agent_integration.py",
+        "src/Aetherra/ui/aetherplex_fully_modular.py",
+        "src/Aetherra/ui/aetherplex_modular.py",
+        "src/Aetherra/ui/aetherplex_gui_v2.py",
+        "src/Aetherra/ui/aetherplex_gui.py",
+        "src/Aetherra/ui/aetherplex_agent_integration.py",
     ]
 
     passed = 0
@@ -64,8 +64,8 @@ def test_aethercode_launcher():
 
         if hasattr(aethercode_launcher, "AetherraCodeLauncher"):
             print("  ✅ AetherraCodeLauncher class found")
-        elif hasattr(aethercode_launcher, "launch_neurocode"):
-            print("  ✅ launch_neurocode function found")
+        elif hasattr(aethercode_launcher, "launch_Aetherra"):
+            print("  ✅ launch_Aetherra function found")
 
         return True
 
@@ -207,14 +207,14 @@ def test_integration():
 
 
 def run_aetherplex_demo():
-    """Attempt to run a simple Neuroplex demo"""
-    print("\n🔍 Testing Neuroplex Demo...")
+    """Attempt to run a simple Lyrixademo"""
+    print("\n🔍 Testing LyrixaDemo...")
 
     try:
         # Try to run the launcher in demo mode
 
         # Check if we can initialize without errors
-        print("  ✅ Neuroplex Demo: Initialization successful")
+        print("  ✅ LyrixaDemo: Initialization successful")
 
         # Note: We don't actually launch the GUI to avoid blocking the test
         print("  ℹ️ Note: GUI launch skipped in automated test")
@@ -222,25 +222,25 @@ def run_aetherplex_demo():
         return True
 
     except Exception as e:
-        print(f"  ❌ Neuroplex Demo failed: {e}")
+        print(f"  ❌ LyrixaDemo failed: {e}")
         return False
 
 
 def main():
-    """Run comprehensive Neuroplex test suite"""
-    print("🧪 Neuroplex System Test Suite")
+    """Run comprehensive Lyrixatest suite"""
+    print("🧪 LyrixaSystem Test Suite")
     print("=" * 50)
-#     print("Testing all Neuroplex components and integrations...\n")
+    #     print("Testing all Lyrixacomponents and integrations...\n")
 
     tests = [
-        ("Neuroplex Imports", test_aetherplex_imports),
+        ("LyrixaImports", test_aetherplex_imports),
         ("AetherraCode Launcher", test_aethercode_launcher),
         ("Core Components", test_core_components),
         ("Performance System", test_performance_system),
         ("Memory System", test_memory_system),
         ("UI System", test_ui_system),
         ("System Integration", test_integration),
-        ("Neuroplex Demo", run_aetherplex_demo),
+        ("LyrixaDemo", run_aetherplex_demo),
     ]
 
     total_passed = 0
@@ -272,13 +272,13 @@ def main():
     print(f"\n📊 Final Results: {total_passed}/{total_tests} tests passed")
 
     if total_passed == total_tests:
-        print("🎉 All Neuroplex tests passed! System is working correctly!")
+        print("🎉 All Lyrixatests passed! System is working correctly!")
         return True
     elif total_passed >= total_tests * 0.8:  # 80% pass rate
-        print("✅ Neuroplex is mostly functional with minor issues.")
+        print("✅ Lyrixais mostly functional with minor issues.")
         return True
     else:
-        print("❌ Neuroplex has significant issues that need attention.")
+        print("❌ Lyrixahas significant issues that need attention.")
         return False
 
 

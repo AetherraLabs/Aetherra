@@ -1036,7 +1036,7 @@
       "count": 1
     },
     {
-      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "file": "testing\\demos\\test_and_launch_Aetherra.py",
       "type": "unused_imports",
       "count": 2,
       "lines_removed": [
@@ -1045,7 +1045,7 @@
       ]
     },
     {
-      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "file": "testing\\demos\\test_Aetherra_gui.py",
       "type": "unused_imports",
       "count": 2,
       "lines_removed": [
@@ -1072,7 +1072,7 @@
       "count": 1
     },
     {
-      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "file": "testing\\integration\\test_enhanced_Aetherra_integration.py",
       "type": "unused_imports",
       "count": 2,
       "lines_removed": [
@@ -1081,12 +1081,12 @@
       ]
     },
     {
-      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "file": "testing\\integration\\test_enhanced_Aetherra_integration.py",
       "type": "debug_prints",
       "count": 1
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "type": "unused_imports",
       "count": 2,
       "lines_removed": [
@@ -1095,7 +1095,7 @@
       ]
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "type": "debug_prints",
       "count": 1
     },
@@ -1569,7 +1569,7 @@
       ]
     },
     {
-      "file": "src\\aetherra\\core\\parser\\neurocode.py",
+      "file": "src\\aetherra\\core\\parser\\Aetherra.py",
       "type": "unused_imports",
       "count": 2,
       "lines_removed": [
@@ -1578,12 +1578,12 @@
       ]
     },
     {
-      "file": "src\\aetherra\\core\\parser\\neurocode.py",
+      "file": "src\\aetherra\\core\\parser\\Aetherra.py",
       "type": "line_length",
       "count": 1
     },
     {
-      "file": "src\\aetherra\\core\\parser\\neurocode.py",
+      "file": "src\\aetherra\\core\\parser\\Aetherra.py",
       "type": "trailing_whitespace",
       "count": 113
     },
@@ -1667,7 +1667,7 @@
       ]
     },
     {
-      "file": "examples\\demos\\demo_neuroplex_v2.py",
+      "file": "examples\\demos\\demo_Aetherra_v2.py",
       "type": "unused_imports",
       "count": 2,
       "lines_removed": [
@@ -1772,7 +1772,7 @@
       "count": 1
     },
     {
-      "file": "archive\\legacy\\neuroplex_cli.py",
+      "file": "archive\\legacy\\Aetherra_cli.py",
       "type": "trailing_whitespace",
       "count": 7
     },
@@ -1790,7 +1790,7 @@
       "count": 3
     },
     {
-      "file": "archive\\old_demos\\demo_neurocode.py",
+      "file": "archive\\old_demos\\demo_Aetherra.py",
       "type": "trailing_whitespace",
       "count": 7
     },
@@ -1800,37 +1800,37 @@
       "count": 3
     },
     {
-      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "file": "archive\\old_demos\\Aetherra_ai_os_complete.py",
       "type": "line_length",
       "count": 7
     },
     {
-      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "file": "archive\\old_demos\\Aetherra_ai_os_complete.py",
       "type": "trailing_whitespace",
       "count": 1
     },
     {
-      "file": "archive\\old_demos\\neurocode_ai_os_demo.py",
+      "file": "archive\\old_demos\\Aetherra_ai_os_demo.py",
       "type": "line_length",
       "count": 4
     },
     {
-      "file": "archive\\old_demos\\neurocode_ai_os_demo.py",
+      "file": "archive\\old_demos\\Aetherra_ai_os_demo.py",
       "type": "trailing_whitespace",
       "count": 1
     },
     {
-      "file": "archive\\old_demos\\neurocode_persona_demo.py",
+      "file": "archive\\old_demos\\Aetherra_persona_demo.py",
       "type": "debug_prints",
       "count": 3
     },
     {
-      "file": "archive\\old_demos\\neurocode_persona_demo.py",
+      "file": "archive\\old_demos\\Aetherra_persona_demo.py",
       "type": "line_length",
       "count": 4
     },
     {
-      "file": "archive\\old_demos\\neurocode_plugin_demo.py",
+      "file": "archive\\old_demos\\Aetherra_plugin_demo.py",
       "type": "trailing_whitespace",
       "count": 2
     },
@@ -1876,32 +1876,32 @@
       "count": 1
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "type": "line_length",
       "count": 20
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "type": "trailing_whitespace",
       "count": 18
     },
     {
-      "file": "archive\\old_launchers\\neurocode_ai_os_launcher.py",
+      "file": "archive\\old_launchers\\Aetherra_ai_os_launcher.py",
       "type": "line_length",
       "count": 2
     },
     {
-      "file": "archive\\old_launchers\\neurocode_ai_os_launcher.py",
+      "file": "archive\\old_launchers\\Aetherra_ai_os_launcher.py",
       "type": "trailing_whitespace",
       "count": 2
     },
     {
-      "file": "archive\\old_launchers\\neurocode_plugin_cli.py",
+      "file": "archive\\old_launchers\\Aetherra_plugin_cli.py",
       "type": "trailing_whitespace",
       "count": 8
     },
     {
-      "file": "archive\\old_launchers\\neurocode_unified_cli.py",
+      "file": "archive\\old_launchers\\Aetherra_unified_cli.py",
       "type": "unused_imports",
       "count": 1,
       "lines_removed": [

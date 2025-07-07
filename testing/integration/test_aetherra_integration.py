@@ -3,7 +3,7 @@
 AetherraCode Functional Integration Test
 =====================================
 
-Tests key functionality to ensure AetherraCode and Neuroplex work properly.
+Tests key functionality to ensure AetherraCode and Lyrixawork properly.
 """
 
 import sys
@@ -40,7 +40,7 @@ def test_enhanced_interpreter():
         interpreter = EnhancedAetherraInterpreter()
 
         # Test basic functionality
-        result = interpreter.execute_neurocode(
+        result = interpreter.execute_Aetherra(
             "remember('enhanced test') as 'enhanced_tag'"
         )
         print("✅ Enhanced interpreter: Advanced functionality working")
@@ -116,9 +116,9 @@ def test_parser_system():
 def test_agent_system():
     """Test agent functionality"""
     try:
+        from Aetherra.core.aetherra_memory import AetherraMemory
         from Aetherra.core.agent import AetherraAgent
         from Aetherra.core.functions import AetherraFunctions
-        from Aetherra.core.aetherra_memory import AetherraMemory
 
         memory = AetherraMemory()
         functions = AetherraFunctions()

@@ -1,16 +1,16 @@
-# NeuroCode Language Identity Enhancement - Status Report
+# aetherra Language Identity Enhancement - Status Report
 
 ## Completed Tasks ✅
 
 ### 1. Formal Grammar Specification
 **Files Created:**
-- `docs/NEUROCODE_GRAMMAR.ebnf` - Complete EBNF grammar specification
-- `docs/NEUROCODE_GRAMMAR.lark` - Lark parser grammar implementation
-- `docs/NEUROCODE_RESERVED_KEYWORDS.md` - Comprehensive keyword documentation (82 reserved keywords)
-- `docs/NEUROCODE_FILE_FORMAT.md` - Complete .aether file format specification
+- `docs/aetherra_GRAMMAR.ebnf` - Complete EBNF grammar specification
+- `docs/aetherra_GRAMMAR.lark` - Lark parser grammar implementation
+- `docs/aetherra_RESERVED_KEYWORDS.md` - Comprehensive keyword documentation (82 reserved keywords)
+- `docs/aetherra_FILE_FORMAT.md` - Complete .aether file format specification
 
 **Key Achievements:**
-- Formalized NeuroCode as a proper programming language with grammar rules
+- Formalized aetherra as a proper programming language with grammar rules
 - Defined syntax for all language constructs (goals, identity, memory, agents, etc.)
 - Documented 82 reserved keywords across 8 categories
 - Established .aether file format standards and conventions
@@ -29,7 +29,7 @@
 
 ### 3. Documentation Updates
 **Files Updated:**
-- `docs/NEUROCODE_LANGUAGE_SPECIFICATION.md` - Added formal grammar references
+- `docs/aetherra_LANGUAGE_SPECIFICATION.md` - Added formal grammar references
 - `requirements.txt` - Already includes Lark dependency (v1.2.2)
 
 **Key Achievements:**
@@ -73,8 +73,8 @@
 ## File Format Specification
 
 ### Standard Structure
-```neurocode
-#!/usr/bin/env neurocode
+```aetherra
+#!/usr/bin/env aetherra
 # File header with metadata
 
 # Configuration section
@@ -151,7 +151,7 @@ project/
 4. **Standards**: Consistent file format and conventions
 
 ### For Ecosystem
-1. **Professionalism**: NeuroCode is now a "real" programming language
+1. **Professionalism**: aetherra is now a "real" programming language
 2. **Tooling**: Foundation for development tools
 3. **Community**: Clear standards for contributions
 4. **Future**: Ready for advanced features (modules, types, etc.)
@@ -178,7 +178,7 @@ project/
 
 ## Conclusion
 
-✅ **Mission Accomplished**: NeuroCode has successfully evolved from a Domain-Specific Language (DSL) to a **formal programming language** with:
+✅ **Mission Accomplished**: aetherra has successfully evolved from a Domain-Specific Language (DSL) to a **formal programming language** with:
 
 - **Complete grammar specification** (EBNF + Lark)
 - **82 reserved keywords** across semantic categories
@@ -187,4 +187,4 @@ project/
 - **Comprehensive documentation**
 - **Migration strategy** for existing code
 
-NeuroCode now has the foundation needed for serious language development, IDE support, and ecosystem growth. The language identity is firmly established with professional-grade specifications and tooling.
+aetherra now has the foundation needed for serious language development, IDE support, and ecosystem growth. The language identity is firmly established with professional-grade specifications and tooling.

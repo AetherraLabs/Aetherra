@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo NeuroCode GitHub Link Diagnostic Script
+echo Aetherra GitHub Link Diagnostic Script
 echo ========================================
 echo.
 
@@ -37,19 +37,19 @@ if errorlevel 1 echo ✓ All GitHub links in neurohub\index.html point to Zyonic
 echo.
 
 echo [7] Testing network connectivity to correct repository...
-echo Testing: https://github.com/Zyonic88/NeuroCode
-curl -I -s "https://github.com/Zyonic88/NeuroCode" | findstr "HTTP/"
+echo Testing: https://github.com/Zyonic88/Aetherra
+curl -I -s "https://github.com/Zyonic88/Aetherra" | findstr "HTTP/"
 echo.
 
 echo [8] Testing old repository (should return 404)...
-echo Testing: https://github.com/VirtualVerse-Corporation/NeuroCode
-curl -I -s "https://github.com/VirtualVerse-Corporation/NeuroCode" | findstr "HTTP/"
+echo Testing: https://github.com/VirtualVerse-Corporation/Aetherra
+curl -I -s "https://github.com/VirtualVerse-Corporation/Aetherra" | findstr "HTTP/"
 echo.
 
 echo ========================================
 echo DIAGNOSIS RESULT:
 echo ✓ All file contents are CORRECT
-echo ✓ DNS resolution works properly  
+echo ✓ DNS resolution works properly
 echo ✓ Network connectivity is good
 echo ✓ No proxy or hosts file issues
 echo.

@@ -1,6 +1,6 @@
 """
-NeuroCode Persona System
-AI personality and emotional intelligence for NeuroCode.
+Aetherra Persona System
+AI personality and emotional intelligence for Aetherra.
 """
 
     PersonaArchetype,

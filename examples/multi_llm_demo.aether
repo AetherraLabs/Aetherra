@@ -1,6 +1,6 @@
-# Multi-LLM NeuroCode Demo
+# Multi-LLM aetherra Demo
 # ========================
-# This demonstrates NeuroCode's ability to seamlessly switch between
+# This demonstrates aetherra's ability to seamlessly switch between
 # different AI models for various tasks, enabling privacy-focused
 # and model-agnostic AI programming.
 
@@ -41,13 +41,13 @@ remember("Local models ensure privacy, cloud models provide advanced reasoning")
 define multi_llm_analysis()
     model: "mistral"
     assistant: "perform initial code scan"
-    
+
     model: "gpt-4"
     assistant: "deep architectural analysis"
-    
+
     model: "llama2"
     assistant: "generate improvement suggestions"
-    
+
     remember("Multi-LLM analysis complete") as "workflow_status"
 end
 

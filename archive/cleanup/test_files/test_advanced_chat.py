@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Advanced test script for the tuned Neuroplex chat system
+Advanced test script for the tuned Aetherra chat system
 """
 
 
@@ -8,7 +8,7 @@ def test_advanced_features():
     try:
         from core.chat_router import aetherraChatRouter
 
-        print("🧬 Testing Advanced Neuroplex Features")
+        print("🧬 Testing Advanced Aetherra Features")
         print("=" * 50)
 
         # Test with different personalities

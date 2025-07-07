@@ -21,7 +21,7 @@ from lark import Lark, Token, Transformer, Tree
 from lark.exceptions import LexError, ParseError
 
 # Complete AetherraCode Grammar Definition
-NEUROCODE_GRAMMAR = r"""
+aetherra_GRAMMAR = r"""
     ?start: program
 
     program: statement*
@@ -198,7 +198,9 @@ class AetherraCodeAST:
 class AetherraCodeTransformer(Transformer):
     """Complete transformer for AetherraCode AST generation"""
 
-    def _extract_value(self, item: Union[Token, Tree, AetherraCodeAST, str, Any]) -> Any:
+    def _extract_value(
+        self, item: Union[Token, Tree, AetherraCodeAST, str, Any]
+    ) -> Any:
         """Extract value from various node types"""
         if isinstance(item, Token):
             return str(item.value)
@@ -294,7 +296,9 @@ class AetherraCodeTransformer(Transformer):
         """Transform memory pattern statement"""
         pattern = self._extract_value(args[0]) if args else ""
         frequency = self._extract_value(args[1]) if len(args) > 1 else ""
-        return AetherraCodeAST("memory_pattern", value=pattern, metadata={"frequency": frequency})
+        return AetherraCodeAST(
+            "memory_pattern", value=pattern, metadata={"frequency": frequency}
+        )
 
     # Plugin System
     def plugin_statement(self, args):
@@ -334,7 +338,9 @@ class AetherraCodeTransformer(Transformer):
         condition = args[0] if args else None
         block = args[1] if len(args) > 1 else []
         return AetherraCodeAST(
-            "when", value=condition, children=block if isinstance(block, list) else [block]
+            "when",
+            value=condition,
+            children=block if isinstance(block, list) else [block],
         )
 
     def if_statement(self, args):
@@ -347,7 +353,10 @@ class AetherraCodeTransformer(Transformer):
         if else_block:
             children.append(
                 AetherraCodeAST(
-                    "else", children=else_block if isinstance(else_block, list) else [else_block]
+                    "else",
+                    children=else_block
+                    if isinstance(else_block, list)
+                    else [else_block],
                 )
             )
 
@@ -371,7 +380,9 @@ class AetherraCodeTransformer(Transformer):
         condition = args[0] if args else None
         block = args[1] if len(args) > 1 else []
         return AetherraCodeAST(
-            "while", value=condition, children=block if isinstance(block, list) else [block]
+            "while",
+            value=condition,
+            children=block if isinstance(block, list) else [block],
         )
 
     def statement_block(self, statements):
@@ -417,7 +428,9 @@ class AetherraCodeTransformer(Transformer):
         """Transform memory condition"""
         pattern = self._extract_value(args[0]) if args else ""
         frequency = self._extract_value(args[1]) if len(args) > 1 else ""
-        return AetherraCodeAST("memory_condition", value=pattern, metadata={"frequency": frequency})
+        return AetherraCodeAST(
+            "memory_condition", value=pattern, metadata={"frequency": frequency}
+        )
 
     # Expressions
     def logical_or(self, args):
@@ -441,7 +454,9 @@ class AetherraCodeTransformer(Transformer):
             op = self._extract_value(args[i])
             right = args[i + 1] if i + 1 < len(args) else None
             if right:
-                result = AetherraCodeAST("binary_op", value=op, children=[result, right])
+                result = AetherraCodeAST(
+                    "binary_op", value=op, children=[result, right]
+                )
         return result
 
     def multiplication(self, args):
@@ -453,7 +468,9 @@ class AetherraCodeTransformer(Transformer):
             op = self._extract_value(args[i])
             right = args[i + 1] if i + 1 < len(args) else None
             if right:
-                result = AetherraCodeAST("binary_op", value=op, children=[result, right])
+                result = AetherraCodeAST(
+                    "binary_op", value=op, children=[result, right]
+                )
         return result
 
     def unary(self, args):
@@ -478,7 +495,11 @@ class AetherraCodeTransformer(Transformer):
         return AetherraCodeAST(
             "method_call",
             value=f"{object_name}.{method_name}",
-            children=arguments if isinstance(arguments, list) else [arguments] if arguments else [],
+            children=arguments
+            if isinstance(arguments, list)
+            else [arguments]
+            if arguments
+            else [],
             metadata={"object": object_name, "method": method_name},
         )
 
@@ -487,7 +508,11 @@ class AetherraCodeTransformer(Transformer):
         elements = args[0] if args else []
         return AetherraCodeAST(
             "array",
-            children=elements if isinstance(elements, list) else [elements] if elements else [],
+            children=elements
+            if isinstance(elements, list)
+            else [elements]
+            if elements
+            else [],
         )
 
     def array_elements(self, elements):
@@ -503,7 +528,9 @@ class AetherraCodeTransformer(Transformer):
         """Transform assignment"""
         variable = self._extract_value(args[0]) if args else ""
         value = args[1] if len(args) > 1 else None
-        return AetherraCodeAST("assignment", value=variable, children=[value] if value else [])
+        return AetherraCodeAST(
+            "assignment", value=variable, children=[value] if value else []
+        )
 
     # Expression statement
     def expression_stmt(self, args):
@@ -560,7 +587,7 @@ class AetherraParser:
         """Initialize the parser"""
         try:
             self.parser = Lark(
-                NEUROCODE_GRAMMAR,
+                aetherra_GRAMMAR,
                 parser="lalr",
                 transformer=AetherraCodeTransformer(),
                 start="program",

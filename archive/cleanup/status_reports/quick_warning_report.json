@@ -1489,18 +1489,18 @@
       "file": "src\\natural_translator.py",
       "line": 175,
       "type": "todo_comment",
-      "message": "TODO/FIXME comment: return f'# Natural input: \"{input_text}\"\\n# TODO: Add specific NeuroCode translation'",
+      "message": "TODO/FIXME comment: return f'# Natural input: \"{input_text}\"\\n# TODO: Add specific Aetherra translation'",
       "severity": "low"
     },
     {
-      "file": "testing\\demo_advanced_neuroplex.py",
+      "file": "testing\\demo_advanced_Aetherra.py",
       "line": 56,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demo_advanced_neuroplex.py",
+      "file": "testing\\demo_advanced_Aetherra.py",
       "line": 67,
       "type": "debug_print",
       "message": "Debug print statement",
@@ -3978,63 +3978,63 @@
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "file": "testing\\demos\\test_and_launch_Aetherra.py",
       "line": 14,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "file": "testing\\demos\\test_and_launch_Aetherra.py",
       "line": 28,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "file": "testing\\demos\\test_and_launch_Aetherra.py",
       "line": 34,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "file": "testing\\demos\\test_and_launch_Aetherra.py",
       "line": 46,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "file": "testing\\demos\\test_and_launch_Aetherra.py",
       "line": 102,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "file": "testing\\demos\\test_and_launch_Aetherra.py",
       "line": 107,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "file": "testing\\demos\\test_and_launch_Aetherra.py",
       "line": 111,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "file": "testing\\demos\\test_and_launch_Aetherra.py",
       "line": 121,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_and_launch_neuroplex.py",
+      "file": "testing\\demos\\test_and_launch_Aetherra.py",
       "line": 130,
       "type": "debug_print",
       "message": "Debug print statement",
@@ -4062,154 +4062,154 @@
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 17,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 20,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 23,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 26,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 29,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 32,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 55,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 67,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 84,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 85,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 98,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 102,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 107,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_final.py",
+      "file": "testing\\demos\\test_Aetherra_final.py",
       "line": 118,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "file": "testing\\demos\\test_Aetherra_gui.py",
       "line": 17,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "file": "testing\\demos\\test_Aetherra_gui.py",
       "line": 51,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "file": "testing\\demos\\test_Aetherra_gui.py",
       "line": 113,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "file": "testing\\demos\\test_Aetherra_gui.py",
       "line": 121,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "file": "testing\\demos\\test_Aetherra_gui.py",
       "line": 125,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "file": "testing\\demos\\test_Aetherra_gui.py",
       "line": 132,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "file": "testing\\demos\\test_Aetherra_gui.py",
       "line": 133,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\demos\\test_neuroplex_gui.py",
+      "file": "testing\\demos\\test_Aetherra_gui.py",
       "line": 134,
       "type": "debug_print",
       "message": "Debug print statement",
@@ -4468,168 +4468,168 @@
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "file": "testing\\integration\\test_enhanced_Aetherra_integration.py",
       "line": 20,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "file": "testing\\integration\\test_enhanced_Aetherra_integration.py",
       "line": 34,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "file": "testing\\integration\\test_enhanced_Aetherra_integration.py",
       "line": 43,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "file": "testing\\integration\\test_enhanced_Aetherra_integration.py",
       "line": 53,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "file": "testing\\integration\\test_enhanced_Aetherra_integration.py",
       "line": 61,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_enhanced_neuroplex_integration.py",
+      "file": "testing\\integration\\test_enhanced_Aetherra_integration.py",
       "line": 77,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 17,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 54,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 80,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 109,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 139,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 161,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 184,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 211,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 220,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 231,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 250,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 258,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 260,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 264,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 267,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 270,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 272,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "testing\\integration\\test_neuroplex_system.py",
+      "file": "testing\\integration\\test_Aetherra_system.py",
       "line": 275,
       "type": "debug_print",
       "message": "Debug print statement",
@@ -6841,7 +6841,7 @@
       "severity": "low"
     },
     {
-      "file": "examples\\demos\\demo_neuroplex_v2.py",
+      "file": "examples\\demos\\demo_Aetherra_v2.py",
       "line": 19,
       "type": "debug_print",
       "message": "Debug print statement",
@@ -6960,70 +6960,70 @@
       "severity": "low"
     },
     {
-      "file": "archive\\old_demos\\demo_neurocode.py",
+      "file": "archive\\old_demos\\demo_Aetherra.py",
       "line": 240,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "file": "archive\\old_demos\\Aetherra_ai_os_complete.py",
       "line": 263,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "file": "archive\\old_demos\\Aetherra_ai_os_complete.py",
       "line": 645,
       "type": "long_line",
       "message": "Line too long (132 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "file": "archive\\old_demos\\Aetherra_ai_os_complete.py",
       "line": 647,
       "type": "long_line",
       "message": "Line too long (127 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_demos\\neurocode_ai_os_complete.py",
+      "file": "archive\\old_demos\\Aetherra_ai_os_complete.py",
       "line": 728,
       "type": "long_line",
       "message": "Line too long (173 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_demos\\neurocode_ai_os_demo.py",
+      "file": "archive\\old_demos\\Aetherra_ai_os_demo.py",
       "line": 505,
       "type": "long_line",
       "message": "Line too long (130 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_demos\\neurocode_persona_demo.py",
+      "file": "archive\\old_demos\\Aetherra_persona_demo.py",
       "line": 443,
       "type": "long_line",
       "message": "Line too long (124 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_demos\\neurocode_persona_demo.py",
+      "file": "archive\\old_demos\\Aetherra_persona_demo.py",
       "line": 446,
       "type": "long_line",
       "message": "Line too long (123 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_demos\\neurocode_persona_demo.py",
+      "file": "archive\\old_demos\\Aetherra_persona_demo.py",
       "line": 536,
       "type": "debug_print",
       "message": "Debug print statement",
       "severity": "low"
     },
     {
-      "file": "archive\\old_demos\\neurocode_plugin_demo.py",
+      "file": "archive\\old_demos\\Aetherra_plugin_demo.py",
       "line": 106,
       "type": "long_line",
       "message": "Line too long (127 characters)",
@@ -7142,133 +7142,133 @@
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 210,
       "type": "long_line",
       "message": "Line too long (164 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 212,
       "type": "long_line",
       "message": "Line too long (127 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 217,
       "type": "long_line",
       "message": "Line too long (126 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 221,
       "type": "long_line",
       "message": "Line too long (143 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 223,
       "type": "long_line",
       "message": "Line too long (127 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 225,
       "type": "long_line",
       "message": "Line too long (129 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 227,
       "type": "long_line",
       "message": "Line too long (134 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 231,
       "type": "long_line",
       "message": "Line too long (133 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 238,
       "type": "long_line",
       "message": "Line too long (133 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 245,
       "type": "long_line",
       "message": "Line too long (133 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 247,
       "type": "long_line",
       "message": "Line too long (134 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 249,
       "type": "long_line",
       "message": "Line too long (127 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 251,
       "type": "long_line",
       "message": "Line too long (127 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 255,
       "type": "long_line",
       "message": "Line too long (136 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 257,
       "type": "long_line",
       "message": "Line too long (126 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 259,
       "type": "long_line",
       "message": "Line too long (131 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 313,
       "type": "long_line",
       "message": "Line too long (131 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode.py",
+      "file": "archive\\old_launchers\\Aetherra.py",
       "line": 316,
       "type": "long_line",
       "message": "Line too long (145 characters)",
       "severity": "low"
     },
     {
-      "file": "archive\\old_launchers\\neurocode_persona_cli.py",
+      "file": "archive\\old_launchers\\Aetherra_persona_cli.py",
       "line": 59,
       "type": "todo_comment",
       "message": "TODO/FIXME comment: # TODO: Implement true blending in persona_engine.py",

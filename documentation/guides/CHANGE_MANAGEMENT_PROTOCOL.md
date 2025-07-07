@@ -1,7 +1,7 @@
-# 📋 NeuroCode Project Change Management & Documentation Protocol
+# 📋 aetherra Project Change Management & Documentation Protocol
 
-**Established**: June 30, 2025  
-**Purpose**: Ensure all major changes, features, and additions to NeuroCode are properly documented and version controlled  
+**Established**: June 30, 2025
+**Purpose**: Ensure all major changes, features, and additions to aetherra are properly documented and version controlled
 **Status**: **ACTIVE PROTOCOL** 🎯
 
 ---
@@ -159,7 +159,7 @@ Update relevant documentation files:
 
 ### **Documentation Files:**
 ```
-NeuroCode Project/
+aetherra Project/
 ├── README.md                    # Main project documentation
 ├── CHANGELOG.md                 # Version history
 ├── {FEATURE}_COMPLETE.md        # Individual feature status reports
@@ -263,7 +263,7 @@ NeuroCode Project/
 
 ## ✅ **Protocol Activation**
 
-This change management protocol is now **ACTIVE** for the NeuroCode Project.
+This change management protocol is now **ACTIVE** for the aetherra Project.
 
 **Starting immediately, all major changes will follow this documentation and version control process to maintain:**
 - Professional project standards
@@ -274,4 +274,4 @@ This change management protocol is now **ACTIVE** for the NeuroCode Project.
 
 ---
 
-**📋 NeuroCode Change Management Protocol - Ensuring excellence in every update** 🚀
+**📋 aetherra Change Management Protocol - Ensuring excellence in every update** 🚀

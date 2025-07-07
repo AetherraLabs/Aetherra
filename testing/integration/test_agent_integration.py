@@ -23,7 +23,7 @@ def test_agent_syntax_parsing():
     """Test agent syntax parsing in AetherraCode"""
     print("🧪 Testing Agent Syntax Parsing...")
 
-    from Aetherra.core.syntax_tree import SyntaxTreeVisitor, parse_neurocode
+    from Aetherra.core.syntax_tree import SyntaxTreeVisitor, parse_Aetherra
 
     # Test agent syntax
     test_code = """
@@ -38,7 +38,7 @@ agent.clear_goals()
 """
 
     # Parse the code
-    tree = parse_neurocode(test_code)
+    tree = parse_Aetherra(test_code)
     visitor = SyntaxTreeVisitor()
 
     print("✅ Parsed agent syntax successfully")
@@ -59,7 +59,7 @@ def test_agent_executor():
     try:
         from Aetherra.core.agent_executor import AgentExecutor
         from Aetherra.core.enhanced_agent import EnhancedNeuroAgent
-        from Aetherra.core.syntax_tree import NodeType, parse_neurocode
+        from Aetherra.core.syntax_tree import NodeType, parse_Aetherra
 
         # Create agent and executor
         agent = EnhancedNeuroAgent()
@@ -73,12 +73,18 @@ def test_agent_executor():
         ]
 
         for cmd in test_commands:
-            tree = parse_neurocode(cmd)
+            tree = parse_Aetherra(cmd)
             # Find agent nodes
             for node in tree.children or []:
-                if node.type in [NodeType.AGENT, NodeType.AGENT_MODE, NodeType.AGENT_GOAL]:
+                if node.type in [
+                    NodeType.AGENT,
+                    NodeType.AGENT_MODE,
+                    NodeType.AGENT_GOAL,
+                ]:
                     result = executor.execute_agent_node(node)
-                    print(f"   • {cmd}: {result.get('status')} - {result.get('message')}")
+                    print(
+                        f"   • {cmd}: {result.get('status')} - {result.get('message')}"
+                    )
 
         print("✅ Agent executor working correctly")
         return True
@@ -163,7 +169,7 @@ def main():
         print("   • Periodic triggers for state-based actions")
         print("   • Goal monitoring and management")
         print("   • Agent mode setting and control")
-        print("   • Deep integration with AetherraCode/Neuroplex")
+        print("   • Deep integration with AetherraCode/Lyrixa")
         return 0
     else:
         print("⚠️ Some tests failed. Check the implementation.")

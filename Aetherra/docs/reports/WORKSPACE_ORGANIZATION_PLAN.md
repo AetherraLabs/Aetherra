@@ -1,4 +1,4 @@
-# NeuroCode Project - Workspace Organization Plan
+# Aetherra Project - Workspace Organization Plan
 
 ## Current Status
 - Modular UI architecture successfully implemented
@@ -9,7 +9,7 @@
 ## Target Structure
 
 ```
-NeuroCode Project/
+Aetherra Project/
 ├── .env
 ├── .gitignore
 ├── LICENSE
@@ -28,7 +28,7 @@ NeuroCode Project/
 │   └── reports/                    # Status reports and completion reports
 │
 ├── src/                            # Main source code
-│   ├── neurocode/                  # Core NeuroCode package
+│   ├── Aetherra/                  # Core Aetherra package
 │   │   ├── __init__.py
 │   │   ├── core/                   # Core engine components
 │   │   │   ├── __init__.py
@@ -42,13 +42,13 @@ NeuroCode Project/
 │   │   ├── plugins/                # Plugin system
 │   │   ├── stdlib/                 # Standard library
 │   │   └── cli/                    # Command-line interface
-│   └── neuroplex/                  # Neuroplex GUI application
+│   └── Lyrixa/                  # Lyrixa application
 │       ├── __init__.py
 │       └── main.py
 │
 ├── launchers/                      # Application launchers
-│   ├── launch_neurocode.py
-│   ├── launch_neuroplex.py
+│   ├── launch_Aetherra.py
+│   ├── launch_Lyrixa.py
 │   ├── launch_playground.py
 │   └── legacy/                     # Legacy launchers
 │
@@ -71,7 +71,7 @@ NeuroCode Project/
 ├── data/                           # Data files and stores
 │   ├── memory_store.json.example
 │   ├── goals_store.json.example
-│   └── neurocode_functions.json.example
+│   └── Aetherra_functions.json.example
 │
 ├── temp/                           # Temporary files
 ├── logs/                           # Log files
@@ -83,23 +83,23 @@ NeuroCode Project/
 
 Break down the large core files into specialized subsystems:
 
-### 1. Parser Subsystem (`src/neurocode/core/parser/`)
+### 1. Parser Subsystem (`src/Aetherra/core/parser/`)
 - `__init__.py`
-- `grammar.py` (from neurocode_grammar.py)
+- `grammar.py` (from Aetherra_grammar.py)
 - `lexer.py`
-- `parser.py` (from neurocode_parser.py)
+- `parser.py` (from Aetherra_parser.py)
 - `enhanced_parser.py`
 - `intent_parser.py`
 - `natural_compiler.py`
 
-### 2. AST Subsystem (`src/neurocode/core/ast/`)
+### 2. AST Subsystem (`src/Aetherra/core/ast/`)
 - `__init__.py`
 - `nodes.py`
 - `builder.py`
 - `parser.py` (from ast_parser.py)
 - `optimizer.py`
 
-### 3. Interpreter Subsystem (`src/neurocode/core/interpreter/`)
+### 3. Interpreter Subsystem (`src/Aetherra/core/interpreter/`)
 - `__init__.py`
 - `base.py`
 - `enhanced.py` (from enhanced_interpreter.py)
@@ -107,14 +107,14 @@ Break down the large core files into specialized subsystems:
 - `block_executor.py`
 - `debug_system.py`
 
-### 4. Memory Subsystem (`src/neurocode/core/memory/`)
+### 4. Memory Subsystem (`src/Aetherra/core/memory/`)
 - `__init__.py`
 - `base.py` (from memory.py)
 - `vector.py` (from vector_memory.py)
 - `temporal.py`
 - `enhanced.py`
 
-### 5. AI Integration (`src/neurocode/core/ai/`)
+### 5. AI Integration (`src/Aetherra/core/ai/`)
 - `__init__.py`
 - `runtime.py` (from ai_runtime.py)
 - `collaboration.py` (from ai_collaboration.py)
@@ -124,7 +124,7 @@ Break down the large core files into specialized subsystems:
 - `universal_ai.py`
 - `chat_router.py`
 
-### 6. Core Utils (`src/neurocode/core/utils/`)
+### 6. Core Utils (`src/Aetherra/core/utils/`)
 - `__init__.py`
 - `functions.py`
 - `input_utils.py`
@@ -138,7 +138,7 @@ Break down the large core files into specialized subsystems:
 ### Phase 4: Organize documentation and reports
 ### Phase 5: Clean up obsolete files
 ### Phase 6: Update all imports and references
-### Phase 7: Rename workspace to "NeuroCode Project"
+### Phase 7: Rename workspace to "Aetherra Project"
 
 ## Benefits
 

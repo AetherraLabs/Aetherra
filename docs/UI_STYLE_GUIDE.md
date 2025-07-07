@@ -175,4 +175,4 @@ This style guide is implemented in the following ways:
 2. **Widget-Specific Styling**: Additional styling for specialized widgets
 3. **Programmatic Application**: Code-based styling for complex or dynamic elements
 
-Refer to `get_dark_theme()` in the `NeuroplexWindow` class for the core implementation of these guidelines.
+Refer to `get_dark_theme()` in the `LyrixaWindow` class for the core implementation of these guidelines.

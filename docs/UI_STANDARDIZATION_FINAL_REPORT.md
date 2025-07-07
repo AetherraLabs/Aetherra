@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-The aetherra UI Standardization Project was initiated to professionalize the user interface and user experience of the aetherra/Neuroplex project. The project focused on the following key areas:
+The aetherra UI Standardization Project was initiated to professionalize the user interface and user experience of the aetherra/Lyrixaproject. The project focused on the following key areas:
 
 1. Architecture standardization
 2. UI/UX consistency

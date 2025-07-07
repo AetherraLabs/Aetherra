@@ -319,7 +319,7 @@ class AgentReflectionLoop:
         if action == "recommend_initial_learning":
             return {
                 "type": "aethercode_generation",
-                "neurocode": """# Agent-suggested initial learning
+                "Aetherra": """# Agent-suggested initial learning
 remember("AetherraCode enables AI-native programming") as "programming_paradigm"
 remember("Memory systems track learning patterns") as "memory_system"
 remember("Agents can reflect on their own knowledge") as "meta_learning"
@@ -332,7 +332,7 @@ goal: establish foundational knowledge priority: high""",
             domain = insight.get("data", {}).get("dominant_tag", "general")
             return {
                 "type": "aethercode_generation",
-                "neurocode": f'''# Agent-suggested domain expansion for {domain}
+                "Aetherra": f'''# Agent-suggested domain expansion for {domain}
 reflect on tags="{domain}"
 analyze patterns in "{domain}"
 goal: deepen {domain} understanding priority: medium
@@ -344,7 +344,7 @@ remember("Domain analysis completed for {domain}") as "{domain},analysis"''',
         elif action == "consolidate_learning":
             return {
                 "type": "aethercode_generation",
-                "neurocode": """# Agent-suggested learning consolidation
+                "Aetherra": """# Agent-suggested learning consolidation
 memory summary
 detect patterns
 reflect on tags="learning"
@@ -358,7 +358,7 @@ goal: organize and synthesize knowledge priority: medium""",
             domain = insight.get("data", {}).get("missing_domain", "general")
             return {
                 "type": "aethercode_generation",
-                "neurocode": f'''# Agent-suggested domain learning for {domain}
+                "Aetherra": f'''# Agent-suggested domain learning for {domain}
 remember("Learning {domain} fundamentals") as "{domain},learning"
 goal: acquire {domain} knowledge priority: high
 remember("Basic {domain} concepts established") as "{domain},foundation"''',
@@ -371,27 +371,27 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
     def _evaluate_suggestion(self, suggestion: Dict[str, Any]):
         """Evaluate and potentially execute a suggestion"""
         confidence = suggestion.get("confidence", 0)
-        neurocode = suggestion.get("neurocode", "")
+        Aetherra = suggestion.get("Aetherra", "")
         rationale = suggestion.get("rationale", "Unknown reason")
 
         print(f"\n💡 Suggestion (confidence: {confidence:.1f}): {rationale}")
 
         # Notify UI
         if self.on_suggestion_callback:
-            self.on_suggestion_callback(neurocode, confidence)
+            self.on_suggestion_callback(Aetherra, confidence)
 
         self.suggestions_made += 1
 
         # Auto-execute high-confidence suggestions
         if confidence >= self.config["auto_execute_threshold"]:
-            success = self._execute_neurocode(neurocode)
+            success = self._execute_Aetherra(Aetherra)
             self.actions_taken += 1
 
             print(f"🤖 Auto-executed: {'✅ Success' if success else '❌ Failed'}")
 
             # Notify UI
             if self.on_action_callback:
-                self.on_action_callback(neurocode, success)
+                self.on_action_callback(Aetherra, success)
 
         elif confidence >= self.config["confidence_threshold"]:
             print(
@@ -400,12 +400,12 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
         else:
             print("💭 Low confidence suggestion logged for future consideration")
 
-    def _execute_neurocode(self, neurocode: str) -> bool:
+    def _execute_Aetherra(self, Aetherra: str) -> bool:
         """Execute AetherraCode and return success status"""
         try:
             # Create temporary file
             temp_file = project_root / "temp_agent_suggestion.aether"
-            temp_file.write_text(neurocode, encoding="utf-8")
+            temp_file.write_text(Aetherra, encoding="utf-8")
 
             # Execute using the standalone runner
             results = self.runner.run_file(str(temp_file))

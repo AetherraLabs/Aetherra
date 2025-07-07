@@ -1,13 +1,13 @@
-# NeuroCode Workspace Reorganization Plan
+# aetherra Workspace Reorganization Plan
 
 ## Current Issues Identified
 
 ### Structural Problems
-1. **Duplicate core directories** - We have both `/core/` and `/src/neurocode/core/`
+1. **Duplicate core directories** - We have both `/core/` and `/src/aetherra/core/`
 2. **Scattered CLI files** - Multiple CLI files in root instead of organized structure
 3. **Mixed concerns** - Demo files, launchers, and core code all in root
 4. **Legacy files** - Multiple completion/status markdown files cluttering root
-5. **Inconsistent naming** - Mix of `neurocode_*` and `neuroplex_*` patterns
+5. **Inconsistent naming** - Mix of `aetherra_*` and `Lyrixa_*` patterns
 
 ### Modularization Opportunities
 1. **Persona System** - Can be its own package
@@ -19,7 +19,7 @@
 ## Proposed New Structure
 
 ```
-neurocode/
+aetherra/
 ├── README.md
 ├── pyproject.toml
 ├── requirements.txt
@@ -28,7 +28,7 @@ neurocode/
 ├── .env.example
 │
 ├── src/
-│   └── neurocode/
+│   └── aetherra/
 │       ├── __init__.py
 │       ├── cli/                    # All CLI tools
 │       │   ├── __init__.py
@@ -108,13 +108,13 @@ neurocode/
 ## Migration Steps
 
 ### Phase 1: Core Restructuring
-1. Create new modular structure under `/src/neurocode/`
+1. Create new modular structure under `/src/aetherra/`
 2. Move and reorganize core components
 3. Update import paths throughout codebase
 4. Create proper `__init__.py` files with clean APIs
 
 ### Phase 2: CLI Consolidation
-1. Consolidate all CLI tools into `/src/neurocode/cli/`
+1. Consolidate all CLI tools into `/src/aetherra/cli/`
 2. Create unified CLI entry point
 3. Implement plugin-based CLI architecture
 4. Update launcher scripts
@@ -169,4 +169,4 @@ neurocode/
 2. **Medium Priority** - Persona and plugin modularization
 3. **Low Priority** - Documentation reorganization and examples
 
-This reorganization will set NeuroCode up for massive scale and community contribution!
+This reorganization will set aetherra up for massive scale and community contribution!

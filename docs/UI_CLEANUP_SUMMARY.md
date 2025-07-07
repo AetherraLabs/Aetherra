@@ -9,7 +9,7 @@ This document summarizes all the emoji removals performed across the aetherra Pr
 0. `src/aetherra/ui/__init__.py`
    - Removed emoji from error message about GUI modules availability
 
-1. `src/aetherra/ui/neuroplex.py`
+1. `src/aetherra/ui/Lyrixa.py`
    - Removed emojis from window title and status bar messages
    - Removed emojis from button labels (Open, Save, Run, etc.)
    - Removed emojis from print statements in demo code
@@ -30,7 +30,7 @@ This document summarizes all the emoji removals performed across the aetherra Pr
    - Removed emojis from analysis sections and chat history displays
    - Standardized button labels (Run Code, Clear, Save)
 
-4. `src/aetherra/ui/neuroplex_agent_integration.py`
+4. `src/aetherra/ui/Lyrixa_agent_integration.py`
    - Removed emoji from module docstring header
    - Removed emojis from agent status UI components
    - Removed emojis from print statements and tabs

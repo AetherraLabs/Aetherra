@@ -1,16 +1,16 @@
 """
-NeuroCode Parser Subsystem
+Aetherra Parser Subsystem
 ========================
 
-Centralized parser functionality for the NeuroCode language.
+Centralized parser functionality for the Aetherra language.
 This module provides a clean API for all parsing operations.
 """
 
 from .parser import AetherraLexer, AetherraParser
 
 __all__ = [
-    "NEUROCODE_GRAMMAR",
-    "NeuroCodeTransformer",
+    "Aetherra_GRAMMAR",
+    "AetherraTransformer",
     "AetherraParser",
     "AetherraLexer",
     "create_parser",
@@ -20,7 +20,7 @@ __all__ = [
 
 
 def create_parser(enhanced=True):
-    """Create a NeuroCode parser instance.
+    """Create a Aetherra parser instance.
 
     Returns a function that can parse code, since the actual parser
     needs tokens which come from lexing the code first.
@@ -39,7 +39,7 @@ def create_parser(enhanced=True):
 
 
 def parse_code(code: str, enhanced=True):
-    """Parse NeuroCode source code."""
+    """Parse Aetherra source code."""
     parser_func = create_parser(enhanced)
     return parser_func(code)
 

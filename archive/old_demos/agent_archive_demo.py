@@ -30,7 +30,7 @@ except ImportError as e:
     sys.exit(1)
 
 
-class MockNeuroCodeAgent:
+class MockAetherraAgent:
     """
     Mock AetherraCode agent for demonstration purposes.
     In a real implementation, this would be the actual AetherraCode agent class.
@@ -286,9 +286,9 @@ class ArchiveSystemDemo:
         logger.info("🤖 Creating demo agents...")
 
         # Create specialized agents
-        self.demo_agents["ProductionOptimizer"] = MockNeuroCodeAgent("prod_opt_001", "devops")
-        self.demo_agents["DataAnalyst"] = MockNeuroCodeAgent("data_analyst_001", "data_science")
-        self.demo_agents["GeneralAssistant"] = MockNeuroCodeAgent("general_001", "general")
+        self.demo_agents["ProductionOptimizer"] = MockAetherraAgent("prod_opt_001", "devops")
+        self.demo_agents["DataAnalyst"] = MockAetherraAgent("data_analyst_001", "data_science")
+        self.demo_agents["GeneralAssistant"] = MockAetherraAgent("general_001", "general")
 
         logger.info(f"✅ Created {len(self.demo_agents)} demo agents")
 
@@ -314,7 +314,7 @@ class ArchiveSystemDemo:
                     version="1.0",
                     description=f"Specialized {agent.specialization} agent with advanced capabilities",
                     tags=[agent.specialization, "demo", "specialized"],
-                    created_by="demo@neurocode.dev",
+                    created_by="demo@Aetherra.dev",
                     privacy_level="public",
                     archive_dir=str(self.archive_dir),
                 )
@@ -356,7 +356,7 @@ class ArchiveSystemDemo:
             print(f"  🧠 Patterns: {len(preview['cognitive_summary']['pattern_types'])}")
 
             # Create target agent for import
-            target_agent = MockNeuroCodeAgent(f"imported_{agent_name.lower()}", "general")
+            target_agent = MockAetherraAgent(f"imported_{agent_name.lower()}", "general")
 
             # Perform import
             result = import_agent(test_archive, target_agent, merge_mode="replace")
@@ -479,13 +479,13 @@ class ArchiveSystemDemo:
         logger.info("💻 Demonstrating CLI functionality...")
 
         print("\n💻 CLI Commands Available:")
-        print("  📦 neurocode agent export <name> --description 'Agent description'")
-        print("  📥 neurocode agent import <archive.nse>")
-        print("  🔀 neurocode agent merge <archive1.nse> <archive2.nse>")
-        print("  📚 neurocode agent list")
-        print("  👁️  neurocode agent preview <archive.nse>")
-        print("  🎬 neurocode agent replay <archive.nse> --interactive")
-        print("  📈 neurocode agent analyze <archive.nse>")
+        print("  📦 Aetherra agent export <name> --description 'Agent description'")
+        print("  📥 Aetherra agent import <archive.nse>")
+        print("  🔀 Aetherra agent merge <archive1.nse> <archive2.nse>")
+        print("  📚 Aetherra agent list")
+        print("  👁️  Aetherra agent preview <archive.nse>")
+        print("  🎬 Aetherra agent replay <archive.nse> --interactive")
+        print("  📈 Aetherra agent analyze <archive.nse>")
 
         # Demonstrate list command
         print("\n📚 Listing available archives:")

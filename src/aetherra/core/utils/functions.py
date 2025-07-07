@@ -2,20 +2,18 @@
 import json
 import os
 
-class NeuroFunctions:
-    """Manages user-defined NeuroCode functions"""
 
-    def __init__(self, function_file="neurocode_functions.json"):
+class NeuroFunctions:
+    """Manages user-defined Aetherra functions"""
+
+    def __init__(self, function_file="Aetherra_functions.json"):
         self.functions = {}
         self.function_file = function_file
         self.load_functions()
 
     def define_function(self, func_name, params, commands):
-        """Define a new NeuroCode function"""
-        self.functions[func_name] = {
-            'params': params,
-            'commands': commands
-        }
+        """Define a new Aetherra function"""
+        self.functions[func_name] = {"params": params, "commands": commands}
         self.save_functions()
         return f"[Function] Defined '{func_name}' with parameters: {', '.join(params) if params else 'none'}"
 
@@ -25,8 +23,8 @@ class NeuroFunctions:
             return f"[Function] Function '{func_name}' not defined"
 
         func = self.functions[func_name]
-        params = func['params']
-        commands = func['commands']
+        params = func["params"]
+        commands = func["commands"]
 
         # Check parameter count
         if len(args) != len(params):
@@ -43,7 +41,9 @@ class NeuroFunctions:
         print(f"[Function] Executing '{func_name}' with args: {', '.join(args)}")
 
         # Execute each command in the function
-        command_lines = [cmd.strip() for cmd in processed_commands.split(';') if cmd.strip()]
+        command_lines = [
+            cmd.strip() for cmd in processed_commands.split(";") if cmd.strip()
+        ]
         for cmd in command_lines:
             if cmd:
                 print(f"  > {cmd}")
@@ -58,7 +58,7 @@ class NeuroFunctions:
 
         result = "[Functions] Defined functions:\n"
         for name, func in self.functions.items():
-            params_str = ', '.join(func['params']) if func['params'] else 'none'
+            params_str = ", ".join(func["params"]) if func["params"] else "none"
             result += f"  {name}({params_str})\n"
             result += f"    Commands: {func['commands'][:50]}{'...' if len(func['commands']) > 50 else ''}\n"
         return result.strip()

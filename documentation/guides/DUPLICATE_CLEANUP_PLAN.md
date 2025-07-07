@@ -1,4 +1,4 @@
-# NeuroCode Project - Duplicate File Analysis & Cleanup Plan
+# aetherra Project - Duplicate File Analysis & Cleanup Plan
 
 ## 🔍 Identified Duplicates
 
@@ -8,7 +8,7 @@
 - ✅ **Keep**: `website/` directory (organized structure)
 - ❌ **Delete**: Root copies
   - `index.html` → `website/index.html` (18,691 bytes, identical)
-  - `styles.css` → `website/styles.css` (16,776 bytes, identical)  
+  - `styles.css` → `website/styles.css` (16,776 bytes, identical)
   - `script.js` → `website/script.js` (8,609 bytes, identical)
 
 #### 2. Overview Scripts
@@ -18,7 +18,7 @@
 #### 3. Website Debug Files (Both locations)
 - ✅ **Keep**: `website/` versions (organized)
 - ❌ **Delete**: Root copies
-  - `debug-test.html` 
+  - `debug-test.html`
   - `cache-buster-test.html`
   - `link-audit.html`
 
@@ -26,7 +26,7 @@
 
 #### Current Status Files (Root)
 - `SUCCESS_SUMMARY.md`
-- `NEUROHUB_SUCCESS_SUMMARY.md` 
+- `NEUROHUB_SUCCESS_SUMMARY.md`
 - `NEUROHUB_CLEANUP_SUMMARY.md`
 - `MODEST_PROFESSIONAL_SUMMARY.md`
 - `MISSION_ACCOMPLISHED_SUMMARY.md`
@@ -38,7 +38,7 @@
 - `docs/reports/` - Various summaries and status reports
 - `archive/old_reports/` - Historical versions
 
-**DECISION**: 
+**DECISION**:
 - ✅ **Keep**: `PROJECT_OVERVIEW.md` (current main status)
 - ✅ **Keep**: `SUCCESS_SUMMARY.md` (final project summary)
 - 📦 **Archive**: Move other status files to `archive/status_files/`
@@ -47,10 +47,10 @@
 
 #### Test Structure
 - `tests/unit/` - 53 test files
-- `tests/` - Additional test files  
+- `tests/` - Additional test files
 - Root test files scattered around
 
-**DECISION**: 
+**DECISION**:
 - ✅ **Keep**: `tests/unit/` structure (organized)
 - 📦 **Review**: Individual test files for consolidation
 
@@ -72,14 +72,14 @@
 ```bash
 # These are confirmed identical - safe to delete
 rm index.html
-rm styles.css  
+rm styles.css
 rm script.js
 rm debug-test.html
 rm cache-buster-test.html
 rm link-audit.html
 ```
 
-### Phase 2: Script Cleanup  
+### Phase 2: Script Cleanup
 ```bash
 # Remove identical script duplicates
 rm scripts/update_overview_clean.py
@@ -118,14 +118,14 @@ mv MISSION_COMPLETE.md archive/status_files/
 ## 🎯 EXPECTED RESULTS
 
 **Files to Delete**: ~15-20 duplicate files
-**Files to Archive**: ~10-15 status files  
+**Files to Archive**: ~10-15 status files
 **Space Saved**: Minimal (but improved organization)
 **Risk Level**: **LOW** (exact duplicates only)
 
 ## ✅ NEXT STEPS
 
 1. **Execute Phase 1** (website files) - Zero risk
-2. **Execute Phase 2** (empty scripts) - Zero risk  
+2. **Execute Phase 2** (empty scripts) - Zero risk
 3. **Execute Phase 3** (status files) - Low risk, improved organization
 4. **Manual review Phase 4** (tests) - Case-by-case basis
 

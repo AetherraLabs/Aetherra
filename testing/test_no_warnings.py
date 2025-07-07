@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to check for box-shadow warnings in Neuroplex
+Test script to check for box-shadow warnings in Lyrixa
 """
 
 import io
@@ -9,7 +9,7 @@ from contextlib import redirect_stderr
 
 
 def test_aetherplex_no_warnings():
-    """Test that Neuroplex launches without box-shadow warnings"""
+    """Test that Lyrixalaunches without box-shadow warnings"""
 
     # Capture stderr to check for warnings
     captured_output = io.StringIO()

@@ -5,6 +5,7 @@
 
 Lyrixa's core capability to understand, parse, and execute .aether code.
 This interpreter allows Lyrixa to work with .aether workflows naturally.
+Enhanced with advanced Natural Language to .aether generation.
 """
 
 import json
@@ -13,6 +14,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 from lyrixa.core.memory import LyrixaMemorySystem
+from .natural_language_aether_generator import NaturalLanguageAetherGenerator
 
 
 @dataclass
@@ -44,9 +46,11 @@ class AetherInterpreter:
 
     Parses, validates, and executes .aether workflows.
     Provides natural language generation and debugging capabilities.
+    Enhanced with advanced Natural Language to .aether conversion.
     """
 
-    def __init__(self):
+    def __init__(self, memory_system: Optional[LyrixaMemorySystem] = None):
+        self.memory_system = memory_system
         self.supported_node_types = {
             "input",
             "output",
@@ -65,6 +69,11 @@ class AetherInterpreter:
         }
         self.active_workflows = {}
         self.execution_history = []
+
+        # Initialize the Natural Language to Aether Generator
+        self.nl_generator = NaturalLanguageAetherGenerator(memory_system)
+
+        print("🧠 Aether Interpreter initialized with NL → .aether generation")
 
     async def parse_aether_code(self, aether_code: str) -> AetherWorkflow:
         """
@@ -143,26 +152,196 @@ class AetherInterpreter:
 
     async def generate_aether_from_intent(
         self, intent: str, context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        🌐➡️⚡ Generate .aether code from natural language intent
+
+        Enhanced method using the Natural Language Aether Generator for
+        sophisticated intent analysis, template-based generation, and
+        memory-driven parameter suggestions.
+
+        Args:
+            intent: Natural language description of desired workflow
+            context: Optional context from previous interactions
+
+        Returns:
+            Complete generation result with code, suggestions, and metadata
+        """
+        print(f"🌐➡️⚡ Generating .aether from intent: {intent[:50]}...")
+
+        try:
+            # Use the enhanced Natural Language Aether Generator
+            result = await self.nl_generator.generate_aether_from_natural_language(intent, context)
+
+            # Store generation in execution history
+            self.execution_history.append({
+                "type": "generation",
+                "timestamp": datetime.now().isoformat(),
+                "intent": intent,
+                "result": result,
+                "success": "error" not in result
+            })
+
+            # Store in memory system if available
+            if self.memory_system and "error" not in result:
+                try:
+                    await self.memory_system.store_memory(
+                        content={
+                            "intent": intent,
+                            "generated_code": result.get("aether_code", ""),
+                            "template_used": result.get("template_used", ""),
+                            "confidence": result.get("confidence", 0.0)
+                        },
+                        context={"generation_method": "nl_aether_generator"},
+                        tags=["aether", "generation", "nl_to_code"],
+                        importance=result.get("confidence", 0.5)
+                    )
+                except Exception as e:
+                    print(f"⚠️ Error storing generation in memory: {e}")
+
+            return result
+
+        except Exception as e:
+            print(f"❌ Error in .aether generation: {e}")
+            return {
+                "error": str(e),
+                "aether_code": f"# Error generating workflow from: {intent}",
+                "confidence": 0.0,
+                "suggestions": ["Try rephrasing your request", "Provide more specific details"]
+            }
+
+    async def generate_aether_from_intent_simple(
+        self, intent: str, context: Optional[Dict[str, Any]] = None
     ) -> str:
         """
-        Generate .aether code from natural language intent
-
-        This is where Lyrixa's intelligence shines - converting human intent
-        into executable .aether workflows.
+        Simple version that returns just the .aether code (for backward compatibility)
         """
+        result = await self.generate_aether_from_intent(intent, context)
+        return result.get("aether_code", "# Error: Could not generate workflow")
+
+    async def suggest_workflow_improvements(self, aether_code: str) -> List[Dict[str, Any]]:
+        """
+        Analyze .aether code and suggest improvements
+
+        Args:
+            aether_code: Existing .aether workflow code
+
+        Returns:
+            List of improvement suggestions with priorities and explanations
+        """
+        suggestions = []
+
+        # Analyze code structure
+        lines = aether_code.split('\n')
+        node_count = len([line for line in lines if line.strip().startswith('node ')])
+        connection_count = len([line for line in lines if '->' in line])
+
+        # Suggest improvements based on analysis
+        if node_count > 10:
+            suggestions.append({
+                "type": "complexity",
+                "priority": "high",
+                "message": "Consider breaking this large workflow into smaller, reusable components",
+                "details": f"Workflow has {node_count} nodes, consider splitting at logical boundaries"
+            })
+
+        if connection_count == 0 and node_count > 1:
+            suggestions.append({
+                "type": "connections",
+                "priority": "high",
+                "message": "Add connections between nodes to define data flow",
+                "details": "Isolated nodes won't execute as part of the workflow"
+            })
+
+        # Check for error handling
+        if "error" not in aether_code.lower() and "retry" not in aether_code.lower():
+            suggestions.append({
+                "type": "robustness",
+                "priority": "medium",
+                "message": "Add error handling and retry mechanisms",
+                "details": "Consider adding error handling for API calls and file operations"
+            })
+
+        # Check for validation
+        if "validator" not in aether_code.lower():
+            suggestions.append({
+                "type": "quality",
+                "priority": "low",
+                "message": "Add data validation steps",
+                "details": "Validation nodes help ensure data quality throughout the workflow"
+            })
+
+        # Check for parallel processing opportunities
+        if node_count > 3 and "parallel" not in aether_code.lower():
+            suggestions.append({
+                "type": "performance",
+                "priority": "medium",
+                "message": "Consider parallel processing for independent operations",
+                "details": "Multiple transform nodes could potentially run in parallel"
+            })
+
+        return suggestions
+
+    async def auto_fill_parameters(self, aether_code: str, context: Optional[Dict[str, Any]] = None) -> str:
+        """
+        Auto-fill missing parameters in .aether code using memory and context
+
+        Args:
+            aether_code: .aether code with potential parameter placeholders
+            context: Optional context for parameter suggestions
+
+        Returns:
+            .aether code with auto-filled parameters
+        """
+        filled_code = aether_code
         context = context or {}
 
-        # Simple intent-to-aether generation
-        # In a real implementation, this would use AI/ML models
+        # Find parameter placeholders (e.g., <parameter_name>)
+        import re
+        placeholder_pattern = r'<([^>]+)>'
+        placeholders = re.findall(placeholder_pattern, aether_code)
 
-        if "data analysis" in intent.lower():
-            return self._generate_data_analysis_workflow(intent, context)
-        elif "api" in intent.lower():
-            return self._generate_api_workflow(intent, context)
-        elif "process" in intent.lower() or "transform" in intent.lower():
-            return self._generate_transform_workflow(intent, context)
-        else:
-            return self._generate_basic_workflow(intent, context)
+        for placeholder in placeholders:
+            filled_value = await self._suggest_parameter_value(placeholder, context)
+            if filled_value:
+                filled_code = filled_code.replace(f'<{placeholder}>', str(filled_value))
+
+        return filled_code
+
+    async def _suggest_parameter_value(self, parameter_name: str, context: Dict[str, Any]) -> Optional[str]:
+        """Suggest a value for a parameter using memory and context"""
+
+        # Check context first
+        if parameter_name in context:
+            return context[parameter_name]
+
+        # Use memory system to find common values
+        if self.memory_system:
+            try:
+                # Use recall_memories method instead of semantic_search
+                memories = await self.memory_system.recall_memories(f"parameter {parameter_name}", limit=3)
+
+                for memory in memories:
+                    if hasattr(memory, 'content') and isinstance(memory.content, dict):
+                        if parameter_name in memory.content:
+                            return memory.content[parameter_name]
+            except Exception as e:
+                print(f"⚠️ Error searching memory for parameter {parameter_name}: {e}")
+
+        # Default suggestions based on parameter name
+        defaults = {
+            "input_source": "data/input.json",
+            "output_destination": "output/results.json",
+            "format": "json",
+            "operation": "transform",
+            "api_url": "https://api.example.com/v1/data",
+            "method": "GET",
+            "algorithm": "random_forest",
+            "confidence_level": "0.95",
+            "batch_size": "100"
+        }
+
+        return defaults.get(parameter_name)
 
     def _generate_data_analysis_workflow(
         self, intent: str, context: Dict[str, Any]

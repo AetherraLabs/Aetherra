@@ -29,7 +29,7 @@ class SimpleAIOSDemo:
 
         # AI Identity (simplified)
         self.ai_identity = {
-            "name": "Neuroplex-AI-OS",
+            "name": "Aetherra-AI-OS",
             "version": "3.0-preview",
             "personality_traits": {
                 "helpful": 0.95,

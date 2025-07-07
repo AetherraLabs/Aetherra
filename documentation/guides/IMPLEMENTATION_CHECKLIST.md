@@ -1,28 +1,28 @@
-# 🧬 NeuroCode & Neuroplex Implementation Checklist
+# 🧬 aetherra & LyrixaImplementation Checklist
 ## AI OS Development Roadmap
 
-> **NeuroCode is the blood of this project flowing through everything and Neuroplex is the face, hands, feet, and eyes. Let's bring this AI OS to a state where it can be ran and operated on!**
+> **aetherra is the blood of this project flowing through everything and Lyrixais the face, hands, feet, and eyes. Let's bring this AI OS to a state where it can be ran and operated on!**
 
 ---
 
 ## 📊 Priority Matrix
 
-| Area                    | Priority    | Status                | Estimated Time | Notes                           |
-|------------------------|-------------|----------------------|---------------|---------------------------------|
-| **UI Polish**          | 🔥 High     | ✅ COMPLETE           | 2-3 days      | Full theme system, feedback, rich display |
-| **Memory Logging**     | 🔥 High     | ✅ COMPLETE           | 1-2 days      | Enhanced logging, analytics, sessions |
-| **Plugin UX**          | 🔥 High     | ✅ READY              | 1 day         | Command system enhanced for plugins |
-| **Assistant Context**  | ✅ Done     | ✅ Maintain           | Ongoing       | Keep quality high              |
-| **Chat Refinement**    | 🧠 Medium   | 🔄 READY              | 2 days        | Display system supports rich chat |
-| **Code Cleanup**       | 🧹 Medium   | 🔄 In Progress        | 3 days        | New modules created, cleanup needed |
-| **Parser/Grammar**     | 🧱 Later    | ✅ COMPLETE           | Complete      | Production-ready grammar system |
+| Area                  | Priority | Status        | Estimated Time | Notes                                     |
+| --------------------- | -------- | ------------- | -------------- | ----------------------------------------- |
+| **UI Polish**         | 🔥 High   | ✅ COMPLETE    | 2-3 days       | Full theme system, feedback, rich display |
+| **Memory Logging**    | 🔥 High   | ✅ COMPLETE    | 1-2 days       | Enhanced logging, analytics, sessions     |
+| **Plugin UX**         | 🔥 High   | ✅ READY       | 1 day          | Command system enhanced for plugins       |
+| **Assistant Context** | ✅ Done   | ✅ Maintain    | Ongoing        | Keep quality high                         |
+| **Chat Refinement**   | 🧠 Medium | 🔄 READY       | 2 days         | Display system supports rich chat         |
+| **Code Cleanup**      | 🧹 Medium | 🔄 In Progress | 3 days         | New modules created, cleanup needed       |
+| **Parser/Grammar**    | 🧱 Later  | ✅ COMPLETE    | Complete       | Production-ready grammar system           |
 
 ---
 
 ## 🎯 Phase 1: High Priority (Week 1)
 
 ### 🔥 UI Polish - Critical Path
-- [ ] **Neuroplex Interface Enhancement**
+- [ ] **LyrixaInterface Enhancement**
   - [ ] Modernize terminal UI with rich formatting
   - [ ] Add interactive command suggestions
   - [ ] Implement progress indicators for long operations
@@ -47,7 +47,7 @@
   - [ ] Implement memory compression for large datasets
 
 - [ ] **Memory Integration**
-  - [ ] Connect memory to all NeuroCode operations
+  - [ ] Connect memory to all aetherra operations
   - [ ] Add automatic memory tagging
   - [ ] Create memory-driven suggestions
   - [ ] Build memory pattern recognition
@@ -110,13 +110,13 @@
 
 ### 📁 File Structure Improvements
 ```
-NeuroCode Project/
+aetherra Project/
 ├── core/
 │   ├── ui/                    # UI components and theming
 │   ├── memory/               # Advanced memory systems
 │   ├── plugins/              # Plugin management
 │   └── chat/                 # Chat and communication
-├── neuroplex/
+├── Lyrixa/
 │   ├── interface/            # Main interface logic
 │   ├── commands/             # Command processing
 │   └── display/              # Display and formatting
@@ -135,16 +135,16 @@ NeuroCode Project/
 #### 1. Enhanced UI System
 ```python
 # core/ui/interface.py
-class NeuroplexUI:
+class LyrixaUI:
     def __init__(self):
         self.theme_manager = ThemeManager()
         self.command_suggestions = CommandSuggestions()
         self.status_display = StatusDisplay()
-    
+
     def render_dashboard(self):
         # Real-time AI OS dashboard
         pass
-    
+
     def show_progress(self, operation):
         # Visual progress indicators
         pass
@@ -158,11 +158,11 @@ class MemoryLogger:
         self.storage = StructuredStorage()
         self.indexer = MemoryIndexer()
         self.analytics = MemoryAnalytics()
-    
+
     def log_operation(self, operation, context, metadata):
         # Structured memory logging
         pass
-    
+
     def search_memories(self, query, filters=None):
         # Advanced memory search
         pass
@@ -176,11 +176,11 @@ class PluginManager:
         self.registry = PluginRegistry()
         self.installer = PluginInstaller()
         self.validator = PluginValidator()
-    
+
     def discover_plugins(self):
         # Plugin discovery with descriptions
         pass
-    
+
     def install_plugin(self, plugin_id):
         # Guided plugin installation
         pass
@@ -211,7 +211,7 @@ class PluginManager:
 - [ ] Implement plugin validation
 
 #### Days 4-5: Integration & Polish
-- [ ] Integrate all components with Neuroplex
+- [ ] Integrate all components with Lyrixa
 - [ ] Add comprehensive error handling
 - [ ] Create user documentation
 - [ ] Perform integration testing
@@ -307,8 +307,8 @@ class PluginManager:
 ## 🎉 Vision: Fully Operational AI OS
 
 **End Goal**: A seamless AI operating system where:
-- Users can interact naturally with AI through NeuroCode
-- Neuroplex provides an intuitive, powerful interface
+- Users can interact naturally with AI through aetherra
+- Lyrixaprovides an intuitive, powerful interface
 - Memory persists and learns from every interaction
 - Plugins extend functionality effortlessly
 - The system feels alive, intelligent, and responsive

@@ -1,8 +1,8 @@
-# 🛡️ NeuroCode Project Protection System
+# 🛡️ aetherra Project Protection System
 
 ## Overview
 
-The NeuroCode Project Protection System is a comprehensive safeguard designed to prevent accidental deletion of critical project files and maintain automatic backups. This system was created after an incident where the main README.md was accidentally overwritten during website deployment.
+The aetherra Project Protection System is a comprehensive safeguard designed to prevent accidental deletion of critical project files and maintain automatic backups. This system was created after an incident where the main README.md was accidentally overwritten during website deployment.
 
 ## 🚨 What Happened (Learning from Mistakes)
 
@@ -56,7 +56,7 @@ protect.ps1                 # Protection manager script
 
 ### Protected Directories
 ```
-core/         # Core NeuroCode engine
+core/         # Core aetherra engine
 src/          # Source code modules
 docs/         # Documentation
 examples/     # Example programs
@@ -69,7 +69,7 @@ launchers/    # Application launchers
 ### Protected Extensions
 ```
 .py          # Python source files
-.aether       # NeuroCode language files
+.aether       # aetherra language files
 .md          # Markdown documentation
 .json        # Configuration files
 .toml        # TOML configuration
@@ -200,7 +200,7 @@ python scripts/project_protection.py force_delete README.md "Replacing with new 
 
 **Example Output:**
 ```
-🛡️ NeuroCode Protection Status:
+🛡️ aetherra Protection Status:
   Protection Enabled: True
   Protected Files: 12/12
   Backup Count: 45
@@ -299,4 +299,4 @@ If you encounter issues with the protection system:
 
 **Remember**: This protection system is a safety net, not a replacement for good version control practices. Always commit your work to git regularly!
 
-🛡️ **NeuroCode Project Protection** - Because losing work is not an option!
+🛡️ **aetherra Project Protection** - Because losing work is not an option!

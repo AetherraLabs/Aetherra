@@ -1,5 +1,5 @@
 """
-🎯 Neuroplex Main Interface
+🎯 LyrixaMain Interface
 ==========================
 
 Main UI interface that coordinates all UI components including themes,
@@ -18,7 +18,7 @@ from .themes import ThemeConfig, ThemeManager, UITheme
 
 @dataclass
 class InterfaceConfig:
-    """Configuration for the Neuroplex interface"""
+    """Configuration for the Lyrixainterface"""
 
     theme: UITheme = UITheme.DARK
     auto_suggestions: bool = True
@@ -132,7 +132,7 @@ class DashboardView:
         if not self.enabled or not self.widgets:
             return ""
 
-        lines = ["🧬 Neuroplex Dashboard", "─" * 30]
+        lines = ["🧬 LyrixaDashboard", "─" * 30]
 
         for name, widget in self.widgets.items():
             lines.append(f"📊 {name}:")
@@ -145,8 +145,8 @@ class DashboardView:
         return "\n".join(lines)
 
 
-class NeuroplexUI:
-    """Main Neuroplex UI interface"""
+class LyrixaUI:
+    """Main LyrixaUI interface"""
 
     def __init__(self, config: Optional[InterfaceConfig] = None):
         self.config = config or InterfaceConfig()
@@ -195,7 +195,7 @@ class NeuroplexUI:
 
     def _setup_status_bar(self):
         """Setup the status bar"""
-        self.status_bar.set_left(["Neuroplex", "Ready"])
+        self.status_bar.set_left(["Lyrixa", "Ready"])
         self.status_bar.set_center([f"Theme: {self.config.theme.value}"])
         self.status_bar.set_right([datetime.now().strftime("%H:%M:%S")])
 
@@ -215,7 +215,7 @@ class NeuroplexUI:
         """Setup visual feedback callbacks"""
 
         def status_callback(update):
-            self.status_bar.set_left(["Neuroplex", update.message])
+            self.status_bar.set_left(["Lyrixa", update.message])
             self._notify_callbacks("status_updated", update)
 
         self.visual_feedback.status_indicator.add_callback(status_callback)
@@ -247,7 +247,7 @@ class NeuroplexUI:
 
         self.rich_display.print_separator("═", 60)
         self.rich_display.print_text(
-            "🧬 Welcome to Neuroplex AI OS",
+            "🧬 Welcome to LyrixaAI OS",
             TextStyle(bold=True, color=self.current_theme.colors.primary),
         )
         self.rich_display.print_text(
@@ -367,7 +367,7 @@ class NeuroplexUI:
         else:
             # General help
             self.rich_display.print_markdown("""
-# Neuroplex Help
+# LyrixaHelp
 
 ## Available Commands
 Type any command name followed by arguments. Use Tab for auto-completion.

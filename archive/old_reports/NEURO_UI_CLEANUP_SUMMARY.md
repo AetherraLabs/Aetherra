@@ -25,7 +25,7 @@ This created confusion about which file was the canonical version and potential 
 ### References Analysis
 - **`launch_neuro_ui.py`** imports from `ui.neuro_ui`
 - **`demo_ui_features.py`** references `ui/neuro_ui.py`
-- **`neuroplex_cli.py`** lists `ui/neuro_ui.py` as main UI file
+- **`Aetherra_cli.py`** lists `ui/neuro_ui.py` as main UI file
 - **Documentation** consistently references `ui/neuro_ui.py`
 
 ## Solution Implemented
@@ -39,7 +39,7 @@ This created confusion about which file was the canonical version and potential 
 Added missing `main()` function to `ui/neuro_ui.py`:
 ```python
 def main():
-    """Main entry point for the NeuroCode Enhanced UI"""
+    """Main entry point for the Aetherra Enhanced UI"""
     if QT_AVAILABLE:
         app = QApplication.instance()
         if app is None:
@@ -80,4 +80,4 @@ def main():
 - Removed: `ui/neuro_ui_backup.py` 
 - Modified: `ui/neuro_ui.py` (added main() function)
 
-The NeuroCode UI is now production-ready with a single, clean, canonical interface file.
+The Aetherra UI is now production-ready with a single, clean, canonical interface file.

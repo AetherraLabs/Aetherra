@@ -3,7 +3,7 @@
 ## CNAME File Configuration
 
 ### Current Setup
-- **Domain**: httpsneurocode.dev
+- **Domain**: httpsaetherra.dev
 - **Temporary Domain**: https://c4e0fc07.aethercode-website.pages.dev/
 - **Files Created**:
   - `/CNAME` (for root deployment)
@@ -18,11 +18,11 @@ yourdomain.com
 ### Common Domain Options
 ```bash
 # Example domains (choose one):
-neurocode.dev
-neurocode.ai
-neurocode.io
-neuroplexai.com
-ai-neurocode.dev
+aetherra.dev
+aetherra.ai
+aetherra.io
+Lyrixaai.com
+ai-aetherra.dev
 ```
 
 ## DNS Configuration Required
@@ -49,10 +49,10 @@ ai-neurocode.dev
 
 #### ✅ Your Current Setup is CORRECT!
 ```
-A       httpsneurocode.dev   185.199.111.153   ✅ CORRECT
-A       httpsneurocode.dev   185.199.110.153   ✅ CORRECT
-A       httpsneurocode.dev   185.199.109.153   ✅ CORRECT
-A       httpsneurocode.dev   185.199.108.153   ✅ CORRECT
+A       httpsaetherra.dev   185.199.111.153   ✅ CORRECT
+A       httpsaetherra.dev   185.199.110.153   ✅ CORRECT
+A       httpsaetherra.dev   185.199.109.153   ✅ CORRECT
+A       httpsaetherra.dev   185.199.108.153   ✅ CORRECT
 CNAME   www                  zyonic88.github.io ✅ CORRECT
 ```
 
@@ -69,7 +69,7 @@ CNAME   www     zyonic88.github.io   ✅ Proxied
 ```
 
 #### 🛠️ Fix Steps:
-1. **DELETE** the current CNAME record (`httpsneurocode.dev → neurocode.dev`)
+1. **DELETE** the current CNAME record (`httpsaetherra.dev → aetherra.dev`)
 2. **ADD** 4 A records as shown above
 3. **ADD** 1 CNAME record for `www` → `zyonic88.github.io`
 
@@ -84,13 +84,13 @@ CNAME   www     zyonic88.github.io   ✅ Proxied
 Based on your latest screenshot, everything is set up perfectly:
 
 ✅ **GitHub Pages**: Enabled and deploying from `main` branch
-✅ **Custom Domain**: `httpsneurocode.dev` configured
+✅ **Custom Domain**: `httpsaetherra.dev` configured
 ✅ **DNS Check**: Successful (green checkmark)
 ✅ **HTTPS**: Available but currently unavailable (will be enabled once domain propagates)
 
 ### 🎯 Current Status:
 - **Source**: Deploy from `main` branch, `/ (root)` folder ✅
-- **Custom Domain**: `httpsneurocode.dev` ✅
+- **Custom Domain**: `httpsaetherra.dev` ✅
 - **DNS**: Successfully configured ✅
 - **HTTPS**: Will be available shortly (waiting for domain verification)
 
@@ -120,23 +120,23 @@ Based on your latest screenshot, everything is set up perfectly:
 
 ### 🎯 What to expect:
 - **Wait 2-5 minutes** for GitHub Pages to rebuild
-- **Visit `https://httpsneurocode.dev`** - should now show your custom website
+- **Visit `https://httpsaetherra.dev`** - should now show your custom website
 - **All GitHub links** should now work correctly
 
 ## Verification Commands (PowerShell)
 
 ```powershell
 # Check DNS propagation
-nslookup httpsneurocode.dev
+nslookup httpsaetherra.dev
 
 # Test CNAME resolution
-nslookup www.httpsneurocode.dev
+nslookup www.httpsaetherra.dev
 
 # Verify GitHub Pages (use Invoke-WebRequest instead of curl)
-Invoke-WebRequest -Uri "https://httpsneurocode.dev" -Method Head
+Invoke-WebRequest -Uri "https://httpsaetherra.dev" -Method Head
 
 # Alternative: Test if site is responding
-Test-NetConnection httpsneurocode.dev -Port 443
+Test-NetConnection httpsaetherra.dev -Port 443
 ```
 
 ## Troubleshooting Commands (PowerShell)
@@ -146,7 +146,7 @@ Test-NetConnection httpsneurocode.dev -Port 443
 ipconfig /flushdns
 
 # Check if GitHub Pages is serving content
-$response = Invoke-WebRequest -Uri "https://httpsneurocode.dev" -UseBasicParsing
+$response = Invoke-WebRequest -Uri "https://httpsaetherra.dev" -UseBasicParsing
 $response.StatusCode
 $response.Headers
 
@@ -154,11 +154,11 @@ $response.Headers
 Test-NetConnection github.io -Port 443
 
 # Check if CNAME file exists in repository
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Zyonic88/NeuroCode/main/CNAME" -UseBasicParsing
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Zyonic88/aetherra/main/CNAME" -UseBasicParsing
 
 # Test with different DNS servers
-nslookup httpsneurocode.dev 8.8.8.8
-nslookup httpsneurocode.dev 1.1.1.1
+nslookup httpsaetherra.dev 8.8.8.8
+nslookup httpsaetherra.dev 1.1.1.1
 ```
 
 ## Notes

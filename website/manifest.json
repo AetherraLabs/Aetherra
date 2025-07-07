@@ -17,10 +17,15 @@
     ],
     "icons": [
         {
-            "src": "aetherra-favicon.svg",
+            "src": "favicon.svg",
             "sizes": "any",
             "type": "image/svg+xml",
             "purpose": "any maskable"
+        },
+        {
+            "src": "favicon.ico",
+            "sizes": "48x48",
+            "type": "image/x-icon"
         }
     ],
     "screenshots": [

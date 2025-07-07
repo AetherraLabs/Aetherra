@@ -925,6 +925,8 @@ class AnalyticsDashboard(QWidget if PYSIDE6_AVAILABLE else object):
         }
 
 
+# Archived legacy file from lyrixa/gui/analytics_dashboard.py
+
 # Example usage
 if __name__ == "__main__":
     if PYSIDE6_AVAILABLE:

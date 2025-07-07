@@ -156,7 +156,7 @@ class OverviewUpdater:
                 "✅ **COMPLETE**"
                 if website_status["cname_exists"] and website_status["index_exists"]
                 else "🔄 **IN PROGRESS**",
-                "Live at httpsneurocode.dev",
+                "Live at httpsAetherra.dev",
             ),
             (
                 "🛡️ **Protection System**",

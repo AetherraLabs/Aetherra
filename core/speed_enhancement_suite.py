@@ -3,7 +3,7 @@
 🚀 AetherraCode Speed Enhancement Suite
 ===================================
 
-Comprehensive speed optimization for all AetherraCode & Neuroplex systems.
+Comprehensive speed optimization for all AetherraCode & Lyrixasystems.
 This module provides dramatic performance improvements through intelligent
 optimization, caching, parallel processing, and adaptive tuning.
 
@@ -77,7 +77,9 @@ class SpeedEnhancementSuite:
             try:
                 # Use available optimizers from imported modules
                 self.ui_optimizer = (
-                    getattr(memory_optimizer, "ui_optimizer", None) if memory_optimizer else None
+                    getattr(memory_optimizer, "ui_optimizer", None)
+                    if memory_optimizer
+                    else None
                 )
                 self.memory_optimizer = memory_optimizer
                 self.performance_manager = performance_manager
@@ -209,7 +211,8 @@ class SpeedEnhancementSuite:
         return {
             "optimizations_applied": list(self.optimizations_applied),
             "speed_multipliers": {
-                opt: self.speed_multipliers.get(opt, 1.0) for opt in self.optimizations_applied
+                opt: self.speed_multipliers.get(opt, 1.0)
+                for opt in self.optimizations_applied
             },
             "performance_engine_status": bool(self.performance_engine),
             "estimated_overall_speedup": self._calculate_overall_speedup(),
@@ -230,7 +233,9 @@ class SpeedEnhancementSuite:
     def _get_system_status(self) -> Dict[str, Any]:
         """Get current system performance status"""
         status = {
-            "speed_mode": "MAXIMUM" if len(self.optimizations_applied) >= 5 else "NORMAL",
+            "speed_mode": "MAXIMUM"
+            if len(self.optimizations_applied) >= 5
+            else "NORMAL",
             "active_optimizations": len(self.optimizations_applied),
             "performance_engine_active": bool(self.performance_engine),
         }
@@ -240,7 +245,9 @@ class SpeedEnhancementSuite:
                 perf_summary = self.performance_engine.get_performance_summary()
                 status.update(
                     {
-                        "operations_per_second": perf_summary.get("operations_per_second", 0),
+                        "operations_per_second": perf_summary.get(
+                            "operations_per_second", 0
+                        ),
                         "cache_hit_rate": perf_summary.get("cache_hit_rate", 0),
                         "memory_usage": perf_summary.get("system_info", {}).get(
                             "memory_percent", 0
@@ -314,7 +321,11 @@ class SpeedBooster:
                 self.performance_engine.cache.max_size * self.boost_factor
             )
             self.performance_engine.settings.thread_pool_size = min(
-                16, int(self.performance_engine.settings.thread_pool_size * self.boost_factor)
+                16,
+                int(
+                    self.performance_engine.settings.thread_pool_size
+                    * self.boost_factor
+                ),
             )
 
         return self
@@ -322,7 +333,9 @@ class SpeedBooster:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.performance_engine and self.original_settings:
             # Restore original settings
-            self.performance_engine.cache.max_size = self.original_settings["cache_size"]
+            self.performance_engine.cache.max_size = self.original_settings[
+                "cache_size"
+            ]
             self.performance_engine.settings.thread_pool_size = self.original_settings[
                 "thread_pool_size"
             ]
@@ -448,7 +461,9 @@ if __name__ == "__main__":
     data = list(range(1000))
     results = process_item(data)
     execution_time = time.time() - start_time
-    print(f"  Data processing: {len(results)} items processed in {execution_time * 1000:.2f}ms")
+    print(
+        f"  Data processing: {len(results)} items processed in {execution_time * 1000:.2f}ms"
+    )
 
     # Test speed booster
     print("\n🚀 Testing Speed Booster:")
@@ -456,11 +471,15 @@ if __name__ == "__main__":
         start_time = time.time()
         boosted_result = heavy_computation(5000)
         boosted_time = time.time() - start_time
-        print(f"  Boosted computation: {boosted_result} (executed in {boosted_time * 1000:.2f}ms)")
+        print(
+            f"  Boosted computation: {boosted_result} (executed in {boosted_time * 1000:.2f}ms)"
+        )
 
     # Show final performance status
     final_status = get_performance_status()
-    print(f"\n✅ Final Performance Status: {final_status['system_status']['speed_mode']} MODE")
+    print(
+        f"\n✅ Final Performance Status: {final_status['system_status']['speed_mode']} MODE"
+    )
 
     print("\n🎯 Speed Enhancement Suite Ready!")
     print("   All AetherraCode systems are now running at maximum speed!")

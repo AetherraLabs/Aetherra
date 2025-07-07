@@ -1,4 +1,4 @@
-# 🚀 NeuroCode Installation & Quick Start Guide
+# 🚀 aetherra Installation & Quick Start Guide
 
 ## 📋 Prerequisites
 
@@ -12,8 +12,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/neurocode.git
-cd neurocode
+git clone https://github.com/YOUR_USERNAME/aetherra.git
+cd aetherra
 
 # Create virtual environment
 python -m venv venv
@@ -44,7 +44,7 @@ python test_core_features.py
 
 You should see output like:
 ```
-✅ NeuroCode core interpreter: Working
+✅ aetherra core interpreter: Working
 ✅ Memory system: Operational
 ✅ Function system: Ready
 ✅ Agent system: Active
@@ -52,10 +52,10 @@ You should see output like:
 
 ## 🎨 Launch the GUI
 
-Start the NeuroCode GUI interface:
+Start the aetherra GUI interface:
 
 ```bash
-python ui/neuroplex_gui.py
+python ui/Lyrixa_gui.py
 ```
 
 Or use the launcher:
@@ -64,13 +64,13 @@ Or use the launcher:
 python simple_gui_launcher.py
 ```
 
-## 📝 Your First NeuroCode Program
+## 📝 Your First aetherra Program
 
 Create a file called `hello.aether`:
 
-```neurocode
+```aetherra
 # Your first AI-native program
-remember("Hello, NeuroCode!") as "greeting"
+remember("Hello, aetherra!") as "greeting"
 recall tag: "greeting"
 
 # Set a goal for the AI
@@ -89,14 +89,14 @@ python main.py hello.aether
 
 ## 🧠 Interactive Mode
 
-Start the NeuroCode interpreter in interactive mode:
+Start the aetherra interpreter in interactive mode:
 
 ```bash
 python main.py
 ```
 
 Try these commands:
-```neurocode
+```aetherra
 remember("AI is the future") as "philosophy"
 recall tag: "philosophy"
 goal: improve coding efficiency
@@ -106,7 +106,7 @@ suggest next actions
 
 ## 📚 Example Programs
 
-Check out the example NeuroCode programs:
+Check out the example aetherra programs:
 
 - `examples/basic_memory.aether` - Memory system basics
 - `examples/goal_setting.aether` - AI goal management
@@ -164,7 +164,7 @@ pip install PySide6 qtawesome
 
 ## 🎯 Next Steps
 
-1. **Read the Documentation**: Check out `NEUROCODE_LANGUAGE_SPEC.md`
+1. **Read the Documentation**: Check out `aetherra_LANGUAGE_SPEC.md`
 2. **Try Examples**: Run the example programs
 3. **Join the Community**: Participate in GitHub Discussions
 4. **Contribute**: See `docs/guides/CONTRIBUTING.md` for how to help
@@ -179,7 +179,7 @@ Create custom plugins in the `plugins/` directory. See the plugin development gu
 
 Enable code self-modification (use with caution):
 
-```neurocode
+```aetherra
 set self_edit_mode on
 load "my_program.py"
 analyze "my_program.py"
@@ -188,9 +188,9 @@ refactor "my_program.py" "performance optimization"
 
 ### AI Agent Mode
 
-Let NeuroCode autonomously improve your code:
+Let aetherra autonomously improve your code:
 
-```neurocode
+```aetherra
 goal: optimize performance > 95%
 agent: on
 autonomous monitoring
@@ -200,4 +200,4 @@ autonomous monitoring
 
 **Welcome to the future of programming! 🧬**
 
-Start coding with intentions, not instructions. Let NeuroCode think, learn, and evolve with you!
+Start coding with intentions, not instructions. Let aetherra think, learn, and evolve with you!

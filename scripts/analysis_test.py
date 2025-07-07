@@ -59,7 +59,6 @@ print("🎨 GUI Analysis")
 print("-" * 30)
 
 try:
-
     print("✅ GUI Components: Import successful")
 
     # Test theme system
@@ -73,4 +72,4 @@ print("")
 print("📊 Summary")
 print("-" * 30)
 print("All major components successfully imported and tested!")
-print("The Neuroplex system is ready for use.")
+print("The Lyrixasystem is ready for use.")

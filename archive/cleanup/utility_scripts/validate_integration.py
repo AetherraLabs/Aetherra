@@ -27,7 +27,7 @@ try:
         print("❌ Factory function is not callable")
 
     print("\n🎉 NeuroChat integration validation passed!")
-    print("🔗 NeuroChat should integrate properly with Neuroplex")
+    print("🔗 NeuroChat should integrate properly with Aetherra")
 
 except Exception as e:
     print(f"❌ Validation failed: {e}")

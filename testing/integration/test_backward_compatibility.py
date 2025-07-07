@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Test backward compatibility with legacy syntax_tree.py interface"""
 
-from Aetherra.core.syntax_tree import analyze_syntax_tree, parse_neurocode
+from Aetherra.core.syntax_tree import analyze_syntax_tree, parse_Aetherra
 
 
 def main():
-#     print("Testing backward compatibility...")
+    #     print("Testing backward compatibility...")
 
     code = """
     goal: Test backward compatibility
@@ -14,7 +14,7 @@ def main():
     """
 
     # Test parsing
-    tree = parse_neurocode(code)
+    tree = parse_Aetherra(code)
     print(f"✓ Parsing successful: {tree.type}")
 
     # Test analysis

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-🚀 Neuroplex Quick Test & Launch
+🚀 LyrixaQuick Test & Launch
 ===============================
 
-Simple test and launch script for Neuroplex to verify it works.
+Simple test and launch script for Lyrixato verify it works.
 """
 
 import sys
 
 
 def test_aetherplex_basic():
-    """Test basic Neuroplex functionality"""
-    print("🔍 Testing Basic Neuroplex Functionality...")
+    """Test basic Lyrixafunctionality"""
+    print("🔍 Testing Basic LyrixaFunctionality...")
 
     try:
         # Test the main launcher
@@ -30,15 +30,15 @@ def test_aetherplex_basic():
 
 
 def test_aetherplex_ui():
-    """Test Neuroplex UI components"""
-    print("\n🔍 Testing Neuroplex UI Components...")
+    """Test LyrixaUI components"""
+    print("\n🔍 Testing LyrixaUI Components...")
 
     try:
         # Test the fully modular version (most stable)
-        print("  ✅ Fully Modular Neuroplex: Import successful")
+        print("  ✅ Fully Modular Lyrixa: Import successful")
 
         # Test GUI v2
-        print("  ✅ Neuroplex GUI v2: Import successful")
+        print("  ✅ Lyrixa v2: Import successful")
 
         return True
 
@@ -48,13 +48,13 @@ def test_aetherplex_ui():
 
 
 def launch_aetherplex_demo():
-    """Launch Neuroplex in demo mode"""
-    print("\n🚀 Launching Neuroplex Demo...")
+    """Launch Lyrixain demo mode"""
+    print("\n🚀 Launching LyrixaDemo...")
 
     try:
         # Import the launcher
 
-        print("  🎯 Neuroplex is ready to launch!")
+        print("  🎯 Lyrixais ready to launch!")
         print("  📋 Available options:")
         print("    1. GUI Mode (Recommended)")
         print("    2. CLI Mode")
@@ -99,7 +99,7 @@ def launch_aetherplex_demo():
 
 def main():
     """Main test and launch function"""
-    print("🚀 Neuroplex Quick Test & Launch")
+    print("🚀 LyrixaQuick Test & Launch")
     print("=" * 40)
 
     # Run basic tests
@@ -110,15 +110,17 @@ def main():
     if not test_aetherplex_ui():
         print("⚠️ UI tests failed, but proceeding with basic functionality.")
 
-    print("\n✅ Neuroplex is functional!")
+    print("\n✅ Lyrixais functional!")
 
     # Ask if user wants to launch
-    launch_choice = input("\n🚀 Would you like to launch Neuroplex now? (y/n): ").strip().lower()
+    launch_choice = (
+        input("\n🚀 Would you like to launch Lyrixanow? (y/n): ").strip().lower()
+    )
 
     if launch_choice in ["y", "yes", ""]:
         return launch_aetherplex_demo()
     else:
-        print("👋 Neuroplex test completed. You can launch it anytime!")
+        print("👋 Lyrixatest completed. You can launch it anytime!")
         return True
 
 

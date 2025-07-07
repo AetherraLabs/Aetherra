@@ -9,7 +9,7 @@ from core.plugin_manager import register_plugin
     description="Perform AI agent reflection and analysis on given topics",
     capabilities=["ai_reflection", "analysis", "meta_cognition"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="ai",
     intent_purpose="AI-powered reflection and analysis",
     intent_triggers=["reflect", "analyze", "think", "consider", "examine"],
@@ -74,7 +74,7 @@ def agent_reflect(topic: str, depth: str = "medium") -> Dict[str, Any]:
     description="Perform detailed analysis of data, problems, or situations",
     capabilities=["analysis", "problem_solving", "data_interpretation"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="ai",
     example_usage="plugin: agent_analyze 'user feedback patterns'",
     ai_description="Provides detailed analytical capabilities for examining data, patterns, and complex situations"

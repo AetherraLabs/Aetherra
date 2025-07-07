@@ -239,9 +239,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="AetherraCode Persona Management CLI",
         epilog="Examples:\n"
-        "  neurocode persona set guardian\n"
-        "  neurocode persona status\n"
-        "  neurocode persona list\n",
+        "  aetherra persona set guardian\n"
+        "  aetherra persona status\n"
+        "  aetherra persona list\n",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 

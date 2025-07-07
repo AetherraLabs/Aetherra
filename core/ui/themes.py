@@ -2,7 +2,7 @@
 🎨 Theme Management System
 =========================
 
-Advanced theming system for Neuroplex UI with customizable color schemes,
+Advanced theming system for LyrixaUI with customizable color schemes,
 typography, and visual styles.
 """
 
@@ -14,7 +14,7 @@ from typing import Any, Dict, Optional
 
 
 class UITheme(Enum):
-    """Available UI themes for Neuroplex"""
+    """Available UI themes for Lyrixa"""
 
     DARK = "dark"
     LIGHT = "light"

@@ -22,7 +22,7 @@ This file maintains backward compatibility with existing code.
     SyntaxNode,
     SyntaxTreeVisitor,
     analyze_syntax_tree,
-    parse_neurocode,
+    parse_aetherra,
 )
 
 
@@ -40,6 +40,6 @@ __all__ = [
     "SyntaxNode",
     "AetherraParser",
     "SyntaxTreeVisitor",
-    "parse_neurocode",
+    "parse_aetherra",
     "analyze_syntax_tree",
 ]

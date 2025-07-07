@@ -2,7 +2,7 @@
 
 ## ✅ **Root Cause Identified**
 
-The issue is **NOT** in the NeuroCode files - all HTML files contain the correct GitHub links pointing to `Zyonic88/NeuroCode`.
+The issue is **NOT** in the aetherra files - all HTML files contain the correct GitHub links pointing to `Zyonic88/aetherra`.
 
 **The redirect happens based on HOW you access the website:**
 - ✅ **Direct file access** (Right-click index.html → Open with browser) = **WORKS CORRECTLY**
@@ -16,7 +16,7 @@ If you're using "Open with Live Server" in VS Code:
 - Check VS Code extensions and disable Live Server temporarily
 - Try accessing via `http://localhost:5500` vs direct file
 
-### **2. Local Development Server** 
+### **2. Local Development Server**
 If you're running a local server (`python -m http.server`, `live-server`, etc.):
 - Server might have proxy/redirect configuration
 - Check server startup logs for any redirect rules
@@ -48,7 +48,7 @@ If there's an online hosted version:
 ## 📋 **Status**
 
 - ✅ **Code is 100% correct** - All files have proper Zyonic88 links
-- ✅ **Network/DNS is working** - GitHub resolution is proper  
+- ✅ **Network/DNS is working** - GitHub resolution is proper
 - ✅ **No system-level redirects** - No hosts file or proxy issues
 - 🎯 **Issue is access-method specific** - Need to identify the exact trigger
 
@@ -56,4 +56,4 @@ If there's an online hosted version:
 
 Once we identify the exact access method causing the redirect, we can provide a targeted fix for that specific tool/server/extension.
 
-**The good news**: Your NeuroCode repository is completely fixed and ready to go! 🚀
+**The good news**: Your aetherra repository is completely fixed and ready to go! 🚀

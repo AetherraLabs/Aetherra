@@ -1,10 +1,10 @@
-# NeuroCode Basic Memory Example
+# aetherra Basic Memory Example
 # Demonstrates the revolutionary memory system
 
 # Store memories with tags
 remember("Python is procedural") as "programming_paradigm"
 remember("JavaScript can be functional") as "programming_paradigm"
-remember("NeuroCode is cognitive") as "programming_paradigm"
+remember("aetherra is cognitive") as "programming_paradigm"
 
 # Recall memories by tag
 recall tag: "programming_paradigm"

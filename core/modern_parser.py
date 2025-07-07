@@ -25,7 +25,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 try:
-
     LARK_AVAILABLE = True
 except ImportError:
     LARK_AVAILABLE = False
@@ -90,7 +89,9 @@ class AetherraCodeTransformer(Transformer):
     def start(self, items):
         """Root program node"""
         return ASTNode(
-            type=ASTNodeType.PROGRAM, children=items, metadata={"total_statements": len(items)}
+            type=ASTNodeType.PROGRAM,
+            children=items,
+            metadata={"total_statements": len(items)},
         )
 
     def goal_statement(self, items):
@@ -226,7 +227,8 @@ class AetherraCodeTransformer(Transformer):
         var_value = items[1]
 
         return ASTNode(
-            type=ASTNodeType.ASSIGNMENT, value={"variable": var_name, "value": var_value}
+            type=ASTNodeType.ASSIGNMENT,
+            value={"variable": var_name, "value": var_value},
         )
 
     def intent_action(self, items):
@@ -240,7 +242,8 @@ class AetherraCodeTransformer(Transformer):
                 modifiers.update(item)
 
         return ASTNode(
-            type=ASTNodeType.INTENT_ACTION, value={"verb": verb, "target": target, **modifiers}
+            type=ASTNodeType.INTENT_ACTION,
+            value={"verb": verb, "target": target, **modifiers},
         )
 
     def when_statement(self, items):
@@ -249,7 +252,8 @@ class AetherraCodeTransformer(Transformer):
         body = items[1] if len(items) > 1 else None
 
         return ASTNode(
-            type=ASTNodeType.WHEN_STATEMENT, value={"condition": condition, "body": body}
+            type=ASTNodeType.WHEN_STATEMENT,
+            value={"condition": condition, "body": body},
         )
 
     def if_statement(self, items):
@@ -266,7 +270,9 @@ class AetherraCodeTransformer(Transformer):
     def block(self, items):
         """Transform code block"""
         return ASTNode(
-            type=ASTNodeType.BLOCK, children=items, metadata={"statement_count": len(items)}
+            type=ASTNodeType.BLOCK,
+            children=items,
+            metadata={"statement_count": len(items)},
         )
 
     # Literal transformations
@@ -300,7 +306,9 @@ class AetherraCodeModernParser:
 
     def __init__(self):
         """Initialize the modern parser"""
-        self.grammar_file = Path(__file__).parent.parent / "docs" / "NEUROCODE_GRAMMAR.lark"
+        self.grammar_file = (
+            Path(__file__).parent.parent / "docs" / "aetherra_GRAMMAR.lark"
+        )
         self.parser = None
         self.transformer = AetherraCodeTransformer()
 
@@ -322,7 +330,10 @@ class AetherraCodeModernParser:
                 grammar_content = self._get_embedded_grammar()
 
             self.parser = Lark(
-                grammar_content, start="start", parser="lalr", transformer=self.transformer
+                grammar_content,
+                start="start",
+                parser="lalr",
+                transformer=self.transformer,
             )
 
         except Exception as e:

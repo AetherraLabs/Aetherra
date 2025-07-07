@@ -1,9 +1,9 @@
-# NeuroCode Reserved Keywords Specification
+# aetherra Reserved Keywords Specification
 **Version**: 3.0 | **Date**: 2024-12-27 | **Status**: Production Ready
 
 ## Overview
 
-This document defines all reserved keywords in the NeuroCode programming language. These keywords have special meaning in the language and cannot be used as identifiers (variable names, function names, etc.).
+This document defines all reserved keywords in the aetherra programming language. These keywords have special meaning in the language and cannot be used as identifiers (variable names, function names, etc.).
 
 ## Core Language Keywords
 
@@ -27,7 +27,7 @@ This document defines all reserved keywords in the NeuroCode programming languag
 ### Function System
 - `define` - Function definition
 - `run` - Function invocation
-- `return` - Function return (implicit in NeuroCode)
+- `return` - Function return (implicit in aetherra)
 
 ### Memory Operations
 - `remember` - Store information in memory
@@ -118,7 +118,7 @@ This document defines all reserved keywords in the NeuroCode programming languag
 
 ### 1. Core Constructs (14 keywords)
 ```
-goal, identity, consciousness, memory, voice, agent, when, if, else, 
+goal, identity, consciousness, memory, voice, agent, when, if, else,
 end, define, run, for, while
 ```
 
@@ -129,13 +129,13 @@ remember, recall, forget, consolidate, search, pattern
 
 ### 3. Intent Actions (15 keywords)
 ```
-think, analyze, optimize, learn, investigate, suggest, reflect, 
+think, analyze, optimize, learn, investigate, suggest, reflect,
 adapt, evolve, process, understand, create, modify, delete, search
 ```
 
 ### 4. Agent System (10 keywords)
 ```
-mode, start, stop, pause, resume, status, add_goal, remove_goal, 
+mode, start, stop, pause, resume, status, add_goal, remove_goal,
 clear_goals, list_goals
 ```
 
@@ -151,7 +151,7 @@ critical, high, medium, low
 
 ### 7. Modifiers and Prepositions (12 keywords)
 ```
-as, since, category, frequency, about, for, from, on, with, 
+as, since, category, frequency, about, for, from, on, with,
 using, through, deadline
 ```
 
@@ -167,15 +167,15 @@ enthusiasm, conciseness
 ## Usage Rules
 
 ### 1. Case Sensitivity
-All NeuroCode keywords are case-sensitive and must be written in lowercase.
+All aetherra keywords are case-sensitive and must be written in lowercase.
 
 **Valid:**
-```neurocode
+```aetherra
 goal: "optimize performance"
 ```
 
 **Invalid:**
-```neurocode
+```aetherra
 GOAL: "optimize performance"  # Error: GOAL is not recognized
 Goal: "optimize performance"  # Error: Goal is not recognized
 ```
@@ -184,14 +184,14 @@ Goal: "optimize performance"  # Error: Goal is not recognized
 Some words may appear as both keywords and property names depending on context:
 
 **As keyword:**
-```neurocode
+```aetherra
 identity {
     name: "Assistant"
 }
 ```
 
 **As property (allowed):**
-```neurocode
+```aetherra
 my_identity = {
     name: "Custom Name"
 }
@@ -213,7 +213,7 @@ try, catch, finally, throw, yield, async, sync, parallel, sequential
 - Added system properties: `enthusiasm`, `conciseness`
 
 ### Backward Compatibility
-All keywords from NeuroCode 2.x remain valid in 3.0. New code should use the updated syntax where available.
+All keywords from aetherra 2.x remain valid in 3.0. New code should use the updated syntax where available.
 
 ## Best Practices
 
@@ -221,26 +221,26 @@ All keywords from NeuroCode 2.x remain valid in 3.0. New code should use the upd
 Avoid using reserved keywords as variable names:
 
 **Good:**
-```neurocode
+```aetherra
 user_name = "Alice"
 priority_level = "high"
 ```
 
 **Bad:**
-```neurocode
+```aetherra
 name = "Alice"      # Conflicts with identity property
 priority = "high"   # Conflicts with goal priority
 ```
 
 ### 2. Future-Proofing
-Avoid using reserved future keywords in your code to ensure compatibility with future NeuroCode versions.
+Avoid using reserved future keywords in your code to ensure compatibility with future aetherra versions.
 
 ### 3. Contextual Usage
-When in doubt about keyword usage, refer to the formal grammar specification in `NEUROCODE_GRAMMAR.ebnf` and `NEUROCODE_GRAMMAR.lark`.
+When in doubt about keyword usage, refer to the formal grammar specification in `aetherra_GRAMMAR.ebnf` and `aetherra_GRAMMAR.lark`.
 
 ## See Also
 
-- [NeuroCode Language Specification](NEUROCODE_LANGUAGE_SPECIFICATION.md)
-- [NeuroCode Grammar (EBNF)](NEUROCODE_GRAMMAR.ebnf)
-- [NeuroCode Grammar (Lark)](NEUROCODE_GRAMMAR.lark)
-- [File Format Specification](NEUROCODE_FILE_FORMAT.md)
+- [aetherra Language Specification](aetherra_LANGUAGE_SPECIFICATION.md)
+- [aetherra Grammar (EBNF)](aetherra_GRAMMAR.ebnf)
+- [aetherra Grammar (Lark)](aetherra_GRAMMAR.lark)
+- [File Format Specification](aetherra_FILE_FORMAT.md)

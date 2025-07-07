@@ -79,3 +79,9 @@ repository_cleanup.py
 repository_cleanup_final.py
 repository_cleanup_safe.py
 cleanup_report.json
+
+# Housekeeping - Generated files
+data/logs/*.log
+data/databases/*.db
+data/json/temp_*.json
+archive/temporary_scripts/

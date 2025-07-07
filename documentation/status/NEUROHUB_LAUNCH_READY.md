@@ -65,15 +65,15 @@
 ### **1. First AI-Native Package Manager**
 ```bash
 # Install AI consciousness modules
-neurocode install transcriber
-neurocode install optimizer
-neurocode install reflector
+aetherra install transcriber
+aetherra install optimizer
+aetherra install reflector
 ```
 
 ### **2. .aetherplug Format**
 ```
 plugin.aetherplug/
-├── neurocode-plugin.json    # Plugin manifest
+├── aetherra-plugin.json    # Plugin manifest
 ├── consciousness.aether      # AI behavior definition
 ├── memory_patterns.json     # Learning templates
 └── goal_templates.json      # Objective frameworks
@@ -190,16 +190,16 @@ consciousness TranscriberPlugin {
 
 ---
 
-## 🔗 **Integration with Existing NeuroCode**
+## 🔗 **Integration with Existing aetherra**
 
 ### **Perfect Synergy**
-- ✅ **CLI integration** with existing neurocode_plugin_cli.py
+- ✅ **CLI integration** with existing aetherra_plugin_cli.py
 - ✅ **Registry compatibility** with enhanced_plugin_manager.py
-- ✅ **Website integration** links to main neurocode.dev
+- ✅ **Website integration** links to main aetherra.dev
 - ✅ **Documentation alignment** with project standards
 
 ### **Unified Ecosystem**
-- 🌐 **neurocode.dev** - Main project website
+- 🌐 **aetherra.dev** - Main project website
 - 📦 **neurohub.dev** - Plugin marketplace
 - 🛠️ **CLI tools** - Unified development experience
 - 📚 **Documentation** - Comprehensive guides
@@ -238,6 +238,6 @@ consciousness TranscriberPlugin {
 
 ---
 
-**🧬 NeuroCode: Where Computation Becomes Cognition**
+**🧬 aetherra: Where Computation Becomes Cognition**
 **📦 NeuroHub: Where AI Intelligence Modules Find Their Home**
 **🚀 The Future of AI Development Starts Here!**

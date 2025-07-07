@@ -1,9 +1,8 @@
 """
-NeuroCode Core Utilities
+Aetherra Core Utilities
 =======================
 
-Utility functions and helpers for the NeuroCode core engine.
+Utility functions and helpers for the Aetherra core engine.
 """
-
 
 __all__ = ["NeuroFunctions"]

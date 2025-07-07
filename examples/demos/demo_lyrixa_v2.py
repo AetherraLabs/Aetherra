@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🎨 Neuroplex v2.0 Feature Demo
+🎨 Lyrixav2.0 Feature Demo
 =============================
 
 Demonstrates the new dark mode GUI and enhanced features.
@@ -20,7 +20,6 @@ def test_qt_availability():
 
     # Test PySide6
     try:
-
         print("✅ PySide6 available")
         return True
     except ImportError:
@@ -28,7 +27,6 @@ def test_qt_availability():
 
     # Test PyQt6
     try:
-
         print("✅ PyQt6 available")
         return True
     except ImportError:
@@ -39,7 +37,7 @@ def test_qt_availability():
 
 def demo_features():
     """Demo the new features"""
-    print("\n🧬 Neuroplex v2.0 Features:")
+    print("\n🧬 Lyrixav2.0 Features:")
     print("━" * 50)
     print("🎨 Ultra-modern dark mode interface")
     print("🤖 Multi-LLM provider support (GPT-4, Claude, Gemini, Local)")
@@ -56,7 +54,7 @@ def demo_features():
 
 def main():
     """Run the demo"""
-    print("🧬 Neuroplex v2.0 Feature Demo")
+    print("🧬 Lyrixav2.0 Feature Demo")
     print("=" * 40)
 
     # Test Qt availability
@@ -64,7 +62,7 @@ def main():
 
     if not qt_available:
         print("\n⚠️ No Qt library available!")
-        print("📋 To use Neuroplex v2.0, install a Qt library:")
+        print("📋 To use Lyrixav2.0, install a Qt library:")
         print("   pip install PySide6")
         print("   or")
         print("   pip install PyQt6")
@@ -74,7 +72,7 @@ def main():
     demo_features()
 
     # Launch demo
-    print("\n🚀 Launching Neuroplex v2.0 Demo...")
+    print("\n🚀 Launching Lyrixav2.0 Demo...")
     try:
         from ui.aetherplex_gui_v2 import main as launch_gui
 

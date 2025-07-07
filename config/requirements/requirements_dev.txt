@@ -1,5 +1,5 @@
-# NeuroCode v1.0.0 - Development Requirements
-# Dependencies for NeuroCode contributors and developers
+# aetherra v1.0.0 - Development Requirements
+# Dependencies for aetherra contributors and developers
 
 # === BASE REQUIREMENTS ===
 -r requirements.txt

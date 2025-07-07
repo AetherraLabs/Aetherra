@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🧬 NeuroCode Standard Library - Executor Plugin
+🧬 Aetherra Standard Library - Executor Plugin
 Built-in plugin for command scheduling and execution management
 """
 
@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional
 
 
 class ExecutorPlugin:
-    """Command scheduling and execution management for NeuroCode"""
+    """Command scheduling and execution management for Aetherra"""
 
     def __init__(self):
         self.name = "executor"
@@ -44,11 +44,16 @@ class ExecutorPlugin:
 
         # Background scheduler
         self.scheduler_running = True
-        self.scheduler_thread = threading.Thread(target=self._scheduler_loop, daemon=True)
+        self.scheduler_thread = threading.Thread(
+            target=self._scheduler_loop, daemon=True
+        )
         self.scheduler_thread.start()
 
     def schedule_command(
-        self, command: str, execution_time: str, context: Optional[Dict[str, Any]] = None
+        self,
+        command: str,
+        execution_time: str,
+        context: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Schedule a command for future execution"""
         task_id = str(uuid.uuid4())
@@ -81,7 +86,9 @@ class ExecutorPlugin:
 
         return f"Command scheduled with ID: {task_id} for {scheduled_time}"
 
-    def execute_now(self, command: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def execute_now(
+        self, command: str, context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Execute a command immediately"""
         task_id = str(uuid.uuid4())
 
@@ -109,7 +116,9 @@ class ExecutorPlugin:
                 "task_id": task_id,
                 "status": "completed",
                 "result": result,
-                "execution_time": (task["completed_at"] - task["started_at"]).total_seconds(),
+                "execution_time": (
+                    task["completed_at"] - task["started_at"]
+                ).total_seconds(),
             }
 
         except Exception as e:
@@ -122,7 +131,9 @@ class ExecutorPlugin:
 
             return {"task_id": task_id, "status": "failed", "error": str(e)}
 
-    def execute_async(self, command: str, context: Optional[Dict[str, Any]] = None) -> str:
+    def execute_async(
+        self, command: str, context: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Execute a command asynchronously"""
         task_id = str(uuid.uuid4())
 
@@ -326,9 +337,15 @@ class ExecutorPlugin:
                 # Check for tasks ready to execute
                 tasks_to_execute = []
                 for task_id, task in list(self.scheduled_tasks.items()):
-                    if task.get("scheduled_time") and task["scheduled_time"] <= current_time:
+                    if (
+                        task.get("scheduled_time")
+                        and task["scheduled_time"] <= current_time
+                    ):
                         tasks_to_execute.append(task_id)
-                    elif task.get("next_execution") and task["next_execution"] <= current_time:
+                    elif (
+                        task.get("next_execution")
+                        and task["next_execution"] <= current_time
+                    ):
                         tasks_to_execute.append(task_id)
 
                 # Execute ready tasks
@@ -357,19 +374,27 @@ class ExecutorPlugin:
             del self.scheduled_tasks[task_id]
 
         # Execute asynchronously
-        future = self.thread_pool.submit(self._execute_command, task["command"], task["context"])
+        future = self.thread_pool.submit(
+            self._execute_command, task["command"], task["context"]
+        )
         task["future"] = future
-        future.add_done_callback(lambda f: self._handle_scheduled_completion(task_id, f))
+        future.add_done_callback(
+            lambda f: self._handle_scheduled_completion(task_id, f)
+        )
 
     def _execute_command(self, command: str, context: Dict[str, Any]) -> Any:
         """Execute a single command"""
         # Record execution start
-        execution_record = {"command": command, "context": context, "started_at": datetime.now()}
+        execution_record = {
+            "command": command,
+            "context": context,
+            "started_at": datetime.now(),
+        }
 
         try:
             # Determine command type and execute accordingly
             if command.startswith("neuro:"):
-                # NeuroCode-specific command
+                # Aetherra-specific command
                 result = self._execute_neuro_command(command[6:], context)
             elif command.startswith("sys:"):
                 # System command
@@ -378,7 +403,7 @@ class ExecutorPlugin:
                 # Python code execution
                 result = self._execute_python_code(command[7:], context)
             else:
-                # Default: treat as NeuroCode command
+                # Default: treat as Aetherra command
                 result = self._execute_neuro_command(command, context)
 
             execution_record["completed_at"] = datetime.now()
@@ -397,10 +422,10 @@ class ExecutorPlugin:
             raise e
 
     def _execute_neuro_command(self, command: str, context: Dict[str, Any]) -> str:
-        """Execute a NeuroCode-specific command"""
-        # This would integrate with the main NeuroCode interpreter
+        """Execute a Aetherra-specific command"""
+        # This would integrate with the main Aetherra interpreter
         # For now, return a mock response
-        return f"NeuroCode command executed: {command}"
+        return f"Aetherra command executed: {command}"
 
     def _execute_system_command(self, command: str, context: Dict[str, Any]) -> str:
         """Execute a system command"""
@@ -485,7 +510,9 @@ class ExecutorPlugin:
             # Handle recurring tasks
             if task.get("interval"):
                 task["execution_count"] = task.get("execution_count", 0) + 1
-                task["next_execution"] = datetime.now() + timedelta(seconds=task["interval"])
+                task["next_execution"] = datetime.now() + timedelta(
+                    seconds=task["interval"]
+                )
                 task["status"] = "recurring"
 
                 # Move back to scheduled tasks
@@ -497,16 +524,24 @@ class ExecutorPlugin:
             if task_id in self.running_tasks:
                 del self.running_tasks[task_id]
 
-    def _execute_sequential_batch(self, batch_id: str, commands: List[str]) -> Dict[str, Any]:
+    def _execute_sequential_batch(
+        self, batch_id: str, commands: List[str]
+    ) -> Dict[str, Any]:
         """Execute commands sequentially"""
         results = []
 
         for i, command in enumerate(commands):
             try:
-                result = self._execute_command(command, {"batch_id": batch_id, "index": i})
-                results.append({"command": command, "result": result, "status": "success"})
+                result = self._execute_command(
+                    command, {"batch_id": batch_id, "index": i}
+                )
+                results.append(
+                    {"command": command, "result": result, "status": "success"}
+                )
             except Exception as e:
-                results.append({"command": command, "error": str(e), "status": "failed"})
+                results.append(
+                    {"command": command, "error": str(e), "status": "failed"}
+                )
                 break  # Stop on first failure
 
         return {
@@ -517,7 +552,9 @@ class ExecutorPlugin:
             "results": results,
         }
 
-    def _execute_parallel_batch(self, batch_id: str, commands: List[str]) -> Dict[str, Any]:
+    def _execute_parallel_batch(
+        self, batch_id: str, commands: List[str]
+    ) -> Dict[str, Any]:
         """Execute commands in parallel"""
         futures = []
 
@@ -531,9 +568,13 @@ class ExecutorPlugin:
         for command, future in futures:
             try:
                 result = future.result(timeout=60)  # 60 second timeout
-                results.append({"command": command, "result": result, "status": "success"})
+                results.append(
+                    {"command": command, "result": result, "status": "success"}
+                )
             except Exception as e:
-                results.append({"command": command, "error": str(e), "status": "failed"})
+                results.append(
+                    {"command": command, "error": str(e), "status": "failed"}
+                )
 
         return {
             "batch_id": batch_id,
@@ -586,7 +627,9 @@ class ExecutorPlugin:
                 command = kwargs.get("command", 'echo "test"')
                 context = kwargs.get("context", {})
                 result = self.execute_now(command, context)
-                return f"Command executed. Exit code: {result.get('exit_code', 'unknown')}"
+                return (
+                    f"Command executed. Exit code: {result.get('exit_code', 'unknown')}"
+                )
 
             elif action == "async" or action == "execute_async":
                 command = kwargs.get("command", 'echo "test"')

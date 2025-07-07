@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the performance optimization techniques implemented in the aetherra/Neuroplex UI to ensure a responsive and efficient user experience, even with complex and dynamic interfaces.
+This document outlines the performance optimization techniques implemented in the aetherra/LyrixaUI to ensure a responsive and efficient user experience, even with complex and dynamic interfaces.
 
 ## Key Optimization Techniques
 

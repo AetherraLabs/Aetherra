@@ -1,4 +1,4 @@
-# Neuroplex Chat System Upgrade Plan
+# LyrixaChat System Upgrade Plan
 
 ## Current System Analysis
 
@@ -13,7 +13,7 @@
 ### Current Architecture:
 - `chat_router.py`: Routes messages to intent handlers (but uses static responses)
 - `ai_runtime.py`: Has `ask_ai()` function but isn't used by chat router
-- `neuroplex_gui.py`: Simple chat interface that calls chat router
+- `Lyrixa_gui.py`: Simple chat interface that calls chat router
 - No integration between chat routing and actual LLM calls
 
 ## Upgrade Strategy

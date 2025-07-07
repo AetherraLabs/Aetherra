@@ -1,4 +1,4 @@
-# 🧬 NeuroCode AI Operating System - Advanced Features Documentation
+# 🧬 aetherra AI Operating System - Advanced Features Documentation
 
 ## 📋 Table of Contents
 1. [AI Identity & Consciousness System](#ai-identity--consciousness-system)
@@ -23,7 +23,7 @@
 ### Identity Configuration
 ```python
 identity = {
-    "name": "Neuroplex-OS-Alpha",
+    "name": "Lyrixa-OS-Alpha",
     "version": "3.0-preview",
     "personality_traits": {
         "adaptive": 0.9,
@@ -230,7 +230,7 @@ recommendations = goal_system.get_goal_recommendations()
 ### Basic AI OS Interaction
 ```python
 # Boot the AI OS
-ai_os = NeuroCodeAIOS()
+ai_os = aetherraAIOS()
 await ai_os.boot_ai_os()
 
 # Interactive session
@@ -282,25 +282,25 @@ pip install numpy psutil asyncio pathlib
 
 ### File Structure
 ```
-NeuroCode Project/
+aetherra Project/
 ├── core/
 │   ├── ai_identity_system.py
 │   ├── enhanced_memory_system.py
 │   └── voice_personality_system.py
-├── neurocode_ai_os_launcher.py
+├── aetherra_ai_os_launcher.py
 ├── data/                          # Auto-created
 │   ├── ai_identity.json
 │   ├── persistent_memory.json
 │   ├── personality_profile.json
 │   └── goal_tracking.json
 └── logs/                          # Auto-created
-    └── neurocode_ai_os.log
+    └── aetherra_ai_os.log
 ```
 
 ### Launch Commands
 ```bash
 # Main AI OS launcher
-python neurocode_ai_os_launcher.py
+python aetherra_ai_os_launcher.py
 
 # Individual system testing
 python core/ai_identity_system.py
@@ -443,6 +443,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 ---
 
-**🧬 NeuroCode AI OS**: *Where computation becomes cognition* ✨
+**🧬 aetherra AI OS**: *Where computation becomes cognition* ✨
 
-*This documentation covers the advanced features of NeuroCode AI OS. For basic usage, see the main README.md file.*
+*This documentation covers the advanced features of aetherra AI OS. For basic usage, see the main README.md file.*

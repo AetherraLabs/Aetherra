@@ -14,15 +14,15 @@ try:
     print("🧪 Testing PySide6...")
     print("✅ PySide6 imports successfully")
 
-    print("🧪 Testing Neuroplex GUI...")
-    from aetherplex_gui import NeuroplexMainWindow
+    print("🧪 Testing Lyrixa...")
+    from aetherplex_gui import LyrixaMainWindow
 
-    print("✅ Neuroplex GUI imports successfully")
+    print("✅ Lyrixa imports successfully")
 
     print("🧪 Testing VectorMemory fix...")
     # This should not throw VectorMemory init error anymore
-    window = NeuroplexMainWindow
-    print("✅ NeuroplexMainWindow class can be accessed")
+    window = LyrixaMainWindow
+    print("✅ LyrixaMainWindow class can be accessed")
 
     print("\n🎉 All fixes verified successfully!")
     print("✅ VectorMemory initialization issue: FIXED")

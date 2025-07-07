@@ -23,7 +23,11 @@ def test_phase2_imports():
         ("Conversational AI", "core.conversational_ai", "ConversationalAI"),
         ("Plugin Registry", "core.plugin_registry", "PluginRegistry"),
         ("Chat Enhancements", "core.chat_enhancements", "ChatEnhancementSystem"),
-        ("Internal Refactoring", "core.internal_refactoring", "InternalRefactoringSystem"),
+        (
+            "Internal Refactoring",
+            "core.internal_refactoring",
+            "InternalRefactoringSystem",
+        ),
     ]
 
     results = {}
@@ -48,7 +52,10 @@ def test_basic_functionality(results):
     print("\n🔧 Testing Basic Functionality...")
 
     # Test Stability System
-    if "Stability System" in results and results["Stability System"]["status"] == "SUCCESS":
+    if (
+        "Stability System" in results
+        and results["Stability System"]["status"] == "SUCCESS"
+    ):
         try:
             stability = results["Stability System"]["instance"]
 
@@ -63,7 +70,10 @@ def test_basic_functionality(results):
             print(f"  ⚠️ Stability: Basic test failed - {e}")
 
     # Test Conversational AI
-    if "Conversational AI" in results and results["Conversational AI"]["status"] == "SUCCESS":
+    if (
+        "Conversational AI" in results
+        and results["Conversational AI"]["status"] == "SUCCESS"
+    ):
         try:
             conv_ai = results["Conversational AI"]["instance"]
             # Test persona system
@@ -75,7 +85,10 @@ def test_basic_functionality(results):
             print(f"  ⚠️ Conversational AI: Basic test failed - {e}")
 
     # Test Chat Enhancements
-    if "Chat Enhancements" in results and results["Chat Enhancements"]["status"] == "SUCCESS":
+    if (
+        "Chat Enhancements" in results
+        and results["Chat Enhancements"]["status"] == "SUCCESS"
+    ):
         try:
             chat_system = results["Chat Enhancements"]["instance"]
             # Test session creation
@@ -85,32 +98,49 @@ def test_basic_functionality(results):
             print(f"  ⚠️ Chat Enhancements: Basic test failed - {e}")
 
     # Test Plugin Registry
-    if "Plugin Registry" in results and results["Plugin Registry"]["status"] == "SUCCESS":
+    if (
+        "Plugin Registry" in results
+        and results["Plugin Registry"]["status"] == "SUCCESS"
+    ):
         try:
             plugin_registry = results["Plugin Registry"]["instance"]
             # Test getting available plugins
             plugins = plugin_registry.get_available_plugins()
-            print(f"  ✅ Plugin Registry: Plugin listing works - {len(plugins)} plugins")
+            print(
+                f"  ✅ Plugin Registry: Plugin listing works - {len(plugins)} plugins"
+            )
         except Exception as e:
             print(f"  ⚠️ Plugin Registry: Basic test failed - {e}")
 
     # Test Introspective Logger
-    if "Introspective Logger" in results and results["Introspective Logger"]["status"] == "SUCCESS":
+    if (
+        "Introspective Logger" in results
+        and results["Introspective Logger"]["status"] == "SUCCESS"
+    ):
         try:
             logger = results["Introspective Logger"]["instance"]
             # Test execution logging
-            reflection = logger.log_execution("test_code", "test_result", {"test": True})
-            print(f"  ✅ Introspective Logger: Execution logging works - {reflection.execution_id}")
+            reflection = logger.log_execution(
+                "test_code", "test_result", {"test": True}
+            )
+            print(
+                f"  ✅ Introspective Logger: Execution logging works - {reflection.execution_id}"
+            )
         except Exception as e:
             print(f"  ⚠️ Introspective Logger: Basic test failed - {e}")
 
     # Test Internal Refactoring
-    if "Internal Refactoring" in results and results["Internal Refactoring"]["status"] == "SUCCESS":
+    if (
+        "Internal Refactoring" in results
+        and results["Internal Refactoring"]["status"] == "SUCCESS"
+    ):
         try:
             refactoring = results["Internal Refactoring"]["instance"]
             # Test status
             status = refactoring.get_refactoring_status()
-            print(f"  ✅ Internal Refactoring: Status reporting works - {len(status)} status items")
+            print(
+                f"  ✅ Internal Refactoring: Status reporting works - {len(status)} status items"
+            )
         except Exception as e:
             print(f"  ⚠️ Internal Refactoring: Basic test failed - {e}")
 
@@ -168,7 +198,7 @@ def generate_test_report(results):
 
     if successful_systems == total_systems:
         print("\n🎉 ALL PHASE 2 SYSTEMS OPERATIONAL!")
-        print("✅ AetherraCode & Neuroplex Phase 2 is ready for production use")
+        print("✅ AetherraCode & LyrixaPhase 2 is ready for production use")
     else:
         print("\n⚠️ Some systems need attention")
         print(f"✅ {successful_systems}/{total_systems} systems are operational")
@@ -179,9 +209,9 @@ def generate_test_report(results):
 
 def main():
     """Main test execution"""
-    print("🚀 AetherraCode & Neuroplex Phase 2 System Verification")
+    print("🚀 AetherraCode & LyrixaPhase 2 System Verification")
     print("=" * 60)
-#     print("Testing all Phase 2 systems for import and basic functionality...")
+    #     print("Testing all Phase 2 systems for import and basic functionality...")
 
     # Test imports
     results = test_phase2_imports()

@@ -1,6 +1,6 @@
 # NeuroHub - The AI Package Manager
 
-NeuroHub is the AI-native package manager for consciousness programming. It provides a complete ecosystem for discovering, installing, and publishing .aetherplug modules for the NeuroCode platform.
+NeuroHub is the AI-native package manager for consciousness programming. It provides a complete ecosystem for discovering, installing, and publishing .aetherplug modules for the aetherra platform.
 
 ## 🚀 Quick Start
 
@@ -160,24 +160,24 @@ GET /api/v1/analytics/overview
 ### Plugin Structure
 ```
 my-plugin/
-├── neurocode-plugin.json     # Plugin metadata
+├── aetherra-plugin.json     # Plugin metadata
 ├── main.aether               # Main plugin code
 ├── README.md               # Documentation
 └── tests/                  # Test files
     └── test_main.aether
 ```
 
-### Plugin Metadata (`neurocode-plugin.json`)
+### Plugin Metadata (`aetherra-plugin.json`)
 ```json
 {
   "name": "my-plugin",
   "version": "1.0.0",
-  "description": "My awesome NeuroCode plugin",
+  "description": "My awesome aetherra plugin",
   "author": "Your Name",
   "license": "MIT",
   "tags": ["memory", "optimization"],
   "dependencies": {
-    "neurocode-core": ">=2.0.0"
+    "aetherra-core": ">=2.0.0"
   },
   "main": "main.aether",
   "repository": "https://github.com/username/my-plugin"
@@ -419,9 +419,9 @@ This project is licensed under the GPL-3.0 License - see the [LICENSE](../LICENS
 
 ## 🆘 Support
 
-- **Documentation**: [neurocode.dev/docs](https://neurocode.dev/docs)
-- **Issues**: [GitHub Issues](https://github.com/Zyonic88/NeuroCode/issues)
-- **Community**: [NeuroCode Community](https://neurocode.dev/community)
+- **Documentation**: [aetherra.dev/docs](https://aetherra.dev/docs)
+- **Issues**: [GitHub Issues](https://github.com/Zyonic88/aetherra/issues)
+- **Community**: [aetherra Community](https://aetherra.dev/community)
 
 ---
 

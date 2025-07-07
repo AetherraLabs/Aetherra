@@ -10,9 +10,9 @@
 - Show the beautiful GUI launching (`python launchers/launch_lyrixa.py`)
 - Modern interface with code editor, AI chat, and real-time panels
 
-**5-10s: Live NeuroCode Programming**
-- Type a simple NeuroCode program:
-```neurocode
+**5-10s: Live aetherra Programming**
+- Type a simple aetherra program:
+```aetherra
 goal: optimize system performance
 when cpu_usage > 80%:
     suggest fix with confidence > 85%
@@ -43,7 +43,7 @@ end
 
 ### **Mobile Demo (mobile-demo.gif)**
 - Responsive web interface on mobile
-- Touch-friendly NeuroCode programming
+- Touch-friendly aetherra programming
 - AI chat optimized for mobile
 
 ### **Terminal Demo (terminal-demo.gif)**
@@ -74,7 +74,7 @@ end
 
 ### **Pre-Recording:**
 - [ ] Clean, organized desktop
-- [ ] NeuroCode project ready with demo scripts
+- [ ] aetherra project ready with demo scripts
 - [ ] Test all features to be demonstrated
 - [ ] Prepare sample code snippets
 - [ ] Set up ideal window sizing
@@ -124,7 +124,7 @@ docs/images/
 After viewing the demo, users should immediately want to:
 1. Clone the repository
 2. Install dependencies
-3. Launch NeuroCode
+3. Launch aetherra
 4. Experience the revolution firsthand
 
 **Remember**: The demo is the hook that transforms browsers into users!

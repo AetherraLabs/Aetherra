@@ -16,7 +16,7 @@ from .parser import AetherraParser
 
 
 # Main API functions
-def parse_neurocode(code: str) -> SyntaxNode:
+def parse_aetherra(code: str) -> SyntaxNode:
     """Parse AetherraCode into a syntax tree"""
     parser = AetherraParser()
     return parser.parse(code)
@@ -28,5 +28,5 @@ __all__ = [
     "AetherraParser",
     "SyntaxTreeVisitor",
     "analyze_syntax_tree",
-    "parse_neurocode",
+    "parse_aetherra",
 ]

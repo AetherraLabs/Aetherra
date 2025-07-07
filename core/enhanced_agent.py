@@ -7,7 +7,7 @@ Advanced autonomous agent with:
 - Background threading for continuous operation
 - Goal-monitoring reflection loop with intelligent state tracking
 - Periodic triggers for context-aware actions
-- Deep integration with AetherraCode (blood) and Neuroplex (face)
+- Deep integration with AetherraCode (blood) and Lyrixa(face)
 - Real-time collaboration with user workflow
 
 The agent operates as the autonomous intelligence layer of the AI OS,
@@ -45,9 +45,9 @@ except ImportError:
     AetherraInterpreter = None
 
 try:
-    from core.syntax_tree import analyze_syntax_tree, parse_neurocode
+    from core.syntax_tree import analyze_syntax_tree, parse_aetherra
 except ImportError:
-    parse_neurocode = None
+    parse_aetherra = None
     analyze_syntax_tree = None
 
 
@@ -101,7 +101,7 @@ class AgentTrigger:
 
 
 class EnhancedNeuroAgent:
-    """Enhanced autonomous agent for AetherraCode/Neuroplex integration"""
+    """Enhanced autonomous agent for AetherraCode/Lyrixaintegration"""
 
     def __init__(
         self,
@@ -294,7 +294,7 @@ class EnhancedNeuroAgent:
                     category="agent_learning",
                 )
 
-            # Suggest improvements to Neuroplex if active
+            # Suggest improvements to Lyrixaif active
             if self.context.aetherplex_active:
                 self._suggest_aetherplex_improvements(insights, patterns)
 
@@ -411,7 +411,7 @@ class EnhancedNeuroAgent:
         )
 
     def _setup_aetherplex_integration(self):
-        """Setup integration hooks with Neuroplex"""
+        """Setup integration hooks with Lyrixa"""
         self.aetherplex_hooks = {
             "on_user_action": self._on_aetherplex_user_action,
             "on_code_execution": self._on_aetherplex_code_execution,
@@ -496,9 +496,9 @@ class EnhancedNeuroAgent:
         """Add a new goal to the agent's current goals."""
         self.context.current_goals.append(goal)
 
-    # Neuroplex Integration Methods
+    # LyrixaIntegration Methods
     def _on_aetherplex_user_action(self, action_data: Dict[str, Any]):
-        """Handle user actions from Neuroplex"""
+        """Handle user actions from Lyrixa"""
         self.context.last_interaction = datetime.now()
         self.context.user_presence = True
         self.stats["aetherplex_interactions"] += 1
@@ -507,7 +507,7 @@ class EnhancedNeuroAgent:
         self._learn_from_user_action(action_data)
 
     def _suggest_aetherplex_improvements(self, insights: str, patterns: Dict[str, Any]):
-        """Suggest improvements to Neuroplex interface"""
+        """Suggest improvements to Lyrixainterface"""
         suggestions = {
             "insights": insights,
             "patterns": patterns,
@@ -515,9 +515,9 @@ class EnhancedNeuroAgent:
             "suggestions": self._generate_ui_suggestions(patterns),
         }
 
-        # Store suggestions for Neuroplex to retrieve
+        # Store suggestions for Lyrixato retrieve
         self.memory.remember(
-            f"Neuroplex improvement suggestions: {json.dumps(suggestions)}",
+            f"Lyrixaimprovement suggestions: {json.dumps(suggestions)}",
             tags=["aetherplex_suggestions", "ui_improvements"],
             category="interface_optimization",
         )

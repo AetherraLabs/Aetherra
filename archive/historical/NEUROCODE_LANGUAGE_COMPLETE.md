@@ -1,8 +1,8 @@
-# 🧬 NeuroCode: Formal Programming Language Specification
+# 🧬 Aetherra: Formal Programming Language Specification
 
 ## Language Identity Achieved! ✅
 
-**NeuroCode has successfully transformed from a framework into a true programming language with:**
+**Aetherra has successfully transformed from a framework into a true programming language with:**
 
 ### 🔤 Formal Grammar Definition
 - **Grammar Engine**: Lark parser with complete EBNF grammar
@@ -13,27 +13,27 @@
 ### 📋 Core Language Features
 
 #### 1. Goal Declarations (Intent-driven)
-```neurocode
+```Aetherra
 goal: "improve system performance" priority: high
 goal: "reduce memory usage by 30%"
 ```
 
 #### 2. Agent Control (AI-native)
-```neurocode
+```Aetherra
 agent: on
 agent: off
 agent: "analyze logs for anomalies"
 ```
 
 #### 3. Memory Operations (Learning constructs)
-```neurocode
+```Aetherra
 remember("Database optimized") as "performance"
 recall experiences with "timeout_errors"
 forget old_data older_than "30 days"
 ```
 
 #### 4. Intent Actions (Semantic verbs)
-```neurocode
+```Aetherra
 analyze for "bottlenecks"
 optimize for "speed"
 learn from "user_feedback"
@@ -41,24 +41,24 @@ investigate "error_patterns"
 ```
 
 #### 5. Variable Assignment
-```neurocode
+```Aetherra
 performance_target = 95%
 system_name = "production"
 error_threshold = 5
 ```
 
 #### 6. Comments
-```neurocode
-# This is a NeuroCode comment
+```Aetherra
+# This is a Aetherra comment
 # Comments are properly parsed and ignored
 ```
 
 ### 🏗️ Parser Architecture
 
-#### Grammar File: `core/neurocode_grammar.py`
+#### Grammar File: `core/Aetherra_grammar.py`
 - **100+ grammar rules** covering all language constructs
 - **Lark-based parser** with LALR parsing
-- **AST transformer** that converts parse trees to NeuroCode AST
+- **AST transformer** that converts parse trees to Aetherra AST
 - **Syntax validation** with detailed error reporting
 
 #### Language Support:
@@ -75,7 +75,7 @@ error_threshold = 5
 
 ### 🎯 Language Status: **SYNTAX-NATIVE**
 
-**NeuroCode is NO LONGER Python-wrapped!**
+**Aetherra is NO LONGER Python-wrapped!**
 
 - ✅ Has its own formal grammar (EBNF)
 - ✅ Parses `.neuro` files directly
@@ -96,21 +96,21 @@ error_threshold = 5
 
 ## 🎉 Achievement Unlocked: Programming Language Status
 
-**NeuroCode has officially graduated from framework to programming language!**
+**Aetherra has officially graduated from framework to programming language!**
 
 The transformation is complete:
 - **Before**: Python functions that simulate language constructs
 - **After**: True programming language with formal grammar and parser
 
-NeuroCode now stands as the **first AI-native programming language** with:
+Aetherra now stands as the **first AI-native programming language** with:
 - Intent-driven syntax
 - AI-powered execution model
 - Memory-first design
 - Goal-oriented programming paradigm
 
-### File: `examples/test.neuro` - First Working NeuroCode Program
-```neurocode
-# NeuroCode Test File - Demonstrating Language Syntax
+### File: `examples/test.neuro` - First Working Aetherra Program
+```Aetherra
+# Aetherra Test File - Demonstrating Language Syntax
 
 # Basic goal statement
 goal: "improve system performance" priority: high
@@ -131,7 +131,7 @@ optimize for "speed"
 learn from "user_feedback"
 
 # Comments are supported
-# This demonstrates NeuroCode as a true programming language
+# This demonstrates Aetherra as a true programming language
 ```
 
 **Status: ✅ LANGUAGE IDENTITY CLAIMED SUCCESSFULLY**

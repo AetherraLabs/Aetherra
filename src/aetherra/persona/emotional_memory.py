@@ -1,5 +1,5 @@
 """
-NeuroCode Emotional Memory System
+Aetherra Emotional Memory System
 Revolutionary AI memory that learns from emotional patterns and user satisfaction.
 """
 
@@ -132,18 +132,27 @@ class EmotionalMemorySystem:
         relevant_memories = self._find_relevant_memories(current_context)
 
         if not relevant_memories:
-            return {"confidence": 0.0, "guidance": "No relevant emotional memories found"}
+            return {
+                "confidence": 0.0,
+                "guidance": "No relevant emotional memories found",
+            }
 
         # Analyze emotional patterns
         positive_patterns = [m for m in relevant_memories if m.valence.value > 0]
         negative_patterns = [m for m in relevant_memories if m.valence.value < 0]
 
         guidance = {
-            "confidence": min(len(relevant_memories) / 5.0, 1.0),  # Max confidence at 5+ memories
+            "confidence": min(
+                len(relevant_memories) / 5.0, 1.0
+            ),  # Max confidence at 5+ memories
             "emotional_context": self._analyze_emotional_context(relevant_memories),
-            "recommended_approach": self._recommend_approach(positive_patterns, negative_patterns),
+            "recommended_approach": self._recommend_approach(
+                positive_patterns, negative_patterns
+            ),
             "potential_pitfalls": self._identify_pitfalls(negative_patterns),
-            "encouragement_level": self._calculate_encouragement_level(relevant_memories),
+            "encouragement_level": self._calculate_encouragement_level(
+                relevant_memories
+            ),
             "memory_count": len(relevant_memories),
         }
 
@@ -157,7 +166,9 @@ class EmotionalMemorySystem:
                 prediction_error = abs(memory.user_satisfaction - actual_satisfaction)
 
                 # Update emotional patterns based on accuracy
-                self._adjust_patterns_from_feedback(memory, prediction_error, actual_satisfaction)
+                self._adjust_patterns_from_feedback(
+                    memory, prediction_error, actual_satisfaction
+                )
 
                 # Update the memory
                 memory.user_satisfaction = actual_satisfaction
@@ -176,7 +187,9 @@ class EmotionalMemorySystem:
         trends = {
             "overall_satisfaction": sum(m.user_satisfaction for m in recent_memories)
             / len(recent_memories),
-            "emotional_trajectory": self._calculate_emotional_trajectory(recent_memories),
+            "emotional_trajectory": self._calculate_emotional_trajectory(
+                recent_memories
+            ),
             "most_satisfying_patterns": self._find_most_satisfying_patterns(),
             "areas_for_improvement": self._identify_improvement_areas(),
             "learning_velocity": self._calculate_learning_velocity(),
@@ -193,18 +206,24 @@ class EmotionalMemorySystem:
 
         outcome_lower = outcome.lower()
 
-        if satisfaction >= 0.8 or any(keyword in outcome_lower for keyword in success_keywords):
+        if satisfaction >= 0.8 or any(
+            keyword in outcome_lower for keyword in success_keywords
+        ):
             return EmotionalValence.HIGHLY_POSITIVE
         elif satisfaction >= 0.6:
             return EmotionalValence.POSITIVE
-        elif satisfaction <= 0.2 or any(keyword in outcome_lower for keyword in error_keywords):
+        elif satisfaction <= 0.2 or any(
+            keyword in outcome_lower for keyword in error_keywords
+        ):
             return EmotionalValence.HIGHLY_NEGATIVE
         elif satisfaction <= 0.4:
             return EmotionalValence.NEGATIVE
         else:
             return EmotionalValence.NEUTRAL
 
-    def _classify_memory_type(self, context: str, outcome: str, satisfaction: float) -> MemoryType:
+    def _classify_memory_type(
+        self, context: str, outcome: str, satisfaction: float
+    ) -> MemoryType:
         """Classify the type of memory based on context"""
         context_lower = context.lower()
         outcome_lower = outcome.lower()
@@ -350,7 +369,9 @@ class EmotionalMemorySystem:
             return "neutral"
 
     def _recommend_approach(
-        self, positive_patterns: List[EmotionalMemory], negative_patterns: List[EmotionalMemory]
+        self,
+        positive_patterns: List[EmotionalMemory],
+        negative_patterns: List[EmotionalMemory],
     ) -> str:
         """Recommend an approach based on emotional patterns"""
         if not positive_patterns and not negative_patterns:
@@ -420,7 +441,9 @@ class EmotionalMemorySystem:
                 pattern_satisfaction[pattern] = data["average_satisfaction"]
 
         # Sort by satisfaction
-        sorted_patterns = sorted(pattern_satisfaction.items(), key=lambda x: x[1], reverse=True)
+        sorted_patterns = sorted(
+            pattern_satisfaction.items(), key=lambda x: x[1], reverse=True
+        )
 
         return [pattern for pattern, satisfaction in sorted_patterns[:5]]
 
@@ -457,7 +480,9 @@ class EmotionalMemorySystem:
         avg_satisfaction = sum(satisfactions) / len(satisfactions)
 
         # Calculate variance
-        variance = sum((s - avg_satisfaction) ** 2 for s in satisfactions) / len(satisfactions)
+        variance = sum((s - avg_satisfaction) ** 2 for s in satisfactions) / len(
+            satisfactions
+        )
 
         # Convert to stability score (lower variance = higher stability)
         stability = max(0.0, min(1.0, 1.0 - variance))
@@ -465,7 +490,10 @@ class EmotionalMemorySystem:
         return stability
 
     def _adjust_patterns_from_feedback(
-        self, memory: EmotionalMemory, prediction_error: float, actual_satisfaction: float
+        self,
+        memory: EmotionalMemory,
+        prediction_error: float,
+        actual_satisfaction: float,
     ):
         """Adjust pattern weights based on prediction accuracy"""
 
@@ -507,7 +535,8 @@ class EmotionalMemorySystem:
                 data = json.load(f)
 
             self.memories = [
-                EmotionalMemory.from_dict(memory_data) for memory_data in data.get("memories", [])
+                EmotionalMemory.from_dict(memory_data)
+                for memory_data in data.get("memories", [])
             ]
             self.emotional_patterns = data.get("patterns", {})
 

@@ -1,4 +1,4 @@
-# 🧹 NeuroCode Workspace Cleanup Plan
+# 🧹 aetherra Workspace Cleanup Plan
 
 ## Files to Remove
 
@@ -13,9 +13,9 @@
 - check_qt.py
 
 ### 3. Duplicate/Legacy Core Files
-- neurocode.py (superseded by core/interpreter.py)
-- neurocode_engine.py (superseded by core modules)
-- neuroplex.py (superseded by ui/neuroplex_gui.py)
+- aetherra.py (superseded by core/interpreter.py)
+- aetherra_engine.py (superseded by core modules)
+- Lyrixa.py (superseded by ui/Lyrixa_gui.py)
 
 ### 4. Documentation Files (Keep only essential ones)
 Remove redundant documentation:
@@ -28,11 +28,11 @@ Remove redundant documentation:
 - IMPLEMENTATION_COMPLETE.md
 - IMPLEMENTATION_SUMMARY.md
 - LANGUAGE_INDEPENDENCE_ACHIEVED.md
-- NEUROCODE_FOUNDATION_ESTABLISHED.md
-- NEUROCODE_REVOLUTION.md
-- NEUROCODE_VOICE_ACHIEVED.md
-- NEUROPLEX_GUI_GUIDE.md
-- NEUROPLEX_GUI_STATUS.md
+- aetherra_FOUNDATION_ESTABLISHED.md
+- aetherra_REVOLUTION.md
+- aetherra_VOICE_ACHIEVED.md
+- Lyrixa_GUI_GUIDE.md
+- Lyrixa_GUI_STATUS.md
 - REVOLUTION_ACHIEVED.md
 - SELF_AWARENESS_DEMO.md
 - VSCODE_SETUP_COMPLETE.md
@@ -42,11 +42,11 @@ Remove redundant documentation:
 - ui/neuro_chat.py (functionality integrated into main GUI)
 - ui/neuro_chat_console.py
 - ui/neuro_chat_fixed.py
-- ui/neuro_ui.py (superseded by neuroplex_gui.py)
+- ui/neuro_ui.py (superseded by Lyrixa_gui.py)
 
 ### 6. Test Files (Keep only essential ones)
 - demo_code.py
-- neurocode_language_demo.py
+- aetherra_language_demo.py
 - integration_test.py
 - workspace_analysis.py
 
@@ -54,14 +54,14 @@ Remove redundant documentation:
 - requirements_optimized.txt (keep requirements.txt)
 
 ### 8. Legacy Launch Files
-- launch_gui.py (superseded by ui/neuroplex_gui.py main())
+- launch_gui.py (superseded by ui/Lyrixa_gui.py main())
 - startup.py (redundant)
 
 ## Files to Keep (Essential)
 
 ### Core System
 - core/ (entire directory - essential)
-- ui/neuroplex_gui.py (main GUI)
+- ui/Lyrixa_gui.py (main GUI)
 - plugins/ (plugin system)
 - stdlib/ (standard library)
 
@@ -72,14 +72,14 @@ Remove redundant documentation:
 - README.md
 
 ### Documentation (Essential)
-- NEUROCODE_LANGUAGE_SPEC.md
-- NEUROCODE_MANIFESTO.md
-- NEUROCODE_UNIVERSAL_STANDARD.md
+- aetherra_LANGUAGE_SPEC.md
+- aetherra_MANIFESTO.md
+- aetherra_UNIVERSAL_STANDARD.md
 - ARCHITECTURE.md
 - OPTIMIZATION_GUIDE.md
 - IMMEDIATE_OPTIMIZATION_SUMMARY.md
 - COMPLETE_OPTIMIZATION_GUIDE.md
-- NEUROPLEX_ANALYSIS_REPORT.md
+- Lyrixa_ANALYSIS_REPORT.md
 - MANUAL_EXTENSION_INSTALL.md
 - SELF_EDITING_ARCHITECTURE.md
 - SELF_EDITING_GUIDE.md
@@ -92,7 +92,7 @@ Remove redundant documentation:
 - analysis_test.py
 
 ### Demo Files
-- *.aether files (NeuroCode examples)
+- *.aether files (aetherra examples)
 
 ### Setup Scripts
 - setup_vscode_extensions.py
@@ -101,8 +101,8 @@ Remove redundant documentation:
 ### Data Files
 - goals_store.json
 - memory_store.json
-- neurocode_functions.json
-- Neuroplex.ico
+- aetherra_functions.json
+- Lyrixa.ico
 
 ### Main Entry Points
 - main.py (if it's the main entry point)

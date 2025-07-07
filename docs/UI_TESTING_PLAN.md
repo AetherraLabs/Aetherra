@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the testing strategy and implementation plan for ensuring consistent and accessible UI across the aetherra/Neuroplex application. The testing infrastructure will verify compliance with the UI Style Guide and accessibility standards.
+This document outlines the testing strategy and implementation plan for ensuring consistent and accessible UI across the aetherra/Lyrixaapplication. The testing infrastructure will verify compliance with the UI Style Guide and accessibility standards.
 
 ## Testing Strategy
 

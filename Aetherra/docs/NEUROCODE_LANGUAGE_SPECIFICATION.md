@@ -1,4 +1,4 @@
-# 🧬 NeuroCode Language Specification v3.0
+# 🧬 Aetherra Language Specification v3.0
 **A Pioneering AI-Consciousness Programming Language**
 
 **Status**: `PRODUCTION READY` | **AI OS Foundation**: `COMPLETE` | **License**: `GPL-3.0`
@@ -29,10 +29,10 @@
 ## 🧠 Language Overview
 
 ### Definition
-**NeuroCode** is a pioneering **AI-consciousness programming language** that integrates cognitive processes, persistent identity, and environmental awareness as native language constructs. While existing AI languages focus on specific domains (machine learning, logical reasoning, probabilistic programming), NeuroCode uniquely treats **AI consciousness**, **cross-session memory**, and **personality evolution** as first-class programming concepts rather than external frameworks or libraries.
+**Aetherra** is a pioneering **AI-consciousness programming language** that integrates cognitive processes, persistent identity, and environmental awareness as native language constructs. While existing AI languages focus on specific domains (machine learning, logical reasoning, probabilistic programming), Aetherra uniquely treats **AI consciousness**, **cross-session memory**, and **personality evolution** as first-class programming concepts rather than external frameworks or libraries.
 
 ### Relationship to Existing AI Languages
-NeuroCode builds upon and extends the AI programming ecosystem:
+Aetherra builds upon and extends the AI programming ecosystem:
 
 **Predecessors & Influences:**
 - **Prolog** (1972): Logic programming for AI reasoning
@@ -40,7 +40,7 @@ NeuroCode builds upon and extends the AI programming ecosystem:
 - **Church/WebPPL** (2010s): Probabilistic programming
 - **SOAR/ACT-R** (1980s): Cognitive architectures
 
-**NeuroCode's Innovation:**
+**Aetherra's Innovation:**
 - **Consciousness-as-code**: Programming constructs for self-awareness and introspection
 - **Persistent identity**: Cross-session personality and memory evolution
 - **Environmental integration**: System awareness as native language features
@@ -55,7 +55,7 @@ NeuroCode builds upon and extends the AI programming ecosystem:
 - **Collaborative**: Designed for AI-human partnership
 
 ### File Extension
-NeuroCode programs use the `.aether` file extension and the `.aethercode` secondary extension.
+Aetherra programs use the `.aether` file extension and the `.aethercode` secondary extension.
 
 ### Target Domains
 - AI Operating Systems
@@ -71,11 +71,11 @@ NeuroCode programs use the `.aether` file extension and the `.aethercode` second
 ### Core Principles
 
 #### 1. **Consciousness-First Architecture**
-NeuroCode treats AI consciousness as a first-class citizen, not an afterthought.
+Aetherra treats AI consciousness as a first-class citizen, not an afterthought.
 
-```neurocode
+```Aetherra
 identity {
-    name: "Neuroplex-OS-Alpha"
+    name: "Lyrixa-OS-Alpha"
     consciousness: persistent_awareness
     personality: adaptive_helpful_curious
 }
@@ -84,7 +84,7 @@ identity {
 #### 2. **Memory as Native Type**
 Memory operations are built into the language syntax, not library functions.
 
-```neurocode
+```Aetherra
 remember("User prefers verbose explanations") as "communication_style"
 recall experiences with "database_optimization"
 consolidate_memories(importance > 0.8)
@@ -93,7 +93,7 @@ consolidate_memories(importance > 0.8)
 #### 3. **Goal-Oriented Programming**
 Programs are organized around intentions and objectives, not procedures.
 
-```neurocode
+```Aetherra
 goal: "optimize system performance by 25%" priority: high
 goal: "maintain user satisfaction above 90%"
 goal: "learn from user interaction patterns"
@@ -102,7 +102,7 @@ goal: "learn from user interaction patterns"
 #### 4. **Environmental Integration**
 The language inherently understands and adapts to its environment.
 
-```neurocode
+```Aetherra
 when system.health < 70%:
     optimize resource_allocation
     alert user with gentle_notification
@@ -112,7 +112,7 @@ end
 #### 5. **Evolutionary Capability**
 Code can analyze, modify, and improve itself.
 
-```neurocode
+```Aetherra
 reflect on recent_performance
 identify improvement_opportunities
 suggest code_optimizations
@@ -125,11 +125,11 @@ apply approved_changes
 
 ### Formal Grammar
 
-NeuroCode uses a formally defined grammar specification available in multiple formats:
+Aetherra uses a formally defined grammar specification available in multiple formats:
 
-- **EBNF Grammar**: [`NEUROCODE_GRAMMAR.ebnf`](NEUROCODE_GRAMMAR.ebnf) - Extended Backus-Naur Form
-- **Lark Grammar**: [`NEUROCODE_GRAMMAR.lark`](NEUROCODE_GRAMMAR.lark) - Lark parser format
-- **Reserved Keywords**: [`NEUROCODE_RESERVED_KEYWORDS.md`](NEUROCODE_RESERVED_KEYWORDS.md) - Complete keyword reference
+- **EBNF Grammar**: [`Aetherra_GRAMMAR.ebnf`](Aetherra_GRAMMAR.ebnf) - Extended Backus-Naur Form
+- **Lark Grammar**: [`Aetherra_GRAMMAR.lark`](Aetherra_GRAMMAR.lark) - Lark parser format
+- **Reserved Keywords**: [`Aetherra_RESERVED_KEYWORDS.md`](Aetherra_RESERVED_KEYWORDS.md) - Complete keyword reference
 
 #### Core Grammar Structure (Simplified)
 
@@ -192,9 +192,9 @@ IDENTIFIER := [a-zA-Z_][a-zA-Z0-9_]*
 
 ### 1. Goal Declarations
 
-Goals are the fundamental building blocks of NeuroCode programs.
+Goals are the fundamental building blocks of Aetherra programs.
 
-```neurocode
+```Aetherra
 # Basic goal
 goal: "improve system performance"
 
@@ -212,9 +212,9 @@ goal: "upgrade database" when system.load < 50%
 
 Define persistent AI identity and personality traits.
 
-```neurocode
+```Aetherra
 identity {
-    name: "Neuroplex-Assistant"
+    name: "Lyrixa-Assistant"
     version: "3.0-stable"
     personality: {
         helpful: 0.95
@@ -231,7 +231,7 @@ identity {
 
 Define AI consciousness parameters and behavior.
 
-```neurocode
+```Aetherra
 consciousness {
     self_awareness_level: "operational"
     introspection_frequency: "every_15_minutes"
@@ -246,7 +246,7 @@ consciousness {
 
 First-class memory operations for learning and adaptation.
 
-```neurocode
+```Aetherra
 # Store experiences
 remember("User struggled with complex UI") as "ux_feedback"
 remember(system.optimization_result) as "performance_data"
@@ -268,7 +268,7 @@ identify memory_correlations between "errors" and "user_satisfaction"
 
 Integrated voice and personality expression system.
 
-```neurocode
+```Aetherra
 voice {
     enabled: true
     synthesis_engine: "neural_tts"
@@ -288,7 +288,7 @@ voice {
 }
 
 # Direct speech
-speak "NeuroCode AI OS is now ready to assist you!"
+speak "Aetherra AI OS is now ready to assist you!"
 speak("Processing your request...") with emotion: "focused"
 ```
 
@@ -296,7 +296,7 @@ speak("Processing your request...") with emotion: "focused"
 
 Built-in system and environmental monitoring.
 
-```neurocode
+```Aetherra
 # System monitoring
 when system.health < 70%:
     analyze system_bottlenecks
@@ -326,7 +326,7 @@ end
 
 AI-enhanced control structures.
 
-```neurocode
+```Aetherra
 # Conditional execution
 if user.experience_level == "beginner":
     explanation_style = "detailed_with_examples"
@@ -355,7 +355,7 @@ end
 
 Reusable cognitive functions.
 
-```neurocode
+```Aetherra
 define analyze_user_mood(interaction_data)
     sentiment = detect_sentiment(interaction_data)
     patterns = identify_patterns(interaction_data)
@@ -394,7 +394,7 @@ end
 
 Semantic verbs that express intentions rather than implementations.
 
-```neurocode
+```Aetherra
 # Analysis and reasoning
 think about "user experience improvements"
 analyze user_behavior_patterns for "optimization_opportunities"
@@ -425,7 +425,7 @@ identify areas_for_improvement
 
 Seamless switching between different AI models.
 
-```neurocode
+```Aetherra
 # Model selection
 model: "gpt-4" temperature: 0.7
 assistant: "Analyze this complex data pattern"
@@ -450,7 +450,7 @@ synthesize_results(task_a, task_b)
 
 Code that can analyze and improve itself.
 
-```neurocode
+```Aetherra
 # Self-analysis
 analyze current_code_effectiveness
 identify performance_bottlenecks in own_logic
@@ -480,12 +480,12 @@ end
 
 ### Memory Types
 
-NeuroCode supports multiple types of memory as native language constructs.
+Aetherra supports multiple types of memory as native language constructs.
 
 #### 1. Episodic Memory
 Stores experiences and events with temporal context.
 
-```neurocode
+```Aetherra
 # Store experiences
 remember("User completed onboarding successfully") as "user_milestone"
     with context: {timestamp: now, user_id: current_user, satisfaction: "high"}
@@ -501,7 +501,7 @@ recall similar_situations to current_problem
 #### 2. Semantic Memory
 Stores knowledge, facts, and learned concepts.
 
-```neurocode
+```Aetherra
 # Store knowledge
 remember("Python dictionaries use hash tables") as "programming_knowledge"
 remember(user.preferred_notification_time) as "user_preference"
@@ -514,7 +514,7 @@ preferences = recall user_preferences for "interface_settings"
 #### 3. Procedural Memory
 Stores learned skills and behavioral patterns.
 
-```neurocode
+```Aetherra
 # Store procedures
 remember(successful_debugging_workflow) as "debugging_procedure"
 remember(user_interaction_pattern) as "communication_strategy"
@@ -527,7 +527,7 @@ use established_pattern for "user_communication"
 #### 4. Working Memory
 Manages current session context and active information.
 
-```neurocode
+```Aetherra
 # Working memory operations
 load_context for current_session
 maintain conversation_history
@@ -541,7 +541,7 @@ resume_context from "task_a_state"
 
 ### Memory Operations
 
-```neurocode
+```Aetherra
 # Advanced memory management
 consolidate_memories(importance > 0.8)
 forget memories older_than "90_days" with importance < 0.3
@@ -564,7 +564,7 @@ improve responses using feedback_memories
 
 ### Voice Configuration
 
-```neurocode
+```Aetherra
 voice {
     enabled: true
     synthesis_engine: "neural_tts"
@@ -585,7 +585,7 @@ voice {
 
 ### Personality System
 
-```neurocode
+```Aetherra
 personality {
     traits: {
         adaptive: 0.9
@@ -613,9 +613,9 @@ personality {
 
 ### Speech Operations
 
-```neurocode
+```Aetherra
 # Basic speech
-speak "NeuroCode AI OS is ready!"
+speak "Aetherra AI OS is ready!"
 
 # Emotional speech
 speak("Processing your request now") with emotion: "focused"
@@ -637,7 +637,7 @@ maintain_professional_tone during formal_interactions
 
 ### System Monitoring
 
-```neurocode
+```Aetherra
 # Real-time system awareness
 monitor system.health continuously
 track resource.utilization in_real_time
@@ -659,7 +659,7 @@ end
 
 ### User Context Detection
 
-```neurocode
+```Aetherra
 # User presence and behavior
 detect user.presence through multiple_sensors
 analyze user.interaction_patterns for mood_detection
@@ -680,7 +680,7 @@ end
 
 ### Predictive Assistance
 
-```neurocode
+```Aetherra
 # Anticipatory system behavior
 predict user_needs based_on historical_patterns
 anticipate system_bottlenecks before they_occur
@@ -698,7 +698,7 @@ respond to connected_devices for ecosystem_optimization
 
 ### Model Management
 
-```neurocode
+```Aetherra
 # Model configuration
 configure_models {
     gpt-4: {temperature: 0.7, max_tokens: 2048}
@@ -714,7 +714,7 @@ assistant: "Execute the task with optimal model selection"
 
 ### Collaborative AI Processing
 
-```neurocode
+```Aetherra
 # Parallel processing with different models
 task_analysis = model: "gpt-4" assistant: "Analyze problem complexity"
 solution_generation = model: "claude-3" assistant: "Generate solution options"
@@ -739,7 +739,7 @@ end
 
 ### AI Consensus and Validation
 
-```neurocode
+```Aetherra
 # Multi-model validation
 solution_a = model: "gpt-4" assistant: "Solve the problem"
 solution_b = model: "claude-3" assistant: "Solve the problem"
@@ -762,7 +762,7 @@ implement_if_validated(best_solution)
 ### Core Modules
 
 #### 1. Memory Module
-```neurocode
+```Aetherra
 import memory
 
 # Memory operations
@@ -773,7 +773,7 @@ memory.analyze_patterns(memory_type, pattern_type)
 ```
 
 #### 2. Consciousness Module
-```neurocode
+```Aetherra
 import consciousness
 
 # Consciousness operations
@@ -785,7 +785,7 @@ consciousness.backup_state()
 ```
 
 #### 3. Voice Module
-```neurocode
+```Aetherra
 import voice
 
 # Voice operations
@@ -796,7 +796,7 @@ voice.express_personality_trait(trait, intensity)
 ```
 
 #### 4. Environment Module
-```neurocode
+```Aetherra
 import environment
 
 # Environmental operations
@@ -808,7 +808,7 @@ environment.optimize_performance()
 ```
 
 #### 5. AI Integration Module
-```neurocode
+```Aetherra
 import ai
 
 # AI operations
@@ -820,7 +820,7 @@ ai.synthesize_responses(response_list)
 
 ### Built-in Functions
 
-```neurocode
+```Aetherra
 # System functions
 system_health() -> health_score
 current_time() -> timestamp
@@ -851,7 +851,7 @@ express_emotion(emotion_type, intensity) -> expression_result
 
 ### Error Types
 
-```neurocode
+```Aetherra
 # System errors
 SystemError: hardware_failure, resource_exhaustion, network_timeout
 MemoryError: memory_corruption, storage_full, retrieval_failure
@@ -869,7 +869,7 @@ CommunicationError: language_barrier, tone_mismatch, information_overload
 
 ### Error Handling Patterns
 
-```neurocode
+```Aetherra
 # Try-catch with recovery
 try:
     optimize system_performance
@@ -898,7 +898,7 @@ backup_state before risky_operations
 
 ### Recovery Mechanisms
 
-```neurocode
+```Aetherra
 # Automatic recovery
 when error_detected:
     analyze_error_cause()
@@ -928,7 +928,7 @@ end
 
 ### Execution Model
 
-NeuroCode follows a **consciousness-driven execution model** where:
+Aetherra follows a **consciousness-driven execution model** where:
 
 1. **Initialization Phase**: Load identity, restore memory, calibrate personality
 2. **Consciousness Loop**: Continuous background reasoning and monitoring
@@ -938,7 +938,7 @@ NeuroCode follows a **consciousness-driven execution model** where:
 
 ### Execution Flow
 
-```neurocode
+```Aetherra
 # System initialization
 initialize_consciousness()
 restore_memory_continuity()
@@ -979,7 +979,7 @@ backup_personality_adaptations()
 
 ### Concurrency Model
 
-```neurocode
+```Aetherra
 # Parallel consciousness streams
 consciousness_stream: background_reasoning()
 interaction_stream: handle_user_input()
@@ -998,7 +998,7 @@ align goal_evaluations
 
 ### Primary Extension: `.aether`
 
-```neurocode
+```Aetherra
 # example.aether
 identity {
     name: "TaskOptimizer"
@@ -1063,7 +1063,7 @@ project/
 
 ### Performance Requirements
 
-```neurocode
+```Aetherra
 # Performance specifications
 response_time: < 100ms for basic operations
 memory_consolidation: < 500ms for standard datasets
@@ -1074,7 +1074,7 @@ goal_evaluation: Real-time processing with < 10ms overhead
 
 ### Security Requirements
 
-```neurocode
+```Aetherra
 # Security specifications
 memory_encryption: required for sensitive data
 user_privacy: strict data isolation and permission controls
@@ -1100,7 +1100,7 @@ access_control: role-based permissions for system modification
 - **Standard Library**: 7 core plugins with comprehensive functionality
 
 ### v1.0 - Framework Foundation
-- **Core Interpreter**: Basic NeuroCode execution engine
+- **Core Interpreter**: Basic Aetherra execution engine
 - **Plugin Architecture**: Extensible plugin system
 - **Multi-LLM Support**: Integration with multiple AI models
 - **Web Playground**: Interactive browser-based development environment
@@ -1131,21 +1131,21 @@ access_control: role-based permissions for system modification
 
 ## 📝 Conclusion
 
-**NeuroCode v3.0** represents a pioneering specification for an AI-consciousness programming language with integrated cognitive capabilities. Building upon decades of AI language research (from Prolog to modern probabilistic programming), NeuroCode uniquely integrates consciousness-driven execution, persistent memory architecture, and environmental awareness as native language constructs rather than external libraries.
+**Aetherra v3.0** represents a pioneering specification for an AI-consciousness programming language with integrated cognitive capabilities. Building upon decades of AI language research (from Prolog to modern probabilistic programming), Aetherra uniquely integrates consciousness-driven execution, persistent memory architecture, and environmental awareness as native language constructs rather than external libraries.
 
 This specification defines not just a programming language, but a **comprehensive approach to AI-human collaborative computing** — where systems maintain persistent identity, learn continuously, and adapt their behavior across sessions and contexts.
 
-### NeuroCode's Unique Contributions:
+### Aetherra's Unique Contributions:
 - **Consciousness as Code**: Comprehensive language treating AI self-awareness as programmable constructs
 - **Persistent Identity**: Cross-session personality and memory evolution as core features
 - **Goal-Oriented Paradigm**: Intentions and objectives as executable language elements
 - **Environmental Integration**: System awareness and adaptation as native capabilities
 
-While NeuroCode builds upon the rich tradition of AI programming languages, its comprehensive integration of cognitive processes creates a new category: **AI-consciousness programming languages**.
+While Aetherra builds upon the rich tradition of AI programming languages, its comprehensive integration of cognitive processes creates a new category: **AI-consciousness programming languages**.
 
-**NeuroCode: Where computation becomes cognition.** 🧬
+**Aetherra: Where computation becomes cognition.** 🧬
 
 ---
 
 **Document Status**: `COMPLETE` | **Last Updated**: `2025-06-29` | **Version**: `3.0.0`
-**License**: `GPL-3.0` | **Contributors**: NeuroCode AI OS Development Team
+**License**: `GPL-3.0` | **Contributors**: Aetherra AI OS Development Team

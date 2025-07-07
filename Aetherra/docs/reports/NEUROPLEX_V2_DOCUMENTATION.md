@@ -1,4 +1,4 @@
-# 🧬 Neuroplex v2.0 - Modern GUI Documentation
+# 🧬 Lyrixav2.0 - Modern GUI Documentation
 
 **Release Date:** June 29, 2025
 **Version:** 2.0.0
@@ -8,7 +8,7 @@
 
 ## 🎨 **What's New in v2.0**
 
-Neuroplex v2.0 introduces a completely modernized interface with cutting-edge dark mode design and enhanced functionality for AI-native development.
+Lyrixav2.0 introduces a completely modernized interface with cutting-edge dark mode design and enhanced functionality for AI-native development.
 
 ---
 
@@ -72,16 +72,16 @@ pip install PyQt6
 pip install psutil
 ```
 
-### **Launching Neuroplex v2.0**
+### **Launching Lyrixav2.0**
 ```bash
 # Launch the modern interface
-python launch_neuroplex_v2.py
+python launch_Lyrixa_v2.py
 
 # Run feature demo
-python demo_neuroplex_v2.py
+python demo_Lyrixa_v2.py
 
 # Direct launch
-python ui/neuroplex_gui_v2.py
+python ui/Lyrixa_gui_v2.py
 ```
 
 ---
@@ -117,7 +117,7 @@ python ui/neuroplex_gui_v2.py
 
 #### **Center Panel (Workspace)**
 - **Natural Programming Tab**: Describe code in plain English, get AI-generated code
-- **Code Editor Tab**: Write and edit NeuroCode with syntax highlighting
+- **Code Editor Tab**: Write and edit Aetherra with syntax highlighting
 - **AI Chat Tab**: Conversational interface with AI assistant
 
 #### **Right Panel (Information Hub)**
@@ -181,7 +181,7 @@ TEXT_SECONDARY = "#a3a3a3" # Light gray text
 
 ### **Plugin Architecture**
 - **Modular Design**: Add functionality without core changes
-- **API Access**: Full access to NeuroCode features
+- **API Access**: Full access to Aetherra features
 - **Hot Loading**: Install plugins without restart
 - **Sandboxed Execution**: Safe plugin environment
 
@@ -192,7 +192,7 @@ TEXT_SECONDARY = "#a3a3a3" # Light gray text
 | Action              | Shortcut       | Description                    |
 | ------------------- | -------------- | ------------------------------ |
 | **File Operations** |
-| New Project         | `Ctrl+N`       | Create new NeuroCode project   |
+| New Project         | `Ctrl+N`       | Create new Aetherra project   |
 | Open File           | `Ctrl+O`       | Open existing .aether file     |
 | Save                | `Ctrl+S`       | Save current file              |
 | Save As             | `Ctrl+Shift+S` | Save with new name             |
@@ -234,12 +234,12 @@ pip install PyQt6
 #### **Plugin Loading Errors**
 - Check plugin compatibility
 - Verify plugin dependencies
-- Restart Neuroplex after plugin installation
+- Restart Lyrixaafter plugin installation
 
 ### **Debug Mode**
 ```bash
 # Launch with debug information
-python -u ui/neuroplex_gui_v2.py --debug
+python -u ui/Lyrixa_gui_v2.py --debug
 
 # Check component availability
 python -c "from ui.aetherplex_gui_v2 import test_components; test_components()"
@@ -316,7 +316,7 @@ class CustomPanel(ModernCard):
 
 ### **Getting Help**
 - **Documentation**: This guide and inline help
-- **Community**: Join the NeuroCode community discussions
+- **Community**: Join the Aetherra community discussions
 - **Issues**: Report bugs and request features
 - **Tutorials**: Video guides and examples
 
@@ -328,6 +328,6 @@ class CustomPanel(ModernCard):
 
 ---
 
-**Neuroplex v2.0 - The Future of AI-Native Development** 🚀
+**Lyrixav2.0 - The Future of AI-Native Development** 🚀
 
 *Experience the next generation of programming with our ultra-modern dark mode interface, advanced AI integration, and powerful development tools.*

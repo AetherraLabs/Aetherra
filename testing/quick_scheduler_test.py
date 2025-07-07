@@ -22,7 +22,7 @@ try:
 
     print("3. Testing GUI import...")
 
-    print("✅ Neuroplex GUI imported successfully")
+    print("✅ Lyrixa imported successfully")
 
     print("4. Testing task scheduler shutdown...")
     scheduler.shutdown(timeout=2.0)

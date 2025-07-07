@@ -15,7 +15,7 @@ from lark import Lark, Transformer
 from lark.exceptions import LarkError
 
 # AetherraCode Formal Grammar Definition - Corrected Structure
-NEUROCODE_GRAMMAR = r"""
+aetherra_GRAMMAR = r"""
     ?start: program
 
     program: statement*
@@ -466,7 +466,7 @@ class AetherraParser:
 
     def __init__(self):
         self.parser = Lark(
-            NEUROCODE_GRAMMAR,
+            aetherra_GRAMMAR,
             parser="lalr",
             transformer=AetherraCodeTransformer(),
             start="program",

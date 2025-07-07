@@ -1,7 +1,7 @@
-# 🧬 Neuroplex GUI v2.0 Fixes Complete
+# 🧬 Lyrixa v2.0 Fixes Complete
 
 ## Summary
-Successfully resolved major QPainter errors and text cutoff issues in the Neuroplex GUI v2.0.
+Successfully resolved major QPainter errors and text cutoff issues in the Lyrixa v2.0.
 
 ## Issues Fixed
 
@@ -32,7 +32,7 @@ Successfully resolved major QPainter errors and text cutoff issues in the Neurop
 
 **Solution**:
 - ✅ Left panel: min 320px, max 380px
-- ✅ Right panel: min 350px, max 450px  
+- ✅ Right panel: min 350px, max 450px
 - ✅ Better splitter proportions: [320, 800, 350]
 - ✅ Improved margins: 6px for panel containers
 - ✅ Non-collapsible splitter panels
@@ -83,7 +83,7 @@ self.cpu_label.setMinimumWidth(40)
 panel.setMinimumWidth(320)
 panel.setMaximumWidth(380)
 
-# Right panel sizing  
+# Right panel sizing
 panel.setMinimumWidth(350)
 panel.setMaximumWidth(450)
 ```
@@ -110,19 +110,19 @@ panel.setMaximumWidth(450)
 ## Launch Commands
 ```bash
 # Direct launch
-python ui\neuroplex_gui_v2.py
+python ui\Lyrixa_gui_v2.py
 
 # Via launcher script
-python launch_neuroplex_v2.py
+python launch_Lyrixa_v2.py
 
 # Via demo script
-python demo_neuroplex_v2.py
+python demo_Lyrixa_v2.py
 ```
 
 ## Technical Details
 
 ### Files Modified
-- `ui/neuroplex_gui_v2.py` (main GUI file)
+- `ui/Lyrixa_gui_v2.py` (main GUI file)
 
 ### Key Improvements
 1. **Memory Management**: Better widget lifecycle management

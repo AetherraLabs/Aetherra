@@ -1,8 +1,8 @@
-# NeuroCode Plugin SDK Documentation
+# Aetherra Plugin SDK Documentation
 
 ## Overview
 
-The NeuroCode Plugin System provides a powerful and extensible way to add functionality to the NeuroCode environment. Plugins can be accessed both programmatically and through natural language `.aether` code syntax.
+The Aetherra Plugin System provides a powerful and extensible way to add functionality to the Aetherra environment. Plugins can be accessed both programmatically and through natural language `.aether` code syntax.
 
 ## Plugin Structure
 
@@ -24,7 +24,7 @@ from core.plugin_manager import register_plugin
     intent_purpose="demonstration and examples",
     intent_triggers=["demo", "example", "test"],
     intent_scenarios=["learning plugin development", "testing functionality"],
-    ai_description="A sample plugin for demonstrating NeuroCode plugin capabilities",
+    ai_description="A sample plugin for demonstrating Aetherra plugin capabilities",
     example_usage="plugin: my_plugin 'hello world'",
     confidence_boost=1.0
 )
@@ -82,7 +82,7 @@ plugin: my_plugin "hello world"
 plugin: calculate "2 + 3 * 4"
 
 # File operations
-plugin: create_file "output.txt" "Hello from NeuroCode!"
+plugin: create_file "output.txt" "Hello from Aetherra!"
 plugin: read_file "output.txt"
 ```
 
@@ -91,7 +91,7 @@ plugin: read_file "output.txt"
 ```neuro
 # Git workflow
 plugin: git_status
-plugin: git_commit "Automated commit via NeuroCode"
+plugin: git_commit "Automated commit via Aetherra"
 
 # Audio transcription
 plugin: whisper_transcribe "meeting.wav"
@@ -178,10 +178,10 @@ plugin: calculate "sin(pi/2) * 100"
 
 ### 1. Create Plugin File
 
-Create a new `.py` file in `src/neurocode/plugins/`:
+Create a new `.py` file in `src/Aetherra/plugins/`:
 
 ```python
-# src/neurocode/plugins/my_custom_plugin.py
+# src/Aetherra/plugins/my_custom_plugin.py
 from core.plugin_manager import register_plugin
 from typing import Dict, Any
 
@@ -254,7 +254,7 @@ result = execute_plugin_command('plugin: weather "London"')
 print(result)
 ```
 
-## Integration with NeuroCode
+## Integration with Aetherra
 
 ### Memory Integration
 
@@ -282,7 +282,7 @@ goal("Check weather and plan day") {
 
 ### AI Collaboration
 
-The plugin system integrates with NeuroCode's AI capabilities:
+The plugin system integrates with Aetherra's AI capabilities:
 
 ```neuro
 # AI can suggest and execute plugins based on context
@@ -345,13 +345,13 @@ toggle_plugin("weather", True)
 
 ## Plugin Icons and Branding
 
-The plugin system supports the NeuroCode icon for consistent branding:
+The plugin system supports the Aetherra icon for consistent branding:
 
 ```python
 # Icon path is available in plugin manager
 from src.aethercode.ui.components.panels.plugin_manager import PluginManagerPanel
 panel = PluginManagerPanel()
-icon_path = panel.icon_path  # Path to neurocode-icon.png
+icon_path = panel.icon_path  # Path to Aetherra-icon.png
 ```
 
 ## Future Enhancements

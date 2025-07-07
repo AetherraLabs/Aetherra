@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🎯 Complete Neuroplex System Integration Test
+🎯 Complete Aetherra System Integration Test
 ============================================
 
-Final comprehensive test of the complete Neuroplex system including:
+Final comprehensive test of the complete Aetherra system including:
 - Unified GUI with all tabs
 - Task Scheduler integration
 - NeuroHub package manager integration
@@ -34,11 +34,11 @@ def test_complete_system_startup():
         if app is None:
             app = QApplication(sys.argv)
 
-        # Import and create Neuroplex window
-        from src.aethercode.ui.aetherplex import NeuroplexWindow
+        # Import and create Aetherra window
+        from src.aethercode.ui.aetherplex import AetherraWindow
 
-        window = NeuroplexWindow()
-        print("✅ Neuroplex window created successfully")
+        window = AetherraWindow()
+        print("✅ Aetherra window created successfully")
 
         # Check all major components
         components = {
@@ -122,7 +122,7 @@ def test_feature_completeness():
     print("🔍 Testing feature completeness...")
 
     completed_features = {
-        "✅ Unified GUI": "Single neuroplex.py with dark mode",
+        "✅ Unified GUI": "Single Aetherra.py with dark mode",
         "✅ Advanced Chat": "Chat router with personalities and memory",
         "✅ Task Scheduler": "Background task management with priority/retry",
         "✅ Memory Timeline": "GUI memory visualization and management",
@@ -176,15 +176,15 @@ def test_system_robustness():
 def generate_system_summary():
     """Generate a comprehensive system summary"""
     print("\n" + "=" * 60)
-    print("🎯 NEUROPLEX SYSTEM SUMMARY")
+    print("🎯 Aetherra SYSTEM SUMMARY")
     print("=" * 60)
 
     print("""
-🧬 NEUROPLEX - AI-NATIVE DEVELOPMENT ENVIRONMENT
+🧬 Aetherra - AI-NATIVE DEVELOPMENT ENVIRONMENT
 ===============================================
 
 ARCHITECTURE:
-• Single unified GUI (src/aetherra/ui/neuroplex.py)
+• Single unified GUI (src/aetherra/ui/Aetherra.py)
 • Modular core system (core/*.py)
 • Plugin-based extensibility (plugins/)
 • Background task processing (core/task_scheduler.py)
@@ -226,7 +226,7 @@ TECHNICAL STACK:
 • Modular plugin architecture
 
 LAUNCH COMMAND:
-python launchers/launch_neuroplex.py
+python launchers/launch_Aetherra.py
 
 STATUS: ✅ PRODUCTION READY
 """)
@@ -234,7 +234,7 @@ STATUS: ✅ PRODUCTION READY
 
 def main():
     """Run comprehensive system integration test"""
-    print("🚀 Starting Complete Neuroplex System Integration Test")
+    print("🚀 Starting Complete Aetherra System Integration Test")
     print("=" * 60)
 
     tests = [
@@ -277,7 +277,7 @@ def main():
 🎉 INTEGRATION COMPLETE!
 ========================
 
-The Neuroplex AI-native development environment is now fully integrated
+The Aetherra AI-native development environment is now fully integrated
 and ready for production use. All major components are working together
 seamlessly:
 

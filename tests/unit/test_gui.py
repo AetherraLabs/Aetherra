@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test the Neuroplex GUI functionality and verify it's working properly
+Test the Lyrixa Plugin UI functionality and verify it's working properly
 """
 
 import os
@@ -9,7 +9,7 @@ import sys
 # Add the current directory to Python path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-print("🧬 Testing Neuroplex GUI Components...")
+print("🎙️ Testing Lyrixa Plugin UI Components...")
 
 
 def test_qt_backend():
@@ -46,12 +46,12 @@ def test_gui_classes():
     test_classes = [
         "NeuroAnimation",
         "PulsingWidget",
-        "NeuroCodeEditor",
+        "AetherraEditor",
         "MemoryVisualization",
         "GoalTracker",
         "SystemMonitor",
         "LiveConsole",
-        "NeuroplexMainWindow",
+        "LyrixaMainWindow",
     ]
 
     try:
@@ -59,8 +59,8 @@ def test_gui_classes():
             LiveConsole,
             MemoryVisualization,
             NeuroAnimation,
-            NeuroCodeEditor,
-            NeuroplexMainWindow,
+            AetherraEditor,
+            LyrixaMainWindow,
             PulsingWidget,
             SystemMonitor,
         )
@@ -82,8 +82,8 @@ def test_gui_classes():
     return components_passed == components_tested
 
 
-def test_neurocode_integration():
-    """Test NeuroCode component integration"""
+def test_Aetherra_integration():
+    """Test Aetherra component integration"""
     try:
         # Test if the core path is being added correctly
         sys.path.append(os.path.join(os.path.dirname(__file__), "core"))
@@ -91,32 +91,32 @@ def test_neurocode_integration():
         # Try importing core components
         try:
 
-            print("✅ NeuroCode interpreter import successful")
+            print("✅ Aetherra interpreter import successful")
             interpreter_ok = True
         except ImportError:
-            print("⚠️ NeuroCode interpreter not available (expected in isolated test)")
+            print("⚠️ Aetherra interpreter not available (expected in isolated test)")
             interpreter_ok = False
 
         try:
 
-            print("✅ NeuroCode memory import successful")
+            print("✅ Aetherra memory import successful")
             memory_ok = True
         except ImportError:
-            print("⚠️ NeuroCode memory not available (expected in isolated test)")
+            print("⚠️ Aetherra memory not available (expected in isolated test)")
             memory_ok = False
 
         try:
 
-            print("✅ NeuroCode chat router import successful")
+            print("✅ Aetherra chat router import successful")
             chat_ok = True
         except ImportError:
-            print("⚠️ NeuroCode chat router not available (expected in isolated test)")
+            print("⚠️ Aetherra chat router not available (expected in isolated test)")
             chat_ok = False
 
         return True  # It's OK if components aren't available in isolation
 
     except Exception as e:
-        print(f"❌ NeuroCode integration test failed: {e}")
+        print(f"❌ Aetherra integration test failed: {e}")
         return False
 
 
@@ -136,14 +136,14 @@ def test_gui_launch():
 def main():
     """Run all tests"""
     print("🧬" + "=" * 60)
-    print("   NEUROPLEX GUI COMPONENT TEST SUITE")
+    print("   Lyrixa COMPONENT TEST SUITE")
     print("🧬" + "=" * 60)
 
     tests = [
         ("Qt Backend", test_qt_backend),
         ("NeuroTheme", test_theme),
         ("GUI Classes", test_gui_classes),
-        ("NeuroCode Integration", test_neurocode_integration),
+        ("Aetherra Integration", test_Aetherra_integration),
         ("GUI Launch Function", test_gui_launch),
     ]
 
@@ -166,7 +166,7 @@ def main():
     print("🧬" + "=" * 60)
 
     if passed == total:
-        print("🎉 ALL TESTS PASSED! Neuroplex GUI is ready to use!")
+        print("🎉 ALL TESTS PASSED! Lyrixa is ready to use!")
         print("💡 To launch the GUI, run: python launch_gui.py")
     else:
         print("⚠️ Some tests failed, but the GUI may still be functional")

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Integration Test - Enhanced Neuroplex with Chat Router
+Integration Test - Enhanced Aetherra with Chat Router
 =====================================================
 
-Tests the integration of the enhanced chat router with the Neuroplex GUI
+Tests the integration of the enhanced chat router with the Aetherra GUI
 """
 
 import sys
@@ -17,7 +17,7 @@ sys.path.insert(0, str(project_root / "core"))
 
 def test_chat_router_integration():
     """Test the chat router integration"""
-    print("🧪 Testing Enhanced Neuroplex Chat Router Integration")
+    print("🧪 Testing Enhanced Aetherra Chat Router Integration")
     print("=" * 60)
 
     # Test 1: Import chat router
@@ -66,17 +66,17 @@ def test_chat_router_integration():
         print(f"❌ Message processing failed: {e}")
         return False
 
-    # Test 5: Test enhanced Neuroplex import
+    # Test 5: Test enhanced Aetherra import
     try:
-        from src.aethercode.ui.enhanced_neuroplex import EnhancedNeuroplexWindow
+        from src.aethercode.ui.enhanced_Aetherra import EnhancedAetherraWindow
 
-        print("✅ Enhanced Neuroplex import successful")
+        print("✅ Enhanced Aetherra import successful")
     except ImportError as e:
-        print(f"⚠️ Enhanced Neuroplex import failed: {e}")
+        print(f"⚠️ Enhanced Aetherra import failed: {e}")
         print("   This is expected if PySide6 is not installed")
 
     print("\n🎉 Integration test completed successfully!")
-    print("🚀 Enhanced Neuroplex is ready with:")
+    print("🚀 Enhanced Aetherra is ready with:")
     print("   • AI-powered chat responses")
     print("   • Swappable personalities")
     print("   • Context-aware conversations")
@@ -93,7 +93,7 @@ def test_gui_integration():
     try:
         from PySide6.QtWidgets import QApplication
 
-        from src.aethercode.ui.enhanced_neuroplex import EnhancedNeuroplexWindow
+        from src.aethercode.ui.enhanced_Aetherra import EnhancedAetherraWindow
 
         print("✅ PySide6 available - GUI test possible")
 
@@ -103,8 +103,8 @@ def test_gui_integration():
             app = QApplication([])
 
         # Test window creation
-        window = EnhancedNeuroplexWindow()
-        print("✅ Enhanced Neuroplex window created successfully")
+        window = EnhancedAetherraWindow()
+        print("✅ Enhanced Aetherra window created successfully")
 
         # Test chat router integration
         if hasattr(window, "chat_router") and window.chat_router:
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     if success:
         print("\n🎯 INTEGRATION READY!")
         print(
-            "Run 'python aetherra_launcher.py' and select option 1 to use Enhanced Neuroplex"
+            "Run 'python aetherra_launcher.py' and select option 1 to use Enhanced Aetherra"
         )
     else:
         print("\n❌ Integration issues detected - check error messages above")

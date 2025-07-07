@@ -3,7 +3,7 @@
 🚀 AetherraCode Performance Enhancement Demo
 ========================================
 
-Comprehensive demonstration of all performance enhancements for AetherraCode & Neuroplex.
+Comprehensive demonstration of all performance enhancements for AetherraCode & Aetherra.
 This script showcases the dramatic performance improvements across all systems.
 
 Features Demonstrated:
@@ -35,10 +35,10 @@ try:
         performance_optimized,
     )
 
-    NEUROCODE_AVAILABLE = True
+    Aetherra_AVAILABLE = True
 except ImportError as e:
     print(f"⚠️ AetherraCode modules not fully available: {e}")
-    NEUROCODE_AVAILABLE = False
+    Aetherra_AVAILABLE = False
 
 
 class PerformanceBenchmark:
@@ -238,10 +238,10 @@ def demo_ui_optimization():
 
 def demo_aethercode_operations():
     """Demonstrate AetherraCode-specific optimizations"""
-    print("\n🧬 NEUROCODE OPERATIONS DEMO")
+    print("\n🧬 Aetherra OPERATIONS DEMO")
     print("-" * 40)
 
-    if not NEUROCODE_AVAILABLE:
+    if not Aetherra_AVAILABLE:
         print("⚠️ AetherraCode modules not available - skipping demo")
         return None
 
@@ -403,7 +403,7 @@ def demo_real_time_monitoring():
 
 def main():
     """Main demonstration function"""
-    print("🚀 AetherraCode & Neuroplex Performance Enhancement Demo")
+    print("🚀 AetherraCode & Aetherra Performance Enhancement Demo")
     print("=" * 60)
     print("Demonstrating dramatic performance improvements across all systems")
 
@@ -467,7 +467,7 @@ def main():
     print("  • Real-time performance monitoring active")
     print("  • Automatic optimization continuously improving performance")
 
-    print("\n✨ AetherraCode & Neuroplex performance optimization complete!")
+    print("\n✨ AetherraCode & Aetherra performance optimization complete!")
     print("The system is now running at peak efficiency! 🚀")
 
 

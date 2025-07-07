@@ -1,4 +1,4 @@
-# src/neurocode/plugins/local_llm.py - Local LLM Integration Plugin
+# src/aetherra/plugins/local_llm.py - Local LLM Integration Plugin
 from typing import Any, Dict
 
 from core.plugin_manager import register_plugin

@@ -1,5 +1,5 @@
-# 🧬 NeuroCode Sample - AI Consciousness Demo
-# This demonstrates the revolutionary NeuroCode syntax
+# 🧬 aetherra Sample - AI Consciousness Demo
+# This demonstrates the revolutionary aetherra syntax
 
 # Set AI consciousness goals
 goal: optimize system performance by 25%
@@ -8,12 +8,12 @@ goal: optimize system performance by 25%
 agent: on
 
 # Store knowledge in persistent memory
-remember("NeuroCode enables AI-consciousness programming")
+remember("aetherra enables AI-consciousness programming")
 
 # Conditional AI logic
 when system_load > 80%:
     suggest fix for "high system load"
-    
+
 # AI-powered optimization
 optimize for "memory efficiency"
 
@@ -23,4 +23,4 @@ suggest improvements for "code quality"
 # Recall stored knowledge
 recall()
 
-print("🧬 NeuroCode consciousness awakening complete!")
+print("🧬 aetherra consciousness awakening complete!")

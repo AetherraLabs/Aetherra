@@ -1,6 +1,6 @@
 # core/block_executor.py
 """
-Block execution engine for NeuroCode advanced syntax
+Block execution engine for Aetherra advanced syntax
 Handles multi-line blocks, loops, conditionals, and functions
 """
 
@@ -19,13 +19,13 @@ class ExecutionContext:
 
 @dataclass
 class NeuroFunction:
-    """Represents a user-defined NeuroCode function"""
+    """Represents a user-defined Aetherra function"""
     name: str
     params: List[str]
     body: List[str]
 
 class BlockExecutor:
-    """Executes NeuroCode blocks with advanced syntax"""
+    """Executes Aetherra blocks with advanced syntax"""
 
     def __init__(self, memory_system, functions_system):
         self.memory = memory_system
@@ -34,7 +34,7 @@ class BlockExecutor:
         self.user_functions = {}
 
     def execute_block(self, lines: List[str], executor_callback: Callable[[str], Any]) -> str:
-        """Execute a block of NeuroCode lines"""
+        """Execute a block of Aetherra lines"""
         context = ExecutionContext(
             variables=self.variables.copy(),
             functions=self.user_functions.copy(),

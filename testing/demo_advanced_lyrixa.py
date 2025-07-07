@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Final demonstration of advanced Neuroplex capabilities
+Final demonstration of advanced Lyrixacapabilities
 """
 
 from core.chat_router import AetherraChatRouter
 
 
 def demonstrate_advanced_aetherplex():
-    print("🧬 NEUROPLEX ADVANCED CAPABILITIES DEMONSTRATION")
+    print("🧬 LyrixaADVANCED CAPABILITIES DEMONSTRATION")
     print("=" * 60)
 
     # Initialize with debug mode for full visibility
@@ -27,7 +27,7 @@ def demonstrate_advanced_aetherplex():
         response = aetherplex.process_message(test_question)
         print(f"Response: {response['text'][:150]}...")
 
-        if response.get('proactive_suggestions'):
+        if response.get("proactive_suggestions"):
             print(f"Suggestions: {response['proactive_suggestions']}")
 
     print("\n🧠 Demonstrating Smart Context Awareness:")
@@ -40,7 +40,7 @@ def demonstrate_advanced_aetherplex():
         "Hello, I'm new to AetherraCode",
         "I want to build a memory system",
         "How do I track my progress?",
-        "What should I do next?"
+        "What should I do next?",
     ]
 
     for i, message in enumerate(conversation_flow, 1):
@@ -48,7 +48,7 @@ def demonstrate_advanced_aetherplex():
         response = aetherplex.process_message(message)
         print(f"Response: {response['text'][:200]}...")
 
-        if response.get('proactive_suggestions'):
+        if response.get("proactive_suggestions"):
             print(f"Proactive: {response['proactive_suggestions']}")
 
     print(f"\n📚 Conversation History: {len(aetherplex.chat_history)} exchanges")
@@ -60,7 +60,7 @@ def demonstrate_advanced_aetherplex():
         ("What is AetherraCode?", "Should route to help"),
         ("Hmm, interesting thought...", "Should route to open-ended AI"),
         ("Create a data analyzer", "Should route to programming"),
-        ("Random philosophical question", "Should route to open-ended AI")
+        ("Random philosophical question", "Should route to open-ended AI"),
     ]
 
     for message, expected in routing_tests:
@@ -72,13 +72,14 @@ def demonstrate_advanced_aetherplex():
         print(f"Result: {response['text'][:100]}...")
 
     print("\n✅ DEMONSTRATION COMPLETE")
-    print("🎉 Neuroplex is now a true AI Assistant with:")
+    print("🎉 Lyrixais now a true AI Assistant with:")
     print("   🧠 Contextual Intelligence")
     print("   🎭 Swappable Personalities")
     print("   🚀 Proactive Suggestions")
     print("   🔮 Smart Intent Routing")
     print("   💾 Conversation Memory")
     print("   🛠️ Advanced Context Injection")
+
 
 if __name__ == "__main__":
     demonstrate_advanced_aetherplex()

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-🔌 NeuroCode Plugin CLI
-Command-line interface for the NeuroCode Plugin Registry System.
+🔌 Aetherra Plugin CLI
+Command-line interface for the Aetherra Plugin Registry System.
 
-This provides an easy-to-use command-line interface for managing NeuroCode plugins,
+This provides an easy-to-use command-line interface for managing Aetherra plugins,
 integrating with the enhanced plugin management system.
 
 Usage:
-    neurocode plugin <command> [options]
+    Aetherra plugin <command> [options]
 
 Commands:
     install <name>          Install a plugin from registry
@@ -32,8 +32,8 @@ sys.path.insert(0, str(core_dir))
 try:
     from enhanced_plugin_manager import EnhancedPluginManager
 except ImportError:
-    print("❌ Error: Could not import NeuroCode plugin management system")
-    print("   Make sure you're running this from the NeuroCode project directory")
+    print("❌ Error: Could not import Aetherra plugin management system")
+    print("   Make sure you're running this from the Aetherra project directory")
     sys.exit(1)
 
 
@@ -43,7 +43,7 @@ def format_plugin_list(plugins, detailed=False):
         return "No plugins found."
 
     output = []
-    output.append(f"\n🔌 NeuroCode Plugins ({len(plugins)}):")
+    output.append(f"\n🔌 Aetherra Plugins ({len(plugins)}):")
     output.append("=" * 70)
 
     for plugin in plugins:
@@ -146,7 +146,7 @@ def cmd_install(args, manager):
     if len(args) < 1:
         print("❌ Error: Plugin name required")
         print(
-            "Usage: neurocode plugin install <name> [--version=VERSION] [--force] [--skip-security]"
+            "Usage: Aetherra plugin install <name> [--version=VERSION] [--force] [--skip-security]"
         )
         return 1
 
@@ -184,7 +184,7 @@ def cmd_uninstall(args, manager):
     """Handle plugin uninstallation"""
     if len(args) < 1:
         print("❌ Error: Plugin name required")
-        print("Usage: neurocode plugin uninstall <name>")
+        print("Usage: Aetherra plugin uninstall <name>")
         return 1
 
     name = args[0]
@@ -207,7 +207,7 @@ def cmd_list(args, manager):
     print(format_plugin_list(plugins, detailed=detailed))
 
     if not plugins:
-        print("\n💡 Tip: Use 'neurocode plugin search' to discover plugins")
+        print("\n💡 Tip: Use 'Aetherra plugin search' to discover plugins")
 
     return 0
 
@@ -238,7 +238,7 @@ def cmd_search(args, manager):
         if not plugins:
             print("💡 Try different search terms or browse categories")
         else:
-            print("\n💡 Use 'neurocode plugin install <name>' to install a plugin")
+            print("\n💡 Use 'Aetherra plugin install <name>' to install a plugin")
 
         return 0
 
@@ -251,7 +251,7 @@ def cmd_info(args, manager):
     """Handle plugin info"""
     if len(args) < 1:
         print("❌ Error: Plugin name required")
-        print("Usage: neurocode plugin info <name>")
+        print("Usage: Aetherra plugin info <name>")
         return 1
 
     name = args[0]
@@ -336,7 +336,7 @@ def cmd_popular(args, manager):
         plugins = manager.get_popular_plugins(limit)
 
         if plugins:
-            print(f"\n🌟 Most Popular NeuroCode Plugins (Top {len(plugins)}):")
+            print(f"\n🌟 Most Popular Aetherra Plugins (Top {len(plugins)}):")
             print("=" * 70)
 
             for i, plugin in enumerate(plugins, 1):
@@ -369,7 +369,7 @@ def cmd_categories(args, manager):
             print(f"📁 {category}")
 
         print(
-            "\n💡 Use 'neurocode plugin search --category=<name>' to browse a category"
+            "\n💡 Use 'Aetherra plugin search --category=<name>' to browse a category"
         )
         return 0
 
@@ -381,10 +381,10 @@ def cmd_categories(args, manager):
 def show_help():
     """Show help information"""
     help_text = """
-🔌 NeuroCode Plugin Manager
+🔌 Aetherra Plugin Manager
 
 Usage:
-    neurocode plugin <command> [options]
+    Aetherra plugin <command> [options]
 
 Commands:
     install <name>              Install a plugin from registry
@@ -414,11 +414,11 @@ Commands:
     help                        Show this help message
 
 Examples:
-    neurocode plugin search memory
-    neurocode plugin install advanced-memory-system
-    neurocode plugin info advanced-memory-system
-    neurocode plugin list --detailed
-    neurocode plugin update
+    Aetherra plugin search memory
+    Aetherra plugin install advanced-memory-system
+    Aetherra plugin info advanced-memory-system
+    Aetherra plugin list --detailed
+    Aetherra plugin update
 
 Plugin Registry: https://registry.aethercode.org
 Documentation: https://docs.aethercode.org/plugins
@@ -466,7 +466,7 @@ def main():
 
     if command not in commands:
         print(f"❌ Unknown command: {command}")
-        print("Use 'neurocode plugin help' for available commands")
+        print("Use 'Aetherra plugin help' for available commands")
         return 1
 
     try:

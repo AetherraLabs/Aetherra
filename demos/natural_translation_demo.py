@@ -18,7 +18,7 @@ sys.path.insert(0, str(project_root))
 
 
 def main():
-    print("🎉 NATURAL-TO-NEUROCODE TRANSLATION REVOLUTION")
+    print("🎉 NATURAL-TO-aetherra TRANSLATION REVOLUTION")
     print("=" * 60)
     print("🗣️  Speak naturally → 🧬 Execute as AetherraCode")
     print()
@@ -57,8 +57,8 @@ def main():
             print(f"🗣️  Human: '{natural_input}'")
 
             # Translate
-            neurocode = translator.translate(natural_input)
-            print(f"🧬 AetherraCode: {neurocode}")
+            aetherra = translator.translate(natural_input)
+            print(f"🧬 AetherraCode: {aetherra}")
 
             # Show the power - this natural language becomes executable code!
             print("⚡ Result: Executable AI-native code generated!")

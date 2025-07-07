@@ -38,8 +38,8 @@ def main():
     print("✅ core/agent.py - No errors")
     print("✅ core/aethercode_parser.py - No errors")
     print("✅ core/functions.py - No errors")
-    print("✅ src/neurocode/cli/main.py - No errors")
-    print("✅ src/neurocode/ui/aetherplex_gui.py - No errors")
+    print("✅ src/Aetherra/cli/main.py - No errors")
+    print("✅ src/Aetherra/ui/aetherplex_gui.py - No errors")
     print("✅ launchers/main.py - No errors")
 
     print("\n🎪 WHAT WORKS NOW:")
@@ -57,8 +57,8 @@ def main():
     print("🔸 Unicode encoding issues in some files (non-critical)")
     print("🔸 Plugin registry requires network connectivity")
 
-    print("\n🚀 HOW TO USE NEUROCODE NOW:")
-    print("1. CLI Mode: python -m neurocode.cli.main")
+    print("\n🚀 HOW TO USE Aetherra NOW:")
+    print("1. CLI Mode: python -m Aetherra.cli.main")
     print("2. GUI Mode: python aethercode_launcher.py (if Qt available)")
     print("3. Enhanced: python launchers/launch_enhanced_aetherplex.py")
     print("4. Direct: from core.interpreter import AetherraInterpreter")
@@ -67,7 +67,7 @@ def main():
     print("=" * 60)
     print("✅ All critical errors have been identified and fixed")
     print("✅ AetherraCode core functionality is working properly")
-    print("✅ Neuroplex components are operational")
+    print("✅ Aetherra components are operational")
     print("✅ Both command-line and GUI interfaces are available")
     print("✅ The project is ready for development and usage")
 

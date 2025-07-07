@@ -129,25 +129,25 @@ class NaturalToNeuroTranslator:
                     match = re.search(pattern, cleaned_input, re.IGNORECASE)
                     if match:
                         if callable(transformer):
-                            neurocode = transformer(match)
+                            Aetherra = transformer(match)
                         else:
-                            neurocode = str(transformer)
+                            Aetherra = str(transformer)
 
                         # Validate generated AetherraCode
-                        if not neurocode or len(neurocode.strip()) == 0:
+                        if not Aetherra or len(Aetherra.strip()) == 0:
                             continue  # Try next pattern
 
                         # Add translation to memory for learning
                         if self.memory:
                             try:
                                 self.memory.remember(
-                                    f"Translated '{natural_input}' to '{neurocode}'",
-                                    ["translation", "natural-language", "neurocode"],
+                                    f"Translated '{natural_input}' to '{Aetherra}'",
+                                    ["translation", "natural-language", "Aetherra"],
                                 )
                             except Exception as e:
                                 print(f"⚠️ Failed to store translation in memory: {e}")
 
-                        return neurocode
+                        return Aetherra
 
                 except re.error as e:
                     print(f"⚠️ Regex error in pattern '{pattern}': {e}")
@@ -248,13 +248,13 @@ class NaturalToNeuroTranslator:
                 if not user_input:
                     continue
 
-                neurocode = self.translate(user_input)
-                print(f"🧬 AetherraCode: {neurocode}")
+                Aetherra = self.translate(user_input)
+                print(f"🧬 AetherraCode: {Aetherra}")
 
                 # Ask if user wants to execute
                 execute = input("🚀 Execute this AetherraCode? (y/n): ").strip().lower()
                 if execute in ["y", "yes"]:
-                    self._execute_neurocode(neurocode)
+                    self._execute_Aetherra(Aetherra)
 
                 print()  # Empty line for readability
 
@@ -264,7 +264,7 @@ class NaturalToNeuroTranslator:
             except Exception as e:
                 print(f"❌ Error: {e}")
 
-    def _execute_neurocode(self, neurocode: str):
+    def _execute_Aetherra(self, Aetherra: str):
         """Execute the generated AetherraCode"""
         try:
             # Import the standalone runner
@@ -274,7 +274,7 @@ class NaturalToNeuroTranslator:
 
             # Create temporary file
             temp_file = Path(__file__).parent / "temp_translation.aether"
-            temp_file.write_text(neurocode, encoding="utf-8")
+            temp_file.write_text(Aetherra, encoding="utf-8")
 
             # Execute
             print("⚡ Executing...")
@@ -296,8 +296,8 @@ class NaturalToNeuroTranslator:
         """Translate multiple natural language inputs"""
         results = []
         for input_text in natural_inputs:
-            neurocode = self.translate(input_text)
-            results.append((input_text, neurocode))
+            Aetherra = self.translate(input_text)
+            results.append((input_text, Aetherra))
         return results
 
     def save_translations(self, filename: str = "translations.json"):
@@ -337,19 +337,19 @@ def main():
     if args.interactive:
         translator.interactive_translate()
     elif args.translate:
-        neurocode = translator.translate(args.translate)
-        print(f"🧬 AetherraCode: {neurocode}")
+        Aetherra = translator.translate(args.translate)
+        print(f"🧬 AetherraCode: {Aetherra}")
         if args.execute:
-            translator._execute_neurocode(neurocode)
+            translator._execute_Aetherra(Aetherra)
     elif args.batch:
         try:
             with open(args.batch) as f:
                 inputs = [line.strip() for line in f if line.strip()]
 
             results = translator.batch_translate(inputs)
-            for natural, neurocode in results:
+            for natural, Aetherra in results:
                 print(f"🗣️  {natural}")
-                print(f"🧬 {neurocode}\n")
+                print(f"🧬 {Aetherra}\n")
         except FileNotFoundError:
             print(f"❌ File not found: {args.batch}")
     else:

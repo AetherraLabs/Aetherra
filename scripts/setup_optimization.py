@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚀 aetherra/Neuroplex Quick Setup Script
+🚀 aetherra/LyrixaQuick Setup Script
 Automatically installs essential packages for optimal performance
 """
 
@@ -36,7 +36,7 @@ def check_python_version():
 
 def main():
     """Main setup function"""
-    print("🧬 aetherra/Neuroplex Optimization Setup")
+    print("🧬 aetherra/LyrixaOptimization Setup")
     print("=" * 50)
 
     # Check Python version
@@ -147,7 +147,7 @@ def main():
             "⚠️  GUI import test failed - but this may be normal if display is not available"
         )
 
-    print("\\n🚀 aetherra/Neuroplex is optimized and ready!")
+    print("\\n🚀 aetherra/Lyrixais optimized and ready!")
 
 
 if __name__ == "__main__":

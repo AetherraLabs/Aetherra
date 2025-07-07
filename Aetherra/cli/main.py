@@ -4,11 +4,11 @@ AetherraCode Persona Command Interface
 Live demonstration of contextual persona adaptation in action.
 
 Usage examples:
-  neurocode persona: guardian voice: neutral
-  neurocode debug "database connection failing"
-  neurocode create "AI chatbot feature"
-  neurocode learn "explain neural networks"
-  neurocode emergency "server crashed!"
+  aetherra persona: guardian voice: neutral
+  aetherra debug "database connection failing"
+  aetherra create "AI chatbot feature"
+  aetherra learn "explain neural networks"
+  aetherra emergency "server crashed!"
 """
 
 import argparse
@@ -235,11 +235,11 @@ Available commands:
    • Context Adaptation: Enabled
 
 🎯 Available Commands:
-   neurocode persona: <archetype> voice: <tone>
-   neurocode debug "<problem>"
-   neurocode create "<project>"
-   neurocode learn "<topic>"
-   neurocode emergency "<crisis>"
+   aetherra persona: <archetype> voice: <tone>
+   aetherra debug "<problem>"
+   aetherra create "<project>"
+   aetherra learn "<topic>"
+   aetherra emergency "<crisis>"
 """
         return status
 
@@ -514,7 +514,7 @@ Examples:
 
         while True:
             try:
-                user_input = input("\nneurocode> ").strip()
+                user_input = input("\naetherra> ").strip()
                 if user_input.lower() in ["quit", "exit", "q"]:
                     print(
                         "👋 Farewell! The persona remembers our interaction for next time."

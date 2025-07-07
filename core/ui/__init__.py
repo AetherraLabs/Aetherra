@@ -2,7 +2,7 @@
 🎭 AetherraCode UI System
 =====================
 
-Advanced UI components for the Neuroplex AI OS interface.
+Advanced UI components for the LyrixaAI OS interface.
 Provides theming, visual feedback, and interactive elements.
 
 Modules:
@@ -13,9 +13,8 @@ Modules:
 - display: Rich text and content rendering
 """
 
-
 __all__ = [
-    "NeuroplexUI",
+    "LyrixaUI",
     "InterfaceConfig",
     "ThemeManager",
     "UITheme",

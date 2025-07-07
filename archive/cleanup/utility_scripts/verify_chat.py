@@ -33,24 +33,24 @@ except ImportError as e:
     print(f"❌ Failed to import chat router: {e}")
     router_ok = False
 
-# Test 3: Neuroplex Integration
+# Test 3: Aetherra Integration
 try:
-    import neuroplex
+    import Aetherra
 
-    print("✅ Neuroplex module loaded successfully")
-    if hasattr(neuroplex, "NEUROCHAT_AVAILABLE") and neuroplex.aetherCHAT_AVAILABLE:
-        print("✅ Advanced NeuroChat interface is AVAILABLE in Neuroplex")
-        neuroplex_ok = True
+    print("✅ Aetherra module loaded successfully")
+    if hasattr(Aetherra, "NEUROCHAT_AVAILABLE") and Aetherra.aetherCHAT_AVAILABLE:
+        print("✅ Advanced NeuroChat interface is AVAILABLE in Aetherra")
+        Aetherra_ok = True
     else:
-        print("❌ Advanced NeuroChat interface is NOT available in Neuroplex")
-        neuroplex_ok = False
+        print("❌ Advanced NeuroChat interface is NOT available in Aetherra")
+        Aetherra_ok = False
 except Exception as e:
-    print(f"❌ Failed to load Neuroplex: {e}")
-    neuroplex_ok = False
+    print(f"❌ Failed to load Aetherra: {e}")
+    Aetherra_ok = False
 
 print()
 print("=" * 50)
-if neurochat_ok and router_ok and neuroplex_ok:
+if neurochat_ok and router_ok and Aetherra_ok:
     print("🎉 ALL TESTS PASSED! Advanced NeuroChat is fully integrated!")
     print("💬 The system is using the advanced chat interface, NOT built-in fallback.")
 else:

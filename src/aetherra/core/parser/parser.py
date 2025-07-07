@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-NeuroCode Parser - The First AI-Native Language Parser
+Aetherra Parser - The First AI-Native Language Parser
 
-This parser defines NeuroCode as a distinct programming language with its own grammar,
-completely separate from Python syntax. It establishes NeuroCode as a new class of
+This parser defines Aetherra as a distinct programming language with its own grammar,
+completely separate from Python syntax. It establishes Aetherra as a new class of
 AI-native programming language.
 
 Grammar Features:
@@ -20,8 +20,9 @@ import ast
 from dataclasses import dataclass
 from enum import Enum
 
+
 class TokenType(Enum):
-    # Core NeuroCode tokens
+    # Core Aetherra tokens
     GOAL = "GOAL"
     AGENT = "AGENT"
     REMEMBER = "REMEMBER"
@@ -56,6 +57,7 @@ class TokenType(Enum):
     NEWLINE = "NEWLINE"
     EOF = "EOF"
 
+
 @dataclass
 class Token:
     type: TokenType
@@ -63,54 +65,64 @@ class Token:
     line: int
     column: int
 
+
 @dataclass
-class NeuroCodeNode:
-    """Base class for all NeuroCode AST nodes"""
+class AetherraNode:
+    """Base class for all Aetherra AST nodes"""
+
     type: str
     line: int
 
+
 @dataclass
-class GoalNode(NeuroCodeNode):
+class GoalNode(AetherraNode):
     objective: str
     priority: Optional[str] = None
 
+
 @dataclass
-class AgentNode(NeuroCodeNode):
+class AgentNode(AetherraNode):
     command: str
     task: Optional[str] = None
 
+
 @dataclass
-class MemoryNode(NeuroCodeNode):
+class MemoryNode(AetherraNode):
     operation: str  # remember, recall, pattern
     data: str
     tag: Optional[str] = None
     criteria: Optional[Dict] = None
 
+
 @dataclass
-class IntentNode(NeuroCodeNode):
+class IntentNode(AetherraNode):
     action: str
     target: str
     modifier: Optional[str] = None
 
+
 @dataclass
-class ConditionalNode(NeuroCodeNode):
+class ConditionalNode(AetherraNode):
     condition: str
-    body: List[NeuroCodeNode]
-    else_body: Optional[List[NeuroCodeNode]] = None
+    body: List[AetherraNode]
+    else_body: Optional[List[AetherraNode]] = None
+
 
 @dataclass
-class PluginNode(NeuroCodeNode):
+class PluginNode(AetherraNode):
     plugin_name: str
-    actions: List[NeuroCodeNode]
+    actions: List[AetherraNode]
+
 
 @dataclass
-class SelfModificationNode(NeuroCodeNode):
+class SelfModificationNode(AetherraNode):
     operation: str  # suggest, apply, refactor
     target: str
     condition: Optional[str] = None
 
+
 class AetherraLexer:
-    """Lexical analyzer for NeuroCode"""
+    """Lexical analyzer for Aetherra"""
 
     def __init__(self, source: str):
         self.source = source
@@ -119,28 +131,28 @@ class AetherraLexer:
         self.column = 1
         self.tokens = []
 
-        # NeuroCode keywords
+        # Aetherra keywords
         self.keywords = {
-            'goal': TokenType.GOAL,
-            'agent': TokenType.AGENT,
-            'remember': TokenType.REMEMBER,
-            'recall': TokenType.RECALL,
-            'memory': TokenType.MEMORY,
-            'when': TokenType.WHEN,
-            'if': TokenType.IF,
-            'end': TokenType.END,
-            'plugin': TokenType.PLUGIN,
-            'suggest': TokenType.SUGGEST,
-            'apply': TokenType.APPLY,
-            'optimize': TokenType.OPTIMIZE,
-            'learn': TokenType.LEARN,
-            'analyze': TokenType.ANALYZE,
-            'as': TokenType.AS,
-            'for': TokenType.FOR,
-            'from': TokenType.FROM,
-            'to': TokenType.TO,
-            'with': TokenType.WITH,
-            'priority': TokenType.PRIORITY,
+            "goal": TokenType.GOAL,
+            "agent": TokenType.AGENT,
+            "remember": TokenType.REMEMBER,
+            "recall": TokenType.RECALL,
+            "memory": TokenType.MEMORY,
+            "when": TokenType.WHEN,
+            "if": TokenType.IF,
+            "end": TokenType.END,
+            "plugin": TokenType.PLUGIN,
+            "suggest": TokenType.SUGGEST,
+            "apply": TokenType.APPLY,
+            "optimize": TokenType.OPTIMIZE,
+            "learn": TokenType.LEARN,
+            "analyze": TokenType.ANALYZE,
+            "as": TokenType.AS,
+            "for": TokenType.FOR,
+            "from": TokenType.FROM,
+            "to": TokenType.TO,
+            "with": TokenType.WITH,
+            "priority": TokenType.PRIORITY,
         }
 
     def current_char(self) -> Optional[str]:
@@ -155,7 +167,7 @@ class AetherraLexer:
         return self.source[pos]
 
     def advance(self):
-        if self.position < len(self.source) and self.source[self.position] == '\n':
+        if self.position < len(self.source) and self.source[self.position] == "\n":
             self.line += 1
             self.column = 1
         else:
@@ -164,13 +176,13 @@ class AetherraLexer:
 
     def skip_whitespace(self):
         char = self.current_char()
-        while char is not None and char in ' \t':
+        while char is not None and char in " \t":
             self.advance()
             char = self.current_char()
 
     def skip_comment(self):
-        if self.current_char() == '#':
-            while self.current_char() is not None and self.current_char() != '\n':
+        if self.current_char() == "#":
+            while self.current_char() is not None and self.current_char() != "\n":
                 self.advance()
 
     def read_string(self) -> str:
@@ -182,7 +194,7 @@ class AetherraLexer:
         value = ""
         char = self.current_char()
         while char is not None and char != quote_char:
-            if char == '\\':
+            if char == "\\":
                 self.advance()
                 next_char = self.current_char()
                 if next_char is not None:
@@ -201,7 +213,7 @@ class AetherraLexer:
     def read_number(self) -> str:
         value = ""
         char = self.current_char()
-        while char is not None and (char.isdigit() or char == '.'):
+        while char is not None and (char.isdigit() or char == "."):
             value += char
             self.advance()
             char = self.current_char()
@@ -210,7 +222,7 @@ class AetherraLexer:
     def read_identifier(self) -> str:
         value = ""
         char = self.current_char()
-        while char is not None and (char.isalnum() or char in '_.'):
+        while char is not None and (char.isalnum() or char in "_."):
             value += char
             self.advance()
             char = self.current_char()
@@ -225,47 +237,55 @@ class AetherraLexer:
                 break
 
             # Comments
-            if char == '#':
+            if char == "#":
                 self.skip_comment()
                 continue
 
             # Newlines
-            if char == '\n':
-                self.tokens.append(Token(TokenType.NEWLINE, '\n', self.line, self.column))
+            if char == "\n":
+                self.tokens.append(
+                    Token(TokenType.NEWLINE, "\n", self.line, self.column)
+                )
                 self.advance()
                 continue
 
             # Strings
-            if char in '"\'':
+            if char in "\"'":
                 value = self.read_string()
-                self.tokens.append(Token(TokenType.STRING, value, self.line, self.column))
+                self.tokens.append(
+                    Token(TokenType.STRING, value, self.line, self.column)
+                )
                 continue
 
             # Numbers
             if char.isdigit():
                 value = self.read_number()
-                self.tokens.append(Token(TokenType.NUMBER, value, self.line, self.column))
+                self.tokens.append(
+                    Token(TokenType.NUMBER, value, self.line, self.column)
+                )
                 continue
 
             # Colon
-            if char == ':':
-                self.tokens.append(Token(TokenType.COLON, ':', self.line, self.column))
+            if char == ":":
+                self.tokens.append(Token(TokenType.COLON, ":", self.line, self.column))
                 self.advance()
                 continue
 
             # Operators
-            if char in '>=<!':
+            if char in ">=<!":
                 op = char
                 self.advance()
                 next_char = self.current_char()
-                if next_char is not None and next_char == '=':
+                if next_char is not None and next_char == "=":
                     op += next_char
                     self.advance()
-                self.tokens.append(Token(TokenType.OPERATOR, op, self.line, self.column))
+                self.tokens.append(
+                    Token(TokenType.OPERATOR, op, self.line, self.column)
+                )
                 continue
 
             # Identifiers and keywords
-            if char.isalpha() or char == '_':
+            if char.isalpha() or char == "_":
                 value = self.read_identifier()
                 token_type = self.keywords.get(value.lower(), TokenType.IDENTIFIER)
                 self.tokens.append(Token(token_type, value, self.line, self.column))
@@ -274,11 +294,12 @@ class AetherraLexer:
             # Unknown character - skip for now
             self.advance()
 
-        self.tokens.append(Token(TokenType.EOF, '', self.line, self.column))
+        self.tokens.append(Token(TokenType.EOF, "", self.line, self.column))
         return self.tokens
 
+
 class AetherraParser:
-    """Parser for NeuroCode - converts tokens to AST"""
+    """Parser for Aetherra - converts tokens to AST"""
 
     def __init__(self, tokens: List[Token]):
         self.tokens = tokens
@@ -294,7 +315,9 @@ class AetherraParser:
 
     def expect(self, token_type: TokenType) -> Token:
         if not self.current_token or self.current_token.type != token_type:
-            raise SyntaxError(f"Expected {token_type}, got {self.current_token.type if self.current_token else 'EOF'}")
+            raise SyntaxError(
+                f"Expected {token_type}, got {self.current_token.type if self.current_token else 'EOF'}"
+            )
         token = self.current_token
         self.advance()
         return token
@@ -313,12 +336,15 @@ class AetherraParser:
 
         # Read objective until priority or newline
         objective_tokens = []
-        while (self.current_token and
-               self.current_token.type not in [TokenType.PRIORITY, TokenType.NEWLINE, TokenType.EOF]):
+        while self.current_token and self.current_token.type not in [
+            TokenType.PRIORITY,
+            TokenType.NEWLINE,
+            TokenType.EOF,
+        ]:
             objective_tokens.append(self.current_token.value)
             self.advance()
 
-        objective = ' '.join(objective_tokens)
+        objective = " ".join(objective_tokens)
 
         priority = None
         if self.current_token and self.current_token.type == TokenType.PRIORITY:
@@ -338,12 +364,14 @@ class AetherraParser:
 
         # Read command/task until newline
         command_tokens = []
-        while (self.current_token and
-               self.current_token.type not in [TokenType.NEWLINE, TokenType.EOF]):
+        while self.current_token and self.current_token.type not in [
+            TokenType.NEWLINE,
+            TokenType.EOF,
+        ]:
             command_tokens.append(self.current_token.value)
             self.advance()
 
-        command = ' '.join(command_tokens)
+        command = " ".join(command_tokens)
         return AgentNode(type="agent", line=line, command=command)
 
     def parse_memory(self) -> MemoryNode:
@@ -365,28 +393,34 @@ class AetherraParser:
                 self.advance()  # skip 'as'
                 tag = self.expect(TokenType.STRING).value
 
-            return MemoryNode(type="memory", line=line, operation="remember", data=data, tag=tag)
+            return MemoryNode(
+                type="memory", line=line, operation="remember", data=data, tag=tag
+            )
 
         elif operation == "recall":
             # recall experiences with "tag"
             data_tokens = []
-            while (self.current_token and
-                   self.current_token.type not in [TokenType.NEWLINE, TokenType.EOF]):
+            while self.current_token and self.current_token.type not in [
+                TokenType.NEWLINE,
+                TokenType.EOF,
+            ]:
                 data_tokens.append(self.current_token.value)
                 self.advance()
 
-            data = ' '.join(data_tokens)
+            data = " ".join(data_tokens)
             return MemoryNode(type="memory", line=line, operation="recall", data=data)
 
         else:  # memory.pattern
             # Skip the dot and get pattern call
             data_tokens = []
-            while (self.current_token and
-                   self.current_token.type not in [TokenType.NEWLINE, TokenType.EOF]):
+            while self.current_token and self.current_token.type not in [
+                TokenType.NEWLINE,
+                TokenType.EOF,
+            ]:
                 data_tokens.append(self.current_token.value)
                 self.advance()
 
-            data = ' '.join(data_tokens)
+            data = " ".join(data_tokens)
             return MemoryNode(type="memory", line=line, operation="pattern", data=data)
 
     def parse_intent_action(self) -> IntentNode:
@@ -398,22 +432,28 @@ class AetherraParser:
         self.advance()
 
         modifier = None
-        if self.current_token and self.current_token.type in [TokenType.FOR,
+        if self.current_token and self.current_token.type in [
+            TokenType.FOR,
             TokenType.FROM,
             TokenType.TO,
-            TokenType.WITH]:
+            TokenType.WITH,
+        ]:
             modifier = self.current_token.value
             self.advance()
 
         # Read target
         target_tokens = []
-        while (self.current_token and
-               self.current_token.type not in [TokenType.NEWLINE, TokenType.EOF]):
+        while self.current_token and self.current_token.type not in [
+            TokenType.NEWLINE,
+            TokenType.EOF,
+        ]:
             target_tokens.append(self.current_token.value)
             self.advance()
 
-        target = ' '.join(target_tokens)
-        return IntentNode(type="intent", line=line, action=action, target=target, modifier=modifier)
+        target = " ".join(target_tokens)
+        return IntentNode(
+            type="intent", line=line, action=action, target=target, modifier=modifier
+        )
 
     def parse_conditional(self) -> ConditionalNode:
         """Parse: when/if condition: body end"""
@@ -425,19 +465,21 @@ class AetherraParser:
 
         # Read condition until colon
         condition_tokens = []
-        while (self.current_token and self.current_token.type != TokenType.COLON):
+        while self.current_token and self.current_token.type != TokenType.COLON:
             condition_tokens.append(self.current_token.value)
             self.advance()
 
-        condition = ' '.join(condition_tokens)
+        condition = " ".join(condition_tokens)
         self.expect(TokenType.COLON)
         self.skip_newlines()
 
         # Parse body until 'end'
         body = []
-        while (self.current_token and
-               self.current_token.type != TokenType.END and
-               self.current_token.type != TokenType.EOF):
+        while (
+            self.current_token
+            and self.current_token.type != TokenType.END
+            and self.current_token.type != TokenType.EOF
+        ):
             stmt = self.parse_statement()
             if stmt:
                 body.append(stmt)
@@ -446,7 +488,9 @@ class AetherraParser:
         if self.current_token and self.current_token.type == TokenType.END:
             self.advance()
 
-        return ConditionalNode(type=cond_type, line=line, condition=condition, body=body)
+        return ConditionalNode(
+            type=cond_type, line=line, condition=condition, body=body
+        )
 
     def parse_plugin(self) -> PluginNode:
         """Parse: plugin: monitoring ... end"""
@@ -457,7 +501,10 @@ class AetherraParser:
         self.expect(TokenType.COLON)
 
         # Get plugin name
-        if not self.current_token or self.current_token.type not in [TokenType.IDENTIFIER, TokenType.STRING]:
+        if not self.current_token or self.current_token.type not in [
+            TokenType.IDENTIFIER,
+            TokenType.STRING,
+        ]:
             raise SyntaxError("Expected plugin name after 'plugin:'")
         plugin_name = self.current_token.value
         self.advance()
@@ -466,24 +513,25 @@ class AetherraParser:
 
         # Parse plugin actions until 'end' - treat as simple text commands
         actions = []
-        while (self.current_token and
-               self.current_token.type != TokenType.END):
-
+        while self.current_token and self.current_token.type != TokenType.END:
             # Collect tokens until newline to form a simple action
             action_tokens = []
-            while (self.current_token and
-                   self.current_token.type not in [TokenType.NEWLINE, TokenType.END, TokenType.EOF]):
+            while self.current_token and self.current_token.type not in [
+                TokenType.NEWLINE,
+                TokenType.END,
+                TokenType.EOF,
+            ]:
                 action_tokens.append(self.current_token.value)
                 self.advance()
 
             if action_tokens:
                 # Create a simple action node
-                action_text = ' '.join(action_tokens)
+                action_text = " ".join(action_tokens)
                 action_node = SelfModificationNode(
                     type="plugin_action",
                     line=self.current_token.line if self.current_token else line,
                     operation="action",
-                    target=action_text
+                    target=action_text,
                 )
                 actions.append(action_node)
 
@@ -492,10 +540,12 @@ class AetherraParser:
         if self.current_token and self.current_token.type == TokenType.END:
             self.advance()
 
-        return PluginNode(type="plugin", line=line, plugin_name=plugin_name, actions=actions)
+        return PluginNode(
+            type="plugin", line=line, plugin_name=plugin_name, actions=actions
+        )
 
-    def parse_statement(self) -> Optional[NeuroCodeNode]:
-        """Parse a single NeuroCode statement"""
+    def parse_statement(self) -> Optional[AetherraNode]:
+        """Parse a single Aetherra statement"""
         if not self.current_token:
             return None
 
@@ -513,11 +563,19 @@ class AetherraParser:
             return self.parse_agent()
 
         # Memory operations
-        elif self.current_token.type in [TokenType.REMEMBER, TokenType.RECALL, TokenType.MEMORY]:
+        elif self.current_token.type in [
+            TokenType.REMEMBER,
+            TokenType.RECALL,
+            TokenType.MEMORY,
+        ]:
             return self.parse_memory()
 
         # Intent actions
-        elif self.current_token.type in [TokenType.OPTIMIZE, TokenType.LEARN, TokenType.ANALYZE]:
+        elif self.current_token.type in [
+            TokenType.OPTIMIZE,
+            TokenType.LEARN,
+            TokenType.ANALYZE,
+        ]:
             return self.parse_intent_action()
 
         # Conditionals
@@ -538,21 +596,25 @@ class AetherraParser:
 
             # Read the rest of the command - treat keywords as identifiers in this context
             target_tokens = []
-            while (self.current_token and
-                   self.current_token.type not in [TokenType.NEWLINE, TokenType.EOF]):
+            while self.current_token and self.current_token.type not in [
+                TokenType.NEWLINE,
+                TokenType.EOF,
+            ]:
                 target_tokens.append(self.current_token.value)
                 self.advance()
 
-            target = ' '.join(target_tokens)
-            return SelfModificationNode(type="self_mod", line=line, operation=operation, target=target)
+            target = " ".join(target_tokens)
+            return SelfModificationNode(
+                type="self_mod", line=line, operation=operation, target=target
+            )
 
         else:
             # Skip unknown tokens
             self.advance()
             return None
 
-    def parse(self) -> List[NeuroCodeNode]:
-        """Parse the entire NeuroCode program"""
+    def parse(self) -> List[AetherraNode]:
+        """Parse the entire Aetherra program"""
         statements = []
 
         while self.current_token and self.current_token.type != TokenType.EOF:
@@ -563,14 +625,15 @@ class AetherraParser:
 
         return statements
 
-class NeuroCodeCompiler:
-    """Converts NeuroCode AST to executable form"""
+
+class AetherraCompiler:
+    """Converts Aetherra AST to executable form"""
 
     def __init__(self):
         self.output = []
 
     def compile_goal(self, node: GoalNode) -> str:
-        priority = f' with priority {node.priority}' if node.priority else ''
+        priority = f" with priority {node.priority}" if node.priority else ""
         return f"interpreter.set_goal('{node.objective}'{priority})"
 
     def compile_agent(self, node: AgentNode) -> str:
@@ -608,7 +671,7 @@ class NeuroCodeCompiler:
         actions_str = "\\n".join(actions_code)
         return f"interpreter.load_plugin('{node.plugin_name}', '''{actions_str}''')"
 
-    def compile_node(self, node: NeuroCodeNode) -> str:
+    def compile_node(self, node: AetherraNode) -> str:
         if isinstance(node, GoalNode):
             return self.compile_goal(node)
         elif isinstance(node, AgentNode):
@@ -626,13 +689,13 @@ class NeuroCodeCompiler:
         else:
             return f"# Unknown node type: {type(node)}"
 
-    def compile(self, ast: List[NeuroCodeNode]) -> str:
-        """Compile NeuroCode AST to executable Python"""
+    def compile(self, ast: List[AetherraNode]) -> str:
+        """Compile Aetherra AST to executable Python"""
         output = [
-            "# Generated from NeuroCode",
+            "# Generated from Aetherra",
             "from core.interpreter import AetherraInterpreter",
             "interpreter = AetherraInterpreter()",
-            ""
+            "",
         ]
 
         for node in ast:
@@ -640,24 +703,27 @@ class NeuroCodeCompiler:
 
         return "\n".join(output)
 
-def parse_neurocode(source: str) -> List[NeuroCodeNode]:
-    """Parse NeuroCode source code to AST"""
+
+def parse_Aetherra(source: str) -> List[AetherraNode]:
+    """Parse Aetherra source code to AST"""
     lexer = AetherraLexer(source)
     tokens = lexer.tokenize()
     parser = AetherraParser(tokens)
     return parser.parse()
 
-def compile_neurocode(source: str) -> str:
-    """Compile NeuroCode source to executable Python"""
-    ast = parse_neurocode(source)
-    compiler = NeuroCodeCompiler()
+
+def compile_Aetherra(source: str) -> str:
+    """Compile Aetherra source to executable Python"""
+    ast = parse_Aetherra(source)
+    compiler = AetherraCompiler()
     return compiler.compile(ast)
+
 
 # Example usage and testing
 if __name__ == "__main__":
-    # Example NeuroCode program
-    neurocode_source = '''
-# NeuroCode Example Program
+    # Example Aetherra program
+    Aetherra_source = """
+# Aetherra Example Program
 goal: reduce memory usage by 30% priority: high
 agent: on
 
@@ -682,28 +748,28 @@ plugin: monitoring
         suggest fix for "error_handling"
     end
 end
-'''
+"""
 
-    print("🧬 NEUROCODE PARSER DEMONSTRATION")
+    print("🧬 Aetherra PARSER DEMONSTRATION")
     print("=" * 50)
 
     print("📝 Source Code:")
-    print(neurocode_source)
+    print(Aetherra_source)
 
     print("\n🔤 Tokenization:")
-    lexer = AetherraLexer(neurocode_source)
+    lexer = AetherraLexer(Aetherra_source)
     tokens = lexer.tokenize()
     for token in tokens[:20]:  # Show first 20 tokens
         print(f"  {token.type.value}: '{token.value}'")
 
     print("\n🌳 Abstract Syntax Tree:")
-    ast = parse_neurocode(neurocode_source)
+    ast = parse_Aetherra(Aetherra_source)
     for node in ast:
         print(f"  {type(node).__name__}: {node.__dict__}")
 
     print("\n🔧 Compiled Output:")
-    compiled = compile_neurocode(neurocode_source)
+    compiled = compile_Aetherra(Aetherra_source)
     print(compiled)
 
-    print("\n✅ NeuroCode is now a distinct programming language!")
+    print("\n✅ Aetherra is now a distinct programming language!")
     print("🧬 Complete with its own lexer, parser, and compiler!")

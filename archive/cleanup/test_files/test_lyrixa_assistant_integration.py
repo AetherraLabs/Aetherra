@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script to verify NeuroChat integration with Neuroplex
+Test script to verify NeuroChat integration with Aetherra
 """
 
 import sys
@@ -46,30 +46,30 @@ def test_neurochat_factory():
         return False
 
 
-def test_neuroplex_integration():
-    """Test if Neuroplex can import NeuroChat components"""
+def test_Aetherra_integration():
+    """Test if Aetherra can import NeuroChat components"""
     try:
-        # Add the paths that Neuroplex uses
+        # Add the paths that Aetherra uses
         sys.path.insert(0, str(project_root / "src" / "aetherra" / "ui"))
 
-        # Test the import pattern used in neuroplex.py
+        # Test the import pattern used in Aetherra.py
         from neuro_chat import NeuroChatInterface, create_embeddable_neurochat
 
-        print("✅ Neuroplex-style import successful")
+        print("✅ Aetherra-style import successful")
         return True
     except ImportError as e:
-        print(f"❌ Neuroplex-style import failed: {e}")
+        print(f"❌ Aetherra-style import failed: {e}")
         return False
 
 
 def main():
-    print("🧪 Testing NeuroChat Integration with Neuroplex")
+    print("🧪 Testing NeuroChat Integration with Aetherra")
     print("=" * 50)
 
     # Run tests
     test1 = test_neurochat_import()
     test2 = test_neurochat_factory()
-    test3 = test_neuroplex_integration()
+    test3 = test_Aetherra_integration()
 
     print("\n📊 Test Results:")
     print(f"  Import Test: {'✅ PASS' if test1 else '❌ FAIL'}")
@@ -77,7 +77,7 @@ def main():
     print(f"  Integration Test: {'✅ PASS' if test3 else '❌ FAIL'}")
 
     if all([test1, test2, test3]):
-        print("\n🎉 All tests passed! NeuroChat should work with Neuroplex.")
+        print("\n🎉 All tests passed! NeuroChat should work with Aetherra.")
     else:
         print("\n⚠️  Some tests failed. Check the issues above.")
 

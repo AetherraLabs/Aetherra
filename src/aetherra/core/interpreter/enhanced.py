@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NeuroCode Enhancement Integration
+Aetherra Enhancement Integration
 Integrates new AI capabilities with existing interpreter
 """
 
@@ -23,7 +23,11 @@ class AIModelRouter:
     def __init__(self):
         self.model_capabilities = {
             "gpt-4": {
-                "strengths": ["complex_reasoning", "code_generation", "architecture_design"],
+                "strengths": [
+                    "complex_reasoning",
+                    "code_generation",
+                    "architecture_design",
+                ],
                 "speed": "medium",
                 "cost": "high",
                 "privacy": "cloud",
@@ -49,14 +53,19 @@ class AIModelRouter:
         }
 
     def select_best_model(
-        self, task_type: str, privacy_required: bool = False, speed_priority: bool = False
+        self,
+        task_type: str,
+        privacy_required: bool = False,
+        speed_priority: bool = False,
     ) -> str:
         """Select the optimal AI model for a specific task"""
 
         # Privacy-first selection
         if privacy_required:
             local_models = {
-                k: v for k, v in self.model_capabilities.items() if v["privacy"] == "local"
+                k: v
+                for k, v in self.model_capabilities.items()
+                if v["privacy"] == "local"
             }
             if not local_models:
                 return "ollama_llama"  # Default local fallback
@@ -69,7 +78,9 @@ class AIModelRouter:
 
         # Speed-first selection
         if speed_priority:
-            fast_models = {k: v for k, v in self.model_capabilities.items() if v["speed"] == "fast"}
+            fast_models = {
+                k: v for k, v in self.model_capabilities.items() if v["speed"] == "fast"
+            }
             for model, caps in fast_models.items():
                 if task_type in caps["strengths"]:
                     return model
@@ -134,7 +145,7 @@ ENHANCEMENTS_AVAILABLE = bool(AICollaborationFramework and ask_ai and LocalAIEng
 
 class EnhancedAetherraInterpreter:
     """
-    Enhanced NeuroCode Interpreter with next-generation AI capabilities
+    Enhanced Aetherra Interpreter with next-generation AI capabilities
     """
 
     def __init__(self):
@@ -148,11 +159,17 @@ class EnhancedAetherraInterpreter:
         try:
             self.local_ai = LocalAIEngine() if LocalAIEngine else None
             self.vector_memory = (
-                EnhancedSemanticMemory("enhanced_memory.json") if EnhancedSemanticMemory else None
+                EnhancedSemanticMemory("enhanced_memory.json")
+                if EnhancedSemanticMemory
+                else None
             )
             self.intent_parser = IntentToCodeParser() if IntentToCodeParser else None
-            self.performance_optimizer = PerformanceOptimizer() if PerformanceOptimizer else None
-            self.ai_collaboration = AICollaborationFramework() if AICollaborationFramework else None
+            self.performance_optimizer = (
+                PerformanceOptimizer() if PerformanceOptimizer else None
+            )
+            self.ai_collaboration = (
+                AICollaborationFramework() if AICollaborationFramework else None
+            )
 
             if all(
                 [
@@ -163,9 +180,13 @@ class EnhancedAetherraInterpreter:
                     self.ai_collaboration,
                 ]
             ):
-                print("🚀 Enhanced NeuroCode Interpreter initialized with AI capabilities")
+                print(
+                    "🚀 Enhanced Aetherra Interpreter initialized with AI capabilities"
+                )
             else:
-                print("⚠️  Enhanced NeuroCode Interpreter initialized with partial AI capabilities")
+                print(
+                    "⚠️  Enhanced Aetherra Interpreter initialized with partial AI capabilities"
+                )
         except Exception as e:
             print(f"⚠️  Enhancement initialization failed: {e}")
             self.local_ai = None
@@ -185,11 +206,11 @@ class EnhancedAetherraInterpreter:
         }
 
     def execute(self, code: str) -> str:
-        """Execute NeuroCode with enhanced AI capabilities (compatibility method)"""
-        return self.execute_neurocode(code)
+        """Execute Aetherra with enhanced AI capabilities (compatibility method)"""
+        return self.execute_Aetherra(code)
 
-    def execute_neurocode(self, code: str) -> str:
-        """Execute NeuroCode with enhanced AI capabilities"""
+    def execute_Aetherra(self, code: str) -> str:
+        """Execute Aetherra with enhanced AI capabilities"""
         self.performance_metrics["commands_processed"] += 1
 
         # Check if this looks like natural language intent
@@ -218,7 +239,7 @@ class EnhancedAetherraInterpreter:
         return self.core_interpreter.execute(code)
 
     def _is_natural_language(self, code: str) -> bool:
-        """Detect if input is natural language rather than NeuroCode syntax"""
+        """Detect if input is natural language rather than Aetherra syntax"""
         if not self.intent_parser:
             return False
 
@@ -249,18 +270,20 @@ class EnhancedAetherraInterpreter:
         return sum(natural_indicators) >= 2
 
     def _handle_natural_language_intent(self, natural_description: str) -> str:
-        """Handle natural language input by converting to NeuroCode"""
+        """Handle natural language input by converting to Aetherra"""
         if not self.intent_parser:
-            return "[Enhancement] Intent parser not available. Please use NeuroCode syntax."
+            return (
+                "[Enhancement] Intent parser not available. Please use Aetherra syntax."
+            )
 
         try:
             self.performance_metrics["intent_translations"] += 1
 
-            # Parse natural language to NeuroCode
+            # Parse natural language to Aetherra
             if parse_natural_intent:
                 parsed_intent = parse_natural_intent(natural_description)
             else:
-                return "[Enhancement] Intent parser not available. Please use NeuroCode syntax."
+                return "[Enhancement] Intent parser not available. Please use Aetherra syntax."
 
             # Store the translation in memory
             if self.vector_memory:
@@ -270,7 +293,7 @@ class EnhancedAetherraInterpreter:
                     category="ai_assistance",
                 )
 
-            # Execute the generated NeuroCode
+            # Execute the generated Aetherra
             result = self.core_interpreter.execute(parsed_intent.generated_code)
 
             return f"""🧠 Intent Translation Complete!
@@ -280,7 +303,7 @@ Original Request: {natural_description}
 Intent Type: {parsed_intent.intent_type.value}
 Confidence: {parsed_intent.confidence:.2f}
 
-Generated NeuroCode:
+Generated Aetherra:
 {parsed_intent.generated_code[:300]}...
 
 Execution Result:
@@ -304,7 +327,7 @@ Execution Result:
             if parse_natural_intent:
                 parsed_intent = parse_natural_intent(intent_description)
             else:
-                return "[Enhancement] Intent parser not available. Please use NeuroCode syntax."
+                return "[Enhancement] Intent parser not available. Please use Aetherra syntax."
             return f"""Intent Parsed Successfully!
 
 Type: {parsed_intent.intent_type.value}
@@ -313,7 +336,7 @@ Constraints: {parsed_intent.constraints}
 Technologies: {parsed_intent.technologies}
 Confidence: {parsed_intent.confidence:.2f}
 
-Generated NeuroCode:
+Generated Aetherra:
 {parsed_intent.generated_code}"""
 
         except Exception as e:
@@ -394,7 +417,9 @@ Generated NeuroCode:
                 response += f"{i}. {pattern['theme']} (size: {pattern['size']})\n"
 
             response += f"\n📊 Most Common Tags: {insights['most_common_tags'][:3]}\n"
-            response += f"📊 Most Common Categories: {insights['most_common_categories'][:3]}\n"
+            response += (
+                f"📊 Most Common Categories: {insights['most_common_categories'][:3]}\n"
+            )
 
             return response
 
@@ -443,8 +468,12 @@ Generated NeuroCode:
             metrics = self.performance_optimizer.get_performance_report()
             response = "⚡ Performance Optimization Status\n\n"
             response += f"Commands monitored: {len(metrics.get('commands', {}))}\n"
-            response += f"Optimization suggestions: {len(metrics.get('suggestions', {}))}\n"
-            response += f"Average execution time: {metrics.get('avg_execution_time', 0):.3f}s\n"
+            response += (
+                f"Optimization suggestions: {len(metrics.get('suggestions', {}))}\n"
+            )
+            response += (
+                f"Average execution time: {metrics.get('avg_execution_time', 0):.3f}s\n"
+            )
             return response
 
         elif command.startswith("analyze"):
@@ -454,9 +483,13 @@ Generated NeuroCode:
             response = "📊 Performance Analysis\n\n"
             if "suggestions" in report and report["suggestions"]:
                 response += "🔧 Recent Optimization Suggestions:\n"
-                for suggestion in list(report["suggestions"].values())[:3]:  # Top 3 suggestions
+                for suggestion in list(report["suggestions"].values())[
+                    :3
+                ]:  # Top 3 suggestions
                     response += f"• Command: {suggestion['command']}\n"
-                    response += f"  Suggestion: {suggestion['suggested_optimization']}\n"
+                    response += (
+                        f"  Suggestion: {suggestion['suggested_optimization']}\n"
+                    )
             else:
                 response += "✅ No performance issues detected\n"
 
@@ -482,14 +515,14 @@ Generated NeuroCode:
                     context={"result_length": len(str(result))},
                 )
 
-                return f"⏱️ Profiled execution in {execution_time:.3f}s\nResult: {result}"
+                return (
+                    f"⏱️ Profiled execution in {execution_time:.3f}s\nResult: {result}"
+                )
             except Exception as e:
                 return f"[Profile Error] {e}"
 
         else:
-            return (
-                "[Error] Unknown optimization command. Available: status, analyze, profile <code>"
-            )
+            return "[Error] Unknown optimization command. Available: status, analyze, profile <code>"
 
     def _handle_collaboration_command(self, code: str) -> str:
         """Handle AI collaboration commands"""
@@ -503,7 +536,9 @@ Generated NeuroCode:
             stats = self.ai_collaboration.get_collaboration_stats()
             response = "🤝 AI Collaboration Status\n\n"
             response += f"Active tasks: {stats.get('active_tasks', 0)}\n"
-            response += f"Total collaborations: {stats.get('total_collaborations', 0)}\n"
+            response += (
+                f"Total collaborations: {stats.get('total_collaborations', 0)}\n"
+            )
             response += f"Available agents: {stats.get('available_agents', 0)}\n"
             response += f"Success rate: {stats.get('success_rate', 0)}%\n"
             return response
@@ -518,7 +553,9 @@ Generated NeuroCode:
             import asyncio
 
             try:
-                result = asyncio.run(self.ai_collaboration.quick_solve(task_description))
+                result = asyncio.run(
+                    self.ai_collaboration.quick_solve(task_description)
+                )
                 return f"🚀 Collaborative solution:\n{result}"
             except Exception as e:
                 return f"[Collaboration Error] {e}"
@@ -584,7 +621,7 @@ Generated NeuroCode:
 
     def demonstrate_enhancements(self) -> str:
         """Demonstrate available enhancements"""
-        demo = "🚀 NeuroCode Enhanced Features Demo\n\n"
+        demo = "🚀 Aetherra Enhanced Features Demo\n\n"
 
         if not ENHANCEMENTS_AVAILABLE:
             return demo + "⚠️  No enhancements available - basic interpreter only"
@@ -645,14 +682,14 @@ if __name__ == "__main__":
     test_enhancements()
 
     # Interactive mode
-    print("\n🚀 Enhanced NeuroCode Interactive Mode")
+    print("\n🚀 Enhanced Aetherra Interactive Mode")
     print("Type 'demo' to see capabilities, 'quit' to exit")
 
     interpreter = create_enhanced_interpreter()
 
     while True:
         try:
-            user_input = input("\nNeuroCode> ").strip()
+            user_input = input("\nAetherra> ").strip()
 
             if user_input.lower() in ["quit", "exit"]:
                 break
@@ -660,12 +697,16 @@ if __name__ == "__main__":
                 print(interpreter.demonstrate_enhancements())
             elif user_input.lower() == "status":
                 status = interpreter.get_enhancement_status()
-                print(f"Enhanced features available: {status['enhancements_available']}")
-                print(f"Commands processed: {status['performance_metrics']['commands_processed']}")
+                print(
+                    f"Enhanced features available: {status['enhancements_available']}"
+                )
+                print(
+                    f"Commands processed: {status['performance_metrics']['commands_processed']}"
+                )
             elif user_input:
-                result = interpreter.execute_neurocode(user_input)
+                result = interpreter.execute_Aetherra(user_input)
                 print(result)
 
         except KeyboardInterrupt:
-            print("\n\n👋 Goodbye! NeuroCode enhancements ready for the future!")
+            print("\n\n👋 Goodbye! Aetherra enhancements ready for the future!")
             break

@@ -1,9 +1,9 @@
-# 🏗️ Neuroplex Modular Architecture Guide
+# 🏗️ LyrixaModular Architecture Guide
 
 ## 📊 **Current File Organization**
 
 ### **Before Modularization (Issues):**
-- `ui/neuroplex_gui_v2.py` - **1600+ lines** causing VS Code lockups
+- `ui/Lyrixa_gui_v2.py` - **1600+ lines** causing VS Code lockups
 - All components in one file
 - Difficult to maintain and test
 - Poor performance
@@ -13,8 +13,8 @@
 ```
 ui/
 ├── __init__.py
-├── neuroplex_gui_v2.py           # Original monolithic version (backup)
-├── neuroplex_modular.py          # New modular main window
+├── Lyrixa_gui_v2.py           # Original monolithic version (backup)
+├── Lyrixa_modular.py          # New modular main window
 ├── components/
 │   ├── __init__.py
 │   ├── theme.py                  # ModernTheme class (extracted)
@@ -33,12 +33,12 @@ ui/
 
 ### **Launch the Modular Version:**
 ```bash
-python launch_modular_neuroplex.py
+python launch_modular_Lyrixa.py
 ```
 
 ### **Fallback to Original:**
 ```bash
-python launch_neuroplex_v2.py
+python launch_Lyrixa_v2.py
 ```
 
 ## ✅ **Benefits Achieved**
@@ -66,7 +66,7 @@ python launch_neuroplex_v2.py
 ### **✅ Completed:**
 1. **Modular Qt imports** - `ui/components/utils/qt_imports.py`
 2. **Extracted theme** - `ui/components/theme.py`
-3. **Working modular GUI** - `ui/neuroplex_modular.py`
+3. **Working modular GUI** - `ui/Lyrixa_modular.py`
 4. **Simplified components** - Basic panels working
 5. **Launcher scripts** - Both modular and fallback options
 
@@ -86,7 +86,7 @@ python launch_neuroplex_v2.py
 
 ### **Working on Components:**
 1. Edit individual component files in `ui/components/panels/`
-2. Test with: `python ui/neuroplex_modular.py`
+2. Test with: `python ui/Lyrixa_modular.py`
 3. Components auto-reload on restart
 
 ### **Adding New Panels:**
@@ -101,10 +101,10 @@ python launch_neuroplex_v2.py
 
 ## 📈 **Results**
 
-The modular architecture successfully addresses the VS Code performance issues while setting up a much more maintainable and scalable codebase for future NeuroCode development.
+The modular architecture successfully addresses the VS Code performance issues while setting up a much more maintainable and scalable codebase for future Aetherra development.
 
 **Performance Impact:**
 - ✅ VS Code responsiveness restored
-- ✅ Faster file parsing and syntax highlighting  
+- ✅ Faster file parsing and syntax highlighting
 - ✅ Better memory management
 - ✅ Improved development experience

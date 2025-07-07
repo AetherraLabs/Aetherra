@@ -67,9 +67,7 @@ PLUGIN_REGISTRY: Dict[str, Callable] = {}
 PLUGIN_METADATA: Dict[str, PluginMetadata] = {}
 PLUGIN_INTENTS: Dict[str, PluginIntent] = {}
 
-PLUGIN_DIR = os.path.join(
-    os.path.dirname(__file__), "..", "src", "neurocode", "plugins"
-)
+PLUGIN_DIR = os.path.join(os.path.dirname(__file__), "..", "src", "aetherra", "plugins")
 os.makedirs(PLUGIN_DIR, exist_ok=True)
 
 

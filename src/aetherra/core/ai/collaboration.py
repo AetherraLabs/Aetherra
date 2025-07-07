@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Multi-AI Collaboration Framework for NeuroCode
+Multi-AI Collaboration Framework for Aetherra
 Coordinates multiple AI agents to solve complex problems collaboratively
 """
 
@@ -87,7 +87,7 @@ class LocalCodeGenerator(AIAgent):
     def __init__(self):
         super().__init__(AgentRole.CODE_GENERATOR)
         self.capabilities = [
-            "neurocode_generation",
+            "Aetherra_generation",
             "python_code_generation",
             "api_design",
             "algorithm_implementation",
@@ -121,15 +121,15 @@ class LocalCodeGenerator(AIAgent):
             metadata={
                 "lines_of_code": len(generated_code.split("\n")),
                 "complexity": "medium",
-                "language": "neurocode",
+                "language": "Aetherra",
             },
         )
 
     def _generate_code(self, description: str, requirements: List[str]) -> str:
-        """Generate NeuroCode based on description and requirements"""
+        """Generate Aetherra based on description and requirements"""
         # This would integrate with local AI models for actual code generation
         code_template = f"""
-# Generated NeuroCode for: {description}
+# Generated Aetherra for: {description}
 goal: {description.lower().replace(" ", "_")} priority: high
 agent: on
 
@@ -314,7 +314,9 @@ class DocumentationGenerator(AIAgent):
 
         await asyncio.sleep(0.2)  # Simulate processing time
 
-        documentation = self._generate_documentation(task.description, task.context.get("code", ""))
+        documentation = self._generate_documentation(
+            task.description, task.context.get("code", "")
+        )
 
         execution_time = time.time() - start_time
 
@@ -352,7 +354,7 @@ This implementation provides {description.lower()} functionality with AI-powered
 - Comprehensive logging
 
 ## Usage
-```neurocode
+```Aetherra
 {code if code else "# Code will be documented here"}
 ```
 
@@ -367,7 +369,7 @@ This implementation provides {description.lower()} functionality with AI-powered
 - Error handling
 
 ## Examples
-```neurocode
+```Aetherra
 # Example usage
 goal: example_implementation
 # Implementation details here
@@ -453,7 +455,7 @@ class AICollaborationFramework:
         task.context["optimized_code"] = optimization_response.solution
 
         # Stage 3: Debugging and Validation
-#         print("🔍 Stage 3: Debugging and Validation")
+        #         print("🔍 Stage 3: Debugging and Validation")
         debugger_agent = self.ai_agents[AgentRole.DEBUGGER]
         task.context["code"] = optimization_response.solution
         debug_response = await debugger_agent.process_task(task)
@@ -530,7 +532,9 @@ class AICollaborationFramework:
         )
 
         print("✅ Collaborative solution completed!")
-        print(f"   Total time: {final_solution['collaboration_metrics']['total_time']:.2f}s")
+        print(
+            f"   Total time: {final_solution['collaboration_metrics']['total_time']:.2f}s"
+        )
         print(
             f"   Average confidence: {final_solution['collaboration_metrics']['average_confidence']:.0%}"
         )
@@ -544,7 +548,10 @@ class AICollaborationFramework:
 
     def get_agent_capabilities(self) -> Dict[str, List[str]]:
         """Get capabilities of all agents"""
-        return {role.value: agent.get_capabilities() for role, agent in self.ai_agents.items()}
+        return {
+            role.value: agent.get_capabilities()
+            for role, agent in self.ai_agents.items()
+        }
 
     def get_collaboration_stats(self) -> Dict[str, Any]:
         """Get statistics about collaborations"""
@@ -614,7 +621,7 @@ def get_ai_capabilities() -> Dict[str, List[str]]:
 if __name__ == "__main__":
     # Example usage
     async def main():
-        print("🤝 NeuroCode AI Collaboration Framework")
+        print("🤝 Aetherra AI Collaboration Framework")
 
         framework = AICollaborationFramework()
 
@@ -631,9 +638,13 @@ if __name__ == "__main__":
 
         print("\n📊 Collaboration Results:")
         print(f"   Problem: {result['problem']}")
-        print(f"   Agents involved: {result['collaboration_metrics']['agents_involved']}")
+        print(
+            f"   Agents involved: {result['collaboration_metrics']['agents_involved']}"
+        )
         print(f"   Total time: {result['collaboration_metrics']['total_time']:.2f}s")
-        print(f"   Average confidence: {result['collaboration_metrics']['average_confidence']:.0%}")
+        print(
+            f"   Average confidence: {result['collaboration_metrics']['average_confidence']:.0%}"
+        )
 
         # Get collaboration stats
         stats = framework.get_collaboration_stats()

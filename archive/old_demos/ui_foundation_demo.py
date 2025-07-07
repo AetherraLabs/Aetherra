@@ -4,10 +4,10 @@
 =======================================
 
 This module demonstrates how to implement the UI foundation system
-for the AetherraCode & Neuroplex AI OS.
+for the AetherraCode & Aetherra AI OS.
 
 This is the first step in our implementation checklist:
-Phase 1 -> UI Polish -> Neuroplex Interface Enhancement
+Phase 1 -> UI Polish -> Aetherra Interface Enhancement
 
 Usage:
     python ui_foundation_demo.py
@@ -26,7 +26,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 class UITheme(Enum):
-    """Available UI themes for Neuroplex"""
+    """Available UI themes for Aetherra"""
 
     DARK = "dark"
     LIGHT = "light"
@@ -258,8 +258,8 @@ class ErrorHandler:
 """
 
 
-class NeuroplexUI:
-    """Main UI system for Neuroplex"""
+class AetherraUI:
+    """Main UI system for Aetherra"""
 
     def __init__(self, config: UIConfig = None):
         self.config = config or UIConfig()
@@ -342,7 +342,7 @@ def demo_ui_foundation():
     print("=" * 50)
 
     # Initialize UI system
-    ui = NeuroplexUI()
+    ui = AetherraUI()
 
     # Demo 1: Dashboard
     print("\n📊 Dashboard Demo:")

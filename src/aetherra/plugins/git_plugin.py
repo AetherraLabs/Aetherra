@@ -1,4 +1,4 @@
-# src/neurocode/plugins/git_plugin.py - Git Integration Plugin
+# src/Aetherra/plugins/git_plugin.py - Git Integration Plugin
 import os
 import subprocess
 from typing import Any, Dict
@@ -11,7 +11,7 @@ from core.plugin_manager import register_plugin
     description="Check the current Git repository status",
     capabilities=["git", "version_control", "status"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="development",
     dependencies=["subprocess"],
     intent_purpose="git repository management and version control",
@@ -91,7 +91,7 @@ def git_status() -> Dict[str, Any]:
     description="Create a Git commit with the provided message",
     capabilities=["git", "commit", "version_control"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="development",
     dependencies=["subprocess"],
     intent_purpose="git commit creation and version control",
@@ -162,7 +162,7 @@ def git_commit(message: str, add_all: bool = True) -> Dict[str, Any]:
     description="View Git commit history",
     capabilities=["git", "history", "log"],
     version="1.0.0",
-    author="NeuroCode Team",
+    author="Aetherra Team",
     category="development",
     dependencies=["subprocess"],
     intent_purpose="git history and commit log viewing",

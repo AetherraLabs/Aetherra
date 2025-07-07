@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple test script to see if neuroplex.py is fixed
+Simple test script to see if Aetherra.py is fixed
 """
 
 import sys
@@ -21,27 +21,27 @@ try:
 
     print("✅ UI package imported successfully")
 
-    print("Trying direct import of neuroplex.py...")
+    print("Trying direct import of Aetherra.py...")
     try:
-        from src.aethercode.ui import neuroplex
+        from src.aethercode.ui import Aetherra
 
-        print("✅ neuroplex.py imported successfully")
-        if hasattr(neuroplex, "NeuroplexWindow"):
-            print("✅ NeuroplexWindow class is available")
+        print("✅ Aetherra.py imported successfully")
+        if hasattr(Aetherra, "AetherraWindow"):
+            print("✅ AetherraWindow class is available")
         else:
-            print("❌ NeuroplexWindow class not found")
+            print("❌ AetherraWindow class not found")
     except Exception as e:
-        print(f"❌ Could not import neuroplex.py directly: {e}")
+        print(f"❌ Could not import Aetherra.py directly: {e}")
 
-    print("Trying to check neuroplex.py file...")
+    print("Trying to check Aetherra.py file...")
     try:
-        file_path = Path("src/aetherra/ui/neuroplex.py").resolve()
+        file_path = Path("src/aetherra/ui/Aetherra.py").resolve()
         print(f"Checking file at: {file_path}")
         if file_path.exists():
             with open(file_path, "r") as f:
                 code = f.read()
                 compile(code, str(file_path), "exec")
-                print("✅ neuroplex.py compiles successfully")
+                print("✅ Aetherra.py compiles successfully")
         else:
             print(f"❌ File does not exist: {file_path}")
     except Exception as e:

@@ -4,7 +4,7 @@ Enhanced aetherra Component Verification
 ========================================
 
 Verifies the components that are actually integrated and working,
-focusing on the Enhanced Neuroplex with chat router integration.
+focusing on the Enhanced Aetherra with chat router integration.
 """
 
 import sys
@@ -56,15 +56,15 @@ def test_gui_integration():
 
         print("✅ PySide6 available")
 
-        # Test Enhanced Neuroplex
-        from aetherra.ui.enhanced_neuroplex import EnhancedNeuroplexWindow
+        # Test Enhanced Aetherra
+        from aetherra.ui.enhanced_Aetherra import EnhancedAetherraWindow
 
-        print("✅ Enhanced Neuroplex imported successfully")
+        print("✅ Enhanced Aetherra imported successfully")
 
         # Test that it can be instantiated
         app = QApplication.instance() or QApplication([])
-        window = EnhancedNeuroplexWindow()
-        print("✅ Enhanced Neuroplex window created successfully")
+        window = EnhancedAetherraWindow()
+        print("✅ Enhanced Aetherra window created successfully")
 
         # Test chat router integration in GUI
         if hasattr(window, "chat_router") and window.chat_router:
@@ -96,12 +96,12 @@ def test_launcher_integration():
             print("❌ Main launcher not found")
             return False
 
-        # Check if enhanced neuroplex launcher exists
-        enhanced_launcher = project_root / "launchers" / "launch_enhanced_neuroplex.py"
+        # Check if enhanced Aetherra launcher exists
+        enhanced_launcher = project_root / "launchers" / "launch_enhanced_Aetherra.py"
         if enhanced_launcher.exists():
-            print("✅ Enhanced Neuroplex launcher exists")
+            print("✅ Enhanced Aetherra launcher exists")
         else:
-            print("❌ Enhanced Neuroplex launcher not found")
+            print("❌ Enhanced Aetherra launcher not found")
             return False
 
         print("✅ Launcher integration complete")
@@ -172,10 +172,10 @@ def run_enhanced_verification():
     print(f"📊 Results: {passed}/{total} tests passed")
 
     if passed >= 3:  # Allow some flexibility
-        print("🎉 ENHANCED NEUROPLEX IS READY!")
+        print("🎉 ENHANCED Aetherra IS READY!")
         print("\n🚀 Ready to launch:")
         print("   python aetherra_launcher.py")
-        print("   Select option 1: Enhanced Neuroplex (Integrated NeuroChat)")
+        print("   Select option 1: Enhanced Aetherra (Integrated NeuroChat)")
         print("\n✨ Features available:")
         print("   • AI-powered chat assistant")
         print("   • Swappable personalities")

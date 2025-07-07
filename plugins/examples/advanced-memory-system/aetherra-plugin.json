@@ -25,9 +25,9 @@
     "episodic",
     "ai-consciousness"
   ],
-  "repository": "https://github.com/neurocode/plugins/advanced-memory",
+  "repository": "https://github.com/Aetherra/plugins/advanced-memory",
   "documentation": "https://docs.aethercode.org/plugins/advanced-memory",
-  "homepage": "https://neurocode.org/plugins/advanced-memory",
+  "homepage": "https://Aetherra.org/plugins/advanced-memory",
   "security_permissions": [
     "file_system_read",
     "memory_persistent_storage"

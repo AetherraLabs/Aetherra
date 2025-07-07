@@ -5,7 +5,7 @@
 
 Advanced performance optimization engine that provides real-time monitoring,
 intelligent caching, parallel processing, and adaptive performance tuning
-across all AetherraCode & Neuroplex components.
+across all AetherraCode & Lyrixacomponents.
 
 Features:
 - Real-time performance monitoring and profiling

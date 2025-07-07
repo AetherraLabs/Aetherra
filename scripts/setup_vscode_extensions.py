@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧 VS Code Extensions Auto-Installer for aetherra/Neuroplex
+🔧 VS Code Extensions Auto-Installer for aetherra/Lyrixa
 Automatically installs essential VS Code extensions for optimal development
 """
 
@@ -154,7 +154,7 @@ def recommend_additional_setup():
 
 def main():
     """Main setup function"""
-    print("🧬 aetherra/Neuroplex VS Code Extension Setup")
+    print("🧬 aetherra/LyrixaVS Code Extension Setup")
     print("=" * 50)
 
     # Check if we're in the right directory

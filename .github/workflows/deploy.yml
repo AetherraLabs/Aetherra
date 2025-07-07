@@ -1,4 +1,4 @@
-name: Deploy NeuroCode Website
+name: Deploy Aetherra Website
 
 on:
   push:

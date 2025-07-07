@@ -20,7 +20,7 @@ from lark import Lark, Token, Transformer
 from lark.exceptions import LarkError, LexError, ParseError
 
 # Refined AetherraCode Grammar Definition - Conflict-free
-REFINED_NEUROCODE_GRAMMAR = r"""
+REFINED_aetherra_GRAMMAR = r"""
     ?start: program
 
     program: statement*
@@ -180,7 +180,7 @@ class RefinedASTNode:
         return f"{self.node_type}({self.value})"
 
 
-class RefinedNeuroCodeTransformer(Transformer):
+class RefinedaetherraTransformer(Transformer):
     """Refined transformer for clean AST generation"""
 
     def program(self, statements):
@@ -238,7 +238,9 @@ class RefinedNeuroCodeTransformer(Transformer):
         """Transform recall statement"""
         target = args[0] if args else ""
         if hasattr(target, "node_type"):
-            return RefinedASTNode("recall", value=target.value, metadata=target.metadata)
+            return RefinedASTNode(
+                "recall", value=target.value, metadata=target.metadata
+            )
         else:
             return RefinedASTNode("recall", value=self._extract_string(target))
 
@@ -247,7 +249,9 @@ class RefinedNeuroCodeTransformer(Transformer):
         if len(args) >= 2:
             target_type = str(args[0])
             value = self._extract_string(args[1])
-            return RefinedASTNode("recall_target", value=value, metadata={"type": target_type})
+            return RefinedASTNode(
+                "recall_target", value=value, metadata={"type": target_type}
+            )
         return RefinedASTNode("recall_target", value="")
 
     def forget_stmt(self, args):
@@ -307,7 +311,9 @@ class RefinedNeuroCodeTransformer(Transformer):
         if_block = args[1] if len(args) > 1 else []
         else_part = args[2] if len(args) > 2 else None
 
-        children = if_block if isinstance(if_block, list) else [if_block] if if_block else []
+        children = (
+            if_block if isinstance(if_block, list) else [if_block] if if_block else []
+        )
         if else_part:
             children.append(RefinedASTNode("else_block", children=[else_part]))
 
@@ -374,7 +380,9 @@ class RefinedNeuroCodeTransformer(Transformer):
         if len(args) >= 2:
             var = str(args[0])
             value = args[1]
-            return RefinedASTNode("assignment", value=var, children=[value] if value else [])
+            return RefinedASTNode(
+                "assignment", value=var, children=[value] if value else []
+            )
         return RefinedASTNode("assignment")
 
     def expression_stmt(self, args):
@@ -404,7 +412,11 @@ class RefinedNeuroCodeTransformer(Transformer):
         elements = args[0] if args else []
         return RefinedASTNode(
             "array",
-            children=elements if isinstance(elements, list) else [elements] if elements else [],
+            children=elements
+            if isinstance(elements, list)
+            else [elements]
+            if elements
+            else [],
         )
 
     def array_elements(self, args):
@@ -496,15 +508,15 @@ class RefinedNeuroCodeTransformer(Transformer):
         return str(node)
 
 
-class RefinedNeuroCodeParser:
+class RefinedaetherraParser:
     """Refined AetherraCode parser with clean, conflict-free grammar"""
 
     def __init__(self):
         """Initialize the refined parser"""
         self.parser = Lark(
-            REFINED_NEUROCODE_GRAMMAR,
+            REFINED_aetherra_GRAMMAR,
             parser="lalr",
-            transformer=RefinedNeuroCodeTransformer(),
+            transformer=RefinedaetherraTransformer(),
             start="program",
         )
         self.last_ast = None
@@ -618,9 +630,9 @@ class AetherraCodeSyntaxError(Exception):
     pass
 
 
-def create_refined_parser() -> RefinedNeuroCodeParser:
+def create_refined_parser() -> RefinedaetherraParser:
     """Create a new refined AetherraCode parser instance"""
-    return RefinedNeuroCodeParser()
+    return RefinedaetherraParser()
 
 
 # Example usage and testing

@@ -3,7 +3,7 @@
 🧪 Test Script: AetherraHub Integration
 ===================================
 
-Test the integration of AetherraHub package manager into the Neuroplex GUI.
+Test the integration of AetherraHub package manager into the Lyrixa.
 This script verifies that:
 1. AetherraHub tab is created successfully
 2. WebEngine support is detected correctly
@@ -73,7 +73,6 @@ def test_webengine_availability():
     """Test if WebEngine is available"""
     print("🔍 Testing WebEngine availability...")
     try:
-
         print("✅ WebEngine available for embedded browser")
         return True
     except ImportError as e:
@@ -94,12 +93,12 @@ def test_gui_neurohub_integration():
         if app is None:
             app = QApplication(sys.argv)
 
-        # Import Neuroplex
+        # Import Lyrixa
         from Lyrixa.ui.aetherplex import LyrixaWindow
 
         # Create main window
         window = LyrixaWindow()
-        print("✅ Neuroplex window created successfully")
+        print("✅ Lyrixawindow created successfully")
 
         # Check if AetherraHub tab method exists
         if hasattr(window, "create_neurohub_tab"):

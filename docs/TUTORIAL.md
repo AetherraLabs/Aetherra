@@ -1,10 +1,10 @@
-# 🚀 NeuroCode Tutorial: Your First AI-Native Program
+# 🚀 aetherra Tutorial: Your First AI-Native Program
 
-Welcome to NeuroCode, a pioneering AI-consciousness programming language! This tutorial will guide you through creating your first NeuroCode program step by step.
+Welcome to aetherra, a pioneering AI-consciousness programming language! This tutorial will guide you through creating your first aetherra program step by step.
 
-## What Makes NeuroCode Special?
+## What Makes aetherra Special?
 
-Unlike traditional programming languages that execute static instructions, NeuroCode programs:
+Unlike traditional programming languages that execute static instructions, aetherra programs:
 
 - 🧠 **Think and reason** about problems
 - 💾 **Remember and learn** from experiences
@@ -12,43 +12,43 @@ Unlike traditional programming languages that execute static instructions, Neuro
 - 🤖 **Collaborate with AI** agents in real-time
 - ⚡ **Self-optimize** for better performance
 
-## Tutorial 1: Your First NeuroCode Program
+## Tutorial 1: Your First aetherra Program
 
 ### Step 1: Store Your First Memory
 
-```neurocode
-# NeuroCode treats memory as a first-class citizen
-remember("I'm learning NeuroCode - the future of programming!") as "first_step"
+```aetherra
+# aetherra treats memory as a first-class citizen
+remember("I'm learning aetherra - the future of programming!") as "first_step"
 ```
 
 ### Step 2: Set a Learning Goal
 
-```neurocode
+```aetherra
 # Express your intentions, not just steps
-goal: master NeuroCode fundamentals priority: high
+goal: master aetherra fundamentals priority: high
 ```
 
 ### Step 3: Activate Your AI Agent
 
-```neurocode
+```aetherra
 # Enable AI collaboration
 agent: on learning: continuous
 ```
 
-### Step 4: Let NeuroCode Think
+### Step 4: Let aetherra Think
 
-```neurocode
-# NeuroCode analyzes and provides insights
+```aetherra
+# aetherra analyzes and provides insights
 analyze "my learning progress"
 suggest "next steps for mastery"
 ```
 
 ### Complete First Program
 
-```neurocode
-# 🧬 My First NeuroCode Program
-remember("I'm learning NeuroCode - the future of programming!") as "first_step"
-goal: master NeuroCode fundamentals priority: high
+```aetherra
+# 🧬 My First aetherra Program
+remember("I'm learning aetherra - the future of programming!") as "first_step"
+goal: master aetherra fundamentals priority: high
 agent: on learning: continuous
 
 analyze "my learning progress"
@@ -59,7 +59,7 @@ suggest "next steps for mastery"
 
 ### Basic Memory Operations
 
-```neurocode
+```aetherra
 # Store different types of memories
 remember("Python is great for data science") as "programming_fact"
 remember("I love building web applications") as "personal_interest"
@@ -72,7 +72,7 @@ recall memories with "development"
 
 ### Tagged Memories
 
-```neurocode
+```aetherra
 # Add tags for better organization
 remember("React makes UI development faster") as "web_insight" tags: ["react", "frontend", "productivity"]
 remember("PostgreSQL is reliable for large datasets") as "database_insight" tags: ["postgresql", "database", "scalability"]
@@ -86,7 +86,7 @@ recall memories with tags: ["database", "scalability"]
 
 ### Setting Goals
 
-```neurocode
+```aetherra
 # Simple goals
 goal: learn machine learning
 
@@ -101,9 +101,9 @@ goal: deploy to production when tests_pass and security_approved
 
 ### Goal Tracking
 
-```neurocode
-# NeuroCode automatically tracks your progress
-goal: complete NeuroCode tutorial priority: high
+```aetherra
+# aetherra automatically tracks your progress
+goal: complete aetherra tutorial priority: high
 agent: on
 
 # The AI will suggest steps and track completion
@@ -115,7 +115,7 @@ suggest "areas that need more focus"
 
 ### Single Agent Assistance
 
-```neurocode
+```aetherra
 # Activate an AI agent with specific focus
 agent: on specialization: "web_development"
 
@@ -126,7 +126,7 @@ suggest "security measures for user authentication"
 
 ### Multi-Agent Collaboration
 
-```neurocode
+```aetherra
 # Complex problems benefit from multiple AI agents
 collaborate: solve "design scalable microservices architecture"
 agents: [architect, security_expert, performance_specialist]
@@ -141,9 +141,9 @@ assign: "performance optimization" to performance_specialist
 
 ### Switching Between AI Models
 
-NeuroCode supports multiple AI models that you can switch between seamlessly:
+aetherra supports multiple AI models that you can switch between seamlessly:
 
-```neurocode
+```aetherra
 # Use OpenAI for complex reasoning
 model: "gpt-4"
 assistant: "design a scalable architecture for a social media platform"
@@ -163,7 +163,7 @@ assistant: "review the complete implementation for security issues"
 
 ### Privacy-First Development
 
-```neurocode
+```aetherra
 # Keep sensitive data on local models
 model: "mistral"  # Local model for privacy
 assistant: "analyze customer behavior patterns from encrypted data"
@@ -175,7 +175,7 @@ assistant: "suggest UI improvements based on general UX principles"
 
 ### Model-Specific Workflows
 
-```neurocode
+```aetherra
 # Different models for different strengths
 define analyze_codebase()
     model: "gpt-4"
@@ -196,7 +196,7 @@ end
 
 ### User-Defined Functions with AI
 
-```neurocode
+```aetherra
 # Define functions that leverage AI assistance
 define optimize_performance(component)
     model: "gpt-4"
@@ -218,7 +218,7 @@ optimize_performance("frontend_rendering")
 
 ### Conditional AI Model Selection
 
-```neurocode
+```aetherra
 # Choose model based on requirements
 if privacy_required:
     model: "mistral"    # Local model
@@ -238,7 +238,7 @@ end
 
 ### Learning from Multi-Model Insights
 
-```neurocode
+```aetherra
 # Gather insights from multiple models
 define get_multi_model_insights(problem)
     insights = []
@@ -266,7 +266,7 @@ end
 
 ### Performance Optimization
 
-```neurocode
+```aetherra
 # Automatic performance optimization
 optimize: current_code
 profile: execution_time, memory_usage
@@ -279,7 +279,7 @@ monitor: performance_metrics
 
 ### Local AI Processing
 
-```neurocode
+```aetherra
 # Use local AI models for privacy
 local_ai: on
 model: "mistral-7b"
@@ -294,7 +294,7 @@ local_generate: "privacy-compliant recommendations"
 
 Let's build a comprehensive AI-powered code review system:
 
-```neurocode
+```aetherra
 # � AI-Powered Code Review System with Multi-LLM
 
 # Set development goals
@@ -355,7 +355,7 @@ suggest "process improvements for future reviews"
 3. **Explore Model Options**: Test different AI models with your specific use cases
 4. **Build Privacy-First Apps**: Use local models for sensitive data processing
 5. **Create Multi-Agent Systems**: Combine multiple AI models for complex problem solving
-6. **Share Your Creations**: Join the NeuroCode community
+6. **Share Your Creations**: Join the aetherra community
 
 ## Key Multi-LLM Concepts
 
@@ -400,13 +400,13 @@ ollama pull mixtral
 - **Memory is fundamental**: Store and recall information naturally
 - **Goals drive execution**: Express what you want, not how to do it
 - **AI agents are partners**: They help analyze, suggest, and optimize
-- **Intention matters**: NeuroCode understands what you're trying to achieve
+- **Intention matters**: aetherra understands what you're trying to achieve
 - **Learning is continuous**: The system gets better as you use it
 
 Welcome to the future of programming! 🧬✨
 
 ---
 
-**Next Tutorial**: [Advanced NeuroCode Patterns](ADVANCED_TUTORIAL.md)
+**Next Tutorial**: [Advanced aetherra Patterns](ADVANCED_TUTORIAL.md)
 **Documentation**: [Complete Documentation](DOCUMENTATION.md)
 **Examples**: [Example Programs](examples/)

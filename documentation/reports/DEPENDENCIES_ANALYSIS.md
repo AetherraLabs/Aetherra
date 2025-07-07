@@ -1,8 +1,8 @@
-# NeuroCode Dependencies Analysis & Update Report
+# aetherra Dependencies Analysis & Update Report
 
 ## Analysis Summary
 
-I analyzed the entire NeuroCode workspace to understand which dependencies are actually used in the codebase versus what was listed in the original requirements.txt.
+I analyzed the entire aetherra workspace to understand which dependencies are actually used in the codebase versus what was listed in the original requirements.txt.
 
 ### Key Findings
 
@@ -11,7 +11,7 @@ I analyzed the entire NeuroCode workspace to understand which dependencies are a
 - `psutil` - System monitoring used in performance modules
 - `openai` - AI integration used in ai_runtime.py and multi_llm_manager.py
 - `numpy` - Used in enhanced_memory_system.py
-- `streamlit` - Only used in src/neurocode/ui/neurocode_playground.py
+- `streamlit` - Only used in src/aetherra/ui/aetherra_playground.py
 - `requests` - Used in plugin managers
 
 **Dependencies Analysis:**

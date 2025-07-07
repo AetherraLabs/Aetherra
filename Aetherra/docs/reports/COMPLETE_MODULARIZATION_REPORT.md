@@ -1,4 +1,4 @@
-# 🏗️ Neuroplex Complete File Organization & Modularization Plan
+# 🏗️ LyrixaComplete File Organization & Modularization Plan
 
 ## 📁 **Current State Analysis**
 
@@ -12,8 +12,8 @@ The project currently has:
 
 ### **New Directory Structure:**
 ```
-📁 New Neurocode Language/
-├── 📁 core/                    # Core NeuroCode engine
+📁 New Aetherra Language/
+├── 📁 core/                    # Core Aetherra engine
 │   ├── interpreter.py
 │   ├── parser.py
 │   └── ast_nodes.py
@@ -34,16 +34,16 @@ The project currently has:
 │   │   ├── theme.py                    ✅ DONE
 │   │   ├── cards.py                    ✅ DONE
 │   │   └── __init__.py                 ✅ DONE
-│   ├── neuroplex_gui_v2.py     # Original (backup)
-│   ├── neuroplex_modular.py            ✅ DONE
-│   ├── neuroplex_fully_modular.py      ✅ DONE
+│   ├── Lyrixa_gui_v2.py     # Original (backup)
+│   ├── Lyrixa_modular.py            ✅ DONE
+│   ├── Lyrixa_fully_modular.py      ✅ DONE
 │   └── __init__.py
 ├── 📁 launchers/               # All launcher scripts
-│   ├── launch_neuroplex.py
+│   ├── launch_Lyrixa.py
 │   ├── launch_modular.py       # NEW - simplified modular
 │   ├── launch_fully_modular.py # NEW - all components
-│   └── launch_neurocode.py     # NEW - NeuroCode only
-├── 📁 neurocode/              # NeuroCode language files
+│   └── launch_Aetherra.py     # NEW - Aetherra only
+├── 📁 Aetherra/              # Aetherra language files
 │   ├── 📁 stdlib/             # Standard library
 │   ├── 📁 examples/          # Example programs
 │   └── 📁 syntax/            # Language definition
@@ -105,9 +105,9 @@ The project currently has:
 # Move launcher files to launchers/
 mv launch_*.py launchers/
 
-# Move NeuroCode files to neurocode/
-mv *.aether neurocode/examples/
-mv stdlib/ neurocode/
+# Move Aetherra files to Aetherra/
+mv *.aether Aetherra/examples/
+mv stdlib/ Aetherra/
 
 # Move documentation
 mv *.md docs/
@@ -117,7 +117,7 @@ mv test_*.py tests/
 ```
 
 ### **2. Create Additional Components:**
-- **Code Editor Panel** - For NeuroCode development
+- **Code Editor Panel** - For Aetherra development
 - **Debug Console Panel** - For debugging
 - **File Explorer Panel** - For project management
 - **Terminal Panel** - Integrated terminal

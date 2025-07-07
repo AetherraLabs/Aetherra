@@ -29,7 +29,7 @@ NeuroHub - The AI-native package manager for consciousness programming - has bee
 
 ### 📦 Plugin Management
 - **Search & Discovery**: Text search with category filtering
-- **Installation Commands**: Generated neurocode install commands
+- **Installation Commands**: Generated aetherra install commands
 - **Version Management**: Plugin versioning and update support
 - **Metadata Handling**: Comprehensive plugin information storage
 - **Download Analytics**: Track downloads, ratings, and statistics
@@ -234,7 +234,7 @@ NeuroHub is now a fully functional AI package manager that provides:
 - **Seamless user experience** from search to installation
 - **Production-ready architecture** for scaling to enterprise use
 
-The implementation demonstrates modern web development best practices while creating a unique marketplace specifically designed for AI consciousness programming. NeuroHub is ready to serve as the central hub for the NeuroCode plugin ecosystem.
+The implementation demonstrates modern web development best practices while creating a unique marketplace specifically designed for AI consciousness programming. NeuroHub is ready to serve as the central hub for the aetherra plugin ecosystem.
 
 ---
 

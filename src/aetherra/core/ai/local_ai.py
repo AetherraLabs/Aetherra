@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Local AI Engine for NeuroCode
+Local AI Engine for Aetherra
 Provides local model inference to reduce API dependency and increase performance
 """
 
@@ -267,7 +267,7 @@ def get_local_ai() -> LocalAIEngine:
     return local_ai
 
 
-# Convenience functions for NeuroCode integration
+# Convenience functions for Aetherra integration
 def local_ask_ai(prompt: str, max_tokens: int = 512, temperature: float = 0.7) -> str:
     """Ask local AI - convenience function"""
     response = local_ai.generate_response(prompt, max_tokens, temperature)
@@ -326,7 +326,7 @@ if __name__ == "__main__":
     print(f"Embeddings available: {status['embedding_available']}")
 
     # Test generation
-    test_prompt = "Explain what makes NeuroCode revolutionary"
+    test_prompt = "Explain what makes Aetherra revolutionary"
     response = engine.generate_response(test_prompt)
 
     print("\nTest Response:")
@@ -334,4 +334,4 @@ if __name__ == "__main__":
     print(f"Time: {response.processing_time:.2f}s")
     print(f"Content: {response.content[:200]}...")
 
-    print("\n✅ Local AI Engine ready for NeuroCode integration!")
+    print("\n✅ Local AI Engine ready for Aetherra integration!")

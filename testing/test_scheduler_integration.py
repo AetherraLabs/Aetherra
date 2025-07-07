@@ -3,7 +3,7 @@
 🧪 Test Script: Task Scheduler Integration
 =========================================
 
-Test the integration of the background task scheduler into the Neuroplex GUI.
+Test the integration of the background task scheduler into the Lyrixa.
 This script verifies that:
 1. Task scheduler loads correctly
 2. GUI includes the Tasks tab
@@ -92,12 +92,12 @@ def test_gui_integration():
         if app is None:
             app = QApplication(sys.argv)
 
-        # Import Neuroplex
+        # Import Lyrixa
         from Lyrixa.ui.aetherplex import LyrixaWindow
 
         # Create main window
         window = LyrixaWindow()
-        print("✅ Neuroplex window created successfully")
+        print("✅ Lyrixawindow created successfully")
 
         # Check if task scheduler was initialized
         if hasattr(window, "task_scheduler") and window.task_scheduler:

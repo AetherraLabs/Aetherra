@@ -1,0 +1,137 @@
+{
+  "timestamp": 1751781788.0646276,
+  "alerts": [
+    {
+      "timestamp": 1751781487.4684596,
+      "category": "system",
+      "level": "warning",
+      "message": "System memory_usage is warning: 81.1",
+      "details": {
+        "total": 16527245312,
+        "available": 3128422400,
+        "used": 13398822912
+      },
+      "resolved": false
+    },
+    {
+      "timestamp": 1751781487.4686973,
+      "category": "errors",
+      "level": "warning",
+      "message": "Errors error_rate_5min is warning: 2",
+      "details": {
+        "warning_count": 0
+      },
+      "resolved": false
+    },
+    {
+      "timestamp": 1751781509.14682,
+      "category": "system",
+      "level": "warning",
+      "message": "System memory_usage is warning: 81.1",
+      "details": {
+        "total": 16527245312,
+        "available": 3128422400,
+        "used": 13398822912
+      },
+      "resolved": false
+    },
+    {
+      "timestamp": 1751781509.147094,
+      "category": "errors",
+      "level": "warning",
+      "message": "Errors error_rate_5min is warning: 2",
+      "details": {
+        "warning_count": 0
+      },
+      "resolved": false
+    },
+    {
+      "timestamp": 1751781622.322679,
+      "category": "system",
+      "level": "warning",
+      "message": "System memory_usage is warning: 81.1",
+      "details": {
+        "total": 16527245312,
+        "available": 3128422400,
+        "used": 13398822912
+      },
+      "resolved": false
+    },
+    {
+      "timestamp": 1751781622.3229396,
+      "category": "errors",
+      "level": "warning",
+      "message": "Errors error_rate_5min is warning: 2",
+      "details": {
+        "warning_count": 0
+      },
+      "resolved": false
+    },
+    {
+      "timestamp": 1751781717.9320927,
+      "category": "system",
+      "level": "warning",
+      "message": "System memory_usage is warning: 81.1",
+      "details": {
+        "total": 16527245312,
+        "available": 3128422400,
+        "used": 13398822912
+      },
+      "resolved": false
+    },
+    {
+      "timestamp": 1751781717.9323869,
+      "category": "errors",
+      "level": "warning",
+      "message": "Errors error_rate_5min is warning: 2",
+      "details": {
+        "warning_count": 0
+      },
+      "resolved": false
+    },
+    {
+      "timestamp": 1751781729.828873,
+      "category": "system",
+      "level": "warning",
+      "message": "System memory_usage is warning: 81.1",
+      "details": {
+        "total": 16527245312,
+        "available": 3128422400,
+        "used": 13398822912
+      },
+      "resolved": false
+    },
+    {
+      "timestamp": 1751781729.8290632,
+      "category": "errors",
+      "level": "warning",
+      "message": "Errors error_rate_5min is warning: 2",
+      "details": {
+        "warning_count": 0
+      },
+      "resolved": false
+    },
+    {
+      "timestamp": 1751781781.056903,
+      "category": "system",
+      "level": "warning",
+      "message": "System memory_usage is warning: 81.1",
+      "details": {
+        "total": 16527245312,
+        "available": 3128422400,
+        "used": 13398822912
+      },
+      "resolved": false
+    },
+    {
+      "timestamp": 1751781781.05703,
+      "category": "errors",
+      "level": "warning",
+      "message": "Errors error_rate_5min is warning: 2",
+      "details": {
+        "warning_count": 0
+      },
+      "resolved": false
+    }
+  ]
+}

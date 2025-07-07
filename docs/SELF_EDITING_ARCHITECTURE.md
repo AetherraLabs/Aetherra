@@ -1,8 +1,8 @@
-# Neuroplex Self-Editing Architecture
+# LyrixaSelf-Editing Architecture
 
 ## Overview
 
-Neuroplex has evolved into a self-improving AI-native system capable of reading, analyzing, correcting, and evolving its own codebase. This creates a closed learning loop where the system becomes a living program that continuously rewrites and improves itself.
+Lyrixahas evolved into a self-improving AI-native system capable of reading, analyzing, correcting, and evolving its own codebase. This creates a closed learning loop where the system becomes a living program that continuously rewrites and improves itself.
 
 ## Core Self-Editing Capabilities
 
@@ -30,7 +30,7 @@ Neuroplex has evolved into a self-improving AI-native system capable of reading,
 ## Memory-Driven Justification System
 
 ### Pattern-Based Decision Making
-```neurocode
+```aetherra
 # System analyzes memory patterns to suggest improvements
 if memory.pattern("recurring plugin error"):
     assistant: improve plugin loading logic
@@ -70,32 +70,32 @@ if memory.pattern("recurring plugin error"):
 ## Self-Editing Workflow
 
 ### Stage 1: Discovery and Loading
-```neurocode
+```aetherra
 load "core/interpreter.py"              # Load target file
 analyze "core/interpreter.py"           # Deep analysis
 ```
 
 ### Stage 2: Improvement Generation
-```neurocode
+```aetherra
 refactor "core/interpreter.py" "performance optimization"
 # Generates fix_id for tracking
 ```
 
 ### Stage 3: Review and Justification
-```neurocode
+```aetherra
 diff fix_20250628_143022               # Review proposed changes
 # Shows: changes, justification, memory-driven reasoning
 ```
 
 ### Stage 4: Safe Application
-```neurocode
+```aetherra
 set self_edit_mode on                  # Enable modifications
 backup "core/interpreter.py"           # Create safety backup
 apply fix fix_20250628_143022          # Apply changes
 ```
 
 ### Stage 5: Learning and Memory
-```neurocode
+```aetherra
 remember("Optimized interpreter performance", tags="refactor,success")
 # System learns from the modification
 ```
@@ -139,11 +139,11 @@ remember("Optimized interpreter performance", tags="refactor,success")
 - **Success Analytics**: Learn from modification outcomes
 
 ### Vision: Living System
-Neuroplex becomes a self-evolving system that:
+Lyrixabecomes a self-evolving system that:
 - Continuously improves its own code quality
 - Learns from patterns and adapts accordingly
 - Maintains safety through human oversight
 - Develops increasing sophistication over time
 - Creates a closed loop of learning and improvement
 
-This self-editing capability transforms Neuroplex from a static tool into a living, learning system that grows more capable and refined through its own analysis and improvement processes.
+This self-editing capability transforms Lyrixafrom a static tool into a living, learning system that grows more capable and refined through its own analysis and improvement processes.

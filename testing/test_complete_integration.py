@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-🎯 Complete Neuroplex System Integration Test
+🎯 Complete LyrixaSystem Integration Test
 ============================================
 
-Final comprehensive test of the complete Neuroplex system including:
+Final comprehensive test of the complete Lyrixasystem including:
 - Unified GUI with all tabs
 - Task Scheduler integration
 - AetherraHub package manager integration
@@ -33,11 +33,11 @@ def test_complete_system_startup():
         if app is None:
             app = QApplication(sys.argv)
 
-        # Import and create Neuroplex window
+        # Import and create Lyrixawindow
         from Lyrixa.ui.aetherplex import LyrixaWindow
 
         window = LyrixaWindow()
-        print("✅ Neuroplex window created successfully")
+        print("✅ Lyrixawindow created successfully")
 
         # Check all major components
         components = {
@@ -175,11 +175,11 @@ def test_system_robustness():
 def generate_system_summary():
     """Generate a comprehensive system summary"""
     print("\n" + "=" * 60)
-    print("🎯 NEUROPLEX SYSTEM SUMMARY")
+    print("🎯 LyrixaSYSTEM SUMMARY")
     print("=" * 60)
 
     print("""
-🧬 NEUROPLEX - AI-NATIVE DEVELOPMENT ENVIRONMENT
+🧬 Lyrixa- AI-NATIVE DEVELOPMENT ENVIRONMENT
 ===============================================
 
 ARCHITECTURE:
@@ -233,7 +233,7 @@ STATUS: ✅ PRODUCTION READY
 
 def main():
     """Run comprehensive system integration test"""
-    print("🚀 Starting Complete Neuroplex System Integration Test")
+    print("🚀 Starting Complete LyrixaSystem Integration Test")
     print("=" * 60)
 
     tests = [
@@ -276,7 +276,7 @@ def main():
 🎉 INTEGRATION COMPLETE!
 ========================
 
-The Neuroplex AI-native development environment is now fully integrated
+The LyrixaAI-native development environment is now fully integrated
 and ready for production use. All major components are working together
 seamlessly:
 

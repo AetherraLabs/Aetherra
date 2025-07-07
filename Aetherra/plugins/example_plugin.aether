@@ -1,8 +1,8 @@
-# NeuroCode Plugin Example Demo
-# This file demonstrates how to use plugins in NeuroCode
+# aetherra Plugin Example Demo
+# This file demonstrates how to use plugins in aetherra
 
 # Basic greeting plugin
-plugin: example.hello_world "NeuroCode SDK"
+plugin: example.hello_world "aetherra SDK"
 
 # Personalized greeting
 plugin: example.greet "Developer"

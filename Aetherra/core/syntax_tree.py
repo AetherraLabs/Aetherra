@@ -23,8 +23,7 @@ from .syntax import (
     SyntaxNode,
     SyntaxTreeVisitor,
     analyze_syntax_tree,
-    parse_aetherra,
-    parse_neurocode,  # Legacy alias
+    parse_aetherra,  # Legacy alias
 )
 
 
@@ -46,7 +45,7 @@ __all__ = [
     "AetherraParser",
     "SyntaxTreeVisitor",
     "parse_aetherra",
-    "parse_neurocode",  # Legacy alias
+    "parse_aetherra",  # Legacy alias
     "parse_Aetherra",  # Legacy alias
     "analyze_syntax_tree",
 ]

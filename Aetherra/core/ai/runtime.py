@@ -64,7 +64,10 @@ def ask_ai(prompt, temperature=0.2):
                 content = response.choices[0].message.content
                 return content.strip() if content is not None else ""
             except Exception as model_error:
-                if "model" in str(model_error).lower() and "not" in str(model_error).lower():
+                if (
+                    "model" in str(model_error).lower()
+                    and "not" in str(model_error).lower()
+                ):
                     continue  # Try next model
                 else:
                     raise model_error  # Different error, don't retry
@@ -135,7 +138,7 @@ Recent memory sample:
 {chr(10).join(memory_summary.get("recent_memories", []))}
 """
 
-    prompt = f"""Based on this Neuroplex system state, suggest evolutionary improvements:
+    prompt = f"""Based on this Lyrixasystem state, suggest evolutionary improvements:
 
 {evolution_context}
 
@@ -151,7 +154,9 @@ Provide concrete, actionable suggestions."""
     return ask_ai(prompt)
 
 
-def provide_adaptive_suggestions(context, recent_memories, available_tags, function_names):
+def provide_adaptive_suggestions(
+    context, recent_memories, available_tags, function_names
+):
     """AI-powered adaptive suggestions based on current context"""
     adaptive_context = f"""
 Current Context: {context}

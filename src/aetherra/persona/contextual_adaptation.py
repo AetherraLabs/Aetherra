@@ -1,5 +1,5 @@
 """
-NeuroCode Contextual Adaptation System
+Aetherra Contextual Adaptation System
 Automatically adapts persona based on user context, project type, and situation.
 """
 
@@ -137,7 +137,9 @@ class ContextualAdaptationSystem:
                 user_command, file_patterns or [], error_messages or []
             ),
             project_type=self._detect_project_type(file_patterns or []),
-            urgency_level=self._detect_urgency_level(error_messages or [], time_since_last_action),
+            urgency_level=self._detect_urgency_level(
+                error_messages or [], time_since_last_action
+            ),
             time_of_day=self._get_time_of_day(),
             day_of_week=self._get_day_of_week(),
             recent_errors=len(error_messages or []),
@@ -145,7 +147,9 @@ class ContextualAdaptationSystem:
         )
 
         # Update user state indicators
-        situation.frustration_level = self._estimate_frustration_level(error_messages or [])
+        situation.frustration_level = self._estimate_frustration_level(
+            error_messages or []
+        )
         situation.confidence_level = self._estimate_confidence_level()
         situation.energy_level = self._estimate_energy_level(situation.time_of_day)
 
@@ -254,7 +258,9 @@ class ContextualAdaptationSystem:
 
         return base_style
 
-    def suggest_optimal_archetype(self, situation: ContextualSituation) -> PersonaArchetype:
+    def suggest_optimal_archetype(
+        self, situation: ContextualSituation
+    ) -> PersonaArchetype:
         """Suggest the most appropriate archetype for the current situation"""
 
         # Context-based archetype suggestions
@@ -297,7 +303,9 @@ class ContextualAdaptationSystem:
         }
 
         if situation.context_type in context_archetype_map:
-            for archetype, score in context_archetype_map[situation.context_type].items():
+            for archetype, score in context_archetype_map[
+                situation.context_type
+            ].items():
                 archetype_scores[archetype] += score
 
         # Adjust based on user state
@@ -338,11 +346,17 @@ class ContextualAdaptationSystem:
             return ContextType.LEARNING
 
         # Testing-related keywords
-        if any(keyword in command_lower for keyword in ["test", "spec", "verify", "validate"]):
+        if any(
+            keyword in command_lower
+            for keyword in ["test", "spec", "verify", "validate"]
+        ):
             return ContextType.TESTING
 
         # Documentation-related keywords
-        if any(keyword in command_lower for keyword in ["document", "docs", "readme", "comment"]):
+        if any(
+            keyword in command_lower
+            for keyword in ["document", "docs", "readme", "comment"]
+        ):
             return ContextType.DOCUMENTATION
 
         # Emergency indicators
@@ -357,13 +371,15 @@ class ContextualAdaptationSystem:
 
         # Production indicators
         if any(
-            keyword in command_lower for keyword in ["deploy", "production", "release", "publish"]
+            keyword in command_lower
+            for keyword in ["deploy", "production", "release", "publish"]
         ):
             return ContextType.PRODUCTION
 
         # Refactoring indicators
         if any(
-            keyword in command_lower for keyword in ["refactor", "cleanup", "optimize", "improve"]
+            keyword in command_lower
+            for keyword in ["refactor", "cleanup", "optimize", "improve"]
         ):
             return ContextType.REFACTORING
 
@@ -404,7 +420,8 @@ class ContextualAdaptationSystem:
 
         # Mobile app indicators
         if any(
-            pattern in patterns_lower for pattern in ["android", "ios", "mobile", "swift", "kotlin"]
+            pattern in patterns_lower
+            for pattern in ["android", "ios", "mobile", "swift", "kotlin"]
         ):
             return ProjectType.MOBILE_APP
 
@@ -443,7 +460,15 @@ class ContextualAdaptationSystem:
 
     def _get_day_of_week(self) -> str:
         """Get current day of week"""
-        days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+        days = [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+        ]
         return days[time.localtime().tm_wday]
 
     def _estimate_frustration_level(self, error_messages: List[str]) -> float:
@@ -458,7 +483,10 @@ class ContextualAdaptationSystem:
         # Certain error types are more frustrating
         frustrating_errors = ["syntax", "undefined", "null", "permission"]
         for error in error_messages:
-            if any(frustrating_word in error.lower() for frustrating_word in frustrating_errors):
+            if any(
+                frustrating_word in error.lower()
+                for frustrating_word in frustrating_errors
+            ):
                 frustration += 0.1
 
         return min(frustration, 1.0)

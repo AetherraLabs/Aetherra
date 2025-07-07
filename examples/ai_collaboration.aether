@@ -1,9 +1,9 @@
 # 🤝 AI Collaboration Example
-# Demonstrates multi-AI agent collaboration in NeuroCode
+# Demonstrates multi-AI agent collaboration in aetherra
 
 # Set up a complex problem requiring multiple AI agents
 goal: design a scalable microservices architecture priority: critical
-goal: ensure security best practices priority: high  
+goal: ensure security best practices priority: high
 goal: optimize for performance priority: medium
 goal: maintain comprehensive documentation priority: medium
 
@@ -23,7 +23,7 @@ problem_scope: |
 
 # Agent specializations
 assign: "overall architecture design" to architect
-assign: "security review and hardening" to security_expert  
+assign: "security review and hardening" to security_expert
 assign: "performance optimization" to performance_specialist
 assign: "technical documentation" to documenter
 

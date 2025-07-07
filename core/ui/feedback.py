@@ -2,7 +2,7 @@
 🔄 Visual Feedback System
 ========================
 
-Provides visual feedback components for Neuroplex including status indicators,
+Provides visual feedback components for Lyrixaincluding status indicators,
 progress bars, loading animations, and real-time AI thinking indicators.
 """
 
@@ -102,7 +102,9 @@ class StatusIndicator:
     def get_current_status(self) -> StatusUpdate:
         """Get the current status"""
         return StatusUpdate(
-            status=self.current_status, message=self.current_message, timestamp=datetime.now()
+            status=self.current_status,
+            message=self.current_message,
+            timestamp=datetime.now(),
         )
 
     def get_history(self, limit: Optional[int] = None) -> List[StatusUpdate]:
@@ -188,7 +190,22 @@ class LoadingAnimation:
         elif self.animation_type == AnimationType.DOTS:
             return ["   ", ".  ", ".. ", "..."]
         elif self.animation_type == AnimationType.WAVE:
-            return ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█", "▇", "▆", "▅", "▄", "▃", "▂"]
+            return [
+                "▁",
+                "▂",
+                "▃",
+                "▄",
+                "▅",
+                "▆",
+                "▇",
+                "█",
+                "▇",
+                "▆",
+                "▅",
+                "▄",
+                "▃",
+                "▂",
+            ]
         elif self.animation_type == AnimationType.PULSE:
             return ["●", "○", "●", "○"]
         else:
@@ -267,7 +284,9 @@ class VisualFeedback:
             self.show_status(StatusType.IDLE, "Ready")
 
     def show_loading(
-        self, message: str = "Loading...", animation_type: AnimationType = AnimationType.SPINNER
+        self,
+        message: str = "Loading...",
+        animation_type: AnimationType = AnimationType.SPINNER,
     ):
         """Show loading animation"""
         if self.loading_animation:
@@ -358,4 +377,6 @@ class FeedbackContext:
             )
 
         # Reset to idle after a short delay
-        threading.Timer(2.0, lambda: self.feedback.show_status(StatusType.IDLE, "Ready")).start()
+        threading.Timer(
+            2.0, lambda: self.feedback.show_status(StatusType.IDLE, "Ready")
+        ).start()

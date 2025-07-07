@@ -1,8 +1,8 @@
 """
-NeuroCode Memory Subsystem
+Aetherra Memory Subsystem
 =========================
 
-Memory management and storage systems for NeuroCode.
+Memory management and storage systems for Aetherra.
 Handles persistent memory, vector memory, and temporal features.
 """
 
@@ -13,7 +13,7 @@ __all__ = ["AetherraMemory", "EnhancedSemanticMemory", "create_memory_system"]
 
 
 def create_memory_system(vector_enabled=True):
-    """Create a NeuroCode memory system."""
+    """Create a Aetherra memory system."""
     if vector_enabled:
         try:
             return EnhancedSemanticMemory()

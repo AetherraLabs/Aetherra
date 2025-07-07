@@ -212,8 +212,8 @@ body {
 }
 
 .nav-logo {
-    width: 4rem;
-    height: 4rem;
+    width: 2rem;
+    height: 2rem;
     border-radius: var(--radius-md);
 }
 
@@ -273,25 +273,6 @@ body {
 }
 
 .github-icon {
-    width: 1rem;
-    height: 1rem;
-}
-
-.twitter-link {
-    background: linear-gradient(135deg, #1da1f2, #0084b4);
-    color: white;
-    border-radius: var(--radius-lg);
-    padding: var(--space-2) var(--space-4);
-    margin-left: var(--space-2);
-}
-
-.twitter-link:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-lg);
-    background: linear-gradient(135deg, #0084b4, #1da1f2);
-}
-
-.twitter-icon {
     width: 1rem;
     height: 1rem;
 }
@@ -1737,8 +1718,8 @@ body {
 }
 
 .footer-logo {
-    width: 4rem;
-    height: 4rem;
+    width: 2rem;
+    height: 2rem;
 }
 
 .footer-text h4 {

@@ -14,7 +14,7 @@ sys.path.insert(0, src_path)
 
 
 def test_parser_directly():
-    print("🧬 DIRECT NEUROCODE PARSER TEST")
+    print("🧬 DIRECT Aetherra PARSER TEST")
     print("=" * 40)
 
     # Test the parser components directly
@@ -182,7 +182,7 @@ recall experiences with "test_log"
 
 
 if __name__ == "__main__":
-    print("🧬 NEUROCODE DIRECT PARSER VERIFICATION")
+    print("🧬 Aetherra DIRECT PARSER VERIFICATION")
     print("=" * 50)
 
     test1 = test_parser_directly()
@@ -201,4 +201,4 @@ if __name__ == "__main__":
     print("✅ AetherraCode compilation works")
     print("✅ All 7 node types supported")
     print("✅ Complex programs parse correctly")
-    print("\n🧬 NEUROCODE IS A WORKING PROGRAMMING LANGUAGE!")
+    print("\n🧬 Aetherra IS A WORKING PROGRAMMING LANGUAGE!")

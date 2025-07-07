@@ -1,5 +1,5 @@
-# NeuroCode v1.0.0 - Minimal Requirements
-# Only the absolute essentials for NeuroCode to function
+# aetherra v1.0.0 - Minimal Requirements
+# Only the absolute essentials for aetherra to function
 
 # === CORE PARSER ===
 lark>=1.1.7                      # Grammar parser for .aether files
@@ -31,6 +31,6 @@ psutil>=5.9.0                    # System resource monitoring
 #    - OR -
 #    export ANTHROPIC_API_KEY="your_key_here"
 #
-# 4. Launch NeuroCode:
-#    python neurocode_launcher.py
+# 4. Launch aetherra:
+#    python aetherra_launcher.py
 # ===============================================================================

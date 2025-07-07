@@ -1,5 +1,5 @@
-// NeuroCode Lark Grammar (Fixed)
-// Lark parser grammar for NeuroCode language
+// Aetherra Lark Grammar (Fixed)
+// Lark parser grammar for Aetherra language
 // Version: 3.0.1
 // Date: 2024-12-27
 
@@ -12,7 +12,7 @@ start: statement_list
 statement_list: statement*
 
 statement: goal_statement
-         | identity_statement  
+         | identity_statement
          | memory_statement
          | agent_statement
          | function_definition

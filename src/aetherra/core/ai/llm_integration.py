@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-🧠 NeuroCode LLM Integration Module
+🧠 Aetherra LLM Integration Module
 ==================================
 
-Extends NeuroCode interpreter with multi-LLM support.
-Enables NeuroCode programs to use different AI models:
+Extends Aetherra interpreter with multi-LLM support.
+Enables Aetherra programs to use different AI models:
 
 model: mistral
 assistant: generate strategy for memory cleanup
@@ -30,8 +30,8 @@ def _get_llm_manager():
     return llm_manager
 
 
-class NeuroCodeLLMIntegration:
-    """Integrates multi-LLM support into NeuroCode interpreter"""
+class AetherraLLMIntegration:
+    """Integrates multi-LLM support into Aetherra interpreter"""
 
     def __init__(self):
         self.llm_manager = _get_llm_manager()
@@ -42,7 +42,7 @@ class NeuroCodeLLMIntegration:
     def execute_model_statement(
         self, model_name: str, config: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
-        """Execute model: statement in NeuroCode"""
+        """Execute model: statement in Aetherra"""
         try:
             # Apply any configuration parameters
             kwargs = config or {}
@@ -65,20 +65,24 @@ class NeuroCodeLLMIntegration:
                 return {
                     "status": "error",
                     "message": f"❌ Failed to set model '{model_name}'",
-                    "available_models": list(self.llm_manager.list_available_models().keys()),
+                    "available_models": list(
+                        self.llm_manager.list_available_models().keys()
+                    ),
                 }
 
         except Exception as e:
             return {
                 "status": "error",
                 "message": f"❌ Error setting model: {str(e)}",
-                "available_models": list(self.llm_manager.list_available_models().keys()),
+                "available_models": list(
+                    self.llm_manager.list_available_models().keys()
+                ),
             }
 
     def execute_assistant_statement(
         self, task: str, context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
-        """Execute assistant: statement in NeuroCode"""
+        """Execute assistant: statement in Aetherra"""
         if not self.current_model:
             return {
                 "status": "error",
@@ -119,15 +123,19 @@ class NeuroCodeLLMIntegration:
                 "model": self.current_model,
             }
 
-    def _build_context_prompt(self, task: str, context: Optional[Dict[str, Any]] = None) -> str:
+    def _build_context_prompt(
+        self, task: str, context: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Build context-aware prompt for the LLM"""
         prompt_parts = []
 
         # Add system context
         prompt_parts.append(
-            "You are an AI assistant integrated into NeuroCode, an AI-native programming language."
+            "You are an AI assistant integrated into Aetherra, an AI-native programming language."
         )
-        prompt_parts.append("Provide clear, actionable responses focused on the specific task.")
+        prompt_parts.append(
+            "Provide clear, actionable responses focused on the specific task."
+        )
 
         # Add context if provided
         if context:
@@ -158,7 +166,9 @@ class NeuroCodeLLMIntegration:
             return {
                 "status": "no_model",
                 "message": "No model currently selected",
-                "available_models": list(self.llm_manager.list_available_models().keys()),
+                "available_models": list(
+                    self.llm_manager.list_available_models().keys()
+                ),
             }
 
         model_info = self.llm_manager.get_current_model_info()
@@ -212,13 +222,13 @@ class NeuroCodeLLMIntegration:
         return datetime.now().isoformat()
 
 
-# Standard library plugin for NeuroCode
+# Standard library plugin for Aetherra
 class LLMPlugin:
-    """NeuroCode plugin for multi-LLM support"""
+    """Aetherra plugin for multi-LLM support"""
 
     def __init__(self):
         self.name = "llm"
-        self.description = "Multi-LLM integration for NeuroCode"
+        self.description = "Multi-LLM integration for Aetherra"
         self.available_actions = [
             "set_model",
             "ask_assistant",
@@ -229,7 +239,7 @@ class LLMPlugin:
             "clear_history",
             "status",
         ]
-        self.integration = NeuroCodeLLMIntegration()
+        self.integration = AetherraLLMIntegration()
 
     def execute_action(self, action: str, memory_system=None, **kwargs) -> str:
         """Execute LLM plugin action"""
@@ -241,7 +251,7 @@ class LLMPlugin:
                 return f"Model setting: {result['message']}"
 
             elif action == "ask_assistant" or action == "assistant":
-                task = kwargs.get("task", "Help me with NeuroCode")
+                task = kwargs.get("task", "Help me with Aetherra")
                 context = kwargs.get("context", {})
                 result = self.integration.execute_assistant_statement(task, context)
                 if result["status"] == "success":
@@ -251,7 +261,9 @@ class LLMPlugin:
 
             elif action == "list_models":
                 models = self.integration.list_available_models()
-                model_list = [f"{name} ({info['provider']})" for name, info in models.items()]
+                model_list = [
+                    f"{name} ({info['provider']})" for name, info in models.items()
+                ]
                 return f"Available models: {', '.join(model_list)}"
 
             elif action == "model_status":
@@ -292,6 +304,6 @@ class LLMPlugin:
             return f"Error in llm.{action}: {str(e)}"
 
 
-# Global instances for NeuroCode integration
-neurocode_llm_integration = NeuroCodeLLMIntegration()
+# Global instances for Aetherra integration
+Aetherra_llm_integration = AetherraLLMIntegration()
 PLUGIN_CLASS = LLMPlugin

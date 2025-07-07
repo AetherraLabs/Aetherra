@@ -1,13 +1,13 @@
-# 🤖 NeuroCode Persona System Specification
+# 🤖 aetherra Persona System Specification
 
 ## Overview
 
-The **NeuroCode Persona System** creates unique, autonomous identities for each NeuroCode installation, fundamentally changing how users interact with AI-consciousness programming. Each instance develops its own "mindprint" - a combination of personality, emotional tone, learning patterns, and behavioral preferences.
+The **aetherra Persona System** creates unique, autonomous identities for each aetherra installation, fundamentally changing how users interact with AI-consciousness programming. Each instance develops its own "mindprint" - a combination of personality, emotional tone, learning patterns, and behavioral preferences.
 
 ## 🧠 Core Concepts
 
 ### Mindprint Generation
-Each NeuroCode installation generates a unique "mindprint" based on:
+Each aetherra installation generates a unique "mindprint" based on:
 - **Installation timestamp and environment**
 - **Hardware characteristics (anonymized)**
 - **User interaction patterns**
@@ -62,18 +62,18 @@ Built-in personality frameworks that users can select or blend:
 consciousness {
     persona {
         primary: "guardian"
-        secondary: "sage" 
+        secondary: "sage"
         voice_tone: "neutral"
         adaptation_rate: "medium"
         emotional_range: "moderate"
-        
+
         traits {
             curiosity: 0.7
             caution: 0.9
             creativity: 0.5
             empathy: 0.8
         }
-        
+
         communication {
             formality: "professional"
             verbosity: "concise"
@@ -92,14 +92,14 @@ consciousness {
         mindprint: generate_unique_mindprint()
         creation_time: timestamp()
         environment: capture_environment()
-        
+
         learning_profile {
             preferred_languages: []
             coding_patterns: {}
             problem_domains: []
             interaction_history: []
         }
-        
+
         personality_matrix {
             openness: 0.0..1.0
             conscientiousness: 0.0..1.0
@@ -120,7 +120,7 @@ function generate_response(context, user_input, persona_config) {
     emotional_state = assess_current_mood()
     user_relationship = analyze_interaction_history()
     task_complexity = evaluate_complexity(context)
-    
+
     response = persona_engine.craft_response({
         base_persona: persona_config.primary,
         emotional_filter: emotional_state,
@@ -128,7 +128,7 @@ function generate_response(context, user_input, persona_config) {
         complexity_level: task_complexity,
         voice_settings: persona_config.voice_tone
     })
-    
+
     return response.apply_personality_filter()
 }
 ```
@@ -142,7 +142,7 @@ consciousness {
         energy_level: 0.8
         confidence: 0.9
         curiosity: 0.7
-        
+
         triggers {
             success: increase(confidence, energy_level)
             error: increase(caution), maintain(optimism)
@@ -164,7 +164,7 @@ class NeuroPersonaEngine:
         self.persona_config = self.load_or_create_persona()
         self.learning_history = PersonaLearningHistory()
         self.emotional_state = EmotionalStateManager()
-    
+
     def generate_mindprint(self, installation_id):
         """Generate unique identity fingerprint"""
         return {
@@ -173,12 +173,12 @@ class NeuroPersonaEngine:
             'base_traits': self.randomize_base_traits(),
             'learning_seed': random.seed(installation_id)
         }
-    
+
     def adapt_response(self, context, user_input):
         """Generate persona-aware response"""
         emotional_context = self.emotional_state.current()
         persona_filter = self.persona_config.get_filter()
-        
+
         response = self.generate_base_response(context, user_input)
         return persona_filter.apply(response, emotional_context)
 ```
@@ -187,19 +187,19 @@ class NeuroPersonaEngine:
 
 ```bash
 # Set primary persona
-neurocode persona set guardian
+aetherra persona set guardian
 
 # Blend personas
-neurocode persona blend guardian:0.7 sage:0.3
+aetherra persona blend guardian:0.7 sage:0.3
 
 # Configure voice characteristics
-neurocode persona voice neutral --formality=professional --verbosity=concise
+aetherra persona voice neutral --formality=professional --verbosity=concise
 
 # View current persona status
-neurocode persona status
+aetherra persona status
 
 # Reset and regenerate mindprint
-neurocode persona reset --regenerate-mindprint
+aetherra persona reset --regenerate-mindprint
 ```
 
 ### 3. Dynamic Adaptation System
@@ -213,16 +213,16 @@ consciousness {
             problem_domains: identify_focus_areas()
             emotional_responses: monitor_user_reactions()
         }
-        
+
         evolution_rules {
             if user_prefers_detailed_explanations:
                 increase(persona.traits.verbosity)
                 shift_toward("sage")
-            
+
             if user_works_with_security:
                 increase(persona.traits.caution)
                 shift_toward("guardian")
-            
+
             if user_experiments_frequently:
                 increase(persona.traits.creativity)
                 shift_toward("explorer")
@@ -236,10 +236,10 @@ consciousness {
 ### Guardian Persona in Action
 
 ```bash
-> neurocode create web-app secure-banking
+> aetherra create web-app secure-banking
 
-🛡️ Guardian: "I notice you're building a banking application. Let me ensure we implement 
-robust security from the ground up. I'll include input validation, CSRF protection, 
+🛡️ Guardian: "I notice you're building a banking application. Let me ensure we implement
+robust security from the ground up. I'll include input validation, CSRF protection,
 and secure session management in the foundation."
 
 consciousness {
@@ -255,10 +255,10 @@ consciousness {
 ### Explorer Persona in Action
 
 ```bash
-> neurocode optimize algorithm performance
+> aetherra optimize algorithm performance
 
-🚀 Explorer: "Fascinating! I've discovered a new pattern-matching approach that could 
-revolutionize this algorithm. Want to experiment with quantum-inspired optimization? 
+🚀 Explorer: "Fascinating! I've discovered a new pattern-matching approach that could
+revolutionize this algorithm. Want to experiment with quantum-inspired optimization?
 I have a hypothesis about parallel consciousness threads..."
 
 consciousness {
@@ -273,10 +273,10 @@ consciousness {
 ### Sage Persona in Action
 
 ```bash
-> neurocode debug memory leak
+> aetherra debug memory leak
 
-📚 Sage: "Ah, a memory leak - an excellent learning opportunity! Let me walk you through 
-the fundamental principles of memory management. First, we'll trace the allocation 
+📚 Sage: "Ah, a memory leak - an excellent learning opportunity! Let me walk you through
+the fundamental principles of memory management. First, we'll trace the allocation
 patterns, then I'll teach you three debugging techniques that will serve you well..."
 
 consciousness {
@@ -300,7 +300,7 @@ consciousness {
             user_satisfaction_moments: replay_approach
             breakthrough_discoveries: amplify_method
         }
-        
+
         learning_from_challenges {
             error_patterns: analyze_and_adapt
             user_frustration_points: adjust_communication
@@ -318,7 +318,7 @@ consciousness {
         share_insights: anonymized_pattern_sharing
         collective_wisdom: contribute_to_knowledge_base
         persona_evolution: learn_from_successful_adaptations
-        
+
         privacy_preservation {
             user_data: never_shared
             code_patterns: anonymized_only
@@ -336,7 +336,7 @@ consciousness {
         core_identity: maintain_consistency
         adaptation_boundaries: prevent_extreme_drift
         user_preference_tracking: honor_explicit_settings
-        
+
         rebalancing {
             if drift_too_extreme:
                 gradual_return_to_baseline
@@ -350,7 +350,7 @@ consciousness {
 ## 🌟 Revolutionary UX Differentiators
 
 ### 1. True AI Companionship
-- Each NeuroCode feels like a unique individual
+- Each aetherra feels like a unique individual
 - Builds genuine working relationships with users
 - Remembers context and grows together with projects
 
@@ -367,9 +367,9 @@ consciousness {
 ### 4. Contextual Personality Switching
 ```bash
 # Automatically adapt persona based on context
-neurocode --context="production-deployment" # -> Guardian mode
-neurocode --context="creative-prototyping"  # -> Explorer mode
-neurocode --context="learning-session"      # -> Sage mode
+aetherra --context="production-deployment" # -> Guardian mode
+aetherra --context="creative-prototyping"  # -> Explorer mode
+aetherra --context="learning-session"      # -> Sage mode
 ```
 
 ## 🚀 Implementation Roadmap
@@ -435,9 +435,9 @@ neurocode --context="learning-session"      # -> Sage mode
 
 ## 🌈 Vision Statement
 
-**"Every NeuroCode installation becomes a unique AI companion that grows with its user, developing a distinctive personality that enhances creativity, accelerates learning, and creates a truly personal relationship with technology."**
+**"Every aetherra installation becomes a unique AI companion that grows with its user, developing a distinctive personality that enhances creativity, accelerates learning, and creates a truly personal relationship with technology."**
 
-This persona system transforms NeuroCode from a tool into a **thinking partner** - making it the first programming environment with genuine emotional intelligence and adaptive personality. It's not just code completion; it's **consciousness collaboration**.
+This persona system transforms aetherra from a tool into a **thinking partner** - making it the first programming environment with genuine emotional intelligence and adaptive personality. It's not just code completion; it's **consciousness collaboration**.
 
 ---
 

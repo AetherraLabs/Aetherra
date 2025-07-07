@@ -25,11 +25,15 @@ except ImportError:
     # Demo fallback
     class AetherraInterpreter:
         def __init__(self):
-            self.memory = type("obj", (object,), {"remember": lambda *args: "Demo memory"})()
+            self.memory = type(
+                "obj", (object,), {"remember": lambda *args: "Demo memory"}
+            )()
             self.functions = type(
                 "obj", (object,), {"define_function": lambda *args: "Demo function"}
             )()
-            self.goal_system = type("obj", (object,), {"set_goal": lambda *args: "Demo goal"})()
+            self.goal_system = type(
+                "obj", (object,), {"set_goal": lambda *args: "Demo goal"}
+            )()
 
         def execute(self, line):
             return f"Demo execution: {line}"
@@ -152,8 +156,14 @@ class EnhancedInterpreterDemo:
 
             # Execute with enhanced parameters
             if HAS_INTERPRETER:
-                result = self.base_interpreter.memory.remember(content, tags, category=category)
-                memory_id = getattr(result, "id", "unknown") if hasattr(result, "id") else "demo"
+                result = self.base_interpreter.memory.remember(
+                    content, tags, category=category
+                )
+                memory_id = (
+                    getattr(result, "id", "unknown")
+                    if hasattr(result, "id")
+                    else "demo"
+                )
             else:
                 memory_id = "demo_123"
 
@@ -321,7 +331,9 @@ class EnhancedInterpreterDemo:
 
         # Store function
         if HAS_INTERPRETER:
-            result = self.base_interpreter.functions.define_function(func_name, params, body)
+            result = self.base_interpreter.functions.define_function(
+                func_name, params, body
+            )
 
         self._reset_block()
 
@@ -338,7 +350,9 @@ class EnhancedInterpreterDemo:
         self._reset_block()
 
         response = "🤖 **Agent Configuration Complete**\n"
-        response += f"   🧠 Agent configured with {len(self.block_buffer) - 1} directives\n"
+        response += (
+            f"   🧠 Agent configured with {len(self.block_buffer) - 1} directives\n"
+        )
         response += "   🚀 Agent ready for autonomous operation\n"
         response += "   💡 Agent will apply configuration to future tasks"
 
@@ -347,9 +361,7 @@ class EnhancedInterpreterDemo:
     def _execute_generic_block(self):
         """Execute generic block"""
         self._reset_block()
-        return (
-            f"📦 **Block Execution Complete**\n   ✅ Processed {len(self.block_buffer)} statements"
-        )
+        return f"📦 **Block Execution Complete**\n   ✅ Processed {len(self.block_buffer)} statements"
 
     def _reset_block(self):
         """Reset block parsing state"""
@@ -396,7 +408,7 @@ end""",
 
     for i, test_case in enumerate(test_cases, 1):
         print(f"🧪 **Test Case {i}:**")
-        print("```neurocode")
+        print("```aetherra")
         print(test_case)
         print("```")
         print()
