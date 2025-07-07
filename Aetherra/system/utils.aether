@@ -36,6 +36,18 @@ plugin utils {
         return now() - seconds_ago
     }
     
+    fn days_ago(n) {
+        return now() - (n * 86400)
+    }
+    
+    fn hours_ago(n) {
+        return now() - (n * 3600)
+    }
+    
+    fn minutes_ago(n) {
+        return now() - (n * 60)
+    }
+    
     # Execution timing
     fn start_timer() {
         set_global("timer_start", now())

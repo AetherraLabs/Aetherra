@@ -14,6 +14,17 @@ plugin plugins {
         cleanup_interval_hours: 24
     }
     
+    # Check if a plugin exists
+    fn exists(id_or_name) {
+        return search_memory_one({ 
+            type: "plugin", 
+            name: id_or_name 
+        }) != null || search_memory_one({ 
+            type: "plugin", 
+            id: id_or_name 
+        }) != null
+    }
+    
     # Check if a plugin is healthy and responsive
     fn check_plugin_health(plugin_name) {
         if not plugin_name {

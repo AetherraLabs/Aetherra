@@ -80,7 +80,7 @@ fn create_agent(agent_def) {
 ### update_agent_role(agent_id, new_role)
 ```plaintext
 fn update_agent_role(agent_id, new_role) {
-    update_memory(agent_id, { 
+    update_memory(agent_id, {
         role: new_role,
         last_activity: now()
     })
@@ -92,7 +92,7 @@ fn update_agent_role(agent_id, new_role) {
 ### update_agent_plugins(agent_id, plugins)
 ```plaintext
 fn update_agent_plugins(agent_id, plugins) {
-    update_memory(agent_id, { 
+    update_memory(agent_id, {
         plugins: plugins,
         last_activity: now()
     })
@@ -115,10 +115,10 @@ fn log_event(event_type, data, level = "info") {
         source: "system_logger",
         session_id: get_session_id()
     }
-    
+
     store_memory(log_entry)
     log "{level_icon} [{event_type}] {format_log_data(data)}"
-    
+
     return log_entry.id
 }
 ```

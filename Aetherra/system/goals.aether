@@ -11,6 +11,14 @@ plugin goals {
         priority_levels: ["low", "normal", "high", "critical"]
     }
 
+    # Check if a goal exists
+    fn exists(id_or_name) {
+        return search_memory_one({ 
+            type: "goal", 
+            id: id_or_name 
+        }) != null
+    }
+    
     # Get all incomplete goals (pending or in_progress)
     fn get_incomplete_goals() {
         let all_goals = search_memory({

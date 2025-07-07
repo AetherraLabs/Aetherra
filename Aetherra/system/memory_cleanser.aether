@@ -1,0 +1,77 @@
+plugin memory_cleanser {
+  description: "Cleans up outdated, low-confidence, and orphaned memory entries to maintain clarity and performance."
+  memory_access: read-write
+  schedule: every 12 hours
+  tags: [os, memory, maintenance]
+
+  config: {
+    min_confidence: 0.4,         # Delete entries below this confidence
+    max_age_days: 30,            # Delete entries older than this
+    enable_orphan_check: true,   # Remove entries linked to deleted goals/plugins
+    log_cleaned_entries: true
+  }
+
+  on_run {
+    let threshold_time = call system/utils.days_ago(config.max_age_days)
+    let entries = call system/memory_ops.get_all_memory_entries()
+
+    for entry in entries {
+      if entry.locked or entry.protected {
+        continue  # Skip critical system entries
+      }
+
+      if entry.confidence < config.min_confidence {
+        call delete_and_log(entry, "low_confidence")
+        continue
+      }
+
+      if entry.timestamp < threshold_time {
+        call delete_and_log(entry, "expired")
+        continue
+      }
+
+      if config.enable_orphan_check and call is_orphan(entry) {
+        call delete_and_log(entry, "orphaned")
+      }
+    }
+
+    call system/logger.log_event("memory_cleanser_complete", {
+      deleted_count: state.deleted_count,
+      timestamp: now()
+    })
+
+    return "Memory cleanser complete."
+  }
+
+  fn delete_and_log(entry, reason) {
+    call system/memory_ops.delete_memory(entry.id)
+    state.deleted_count += 1
+
+    if config.log_cleaned_entries {
+      call system/logger.log_event("memory_deleted", {
+        id: entry.id,
+        reason: reason,
+        type: entry.type,
+        confidence: entry.confidence
+      })
+    }
+  }
+
+  fn is_orphan(entry) {
+    if entry.type == "plugin" {
+      return not call system/plugins.exists(entry.name)
+    }
+    if entry.type == "goal" {
+      return not call system/goals.exists(entry.id)
+    }
+    if entry.type == "agent" {
+      return not call system/agents.exists(entry.id)
+    }
+    
+    return false  # Default: not orphaned
+  }
+
+  state: {
+    deleted_count: 0
+  }
+}
