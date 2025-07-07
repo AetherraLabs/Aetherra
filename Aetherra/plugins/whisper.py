@@ -19,17 +19,15 @@ from core.plugin_manager import register_plugin
         "transcribing meeting recordings",
         "converting voice notes to text",
         "processing audio interviews",
-        "creating text from audio content"
+        "creating text from audio content",
     ],
-    ai_description="Transcribes audio files to text using OpenAI Whisper. Supports various audio formats including MP3,
-        WAV,
-        M4A,
-        and more.",
-
+    ai_description="Transcribes audio files to text using OpenAI Whisper. Supports various audio formats including MP3, WAV, M4A, and more.",
     example_usage="plugin: whisper_transcribe 'meeting.wav'",
     confidence_boost=1.3,
 )
-def whisper_transcribe(audio_file: str, model: str = "base", language: Optional[str] = None) -> Dict[str, Any]:
+def whisper_transcribe(
+    audio_file: str, model: str = "base", language: Optional[str] = None
+) -> Dict[str, Any]:
     """Transcribe audio files using OpenAI Whisper"""
     try:
         # Check if file exists
@@ -43,7 +41,7 @@ def whisper_transcribe(audio_file: str, model: str = "base", language: Optional[
         except ImportError:
             return {
                 "error": "Whisper package not installed",
-                "suggestion": "Install with: pip install openai-whisper"
+                "suggestion": "Install with: pip install openai-whisper",
             }
 
         # Load the model
@@ -54,9 +52,7 @@ def whisper_transcribe(audio_file: str, model: str = "base", language: Optional[
 
         # Transcribe the audio
         result = whisper_model.transcribe(
-            str(audio_path),
-            language=language,
-            verbose=False
+            str(audio_path), language=language, verbose=False
         )
 
         return {
@@ -87,10 +83,9 @@ def whisper_transcribe(audio_file: str, model: str = "base", language: Optional[
         "processing voice commands",
         "interpreting spoken instructions",
         "voice-driven development",
-        "hands-free programming"
+        "hands-free programming",
     ],
     ai_description="Processes voice commands and converts them to actionable instructions. Can simulate voice processing when actual audio hardware is not available.",
-
     example_usage="plugin: whisper_voice_command 'remember to refactor the database module'",
     confidence_boost=1.1,
 )
@@ -106,7 +101,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
             "command_type": "memory",
             "action": "store",
             "content": processed_text,
-            "neuro_code": f'remember("{command_text}") as "voice_input"'
+            "neuro_code": f'remember("{command_text}") as "voice_input"',
         }
     elif "recall" in processed_text or "what did i" in processed_text:
         return {
@@ -114,7 +109,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
             "command_type": "memory",
             "action": "retrieve",
             "content": processed_text,
-            "neuro_code": 'recall tag: "voice_query"'
+            "neuro_code": 'recall tag: "voice_query"',
         }
     elif "create" in processed_text and "file" in processed_text:
         return {
@@ -122,7 +117,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
             "command_type": "file_operation",
             "action": "create",
             "content": processed_text,
-            "neuro_code": "plugin: create_file 'new_file.py'"
+            "neuro_code": "plugin: create_file 'new_file.py'",
         }
     elif "commit" in processed_text or "save changes" in processed_text:
         return {
@@ -130,7 +125,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
             "command_type": "git",
             "action": "commit",
             "content": processed_text,
-            "neuro_code": f'plugin: git_commit "Voice commit: {command_text}"'
+            "neuro_code": f'plugin: git_commit "Voice commit: {command_text}"',
         }
     else:
         return {
@@ -138,7 +133,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
             "command_type": "general",
             "action": "transcribe",
             "content": processed_text,
-            "neuro_code": f'// Voice input: {command_text}'
+            "neuro_code": f"// Voice input: {command_text}",
         }
 
 

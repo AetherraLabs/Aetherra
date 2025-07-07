@@ -10,7 +10,7 @@ from core.plugin_manager import register_plugin
     description="Generate personalized greetings with context and time awareness",
     capabilities=["greetings", "personalization", "social"],
     version="1.0.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="social",
     intent_purpose="personalized greeting generation",
     intent_triggers=["greet", "hello", "welcome", "introduce"],
@@ -18,7 +18,7 @@ from core.plugin_manager import register_plugin
         "welcoming users personally",
         "creating friendly interactions",
         "time-appropriate greetings",
-        "social engagement",
+        "social engagement"
     ],
     ai_description="Creates personalized, context-aware greetings that consider time of day and user preferences.",
     example_usage="plugin: greet_personal 'Alice'",
@@ -43,10 +43,10 @@ def greet_personal(name: str, style: str = "friendly") -> Dict[str, Any]:
 
         # Style variations
         greetings = {
-            "friendly": f"{time_greeting}, {name}! Great to see you here with Aetherra!",
-            "professional": f"{time_greeting}, {name}. Welcome to the Aetherra environment.",
-            "casual": f"Hey {name}! Hope you're having a great day with Aetherra!",
-            "enthusiastic": f"{time_greeting}, {name}! 🎉 Ready to code some amazing things together?",
+            "friendly": f"{time_greeting}, {name}! Great to see you here with AetherraCode!",
+            "professional": f"{time_greeting}, {name}. Welcome to the AetherraCode environment.",
+            "casual": f"Hey {name}! Hope you're having a great day with AetherraCode!",
+            "enthusiastic": f"{time_greeting}, {name}! 🎉 Ready to code some amazing things together?"
         }
 
         greeting = greetings.get(style, greetings["friendly"])
@@ -58,7 +58,7 @@ def greet_personal(name: str, style: str = "friendly") -> Dict[str, Any]:
             "time_context": time_greeting,
             "style": style,
             "timestamp": datetime.datetime.now().isoformat(),
-            "message": f"Personal greeting generated for {name}",
+            "message": f"Personal greeting generated for {name}"
         }
 
     except Exception as e:
@@ -70,10 +70,10 @@ def greet_personal(name: str, style: str = "friendly") -> Dict[str, Any]:
     description="Generate greetings for groups or teams",
     capabilities=["group_greetings", "team_welcome", "social"],
     version="1.0.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="social",
     example_usage="plugin: greet_group 'development team'",
-    ai_description="Creates welcoming messages for groups, teams, or multiple people",
+    ai_description="Creates welcoming messages for groups, teams, or multiple people"
 )
 def greet_group(group_name: str, occasion: str = "general") -> Dict[str, Any]:
     """Generate a group greeting"""
@@ -85,7 +85,7 @@ def greet_group(group_name: str, occasion: str = "general") -> Dict[str, Any]:
             "general": f"Welcome, {group_name}! Great to have everyone here.",
             "meeting": f"Hello {group_name}! Thanks for joining today's session.",
             "project": f"Greetings, {group_name}! Ready to build something amazing together?",
-            "celebration": f"Congratulations, {group_name}! Let's celebrate this achievement!",
+            "celebration": f"Congratulations, {group_name}! Let's celebrate this achievement!"
         }
 
         greeting = occasions.get(occasion, occasions["general"])
@@ -95,7 +95,7 @@ def greet_group(group_name: str, occasion: str = "general") -> Dict[str, Any]:
             "group_name": group_name,
             "greeting": greeting,
             "occasion": occasion,
-            "timestamp": datetime.datetime.now().isoformat(),
+            "timestamp": datetime.datetime.now().isoformat()
         }
 
     except Exception as e:

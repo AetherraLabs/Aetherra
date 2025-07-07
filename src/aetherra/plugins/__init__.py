@@ -1,10 +1,8 @@
 """
-Aetherra Plugin System
-Modular plugin architecture for extending Aetherra functionality.
+Aetherra Plugins Module
+======================
+
+Plugin system and bundled plugins.
 """
 
-__all__ = [
-    "EnhancedPluginManager",
-]
-
-__version__ = "1.0.0"
+__all__ = []

@@ -5,24 +5,33 @@ from core.plugin_manager import register_plugin
 @register_plugin(
     name="demo_analyzer",
     description="Analyze text and provide insights with AI-powered capabilities",
-    capabilities=["text_analysis", "sentiment_detection", "keyword_extraction", "ai_insights"],
+    capabilities=[
+        "text_analysis",
+        "sentiment_detection",
+        "keyword_extraction",
+        "ai_insights",
+    ],
     version="2.0.0",
-    author="Aetherra AI Team",
+    author="AetherraCode AI Team",
     category="analysis",
     dependencies=["re", "collections"],
     # Enhanced intent-based discovery
     intent_purpose="text analysis and sentiment detection",
-    intent_triggers=["analyze", "sentiment", "text", "insights", "analyze text", "check sentiment"],
+    intent_triggers=[
+        "analyze",
+        "sentiment",
+        "text",
+        "insights",
+        "analyze text",
+        "check sentiment",
+    ],
     intent_scenarios=[
         "analyzing user feedback or reviews",
         "understanding document sentiment",
         "extracting keywords from content",
         "getting text statistics and insights",
     ],
-    ai_description="Provides comprehensive text analysis including word count,
-        sentiment analysis,
-        and keyword extraction. Perfect for understanding content tone and extracting meaningful insights from text data.",
-
+    ai_description="Provides comprehensive text analysis including word count, sentiment analysis, and keyword extraction. Perfect for understanding content tone and extracting meaningful insights from text data.",
     example_usage="plugin: demo_analyzer 'This is amazing text to analyze!'",
     confidence_boost=1.2,
 )
@@ -70,22 +79,26 @@ def analyze_text(text):
     description="Format and beautify code with intelligent indentation and styling",
     capabilities=["code_formatting", "syntax_highlighting", "style_validation"],
     version="1.5.0",
-    author="Aetherra DevTools",
+    author="AetherraCode DevTools",
     category="development",
     dependencies=["re"],
     # Enhanced intent-based discovery
     intent_purpose="code formatting and beautification",
-    intent_triggers=["format", "beautify", "indent", "style", "format code", "clean code"],
+    intent_triggers=[
+        "format",
+        "beautify",
+        "indent",
+        "style",
+        "format code",
+        "clean code",
+    ],
     intent_scenarios=[
         "formatting messy or unindented code",
         "preparing code for presentation or review",
         "standardizing code style across projects",
         "improving code readability and organization",
     ],
-    ai_description="Automatically formats and beautifies code with proper indentation,
-        spacing,
-        and style conventions. Supports multiple programming languages and intelligent bracket matching.",
-
+    ai_description="Automatically formats and beautifies code with proper indentation, spacing, and style conventions. Supports multiple programming languages and intelligent bracket matching.",
     example_usage="plugin: code_formatter 'def func():\\nprint(\"hello\")' python",
     confidence_boost=1.1,
 )

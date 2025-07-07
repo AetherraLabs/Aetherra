@@ -1,0 +1,140 @@
+plugin goals {
+    description: "Core goal management system for creating, updating, and tracking goals."
+    memory_access: read-write
+    tags: [goals, tasks, management, system]
+
+    # Configuration
+    config: {
+        max_active_goals: 100,
+        goal_timeout_hours: 24,
+        auto_archive_completed: true,
+        priority_levels: ["low", "normal", "high", "critical"]
+    }
+
+    # Get all incomplete goals (pending or in_progress)
+    fn get_incomplete_goals() {
+        let all_goals = search_memory({
+            type: "goal",
+            status_in: ["pending", "in_progress"]
+        })
+
+        log "Retrieved {all_goals.length} incomplete goals"
+        return all_goals.sort_by("priority", "desc").sort_by("created_at", "asc")
+    }
+
+    # Resume a goal (retry execution)
+    fn resume_goal(goal) {
+        log "Resuming goal: {goal.title} (id: {goal.id})"
+
+        # Lock the goal to prevent concurrent processing
+        goal.locked = true
+        goal.last_attempt = now()
+        goal.retry_count = (goal.retry_count || 0) + 1
+        goal.status = "in_progress"
+        goal.updated_at = now()
+
+        store_memory(goal)
+
+        try {
+            # If the goal has a specific plugin, trigger it
+            if goal.plugin {
+                let result = call_plugin(goal.plugin, goal)
+
+                if result.success {
+                    goal.status = "completed"
+                    goal.completion_data = result.data
+                    goal.completed_at = now()
+                    log "✅ Goal completed: {goal.title}"
+                } else {
+                    goal.status = "failed"
+                    goal.error_history = goal.error_history || []
+                    goal.error_history.push({
+                        timestamp: now(),
+                        error: result.error,
+                        retry_count: goal.retry_count
+                    })
+                    log "❌ Goal failed: {goal.title} - {result.error}"
+                }
+            } else {
+                # Generic goal processing - mark as ready for manual handling
+                goal.status = "pending"
+                log "⚠️ Goal has no specific plugin, marked as pending: {goal.title}"
+            }
+        } catch (error) {
+            goal.status = "failed"
+            goal.error_history = goal.error_history || []
+            goal.error_history.push({
+                timestamp: now(),
+                error: error.message,
+                retry_count: goal.retry_count
+            })
+            log "❌ Exception while resuming goal {goal.id}: {error.message}"
+        } finally {
+            # Always unlock the goal
+            goal.locked = false
+            goal.updated_at = now()
+            store_memory(goal)
+        }
+
+        return goal
+    }
+
+    # Mark a goal as failed with reason
+    fn mark_goal_failed(goal, reason) {
+        goal.status = "failed"
+        goal.failure_reason = reason
+        goal.failed_at = now()
+        goal.updated_at = now()
+        goal.locked = false
+
+        store_memory(goal)
+        log "❌ Goal marked as failed: {goal.title} - {reason}"
+
+        return goal
+    }
+
+    # Create a new goal
+    fn create_goal(title, description, plugin = null, priority = "normal") {
+        let goal = {
+            type: "goal",
+            id: generate_id(),
+            title: title,
+            description: description,
+            plugin: plugin,
+            priority: priority,
+            status: "pending",
+            created_at: now(),
+            updated_at: now(),
+            retry_count: 0,
+            locked: false,
+            last_attempt: null,
+            completion_data: null,
+            error_history: []
+        }
+
+        store_memory(goal)
+        log "Created new goal: {title} (id: {goal.id})"
+
+        return goal
+    }
+
+    # Get goal statistics
+    fn get_goal_statistics() {
+        let all_goals = search_memory({type: "goal"})
+
+        let stats = {
+            total: all_goals.length,
+            pending: 0,
+            in_progress: 0,
+            completed: 0,
+            failed: 0,
+            archived: 0
+        }
+
+        for goal in all_goals {
+            stats[goal.status] = (stats[goal.status] || 0) + 1
+        }
+
+        return stats
+    }
+}

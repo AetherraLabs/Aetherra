@@ -29,6 +29,13 @@ aetherra_GRAMMAR = r"""
               | if_statement
               | for_statement
               | while_statement
+              | try_statement
+              | match_statement
+              | wait_statement
+              | return_statement
+              | break_statement
+              | continue_statement
+              | import_statement
               | intent_action
               | assignment
               | expression_statement
@@ -70,16 +77,39 @@ aetherra_GRAMMAR = r"""
     plugin_body: statement*
 
     // Function definitions
-    function_definition: "define" IDENTIFIER "(" parameter_list? ")" ":" NEWLINE function_body "end"
+    function_definition: "fn" IDENTIFIER "(" parameter_list? ")" "{" function_body "}"
+                      | "function" IDENTIFIER "(" parameter_list? ")" "{" function_body "}"
     parameter_list: IDENTIFIER ("," IDENTIFIER)*
     function_body: statement*
 
     // Control flow
     when_statement: "when" condition ":" NEWLINE statement_block "end"
-    if_statement: "if" condition ":" NEWLINE statement_block else_clause? "end"
-    else_clause: "else" ":" NEWLINE statement_block
-    for_statement: "for" for_target "in" value ":" NEWLINE statement_block "end"
-    while_statement: "while" condition ":" NEWLINE statement_block "end"
+    if_statement: "if" condition ":" "{" statement_block "}" else_clause?
+    else_clause: "else" "{" statement_block "}"
+    for_statement: "for" for_target "in" value "{" statement_block "}"
+    while_statement: "while" condition "{" statement_block "}"
+
+    // Enhanced control flow
+    try_statement: "try" "{" statement_block "}" catch_clause+
+    catch_clause: "catch" "(" IDENTIFIER ")" "{" statement_block "}"
+
+    match_statement: "match" value "{" match_case+ default_case? "}"
+    match_case: "case" value ":" statement_block
+    default_case: "default" ":" statement_block
+
+    // Flow control
+    break_statement: "break"
+    continue_statement: "continue"
+    return_statement: "return" value?
+
+    // Timing control
+    wait_statement: "wait" duration
+    duration: NUMBER time_unit
+    time_unit: "s" | "sec" | "seconds" | "m" | "min" | "minutes" | "h" | "hours"
+
+    // Module system
+    import_statement: "import" STRING "as" IDENTIFIER
+                   | "use" IDENTIFIER
 
     for_target: ("each")? IDENTIFIER
     statement_block: statement*
@@ -440,6 +470,89 @@ class AetherraCodeTransformer(Transformer):
 
     def comment(self, args):
         return AetherraCodeAST(type="comment", value=str(args[0]).strip("#").strip())
+
+    # Enhanced control flow
+    def try_statement(self, args):
+        try_block = args[0]
+        catch_clauses = args[1:]
+        return AetherraCodeAST(
+            type="try",
+            children=[try_block] + list(catch_clauses),
+        )
+
+    def catch_clause(self, args):
+        exception_var = str(args[0])
+        catch_block = args[1]
+        return AetherraCodeAST(
+            type="catch",
+            value=exception_var,
+            children=catch_block if isinstance(catch_block, list) else [catch_block],
+        )
+
+    def match_statement(self, args):
+        match_value = self._extract_value(args[0])
+        cases = args[1:]
+        return AetherraCodeAST(
+            type="match",
+            value=match_value,
+            children=list(cases),
+        )
+
+    def match_case(self, args):
+        case_value = self._extract_value(args[0])
+        case_block = args[1]
+        return AetherraCodeAST(
+            type="case",
+            value=case_value,
+            children=case_block if isinstance(case_block, list) else [case_block],
+        )
+
+    def default_case(self, args):
+        default_block = args[0]
+        return AetherraCodeAST(
+            type="default",
+            children=default_block
+            if isinstance(default_block, list)
+            else [default_block],
+        )
+
+    # Flow control
+    def break_statement(self, args):
+        return AetherraCodeAST(type="break")
+
+    def continue_statement(self, args):
+        return AetherraCodeAST(type="continue")
+
+    def return_statement(self, args):
+        if args:
+            return_value = self._extract_value(args[0])
+            return AetherraCodeAST(type="return", value=return_value)
+        return AetherraCodeAST(type="return")
+
+    # Timing control
+    def wait_statement(self, args):
+        duration = args[0]
+        return AetherraCodeAST(type="wait", value=duration)
+
+    def duration(self, args):
+        amount = self._extract_value(args[0])
+        unit = str(args[1])
+        return {"amount": amount, "unit": unit}
+
+    def time_unit(self, args):
+        return str(args[0])
+
+    # Module system
+    def import_statement(self, args):
+        if len(args) == 2:  # import "path" as alias
+            module_path = self._extract_value(args[0])
+            alias = str(args[1])
+            return AetherraCodeAST(
+                type="import", value=module_path, metadata={"alias": alias}
+            )
+        else:  # use module
+            module_name = str(args[0])
+            return AetherraCodeAST(type="use", value=module_name)
 
     # Helper methods
     def _extract_value(self, node):

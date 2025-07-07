@@ -98,14 +98,14 @@ class PluginInfo:
 
 
 class PluginRegistryClient:
-    """Client for interacting with Aetherra Plugin Registry"""
+    """Client for interacting with AetherraCode Plugin Registry"""
 
     def __init__(self, registry_url: str = "https://registry.aethercode.org/api/v1"):
         self.registry_url = registry_url
         self.session = requests.Session()
         self.session.headers.update(
             {
-                "User-Agent": "Aetherra-Plugin-Manager/3.0.0",
+                "User-Agent": "AetherraCode-Plugin-Manager/3.0.0",
                 "Accept": "application/json",
             }
         )
@@ -252,7 +252,7 @@ class PluginSecurityManager:
         """Basic security scan of plugin code"""
         security_report = {"threats_found": [], "warnings": [], "safe": True}
 
-        # Scan Aetherra files for potentially dangerous patterns
+        # Scan AetherraCode files for potentially dangerous patterns
         for neuro_file in plugin_path.glob("**/*.aether"):
             content = neuro_file.read_text()
 
@@ -320,7 +320,7 @@ class EnhancedPluginManager:
         self._plugin_cache: Dict[str, PluginInfo] = {}
         self._load_plugin_cache()
 
-        logger.info("🔌 Enhanced Aetherra Plugin Manager initialized")
+        logger.info("🔌 Enhanced AetherraCode Plugin Manager initialized")
         logger.info(f"📁 Plugins directory: {self.plugins_dir}")
         logger.info(f"🌐 Registry: {self.registry.registry_url}")
 
@@ -404,7 +404,7 @@ class EnhancedPluginManager:
                     raise ValueError("Could not find plugin root directory")
 
                 # Validate plugin structure
-                manifest_path = plugin_root / "Aetherra-plugin.json"
+                manifest_path = plugin_root / "aetherra-plugin.json"
                 if not manifest_path.exists():
                     raise ValueError("Plugin manifest not found")
 
@@ -479,7 +479,7 @@ class EnhancedPluginManager:
 
         for plugin_dir in self.plugins_dir.iterdir():
             if plugin_dir.is_dir() and not plugin_dir.name.startswith("."):
-                manifest_path = plugin_dir / "Aetherra-plugin.json"
+                manifest_path = plugin_dir / "aetherra-plugin.json"
                 if manifest_path.exists():
                     try:
                         manifest = self._parse_manifest(manifest_path)
@@ -624,7 +624,7 @@ class EnhancedPluginManager:
         """Find the root directory of extracted plugin"""
         # Look for manifest file
         for root, _dirs, files in os.walk(extract_dir):
-            if "Aetherra-plugin.json" in files:
+            if "aetherra-plugin.json" in files:
                 return Path(root)
         return None
 
@@ -701,8 +701,8 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Aetherra Enhanced Plugin Manager",
-        epilog="Use 'Aetherra plugin <command> --help' for command-specific help",
+        description="AetherraCode Enhanced Plugin Manager",
+        epilog="Use 'aetherra plugin <command> --help' for command-specific help",
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -785,7 +785,7 @@ def main():
     elif args.command == "list":
         plugins = manager.list_installed_plugins()
         if plugins:
-            print(f"\n🔌 Installed Aetherra Plugins ({len(plugins)}):")
+            print(f"\n🔌 Installed AetherraCode Plugins ({len(plugins)}):")
             print("=" * 60)
 
             for plugin in plugins:
@@ -810,7 +810,7 @@ def main():
                 print()
         else:
             print(
-                "No plugins installed. Use 'Aetherra plugin search' to discover plugins."
+                "No plugins installed. Use 'aetherra plugin search' to discover plugins."
             )
 
     elif args.command == "search":
@@ -845,7 +845,7 @@ def main():
         plugins = manager.get_popular_plugins(args.limit)
 
         if plugins:
-            print(f"\n🌟 Most Popular Aetherra Plugins (Top {len(plugins)}):")
+            print(f"\n🌟 Most Popular AetherraCode Plugins (Top {len(plugins)}):")
             print("=" * 60)
 
             for i, plugin in enumerate(plugins, 1):

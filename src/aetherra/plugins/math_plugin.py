@@ -10,7 +10,7 @@ from core.plugin_manager import register_plugin
     description="Safely evaluate mathematical expressions with basic operations",
     capabilities=["arithmetic", "expression_evaluation", "safe_math"],
     version="1.1.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="mathematics",
     dependencies=["math", "re"],
     # Enhanced intent-based discovery
@@ -22,12 +22,7 @@ from core.plugin_manager import register_plugin
         "calculating formulas and equations",
         "solving numerical problems",
     ],
-    ai_description="Safely evaluates mathematical expressions using standard arithmetic operations (+,
-        -,
-        *,
-        /,
-        parentheses). Provides secure calculation without executing dangerous code.",
-
+    ai_description="Safely evaluates mathematical expressions using standard arithmetic operations (+, -, *, /, parentheses). Provides secure calculation without executing dangerous code.",
     example_usage="plugin: calculate '2 + 3 * 4 - (5 / 2)'",
     confidence_boost=1.3,
 )
@@ -49,25 +44,28 @@ def calculate(expression):
     description="Apply mathematical functions like sqrt, sin, cos, etc.",
     capabilities=["trigonometry", "square_root", "mathematical_functions"],
     version="1.1.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="mathematics",
     dependencies=["math"],
     # Enhanced intent-based discovery
     intent_purpose="advanced mathematical functions and trigonometry",
-    intent_triggers=["sqrt", "sin", "cos", "tan", "log", "exp", "trigonometry", "function"],
+    intent_triggers=[
+        "sqrt",
+        "sin",
+        "cos",
+        "tan",
+        "log",
+        "exp",
+        "trigonometry",
+        "function",
+    ],
     intent_scenarios=[
         "calculating square roots and powers",
         "trigonometric calculations (sin, cos, tan)",
         "logarithmic and exponential operations",
         "scientific and engineering computations",
     ],
-    ai_description="Provides advanced mathematical functions including trigonometry (sin,
-        cos,
-        tan),
-        square root,
-        logarithms,
-        and exponentials. Essential for scientific calculations and engineering tasks.",
-
+    ai_description="Provides advanced mathematical functions including trigonometry (sin, cos, tan), square root, logarithms, and exponentials. Essential for scientific calculations and engineering tasks.",
     example_usage="plugin: math_func 'sqrt' 25",
     confidence_boost=1.2,
 )
@@ -99,9 +97,15 @@ def math_function(func_name, value):
 @register_plugin(
     name="statistics",
     description="Calculate basic statistics for a list of numbers",
-    capabilities=["statistics", "mean", "median", "standard_deviation", "data_analysis"],
+    capabilities=[
+        "statistics",
+        "mean",
+        "median",
+        "standard_deviation",
+        "data_analysis",
+    ],
     version="1.0.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="mathematics",
     dependencies=["math"],
     # Enhanced intent-based discovery
@@ -121,10 +125,7 @@ def math_function(func_name, value):
         "summarizing data distributions",
         "getting statistical insights from numbers",
     ],
-    ai_description="Computes essential statistical measures including mean,
-        median,
-        and standard deviation for numerical data. Perfect for quick data analysis and understanding data distributions.",
-
+    ai_description="Computes essential statistical measures including mean, median, and standard deviation for numerical data. Perfect for quick data analysis and understanding data distributions.",
     example_usage="plugin: statistics 1 2 3 4 5 6 7 8 9 10",
     confidence_boost=1.1,
 )

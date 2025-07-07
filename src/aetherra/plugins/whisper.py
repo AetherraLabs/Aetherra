@@ -10,7 +10,7 @@ from core.plugin_manager import register_plugin
     description="Transcribe audio files using OpenAI Whisper (requires whisper package)",
     capabilities=["audio_transcription", "speech_to_text", "file_processing"],
     version="2.0.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="audio",
     dependencies=["whisper"],
     intent_purpose="audio transcription and speech-to-text conversion",
@@ -21,10 +21,7 @@ from core.plugin_manager import register_plugin
         "processing audio interviews",
         "creating text from audio content"
     ],
-    ai_description="Transcribes audio files to text using OpenAI Whisper. Supports various audio formats including MP3,
-        WAV,
-        M4A,
-        and more.",
+    ai_description="Transcribes audio files to text using OpenAI Whisper. Supports various audio formats including MP3, WAV, M4A, and more.",
 
     example_usage="plugin: whisper_transcribe 'meeting.wav'",
     confidence_boost=1.3,
@@ -78,7 +75,7 @@ def whisper_transcribe(audio_file: str, model: str = "base", language: Optional[
     description="Process voice commands through whisper-like functionality",
     capabilities=["voice_processing", "speech_recognition", "command_parsing"],
     version="2.0.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="audio",
     dependencies=[],
     intent_purpose="voice command processing and interpretation",
@@ -144,18 +141,18 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
 
 @register_plugin(
     name="voice_to_neuro",
-    description="Convert natural voice input to Aetherra commands",
-    capabilities=["voice_conversion", "Aetherra_generation", "natural_language"],
+    description="Convert natural voice input to AetherraCode commands",
+    capabilities=["voice_conversion", "aethercode_generation", "natural_language"],
     version="1.0.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="audio",
     dependencies=[],
 )
-def voice_to_Aetherra(voice_input):
-    """Convert voice input to Aetherra commands"""
+def voice_to_aetherra(voice_input):
+    """Convert voice input to AetherraCode commands"""
     voice_input = voice_input.lower().strip()
 
-    # Convert common voice patterns to Aetherra
+    # Convert common voice patterns to AetherraCode
     if "remember that" in voice_input:
         content = voice_input.replace("remember that", "").strip()
         return f'remember("{content}") as "voice_input"'

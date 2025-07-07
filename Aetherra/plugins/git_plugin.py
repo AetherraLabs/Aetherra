@@ -20,12 +20,9 @@ from core.plugin_manager import register_plugin
         "checking repository status",
         "viewing uncommitted changes",
         "managing version control",
-        "development workflow automation"
+        "development workflow automation",
     ],
-    ai_description="Provides Git repository status information including tracked files,
-        untracked files,
-        and pending changes. Helps manage version control workflow.",
-
+    ai_description="Provides Git repository status information including tracked files, untracked files, and pending changes. Helps manage version control workflow.",
     example_usage="plugin: git_status",
     confidence_boost=1.2,
 )
@@ -37,7 +34,7 @@ def git_status() -> Dict[str, Any]:
             ["git", "rev-parse", "--is-inside-work-tree"],
             capture_output=True,
             text=True,
-            cwd=os.getcwd()
+            cwd=os.getcwd(),
         )
 
         if result.returncode != 0:
@@ -48,7 +45,7 @@ def git_status() -> Dict[str, Any]:
             ["git", "status", "--porcelain"],
             capture_output=True,
             text=True,
-            cwd=os.getcwd()
+            cwd=os.getcwd(),
         )
 
         # Get branch info
@@ -56,28 +53,30 @@ def git_status() -> Dict[str, Any]:
             ["git", "branch", "--show-current"],
             capture_output=True,
             text=True,
-            cwd=os.getcwd()
+            cwd=os.getcwd(),
         )
 
         # Parse status
         changes = []
         if status_result.stdout:
-            for line in status_result.stdout.strip().split('\n'):
+            for line in status_result.stdout.strip().split("\n"):
                 if line:
                     status_code = line[:2]
                     filename = line[3:]
-                    changes.append({
-                        "file": filename,
-                        "status": status_code.strip(),
-                        "staged": status_code[0] != ' ' and status_code[0] != '?',
-                        "modified": status_code[1] != ' '
-                    })
+                    changes.append(
+                        {
+                            "file": filename,
+                            "status": status_code.strip(),
+                            "staged": status_code[0] != " " and status_code[0] != "?",
+                            "modified": status_code[1] != " ",
+                        }
+                    )
 
         return {
             "success": True,
             "branch": branch_result.stdout.strip(),
             "changes": changes,
-            "clean": len(changes) == 0
+            "clean": len(changes) == 0,
         }
 
     except FileNotFoundError:
@@ -100,10 +99,9 @@ def git_status() -> Dict[str, Any]:
         "saving code changes",
         "creating version checkpoints",
         "committing development progress",
-        "maintaining project history"
+        "maintaining project history",
     ],
     ai_description="Creates Git commits with descriptive messages. Automatically stages changes and commits them to the repository.",
-
     example_usage="plugin: git_commit 'Add new feature implementation'",
     confidence_boost=1.1,
 )
@@ -116,10 +114,7 @@ def git_commit(message: str, add_all: bool = True) -> Dict[str, Any]:
         # Add all files if requested
         if add_all:
             add_result = subprocess.run(
-                ["git", "add", "."],
-                capture_output=True,
-                text=True,
-                cwd=os.getcwd()
+                ["git", "add", "."], capture_output=True, text=True, cwd=os.getcwd()
             )
 
             if add_result.returncode != 0:
@@ -130,7 +125,7 @@ def git_commit(message: str, add_all: bool = True) -> Dict[str, Any]:
             ["git", "commit", "-m", message],
             capture_output=True,
             text=True,
-            cwd=os.getcwd()
+            cwd=os.getcwd(),
         )
 
         if commit_result.returncode != 0:
@@ -141,14 +136,16 @@ def git_commit(message: str, add_all: bool = True) -> Dict[str, Any]:
             ["git", "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
-            cwd=os.getcwd()
+            cwd=os.getcwd(),
         )
 
         return {
             "success": True,
             "message": message,
-            "hash": hash_result.stdout.strip()[:8] if hash_result.returncode == 0 else "unknown",
-            "output": commit_result.stdout
+            "hash": hash_result.stdout.strip()[:8]
+            if hash_result.returncode == 0
+            else "unknown",
+            "output": commit_result.stdout,
         }
 
     except FileNotFoundError:
@@ -171,12 +168,9 @@ def git_commit(message: str, add_all: bool = True) -> Dict[str, Any]:
         "viewing project history",
         "checking recent commits",
         "reviewing development progress",
-        "investigating code changes"
+        "investigating code changes",
     ],
-    ai_description="Displays Git commit history with commit messages,
-        authors,
-        and timestamps. Shows the evolution of the project.",
-
+    ai_description="Displays Git commit history with commit messages, authors, and timestamps. Shows the evolution of the project.",
     example_usage="plugin: git_log 10",
     confidence_boost=1.0,
 )
@@ -185,10 +179,16 @@ def git_log(limit: int = 10) -> Dict[str, Any]:
     try:
         # Get commit history
         log_result = subprocess.run(
-            ["git", "log", f"--max-count={limit}", "--pretty=format:%H|%an|%ad|%s", "--date=short"],
+            [
+                "git",
+                "log",
+                f"--max-count={limit}",
+                "--pretty=format:%H|%an|%ad|%s",
+                "--date=short",
+            ],
             capture_output=True,
             text=True,
-            cwd=os.getcwd()
+            cwd=os.getcwd(),
         )
 
         if log_result.returncode != 0:
@@ -196,22 +196,20 @@ def git_log(limit: int = 10) -> Dict[str, Any]:
 
         commits = []
         if log_result.stdout:
-            for line in log_result.stdout.strip().split('\n'):
+            for line in log_result.stdout.strip().split("\n"):
                 if line:
-                    parts = line.split('|', 3)
+                    parts = line.split("|", 3)
                     if len(parts) == 4:
-                        commits.append({
-                            "hash": parts[0][:8],
-                            "author": parts[1],
-                            "date": parts[2],
-                            "message": parts[3]
-                        })
+                        commits.append(
+                            {
+                                "hash": parts[0][:8],
+                                "author": parts[1],
+                                "date": parts[2],
+                                "message": parts[3],
+                            }
+                        )
 
-        return {
-            "success": True,
-            "commits": commits,
-            "total_shown": len(commits)
-        }
+        return {"success": True, "commits": commits, "total_shown": len(commits)}
 
     except FileNotFoundError:
         return {"error": "Git not found. Please install Git."}

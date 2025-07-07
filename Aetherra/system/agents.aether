@@ -1,0 +1,178 @@
+# System Agents API
+# Helper for agent routing, escalation, and status management
+
+plugin agents {
+    description: "Agent routing and escalation system for goal management."
+    memory_access: read-write
+    tags: [agents, routing, escalation, system]
+    
+    # Configuration
+    config: {
+        escalation_agent_role: "supervisor",
+        default_timeout: 300,
+        max_concurrent_escalations: 5
+    }
+    
+    # Get available agents by role
+    fn get_agents_by_role(role) {
+        return search_memory({
+            type: "agent",
+            role: role,
+            status: "active"
+        })
+    }
+    
+    # Get agent status and health
+    fn get_agent_status(agent_id) {
+        let agent = get_memory(agent_id)
+        if not agent {
+            return {status: "not_found", health: "unknown"}
+        }
+        
+        return {
+            status: agent.status,
+            health: agent.health || "unknown",
+            load: agent.current_tasks?.length || 0,
+            last_activity: agent.last_activity
+        }
+    }
+    
+    # Escalate a goal to a supervisor agent
+    fn escalate_goal(goal) {
+        log "🆙 Escalating goal {goal.id} to supervisor agent"
+        
+        # Find available escalation agents
+        let escalation_agents = get_agents_by_role(config.escalation_agent_role)
+        
+        if escalation_agents.length == 0 {
+            log "❌ No escalation agents available for goal {goal.id}"
+            # Create escalation ticket for manual intervention
+            call create_escalation_ticket(goal, "no_agents_available")
+            return false
+        }
+        
+        # Select agent with lowest load
+        let selected_agent = escalation_agents.sort_by(agent => agent.current_tasks?.length || 0)[0]
+        
+        log "📋 Assigning goal {goal.id} to escalation agent {selected_agent.id}"
+        
+        # Update goal with escalation info
+        update_memory(goal.id, {
+            status: "escalated",
+            escalated_to: selected_agent.id,
+            escalation_time: now(),
+            escalation_reason: "stalled_timeout"
+        })
+        
+        # Notify the escalation agent
+        try {
+            call selected_agent.handle_escalated_goal(goal)
+            
+            # Track escalation in agent's task list
+            let current_tasks = selected_agent.current_tasks || []
+            current_tasks.push({
+                type: "escalated_goal",
+                goal_id: goal.id,
+                assigned_at: now()
+            })
+            
+            update_memory(selected_agent.id, {
+                current_tasks: current_tasks,
+                last_activity: now()
+            })
+            
+            return true
+        } catch (error) {
+            log "❌ Failed to notify escalation agent: {error.message}"
+            call create_escalation_ticket(goal, "agent_notification_failed")
+            return false
+        }
+    }
+    
+    # Create escalation ticket for manual intervention
+    fn create_escalation_ticket(goal, reason) {
+        let ticket = {
+            type: "escalation_ticket",
+            goal_id: goal.id,
+            goal_title: goal.title,
+            reason: reason,
+            created_at: now(),
+            status: "open",
+            priority: goal.priority || "medium"
+        }
+        
+        store_memory(ticket)
+        log "🎫 Created escalation ticket for goal {goal.id} (reason: {reason})"
+        
+        return ticket
+    }
+    
+    # Route a goal to the most appropriate agent
+    fn route_goal_to_agent(goal, required_capabilities = []) {
+        log "🎯 Routing goal {goal.id} to appropriate agent"
+        
+        # Find agents with required capabilities
+        let capable_agents = search_memory({
+            type: "agent",
+            status: "active",
+            capabilities_include: required_capabilities
+        })
+        
+        if capable_agents.length == 0 {
+            log "❌ No agents found with required capabilities: {required_capabilities}"
+            return null
+        }
+        
+        # Score agents based on load and capability match
+        let scored_agents = capable_agents.map(agent => {
+            let load_score = 100 - (agent.current_tasks?.length || 0) * 10
+            let capability_score = agent.capabilities.intersection(required_capabilities).length * 20
+            
+            return {
+                agent: agent,
+                score: load_score + capability_score
+            }
+        })
+        
+        # Select highest scoring agent
+        let best_agent = scored_agents.sort_by(sa => sa.score).reverse()[0].agent
+        
+        log "🎯 Selected agent {best_agent.id} for goal {goal.id} (score: {best_agent.score})"
+        return best_agent
+    }
+    
+    # Check if an agent is healthy and responsive
+    fn check_agent_health(agent_id) {
+        let agent = get_memory(agent_id)
+        if not agent {
+            return false
+        }
+        
+        # Check if agent responded recently
+        let last_activity = agent.last_activity
+        let time_since_activity = now() - last_activity
+        
+        # Agent is unhealthy if no activity in 30 minutes
+        if time_since_activity > 1800 {
+            return false
+        }
+        
+        # Check agent's self-reported health
+        return agent.health == "healthy"
+    }
+    
+    # Get system-wide agent statistics
+    fn get_agent_statistics() {
+        let all_agents = search_memory({type: "agent"})
+        
+        let stats = {
+            total_agents: all_agents.length,
+            active_agents: all_agents.filter(a => a.status == "active").length,
+            healthy_agents: all_agents.filter(a => a.health == "healthy").length,
+            total_load: all_agents.sum(a => a.current_tasks?.length || 0),
+            escalations_pending: search_memory({type: "escalation_ticket", status: "open"}).length
+        }
+        
+        return stats
+    }
+}

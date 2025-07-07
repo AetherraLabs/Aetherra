@@ -17,12 +17,9 @@ from core.plugin_manager import register_plugin
         "analyzing project progress",
         "reflecting on learning experiences",
         "examining problem-solving approaches",
-        "meta-cognitive analysis"
+        "meta-cognitive analysis",
     ],
-    ai_description="Provides AI-powered reflection and analysis capabilities for deep thinking about topics,
-        problems,
-        and experiences.",
-
+    ai_description="Provides AI-powered reflection and analysis capabilities for deep thinking about topics, problems, and experiences.",
     example_usage="plugin: agent_reflect 'project development approach'",
     confidence_boost=1.3,
 )
@@ -39,16 +36,8 @@ def agent_reflect(topic: str, depth: str = "medium") -> Dict[str, Any]:
         # Placeholder reflection - in real implementation would use AI models
         reflections = {
             "shallow": f"Initial thoughts on {topic}: This appears to be an important area requiring attention.",
-            "medium": f"Analyzing {topic}: This involves multiple interconnected factors that should be considered systematically. Key aspects include planning,
-                execution,
-                and evaluation phases.",
-
-            "deep": f"Deep reflection on {topic}: This complex topic requires careful examination of underlying assumptions,
-                potential outcomes,
-                and long-term implications. Multiple perspectives should be considered,
-                including technical,
-                practical,
-                and strategic viewpoints."
+            "medium": f"Analyzing {topic}: This involves multiple interconnected factors that should be considered systematically. Key aspects include planning, execution, and evaluation phases.",
+            "deep": f"Deep reflection on {topic}: This complex topic requires careful examination of underlying assumptions, potential outcomes, and long-term implications. Multiple perspectives should be considered, including technical, practical, and strategic viewpoints.",
         }
 
         return {
@@ -58,11 +47,11 @@ def agent_reflect(topic: str, depth: str = "medium") -> Dict[str, Any]:
             "reflection": reflections[depth],
             "insights": [
                 f"Primary consideration: {topic} requires structured approach",
-                f"Secondary factors: Context and timing are crucial",
-                f"Recommendation: Iterative refinement and feedback incorporation"
+                "Secondary factors: Context and timing are crucial",
+                "Recommendation: Iterative refinement and feedback incorporation",
             ],
             "confidence": 0.85,
-            "timestamp": "2025-07-01T15:30:00Z"
+            "timestamp": "2025-07-01T15:30:00Z",
         }
 
     except Exception as e:
@@ -77,7 +66,7 @@ def agent_reflect(topic: str, depth: str = "medium") -> Dict[str, Any]:
     author="AetherraCode Team",
     category="ai",
     example_usage="plugin: agent_analyze 'user feedback patterns'",
-    ai_description="Provides detailed analytical capabilities for examining data, patterns, and complex situations"
+    ai_description="Provides detailed analytical capabilities for examining data, patterns, and complex situations",
 )
 def agent_analyze(subject: str, analysis_type: str = "general") -> Dict[str, Any]:
     """Perform detailed analysis of given subject"""
@@ -96,15 +85,15 @@ def agent_analyze(subject: str, analysis_type: str = "general") -> Dict[str, Any
             "findings": [
                 f"Key pattern identified in {subject}",
                 f"Correlation with {analysis_type} factors detected",
-                f"Recommended actions based on {subject} analysis"
+                f"Recommended actions based on {subject} analysis",
             ],
             "confidence_score": 0.78,
             "methodology": f"{analysis_type} analysis framework applied",
             "next_steps": [
                 "Gather additional data points",
                 "Validate findings with stakeholders",
-                "Implement recommended changes"
-            ]
+                "Implement recommended changes",
+            ],
         }
 
     except Exception as e:

@@ -1,4 +1,4 @@
-# src/Aetherra/plugins/file_tools.py - File Management Plugin
+# src/aetherra/plugins/file_tools.py - File Management Plugin
 import shutil
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -11,7 +11,7 @@ from core.plugin_manager import register_plugin
     description="Create a new file with optional content",
     capabilities=["file_creation", "file_management", "workspace"],
     version="1.0.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="file_management",
     dependencies=["pathlib"],
     intent_purpose="file creation and workspace management",
@@ -61,7 +61,7 @@ def create_file(filepath: str, content: str = "") -> Dict[str, Any]:
     description="Read the contents of a file",
     capabilities=["file_reading", "content_access", "workspace"],
     version="1.0.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="file_management",
     dependencies=["pathlib"],
     intent_purpose="file content reading and access",
@@ -121,7 +121,7 @@ def read_file(filepath: str, max_lines: Optional[int] = None) -> Dict[str, Any]:
     description="Write content to a file (overwrites existing content)",
     capabilities=["file_writing", "content_modification", "workspace"],
     version="1.0.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="file_management",
     dependencies=["pathlib"],
     intent_purpose="file content writing and modification",
@@ -172,7 +172,7 @@ def write_file(filepath: str, content: str) -> Dict[str, Any]:
     description="List files and directories in a given path",
     capabilities=["directory_listing", "file_discovery", "workspace"],
     version="1.0.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="file_management",
     dependencies=["pathlib"],
     intent_purpose="directory exploration and file discovery",
@@ -246,7 +246,7 @@ def list_files(
     description="Delete a file or directory (with safety confirmation)",
     capabilities=["file_deletion", "cleanup", "workspace"],
     version="1.0.0",
-    author="Aetherra Team",
+    author="AetherraCode Team",
     category="file_management",
     dependencies=["pathlib", "shutil"],
     intent_purpose="file and directory deletion with safety checks",
