@@ -1,0 +1,71 @@
+{
+  "success": true,
+  "tests_run": 6,
+  "tests_passed": 2,
+  "pass_rate": 0.3333333333333333,
+  "detailed_results": [
+    {
+      "test_name": "Safe Plugin Analysis",
+      "plugin_file": "test_plugin_safe.py",
+      "confidence_score": 0.7000000000000001,
+      "safety_score": 100.0,
+      "risk_level": "LOW",
+      "issues_count": 0,
+      "warnings_count": 0,
+      "passed": false
+    },
+    {
+      "test_name": "Unsafe Plugin Analysis",
+      "plugin_file": "test_plugin_unsafe.py",
+      "confidence_score": 0.48,
+      "safety_score": 45.0,
+      "risk_level": "CRITICAL",
+      "issues_count": 1,
+      "warnings_count": 3,
+      "passed": false
+    },
+    {
+      "test_name": "Complex Plugin Analysis",
+      "plugin_file": "test_plugin_complex.py",
+      "confidence_score": 0.68,
+      "safety_score": 95.0,
+      "risk_level": "LOW",
+      "issues_count": 0,
+      "warnings_count": 1,
+      "passed": true
+    },
+    {
+      "test_name": "Broken Plugin Analysis",
+      "plugin_file": "test_plugin_broken.py",
+      "confidence_score": 0.30000000000000004,
+      "safety_score": 0.0,
+      "risk_level": "CRITICAL",
+      "issues_count": 1,
+      "warnings_count": 0,
+      "passed": false
+    },
+    {
+      "test_name": "Runtime Metrics Collection",
+      "plugin_name": "test_runtime_plugin",
+      "total_executions": 13,
+      "success_rate": 0.7692307692307693,
+      "avg_execution_time": 0.22692307692307692,
+      "error_frequency": 0.23076923076923078,
+      "common_errors": [
+        [
+          "ValueError",
+          3
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "test_name": "Integration System Test",
+      "safe_plugin_loaded": true,
+      "unsafe_plugin_blocked": false,
+      "warnings_generated": 0,
+      "errors_generated": 0,
+      "passed": false
+    }
+  ]
+}
