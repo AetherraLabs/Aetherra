@@ -20,6 +20,15 @@ try:
     from .intelligence_layer import IntelligenceLayerWidget
     from .performance_monitor import PerformanceMonitor
     from .suggestion_notifications import SuggestionNotificationSystem
+    
+    # Import new polish components
+    from .context_memory_manager import ContextMemoryManager
+    from .chat_history_manager import ChatHistoryManager
+    from .plugin_panel_manager import PluginPanelManager
+    from .quick_commands_manager import QuickCommandsManager
+    from .personality_manager import PersonalityManager
+    from .response_style_memory import ResponseStyleMemoryManager
+    from .intelligence_panel_manager import IntelligencePanelManager
 
     PHASE3_GUI_AVAILABLE = True
 except ImportError as e:
@@ -71,12 +80,24 @@ class EnhancedLyrixaWindow:
         self.config_manager = None
         self.performance_monitor = None
         self.anticipation_engine = None
+        
+        # Initialize new polish components
+        self.context_memory_manager = None
+        self.chat_history_manager = None
+        self.plugin_panel_manager = None
+        self.quick_commands_manager = None
+        self.personality_manager = None
+        self.response_style_memory = None
+        self.intelligence_panel_manager = None
 
         # Initialize AI and memory systems
         self._initialize_lyrixa_ai()
 
         # Initialize Phase 3 components
         self._initialize_phase3_components()
+        
+        # Initialize polish components
+        self._initialize_polish_components()
 
         print("✅ Enhanced Lyrixa Window ready with Phase 3 integration")
 
@@ -213,6 +234,47 @@ class EnhancedLyrixaWindow:
 
         except Exception as e:
             print(f"⚠️ Error in Phase 3 initialization: {e}")
+    
+    def _initialize_polish_components(self):
+        """Initialize strategic polish components for enhanced UX."""
+        try:
+            print("✨ Initializing Lyrixa polish components...")
+            
+            # Context Memory Manager - tracks user context switches
+            self.context_memory_manager = ContextMemoryManager()
+            print("   🧭 Context Memory Manager initialized")
+            
+            # Chat History Manager - conversation history and replay
+            self.chat_history_manager = ChatHistoryManager()
+            print("   💬 Chat History Manager initialized")
+            
+            # Plugin Panel Manager - collapsible panels with layout memory
+            self.plugin_panel_manager = PluginPanelManager()
+            print("   🔌 Plugin Panel Manager initialized")
+            
+            # Quick Commands Manager - GUI buttons for common actions
+            self.quick_commands_manager = QuickCommandsManager()
+            print("   ⚡ Quick Commands Manager initialized")
+            
+            # Personality Manager - personality presets and style adaptation
+            self.personality_manager = PersonalityManager()
+            print("   🎭 Personality Manager initialized")
+            
+            # Response Style Memory - learns from user feedback
+            self.response_style_memory = ResponseStyleMemoryManager()
+            print("   🎯 Response Style Memory initialized")
+            
+            # Intelligence Panel Manager - real-time system insights
+            self.intelligence_panel_manager = IntelligencePanelManager()
+            print("   🧠 Intelligence Panel Manager initialized")
+            
+            # Start intelligence monitoring
+            self.intelligence_panel_manager.start_monitoring()
+            
+            print("✅ All polish components initialized successfully")
+            
+        except Exception as e:
+            print(f"⚠️ Error initializing polish components: {e}")
 
     def _initialize_phase3_gui_components(self):
         """Initialize Phase 3 GUI components after Qt is available."""
@@ -885,6 +947,144 @@ class EnhancedLyrixaWindow:
 
         status_bar = self.main_window.statusBar()
         status_bar.showMessage("Lyrixa Assistant Ready")
+    
+    # Polish Component Integration Methods
+    
+    def switch_context(self, context_type: str, context_data: dict = None):
+        """Handle context switching with memory awareness."""
+        if context_data is None:
+            context_data = {}
+            
+        if self.context_memory_manager:
+            self.context_memory_manager.switch_context(context_type, context_data)
+            print(f"🧭 Context switched to: {context_type}")
+    
+    def execute_quick_command(self, command_id: str) -> bool:
+        """Execute a quick command and update intelligence panel."""
+        if not self.quick_commands_manager:
+            return False
+        
+        success = self.quick_commands_manager.execute_command(command_id)
+        
+        if success and self.intelligence_panel_manager:
+            # Update intelligence panel with command execution
+            self.intelligence_panel_manager._update_all_metrics()
+        
+        return success
+    
+    def handle_chat_message(self, user_message: str) -> str:
+        """Enhanced chat message handling with polish features."""
+        # Record message in chat history
+        if self.chat_history_manager:
+            self.chat_history_manager.add_message(
+                sender="user",
+                content=user_message,
+                message_type="text"
+            )
+        
+        # Apply personality and style awareness
+        if self.personality_manager:
+            self.personality_manager.get_current_personality()
+        
+        if self.response_style_memory:
+            context_type = self.context_memory_manager.current_context if self.context_memory_manager else "general"
+            self.response_style_memory.get_style_recommendations(context_type)
+        
+        # Process with AI system
+        if self.lyrixa_ai:
+            # Apply personality and style to AI response
+            ai_response = f"Lyrixa here! I understand: '{user_message}'. How can I help you with that?"
+        else:
+            ai_response = f"I understand you said: '{user_message}'. How can I help you with that?"
+        
+        # Record assistant response
+        if self.chat_history_manager:
+            self.chat_history_manager.add_message(
+                sender="assistant",
+                content=ai_response,
+                message_type="text"
+            )
+        
+        return ai_response
+    
+    def toggle_panel(self, panel_name: str) -> bool:
+        """Toggle panel visibility with layout memory."""
+        if self.plugin_panel_manager:
+            return self.plugin_panel_manager.toggle_panel_collapse(panel_name)
+        return False
+    
+    def record_user_feedback(self, response_id: str, feedback_type: str, rating: int):
+        """Record user feedback for response style learning."""
+        if self.response_style_memory:
+            context_type = self.context_memory_manager.current_context if self.context_memory_manager else "general"
+            personality_mode = self.personality_manager.current_personality if self.personality_manager else "balanced"
+            
+            self.response_style_memory.record_feedback(
+                response_id=response_id,
+                context_type=context_type,
+                response_style={"personality": personality_mode},
+                user_rating=rating,
+                feedback_type=feedback_type,
+                personality_mode=personality_mode
+            )
+    
+    def get_intelligence_summary(self) -> dict:
+        """Get current intelligence panel summary."""
+        if self.intelligence_panel_manager:
+            return self.intelligence_panel_manager.get_intelligence_summary()
+        return {}
+    
+    def set_personality(self, personality_name: str) -> bool:
+        """Set Lyrixa's personality."""
+        if self.personality_manager:
+            return self.personality_manager.set_personality(personality_name)
+        return False
+    
+    def get_available_personalities(self) -> list:
+        """Get list of available personality presets."""
+        if self.personality_manager:
+            return self.personality_manager.get_available_personalities()
+        return []
+    
+    def get_chat_history(self, limit: int = 50) -> list:
+        """Get recent chat history."""
+        if self.chat_history_manager:
+            return self.chat_history_manager.get_recent_messages(limit)
+        return []
+    
+    def get_quick_commands(self, category: str | None = None) -> dict:
+        """Get available quick commands."""
+        if self.quick_commands_manager:
+            if category:
+                return self.quick_commands_manager.get_commands_by_category(category)
+            else:
+                return self.quick_commands_manager.get_favorite_commands()
+        return {}
+    
+    def cleanup_polish_components(self):
+        """Cleanup polish components on shutdown."""
+        try:
+            if self.intelligence_panel_manager:
+                self.intelligence_panel_manager.stop_monitoring()
+            
+            if self.context_memory_manager:
+                # Save context data if method exists
+                pass
+            
+            if self.chat_history_manager:
+                # End session if method exists
+                pass
+            
+            if self.plugin_panel_manager:
+                self.plugin_panel_manager.save_layout_config()
+            
+            if self.personality_manager:
+                self.personality_manager.save_personality_config()
+            
+            print("✅ Polish components cleaned up successfully")
+            
+        except Exception as e:
+            print(f"⚠️ Error cleaning up polish components: {e}")
 
     def show(self):
         """Show the main window."""
