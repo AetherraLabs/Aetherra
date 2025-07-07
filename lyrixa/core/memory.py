@@ -15,7 +15,8 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
-# from src.aetherra.core.webhook_manager import WebhookManager  # TODO: Fix this import
+# Webhook manager import disabled - not currently available
+# from src.aetherra.core.webhook_manager import WebhookManager
 
 
 @dataclass
@@ -61,7 +62,8 @@ class LyrixaMemorySystem:
         )  # Initialize connection
         self.memory_cache: Dict[str, Any] = {}
         self.consolidation_interval = 3600  # 1 hour in seconds
-        # self.webhook_manager = WebhookManager()  # Initialize WebhookManager  # TODO: Fix this import
+        # Webhook manager disabled - not currently available
+        # self.webhook_manager = WebhookManager()
 
         # Initialize database synchronously
         self._initialize_database_sync()
@@ -421,7 +423,8 @@ class LyrixaMemorySystem:
 
             self.ensure_connection().commit()
 
-            # TODO: Trigger webhook for memory update
+            # Webhook functionality disabled - not currently available
+            # TODO: Implement webhook for memory update when available
             # self.webhook_manager.trigger_webhook(
             #     "memory_update",
             #     {"memory_id": memory_id, "timestamp": datetime.now().isoformat()},
