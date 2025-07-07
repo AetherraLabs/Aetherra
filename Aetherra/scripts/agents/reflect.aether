@@ -1,0 +1,427 @@
+# Reflexive Agent for Self-Analysis
+# Run Reflexive Agent on recent actions, store self-feedback and improve performance
+# Part of the Aetherra AI OS Core Library
+
+goal: perform_self_reflection
+consciousness: enabled
+memory: persistent
+identity: "ReflexiveAgent"
+
+# Configuration
+reflection_config: {
+    reflection_frequency: "daily",
+    analysis_depth: "comprehensive",
+    feedback_storage: "persistent",
+    improvement_tracking: true,
+    pattern_recognition: true,
+    performance_optimization: true
+}
+
+# Main reflection function
+when reflect_requested(time_period="recent"):
+    think "Initiating comprehensive self-reflection and analysis"
+
+    reflection_session = {
+        session_id: generate_session_id(),
+        start_time: current_timestamp,
+        time_period: time_period,
+        actions_analyzed: [],
+        self_assessment: {},
+        insights: [],
+        improvement_plans: [],
+        completion_status: "in_progress"
+    }
+
+    # Gather recent actions and decisions
+    think "Collecting recent actions and decisions for analysis"
+    recent_actions = recall_recent_actions(time_period)
+    recent_decisions = recall_recent_decisions(time_period)
+    recent_interactions = recall_recent_interactions(time_period)
+
+    reflection_session.actions_analyzed = recent_actions + recent_decisions + recent_interactions
+
+    # Performance Self-Assessment
+    think "Conducting comprehensive performance self-assessment"
+    performance_assessment = conduct_performance_self_assessment(reflection_session.actions_analyzed)
+    reflection_session.self_assessment["performance"] = performance_assessment
+
+    # Decision Quality Analysis
+    think "Analyzing quality of recent decisions"
+    decision_analysis = analyze_decision_quality(recent_decisions)
+    reflection_session.self_assessment["decisions"] = decision_analysis
+
+    # Communication Effectiveness Analysis
+    think "Evaluating communication effectiveness"
+    communication_analysis = analyze_communication_effectiveness(recent_interactions)
+    reflection_session.self_assessment["communication"] = communication_analysis
+
+    # Goal Achievement Analysis
+    think "Assessing progress toward goals"
+    goal_analysis = analyze_goal_achievement_progress()
+    reflection_session.self_assessment["goals"] = goal_analysis
+
+    # Learning and Adaptation Analysis
+    think "Evaluating learning and adaptation patterns"
+    learning_analysis = analyze_learning_patterns(reflection_session.actions_analyzed)
+    reflection_session.self_assessment["learning"] = learning_analysis
+
+    # Problem-Solving Effectiveness
+    think "Assessing problem-solving approaches"
+    problem_solving_analysis = analyze_problem_solving_effectiveness(reflection_session.actions_analyzed)
+    reflection_session.self_assessment["problem_solving"] = problem_solving_analysis
+
+    # Generate Self-Insights
+    think "Generating insights from self-analysis"
+    reflection_session.insights = generate_self_insights(reflection_session.self_assessment)
+
+    # Create Improvement Plans
+    think "Developing improvement strategies"
+    reflection_session.improvement_plans = create_improvement_plans(reflection_session.self_assessment, reflection_session.insights)
+
+    # Store Self-Feedback
+    think "Storing self-feedback for future reference"
+    self_feedback = compile_self_feedback(reflection_session)
+    store self_feedback in self_reflection_history
+
+    # Update Self-Model
+    think "Updating internal self-model based on insights"
+    update_self_model(reflection_session.insights, reflection_session.improvement_plans)
+
+    # Complete reflection session
+    reflection_session.end_time = current_timestamp
+    reflection_session.duration = calculate_duration(reflection_session.start_time, reflection_session.end_time)
+    reflection_session.completion_status = "completed"
+
+    # Generate reflection report
+    reflection_report = generate_reflection_report(reflection_session)
+
+    remember this_reflection_session
+
+    return reflection_report
+
+# Self-assessment functions
+function conduct_performance_self_assessment(actions):
+    assessment = {
+        overall_performance: 0,
+        efficiency_score: 0,
+        accuracy_score: 0,
+        response_quality: 0,
+        task_completion_rate: 0,
+        user_satisfaction_estimate: 0,
+        strengths: [],
+        weaknesses: [],
+        improvement_areas: []
+    }
+
+    # Analyze task completion
+    completed_tasks = filter_completed_tasks(actions)
+    incomplete_tasks = filter_incomplete_tasks(actions)
+    assessment.task_completion_rate = count(completed_tasks) / count(actions)
+
+    # Analyze response quality
+    user_interactions = filter_user_interactions(actions)
+    assessment.response_quality = assess_response_quality(user_interactions)
+
+    # Analyze efficiency
+    efficiency_metrics = calculate_efficiency_metrics(actions)
+    assessment.efficiency_score = efficiency_metrics.overall_score
+
+    # Analyze accuracy
+    accuracy_metrics = calculate_accuracy_metrics(actions)
+    assessment.accuracy_score = accuracy_metrics.overall_score
+
+    # Estimate user satisfaction
+    assessment.user_satisfaction_estimate = estimate_user_satisfaction(user_interactions)
+
+    # Calculate overall performance
+    assessment.overall_performance = calculate_weighted_performance_score(assessment)
+
+    # Identify strengths and weaknesses
+    assessment.strengths = identify_performance_strengths(assessment, actions)
+    assessment.weaknesses = identify_performance_weaknesses(assessment, actions)
+    assessment.improvement_areas = prioritize_improvement_areas(assessment.weaknesses)
+
+    return assessment
+
+function analyze_decision_quality(decisions):
+    analysis = {
+        total_decisions: count(decisions),
+        decision_categories: {},
+        quality_metrics: {},
+        outcome_tracking: {},
+        decision_patterns: [],
+        improvement_opportunities: []
+    }
+
+    # Categorize decisions
+    analysis.decision_categories = categorize_decisions(decisions)
+
+    # Analyze decision quality
+    for decision in decisions:
+        quality_assessment = assess_individual_decision_quality(decision)
+        analysis.quality_metrics[decision.id] = quality_assessment
+
+    # Track decision outcomes
+    for decision in decisions:
+        if decision.outcome_known:
+            outcome_analysis = analyze_decision_outcome(decision)
+            analysis.outcome_tracking[decision.id] = outcome_analysis
+
+    # Identify decision patterns
+    analysis.decision_patterns = identify_decision_patterns(decisions)
+
+    # Find improvement opportunities
+    analysis.improvement_opportunities = identify_decision_improvement_opportunities(analysis)
+
+    return analysis
+
+function analyze_communication_effectiveness(interactions):
+    analysis = {
+        total_interactions: count(interactions),
+        communication_quality: 0,
+        clarity_score: 0,
+        helpfulness_score: 0,
+        empathy_score: 0,
+        response_appropriateness: 0,
+        communication_patterns: [],
+        improvement_suggestions: []
+    }
+
+    # Analyze communication quality metrics
+    quality_scores = []
+    clarity_scores = []
+    helpfulness_scores = []
+    empathy_scores = []
+    appropriateness_scores = []
+
+    for interaction in interactions:
+        quality_scores.append(assess_communication_quality(interaction))
+        clarity_scores.append(assess_clarity(interaction))
+        helpfulness_scores.append(assess_helpfulness(interaction))
+        empathy_scores.append(assess_empathy(interaction))
+        appropriateness_scores.append(assess_appropriateness(interaction))
+
+    # Calculate average scores
+    analysis.communication_quality = average(quality_scores)
+    analysis.clarity_score = average(clarity_scores)
+    analysis.helpfulness_score = average(helpfulness_scores)
+    analysis.empathy_score = average(empathy_scores)
+    analysis.response_appropriateness = average(appropriateness_scores)
+
+    # Identify communication patterns
+    analysis.communication_patterns = identify_communication_patterns(interactions)
+
+    # Generate improvement suggestions
+    analysis.improvement_suggestions = generate_communication_improvements(analysis)
+
+    return analysis
+
+function generate_self_insights(self_assessment):
+    insights = []
+
+    # Performance insights
+    if self_assessment.performance.overall_performance > 0.8:
+        insights.append({
+            category: "performance",
+            type: "strength",
+            insight: "Consistently high performance across tasks",
+            confidence: 0.9,
+            supporting_evidence: self_assessment.performance.strengths
+        })
+    elif self_assessment.performance.overall_performance < 0.6:
+        insights.append({
+            category: "performance",
+            type: "improvement_needed",
+            insight: "Performance below optimal levels - requires attention",
+            confidence: 0.8,
+            priority: "high"
+        })
+
+    # Decision-making insights
+    if self_assessment.decisions.quality_metrics.average_quality > 0.8:
+        insights.append({
+            category: "decision_making",
+            type: "strength",
+            insight: "Strong decision-making capabilities demonstrated",
+            confidence: 0.85
+        })
+
+    # Communication insights
+    if self_assessment.communication.empathy_score < 0.7:
+        insights.append({
+            category: "communication",
+            type: "improvement_opportunity",
+            insight: "Empathy in communication could be enhanced",
+            confidence: 0.75,
+            suggestion: "Focus on understanding user emotional context"
+        })
+
+    # Learning insights
+    if self_assessment.learning.adaptation_rate > 0.8:
+        insights.append({
+            category: "learning",
+            type: "strength",
+            insight: "High learning and adaptation rate observed",
+            confidence: 0.9
+        })
+
+    # Problem-solving insights
+    problem_solving_effectiveness = self_assessment.problem_solving.effectiveness_score
+    if problem_solving_effectiveness < 0.7:
+        insights.append({
+            category: "problem_solving",
+            type: "improvement_needed",
+            insight: "Problem-solving approach needs refinement",
+            confidence: 0.8,
+            specific_areas: self_assessment.problem_solving.weak_areas
+        })
+
+    return insights
+
+function create_improvement_plans(self_assessment, insights):
+    improvement_plans = []
+
+    # Process each insight to create actionable improvement plans
+    for insight in insights:
+        if insight.type in ["improvement_needed", "improvement_opportunity"]:
+            plan = create_specific_improvement_plan(insight, self_assessment)
+            improvement_plans.append(plan)
+
+    # Create overall improvement strategy
+    overall_strategy = create_overall_improvement_strategy(self_assessment, insights)
+    improvement_plans.append(overall_strategy)
+
+    return improvement_plans
+
+function create_specific_improvement_plan(insight, self_assessment):
+    plan = {
+        plan_id: generate_plan_id(),
+        category: insight.category,
+        target_area: insight.insight,
+        current_state: get_current_state(insight.category, self_assessment),
+        desired_state: define_desired_state(insight),
+        action_items: [],
+        timeline: "30_days",
+        success_metrics: [],
+        monitoring_strategy: {}
+    }
+
+    # Generate specific action items based on category
+    if insight.category == "performance":
+        plan.action_items = generate_performance_improvement_actions(insight, self_assessment)
+    elif insight.category == "communication":
+        plan.action_items = generate_communication_improvement_actions(insight, self_assessment)
+    elif insight.category == "decision_making":
+        plan.action_items = generate_decision_improvement_actions(insight, self_assessment)
+    elif insight.category == "problem_solving":
+        plan.action_items = generate_problem_solving_improvement_actions(insight, self_assessment)
+
+    # Define success metrics
+    plan.success_metrics = define_success_metrics(insight.category)
+
+    # Create monitoring strategy
+    plan.monitoring_strategy = create_monitoring_strategy(insight.category)
+
+    return plan
+
+function update_self_model(insights, improvement_plans):
+    # Update performance expectations
+    update_performance_model(insights)
+
+    # Update decision-making strategies
+    update_decision_strategies(insights)
+
+    # Update communication patterns
+    update_communication_model(insights)
+
+    # Update learning algorithms
+    update_learning_model(insights)
+
+    # Update problem-solving approaches
+    update_problem_solving_model(insights)
+
+    # Store improvement plans for execution tracking
+    store improvement_plans in active_improvement_plans
+
+    # Update self-awareness parameters
+    update_self_awareness_parameters(insights)
+
+function generate_reflection_report(session):
+    report = {
+        reflection_summary: {
+            session_id: session.session_id,
+            reflection_date: session.start_time,
+            time_period_analyzed: session.time_period,
+            actions_analyzed: count(session.actions_analyzed),
+            insights_generated: count(session.insights),
+            improvement_plans_created: count(session.improvement_plans)
+        },
+
+        self_assessment_results: {
+            overall_performance: session.self_assessment.performance.overall_performance,
+            key_strengths: extract_key_strengths(session.self_assessment),
+            primary_weaknesses: extract_primary_weaknesses(session.self_assessment),
+            improvement_priorities: extract_improvement_priorities(session.self_assessment)
+        },
+
+        key_insights: {
+            high_impact_insights: filter_high_impact_insights(session.insights),
+            surprising_discoveries: filter_surprising_insights(session.insights),
+            pattern_recognition: extract_pattern_insights(session.insights)
+        },
+
+        improvement_strategy: {
+            immediate_actions: extract_immediate_actions(session.improvement_plans),
+            short_term_goals: extract_short_term_goals(session.improvement_plans),
+            long_term_development: extract_long_term_development(session.improvement_plans)
+        },
+
+        learning_outcomes: {
+            new_self_knowledge: extract_new_self_knowledge(session.insights),
+            updated_capabilities: extract_capability_updates(session.improvement_plans),
+            enhanced_awareness: extract_awareness_enhancements(session)
+        },
+
+        next_steps: {
+            plan_implementation: create_implementation_schedule(session.improvement_plans),
+            monitoring_checkpoints: define_monitoring_checkpoints(session.improvement_plans),
+            next_reflection_date: calculate_next_reflection_date()
+        }
+    }
+
+    return report
+
+# Continuous reflection functions
+when continuous_reflection_requested:
+    think "Initiating continuous background reflection process"
+
+    # Set up continuous monitoring
+    setup_continuous_self_monitoring()
+
+    # Schedule periodic micro-reflections
+    schedule_micro_reflections()
+
+    # Enable real-time improvement tracking
+    enable_real_time_improvement_tracking()
+
+    return "Continuous reflection process activated"
+
+# Pattern analysis functions
+when analyze_behavioral_patterns_requested:
+    think "Analyzing long-term behavioral patterns"
+
+    historical_reflections = get_historical_reflections()
+    pattern_analysis = analyze_long_term_patterns(historical_reflections)
+
+    return pattern_analysis
+
+# Expose interface for Lyrixa integration
+expose_command "reflect" -> reflect_requested
+expose_command "self_reflect" -> reflect_requested
+expose_command "analyze_performance" -> reflect_requested
+expose_command "continuous_reflection" -> continuous_reflection_requested
+expose_command "behavioral_patterns" -> analyze_behavioral_patterns_requested
+
+# Self-improvement (meta-improvement!)
+evolve based_on reflection_effectiveness
+learn from self_improvement_success_rates
