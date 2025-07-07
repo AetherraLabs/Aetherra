@@ -1,0 +1,42 @@
+{
+  "test_name": "Plugin Watchdog System Test",
+  "timestamp": "2025-07-07T16:34:19.979492",
+  "plugin_file": "Aetherra/system/plugin_watchdog.aether",
+  "supporting_modules": [
+    "plugins.aether",
+    "logger.aether",
+    "utils.aether"
+  ],
+  "required_functions": {
+    "plugins.aether": [
+      "get_all_plugins()",
+      "mark_unhealthy(name, reason)",
+      "disable_plugin(name)"
+    ],
+    "logger.aether": [
+      "get_plugin_logs(name, since_time)",
+      "log_event()"
+    ],
+    "utils.aether": [
+      "hours_ago(h)"
+    ]
+  },
+  "test_results": [
+    "\u2705 Plugin file exists: Aetherra/system/plugin_watchdog.aether",
+    "\u2705 Plugin syntax validation passed",
+    "\u2705 get_all_plugins() function exists",
+    "\u2705 mark_unhealthy() function exists",
+    "\u2705 disable_plugin() function exists",
+    "\u2705 get_plugin_logs() function exists",
+    "\u2705 log_event() function exists",
+    "\u2705 hours_ago() function exists",
+    "\u2705 Function call structure is correct",
+    "\u2705 Plugin logic flow is correct",
+    "\u2705 Configuration structure is correct",
+    "\u2705 Schedule configuration is correct",
+    "\u2705 Event logging structure is correct",
+    "\u2705 Error handling patterns are present",
+    "\u2705 All required plugin files exist"
+  ],
+  "status": "PASSED"
+}

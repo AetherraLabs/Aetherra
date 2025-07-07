@@ -316,7 +316,7 @@ plugin plugins {
         log "🧹 Cleaned up {old_checks.length} old plugin health records"
         return old_checks.length
     }
-    
+
     # Get recent plugin summary for daily reflector
     fn get_recent_plugin_summary(since_time) {
         let all_plugins = get_available_plugins()
@@ -324,42 +324,59 @@ plugin plugins {
             type: "plugin_health_check",
             timestamp_gte: since_time
         })
-        
+
         let healthy_plugins = all_plugins.filter(p => p.health == "healthy")
         let unhealthy_plugins = all_plugins.filter(p => p.health == "unhealthy")
         let disabled_plugins = all_plugins.filter(p => p.status == "disabled")
-        
+
         let failed_checks = recent_health_checks.filter(c => c.success == false)
         let slow_responses = recent_health_checks.filter(c => c.response_time > config.response_time_threshold)
-        
+
         let summary = []
-        
+
         summary.append("🔌 Plugin System Status:")
         summary.append("  • Total Plugins: {all_plugins.length}")
         summary.append("  • Healthy: {healthy_plugins.length}")
         summary.append("  • Unhealthy: {unhealthy_plugins.length}")
         summary.append("  • Disabled: {disabled_plugins.length}")
-        
+
         if recent_health_checks.length > 0 {
             summary.append("📊 Recent Health Checks: {recent_health_checks.length}")
             summary.append("  • Failed: {failed_checks.length}")
             summary.append("  • Slow Responses: {slow_responses.length}")
         }
-        
+
         if unhealthy_plugins.length > 0 {
             summary.append("⚠️ Unhealthy Plugins:")
             for plugin in unhealthy_plugins.slice(0, 3) {
                 summary.append("  • {plugin.name} - {plugin.last_error || 'Unknown issue'}")
             }
         }
-        
+
         if slow_responses.length > 0 {
             summary.append("🐌 Slow Responses:")
             for check in slow_responses.slice(0, 3) {
                 summary.append("  • {check.plugin_name}: {check.response_time}ms")
             }
         }
-        
+
         return summary.join("\n")
+    }
+    
+    # Mark plugin as unhealthy for watchdog system
+    fn mark_unhealthy(name, reason) {
+        let plugin = get_plugin_info(name)
+        if not plugin {
+            return false
+        }
+
+        update_memory(plugin.id, {
+            status: "unhealthy",
+            last_issue: reason,
+            last_checked: now()
+        })
+
+        log "⚠️ Marked plugin as unhealthy: {name} (reason: {reason})"
+        return true
     }
 }
