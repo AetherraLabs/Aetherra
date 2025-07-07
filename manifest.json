@@ -17,19 +17,19 @@
     ],
     "icons": [
         {
-            "src": "favicon.svg?v=1",
+            "src": "assets/images/aetherra_v2.svg?v=2",
             "sizes": "any",
             "type": "image/svg+xml",
             "purpose": "any maskable"
         },
         {
-            "src": "favicon.png?v=1",
+            "src": "favicon.png?v=2",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "favicon.png?v=1",
+            "src": "favicon.png?v=2",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
