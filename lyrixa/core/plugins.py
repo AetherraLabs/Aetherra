@@ -15,6 +15,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Type
 
+from .plugin_state_memory import CognitivePluginMemory, PluginStateMemory
+
+# Import our new semantic discovery system
+from .semantic_plugin_discovery import SemanticPluginDiscovery
+
 
 @dataclass
 class PluginInfo:
@@ -30,6 +35,22 @@ class PluginInfo:
     file_path: str
     enabled: bool = True
     loaded: bool = False
+
+    # Plugin Chaining Metadata
+    input_types: Optional[List[str]] = None  # Data types this plugin accepts
+    output_types: Optional[List[str]] = None  # Data types this plugin produces
+    collaborates_with: Optional[List[str]] = None  # Plugin names this can work with
+    auto_chain: bool = False  # Whether this plugin can be auto-chained
+    chain_priority: float = 0.5  # Priority in chain selection (0.0-1.0)
+
+    def __post_init__(self):
+        """Initialize None fields with empty lists"""
+        if self.input_types is None:
+            self.input_types = []
+        if self.output_types is None:
+            self.output_types = []
+        if self.collaborates_with is None:
+            self.collaborates_with = []
 
 
 class LyrixaPlugin(ABC):
@@ -48,6 +69,16 @@ class LyrixaPlugin(ABC):
         self.capabilities = []
         self.dependencies = []
 
+        # Plugin Chaining Metadata
+        self.input_types = []  # Data types this plugin accepts
+        self.output_types = []  # Data types this plugin produces
+        self.collaborates_with = []  # Plugin names this can work with
+        self.auto_chain = False  # Whether this plugin can be auto-chained
+        self.chain_priority = 0.5  # Priority in chain selection (0.0-1.0)
+
+        # Reference to plugin manager (set during initialization)
+        self.plugin_manager: Optional["LyrixaPluginManager"] = None
+
     @abstractmethod
     async def initialize(self, lyrixa_context: Dict[str, Any]) -> bool:
         """Initialize the plugin with Lyrixa context"""
@@ -55,7 +86,7 @@ class LyrixaPlugin(ABC):
 
     @abstractmethod
     async def execute(
-        self, command: str, params: Dict[str, Any] = None
+        self, command: str, params: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Execute a plugin command"""
         pass
@@ -76,7 +107,82 @@ class LyrixaPlugin(ABC):
             capabilities=self.capabilities,
             dependencies=self.dependencies,
             file_path="",
+            input_types=self.input_types,
+            output_types=self.output_types,
+            collaborates_with=self.collaborates_with,
+            auto_chain=self.auto_chain,
+            chain_priority=self.chain_priority,
         )
+
+    # State Memory Helper Methods
+    def set_state(self, key: str, value: Any, state_type: str = "json") -> bool:
+        """Set persistent state for this plugin"""
+        if self.plugin_manager:
+            return self.plugin_manager.set_plugin_state(
+                self.name, key, value, state_type
+            )
+        return False
+
+    def get_state(self, key: str, default: Any = None) -> Any:
+        """Get persistent state for this plugin"""
+        if self.plugin_manager:
+            return self.plugin_manager.get_plugin_state(self.name, key, default)
+        return default
+
+    def delete_state(self, key: Optional[str] = None) -> bool:
+        """Delete persistent state for this plugin"""
+        if self.plugin_manager:
+            return self.plugin_manager.delete_plugin_state(self.name, key)
+        return False
+
+    def get_shared_state(self, namespace: str, key: str, default: Any = None) -> Any:
+        """Get shared state from another plugin"""
+        if self.plugin_manager:
+            return self.plugin_manager.get_shared_state(
+                namespace, key, self.name, default
+            )
+        return default
+
+    def set_shared_state(
+        self,
+        namespace: str,
+        key: str,
+        value: Any,
+        allowed_plugins: Optional[List[str]] = None,
+    ) -> bool:
+        """Set shared state for other plugins to access"""
+        if self.plugin_manager:
+            return self.plugin_manager.set_shared_state(
+                namespace, key, value, self.name, allowed_plugins
+            )
+        return False
+
+    # Plugin Chaining Helper Methods
+    def get_io_spec(self) -> Dict[str, List[str]]:
+        """Get input/output specification for chaining"""
+        return {"inputs": self.input_types, "outputs": self.output_types}
+
+    def get_collaborators(self) -> List[str]:
+        """Get list of plugins this can collaborate with"""
+        return self.collaborates_with
+
+    def can_chain_with(self, other_plugin: "LyrixaPlugin") -> bool:
+        """Check if this plugin can chain with another plugin"""
+        # Check if output types match input types
+        if any(
+            output_type in other_plugin.input_types for output_type in self.output_types
+        ):
+            return True
+
+        # Check explicit collaboration
+        if other_plugin.name in self.collaborates_with:
+            return True
+
+        return False
+
+    def get_chain_priority(self) -> float:
+        """Get the chaining priority of this plugin"""
+        return self.chain_priority
 
 
 class LyrixaPluginManager:
@@ -95,6 +201,14 @@ class LyrixaPluginManager:
         self.enabled_plugins: set = set()
         self.lyrixa_context: Dict[str, Any] = {}
 
+        # Will be initialized after manager is set up
+        self.semantic_discovery: Optional[SemanticPluginDiscovery] = None
+        self.plugin_chainer = None  # Will be initialized as PluginChainer
+
+        # Initialize plugin state memory
+        self.state_memory = PluginStateMemory()
+        self.cognitive_memory = CognitivePluginMemory(self.state_memory)
+
         # Create plugin directory if it doesn't exist
         os.makedirs(plugin_directory, exist_ok=True)
 
@@ -105,9 +219,20 @@ class LyrixaPluginManager:
         """Initialize the plugin manager with Lyrixa context"""
         self.lyrixa_context = lyrixa_context
 
+        # Initialize semantic plugin discovery
+        self.semantic_discovery = SemanticPluginDiscovery(self)
+
+        # Initialize plugin chainer
+        from .plugin_chainer import PluginChainer
+
+        self.plugin_chainer = PluginChainer(self)
+
         # Discover and load plugins
         await self._discover_plugins()
         await self._load_enabled_plugins()
+
+        # Index plugins for semantic discovery
+        await self._index_plugins_for_semantic_search()
 
         print(f"🧩 Plugin manager initialized with {len(self.loaded_plugins)} plugins")
 
@@ -197,6 +322,9 @@ class LyrixaPluginManager:
             plugin_class = self.plugin_registry[plugin_name]
             plugin_instance = plugin_class()
 
+            # Set plugin manager reference for state memory access
+            plugin_instance.plugin_manager = self
+
             # Initialize the plugin
             success = await plugin_instance.initialize(self.lyrixa_context)
 
@@ -246,9 +374,22 @@ class LyrixaPluginManager:
                 "result": None,
             }
 
+        start_time = datetime.now()
         try:
             plugin = self.loaded_plugins[plugin_name]
             result = await plugin.execute(command, params or {})
+
+            # Track execution metrics
+            execution_time = (datetime.now() - start_time).total_seconds()
+            self.update_plugin_performance(plugin_name, True, execution_time)
+
+            # Remember successful interaction for learning
+            self.cognitive_memory.remember_interaction(
+                plugin_name=plugin_name,
+                user_input=f"{command}: {params}",
+                plugin_response=str(result),
+                success=True,
+            )
 
             return {
                 "success": True,
@@ -256,16 +397,30 @@ class LyrixaPluginManager:
                 "result": result,
                 "plugin": plugin_name,
                 "command": command,
+                "execution_time": execution_time,
                 "timestamp": datetime.now().isoformat(),
             }
 
         except Exception as e:
+            # Track execution failure
+            execution_time = (datetime.now() - start_time).total_seconds()
+            self.update_plugin_performance(plugin_name, False, execution_time)
+
+            # Remember failed interaction for learning
+            self.cognitive_memory.remember_interaction(
+                plugin_name=plugin_name,
+                user_input=f"{command}: {params}",
+                plugin_response=str(e),
+                success=False,
+            )
+
             return {
                 "success": False,
                 "error": str(e),
                 "result": None,
                 "plugin": plugin_name,
                 "command": command,
+                "execution_time": execution_time,
                 "timestamp": datetime.now().isoformat(),
             }
 
@@ -325,6 +480,217 @@ class LyrixaPluginManager:
         for plugin_name in list(self.loaded_plugins.keys()):
             await self.unload_plugin(plugin_name)
 
+    async def _index_plugins_for_semantic_search(self):
+        """Index all loaded plugins for semantic discovery"""
+        if not self.semantic_discovery:
+            return
+
+        try:
+            indexed_count = self.semantic_discovery.discover_and_index_plugins()
+            print(f"🔍 Indexed {indexed_count} plugins for semantic discovery")
+        except Exception as e:
+            print(f"⚠️ Failed to index plugins for semantic discovery: {e}")
+
+    async def suggest_plugins_for_goal(self, user_goal: str) -> str:
+        """Get plugin suggestions based on user goal using semantic discovery"""
+        if not self.semantic_discovery:
+            return "Semantic plugin discovery not available."
+
+        try:
+            relevant_plugins = await self.semantic_discovery.find_relevant_plugins(
+                user_goal
+            )
+
+            if not relevant_plugins:
+                return "No relevant plugins found for your goal. Try being more specific or enabling additional plugins."
+
+            suggestions = []
+            for plugin_name in relevant_plugins:
+                info = self.plugin_info.get(plugin_name)
+                if info:
+                    status = "✅ Enabled" if info.loaded else "⚠️ Available"
+                    suggestions.append(
+                        f"• {plugin_name}: {info.description} ({status})"
+                    )
+
+            response = f"🎯 Suggested plugins for '{user_goal}':\n"
+            response += "\n".join(suggestions[:5])  # Limit to top 5
+
+            if len(relevant_plugins) > 5:
+                response += f"\n\n... and {len(relevant_plugins) - 5} more plugins."
+
+            return response
+
+        except Exception as e:
+            return f"Error finding plugin suggestions: {e}"
+
+    # Plugin Chaining Methods
+    async def build_plugin_chain(
+        self,
+        goal: str,
+        available_plugins: Optional[List[str]] = None,
+        input_data: Optional[Dict[str, Any]] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Build a plugin chain to achieve a goal"""
+        if not self.plugin_chainer:
+            return None
+
+        try:
+            from .plugin_chainer import ChainExecutionMode
+
+            chain = await self.plugin_chainer.build_chain(
+                goal=goal,
+                available_plugins=available_plugins,
+                input_data=input_data,
+                execution_mode=ChainExecutionMode.ADAPTIVE,
+            )
+
+            if not chain:
+                return None
+
+            return {
+                "chain_id": chain.chain_id,
+                "plugins": [node.plugin_name for node in chain.nodes],
+                "execution_mode": chain.execution_mode.value,
+                "metadata": chain.metadata,
+            }
+
+        except Exception as e:
+            print(f"❌ Error building plugin chain: {e}")
+            return None
+
+    async def execute_plugin_chain(
+        self, chain_id: str, initial_data: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Execute a previously built plugin chain"""
+        if not self.plugin_chainer:
+            return {"error": "Plugin chainer not available"}
+
+        try:
+            if chain_id not in self.plugin_chainer.active_chains:
+                return {"error": f"Chain {chain_id} not found"}
+
+            chain = self.plugin_chainer.active_chains[chain_id]
+            result = await self.plugin_chainer.run_chain(chain, initial_data)
+
+            return {
+                "success": True,
+                "chain_id": chain_id,
+                "result": result,
+                "timestamp": datetime.now().isoformat(),
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "chain_id": chain_id,
+                "timestamp": datetime.now().isoformat(),
+            }
+
+    async def suggest_plugin_chains(
+        self, user_input: str, context: Optional[Dict[str, Any]] = None
+    ) -> List[Dict[str, Any]]:
+        """Suggest plugin chains based on user input"""
+        if not self.plugin_chainer:
+            return []
+
+        try:
+            suggestions = await self.plugin_chainer.suggest_chains(
+                user_input=user_input, context=context or {}
+            )
+
+            return suggestions
+
+        except Exception as e:
+            print(f"❌ Error suggesting plugin chains: {e}")
+            return []
+
+    def get_chain_status(self, chain_id: str) -> Optional[Dict[str, Any]]:
+        """Get the status of a plugin chain"""
+        if not self.plugin_chainer:
+            return None
+
+        return self.plugin_chainer.get_chain_status(chain_id)
+
+    async def cleanup_chain(self, chain_id: str) -> bool:
+        """Clean up a completed plugin chain"""
+        if not self.plugin_chainer:
+            return False
+
+        return self.plugin_chainer.cleanup_chain(chain_id)
+
+    def update_plugin_performance(
+        self, plugin_name: str, success: bool, execution_time: float
+    ):
+        """Update plugin performance metrics after execution"""
+        if self.semantic_discovery:
+            self.semantic_discovery.update_plugin_performance(
+                plugin_name, success, execution_time
+            )
+
+    # Plugin State Memory Methods
+    def set_plugin_state(
+        self,
+        plugin_name: str,
+        state_key: str,
+        state_value: Any,
+        state_type: str = "json",
+    ) -> bool:
+        """Set persistent state for a plugin"""
+        return self.state_memory.set_plugin_state(
+            plugin_name, state_key, state_value, state_type
+        )
+
+    def get_plugin_state(
+        self, plugin_name: str, state_key: str, default: Any = None
+    ) -> Any:
+        """Get persistent state for a plugin"""
+        return self.state_memory.get_plugin_state(plugin_name, state_key, default)
+
+    def delete_plugin_state(
+        self, plugin_name: str, state_key: Optional[str] = None
+    ) -> bool:
+        """Delete plugin state"""
+        return self.state_memory.delete_plugin_state(plugin_name, state_key)
+
+    def get_plugin_insights(self, plugin_name: str) -> Dict[str, Any]:
+        """Get insights about plugin usage and performance"""
+        return self.cognitive_memory.get_plugin_insights(plugin_name)
+
+    def suggest_plugin_optimizations(self, plugin_name: str) -> List[str]:
+        """Get optimization suggestions for a plugin"""
+        return self.cognitive_memory.suggest_optimization(plugin_name)
+
+    def set_shared_state(
+        self,
+        namespace: str,
+        state_key: str,
+        state_value: Any,
+        owner_plugin: str,
+        allowed_plugins: Optional[List[str]] = None,
+    ) -> bool:
+        """Set shared state accessible by multiple plugins"""
+        return self.state_memory.set_shared_state(
+            namespace, state_key, state_value, owner_plugin, allowed_plugins
+        )
+
+    def get_shared_state(
+        self,
+        namespace: str,
+        state_key: str,
+        requesting_plugin: str,
+        default: Any = None,
+    ) -> Any:
+        """Get shared state with permission checking"""
+        return self.state_memory.get_shared_state(
+            namespace, state_key, requesting_plugin, default
+        )
+
+    def cleanup_old_plugin_data(self, days_old: int = 30) -> int:
+        """Clean up old plugin data to prevent bloat"""
+        return self.state_memory.cleanup_old_states(days_old)
+
 
 # Built-in Plugin Implementations
 
@@ -344,7 +710,7 @@ class FileManagerPlugin(LyrixaPlugin):
         return True
 
     async def execute(
-        self, command: str, params: Dict[str, Any] = None
+        self, command: str, params: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         params = params or {}
 
@@ -414,7 +780,7 @@ class WebSearchPlugin(LyrixaPlugin):
         return True
 
     async def execute(
-        self, command: str, params: Dict[str, Any] = None
+        self, command: str, params: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         params = params or {}
 
@@ -466,7 +832,7 @@ class CodeAnalyzerPlugin(LyrixaPlugin):
         return True
 
     async def execute(
-        self, command: str, params: Dict[str, Any] = None
+        self, command: str, params: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         params = params or {}
 
@@ -528,7 +894,7 @@ class DataVisualizerPlugin(LyrixaPlugin):
         return True
 
     async def execute(
-        self, command: str, params: Dict[str, Any] = None
+        self, command: str, params: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         params = params or {}
 
@@ -582,7 +948,7 @@ class APIConnectorPlugin(LyrixaPlugin):
         return True
 
     async def execute(
-        self, command: str, params: Dict[str, Any] = None
+        self, command: str, params: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         params = params or {}
 
