@@ -5,22 +5,22 @@ plugin memory_ops {
     description: "Core memory management operations for the Aetherra operating system."
     memory_access: read-write
     tags: [memory, system, operations]
-    
+
     # Get all memory entries
     fn get_all_memory_entries() {
         return search_memory({})  # Optionally batch/paginate later for performance
     }
-    
+
     # Delete a memory entry by ID
     fn delete_memory(id) {
         delete_memory_entry(id)
     }
-    
+
     # Get memory entries by type
     fn get_memory_by_type(type) {
         return search_memory({ type: type })
     }
-    
+
     # Get memory entries with confidence threshold
     fn get_memory_by_confidence(min_confidence = 0.0, max_confidence = 1.0) {
         return search_memory({
@@ -28,14 +28,14 @@ plugin memory_ops {
             confidence_lte: max_confidence
         })
     }
-    
+
     # Get memory entries older than specified timestamp
     fn get_memory_older_than(timestamp) {
         return search_memory({
             timestamp_lt: timestamp
         })
     }
-    
+
     # Batch delete memory entries
     fn batch_delete_memory(ids) {
         let deleted_count = 0
@@ -49,11 +49,11 @@ plugin memory_ops {
         }
         return deleted_count
     }
-    
+
     # Get memory statistics
     fn get_memory_stats() {
         let all_entries = get_all_memory_entries()
-        
+
         let stats = {
             total_entries: all_entries.length,
             by_type: {},
@@ -61,24 +61,24 @@ plugin memory_ops {
             oldest_entry: null,
             newest_entry: null
         }
-        
+
         if all_entries.length > 0 {
             # Calculate type distribution
             for entry in all_entries {
                 let type = entry.type || "unknown"
                 stats.by_type[type] = (stats.by_type[type] || 0) + 1
             }
-            
+
             # Calculate average confidence
             let total_confidence = all_entries.sum(e => e.confidence || 0)
             stats.avg_confidence = total_confidence / all_entries.length
-            
+
             # Find oldest and newest entries
             let sorted_by_time = all_entries.sort_by(e => e.timestamp || 0)
             stats.oldest_entry = sorted_by_time[0]
             stats.newest_entry = sorted_by_time[-1]
         }
-        
+
         return stats
     }
 }

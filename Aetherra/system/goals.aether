@@ -13,12 +13,12 @@ plugin goals {
 
     # Check if a goal exists
     fn exists(id_or_name) {
-        return search_memory_one({ 
-            type: "goal", 
-            id: id_or_name 
+        return search_memory_one({
+            type: "goal",
+            id: id_or_name
         }) != null
     }
-    
+
     # Get all incomplete goals (pending or in_progress)
     fn get_incomplete_goals() {
         let all_goals = search_memory({
@@ -144,5 +144,47 @@ plugin goals {
         }
 
         return stats
+    }
+    
+    # Get recent goal summary for daily reflector
+    fn get_recent_goal_summary(since_time) {
+        let recent_goals = search_memory({
+            type: "goal",
+            updated_at_gte: since_time
+        })
+        
+        let completed_goals = recent_goals.filter(g => g.status == "completed")
+        let failed_goals = recent_goals.filter(g => g.status == "failed")
+        let in_progress_goals = recent_goals.filter(g => g.status == "in_progress")
+        let new_goals = recent_goals.filter(g => g.created_at >= since_time)
+        
+        let summary = []
+        
+        if completed_goals.length > 0 {
+            summary.append("✅ Completed Goals ({completed_goals.length}):")
+            for goal in completed_goals.slice(0, 5) {
+                summary.append("  • {goal.title} (priority: {goal.priority})")
+            }
+        }
+        
+        if failed_goals.length > 0 {
+            summary.append("❌ Failed Goals ({failed_goals.length}):")
+            for goal in failed_goals.slice(0, 3) {
+                summary.append("  • {goal.title} - {goal.error_message || 'Unknown error'}")
+            }
+        }
+        
+        if new_goals.length > 0 {
+            summary.append("🆕 New Goals ({new_goals.length}):")
+            for goal in new_goals.slice(0, 3) {
+                summary.append("  • {goal.title} (priority: {goal.priority})")
+            }
+        }
+        
+        if in_progress_goals.length > 0 {
+            summary.append("⏳ Active Goals: {in_progress_goals.length}")
+        }
+        
+        return summary.join("\n")
     }
 }

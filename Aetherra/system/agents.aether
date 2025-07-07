@@ -26,12 +26,12 @@ plugin agents {
     fn find_agent(agent_id) {
         return search_memory_one({ type: "agent", id: agent_id })
     }
-    
+
     # Check if an agent exists
     fn exists(id_or_name) {
-        return search_memory_one({ 
-            type: "agent", 
-            id: id_or_name 
+        return search_memory_one({
+            type: "agent",
+            id: id_or_name
         }) != null
     }
 
@@ -218,5 +218,49 @@ plugin agents {
         }
 
         return stats
+    }
+    
+    # Get recent agent activity summary for daily reflector
+    fn get_recent_agent_activity(since_time) {
+        let all_agents = search_memory({type: "agent"})
+        let recent_escalations = search_memory({
+            type: "escalation_ticket",
+            created_at_gte: since_time
+        })
+        
+        let active_agents = all_agents.filter(a => a.status == "active")
+        let busy_agents = all_agents.filter(a => a.current_tasks?.length > 0)
+        let unhealthy_agents = all_agents.filter(a => a.health != "healthy")
+        
+        let completed_escalations = recent_escalations.filter(e => e.status == "resolved")
+        let failed_escalations = recent_escalations.filter(e => e.status == "failed")
+        let pending_escalations = recent_escalations.filter(e => e.status == "open")
+        
+        let summary = []
+        
+        summary.append("🤖 Agent System Status:")
+        summary.append("  • Active Agents: {active_agents.length}/{all_agents.length}")
+        summary.append("  • Busy Agents: {busy_agents.length}")
+        
+        if unhealthy_agents.length > 0 {
+            summary.append("  • ⚠️ Unhealthy Agents: {unhealthy_agents.length}")
+        }
+        
+        if recent_escalations.length > 0 {
+            summary.append("📊 Recent Escalations:")
+            summary.append("  • Resolved: {completed_escalations.length}")
+            summary.append("  • Failed: {failed_escalations.length}")
+            summary.append("  • Pending: {pending_escalations.length}")
+        }
+        
+        if busy_agents.length > 0 {
+            summary.append("⏳ Currently Processing:")
+            for agent in busy_agents.slice(0, 3) {
+                let task_count = agent.current_tasks?.length || 0
+                summary.append("  • {agent.id}: {task_count} tasks")
+            }
+        }
+        
+        return summary.join("\n")
     }
 }

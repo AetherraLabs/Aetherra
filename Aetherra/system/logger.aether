@@ -76,6 +76,14 @@ plugin logger {
             .slice(0, limit)
     }
     
+    # Get logs since a specific timestamp
+    fn get_logs_since(timestamp, limit = 1000) {
+        return search_memory({
+            type: "system_log",
+            timestamp_gte: timestamp
+        }).sort_by(log => log.timestamp).reverse().slice(0, limit)
+    }
+    
     # Log error with stack trace if available
     fn log_error(event_type, error, additional_data = {}) {
         let error_data = {

@@ -67,7 +67,7 @@ plugin memory_cleanser {
     if entry.type == "agent" {
       return not call system/agents.exists(entry.id)
     }
-    
+
     return false  # Default: not orphaned
   }
 

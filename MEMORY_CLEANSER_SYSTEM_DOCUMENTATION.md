@@ -8,8 +8,8 @@ The Memory Cleanser System automatically maintains memory health by removing out
 
 ### Main Plugin: `memory_cleanser.aether`
 
-**Schedule**: Every 12 hours  
-**Memory Access**: Read-write  
+**Schedule**: Every 12 hours
+**Memory Access**: Read-write
 **Tags**: [os, memory, maintenance]
 
 #### Configuration
@@ -101,12 +101,12 @@ fn minutes_ago(n) {
 #### Plugins (`plugins.aether`)
 ```plaintext
 fn exists(id_or_name) {
-    return search_memory_one({ 
-        type: "plugin", 
-        name: id_or_name 
-    }) != null || search_memory_one({ 
-        type: "plugin", 
-        id: id_or_name 
+    return search_memory_one({
+        type: "plugin",
+        name: id_or_name
+    }) != null || search_memory_one({
+        type: "plugin",
+        id: id_or_name
     }) != null
 }
 ```
@@ -114,9 +114,9 @@ fn exists(id_or_name) {
 #### Goals (`goals.aether`)
 ```plaintext
 fn exists(id_or_name) {
-    return search_memory_one({ 
-        type: "goal", 
-        id: id_or_name 
+    return search_memory_one({
+        type: "goal",
+        id: id_or_name
     }) != null
 }
 ```
@@ -124,9 +124,9 @@ fn exists(id_or_name) {
 #### Agents (`agents.aether`)
 ```plaintext
 fn exists(id_or_name) {
-    return search_memory_one({ 
-        type: "agent", 
-        id: id_or_name 
+    return search_memory_one({
+        type: "agent",
+        id: id_or_name
     }) != null
 }
 ```
@@ -178,7 +178,7 @@ fn is_orphan(entry) {
     if entry.type == "agent" {
         return not call system/agents.exists(entry.id)
     }
-    
+
     return false  # Default: not orphaned
 }
 ```
@@ -232,15 +232,15 @@ fn delete_and_log(entry, reason) {
 
 The system handles various memory entry types:
 
-| Type | Description | Orphan Check |
-|------|-------------|--------------|
-| `plugin` | Plugin-related entries | Check `plugins.exists(entry.name)` |
-| `goal` | Goal-related entries | Check `goals.exists(entry.id)` |
-| `agent` | Agent-related entries | Check `agents.exists(entry.id)` |
-| `thought` | General thoughts and ideas | No orphan check |
-| `fact` | Stored facts and information | No orphan check |
-| `context` | Contextual information | No orphan check |
-| `session` | Session-specific data | No orphan check |
+| Type      | Description                  | Orphan Check                       |
+| --------- | ---------------------------- | ---------------------------------- |
+| `plugin`  | Plugin-related entries       | Check `plugins.exists(entry.name)` |
+| `goal`    | Goal-related entries         | Check `goals.exists(entry.id)`     |
+| `agent`   | Agent-related entries        | Check `agents.exists(entry.id)`    |
+| `thought` | General thoughts and ideas   | No orphan check                    |
+| `fact`    | Stored facts and information | No orphan check                    |
+| `context` | Contextual information       | No orphan check                    |
+| `session` | Session-specific data        | No orphan check                    |
 
 ## Configuration Options
 
