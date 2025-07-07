@@ -1,0 +1,47 @@
+plugin agent_sync {
+  description: "Ensures all system agents are correctly defined, up to date, and aware of relevant plugins."
+  memory_access: read-write
+  schedule: every 1 hour
+  tags: [os, sync, agents]
+
+  config: {
+    log_all_actions: true,
+    sync_roles: true,
+    allow_agent_regeneration: true
+  }
+
+  on_run {
+    let expected_agents = [
+      { id: "core_agent",     role: "core",     plugins: ["goal_autopilot", "memory_cleanser"] },
+      { id: "escalation_mgr", role: "escalator", plugins: ["goal_autopilot", "logger"] },
+      { id: "reflection_ai",  role: "reflector", plugins: ["summarizer_plugin"] }
+    ]
+
+    for expected in expected_agents {
+      let existing = call system/agents.find_agent(expected.id)
+
+      if not existing {
+        if config.allow_agent_regeneration {
+          call system/agents.create_agent(expected)
+          call system/logger.log_event("agent_created", expected)
+        } else {
+          call system/logger.log_event("agent_missing", expected)
+        }
+        continue
+      }
+
+      if config.sync_roles and existing.role != expected.role {
+        call system/agents.update_agent_role(expected.id, expected.role)
+        call system/logger.log_event("agent_role_updated", expected)
+      }
+
+      let current_plugins = existing.plugins or []
+      if not all(expected.plugins in current_plugins) {
+        call system/agents.update_agent_plugins(expected.id, expected.plugins)
+        call system/logger.log_event("agent_plugins_synced", expected)
+      }
+    }
+
+    return "Agent sync complete."
+  }
+}

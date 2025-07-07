@@ -22,6 +22,42 @@ plugin agents {
         })
     }
     
+    # Find a specific agent by ID
+    fn find_agent(agent_id) {
+        return search_memory_one({ type: "agent", id: agent_id })
+    }
+    
+    # Create a new agent with the given definition
+    fn create_agent(agent_def) {
+        store_memory({
+            type: "agent",
+            id: agent_def.id,
+            role: agent_def.role,
+            plugins: agent_def.plugins,
+            created: now(),
+            status: "active",
+            health: "healthy",
+            current_tasks: [],
+            last_activity: now()
+        })
+    }
+    
+    # Update an agent's role
+    fn update_agent_role(agent_id, new_role) {
+        update_memory(agent_id, { 
+            role: new_role,
+            last_activity: now()
+        })
+    }
+    
+    # Update an agent's plugins
+    fn update_agent_plugins(agent_id, plugins) {
+        update_memory(agent_id, { 
+            plugins: plugins,
+            last_activity: now()
+        })
+    }
+    
     # Get agent status and health
     fn get_agent_status(agent_id) {
         let agent = get_memory(agent_id)
