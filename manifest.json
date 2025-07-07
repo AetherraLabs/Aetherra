@@ -17,7 +17,7 @@
     ],
     "icons": [
         {
-            "src": "assets/images/aetherra_v2.svg?v=2",
+            "src": "assets\\images\\Aetherra_v2.svg?v=2",
             "sizes": "any",
             "type": "image/svg+xml",
             "purpose": "any maskable"
