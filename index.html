@@ -1441,25 +1441,26 @@ when program_starts:
         // Intersection Observer for animations
         const observerOptions = {
             threshold: 0.1,
-            rootMargin: '0px 0px -100px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-in');
-                }
+        }argin: '0px 0px -100px 0px'
             });
         }, observerOptions);
-
-        // Observe all sections for animations
-        document.addEventListener('DOMContentLoaded', () => {
-            const sections = document.querySelectorAll('section');
-            sections.forEach(section => {
-                observer.observe(section);
-            });
+        const observer = new IntersectionObserver((entries) => {
+            // Observe all sections for animations
+            document.addEventListener('DOMContentLoaded', () => {
+                const sections = document.querySelectorAll('section');
+                sections.forEach(section => {
+                    observer.observe(section);
+                });rverOptions);
         });
-    </script>
+    </script>serve all sections for animations
+</body> document.addEventListener('DOMContentLoaded', () => {
+const sections = document.querySelectorAll('section');
+
+</html> sections.forEach(section => {
+observer.observe(section);
+});
+});
+</script>
 </body>
 
 </html>
