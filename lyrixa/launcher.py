@@ -4,7 +4,7 @@
 ===============================
 
 Launch the new Python-based Lyrixa AI Assistant for Aetherra.
-This replaces the legacy web-based implementation.
+Enhanced with Aether Runtime integration for AI OS capabilities.
 """
 
 import asyncio
@@ -12,20 +12,22 @@ import sys
 from pathlib import Path
 
 # Add the project root to the Python path
-project_root = Path(__file__).parent
+project_root = Path(__file__).parent.parent  # Go up one level to project root
 sys.path.insert(0, str(project_root))
 
 try:
+    from Aetherra.runtime.aether_runtime import AetherRuntime
     from lyrixa import LyrixaAI
 except ImportError as e:
-    print(f"❌ Failed to import Lyrixa: {e}")
+    print(f"❌ Failed to import required modules: {e}")
     print("Make sure you're running this from the project root directory.")
     sys.exit(1)
 
 
 async def main():
-    """Main entry point for Lyrixa AI Assistant"""
+    """Main entry point for Lyrixa AI Assistant with Aether Runtime integration"""
     print("🎙️ Starting Lyrixa AI Assistant for Aetherra...")
+    print("🚀 Initializing AI OS Kernel...")
 
     # Initialize Lyrixa
     workspace_path = str(project_root)
@@ -35,13 +37,30 @@ async def main():
         # Initialize all systems
         await lyrixa.initialize()
 
-        print("\n" + "=" * 50)
+        # Initialize Aether Runtime and connect to Lyrixa's ecosystem
+        print("\n🔮 Initializing Aether Runtime...")
+        aether_runtime = AetherRuntime()
+
+        # Connect Lyrixa's systems to the Aether Runtime
+        aether_runtime.register_context(
+            memory=getattr(lyrixa, "memory_system", None),
+            plugins=getattr(lyrixa, "plugin_manager", None),
+            agents=getattr(lyrixa, "agent_system", None),
+        )
+
+        # Store runtime reference in lyrixa for chat integration
+        lyrixa.aether_runtime = aether_runtime
+
+        print("\n" + "=" * 60)
         print("🎙️ LYRIXA AI ASSISTANT READY")
-        print("=" * 50)
+        print("🔮 AETHER RUNTIME INTEGRATED")
+        print("=" * 60)
         print(
             "Type 'help' for assistance, 'status' for system info, or 'quit' to exit."
         )
         print("You can also ask me anything in natural language!")
+        print("💡 NEW: Use .aether commands for AI OS operations!")
+        print("   Example: 'run this .aether script: goal \"test goal\"'")
         print()
 
         # Interactive loop
@@ -88,12 +107,23 @@ I'm your AI assistant for Aetherra development. Here's what I can do:
 
 **System Commands:**
 • `status` - Show system status
+• `aether status` - Show Aether Runtime status
+• `bootstrap` - Run bootstrap.aether script
 • `debug` - Show debug console state
 • `debug thoughts` - Show recent thought processes
 • `debug export` - Export debug session to file
 • `debug level <LEVEL>` - Change debug level (MINIMAL, STANDARD, DETAILED, VERBOSE, TRACE)
 • `help` - Show this help
 • `quit` - Exit Lyrixa
+
+**.aether Commands:**
+• "run this .aether script: goal \"my goal\""
+• "load .aether file: path/to/script.aether"
+• "goal \"summarize today's work\""
+• "use plugin \"DailyLogSummarizer\""
+• "recall \"recent goals\" → $goals"
+• "run agent \"Summarizer\" with $goals"
+• "store $result in memory"
 
 **Core Capabilities:**
 🎯 Goal & Task Management - Set and track development goals
@@ -171,6 +201,84 @@ Reasoning steps: {len(analysis["reasoning_steps"])}
                         print("   debug export - Export session to file")
                         print("   debug level <LEVEL> - Change debug level")
 
+                    continue
+
+                # Check for .aether commands
+                if ".aether" in user_input.lower():
+                    print("🔮 Detected .aether command...")
+
+                    # Extract .aether script from user input
+                    if "run this .aether script:" in user_input.lower():
+                        # Extract the script part
+                        script_start = user_input.lower().find(
+                            "run this .aether script:"
+                        ) + len("run this .aether script:")
+                        aether_script = user_input[script_start:].strip()
+
+                        print(f"🔮 Executing .aether script: {aether_script}")
+                        try:
+                            aether_runtime.execute_goal(aether_script)
+                        except Exception as e:
+                            print(f"❌ .aether execution failed: {e}")
+                        continue
+
+                    # Check for individual .aether commands
+                    elif any(
+                        cmd in user_input
+                        for cmd in [
+                            "goal ",
+                            "use plugin ",
+                            "recall ",
+                            "run agent ",
+                            "store ",
+                        ]
+                    ):
+                        print(f"🔮 Executing .aether instruction: {user_input}")
+                        try:
+                            success = aether_runtime.interpret_aether_line(user_input)
+                            if not success:
+                                print(
+                                    "💡 Try: 'goal \"my goal\"', 'use plugin \"name\"', 'recall \"query\" → $var'"
+                                )
+                        except Exception as e:
+                            print(f"❌ .aether command failed: {e}")
+                        continue
+
+                    # Load .aether file
+                    elif "load .aether file:" in user_input.lower():
+                        file_start = user_input.lower().find(
+                            "load .aether file:"
+                        ) + len("load .aether file:")
+                        file_path = user_input[file_start:].strip()
+
+                        print(f"📁 Loading .aether file: {file_path}")
+                        try:
+                            aether_runtime.load_aether_goal(file_path)
+                        except Exception as e:
+                            print(f"❌ Failed to load .aether file: {e}")
+                        continue
+
+                # Special commands for Aether Runtime
+                elif user_input.lower() in ["aether status", ".aether status"]:
+                    stats = aether_runtime.get_execution_stats()
+                    print("🔮 Aether Runtime Status:")
+                    print(f"   🎯 Goals completed: {stats['goals_completed']}")
+                    print(f"   ❌ Goals failed: {stats['goals_failed']}")
+                    print(f"   📝 Variables set: {stats['variables_set']}")
+                    print(f"   🎯 Goals defined: {stats['goals_defined']}")
+                    print(f"   📋 Queue size: {stats['queue_size']}")
+                    continue
+
+                elif user_input.lower() in ["bootstrap", "run bootstrap"]:
+                    print("🚀 Running bootstrap.aether...")
+                    try:
+                        bootstrap_path = project_root / "bootstrap.aether"
+                        if bootstrap_path.exists():
+                            aether_runtime.load_aether_goal(str(bootstrap_path))
+                        else:
+                            print("❌ bootstrap.aether file not found")
+                    except Exception as e:
+                        print(f"❌ Bootstrap failed: {e}")
                     continue
 
                 # Process natural language input

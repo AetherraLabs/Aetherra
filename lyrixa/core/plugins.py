@@ -17,6 +17,9 @@ from typing import Any, Dict, List, Optional, Type
 
 from .plugin_state_memory import CognitivePluginMemory, PluginStateMemory
 
+# Import our new version control system
+from .plugin_version_control import PluginVersionControl, PluginVersionHooks
+
 # Import our new semantic discovery system
 from .semantic_plugin_discovery import SemanticPluginDiscovery
 
@@ -208,6 +211,12 @@ class LyrixaPluginManager:
         # Initialize plugin state memory
         self.state_memory = PluginStateMemory()
         self.cognitive_memory = CognitivePluginMemory(self.state_memory)
+
+        # Initialize version control system
+        self.version_control = PluginVersionControl(
+            memory_system=None
+        )  # Will be set later
+        self.version_hooks = PluginVersionHooks(self.version_control)
 
         # Create plugin directory if it doesn't exist
         os.makedirs(plugin_directory, exist_ok=True)
@@ -690,6 +699,141 @@ class LyrixaPluginManager:
     def cleanup_old_plugin_data(self, days_old: int = 30) -> int:
         """Clean up old plugin data to prevent bloat"""
         return self.state_memory.cleanup_old_states(days_old)
+
+    # ==============================================
+    # PLUGIN VERSION CONTROL METHODS
+    # ==============================================
+
+    def create_plugin_snapshot(
+        self,
+        plugin_name: str,
+        confidence_score: float = 0.0,
+        description: str = "",
+        created_by: str = "system",
+    ) -> bool:
+        """Create a snapshot of a plugin's current state"""
+        try:
+            plugin_path = os.path.join(self.plugin_directory, f"{plugin_name}.py")
+
+            if not os.path.exists(plugin_path):
+                print(f"❌ Plugin file not found: {plugin_path}")
+                return False
+
+            with open(plugin_path, "r", encoding="utf-8") as f:
+                plugin_code = f.read()
+
+            snapshot = self.version_control.create_snapshot(
+                plugin_name, plugin_code, confidence_score, created_by, description
+            )
+
+            return snapshot is not None
+
+        except Exception as e:
+            print(f"❌ Failed to create snapshot for {plugin_name}: {e}")
+            return False
+
+    def rollback_plugin(self, plugin_name: str, timestamp: str) -> bool:
+        """Rollback a plugin to a previous version"""
+        try:
+            # Create snapshot before rollback
+            self.create_plugin_snapshot(
+                plugin_name, 0.0, "Pre-rollback backup", "rollback_system"
+            )
+
+            # Perform rollback
+            target_path = os.path.join(self.plugin_directory, f"{plugin_name}.py")
+            success = self.version_control.rollback_plugin(
+                plugin_name, timestamp, target_path
+            )
+
+            if success:
+                # Reload the plugin if it's currently loaded
+                if plugin_name in self.loaded_plugins:
+                    print(f"🔄 Reloading plugin {plugin_name} after rollback...")
+                    # Note: This is a simplified reload - in production you might want
+                    # more sophisticated hot-reloading
+                    self.enabled_plugins.add(plugin_name)
+
+                print(f"✅ Plugin {plugin_name} rolled back successfully")
+
+            return success
+
+        except Exception as e:
+            print(f"❌ Failed to rollback plugin {plugin_name}: {e}")
+            return False
+
+    def get_plugin_version_history(self, plugin_name: str) -> List[Dict[str, Any]]:
+        """Get version history for a plugin"""
+        try:
+            snapshots = self.version_control.list_snapshots(plugin_name)
+
+            history = []
+            for snapshot in snapshots:
+                history.append(
+                    {
+                        "timestamp": snapshot.timestamp,
+                        "confidence_score": snapshot.confidence_score,
+                        "file_path": snapshot.file_path,
+                        "size": snapshot.size,
+                        "metadata": snapshot.metadata,
+                    }
+                )
+
+            return history
+
+        except Exception as e:
+            print(f"❌ Failed to get version history for {plugin_name}: {e}")
+            return []
+
+    def diff_plugin_versions(
+        self,
+        plugin_name: str,
+        version1: str,
+        version2: str,
+        format_type: str = "unified",
+    ) -> str:
+        """Generate diff between two plugin versions"""
+        try:
+            return self.version_control.diff_plugin_versions(
+                plugin_name, version1, version2, format_type
+            )
+        except Exception as e:
+            print(f"❌ Failed to generate diff for {plugin_name}: {e}")
+            return f"Error generating diff: {e}"
+
+    def cleanup_plugin_versions(self, plugin_name: str, keep_count: int = 10) -> int:
+        """Clean up old versions of a plugin"""
+        try:
+            return self.version_control.cleanup_old_snapshots(plugin_name, keep_count)
+        except Exception as e:
+            print(f"❌ Failed to cleanup versions for {plugin_name}: {e}")
+            return 0
+
+    def get_plugin_version_stats(self, plugin_name: str) -> Dict[str, Any]:
+        """Get version statistics for a plugin"""
+        try:
+            return self.version_control.get_plugin_history_stats(plugin_name)
+        except Exception as e:
+            print(f"❌ Failed to get version stats for {plugin_name}: {e}")
+            return {}
+
+    def export_plugin_version(
+        self, plugin_name: str, timestamp: str, export_path: str
+    ) -> bool:
+        """Export a specific plugin version"""
+        try:
+            return self.version_control.export_snapshot(
+                plugin_name, timestamp, export_path
+            )
+        except Exception as e:
+            print(f"❌ Failed to export plugin version: {e}")
+            return False
+
+    # ==============================================
+    # END VERSION CONTROL METHODS
+    # ==============================================
+
+    # ...existing methods continue...
 
 
 # Built-in Plugin Implementations

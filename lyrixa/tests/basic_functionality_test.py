@@ -44,7 +44,9 @@ async def main():
         # Test 5: System status
         print("5️⃣ Testing system status...")
         status = await lyrixa.get_system_status()
-        print(f"   ✅ System status: Health {status['overall_health']:.1%}, Issues: {status['issues_detected']}")
+        print(
+            f"   ✅ System status: Health {status['overall_health']:.1%}, Issues: {status['issues_detected']}"
+        )
 
         print("\n🎉 BASIC FUNCTIONALITY WORKING!")
         print("Lyrixa AI Assistant is operational.")

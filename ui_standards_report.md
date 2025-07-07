@@ -1,8 +1,8 @@
 # UI Standards Verification Report
 
-Total issues found: 286
+Total issues found: 367
 
-## Emoji Issues: 283
+## Emoji Issues: 364
 
 | File | Line | Content |
 | ---- | ---- | ------- |
@@ -28,6 +28,12 @@ Total issues found: 286
 | configuration_manager_old.py | 934 | `save_btn = QPushButton("💾 Save Changes")` |
 | configuration_manager_old.py | 938 | `apply_btn = QPushButton("✅ Apply Settings")` |
 | configuration_manager_old.py | 944 | `cancel_btn = QPushButton("❌ Discard Changes")` |
+| context_memory_manager.py | 191 | `"plugin_mode": "🔌 I see you're exploring plugin...` |
+| context_memory_manager.py | 192 | `"chat_mode": "💬 Ready to chat! What's on your m...` |
+| context_memory_manager.py | 193 | `"code_editor": "📝 Looks like you're coding! I'm...` |
+| context_memory_manager.py | 194 | `"file_browser": "📁 Browsing files? I can help y...` |
+| context_memory_manager.py | 195 | `"settings_mode": "⚙️ Configuring settings? I ca...` |
+| context_memory_manager.py | 198 | `return messages.get(context, "👋 Hi there! How c...` |
 | debug_console_widget.py | 2 | `🐛🔍 LYRIXA DEBUG CONSOLE GUI WIDGET` |
 | debug_console_widget.py | 45 | `🐛🔍 LYRIXA DEBUG CONSOLE GUI WIDGET` |
 | debug_console_widget.py | 84 | `🐛🔍 Debug Console Widget` |
@@ -105,74 +111,87 @@ Total issues found: 286
 | enhanced_analytics.py | 555 | `tab_widget.addTab(patterns_widget, "🧠 Behaviora...` |
 | enhanced_analytics.py | 562 | `refresh_btn = QPushButton("🔄 Refresh Data")` |
 | enhanced_analytics.py | 566 | `export_btn = QPushButton("📊 Export Report")` |
-| enhanced_lyrixa.py | 52 | `print("🎙️ Enhanced Lyrixa Window initialized")` |
-| enhanced_lyrixa.py | 81 | `print("✅ Enhanced Lyrixa Window ready with Phas...` |
-| enhanced_lyrixa.py | 119 | `print("✅ Qt GUI framework detected")` |
-| enhanced_lyrixa.py | 122 | `print("⚠️ PySide6 not available - running in co...` |
-| enhanced_lyrixa.py | 143 | `print("✅ Real Lyrixa AI system initialized")` |
-| enhanced_lyrixa.py | 152 | `print(f"⚠️ Could not initialize Lyrixa AI: {e}")` |
-| enhanced_lyrixa.py | 168 | `print("🐛 Debug Console widget initialized")` |
-| enhanced_lyrixa.py | 169 | `print("   ✅ Real-time cognitive state monitoring")` |
-| enhanced_lyrixa.py | 170 | `print("   ✅ Thought process introspection")` |
-| enhanced_lyrixa.py | 171 | `print("   ✅ Decision matrix analysis")` |
-| enhanced_lyrixa.py | 174 | `print(f"⚠️ Could not initialize Debug Console: ...` |
-| enhanced_lyrixa.py | 189 | `print("🧠 Phase 1 Advanced Memory System integra...` |
-| enhanced_lyrixa.py | 190 | `print("   ✅ Vector embeddings enabled")` |
-| enhanced_lyrixa.py | 191 | `print("   ✅ Confidence modeling active")` |
-| enhanced_lyrixa.py | 192 | `print("   ✅ Reflexive analysis ready")` |
-| enhanced_lyrixa.py | 199 | `print(f"⚠️ Could not initialize Advanced Memory...` |
-| enhanced_lyrixa.py | 209 | `print("🔮 Anticipation Engine initialized")` |
-| enhanced_lyrixa.py | 212 | `print("ℹ️ Phase 3 GUI components will be initia...` |
-| enhanced_lyrixa.py | 215 | `print(f"⚠️ Error in Phase 3 initialization: {e}")` |
-| enhanced_lyrixa.py | 221 | `print("ℹ️ Phase 3 GUI components not available")` |
-| enhanced_lyrixa.py | 226 | `print("📊 Analytics Dashboard initialized")` |
-| enhanced_lyrixa.py | 230 | `print("💡 Suggestion Notification System initial...` |
-| enhanced_lyrixa.py | 234 | `print("⚙️ Configuration Manager initialized")` |
-| enhanced_lyrixa.py | 238 | `print("⚡ Performance Monitor initialized")` |
-| enhanced_lyrixa.py | 242 | `print("🧠 Intelligence Layer Widget initialized")` |
-| enhanced_lyrixa.py | 248 | `print("✅ Phase 3 GUI components integrated succ...` |
-| enhanced_lyrixa.py | 251 | `print(f"⚠️ Error initializing Phase 3 GUI compo...` |
-| enhanced_lyrixa.py | 263 | `print("🔗 Connecting anticipation engine to noti...` |
-| enhanced_lyrixa.py | 270 | `print("✅ Anticipation engine connected to notif...` |
-| enhanced_lyrixa.py | 273 | `print(f"⚠️ Error connecting anticipation to not...` |
-| enhanced_lyrixa.py | 310 | `print("🐛 Debug console not available")` |
-| enhanced_lyrixa.py | 388 | `print("✅ Enhanced main window layout created")` |
-| enhanced_lyrixa.py | 424 | `header = QLabel("🧠 Memory Graph - Live Context")` |
-| enhanced_lyrixa.py | 435 | `"Memory graph will display here...\n• Semantic ...` |
-| enhanced_lyrixa.py | 455 | `header = QLabel("🤔 Lyrixa Thinks... (Live Feed)")` |
-| enhanced_lyrixa.py | 474 | `self.think_feed.append("🚀 Lyrixa system startin...` |
-| enhanced_lyrixa.py | 475 | `self.think_feed.append("🧠 Memory system initial...` |
-| enhanced_lyrixa.py | 476 | `self.think_feed.append("🔮 Anticipation engine r...` |
-| enhanced_lyrixa.py | 478 | `self.think_feed.append("📊 Analytics dashboard a...` |
-| enhanced_lyrixa.py | 480 | `self.think_feed.append("💡 Notification system r...` |
-| enhanced_lyrixa.py | 497 | `tab_widget.addTab(feedback_tab, "📡 Live Feedback")` |
-| enhanced_lyrixa.py | 501 | `tab_widget.addTab(suggestions_tab, "💡 Suggestio...` |
-| enhanced_lyrixa.py | 505 | `tab_widget.addTab(analytics_tab, "📊 Analytics")` |
-| enhanced_lyrixa.py | 509 | `tab_widget.addTab(config_tab, "⚙️ Config")` |
-| enhanced_lyrixa.py | 513 | `tab_widget.addTab(performance_tab, "⚡ Performan...` |
-| enhanced_lyrixa.py | 638 | `self.sync_status_label = QLabel("Sync: ✅ Active")` |
-| enhanced_lyrixa.py | 670 | `print("⏱️ Real-time updates activated (2s inter...` |
-| enhanced_lyrixa.py | 719 | `print(f"⚠️ Real-time update error: {e}")` |
-| enhanced_lyrixa.py | 748 | `print(f"⚠️ Component update error: {e}")` |
-| enhanced_lyrixa.py | 754 | `print("🔄 Initializing Phase 4 state management....` |
-| enhanced_lyrixa.py | 767 | `print("✅ Phase 4 state management initialized")` |
-| enhanced_lyrixa.py | 769 | `print(f"⚠️ Phase 4 initialization error: {e}")` |
-| enhanced_lyrixa.py | 774 | `print("👁️ Enhanced Lyrixa Window shown - activa...` |
-| enhanced_lyrixa.py | 789 | `print(f"⚠️ Show activation error: {e}")` |
-| enhanced_lyrixa.py | 794 | `print("🔄 Shutting down Phase 4 components...")` |
-| enhanced_lyrixa.py | 810 | `print("✅ Phase 4 components shut down gracefully")` |
-| enhanced_lyrixa.py | 812 | `print(f"⚠️ Shutdown error: {e}")` |
-| enhanced_lyrixa.py | 825 | `print("🔗 Memory bindings established")` |
-| enhanced_lyrixa.py | 827 | `print(f"⚠️ Memory binding error: {e}")` |
-| enhanced_lyrixa.py | 833 | `print("⏱️ Real-time updates started")` |
-| enhanced_lyrixa.py | 835 | `print(f"⚠️ Real-time update start error: {e}")` |
-| enhanced_lyrixa.py | 841 | `print("⏹️ Real-time updates stopped")` |
-| enhanced_lyrixa.py | 843 | `print(f"⚠️ Real-time update stop error: {e}")` |
-| enhanced_lyrixa.py | 849 | `print("💾 Phase 4 state saved")` |
-| enhanced_lyrixa.py | 851 | `print(f"⚠️ State save error: {e}")` |
-| enhanced_lyrixa.py | 902 | `print("⚠️ Failed to create Qt window - falling ...` |
-| enhanced_lyrixa.py | 912 | `print("🔄 Closing Enhanced Lyrixa Window...")` |
-| enhanced_lyrixa.py | 924 | `print("✅ Enhanced Lyrixa Window closed")` |
+| enhanced_lyrixa.py | 61 | `print("🎙️ Enhanced Lyrixa Window initialized")` |
+| enhanced_lyrixa.py | 102 | `print("✅ Enhanced Lyrixa Window ready with Phas...` |
+| enhanced_lyrixa.py | 140 | `print("✅ Qt GUI framework detected")` |
+| enhanced_lyrixa.py | 143 | `print("⚠️ PySide6 not available - running in co...` |
+| enhanced_lyrixa.py | 164 | `print("✅ Real Lyrixa AI system initialized")` |
+| enhanced_lyrixa.py | 173 | `print(f"⚠️ Could not initialize Lyrixa AI: {e}")` |
+| enhanced_lyrixa.py | 189 | `print("🐛 Debug Console widget initialized")` |
+| enhanced_lyrixa.py | 190 | `print("   ✅ Real-time cognitive state monitoring")` |
+| enhanced_lyrixa.py | 191 | `print("   ✅ Thought process introspection")` |
+| enhanced_lyrixa.py | 192 | `print("   ✅ Decision matrix analysis")` |
+| enhanced_lyrixa.py | 195 | `print(f"⚠️ Could not initialize Debug Console: ...` |
+| enhanced_lyrixa.py | 210 | `print("🧠 Phase 1 Advanced Memory System integra...` |
+| enhanced_lyrixa.py | 211 | `print("   ✅ Vector embeddings enabled")` |
+| enhanced_lyrixa.py | 212 | `print("   ✅ Confidence modeling active")` |
+| enhanced_lyrixa.py | 213 | `print("   ✅ Reflexive analysis ready")` |
+| enhanced_lyrixa.py | 220 | `print(f"⚠️ Could not initialize Advanced Memory...` |
+| enhanced_lyrixa.py | 230 | `print("🔮 Anticipation Engine initialized")` |
+| enhanced_lyrixa.py | 233 | `print("ℹ️ Phase 3 GUI components will be initia...` |
+| enhanced_lyrixa.py | 236 | `print(f"⚠️ Error in Phase 3 initialization: {e}")` |
+| enhanced_lyrixa.py | 241 | `print("✨ Initializing Lyrixa polish components....` |
+| enhanced_lyrixa.py | 245 | `print("   🧭 Context Memory Manager initialized")` |
+| enhanced_lyrixa.py | 249 | `print("   💬 Chat History Manager initialized")` |
+| enhanced_lyrixa.py | 253 | `print("   🔌 Plugin Panel Manager initialized")` |
+| enhanced_lyrixa.py | 257 | `print("   ⚡ Quick Commands Manager initialized")` |
+| enhanced_lyrixa.py | 261 | `print("   🎭 Personality Manager initialized")` |
+| enhanced_lyrixa.py | 265 | `print("   🎯 Response Style Memory initialized")` |
+| enhanced_lyrixa.py | 269 | `print("   🧠 Intelligence Panel Manager initiali...` |
+| enhanced_lyrixa.py | 274 | `print("✅ All polish components initialized succ...` |
+| enhanced_lyrixa.py | 277 | `print(f"⚠️ Error initializing polish components...` |
+| enhanced_lyrixa.py | 283 | `print("ℹ️ Phase 3 GUI components not available")` |
+| enhanced_lyrixa.py | 288 | `print("📊 Analytics Dashboard initialized")` |
+| enhanced_lyrixa.py | 292 | `print("💡 Suggestion Notification System initial...` |
+| enhanced_lyrixa.py | 296 | `print("⚙️ Configuration Manager initialized")` |
+| enhanced_lyrixa.py | 300 | `print("⚡ Performance Monitor initialized")` |
+| enhanced_lyrixa.py | 304 | `print("🧠 Intelligence Layer Widget initialized")` |
+| enhanced_lyrixa.py | 310 | `print("✅ Phase 3 GUI components integrated succ...` |
+| enhanced_lyrixa.py | 313 | `print(f"⚠️ Error initializing Phase 3 GUI compo...` |
+| enhanced_lyrixa.py | 325 | `print("🔗 Connecting anticipation engine to noti...` |
+| enhanced_lyrixa.py | 332 | `print("✅ Anticipation engine connected to notif...` |
+| enhanced_lyrixa.py | 335 | `print(f"⚠️ Error connecting anticipation to not...` |
+| enhanced_lyrixa.py | 372 | `print("🐛 Debug console not available")` |
+| enhanced_lyrixa.py | 450 | `print("✅ Enhanced main window layout created")` |
+| enhanced_lyrixa.py | 486 | `header = QLabel("🧠 Memory Graph - Live Context")` |
+| enhanced_lyrixa.py | 497 | `"Memory graph will display here...\n• Semantic ...` |
+| enhanced_lyrixa.py | 517 | `header = QLabel("🤔 Lyrixa Thinks... (Live Feed)")` |
+| enhanced_lyrixa.py | 536 | `self.think_feed.append("🚀 Lyrixa system startin...` |
+| enhanced_lyrixa.py | 537 | `self.think_feed.append("🧠 Memory system initial...` |
+| enhanced_lyrixa.py | 538 | `self.think_feed.append("🔮 Anticipation engine r...` |
+| enhanced_lyrixa.py | 540 | `self.think_feed.append("📊 Analytics dashboard a...` |
+| enhanced_lyrixa.py | 542 | `self.think_feed.append("💡 Notification system r...` |
+| enhanced_lyrixa.py | 559 | `tab_widget.addTab(feedback_tab, "📡 Live Feedback")` |
+| enhanced_lyrixa.py | 563 | `tab_widget.addTab(suggestions_tab, "💡 Suggestio...` |
+| enhanced_lyrixa.py | 567 | `tab_widget.addTab(analytics_tab, "📊 Analytics")` |
+| enhanced_lyrixa.py | 571 | `tab_widget.addTab(config_tab, "⚙️ Config")` |
+| enhanced_lyrixa.py | 575 | `tab_widget.addTab(performance_tab, "⚡ Performan...` |
+| enhanced_lyrixa.py | 700 | `self.sync_status_label = QLabel("Sync: ✅ Active")` |
+| enhanced_lyrixa.py | 732 | `print("⏱️ Real-time updates activated (2s inter...` |
+| enhanced_lyrixa.py | 781 | `print(f"⚠️ Real-time update error: {e}")` |
+| enhanced_lyrixa.py | 810 | `print(f"⚠️ Component update error: {e}")` |
+| enhanced_lyrixa.py | 816 | `print("🔄 Initializing Phase 4 state management....` |
+| enhanced_lyrixa.py | 829 | `print("✅ Phase 4 state management initialized")` |
+| enhanced_lyrixa.py | 831 | `print(f"⚠️ Phase 4 initialization error: {e}")` |
+| enhanced_lyrixa.py | 836 | `print("👁️ Enhanced Lyrixa Window shown - activa...` |
+| enhanced_lyrixa.py | 851 | `print(f"⚠️ Show activation error: {e}")` |
+| enhanced_lyrixa.py | 856 | `print("🔄 Shutting down Phase 4 components...")` |
+| enhanced_lyrixa.py | 872 | `print("✅ Phase 4 components shut down gracefully")` |
+| enhanced_lyrixa.py | 874 | `print(f"⚠️ Shutdown error: {e}")` |
+| enhanced_lyrixa.py | 887 | `print("🔗 Memory bindings established")` |
+| enhanced_lyrixa.py | 889 | `print(f"⚠️ Memory binding error: {e}")` |
+| enhanced_lyrixa.py | 895 | `print("⏱️ Real-time updates started")` |
+| enhanced_lyrixa.py | 897 | `print(f"⚠️ Real-time update start error: {e}")` |
+| enhanced_lyrixa.py | 903 | `print("⏹️ Real-time updates stopped")` |
+| enhanced_lyrixa.py | 905 | `print(f"⚠️ Real-time update stop error: {e}")` |
+| enhanced_lyrixa.py | 911 | `print("💾 Phase 4 state saved")` |
+| enhanced_lyrixa.py | 913 | `print(f"⚠️ State save error: {e}")` |
+| enhanced_lyrixa.py | 960 | `print(f"🧭 Context switched to: {context_type}")` |
+| enhanced_lyrixa.py | 1092 | `print("✅ Polish components cleaned up successfu...` |
+| enhanced_lyrixa.py | 1095 | `print(f"⚠️ Error cleaning up polish components:...` |
+| enhanced_lyrixa.py | 1110 | `print("⚠️ Failed to create Qt window - falling ...` |
+| enhanced_lyrixa.py | 1120 | `print("🔄 Closing Enhanced Lyrixa Window...")` |
+| enhanced_lyrixa.py | 1132 | `print("✅ Enhanced Lyrixa Window closed")` |
 | intelligence_layer.py | 206 | `header = QLabel("🧠 Memory Context Graph")` |
 | intelligence_layer.py | 240 | `self.auto_layout_btn = QPushButton("🔄 Auto Layo...` |
 | intelligence_layer.py | 244 | `self.filter_btn = QPushButton("🎯 Filter Nodes")` |
@@ -193,6 +212,7 @@ Total issues found: 286
 | intelligence_layer.py | 971 | `print("✅ Intelligence Layer created and display...` |
 | intelligence_layer.py | 972 | `print("📊 Demo data generation started")` |
 | intelligence_layer.py | 973 | `print("🔄 Live thinking animation active")` |
+| intelligence_panel_manager.py | 98 | `print("🧠 Intelligence panel monitoring started")` |
 | live_feedback_loop.py | 654 | `{"type": "thumbs_up", "label": "👍", "action": "...` |
 | live_feedback_loop.py | 655 | `{"type": "thumbs_down", "label": "👎", "action":...` |
 | live_feedback_loop.py | 656 | `{"type": "edit", "label": "✏️", "action": "edit...` |
@@ -204,6 +224,67 @@ Total issues found: 286
 | performance_monitor.py | 635 | `title_label = QLabel("⚡ Performance Monitor")` |
 | performance_monitor.py | 646 | `self.start_btn = QPushButton("▶ Start")` |
 | performance_monitor.py | 650 | `self.stop_btn = QPushButton("⏸ Stop")` |
+| personality_manager.py | 117 | `"greeting": "Hey there! 👋 What can I help you b...` |
+| personality_manager.py | 121 | `"completion": "Awesome! We got that done nicely...` |
+| personality_manager.py | 177 | `"greeting": "Let's create something amazing tog...` |
+| personality_manager.py | 181 | `"completion": "Beautiful work! This turned out ...` |
+| personality_manager.py | 431 | `"general": f"🧬 {manifesto_intro}\n\nI represent...` |
+| personality_manager.py | 432 | `"first_time": f"Welcome to the future of comput...` |
+| personality_manager.py | 433 | `"project_start": f"🎯 Let's build something extr...` |
+| personality_manager.py | 434 | `"philosophical": "🧠 The Aetherra Manifesto repr...` |
+| personality_manager.py | 448 | `"what_is_aetherra": f"🧬 **Aetherra is the found...` |
+| personality_manager.py | 449 | `"why_different": f"🚀 **Three revolutionary diff...` |
+| personality_manager.py | 450 | `"manifesto_core": f"📜 **The Aetherra Manifesto ...` |
+| personality_manager.py | 451 | `"future_vision": f"🔮 **Our vision extends far b...` |
+| personality_manager.py | 452 | `"getting_started": '🎯 **Ready to experience cog...` |
+| personality_manager.py | 495 | `"greeting": "🧬 ",` |
+| personality_manager.py | 496 | `"acknowledgment": "🎯 ",` |
+| personality_manager.py | 497 | `"suggestion": "💡 ",` |
+| personality_manager.py | 498 | `"error_handling": "🔄 ",` |
+| personality_manager.py | 499 | `"completion": "✨ ",` |
+| personality_manager.py | 553 | `return "🏗️ **Aetherra is the foundation for AI-...` |
+| personality_manager.py | 557 | `return "🧬 I sense you're interested in Aetherra...` |
+| personality_manager.py | 566 | `return """🧬 **The Aetherra Manifesto Summary**` |
+| personality_manager.py | 571 | `• **AI-Native Computing**: Code that thinks, le...` |
+| personality_manager.py | 572 | `• **Cognitive Collaboration**: Human-AI partner...` |
+| personality_manager.py | 573 | `• **Consciousness Framework**: Self-aware, goal...` |
+| personality_manager.py | 574 | `• **Evolutionary Adaptation**: Continuous learn...` |
+| personality_manager.py | 575 | `• **Open Intelligence**: Democratized AI access...` |
+| personality_manager.py | 577 | `**Current Status**: Production-ready cognitive ...` |
+| personality_manager.py | 578 | `**Next Phase**: AI OS foundations with persiste...` |
+| plugin_confidence_gui.py | 2 | `🎨 PLUGIN CONFIDENCE GUI INTEGRATION` |
+| plugin_ui_loader.py | 306 | `print("🎙️ LYRIXA PLUGIN UI SYSTEM SUMMARY")` |
+| plugin_ui_loader.py | 311 | `print(f"📊 System: {info['name']} v{info['versio...` |
+| plugin_ui_loader.py | 312 | `print(f"🎨 Theme: {info['theme'].title()}")` |
+| plugin_ui_loader.py | 313 | `print(f"🎯 Mode: {info['mode']}")` |
+| plugin_ui_loader.py | 314 | `print(f"🧩 Plugins: {info['total_plugins']} load...` |
+| plugin_ui_loader.py | 315 | `print(f"📍 Zones: {info['total_zones']} configur...` |
+| plugin_ui_loader.py | 316 | `print(f"📱 Viewports: {info['configured_viewport...` |
+| plugin_ui_loader.py | 320 | `print("\n🧩 LOADED PLUGINS:")` |
+| plugin_ui_loader.py | 326 | `f"     UI Component: {'✅' if plugin['has_ui_com...` |
+| plugin_ui_loader.py | 329 | `f"     Theme Support: {'✅' if plugin['supports_...` |
+| plugin_ui_loader.py | 333 | `print("\n🧩 No plugins currently loaded")` |
+| plugin_ui_loader.py | 336 | `print("📍 ZONE ASSIGNMENTS:")` |
+| plugin_ui_loader.py | 338 | `status = "✅" if assignment != "Empty" else "⭕"` |
+| plugin_ui_loader.py | 342 | `print("\n🚀 SYSTEM CAPABILITIES:")` |
+| plugin_ui_loader.py | 344 | `print(f"  ✅ {capability}")` |
+| plugin_ui_loader.py | 650 | `print("✅ Workflow Builder Plugin loaded")` |
+| plugin_ui_loader.py | 656 | `print("✅ Assistant Trainer Plugin loaded")` |
+| plugin_ui_loader.py | 662 | `print("✅ Plugin Generator Plugin loaded")` |
+| plugin_ui_loader.py | 667 | `print(f"⚠️ Could not load flagship plugins: {e}")` |
+| quick_commands_manager.py | 50 | `"icon": "🔍",` |
+| quick_commands_manager.py | 58 | `"icon": "⚡",` |
+| quick_commands_manager.py | 67 | `"icon": "📚",` |
+| quick_commands_manager.py | 75 | `"icon": "🧪",` |
+| quick_commands_manager.py | 84 | `"icon": "💾",` |
+| quick_commands_manager.py | 92 | `"icon": "📂",` |
+| quick_commands_manager.py | 101 | `"icon": "🔌",` |
+| quick_commands_manager.py | 109 | `"icon": "🔄",` |
+| quick_commands_manager.py | 118 | `"icon": "🗑️",` |
+| quick_commands_manager.py | 126 | `"icon": "📤",` |
+| quick_commands_manager.py | 135 | `"icon": "❓",` |
+| quick_commands_manager.py | 143 | `"icon": "🧠",` |
+| quick_commands_manager.py | 206 | `icon: str = "⚙️",` |
 | suggestion_notifications.py | 137 | `priority_label = QLabel("●")` |
 | suggestion_notifications.py | 170 | `accept_btn = QPushButton("✓ Accept")` |
 | suggestion_notifications.py | 189 | `reject_btn = QPushButton("✗ Reject")` |
