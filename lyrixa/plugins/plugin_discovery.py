@@ -10,8 +10,7 @@ import hashlib
 import json
 import os
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Dict, List, Optional
 
 
 class PluginMetadata:
@@ -38,7 +37,7 @@ class PluginMetadata:
 class PluginDiscovery:
     """Plugin discovery and indexing system."""
 
-    def __init__(self, plugins_dir: str = None):
+    def __init__(self, plugins_dir: Optional[str] = None):
         self.plugins_dir = plugins_dir or os.path.join(os.path.dirname(__file__))
         self.plugin_index = {}
         self.categories = set()
@@ -413,10 +412,7 @@ class PluginDiscovery:
 
             tree = ast.parse(content)
 
-            # Find classes and methods
-            classes = [
-                node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)
-            ]
+            # Find functions
             functions = [
                 node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)
             ]
@@ -492,7 +488,9 @@ class PluginDiscovery:
 
         return score
 
-    def search_plugins(self, query: str, filters: Dict = None) -> List[PluginMetadata]:
+    def search_plugins(
+        self, query: str, filters: Optional[Dict] = None
+    ) -> List[PluginMetadata]:
         """Search for plugins based on query and filters."""
         # Check cache first
         cache_key = f"{query}:{json.dumps(filters or {}, sort_keys=True)}"
@@ -559,7 +557,9 @@ class PluginDiscovery:
             if any(tag in meta.tags for tag in tags)
         ]
 
-    def get_recommended_plugins(self, context: Dict = None) -> List[PluginMetadata]:
+    def get_recommended_plugins(
+        self, context: Optional[Dict] = None
+    ) -> List[PluginMetadata]:
         """Get recommended plugins based on context."""
         if not self.recommendation_engine:
             # Simple recommendation based on usage and rating
@@ -635,6 +635,6 @@ def discover_plugins(force_refresh: bool = False) -> Dict[str, PluginMetadata]:
     return plugin_discovery.discover_plugins(force_refresh)
 
 
-def search_plugins(query: str, filters: Dict = None) -> List[PluginMetadata]:
+def search_plugins(query: str, filters: Optional[Dict] = None) -> List[PluginMetadata]:
     """Convenience function for plugin search."""
     return plugin_discovery.search_plugins(query, filters)

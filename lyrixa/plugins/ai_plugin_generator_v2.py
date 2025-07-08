@@ -9,9 +9,8 @@ based on user requirements, patterns, and best practices.
 import ast
 import json
 import os
-import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 
 class PluginTemplate:
@@ -461,7 +460,6 @@ def main(*args, **kwargs):
         try:
             # Extract requirements
             plugin_name = requirements.get("name", "generated_plugin")
-            description = requirements.get("description", "Auto-generated plugin")
             category = requirements.get("category", "general")
             functionality = requirements.get("functionality", [])
             complexity = requirements.get("complexity", "medium")

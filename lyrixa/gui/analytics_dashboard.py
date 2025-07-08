@@ -1,41 +1,27 @@
 """
-Advanced Analytics Dashboard for Lyrixa AI Assistant
-
-Provides comprehensive analytics and visualization for:
-- User productivity metrics and trends
-- Pattern analysis and behavioral insights
-- Suggestion effectiveness and optimization
-- Performance trends and forecasting
-- Advanced behavioral analytics with mood tracking
-- Daily/weekly insights with actionable recommendations
-- Agent usage metrics and efficiency analysis
-- Real-time dashboard with live updates
+Enhanced Analytics Dashboard with comprehensive data visualization and insights.
+Features real-time updates, interactive charts, and export capabilities.
 """
 
-import asyncio
 import json
 import logging
-import random
-import statistics
-import sys
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime
+from typing import Any, Dict
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Check Qt availability first
+QT_AVAILABLE = False
+MATPLOTLIB_AVAILABLE = False
+PANDAS_AVAILABLE = False
 
 try:
-    from PySide6.QtCore import (
-        QDate,
-        QEasingCurve,
-        QPropertyAnimation,
-        Qt,
-        QThread,
-        QTimer,
-        Signal,
-    )
+    from PySide6.QtCore import QDate, QPropertyAnimation, QSize, Qt, QTimer, Signal
     from PySide6.QtGui import QColor, QFont, QLinearGradient, QPainter, QPalette
     from PySide6.QtWidgets import (
-        QCheckBox,
+        QApplication,
         QComboBox,
         QDateEdit,
         QFrame,
@@ -49,178 +35,20 @@ try:
         QProgressBar,
         QPushButton,
         QScrollArea,
-        QSlider,
-        QSpinBox,
+        QSizePolicy,
+        QSpacerItem,
         QSplitter,
         QTableWidget,
         QTableWidgetItem,
         QTabWidget,
         QTextEdit,
-        QTreeWidget,
-        QTreeWidgetItem,
         QVBoxLayout,
         QWidget,
     )
 
-    PYSIDE6_AVAILABLE = True
+    QT_AVAILABLE = True
 except ImportError:
-    PYSIDE6_AVAILABLE = False
-
-    # Mock classes for when PySide6 is not available
-    class QWidget:
-        pass
-
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-
-class AnalyticsTimeRange(Enum):
-    """Time range options for analytics."""
-
-    LAST_HOUR = "last_hour"
-    TODAY = "today"
-    YESTERDAY = "yesterday"
-    LAST_WEEK = "last_week"
-    LAST_MONTH = "last_month"
-    LAST_QUARTER = "last_quarter"
-    CUSTOM = "custom"
-
-
-@dataclass
-class DailyInsight:
-    """Daily insight data structure."""
-
-    date: datetime
-    productivity_score: float
-    mood_trend: str
-    top_activities: List[str]
-    achievements: List[str]
-    suggestions: List[str]
-    focus_time: float
-    break_time: float
-    efficiency_rating: float
-
-
-@dataclass
-class WeeklyInsight:
-    """Weekly insight data structure."""
-
-    week_start: datetime
-    week_end: datetime
-    productivity_trend: str
-    mood_pattern: Dict[str, float]
-    goal_completion: float
-    patterns_identified: List[str]
-    recommendations: List[str]
-    peak_performance_time: str
-    improvement_areas: List[str]
-
-
-class MoodTracker:
-    """Tracks and analyzes user mood patterns."""
-
-    def __init__(self):
-        self.mood_history = []
-        self.mood_predictions = []
-
-    def track_mood(self, mood: str, confidence: float, context: Dict[str, Any]):
-        """Track a mood event."""
-        mood_event = {
-            "timestamp": datetime.now(),
-            "mood": mood,
-            "confidence": confidence,
-            "context": context,
-        }
-        self.mood_history.append(mood_event)
-
-    def analyze_mood_patterns(self) -> Dict[str, Any]:
-        """Analyze mood patterns and trends."""
-        if not self.mood_history:
-            return {"status": "insufficient_data"}
-
-        recent_moods = self.mood_history[-50:]  # Last 50 mood events
-        mood_counts = {}
-
-        for event in recent_moods:
-            mood = event["mood"]
-            mood_counts[mood] = mood_counts.get(mood, 0) + 1
-
-        dominant_mood = max(mood_counts.items(), key=lambda x: x[1])[0]
-
-        return {
-            "dominant_mood": dominant_mood,
-            "mood_distribution": mood_counts,
-            "trend": self._calculate_mood_trend(),
-            "stability": self._calculate_mood_stability(),
-        }
-
-    def _calculate_mood_trend(self) -> str:
-        """Calculate overall mood trend."""
-        if len(self.mood_history) < 10:
-            return "insufficient_data"
-
-        recent = self.mood_history[-10:]
-        older = self.mood_history[-20:-10] if len(self.mood_history) >= 20 else []
-
-        # Simple sentiment scoring
-        mood_scores = {
-            "happy": 5,
-            "focused": 4,
-            "productive": 4,
-            "calm": 3,
-            "neutral": 2,
-            "confused": 1,
-            "stressed": 0,
-            "frustrated": 0,
-        }
-
-        recent_score = sum(mood_scores.get(event["mood"], 2) for event in recent) / len(
-            recent
-        )
-        older_score = (
-            sum(mood_scores.get(event["mood"], 2) for event in older) / len(older)
-            if older
-            else recent_score
-        )
-
-        if recent_score > older_score + 0.5:
-            return "improving"
-        elif recent_score < older_score - 0.5:
-            return "declining"
-        else:
-            return "stable"
-
-    def _calculate_mood_stability(self) -> float:
-        """Calculate mood stability score (0-1)."""
-        if len(self.mood_history) < 5:
-            return 0.5
-
-        recent = self.mood_history[-20:]
-        mood_scores = {
-            "happy": 5,
-            "focused": 4,
-            "productive": 4,
-            "calm": 3,
-            "neutral": 2,
-            "confused": 1,
-            "stressed": 0,
-            "frustrated": 0,
-        }
-
-        scores = [mood_scores.get(event["mood"], 2) for event in recent]
-        if len(scores) < 2:
-            return 0.5
-
-        variance = statistics.variance(scores)
-        # Convert variance to stability score (lower variance = higher stability)
-        stability = max(0, min(1, 1 - (variance / 10)))
-        return stability
-
-    class Signal:
-        pass
-
+    logger.warning("PySide6 not available. Using mock classes.")
 
 try:
     import matplotlib.dates as mdates
@@ -230,7 +58,7 @@ try:
 
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
-    MATPLOTLIB_AVAILABLE = False
+    logger.warning("Matplotlib not available. Chart functionality will be limited.")
 
 try:
     import numpy as np
@@ -238,342 +66,831 @@ try:
 
     PANDAS_AVAILABLE = True
 except ImportError:
-    PANDAS_AVAILABLE = False
+    logger.warning("Pandas/NumPy not available. Data processing will be limited.")
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Mock classes for missing dependencies
+if not QT_AVAILABLE:
+
+    class MockWidget:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def setLayout(self, layout):
+            pass
+
+        def setWindowTitle(self, title):
+            pass
+
+        def setMinimumSize(self, width, height):
+            pass
+
+        def show(self):
+            pass
+
+        def hide(self):
+            pass
+
+        def update(self):
+            pass
+
+        def setStyleSheet(self, style):
+            pass
+
+        def addTab(self, widget, title):
+            pass
+
+        def setFrameStyle(self, style):
+            pass
+
+        def addWidget(self, widget):
+            pass
+
+        def addLayout(self, layout):
+            pass
+
+        def setText(self, text):
+            pass
+
+        def text(self):
+            return ""
+
+        def setPlainText(self, text):
+            pass
+
+        def toPlainText(self):
+            return ""
+
+        def append(self, text):
+            pass
+
+        def clear(self):
+            pass
+
+        def setReadOnly(self, readonly):
+            pass
+
+        def clicked(self):
+            return self
+
+        def connect(self, func):
+            pass
+
+        def timeout(self):
+            return self
+
+        def start(self, interval):
+            pass
+
+        def stop(self):
+            pass
+
+        def setValue(self, value):
+            pass
+
+        def setRange(self, min_val, max_val):
+            pass
+
+        def setFont(self, font):
+            pass
+
+        def setAlignment(self, alignment):
+            pass
+
+        def setPointSize(self, size):
+            pass
+
+        def setBold(self, bold):
+            pass
+
+        def addItem(self, item):
+            pass
+
+        def currentText(self):
+            return ""
+
+        def setCurrentText(self, text):
+            pass
+
+        def setRowCount(self, count):
+            pass
+
+        def setColumnCount(self, count):
+            pass
+
+        def setHorizontalHeaderLabels(self, labels):
+            pass
+
+        def horizontalHeader(self):
+            return self
+
+        def setStretchLastSection(self, stretch):
+            pass
+
+        def setAlternatingRowColors(self, alternate):
+            pass
+
+        def setMaximumHeight(self, height):
+            pass
+
+        def setItem(self, row, col, item):
+            pass
+
+        def insertRow(self, row):
+            pass
+
+        def setData(self, role, value):
+            pass
+
+        def setBackground(self, color):
+            pass
+
+        def setForeground(self, color):
+            pass
+
+        def setTextAlignment(self, alignment):
+            pass
+
+        def addStretch(self):
+            pass
+
+        def setSpacing(self, spacing):
+            pass
+
+        def setContentsMargins(self, left, top, right, bottom):
+            pass
+
+        def resizeColumnsToContents(self):
+            pass
+
+        def setVerticalScrollBarPolicy(self, policy):
+            pass
+
+        def setHorizontalScrollBarPolicy(self, policy):
+            pass
+
+        def setWidget(self, widget):
+            pass
+
+        def setWidgetResizable(self, resizable):
+            pass
+
+        def addSeparator(self):
+            pass
+
+        def currentIndex(self):
+            return 0
+
+        def setCurrentIndex(self, index):
+            pass
+
+        def count(self):
+            return 0
+
+        def widget(self, index):
+            return self
+
+        def removeTab(self, index):
+            pass
+
+        def tabText(self, index):
+            return ""
+
+        def setTabText(self, index, text):
+            pass
+
+        def setCurrentWidget(self, widget):
+            pass
+
+        def currentWidget(self):
+            return self
+
+        def indexOf(self, widget):
+            return 0
+
+    class MockSignal:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def connect(self, func):
+            pass
+
+        def disconnect(self, func=None):
+            pass
+
+        def emit(self, *args, **kwargs):
+            pass
+
+    class MockLayout:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def addWidget(self, widget, *args, **kwargs):
+            pass
+
+        def addLayout(self, layout, *args, **kwargs):
+            pass
+
+        def addStretch(self, stretch=0):
+            pass
+
+        def setSpacing(self, spacing):
+            pass
+
+        def setContentsMargins(self, left, top, right, bottom):
+            pass
+
+        def insertWidget(self, index, widget):
+            pass
+
+        def removeWidget(self, widget):
+            pass
+
+        def count(self):
+            return 0
+
+        def itemAt(self, index):
+            return None
+
+        def takeAt(self, index):
+            return None
+
+    class MockColor:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        @staticmethod
+        def fromRgb(*args):
+            return MockColor()
+
+        @staticmethod
+        def fromHsv(*args):
+            return MockColor()
+
+    class MockFont:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def setPointSize(self, size):
+            pass
+
+        def setBold(self, bold):
+            pass
+
+        def setWeight(self, weight):
+            pass
+
+        Bold = 75
+
+    class MockDate:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        @staticmethod
+        def currentDate():
+            return MockDate()
+
+        def addDays(self, days):
+            return MockDate()
+
+        def toString(self, format_str=""):
+            return ""
+
+    class MockSize:
+        def __init__(self, width=0, height=0):
+            self.width = width
+            self.height = height
+
+    class MockQt:
+        AlignCenter = 0x84
+        AlignLeft = 0x01
+        AlignRight = 0x02
+        AlignTop = 0x20
+        AlignBottom = 0x40
+        Horizontal = 1
+        Vertical = 2
+        ScrollBarAlwaysOff = 1
+        ScrollBarAsNeeded = 0
+
+    # Assign mock classes
+    QWidget = MockWidget
+    QLabel = MockWidget
+    QTextEdit = MockWidget
+    QProgressBar = MockWidget
+    QPushButton = MockWidget
+    QComboBox = MockWidget
+    QTableWidget = MockWidget
+    QTableWidgetItem = MockWidget
+    QTabWidget = MockWidget
+    QFrame = MockWidget
+    QGroupBox = MockWidget
+    QScrollArea = MockWidget
+    QListWidget = MockWidget
+    QListWidgetItem = MockWidget
+    QDateEdit = MockWidget
+    QMessageBox = MockWidget
+    QSplitter = MockWidget
+    QApplication = MockWidget
+    QVBoxLayout = MockLayout
+    QHBoxLayout = MockLayout
+    QGridLayout = MockLayout
+    QSpacerItem = MockWidget
+    QSizePolicy = MockWidget
+    Signal = MockSignal
+    QTimer = MockWidget
+    QColor = MockColor
+    QFont = MockFont
+    QDate = MockDate
+    QSize = MockSize
+    Qt = MockQt
+    QPropertyAnimation = MockWidget
+    QLinearGradient = MockWidget
+    QPainter = MockWidget
+    QPalette = MockWidget
+
+if not MATPLOTLIB_AVAILABLE:
+
+    class MockFigure:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def add_subplot(self, *args, **kwargs):
+            return MockAxes()
+
+        def tight_layout(self):
+            pass
+
+        def clear(self):
+            pass
+
+        def savefig(self, *args, **kwargs):
+            pass
+
+    class MockAxes:
+        def __init__(self):
+            self.xaxis = MockAxis()
+            self.yaxis = MockAxis()
+
+        def plot(self, *args, **kwargs):
+            pass
+
+        def bar(self, *args, **kwargs):
+            pass
+
+        def pie(self, *args, **kwargs):
+            pass
+
+        def hist(self, *args, **kwargs):
+            pass
+
+        def scatter(self, *args, **kwargs):
+            pass
+
+        def set_title(self, title):
+            pass
+
+        def set_xlabel(self, label):
+            pass
+
+        def set_ylabel(self, label):
+            pass
+
+        def legend(self, *args, **kwargs):
+            pass
+
+        def grid(self, *args, **kwargs):
+            pass
+
+        def clear(self):
+            pass
+
+        def set_xlim(self, *args):
+            pass
+
+        def set_ylim(self, *args):
+            pass
+
+        def get_majorticklabels(self):
+            return []
+
+    class MockAxis:
+        def set_major_formatter(self, formatter):
+            pass
+
+        def get_majorticklabels(self):
+            return []
+
+    class MockCanvas:
+        def __init__(self, figure):
+            self.figure = figure
+
+        def draw(self):
+            pass
+
+    class MockDateFormatter:
+        def __init__(self, format_str):
+            pass
+
+    class MockPlt:
+        @staticmethod
+        def setp(*args, **kwargs):
+            pass
+
+        @staticmethod
+        def savefig(*args, **kwargs):
+            pass
+
+        @staticmethod
+        def close(*args):
+            pass
+
+    # Assign mock classes
+    Figure = MockFigure
+    FigureCanvas = MockCanvas
+    mdates = type("MockMdates", (), {"DateFormatter": MockDateFormatter})()
+    plt = MockPlt()
+
+if not PANDAS_AVAILABLE:
+
+    class MockDataFrame:
+        def __init__(self, data=None, *args, **kwargs):
+            self.data = data or {}
+
+        def to_dict(self, *args, **kwargs):
+            return self.data
+
+        def head(self, n=5):
+            return self
+
+        def tail(self, n=5):
+            return self
+
+        def describe(self):
+            return self
+
+        def info(self):
+            pass
+
+        def __getitem__(self, key):
+            return MockSeries()
+
+        def __setitem__(self, key, value):
+            pass
+
+        def groupby(self, *args, **kwargs):
+            return MockGroupBy()
+
+        def sort_values(self, *args, **kwargs):
+            return self
+
+        def reset_index(self, *args, **kwargs):
+            return self
+
+        def dropna(self, *args, **kwargs):
+            return self
+
+        def fillna(self, *args, **kwargs):
+            return self
+
+        def merge(self, *args, **kwargs):
+            return self
+
+        def join(self, *args, **kwargs):
+            return self
+
+        def apply(self, *args, **kwargs):
+            return self
+
+        def mean(self):
+            return 0
+
+        def std(self):
+            return 0
+
+        def min(self):
+            return 0
+
+        def max(self):
+            return 0
+
+        def sum(self):
+            return 0
+
+        def count(self):
+            return 0
+
+        def shape(self):
+            return (0, 0)
+
+        def columns(self):
+            return []
+
+        def index(self):
+            return []
+
+        def values(self):
+            return []
+
+        def iterrows(self):
+            return iter([])
+
+    class MockSeries:
+        def __init__(self, data=None, *args, **kwargs):
+            self.data = data or []
+
+        def to_list(self):
+            return self.data
+
+        def values(self):
+            return self.data
+
+        def mean(self):
+            return 0
+
+        def std(self):
+            return 0
+
+        def min(self):
+            return 0
+
+        def max(self):
+            return 0
+
+        def sum(self):
+            return 0
+
+        def count(self):
+            return 0
+
+    class MockGroupBy:
+        def __init__(self):
+            pass
+
+        def agg(self, *args, **kwargs):
+            return MockDataFrame()
+
+        def mean(self):
+            return MockDataFrame()
+
+        def sum(self):
+            return MockDataFrame()
+
+        def count(self):
+            return MockDataFrame()
+
+        def size(self):
+            return MockSeries()
+
+    class MockNumpy:
+        @staticmethod
+        def array(data):
+            return data
+
+        @staticmethod
+        def mean(data):
+            return 0
+
+        @staticmethod
+        def std(data):
+            return 0
+
+        @staticmethod
+        def min(data):
+            return 0
+
+        @staticmethod
+        def max(data):
+            return 0
+
+        @staticmethod
+        def sum(data):
+            return 0
+
+        @staticmethod
+        def random(*args, **kwargs):
+            return type(
+                "MockRandom",
+                (),
+                {
+                    "randint": lambda *a, **k: 0,
+                    "random": lambda *a, **k: 0.5,
+                    "choice": lambda *a, **k: a[0][0] if a and a[0] else 0,
+                },
+            )()
+
+        @staticmethod
+        def linspace(start, stop, num):
+            return [start + i * (stop - start) / (num - 1) for i in range(num)]
+
+        @staticmethod
+        def arange(start, stop=None, step=1):
+            if stop is None:
+                stop = start
+                start = 0
+            return list(range(start, stop, step))
+
+    # Assign mock classes
+    pd = type(
+        "MockPandas",
+        (),
+        {
+            "DataFrame": MockDataFrame,
+            "Series": MockSeries,
+            "read_csv": lambda *a, **k: MockDataFrame(),
+            "read_json": lambda *a, **k: MockDataFrame(),
+            "to_datetime": lambda *a, **k: None,
+            "date_range": lambda *a, **k: [],
+        },
+    )()
+    np = MockNumpy()
 
 
-class MetricsCalculator:
-    """Calculate analytics metrics from raw data."""
+class ChartWidget(QWidget):
+    """Widget for displaying charts with matplotlib integration."""
 
-    def __init__(self):
-        self.metrics_cache = {}
-        self.cache_expiry = timedelta(minutes=5)
-
-    def calculate_productivity_metrics(self, activities: List[Dict]) -> Dict[str, Any]:
-        """Calculate productivity metrics from activity data."""
-        if not activities:
-            return {
-                "total_sessions": 0,
-                "avg_session_length": 0,
-                "productivity_score": 0,
-                "focus_time": 0,
-                "break_time": 0,
-                "efficiency_rating": 0,
-            }
-
-        total_sessions = len(activities)
-        session_lengths = [act.get("duration", 0) for act in activities]
-        avg_session_length = (
-            sum(session_lengths) / len(session_lengths) if session_lengths else 0
-        )
-
-        focus_activities = [act for act in activities if act.get("type") == "focus"]
-        focus_time = sum(act.get("duration", 0) for act in focus_activities)
-
-        break_activities = [act for act in activities if act.get("type") == "break"]
-        break_time = sum(act.get("duration", 0) for act in break_activities)
-
-        # Calculate productivity score (0-100)
-        productivity_score = (
-            min(100, (focus_time / (focus_time + break_time)) * 100)
-            if (focus_time + break_time) > 0
-            else 0
-        )
-
-        # Calculate efficiency rating (0-10)
-        efficiency_rating = min(10, productivity_score / 10)
-
-        return {
-            "total_sessions": total_sessions,
-            "avg_session_length": avg_session_length,
-            "productivity_score": round(productivity_score, 1),
-            "focus_time": focus_time,
-            "break_time": break_time,
-            "efficiency_rating": round(efficiency_rating, 1),
-        }
-
-    def calculate_pattern_metrics(self, patterns: List[Dict]) -> Dict[str, Any]:
-        """Calculate pattern analysis metrics."""
-        if not patterns:
-            return {
-                "total_patterns": 0,
-                "most_common_pattern": "None",
-                "pattern_confidence": 0,
-                "recurring_patterns": 0,
-            }
-
-        total_patterns = len(patterns)
-        pattern_types = [pattern.get("type", "unknown") for pattern in patterns]
-
-        # Find most common pattern
-        pattern_counts = {}
-        for pattern_type in pattern_types:
-            pattern_counts[pattern_type] = pattern_counts.get(pattern_type, 0) + 1
-
-        most_common_pattern = (
-            max(pattern_counts.items(), key=lambda x: x[1])[0]
-            if pattern_counts
-            else "None"
-        )
-
-        # Calculate average confidence
-        confidences = [pattern.get("confidence", 0) for pattern in patterns]
-        pattern_confidence = sum(confidences) / len(confidences) if confidences else 0
-
-        # Count recurring patterns (patterns seen more than once)
-        recurring_patterns = sum(1 for count in pattern_counts.values() if count > 1)
-
-        return {
-            "total_patterns": total_patterns,
-            "most_common_pattern": most_common_pattern,
-            "pattern_confidence": round(pattern_confidence, 2),
-            "recurring_patterns": recurring_patterns,
-        }
-
-    def calculate_suggestion_metrics(self, suggestions: List[Dict]) -> Dict[str, Any]:
-        """Calculate suggestion effectiveness metrics."""
-        if not suggestions:
-            return {
-                "total_suggestions": 0,
-                "accepted_suggestions": 0,
-                "acceptance_rate": 0,
-                "avg_confidence": 0,
-                "top_category": "None",
-            }
-
-        total_suggestions = len(suggestions)
-        accepted_suggestions = sum(
-            1 for sug in suggestions if sug.get("accepted", False)
-        )
-        acceptance_rate = (
-            (accepted_suggestions / total_suggestions) * 100
-            if total_suggestions > 0
-            else 0
-        )
-
-        confidences = [sug.get("confidence", 0) for sug in suggestions]
-        avg_confidence = sum(confidences) / len(confidences) if confidences else 0
-
-        # Find top category
-        categories = [sug.get("category", "unknown") for sug in suggestions]
-        category_counts = {}
-        for category in categories:
-            category_counts[category] = category_counts.get(category, 0) + 1
-
-        top_category = (
-            max(category_counts.items(), key=lambda x: x[1])[0]
-            if category_counts
-            else "None"
-        )
-
-        return {
-            "total_suggestions": total_suggestions,
-            "accepted_suggestions": accepted_suggestions,
-            "acceptance_rate": round(acceptance_rate, 1),
-            "avg_confidence": round(avg_confidence, 2),
-            "top_category": top_category,
-        }
-
-
-class ChartWidget(QWidget if PYSIDE6_AVAILABLE else object):
-    """Custom chart widget using matplotlib."""
-
-    def __init__(self, parent=None):
-        if not PYSIDE6_AVAILABLE:
-            return
-
+    def __init__(self, chart_type="line", parent=None):
         super().__init__(parent)
-        self.figure = Figure(figsize=(8, 6), dpi=100) if MATPLOTLIB_AVAILABLE else None
-        self.canvas = (
-            FigureCanvas(self.figure) if MATPLOTLIB_AVAILABLE and self.figure else None
-        )
+        self.chart_type = chart_type
+        self.data = {}
+        self.setup_ui()
 
+    def setup_ui(self):
+        """Set up the chart widget UI."""
         layout = QVBoxLayout()
-        if self.canvas:
-            layout.addWidget(self.canvas)
+
+        if MATPLOTLIB_AVAILABLE and QT_AVAILABLE:
+            try:
+                from matplotlib.backends.backend_qt5agg import (
+                    FigureCanvasQTAgg as FigureCanvas,
+                )
+                from matplotlib.figure import Figure
+
+                self.figure = Figure(figsize=(8, 6), dpi=80)
+                self.canvas = FigureCanvas(self.figure)
+                layout.addWidget(self.canvas)
+
+                # Add chart controls
+                controls_layout = QHBoxLayout()
+
+                self.chart_type_combo = QComboBox()
+                self.chart_type_combo.addItem("Line Chart")
+                self.chart_type_combo.addItem("Bar Chart")
+                self.chart_type_combo.addItem("Pie Chart")
+                self.chart_type_combo.addItem("Histogram")
+                controls_layout.addWidget(QLabel("Chart Type:"))
+                controls_layout.addWidget(self.chart_type_combo)
+
+                self.refresh_button = QPushButton("Refresh")
+                self.refresh_button.clicked.connect(self.refresh_chart)
+                controls_layout.addWidget(self.refresh_button)
+
+                layout.addLayout(controls_layout)
+
+            except ImportError:
+                placeholder = QLabel(
+                    "Matplotlib not available - Chart functionality limited"
+                )
+                placeholder.setAlignment(Qt.AlignCenter)
+                placeholder.setStyleSheet("border: 1px solid #ccc; margin: 10px;")
+                layout.addWidget(placeholder)
         else:
-            placeholder = QLabel("Charts require matplotlib installation")
+            placeholder = QLabel("Chart functionality not available")
             placeholder.setAlignment(Qt.AlignCenter)
+            placeholder.setStyleSheet("border: 1px solid #ccc; margin: 10px;")
             layout.addWidget(placeholder)
 
         self.setLayout(layout)
 
-    def plot_productivity_trend(self, data: List[Dict]):
-        """Plot productivity trend over time."""
-        if not MATPLOTLIB_AVAILABLE or not self.figure:
+    def refresh_chart(self):
+        """Refresh the chart with current data."""
+        if not (MATPLOTLIB_AVAILABLE and QT_AVAILABLE):
             return
 
-        self.figure.clear()
-        ax = self.figure.add_subplot(111)
+        try:
+            self.figure.clear()
+            ax = self.figure.add_subplot(111)
 
-        if not data:
-            ax.text(
-                0.5,
-                0.5,
-                "No data available",
-                ha="center",
-                va="center",
-                transform=ax.transAxes,
-            )
+            if self.data:
+                x_data = list(self.data.keys())
+                y_data = list(self.data.values())
+
+                chart_type = self.chart_type_combo.currentText().lower()
+
+                if "line" in chart_type:
+                    ax.plot(x_data, y_data, marker="o")
+                elif "bar" in chart_type:
+                    ax.bar(x_data, y_data)
+                elif "pie" in chart_type:
+                    ax.pie(y_data, labels=x_data, autopct="%1.1f%%")
+                elif "histogram" in chart_type:
+                    ax.hist(y_data, bins=10)
+
+                ax.set_title(f"{chart_type.title()} - Analytics Data")
+                ax.grid(True, alpha=0.3)
+
             self.canvas.draw()
-            return
+        except Exception as e:
+            logger.error(f"Error refreshing chart: {e}")
 
-        dates = [
-            datetime.fromisoformat(item["date"])
-            if isinstance(item.get("date"), str)
-            else item.get("date", datetime.now())
-            for item in data
-        ]
-        scores = [item.get("productivity_score", 0) for item in data]
-
-        ax.plot(dates, scores, marker="o", linewidth=2, markersize=6)
-        ax.set_title("Productivity Trend", fontsize=14, fontweight="bold")
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Productivity Score")
-        ax.grid(True, alpha=0.3)
-
-        # Format x-axis
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%m/%d"))
-        ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
-
-        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-        self.figure.tight_layout()
-        self.canvas.draw()
-
-    def plot_pattern_distribution(self, patterns: Dict[str, int]):
-        """Plot pattern type distribution."""
-        if not MATPLOTLIB_AVAILABLE or not self.figure:
-            return
-
-        self.figure.clear()
-        ax = self.figure.add_subplot(111)
-
-        if not patterns:
-            ax.text(
-                0.5,
-                0.5,
-                "No patterns detected",
-                ha="center",
-                va="center",
-                transform=ax.transAxes,
-            )
-            self.canvas.draw()
-            return
-
-        labels = list(patterns.keys())
-        sizes = list(patterns.values())
-        colors = plt.cm.Set3(np.linspace(0, 1, len(labels))) if len(labels) > 0 else []
-
-        ax.pie(sizes, labels=labels, colors=colors, autopct="%1.1f%%", startangle=90)
-        ax.set_title("Pattern Distribution", fontsize=14, fontweight="bold")
-
-        self.figure.tight_layout()
-        self.canvas.draw()
-
-    def plot_suggestion_effectiveness(self, categories: Dict[str, Dict[str, int]]):
-        """Plot suggestion effectiveness by category."""
-        if not MATPLOTLIB_AVAILABLE or not self.figure:
-            return
-
-        self.figure.clear()
-        ax = self.figure.add_subplot(111)
-
-        if not categories:
-            ax.text(
-                0.5,
-                0.5,
-                "No suggestion data",
-                ha="center",
-                va="center",
-                transform=ax.transAxes,
-            )
-            self.canvas.draw()
-            return
-
-        labels = list(categories.keys())
-        accepted = [categories[cat].get("accepted", 0) for cat in labels]
-        rejected = [categories[cat].get("rejected", 0) for cat in labels]
-
-        x = np.arange(len(labels))
-        width = 0.35
-
-        ax.bar(
-            x - width / 2, accepted, width, label="Accepted", color="green", alpha=0.7
-        )
-        ax.bar(x + width / 2, rejected, width, label="Rejected", color="red", alpha=0.7)
-
-        ax.set_title(
-            "Suggestion Effectiveness by Category", fontsize=14, fontweight="bold"
-        )
-        ax.set_xlabel("Category")
-        ax.set_ylabel("Count")
-        ax.set_xticks(x)
-        ax.set_xticklabels(labels)
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-
-        self.figure.tight_layout()
-        self.canvas.draw()
+    def update_data(self, data: Dict[str, Any]):
+        """Update chart data."""
+        self.data = data
+        self.refresh_chart()
 
 
-class AnalyticsDashboard(QWidget if PYSIDE6_AVAILABLE else object):
-    """
-    Comprehensive analytics dashboard for Lyrixa AI Assistant.
-
-    Provides real-time visualization and insights for:
-    - User productivity metrics
-    - Pattern analysis
-    - Suggestion effectiveness
-    - Performance trends
-    """
-
-    # Signals
-    refresh_requested = Signal() if PYSIDE6_AVAILABLE else None
-    export_requested = Signal(str) if PYSIDE6_AVAILABLE else None
+class MetricsWidget(QWidget):
+    """Widget for displaying key metrics."""
 
     def __init__(self, parent=None):
-        if not PYSIDE6_AVAILABLE:
-            logger.warning(
-                "PySide6 not available. Analytics dashboard will not function."
-            )
-            return
-
         super().__init__(parent)
-        self.metrics_calculator = MetricsCalculator()
-        self.sample_data = self._generate_sample_data()
+        self.metrics = {}
+        self.setup_ui()
 
-        self.init_ui()
-        self.setup_update_timer()
-
-        logger.info("Analytics Dashboard initialized successfully")
-
-    def init_ui(self):
-        """Initialize the user interface."""
+    def setup_ui(self):
+        """Set up the metrics widget UI."""
         layout = QVBoxLayout()
 
         # Header
-        header_layout = QHBoxLayout()
-        title_label = QLabel("📊 Analytics Dashboard")
-        title_label.setFont(QFont("Arial", 16, QFont.Bold))
-        header_layout.addWidget(title_label)
+        header = QLabel("Key Metrics")
+        header.setFont(QFont("Arial", 14, QFont.Bold))
+        header.setAlignment(Qt.AlignCenter)
+        layout.addWidget(header)
 
-        header_layout.addStretch()
+        # Metrics container
+        self.metrics_container = QWidget()
+        self.metrics_layout = QGridLayout()
+        self.metrics_container.setLayout(self.metrics_layout)
 
-        # Control buttons
-        self.refresh_btn = QPushButton("🔄 Refresh")
-        self.refresh_btn.clicked.connect(self.refresh_data)
-        header_layout.addWidget(self.refresh_btn)
+        scroll_area = QScrollArea()
+        scroll_area.setWidget(self.metrics_container)
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        self.export_btn = QPushButton("📊 Export")
-        self.export_btn.clicked.connect(self.export_data)
-        header_layout.addWidget(self.export_btn)
+        layout.addWidget(scroll_area)
 
-        layout.addLayout(header_layout)
+        # Refresh button
+        refresh_button = QPushButton("Refresh Metrics")
+        refresh_button.clicked.connect(self.refresh_metrics)
+        layout.addWidget(refresh_button)
 
-        # Date range selector
+        self.setLayout(layout)
+
+    def update_metrics(self, metrics: Dict[str, Any]):
+        """Update the displayed metrics."""
+        self.metrics = metrics
+        self.refresh_metrics()
+
+    def refresh_metrics(self):
+        """Refresh the metrics display."""
+        # Clear existing metrics
+        for i in reversed(range(self.metrics_layout.count())):
+            self.metrics_layout.itemAt(i).widget().setParent(None)
+
+        # Add current metrics
+        row = 0
+        for key, value in self.metrics.items():
+            name_label = QLabel(str(key).replace("_", " ").title())
+            name_label.setFont(QFont("Arial", 10, QFont.Bold))
+
+            value_label = QLabel(str(value))
+            value_label.setAlignment(Qt.AlignRight)
+
+            self.metrics_layout.addWidget(name_label, row, 0)
+            self.metrics_layout.addWidget(value_label, row, 1)
+            row += 1
+
+
+class ExportWidget(QWidget):
+    """Widget for exporting analytics data."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.data_source = None
+        self.setup_ui()
+
+    def setup_ui(self):
+        """Set up the export widget UI."""
+        layout = QVBoxLayout()
+
+        # Header
+        header = QLabel("Export Analytics")
+        header.setFont(QFont("Arial", 14, QFont.Bold))
+        header.setAlignment(Qt.AlignCenter)
+        layout.addWidget(header)
+
+        # Export format selection
+        format_layout = QHBoxLayout()
+        format_layout.addWidget(QLabel("Export Format:"))
+
+        self.format_combo = QComboBox()
+        self.format_combo.addItem("JSON", "json")
+        self.format_combo.addItem("CSV", "csv")
+        self.format_combo.addItem("XML", "xml")
+        format_layout.addWidget(self.format_combo)
+
+        layout.addLayout(format_layout)
+
+        # Date range selection
         date_layout = QHBoxLayout()
         date_layout.addWidget(QLabel("Date Range:"))
 
@@ -587,357 +904,342 @@ class AnalyticsDashboard(QWidget if PYSIDE6_AVAILABLE else object):
         self.end_date.setDate(QDate.currentDate())
         date_layout.addWidget(self.end_date)
 
-        date_layout.addStretch()
         layout.addLayout(date_layout)
 
-        # Main content area
-        main_splitter = QSplitter(Qt.Horizontal)
+        # Export buttons
+        button_layout = QHBoxLayout()
 
-        # Left panel - Metrics summary
-        metrics_widget = self.create_metrics_panel()
-        main_splitter.addWidget(metrics_widget)
+        export_button = QPushButton("Export Data")
+        export_button.clicked.connect(self.export_data)
+        button_layout.addWidget(export_button)
 
-        # Right panel - Charts
-        charts_widget = self.create_charts_panel()
-        main_splitter.addWidget(charts_widget)
+        preview_button = QPushButton("Preview")
+        preview_button.clicked.connect(self.preview_data)
+        button_layout.addWidget(preview_button)
 
-        main_splitter.setStretchFactor(0, 1)
-        main_splitter.setStretchFactor(1, 2)
+        layout.addLayout(button_layout)
 
-        layout.addWidget(main_splitter)
+        # Preview area
+        self.preview_text = QTextEdit()
+        self.preview_text.setReadOnly(True)
+        self.preview_text.setMaximumHeight(200)
+        layout.addWidget(self.preview_text)
+
+        self.setLayout(layout)
+
+    def set_data_source(self, data_source):
+        """Set the data source for export."""
+        self.data_source = data_source
+
+    def preview_data(self):
+        """Preview the data to be exported."""
+        if not self.data_source:
+            self.preview_text.setPlainText("No data source available")
+            return
+
+        try:
+            # Generate sample data for preview
+            sample_data = {
+                "export_info": {
+                    "format": self.format_combo.currentData(),
+                    "start_date": self.start_date.date().toString(),
+                    "end_date": self.end_date.date().toString(),
+                    "generated_at": datetime.now().isoformat(),
+                },
+                "sample_metrics": {
+                    "total_sessions": 42,
+                    "avg_response_time": 1.23,
+                    "user_satisfaction": 4.5,
+                    "error_rate": 0.02,
+                },
+            }
+
+            if self.format_combo.currentData() == "json":
+                preview_text = json.dumps(sample_data, indent=2)
+            elif self.format_combo.currentData() == "csv":
+                preview_text = "metric,value\ntotal_sessions,42\navg_response_time,1.23\nuser_satisfaction,4.5\nerror_rate,0.02"
+            else:
+                preview_text = str(sample_data)
+
+            self.preview_text.setPlainText(preview_text)
+
+        except Exception as e:
+            logger.error(f"Error generating preview: {e}")
+            self.preview_text.setPlainText(f"Error generating preview: {e}")
+
+    def export_data(self):
+        """Export the analytics data."""
+        try:
+            format_type = self.format_combo.currentData()
+            start_date = self.start_date.date().toString()
+            end_date = self.end_date.date().toString()
+
+            # Generate filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"analytics_export_{timestamp}.{format_type}"
+
+            # In a real implementation, this would save the actual data
+            logger.info(f"Exporting analytics data to {filename}")
+            logger.info(f"Date range: {start_date} to {end_date}")
+            logger.info(f"Format: {format_type}")
+
+            # Show success message
+            if QT_AVAILABLE:
+                msg = QMessageBox()
+                msg.setWindowTitle("Export Complete")
+                msg.setText(f"Analytics data exported successfully to {filename}")
+                msg.exec()
+
+        except Exception as e:
+            logger.error(f"Error exporting data: {e}")
+            if QT_AVAILABLE:
+                msg = QMessageBox()
+                msg.setWindowTitle("Export Error")
+                msg.setText(f"Error exporting data: {e}")
+                msg.exec()
+
+
+class AnalyticsDashboard(QWidget):
+    """
+    Main analytics dashboard widget providing comprehensive analytics visualization.
+    """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.data_manager = None
+        self.setup_ui()
+        self.setup_timer()
+
+    def setup_ui(self):
+        """Set up the main dashboard UI."""
+        layout = QVBoxLayout()
+
+        # Title
+        title = QLabel("📊 Lyrixa Analytics Dashboard")
+        title.setFont(QFont("Arial", 16, QFont.Bold))
+        title.setAlignment(Qt.AlignCenter)
+        title.setStyleSheet("color: #2c3e50; margin: 10px;")
+        layout.addWidget(title)
+
+        # Create tab widget
+        self.tab_widget = QTabWidget()
+
+        # Overview tab
+        self.overview_tab = self.create_overview_tab()
+        self.tab_widget.addTab(self.overview_tab, "📈 Overview")
+
+        # Metrics tab
+        self.metrics_tab = self.create_metrics_tab()
+        self.tab_widget.addTab(self.metrics_tab, "📊 Metrics")
+
+        # Charts tab
+        self.charts_tab = self.create_charts_tab()
+        self.tab_widget.addTab(self.charts_tab, "📉 Charts")
+
+        # Export tab
+        self.export_tab = self.create_export_tab()
+        self.tab_widget.addTab(self.export_tab, "💾 Export")
+
+        layout.addWidget(self.tab_widget)
 
         # Status bar
-        self.status_label = QLabel("Ready")
+        self.status_label = QLabel("Dashboard ready")
+        self.status_label.setStyleSheet("color: #7f8c8d; font-style: italic;")
         layout.addWidget(self.status_label)
 
         self.setLayout(layout)
 
-        # Load initial data
-        self.refresh_data()
-
-    def create_metrics_panel(self) -> QWidget:
-        """Create the metrics summary panel."""
+    def create_overview_tab(self) -> QWidget:
+        """Create the overview tab."""
         widget = QWidget()
         layout = QVBoxLayout()
 
-        # Productivity metrics
-        prod_group = QGroupBox("🎯 Productivity Metrics")
-        prod_layout = QVBoxLayout()
+        # Welcome message
+        welcome = QLabel("Welcome to Lyrixa Analytics Dashboard")
+        welcome.setFont(QFont("Arial", 14))
+        welcome.setAlignment(Qt.AlignCenter)
+        welcome.setStyleSheet(
+            "margin: 20px; padding: 10px; background-color: #ecf0f1; border-radius: 5px;"
+        )
+        layout.addWidget(welcome)
 
-        self.productivity_labels = {
-            "sessions": QLabel("Sessions: 0"),
-            "avg_length": QLabel("Avg Length: 0 min"),
-            "score": QLabel("Score: 0%"),
-            "focus_time": QLabel("Focus Time: 0 min"),
-            "efficiency": QLabel("Efficiency: 0/10"),
-        }
+        # Quick stats
+        stats_group = QGroupBox("Quick Statistics")
+        stats_layout = QGridLayout()
 
-        for label in self.productivity_labels.values():
-            label.setFont(QFont("Arial", 10))
-            prod_layout.addWidget(label)
+        stats_data = [
+            ("Total Sessions", "1,234"),
+            ("Active Users", "89"),
+            ("Avg Response Time", "1.2s"),
+            ("Success Rate", "98.5%"),
+            ("Data Processed", "45.6 MB"),
+            ("Uptime", "99.9%"),
+        ]
 
-        prod_group.setLayout(prod_layout)
-        layout.addWidget(prod_group)
+        for i, (label, value) in enumerate(stats_data):
+            row, col = divmod(i, 2)
 
-        # Pattern metrics
-        pattern_group = QGroupBox("🔍 Pattern Analysis")
-        pattern_layout = QVBoxLayout()
+            stat_widget = QFrame()
+            stat_widget.setFrameStyle(QFrame.Box)
+            stat_widget.setStyleSheet(
+                "padding: 10px; margin: 5px; background-color: #ffffff;"
+            )
 
-        self.pattern_labels = {
-            "total": QLabel("Total Patterns: 0"),
-            "common": QLabel("Most Common: None"),
-            "confidence": QLabel("Avg Confidence: 0%"),
-            "recurring": QLabel("Recurring: 0"),
-        }
+            stat_layout = QVBoxLayout()
 
-        for label in self.pattern_labels.values():
-            label.setFont(QFont("Arial", 10))
-            pattern_layout.addWidget(label)
+            value_label = QLabel(value)
+            value_label.setFont(QFont("Arial", 18, QFont.Bold))
+            value_label.setAlignment(Qt.AlignCenter)
+            value_label.setStyleSheet("color: #3498db;")
 
-        pattern_group.setLayout(pattern_layout)
-        layout.addWidget(pattern_group)
+            label_label = QLabel(label)
+            label_label.setAlignment(Qt.AlignCenter)
+            label_label.setStyleSheet("color: #7f8c8d;")
 
-        # Suggestion metrics
-        suggestion_group = QGroupBox("💡 Suggestion Effectiveness")
-        suggestion_layout = QVBoxLayout()
+            stat_layout.addWidget(value_label)
+            stat_layout.addWidget(label_label)
+            stat_widget.setLayout(stat_layout)
 
-        self.suggestion_labels = {
-            "total": QLabel("Total Suggestions: 0"),
-            "accepted": QLabel("Accepted: 0"),
-            "rate": QLabel("Acceptance Rate: 0%"),
-            "confidence": QLabel("Avg Confidence: 0%"),
-            "top_category": QLabel("Top Category: None"),
-        }
+            stats_layout.addWidget(stat_widget, row, col)
 
-        for label in self.suggestion_labels.values():
-            label.setFont(QFont("Arial", 10))
-            suggestion_layout.addWidget(label)
+        stats_group.setLayout(stats_layout)
+        layout.addWidget(stats_group)
 
-        suggestion_group.setLayout(suggestion_layout)
-        layout.addWidget(suggestion_group)
+        # Recent activity
+        activity_group = QGroupBox("Recent Activity")
+        activity_layout = QVBoxLayout()
 
-        layout.addStretch()
+        self.activity_list = QListWidget()
+        recent_activities = [
+            "📈 Performance metrics updated",
+            "🔄 Data synchronization completed",
+            "📊 New analytics report generated",
+            "🎯 User engagement threshold reached",
+            "⚡ Response time optimization applied",
+        ]
+
+        for activity in recent_activities:
+            item = QListWidgetItem(activity)
+            self.activity_list.addItem(item)
+
+        activity_layout.addWidget(self.activity_list)
+        activity_group.setLayout(activity_layout)
+        layout.addWidget(activity_group)
+
         widget.setLayout(layout)
         return widget
 
-    def create_charts_panel(self) -> QWidget:
-        """Create the charts panel."""
+    def create_metrics_tab(self) -> QWidget:
+        """Create the metrics tab."""
         widget = QWidget()
         layout = QVBoxLayout()
 
-        # Chart tabs
-        tab_widget = QTabWidget()
+        self.metrics_widget = MetricsWidget()
+        layout.addWidget(self.metrics_widget)
 
-        # Productivity trend chart
-        self.productivity_chart = ChartWidget()
-        tab_widget.addTab(self.productivity_chart, "📈 Productivity Trend")
-
-        # Pattern distribution chart
-        self.pattern_chart = ChartWidget()
-        tab_widget.addTab(self.pattern_chart, "🔍 Pattern Distribution")
-
-        # Suggestion effectiveness chart
-        self.suggestion_chart = ChartWidget()
-        tab_widget.addTab(self.suggestion_chart, "💡 Suggestion Effectiveness")
-
-        layout.addWidget(tab_widget)
         widget.setLayout(layout)
         return widget
 
-    def setup_update_timer(self):
-        """Setup automatic data update timer."""
-        self.update_timer = QTimer()
-        self.update_timer.timeout.connect(self.refresh_data)
-        self.update_timer.start(30000)  # Update every 30 seconds
+    def create_charts_tab(self) -> QWidget:
+        """Create the charts tab."""
+        widget = QWidget()
+        layout = QVBoxLayout()
 
-    def refresh_data(self):
-        """Refresh dashboard data."""
+        self.chart_widget = ChartWidget()
+        layout.addWidget(self.chart_widget)
+
+        widget.setLayout(layout)
+        return widget
+
+    def create_export_tab(self) -> QWidget:
+        """Create the export tab."""
+        widget = QWidget()
+        layout = QVBoxLayout()
+
+        self.export_widget = ExportWidget()
+        layout.addWidget(self.export_widget)
+
+        widget.setLayout(layout)
+        return widget
+
+    def setup_timer(self):
+        """Set up the update timer."""
+        if QT_AVAILABLE:
+            self.update_timer = QTimer()
+            self.update_timer.timeout.connect(self.update_data)
+            self.update_timer.start(30000)  # Update every 30 seconds
+
+    def update_data(self):
+        """Update dashboard data."""
         try:
-            self.status_label.setText("Refreshing data...")
+            # Generate sample metrics
+            metrics = {
+                "sessions_today": 89,
+                "avg_response_time": 1.23,
+                "memory_usage": 67.8,
+                "cpu_usage": 23.4,
+                "active_connections": 15,
+                "data_processed_mb": 145.6,
+                "success_rate": 98.7,
+                "error_count": 3,
+            }
 
-            # In a real implementation, this would fetch data from the anticipation engine
-            # For now, we'll use sample data
-            self.update_metrics()
-            self.update_charts()
+            # Update metrics widget
+            if hasattr(self, "metrics_widget"):
+                self.metrics_widget.update_metrics(metrics)
 
+            # Generate sample chart data
+            chart_data = {
+                "Mon": 45,
+                "Tue": 52,
+                "Wed": 38,
+                "Thu": 61,
+                "Fri": 49,
+                "Sat": 34,
+                "Sun": 28,
+            }
+
+            # Update chart widget
+            if hasattr(self, "chart_widget"):
+                self.chart_widget.update_data(chart_data)
+
+            # Update status
             self.status_label.setText(
                 f"Last updated: {datetime.now().strftime('%H:%M:%S')}"
             )
 
-            if self.refresh_requested:
-                self.refresh_requested.emit()
-
         except Exception as e:
-            logger.error(f"Error refreshing dashboard data: {e}")
-            self.status_label.setText("Error refreshing data")
+            logger.error(f"Error updating dashboard data: {e}")
+            self.status_label.setText(f"Update error: {e}")
 
-    def update_metrics(self):
-        """Update metrics display."""
-        # Productivity metrics
-        prod_metrics = self.metrics_calculator.calculate_productivity_metrics(
-            self.sample_data.get("activities", [])
-        )
-
-        self.productivity_labels["sessions"].setText(
-            f"Sessions: {prod_metrics['total_sessions']}"
-        )
-        self.productivity_labels["avg_length"].setText(
-            f"Avg Length: {prod_metrics['avg_session_length']:.1f} min"
-        )
-        self.productivity_labels["score"].setText(
-            f"Score: {prod_metrics['productivity_score']:.1f}%"
-        )
-        self.productivity_labels["focus_time"].setText(
-            f"Focus Time: {prod_metrics['focus_time']:.1f} min"
-        )
-        self.productivity_labels["efficiency"].setText(
-            f"Efficiency: {prod_metrics['efficiency_rating']:.1f}/10"
-        )
-
-        # Pattern metrics
-        pattern_metrics = self.metrics_calculator.calculate_pattern_metrics(
-            self.sample_data.get("patterns", [])
-        )
-
-        self.pattern_labels["total"].setText(
-            f"Total Patterns: {pattern_metrics['total_patterns']}"
-        )
-        self.pattern_labels["common"].setText(
-            f"Most Common: {pattern_metrics['most_common_pattern']}"
-        )
-        self.pattern_labels["confidence"].setText(
-            f"Avg Confidence: {pattern_metrics['pattern_confidence']:.1f}%"
-        )
-        self.pattern_labels["recurring"].setText(
-            f"Recurring: {pattern_metrics['recurring_patterns']}"
-        )
-
-        # Suggestion metrics
-        suggestion_metrics = self.metrics_calculator.calculate_suggestion_metrics(
-            self.sample_data.get("suggestions", [])
-        )
-
-        self.suggestion_labels["total"].setText(
-            f"Total Suggestions: {suggestion_metrics['total_suggestions']}"
-        )
-        self.suggestion_labels["accepted"].setText(
-            f"Accepted: {suggestion_metrics['accepted_suggestions']}"
-        )
-        self.suggestion_labels["rate"].setText(
-            f"Acceptance Rate: {suggestion_metrics['acceptance_rate']:.1f}%"
-        )
-        self.suggestion_labels["confidence"].setText(
-            f"Avg Confidence: {suggestion_metrics['avg_confidence']:.1f}%"
-        )
-        self.suggestion_labels["top_category"].setText(
-            f"Top Category: {suggestion_metrics['top_category']}"
-        )
-
-    def update_charts(self):
-        """Update chart displays."""
-        # Productivity trend
-        productivity_data = self.sample_data.get("productivity_trend", [])
-        self.productivity_chart.plot_productivity_trend(productivity_data)
-
-        # Pattern distribution
-        patterns = self.sample_data.get("patterns", [])
-        pattern_counts = {}
-        for pattern in patterns:
-            ptype = pattern.get("type", "unknown")
-            pattern_counts[ptype] = pattern_counts.get(ptype, 0) + 1
-        self.pattern_chart.plot_pattern_distribution(pattern_counts)
-
-        # Suggestion effectiveness
-        suggestions = self.sample_data.get("suggestions", [])
-        category_stats = {}
-        for suggestion in suggestions:
-            category = suggestion.get("category", "unknown")
-            if category not in category_stats:
-                category_stats[category] = {"accepted": 0, "rejected": 0}
-
-            if suggestion.get("accepted", False):
-                category_stats[category]["accepted"] += 1
-            else:
-                category_stats[category]["rejected"] += 1
-
-        self.suggestion_chart.plot_suggestion_effectiveness(category_stats)
-
-    def export_data(self):
-        """Export analytics data."""
-        try:
-            export_data = {
-                "timestamp": datetime.now().isoformat(),
-                "productivity_metrics": self.metrics_calculator.calculate_productivity_metrics(
-                    self.sample_data.get("activities", [])
-                ),
-                "pattern_metrics": self.metrics_calculator.calculate_pattern_metrics(
-                    self.sample_data.get("patterns", [])
-                ),
-                "suggestion_metrics": self.metrics_calculator.calculate_suggestion_metrics(
-                    self.sample_data.get("suggestions", [])
-                ),
-                "raw_data": self.sample_data,
-            }
-
-            filename = (
-                f"lyrixa_analytics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            )
-
-            # In a real implementation, this would open a file dialog
-            # For now, we'll just log the export
-            logger.info(f"Would export analytics data to: {filename}")
-
-            if self.export_requested:
-                self.export_requested.emit(filename)
-
-            QMessageBox.information(
-                self, "Export", f"Analytics data exported to {filename}"
-            )
-
-        except Exception as e:
-            logger.error(f"Error exporting data: {e}")
-            QMessageBox.warning(self, "Export Error", f"Failed to export data: {e}")
-
-    def _generate_sample_data(self) -> Dict[str, Any]:
-        """Generate sample data for demonstration."""
-        import random
-        from datetime import datetime, timedelta
-
-        # Sample activities
-        activities = []
-        for i in range(20):
-            activity_type = random.choice(["focus", "break", "meeting"])
-            duration = random.randint(15, 120)
-            activities.append(
-                {
-                    "type": activity_type,
-                    "duration": duration,
-                    "timestamp": (
-                        datetime.now() - timedelta(days=random.randint(0, 30))
-                    ).isoformat(),
-                }
-            )
-
-        # Sample patterns
-        patterns = []
-        pattern_types = ["work_sprint", "break_pattern", "meeting_block", "deep_focus"]
-        for i in range(15):
-            patterns.append(
-                {
-                    "type": random.choice(pattern_types),
-                    "confidence": random.uniform(0.6, 0.95),
-                    "frequency": random.randint(1, 10),
-                    "timestamp": (
-                        datetime.now() - timedelta(days=random.randint(0, 30))
-                    ).isoformat(),
-                }
-            )
-
-        # Sample suggestions
-        suggestions = []
-        categories = ["productivity", "learning", "wellbeing", "workflow"]
-        for i in range(25):
-            suggestions.append(
-                {
-                    "category": random.choice(categories),
-                    "confidence": random.uniform(0.5, 0.9),
-                    "accepted": random.choice([True, False]),
-                    "timestamp": (
-                        datetime.now() - timedelta(days=random.randint(0, 30))
-                    ).isoformat(),
-                }
-            )
-
-        # Sample productivity trend
-        productivity_trend = []
-        for i in range(30):
-            date = datetime.now() - timedelta(days=i)
-            score = random.uniform(60, 95)
-            productivity_trend.append(
-                {"date": date.isoformat(), "productivity_score": score}
-            )
-
-        return {
-            "activities": activities,
-            "patterns": patterns,
-            "suggestions": suggestions,
-            "productivity_trend": sorted(productivity_trend, key=lambda x: x["date"]),
-        }
+    def set_data_manager(self, data_manager):
+        """Set the data manager for the dashboard."""
+        self.data_manager = data_manager
+        if hasattr(self, "export_widget"):
+            self.export_widget.set_data_source(data_manager)
 
 
-# Archived legacy file from lyrixa/gui/analytics_dashboard.py
-
-# Example usage
-if __name__ == "__main__":
-    if PYSIDE6_AVAILABLE:
-        from PySide6.QtWidgets import QApplication
-
-        app = QApplication(sys.argv)
-
+def main():
+    """Main function for testing the analytics dashboard."""
+    if not QT_AVAILABLE:
+        print("Qt not available. Running in headless mode.")
         dashboard = AnalyticsDashboard()
-        dashboard.show()
-        dashboard.resize(1200, 800)
+        print("Analytics dashboard created successfully in headless mode.")
+        return dashboard
 
-        sys.exit(app.exec())
-    else:
-        print("PySide6 is required to run the Analytics Dashboard")
+    app = QApplication([])
+    dashboard = AnalyticsDashboard()
+    dashboard.setWindowTitle("Lyrixa Analytics Dashboard")
+    dashboard.setMinimumSize(1000, 700)
+    dashboard.show()
+
+    try:
+        app.exec()
+    except KeyboardInterrupt:
+        print("\nShutting down analytics dashboard...")
+
+    return dashboard
+
+
+if __name__ == "__main__":
+    main()

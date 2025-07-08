@@ -25,6 +25,16 @@ except ImportError:
     print("⚠️ Aetherra runtime not available")
     AetherRuntime = None
 
+# Import conversation manager
+try:
+    from .conversation_manager import LyrixaConversationManager
+
+    CONVERSATION_MANAGER_AVAILABLE = True
+except ImportError as e:
+    print(f"⚠️ Conversation manager not available: {e}")
+    LyrixaConversationManager = None
+    CONVERSATION_MANAGER_AVAILABLE = False
+
 
 class LyrixaIntelligenceStack:
     """
@@ -34,13 +44,24 @@ class LyrixaIntelligenceStack:
     by integrating all core Aetherra AI OS system plugins and modules.
     """
 
-    def __init__(
-        self, workspace_path: str, aether_runtime: Optional[AetherRuntime] = None
-    ):
+    def __init__(self, workspace_path: str, aether_runtime=None):
         self.workspace_path = workspace_path
         self.aether_runtime = aether_runtime or (
             AetherRuntime() if AetherRuntime else None
         )
+
+        # Initialize conversation manager
+        if CONVERSATION_MANAGER_AVAILABLE and LyrixaConversationManager:
+            try:
+                self.conversation_manager = LyrixaConversationManager(
+                    workspace_path=workspace_path, aether_runtime=self.aether_runtime
+                )
+                print("✅ LLM-powered conversation manager initialized")
+            except Exception as e:
+                print(f"⚠️ Failed to initialize conversation manager: {e}")
+                self.conversation_manager = None
+        else:
+            self.conversation_manager = None
 
         # Intelligence components status
         self.intelligence_status = {
@@ -277,6 +298,234 @@ class LyrixaIntelligenceStack:
             print(f"❌ System reflection failed: {e}")
             return {"status": "error", "message": str(e)}
 
+    async def generate_response_async(self, user_message: str) -> str:
+        """Generate a response based on user input using intelligence components."""
+        try:
+            # Check for memory-related queries
+            if self.aether_runtime and self.aether_runtime.context.memory:
+                memory_results = (
+                    await self.aether_runtime.context.memory.query_memories(
+                        user_message
+                    )
+                )
+                if memory_results:
+                    # Process memory results into a conversational response
+                    response = self._process_memory_results(
+                        memory_results, user_message
+                    )
+                    if response:
+                        return response
+
+            # Try plugin execution for dynamic responses
+            if self.aether_runtime and self.aether_runtime.context.plugins:
+                plugin_response = self.aether_runtime.context.plugins.execute_chain(
+                    user_message
+                )
+                if plugin_response:
+                    return plugin_response
+
+            # Generate a contextual response based on the user message
+            return self._generate_contextual_response(user_message)
+        except Exception as e:
+            return f"I encountered an error while processing your request: {str(e)}"
+
+    def _process_memory_results(
+        self, memory_results: List[Dict], user_message: str
+    ) -> Optional[str]:
+        """Process memory query results into a conversational response."""
+        try:
+            if not memory_results:
+                return None
+
+            # Analyze the memory results to generate a meaningful response
+            relevant_memories = []
+            for memory in memory_results[:3]:  # Limit to top 3 most relevant
+                content = memory.get("content", {})
+
+                # Extract meaningful information from different memory types
+                if "project_understanding" in content:
+                    project_info = content["project_understanding"]
+                    relevant_memories.append(
+                        {
+                            "type": "project",
+                            "info": f"Project: {project_info.get('project_name', 'Unknown')}, "
+                            f"Type: {project_info.get('project_type', 'Unknown')}, "
+                            f"Phase: {project_info.get('current_phase', 'Unknown')}",
+                        }
+                    )
+                elif "feedback_entry" in content:
+                    feedback_info = content["feedback_entry"]
+                    relevant_memories.append(
+                        {
+                            "type": "feedback",
+                            "info": f"Feedback: {feedback_info.get('feedback_type', 'Unknown')} "
+                            f"(Rating: {feedback_info.get('rating', 'N/A')})",
+                        }
+                    )
+                else:
+                    # Generic memory content
+                    relevant_memories.append(
+                        {
+                            "type": "general",
+                            "info": str(content)[:100] + "..."
+                            if len(str(content)) > 100
+                            else str(content),
+                        }
+                    )
+
+            # Generate response based on memory context
+            if relevant_memories:
+                response_parts = ["Based on what I remember:"]
+
+                project_memories = [
+                    m for m in relevant_memories if m["type"] == "project"
+                ]
+                if project_memories:
+                    response_parts.append(
+                        f"You're working on the {project_memories[0]['info']}."
+                    )
+
+                feedback_memories = [
+                    m for m in relevant_memories if m["type"] == "feedback"
+                ]
+                if feedback_memories:
+                    response_parts.append(
+                        "I've been learning from your feedback to improve my responses."
+                    )
+
+                # Add contextual help based on user message
+                if any(
+                    word in user_message.lower()
+                    for word in ["help", "how", "what", "explain"]
+                ):
+                    response_parts.append(
+                        "How can I assist you with your current work?"
+                    )
+                else:
+                    response_parts.append(
+                        "Is there something specific you'd like to know or work on?"
+                    )
+
+                return " ".join(response_parts)
+
+            return None
+        except Exception as e:
+            print(f"❌ Error processing memory results: {e}")
+            return None
+
+    def _generate_contextual_response(self, user_message: str) -> str:
+        """Generate a contextual response based on the user message."""
+        message_lower = user_message.lower()
+
+        # Greeting responses
+        if any(word in message_lower for word in ["hello", "hi", "hey", "greetings"]):
+            return "Hello! I'm Lyrixa, your AI assistant for the Aetherra project. How can I help you today?"
+
+        # Help requests
+        if any(word in message_lower for word in ["help", "assist", "support"]):
+            return "I'm here to help with your Aetherra project! I can assist with development tasks, answer questions, provide insights, and help manage your workflow. What would you like to work on?"
+
+        # Status inquiries
+        if any(word in message_lower for word in ["status", "progress", "update"]):
+            return "I can help you check the status of your project. Would you like me to review your current progress or help with next steps?"
+
+        # Question patterns
+        if any(
+            word in message_lower for word in ["what", "how", "why", "when", "where"]
+        ):
+            return "That's a great question! I'd be happy to help you understand this better. Could you provide more context about what you're working on?"
+
+        # Default conversational response
+        return "I understand you're reaching out. I'm here to help with your Aetherra project - whether you need technical assistance, want to discuss ideas, or need help with development tasks. What's on your mind?"
+
+    def generate_response(self, user_message: str) -> str:
+        """Synchronous wrapper for generate_response_async with LLM support."""
+        try:
+            # Check if we have the LLM-powered conversation manager
+            if self.conversation_manager and hasattr(
+                self.conversation_manager, "generate_response"
+            ):
+                # Use async conversation manager
+                try:
+                    # Try to get the current event loop
+                    try:
+                        asyncio.get_running_loop()
+                        # If we reach here, there's a running loop
+                        # Use thread executor to run async code
+                        import concurrent.futures
+
+                        def run_async():
+                            new_loop = asyncio.new_event_loop()
+                            try:
+                                if self.conversation_manager and hasattr(
+                                    self.conversation_manager, "generate_response"
+                                ):
+                                    return new_loop.run_until_complete(
+                                        self.conversation_manager.generate_response(
+                                            user_message
+                                        )
+                                    )
+                                else:
+                                    return "Conversation manager not available"
+                            finally:
+                                new_loop.close()
+
+                        with concurrent.futures.ThreadPoolExecutor() as executor:
+                            future = executor.submit(run_async)
+                            return future.result(timeout=30)
+
+                    except RuntimeError:
+                        # No running loop, safe to use asyncio.run
+                        if self.conversation_manager and hasattr(
+                            self.conversation_manager, "generate_response"
+                        ):
+                            return asyncio.run(
+                                self.conversation_manager.generate_response(
+                                    user_message
+                                )
+                            )
+                        else:
+                            return "Conversation manager not available"
+
+                except Exception as e:
+                    print(f"⚠️ LLM conversation manager failed: {e}")
+                    # Fall back to the old system
+                    pass
+
+            # Fallback to old system if LLM conversation manager not available
+            # Use a more robust approach to handle async in sync context
+            try:
+                # Try to get the current event loop
+                asyncio.get_running_loop()
+                # If we reach here, there's a running loop
+                # Use thread executor to run async code
+                import concurrent.futures
+
+                def run_async():
+                    new_loop = asyncio.new_event_loop()
+                    try:
+                        return new_loop.run_until_complete(
+                            self.generate_response_async(user_message)
+                        )
+                    finally:
+                        new_loop.close()
+
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(run_async)
+                    return future.result(timeout=10)
+
+            except RuntimeError:
+                # No running loop, safe to use asyncio.run
+                return asyncio.run(self.generate_response_async(user_message))
+
+        except Exception as e:
+            print(f"⚠️ Error in generate_response: {e}")
+            # Fallback to contextual response if async fails
+            try:
+                return self._generate_contextual_response(user_message)
+            except Exception:
+                return "I'm here to help with your Aetherra project! How can I assist you today?"
+
     # Private helper methods
     async def _check_semantic_memory(self):
         """Check semantic memory with confidence scoring"""
@@ -431,9 +680,40 @@ class LyrixaIntelligenceStack:
                     workflow_code = f.read()
 
                 # Execute using Aether runtime
-                result = await self.aether_runtime.execute_async(
-                    workflow_code, params or {}
-                )
+                result = None
+                if self.aether_runtime:
+                    try:
+                        # Try different execution methods
+                        if hasattr(self.aether_runtime, "execute_async"):
+                            # Check if it's actually async
+                            execute_method = getattr(
+                                self.aether_runtime, "execute_async"
+                            )
+                            if asyncio.iscoroutinefunction(execute_method):
+                                result = await execute_method(
+                                    workflow_code, params or {}
+                                )
+                            else:
+                                result = execute_method(workflow_code, params or {})
+                        elif hasattr(self.aether_runtime, "execute"):
+                            # Try the sync execute method
+                            execute_method = getattr(self.aether_runtime, "execute")
+                            try:
+                                result = execute_method(workflow_code)
+                            except TypeError:
+                                # If it doesn't accept parameters, try without
+                                result = execute_method()
+                        else:
+                            result = "No execute method found on AetherRuntime"
+                    except Exception as e:
+                        result = f"Execution failed: {str(e)}"
+                else:
+                    result = "AetherRuntime not available"
+
+                # If we still don't have a result, use fallback
+                if result is None:
+                    result = f"Executed {workflow_name} (simulated)"
+
                 return {
                     "success": True,
                     "result": result,

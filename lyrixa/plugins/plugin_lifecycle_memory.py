@@ -8,16 +8,17 @@ creation context, and intelligent loading/unloading based on historical data.
 
 import json
 import os
-import time
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set
+from typing import Dict, List, Optional
 
 
 class PluginMemoryEntry:
     """Represents a memory entry for plugin lifecycle events."""
 
-    def __init__(self, plugin_name: str, event_type: str, context: Dict = None):
+    def __init__(
+        self, plugin_name: str, event_type: str, context: Optional[Dict] = None
+    ):
         self.plugin_name = plugin_name
         self.event_type = (
             event_type  # 'loaded', 'unloaded', 'executed', 'created', 'modified'
@@ -45,7 +46,7 @@ class PluginUsagePattern:
         self.co_occurrence = defaultdict(int)  # Other plugins used together
         self.average_session_length = 0.0
         self.success_rate = 1.0
-        self.last_used = None
+        self.last_used: Optional[datetime] = None
         self.creation_reason = ""
         self.lifecycle_stage = "active"  # active, idle, deprecated, retired
 
@@ -53,7 +54,7 @@ class PluginUsagePattern:
 class PluginLifecycleMemory:
     """Memory-aware plugin lifecycle management system."""
 
-    def __init__(self, memory_dir: str = None):
+    def __init__(self, memory_dir: Optional[str] = None):
         self.memory_dir = memory_dir or os.path.join(
             os.path.dirname(__file__), ".memory"
         )
@@ -196,7 +197,7 @@ class PluginLifecycleMemory:
         self,
         plugin_name: str,
         event_type: str,
-        context: Dict = None,
+        context: Optional[Dict] = None,
         success: bool = True,
     ):
         """Record a plugin lifecycle event."""
@@ -265,7 +266,9 @@ class PluginLifecycleMemory:
         """Update current session context."""
         self.session_context.update(context)
 
-    def get_load_recommendations(self, current_context: Dict = None) -> List[Dict]:
+    def get_load_recommendations(
+        self, current_context: Optional[Dict] = None
+    ) -> List[Dict]:
         """Get plugin load recommendations based on memory and patterns."""
         recommendations = []
         current_time = datetime.now()
@@ -707,7 +710,10 @@ lifecycle_memory = PluginLifecycleMemory()
 
 
 def record_plugin_event(
-    plugin_name: str, event_type: str, context: Dict = None, success: bool = True
+    plugin_name: str,
+    event_type: str,
+    context: Optional[Dict] = None,
+    success: bool = True,
 ):
     """Convenience function for recording plugin events."""
     return lifecycle_memory.record_plugin_event(
@@ -715,6 +721,6 @@ def record_plugin_event(
     )
 
 
-def get_load_recommendations(current_context: Dict = None) -> List[Dict]:
+def get_load_recommendations(current_context: Optional[Dict] = None) -> List[Dict]:
     """Convenience function for getting load recommendations."""
     return lifecycle_memory.get_load_recommendations(current_context)

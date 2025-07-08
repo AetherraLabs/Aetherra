@@ -571,7 +571,11 @@ class AetherraCodeProductionParser:
     def parse(self, code: str) -> AetherraCodeAST:
         """Parse AetherraCode and return AST"""
         try:
-            return self.parser.parse(code)
+            result = self.parser.parse(code)
+            # If the transformer was not applied, apply it manually
+            if isinstance(result, Tree):
+                result = AetherraCodeProductionTransformer().transform(result)
+            return result
         except ParseError as e:
             raise ParseError(f"AetherraCode parse error: {e}") from e
         except LexError as e:

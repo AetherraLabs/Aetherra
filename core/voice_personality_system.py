@@ -93,7 +93,7 @@ class VoicePersonalitySystem:
         self.tts_engine = None
         self._initialize_tts_engine()
 
-    def _initialize_speech_patterns(self) -> Dict[str, List[str]]:
+    def _initialize_speech_patterns(self) -> Dict[str, Any]:
         """Initialize speech pattern libraries for different contexts"""
         return {
             "greetings": {
@@ -175,10 +175,16 @@ class VoicePersonalitySystem:
         adapted_text = text
 
         # Apply personality-based modifications
-        if self.personality["traits"]["enthusiastic"] > 0.7 and emotion in ["happy", "excited"]:
+        if self.personality["traits"]["enthusiastic"] > 0.7 and emotion in [
+            "happy",
+            "excited",
+        ]:
             adapted_text = self._add_enthusiasm(adapted_text)
 
-        if self.personality["traits"]["empathetic"] > 0.8 and emotion in ["sad", "frustrated"]:
+        if self.personality["traits"]["empathetic"] > 0.8 and emotion in [
+            "sad",
+            "frustrated",
+        ]:
             adapted_text = self._add_empathy(adapted_text)
 
         if (
@@ -193,14 +199,22 @@ class VoicePersonalitySystem:
 
         # Context-specific adaptations
         current_hour = datetime.now().hour
-        if current_hour < 12 and self.personality["contextual_adaptations"]["morning_energy"] > 0.7:
+        if (
+            current_hour < 12
+            and self.personality["contextual_adaptations"]["morning_energy"] > 0.7
+        ):
             adapted_text = self._add_morning_energy(adapted_text)
-        elif current_hour > 18 and self.personality["contextual_adaptations"]["evening_calm"] > 0.6:
+        elif (
+            current_hour > 18
+            and self.personality["contextual_adaptations"]["evening_calm"] > 0.6
+        ):
             adapted_text = self._add_evening_calm(adapted_text)
 
         return adapted_text
 
-    def _calculate_speech_parameters(self, emotion: str, context: str) -> Dict[str, float]:
+    def _calculate_speech_parameters(
+        self, emotion: str, context: str
+    ) -> Dict[str, float]:
         """Calculate speech synthesis parameters based on emotion and context"""
         base_params = {
             "rate": self.voice_config["speech_rate"],
@@ -283,7 +297,9 @@ class VoicePersonalitySystem:
         }
 
         self.interaction_history.append(learning_event)
-        logger.info(f"🧠 Learning from interaction: {feedback_analysis['sentiment']} feedback")
+        logger.info(
+            f"🧠 Learning from interaction: {feedback_analysis['sentiment']} feedback"
+        )
 
     def adapt_to_user_mood(self, detected_mood: str, confidence: float = 0.8):
         """Adapt personality and voice to user's detected mood"""
@@ -327,7 +343,9 @@ class VoicePersonalitySystem:
                 if param in self.voice_config:
                     self.voice_config[param] = value
 
-            logger.info(f"🎭 Adapted to user mood: {detected_mood} (confidence: {confidence:.1%})")
+            logger.info(
+                f"🎭 Adapted to user mood: {detected_mood} (confidence: {confidence:.1%})"
+            )
 
     def get_contextual_greeting(self) -> str:
         """Generate contextual greeting based on time and personality"""
@@ -345,7 +363,9 @@ class VoicePersonalitySystem:
         # Select greeting based on personality
         if self.personality["traits"]["enthusiastic"] > 0.7:
             # Prefer more energetic greetings
-            selected_greeting = available_greetings[0] if available_greetings else "Hello!"
+            selected_greeting = (
+                available_greetings[0] if available_greetings else "Hello!"
+            )
         else:
             # Random selection from available greetings
             selected_greeting = (
@@ -478,12 +498,17 @@ class VoicePersonalitySystem:
     def _update_emotional_state_after_speech(self, text: str, params: Dict[str, float]):
         """Update emotional state based on speech interaction"""
         # Analyze text for emotional content
-        if any(word in text.lower() for word in ["excellent", "great", "wonderful", "fantastic"]):
+        if any(
+            word in text.lower()
+            for word in ["excellent", "great", "wonderful", "fantastic"]
+        ):
             self.current_emotional_state["satisfaction_level"] = min(
                 1.0, self.current_emotional_state["satisfaction_level"] + 0.05
             )
 
-        if any(word in text.lower() for word in ["problem", "error", "issue", "difficult"]):
+        if any(
+            word in text.lower() for word in ["problem", "error", "issue", "difficult"]
+        ):
             self.current_emotional_state["stress_level"] = min(
                 1.0, self.current_emotional_state["stress_level"] + 0.1
             )
@@ -540,8 +565,24 @@ class VoicePersonalitySystem:
     def _analyze_user_feedback(self, feedback: str) -> Dict[str, Any]:
         """Analyze user feedback for sentiment and specific aspects"""
         # Simple sentiment analysis placeholder
-        positive_words = ["good", "great", "excellent", "love", "perfect", "helpful", "amazing"]
-        negative_words = ["bad", "terrible", "hate", "awful", "annoying", "wrong", "confusing"]
+        positive_words = [
+            "good",
+            "great",
+            "excellent",
+            "love",
+            "perfect",
+            "helpful",
+            "amazing",
+        ]
+        negative_words = [
+            "bad",
+            "terrible",
+            "hate",
+            "awful",
+            "annoying",
+            "wrong",
+            "confusing",
+        ]
 
         feedback_lower = feedback.lower()
         positive_count = sum(1 for word in positive_words if word in feedback_lower)
@@ -575,7 +616,9 @@ class VoicePersonalitySystem:
             if value > 0.7:  # Reinforce strong traits
                 self.personality["traits"][trait] = min(1.0, value + 0.02)
 
-    def _adjust_behavior_based_on_feedback(self, analysis: Dict[str, Any], context: Dict[str, Any]):
+    def _adjust_behavior_based_on_feedback(
+        self, analysis: Dict[str, Any], context: Dict[str, Any]
+    ):
         """Adjust behavior based on negative feedback"""
         mentioned_aspects = analysis["specific_mentions"]
 
@@ -588,13 +631,17 @@ class VoicePersonalitySystem:
                 0.1, self.personality["traits"]["humorous"] - 0.1
             )
 
-    def _update_communication_preferences(self, analysis: Dict[str, Any], context: Dict[str, Any]):
+    def _update_communication_preferences(
+        self, analysis: Dict[str, Any], context: Dict[str, Any]
+    ):
         """Update communication style preferences based on feedback"""
         if analysis["sentiment"] == "positive":
             # Reinforce current communication style
             for style, value in self.personality["communication_styles"].items():
                 if value > 0.7:
-                    self.personality["communication_styles"][style] = min(1.0, value + 0.05)
+                    self.personality["communication_styles"][style] = min(
+                        1.0, value + 0.05
+                    )
 
     def _interrupt_current_speech(self):
         """Interrupt current speech for urgent messages"""
@@ -622,7 +669,9 @@ if __name__ == "__main__":
 
     print("\n3. Adaptive Speech:")
     voice_system.speak(
-        "Let's work on this Python problem together!", emotion="enthusiastic", context="technical"
+        "Let's work on this Python problem together!",
+        emotion="enthusiastic",
+        context="technical",
     )
 
     print("\n4. Mood Adaptation:")
@@ -637,7 +686,9 @@ if __name__ == "__main__":
     voice_system.learn_from_interaction(
         "Your voice is too fast, please slow down", {"context": "speed_feedback"}
     )
-    voice_system.speak("How's this pace? Better?", emotion="curious", context="adjustment")
+    voice_system.speak(
+        "How's this pace? Better?", emotion="curious", context="adjustment"
+    )
 
     # Save personality and history
     voice_system.save_personality_profile()
@@ -645,4 +696,6 @@ if __name__ == "__main__":
 
     print("\n✅ Voice & Personality system demonstration complete!")
     print(f"Personality traits: {voice_system.personality['traits']}")
-    print(f"Interaction history: {len(voice_system.interaction_history)} recorded interactions")
+    print(
+        f"Interaction history: {len(voice_system.interaction_history)} recorded interactions"
+    )

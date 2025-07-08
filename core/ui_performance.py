@@ -3,7 +3,7 @@
 🚀 AetherraCode UI Performance Optimizer
 =====================================
 
-Advanced UI performance optimization for AetherraCode & Lyrixa components.
+Advanced UI performance optimization for Aetherra & Lyrixa components.
 This module enhances responsiveness, reduces memory usage, and improves
 rendering performance across all UI components.
 

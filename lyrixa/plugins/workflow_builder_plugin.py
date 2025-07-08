@@ -7,15 +7,16 @@ within the Lyrixa system. Features drag-and-drop workflow creation, task automat
 and integration with other plugins.
 """
 
-import json
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class WorkflowStep:
     """Represents a single step in a workflow."""
 
-    def __init__(self, step_id: str, name: str, action: str, parameters: Dict = None):
+    def __init__(
+        self, step_id: str, name: str, action: str, parameters: Optional[Dict] = None
+    ):
         self.step_id = step_id
         self.name = name
         self.action = action
@@ -154,7 +155,7 @@ class WorkflowBuilderPlugin:
         self.workflows[workflow_id] = workflow
         return workflow_id
 
-    def get_workflow(self, workflow_id: str) -> Workflow:
+    def get_workflow(self, workflow_id: str) -> Optional[Workflow]:
         """Get a workflow by ID."""
         return self.workflows.get(workflow_id)
 

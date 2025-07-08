@@ -30,9 +30,14 @@ try:
 
     ADVANCED_ENGINE_AVAILABLE = True
 except ImportError:
+    get_performance_engine = None
+    parallel_optimized = None
+    performance_optimized = None
     ADVANCED_ENGINE_AVAILABLE = False
 
 # Import existing performance systems
+memory_optimizer = None
+performance_manager = None
 try:
     from .memory_performance import memory_optimizer
     from .performance_integration import performance_manager
@@ -68,8 +73,11 @@ class SpeedEnhancementSuite:
         """Initialize all available performance systems"""
         if ADVANCED_ENGINE_AVAILABLE:
             try:
-                self.performance_engine = get_performance_engine()
-                print("✅ Advanced Performance Engine loaded")
+                if get_performance_engine is not None:
+                    self.performance_engine = get_performance_engine()
+                    print("✅ Advanced Performance Engine loaded")
+                else:
+                    print("⚠️ get_performance_engine is not available.")
             except Exception as e:
                 print(f"⚠️ Advanced Performance Engine failed to load: {e}")
 
@@ -265,7 +273,7 @@ def ultra_fast(operation_name: Optional[str] = None):
     """Decorator for ultra-fast operation execution"""
 
     def decorator(func: Callable) -> Callable:
-        if ADVANCED_ENGINE_AVAILABLE:
+        if ADVANCED_ENGINE_AVAILABLE and performance_optimized is not None:
             return performance_optimized(operation_name)(func)
         else:
             # Fallback optimization
@@ -284,7 +292,7 @@ def lightning_fast_data(max_workers: Optional[int] = None):
     """Decorator for lightning-fast data processing"""
 
     def decorator(func: Callable) -> Callable:
-        if ADVANCED_ENGINE_AVAILABLE:
+        if ADVANCED_ENGINE_AVAILABLE and parallel_optimized is not None:
             return parallel_optimized(max_workers=max_workers)(func)
         else:
             # Fallback to regular execution
@@ -308,7 +316,7 @@ class SpeedBooster:
         self.performance_engine = None
 
     def __enter__(self):
-        if ADVANCED_ENGINE_AVAILABLE:
+        if ADVANCED_ENGINE_AVAILABLE and get_performance_engine is not None:
             self.performance_engine = get_performance_engine()
             # Temporarily boost performance settings
             self.original_settings = {

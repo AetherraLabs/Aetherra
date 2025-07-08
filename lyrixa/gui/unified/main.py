@@ -16,8 +16,7 @@ Features:
 import asyncio
 import sys
 import traceback
-from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 print("🚀 LYRIXA UNIFIED GUI LAUNCHER")
 print("=" * 50)
@@ -25,13 +24,47 @@ print("=" * 50)
 # Check Qt availability first
 QT_AVAILABLE = False
 try:
-    from PySide6.QtCore import QTimer, Signal
-    from PySide6.QtWidgets import QApplication
+    from PySide6.QtCore import QTimer as QtTimer
+    from PySide6.QtWidgets import QApplication as QtApplication
 
+    # Use the real Qt classes
+    QTimer = QtTimer  # type: ignore
+    QApplication = QtApplication  # type: ignore
     QT_AVAILABLE = True
     print("✅ Qt GUI framework available")
 except ImportError:
     print("⚠️ Qt not available - will run in headless mode")
+
+    # Create mock classes for runtime when Qt is not available
+    class QApplication:
+        def __init__(self, *args):
+            pass
+
+        @staticmethod
+        def instance():
+            return None
+
+        def exec(self):
+            return 0
+
+    class QTimer:
+        def __init__(self, *args):
+            pass
+
+        def start(self, interval):
+            pass
+
+        def stop(self):
+            pass
+
+        @property
+        def timeout(self):
+            return MockSignal()
+
+    class MockSignal:
+        def connect(self, callback):
+            pass
+
 
 # Import Lyrixa components
 try:
@@ -56,11 +89,11 @@ class UnifiedLyrixaLauncher:
 
     def __init__(self):
         """Initialize the unified launcher."""
-        self.app: Optional[QApplication] = None if not QT_AVAILABLE else None
+        self.app: Any = None
         self.main_window: Optional[EnhancedLyrixaWindow] = None
         self.memory_system: Optional[AdvancedMemorySystem] = None
         self.anticipation_engine: Optional[AnticipationEngine] = None
-        self.realtime_timer: Optional[QTimer] = None if not QT_AVAILABLE else None
+        self.realtime_timer: Any = None
         self.context_bridge: Optional[ContextBridge] = None
 
         # Communication bus for cross-phase events
@@ -74,7 +107,11 @@ class UnifiedLyrixaLauncher:
             self.memory_system = AdvancedMemorySystem()
             # Note: Some memory systems may not have async initialize
             if hasattr(self.memory_system, "initialize"):
-                await self.memory_system.initialize()
+                initialize_method = getattr(self.memory_system, "initialize")
+                if asyncio.iscoroutinefunction(initialize_method):
+                    await initialize_method()
+                else:
+                    initialize_method()
             print("✅ Advanced Memory System ready")
             return True
         except Exception as e:
@@ -87,10 +124,36 @@ class UnifiedLyrixaLauncher:
             print("🔮 Initializing Phase 2 Anticipation Engine...")
             self.anticipation_engine = AnticipationEngine()
             # Connect to memory system if both are available
-            if self.memory_system and hasattr(
-                self.anticipation_engine, "connect_memory"
-            ):
-                self.anticipation_engine.connect_memory(self.memory_system)
+            if self.memory_system:
+                # Try to connect memory system using various methods
+                connect_method = getattr(
+                    self.anticipation_engine, "connect_memory", None
+                )
+                if connect_method:
+                    try:
+                        connect_method(self.memory_system)
+                    except Exception as e:
+                        print(f"⚠️ Memory connection failed: {e}")
+                else:
+                    set_method = getattr(
+                        self.anticipation_engine, "set_memory_system", None
+                    )
+                    if set_method:
+                        try:
+                            set_method(self.memory_system)
+                        except Exception as e:
+                            print(f"⚠️ Memory system assignment failed: {e}")
+                    else:
+                        # Fallback: set memory system as attribute
+                        try:
+                            setattr(
+                                self.anticipation_engine,
+                                "memory_system",
+                                self.memory_system,
+                            )
+                            print("⚠️ Using fallback memory connection method")
+                        except Exception as e:
+                            print(f"⚠️ Fallback memory connection failed: {e}")
             print("✅ Anticipation Engine ready")
             return True
         except Exception as e:

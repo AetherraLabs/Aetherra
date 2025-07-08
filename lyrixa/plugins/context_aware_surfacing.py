@@ -7,10 +7,9 @@ user behavior, task patterns, and environmental factors.
 """
 
 import json
-import time
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 
 class ContextSnapshot:
@@ -148,7 +147,7 @@ class ContextAwareSurfacing:
         return snapshot
 
     def get_context_recommendations(
-        self, context: ContextSnapshot = None, limit: int = 10
+        self, context: Optional[ContextSnapshot] = None, limit: int = 10
     ) -> List[Dict]:
         """Get plugin recommendations based on current context."""
         if not context:
@@ -374,7 +373,7 @@ class ContextAwareSurfacing:
         plugin_name: str,
         context: ContextSnapshot,
         success: bool = True,
-        execution_time: float = None,
+        execution_time: Optional[float] = None,
     ):
         """Record plugin usage for learning."""
         usage_record = {
@@ -505,7 +504,9 @@ class ContextAwareSurfacing:
 context_surfacing = ContextAwareSurfacing()
 
 
-def get_recommendations(context: ContextSnapshot = None, limit: int = 10) -> List[Dict]:
+def get_recommendations(
+    context: Optional[ContextSnapshot] = None, limit: int = 10
+) -> List[Dict]:
     """Convenience function for getting context-aware recommendations."""
     return context_surfacing.get_context_recommendations(context, limit)
 

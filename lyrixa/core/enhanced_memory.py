@@ -16,8 +16,6 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
-import numpy as np
-
 
 @dataclass
 class MemoryCluster:
@@ -178,20 +176,59 @@ class LyrixaEnhancedMemorySystem:
         except Exception as e:
             print(f"❌ Failed to initialize enhanced memory database: {e}")
 
+    async def query_memories(
+        self, query: str, tags: Optional[List[str]] = None
+    ) -> List[Dict[str, Any]]:
+        """Search memories based on a query and optional tags."""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+
+            # Build SQL query
+            sql_query = (
+                "SELECT id, content, tags FROM enhanced_memories WHERE content LIKE ?"
+            )
+            params = [f"%{query}%"]
+
+            if tags:
+                sql_query += " AND ("
+                sql_query += " OR ".join(["tags LIKE ?" for _ in tags])
+                sql_query += ")"
+                params.extend([f"%{tag}%" for tag in tags])
+
+            cursor.execute(sql_query, params)
+            results = cursor.fetchall()
+            conn.close()
+
+            # Format results
+            memories = [
+                {
+                    "id": row[0],
+                    "content": json.loads(row[1]),
+                    "tags": json.loads(row[2]),
+                }
+                for row in results
+            ]
+
+            return memories
+
+        except Exception as e:
+            print(f"❌ Failed to search memories: {e}")
+            return []
+
     async def store_enhanced_memory(
         self,
         content: Dict[str, Any],
         context: Optional[Dict[str, Any]] = None,
         tags: Optional[List[str]] = None,
         importance: float = 0.5,
-        memory_type: str = "general",
         emotional_valence: float = 0.0,
         cognitive_load: float = 0.5,
     ) -> str:
-        """Store memory with enhanced metadata and automatic clustering"""
-
+        """Store memory with enhanced metadata and automatic clustering."""
         memory_id = self._generate_memory_id(content, context)
         now = datetime.now().isoformat()
+        memory_type = "general"  # Default memory type
 
         # Generate embedding vector for clustering
         embedding_vector = await self._generate_embedding(content, context)
@@ -228,7 +265,7 @@ class LyrixaEnhancedMemorySystem:
                     now,
                     now,
                     1,
-                    memory_type,
+                    "general",  # Default memory type
                     json.dumps(embedding_vector),
                     cluster_id,
                     emotional_valence,
@@ -306,7 +343,9 @@ class LyrixaEnhancedMemorySystem:
 
         for cluster_id, center_vector_json, cluster_tags_json in cursor.fetchall():
             center_vector = json.loads(center_vector_json)
-            cluster_tags = json.loads(cluster_tags_json)
+            cluster_tags = json.loads(
+                cluster_tags_json
+            )  # Ensure correct variable usage
 
             # Calculate cosine similarity
             similarity = self._cosine_similarity(embedding_vector, center_vector)
@@ -328,7 +367,7 @@ class LyrixaEnhancedMemorySystem:
             return best_cluster
         else:
             # Create new cluster
-            return await self._create_new_cluster(embedding_vector, tags, memory_type)
+            return await self._create_new_cluster(embedding_vector, tags)
 
     def _cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
         """Calculate cosine similarity between two vectors"""
@@ -345,11 +384,11 @@ class LyrixaEnhancedMemorySystem:
         return dot_product / (magnitude1 * magnitude2)
 
     async def _create_new_cluster(
-        self, center_vector: List[float], tags: List[str], memory_type: str
+        self, center_vector: List[float], tags: List[str]
     ) -> str:
         """Create a new memory cluster"""
         cluster_id = f"cluster_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(str(center_vector)) % 10000}"
-        cluster_name = f"Cluster {memory_type.title()}"
+        cluster_name = "Cluster "
 
         if tags:
             cluster_name += f" ({', '.join(tags[:2])})"
@@ -367,7 +406,7 @@ class LyrixaEnhancedMemorySystem:
                 (
                     cluster_id,
                     cluster_name,
-                    f"Auto-generated cluster for {memory_type} memories",
+                    "Auto-generated cluster for memories",
                     json.dumps(center_vector),
                     datetime.now().isoformat(),
                     datetime.now().isoformat(),
@@ -1045,7 +1084,6 @@ class LyrixaEnhancedMemorySystem:
             content=content,
             context=context,
             tags=tags,
-            memory_type="user_interaction",
             importance=importance,
         )
 

@@ -12,7 +12,6 @@ Provides cross-platform synchronization and smart notification capabilities:
 import asyncio
 import json
 import logging
-import time
 import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
@@ -56,9 +55,9 @@ class SmartNotification:
     message: str
     timestamp: datetime
     scheduled_time: Optional[datetime] = None
-    device_targets: List[str] = None
-    context: Dict[str, Any] = None
-    actions: List[Dict[str, str]] = None
+    device_targets: List[str] = None  # type: ignore
+    context: Dict[str, Any] = None  # type: ignore
+    actions: List[Dict[str, str]] = None  # type: ignore
     delivered: bool = False
     dismissed: bool = False
 
@@ -338,7 +337,7 @@ class CrossPlatformSyncManager:
             local_changes = self._get_local_changes()
 
             # Send changes to server
-            server_response = await self._upload_changes(local_changes)
+            await self._upload_changes(local_changes)
 
             # Get remote changes
             remote_changes = await self._download_changes()
@@ -493,7 +492,7 @@ class WebMobileInterface:
         """Send achievement notification."""
         return self.notification_manager.create_notification(
             NotificationType.ACHIEVEMENT,
-            f"🏆 Achievement Unlocked!",
+            "🏆 Achievement Unlocked!",
             f"{achievement}: {details}",
             NotificationPriority.HIGH,
         )
@@ -528,7 +527,7 @@ class WebMobileInterface:
             ],
         }
 
-    async def handle_quick_action(self, action_id: str, params: Dict[str, Any] = None):
+    async def handle_quick_action(self, action_id: str, params: Dict[str, Any] = None):  # type: ignore
         """Handle quick action from mobile/web UI."""
 
         if action_id == "quick_note":

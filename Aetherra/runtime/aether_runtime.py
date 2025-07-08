@@ -1,9 +1,11 @@
 # aetherra/runtime/aether_runtime.py
 
+import asyncio
 import re
 import time
 from datetime import datetime
 from queue import Queue
+from typing import Any, Dict, Optional
 
 
 class ExecutionContext:
@@ -313,3 +315,24 @@ class AetherRuntime:
         else:
             print(f"❌ Invalid .aether command: {line}")
             return False
+
+    async def initialize(self):
+        """Initialize the runtime context and ensure all components are ready."""
+        print("Initializing AetherRuntime...")
+        if not self.context.memory or not self.context.plugins:
+            raise RuntimeError(
+                "Memory or plugins are not registered in the runtime context."
+            )
+        await asyncio.sleep(0)  # Simulate async initialization if needed
+        print("AetherRuntime initialized successfully.")
+
+    def execute_async(
+        self, command: str, context: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """Execute a command asynchronously using the executor."""
+        if not hasattr(self, "executor"):
+            from Aetherra.stdlib.executor import ExecutorPlugin
+
+            self.executor = ExecutorPlugin()
+
+        return self.executor.execute_async(command, context)

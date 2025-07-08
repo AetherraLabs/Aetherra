@@ -10,7 +10,7 @@ import ast
 import os
 import time
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class QualityMetrics:
@@ -503,7 +503,7 @@ class PluginQualityControl:
         return results
 
     def generate_quality_report(
-        self, plugin_path: str, plugin_name: str = None
+        self, plugin_path: str, plugin_name: Optional[str] = None
     ) -> Dict:
         """Generate comprehensive quality report."""
         metrics = self.validate_plugin(plugin_path, plugin_name)
@@ -550,11 +550,15 @@ class PluginQualityControl:
 quality_control = PluginQualityControl()
 
 
-def validate_plugin(plugin_path: str, plugin_name: str = None) -> QualityMetrics:
+def validate_plugin(
+    plugin_path: str, plugin_name: Optional[str] = None
+) -> QualityMetrics:
     """Convenience function for plugin validation."""
     return quality_control.validate_plugin(plugin_path, plugin_name)
 
 
-def generate_quality_report(plugin_path: str, plugin_name: str = None) -> Dict:
+def generate_quality_report(
+    plugin_path: str, plugin_name: Optional[str] = None
+) -> Dict:
     """Convenience function for quality report generation."""
     return quality_control.generate_quality_report(plugin_path, plugin_name)

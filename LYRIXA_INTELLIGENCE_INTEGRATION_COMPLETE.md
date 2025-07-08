@@ -70,7 +70,7 @@ Lyrixa: 🔍 Performing system reflection...
 ```python
 # Initialize intelligence stack
 self.intelligence_stack = LyrixaIntelligenceStack(
-    workspace_path=workspace_path, 
+    workspace_path=workspace_path,
     aether_runtime=self.aether_runtime
 )
 
@@ -209,14 +209,14 @@ python lyrixa/launcher.py
 
 ## 📋 Status Summary
 
-| Component | Status | Health | Features |
-|-----------|--------|--------|----------|
-| Intelligence Layer | ✅ Active | 100% | 6/6 components |
-| System Workflows | ✅ Active | 80% | 4/5 workflows |
-| System Modules | ✅ Active | 100% | 6/6 modules |
-| GUI Integration | ✅ Active | 100% | Full integration |
-| Chat Interface | ✅ Active | 100% | Intelligence-aware |
-| Health Monitoring | ✅ Active | 100% | Real-time tracking |
+| Component          | Status   | Health | Features           |
+| ------------------ | -------- | ------ | ------------------ |
+| Intelligence Layer | ✅ Active | 100%   | 6/6 components     |
+| System Workflows   | ✅ Active | 80%    | 4/5 workflows      |
+| System Modules     | ✅ Active | 100%   | 6/6 modules        |
+| GUI Integration    | ✅ Active | 100%   | Full integration   |
+| Chat Interface     | ✅ Active | 100%   | Intelligence-aware |
+| Health Monitoring  | ✅ Active | 100%   | Real-time tracking |
 
 ## 🏆 Conclusion
 

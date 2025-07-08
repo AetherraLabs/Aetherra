@@ -462,6 +462,48 @@ class LyrixaAdvancedPluginManager:
             "total_time": sum(step["execution_time"] for step in execution_log),
         }
 
+    def execute_chain(self, user_message: str) -> str:
+        """Execute a chain of plugins based on the user message (synchronous wrapper)."""
+        try:
+            # Try to find relevant plugins for the message
+            for plugin_name, plugin_data in self.plugins.items():
+                # Simple keyword matching for now
+                if hasattr(plugin_data.get("instance"), "process_message"):
+                    try:
+                        response = plugin_data["instance"].process_message(user_message)
+                        if response:
+                            return response
+                    except Exception as e:
+                        print(f"❌ Error executing plugin {plugin_name}: {e}")
+                        continue
+
+            # Try to route to plugins using intent routing
+            try:
+                # Use async method in sync context carefully
+                import asyncio
+
+                if asyncio.get_event_loop().is_running():
+                    # Create a simple response using available plugins
+                    if self.plugins:
+                        available_plugins = list(self.plugins.keys())[:3]
+                        return f"I have access to these plugins that might help: {', '.join(available_plugins)}. What specific task would you like me to help with?"
+                    else:
+                        return "I'm ready to help! What can I assist you with today?"
+                else:
+                    # If no event loop is running, we can use asyncio.run
+                    result = asyncio.run(
+                        self.route_intent_to_plugins("general_query", user_message, {})
+                    )
+                    if result:
+                        return f"I can help you with that using these capabilities: {', '.join(result[:3])}"
+            except Exception as e:
+                print(f"❌ Error in async plugin routing: {e}")
+
+            # Fallback response
+            return "I'm ready to help! What would you like me to assist you with?"
+        except Exception as e:
+            return f"I encountered an error: {str(e)}"
+
     async def scaffold_plugin_from_nl(self, description: str, plugin_name: str) -> str:
         """Generate plugin scaffolding from natural language description"""
 
@@ -747,10 +789,27 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
             )
 
             for memory in chain_memories:
-                chain_data = memory.content.get("plugin_chain")
-                if chain_data:
-                    chain = PluginChain(**chain_data)
-                    self.plugin_chains[chain.name] = chain
+                # Handle both dict and object memory structures
+                if hasattr(memory, "content"):
+                    content = memory.content
+                else:
+                    content = memory
+
+                # Extract chain data from content
+                if isinstance(content, dict):
+                    chain_data = content.get("plugin_chain") or content
+                else:
+                    chain_data = content
+
+                if chain_data and isinstance(chain_data, dict):
+                    try:
+                        chain = PluginChain(**chain_data)
+                        self.plugin_chains[chain.name] = chain
+                    except Exception as chain_error:
+                        print(
+                            f"⚠️ Failed to create plugin chain from data: {chain_error}"
+                        )
+                        continue
 
             print(f"✅ Loaded {len(self.plugin_chains)} plugin chains from memory")
 

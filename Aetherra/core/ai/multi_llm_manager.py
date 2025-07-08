@@ -516,7 +516,11 @@ class GeminiProvider:
 
 
 # Global instance for AetherraCode integration
-llm_manager = MultiLLMManager()
+# Only create global instance if running as main module
+if __name__ == "__main__":
+    llm_manager = MultiLLMManager()
+else:
+    llm_manager = None  # Available when needed
 
 # Plugin registration for AetherraCode
 PLUGIN_CLASS = None  # This is a core component, not a plugin

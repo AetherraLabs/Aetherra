@@ -12,15 +12,12 @@ Cross-Phase Communication Matrix:
 - Phase 4 Feedback → Phase 2+1 Systems: user_preference_delta, suggestion_ratings
 """
 
-import asyncio
-import json
 import logging
 import time
 import uuid
-from dataclasses import asdict, dataclass
-from datetime import datetime
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Set
 
 # Setup logging
 logger = logging.getLogger(__name__)

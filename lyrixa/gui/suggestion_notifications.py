@@ -22,7 +22,9 @@ try:
         QRect,
         Qt,
         QTimer,
-        Signal,
+    )
+    from PySide6.QtCore import (
+        Signal as QtSignal,
     )
     from PySide6.QtGui import QColor, QFont, QIcon, QLinearGradient, QPainter, QPixmap
     from PySide6.QtWidgets import (
@@ -106,10 +108,10 @@ class SuggestionWidget(QWidget if PYSIDE6_AVAILABLE else object):
     """Individual suggestion display widget."""
 
     # Signals
-    suggestion_accepted = Signal(str) if PYSIDE6_AVAILABLE else None
-    suggestion_rejected = Signal(str) if PYSIDE6_AVAILABLE else None
-    suggestion_dismissed = Signal(str) if PYSIDE6_AVAILABLE else None
-    feedback_provided = Signal(str, str) if PYSIDE6_AVAILABLE else None
+    suggestion_accepted = QtSignal(str) if PYSIDE6_AVAILABLE else None
+    suggestion_rejected = QtSignal(str) if PYSIDE6_AVAILABLE else None
+    suggestion_dismissed = QtSignal(str) if PYSIDE6_AVAILABLE else None
+    feedback_provided = QtSignal(str, str) if PYSIDE6_AVAILABLE else None
 
     def __init__(self, suggestion: Suggestion, parent=None):
         if not PYSIDE6_AVAILABLE:
@@ -544,8 +546,8 @@ class SuggestionNotificationSystem(QWidget if PYSIDE6_AVAILABLE else object):
     """
 
     # Signals
-    suggestion_processed = Signal(str, bool) if PYSIDE6_AVAILABLE else None
-    settings_changed = Signal() if PYSIDE6_AVAILABLE else None
+    suggestion_processed = QtSignal(str, bool) if PYSIDE6_AVAILABLE else None
+    settings_changed = QtSignal() if PYSIDE6_AVAILABLE else None
 
     def __init__(self, parent=None):
         if not PYSIDE6_AVAILABLE:

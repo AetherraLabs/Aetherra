@@ -20,6 +20,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+# Check for PySide6 availability
+PYSIDE6_AVAILABLE = False
 try:
     from PySide6.QtCore import (
         QEasingCurve,
@@ -76,8 +78,9 @@ try:
 except ImportError:
     PYSIDE6_AVAILABLE = False
 
-    # Mock classes for when PySide6 is not available
-    class QWidget:
+if not PYSIDE6_AVAILABLE:
+    # Comprehensive mock classes for when PySide6 is not available
+    class MockWidget:
         def __init__(self, *args, **kwargs):
             pass
 
@@ -87,21 +90,67 @@ except ImportError:
         def show(self):
             pass
 
-    class Signal:
-        def __init__(self, *args):
+        def hide(self):
             pass
 
-        def connect(self, *args):
+        def setLayout(self, layout):
+            pass
+
+        def addWidget(self, widget):
+            pass
+
+        def addLayout(self, layout):
+            pass
+
+        def addStretch(self):
+            pass
+
+        def setFont(self, font):
+            pass
+
+        def setStyleSheet(self, style):
+            pass
+
+        def setText(self, text):
+            pass
+
+        def text(self):
+            return ""
+
+        def setChecked(self, checked):
+            pass
+
+        def isChecked(self):
+            return False
+
+        def setCurrentText(self, text):
+            pass
+
+        def currentText(self):
+            return ""
+
+        def addItem(self, item):
+            pass
+
+        def addItems(self, items):
+            pass
+
+        def clicked(self):
+            return self
+
+        def toggled(self):
+            return self
+
+        def currentTextChanged(self):
+            return self
+
+        def timeout(self):
+            return self
+
+        def connect(self, func):
             pass
 
         def emit(self, *args):
-            pass
-
-    class QThread:
-        pass
-
-    class QTimer:
-        def __init__(self, *args):
             pass
 
         def start(self, *args):
@@ -110,13 +159,161 @@ except ImportError:
         def stop(self):
             pass
 
-    # Mock other Qt classes
-    Qt = type("Qt", (), {"AlignCenter": 0, "AlignLeft": 0})
-    QVBoxLayout = QHBoxLayout = QTabWidget = QLabel = QPushButton = QWidget
-    QGroupBox = QFrame = QScrollArea = QSplitter = QTextEdit = QWidget
-    QProgressBar = QSlider = QSpinBox = QCheckBox = QListWidget = QWidget
-    QGraphicsView = QGraphicsScene = QTreeWidget = QWidget
-    QFont = QColor = QPalette = QWidget
+        def setScene(self, scene):
+            pass
+
+        def setRenderHint(self, hint):
+            pass
+
+        def setDragMode(self, mode):
+            pass
+
+        def setInteractive(self, interactive):
+            pass
+
+        def scale(self, x, y):
+            pass
+
+        def resetTransform(self):
+            pass
+
+        def centerOn(self, x, y):
+            pass
+
+        def clear(self):
+            pass
+
+        def addEllipse(self, *args, **kwargs):
+            return self
+
+        def addText(self, *args, **kwargs):
+            return self
+
+        def addItem(self, item):
+            pass
+
+        def setMaximumHeight(self, height):
+            pass
+
+        def setPlaceholderText(self, text):
+            pass
+
+        def setHeaderLabels(self, labels):
+            pass
+
+        def itemClicked(self):
+            return self
+
+        def addTopLevelItem(self, item):
+            pass
+
+        def setExpanded(self, expanded):
+            pass
+
+        def addChild(self, child):
+            pass
+
+        def setData(self, column, role, data):
+            pass
+
+        def data(self, column, role):
+            return None
+
+        def setForeground(self, column, color):
+            pass
+
+        def setValue(self, value):
+            pass
+
+        def setRange(self, min_val, max_val):
+            pass
+
+        def setSizes(self, sizes):
+            pass
+
+        def thought_updated(self):
+            return self
+
+        def event_selected(self):
+            return self
+
+        def setPos(self, x, y):
+            pass
+
+        def setPen(self, pen):
+            pass
+
+    class MockSignal(MockWidget):
+        def __init__(self, *args):
+            super().__init__()
+
+    class MockQTimer(MockWidget):
+        pass
+
+    class MockQThread(MockWidget):
+        pass
+
+    # Base Qt classes
+    Qt = type(
+        "Qt",
+        (),
+        {
+            "AlignCenter": 4,
+            "AlignLeft": 1,
+            "AlignRight": 2,
+            "Horizontal": 1,
+            "Vertical": 2,
+            "UserRole": 256,
+        },
+    )
+
+    QEasingCurve = MockWidget
+    QParallelAnimationGroup = MockWidget
+    QPropertyAnimation = MockWidget
+    QRect = MockWidget
+    QSequentialAnimationGroup = MockWidget
+    QThread = MockQThread
+    QTimer = MockQTimer
+    Signal = MockSignal
+
+    # GUI classes
+    QBrush = MockWidget
+    QColor = MockWidget
+    QFont = type("QFont", (MockWidget,), {"Bold": 75})
+    QIcon = MockWidget
+    QLinearGradient = MockWidget
+    QPainter = type("QPainter", (MockWidget,), {"Antialiasing": 1})
+    QPalette = MockWidget
+    QPen = MockWidget
+    QPixmap = MockWidget
+
+    # Widget classes
+    QWidget = MockWidget
+    QCheckBox = MockWidget
+    QComboBox = MockWidget
+    QFrame = MockWidget
+    QGraphicsEllipseItem = MockWidget
+    QGraphicsItem = MockWidget
+    QGraphicsLineItem = MockWidget
+    QGraphicsScene = MockWidget
+    QGraphicsTextItem = MockWidget
+    QGraphicsView = type("QGraphicsView", (MockWidget,), {"RubberBandDrag": 1})
+    QGroupBox = MockWidget
+    QHBoxLayout = MockWidget
+    QLabel = MockWidget
+    QListWidget = MockWidget
+    QListWidgetItem = MockWidget
+    QProgressBar = MockWidget
+    QPushButton = MockWidget
+    QScrollArea = MockWidget
+    QSlider = MockWidget
+    QSpinBox = MockWidget
+    QSplitter = MockWidget
+    QTabWidget = MockWidget
+    QTextEdit = MockWidget
+    QTreeWidget = MockWidget
+    QTreeWidgetItem = MockWidget
+    QVBoxLayout = MockWidget
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -175,11 +372,8 @@ class TimelineEvent:
     color: str
 
 
-class MemoryGraphWidget(QWidget if PYSIDE6_AVAILABLE else object):
+class MemoryGraphWidget(QWidget):
     """Interactive memory visualization graph with advanced features."""
-
-    node_selected = Signal(str) if PYSIDE6_AVAILABLE else None
-    connection_created = Signal(str, str) if PYSIDE6_AVAILABLE else None
 
     def __init__(self, parent=None):
         if not PYSIDE6_AVAILABLE:
@@ -192,6 +386,14 @@ class MemoryGraphWidget(QWidget if PYSIDE6_AVAILABLE else object):
         self.hover_node = None
         self.real_time_updates = True
         self.layout_algorithm = "force_directed"
+
+        # Initialize signals
+        if PYSIDE6_AVAILABLE:
+            self.node_selected = Signal(str)
+            self.connection_created = Signal(str, str)
+        else:
+            self.node_selected = None
+            self.connection_created = None
 
         self.init_ui()
         self.setup_animations()

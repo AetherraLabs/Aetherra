@@ -13,7 +13,7 @@ import sys
 import threading
 import time
 from datetime import datetime
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 
 class PluginState:
@@ -45,11 +45,44 @@ class PluginManager:
     def _initialize_analytics(self):
         """Initialize plugin analytics if available."""
         try:
-            from .plugin_analytics import PluginAnalytics
+            from .plugin_analytics import PluginAnalyticsIntegration
 
-            self.analytics = PluginAnalytics()
+            self.analytics = PluginAnalyticsIntegration()
         except ImportError:
-            print("Plugin analytics not available")
+            self.analytics = None
+
+    def track_plugin_event(
+        self, plugin_name: str, event: str, extra_context: Optional[Dict] = None
+    ):
+        """Track plugin events using analytics integration."""
+        if self.analytics:
+            context = {"plugin_name": plugin_name}
+            if extra_context:
+                context.update(extra_context)
+            if event == "load_attempt":
+                self.analytics.record_plugin_action(
+                    plugin_name, "load_attempt", context
+                )
+            elif event == "load_success":
+                self.analytics.record_plugin_action(
+                    plugin_name, "load_success", context
+                )
+            elif event == "unload":
+                self.analytics.record_plugin_action(plugin_name, "unload", context)
+            elif event == "execute_start":
+                self.analytics.record_plugin_action(
+                    plugin_name, "execute_start", context
+                )
+            elif event == "execute_end":
+                self.analytics.record_plugin_action(plugin_name, "execute_end", context)
+            elif event == "load_error":
+                self.analytics.record_plugin_error(
+                    plugin_name, Exception("Load error occurred"), context
+                )
+            elif event == "execute_error":
+                self.analytics.record_plugin_error(
+                    plugin_name, Exception("Execution error occurred"), context
+                )
 
     def discover_plugins(self) -> List[str]:
         """Discover available plugins in the plugins directory."""
@@ -81,8 +114,7 @@ class PluginManager:
             self.plugin_states[plugin_name] = PluginState.LOADING
 
             # Analytics tracking
-            if self.analytics:
-                self.analytics.track_plugin_event(plugin_name, "load_attempt")
+            self.track_plugin_event(plugin_name, "load_attempt")
 
             # Check if already loaded
             if plugin_name in self.plugins and not force_reload:
@@ -136,8 +168,7 @@ class PluginManager:
                 self._trigger_event("plugin_loaded", plugin_name)
 
                 # Analytics tracking
-                if self.analytics:
-                    self.analytics.track_plugin_event(plugin_name, "load_success")
+                self.track_plugin_event(plugin_name, "load_success")
 
                 return True
             else:
@@ -148,10 +179,7 @@ class PluginManager:
             self.plugin_states[plugin_name] = PluginState.ERROR
 
             # Analytics tracking
-            if self.analytics:
-                self.analytics.track_plugin_event(
-                    plugin_name, "load_error", {"error": str(e)}
-                )
+            self.track_plugin_event(plugin_name, "load_error", {"error": str(e)})
 
             print(f"Error loading plugin {plugin_name}: {e}")
             return False
@@ -190,8 +218,7 @@ class PluginManager:
             self._trigger_event("plugin_unloaded", plugin_name)
 
             # Analytics tracking
-            if self.analytics:
-                self.analytics.track_plugin_event(plugin_name, "unload")
+            self.track_plugin_event(plugin_name, "unload")
 
             return True
 
@@ -210,8 +237,7 @@ class PluginManager:
 
             # Analytics tracking - start
             start_time = time.time()
-            if self.analytics:
-                self.analytics.track_plugin_event(plugin_name, "execute_start")
+            self.track_plugin_event(plugin_name, "execute_start")
 
             # Execute plugin
             if hasattr(plugin, "execute"):
@@ -223,28 +249,39 @@ class PluginManager:
 
             # Analytics tracking - success
             execution_time = time.time() - start_time
-            if self.analytics:
-                self.analytics.track_plugin_event(
-                    plugin_name,
-                    "execute_success",
-                    {
-                        "execution_time": execution_time,
-                        "args_count": len(args),
-                        "kwargs_count": len(kwargs),
-                    },
-                )
+            self.track_plugin_event(
+                plugin_name,
+                "execute_success",
+                {
+                    "execution_time": execution_time,
+                    "args_count": len(args),
+                    "kwargs_count": len(kwargs),
+                },
+            )
 
             return result
 
         except Exception as e:
             # Analytics tracking - error
-            if self.analytics:
-                self.analytics.track_plugin_event(
-                    plugin_name, "execute_error", {"error": str(e)}
-                )
+            self.track_plugin_event(plugin_name, "execute_error", {"error": str(e)})
 
             print(f"Error executing plugin {plugin_name}: {e}")
             return None
+
+    def execute_chain(self, user_message: str) -> str:
+        """Execute a chain of plugins based on the user message."""
+        try:
+            # Example logic: iterate through plugins and execute matching ones
+            for plugin_name, plugin in self.plugins.items():
+                if hasattr(plugin, "process_message"):
+                    response = plugin.process_message(user_message)
+                    if response:
+                        return response
+
+            # Fallback if no plugin processes the message
+            return "No plugin could process the message."
+        except Exception as e:
+            return f"Error executing plugin chain: {e}"
 
     def get_plugin_info(self, plugin_name: str) -> Dict:
         """Get comprehensive plugin information."""
@@ -258,7 +295,7 @@ class PluginManager:
 
         # Add analytics data
         if self.analytics:
-            info["analytics"] = self.analytics.get_plugin_metrics(plugin_name)
+            info["analytics"] = self.analytics.get_plugin_analytics(plugin_name)
 
         return info
 
@@ -342,7 +379,7 @@ class PluginManager:
             "total_plugins": len(self.discover_plugins()),
             "loaded_plugins": len(self.plugins),
             "plugin_states": dict(self.plugin_states),
-            "analytics": self.analytics.get_summary(),
+            "analytics": self.analytics.get_dashboard_data(),
         }
 
     def export_configuration(self) -> Dict:

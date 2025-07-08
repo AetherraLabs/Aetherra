@@ -13,9 +13,8 @@ import sqlite3
 import statistics
 import threading
 import time
-from collections import Counter, defaultdict
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -88,11 +87,11 @@ class PluginMetricsCollector:
         plugin_id: str,
         execution_time: float,
         success: bool,
-        error_message: str = None,
-        memory_usage: float = None,
-        cpu_usage: float = None,
-        context: Dict[str, Any] = None,
-        session_id: str = None,
+        error_message: Optional[str] = None,
+        memory_usage: Optional[float] = None,
+        cpu_usage: Optional[float] = None,
+        context: Optional[Dict[str, Any]] = None,
+        session_id: Optional[str] = None,
     ):
         """Record a plugin execution event."""
         try:
@@ -140,8 +139,8 @@ class PluginMetricsCollector:
         self,
         plugin_id: str,
         action: str,
-        context: Dict[str, Any] = None,
-        session_id: str = None,
+        context: Optional[Dict[str, Any]] = None,
+        session_id: Optional[str] = None,
     ):
         """Record a plugin usage event."""
         try:
@@ -167,8 +166,8 @@ class PluginMetricsCollector:
         plugin_id: str,
         error_type: str,
         error_message: str,
-        stack_trace: str = None,
-        context: Dict[str, Any] = None,
+        stack_trace: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ):
         """Record a plugin error event."""
         try:
@@ -492,13 +491,13 @@ class PluginAnalyticsIntegration:
         )
 
     def record_plugin_action(
-        self, plugin_id: str, action: str, context: Dict[str, Any] = None
+        self, plugin_id: str, action: str, context: Optional[Dict[str, Any]] = None
     ):
         """Record a plugin action/usage event."""
         self.metrics_collector.record_usage(plugin_id, action, context, self.session_id)
 
     def record_plugin_error(
-        self, plugin_id: str, error: Exception, context: Dict[str, Any] = None
+        self, plugin_id: str, error: Exception, context: Optional[Dict[str, Any]] = None
     ):
         """Record a plugin error."""
         import traceback
@@ -507,7 +506,7 @@ class PluginAnalyticsIntegration:
             plugin_id, type(error).__name__, str(error), traceback.format_exc(), context
         )
 
-    def get_plugin_analytics(self, plugin_id: str = None) -> Dict[str, Any]:
+    def get_plugin_analytics(self, plugin_id: Optional[str] = None) -> Dict[str, Any]:
         """Get analytics for a specific plugin or system overview."""
         if plugin_id:
             return self.metrics_collector.get_plugin_metrics(plugin_id)
@@ -532,7 +531,7 @@ class PluginExecutionTracker:
         self.metrics = metrics_collector
         self.plugin_id = plugin_id
         self.session_id = session_id
-        self.start_time = None
+        self.start_time = 0.0
         self.context = {}
 
     def __enter__(self):
@@ -560,7 +559,7 @@ class PluginExecutionTracker:
                 self.plugin_id,
                 exc_type.__name__ if exc_type else "Unknown",
                 error_message or "Unknown error",
-                traceback.format_exc() if exc_type else None,
+                traceback.format_exc() if exc_type else "",
                 self.context,
             )
 

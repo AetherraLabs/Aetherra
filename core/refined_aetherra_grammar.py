@@ -237,7 +237,7 @@ class RefinedaetherraTransformer(Transformer):
     def recall_stmt(self, args):
         """Transform recall statement"""
         target = args[0] if args else ""
-        if hasattr(target, "node_type"):
+        if isinstance(target, RefinedASTNode):
             return RefinedASTNode(
                 "recall", value=target.value, metadata=target.metadata
             )
@@ -540,8 +540,22 @@ class RefinedaetherraParser:
 
             # Parse with refined grammar
             ast = self.parser.parse(cleaned_source)
+            # Ensure the result is a RefinedASTNode (not a ParseTree)
+            if not isinstance(ast, RefinedASTNode):
+                transformer = getattr(
+                    getattr(self.parser, "options", None), "transformer", None
+                )
+                if transformer is not None:
+                    ast = transformer.transform(ast)
+                else:
+                    # fallback: try to use the transformer's transform method directly
+                    ast = RefinedaetherraTransformer().transform(ast)
             self.last_ast = ast
 
+            if not isinstance(ast, RefinedASTNode):
+                raise AetherraCodeSyntaxError(
+                    "Parse did not produce a valid RefinedASTNode"
+                )
             return ast
 
         except (LarkError, ParseError, LexError) as e:
