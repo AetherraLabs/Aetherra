@@ -23,6 +23,7 @@ from .core.plugins import LyrixaPluginManager
 from .core.project_knowledge_responder import ProjectKnowledgeResponder
 from .core.reflexive_loop import LyrixaReflexiveLoop
 from .core.system_bootstrap import LyrixaSystemBootstrap
+from .intelligence_integration import LyrixaIntelligenceStack
 
 
 class LyrixaAI:
@@ -97,6 +98,15 @@ class LyrixaAI:
         self.debug_console = LyrixaDebugConsole(
             debug_level=DebugLevel.STANDARD  # Can be configured via settings
         )
+
+        # Initialize Intelligence Stack
+        self.intelligence_stack = LyrixaIntelligenceStack(
+            workspace_path=self.workspace_path,
+            aether_runtime=None,  # Will be set later
+        )
+
+        # Initialize intelligence components
+        self.intelligence_initialized = False
 
         # Conversation state
         self.conversation_context = []

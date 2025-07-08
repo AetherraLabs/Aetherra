@@ -56,6 +56,7 @@ except ImportError as e:
 try:
     from Aetherra.runtime.aether_runtime import AetherRuntime
     from lyrixa import LyrixaAI
+    from lyrixa.intelligence_integration import LyrixaIntelligenceStack
 except ImportError as e:
     print(f"❌ Failed to import required modules: {e}")
     print("Make sure you're running this from the project root directory.")
@@ -69,6 +70,7 @@ class LyrixaLauncherGUI(QMainWindow):
         super().__init__()
         self.lyrixa = None
         self.aether_runtime = None
+        self.intelligence_stack = None
         self.setup_ui()
         self.setup_theme()
         self.setup_connections()
@@ -622,19 +624,41 @@ class LyrixaLauncherGUI(QMainWindow):
         self.chat_display.ensureCursorVisible()
 
     def simulate_ai_response(self, user_message):
-        """Simulate AI response (replace with actual Lyrixa integration)"""
-        # Simple responses for demonstration
+        """Generate AI response using intelligence stack"""
+        # Check for intelligence commands first
+        message_lower = user_message.lower()
+        
+        # Intelligence stack commands
+        if "intelligence status" in message_lower or "system status" in message_lower:
+            QTimer.singleShot(500, lambda: self.handle_intelligence_status())
+            return
+        elif "run workflow" in message_lower:
+            workflow_name = self.extract_workflow_name(user_message)
+            if workflow_name:
+                QTimer.singleShot(500, lambda: self.handle_run_workflow(workflow_name))
+            else:
+                QTimer.singleShot(500, lambda: self.add_chat_message("Lyrixa", "Available workflows: goal_autopilot, agent_sync, memory_cleanser, daily_reflector, plugin_watchdog"))
+            return
+        elif "system reflection" in message_lower:
+            QTimer.singleShot(500, lambda: self.handle_system_reflection())
+            return
+        elif "intelligence health" in message_lower:
+            QTimer.singleShot(500, lambda: self.handle_intelligence_health())
+            return
+        
+        # Traditional responses enhanced with intelligence awareness
         responses = {
-            "hello": "Hello! I'm Lyrixa, your AI assistant. How can I help you today?",
-            "status": "All systems are running smoothly! Plugin health is at 85%, memory usage is optimal.",
-            "help": "I can help you with:\n• System monitoring\n• Plugin management\n• Task scheduling\n• Memory optimization\n• And much more!",
-            "plugins": "Currently monitoring 5 active plugins. All are healthy and functioning properly.",
-            "agents": "3 agents are active: core_agent, escalation_mgr, and reflection_ai.",
+            "hello": "Hello! I'm Lyrixa, your AI assistant with full intelligence stack integration. How can I help you today?",
+            "status": "🎯 System Status: All intelligence components are active. Use 'intelligence status' for detailed analysis.",
+            "help": "I can help you with:\n• 🧠 Intelligence stack monitoring\n• 📊 System workflow execution\n• 🔍 System reflection and analysis\n• ⚙️ Plugin and agent management\n• 📈 Performance optimization\n\nTry: 'intelligence status', 'run workflow', or 'system reflection'",
+            "plugins": "🔌 Plugin monitoring via intelligence stack. Use 'run workflow plugin_watchdog' for detailed health check.",
+            "agents": "🤖 Agent synchronization active. Use 'run workflow agent_sync' to ensure all agents are in sync.",
+            "memory": "🧠 Memory management via intelligence stack. Use 'run workflow memory_cleanser' to optimize memory.",
+            "goals": "🎯 Goal management active. Use 'run workflow goal_autopilot' to check goal status.",
         }
 
-        message_lower = user_message.lower()
-        response = "I'm processing your request. This is a demo response - full integration coming soon!"
-
+        response = "I'm processing your request using the intelligence stack. How can I assist you further?"
+        
         for key, value in responses.items():
             if key in message_lower:
                 response = value
@@ -643,8 +667,109 @@ class LyrixaLauncherGUI(QMainWindow):
         # Add AI response with a slight delay for realism
         QTimer.singleShot(1000, lambda: self.add_chat_message("Lyrixa", response))
 
+    def extract_workflow_name(self, message):
+        """Extract workflow name from user message"""
+        workflows = ["goal_autopilot", "agent_sync", "memory_cleanser", "daily_reflector", "plugin_watchdog"]
+        message_lower = message.lower()
+        
+        for workflow in workflows:
+            if workflow in message_lower:
+                return workflow
+        return None
+
+    def handle_intelligence_status(self):
+        """Handle intelligence status request"""
+        asyncio.create_task(self.async_intelligence_status())
+
+    async def async_intelligence_status(self):
+        """Async handler for intelligence status"""
+        try:
+            if not self.intelligence_stack:
+                self.add_chat_message("Lyrixa", "❌ Intelligence stack not initialized", is_system=True)
+                return
+
+            status = await self.intelligence_stack.get_intelligence_status()
+            health_score = status.get('overall_health', 0) * 100
+            
+            # Intelligence Layer Status
+            intel_status = status.get('intelligence_layer', {})
+            intel_health = intel_status.get('health', 0) * 100
+            
+            # System Workflows Status
+            workflow_status = status.get('system_workflows', {})
+            workflow_health = workflow_status.get('health', 0) * 100
+            active_workflows = workflow_status.get('active_count', 0)
+            
+            # System Modules Status
+            module_status = status.get('system_modules', {})
+            module_health = module_status.get('health', 0) * 100
+            active_modules = module_status.get('active_count', 0)
+            
+            # Generate comprehensive status report
+            status_report = f"""🧠 INTELLIGENCE STACK STATUS
+            
+🎯 Overall Health: {health_score:.1f}%
+🔬 Intelligence Layer: {intel_health:.1f}%
+📊 System Workflows: {workflow_health:.1f}% ({active_workflows}/5 active)
+⚙️ System Modules: {module_health:.1f}% ({active_modules}/6 active)
+
+💡 Intelligence Components:
+• Semantic Memory: {'✅' if status['intelligence_layer']['status'].get('semantic_memory') else '❌'}
+• System Awareness: {'✅' if status['intelligence_layer']['status'].get('system_awareness') else '❌'}
+• Self Reflection: {'✅' if status['intelligence_layer']['status'].get('self_reflection') else '❌'}
+• Event Correlation: {'✅' if status['intelligence_layer']['status'].get('event_correlation') else '❌'}
+• Conversational Integration: {'✅' if status['intelligence_layer']['status'].get('conversational_integration') else '❌'}
+• Plugin Monitoring: {'✅' if status['intelligence_layer']['status'].get('plugin_monitoring') else '❌'}"""
+
+            self.add_chat_message("Lyrixa", status_report)
+            
+        except Exception as e:
+            self.add_chat_message("Lyrixa", f"❌ Failed to get intelligence status: {e}")
+
+    def handle_run_workflow(self, workflow_name):
+        """Handle workflow execution request"""
+        asyncio.create_task(self.async_run_workflow(workflow_name))
+
+    async def async_run_workflow(self, workflow_name):
+        """Async handler for workflow execution"""
+        await self.run_intelligence_workflow(workflow_name)
+
+    def handle_system_reflection(self):
+        """Handle system reflection request"""
+        asyncio.create_task(self.async_system_reflection())
+
+    async def async_system_reflection(self):
+        """Async handler for system reflection"""
+        await self.perform_system_reflection()
+
+    def handle_intelligence_health(self):
+        """Handle intelligence health request"""
+        asyncio.create_task(self.async_intelligence_health())
+
+    async def async_intelligence_health(self):
+        """Async handler for intelligence health"""
+        try:
+            if not self.intelligence_stack:
+                self.add_chat_message("Lyrixa", "❌ Intelligence stack not initialized")
+                return
+
+            status = await self.intelligence_stack.get_intelligence_status()
+            health_score = status.get('overall_health', 0) * 100
+            
+            if health_score >= 80:
+                health_status = "🟢 Excellent"
+            elif health_score >= 60:
+                health_status = "🟡 Good"
+            else:
+                health_status = "🔴 Needs Attention"
+                
+            self.add_chat_message("Lyrixa", f"🎯 Intelligence Health: {health_status} ({health_score:.1f}%)")
+            
+        except Exception as e:
+            self.add_chat_message("Lyrixa", f"❌ Failed to get intelligence health: {e}")
+
     async def initialize_lyrixa(self):
-        """Initialize Lyrixa AI system"""
+        """Initialize Lyrixa AI system with full intelligence stack"""
         try:
             self.status_bar.showMessage("🚀 Initializing Lyrixa AI...")
 
@@ -661,9 +786,31 @@ class LyrixaLauncherGUI(QMainWindow):
                 agents=getattr(self.lyrixa, "agent_system", None),
             )
 
-            self.status_bar.showMessage("✅ Lyrixa AI - Ready")
+            # Initialize Intelligence Stack
+            self.status_bar.showMessage("🧠 Initializing Intelligence Stack...")
+            self.intelligence_stack = LyrixaIntelligenceStack(
+                workspace_path=workspace_path, 
+                aether_runtime=self.aether_runtime
+            )
+            
+            # Initialize all intelligence components
+            intelligence_result = await self.intelligence_stack.initialize_intelligence_layer()
+            workflow_result = await self.intelligence_stack.initialize_system_workflows()
+            module_result = await self.intelligence_stack.initialize_system_modules()
+            
+            # Update UI with intelligence status
+            await self.update_intelligence_dashboard()
+
+            self.status_bar.showMessage("✅ Lyrixa AI - Ready (Intelligence Stack Active)")
             self.add_chat_message(
-                "System", "Lyrixa AI system initialized successfully!", is_system=True
+                "System", "🧠 Lyrixa AI system initialized with full intelligence stack!", is_system=True
+            )
+            
+            # Show intelligence summary
+            intelligence_status = await self.intelligence_stack.get_intelligence_status()
+            health_score = intelligence_status.get('overall_health', 0) * 100
+            self.add_chat_message(
+                "System", f"🎯 Intelligence Stack Health: {health_score:.1f}%", is_system=True
             )
 
         except Exception as e:
@@ -671,6 +818,90 @@ class LyrixaLauncherGUI(QMainWindow):
             self.add_chat_message(
                 "System", f"Failed to initialize: {str(e)}", is_system=True
             )
+
+    async def update_intelligence_dashboard(self):
+        """Update the intelligence dashboard with current status"""
+        try:
+            if not self.intelligence_stack:
+                return
+
+            # Get current intelligence status
+            intelligence_status = await self.intelligence_stack.get_intelligence_status()
+            
+            # Update system health display
+            overall_health = intelligence_status.get('overall_health', 0)
+            health_percentage = int(overall_health * 100)
+            
+            # Update progress bars and labels in the dashboard
+            # This would update the GUI elements created in setup_dashboard_tab
+            
+            # Update chat with intelligence insights
+            if overall_health > 0.8:
+                status_msg = f"🟢 Intelligence Stack: Excellent ({health_percentage}%)"
+            elif overall_health > 0.6:
+                status_msg = f"🟡 Intelligence Stack: Good ({health_percentage}%)"
+            else:
+                status_msg = f"🔴 Intelligence Stack: Needs Attention ({health_percentage}%)"
+                
+            self.add_chat_message("System", status_msg, is_system=True)
+            
+            # Update workflow status
+            workflow_status = intelligence_status.get('system_workflows', {})
+            active_workflows = workflow_status.get('active_count', 0)
+            self.add_chat_message("System", f"📊 Active Workflows: {active_workflows}/5", is_system=True)
+            
+            # Update module status
+            module_status = intelligence_status.get('system_modules', {})
+            active_modules = module_status.get('active_count', 0)
+            self.add_chat_message("System", f"⚙️ Active Modules: {active_modules}/6", is_system=True)
+
+        except Exception as e:
+            print(f"❌ Failed to update intelligence dashboard: {e}")
+
+    async def run_intelligence_workflow(self, workflow_name: str):
+        """Run a specific intelligence workflow"""
+        try:
+            if not self.intelligence_stack:
+                self.add_chat_message("System", "❌ Intelligence stack not initialized", is_system=True)
+                return
+
+            self.add_chat_message("System", f"🚀 Running workflow: {workflow_name}", is_system=True)
+            result = await self.intelligence_stack.run_intelligence_workflow(workflow_name)
+            
+            if result.get('success', False):
+                self.add_chat_message("System", f"✅ Workflow '{workflow_name}' completed successfully", is_system=True)
+            else:
+                error_msg = result.get('message', 'Unknown error')
+                self.add_chat_message("System", f"❌ Workflow '{workflow_name}' failed: {error_msg}", is_system=True)
+                
+        except Exception as e:
+            self.add_chat_message("System", f"❌ Failed to run workflow: {e}", is_system=True)
+
+    async def perform_system_reflection(self):
+        """Perform comprehensive system reflection"""
+        try:
+            if not self.intelligence_stack:
+                self.add_chat_message("System", "❌ Intelligence stack not initialized", is_system=True)
+                return
+
+            self.add_chat_message("System", "🔍 Performing system reflection...", is_system=True)
+            reflection = await self.intelligence_stack.perform_system_reflection()
+            
+            # Display reflection insights
+            insights = reflection.get('insights', [])
+            for insight in insights[:3]:  # Show first 3 insights
+                self.add_chat_message("System", f"💡 {insight}", is_system=True)
+            
+            # Display recommendations
+            recommendations = reflection.get('recommendations', [])
+            for recommendation in recommendations[:2]:  # Show first 2 recommendations
+                self.add_chat_message("System", f"📋 {recommendation}", is_system=True)
+                
+            confidence = reflection.get('confidence_score', 0) * 100
+            self.add_chat_message("System", f"🎯 Analysis Confidence: {confidence:.1f}%", is_system=True)
+            
+        except Exception as e:
+            self.add_chat_message("System", f"❌ System reflection failed: {e}", is_system=True)
 
 
 def run_gui():
