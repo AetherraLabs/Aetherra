@@ -11,7 +11,7 @@ import json
 import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Optional
 
 
 class ChatHistoryManager:
@@ -109,8 +109,8 @@ class ChatHistoryManager:
         sender: str,
         content: str,
         message_type: str = "text",
-        context_data: Dict = None,
-        thread_id: str = None,
+        context_data: Optional[Dict] = None,
+        thread_id: Optional[str] = None,
     ) -> str:
         """Add a message to the current session."""
         message_hash = hashlib.md5(
@@ -136,8 +136,6 @@ class ChatHistoryManager:
                 thread_id,
             ),
         )
-
-        message_id = cursor.lastrowid
 
         # Update session message count
         cursor.execute(
@@ -286,7 +284,7 @@ class ChatHistoryManager:
         conn.close()
         return results
 
-    def get_conversation_summary(self, session_id: str = None) -> Dict:
+    def get_conversation_summary(self, session_id: Optional[str] = None) -> Dict:
         """Get a summary of a conversation session."""
         if not session_id:
             session_id = self.current_session_id
@@ -409,7 +407,9 @@ class ChatHistoryManager:
         conn.commit()
         conn.close()
 
-    def export_session(self, session_id: str = None, format: str = "json") -> str:
+    def export_session(
+        self, session_id: Optional[str] = None, format: str = "json"
+    ) -> str:
         """Export a session's chat history."""
         if not session_id:
             session_id = self.current_session_id

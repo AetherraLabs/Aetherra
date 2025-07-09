@@ -16,6 +16,8 @@ making it truly independent and privacy-focused.
 """
 
 import asyncio
+import importlib
+import importlib.util
 import json
 import logging
 import os
@@ -221,7 +223,8 @@ class MultiLLMManager:
                     "context_window": config.context_window,
                     "max_tokens": config.max_tokens,
                     "supports_streaming": config.supports_streaming,
-                    "is_local": config.provider in [LLMProvider.OLLAMA, LLMProvider.LLAMACPP],
+                    "is_local": config.provider
+                    in [LLMProvider.OLLAMA, LLMProvider.LLAMACPP],
                     "requires_api_key": config.provider
                     in [LLMProvider.OPENAI, LLMProvider.ANTHROPIC, LLMProvider.GEMINI],
                 }
@@ -285,7 +288,8 @@ class MultiLLMManager:
             "context_window": self.current_model.context_window,
             "max_tokens": self.current_model.max_tokens,
             "temperature": self.current_model.temperature,
-            "is_local": self.current_model.provider in [LLMProvider.OLLAMA, LLMProvider.LLAMACPP],
+            "is_local": self.current_model.provider
+            in [LLMProvider.OLLAMA, LLMProvider.LLAMACPP],
         }
 
     def save_configs(self):
@@ -364,7 +368,9 @@ class OllamaProvider:
         """Check if model is available in Ollama"""
         try:
             models = self.client.list()
-            available_models = [model["name"].split(":")[0] for model in models["models"]]
+            available_models = [
+                model["name"].split(":")[0] for model in models["models"]
+            ]
             return config.model_name in available_models
         except Exception:
             return False
@@ -484,7 +490,9 @@ class GeminiProvider:
             # Use direct attribute access for Google Generative AI
             model = getattr(self.genai, "GenerativeModel", None)
             if not model:
-                raise AttributeError("GenerativeModel not available in google.generativeai")
+                raise AttributeError(
+                    "GenerativeModel not available in google.generativeai"
+                )
 
             genai_model = model(config.model_name)
 
@@ -499,7 +507,9 @@ class GeminiProvider:
                         max_output_tokens=kwargs.get("max_tokens", config.max_tokens),
                     )
 
-            response = genai_model.generate_content(prompt, generation_config=generation_config)
+            response = genai_model.generate_content(
+                prompt, generation_config=generation_config
+            )
             return response.text or "No response generated"
         except Exception as e:
             raise Exception(f"Gemini error: {e}") from e

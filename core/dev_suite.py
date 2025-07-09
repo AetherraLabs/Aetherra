@@ -16,6 +16,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, List
 
 # Add core modules to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -345,6 +346,136 @@ class AetherraCodeProfiler:
                 )
 
         return suggestions
+
+
+class AetherraCodeIDE:
+    """
+    Interactive Development Environment for AetherraCode
+    """
+
+    def __init__(self):
+        self.current_program = []
+        self.variables = {}
+        self.history = []
+
+    def interactive_programming(self):
+        """Interactive natural language programming session"""
+        print("🗣️  Natural Language Programming Mode")
+        print("Type 'exit' to return to main menu, 'help' for commands")
+        print("Describe what you want to do in natural language...")
+
+        while True:
+            try:
+                user_input = input("\nNL> ").strip()
+
+                if user_input.lower() in ["exit", "quit"]:
+                    break
+                elif user_input.lower() == "help":
+                    self._show_help()
+                elif user_input.lower() == "clear":
+                    self.current_program = []
+                    print("✅ Program cleared")
+                elif user_input.lower() == "show":
+                    self._show_current_program()
+                elif user_input.lower() == "save":
+                    self._save_program()
+                elif user_input:
+                    aether_code = self._translate_to_aetherra(user_input)
+                    if aether_code:
+                        self.current_program.append(aether_code)
+                        print(f"📝 Added: {aether_code}")
+
+            except EOFError:
+                print("\n👋 Natural language session ended.")
+                break
+            except KeyboardInterrupt:
+                print("\n👋 Natural language session interrupted.")
+                break
+
+    def _show_help(self):
+        """Show help for natural language programming"""
+        print("\n💡 Natural Language Programming Help:")
+        print("Commands:")
+        print("  help  - Show this help")
+        print("  clear - Clear current program")
+        print("  show  - Show current program")
+        print("  save  - Save program to file")
+        print("  exit  - Return to main menu")
+        print("\nExamples:")
+        print('  "Remember that AI safety is important"')
+        print('  "Set a goal to optimize performance"')
+        print('  "Use the math plugin to calculate square root of 16"')
+
+    def _show_current_program(self):
+        """Show the current program being built"""
+        if not self.current_program:
+            print("📄 No program yet. Start by describing what you want to do.")
+        else:
+            print("\n📄 Current AetherraCode Program:")
+            for i, line in enumerate(self.current_program, 1):
+                print(f"  {i:2d}. {line}")
+
+    def _save_program(self):
+        """Save the current program to a file"""
+        if not self.current_program:
+            print("❌ No program to save")
+            return
+
+        try:
+            filename = input("Enter filename (without extension): ").strip()
+            if not filename:
+                return
+
+            filepath = f"{filename}.aether"
+            with open(filepath, "w") as f:
+                for line in self.current_program:
+                    f.write(line + "\n")
+
+            print(f"✅ Program saved to {filepath}")
+        except Exception as e:
+            print(f"❌ Error saving file: {e}")
+
+    def _translate_to_aetherra(self, natural_language: str) -> str:
+        """Translate natural language to AetherraCode"""
+        # Simple translation rules - this could be enhanced with AI
+        nl = natural_language.lower().strip()
+
+        if nl.startswith(("remember", "store", "save")):
+            content = nl.split(" ", 1)[1] if " " in nl else "information"
+            return f'remember "{content}"'
+
+        elif nl.startswith(("goal", "set goal", "objective")):
+            if "goal" in nl:
+                goal_part = nl.split("goal", 1)[1].strip()
+                if goal_part.startswith("to "):
+                    goal_part = goal_part[3:]
+                return f'set_goal "{goal_part}"'
+            else:
+                return f'set_goal "{nl}"'
+
+        elif "use" in nl and ("plugin" in nl or "tool" in nl):
+            # Extract plugin usage
+            parts = nl.split()
+            if "use" in parts:
+                use_idx = parts.index("use")
+                if use_idx + 1 < len(parts):
+                    plugin_name = parts[use_idx + 1]
+                    action = (
+                        " ".join(parts[use_idx + 2 :])
+                        if use_idx + 2 < len(parts)
+                        else "execute"
+                    )
+                    return f"use {plugin_name} to {action}"
+
+        elif nl.startswith(("think", "analyze", "reason")):
+            return f'think about "{nl}"'
+
+        elif nl.startswith(("calculate", "compute", "math")):
+            expression = nl.split(" ", 1)[1] if " " in nl else nl
+            return f'calculate "{expression}"'
+
+        # Generic action for everything else
+        return f"# {natural_language}"
 
 
 class AetherraCodeDevSuite:

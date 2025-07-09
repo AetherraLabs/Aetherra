@@ -23,6 +23,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 class TaskPriority(Enum):
     """Task priority levels"""
+
     LOW = 1
     NORMAL = 3
     HIGH = 5
@@ -32,6 +33,7 @@ class TaskPriority(Enum):
 
 class TaskStatus(Enum):
     """Task execution status"""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -43,6 +45,7 @@ class TaskStatus(Enum):
 @dataclass
 class ScheduledTask:
     """Represents a scheduled task"""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str = ""
     function: Optional[Callable] = None
@@ -88,7 +91,7 @@ class BackgroundTaskScheduler:
             "tasks_completed": 0,
             "tasks_failed": 0,
             "average_execution_time": 0.0,
-            "total_execution_time": 0.0
+            "total_execution_time": 0.0,
         }
 
         # Event callbacks
@@ -96,7 +99,7 @@ class BackgroundTaskScheduler:
             "task_started": [],
             "task_completed": [],
             "task_failed": [],
-            "task_retrying": []
+            "task_retrying": [],
         }
 
         # Initialize scheduler
@@ -110,22 +113,22 @@ class BackgroundTaskScheduler:
         for i in range(self.max_workers):
             worker = threading.Thread(
                 target=self._worker_loop,
-                name=f"AetherraScheduler-Worker-{i+1}",
-                daemon=True
+                name=f"AetherraScheduler-Worker-{i + 1}",
+                daemon=True,
             )
             worker.start()
             self.workers.append(worker)
 
         # Start scheduler thread
         scheduler_thread = threading.Thread(
-            target=self._scheduler_loop,
-            name="AetherraScheduler-Main",
-            daemon=True
+            target=self._scheduler_loop, name="AetherraScheduler-Main", daemon=True
         )
         scheduler_thread.start()
 
         if self.enable_logging:
-            print(f"🔄 Background Task Scheduler started with {self.max_workers} workers")
+            print(
+                f"🔄 Background Task Scheduler started with {self.max_workers} workers"
+            )
 
     def schedule_task(
         self,
@@ -139,7 +142,7 @@ class BackgroundTaskScheduler:
         timeout: Optional[float] = None,
         dependencies: Optional[List[str]] = None,
         metadata: Optional[Dict] = None,
-        **kwargs
+        **kwargs,
     ) -> str:
         """Schedule a task for background execution"""
 
@@ -158,7 +161,7 @@ class BackgroundTaskScheduler:
             max_retries=max_retries,
             timeout=timeout,
             dependencies=dependencies or [],
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         # Add to task storage
@@ -179,7 +182,7 @@ class BackgroundTaskScheduler:
         *args,
         name: str = "",
         max_executions: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ) -> str:
         """Schedule a task to run periodically"""
 
@@ -187,7 +190,9 @@ class BackgroundTaskScheduler:
 
         def periodic_wrapper():
             nonlocal execution_count
-            while (max_executions is None or execution_count < max_executions) and self.worker_pool_active:
+            while (
+                max_executions is None or execution_count < max_executions
+            ) and self.worker_pool_active:
                 try:
                     function(*args, **kwargs)
                     execution_count += 1
@@ -205,23 +210,14 @@ class BackgroundTaskScheduler:
             periodic_wrapper,
             name=f"Periodic: {name}",
             priority=TaskPriority.LOW,
-            **kwargs
+            **kwargs,
         )
 
     def schedule_delayed_task(
-        self,
-        function: Callable,
-        delay: float,
-        *args,
-        **kwargs
+        self, function: Callable, delay: float, *args, **kwargs
     ) -> str:
         """Schedule a task to run after a delay"""
-        return self.schedule_task(
-            function,
-            *args,
-            delay=delay,
-            **kwargs
-        )
+        return self.schedule_task(function, *args, delay=delay, **kwargs)
 
     def cancel_task(self, task_id: str) -> bool:
         """Cancel a pending task"""
@@ -255,7 +251,11 @@ class BackgroundTaskScheduler:
 
         while task_id in self.tasks:
             task = self.tasks[task_id]
-            if task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED]:
+            if task.status in [
+                TaskStatus.COMPLETED,
+                TaskStatus.FAILED,
+                TaskStatus.CANCELLED,
+            ]:
                 return task.status == TaskStatus.COMPLETED
 
             if timeout and (time.time() - start_time) > timeout:
@@ -274,12 +274,18 @@ class BackgroundTaskScheduler:
         """Get scheduler statistics"""
         return {
             **self.stats,
-            "pending_tasks": len([t for t in self.tasks.values() if t.status == TaskStatus.PENDING]),
+            "pending_tasks": len(
+                [t for t in self.tasks.values() if t.status == TaskStatus.PENDING]
+            ),
             "running_tasks": len(self.running_tasks),
-            "completed_tasks": len([t for t in self.tasks.values() if t.status == TaskStatus.COMPLETED]),
-            "failed_tasks": len([t for t in self.tasks.values() if t.status == TaskStatus.FAILED]),
+            "completed_tasks": len(
+                [t for t in self.tasks.values() if t.status == TaskStatus.COMPLETED]
+            ),
+            "failed_tasks": len(
+                [t for t in self.tasks.values() if t.status == TaskStatus.FAILED]
+            ),
             "worker_count": len(self.workers),
-            "active": self.worker_pool_active
+            "active": self.worker_pool_active,
         }
 
     def get_task_list(self, status_filter: Optional[TaskStatus] = None) -> List[Dict]:
@@ -288,16 +294,20 @@ class BackgroundTaskScheduler:
 
         for task in self.tasks.values():
             if status_filter is None or task.status == status_filter:
-                tasks.append({
-                    "id": task.id,
-                    "name": task.name,
-                    "status": task.status.value,
-                    "priority": task.priority.value,
-                    "created_at": task.created_at.isoformat(),
-                    "scheduled_time": task.scheduled_time.isoformat() if task.scheduled_time else None,
-                    "retry_count": task.retry_count,
-                    "metadata": task.metadata
-                })
+                tasks.append(
+                    {
+                        "id": task.id,
+                        "name": task.name,
+                        "status": task.status.value,
+                        "priority": task.priority.value,
+                        "created_at": task.created_at.isoformat(),
+                        "scheduled_time": task.scheduled_time.isoformat()
+                        if task.scheduled_time
+                        else None,
+                        "retry_count": task.retry_count,
+                        "metadata": task.metadata,
+                    }
+                )
 
         return sorted(tasks, key=lambda x: x["created_at"], reverse=True)
 
@@ -327,9 +337,12 @@ class BackgroundTaskScheduler:
                 # Check for tasks ready to run
                 ready_tasks = []
                 for task in self.task_queue[:]:
-                    if (task.scheduled_time and task.scheduled_time <= current_time and
-                        self._dependencies_satisfied(task) and
-                        len(self.running_tasks) < self.max_workers):
+                    if (
+                        task.scheduled_time
+                        and task.scheduled_time <= current_time
+                        and self._dependencies_satisfied(task)
+                        and len(self.running_tasks) < self.max_workers
+                    ):
                         ready_tasks.append(task)
 
                 # Move ready tasks to running
@@ -368,6 +381,7 @@ class BackgroundTaskScheduler:
     def _execute_task(self, task: ScheduledTask):
         """Execute a single task"""
         try:
+            result = None  # Ensure result is always defined
             # Trigger started callbacks
             for callback in self.event_callbacks["task_started"]:
                 try:
@@ -417,7 +431,9 @@ class BackgroundTaskScheduler:
                 # Retry the task
                 task.retry_count += 1
                 task.status = TaskStatus.RETRYING
-                task.scheduled_time = datetime.now() + timedelta(seconds=task.retry_delay)
+                task.scheduled_time = datetime.now() + timedelta(
+                    seconds=task.retry_delay
+                )
 
                 # Move back to queue for retry
                 del self.running_tasks[task.id]
@@ -431,7 +447,9 @@ class BackgroundTaskScheduler:
                         pass
 
                 if self.enable_logging:
-                    print(f"🔄 Task retrying: {task.name} (attempt {task.retry_count + 1})")
+                    print(
+                        f"🔄 Task retrying: {task.name} (attempt {task.retry_count + 1})"
+                    )
             else:
                 # Mark as failed
                 task.status = TaskStatus.FAILED
@@ -493,21 +511,29 @@ class BackgroundTaskScheduler:
                 "status": task.status.value,
                 "priority": task.priority.value,
                 "created_at": task.created_at.isoformat(),
-                "scheduled_time": task.scheduled_time.isoformat() if task.scheduled_time else None,
+                "scheduled_time": task.scheduled_time.isoformat()
+                if task.scheduled_time
+                else None,
                 "started_at": task.started_at.isoformat() if task.started_at else None,
-                "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+                "completed_at": task.completed_at.isoformat()
+                if task.completed_at
+                else None,
                 "retry_count": task.retry_count,
                 "error": task.error,
-                "metadata": task.metadata
+                "metadata": task.metadata,
             }
             task_data.append(task_dict)
 
-        with open(filename, 'w') as f:
-            json.dump({
-                "tasks": task_data,
-                "statistics": self.get_statistics(),
-                "saved_at": datetime.now().isoformat()
-            }, f, indent=2)
+        with open(filename, "w") as f:
+            json.dump(
+                {
+                    "tasks": task_data,
+                    "statistics": self.get_statistics(),
+                    "saved_at": datetime.now().isoformat(),
+                },
+                f,
+                indent=2,
+            )
 
 
 # Example usage and testing functions
@@ -520,6 +546,7 @@ def example_task(name: str, duration: float = 1.0) -> str:
 def example_failing_task() -> str:
     """Example failing task for testing retry logic"""
     import random
+
     if random.random() < 0.7:  # 70% chance of failure
         raise Exception("Random task failure")
     return "Task succeeded after retries"
@@ -534,11 +561,7 @@ if __name__ == "__main__":
 
     # Schedule some example tasks
     task1 = scheduler.schedule_task(
-        example_task,
-        "Alpha",
-        1.0,
-        name="Alpha Task",
-        priority=TaskPriority.HIGH
+        example_task, "Alpha", 1.0, name="Alpha Task", priority=TaskPriority.HIGH
     )
 
     task2 = scheduler.schedule_task(
@@ -547,14 +570,14 @@ if __name__ == "__main__":
         0.5,
         name="Beta Task",
         priority=TaskPriority.NORMAL,
-        delay=2.0
+        delay=2.0,
     )
 
     task3 = scheduler.schedule_task(
         example_failing_task,
         name="Failing Task",
         priority=TaskPriority.LOW,
-        max_retries=2
+        max_retries=2,
     )
 
     # Schedule a periodic task
@@ -562,7 +585,7 @@ if __name__ == "__main__":
         lambda: print("🔄 Periodic heartbeat"),
         interval=3.0,
         name="Heartbeat",
-        max_executions=3
+        max_executions=3,
     )
 
     print("\n📊 Scheduler Statistics:")

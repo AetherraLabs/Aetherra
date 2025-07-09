@@ -152,7 +152,9 @@ class ChatSession:
             last_activity=datetime.fromisoformat(data["last_activity"]),
             metadata=data.get("metadata", {}),
         )
-        session.messages = [ChatMessage.from_dict(msg) for msg in data.get("messages", [])]
+        session.messages = [
+            ChatMessage.from_dict(msg) for msg in data.get("messages", [])
+        ]
         return session
 
 
@@ -242,6 +244,10 @@ class RichFormatter:
             return code
 
         try:
+            from pygments import highlight
+            from pygments.formatters import TerminalFormatter
+            from pygments.lexers import get_lexer_by_name
+
             lexer = get_lexer_by_name(language, stripall=True)
             formatter = TerminalFormatter()
             return highlight(code, lexer, formatter)
@@ -259,15 +265,17 @@ class ChatMemoryManager:
 
         # Try to connect to memory logger if available
         self.memory_logger = None
-        if MEMORY_LOGGER_AVAILABLE:
+        if MEMORY_LOGGER_AVAILABLE and "MemoryLogger" in globals():
             try:
-                self.memory_logger = MemoryLogger()
+                self.memory_logger = globals()["MemoryLogger"]()
             except Exception:
                 pass  # Graceful fallback
 
         self._load_sessions()
 
-    def create_session(self, title: Optional[str] = None, tags: Optional[List[str]] = None) -> str:
+    def create_session(
+        self, title: Optional[str] = None, tags: Optional[List[str]] = None
+    ) -> str:
         """Create a new chat session"""
         session_id = f"session_{int(time.time() * 1000)}"
 
@@ -298,7 +306,10 @@ class ChatMemoryManager:
         return None
 
     def add_message(
-        self, content: str, message_type: ChatMessageType, metadata: Optional[Dict[str, Any]] = None
+        self,
+        content: str,
+        message_type: ChatMessageType,
+        metadata: Optional[Dict[str, Any]] = None,
     ):
         """Add a message to the current session"""
         if not self.current_session_id:
@@ -315,7 +326,9 @@ class ChatMemoryManager:
             # Log important messages to memory system
             if self.memory_logger and message_type == ChatMessageType.ASSISTANT:
                 try:
-                    truncated_content = content[:200] + "..." if len(content) > 200 else content
+                    truncated_content = (
+                        content[:200] + "..." if len(content) > 200 else content
+                    )
                     self.memory_logger.log_memory(
                         f"Chat response: {truncated_content} [session:{self.current_session_id}]"
                     )
@@ -341,7 +354,9 @@ class ChatMemoryManager:
     def get_session_list(self) -> List[Dict[str, Any]]:
         """Get list of all sessions with summary info"""
         session_list = []
-        for session in sorted(self.sessions.values(), key=lambda s: s.last_activity, reverse=True):
+        for session in sorted(
+            self.sessions.values(), key=lambda s: s.last_activity, reverse=True
+        ):
             session_list.append(
                 {
                     "session_id": session.session_id,
@@ -379,7 +394,9 @@ class ChatMemoryManager:
 
         for message in session.messages:
             speaker = (
-                "🤖 **AI**" if message.message_type == ChatMessageType.ASSISTANT else "👤 **User**"
+                "🤖 **AI**"
+                if message.message_type == ChatMessageType.ASSISTANT
+                else "👤 **User**"
             )
             timestamp = message.timestamp.strftime("%H:%M:%S")
             lines.append(f"## {speaker} ({timestamp})\n")
@@ -394,7 +411,9 @@ class ChatMemoryManager:
         lines.append("=" * 50)
 
         for message in session.messages:
-            speaker = "AI" if message.message_type == ChatMessageType.ASSISTANT else "User"
+            speaker = (
+                "AI" if message.message_type == ChatMessageType.ASSISTANT else "User"
+            )
             timestamp = message.timestamp.strftime("%H:%M:%S")
             lines.append(f"[{timestamp}] {speaker}: {message.content}")
             lines.append("")
@@ -515,7 +534,9 @@ class ChatEnhancementSystem:
             return True
         return False
 
-    def search_conversations(self, query: str, max_results: int = 20) -> List[ChatMessage]:
+    def search_conversations(
+        self, query: str, max_results: int = 20
+    ) -> List[ChatMessage]:
         """Search through conversation history"""
         return self.memory_manager.search_messages(query, max_results)
 
@@ -544,12 +565,16 @@ class ChatEnhancementSystem:
     def get_activity_stats(self) -> Dict[str, Any]:
         """Get chat activity statistics"""
         total_sessions = len(self.memory_manager.sessions)
-        total_messages = sum(len(s.messages) for s in self.memory_manager.sessions.values())
+        total_messages = sum(
+            len(s.messages) for s in self.memory_manager.sessions.values()
+        )
 
         # Recent activity (last 24 hours)
         recent_cutoff = datetime.now() - timedelta(hours=24)
         recent_sessions = sum(
-            1 for s in self.memory_manager.sessions.values() if s.last_activity > recent_cutoff
+            1
+            for s in self.memory_manager.sessions.values()
+            if s.last_activity > recent_cutoff
         )
 
         return {

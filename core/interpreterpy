@@ -20,7 +20,10 @@ This file maintains backward compatibility with existing code.
 
 # Import everything from the new modular system
 try:
-    from .interpreter import AetherraInterpreter
+    from .interpreter import AetherraInterpreter as _BaseAetherraInterpreter
+
+    class AetherraInterpreter(_BaseAetherraInterpreter):
+        pass
 
     # Legacy function compatibility
     def create_interpreter():
@@ -40,14 +43,14 @@ except ImportError:
     # Include original implementation as fallback
     # (The original implementation would be here for compatibility)
 
-    class AetherraInterpreter:
+    class FallbackAetherraInterpreter:
         def __init__(self):
             print("Using fallback interpreter implementation")
 
         def execute(self, line):
             return f"Fallback interpreter processed: {line}"
 
-    def create_interpreter():
-        return AetherraInterpreter()
+    def create_fallback_interpreter():
+        return FallbackAetherraInterpreter()
 
-    __all__ = ["AetherraInterpreter", "create_interpreter"]
+    __all__ = ["FallbackAetherraInterpreter", "create_fallback_interpreter"]

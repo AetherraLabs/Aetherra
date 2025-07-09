@@ -12,8 +12,10 @@ This system establishes AetherraCode as the universal standard by providing:
 
 import hashlib
 import json
+import urllib.request
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
 class PluginEcosystem:
@@ -95,7 +97,7 @@ class PluginEcosystem:
         try:
             tree = ast.parse(content)
             return ast.get_docstring(tree) or "No description"
-        except:
+        except Exception:
             return "No description"
 
     def _extract_capabilities(self, content: str) -> List[str]:
@@ -176,7 +178,7 @@ class PluginEcosystem:
                 # Install from marketplace
                 print(f"🔍 Searching marketplace for {plugin_name}...")
                 # This would connect to the AetherraCode plugin marketplace
-                print(f"⚠️  Marketplace not yet implemented. Use local installation.")
+                print("⚠️  Marketplace not yet implemented. Use local installation.")
                 return False
 
             # Verify installation
@@ -513,7 +515,7 @@ def main():
         manager.initialize_ecosystem()
     elif args.status:
         status = manager.get_ecosystem_status()
-        print("🧬 AetherraCode Ecosystem Status:")
+        print("AetherraCode Ecosystem Status:")
         print(json.dumps(status, indent=2))
     elif args.discover:
         plugins = manager.plugin_ecosystem.discover_plugins()

@@ -6,13 +6,17 @@ Advanced syntax support including blocks, loops, conditionals, functions
 
 import re
 from dataclasses import dataclass
+from typing import Any, List, Optional
+
 
 @dataclass
 class AetherraCommand:
     """Base class for AetherraCode commands"""
+
     command_type: str
     raw_text: str
     indent_level: int = 0
+
 
 @dataclass
 class RememberCommand(AetherraCommand):
@@ -24,23 +28,26 @@ class RememberCommand(AetherraCommand):
         if self.tags is None:
             self.tags = []
 
+
 @dataclass
 class RecallCommand(AetherraCommand):
     tags: Optional[List[str]] = None
     category: Optional[str] = None
     limit: Optional[int] = None
 
+
 @dataclass
 class FunctionDefineCommand(AetherraCommand):
     name: str = ""
     params: Optional[List[str]] = None
-    body: Optional[List['AetherraCommand']] = None
+    body: Optional[List["AetherraCommand"]] = None
 
     def __post_init__(self):
         if self.params is None:
             self.params = []
         if self.body is None:
             self.body = []
+
 
 @dataclass
 class FunctionCallCommand(AetherraCommand):
@@ -51,59 +58,68 @@ class FunctionCallCommand(AetherraCommand):
         if self.args is None:
             self.args = []
 
+
 @dataclass
 class ReflectCommand(AetherraCommand):
     tags: Optional[List[str]] = None
     category: Optional[str] = None
 
+
 @dataclass
 class IfCommand(AetherraCommand):
     condition: str = ""
-    then_body: Optional[List['AetherraCommand']] = None
-    else_body: Optional[List['AetherraCommand']] = None
+    then_body: Optional[List["AetherraCommand"]] = None
+    else_body: Optional[List["AetherraCommand"]] = None
 
     def __post_init__(self):
         if self.then_body is None:
             self.then_body = []
 
+
 @dataclass
 class ForCommand(AetherraCommand):
     variable: str = ""
     iterable: str = ""
-    body: Optional[List['AetherraCommand']] = None
+    body: Optional[List["AetherraCommand"]] = None
 
     def __post_init__(self):
         if self.body is None:
             self.body = []
+
 
 @dataclass
 class WhileCommand(AetherraCommand):
     condition: str = ""
-    body: Optional[List['AetherraCommand']] = None
+    body: Optional[List["AetherraCommand"]] = None
 
     def __post_init__(self):
         if self.body is None:
             self.body = []
+
 
 @dataclass
 class BlockCommand(AetherraCommand):
-    body: Optional[List['AetherraCommand']] = None
+    body: Optional[List["AetherraCommand"]] = None
 
     def __post_init__(self):
         if self.body is None:
             self.body = []
+
 
 @dataclass
 class VariableAssignment(AetherraCommand):
     name: str = ""
     value: str = ""
 
+
 @dataclass
 class ExpressionCommand(AetherraCommand):
     expression: str = ""
 
+
 class AetherraBlock:
     """Represents a code block with indentation"""
+
     def __init__(self, lines: List[str], start_indent: int = 0):
         self.lines = lines
         self.start_indent = start_indent
@@ -132,47 +148,51 @@ class AetherraBlock:
         indent = len(line) - len(line.lstrip())
 
         # Function definition
-        if stripped.startswith('define '):
+        if stripped.startswith("define "):
             return self._parse_function_def(index)
 
         # Control flow
-        if stripped.startswith('if '):
+        if stripped.startswith("if "):
             return self._parse_if_statement(index)
-        elif stripped.startswith('for '):
+        elif stripped.startswith("for "):
             return self._parse_for_loop(index)
-        elif stripped.startswith('while '):
+        elif stripped.startswith("while "):
             return self._parse_while_loop(index)
 
         # Variable assignment
-        if '=' in stripped and not stripped.startswith('remember'):
+        if "=" in stripped and not stripped.startswith("remember"):
             return self._parse_assignment(stripped, indent), index + 1
 
         # Regular command
         return AetherraCommand(
-            command_type="expression",
-            raw_text=stripped,
-            indent_level=indent
+            command_type="expression", raw_text=stripped, indent_level=indent
         ), index + 1
 
     def _parse_function_def(self, start_index: int) -> tuple:
         """Parse function definition block"""
         line = self.lines[start_index].strip()
-        match = re.match(r'define\s+(\w+)\s*\((.*?)\)', line)
+        match = re.match(r"define\s+(\w+)\s*\((.*?)\)", line)
         if not match:
             return None, start_index + 1
 
         func_name = match.group(1)
         params_str = match.group(2).strip()
-        params = [p.strip() for p in params_str.split(',') if p.strip()] if params_str else []
+        params = (
+            [p.strip() for p in params_str.split(",") if p.strip()]
+            if params_str
+            else []
+        )
 
         # Parse function body until 'end'
         body_commands = []
         i = start_index + 1
-        base_indent = len(self.lines[start_index]) - len(self.lines[start_index].lstrip())
+        base_indent = len(self.lines[start_index]) - len(
+            self.lines[start_index].lstrip()
+        )
 
         while i < len(self.lines):
             line = self.lines[i]
-            if line.strip() == 'end':
+            if line.strip() == "end":
                 break
             if line.strip():
                 cmd, _ = self._parse_line(line, i)
@@ -186,7 +206,7 @@ class AetherraBlock:
             indent_level=base_indent,
             name=func_name,
             params=params,
-            body=body_commands
+            body=body_commands,
         ), i + 1
 
     def _parse_if_statement(self, start_index: int) -> tuple:
@@ -202,9 +222,9 @@ class AetherraBlock:
 
         while i < len(self.lines):
             line = self.lines[i]
-            if line.strip() == 'end':
+            if line.strip() == "end":
                 break
-            elif line.strip() == 'else':
+            elif line.strip() == "else":
                 in_else = True
                 i += 1
                 continue
@@ -224,13 +244,13 @@ class AetherraBlock:
             indent_level=indent,
             condition=condition,
             then_body=then_commands,
-            else_body=else_commands if else_commands else None
+            else_body=else_commands if else_commands else None,
         ), i + 1
 
     def _parse_for_loop(self, start_index: int) -> tuple:
         """Parse for loop block"""
         line = self.lines[start_index].strip()
-        match = re.match(r'for\s+(\w+)\s+in\s+(.+)', line)
+        match = re.match(r"for\s+(\w+)\s+in\s+(.+)", line)
         if not match:
             return None, start_index + 1
 
@@ -243,7 +263,7 @@ class AetherraBlock:
 
         while i < len(self.lines):
             line = self.lines[i]
-            if line.strip() == 'end':
+            if line.strip() == "end":
                 break
             if line.strip():
                 cmd, _ = self._parse_line(line, i)
@@ -257,7 +277,7 @@ class AetherraBlock:
             indent_level=indent,
             variable=variable,
             iterable=iterable,
-            body=body_commands
+            body=body_commands,
         ), i + 1
 
     def _parse_while_loop(self, start_index: int) -> tuple:
@@ -271,7 +291,7 @@ class AetherraBlock:
 
         while i < len(self.lines):
             line = self.lines[i]
-            if line.strip() == 'end':
+            if line.strip() == "end":
                 break
             if line.strip():
                 cmd, _ = self._parse_line(line, i)
@@ -284,12 +304,12 @@ class AetherraBlock:
             raw_text=self.lines[start_index],
             indent_level=indent,
             condition=condition,
-            body=body_commands
+            body=body_commands,
         ), i + 1
 
     def _parse_assignment(self, line: str, indent: int) -> AetherraCommand:
         """Parse variable assignment"""
-        parts = line.split('=', 1)
+        parts = line.split("=", 1)
         if len(parts) == 2:
             var_name = parts[0].strip()
             value = parts[1].strip()
@@ -298,13 +318,12 @@ class AetherraBlock:
                 raw_text=line,
                 indent_level=indent,
                 name=var_name,
-                value=value
+                value=value,
             )
         return AetherraCommand(
-            command_type="expression",
-            raw_text=line,
-            indent_level=indent
+            command_type="expression", raw_text=line, indent_level=indent
         )
+
 
 class AetherraASTParser:
     """
@@ -325,30 +344,28 @@ class AetherraASTParser:
         indent = len(line) - len(line.lstrip())
 
         # Remember command
-        if stripped.startswith('remember'):
+        if stripped.startswith("remember"):
             return self._parse_remember(line)
 
         # Recall command
-        elif stripped.startswith('recall'):
+        elif stripped.startswith("recall"):
             return self._parse_recall(line)
 
         # Function definition (single line - for multi-line use parse_block)
-        elif stripped.startswith('define'):
+        elif stripped.startswith("define"):
             return self._parse_function_define(line)
 
         # Function call
-        elif re.match(r'run\s+\w+', stripped):
+        elif re.match(r"run\s+\w+", stripped):
             return self._parse_function_call(line)
 
         # Variable assignment
-        elif '=' in stripped and not stripped.startswith('remember'):
+        elif "=" in stripped and not stripped.startswith("remember"):
             return self._parse_assignment(stripped, indent)
 
         # Regular expression/command
         return AetherraCommand(
-            command_type="expression",
-            raw_text=stripped,
-            indent_level=indent
+            command_type="expression", raw_text=stripped, indent_level=indent
         )
 
     def parse_block(self, lines: List[str]) -> List[AetherraCommand]:
@@ -358,13 +375,22 @@ class AetherraASTParser:
 
     def _parse_remember(self, line: str) -> Optional[RememberCommand]:
         """Parse remember command with tags"""
-        match = re.match(r'remember\s+(.+?)(?:\s+as\s+"([^"]+)")?(?:\s+in\s+(\w+))?', line)
+        match = re.match(
+            r'remember\s+(.+?)(?:\s+as\s+"([^"]+)")?(?:\s+in\s+(\w+))?$', line
+        )
         if match:
             content = match.group(1)
             tags_str = match.group(2)
             category = match.group(3) or "general"
 
-            tags = [tag.strip() for tag in tags_str.split(',')] if tags_str else []
+            # If there are tags, remove the 'as "tags"' part from content
+            if tags_str:
+                # Find the position of 'as "tags"' and remove it from content
+                as_pos = content.find(' as "')
+                if as_pos != -1:
+                    content = content[:as_pos].strip()
+
+            tags = [tag.strip() for tag in tags_str.split(",")] if tags_str else []
             indent = len(line) - len(line.lstrip())
 
             return RememberCommand(
@@ -373,19 +399,22 @@ class AetherraASTParser:
                 indent_level=indent,
                 content=content,
                 tags=tags,
-                category=category
+                category=category,
             )
         return None
 
     def _parse_recall(self, line: str) -> Optional[RecallCommand]:
         """Parse recall command"""
-        match = re.match(r'recall(?:\s+tag:\s*"([^"]+)")?(?:\s+from\s+(\w+))?(?:\s+limit\s+(\d+))?', line)
+        match = re.match(
+            r'recall(?:\s+tag:\s*"([^"]+)")?(?:\s+from\s+(\w+))?(?:\s+limit\s+(\d+))?',
+            line,
+        )
         if match:
             tags_str = match.group(1)
             category = match.group(2)
             limit = int(match.group(3)) if match.group(3) else None
 
-            tags = [tag.strip() for tag in tags_str.split(',')] if tags_str else None
+            tags = [tag.strip() for tag in tags_str.split(",")] if tags_str else None
             indent = len(line) - len(line.lstrip())
 
             return RecallCommand(
@@ -394,25 +423,29 @@ class AetherraASTParser:
                 indent_level=indent,
                 tags=tags,
                 category=category,
-                limit=limit
+                limit=limit,
             )
         return None
 
     def _parse_function_define(self, line: str) -> Optional[FunctionDefineCommand]:
         """Parse single-line function definition"""
-        match = re.match(r'define\s+(\w+)\s*\((.*?)\)\s*:\s*(.+)', line)
+        match = re.match(r"define\s+(\w+)\s*\((.*?)\)\s*:\s*(.+)", line)
         if match:
             func_name = match.group(1)
             params_str = match.group(2).strip()
             body_str = match.group(3).strip()
 
-            params = [p.strip() for p in params_str.split(',') if p.strip()] if params_str else []
+            params = (
+                [p.strip() for p in params_str.split(",") if p.strip()]
+                if params_str
+                else []
+            )
             # For single line, create a simple expression command as body
-            body_commands = [AetherraCommand(
-                command_type="expression",
-                raw_text=body_str,
-                indent_level=0
-            )]
+            body_commands = [
+                AetherraCommand(
+                    command_type="expression", raw_text=body_str, indent_level=0
+                )
+            ]
             indent = len(line) - len(line.lstrip())
 
             return FunctionDefineCommand(
@@ -421,18 +454,22 @@ class AetherraASTParser:
                 indent_level=indent,
                 name=func_name,
                 params=params,
-                body=body_commands
+                body=body_commands,
             )
         return None
 
     def _parse_function_call(self, line: str) -> Optional[FunctionCallCommand]:
         """Parse function call"""
-        match = re.match(r'run\s+(\w+)\s*\((.*?)\)', line)
+        match = re.match(r"run\s+(\w+)\s*\((.*?)\)", line)
         if match:
             func_name = match.group(1)
             args_str = match.group(2).strip()
 
-            args = [arg.strip().strip('"\'') for arg in args_str.split(',') if arg.strip()] if args_str else []
+            args = (
+                [arg.strip().strip("\"'") for arg in args_str.split(",") if arg.strip()]
+                if args_str
+                else []
+            )
             indent = len(line) - len(line.lstrip())
 
             return FunctionCallCommand(
@@ -440,13 +477,13 @@ class AetherraASTParser:
                 raw_text=line,
                 indent_level=indent,
                 name=func_name,
-                args=args
+                args=args,
             )
         return None
 
     def _parse_assignment(self, line: str, indent: int) -> AetherraCommand:
         """Parse variable assignment"""
-        parts = line.split('=', 1)
+        parts = line.split("=", 1)
         if len(parts) == 2:
             var_name = parts[0].strip()
             value = parts[1].strip()
@@ -455,12 +492,10 @@ class AetherraASTParser:
                 raw_text=line,
                 indent_level=indent,
                 name=var_name,
-                value=value
+                value=value,
             )
         return AetherraCommand(
-            command_type="expression",
-            raw_text=line,
-            indent_level=indent
+            command_type="expression", raw_text=line, indent_level=indent
         )
 
     def evaluate_condition(self, condition: str) -> bool:
@@ -469,33 +504,43 @@ class AetherraASTParser:
         condition = condition.strip()
 
         # Handle memory.pattern conditions
-        if 'memory.pattern' in condition:
+        if "memory.pattern" in condition:
             # Extract pattern from condition
             match = re.search(r'memory\.pattern\("([^"]+)"\)', condition)
             if match:
                 pattern = match.group(1)
                 # This would need to be connected to actual memory system
-                return True  # Placeholder
+                # For now, just validate the pattern was extracted
+                return bool(pattern)  # Placeholder that uses the pattern
 
         # Handle variable comparisons
-        if '==' in condition:
-            left, right = condition.split('==', 1)
+        if "==" in condition:
+            left, right = condition.split("==", 1)
             left_val = self._evaluate_expression(left.strip())
             right_val = self._evaluate_expression(right.strip())
             return left_val == right_val
 
-        elif '!=' in condition:
-            left, right = condition.split('!=', 1)
+        elif "!=" in condition:
+            left, right = condition.split("!=", 1)
             left_val = self._evaluate_expression(left.strip())
             right_val = self._evaluate_expression(right.strip())
             return left_val != right_val
 
-        elif '>' in condition:
-            left, right = condition.split('>', 1)
+        elif ">" in condition:
+            left, right = condition.split(">", 1)
             left_val = self._evaluate_expression(left.strip())
             right_val = self._evaluate_expression(right.strip())
             try:
                 return float(left_val) > float(right_val)
+            except (ValueError, TypeError):
+                return False
+
+        elif "<" in condition:
+            left, right = condition.split("<", 1)
+            left_val = self._evaluate_expression(left.strip())
+            right_val = self._evaluate_expression(right.strip())
+            try:
+                return float(left_val) < float(right_val)
             except (ValueError, TypeError):
                 return False
 
@@ -504,7 +549,7 @@ class AetherraASTParser:
 
     def _evaluate_expression(self, expr: str):
         """Evaluate a simple expression"""
-        expr = expr.strip().strip('"\'')
+        expr = expr.strip().strip("\"'")
 
         # Check if it's a variable
         if expr in self.variables:
@@ -512,7 +557,7 @@ class AetherraASTParser:
 
         # Try to parse as number
         try:
-            if '.' in expr:
+            if "." in expr:
                 return float(expr)
             else:
                 return int(expr)
@@ -535,8 +580,8 @@ class AetherraASTParser:
         iterable_str = iterable_str.strip()
 
         # Handle ranges like "1..5"
-        if '..' in iterable_str:
-            parts = iterable_str.split('..')
+        if ".." in iterable_str:
+            parts = iterable_str.split("..")
             if len(parts) == 2:
                 try:
                     start = int(parts[0])
@@ -546,9 +591,11 @@ class AetherraASTParser:
                     pass
 
         # Handle lists like "[1, 2, 3]"
-        if iterable_str.startswith('[') and iterable_str.endswith(']'):
+        if iterable_str.startswith("[") and iterable_str.endswith("]"):
             content = iterable_str[1:-1]
-            items = [item.strip().strip('"\'') for item in content.split(',') if item.strip()]
+            items = [
+                item.strip().strip("\"'") for item in content.split(",") if item.strip()
+            ]
             return items
 
         # Handle variables

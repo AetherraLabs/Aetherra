@@ -34,10 +34,6 @@ try:
 except ImportError:
     GoalSystem = None
 
-try:
-    from core.plugin_manager import PluginManager
-except ImportError:
-    PluginManager = None
 
 try:
     from core.interpreter import AetherraInterpreter
@@ -105,13 +101,17 @@ class EnhancedNeuroAgent:
 
     def __init__(
         self,
-        memory: Optional["AetherraMemory"] = None,
-        goal_system: Optional["GoalSystem"] = None,
-        interpreter: Optional["AetherraInterpreter"] = None,
+        memory: Optional[Any] = None,  # type: ignore
+        goal_system: Optional[Any] = None,  # type: ignore
+        interpreter: Optional[Any] = None,  # type: ignore
     ):
         # Core components
         self.memory = memory or (AetherraMemory() if AetherraMemory else None)
-        self.goal_system = goal_system or (GoalSystem() if GoalSystem else None)
+        self.goal_system = goal_system or (
+            GoalSystem(memory=self.memory, interpreter=interpreter)
+            if GoalSystem
+            else None
+        )
         self.interpreter = interpreter or (
             AetherraInterpreter() if AetherraInterpreter else None
         )
@@ -278,7 +278,11 @@ class EnhancedNeuroAgent:
 
         try:
             # Analyze recent memories
-            recent_memories = self.memory.get_recent_memories(limit=10)
+            recent_memories = []
+            if self.memory and hasattr(self.memory, "get_memories_by_timeframe"):
+                recent_memories = self.memory.get_memories_by_timeframe(hours=24)
+            elif self.memory and hasattr(self.memory, "recall"):
+                recent_memories = self.memory.recall(limit=10)
 
             # Generate insights
             insights = self._generate_insights(recent_memories)
@@ -287,7 +291,7 @@ class EnhancedNeuroAgent:
             patterns = self._detect_learning_patterns()
 
             # Update knowledge
-            if insights:
+            if insights and self.memory and hasattr(self.memory, "remember"):
                 self.memory.remember(
                     f"Agent reflection insights: {insights}",
                     tags=["agent_reflection", "insights"],
@@ -315,7 +319,13 @@ class EnhancedNeuroAgent:
 
         try:
             # Get active goals
-            active_goals = self.goal_system.get_active_goals()
+            active_goals = []
+            if self.goal_system and hasattr(self.goal_system, "active_goals"):
+                # Get active goal IDs and find corresponding goals
+                active_goal_ids = getattr(self.goal_system, "active_goals", [])
+                all_goals = getattr(self.goal_system, "goals", [])
+                active_goals = [g for g in all_goals if g.get("id") in active_goal_ids]
+
             self.context.current_goals = active_goals
 
             for goal in active_goals:
@@ -326,8 +336,11 @@ class EnhancedNeuroAgent:
                 if progress["needs_attention"]:
                     self._queue_goal_action(goal, progress)
 
-                # Update goal status
-                self.goal_system.update_goal_progress(goal["id"], progress)
+                # Update goal status - using available method
+                if self.goal_system and hasattr(
+                    self.goal_system, "check_goal_progress"
+                ):
+                    self.goal_system.check_goal_progress(goal["id"])
 
             self.stats["goals_processed"] += len(active_goals)
 
@@ -357,11 +370,12 @@ class EnhancedNeuroAgent:
             }
 
             # Store pattern analysis
-            self.memory.remember(
-                f"Pattern analysis: {json.dumps(all_patterns, indent=2)}",
-                tags=["pattern_analysis", "system_insights"],
-                category="agent_analysis",
-            )
+            if self.memory and hasattr(self.memory, "remember"):
+                self.memory.remember(
+                    f"Pattern analysis: {json.dumps(all_patterns, indent=2)}",
+                    tags=["pattern_analysis", "system_insights"],
+                    category="agent_analysis",
+                )
 
             self.stats["patterns_detected"] += len(all_patterns)
 
@@ -516,11 +530,12 @@ class EnhancedNeuroAgent:
         }
 
         # Store suggestions for Lyrixato retrieve
-        self.memory.remember(
-            f"Lyrixaimprovement suggestions: {json.dumps(suggestions)}",
-            tags=["aetherplex_suggestions", "ui_improvements"],
-            category="interface_optimization",
-        )
+        if self.memory and hasattr(self.memory, "remember"):
+            self.memory.remember(
+                f"Lyrixaimprovement suggestions: {json.dumps(suggestions)}",
+                tags=["aetherplex_suggestions", "ui_improvements"],
+                category="interface_optimization",
+            )
 
     # Internal helper methods
     def _process_event_queue(self):
@@ -609,31 +624,51 @@ class EnhancedNeuroAgent:
 
     def _log_agent_event(self, event_type: str, event_data: Dict[str, Any]):
         """Log agent events for debugging and analysis"""
-        log_entry = {
-            "event_type": event_type,
-            "data": event_data,
-            "timestamp": datetime.now().isoformat(),
-            "agent_state": self.state.value,
-        }
-
         # Store in memory for pattern analysis
-        self.memory.remember(
-            f"Agent event: {event_type} - {json.dumps(event_data)}",
-            tags=["agent_log", event_type],
-            category="agent_events",
-        )
+        if self.memory and hasattr(self.memory, "remember"):
+            self.memory.remember(
+                f"Agent event: {event_type} - {json.dumps(event_data)}",
+                tags=["agent_log", event_type],
+                category="agent_events",
+            )
 
     # Placeholder methods for specific implementations
-    def _generate_insights(self, memories: List[Dict[str, Any]]) -> str:
+    def _generate_insights(self, memories) -> str:
         """Generate insights from recent memories"""
         if not memories:
             return "No recent activity to analyze"
 
-        # Analyze memory themes and patterns
+        # Handle both string and dict formats
         themes = {}
         for memory in memories:
-            for tag in memory.get("tags", []):
-                themes[tag] = themes.get(tag, 0) + 1
+            if isinstance(memory, dict):
+                # Dictionary format with tags
+                for tag in memory.get("tags", []):
+                    themes[tag] = themes.get(tag, 0) + 1
+            elif isinstance(memory, str):
+                # String format - extract keywords
+                words = memory.lower().split()
+                common_words = [
+                    "the",
+                    "a",
+                    "an",
+                    "and",
+                    "or",
+                    "but",
+                    "in",
+                    "on",
+                    "at",
+                    "to",
+                    "for",
+                    "with",
+                    "by",
+                ]
+                for word in words:
+                    if len(word) > 3 and word not in common_words:
+                        themes[word] = themes.get(word, 0) + 1
+
+        if not themes:
+            return "No patterns identified in recent activity"
 
         top_themes = sorted(themes.items(), key=lambda x: x[1], reverse=True)[:3]
         return f"Recent focus areas: {', '.join([f'{theme}({count})' for theme, count in top_themes])}"
@@ -658,8 +693,11 @@ class EnhancedNeuroAgent:
 
     def _queue_goal_action(self, goal: Dict[str, Any], progress: Dict[str, Any]):
         """Queue an action related to goal progress"""
-        action = lambda: self._handle_goal_progress(goal, progress)
-        self._queue_action(f"goal_progress_{goal['id']}", action)
+
+        def handle_goal_progress():
+            return self._handle_goal_progress(goal, progress)
+
+        self._queue_action(f"goal_progress_{goal['id']}", handle_goal_progress)
 
     # Condition check methods
     def _check_user_inactivity(self) -> bool:
@@ -702,6 +740,206 @@ class EnhancedNeuroAgent:
     def _handle_system_optimization(self):
         """Handle system optimization"""
         return "System optimization performed"
+
+    def _handle_goal_progress(self, goal: Dict[str, Any], progress: Dict[str, Any]):
+        """Handle goal progress updates"""
+        try:
+            # Log the progress
+            if self.memory and hasattr(self.memory, "remember"):
+                self.memory.remember(
+                    f"Goal progress update: {goal.get('text', 'Unknown goal')} - {progress.get('completion_percentage', 0)}% complete",
+                    tags=["goal_progress", "agent_action"],
+                    category="goal_monitoring",
+                )
+
+            # Return status
+            return f"Processed goal progress for {goal.get('id', 'unknown')}"
+        except Exception as e:
+            return f"Error processing goal progress: {str(e)}"
+
+    def _analyze_memory_patterns(self) -> Dict[str, Any]:
+        """Analyze memory patterns for insights"""
+        if not self.memory:
+            return {"patterns": [], "insights": "No memory system available"}
+
+        try:
+            # Get recent memories
+            recent_memories = []
+            if hasattr(self.memory, "get_memories_by_timeframe"):
+                recent_memories = self.memory.get_memories_by_timeframe(hours=24)
+            elif hasattr(self.memory, "recall"):
+                recent_memories = self.memory.recall(limit=50)
+
+            # Analyze patterns
+            patterns = {
+                "frequency": len(recent_memories),
+                "categories": {},
+                "time_distribution": "recent",
+                "insights": [],
+            }
+
+            # Count categories if available
+            for memory in recent_memories:
+                if isinstance(memory, dict):
+                    category = memory.get("category", "general")
+                    patterns["categories"][category] = (
+                        patterns["categories"].get(category, 0) + 1
+                    )
+
+            return patterns
+        except Exception as e:
+            return {
+                "patterns": [],
+                "insights": f"Error analyzing memory patterns: {str(e)}",
+            }
+
+    def _analyze_behavior_patterns(self) -> Dict[str, Any]:
+        """Analyze user behavior patterns"""
+        return {
+            "interaction_frequency": "normal",
+            "activity_patterns": [],
+            "preferences": {},
+            "insights": "Behavior analysis requires more data",
+        }
+
+    def _analyze_code_patterns(self) -> Dict[str, Any]:
+        """Analyze code usage patterns"""
+        return {
+            "languages_used": [],
+            "execution_patterns": [],
+            "error_patterns": [],
+            "insights": "Code pattern analysis requires execution history",
+        }
+
+    def _generate_ui_suggestions(self, patterns: Dict[str, Any]) -> List[str]:
+        """Generate UI improvement suggestions based on patterns"""
+        suggestions = []
+
+        # Basic suggestions based on patterns
+        if patterns.get("memory", {}).get("frequency", 0) > 100:
+            suggestions.append(
+                "Consider implementing memory archival for better performance"
+            )
+
+        if patterns.get("behavior", {}).get("interaction_frequency") == "high":
+            suggestions.append(
+                "Add quick-access shortcuts for frequently used features"
+            )
+
+        if not suggestions:
+            suggestions.append(
+                "System running optimally - no immediate improvements needed"
+            )
+
+        return suggestions
+
+    def _learn_from_user_action(self, action_data: Dict[str, Any]):
+        """Learn from user actions in Aetherplex"""
+        try:
+            # Store user action for learning
+            if self.memory and hasattr(self.memory, "remember"):
+                self.memory.remember(
+                    f"User action: {action_data.get('type', 'unknown')} - {action_data.get('details', '')}",
+                    tags=["user_action", "learning", "aetherplex"],
+                    category="user_behavior",
+                )
+
+            # Update context
+            self.context.last_interaction = datetime.now()
+            self.context.user_presence = True
+
+        except Exception as e:
+            self._log_agent_event(
+                "learning_error", {"error": str(e), "action": action_data}
+            )
+
+    def _on_aetherplex_code_execution(self, execution_data: Dict[str, Any]):
+        """Handle code execution events from Aetherplex"""
+        try:
+            # Store execution data
+            if self.memory and hasattr(self.memory, "remember"):
+                self.memory.remember(
+                    f"Code execution: {execution_data.get('language', 'unknown')} - {execution_data.get('status', 'unknown')}",
+                    tags=["code_execution", "aetherplex"],
+                    category="code_activity",
+                )
+
+            # Update stats
+            self.stats["aetherplex_interactions"] += 1
+
+        except Exception as e:
+            self._log_agent_event(
+                "aetherplex_code_error", {"error": str(e), "execution": execution_data}
+            )
+
+    def _on_aetherplex_goal_update(self, goal_data: Dict[str, Any]):
+        """Handle goal updates from Aetherplex"""
+        try:
+            # Process goal update
+            if self.goal_system and hasattr(self.goal_system, "check_goal_progress"):
+                goal_id = goal_data.get("goal_id")
+                if goal_id:
+                    self.goal_system.check_goal_progress(goal_id)
+
+            # Store goal update
+            if self.memory and hasattr(self.memory, "remember"):
+                self.memory.remember(
+                    f"Goal update: {goal_data.get('action', 'unknown')} - {goal_data.get('goal_id', 'unknown')}",
+                    tags=["goal_update", "aetherplex"],
+                    category="goal_management",
+                )
+
+        except Exception as e:
+            self._log_agent_event(
+                "aetherplex_goal_error", {"error": str(e), "goal": goal_data}
+            )
+
+    def _on_aetherplex_memory_operation(self, memory_data: Dict[str, Any]):
+        """Handle memory operations from Aetherplex"""
+        try:
+            # Store memory operation
+            if self.memory and hasattr(self.memory, "remember"):
+                self.memory.remember(
+                    f"Memory operation: {memory_data.get('operation', 'unknown')} - {memory_data.get('details', '')}",
+                    tags=["memory_operation", "aetherplex"],
+                    category="memory_management",
+                )
+
+            # Update stats
+            self.stats["aetherplex_interactions"] += 1
+
+        except Exception as e:
+            self._log_agent_event(
+                "aetherplex_memory_error", {"error": str(e), "memory": memory_data}
+            )
+
+    def _handle_event(self, event: Dict[str, Any]):
+        """Handle events from the event queue"""
+        try:
+            event_type = event.get("type", "unknown")
+            event_data = event.get("data", {})
+
+            # Process different event types
+            if event_type == "user_action":
+                self._on_aetherplex_user_action(event_data)
+            elif event_type == "code_execution":
+                self._on_aetherplex_code_execution(event_data)
+            elif event_type == "goal_update":
+                self._on_aetherplex_goal_update(event_data)
+            elif event_type == "memory_operation":
+                self._on_aetherplex_memory_operation(event_data)
+            else:
+                # Log unknown event
+                self._log_agent_event(
+                    "unknown_event", {"event_type": event_type, "data": event_data}
+                )
+
+        except Exception as e:
+            self._log_agent_event(
+                "event_handling_error", {"error": str(e), "event": event}
+            )
+
+    # ...existing code...
 
 
 def create_enhanced_agent(

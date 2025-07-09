@@ -7,6 +7,7 @@ ratings, and comprehensive plugin lifecycle management.
 """
 
 import importlib
+import importlib.util
 import json
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -126,7 +127,9 @@ class PluginUsageStats:
 class PluginRegistry:
     """Enhanced plugin registry with discovery and management"""
 
-    def __init__(self, plugins_dir: Path = Path("plugins"), data_dir: Path = Path("data")):
+    def __init__(
+        self, plugins_dir: Path = Path("plugins"), data_dir: Path = Path("data")
+    ):
         self.plugins_dir = plugins_dir
         self.data_dir = data_dir
         self.plugins_dir.mkdir(exist_ok=True)
@@ -190,7 +193,9 @@ class PluginRegistry:
                                 user_id=rating_data["user_id"],
                                 rating=rating_data["rating"],
                                 review=rating_data["review"],
-                                timestamp=datetime.fromisoformat(rating_data["timestamp"]),
+                                timestamp=datetime.fromisoformat(
+                                    rating_data["timestamp"]
+                                ),
                                 helpful_count=rating_data.get("helpful_count", 0),
                             )
                             if metadata.ratings is None:
@@ -207,7 +212,9 @@ class PluginRegistry:
                             total_execution_time=stats_data["total_execution_time"],
                             average_execution_time=stats_data["average_execution_time"],
                             success_rate=stats_data["success_rate"],
-                            last_invocation=datetime.fromisoformat(stats_data["last_invocation"]),
+                            last_invocation=datetime.fromisoformat(
+                                stats_data["last_invocation"]
+                            ),
                             error_count=stats_data["error_count"],
                             user_sessions=stats_data["user_sessions"],
                         )
@@ -265,7 +272,9 @@ class PluginRegistry:
 
             try:
                 # Import plugin module
-                spec = importlib.util.spec_from_file_location(plugin_file.stem, plugin_file)
+                spec = importlib.util.spec_from_file_location(
+                    plugin_file.stem, plugin_file
+                )
                 if spec is None or spec.loader is None:
                     continue
 
@@ -395,7 +404,9 @@ class PluginRegistry:
             for p in self.available_plugins.values()
             if p.average_rating >= 4.0 and p.usage_count > 100
         ]
-        catalog["featured"] = sorted(featured, key=lambda p: p.average_rating, reverse=True)[:10]
+        catalog["featured"] = sorted(
+            featured, key=lambda p: p.average_rating, reverse=True
+        )[:10]
 
         # Popular plugins
         catalog["popular"] = sorted(
@@ -416,7 +427,9 @@ class PluginRegistry:
 
         try:
             # Check dependencies
-            if metadata.dependencies and not self._check_dependencies(metadata.dependencies):
+            if metadata.dependencies and not self._check_dependencies(
+                metadata.dependencies
+            ):
                 print(f"Missing dependencies for {plugin_id}")
                 return False
 
@@ -556,11 +569,17 @@ class PluginRegistry:
         self._save_registry_data()
         return True
 
-    def get_plugin_suggestions(self, context: str, limit: int = 5) -> List[PluginMetadata]:
+    def get_plugin_suggestions(
+        self, context: str, limit: int = 5
+    ) -> List[PluginMetadata]:
         """Get plugin suggestions based on context"""
-        return self.suggestion_engine.get_suggestions(context, self.available_plugins, limit)
+        return self.suggestion_engine.get_suggestions(
+            context, self.available_plugins, limit
+        )
 
-    def track_plugin_usage(self, plugin_id: str, execution_time: float, success: bool = True):
+    def track_plugin_usage(
+        self, plugin_id: str, execution_time: float, success: bool = True
+    ):
         """Track plugin usage for analytics"""
         if plugin_id not in self.usage_stats:
             self.usage_stats[plugin_id] = PluginUsageStats(
@@ -577,13 +596,17 @@ class PluginRegistry:
         stats = self.usage_stats[plugin_id]
         stats.total_invocations += 1
         stats.total_execution_time += execution_time
-        stats.average_execution_time = stats.total_execution_time / stats.total_invocations
+        stats.average_execution_time = (
+            stats.total_execution_time / stats.total_invocations
+        )
         stats.last_invocation = datetime.now()
 
         if not success:
             stats.error_count += 1
 
-        stats.success_rate = (stats.total_invocations - stats.error_count) / stats.total_invocations
+        stats.success_rate = (
+            stats.total_invocations - stats.error_count
+        ) / stats.total_invocations
 
         # Update plugin metadata
         if plugin_id in self.available_plugins:
@@ -621,7 +644,9 @@ class PluginSuggestionEngine:
         scored_plugins.sort(key=lambda x: x[0], reverse=True)
         return [metadata for _, metadata in scored_plugins[:limit]]
 
-    def _calculate_relevance_score(self, context: str, metadata: PluginMetadata) -> float:
+    def _calculate_relevance_score(
+        self, context: str, metadata: PluginMetadata
+    ) -> float:
         """Calculate relevance score for a plugin given context"""
         score = 0.0
 

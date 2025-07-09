@@ -25,18 +25,30 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 try:
+    from lark import Lark, Token, Transformer, Tree  # type: ignore
+    from lark.exceptions import LexError, ParseError  # type: ignore
+
     LARK_AVAILABLE = True
 except ImportError:
     LARK_AVAILABLE = False
+    Lark = None  # Ensure Lark is always defined
 
     # Fallback types for when Lark is not available
-    class Tree:
+    class Tree:  # type: ignore
         pass
 
-    class Token:
+    class Token:  # type: ignore
         pass
 
-    class Transformer:
+    class Transformer:  # type: ignore
+        def transform(self, tree):
+            """Mock transform method"""
+            return tree
+
+    class ParseError(Exception):  # type: ignore
+        pass
+
+    class LexError(Exception):  # type: ignore
         pass
 
 
@@ -85,6 +97,19 @@ class ASTNode:
 
 class AetherraCodeTransformer(Transformer):
     """Transforms Lark parse tree into AetherraCode AST"""
+
+    def transform(self, tree):
+        """Transform a Lark tree into an ASTNode"""
+        if hasattr(super(), "transform"):
+            return super().transform(tree)
+        # Fallback transformation
+        return self._transform_fallback(tree)
+
+    def _transform_fallback(self, tree):
+        """Fallback transformation when Lark is not available"""
+        return ASTNode(
+            type=ASTNodeType.PROGRAM, value=str(tree), metadata={"fallback": True}
+        )
 
     def start(self, items):
         """Root program node"""
@@ -329,6 +354,10 @@ class AetherraCodeModernParser:
                 # Fallback to embedded grammar
                 grammar_content = self._get_embedded_grammar()
 
+            if not LARK_AVAILABLE or Lark is None:
+                raise ImportError(
+                    "Lark is not available. Please install the 'lark' package."
+                )
             self.parser = Lark(
                 grammar_content,
                 start="start",
@@ -339,6 +368,10 @@ class AetherraCodeModernParser:
         except Exception as e:
             print(f"Warning: Could not load Lark grammar: {e}")
             print("Falling back to embedded grammar...")
+            if not LARK_AVAILABLE or Lark is None:
+                raise ImportError(
+                    "Lark is not available. Please install the 'lark' package."
+                )
             self.parser = Lark(
                 self._get_embedded_grammar(),
                 start="start",
@@ -391,7 +424,17 @@ class AetherraCodeModernParser:
                 return tree
             else:
                 # Handle case where transformer wasn't applied
-                return self.transformer.transform(tree)
+                result = self.transformer.transform(tree)
+                # Ensure we return an ASTNode
+                if isinstance(result, ASTNode):
+                    return result
+                else:
+                    # Fallback: wrap in a program node
+                    return ASTNode(
+                        type=ASTNodeType.PROGRAM,
+                        value=result,
+                        metadata={"transformed": True},
+                    )
 
         except (ParseError, LexError) as e:
             raise SyntaxError(f"AetherraCode syntax error: {e}")
@@ -409,7 +452,8 @@ class AetherraCodeModernParser:
             source_code = f.read()
 
         ast = self.parse(source_code)
-        ast.metadata["source_file"] = str(file_path)
+        if ast and ast.metadata is not None:
+            ast.metadata["source_file"] = str(file_path)
 
         return ast
 

@@ -19,6 +19,7 @@ Features:
 - Auto-scaling and resource management
 """
 
+import concurrent
 import functools
 import gc
 import hashlib
@@ -30,7 +31,7 @@ import threading
 import time
 import weakref
 from collections import defaultdict, deque
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
@@ -143,7 +144,7 @@ class ParallelProcessor:
         self.max_workers = max_workers or min(32, (os.cpu_count() or 1) + 4)
         self.thread_pool = ThreadPoolExecutor(max_workers=self.max_workers)
         self.process_pool = None  # Lazy initialization
-        self.futures: Set[concurrent.futures.Future] = set()
+        self.futures: Set[Future] = set()
 
     def execute_parallel(
         self, func: Callable, items: List[Any], use_processes: bool = False

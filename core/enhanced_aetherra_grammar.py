@@ -618,13 +618,13 @@ class EnhancedaetherraTransformer(Transformer):
         return str(node)
 
     def _create_ast_node(
-        self, node_type: str, value: Any = None, children: List = None
+        self, node_type: str, value: Any = None, children: List = []
     ) -> AetherraCodeASTNode:
         """Create AST node with proper handling"""
         return AetherraCodeASTNode(
             node_type=node_type,
             value=value,
-            children=children or [],
+            children=children,
             location={"line": self.current_line},
         )
 
@@ -637,10 +637,10 @@ class EnhancedaetherraParser:
         self.parser = Lark(
             ENHANCED_aetherra_GRAMMAR,
             parser="lalr",
-            transformer=EnhancedaetherraTransformer(),
             start="program",
             propagate_positions=True,
         )
+        self.transformer = EnhancedaetherraTransformer()
         self.last_ast = None
         self.errors = []
         self.warnings = []
@@ -667,7 +667,8 @@ class EnhancedaetherraParser:
             cleaned_source = self._preprocess_source(source_code)
 
             # Parse with enhanced grammar
-            ast = self.parser.parse(cleaned_source)
+            parse_tree = self.parser.parse(cleaned_source)
+            ast = self.transformer.transform(parse_tree)
             self.last_ast = ast
 
             # Validate AST

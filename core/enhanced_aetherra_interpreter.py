@@ -7,6 +7,7 @@ Integrates new AI capabilities with existing interpreter
 import os
 import sys
 import time
+from typing import Any
 
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(__file__))
@@ -114,6 +115,18 @@ except ImportError:
     from intent_parser import IntentToCodeParser, parse_natural_intent
 
 
+# Minimal LocalAIEngine stub for compatibility
+class LocalAIEngine:
+    def is_available(self) -> bool:
+        # Implement actual availability check if needed
+        return False
+
+    def intent_to_code(self, intent: str) -> str:
+        """Convert natural language intent to Aetherra code"""
+        # Placeholder implementation
+        return f"# Generated from intent: {intent}\nprint('Not implemented yet')"
+
+
 class EnhancedAetherraInterpreter(AetherraInterpreter):
     """Enhanced interpreter with natural language and AI capabilities"""
 
@@ -188,7 +201,7 @@ class EnhancedAetherraInterpreter(AetherraInterpreter):
                 aether_code = parse_natural_intent(intent)
 
             print(f"💻 Generated Aetherra Code:\n{aether_code}")
-            return self.execute(aether_code)
+            return super().execute(aether_code)
         except Exception as e:
             return f"Error handling natural intent: {e}"
 
@@ -218,9 +231,7 @@ class EnhancedAetherraInterpreter(AetherraInterpreter):
 
     def refactor_code(self, code: str, model: str) -> str:
         """Use AI to refactor and improve a piece of code"""
-        prompt = f"Refactor the following Aetherra code to improve its clarity,
-            efficiency,
-            and adherence to best practices:\n\n{code}"
+        prompt = f"Refactor the following Aetherra code to improve its clarity, efficiency, and adherence to best practices:\n\n{code}"
         return ask_ai(prompt, model=model)
 
     def generate_code(self, description: str, model: str) -> str:

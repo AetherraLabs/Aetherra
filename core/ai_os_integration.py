@@ -16,7 +16,9 @@ from .enhanced_memory_system import GoalTrackingSystem, VectorMemorySystem
 from .voice_personality_system import VoicePersonalitySystem
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -91,10 +93,14 @@ class AetherraCodeAIOS:
         # Step 7: Voice Greeting
         if self.voice.voice_config["enabled"]:
             greeting = self.voice.get_contextual_greeting()
-            self.voice.speak(greeting, emotion="welcoming", context="system_initialization")
+            self.voice.speak(
+                greeting, emotion="welcoming", context="system_initialization"
+            )
 
         self.system_active = True
-        logger.info("🚀 AetherraCode AI OS fully operational - Welcome to the future of computing!")
+        logger.info(
+            "🚀 AetherraCode AI OS fully operational - Welcome to the future of computing!"
+        )
 
     async def _restore_integrated_memory(self):
         """Restore and integrate all memory systems"""
@@ -147,9 +153,13 @@ class AetherraCodeAIOS:
         self.cross_system_sync_active = True
 
         # Memory-driven personality adaptation
-        recent_interactions = self.memory.get_recent_memories(hours=24, memory_type="episodic")
+        recent_interactions = self.memory.get_recent_memories(
+            hours=24, memory_type="episodic"
+        )
         if recent_interactions:
-            interaction_analysis = self._analyze_interaction_patterns(recent_interactions)
+            interaction_analysis = self._analyze_interaction_patterns(
+                recent_interactions
+            )
             mood = interaction_analysis.get("dominant_mood", "neutral")
             # Ensure mood is a string
             if isinstance(mood, str):
@@ -288,7 +298,9 @@ class AetherraCodeAIOS:
 
         # Store as high-importance memory
         self.memory.store_semantic_memory(
-            concept="deep_integration_analysis", knowledge=analysis_result, importance=0.9
+            concept="deep_integration_analysis",
+            knowledge=analysis_result,
+            importance=0.9,
         )
 
     def _analyze_interaction_patterns(self, memories: List[Dict]) -> Dict[str, float]:
@@ -304,8 +316,21 @@ class AetherraCodeAIOS:
         if not memories:
             return patterns
 
-        technical_keywords = ["code", "function", "error", "debug", "algorithm", "programming"]
-        emotional_keywords = ["frustrated", "excited", "happy", "concerned", "satisfied"]
+        technical_keywords = [
+            "code",
+            "function",
+            "error",
+            "debug",
+            "algorithm",
+            "programming",
+        ]
+        emotional_keywords = [
+            "frustrated",
+            "excited",
+            "happy",
+            "concerned",
+            "satisfied",
+        ]
         problem_keywords = ["issue", "problem", "bug", "fix", "solve", "troubleshoot"]
         learning_keywords = ["learn", "understand", "explain", "teach", "how", "why"]
 
@@ -313,16 +338,26 @@ class AetherraCodeAIOS:
             content = str(memory.get("event", memory.get("concept", ""))).lower()
 
             # Count keyword occurrences
-            patterns["technical_focus"] += sum(1 for kw in technical_keywords if kw in content)
-            patterns["emotional_content"] += sum(1 for kw in emotional_keywords if kw in content)
-            patterns["problem_solving"] += sum(1 for kw in problem_keywords if kw in content)
-            patterns["learning_oriented"] += sum(1 for kw in learning_keywords if kw in content)
+            patterns["technical_focus"] += sum(
+                1 for kw in technical_keywords if kw in content
+            )
+            patterns["emotional_content"] += sum(
+                1 for kw in emotional_keywords if kw in content
+            )
+            patterns["problem_solving"] += sum(
+                1 for kw in problem_keywords if kw in content
+            )
+            patterns["learning_oriented"] += sum(
+                1 for kw in learning_keywords if kw in content
+            )
 
         # Normalize patterns
         memory_count = len(memories)
         for key in patterns:
             if key != "dominant_mood":
-                patterns[key] = patterns[key] / memory_count if memory_count > 0 else 0.0
+                patterns[key] = (
+                    patterns[key] / memory_count if memory_count > 0 else 0.0
+                )
 
         # Determine dominant mood
         if patterns["emotional_content"] > 0.3:
@@ -373,7 +408,9 @@ class AetherraCodeAIOS:
             if "help" in goal_desc or "assist" in goal_desc:
                 trait_goal_matches["helpful"] = personality_traits.get("helpful", 0.5)
             if "analyze" in goal_desc or "solve" in goal_desc:
-                trait_goal_matches["analytical"] = personality_traits.get("analytical", 0.5)
+                trait_goal_matches["analytical"] = personality_traits.get(
+                    "analytical", 0.5
+                )
             if "create" in goal_desc or "build" in goal_desc:
                 trait_goal_matches["creative"] = personality_traits.get("creative", 0.5)
 
@@ -406,14 +443,17 @@ class AetherraCodeAIOS:
                 related_memories.extend(memories)
 
         effectiveness_metrics = {
-            "voice_memory_correlation": len(related_memories) / len(recent_voice_interactions)
+            "voice_memory_correlation": len(related_memories)
+            / len(recent_voice_interactions)
             if recent_voice_interactions
             else 0,
             "memory_triggered_responses": sum(
                 1 for i in recent_voice_interactions if "memory" in i.get("context", "")
             ),
             "personality_adaptation_events": sum(
-                1 for i in recent_voice_interactions if i.get("personality_adjusted", False)
+                1
+                for i in recent_voice_interactions
+                if i.get("personality_adjusted", False)
             ),
             "overall_effectiveness": 0.0,
         }
@@ -422,7 +462,8 @@ class AetherraCodeAIOS:
         effectiveness_metrics["overall_effectiveness"] = (
             effectiveness_metrics["voice_memory_correlation"] * 0.4
             + (
-                effectiveness_metrics["memory_triggered_responses"] / len(recent_voice_interactions)
+                effectiveness_metrics["memory_triggered_responses"]
+                / len(recent_voice_interactions)
                 if recent_voice_interactions
                 else 0
             )
@@ -445,12 +486,16 @@ class AetherraCodeAIOS:
         # Memory optimization
         memory_stats = self.memory.get_memory_statistics()
         if memory_stats["total_memories"] > 10000:
-            recommendations.append("Consider memory consolidation - large memory database detected")
+            recommendations.append(
+                "Consider memory consolidation - large memory database detected"
+            )
 
         # Personality optimization
         personality_traits = self.voice.personality["traits"]
         extreme_traits = [
-            trait for trait, value in personality_traits.items() if value > 0.95 or value < 0.05
+            trait
+            for trait, value in personality_traits.items()
+            if value > 0.95 or value < 0.05
         ]
         if extreme_traits:
             recommendations.append(
@@ -535,7 +580,9 @@ class AetherraCodeAIOS:
         response = await self._generate_integrated_response(user_input, input_analysis)
 
         # Voice output if enabled
-        if self.voice.voice_config["enabled"] and input_analysis.get("voice_response", True):
+        if self.voice.voice_config["enabled"] and input_analysis.get(
+            "voice_response", True
+        ):
             emotion = input_analysis.get("detected_emotion", "neutral")
             context = input_analysis.get("context", "general")
             self.voice.speak(response, emotion=emotion, context=context)
@@ -586,11 +633,15 @@ class AetherraCodeAIOS:
             analysis["detected_emotion"] = "frustrated"
         elif any(word in input_lower for word in ["excited", "great", "awesome"]):
             analysis["detected_emotion"] = "excited"
-        elif any(word in input_lower for word in ["confused", "unclear", "don't understand"]):
+        elif any(
+            word in input_lower for word in ["confused", "unclear", "don't understand"]
+        ):
             analysis["detected_emotion"] = "confused"
 
         # Context detection
-        if any(word in input_lower for word in ["code", "programming", "function", "debug"]):
+        if any(
+            word in input_lower for word in ["code", "programming", "function", "debug"]
+        ):
             analysis["context"] = "technical"
             analysis["complexity"] = "high"
         elif any(word in input_lower for word in ["quick", "simple", "just"]):
@@ -598,7 +649,9 @@ class AetherraCodeAIOS:
 
         return analysis
 
-    async def _generate_integrated_response(self, user_input: str, analysis: Dict[str, Any]) -> str:
+    async def _generate_integrated_response(
+        self, user_input: str, analysis: Dict[str, Any]
+    ) -> str:
         """Generate response using all AI OS capabilities"""
         intent = analysis["intent"]
 
@@ -656,7 +709,9 @@ class AetherraCodeAIOS:
         if "create" in input_lower or "add" in input_lower or "new" in input_lower:
             # Extract goal description
             goal_start = max(
-                input_lower.find("goal"), input_lower.find("objective"), input_lower.find("task")
+                input_lower.find("goal"),
+                input_lower.find("objective"),
+                input_lower.find("task"),
             )
             if goal_start != -1:
                 goal_desc = user_input[goal_start:].split(":", 1)[-1].strip()
@@ -669,7 +724,9 @@ class AetherraCodeAIOS:
             if active_goals:
                 response = f"You have {len(active_goals)} active goals:\n"
                 for goal in active_goals[:5]:  # Show first 5
-                    response += f"• {goal['description']} (Priority: {goal['priority']})\n"
+                    response += (
+                        f"• {goal['description']} (Priority: {goal['priority']})\n"
+                    )
                 return response.strip()
             else:
                 return "You don't have any active goals. Would you like to create one?"
@@ -696,7 +753,9 @@ All systems operational and learning continuously."""
 
         return response
 
-    async def _handle_help_request(self, user_input: str, analysis: Dict[str, Any]) -> str:
+    async def _handle_help_request(
+        self, user_input: str, analysis: Dict[str, Any]
+    ) -> str:
         """Handle help requests with context awareness"""
         urgency = analysis["urgency"]
         context = analysis["context"]
@@ -707,11 +766,13 @@ All systems operational and learning continuously."""
             response = "I'm happy to assist you. "
 
         if context == "technical":
-            response += "For technical issues,
-                I can help with debugging,
-                code analysis,
-                system optimization,
-                and more. "
+            response += (
+                "For technical issues, "
+                "I can help with debugging, "
+                "code analysis, "
+                "system optimization, "
+                "and more. "
+            )
         else:
             response += "I can help with goals, memory queries, system status, learning, and general assistance. "
 
@@ -720,9 +781,10 @@ All systems operational and learning continuously."""
         if recent_memories:
             common_topics = self._extract_common_topics(recent_memories)
             if common_topics:
-                response += f"Based on our recent interactions,
-                    I can especially help with: {',
-                    '.join(common_topics[:3])}."
+                response += (
+                    f"Based on our recent interactions, "
+                    f"I can especially help with: {', '.join(common_topics[:3])}."
+                )
 
         return response
 
@@ -742,7 +804,9 @@ All systems operational and learning continuously."""
             topic = user_input[topic_start:].strip()
 
             # Search for related knowledge in memory
-            related_memories = self.memory.semantic_search(topic, limit=3, memory_type="semantic")
+            related_memories = self.memory.semantic_search(
+                topic, limit=3, memory_type="semantic"
+            )
 
             if related_memories:
                 response = f"Based on what I know about {topic}:\n"
@@ -751,8 +815,7 @@ All systems operational and learning continuously."""
                     response += f"• {content}\n"
                 response += "\nWould you like me to elaborate on any of these aspects?"
             else:
-                response = f"I'd be happy to help you learn about {topic}. Let me gather information \and
-                    provide a comprehensive explanation."
+                response = f"I'd be happy to help you learn about {topic}. Let me gather information and provide a comprehensive explanation."
                 # Store learning request for future enhancement
                 self.memory.store_semantic_memory(
                     concept=f"learning_request: {topic}",
@@ -764,7 +827,9 @@ All systems operational and learning continuously."""
 
         return response
 
-    async def _handle_general_interaction(self, user_input: str, analysis: Dict[str, Any]) -> str:
+    async def _handle_general_interaction(
+        self, user_input: str, analysis: Dict[str, Any]
+    ) -> str:
         """Handle general interactions with personality"""
         emotion = analysis["detected_emotion"]
 
@@ -774,15 +839,15 @@ All systems operational and learning continuously."""
         elif emotion == "excited":
             response = "That's wonderful! I'm excited to help you with this."
         elif emotion == "confused":
-            response = "No problem - let me clarify this for you in a way that makes sense."
+            response = (
+                "No problem - let me clarify this for you in a way that makes sense."
+            )
         else:
             response = "I'm here to help. Let me process your request and provide the best assistance I can."
 
         # Add context-aware suggestions
         if analysis["context"] == "technical":
-            response += (
-                " For technical matters, I can analyze code, debug issues, or explain concepts."
-            )
+            response += " For technical matters, I can analyze code, debug issues, or explain concepts."
 
         # Reference relevant memories if applicable
         relevant_memories = self.memory.semantic_search(user_input, limit=2)

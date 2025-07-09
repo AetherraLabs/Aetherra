@@ -309,10 +309,13 @@ class PluginConfidenceDashboard(ttk.Frame):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
 
+        self.confidence_system = None
         if CONFIDENCE_SYSTEM_AVAILABLE:
-            self.confidence_system = ConfidenceEnhancedPluginSystem()
-        else:
-            self.confidence_system = None
+            # Only instantiate if the class is available
+            try:
+                self.confidence_system = ConfidenceEnhancedPluginSystem()
+            except NameError:
+                self.confidence_system = None
 
         self.plugin_widgets = {}
         self.setup_ui()

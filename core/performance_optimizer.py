@@ -69,15 +69,17 @@ class PerformanceOptimizer:
         """Profile command execution for optimization opportunities"""
 
         # Get system metrics if not provided
+        process = psutil.Process()
         if memory_usage is None:
-            process = psutil.Process()
             memory_usage = process.memory_info().rss / 1024 / 1024  # MB
 
         cpu_usage = psutil.cpu_percent(interval=0.1)
 
         # Ensure memory_usage is not None
         final_memory_usage = (
-            memory_usage if memory_usage is not None else process.memory_info().rss / 1024 / 1024
+            memory_usage
+            if memory_usage is not None
+            else process.memory_info().rss / 1024 / 1024
         )
 
         metric = ExecutionMetric(
@@ -157,7 +159,10 @@ class PerformanceOptimizer:
         return suggestion
 
     def _generate_optimization_suggestion(
-        self, command: str, current_performance: Dict[str, float], metrics: List[ExecutionMetric]
+        self,
+        command: str,
+        current_performance: Dict[str, float],
+        metrics: List[ExecutionMetric],
     ) -> Optional[OptimizationSuggestion]:
         """Generate specific optimization suggestions"""
 
@@ -170,11 +175,15 @@ class PerformanceOptimizer:
         # Time-based optimizations
         if avg_time > 2.0:
             suggestions.append("Consider caching frequently accessed data")
-            suggestions.append("Implement parallel processing for data-intensive operations")
+            suggestions.append(
+                "Implement parallel processing for data-intensive operations"
+            )
             confidence += 0.1
 
         if avg_time > 5.0:
-            suggestions.append("Break down complex operations into smaller, async tasks")
+            suggestions.append(
+                "Break down complex operations into smaller, async tasks"
+            )
             confidence += 0.1
 
         # Memory-based optimizations
@@ -192,7 +201,9 @@ class PerformanceOptimizer:
         if len(metrics) > 20:
             time_trend = self._calculate_time_trend(metrics)
             if time_trend > 0.1:  # Performance degrading
-                suggestions.append("Performance is degrading over time - check for memory leaks")
+                suggestions.append(
+                    "Performance is degrading over time - check for memory leaks"
+                )
                 suggestions.append("Consider resetting cached data periodically")
                 confidence += 0.1
 
@@ -263,8 +274,10 @@ class PerformanceOptimizer:
             recent_metrics = metrics[-10:]
             report["command_performance"][command] = {
                 "executions": len(metrics),
-                "avg_time": sum(m.execution_time for m in recent_metrics) / len(recent_metrics),
-                "avg_memory": sum(m.memory_usage for m in recent_metrics) / len(recent_metrics),
+                "avg_time": sum(m.execution_time for m in recent_metrics)
+                / len(recent_metrics),
+                "avg_memory": sum(m.memory_usage for m in recent_metrics)
+                / len(recent_metrics),
                 "trend": self._calculate_time_trend(metrics),
                 "needs_optimization": self.should_optimize(command),
             }
@@ -304,7 +317,9 @@ class PerformanceOptimizer:
                     cmd: [asdict(metric) for metric in metrics]
                     for cmd, metrics in self.execution_metrics.items()
                 },
-                "optimizations": {cmd: asdict(opt) for cmd, opt in self.optimization_cache.items()},
+                "optimizations": {
+                    cmd: asdict(opt) for cmd, opt in self.optimization_cache.items()
+                },
                 "saved_at": time.time(),
             }
 
@@ -347,9 +362,13 @@ performance_optimizer = PerformanceOptimizer()
 
 
 # Utility functions for easy integration
-def profile_command(command: str, execution_time: float, context: Optional[Dict[str, Any]] = None):
+def profile_command(
+    command: str, execution_time: float, context: Optional[Dict[str, Any]] = None
+):
     """Profile a command execution"""
-    return performance_optimizer.profile_execution(command, execution_time, context=context)
+    return performance_optimizer.profile_execution(
+        command, execution_time, context=context
+    )
 
 
 def get_optimization_suggestions(command: str) -> Optional[OptimizationSuggestion]:
@@ -381,7 +400,9 @@ if __name__ == "__main__":
     if suggestion:
         print("\n📊 Optimization Suggestion:")
         print(f"   Command: {suggestion.command}")
-        print(f"   Current avg time: {suggestion.current_performance['avg_execution_time']:.2f}s")
+        print(
+            f"   Current avg time: {suggestion.current_performance['avg_execution_time']:.2f}s"
+        )
         print(f"   Suggestion: {suggestion.suggested_optimization}")
         print(f"   Expected improvement: {suggestion.expected_improvement}")
         print(f"   Confidence: {suggestion.confidence:.0%}")

@@ -598,7 +598,15 @@ class AetherraParser:
     def parse(self, code: str) -> AetherraCodeAST:
         """Parse AetherraCode and return AST"""
         try:
-            return self.parser.parse(code)
+            result = self.parser.parse(code)
+            # Ensure result is AetherraCodeAST, not a Tree
+            if isinstance(result, AetherraCodeAST):
+                return result
+            elif hasattr(result, "children"):
+                # Manually transform if transformer was not applied
+                return AetherraCodeTransformer().transform(result)
+            else:
+                raise Exception("Parsing did not return an AetherraCodeAST.")
         except ParseError as e:
             raise ParseError(f"AetherraCode parse error: {e}")
         except LexError as e:

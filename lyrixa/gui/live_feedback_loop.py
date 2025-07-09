@@ -65,7 +65,7 @@ class UserFeedback:
     memory_id: Optional[str] = None
     original_content: Optional[str] = None
     edited_content: Optional[str] = None
-    user_context: Dict[str, Any] = None
+    user_context: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
@@ -127,8 +127,8 @@ class FeedbackCollector:
     def collect_thumbs_feedback(
         self,
         is_positive: bool,
-        suggestion_id: str = None,
-        context: Dict[str, Any] = None,
+        suggestion_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> UserFeedback:
         """Collect thumbs up/down feedback."""
 
@@ -154,8 +154,8 @@ class FeedbackCollector:
         original_content: str,
         edited_content: str,
         item_type: str,
-        item_id: str = None,
-        context: Dict[str, Any] = None,
+        item_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> UserFeedback:
         """Collect feedback from user edits."""
 
@@ -190,8 +190,8 @@ class FeedbackCollector:
         self,
         rating: float,
         feedback_type: FeedbackType,
-        comment: str = None,
-        context: Dict[str, Any] = None,
+        comment: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> UserFeedback:
         """Collect explicit rating feedback."""
 
@@ -360,38 +360,42 @@ class AdaptiveLearningEngine:
 
         # User editing suggestions frequently suggests wrong style
         if feedback.feedback_type == FeedbackType.SUGGESTION_EDIT:
-            edit_ratio = len(feedback.edited_content) / len(feedback.original_content)
+            if feedback.original_content and feedback.edited_content:
+                edit_ratio = len(feedback.edited_content) / len(
+                    feedback.original_content
+                )
 
-            if edit_ratio < 0.5:  # Major reduction
-                adaptations.append(
-                    {
-                        "dimension": AdaptationDimension.DETAIL_LEVEL,
-                        "direction": -0.05,
-                        "reason": "user_prefers_brevity",
-                        "confidence": 0.6,
-                    }
-                )
-            elif edit_ratio > 1.5:  # Major expansion
-                adaptations.append(
-                    {
-                        "dimension": AdaptationDimension.DETAIL_LEVEL,
-                        "direction": 0.05,
-                        "reason": "user_wants_more_detail",
-                        "confidence": 0.6,
-                    }
-                )
+                if edit_ratio < 0.5:  # Major reduction
+                    adaptations.append(
+                        {
+                            "dimension": AdaptationDimension.DETAIL_LEVEL,
+                            "direction": -0.05,
+                            "reason": "user_prefers_brevity",
+                            "confidence": 0.6,
+                        }
+                    )
+                elif edit_ratio > 1.5:  # Major expansion
+                    adaptations.append(
+                        {
+                            "dimension": AdaptationDimension.DETAIL_LEVEL,
+                            "direction": 0.05,
+                            "reason": "user_wants_more_detail",
+                            "confidence": 0.6,
+                        }
+                    )
 
         # Preference changes have high adaptation weight
         if feedback.feedback_type == FeedbackType.PREFERENCE_CHANGE:
-            adaptations.append(
-                {
-                    "dimension": AdaptationDimension.INTERVENTION_FREQUENCY,
-                    "direction": feedback.rating / 5.0
-                    - 0.5,  # Convert rating to adaptation
-                    "reason": "explicit_preference_change",
-                    "confidence": 0.9,
-                }
-            )
+            if feedback.rating is not None:
+                adaptations.append(
+                    {
+                        "dimension": AdaptationDimension.INTERVENTION_FREQUENCY,
+                        "direction": feedback.rating / 5.0
+                        - 0.5,  # Convert rating to adaptation
+                        "reason": "explicit_preference_change",
+                        "confidence": 0.9,
+                    }
+                )
 
         return adaptations
 
@@ -636,7 +640,10 @@ class LiveFeedbackInterface:
         self.editable_items = {}
 
     def present_suggestion_with_feedback(
-        self, suggestion_id: str, suggestion_text: str, context: Dict[str, Any] = None
+        self,
+        suggestion_id: str,
+        suggestion_text: str,
+        context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Present a suggestion with feedback collection interface."""
 
@@ -661,7 +668,7 @@ class LiveFeedbackInterface:
         }
 
     def handle_feedback_action(
-        self, action_type: str, item_id: str, data: Dict[str, Any] = None
+        self, action_type: str, item_id: str, data: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Handle feedback action from user interface."""
 
@@ -695,7 +702,7 @@ class LiveFeedbackInterface:
             elif action_type == "edit_suggestion":
                 if item_id in self.active_suggestions:
                     original_text = self.active_suggestions[item_id]["text"]
-                    edited_text = data.get("edited_text", "")
+                    edited_text = data.get("edited_text", "") if data else ""
 
                     feedback = (
                         self.learning_engine.feedback_collector.collect_edit_feedback(
@@ -711,10 +718,15 @@ class LiveFeedbackInterface:
                         "status": "success",
                         "message": "Suggestion updated. I'm learning from your edits!",
                     }
+                else:
+                    return {
+                        "status": "error",
+                        "message": "Suggestion not found",
+                    }
 
             elif action_type == "rate_interaction":
-                rating = data.get("rating", 3.0)
-                comment = data.get("comment", "")
+                rating = data.get("rating", 3.0) if data else 3.0
+                comment = data.get("comment", "") if data else ""
 
                 feedback = (
                     self.learning_engine.feedback_collector.collect_rating_feedback(
