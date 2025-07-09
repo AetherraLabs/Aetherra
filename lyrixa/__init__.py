@@ -19,8 +19,16 @@ if _parent_dir not in sys.path:
 try:
     from .assistant import LyrixaAI
     from .models import LocalModel, ModelRouter, OpenAIModel
+    from .prompt_engine import build_dynamic_prompt
 
-    __all__ = ["LyrixaAI", "LocalModel", "ModelRouter", "OpenAIModel", "__version__"]
+    __all__ = [
+        "LyrixaAI",
+        "LocalModel",
+        "ModelRouter",
+        "OpenAIModel",
+        "build_dynamic_prompt",
+        "__version__",
+    ]
 except ImportError:
     # If imports fail, just expose version
     __all__ = ["__version__"]

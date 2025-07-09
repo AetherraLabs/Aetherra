@@ -4,7 +4,7 @@
 =====================================
 
 Unified LLM interface supporting multiple backends:
-- OpenAI GPT models (GPT-4, GPT-3.5)
+- OpenAI GPT models (gpt-4o, GPT-3.5)
 - Local models via Ollama (Mistral, LLaMA, Mixtral)
 - GGUF models via llama-cpp-python
 - Anthropic Claude
@@ -134,9 +134,9 @@ class MultiLLMManager:
         if LLMProvider.OPENAI in self.providers:
             self.model_configs.update(
                 {
-                    "gpt-4": LLMConfig(
+                    "gpt-4o": LLMConfig(
                         provider=LLMProvider.OPENAI,
-                        model_name="gpt-4",
+                        model_name="gpt-4o",
                         context_window=8192,
                         max_tokens=4096,
                     ),
@@ -334,7 +334,7 @@ class OpenAIProvider:
         """Check if model is available"""
         try:
             # Simple availability check
-            return config.model_name in ["gpt-4", "gpt-3.5-turbo", "gpt-4-turbo"]
+            return config.model_name in ["gpt-4o", "gpt-3.5-turbo", "gpt-4o-turbo"]
         except Exception:
             return False
 

@@ -16,6 +16,7 @@ making it truly independent and privacy-focused.
 """
 
 import asyncio
+import importlib.util
 import json
 import logging
 import os
@@ -153,25 +154,37 @@ class MultiLLMManager:
                 {
                     "mistral": LLMConfig(
                         provider=LLMProvider.OLLAMA,
-                        model_name="mistral",
+                        model_name="mistral:latest",
                         base_url="http://localhost:11434",
                         context_window=4096,
                     ),
                     "llama2": LLMConfig(
                         provider=LLMProvider.OLLAMA,
-                        model_name="llama2",
+                        model_name="llama2:latest",
                         base_url="http://localhost:11434",
                         context_window=4096,
                     ),
+                    "llama3.2:3b": LLMConfig(
+                        provider=LLMProvider.OLLAMA,
+                        model_name="llama3.2:3b",
+                        base_url="http://localhost:11434",
+                        context_window=8192,
+                    ),
+                    "llama3": LLMConfig(
+                        provider=LLMProvider.OLLAMA,
+                        model_name="llama3:latest",
+                        base_url="http://localhost:11434",
+                        context_window=8192,
+                    ),
                     "mixtral": LLMConfig(
                         provider=LLMProvider.OLLAMA,
-                        model_name="mixtral",
+                        model_name="mixtral:latest",
                         base_url="http://localhost:11434",
                         context_window=32768,
                     ),
                     "codellama": LLMConfig(
                         provider=LLMProvider.OLLAMA,
-                        model_name="codellama",
+                        model_name="codellama:latest",
                         base_url="http://localhost:11434",
                         context_window=4096,
                     ),
@@ -366,9 +379,7 @@ class OllamaProvider:
         """Check if model is available in Ollama"""
         try:
             models = self.client.list()
-            available_models = [
-                model["name"].split(":")[0] for model in models["models"]
-            ]
+            available_models = [model.model for model in models.models]
             return config.model_name in available_models
         except Exception:
             return False

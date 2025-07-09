@@ -31,6 +31,17 @@ except ImportError as e:
     MultiLLMManager = None
     LLM_AVAILABLE = False
 
+# Import the enhanced prompt engine
+try:
+    from .prompt_engine import build_dynamic_prompt
+
+    PROMPT_ENGINE_AVAILABLE = True
+    logger.info("✅ Enhanced prompt engine loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Enhanced prompt engine not available: {e}")
+    PROMPT_ENGINE_AVAILABLE = False
+    build_dynamic_prompt = None
+
 
 class LyrixaConversationManager:
     """
@@ -47,18 +58,25 @@ class LyrixaConversationManager:
         self.workspace_path = workspace_path
         self.aether_runtime = aether_runtime
 
+        # Initialize model failure tracking first
+        self.model_failures = {}
+        self.max_retries_per_model = 3
+
         # Initialize LLM manager if available
         if LLM_AVAILABLE and MultiLLMManager is not None:
             try:
                 self.llm_manager = MultiLLMManager()
 
-                # Set default model (GPT-4 preferred, fallback to available models)
+                # Updated model preferences with gpt-4o and fallback chain
                 self.preferred_models = [
-                    "gpt-4",
-                    "gpt-4-turbo",
-                    "gpt-3.5-turbo",
-                    "claude-3-sonnet",
-                    "mistral",
+                    "gpt-4o",  # Primary model (updated from gpt-4)
+                    "gpt-4-turbo",  # Fallback 1
+                    "gpt-3.5-turbo",  # Fallback 2
+                    "claude-3-sonnet",  # Fallback 3
+                    "mistral",  # Fallback 4 (ollama mistral:latest)
+                    "llama3.2:3b",  # Local fallback 1 (downloaded model)
+                    "llama3",  # Local fallback 2 (llama3:latest)
+                    "mixtral",  # Local fallback 3 (mixtral:latest)
                 ]
                 self.current_model = self._select_best_model()
                 self.llm_enabled = True
@@ -90,19 +108,27 @@ class LyrixaConversationManager:
         self.conversation_count = 0
 
     def _select_best_model(self) -> str:
-        """Select the best available model from preferences"""
+        """Select the best available model from preferences with failure tracking"""
         if not self.llm_manager:
             return "fallback"
 
         try:
             available_models = self.llm_manager.list_available_models()
+            logger.info(f"🔍 Available models: {list(available_models.keys())}")
 
             for model in self.preferred_models:
+                # Skip models that have failed too many times
+                if self.model_failures.get(model, 0) >= self.max_retries_per_model:
+                    logger.warning(f"⚠️ Skipping {model} - too many failures")
+                    continue
+
                 if model in available_models:
                     # Try to set the model
                     if self.llm_manager.set_model(model):
                         logger.info(f"✅ Selected model: {model}")
                         return model
+                    else:
+                        self._record_model_failure(model)
 
             # Fallback to first available model
             if available_models:
@@ -117,6 +143,13 @@ class LyrixaConversationManager:
         except Exception as e:
             logger.error(f"❌ Error selecting model: {e}")
             return "fallback"
+
+    def _record_model_failure(self, model: str):
+        """Record a model failure for tracking"""
+        self.model_failures[model] = self.model_failures.get(model, 0) + 1
+        logger.warning(
+            f"⚠️ Model {model} failed ({self.model_failures[model]}/{self.max_retries_per_model})"
+        )
 
     def get_lyrixa_personality(self) -> str:
         """Get Lyrixa's core personality prompt"""
@@ -147,7 +180,7 @@ class LyrixaConversationManager:
 
 **Important:** You have real-time access to the system's current state, so use that information to provide relevant, contextual responses."""
 
-    def get_system_context(self) -> Dict[str, Any]:
+    async def get_system_context(self) -> Dict[str, Any]:
         """Get current system context and status"""
         try:
             # Cache system context for 30 seconds to avoid excessive calls
@@ -183,7 +216,7 @@ class LyrixaConversationManager:
                     if hasattr(self.aether_runtime.context, "memory"):
                         memory_system = self.aether_runtime.context.memory
                         if hasattr(memory_system, "get_memory_stats"):
-                            memory_stats = memory_system.get_memory_stats()
+                            memory_stats = await memory_system.get_memory_stats()
                             context["memory_entries"] = memory_stats.get(
                                 "total_entries", 0
                             )
@@ -198,38 +231,19 @@ class LyrixaConversationManager:
                     if hasattr(self.aether_runtime.context, "agents"):
                         agent_system = self.aether_runtime.context.agents
                         if hasattr(agent_system, "agents"):
-                            context["active_agents"] = len(agent_system.agents)
-                            context["agent_names"] = list(agent_system.agents.keys())[
-                                :3
-                            ]  # Top 3
-                        else:
-                            context["active_agents"] = 0
-                            context["agent_names"] = []
+                            context["agent_count"] = len(agent_system.agents)
 
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get runtime context: {e}")
-                    context["runtime_status"] = "limited_access"
-            else:
-                context["runtime_status"] = "not_connected"
 
-            # System health summary
-            context["system_health"] = "operational"
-            context["current_model"] = self.current_model
-
-            # Cache the context
+            # Update cache
             self.system_context_cache = context
             self.last_context_update = now
-
             return context
 
         except Exception as e:
             logger.error(f"❌ Error getting system context: {e}")
-            return {
-                "timestamp": datetime.now().isoformat(),
-                "error": "Could not retrieve system context",
-                "current_model": self.current_model,
-                "system_health": "unknown",
-            }
+            return {"error": str(e)}
 
     def format_system_context(self, context: Dict[str, Any]) -> str:
         """Format system context for the LLM prompt"""
@@ -269,24 +283,18 @@ class LyrixaConversationManager:
         if len(self.conversation_history) > self.max_history_length:
             self.conversation_history.pop(0)
 
-    def get_conversation_messages(self, user_input: str) -> List[Dict[str, str]]:
+    async def get_conversation_messages(self, user_input: str) -> List[Dict[str, str]]:
         """Prepare messages for LLM including system context and history"""
-        system_context = self.get_system_context()
+        system_context = await self.get_system_context()
 
         messages = [
             {
                 "role": "system",
                 "content": f"{self.get_lyrixa_personality()}\n\n{self.format_system_context(system_context)}",
-            }
+            },
+            *self.conversation_history,
+            {"role": "user", "content": user_input},
         ]
-
-        # Add conversation history (exclude system messages from history)
-        for msg in self.conversation_history:
-            if msg["role"] in ["user", "assistant"]:
-                messages.append({"role": msg["role"], "content": msg["content"]})
-
-        # Add current user message
-        messages.append({"role": "user", "content": user_input})
 
         return messages
 
@@ -311,58 +319,168 @@ class LyrixaConversationManager:
         return "\n".join(prompt_parts)
 
     async def generate_response(self, user_input: str) -> str:
-        """Generate an LLM-powered response to user input"""
+        """Generate an LLM-powered response with enhanced dynamic prompts and robust fallback mechanism"""
         try:
             self.conversation_count += 1
 
             # Check if LLM is available
             if not self.llm_enabled or not self.llm_manager:
                 logger.info("💬 Using fallback response (LLM not available)")
-                fallback_response = self._generate_fallback_response(user_input)
-                self.add_to_conversation_history("user", user_input)
-                self.add_to_conversation_history("assistant", fallback_response)
-                return fallback_response
+                return await self._generate_smart_fallback_response(user_input)
 
-            # Prepare messages with full context
-            messages = self.get_conversation_messages(user_input)
+            # 🧠 Use enhanced dynamic prompt engine if available
+            if PROMPT_ENGINE_AVAILABLE and build_dynamic_prompt:
+                try:
+                    system_prompt = build_dynamic_prompt(user_id="default_user")
+                    logger.info(
+                        "🎭 Using enhanced dynamic prompt with contextual personality"
+                    )
+                except Exception as e:
+                    logger.warning(
+                        f"⚠️ Dynamic prompt engine failed, using fallback: {e}"
+                    )
+                    # Fallback to traditional method
+                    messages = await self.get_conversation_messages(user_input)
+                    system_prompt = messages[0]["content"]
+            else:
+                # Fallback to traditional method
+                messages = await self.get_conversation_messages(user_input)
+                system_prompt = messages[0]["content"]
 
-            # Convert messages to prompt format
-            prompt = self.format_messages_as_prompt(messages)
+            # Create messages with enhanced prompt
+            enhanced_messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_input},
+            ]
 
-            # Log the conversation for debugging
-            logger.info(f"💬 Generating LLM response for: {user_input[:100]}...")
+            # Add conversation history for context
+            conversation_messages = []
+            for msg in self.conversation_history[-6:]:  # Last 6 messages for context
+                conversation_messages.append(
+                    {"role": msg["role"], "content": msg["content"]}
+                )
 
-            # Generate response using LLM
-            response = await self.llm_manager.generate_response(
-                prompt=prompt, temperature=0.7, max_tokens=1000
+            # Combine: system prompt + history + current input
+            final_messages = (
+                [enhanced_messages[0]] + conversation_messages + [enhanced_messages[1]]
             )
 
-            # Clean up the response (remove any "ASSISTANT:" prefix if present)
-            response = response.strip()
-            if response.startswith("ASSISTANT:"):
-                response = response[10:].strip()
+            prompt = self.format_messages_as_prompt(final_messages)
 
-            # Add to conversation history
-            self.add_to_conversation_history("user", user_input)
-            self.add_to_conversation_history("assistant", response)
+            logger.info(
+                f"💬 Generating enhanced LLM response for: {user_input[:100]}..."
+            )
 
-            logger.info(f"✅ LLM response generated: {len(response)} characters")
-            return response
+            # Try each model in order until one succeeds
+            for model in self.preferred_models:
+                # Skip models that have failed too many times
+                if self.model_failures.get(model, 0) >= self.max_retries_per_model:
+                    continue
+
+                try:
+                    # Check if model is available
+                    available_models = self.llm_manager.list_available_models()
+                    if model not in available_models:
+                        logger.warning(f"⚠️ Model {model} not available, trying next...")
+                        continue
+
+                    # Set the model
+                    if not self.llm_manager.set_model(model):
+                        logger.warning(f"⚠️ Failed to set model {model}, trying next...")
+                        self._record_model_failure(model)
+                        continue
+
+                    # Generate response
+                    response = await self.llm_manager.generate_response(
+                        prompt=prompt, temperature=0.7, max_tokens=1000
+                    )
+
+                    # Clean up the response
+                    response = response.strip()
+                    if response.startswith("ASSISTANT:"):
+                        response = response[10:].strip()
+
+                    # Check if response is valid
+                    if not response or len(response.strip()) < 10:
+                        logger.warning(f"⚠️ Empty or too short response from {model}")
+                        self._record_model_failure(model)
+                        continue
+
+                    # Success! Add to conversation history
+                    self.add_to_conversation_history("user", user_input)
+                    self.add_to_conversation_history("assistant", response)
+                    self.current_model = model
+
+                    logger.info(
+                        f"✅ Enhanced LLM response generated with {model}: {len(response)} characters"
+                    )
+
+                    # 📝 Store interaction for learning (if available)
+                    if PROMPT_ENGINE_AVAILABLE and build_dynamic_prompt:
+                        try:
+                            # This would store the interaction for future learning
+                            # Implementation depends on memory system availability
+                            pass
+                        except Exception as e:
+                            logger.debug(
+                                f"Could not store interaction for learning: {e}"
+                            )
+
+                    return response
+
+                except Exception as e:
+                    error_msg = str(e).lower()
+                    logger.warning(f"⚠️ Model {model} failed: {e}")
+
+                    # Record failure and check for specific error types
+                    self._record_model_failure(model)
+
+                    # Check for quota/billing errors
+                    if any(
+                        keyword in error_msg
+                        for keyword in [
+                            "quota",
+                            "billing",
+                            "insufficient",
+                            "exceeded",
+                            "limit",
+                        ]
+                    ):
+                        logger.error(f"💰 {model} quota/billing issue detected")
+                        self.model_failures[model] = (
+                            self.max_retries_per_model
+                        )  # Immediately disable
+
+                    # Check for authentication errors
+                    elif any(
+                        keyword in error_msg
+                        for keyword in ["auth", "key", "token", "permission"]
+                    ):
+                        logger.error(f"🔐 {model} authentication issue detected")
+                        self.model_failures[model] = (
+                            self.max_retries_per_model
+                        )  # Immediately disable
+
+                    # Check for model not found errors
+                    elif any(
+                        keyword in error_msg
+                        for keyword in ["not found", "does not exist", "unavailable"]
+                    ):
+                        logger.error(f"❌ {model} not found or unavailable")
+                        self.model_failures[model] = (
+                            self.max_retries_per_model
+                        )  # Immediately disable
+
+                    # Continue to next model
+                    continue
+
+            # If all models fail, use smart fallback
+            logger.error("❌ All models failed, using smart fallback response")
+            return await self._generate_smart_fallback_response(user_input)
 
         except Exception as e:
-            logger.error(f"❌ Error generating LLM response: {e}")
-
-            # Check if this is a quota/billing error
-            if "quota" in str(e).lower() or "billing" in str(e).lower():
-                logger.warning("⚠️ OpenAI quota exceeded, switching to fallback mode")
-                self.llm_enabled = False  # Disable LLM for this session
-
-            # Fallback to contextual response
-            fallback_response = self._generate_fallback_response(user_input)
-            self.add_to_conversation_history("user", user_input)
-            self.add_to_conversation_history("assistant", fallback_response)
-
-            return fallback_response
+            logger.error(f"❌ Critical error in generate_response: {e}")
+            return await self._generate_smart_fallback_response(user_input)
 
     def _generate_fallback_response(self, user_input: str) -> str:
         """Generate a fallback response when LLM fails"""
@@ -391,14 +509,14 @@ I'm Lyrixa, your AI companion within this system. How can I help you explore Aet
         # Default response
         return f"I understand you're asking about: '{user_input}'. I'm currently running with limited capabilities but I'm here to help! Could you tell me more about what you'd like to know or accomplish?"
 
-    def get_conversation_summary(self) -> Dict[str, Any]:
+    async def get_conversation_summary(self) -> Dict[str, Any]:
         """Get a summary of the current conversation"""
         return {
             "session_id": self.session_id,
             "conversation_count": self.conversation_count,
             "history_length": len(self.conversation_history),
             "current_model": self.current_model,
-            "system_context": self.get_system_context(),
+            "system_context": await self.get_system_context(),
             "last_update": datetime.now().isoformat(),
         }
 
@@ -433,13 +551,13 @@ I'm Lyrixa, your AI companion within this system. How can I help you explore Aet
             logger.error(f"❌ Error switching model: {e}")
             return False
 
-    def _generate_fallback_response_with_context(self, user_input: str) -> str:
+    async def fallback_with_context(self, user_input: str) -> str:
         """Generate a fallback response with system context"""
         try:
             self.conversation_count += 1
 
             # Get system context for more contextual fallback
-            system_context = self.get_system_context()
+            system_context = await self.get_system_context()
 
             # Add to conversation history
             self.add_to_conversation_history("user", user_input)
@@ -458,48 +576,13 @@ I'm Lyrixa, your AI companion within this system. How can I help you explore Aet
             logger.error(f"❌ Error in fallback with context: {e}")
             return self._generate_fallback_response(user_input)
 
-    def generate_response_sync(self, user_input: str) -> str:
-        """Synchronous wrapper for generate_response"""
-        try:
-            # Try to get the current event loop
-            loop = asyncio.get_running_loop()
-            # If there's a running loop, create a task and run it
-            logger.info("🔄 Using existing event loop for LLM response")
-
-            # Create a task that runs the async function
-            task = loop.create_task(self.generate_response(user_input))
-
-            # Wait for the task to complete (this is a bit of a hack for sync compatibility)
-            # In a real GUI, you'd want to use proper async handling
-            try:
-                # Try to get the result if it's already available
-                if task.done():
-                    return task.result()
-                else:
-                    # If not done, fall back to enhanced fallback
-                    logger.info(
-                        "🔄 LLM task not immediately available, using enhanced fallback"
-                    )
-                    return self._generate_smart_fallback_response(user_input)
-            except Exception as task_error:
-                logger.warning(f"⚠️ Task error: {task_error}")
-                return self._generate_smart_fallback_response(user_input)
-
-        except RuntimeError:
-            # No event loop running, we can use asyncio.run()
-            logger.info("🔄 Creating new event loop for LLM response")
-            return asyncio.run(self.generate_response(user_input))
-        except Exception as e:
-            logger.error(f"❌ Error in sync wrapper: {e}")
-            return self._generate_smart_fallback_response(user_input)
-
-    def _generate_smart_fallback_response(self, user_input: str) -> str:
+    async def _generate_smart_fallback_response(self, user_input: str) -> str:
         """Generate an enhanced fallback response with better system awareness"""
         try:
             self.conversation_count += 1
 
             # Get system context for more contextual fallback
-            system_context = self.get_system_context()
+            system_context = await self.get_system_context()
 
             # Add to conversation history
             self.add_to_conversation_history("user", user_input)
@@ -507,17 +590,25 @@ I'm Lyrixa, your AI companion within this system. How can I help you explore Aet
             # Generate enhanced fallback response based on input patterns
             message_lower = user_input.lower()
 
-            # More sophisticated pattern matching
+            # Handle different types of user input
             if any(
                 word in message_lower for word in ["hello", "hi", "hey", "greetings"]
             ):
-                response = f"Hello! I'm Lyrixa, your AI assistant for Aetherra. I'm currently running with {system_context.get('active_plugins', 0)} plugins active and ready to help!"
+                response = f"Hello! I'm Lyrixa, your AI assistant for Aetherra. I'm currently running in fallback mode with {system_context.get('active_plugins', 0)} plugins active and ready to help! 🌟"
 
             elif any(word in message_lower for word in ["help", "assist", "support"]):
-                response = f"I'm here to help! With {system_context.get('active_plugins', 0)} plugins and {system_context.get('memory_entries', 0)} memory entries at my disposal, I can assist with system management, plugin questions, and general guidance."
+                response = f"I'm here to help! Even in fallback mode, I can assist with system management, plugin questions, and general guidance. With {system_context.get('active_plugins', 0)} plugins and {system_context.get('memory_entries', 0)} memory entries available, what would you like to work on? 🔧"
 
             elif "status" in message_lower or "health" in message_lower:
-                response = f"📊 **System Status Report:**\n• {system_context.get('active_plugins', 0)} plugins active\n• {system_context.get('memory_entries', 0)} memory entries\n• {system_context.get('active_agents', 0)} agents running\n• System health: {system_context.get('system_health', 'unknown')}\n• Current model: {system_context.get('current_model', 'fallback')}"
+                response = f"""📊 **System Status Report:**
+• {system_context.get("active_plugins", 0)} plugins active
+• {system_context.get("memory_entries", 0)} memory entries
+• {system_context.get("active_agents", 0)} agents running
+• System health: {system_context.get("system_health", "operational")}
+• Current model: {self.current_model} (fallback mode)
+• Model failures: {len([k for k, v in self.model_failures.items() if v >= self.max_retries_per_model])} disabled
+
+The system is running in fallback mode but fully operational! 🟢"""
 
             elif "plugin" in message_lower:
                 plugin_names = system_context.get("plugin_names", [])
@@ -539,25 +630,133 @@ I'm Lyrixa, your AI companion within this system. How can I help you explore Aet
 • 🤖 {system_context.get("active_agents", 0)} agents active
 • 💾 System health: {system_context.get("system_health", "operational")}
 
-**Key Features:**
+**System Mode:** Fallback mode (LLM models temporarily unavailable)
+
+**Key Features Still Available:**
 • Intelligence Stack with advanced AI reasoning
 • Plugin architecture for extending capabilities
 • AI agents that work together autonomously
 • Enhanced memory with confidence scoring
 • Workflow automation and goal processing
 
-How can I help you explore Aetherra's capabilities?"""
+How can I help you explore Aetherra's capabilities? 🚀"""
+
+            elif any(
+                word in message_lower
+                for word in ["error", "problem", "issue", "broken"]
+            ):
+                response = f"""🔧 **Troubleshooting Mode:**
+
+I notice you're reporting an issue. Here's what I can help with:
+
+• **System Status:** {system_context.get("active_plugins", 0)} plugins active, {system_context.get("memory_entries", 0)} memory entries
+• **Current Mode:** Fallback mode (LLM models temporarily unavailable)
+• **Failed Models:** {len([k for k, v in self.model_failures.items() if v >= self.max_retries_per_model])} models disabled
+
+**What I can still do:**
+• Analyze system logs and status
+• Help with plugin management
+• Provide system information
+• Guide you through troubleshooting steps
+
+What specific issue are you experiencing? 🛠️"""
 
             else:
                 # Default enhanced response with context
-                response = f"I understand you're asking about: '{user_input}'. With {system_context.get('active_plugins', 0)} plugins and {system_context.get('memory_entries', 0)} memory entries at my disposal, I'm here to help! Could you tell me more about what you'd like to know or accomplish?"
+                response = f"""I understand you're asking about: '{user_input}'.
+
+**Current Status:**
+• Running in fallback mode (LLM models temporarily unavailable)
+• {system_context.get("active_plugins", 0)} plugins active
+• {system_context.get("memory_entries", 0)} memory entries available
+• System health: {system_context.get("system_health", "operational")}
+
+Even in fallback mode, I can help with system management, plugin questions, and general guidance. Could you tell me more about what you'd like to know or accomplish? 🤔"""
 
             # Add system info footer
-            response += f"\n\n💡 *Session {self.session_id.split('_')[-1]} • Conversation #{self.conversation_count}*"
+            response += f"\n\n💡 *Session {self.session_id.split('_')[-1]} • Conversation #{self.conversation_count} • Fallback Mode*"
 
             self.add_to_conversation_history("assistant", response)
             return response
 
         except Exception as e:
             logger.error(f"❌ Error in smart fallback: {e}")
-            return self._generate_fallback_response(user_input)
+            # Ultimate fallback
+            return f"I'm Lyrixa, your AI assistant. I'm currently experiencing some technical difficulties but I'm still here to help! You asked: '{user_input}'. How can I assist you today? 🌟"
+
+    def reset_model_failures(self):
+        """Reset model failure tracking"""
+        self.model_failures = {}
+        logger.info("🔄 Model failure tracking reset")
+
+    def get_model_health(self) -> Dict[str, Any]:
+        """Get current model health status"""
+        return {
+            "current_model": self.current_model,
+            "llm_enabled": self.llm_enabled,
+            "model_failures": self.model_failures,
+            "preferred_models": self.preferred_models,
+            "available_models": list(self.llm_manager.list_available_models().keys())
+            if self.llm_manager
+            else [],
+        }
+
+    async def _try_ollama_fallback(self, prompt: str) -> str:
+        """Try to use Ollama as a local fallback"""
+        try:
+            # Check if Ollama is available as a model
+            if self.llm_manager:
+                available_models = self.llm_manager.list_available_models()
+                if "ollama" in available_models:
+                    if self.llm_manager.set_model("ollama"):
+                        response = await self.llm_manager.generate_response(
+                            prompt=prompt, temperature=0.7, max_tokens=1000
+                        )
+                        if response and len(response.strip()) > 10:
+                            logger.info("✅ Ollama fallback successful")
+                            return response.strip()
+                else:
+                    logger.warning("⚠️ Ollama not available in model list")
+            else:
+                logger.warning("⚠️ LLM manager not available for Ollama fallback")
+        except Exception as e:
+            logger.error(f"❌ Ollama fallback failed: {e}")
+
+        return "I'm sorry, but I'm unable to generate a response at the moment. Please try again later."
+
+    def generate_response_sync(self, user_input: str) -> str:
+        """Synchronous wrapper for generate_response with robust fallback"""
+        try:
+            # Try to get the current event loop
+            loop = asyncio.get_running_loop()
+            # If there's a running loop, create a task and run it
+            logger.info("🔄 Using existing event loop for LLM response")
+
+            # Create a task that runs the async function
+            task = loop.create_task(self.generate_response(user_input))
+
+            # Wait for the task to complete (this is a bit of a hack for sync compatibility)
+            # In a real GUI, you'd want to use proper async handling
+            try:
+                # Try to get the result if it's already available
+                if task.done():
+                    return task.result()
+                else:
+                    # If not done, fall back to enhanced fallback
+                    logger.info(
+                        "🔄 LLM task not immediately available, using enhanced fallback"
+                    )
+                    return asyncio.run(
+                        self._generate_smart_fallback_response(user_input)
+                    )
+            except Exception as task_error:
+                logger.warning(f"⚠️ Task error: {task_error}")
+                return asyncio.run(self._generate_smart_fallback_response(user_input))
+
+        except RuntimeError:
+            # No event loop running, we can use asyncio.run()
+            logger.info("🔄 Creating new event loop for LLM response")
+            return asyncio.run(self.generate_response(user_input))
+        except Exception as e:
+            logger.error(f"❌ Error in sync wrapper: {e}")
+            return asyncio.run(self._generate_smart_fallback_response(user_input))

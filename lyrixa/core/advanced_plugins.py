@@ -173,7 +173,13 @@ class LyrixaAdvancedPluginManager:
 
         # Dynamic import
         spec = importlib.util.spec_from_file_location(plugin_name, plugin_file)
+        if spec is None:
+            raise ImportError("Module specification could not be found.")
+
         module = importlib.util.module_from_spec(spec)
+        if spec.loader is None:
+            raise ImportError("Spec loader is not defined.")
+
         spec.loader.exec_module(module)
 
         # Extract plugin metadata and functions
@@ -802,8 +808,31 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
                     chain_data = content
 
                 if chain_data and isinstance(chain_data, dict):
+                    # Validate required fields in chain_data
+                    required_fields = {
+                        "name",
+                        "description",
+                        "plugins",
+                        "input_schema",
+                        "output_schema",
+                        "created_by",
+                    }
+                    missing_fields = required_fields - chain_data.keys()
+
+                    if missing_fields:
+                        print(
+                            f"⚠️ Failed to create plugin chain from data: Missing fields: {', '.join(missing_fields)}"
+                        )
+                        continue
+
+                    # Filter out unexpected keys from chain_data
+                    valid_keys = required_fields | {"usage_count"}
+                    filtered_chain_data = {
+                        k: v for k, v in chain_data.items() if k in valid_keys
+                    }
+
                     try:
-                        chain = PluginChain(**chain_data)
+                        chain = PluginChain(**filtered_chain_data)
                         self.plugin_chains[chain.name] = chain
                     except Exception as chain_error:
                         print(

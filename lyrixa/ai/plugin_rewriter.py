@@ -2,11 +2,10 @@
 
 import ast
 import datetime
-import difflib
 import logging
 import os
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import openai
 
@@ -276,7 +275,6 @@ class PluginRewriter:
 
     def list_plugin_versions(self, plugin_name: str) -> List[str]:
         """List all available versions for a plugin"""
-        pattern = f"{plugin_name}_*.bak"
         versions = []
 
         for filename in os.listdir(self.history_dir):
@@ -447,11 +445,12 @@ class PluginRewriter:
             # Use the newer OpenAI client format
             client = openai.OpenAI()
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",  # Updated model for compatibility
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.3,  # Lower temperature for more consistent code
                 max_tokens=4000,
             )
+            self.logger.info("Using model: gpt-3.5-turbo")
             content = response.choices[0].message.content
             return content.strip() if content is not None else ""
         except Exception as e:

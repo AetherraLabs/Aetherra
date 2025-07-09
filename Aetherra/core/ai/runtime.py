@@ -52,7 +52,7 @@ def ask_ai(prompt, temperature=0.2):
 
     try:
         # Try gpt-4o-mini first (most accessible), fallback to gpt-3.5-turbo
-        models_to_try = ["gpt-4o-mini", "gpt-3.5-turbo", "gpt-4"]
+        models_to_try = ["gpt-4oo-mini", "gpt-3.5-turbo", "gpt-4o"]
 
         for model in models_to_try:
             try:
