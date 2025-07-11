@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroHub - The AI Package Manager</title>
+    <title>aetherhub - The AI Package Manager</title>
     <meta name="description"
         content="The AI-native package manager for consciousness programming. Browse, install, and publish .aetherplug modules for aetherra.">
     <link rel="icon" href="../website/favicon.svg" type="image/svg+xml">
-    <script src="neurohub-client.js"></script>
+    <script src="aetherhub-client.js"></script>
     <style>
         * {
             margin: 0;
@@ -521,7 +521,7 @@
                     <line x1="65" y1="40" x2="85" y2="65" stroke="currentColor" stroke-width="2" opacity="0.5" />
                     <line x1="80" y1="25" x2="65" y2="40" stroke="currentColor" stroke-width="2" opacity="0.5" />
                 </svg>
-                NeuroHub
+                aetherhub
             </div>
             <ul class="nav-links">
                 <li><a href="#browse">Browse</a></li>
@@ -538,7 +538,7 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <h1>NeuroHub</h1>
+            <h1>aetherhub</h1>
             <p class="subtitle">The AI-native package manager for consciousness programming. Browse, install, and
                 publish .aetherplug modules for aetherra.</p>
 
@@ -603,7 +603,7 @@
                     <div style="color: #00d4ff;">aetherra create transcriber</div>
                     <div style="color: #888; margin: 1rem 0;"># Test locally</div>
                     <div style="color: #00d4ff;">aetherra test transcriber</div>
-                    <div style="color: #888; margin: 1rem 0;"># Publish to NeuroHub</div>
+                    <div style="color: #888; margin: 1rem 0;"># Publish to aetherhub</div>
                     <div style="color: #ff6b6b;">aetherra publish transcriber</div>
                     <div style="color: #888; margin: 1rem 0;"># Install anywhere</div>
                     <div style="color: #00d4ff;">aetherra install transcriber</div>
@@ -630,7 +630,7 @@
     <div id="authModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2 id="authTitle">Sign In to NeuroHub</h2>
+            <h2 id="authTitle">Sign In to aetherhub</h2>
 
             <div id="signInForm" class="auth-form">
                 <input type="text" id="signInApiKey" placeholder="Enter your API key" required>
@@ -863,14 +863,14 @@
                 e.preventDefault();
                 document.getElementById('signInForm').style.display = 'none';
                 document.getElementById('signUpForm').style.display = 'block';
-                document.getElementById('authTitle').textContent = 'Create NeuroHub Account';
+                document.getElementById('authTitle').textContent = 'Create aetherhub Account';
             }
 
             document.getElementById('showSignIn').onclick = function (e) {
                 e.preventDefault();
                 document.getElementById('signUpForm').style.display = 'none';
                 document.getElementById('signInForm').style.display = 'block';
-                document.getElementById('authTitle').textContent = 'Sign In to NeuroHub';
+                document.getElementById('authTitle').textContent = 'Sign In to aetherhub';
             }
 
             // Authentication

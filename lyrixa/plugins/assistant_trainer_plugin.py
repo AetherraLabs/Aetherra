@@ -14,6 +14,25 @@ from typing import Any, Dict, List, Optional
 
 class TrainingDataset:
     """Represents a training dataset for assistant training."""
+    # Required plugin metadata
+    name = "assistant_trainer_plugin"
+    description = "TrainingDataset - Auto-generated description"
+    input_schema = {
+        "type": "object",
+        "properties": {
+            "input": {"type": "string", "description": "Input data"}
+        },
+        "required": ["input"]
+    }
+    output_schema = {
+        "type": "object",
+        "properties": {
+            "result": {"type": "string", "description": "Processing result"},
+            "status": {"type": "string", "description": "Operation status"}
+        }
+    }
+    created_by = "Plugin System Auto-Fixer"
+
 
     def __init__(self, dataset_id: str, name: str, description: str = ""):
         self.dataset_id = dataset_id

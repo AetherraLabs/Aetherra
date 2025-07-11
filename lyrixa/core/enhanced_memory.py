@@ -1097,24 +1097,24 @@ class LyrixaEnhancedMemorySystem:
         self, tags: List[str], limit: int = 10
     ) -> List[Dict[str, Any]]:
         """Get memories filtered by tags"""
-        placeholders = ",".join(["?" for _ in tags])
 
         def _query_by_tags():
             conn = sqlite3.connect(self.db_path)
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
 
+            # Build query to search for tags in the tags field (stored as JSON)
+            tag_conditions = " OR ".join(["tags LIKE ?" for _ in tags])
+
             cursor.execute(
-                """
-                SELECT m.*, GROUP_CONCAT(mt.tag) as all_tags
-                FROM memories m
-                LEFT JOIN memory_tags mt ON m.id = mt.memory_id
-                WHERE mt.tag IN ({})
-                GROUP BY m.id
-                ORDER BY m.importance DESC, m.last_accessed DESC
+                f"""
+                SELECT *
+                FROM enhanced_memories
+                WHERE ({tag_conditions})
+                ORDER BY importance DESC, last_accessed DESC
                 LIMIT ?
-            """.format(placeholders),
-                tags + [limit],
+                """,
+                [f"%{tag}%" for tag in tags] + [limit],
             )
 
             rows = cursor.fetchall()
@@ -1128,7 +1128,7 @@ class LyrixaEnhancedMemorySystem:
             memory_data["content"] = json.loads(memory_data["content"])
             memory_data["context"] = json.loads(memory_data["context"])
             memory_data["tags"] = (
-                memory_data["all_tags"].split(",") if memory_data["all_tags"] else []
+                json.loads(memory_data["tags"]) if memory_data["tags"] else []
             )
             memories.append(memory_data)
 

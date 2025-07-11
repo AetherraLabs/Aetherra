@@ -10,7 +10,7 @@
 - ✅ `Lyrixa.bat` → `lyrixa.bat`
 - ✅ `Lyrixa/` → `lyrixa/`
 - ✅ `src/Lyrixa/` → `src/aetherra/ui/`
-- ✅ `neurohub/` → `aetherra_hub/`
+- ✅ `aetherhub/` → `aetherra_hub/`
 - ✅ `core/memory.py` → `core/aetherra_memory.py`
 - ✅ `core/aetherra_grammar.py` → `core/aetherra_grammar.py`
 - ✅ `core/aetherra_parser.py` → `core/aetherra_parser.py`

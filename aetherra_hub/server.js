@@ -528,7 +528,7 @@ const initializeServer = async () => {
 // Start server
 initializeServer().then(() => {
     app.listen(PORT, () => {
-        console.log(`🚀 NeuroHub API server running on port ${PORT}`);
+        console.log(`🚀 aetherhub API server running on port ${PORT}`);
         console.log(`📊 Serving ${plugins.length} plugins from ${new Set(plugins.map(p => p.author)).size} authors`);
         console.log(`🌐 API available at http://localhost:${PORT}/api/v1`);
     });

@@ -26,8 +26,8 @@
 
 #### Current Status Files (Root)
 - `SUCCESS_SUMMARY.md`
-- `NEUROHUB_SUCCESS_SUMMARY.md`
-- `NEUROHUB_CLEANUP_SUMMARY.md`
+- `aetherhub_SUCCESS_SUMMARY.md`
+- `aetherhub_CLEANUP_SUMMARY.md`
 - `MODEST_PROFESSIONAL_SUMMARY.md`
 - `MISSION_ACCOMPLISHED_SUMMARY.md`
 - `FINAL_ORGANIZATION_STATUS.md`
@@ -100,8 +100,8 @@ rm scripts/check_qt.py
 mkdir -p archive/status_files
 
 # Move historical status files
-mv NEUROHUB_SUCCESS_SUMMARY.md archive/status_files/
-mv NEUROHUB_CLEANUP_SUMMARY.md archive/status_files/
+mv aetherhub_SUCCESS_SUMMARY.md archive/status_files/
+mv aetherhub_CLEANUP_SUMMARY.md archive/status_files/
 mv MODEST_PROFESSIONAL_SUMMARY.md archive/status_files/
 mv MISSION_ACCOMPLISHED_SUMMARY.md archive/status_files/
 mv FINAL_REPOSITORY_STATUS.md archive/status_files/

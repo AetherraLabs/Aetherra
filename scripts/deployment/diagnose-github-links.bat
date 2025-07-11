@@ -31,9 +31,9 @@ findstr /n "github.com" website\index.html | findstr /v "Zyonic88" 2>nul
 if errorlevel 1 echo ✓ All GitHub links in website\index.html point to Zyonic88
 echo.
 
-echo Checking neurohub\index.html:
-findstr /n "github.com" neurohub\index.html | findstr /v "Zyonic88" 2>nul
-if errorlevel 1 echo ✓ All GitHub links in neurohub\index.html point to Zyonic88
+echo Checking aetherhub\index.html:
+findstr /n "github.com" aetherhub\index.html | findstr /v "Zyonic88" 2>nul
+if errorlevel 1 echo ✓ All GitHub links in aetherhub\index.html point to Zyonic88
 echo.
 
 echo [7] Testing network connectivity to correct repository...

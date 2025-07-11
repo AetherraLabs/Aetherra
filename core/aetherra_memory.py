@@ -23,7 +23,7 @@ try:
     )
 
     SPEED_ENHANCEMENT_AVAILABLE = True
-    print("🧠 Speed Enhancement Suite integrated with memory system")
+    print("Speed Enhancement Suite integrated with memory system")
 except ImportError:
     SPEED_ENHANCEMENT_AVAILABLE = False
 
@@ -63,7 +63,7 @@ class AetherraMemory:
         # Apply speed optimizations
         if SPEED_ENHANCEMENT_AVAILABLE:
             optimize_memory_system(self)
-            print("🚀 Memory system speed optimized!")
+            print("Memory system speed optimized!")
 
     def load(self):
         """Load memories from persistent storage"""

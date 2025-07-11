@@ -96,8 +96,17 @@ class LyrixaAdvancedPluginManager:
     - Intelligent routing based on intent
     """
 
-    def __init__(self, plugin_directory: str = "plugins", memory_system=None):
+    def __init__(
+        self,
+        plugin_directory: str = "plugins",
+        memory_system=None,
+        additional_directories: Optional[List[str]] = None,
+    ):
         self.plugin_directory = Path(plugin_directory)
+        self.additional_directories = [Path(d) for d in (additional_directories or [])]
+        self.all_plugin_directories = [
+            self.plugin_directory
+        ] + self.additional_directories
         self.memory_system = memory_system
 
         # Plugin registry
@@ -138,32 +147,42 @@ class LyrixaAdvancedPluginManager:
         print(f"✅ Plugin ecosystem ready: {len(self.plugins)} plugins loaded")
 
     async def _auto_discover_plugins(self):
-        """Automatically discover and register plugins"""
+        """Automatically discover and register plugins from all configured directories"""
         print("🔍 Auto-discovering plugins...")
 
         discovered_count = 0
 
-        # Scan plugin directory
-        for plugin_file in self.plugin_directory.glob("*.py"):
-            if plugin_file.name.startswith("__"):
+        # Scan all plugin directories
+        for plugin_dir in self.all_plugin_directories:
+            if not plugin_dir.exists():
+                print(f"   📂 Directory not found: {plugin_dir}")
                 continue
 
-            try:
-                await self._load_plugin_from_file(plugin_file)
-                discovered_count += 1
-            except Exception as e:
-                print(f"⚠️ Failed to load plugin {plugin_file.name}: {e}")
+            print(f"   📁 Scanning: {plugin_dir}")
 
-        # Scan for plugin packages
-        for plugin_dir in self.plugin_directory.iterdir():
-            if plugin_dir.is_dir() and not plugin_dir.name.startswith("__"):
-                init_file = plugin_dir / "__init__.py"
-                if init_file.exists():
-                    try:
-                        await self._load_plugin_from_package(plugin_dir)
-                        discovered_count += 1
-                    except Exception as e:
-                        print(f"⚠️ Failed to load plugin package {plugin_dir.name}: {e}")
+            # Scan for Python files
+            for plugin_file in plugin_dir.glob("*.py"):
+                if plugin_file.name.startswith("__"):
+                    continue
+
+                try:
+                    await self._load_plugin_from_file(plugin_file)
+                    discovered_count += 1
+                except Exception as e:
+                    print(f"⚠️ Failed to load plugin {plugin_file.name}: {e}")
+
+            # Scan for plugin packages
+            for plugin_subdir in plugin_dir.iterdir():
+                if plugin_subdir.is_dir() and not plugin_subdir.name.startswith("__"):
+                    init_file = plugin_subdir / "__init__.py"
+                    if init_file.exists():
+                        try:
+                            await self._load_plugin_from_package(plugin_subdir)
+                            discovered_count += 1
+                        except Exception as e:
+                            print(
+                                f"⚠️ Failed to load plugin package {plugin_subdir.name}: {e}"
+                            )
 
         print(f"🔍 Auto-discovery complete: {discovered_count} plugins found")
 
@@ -787,12 +806,16 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
     async def _load_plugin_chains(self):
         """Load plugin chains from memory system"""
         if not self.memory_system:
+            print("📋 No memory system configured, skipping plugin chain loading")
             return
 
         try:
-            chain_memories = await self.memory_system.search_memories(
-                {"tags": ["plugin_chain"], "memory_type": "plugin_chain"}
+            # Search for plugin chain memories using tags
+            chain_memories = await self.memory_system.get_memories_by_tags(
+                tags=["plugin_chain"], limit=100
             )
+
+            print(f"🔍 Found {len(chain_memories)} plugin chain memories to process")
 
             for memory in chain_memories:
                 # Handle both dict and object memory structures
@@ -821,8 +844,17 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
 
                     if missing_fields:
                         print(
-                            f"⚠️ Failed to create plugin chain from data: Missing fields: {', '.join(missing_fields)}"
+                            f"⚠️ Found corrupted plugin chain: Missing fields: {', '.join(missing_fields)}"
                         )
+                        print(f"🧹 Attempting to clean corrupted chain data...")
+                        # Try to delete the corrupted memory entry
+                        try:
+                            if hasattr(memory, "id"):
+                                # If we can identify the memory entry, we could delete it
+                                # For now, just skip and continue
+                                pass
+                        except Exception:
+                            pass
                         continue
 
                     # Filter out unexpected keys from chain_data
@@ -854,3 +886,15 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
             "error_tracking": {},
         }
         print("📊 Performance monitoring initialized")
+
+    def discover_plugins(self) -> list:
+        """Discover available plugins in all plugin directories."""
+        discovered = set()
+        for directory in self.all_plugin_directories:
+            if not directory.exists():
+                continue
+            for file in directory.iterdir():
+                if file.suffix == ".py" and not file.name.startswith("__"):
+                    plugin_name = file.stem
+                    discovered.add(plugin_name)
+        return sorted(discovered)

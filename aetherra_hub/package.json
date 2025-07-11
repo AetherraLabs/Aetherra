@@ -1,13 +1,13 @@
 {
-  "name": "neurohub-marketplace",
+  "name": "aetherhub-marketplace",
   "version": "1.0.0",
-  "description": "NeuroHub - The AI Package Manager Marketplace",
+  "description": "aetherhub - The AI Package Manager Marketplace",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
     "frontend": "python -m http.server 8080",
-    "build": "echo 'Building NeuroHub...'",
+    "build": "echo 'Building aetherhub...'",
     "test": "jest",
     "lint": "eslint ."
   },
@@ -37,12 +37,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Zyonic88/aetherra.git",
-    "directory": "neurohub"
+    "directory": "aetherhub"
   },
   "bugs": {
     "url": "https://github.com/Zyonic88/aetherra/issues"
   },
-  "homepage": "https://aetherra.dev/neurohub",
+  "homepage": "https://aetherra.dev/aetherhub",
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"

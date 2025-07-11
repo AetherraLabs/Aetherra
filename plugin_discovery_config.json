@@ -1,0 +1,28 @@
+{
+  "plugin_directories": [
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\plugins",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\sdk\\plugins"
+  ],
+  "required_fields": [
+    "name",
+    "description",
+    "input_schema",
+    "output_schema",
+    "created_by",
+    "plugins"
+  ],
+  "discovery_patterns": [
+    "*.py",
+    "*plugin*.py",
+    "*_plugin.py"
+  ],
+  "validation_rules": {
+    "must_have_class": true,
+    "must_have_execute_method": true,
+    "must_have_metadata": true
+  },
+  "auto_repair": true,
+  "last_updated": "2025-07-09T13:47:56.359778"
+}

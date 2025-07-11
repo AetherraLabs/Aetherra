@@ -17,7 +17,14 @@ async def simple_test():
     # Initialize components
     memory = LyrixaEnhancedMemorySystem()
     goals = LyrixaGoalSystem()
-    plugins = LyrixaAdvancedPluginManager("plugins")
+    plugins = LyrixaAdvancedPluginManager(
+        "plugins",
+        additional_directories=[
+            "lyrixa/plugins",
+            "src/aetherra/plugins",
+            "sdk/plugins",
+        ],
+    )
     personality = PersonalityProcessor()
     feedback = LyrixaFeedbackSystem(memory, personality)
 

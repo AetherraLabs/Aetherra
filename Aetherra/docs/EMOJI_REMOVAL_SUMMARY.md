@@ -13,7 +13,7 @@ This document summarizes the removal of emojis from the LyrixaUI components as p
   - "🔌 Plugins" → "Plugins"
   - "🧠 Memory" → "Memory"
   - "⚙️ Tasks" → "Tasks"
-  - "🌐 NeuroHub" → "NeuroHub"
+  - "🌐 aetherhub" → "aetherhub"
 
 ### 2. Print Statements
 - Replaced emojis in status messages with text prefixes:
@@ -46,8 +46,8 @@ This document summarizes the removal of emojis from the LyrixaUI components as p
   - "❓" → "[?]"
 
 ### 5. HTML Content
-- Removed emojis from HTML content in the NeuroHub panel:
-  - "🌐 NeuroHub Package Manager" → "NeuroHub Package Manager"
+- Removed emojis from HTML content in the aetherhub panel:
+  - "🌐 aetherhub Package Manager" → "aetherhub Package Manager"
   - "🔌 Plugin Discovery" → "Plugin Discovery"
   - "🛠️ Tool Integration" → "Tool Integration"
   - "🌐 Community Sharing" → "Community Sharing"
@@ -59,7 +59,7 @@ This document summarizes the removal of emojis from the LyrixaUI components as p
   - "🔌 Plugin Manager" → "Plugin Manager"
   - "🧠 Memory Timeline" → "Memory Timeline"
   - "⚙️ Background Tasks" → "Background Tasks"
-  - "🌐 NeuroHub Package Manager" → "NeuroHub Package Manager"
+  - "🌐 aetherhub Package Manager" → "aetherhub Package Manager"
 
 ### 7. File Structure Displays
 - Removed emojis from file structure displays:

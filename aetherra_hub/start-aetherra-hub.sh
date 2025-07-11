@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# NeuroHub Startup Script
-echo "🚀 Starting NeuroHub - The AI Package Manager"
+# aetherhub Startup Script
+echo "🚀 Starting aetherhub - The AI Package Manager"
 echo "=============================================="
 
 # Check if Node.js is installed
@@ -22,7 +22,7 @@ echo "✅ Node.js and npm are available"
 if [ ! -d "node_modules" ]; then
     echo "📦 Installing dependencies..."
     npm install
-    
+
     if [ $? -ne 0 ]; then
         echo "❌ Failed to install dependencies"
         exit 1
@@ -39,7 +39,7 @@ if [ ! -d "uploads" ]; then
 fi
 
 echo ""
-echo "🌟 Starting NeuroHub services..."
+echo "🌟 Starting aetherhub services..."
 echo ""
 
 # Start the backend server in the background
@@ -76,7 +76,7 @@ else
 fi
 
 echo ""
-echo "🎉 NeuroHub is now running!"
+echo "🎉 aetherhub is now running!"
 echo "================================"
 echo "Frontend:  http://localhost:8080"
 echo "API:       http://localhost:3001/api/v1"
@@ -88,7 +88,7 @@ echo ""
 # Function to cleanup processes on exit
 cleanup() {
     echo ""
-    echo "🛑 Shutting down NeuroHub services..."
+    echo "🛑 Shutting down aetherhub services..."
     kill $BACKEND_PID 2>/dev/null
     kill $FRONTEND_PID 2>/dev/null
     echo "✅ All services stopped"

@@ -34,7 +34,7 @@ class StandardLibraryManager:
                 try:
                     self.load_plugin(plugin_path)
                 except Exception as e:
-                    print(f"⚠️ [StdLib] Warning: Could not load {plugin_file}: {e}")
+                    print(f"[StdLib] Warning: Could not load {plugin_file}: {e}")
 
     def load_plugin(self, plugin_path):
         """Load a single plugin from file"""
@@ -55,12 +55,12 @@ class StandardLibraryManager:
                 plugin_instance = plugin_class()
                 self.plugins[plugin_instance.name] = plugin_instance
                 print(
-                    f"✅ [StdLib] Loaded plugin: {plugin_instance.name} - {plugin_instance.description}"
+                    f"[StdLib] Loaded plugin: {plugin_instance.name} - {plugin_instance.description}"
                 )
             else:
-                print(f"⚠️ [StdLib] Warning: {plugin_name} missing PLUGIN_CLASS")
+                print(f"[StdLib] Warning: {plugin_name} missing PLUGIN_CLASS")
         except Exception as e:
-            print(f"⚠️ [StdLib] Error loading {plugin_name}: {e}")
+            print(f"[StdLib] Error loading {plugin_name}: {e}")
             raise
 
     def execute_plugin_action(self, plugin_name, action, memory_system=None, **kwargs):

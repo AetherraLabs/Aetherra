@@ -23,6 +23,25 @@ logger = logging.getLogger(__name__)
 
 class PluginMetricsCollector:
     """Collects detailed metrics for plugin execution and usage."""
+    # Required plugin metadata
+    name = "plugin_analytics"
+    description = "PluginMetricsCollector - Auto-generated description"
+    input_schema = {
+        "type": "object",
+        "properties": {
+            "input": {"type": "string", "description": "Input data"}
+        },
+        "required": ["input"]
+    }
+    output_schema = {
+        "type": "object",
+        "properties": {
+            "result": {"type": "string", "description": "Processing result"},
+            "status": {"type": "string", "description": "Operation status"}
+        }
+    }
+    created_by = "Plugin System Auto-Fixer"
+
 
     def __init__(self, db_path: str = "plugin_analytics.db"):
         self.db_path = db_path

@@ -27,8 +27,8 @@
 
 ### ✅ **PHASE 4: Status Files** - COMPLETE
 **Organized historical status files:**
-- 📦 `NEUROHUB_SUCCESS_SUMMARY.md` → `archive/status_files/`
-- 📦 `NEUROHUB_CLEANUP_SUMMARY.md` → `archive/status_files/`
+- 📦 `aetherhub_SUCCESS_SUMMARY.md` → `archive/status_files/`
+- 📦 `aetherhub_CLEANUP_SUMMARY.md` → `archive/status_files/`
 - 📦 `MODEST_PROFESSIONAL_SUMMARY.md` → `archive/status_files/`
 - 📦 `MISSION_ACCOMPLISHED_SUMMARY.md` → `archive/status_files/`
 - 📦 `FINAL_REPOSITORY_STATUS.md` → `archive/status_files/`

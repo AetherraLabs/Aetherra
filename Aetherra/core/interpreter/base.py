@@ -12,7 +12,8 @@ from typing import Any, List
 try:
     # Try relative imports first (when run as module)
     try:
-        from .aetherra_memory import AetherraMemory  # type: ignore
+        from core.memory.base import AetherraMemory  # type: ignore
+
         from .agent import AetherraAgent  # type: ignore
         from .ai_runtime import (  # type: ignore
             ask_ai,

@@ -410,7 +410,7 @@ Just as Linux democratized server computing, **Aetherra AI OS will democratize i
 **Aetherra is growing rapidly:**
 - **🌐 Global Website**: [Aetherra.dev](https://Aetherra.dev) with interactive demos
 - **⭐ GitHub Repository**: [github.com/Zyonic88/Aetherra](https://github.com/Zyonic88/Aetherra)
-- **📦 Plugin Ecosystem**: Extensible AI capabilities through NeuroHub registry
+- **📦 Plugin Ecosystem**: Extensible AI capabilities through aetherhub registry
 - **👥 Developer Community**: Contributors from around the world
 - **📚 Comprehensive Documentation**: Guides, tutorials, and API references
 

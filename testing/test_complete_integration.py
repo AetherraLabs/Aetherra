@@ -45,7 +45,7 @@ def test_complete_system_startup():
             and window.chat_router is not None,
             "Task Scheduler": hasattr(window, "task_scheduler")
             and window.task_scheduler is not None,
-            "AetherraHub Process": hasattr(window, "neurohub_process"),
+            "AetherraHub Process": hasattr(window, "aetherhub_process"),
         }
 
         print("\n📊 Component Status:")
@@ -64,7 +64,7 @@ def test_complete_system_startup():
             "create_plugins_tab",
             "create_memory_timeline_tab",
             "create_tasks_tab",
-            "create_neurohub_tab",
+            "create_aetherhub_tab",
         ]
 
         print("\n📋 Tab Methods:")

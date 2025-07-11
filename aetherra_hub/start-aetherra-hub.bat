@@ -1,6 +1,6 @@
 @echo off
-REM NeuroHub Startup Script for Windows
-echo 🚀 Starting NeuroHub - The AI Package Manager
+REM aetherhub Startup Script for Windows
+echo 🚀 Starting aetherhub - The AI Package Manager
 echo ==============================================
 
 REM Check if Node.js is installed
@@ -42,12 +42,12 @@ if not exist "uploads" (
 )
 
 echo.
-echo 🌟 Starting NeuroHub services...
+echo 🌟 Starting aetherhub services...
 echo.
 
 REM Start the backend server
 echo 🔧 Starting backend API server...
-start "NeuroHub Backend" cmd /k "npm start"
+start "aetherhub Backend" cmd /k "npm start"
 
 REM Wait a moment for the server to start
 timeout /t 3 /nobreak >nul
@@ -57,7 +57,7 @@ echo 📊 API available at: http://localhost:3001/api/v1
 
 REM Start the frontend server
 echo 🌐 Starting frontend server...
-start "NeuroHub Frontend" cmd /k "npm run frontend"
+start "aetherhub Frontend" cmd /k "npm run frontend"
 
 timeout /t 2 /nobreak >nul
 
@@ -65,19 +65,19 @@ echo ✅ Frontend server started
 echo 🌐 Frontend available at: http://localhost:8080
 
 echo.
-echo 🎉 NeuroHub is now running!
+echo 🎉 aetherhub is now running!
 echo ================================
 echo Frontend:  http://localhost:8080
 echo API:       http://localhost:3001/api/v1
 echo Health:    http://localhost:3001/api/health
 echo.
-echo Press any key to open NeuroHub in your browser...
+echo Press any key to open aetherhub in your browser...
 pause >nul
 
-REM Open NeuroHub in default browser
+REM Open aetherhub in default browser
 start http://localhost:8080
 
 echo.
-echo NeuroHub is running in separate windows.
+echo aetherhub is running in separate windows.
 echo Close those windows to stop the services.
 pause

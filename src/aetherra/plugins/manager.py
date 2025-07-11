@@ -45,13 +45,13 @@ class PluginManifest:
     name: str
     version: str
     description: str
-    category: str
     author: str
-    license: str
-    aetherra_version: str
-    dependencies: Dict[str, str] = field(default_factory=dict)
+    category: str = "general"
+    license: str = "MIT"
+    aetherra_version: str = ">=3.0.0"
+    dependencies: Dict[str, Any] = field(default_factory=dict)
     entry_point: str = "plugin.aether"
-    exports: Dict[str, str] = field(default_factory=dict)
+    exports: Dict[str, Any] = field(default_factory=dict)
     keywords: List[str] = field(default_factory=list)
     repository: Optional[str] = None
     documentation: Optional[str] = None
@@ -59,6 +59,9 @@ class PluginManifest:
     bug_reports: Optional[str] = None
     security_permissions: List[str] = field(default_factory=list)
     compatibility: Dict[str, Any] = field(default_factory=dict)
+    tags: List[str] = field(default_factory=list)
+    ai_consciousness_version: str = ">=1.0.0"
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "PluginManifest":
@@ -67,9 +70,9 @@ class PluginManifest:
             name=data["name"],
             version=data["version"],
             description=data["description"],
-            category=data["category"],
+            category=data.get("category", "general"),
             author=data["author"],
-            license=data["license"],
+            license=data.get("license", "MIT"),
             aetherra_version=data.get("aetherra_version", ">=3.0.0"),
             dependencies=data.get("dependencies", {}),
             entry_point=data.get("entry_point", "plugin.aether"),
@@ -81,7 +84,31 @@ class PluginManifest:
             bug_reports=data.get("bug_reports"),
             security_permissions=data.get("security_permissions", []),
             compatibility=data.get("compatibility", {}),
+            tags=data.get("tags", []),
+            ai_consciousness_version=data.get("ai_consciousness_version", ">=1.0.0"),
+            metadata=data.get("metadata", {}),
         )
+
+
+class PluginManager:
+    """Enhanced plugin manager with registry integration."""
+
+    # Required plugin metadata
+    name = "manager"
+    description = "Plugin manager for Aetherra plugin system"
+    input_schema = {
+        "type": "object",
+        "properties": {"input": {"type": "string", "description": "Input data"}},
+        "required": ["input"],
+    }
+    output_schema = {
+        "type": "object",
+        "properties": {
+            "result": {"type": "string", "description": "Processing result"},
+            "status": {"type": "string", "description": "Operation status"},
+        },
+    }
+    created_by = "Plugin System Auto-Fixer"
 
 
 @dataclass
@@ -100,7 +127,7 @@ class PluginInfo:
 class PluginRegistryClient:
     """Client for interacting with AetherraCode Plugin Registry"""
 
-    def __init__(self, registry_url: str = "https://registry.aethercode.org/api/v1"):
+    def __init__(self, registry_url: str = "http://localhost:3001/api/v1"):
         self.registry_url = registry_url
         self.session = requests.Session()
         self.session.headers.update(

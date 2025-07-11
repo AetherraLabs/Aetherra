@@ -18,6 +18,25 @@ from typing import Any, Callable, Dict, List, Optional
 
 class PluginState:
     """Plugin state management."""
+    # Required plugin metadata
+    name = "enhanced_plugin_manager"
+    description = "PluginState - Auto-generated description"
+    input_schema = {
+        "type": "object",
+        "properties": {
+            "input": {"type": "string", "description": "Input data"}
+        },
+        "required": ["input"]
+    }
+    output_schema = {
+        "type": "object",
+        "properties": {
+            "result": {"type": "string", "description": "Processing result"},
+            "status": {"type": "string", "description": "Operation status"}
+        }
+    }
+    created_by = "Plugin System Auto-Fixer"
+
 
     INACTIVE = "inactive"
     LOADING = "loading"

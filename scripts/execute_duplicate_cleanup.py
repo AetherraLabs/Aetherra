@@ -13,7 +13,11 @@ from pathlib import Path
 
 def create_archive_structure():
     """Create archive directories for organizing moved files."""
-    archive_dirs = ["archive/status_files", "archive/duplicates", "archive/empty_scripts"]
+    archive_dirs = [
+        "archive/status_files",
+        "archive/duplicates",
+        "archive/empty_scripts",
+    ]
 
     for dir_path in archive_dirs:
         Path(dir_path).mkdir(parents=True, exist_ok=True)
@@ -48,7 +52,7 @@ def phase1_website_duplicates():
 
 def phase2_empty_scripts():
     """Remove empty debug script files."""
-#     print("\n🔧 PHASE 2: Removing empty debug scripts...")
+    #     print("\n🔧 PHASE 2: Removing empty debug scripts...")
 
     empty_scripts = [
         "scripts/parse_debug.py",
@@ -70,7 +74,9 @@ def phase2_empty_scripts():
                 shutil.move(str(script_path), str(archive_path))
                 print(f"📦 Archived empty script: {script} → archive/empty_scripts/")
             else:
-                print(f"⚠️  Skipped {script} - not empty ({script_path.stat().st_size} bytes)")
+                print(
+                    f"⚠️  Skipped {script} - not empty ({script_path.stat().st_size} bytes)"
+                )
         else:
             print(f"ℹ️  {script} - already removed")
 
@@ -97,8 +103,8 @@ def phase4_status_files():
     print("\n📊 PHASE 4: Organizing status files...")
 
     status_files_to_archive = [
-        "NEUROHUB_SUCCESS_SUMMARY.md",
-        "NEUROHUB_CLEANUP_SUMMARY.md",
+        "aetherhub_SUCCESS_SUMMARY.md",
+        "aetherhub_CLEANUP_SUMMARY.md",
         "MODEST_PROFESSIONAL_SUMMARY.md",
         "MISSION_ACCOMPLISHED_SUMMARY.md",
         "FINAL_REPOSITORY_STATUS.md",
@@ -119,7 +125,9 @@ def phase4_status_files():
     if website_cname.exists():
         archive_path = Path("archive/duplicates") / "CNAME_website"
         shutil.move(str(website_cname), str(archive_path))
-        print("📦 Archived duplicate CNAME: website/CNAME → archive/duplicates/CNAME_website")
+        print(
+            "📦 Archived duplicate CNAME: website/CNAME → archive/duplicates/CNAME_website"
+        )
 
 
 def show_cleanup_summary():

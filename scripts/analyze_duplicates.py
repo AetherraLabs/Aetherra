@@ -187,7 +187,7 @@ class DuplicateAnalyzer:
             "*_SUCCESS.md",
             "REVOLUTIONARY_*.md",
             "REPOSITORY_*.md",
-            "NEUROHUB_*.md",
+            "aetherhub_*.md",
             "PERSONA_*.md",
         ]
 

@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All import system errors and type annotation issues
 - Broken GitHub repository links across website and documentation
 - CLI integration with new modular structure
-- Package.json repository references in website and neurohub
+- Package.json repository references in website and aetherhub
 
 ### Changed
 - Modular architecture: Large monolithic files split into focused subsystems

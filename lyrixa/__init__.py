@@ -18,7 +18,11 @@ if _parent_dir not in sys.path:
 # Import key classes for easy access
 try:
     from .assistant import LyrixaAI
+    from .core.advanced_plugins import LyrixaAdvancedPluginManager
     from .models import LocalModel, ModelRouter, OpenAIModel
+    from .plugin_discovery import discover, discover_detailed
+    from .plugin_discovery import status as plugin_status
+    from .plugins.enhanced_plugin_manager import PluginManager
     from .prompt_engine import build_dynamic_prompt
 
     __all__ = [
@@ -27,6 +31,11 @@ try:
         "ModelRouter",
         "OpenAIModel",
         "build_dynamic_prompt",
+        "LyrixaAdvancedPluginManager",
+        "PluginManager",
+        "discover",
+        "discover_detailed",
+        "plugin_status",
         "__version__",
     ]
 except ImportError:

@@ -41,19 +41,19 @@ class LocalAIEngine:
 
         # Try Ollama first (most accessible)
         if self._init_ollama():
-            print("✅ Ollama models available")
+            print("[LocalAI] Ollama models available")
 
         # Try llama-cpp-python
         if self._init_llama_cpp():
-            print("✅ LLaMA-cpp models available")
+            print("[LocalAI] LLaMA-cpp models available")
 
         # Try sentence transformers for embeddings
         if self._init_embeddings():
-            print("✅ Embedding models available")
+            print("[LocalAI] Embedding models available")
 
         # Fallback to lightweight models
         if not self.local_models:
-            print("⚠️  No local models available, using mock AI")
+            print("[LocalAI] No local models available, using mock AI")
             self.local_models["mock"] = self._mock_ai_response
 
     def _init_ollama(self) -> bool:

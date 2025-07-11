@@ -15,6 +15,25 @@ from typing import Dict, List
 
 class PluginTemplate:
     """Plugin template definition."""
+    # Required plugin metadata
+    name = "ai_plugin_generator_v2"
+    description = "PluginTemplate - Auto-generated description"
+    input_schema = {
+        "type": "object",
+        "properties": {
+            "input": {"type": "string", "description": "Input data"}
+        },
+        "required": ["input"]
+    }
+    output_schema = {
+        "type": "object",
+        "properties": {
+            "result": {"type": "string", "description": "Processing result"},
+            "status": {"type": "string", "description": "Operation status"}
+        }
+    }
+    created_by = "Plugin System Auto-Fixer"
+
 
     def __init__(
         self, name: str, category: str, template: str, metadata: Dict | None = None

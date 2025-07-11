@@ -13,6 +13,25 @@ from typing import Any, Dict, List, Optional
 
 class WorkflowStep:
     """Represents a single step in a workflow."""
+    # Required plugin metadata
+    name = "workflow_builder_plugin"
+    description = "WorkflowStep - Auto-generated description"
+    input_schema = {
+        "type": "object",
+        "properties": {
+            "input": {"type": "string", "description": "Input data"}
+        },
+        "required": ["input"]
+    }
+    output_schema = {
+        "type": "object",
+        "properties": {
+            "result": {"type": "string", "description": "Processing result"},
+            "status": {"type": "string", "description": "Operation status"}
+        }
+    }
+    created_by = "Plugin System Auto-Fixer"
+
 
     def __init__(
         self, step_id: str, name: str, action: str, parameters: Optional[Dict] = None

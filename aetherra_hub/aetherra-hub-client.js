@@ -1,8 +1,8 @@
-// NeuroHub Frontend API Client
-class NeuroHubClient {
+// aetherhub Frontend API Client
+class aetherhubClient {
     constructor(baseUrl = 'http://localhost:3001/api/v1') {
         this.baseUrl = baseUrl;
-        this.apiKey = localStorage.getItem('neurohub_api_key');
+        this.apiKey = localStorage.getItem('aetherhub_api_key');
     }
 
     // Authentication
@@ -23,7 +23,7 @@ class NeuroHubClient {
 
             const data = await response.json();
             this.apiKey = data.apiKey;
-            localStorage.setItem('neurohub_api_key', this.apiKey);
+            localStorage.setItem('aetherhub_api_key', this.apiKey);
             return data;
         } catch (error) {
             console.error('Registration error:', error);
@@ -43,7 +43,7 @@ class NeuroHubClient {
 
             if (response.ok) {
                 this.apiKey = apiKey;
-                localStorage.setItem('neurohub_api_key', apiKey);
+                localStorage.setItem('aetherhub_api_key', apiKey);
                 return true;
             }
             return false;
@@ -55,7 +55,7 @@ class NeuroHubClient {
 
     logout() {
         this.apiKey = null;
-        localStorage.removeItem('neurohub_api_key');
+        localStorage.removeItem('aetherhub_api_key');
     }
 
     isAuthenticated() {
@@ -326,4 +326,4 @@ notificationStyles.textContent = `
 document.head.appendChild(notificationStyles);
 
 // Global instance
-window.aetherHub = new NeuroHubClient();
+window.aetherHub = new aetherhubClient();

@@ -159,7 +159,7 @@
 
 ✅ **ALL GITHUB LINKS NOW WORKING**: Fixed broken repository references
 - Fixed website/package.json repository URL
-- Fixed neurohub GitHub links and package.json
+- Fixed aetherhub GitHub links and package.json
 - Fixed all documentation references
 - **Commit**: 9fbe137 - Successfully pushed to repository
 - **Website will auto-update**: Cloudflare Pages will deploy changes automatically

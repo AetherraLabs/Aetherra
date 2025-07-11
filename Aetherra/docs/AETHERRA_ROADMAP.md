@@ -96,7 +96,7 @@ Welcome to the official development roadmap for **aetherra** and **Lyrixa** — 
 ## 🌌 Phase 3: AI-Native Power Tools
 *Target: Q4 2025*
 
-### 📦 NeuroHub Plugin Marketplace
+### 📦 aetherhub Plugin Marketplace
 - [ ] **Live Plugin Marketplace**
   - Integrated plugin browser and installer within Lyrixa
   - Community-driven plugin repository with ratings and reviews
@@ -162,7 +162,7 @@ Welcome to the official development roadmap for **aetherra** and **Lyrixa** — 
    - Task delegation and coordination
    - Autonomous system monitoring
 
-2. **NeuroHub Integration**
+2. **aetherhub Integration**
    - Plugin marketplace within Lyrixa
    - Community features and collaboration
    - Security and verification systems

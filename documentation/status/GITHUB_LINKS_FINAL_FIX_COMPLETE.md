@@ -52,11 +52,11 @@ All website and documentation GitHub links have been analyzed, verified, and fix
 ✅ Footer links updated to correct paths
 ```
 
-### **NeuroHub Files Analysis**
-**Files Checked**: `neurohub/index.html`, `neurohub/package.json`, `neurohub/README.md`, `neurohub/server.js`
+### **aetherhub Files Analysis**
+**Files Checked**: `aetherhub/index.html`, `aetherhub/package.json`, `aetherhub/README.md`, `aetherhub/server.js`
 
 ```
-✅ All 15 GitHub links in neurohub/ directory verified working
+✅ All 15 GitHub links in aetherhub/ directory verified working
 ✅ Repository and issues URLs correct in package.json
 ✅ Sample plugin repository URLs are placeholder examples (correct)
 ✅ Main aetherra repository links functional

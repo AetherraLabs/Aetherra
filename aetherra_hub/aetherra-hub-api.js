@@ -1,5 +1,5 @@
-// NeuroHub API for plugin management
-class NeuroHubAPI {
+// aetherhub API for plugin management
+class aetherhubAPI {
     constructor() {
         this.baseUrl = 'https://api.aetherhub.dev';
         this.version = 'v1';
@@ -278,7 +278,7 @@ class PluginManager {
     constructor() {
         this.installedPlugins = new Map();
         this.pluginDirectory = './plugins/';
-        this.api = new NeuroHubAPI();
+        this.api = new aetherhubAPI();
     }
 
     async install(name, version = 'latest') {
@@ -426,8 +426,8 @@ class PluginManager {
 
 // Export for Node.js or browser usage
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { NeuroHubAPI, PluginManager };
+    module.exports = { aetherhubAPI, PluginManager };
 } else {
-    window.aetherHubAPI = NeuroHubAPI;
+    window.aetherHubAPI = aetherhubAPI;
     window.PluginManager = PluginManager;
 }

@@ -10,9 +10,14 @@ Features modern dark theme GUI with Aetherra green accents.
 
 import asyncio
 import os
+import signal
+import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+import requests
 
 # Add the project root to the Python path
 project_root = Path(__file__).parent.parent  # Go up one level to project root
@@ -88,6 +93,81 @@ except ImportError as e:
     sys.exit(1)
 
 
+class BackendProcessManager:
+    """Manages the FastAPI backend server as a subprocess."""
+
+    def __init__(self, script_path, host="127.0.0.1", port=8000):
+        self.script_path = script_path
+        self.host = host
+        self.port = port
+        self.process = None
+
+    def is_running(self):
+        try:
+            resp = requests.get(f"http://{self.host}:{self.port}/docs", timeout=1)
+            return resp.status_code == 200
+        except Exception:
+            return False
+
+    def start(self):
+        if self.is_running():
+            print(f"[Lyrixa] Backend already running at http://{self.host}:{self.port}")
+            return
+        print(f"[Lyrixa] Starting backend: {self.script_path}")
+        self.process = subprocess.Popen(
+            [sys.executable, self.script_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+            text=True,
+        )
+        # Wait for server to be ready
+        for _ in range(30):
+            if self.is_running():
+                print(f"[Lyrixa] Backend started at http://{self.host}:{self.port}")
+                return
+            time.sleep(0.5)
+        print("[Lyrixa] Backend did not start in time!")
+        # Print backend stdout/stderr for debugging
+        try:
+            out, err = self.process.communicate(timeout=2)
+        except Exception:
+            out, err = "", ""
+        if out:
+            print("[Lyrixa][Backend STDOUT]\n" + out)
+        if err:
+            print("[Lyrixa][Backend STDERR]\n" + err)
+        # Optionally, write to a log file
+        log_path = os.path.join(
+            os.path.dirname(self.script_path), "backend_startup.log"
+        )
+        with open(log_path, "w", encoding="utf-8") as f:
+            if out:
+                f.write("[STDOUT]\n" + out + "\n")
+            if err:
+                f.write("[STDERR]\n" + err + "\n")
+        print(f"[Lyrixa] Backend startup logs written to: {log_path}")
+
+    def stop(self):
+        if self.process:
+            print("[Lyrixa] Stopping backend...")
+            if os.name == "nt":
+                self.process.send_signal(signal.CTRL_BREAK_EVENT)
+            else:
+                self.process.terminate()
+            try:
+                self.process.wait(timeout=5)
+            except Exception:
+                self.process.kill()
+            print("[Lyrixa] Backend stopped.")
+            self.process = None
+
+
+BACKEND_SCRIPT = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "run_self_improvement_api.py"
+)
+backend_manager = BackendProcessManager(BACKEND_SCRIPT)
+
 if GUI_AVAILABLE:
 
     class LyrixaLauncherGUI(QMainWindow):
@@ -101,10 +181,14 @@ if GUI_AVAILABLE:
             self.lyrixa = None
             self.aether_runtime = None
             self.intelligence_stack = None
+            self.ai_dashboard_widget = None  # For linting/IDE
 
             # Ensure QApplication is initialized
             if not QApplication.instance():
                 self.app = QApplication(sys.argv)
+
+            # Start backend before UI
+            backend_manager.start()
 
             self.setup_ui()
             self.setup_theme()
@@ -166,6 +250,33 @@ if GUI_AVAILABLE:
             self.setup_agents_tab()
             self.setup_tasks_tab()
             self.setup_logs_tab()
+
+            # Delay adding Self-Improvement Dashboard Widget until backend is running
+            self._ai_dashboard_widget_pending = True
+
+            def try_add_ai_dashboard_widget():
+                if backend_manager.is_running():
+                    try:
+                        from lyrixa.ui.self_improvement_dashboard_widget import (
+                            SelfImprovementDashboardWidget,
+                        )
+
+                        self.ai_dashboard_widget = SelfImprovementDashboardWidget()
+                        self.system_tabs.addTab(
+                            self.ai_dashboard_widget, "AI Intelligence"
+                        )
+                        self._ai_dashboard_widget_pending = False
+                    except Exception as e:
+                        print(
+                            f"[WARN] Could not load SelfImprovementDashboardWidget: {e}"
+                        )
+                else:
+                    # Retry after 500ms
+                    QTimer.singleShot(500, try_add_ai_dashboard_widget)
+
+            from PySide6.QtCore import QTimer
+
+            QTimer.singleShot(500, try_add_ai_dashboard_widget)
 
             splitter.addWidget(left_widget)
 
@@ -236,6 +347,32 @@ if GUI_AVAILABLE:
 
             dashboard_layout.addWidget(health_group)
 
+            # Self-Improvement Dashboard section
+            import asyncio
+
+            from lyrixa.core.enhanced_memory import LyrixaEnhancedMemorySystem
+            from lyrixa.core.enhanced_self_evaluation_agent import (
+                EnhancedSelfEvaluationAgent,
+            )
+
+            self.self_improvement_group = QGroupBox("AI Self-Improvement")
+            self.self_improvement_layout = QVBoxLayout(self.self_improvement_group)
+            self.self_improvement_labels = {}
+            for label in [
+                ("total_evaluation_cycles", "Evaluation Cycles"),
+                ("total_recommendations", "Total Recommendations"),
+                ("total_auto_improvements", "Auto-Improvements"),
+                ("avg_recommendations_per_cycle", "Avg Recommendations/Cycle"),
+                ("improvement_rate", "Improvement Rate"),
+                ("last_evaluation", "Last Evaluation"),
+            ]:
+                key, text = label
+                lbl = QLabel(f"{text}: ...")
+                self.self_improvement_layout.addWidget(lbl)
+                self.self_improvement_labels[key] = lbl
+
+            dashboard_layout.addWidget(self.self_improvement_group)
+
             # Recent events
             events_group = QGroupBox("Recent Events")
             events_layout = QVBoxLayout(events_group)
@@ -250,6 +387,30 @@ if GUI_AVAILABLE:
             dashboard_layout.addWidget(events_group)
 
             self.system_tabs.addTab(dashboard_widget, "Dashboard")
+
+            # Async update for self-improvement metrics
+            async def update_self_improvement_metrics():
+                memory_system = LyrixaEnhancedMemorySystem()
+                agent = EnhancedSelfEvaluationAgent(memory_system)
+                metrics = await agent.get_evaluation_metrics()
+                for key, lbl in self.self_improvement_labels.items():
+                    val = metrics.get(key, "...")
+                    if key == "improvement_rate" and isinstance(val, float):
+                        val = f"{val * 100:.1f}%"
+                    elif key == "avg_recommendations_per_cycle" and isinstance(
+                        val, float
+                    ):
+                        val = f"{val:.2f}"
+                    lbl.setText(f"{lbl.text().split(':')[0]}: {val}")
+
+            def run_async_update():
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    asyncio.ensure_future(update_self_improvement_metrics())
+                else:
+                    loop.run_until_complete(update_self_improvement_metrics())
+
+            run_async_update()
 
         def setup_plugins_tab(self):
             """Setup the plugins management tab"""
@@ -333,17 +494,34 @@ if GUI_AVAILABLE:
             ]
 
             self.tasks_table.setRowCount(len(tasks_data))
+
             for row, (name, status, progress, started, eta) in enumerate(tasks_data):
-                self.tasks_table.setItem(row, 0, QTableWidgetItem(name))
-                self.tasks_table.setItem(row, 1, QTableWidgetItem(status))
+                # Task name (read-only)
+                name_item = QTableWidgetItem(name)
+                name_item.setFlags(name_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.tasks_table.setItem(row, 0, name_item)
+
+                # Status (read-only)
+                status_item = QTableWidgetItem(status)
+                status_item.setFlags(status_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.tasks_table.setItem(row, 1, status_item)
 
                 # Progress bar
                 progress_bar = QProgressBar()
                 progress_bar.setValue(progress)
                 self.tasks_table.setCellWidget(row, 2, progress_bar)
 
-                self.tasks_table.setItem(row, 3, QTableWidgetItem(started))
-                self.tasks_table.setItem(row, 4, QTableWidgetItem(eta))
+                # Started (read-only)
+                started_item = QTableWidgetItem(started)
+                started_item.setFlags(
+                    started_item.flags() & ~Qt.ItemFlag.ItemIsEditable
+                )
+                self.tasks_table.setItem(row, 3, started_item)
+
+                # ETA (read-only)
+                eta_item = QTableWidgetItem(eta)
+                eta_item.setFlags(eta_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.tasks_table.setItem(row, 4, eta_item)
 
             tasks_layout.addWidget(self.tasks_table)
 
@@ -1071,13 +1249,12 @@ if GUI_AVAILABLE:
                     is_system=True,
                 )
 
-
-def run_gui():
-    """Run the GUI version of Lyrixa"""
-    if not GUI_AVAILABLE:
-        print("❌ GUI dependencies not available. Please install PySide6:")
-        print("pip install PySide6")
-        return False
+    def run_gui():
+        """Run the GUI version of Lyrixa"""
+        if not GUI_AVAILABLE:
+            print("❌ GUI dependencies not available. Please install PySide6:")
+            print("pip install PySide6")
+            return False
 
     app = QApplication(sys.argv)
     app.setStyle("Fusion")  # Use Fusion style for better dark theme support
@@ -1086,29 +1263,24 @@ def run_gui():
     launcher.show()
 
     # Use QTimer properly to avoid threading issues
-    def start_initialization():
-        import threading
-
-        def init_thread():
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                loop.run_until_complete(launcher.initialize_lyrixa())
-            except Exception as e:
-                print(f"❌ Initialization failed: {e}")
-            finally:
-                loop.close()
-
-        thread = threading.Thread(target=init_thread, daemon=True)
-        thread.start()
-
-    # Start initialization after a brief delay
     from PySide6.QtCore import QTimer
+
+    def start_initialization():
+        asyncio.ensure_future(launcher.initialize_lyrixa())
 
     timer = QTimer()
     timer.singleShot(1000, start_initialization)
 
-    return app.exec()
+    # Ensure backend stops when app closes
+    def cleanup_backend():
+        backend_manager.stop()
+
+    app.aboutToQuit.connect(cleanup_backend)
+
+    try:
+        app.exec()
+    finally:
+        backend_manager.stop()
 
 
 def main():

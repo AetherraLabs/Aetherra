@@ -19,7 +19,7 @@
 - **Comprehensive Documentation**: 13 new status and progress tracking files
 - **Persona System**: Complete contextual adaptation system with emotional intelligence
 - **Unified CLI**: Single entry point for all aetherra functionality
-- **NeuroHub**: AI package manager with web interface
+- **aetherhub**: AI package manager with web interface
 - **Modular Architecture**: Clean src/aetherra/ package organization
 
 ### 🔧 **Technical Improvements Committed**

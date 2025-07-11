@@ -14,7 +14,7 @@ This document summarizes all the emoji removals performed across the aetherra Pr
    - Removed emojis from button labels (Open, Save, Run, etc.)
    - Removed emojis from print statements in demo code
    - Replaced emoji status indicators with text-based alternatives (e.g., "[WAIT]", "[DONE]", "[FAIL]")
-   - Removed emojis from NeuroHub server UI elements and controls
+   - Removed emojis from aetherhub server UI elements and controls
    - Standardized all user-facing text
 
 2. `src/aetherra/ui/neuro_ui.py`

@@ -21,24 +21,24 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "core"))
 
 
-def test_neurohub_directory():
+def test_aetherhub_directory():
     """Test that AetherraHub directory exists"""
     print("🔍 Testing AetherraHub directory...")
     try:
-        neurohub_path = project_root / "neurohub"
-        if neurohub_path.exists():
-            print(f"✅ AetherraHub directory found: {neurohub_path}")
+        aetherhub_path = project_root / "aetherhub"
+        if aetherhub_path.exists():
+            print(f"✅ AetherraHub directory found: {aetherhub_path}")
 
             # Check for key files
             key_files = ["package.json", "server.js", "README.md"]
             for file in key_files:
-                if (neurohub_path / file).exists():
+                if (aetherhub_path / file).exists():
                     print(f"✅ Found {file}")
                 else:
                     print(f"⚠️  Missing {file}")
             return True
         else:
-            print(f"❌ AetherraHub directory not found: {neurohub_path}")
+            print(f"❌ AetherraHub directory not found: {aetherhub_path}")
             return False
     except Exception as e:
         print(f"❌ Error checking AetherraHub directory: {e}")
@@ -81,7 +81,7 @@ def test_webengine_availability():
         return False
 
 
-def test_gui_neurohub_integration():
+def test_gui_aetherhub_integration():
     """Test that the GUI can load with AetherraHub integration"""
     print("🔍 Testing GUI AetherraHub integration...")
     try:
@@ -101,24 +101,24 @@ def test_gui_neurohub_integration():
         print("✅ Lyrixawindow created successfully")
 
         # Check if AetherraHub tab method exists
-        if hasattr(window, "create_neurohub_tab"):
+        if hasattr(window, "create_aetherhub_tab"):
             print("✅ AetherraHub tab method available")
         else:
             print("❌ AetherraHub tab method missing")
 
         # Check if AetherraHub process attribute exists
-        if hasattr(window, "neurohub_process"):
+        if hasattr(window, "aetherhub_process"):
             print("✅ AetherraHub process management available")
         else:
             print("❌ AetherraHub process management missing")
 
         # Check if AetherraHub server methods exist
         methods_to_check = [
-            "start_neurohub_server",
-            "stop_neurohub_server",
-            "open_neurohub_browser",
-            "neurohub_server_started",
-            "neurohub_server_failed",
+            "start_aetherhub_server",
+            "stop_aetherhub_server",
+            "open_aetherhub_browser",
+            "aetherhub_server_started",
+            "aetherhub_server_failed",
         ]
 
         for method_name in methods_to_check:
@@ -142,17 +142,17 @@ def test_gui_neurohub_integration():
         return False
 
 
-def test_neurohub_npm_setup():
+def test_aetherhub_npm_setup():
     """Test AetherraHub npm setup"""
     print("🔍 Testing AetherraHub npm setup...")
     try:
-        neurohub_path = project_root / "neurohub"
-        if not neurohub_path.exists():
+        aetherhub_path = project_root / "aetherhub"
+        if not aetherhub_path.exists():
             print("❌ AetherraHub directory not found")
             return False
 
         # Check if node_modules exists or can be created
-        node_modules = neurohub_path / "node_modules"
+        node_modules = aetherhub_path / "node_modules"
         if node_modules.exists():
             print("✅ Node modules directory exists")
             return True
@@ -171,11 +171,11 @@ def main():
     print("=" * 50)
 
     tests = [
-        ("AetherraHub Directory", test_neurohub_directory),
+        ("AetherraHub Directory", test_aetherhub_directory),
         ("Node.js Availability", test_nodejs_availability),
         ("WebEngine Availability", test_webengine_availability),
-        ("GUI AetherraHub Integration", test_gui_neurohub_integration),
-        ("AetherraHub NPM Setup", test_neurohub_npm_setup),
+        ("GUI AetherraHub Integration", test_gui_aetherhub_integration),
+        ("AetherraHub NPM Setup", test_aetherhub_npm_setup),
     ]
 
     results = []
@@ -192,7 +192,7 @@ def main():
 
     # Summary
     print("\n" + "=" * 50)
-    print("📈 NEUROHUB INTEGRATION TEST SUMMARY")
+    print("📈 aetherhub INTEGRATION TEST SUMMARY")
     print("=" * 50)
 
     passed = sum(1 for _, result in results if result)

@@ -1,6 +1,6 @@
-# NeuroHub - The AI Package Manager
+# aetherhub - The AI Package Manager
 
-NeuroHub is the AI-native package manager for consciousness programming. It provides a complete ecosystem for discovering, installing, and publishing .aetherplug modules for the aetherra platform.
+AetherHub is the AI-native package manager for consciousness programming. It provides a complete ecosystem for discovering, installing, and publishing .aetherplug modules for the aetherra platform.
 
 ## 🚀 Quick Start
 
@@ -13,20 +13,20 @@ NeuroHub is the AI-native package manager for consciousness programming. It prov
 
 #### Windows
 ```bash
-# Clone or navigate to the neurohub directory
-cd neurohub
+# Clone or navigate to the aetherhub directory
+cd aetherhub
 
 # Run the startup script
-start-neurohub.bat
+start-aetherhub.bat
 ```
 
 #### Linux/macOS
 ```bash
 # Make the script executable
-chmod +x start-neurohub.sh
+chmod +x start-aetherhub.sh
 
 # Run the startup script
-./start-neurohub.sh
+./start-aetherhub.sh
 ```
 
 #### Manual Setup
@@ -48,7 +48,7 @@ npm run frontend
 
 ## 🏗️ Architecture
 
-NeuroHub consists of two main components:
+aetherhub consists of two main components:
 
 ### Backend API (`server.js`)
 - **Express.js** REST API server
@@ -59,7 +59,7 @@ NeuroHub consists of two main components:
 
 ### Frontend (`index.html`)
 - **Modern responsive UI** with search and filtering
-- **Real-time API integration** via `neurohub-client.js`
+- **Real-time API integration** via `aetherhub-client.js`
 - **Plugin marketplace** with installation commands
 - **User authentication** and publishing interface
 
@@ -201,7 +201,7 @@ my-plugin/
    ```
 
 3. **Publish via Web Interface**
-   - Sign in to NeuroHub
+   - Sign in to aetherhub
    - Click "Publish Plugin"
    - Fill in details and upload package
 
@@ -215,29 +215,29 @@ my-plugin/
 
 ## 💻 Frontend Integration
 
-### Using the NeuroHub Client
+### Using the aetherhub Client
 
 ```javascript
 // Initialize client
-const neuroHub = new NeuroHubClient();
+const aetherhub = new aetherhubClient();
 
 // Search plugins
-const results = await neuroHub.searchPlugins('transcriber');
+const results = await aetherhub.searchPlugins('transcriber');
 
 // Download plugin
-await neuroHub.downloadAndSave('transcriber');
+await aetherhub.downloadAndSave('transcriber');
 
 // Authenticate user
-await neuroHub.authenticate('your-api-key');
+await aetherhub.authenticate('your-api-key');
 
 // Publish plugin
-await neuroHub.publishPlugin(metadata, packageFile);
+await aetherhub.publishPlugin(metadata, packageFile);
 ```
 
 ### Custom Integration
 
 ```html
-<script src="neurohub-client.js"></script>
+<script src="aetherhub-client.js"></script>
 <script>
   window.aetherHub.getFeaturedPlugins()
     .then(plugins => {
@@ -267,13 +267,13 @@ npm run lint
 ### File Structure
 
 ```
-neurohub/
+aetherhub/
 ├── server.js              # Backend API server
-├── neurohub-client.js     # Frontend API client
+├── aetherhub-client.js     # Frontend API client
 ├── index.html            # Main web interface
 ├── package.json          # Dependencies & scripts
-├── start-neurohub.bat    # Windows startup script
-├── start-neurohub.sh     # Linux/macOS startup script
+├── start-aetherhub.bat    # Windows startup script
+├── start-aetherhub.sh     # Linux/macOS startup script
 ├── uploads/              # Plugin package uploads
 └── README.md            # This documentation
 ```
@@ -289,8 +289,8 @@ MAX_FILE_SIZE=50MB       # Max plugin package size
 
 #### API Configuration
 ```javascript
-// In neurohub-client.js
-const neuroHub = new NeuroHubClient('http://localhost:3001/api/v1');
+// In aetherhub-client.js
+const aetherhub = new aetherhubClient('http://localhost:3001/api/v1');
 ```
 
 ## 🔐 Security
@@ -336,14 +336,14 @@ const neuroHub = new NeuroHubClient('http://localhost:3001/api/v1');
    # nginx configuration
    server {
        listen 80;
-       server_name neurohub.yourdomain.com;
+       server_name aetherhub.yourdomain.com;
 
        location /api/ {
            proxy_pass http://localhost:3001;
        }
 
        location / {
-           root /path/to/neurohub;
+           root /path/to/aetherhub;
            index index.html;
        }
    }
@@ -366,7 +366,7 @@ CMD ["npm", "start"]
 ```yaml
 version: '3.8'
 services:
-  neurohub:
+  aetherhub:
     build: .
     ports:
       - "3001:3001"
@@ -425,4 +425,4 @@ This project is licensed under the GPL-3.0 License - see the [LICENSE](../LICENS
 
 ---
 
-**NeuroHub** - Empowering the future of AI-consciousness programming through collaborative plugin development.
+**aetherhub** - Empowering the future of AI-consciousness programming through collaborative plugin development.

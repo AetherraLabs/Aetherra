@@ -15,6 +15,25 @@ from typing import Any, Dict, List, Optional
 
 class PluginTemplate:
     """Represents a plugin template for generation."""
+    # Required plugin metadata
+    name = "plugin_generator_plugin"
+    description = "PluginTemplate - Auto-generated description"
+    input_schema = {
+        "type": "object",
+        "properties": {
+            "input": {"type": "string", "description": "Input data"}
+        },
+        "required": ["input"]
+    }
+    output_schema = {
+        "type": "object",
+        "properties": {
+            "result": {"type": "string", "description": "Processing result"},
+            "status": {"type": "string", "description": "Operation status"}
+        }
+    }
+    created_by = "Plugin System Auto-Fixer"
+
 
     def __init__(self, template_id: str, name: str, description: str, category: str):
         self.template_id = template_id

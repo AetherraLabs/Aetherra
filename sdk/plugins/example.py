@@ -1,3 +1,41 @@
+class ExamplePlugin:
+    """Plugin class for Simple example plugin demonstrating basic functionality"""
+    # Required plugin metadata
+    name = "example"
+    description = "Simple example plugin demonstrating basic functionality"
+    input_schema = {
+        "type": "object",
+        "properties": {
+            "input": {
+                "type": "string",
+                "description": "Input data"
+            }
+        },
+        "required": [
+            "input"
+        ]
+    }
+    output_schema = {
+        "type": "object",
+        "properties": {
+            "result": {
+                "type": "string",
+                "description": "Processing result"
+            },
+            "status": {
+                "type": "string",
+                "description": "Operation status"
+            }
+        }
+    }
+    created_by = "Plugin System Auto-Fixer"
+
+    
+    def execute(self, input_data):
+        """Execute the plugin functionality."""
+        return {"result": "Not implemented", "status": "success"}
+
+
 # sdk/plugins/example.py
 """
 Example AetherraCode Plugin

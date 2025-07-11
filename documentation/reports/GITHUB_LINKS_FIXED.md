@@ -15,17 +15,17 @@ All broken GitHub links in the aetherra project have been identified and fixed. 
 - **Before**: `https://github.com/VirtualVerse-Corporation/aetherra.git`
 - **After**: `https://github.com/Zyonic88/aetherra.git`
 
-### 2. **neurohub/index.html**
+### 2. **aetherhub/index.html**
 - **Fixed**: GitHub link in footer
 - **Before**: `https://github.com/VirtualVerse-Corporation/aetherra`
 - **After**: `https://github.com/Zyonic88/aetherra`
 
-### 3. **neurohub/README.md**
+### 3. **aetherhub/README.md**
 - **Fixed**: Issues link in support section
 - **Before**: `https://github.com/VirtualVerse-Corporation/aetherra/issues`
 - **After**: `https://github.com/Zyonic88/aetherra/issues`
 
-### 4. **neurohub/package.json**
+### 4. **aetherhub/package.json**
 - **Fixed**: Repository and bugs URLs
 - **Before**:
   - Repository: `https://github.com/VirtualVerse-Corporation/aetherra.git`

@@ -15,6 +15,23 @@ from typing import Dict, List, Optional
 class ContextSnapshot:
     """Represents a snapshot of current context."""
 
+    # Required plugin metadata
+    name = "context_aware_surfacing"
+    description = "ContextSnapshot - Auto-generated description"
+    input_schema = {
+        "type": "object",
+        "properties": {"input": {"type": "string", "description": "Input data"}},
+        "required": ["input"],
+    }
+    output_schema = {
+        "type": "object",
+        "properties": {
+            "result": {"type": "string", "description": "Processing result"},
+            "status": {"type": "string", "description": "Operation status"},
+        },
+    }
+    created_by = "Plugin System Auto-Fixer"
+
     def __init__(self):
         self.timestamp = datetime.now()
         self.active_files = []
@@ -28,6 +45,34 @@ class ContextSnapshot:
 
 class ContextAwareSurfacing:
     """Context-aware plugin surfacing system."""
+
+    # Required plugin metadata
+    name = "context_aware_surfacing"
+    description = (
+        "Intelligent plugin recommendation and surfacing based on current context"
+    )
+    input_schema = {
+        "type": "object",
+        "properties": {
+            "context": {"type": "object", "description": "Current context data"},
+            "task": {"type": "string", "description": "Current task"},
+        },
+        "required": ["context"],
+    }
+    output_schema = {
+        "type": "object",
+        "properties": {
+            "recommended_plugins": {
+                "type": "array",
+                "description": "List of recommended plugins",
+            },
+            "confidence_scores": {
+                "type": "object",
+                "description": "Confidence scores for recommendations",
+            },
+        },
+    }
+    created_by = "Lyrixa Team"
 
     def __init__(self):
         self.context_history = deque(maxlen=100)

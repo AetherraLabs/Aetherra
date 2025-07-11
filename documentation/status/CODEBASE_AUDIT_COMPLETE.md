@@ -100,7 +100,7 @@ The aetherra codebase is now:
 - 🧠 **Emotional Memory:** Context-aware emotional learning
 - 🔄 **Contextual Adaptation:** Automatic persona switching based on situation
 - 🔌 **Plugin System:** Extensible architecture for community plugins
-- 🌐 **NeuroHub Integration:** AI-native package marketplace ready
+- 🌐 **aetherhub Integration:** AI-native package marketplace ready
 - 💻 **CLI Tools:** Professional command-line interface
 - 🚀 **Demo System:** Interactive demonstrations work flawlessly
 

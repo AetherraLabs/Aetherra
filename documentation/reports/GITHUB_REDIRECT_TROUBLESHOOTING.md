@@ -10,7 +10,7 @@
 
 All GitHub links in the website files are CORRECT:
 - ✅ `website/index.html` - All 17 GitHub links point to `Zyonic88/aetherra`
-- ✅ `neurohub/index.html` - All GitHub links point to `Zyonic88/aetherra`
+- ✅ `aetherhub/index.html` - All GitHub links point to `Zyonic88/aetherra`
 - ✅ No redirect JavaScript found
 - ✅ No .htaccess or CNAME files causing redirects
 - ✅ All changes committed and pushed (commit 6862dd8)
