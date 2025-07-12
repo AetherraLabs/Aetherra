@@ -43,8 +43,13 @@ def get_plugin_manager():
 
 def get_enhanced_plugin_manager():
     """Get the enhanced plugin manager instance (Aetherhub-integrated)"""
-    # You can set plugins_dir to your canonical plugin directory if needed
-    return EnhancedPluginManager()
+    # Explicitly set plugins_dir to lyrixa/plugins for local development
+    plugins_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "plugins"))
+    if not os.path.exists(plugins_dir):
+        print(f"[Lyrixa DEBUG] Plugins directory does not exist: {plugins_dir}")
+    else:
+        print(f"[Lyrixa DEBUG] Using plugins directory: {plugins_dir}")
+    return EnhancedPluginManager(plugins_dir=plugins_dir)
 
 
 @router.get("/api/plugins/discover")
@@ -52,18 +57,33 @@ async def discover_plugins():
     """Discover all available plugins using EnhancedPluginManager (Aetherhub)."""
     try:
         enhanced_manager = get_enhanced_plugin_manager()
-        plugins = [p.manifest.name for p in enhanced_manager.list_installed_plugins()]
+        print(f"[Lyrixa DEBUG] Scanning for plugins in: {enhanced_manager.plugins_dir}")
+        plugins = []
+        errors = []
+        for plugin in enhanced_manager.list_installed_plugins():
+            try:
+                plugins.append(plugin.manifest.name)
+            except Exception as e:
+                errors.append(f"Error loading plugin: {e}")
         registry_plugins = enhanced_manager.search_registry()
         registry_plugin_names = [p.manifest.name for p in registry_plugins]
         all_plugins = sorted(set(plugins + registry_plugin_names))
+        debug_info = {
+            "scanned_dir": str(enhanced_manager.plugins_dir),
+            "plugin_count": len(plugins),
+            "errors": errors,
+        }
+        print(f"[Lyrixa DEBUG] Plugin discovery debug info: {debug_info}")
         return {
             "plugins": all_plugins,
             "installed_plugins": plugins,
             "registry_plugins": registry_plugin_names,
             "count": len(all_plugins),
             "status": "success",
+            "debug": debug_info,
         }
     except Exception as e:
+        print(f"[Lyrixa DEBUG] Plugin discovery error: {e}")
         return JSONResponse(
             content={"error": str(e), "plugins": [], "count": 0, "status": "error"},
             status_code=500,
@@ -202,6 +222,68 @@ async def get_reasoning_context(request: Request):
 
         context = reasoning_context_for_goal(goal)
         return {"reasoning_context": context, "status": "success"}
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e), "status": "error"}, status_code=500
+        )
+
+
+from lyrixa.agent_collaboration_manager import (
+    enable_agent_chaining,
+    get_agent_status,
+    suggest_agent_pairings,
+)
+from lyrixa.cognitive_monitor_dashboard import summarize_dashboard
+
+
+@router.get("/api/agents/status")
+async def api_get_agent_status():
+    """Get the status of all registered agents."""
+    try:
+        status = get_agent_status()
+        return {"agents": status, "count": len(status), "status": "success"}
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e), "status": "error"}, status_code=500
+        )
+
+
+@router.post("/api/agents/suggest_pairings")
+async def api_suggest_agent_pairings(request: Request):
+    """Suggest optimal agent pairings for a given task."""
+    try:
+        data = await request.json()
+        task = data.get("task", "")
+        n = int(data.get("n", 2))
+        pairings = suggest_agent_pairings(task, n)
+        return {"pairings": pairings, "status": "success"}
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e), "status": "error"}, status_code=500
+        )
+
+
+@router.post("/api/agents/enable_chaining")
+async def api_enable_agent_chaining(request: Request):
+    """Enable agent chaining/parallelism for a task."""
+    try:
+        data = await request.json()
+        agents = data.get("agents", [])
+        task = data.get("task", "")
+        result = enable_agent_chaining(agents, task)
+        return {"result": result, "status": "success"}
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e), "status": "error"}, status_code=500
+        )
+
+
+@router.get("/api/cognitive_monitor/dashboard")
+async def api_cognitive_monitor_dashboard():
+    """Get live system insights for the cognitive monitor dashboard."""
+    try:
+        summary = summarize_dashboard()
+        return summary
     except Exception as e:
         return JSONResponse(
             content={"error": str(e), "status": "error"}, status_code=500

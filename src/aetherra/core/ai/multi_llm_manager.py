@@ -24,6 +24,21 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Optional
 
+# Load environment variables
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    # If python-dotenv not available, try to load manually
+    env_file = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", ".env")
+    if os.path.exists(env_file):
+        with open(env_file, "r") as f:
+            for line in f:
+                if line.strip() and not line.startswith("#") and "=" in line:
+                    key, value = line.strip().split("=", 1)
+                    os.environ[key] = value
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -380,7 +395,18 @@ class OllamaProvider:
         try:
             models = self.client.list()
             available_models = [model.model for model in models.models]
-            return config.model_name in available_models
+
+            # Check exact match first
+            if config.model_name in available_models:
+                return True
+
+            # Check if model exists with different tag (e.g., mistral vs mistral:latest)
+            model_base = config.model_name.split(":")[0]
+            for available_model in available_models:
+                if available_model and available_model.split(":")[0] == model_base:
+                    return True
+
+            return False
         except Exception:
             return False
 
@@ -451,7 +477,12 @@ class AnthropicProvider:
         try:
             import anthropic
 
-            self.client = anthropic.Anthropic()
+            # Get API key from environment
+            api_key = os.getenv("ANTHROPIC_API_KEY")
+            if api_key:
+                self.client = anthropic.Anthropic(api_key=api_key)
+            else:
+                self.client = anthropic.Anthropic()  # Fallback to default behavior
         except ImportError as e:
             raise ImportError("Anthropic package not installed") from e
 

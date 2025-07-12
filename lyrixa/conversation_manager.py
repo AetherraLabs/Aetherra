@@ -73,10 +73,9 @@ class LyrixaConversationManager:
                     "gpt-4-turbo",  # Fallback 1
                     "gpt-3.5-turbo",  # Fallback 2
                     "claude-3-sonnet",  # Fallback 3
-                    "mistral",  # Fallback 4 (ollama mistral:latest)
-                    "llama3.2:3b",  # Local fallback 1 (downloaded model)
-                    "llama3",  # Local fallback 2 (llama3:latest)
-                    "mixtral",  # Local fallback 3 (mixtral:latest)
+                    "mistral",  # Fallback 4 (maps to mistral:latest)
+                    "llama3.2:3b",  # Local fallback 1 (exact model name)
+                    "llama3",  # Local fallback 2 (maps to llama3:latest)
                 ]
                 self.current_model = self._select_best_model()
                 self.llm_enabled = True

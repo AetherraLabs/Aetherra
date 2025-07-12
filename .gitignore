@@ -7,11 +7,10 @@
 
 # Python cache and bytecode
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+*.py[cod]
+*$py.class
 *.so
+.Python
 build/
 dist/
 *.egg-info/
@@ -33,14 +32,11 @@ ENV/
 
 # OS files
 .DS_Store
-.DS_Store?
-._*
 Thumbs.db
-desktop.ini
-ehthumbs.db
 
 # Logs and temporary files
 *.log
+logs/
 *.tmp
 *.temp
 temp/
@@ -85,3 +81,7 @@ data/logs/*.log
 data/databases/*.db
 data/json/temp_*.json
 archive/temporary_scripts/
+
+# Project specific
+backend_startup.log
+mutation_log.json

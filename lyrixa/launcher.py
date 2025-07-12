@@ -96,7 +96,7 @@ except ImportError as e:
 class BackendProcessManager:
     """Manages the FastAPI backend server as a subprocess."""
 
-    def __init__(self, script_path, host="127.0.0.1", port=8000):
+    def __init__(self, script_path, host="127.0.0.1", port=8005):
         self.script_path = script_path
         self.host = host
         self.port = port
@@ -194,9 +194,14 @@ if GUI_AVAILABLE:
             self.setup_theme()
             self.setup_connections()
 
-            # Initialize with disabled chat input until system is ready
-            self.chat_input.setEnabled(False)
-            self.send_button.setEnabled(False)
+            # Enable chat immediately for basic functionality
+            self.chat_input.setEnabled(True)
+            self.send_button.setEnabled(True)
+            self.add_chat_message(
+                "System",
+                "🚀 Basic chat enabled! Full initialization in progress...",
+                is_system=True,
+            )
 
         def setup_ui(self):
             """Setup the user interface"""
@@ -841,11 +846,82 @@ if GUI_AVAILABLE:
             self.chat_display.ensureCursorVisible()
 
         def simulate_ai_response(self, user_message):
-            """Generate AI response using intelligence stack"""
+            """Generate AI response using intelligence stack or basic AI responses"""
             if not self.intelligence_stack:
-                self.add_chat_message(
-                    "Lyrixa", "❌ Intelligence stack not initialized", is_system=True
-                )
+                # Use OpenAI directly for better basic responses
+                anthropic_key = None  # Ensure anthropic_key is always defined
+                try:
+                    import os
+
+                    import openai
+                    from dotenv import load_dotenv
+
+                    # Load environment variables
+                    load_dotenv()
+                    openai_key = os.getenv("OPENAI_API_KEY")
+                    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+
+                    # Try OpenAI first, then Claude if quota exceeded
+                    if openai_key:
+                        try:
+                            client = openai.OpenAI(api_key=openai_key)
+                            response = client.chat.completions.create(
+                                model="gpt-3.5-turbo",
+                                messages=[
+                                    {
+                                        "role": "system",
+                                        "content": "You are Lyrixa, an advanced AI assistant from the Aetherra project. You have full AI capabilities and can help with complex tasks, coding, analysis, and more. Be intelligent, helpful, and engaging.",
+                                    },
+                                    {"role": "user", "content": user_message},
+                                ],
+                                max_tokens=300,
+                                temperature=0.7,
+                            )
+                            ai_response = response.choices[0].message.content
+                            self.add_chat_message("Lyrixa", f"{ai_response} ✨")
+                            return
+                        except Exception as openai_error:
+                            print(f"OpenAI failed (quota?): {openai_error}")
+                            # Fall through to try Claude
+                except Exception as openai_error:
+                    print(f"OpenAI failed (quota?): {openai_error}")
+                    # Fall through to try Claude
+
+                # Try Claude if OpenAI fails
+                if anthropic_key:
+                    try:
+                        import anthropic
+
+                        client = anthropic.Anthropic(api_key=anthropic_key)
+                        response = client.messages.create(
+                            model="claude-3-sonnet-20240229",
+                            max_tokens=300,
+                            messages=[
+                                {
+                                    "role": "user",
+                                    "content": f"You are Lyrixa, an advanced AI assistant from the Aetherra project. You have full AI capabilities. User message: {user_message}",
+                                }
+                            ],
+                        )
+                        # Claude v3 API returns blocks, use .content or str() to get text
+                        block = response.content[0]
+                        ai_response = getattr(block, "text", None)
+                        if ai_response is None:
+                            ai_response = getattr(block, "content", None)
+                        if ai_response is None:
+                            ai_response = str(block)
+                        self.add_chat_message("Lyrixa", f"{ai_response} 🧠")
+                        return
+                    except Exception as claude_error:
+                        print(f"Claude failed: {claude_error}")
+                        # Fallback to basic response if Claude also fails
+                        response = self.generate_basic_response(user_message)
+                        self.add_chat_message("Lyrixa", response)
+                        return
+
+                # Fallback to enhanced basic responses
+                response = self.generate_basic_response(user_message)
+                self.add_chat_message("Lyrixa", response)
                 return
 
             # Check for intelligence commands first
@@ -903,6 +979,16 @@ if GUI_AVAILABLE:
                 response = self.intelligence_stack.generate_response(user_message)
                 if not response:
                     response = "I'm sorry, I couldn't process your request."
+
+                # Check if this is a fallback response and add helpful context
+                if (
+                    "fallback mode" in response.lower()
+                    or "smart fallback" in response.lower()
+                ):
+                    # Add helpful hint about model status
+                    status_hint = "\n\n💡 *Note: AI models are currently unavailable (API quota/billing issues), but I'm still functional with enhanced fallback responses!*"
+                    response += status_hint
+
             except Exception as e:
                 response = f"Error generating response: {e}"
 
@@ -913,6 +999,39 @@ if GUI_AVAILABLE:
                 )
             else:
                 self.add_chat_message("Lyrixa", response)
+
+        def generate_basic_response(self, user_message):
+            """Generate intelligent basic responses without full AI stack"""
+            message_lower = user_message.lower()
+
+            # Greeting responses
+            if any(
+                word in message_lower for word in ["hello", "hi", "hey", "greetings"]
+            ):
+                return "Hello! I'm Lyrixa, your AI assistant. How can I help you today? (Basic mode - full capabilities loading...)"
+
+            # Help requests (check before questions to prioritize)
+            elif any(word in message_lower for word in ["help", "assist", "support"]):
+                return "I'm here to help! I'm currently in basic mode while loading my full capabilities. You can ask me anything, and I'll do my best to assist you."
+
+            # Status requests
+            elif any(word in message_lower for word in ["status", "ready", "working"]):
+                return "I'm partially online! My basic chat functions are working, and I'm currently loading my advanced intelligence modules. Full capabilities will be available shortly."
+
+            # Aetherra/Project questions
+            elif any(
+                word in message_lower
+                for word in ["aetherra", "project", "what are you"]
+            ):
+                return "I'm Lyrixa, an AI assistant that's part of the Aetherra project - an AI-native operating system. I'm currently starting up my full intelligence stack!"
+
+            # Question responses (broader check last)
+            elif "?" in user_message:
+                return "That's an interesting question. I'm currently in basic mode while my full intelligence stack initializes. I'll be able to provide more detailed answers soon!"
+
+            # Default intelligent response
+            else:
+                return f"I understand you're saying '{user_message}'. I'm processing this in basic mode while my full AI capabilities initialize. Thank you for your patience!"
 
         def extract_workflow_name(self, message):
             """Extract workflow name from user message"""
@@ -1249,12 +1368,13 @@ if GUI_AVAILABLE:
                     is_system=True,
                 )
 
-    def run_gui():
-        """Run the GUI version of Lyrixa"""
-        if not GUI_AVAILABLE:
-            print("❌ GUI dependencies not available. Please install PySide6:")
-            print("pip install PySide6")
-            return False
+
+def run_gui():
+    """Run the GUI version of Lyrixa"""
+    if not GUI_AVAILABLE:
+        print("❌ GUI dependencies not available. Please install PySide6:")
+        print("pip install PySide6")
+        return False
 
     app = QApplication(sys.argv)
     app.setStyle("Fusion")  # Use Fusion style for better dark theme support

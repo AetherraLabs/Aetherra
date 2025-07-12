@@ -63,7 +63,9 @@ class LocalAIEngine:
 
             result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
             if result.returncode == 0:
-                models = [line.split()[0] for line in result.stdout.strip().split("\n")[1:]]
+                models = [
+                    line.split()[0] for line in result.stdout.strip().split("\n")[1:]
+                ]
                 if models:
                     self.local_models["ollama"] = models
                     return True
@@ -84,7 +86,10 @@ class LocalAIEngine:
                         model_path = os.path.join(models_dir, file)
                         try:
                             model = Llama(
-                                model_path=model_path, n_ctx=2048, n_threads=4, verbose=False
+                                model_path=model_path,
+                                n_ctx=2048,
+                                n_threads=4,
+                                verbose=False,
                             )
                             self.local_models[f"llama_cpp_{file}"] = model
                             print(f"✅ Loaded {file}")
@@ -120,7 +125,9 @@ class LocalAIEngine:
                 if model_name.startswith("ollama"):
                     response = self._ollama_generate(prompt, max_tokens, temperature)
                 elif model_name.startswith("llama_cpp"):
-                    response = self._llama_cpp_generate(model, prompt, max_tokens, temperature)
+                    response = self._llama_cpp_generate(
+                        model, prompt, max_tokens, temperature
+                    )
                 elif model_name == "mock":
                     response = self._mock_ai_response(prompt)
                 else:
@@ -155,14 +162,18 @@ class LocalAIEngine:
         import subprocess
 
         # Use first available model
-        model = self.local_models["ollama"][0] if self.local_models["ollama"] else "llama2"
+        model = (
+            self.local_models["ollama"][0] if self.local_models["ollama"] else "llama2"
+        )
 
         cmd = ["ollama", "run", model, "--num-ctx", str(max_tokens * 2), prompt]
 
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
         return result.stdout.strip()
 
-    def _llama_cpp_generate(self, model, prompt: str, max_tokens: int, temperature: float) -> str:
+    def _llama_cpp_generate(
+        self, model, prompt: str, max_tokens: int, temperature: float
+    ) -> str:
         """Generate using llama-cpp-python"""
         response = model(
             prompt,
@@ -186,10 +197,12 @@ class LocalAIEngine:
             if key in prompt.lower():
                 return response
 
-        return "I understand your request. As a local AI model,
-            I can help with code analysis,
-            optimization suggestions,
-            and general programming guidance."
+        return (
+            "I understand your request. As a local AI model, "
+            "I can help with code analysis, "
+            "optimization suggestions, "
+            "and general programming guidance."
+        )
 
     def create_embeddings(self, texts: List[str]) -> List[List[float]]:
         """Create embeddings for semantic search"""
@@ -227,7 +240,9 @@ class LocalAIEngine:
 
         # Keep only last 100 measurements
         if len(self.performance_metrics[model_name]) > 100:
-            self.performance_metrics[model_name] = self.performance_metrics[model_name][-100:]
+            self.performance_metrics[model_name] = self.performance_metrics[model_name][
+                -100:
+            ]
 
     def get_best_model(self) -> str:
         """Get the best performing model based on metrics"""

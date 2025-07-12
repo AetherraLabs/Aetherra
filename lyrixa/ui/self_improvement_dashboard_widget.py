@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-API_BASE = "http://localhost:8000"  # Adjust if needed
+API_BASE = "http://127.0.0.1:8005"  # Updated to working API server
 
 
 class APICallThread(QThread):
@@ -225,7 +225,7 @@ class SelfImprovementDashboardWidget(QWidget):
             return
         self.forecast_btn.setEnabled(False)
         self.forecast_loading.show()
-        payload = {"goal": {"description": goal}}
+        payload = {"goal": goal}
         thread = APICallThread(
             f"{API_BASE}/api/goals/forecast", method="post", payload=payload
         )
@@ -252,7 +252,7 @@ class SelfImprovementDashboardWidget(QWidget):
             return
         self.reasoning_btn.setEnabled(False)
         self.reasoning_loading.show()
-        payload = {"goal": {"description": goal}}
+        payload = {"goal": goal}
         thread = APICallThread(
             f"{API_BASE}/api/goals/reasoning_context", method="post", payload=payload
         )
