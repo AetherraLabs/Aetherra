@@ -198,7 +198,7 @@ async def forecast_goal(request: Request):
             return JSONResponse(
                 content={"error": "Missing 'goal' in request."}, status_code=400
             )
-        from lyrixa.goal_forecaster import forecast_goal as forecast_goal_fn
+        from Aetherra.core.engine.goal_forecaster import forecast_goal as forecast_goal_fn
 
         forecast = forecast_goal_fn(goal)
         return {"forecast": forecast, "status": "success"}

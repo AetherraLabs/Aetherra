@@ -23,7 +23,7 @@ try:
     from .plugin_discovery import discover, discover_detailed
     from .plugin_discovery import status as plugin_status
     from .plugins.enhanced_plugin_manager import PluginManager
-    from .prompt_engine import build_dynamic_prompt
+    from Aetherra.core.prompt_engine import build_dynamic_prompt
 
     __all__ = [
         "LyrixaAI",

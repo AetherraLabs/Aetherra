@@ -26,7 +26,7 @@ from lyrixa.agent_collaboration_manager import (
 
 list_agents = getattr(lyrixa.agent_collaboration_manager, "list_agents", None)
 from lyrixa.cognitive_monitor_dashboard import summarize_dashboard
-from lyrixa.goal_forecaster import forecast_goal
+from Aetherra.core.engine.goal_forecaster import forecast_goal
 from lyrixa.reasoning_memory_layer import reasoning_context_for_goal
 
 print("✅ All intelligence modules imported successfully")

@@ -33,7 +33,7 @@ except ImportError as e:
 
 # Import the enhanced prompt engine
 try:
-    from .prompt_engine import build_dynamic_prompt
+    from Aetherra.core.prompt_engine import build_dynamic_prompt
 
     PROMPT_ENGINE_AVAILABLE = True
     logger.info("✅ Enhanced prompt engine loaded")

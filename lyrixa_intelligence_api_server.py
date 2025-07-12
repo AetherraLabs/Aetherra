@@ -27,7 +27,7 @@ async def forecast_goal(request: Request):
         goal = data.get("goal", "")
 
         # Import and use the goal forecaster
-        from lyrixa.goal_forecaster import forecast_goal as forecast_goal_fn
+        from Aetherra.core.engine.goal_forecaster import forecast_goal as forecast_goal_fn
 
         forecast = forecast_goal_fn(goal)
         return {"forecast": forecast, "status": "success"}
