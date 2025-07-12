@@ -20,7 +20,7 @@ try:
             suggest_next_actions,
         )
         from .block_executor import BlockExecutor  # type: ignore
-        from .debug_system import NeuroDebugSystem  # type: ignore
+        from .debug_system import AetherraDebugSystem  # type: ignore
         from .functions import AetherraFunctions  # type: ignore
         from .goal_system import GoalSystem  # type: ignore
         from .aetherra_memory import AetherraMemory  # type: ignore
@@ -902,10 +902,9 @@ class AetherraInterpreter:
         """Handle assistant queries"""
         query = line.split("assistant:", 1)[-1].strip()
         context = "\n".join(self.memory.recall())
-        prompt = f"You are NeuroAssistant,
-            a helpful AI embedded in the Aetherra runtime. Here is your memory:\n{context}\n\nAnswer this: {query}"
+        prompt = f"You are AetherraAssistant, a helpful AI embedded in the Aetherra runtime. Here is your memory:\n{context}\n\nAnswer this: {query}"
         response = ask_ai(prompt)
-        return f"[NeuroAssistant] {response}"
+        return f"[AetherraAssistant] {response}"
 
     def _handle_plugin(self, line):
         """Handle plugin execution - supports both legacy and stdlib plugins"""

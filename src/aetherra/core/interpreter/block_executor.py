@@ -12,13 +12,13 @@ from dataclasses import dataclass
 class ExecutionContext:
     """Context for block execution"""
     variables: Dict[str, Any]
-    functions: Dict[str, 'NeuroFunction']
+    functions: Dict[str, 'AetherraFunction']
     memory_system: Any
     executor_callback: Callable[[str], Any]
     loop_vars: Optional[Dict[str, Any]] = None
 
 @dataclass
-class NeuroFunction:
+class AetherraFunction:
     """Represents a user-defined Aetherra function"""
     name: str
     params: List[str]
@@ -103,7 +103,7 @@ class BlockExecutor:
             return len(lines)
 
         # Store function
-        context.functions[func_name] = NeuroFunction(func_name, params, body)
+        context.functions[func_name] = AetherraFunction(func_name, params, body)
         result.append(f"[Function] Defined '{func_name}' with parameters: {', '.join(params) if params else 'none'}")
 
         return i + 1
