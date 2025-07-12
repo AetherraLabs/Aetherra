@@ -12,7 +12,7 @@ from typing import Any, List
 try:
     # Try relative imports first (when run as module)
     try:
-        from .agent import NeuroAgent  # type: ignore
+        from .agent import AetherraAgent  # type: ignore
         from .ai_runtime import (  # type: ignore
             ask_ai,
             auto_tag_content,
@@ -21,14 +21,14 @@ try:
         )
         from .block_executor import BlockExecutor  # type: ignore
         from .debug_system import NeuroDebugSystem  # type: ignore
-        from .functions import NeuroFunctions  # type: ignore
+        from .functions import AetherraFunctions  # type: ignore
         from .goal_system import GoalSystem  # type: ignore
         from .aetherra_memory import AetherraMemory  # type: ignore
         from .meta_plugins import MetaPluginSystem  # type: ignore
         from .plugin_manager import PLUGIN_REGISTRY  # type: ignore
     except ImportError:
         # Fallback to direct imports (when run from parent directory)
-        from core.agent import NeuroAgent  # type: ignore
+        from core.agent import AetherraAgent  # type: ignore
         from core.ai_runtime import (  # type: ignore
             ask_ai,
             auto_tag_content,
@@ -37,7 +37,7 @@ try:
         )
         from core.block_executor import BlockExecutor  # type: ignore
         from core.debug_system import NeuroDebugSystem  # type: ignore
-        from core.functions import NeuroFunctions  # type: ignore
+        from core.functions import AetherraFunctions  # type: ignore
         from core.goal_system import GoalSystem  # type: ignore
         from core.aetherra_memory import AetherraMemory  # type: ignore
         from core.meta_plugins import MetaPluginSystem  # type: ignore
@@ -45,7 +45,7 @@ try:
 except ImportError:
     # Fallback for when running as standalone script or from different context
     try:
-        from core.agent import NeuroAgent  # type: ignore
+        from core.agent import AetherraAgent  # type: ignore
         from core.ai_runtime import (  # type: ignore
             ask_ai,
             auto_tag_content,
@@ -54,7 +54,7 @@ except ImportError:
         )
         from core.block_executor import BlockExecutor  # type: ignore
         from core.debug_system import NeuroDebugSystem  # type: ignore
-        from core.functions import NeuroFunctions  # type: ignore
+        from core.functions import AetherraFunctions  # type: ignore
         from core.goal_system import GoalSystem  # type: ignore
         from core.aetherra_memory import AetherraMemory  # type: ignore
         from core.meta_plugins import MetaPluginSystem  # type: ignore
@@ -77,7 +77,7 @@ except ImportError:
 
         # Try importing again with correct path
         try:
-            from agent import NeuroAgent  # type: ignore
+            from agent import AetherraAgent  # type: ignore
             from ai_runtime import (  # type: ignore
                 ask_ai,
                 auto_tag_content,
@@ -86,7 +86,7 @@ except ImportError:
             )
             from block_executor import BlockExecutor  # type: ignore
             from debug_system import NeuroDebugSystem  # type: ignore
-            from functions import NeuroFunctions  # type: ignore
+            from functions import AetherraFunctions  # type: ignore
             from goal_system import GoalSystem  # type: ignore
             from memory import AetherraMemory  # type: ignore
             from meta_plugins import MetaPluginSystem  # type: ignore
@@ -138,7 +138,7 @@ except ImportError:
             def clear(self):
                 pass
 
-        class NeuroFunctions:
+        class AetherraFunctions:
             def __init__(self):
                 self.functions = {}
 
@@ -157,7 +157,7 @@ except ImportError:
             def delete_function(self, name):
                 return f"Demo function deleted: {name}"
 
-        class NeuroAgent:
+        class AetherraAgent:
             def __init__(self, memory=None, functions=None, command_history=None):
                 self.active = False
                 self.memory = memory
@@ -292,9 +292,9 @@ class AetherraInterpreter:
 
     def __init__(self):
         self.memory = AetherraMemory()
-        self.functions = NeuroFunctions()
+        self.functions = AetherraFunctions()
         self.command_history = []  # Track command usage patterns
-        self.agent = NeuroAgent(self.memory, self.functions, self.command_history)
+        self.agent = AetherraAgent(self.memory, self.functions, self.command_history)
         self.goal_system = GoalSystem(self.memory, self)  # New goal system
         self.meta_plugins = MetaPluginSystem(
             self.memory, self, self.goal_system
@@ -1438,7 +1438,7 @@ class AetherraInterpreter:
         block_starters = ["define ", "if ", "for ", "while ", "simulate "]
 
         # Aetherra-specific block starters
-        neuro_block_starters = [
+        aetherra_block_starters = [
             "agent:",
             "with agent:",
             "function ",
@@ -1457,7 +1457,7 @@ class AetherraInterpreter:
             return True
 
         # Check Aetherra blocks
-        if any(stripped_line.startswith(starter) for starter in neuro_block_starters):
+        if any(stripped_line.startswith(starter) for starter in aetherra_block_starters):
             return True
 
         # Check for function definition with colon
@@ -1501,7 +1501,7 @@ class AetherraInterpreter:
             stripped_line.startswith(starter)
             for starter in ["memory {", "reflect {", "analyze {", "think {", "learn {"]
         ):
-            self.block_type = "neuro_block"
+            self.block_type = "aetherra_block"
             block_name = stripped_line.split("{")[0].strip()
             return f"🧬 Started Aetherra {block_name} block\n   💭 Enter AI-native operations, use '{{}}' to complete"
 
@@ -1535,14 +1535,14 @@ class AetherraInterpreter:
                 return f"  ➕ Added to function (line {len(self.block_buffer)}): {line}"
             elif self.block_type == "agent":
                 return f"  🤖 Added agent directive: {line}"
-            elif self.block_type == "neuro_block":
+            elif self.block_type == "aetherra_block":
                 return f"  🧬 Added Aetherra operation: {line}"
             else:
                 return f"  📝 Added to {self.block_type} block: {line}"
 
     def _is_block_terminator(self, line):
         """Check if line terminates the current block"""
-        if self.block_type == "neuro_block":
+        if self.block_type == "aetherra_block":
             return line == "}" or line.endswith("}")
         else:
             return line == "end" or line.endswith("end")
@@ -1557,8 +1557,8 @@ class AetherraInterpreter:
                 return self._execute_function_block()
             elif self.block_type == "agent":
                 return self._execute_agent_block()
-            elif self.block_type == "neuro_block":
-                return self._execute_neuro_block()
+            elif self.block_type == "aetherra_block":
+                return self._execute_aetherra_block()
             else:
                 # Use the block executor for standard blocks
                 result = self.block_executor.execute_block(
@@ -1641,7 +1641,7 @@ class AetherraInterpreter:
 
         return response
 
-    def _execute_neuro_block(self):
+    def _execute_aetherra_block(self):
         """Execute Aetherra AI-native block"""
         if len(self.block_buffer) < 2:
             self._reset_block_state()

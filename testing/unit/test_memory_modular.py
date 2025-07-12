@@ -323,7 +323,7 @@ def test_legacy_memory_compatibility():
 
     try:
         # Test import of legacy functions
-        from Aetherra.core.memory_legacy import AetherraMemory as LegacyNeuroMemory
+        from Aetherra.core.memory_legacy import AetherraMemory as LegacyAetherraMemory
 
         # Use temporary directory
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -331,7 +331,7 @@ def test_legacy_memory_compatibility():
             try:
                 os.chdir(tmp_dir)
 
-                legacy_memory = LegacyNeuroMemory()
+                legacy_memory = LegacyAetherraMemory()
                 legacy_memory.remember("Legacy module test", ["legacy"], "testing")
                 memories = legacy_memory.recall()
 

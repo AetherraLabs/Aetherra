@@ -158,8 +158,8 @@ def demonstrate_ui_features():
     print("✅ All features maintain backward compatibility")
 
     print("\n🚀 To launch the full UI, run:")
-    print("   python ui/neuro_ui.py")
-    print(f"\n📁 UI file location: {project_root}/ui/neuro_ui.py")
+    print("   python ui/aetherra_ui.py")
+    print(f"\n📁 UI file location: {project_root}/ui/aetherra_ui.py")
 
 
 if __name__ == "__main__":

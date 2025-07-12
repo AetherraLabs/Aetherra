@@ -33,7 +33,7 @@ except ImportError:
     AetherraMemory = None
 
 
-class NaturalToNeuroTranslator:
+class NaturalToAetherraTranslator:
     """Translates natural language to AetherraCode"""
 
     def __init__(self):
@@ -268,9 +268,9 @@ class NaturalToNeuroTranslator:
         """Execute the generated AetherraCode"""
         try:
             # Import the standalone runner
-            from scripts.aether_runner_standalone import StandaloneNeuroRunner
+            from scripts.aether_runner_standalone import StandaloneAetherraRunner
 
-            runner = StandaloneNeuroRunner(verbose=True)
+            runner = StandaloneAetherraRunner(verbose=True)
 
             # Create temporary file
             temp_file = Path(__file__).parent / "temp_translation.aether"
@@ -332,7 +332,7 @@ def main():
 
     args = parser.parse_args()
 
-    translator = NaturalToNeuroTranslator()
+    translator = NaturalToAetherraTranslator()
 
     if args.interactive:
         translator.interactive_translate()

@@ -3,7 +3,7 @@ import json
 import os
 
 
-class NeuroFunctions:
+class AetherraFunctions:
     """Manages user-defined Aetherra functions"""
 
     def __init__(self, function_file="Aetherra_functions.json"):

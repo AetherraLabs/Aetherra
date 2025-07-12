@@ -101,7 +101,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
             "command_type": "memory",
             "action": "store",
             "content": processed_text,
-            "neuro_code": f'remember("{command_text}") as "voice_input"',
+            "aetherra_code": f'remember("{command_text}") as "voice_input"',
         }
     elif "recall" in processed_text or "what did i" in processed_text:
         return {
@@ -109,7 +109,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
             "command_type": "memory",
             "action": "retrieve",
             "content": processed_text,
-            "neuro_code": 'recall tag: "voice_query"',
+            "aetherra_code": 'recall tag: "voice_query"',
         }
     elif "create" in processed_text and "file" in processed_text:
         return {
@@ -117,7 +117,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
             "command_type": "file_operation",
             "action": "create",
             "content": processed_text,
-            "neuro_code": "plugin: create_file 'new_file.py'",
+            "aetherra_code": "plugin: create_file 'new_file.py'",
         }
     elif "commit" in processed_text or "save changes" in processed_text:
         return {
@@ -125,7 +125,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
             "command_type": "git",
             "action": "commit",
             "content": processed_text,
-            "neuro_code": f'plugin: git_commit "Voice commit: {command_text}"',
+            "aetherra_code": f'plugin: git_commit "Voice commit: {command_text}"',
         }
     else:
         return {
@@ -133,7 +133,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
             "command_type": "general",
             "action": "transcribe",
             "content": processed_text,
-            "neuro_code": f"// Voice input: {command_text}",
+            "aetherra_code": f"// Voice input: {command_text}",
         }
 
 

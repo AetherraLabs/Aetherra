@@ -97,17 +97,17 @@ def test_fallback_ui():
     print("\n=== Testing Fallback UI Implementation ===")
 
     try:
-        from Lyrixa.ui.fallback_ui import BasicNeuroUI, FallbackUI
+        from Lyrixa.ui.fallback_ui import BasicAetherraUI, FallbackUI
 
         # Test FallbackUI creation
         fallback = FallbackUI()
         if fallback.commands and "help" in fallback.commands:
             print("✓ FallbackUI commands initialized")
 
-        # Test BasicNeuroUI creation
-        basic_ui = BasicNeuroUI()
+        # Test BasicAetherraUI creation
+        basic_ui = BasicAetherraUI()
         if basic_ui.fallback:
-            print("✓ BasicNeuroUI initialized")
+            print("✓ BasicAetherraUI initialized")
 
         print("✓ Fallback UI implementations working")
         return True

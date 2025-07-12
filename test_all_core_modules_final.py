@@ -16,12 +16,12 @@ def test_module_import(module_name: str, module_path: str) -> Dict[str, Any]:
     try:
         # Test import and basic functionality
         if module_path == "core.enhanced_agent":
-            from core.enhanced_agent import EnhancedNeuroAgent
+            from core.enhanced_agent import EnhancedAetherraAgent
 
             print("✓ Import successful")
 
             # Test initialization
-            agent = EnhancedNeuroAgent()
+            agent = EnhancedAetherraAgent()
             print("✓ Initialization successful")
 
             # Test basic functionality
@@ -34,7 +34,7 @@ def test_module_import(module_name: str, module_path: str) -> Dict[str, Any]:
             goals = agent.get_goals()
             print(f"✓ Get goals: {type(goals)}")
 
-            return {"status": "success", "class": "EnhancedNeuroAgent"}
+            return {"status": "success", "class": "EnhancedAetherraAgent"}
 
         elif module_path == "core.enhanced_aetherra_interpreter":
             from core.enhanced_aetherra_interpreter import EnhancedAetherraInterpreter

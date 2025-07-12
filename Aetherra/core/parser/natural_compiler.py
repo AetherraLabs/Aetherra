@@ -193,7 +193,7 @@ class AetherraCodeIDE:
         self.compiler = NaturalLanguageCompiler()
         self.session_history = []
 
-    def natural_to_neuro(self, natural_language: str) -> str:
+    def natural_to_aetherra(self, natural_language: str) -> str:
         """Convert natural language to AetherraCode"""
         aetherra = self.compiler.compile_natural_language(natural_language)
 
@@ -230,7 +230,7 @@ class AetherraCodeIDE:
                     continue
 
                 # Compile to AetherraCode
-                aetherra = self.natural_to_neuro(user_input)
+                aetherra = self.natural_to_aetherra(user_input)
 
                 print(f"\n🧬 Generated AetherraCode:")
                 print("=" * 40)

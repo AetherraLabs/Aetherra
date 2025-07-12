@@ -4,7 +4,7 @@
 ==============================================
 
 A comprehensive runner for AetherraCode .aether files that enables:
-- Command line execution: `python neuro_runner.py monitor.aether`
+- Command line execution: `python aetherra_runner.py monitor.aether`
 - Programmatic execution: `runner.run_file("monitor.aether")`
 - Integration with aetherplex: `aetherplex run monitor.aether`
 
@@ -394,9 +394,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python neuro_runner.py monitor.aether
-  python neuro_runner.py examples/basic_memory.aether --verbose
-  python neuro_runner.py advanced_syntax_demo.aether -v
+  python aetherra_runner.py monitor.aether
+  python aetherra_runner.py examples/basic_memory.aether --verbose
+  python aetherra_runner.py advanced_syntax_demo.aether -v
 
 This enables the vision of: aetherplex run monitor.aether
         """,

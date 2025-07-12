@@ -58,11 +58,11 @@ def test_agent_executor():
 
     try:
         from Aetherra.core.agent_executor import AgentExecutor
-        from Aetherra.core.enhanced_agent import EnhancedNeuroAgent
+        from Aetherra.core.enhanced_agent import EnhancedAetherraAgent
         from Aetherra.core.syntax_tree import NodeType, parse_Aetherra
 
         # Create agent and executor
-        agent = EnhancedNeuroAgent()
+        agent = EnhancedAetherraAgent()
         executor = AgentExecutor(agent)
 
         # Test parsing and execution
@@ -99,10 +99,10 @@ def test_agent_state_management():
     print("\n🧪 Testing Agent State Management...")
 
     try:
-        from Aetherra.core.enhanced_agent import EnhancedNeuroAgent
+        from Aetherra.core.enhanced_agent import EnhancedAetherraAgent
 
         # Create agent
-        agent = EnhancedNeuroAgent()
+        agent = EnhancedAetherraAgent()
 
         # Test state management
         initial_state = agent.get_state()

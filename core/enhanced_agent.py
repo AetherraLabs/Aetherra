@@ -96,7 +96,7 @@ class AgentTrigger:
     enabled: bool = True
 
 
-class EnhancedNeuroAgent:
+class EnhancedAetherraAgent:
     """Enhanced autonomous agent for AetherraCode/Lyrixaintegration"""
 
     def __init__(
@@ -944,9 +944,9 @@ class EnhancedNeuroAgent:
 
 def create_enhanced_agent(
     memory=None, goal_system=None, interpreter=None
-) -> EnhancedNeuroAgent:
+) -> EnhancedAetherraAgent:
     """Factory function to create an enhanced agent"""
-    return EnhancedNeuroAgent(
+    return EnhancedAetherraAgent(
         memory=memory, goal_system=goal_system, interpreter=interpreter
     )
 

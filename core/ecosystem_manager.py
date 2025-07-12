@@ -149,7 +149,7 @@ class PluginEcosystem:
         """Check if plugin is AI-compatible"""
         ai_indicators = [
             "ai_action",
-            "neuro_compatible",
+            "aetherra_compatible",
             "AI_COMPATIBLE = True",
             "think_about",
             "reason_from",

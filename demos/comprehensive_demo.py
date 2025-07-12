@@ -91,7 +91,7 @@ def main():
     print("-" * 40)
 
     try:
-        from aetherra_runner_standalone import StandaloneNeuroRunner
+        from aetherra_runner_standalone import StandaloneAetherraRunner
 
         # Create a test .aether file
         test_file = project_root / "test_demo.aether"
@@ -107,7 +107,7 @@ memory summary
 
         # Run the test file
         print("✅ Executing test .aether file...")
-        runner = StandaloneNeuroRunner(verbose=False)
+        runner = StandaloneAetherraRunner(verbose=False)
         results = runner.run_file(str(test_file))
 
         print(

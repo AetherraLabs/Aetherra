@@ -19,7 +19,7 @@ def ask_ai(prompt, temperature=0.1):
     return "Please check the error above and fix manually. AI assistance is not available in this context."
 
 
-class NeuroDebugSystem:
+class AetherraDebugSystem:
     """Automatic error detection, analysis, and self-correction system"""
 
     def __init__(self, memory: AetherraMemory):
@@ -351,7 +351,7 @@ CODE:
 
 
 # Decorator for automatic error handling
-def auto_debug(debug_system: NeuroDebugSystem, file_path: str = ""):
+def auto_debug(debug_system: AetherraDebugSystem, file_path: str = ""):
     """Decorator to automatically handle errors in functions"""
 
     def decorator(func):

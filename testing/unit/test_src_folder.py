@@ -98,7 +98,7 @@ def test_ui_imports():
         ui_modules = [
             "Lyrixa_fully_modular.py",
             "Lyrixa_gui_v2.py",
-            "neuro_ui.py",
+            "aetherra_ui.py",
         ]
 
         ui_dir = os.path.join(project_root, "src", "Aetherra", "ui")

@@ -1,5 +1,5 @@
 """
-Test script to verify the functionality of neuro_chat.py in a real application context.
+Test script to verify the functionality of lyrixa_chat.py in a real application context.
 """
 
 import os
@@ -8,7 +8,7 @@ import sys
 # Add the project root to the Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# print("Testing neuro_chat.py module imports...")
+# print("Testing lyrixa_chat.py module imports...")
 try:
     from Lyrixa.ui.aether_chat import (
         LyrixaAssistantInterface,
@@ -38,4 +38,4 @@ try:
 except Exception as e:
     print(f"✗ Error importing from aetherra_chat.py: {e}")
 
-print("\nNeuroChat testing complete.")
+print("\nLyrixaChat testing complete.")

@@ -34,7 +34,7 @@ try:
     import Lyrixa
 
     print("✅ Lyrixa module loaded successfully")
-    if hasattr(Lyrixa, "NEUROCHAT_AVAILABLE") and Lyrixa.aetherCHAT_AVAILABLE:
+    if hasattr(Lyrixa, "LYRIXACHAT_AVAILABLE") and Lyrixa.LYRIXACHAT_AVAILABLE:
         print("✅ Advanced AetherraChat interface is AVAILABLE in Lyrixa")
         Lyrixa_ok = True
     else:

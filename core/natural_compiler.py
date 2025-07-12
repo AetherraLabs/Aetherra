@@ -183,7 +183,7 @@ class NaturalLanguageCompiler:
         context_code = "recall relevant_context from memory\n"
         return context_code + aetherra
 
-    def generate_neuro_workflow(
+    def generate_aetherra_workflow(
         self, description: str, complexity: str = "standard"
     ) -> str:
         """
@@ -427,7 +427,7 @@ class AetherraCodeIDE:
         self.compiler = NaturalLanguageCompiler()
         self.session_history = []
 
-    def natural_to_neuro(self, natural_language: str) -> str:
+    def natural_to_aetherra(self, natural_language: str) -> str:
         """Convert natural language to AetherraCode"""
         aetherra = self.compiler.compile_natural_language(natural_language)
 
@@ -464,7 +464,7 @@ class AetherraCodeIDE:
                     continue
 
                 # Compile to AetherraCode
-                aetherra = self.natural_to_neuro(user_input)
+                aetherra = self.natural_to_aetherra(user_input)
 
                 print("\n🧬 Generated AetherraCode:")
                 print("=" * 40)

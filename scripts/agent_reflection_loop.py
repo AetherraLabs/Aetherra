@@ -28,7 +28,7 @@ sys.path.insert(0, str(project_root / "core"))
 # Import AetherraCode components
 try:
     from memory import AetherraMemory
-    from aetherra_runner_standalone import StandaloneNeuroRunner
+    from aetherra_runner_standalone import StandaloneAetherraRunner
 except ImportError as e:
     print(f"⚠️ Some components not available: {e}")
 
@@ -38,7 +38,7 @@ class AgentReflectionLoop:
 
     def __init__(self, memory_instance: Optional[AetherraMemory] = None):
         self.memory = memory_instance or AetherraMemory()
-        self.runner = StandaloneNeuroRunner(verbose=False)
+        self.runner = StandaloneAetherraRunner(verbose=False)
         self.is_running = False
         self.reflection_thread = None
 

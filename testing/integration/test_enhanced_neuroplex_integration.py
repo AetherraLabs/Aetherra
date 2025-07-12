@@ -3,7 +3,7 @@
 Enhanced LyrixaIntegration Test
 ==================================
 
-Test script to verify the integration between Lyrixaand NeuroChat works correctly.
+Test script to verify the integration between Lyrixaand LyrixaChat works correctly.
 """
 
 import sys
@@ -30,13 +30,13 @@ def test_enhanced_Lyrixa():
         print("❌ PySide6 not available - install with: pip install PySide6")
         return False
 
-    # Test 2: Check NeuroChat components
-    print("\nTest 2: NeuroChat Components")
+    # Test 2: Check LyrixaChat components
+    print("\nTest 2: LyrixaChat Components")
     try:
 
-        print("✅ NeuroChat interface available")
+        print("✅ LyrixaChat interface available")
     except ImportError as e:
-        print(f"⚠️ NeuroChat interface not available: {e}")
+        print(f"⚠️ LyrixaChat interface not available: {e}")
         print("   (This is OK - fallback will be used)")
 
     # Test 3: Check Enhanced Lyrixa
@@ -88,7 +88,7 @@ def show_integration_summary():
     print("=" * 50)
     print("🎭 What's New:")
     print("   • Enhanced Lyrixacombines the full development environment")
-    print("     with the sophisticated NeuroChat interface")
+    print("     with the sophisticated LyrixaChat interface")
     print("   • Replaces basic chat with advanced features:")
     print("     - Tabbed interface (Assistant/Reflections/Code Preview)")
     print("     - Auto-scroll and typing indicators")
@@ -98,11 +98,11 @@ def show_integration_summary():
     print()
     print("🛠️ Architecture:")
     print("   • Left Panel: Development tools (Editor, Memory, Plugins, Performance)")
-    print("   • Right Panel: Enhanced NeuroChat interface")
+    print("   • Right Panel: Enhanced LyrixaChat interface")
     print("   • Seamless integration between coding and AI assistance")
     print()
     print("🔧 Fallback Strategy:")
-    print("   • If NeuroChat components aren't available, uses basic chat")
+    print("   • If LyrixaChat components aren't available, uses basic chat")
     print("   • If Enhanced Lyrixafails, falls back to standard Lyrixa")
     print("   • Graceful degradation ensures functionality")
 

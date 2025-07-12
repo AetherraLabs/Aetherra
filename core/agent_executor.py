@@ -20,11 +20,11 @@ from typing import Any, Dict, Optional
 from core.syntax_tree import NodeType, SyntaxNode
 
 try:
-    from core.enhanced_agent import EnhancedNeuroAgent
+    from core.enhanced_agent import EnhancedAetherraAgent
 
     AGENT_AVAILABLE = True
 except ImportError:
-    EnhancedNeuroAgent = None  # type: ignore
+    EnhancedAetherraAgent = None  # type: ignore
     AGENT_AVAILABLE = False
 
 

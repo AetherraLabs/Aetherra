@@ -20,15 +20,15 @@ def check_module(module_path):
         return False
 
 
-# Test neuro_chat.py
-neuro_chat_path = os.path.join(
+# Test lyrixa_chat.py
+lyrixa_chat_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "src",
     "Aetherra",
     "ui",
-    "neuro_chat.py",
+    "lyrixa_chat.py",
 )
-check_module(neuro_chat_path)
+check_module(lyrixa_chat_path)
 
 # Test aetherplex.py
 aetherplex_path = os.path.join(

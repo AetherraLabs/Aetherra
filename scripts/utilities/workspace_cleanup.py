@@ -199,7 +199,7 @@ def move_test_files():
         "test_aetherra_comprehensive.py",
         "test_aetherplex_final.py",
         "test_aetherplex_gui.py",
-        "test_neuro_chat.py",
+        "test_lyrixa_chat.py",
         "test_phase2_basic.py",
     ]
 
@@ -265,7 +265,7 @@ def move_demo_files():
         "phase2_final_demo.py",
         "simple_ui_demo.py",
         "ui_foundation_demo.py",
-        "neuro_chat_standalone.py",
+        "lyrixa_chat_standalone.py",
     ]
 
     for demo in demo_files:

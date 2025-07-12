@@ -111,7 +111,7 @@ def execute_plugin_command(plugin_name, function_name, arguments):
         print(f"❌ {display_name}: Error - {str(e)}")
 
 
-def run_neuro_file(file_path):
+def run_aetherra_file(file_path):
     """Execute a .aether file by processing each command."""
     if not os.path.exists(file_path):
         print(f"❌ Error: File '{file_path}' not found")
@@ -165,7 +165,7 @@ def run_neuro_file(file_path):
 def main():
     """Main function."""
     if len(sys.argv) != 2:
-        print("Usage: python run_neuro.py <path_to_neuro_file>")
+        print("Usage: python run_neuro.py <path_to_aetherra_file>")
         print("\nExample:")
         print("  python run_neuro.py examples/plugin_demo_corrected.aether")
         sys.exit(1)
@@ -175,7 +175,7 @@ def main():
     print("🧬 aetherra File Runner")
     print("========================")
 
-    success = run_neuro_file(file_path)
+    success = run_aetherra_file(file_path)
 
     if not success:
         sys.exit(1)

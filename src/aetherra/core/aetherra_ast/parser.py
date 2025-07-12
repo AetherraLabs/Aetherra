@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class NeuroCommand:
+class AetherraCommand:
     """Base class for Aetherra commands"""
 
     command_type: str
@@ -18,7 +18,7 @@ class NeuroCommand:
 
 
 @dataclass
-class RememberCommand(NeuroCommand):
+class RememberCommand(AetherraCommand):
     content: str = ""
     tags: Optional[List[str]] = None
     category: str = "general"
@@ -29,17 +29,17 @@ class RememberCommand(NeuroCommand):
 
 
 @dataclass
-class RecallCommand(NeuroCommand):
+class RecallCommand(AetherraCommand):
     tags: Optional[List[str]] = None
     category: Optional[str] = None
     limit: Optional[int] = None
 
 
 @dataclass
-class FunctionDefineCommand(NeuroCommand):
+class FunctionDefineCommand(AetherraCommand):
     name: str = ""
     params: Optional[List[str]] = None
-    body: Optional[List["NeuroCommand"]] = None
+    body: Optional[List["AetherraCommand"]] = None
 
     def __post_init__(self):
         if self.params is None:
@@ -49,7 +49,7 @@ class FunctionDefineCommand(NeuroCommand):
 
 
 @dataclass
-class FunctionCallCommand(NeuroCommand):
+class FunctionCallCommand(AetherraCommand):
     name: str = ""
     args: Optional[List[str]] = None
 
@@ -59,16 +59,16 @@ class FunctionCallCommand(NeuroCommand):
 
 
 @dataclass
-class ReflectCommand(NeuroCommand):
+class ReflectCommand(AetherraCommand):
     tags: Optional[List[str]] = None
     category: Optional[str] = None
 
 
 @dataclass
-class IfCommand(NeuroCommand):
+class IfCommand(AetherraCommand):
     condition: str = ""
-    then_body: Optional[List["NeuroCommand"]] = None
-    else_body: Optional[List["NeuroCommand"]] = None
+    then_body: Optional[List["AetherraCommand"]] = None
+    else_body: Optional[List["AetherraCommand"]] = None
 
     def __post_init__(self):
         if self.then_body is None:
@@ -76,10 +76,10 @@ class IfCommand(NeuroCommand):
 
 
 @dataclass
-class ForCommand(NeuroCommand):
+class ForCommand(AetherraCommand):
     variable: str = ""
     iterable: str = ""
-    body: Optional[List["NeuroCommand"]] = None
+    body: Optional[List["AetherraCommand"]] = None
 
     def __post_init__(self):
         if self.body is None:
@@ -87,9 +87,9 @@ class ForCommand(NeuroCommand):
 
 
 @dataclass
-class WhileCommand(NeuroCommand):
+class WhileCommand(AetherraCommand):
     condition: str = ""
-    body: Optional[List["NeuroCommand"]] = None
+    body: Optional[List["AetherraCommand"]] = None
 
     def __post_init__(self):
         if self.body is None:
@@ -97,8 +97,8 @@ class WhileCommand(NeuroCommand):
 
 
 @dataclass
-class BlockCommand(NeuroCommand):
-    body: Optional[List["NeuroCommand"]] = None
+class BlockCommand(AetherraCommand):
+    body: Optional[List["AetherraCommand"]] = None
 
     def __post_init__(self):
         if self.body is None:
@@ -106,17 +106,17 @@ class BlockCommand(NeuroCommand):
 
 
 @dataclass
-class VariableAssignment(NeuroCommand):
+class VariableAssignment(AetherraCommand):
     name: str = ""
     value: str = ""
 
 
 @dataclass
-class ExpressionCommand(NeuroCommand):
+class ExpressionCommand(AetherraCommand):
     expression: str = ""
 
 
-class NeuroBlock:
+class AetherraBlock:
     """Represents a code block with indentation"""
 
     def __init__(self, lines: List[str], start_indent: int = 0):
@@ -124,8 +124,8 @@ class NeuroBlock:
         self.start_indent = start_indent
         self.commands = []
 
-    def parse(self) -> List[NeuroCommand]:
-        """Parse block into NeuroCommands"""
+    def parse(self) -> List[AetherraCommand]:
+        """Parse block into AetherraCommands"""
         commands = []
         i = 0
         while i < len(self.lines):
@@ -163,7 +163,7 @@ class NeuroBlock:
             return self._parse_assignment(stripped, indent), index + 1
 
         # Regular command
-        return NeuroCommand(
+        return AetherraCommand(
             command_type="expression", raw_text=stripped, indent_level=indent
         ), index + 1
 
@@ -306,7 +306,7 @@ class NeuroBlock:
             body=body_commands,
         ), i + 1
 
-    def _parse_assignment(self, line: str, indent: int) -> NeuroCommand:
+    def _parse_assignment(self, line: str, indent: int) -> AetherraCommand:
         """Parse variable assignment"""
         parts = line.split("=", 1)
         if len(parts) == 2:
@@ -319,12 +319,12 @@ class NeuroBlock:
                 name=var_name,
                 value=value,
             )
-        return NeuroCommand(
+        return AetherraCommand(
             command_type="expression", raw_text=line, indent_level=indent
         )
 
 
-class NeuroASTParser:
+class AetherraASTParser:
     """
     Advanced parser for Aetherra syntax
     Handles blocks, loops, conditionals, and functions
@@ -334,8 +334,8 @@ class NeuroASTParser:
         self.variables = {}  # Store variables during execution
         self.functions = {}  # Store parsed functions
 
-    def parse_line(self, line: str) -> Optional[NeuroCommand]:
-        """Parse a single line into a NeuroCommand"""
+    def parse_line(self, line: str) -> Optional[AetherraCommand]:
+        """Parse a single line into a AetherraCommand"""
         stripped = line.strip()
         if not stripped:
             return None
@@ -363,13 +363,13 @@ class NeuroASTParser:
             return self._parse_assignment(stripped, indent)
 
         # Regular expression/command
-        return NeuroCommand(
+        return AetherraCommand(
             command_type="expression", raw_text=stripped, indent_level=indent
         )
 
-    def parse_block(self, lines: List[str]) -> List[NeuroCommand]:
+    def parse_block(self, lines: List[str]) -> List[AetherraCommand]:
         """Parse multiple lines as a block"""
-        block = NeuroBlock(lines)
+        block = AetherraBlock(lines)
         return block.parse()
 
     def _parse_remember(self, line: str) -> Optional[RememberCommand]:
@@ -434,7 +434,7 @@ class NeuroASTParser:
             )
             # For single line, create a simple expression command as body
             body_commands = [
-                NeuroCommand(
+                AetherraCommand(
                     command_type="expression", raw_text=body_str, indent_level=0
                 )
             ]
@@ -473,7 +473,7 @@ class NeuroASTParser:
             )
         return None
 
-    def _parse_assignment(self, line: str, indent: int) -> NeuroCommand:
+    def _parse_assignment(self, line: str, indent: int) -> AetherraCommand:
         """Parse variable assignment"""
         parts = line.split("=", 1)
         if len(parts) == 2:
@@ -486,7 +486,7 @@ class NeuroASTParser:
                 name=var_name,
                 value=value,
             )
-        return NeuroCommand(
+        return AetherraCommand(
             command_type="expression", raw_text=line, indent_level=indent
         )
 

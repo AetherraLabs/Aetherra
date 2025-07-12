@@ -16,7 +16,7 @@ from typing import Any, Dict, Union
 # Performance monitoring integration available (for future use)
 
 
-class StandaloneNeuroRunner:
+class StandaloneAetherraRunner:
     """Standalone AetherraCode file runner without complex dependencies"""
 
     def __init__(self, verbose: bool = False):
@@ -380,8 +380,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python neuro_runner_standalone.py monitor.aether
-  python neuro_runner_standalone.py examples/basic_memory.aether --verbose
+  python aetherra_runner_standalone.py monitor.aether
+  python aetherra_runner_standalone.py examples/basic_memory.aether --verbose
 
 This is the foundation for: aetherplex run monitor.aether
         """,
@@ -395,7 +395,7 @@ This is the foundation for: aetherplex run monitor.aether
     args = parser.parse_args()
 
     try:
-        runner = StandaloneNeuroRunner(verbose=args.verbose)
+        runner = StandaloneAetherraRunner(verbose=args.verbose)
         results = runner.run_file(args.file)
 
         sys.exit(0 if results["success"] else 1)

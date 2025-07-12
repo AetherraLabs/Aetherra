@@ -48,9 +48,9 @@ def main():
 
     # Import translator
     try:
-        from natural_translator import NaturalToNeuroTranslator
+        from natural_translator import NaturalToAetherraTranslator
 
-        translator = NaturalToNeuroTranslator()
+        translator = NaturalToAetherraTranslator()
 
         for i, (natural_input, description) in enumerate(examples, 1):
             print(f"\n📝 Example {i}: {description}")

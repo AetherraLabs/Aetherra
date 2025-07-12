@@ -96,7 +96,7 @@ def main():
         "launch_aetherplex.py",
         "launch_aetherplex_v2.py",
         "launch_gui.py",
-        "launch_neuro_ui.py",
+        "launch_aetherra_ui.py",
         "launch_playground.py",
         "main.py",
         "startup.py",
@@ -163,7 +163,7 @@ def main():
         "test_launch.py",
         "test_memory_reflection.py",
         "test_multi_llm_integration.py",
-        "test_neuro_parser.py",
+        "test_aetherra_parser.py",
         "test_new_enhancements.py",
         "test_openai_fix.py",
         "test_playground_components.py",
@@ -218,7 +218,7 @@ def main():
         move_file_if_exists(WORKSPACE_ROOT / demo, examples_dir / "demos" / demo)
 
     # Move .aether example files
-    neuro_files = [
+    aetherra_files = [
         "advanced_syntax_demo.aether",
         "independence_demo.aether",
         "monitor.aether",
@@ -229,14 +229,14 @@ def main():
         "universal_ai_demo.aether",
     ]
 
-    for neuro_file in neuro_files:
-        if neuro_file.endswith("demo.aether") or neuro_file.endswith("test.aether"):
+    for aetherra_file in aetherra_files:
+        if aetherra_file.endswith("demo.aether") or aetherra_file.endswith("test.aether"):
             move_file_if_exists(
-                WORKSPACE_ROOT / neuro_file, examples_dir / "basic" / neuro_file
+                WORKSPACE_ROOT / aetherra_file, examples_dir / "basic" / aetherra_file
             )
         else:
             move_file_if_exists(
-                WORKSPACE_ROOT / neuro_file, examples_dir / "advanced" / neuro_file
+                WORKSPACE_ROOT / aetherra_file, examples_dir / "advanced" / aetherra_file
             )
 
     # 6. Move data files
@@ -271,8 +271,8 @@ def main():
         "aetherra_engine.py",
         "aetherra_playground.py",
         "aetherplex.py",  # Old monolithic GUI
-        "neuro_runner.py",
-        "neuro_runner_standalone.py",
+        "aetherra_runner.py",
+        "aetherra_runner_standalone.py",
         "natural_translator.py",
         "quickstart.py",
         "quick_debug_test.py",

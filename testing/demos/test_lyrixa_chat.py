@@ -22,7 +22,7 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "src" / "Aetherra" / "ui"))
 
 
-def test_neuro_chat():
+def test_lyrixa_chat():
     """Test the enhanced AetherraChat interface"""
     print("🎭 Starting AetherraChat Enhanced UI Demo...")
     print("=" * 50)
@@ -52,14 +52,14 @@ def test_neuro_chat():
             sys.path.insert(0, str(project_root / "src" / "Aetherra" / "ui"))
             import aetherra_chat
 
-            neuro_chat.main()
+            lyrixa_chat.main()
 
         except Exception as e2:
             print(f"❌ Alternative import failed: {e2}")
             print("\n🔧 Manual testing instructions:")
             print("1. Ensure PySide6 is installed: pip install PySide6")
             print("2. Navigate to src/Aetherra/ui/")
-            print("3. Run: python neuro_chat.py")
+            print("3. Run: python lyrixa_chat.py")
 
     except Exception as e:
         print(f"❌ Error starting AetherraChat: {e}")
@@ -123,10 +123,10 @@ if __name__ == "__main__":
     demo_features()
 
     try:
-        test_neuro_chat()
+        test_lyrixa_chat()
     except KeyboardInterrupt:
         print("\n👋 Demo interrupted by user")
     except Exception as e:
         print(f"\n❌ Demo error: {e}")
         print("\n💡 The AetherraChat interface is ready for testing!")
-        print("   Check src/Aetherra/ui/neuro_chat.py for the implementation")
+        print("   Check src/Aetherra/ui/lyrixa_chat.py for the implementation")

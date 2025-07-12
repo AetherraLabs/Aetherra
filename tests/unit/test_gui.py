@@ -25,16 +25,16 @@ def test_qt_backend():
 
 
 def test_theme():
-    """Test the NeuroTheme"""
+    """Test the AetherraTheme"""
     try:
-        from ui.aetherplex_gui import NeuroTheme
+        from ui.aetherplex_gui import AetherraTheme
 
-        print("✅ NeuroTheme loaded successfully")
-        print(f"   Primary color: {NeuroTheme.PRIMARY}")
-        print(f"   Background: {NeuroTheme.BACKGROUND}")
+        print("✅ AetherraTheme loaded successfully")
+        print(f"   Primary color: {AetherraTheme.PRIMARY}")
+        print(f"   Background: {AetherraTheme.BACKGROUND}")
         return True
     except ImportError as e:
-        print(f"❌ NeuroTheme import failed: {e}")
+        print(f"❌ AetherraTheme import failed: {e}")
         return False
 
 
@@ -44,7 +44,7 @@ def test_gui_classes():
     components_passed = 0
 
     test_classes = [
-        "NeuroAnimation",
+        "AetherraAnimation",
         "PulsingWidget",
         "AetherraEditor",
         "MemoryVisualization",
@@ -58,7 +58,7 @@ def test_gui_classes():
             GoalTracker,
             LiveConsole,
             MemoryVisualization,
-            NeuroAnimation,
+            AetherraAnimation,
             AetherraEditor,
             LyrixaMainWindow,
             PulsingWidget,
@@ -141,7 +141,7 @@ def main():
 
     tests = [
         ("Qt Backend", test_qt_backend),
-        ("NeuroTheme", test_theme),
+        ("AetherraTheme", test_theme),
         ("GUI Classes", test_gui_classes),
         ("Aetherra Integration", test_Aetherra_integration),
         ("GUI Launch Function", test_gui_launch),

@@ -16,7 +16,7 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "core"))
 
 
-def test_memory_reflection_with_basic_neuro():
+def test_memory_reflection_with_basic_aetherra():
     """Test memory reflection features with basic_memory.aether content"""
 
     print("🧠 Testing Memory Reflection with basic_memory.aether")
@@ -140,4 +140,4 @@ def test_memory_reflection_with_basic_neuro():
 
 
 if __name__ == "__main__":
-    test_memory_reflection_with_basic_neuro()
+    test_memory_reflection_with_basic_aetherra()

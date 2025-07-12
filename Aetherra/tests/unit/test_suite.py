@@ -30,8 +30,8 @@ try:
     from memory import AetherraMemory
     from performance_monitor import AetherraLogger, PerformanceMonitor
 
-    from natural_translator import NaturalToNeuroTranslator
-    from scripts.aether_runner_standalone import StandaloneNeuroRunner
+    from natural_translator import NaturalToAetherraTranslator
+    from scripts.aether_runner_standalone import StandaloneAetherraRunner
 except ImportError as e:
     print(f"⚠️ Some test dependencies not available: {e}")
 
@@ -154,7 +154,7 @@ class TestNaturalTranslator(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment"""
-        self.translator = NaturalToNeuroTranslator()
+        self.translator = NaturalToAetherraTranslator()
 
     def test_basic_translation(self):
         """Test basic natural language translation"""
@@ -212,7 +212,7 @@ class TestAetherraRunner(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment"""
-        self.runner = StandaloneNeuroRunner(verbose=False)
+        self.runner = StandaloneAetherraRunner(verbose=False)
 
     def test_file_execution(self):
         """Test Aetherra file execution"""
@@ -336,8 +336,8 @@ class TestSystemIntegration(unittest.TestCase):
     def test_translation_to_execution(self):
         """Test complete workflow from natural language to execution"""
         # Initialize components
-        translator = NaturalToNeuroTranslator()
-        runner = StandaloneNeuroRunner(verbose=False)
+        translator = NaturalToAetherraTranslator()
+        runner = StandaloneAetherraRunner(verbose=False)
 
         # Translate natural language
         Aetherra = translator.translate("Remember this integration test")
@@ -402,7 +402,7 @@ def run_benchmark_suite():
 
     # Translation benchmark
     print("📊 Translation Benchmark")
-    translator = NaturalToNeuroTranslator()
+    translator = NaturalToAetherraTranslator()
     test_phrases = [
         "Remember this important fact",
         "Calculate the fibonacci sequence",

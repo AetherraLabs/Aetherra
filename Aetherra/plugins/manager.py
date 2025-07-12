@@ -253,8 +253,8 @@ class PluginSecurityManager:
         security_report = {"threats_found": [], "warnings": [], "safe": True}
 
         # Scan AetherraCode files for potentially dangerous patterns
-        for neuro_file in plugin_path.glob("**/*.aether"):
-            content = neuro_file.read_text()
+        for aetherra_file in plugin_path.glob("**/*.aether"):
+            content = aetherra_file.read_text()
 
             dangerous_patterns = [
                 "system_execute",
@@ -269,7 +269,7 @@ class PluginSecurityManager:
                 if pattern in content:
                     security_report["threats_found"].append(
                         {
-                            "file": str(neuro_file.relative_to(plugin_path)),
+                            "file": str(aetherra_file.relative_to(plugin_path)),
                             "pattern": pattern,
                             "severity": "high",
                         }

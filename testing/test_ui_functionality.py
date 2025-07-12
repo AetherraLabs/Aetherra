@@ -1,5 +1,5 @@
 """
-Test script to verify the functionality of neuro_chat.py and Lyrixa.py in a real application context.
+Test script to verify the functionality of lyrixa_chat.py and Lyrixa.py in a real application context.
 This script attempts to import and initialize the key UI components from both modules.
 """
 

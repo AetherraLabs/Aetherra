@@ -13,7 +13,7 @@ __all__ = [
     "AetherraInterpreter",
     "EnhancedAetherraInterpreter",
     "BlockExecutor",
-    "NeuroDebugSystem",
+    "AetherraDebugSystem",
 ]
 
 
