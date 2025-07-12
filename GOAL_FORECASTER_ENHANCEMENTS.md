@@ -15,7 +15,7 @@
 
 **Benefits:**
 - 📊 Historical analysis and learning from past forecasts
-- 🔍 Advanced querying and filtering capabilities  
+- 🔍 Advanced querying and filtering capabilities
 - 💾 Data persistence across sessions
 - 🔐 Thread-safe concurrent access
 
@@ -149,7 +149,7 @@ print(f"Average confidence: {stats['average_confidence']:.1%}")
 This enhanced Goal Forecaster transforms Aetherra from a simple rule-based system into an intelligent, learning, and adaptive AI platform capable of:
 
 - **Semantic Understanding**: True comprehension of user goals
-- **Intelligent Orchestration**: Multi-agent coordination for complex tasks  
+- **Intelligent Orchestration**: Multi-agent coordination for complex tasks
 - **Continuous Learning**: Historical analysis for improved predictions
 - **Dynamic Adaptation**: Hot-swappable components for real-time updates
 

@@ -17,20 +17,19 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 app = FastAPI(title="Lyrixa Intelligence API", version="2.0.0")
 
 # Import intelligence modules
-try:
-    from lyrixa.agent_collaboration_manager import (
-        enable_agent_chaining,
-        list_agents,
-        register_agent,
-        suggest_agent_pairings,
-    )
-    from lyrixa.cognitive_monitor_dashboard import summarize_dashboard
-    from lyrixa.goal_forecaster import forecast_goal
-    from lyrixa.reasoning_memory_layer import reasoning_context_for_goal
+import lyrixa.agent_collaboration_manager
+from lyrixa.agent_collaboration_manager import (
+    enable_agent_chaining,
+    register_agent,
+    suggest_agent_pairings,
+)
 
-    print("✅ All intelligence modules imported successfully")
-except ImportError as e:
-    print(f"⚠️ Some modules failed to import: {e}")
+list_agents = getattr(lyrixa.agent_collaboration_manager, "list_agents", None)
+from lyrixa.cognitive_monitor_dashboard import summarize_dashboard
+from lyrixa.goal_forecaster import forecast_goal
+from lyrixa.reasoning_memory_layer import reasoning_context_for_goal
+
+print("✅ All intelligence modules imported successfully")
 
 
 # Plugin discovery endpoint
@@ -107,6 +106,11 @@ async def api_reasoning_context(request: Request):
 async def api_list_agents():
     """List all registered agents with their capabilities."""
     try:
+        if list_agents is None:
+            return JSONResponse(
+                content={"error": "list_agents function not found", "status": "error"},
+                status_code=500,
+            )
         agents = list_agents()
         return {"agents": agents, "status": "success"}
     except Exception as e:

@@ -1,16 +1,34 @@
-# aetherra v1.0.0 - AI-Native Programming Language Requirements
+# aetherra v2.0.0 - AI-Native Programming Language Requirements
 # Production-ready dependencies for the world's first AI-native language
 
 # === CORE REQUIREMENTS (ALWAYS NEEDED) ===
 lark>=1.1.7                      # Grammar parser for .aether files (used in multiple parsers)
+numpy>=1.24.0                    # Fast numerical operations (used in engine components)
+requests>=2.28.0                 # HTTP client for plugin registry and webhook functionality
 
 # === SYSTEM MONITORING ===
 psutil>=5.9.0                    # System resource monitoring (used in performance modules)
 
+# === API SERVER REQUIREMENTS (for REST API functionality) ===
+fastapi>=0.104.0                 # Modern, fast web framework for building APIs
+uvicorn[standard]>=0.24.0        # ASGI server for FastAPI applications
+pydantic>=2.5.0                  # Data validation and settings management
+python-multipart>=0.0.6          # Multipart form data parser for FastAPI
+
+# === GUI FRAMEWORKS (for desktop applications) ===
+PySide6>=6.4.0                   # Primary Qt backend for GUI apps (cross-platform)
+# PyQt6>=6.5.0                   # Alternative Qt backend
+
+# === DEVELOPMENT AND TESTING ===
+pytest>=7.0.0                    # Testing framework (used in test suite)
+# pytest-cov>=4.0.0              # Test coverage reports
+# black>=22.0.0                  # Code formatter
+# mypy>=1.0.0                    # Static type checker
+
 # === AI & LLM PROVIDERS (OPTIONAL - Install as needed) ===
 # At least ONE AI provider is recommended for full functionality
 openai>=1.0.0,<2.0.0            # OpenAI GPT models (used in ai_runtime.py)
-# anthropic>=0.5.0               # Claude AI integration
+anthropic>=0.7.0                 # Claude AI integration (optional but recommended)
 # google-generativeai>=0.3.0    # Gemini AI integration
 
 # === LOCAL AI SUPPORT (OPTIONAL) ===
@@ -19,6 +37,10 @@ openai>=1.0.0,<2.0.0            # OpenAI GPT models (used in ai_runtime.py)
 
 # === WEB INTERFACE (OPTIONAL) ===
 # streamlit>=1.28.0              # Interactive playground interface (src/aetherra/ui/playground)
+
+# === ADDITIONAL UTILITIES ===
+pyyaml>=6.0                      # YAML file processing (used in agent configurations)
+typing-extensions>=4.0.0         # Enhanced typing support for older Python versions
 
 # === PLUGIN SYSTEM (OPTIONAL) ===
 # requests>=2.31.0               # HTTP client for plugin registry
@@ -34,7 +56,7 @@ openai>=1.0.0,<2.0.0            # OpenAI GPT models (used in ai_runtime.py)
 # PyQt6>=6.5.0                   # Alternative Qt backend
 
 # === PERFORMANCE & ANALYTICS ===
-numpy>=1.24.0                    # Fast numerical operations (used in enhanced_memory_system.py)
+# numpy>=1.24.0                  # Fast numerical operations (moved to core requirements)
 # scipy>=1.9.0                   # Scientific computing
 # memory-profiler>=0.61.0        # Memory usage analysis
 
@@ -79,10 +101,16 @@ numpy>=1.24.0                    # Fast numerical operations (used in enhanced_m
 # ===============================================================================
 #
 # MINIMAL INSTALL (Core functionality only):
-#   pip install lark psutil
+#   pip install lark numpy requests psutil
 #
-# RECOMMENDED INSTALL (With AI provider):
-#   pip install lark psutil openai
+# RECOMMENDED INSTALL (With AI provider and GUI):
+#   pip install lark numpy requests psutil openai PySide6
+#
+# API SERVER INSTALL (For REST API functionality):
+#   pip install lark numpy requests psutil fastapi uvicorn pydantic python-multipart
+#
+# DEVELOPMENT INSTALL (With testing framework):
+#   pip install lark numpy requests psutil pytest
 #
 # FULL INSTALL (All features):
 #   pip install -r requirements.txt
@@ -96,7 +124,18 @@ numpy>=1.24.0                    # Fast numerical operations (used in enhanced_m
 #
 # REQUIRED:
 # - lark: Parses .aether files using grammar definitions
+# - numpy: Fast numerical operations for engine components
+# - requests: HTTP client for plugin registry and webhooks
 # - psutil: System monitoring for performance optimization
+#
+# API SERVER:
+# - fastapi: Modern web framework for REST API
+# - uvicorn: ASGI server for FastAPI
+# - pydantic: Data validation and serialization
+# - python-multipart: Multipart form data support
+#
+# GUI APPLICATIONS:
+# - PySide6: Cross-platform Qt-based GUI framework
 #
 # AI PROVIDERS (Choose at least one):
 # - openai: GPT-3.5/GPT-4 integration via OpenAI API
@@ -107,8 +146,21 @@ numpy>=1.24.0                    # Fast numerical operations (used in enhanced_m
 #
 # OPTIONAL FEATURES:
 # - streamlit: Web-based playground interface
-# - requests: Plugin registry and HTTP functionality
-# - numpy: Enhanced memory and performance systems
-# - PySide6/PyQt6: Advanced GUI applications
+# - pyyaml: YAML configuration file support
+# - typing-extensions: Enhanced typing for older Python versions
+# - pytest: Testing framework for development
+# - anthropic: Claude AI integration
+# - PySide6: Advanced GUI applications
+#
+# ===============================================================================
+# ALTERNATIVE REQUIREMENT FILES:
+# ===============================================================================
+#
+# For specific use cases, see these alternative requirement files:
+# - config/requirements/requirements_minimal.txt: Absolute minimum dependencies
+# - config/requirements/requirements_enhanced.txt: Full feature set
+# - config/requirements/requirements_dev.txt: Development tools
+# - Aetherra/api/requirements.txt: API server only
+# - config/requirements/playground_requirements.txt: Playground interface
 #
 # ===============================================================================
