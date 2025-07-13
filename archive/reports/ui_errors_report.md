@@ -130,23 +130,23 @@ No issues found.
 | Lyrixa.py                                 | 1684 | `padding: 8px 16px !important;`                      |
 | Lyrixa.py                                 | 2460 | `padding: 50px;`                                     |
 | Lyrixa.py                                 | 2513 | `info_label.setStyleSheet("color: #cccccc; font-...` |
-| neuro_chat.py                             | 513  | `padding: 2px !important;`                           |
-| neuro_chat.py                             | 514  | `margin: 0px !important;`                            |
-| neuro_chat.py                             | 606  | `margin: 8px 0px !important;`                        |
-| neuro_chat.py                             | 607  | `padding: 8px 0px !important;`                       |
-| neuro_chat.py                             | 614  | `padding: 4px 0px !important;`                       |
-| neuro_chat.py                             | 615  | `margin: 0px !important;`                            |
-| neuro_chat.py                             | 709  | `padding: 4px !important;`                           |
-| neuro_chat.py                             | 715  | `padding: 8px 12px !important;`                      |
-| neuro_chat.py                             | 728  | `padding: 8px 16px !important;`                      |
-| neuro_chat.py                             | 811  | `padding: 8px !important;`                           |
-| neuro_chat.py                             | 969  | `padding: 8px !important;`                           |
-| neuro_chat.py                             | 1128 | `padding: 8px 16px !important;`                      |
-| neuro_chat.py                             | 1167 | `padding: 8px 12px !important;`                      |
-| neuro_chat.py                             | 1180 | `padding: 8px 16px !important;`                      |
-| neuro_chat.py                             | 1342 | `padding: 8px 16px !important;`                      |
-| neuro_chat.py                             | 1381 | `padding: 8px 12px !important;`                      |
-| neuro_chat.py                             | 1394 | `padding: 8px 16px !important;`                      |
+| aether_chat.py                            | 513  | `padding: 2px !important;`                           |
+| aether_chat.py                            | 514  | `margin: 0px !important;`                            |
+| aether_chat.py                            | 606  | `margin: 8px 0px !important;`                        |
+| aether_chat.py                            | 607  | `padding: 8px 0px !important;`                       |
+| aether_chat.py                            | 614  | `padding: 4px 0px !important;`                       |
+| aether_chat.py                            | 615  | `margin: 0px !important;`                            |
+| aether_chat.py                            | 709  | `padding: 4px !important;`                           |
+| aether_chat.py                            | 715  | `padding: 8px 12px !important;`                      |
+| aether_chat.py                            | 728  | `padding: 8px 16px !important;`                      |
+| aether_chat.py                            | 811  | `padding: 8px !important;`                           |
+| aether_chat.py                            | 969  | `padding: 8px !important;`                           |
+| aether_chat.py                            | 1128 | `padding: 8px 16px !important;`                      |
+| aether_chat.py                            | 1167 | `padding: 8px 12px !important;`                      |
+| aether_chat.py                            | 1180 | `padding: 8px 16px !important;`                      |
+| aether_chat.py                            | 1342 | `padding: 8px 16px !important;`                      |
+| aether_chat.py                            | 1381 | `padding: 8px 12px !important;`                      |
+| aether_chat.py                            | 1394 | `padding: 8px 16px !important;`                      |
 | components\theme.py                       | 67   | `padding: 10px 20px;`                                |
 | components\theme.py                       | 103  | `padding: 8px 12px;`                                 |
 | components\theme.py                       | 124  | `padding: 12px 20px;`                                |

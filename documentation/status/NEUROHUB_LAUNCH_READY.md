@@ -80,7 +80,7 @@ plugin.aetherplug/
 ```
 
 ### **3. Consciousness-Aware Plugins**
-```neuro
+```aether
 consciousness TranscriberPlugin {
     memory {
         type: "episodic"

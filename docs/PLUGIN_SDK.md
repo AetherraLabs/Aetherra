@@ -74,7 +74,7 @@ For AI integration and natural language discovery:
 
 ### Basic Syntax
 
-```neuro
+```aether
 # Simple plugin call
 plugin: my_plugin "hello world"
 
@@ -88,7 +88,7 @@ plugin: read_file "output.txt"
 
 ### Advanced Usage
 
-```neuro
+```aether
 # Git workflow
 plugin: git_status
 plugin: git_commit "Automated commit via aetherra"
@@ -114,7 +114,7 @@ plugin: delete_file "temp.txt" true
 - `git_log(limit=10)` - View commit history
 
 **Usage:**
-```neuro
+```aether
 plugin: git_status
 plugin: git_commit "Added new feature"
 plugin: git_log 5
@@ -130,7 +130,7 @@ plugin: git_log 5
 - `delete_file(filepath, confirm=False)` - Delete files safely
 
 **Usage:**
-```neuro
+```aether
 plugin: create_file "utils.py" "def hello(): pass"
 plugin: read_file "config.json"
 plugin: list_files "src" "*.py"
@@ -143,7 +143,7 @@ plugin: list_files "src" "*.py"
 - `whisper_voice_command(command_text)` - Process voice commands
 
 **Usage:**
-```neuro
+```aether
 plugin: whisper_transcribe "meeting.wav"
 plugin: whisper_voice_command "remember to refactor the code"
 ```
@@ -157,7 +157,7 @@ plugin: whisper_voice_command "remember to refactor the code"
 - `llamacpp_chat(model_path, prompt)` - CPU-optimized inference
 
 **Usage:**
-```neuro
+```aether
 plugin: ollama_chat "llama2" "How do Python generators work?"
 plugin: ollama_list_models
 plugin: huggingface_local "gpt2" "Once upon a time"
@@ -169,7 +169,7 @@ plugin: huggingface_local "gpt2" "Once upon a time"
 - `calculate(expression)` - Safe mathematical evaluation
 
 **Usage:**
-```neuro
+```aether
 plugin: calculate "sqrt(16) + 2^3"
 plugin: calculate "sin(pi/2) * 100"
 ```
@@ -258,7 +258,7 @@ print(result)
 
 ### Memory Integration
 
-```neuro
+```aether
 # Store plugin results in memory
 $weather_data = plugin: weather "San Francisco"
 remember($weather_data) as "current_weather"
@@ -270,7 +270,7 @@ if $weather_data.temperature > 25:
 
 ### Goal Integration
 
-```neuro
+```aether
 goal("Check weather and plan day") {
     $weather = plugin: weather "Boston"
     if $weather.condition == "Sunny":
@@ -284,7 +284,7 @@ goal("Check weather and plan day") {
 
 The plugin system integrates with aetherra's AI capabilities:
 
-```neuro
+```aether
 # AI can suggest and execute plugins based on context
 ask_ai("How's the weather looking?")
 # AI might respond by executing: plugin: weather "user_location"

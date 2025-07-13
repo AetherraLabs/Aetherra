@@ -23,7 +23,7 @@
 - **Category Support**: Organized memory storage and retrieval
 
 ### ✅ Interpreter Integration
-- **NeuroExecutionVisitor**: Executes parsed syntax trees
+- **aetherExecutionVisitor**: Executes parsed syntax trees
 - **execute_enhanced()**: New method for SyntaxTree-based execution
 - **execute_syntax_tree()**: Direct syntax tree execution
 - **Robust Fallbacks**: Graceful degradation when enhanced parser unavailable

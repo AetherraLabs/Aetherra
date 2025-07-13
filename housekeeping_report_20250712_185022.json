@@ -17,7 +17,7 @@
       "type": "temporary"
     },
     {
-      "file": "fix_neuro_branding.py",
+      "file": "fix_aether_branding.py",
       "size_bytes": 7751,
       "type": "temporary"
     },
@@ -1189,8 +1189,8 @@
       "type": "test"
     },
     {
-      "from": "testing\\demos\\test_and_launch_neuroplex.py",
-      "to": "archive\\test_files\\test_and_launch_neuroplex.py",
+      "from": "testing\\demos\\test_and_launch_lyrixa.py",
+      "to": "archive\\test_files\\test_and_launch_lyrixa.py",
       "type": "test"
     },
     {
@@ -1214,13 +1214,13 @@
       "type": "test"
     },
     {
-      "from": "testing\\demos\\test_neuroplex_final.py",
-      "to": "archive\\test_files\\test_neuroplex_final.py",
+      "from": "testing\\demos\\test_lyrixa_final.py",
+      "to": "archive\\test_files\\test_lyrixa_final.py",
       "type": "test"
     },
     {
-      "from": "testing\\demos\\test_neuroplex_gui.py",
-      "to": "archive\\test_files\\test_neuroplex_gui.py",
+      "from": "testing\\demos\\test_lyrixa_gui.py",
+      "to": "archive\\test_files\\test_lyrixa_gui.py",
       "type": "test"
     },
     {
@@ -1254,8 +1254,8 @@
       "type": "test"
     },
     {
-      "from": "testing\\integration\\test_enhanced_neuroplex_integration.py",
-      "to": "archive\\test_files\\test_enhanced_neuroplex_integration.py",
+      "from": "testing\\integration\\test_enhanced_lyrixa_integration.py",
+      "to": "archive\\test_files\\test_enhanced_lyrixa_integration.py",
       "type": "test"
     },
     {
@@ -1264,8 +1264,8 @@
       "type": "test"
     },
     {
-      "from": "testing\\integration\\test_neuroplex_system.py",
-      "to": "archive\\test_files\\test_neuroplex_system.py",
+      "from": "testing\\integration\\test_lyrixa_system.py",
+      "to": "archive\\test_files\\test_lyrixa_system.py",
       "type": "test"
     },
     {
@@ -1634,8 +1634,8 @@
       "type": "test"
     },
     {
-      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\tests\\unit\\test_neuro_parser.py",
-      "to": "archive\\test_files\\test_neuro_parser.py",
+      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\tests\\unit\\test_aether_parser.py",
+      "to": "archive\\test_files\\test_aether_parser.py",
       "type": "test"
     },
     {
@@ -16879,8 +16879,8 @@
       "type": "demo"
     },
     {
-      "from": "testing\\demo_advanced_neuroplex.py",
-      "to": "archive\\demo_files\\demo_advanced_neuroplex.py",
+      "from": "testing\\demo_advanced_lyrixa.py",
+      "to": "archive\\demo_files\\demo_advanced_lyrixa.py",
       "type": "demo"
     },
     {
@@ -16924,8 +16924,8 @@
       "type": "demo"
     },
     {
-      "from": "examples\\demos\\demo_neuroplex_v2.py",
-      "to": "archive\\demo_files\\demo_neuroplex_v2.py",
+      "from": "examples\\demos\\demo_lyrixa_v2.py",
+      "to": "archive\\demo_files\\demo_lyrixa_v2.py",
       "type": "demo"
     },
     {
@@ -17294,8 +17294,8 @@
       "type": "report"
     },
     {
-      "from": "documentation\\status\\ENHANCED_NEUROPLEX_INTEGRATION_REPORT.md",
-      "to": "archive\\reports\\ENHANCED_NEUROPLEX_INTEGRATION_REPORT.md",
+      "from": "documentation\\status\\ENHANCED_lyrixa_INTEGRATION_REPORT.md",
+      "to": "archive\\reports\\ENHANCED_lyrixa_INTEGRATION_REPORT.md",
       "type": "report"
     },
     {
@@ -17349,18 +17349,18 @@
       "type": "report"
     },
     {
-      "from": "documentation\\status\\NEUROHUB_IMPLEMENTATION_COMPLETE.md",
-      "to": "archive\\reports\\NEUROHUB_IMPLEMENTATION_COMPLETE.md",
+      "from": "documentation\\status\\aetherHUB_IMPLEMENTATION_COMPLETE.md",
+      "to": "archive\\reports\\aetherHUB_IMPLEMENTATION_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "documentation\\status\\NEUROPLEX_LAUNCH_RESOLUTION_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_LAUNCH_RESOLUTION_COMPLETE.md",
+      "from": "documentation\\status\\lyrixa_LAUNCH_RESOLUTION_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_LAUNCH_RESOLUTION_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "documentation\\status\\NEUROPLEX_TEST_RESULTS_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_TEST_RESULTS_COMPLETE.md",
+      "from": "documentation\\status\\lyrixa_TEST_RESULTS_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_TEST_RESULTS_COMPLETE.md",
       "type": "report"
     },
     {
@@ -17554,28 +17554,28 @@
       "type": "report"
     },
     {
-      "from": "docs\\reports\\NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md",
+      "from": "docs\\reports\\lyrixa_AI_ENHANCEMENT_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_AI_ENHANCEMENT_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "docs\\reports\\NEUROPLEX_ANALYSIS_REPORT.md",
-      "to": "archive\\reports\\NEUROPLEX_ANALYSIS_REPORT.md",
+      "from": "docs\\reports\\lyrixa_ANALYSIS_REPORT.md",
+      "to": "archive\\reports\\lyrixa_ANALYSIS_REPORT.md",
       "type": "report"
     },
     {
-      "from": "docs\\reports\\NEUROPLEX_GUI_FIXES_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_GUI_FIXES_COMPLETE.md",
+      "from": "docs\\reports\\lyrixa_GUI_FIXES_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_GUI_FIXES_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "docs\\reports\\NEUROPLEX_LAYOUT_OPTIMIZATION_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_LAYOUT_OPTIMIZATION_COMPLETE.md",
+      "from": "docs\\reports\\lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "docs\\reports\\NEUROPLEX_V2_ENHANCEMENT_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_V2_ENHANCEMENT_COMPLETE.md",
+      "from": "docs\\reports\\lyrixa_V2_ENHANCEMENT_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_V2_ENHANCEMENT_COMPLETE.md",
       "type": "report"
     },
     {
@@ -17834,28 +17834,28 @@
       "type": "report"
     },
     {
-      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\docs\\reports\\NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md",
+      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\docs\\reports\\lyrixa_AI_ENHANCEMENT_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_AI_ENHANCEMENT_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\docs\\reports\\NEUROPLEX_ANALYSIS_REPORT.md",
-      "to": "archive\\reports\\NEUROPLEX_ANALYSIS_REPORT.md",
+      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\docs\\reports\\lyrixa_ANALYSIS_REPORT.md",
+      "to": "archive\\reports\\lyrixa_ANALYSIS_REPORT.md",
       "type": "report"
     },
     {
-      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\docs\\reports\\NEUROPLEX_GUI_FIXES_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_GUI_FIXES_COMPLETE.md",
+      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\docs\\reports\\lyrixa_GUI_FIXES_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_GUI_FIXES_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\docs\\reports\\NEUROPLEX_LAYOUT_OPTIMIZATION_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_LAYOUT_OPTIMIZATION_COMPLETE.md",
+      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\docs\\reports\\lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\docs\\reports\\NEUROPLEX_V2_ENHANCEMENT_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_V2_ENHANCEMENT_COMPLETE.md",
+      "from": "backups\\housekeeping_20250709_110437\\Aetherra\\docs\\reports\\lyrixa_V2_ENHANCEMENT_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_V2_ENHANCEMENT_COMPLETE.md",
       "type": "report"
     },
     {
@@ -18074,28 +18074,28 @@
       "type": "report"
     },
     {
-      "from": "Aetherra_backup_20250712_184525\\docs\\reports\\NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md",
+      "from": "Aetherra_backup_20250712_184525\\docs\\reports\\lyrixa_AI_ENHANCEMENT_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_AI_ENHANCEMENT_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "Aetherra_backup_20250712_184525\\docs\\reports\\NEUROPLEX_ANALYSIS_REPORT.md",
-      "to": "archive\\reports\\NEUROPLEX_ANALYSIS_REPORT.md",
+      "from": "Aetherra_backup_20250712_184525\\docs\\reports\\lyrixa_ANALYSIS_REPORT.md",
+      "to": "archive\\reports\\lyrixa_ANALYSIS_REPORT.md",
       "type": "report"
     },
     {
-      "from": "Aetherra_backup_20250712_184525\\docs\\reports\\NEUROPLEX_GUI_FIXES_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_GUI_FIXES_COMPLETE.md",
+      "from": "Aetherra_backup_20250712_184525\\docs\\reports\\lyrixa_GUI_FIXES_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_GUI_FIXES_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "Aetherra_backup_20250712_184525\\docs\\reports\\NEUROPLEX_LAYOUT_OPTIMIZATION_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_LAYOUT_OPTIMIZATION_COMPLETE.md",
+      "from": "Aetherra_backup_20250712_184525\\docs\\reports\\lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "Aetherra_backup_20250712_184525\\docs\\reports\\NEUROPLEX_V2_ENHANCEMENT_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_V2_ENHANCEMENT_COMPLETE.md",
+      "from": "Aetherra_backup_20250712_184525\\docs\\reports\\lyrixa_V2_ENHANCEMENT_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_V2_ENHANCEMENT_COMPLETE.md",
       "type": "report"
     },
     {
@@ -18314,28 +18314,28 @@
       "type": "report"
     },
     {
-      "from": "Aetherra\\docs\\reports\\NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md",
+      "from": "Aetherra\\docs\\reports\\lyrixa_AI_ENHANCEMENT_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_AI_ENHANCEMENT_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "Aetherra\\docs\\reports\\NEUROPLEX_ANALYSIS_REPORT.md",
-      "to": "archive\\reports\\NEUROPLEX_ANALYSIS_REPORT.md",
+      "from": "Aetherra\\docs\\reports\\lyrixa_ANALYSIS_REPORT.md",
+      "to": "archive\\reports\\lyrixa_ANALYSIS_REPORT.md",
       "type": "report"
     },
     {
-      "from": "Aetherra\\docs\\reports\\NEUROPLEX_GUI_FIXES_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_GUI_FIXES_COMPLETE.md",
+      "from": "Aetherra\\docs\\reports\\lyrixa_GUI_FIXES_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_GUI_FIXES_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "Aetherra\\docs\\reports\\NEUROPLEX_LAYOUT_OPTIMIZATION_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_LAYOUT_OPTIMIZATION_COMPLETE.md",
+      "from": "Aetherra\\docs\\reports\\lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md",
       "type": "report"
     },
     {
-      "from": "Aetherra\\docs\\reports\\NEUROPLEX_V2_ENHANCEMENT_COMPLETE.md",
-      "to": "archive\\reports\\NEUROPLEX_V2_ENHANCEMENT_COMPLETE.md",
+      "from": "Aetherra\\docs\\reports\\lyrixa_V2_ENHANCEMENT_COMPLETE.md",
+      "to": "archive\\reports\\lyrixa_V2_ENHANCEMENT_COMPLETE.md",
       "type": "report"
     },
     {
@@ -20009,7 +20009,7 @@
     "backups\\housekeeping_20250709_110437\\Aetherra\\src\\aetherra\\plugins",
     "backups\\housekeeping_20250709_110437\\lyrixa\\plugins\\.memory",
     "backups\\housekeeping_20250709_110437\\Aetherra\\src\\aetherra",
-    "backups\\housekeeping_20250709_110437\\Aetherra\\src\\neurocode",
+    "backups\\housekeeping_20250709_110437\\Aetherra\\src\\aetherra",
     "backups\\housekeeping_20250709_110437\\Aetherra\\tests\\unit",
     "backups\\phase4_complete_backup\\lyrixa\\core",
     "backups\\housekeeping_20250709_110437\\Aetherra\\data",

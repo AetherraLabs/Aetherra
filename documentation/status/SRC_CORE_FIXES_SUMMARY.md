@@ -76,9 +76,9 @@ from ..ai.runtime import ask_ai
 - `src/aetherra/core/ai/multi_llm_manager.py`
 
 ### AST Subsystem:
-- `src/aetherra/core/neuro_ast/__init__.py`
-- `src/aetherra/core/neuro_ast/parser.py`
-- `src/aetherra/core/neuro_ast/parser_fixed.py`
+- `src/aetherra/core/aether_ast/__init__.py`
+- `src/aetherra/core/aether_ast/parser.py`
+- `src/aetherra/core/aether_ast/parser_fixed.py`
 
 ### Utilities:
 - `src/aetherra/core/utils/__init__.py`

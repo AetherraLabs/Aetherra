@@ -10,8 +10,8 @@
 ├── ⚙️ Aetherra_engine.py          # Language engine
 ├── 🎛️ Lyrixa.py                 # Lyrixasystem
 ├── 📟 Lyrixa_cli.py             # Command line interface
-├── 🏃 neuro_runner.py              # Aetherra runner
-├── 🏃 neuro_runner_standalone.py   # Standalone runner
+├── 🏃 aether_runner.py              # Aetherra runner
+├── 🏃 aether_runner_standalone.py   # Standalone runner
 ├── 🌐 natural_translator.py        # Natural language translator
 ├── 🚀 startup.py                   # System startup
 ├── 📄 README.md                    # Main documentation
@@ -24,7 +24,7 @@
 #### **📂 `/launchers/` - GUI & App Launchers**
 - `launch_gui.py`
 - `launch_Lyrixa.py`
-- `launch_neuro_ui.py`
+- `launch_aether_ui.py`
 - `simple_gui_launcher.py`
 - `safe_launcher.py`
 
@@ -37,9 +37,9 @@
 - And more core modules...
 
 #### **📂 `/ui/` - User Interface Components**
-- `neuro_ui.py` (main enhanced UI)
+- `aether_ui.py` (main enhanced UI)
 - `Lyrixa_gui.py` (Lyrixa)
-- `neuro_chat.py`, `neuro_chat_console.py`
+- `aether_chat.py`, `aether_chat_console.py`
 
 #### **📂 `/examples/` - Aetherra Examples**
 - `basic_memory.aether`

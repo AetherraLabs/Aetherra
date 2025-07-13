@@ -13,7 +13,7 @@ You asked about continuing the chat UI iteration, specifically for:
 
 ### 🧬 Enhanced LyrixaSolution
 
-Instead of creating separate interfaces, I've integrated the sophisticated NeuroChat features into Lyrixa, creating **Enhanced Lyrixa** - a unified AI-native development environment.
+Instead of creating separate interfaces, I've integrated the sophisticated aetherChat features into Lyrixa, creating **Enhanced Lyrixa** - a unified AI-native development environment.
 
 ## 🚀 New Architecture
 
@@ -24,7 +24,7 @@ Instead of creating separate interfaces, I've integrated the sophisticated Neuro
   - 🔌 Plugin Manager
   - 📊 Performance Monitor
 
-- **🤖 Right Panel**: Enhanced NeuroChat Interface
+- **🤖 Right Panel**: Enhanced aetherChat Interface
   - 🎭 Tabbed chat (Assistant/Reflections/Code Preview)
   - 💬 Auto-scroll and typing indicators
   - 🎨 Modern message bubbles and styling
@@ -44,7 +44,7 @@ Instead of creating separate interfaces, I've integrated the sophisticated Neuro
 
 ```
 ✅ PySide6 is available
-✅ NeuroChat interface available
+✅ aetherChat interface available
 ✅ Enhanced Lyrixamodule available
 ✅ Fully modular Lyrixaavailable
 ⚠️ Minor Qt cleanup issue (non-critical)
@@ -63,15 +63,15 @@ python aetherra_launcher.py
 python launchers/launch_enhanced_Lyrixa.py
 ```
 
-### Option 3: Standalone NeuroChat
+### Option 3: Standalone aetherChat
 ```bash
-python test_neuro_chat.py
+python test_aether_chat.py
 ```
 
 ## 🔧 Fallback Strategy
 
 The integration includes intelligent fallbacks:
-- If NeuroChat components unavailable → Basic chat interface
+- If aetherChat components unavailable → Basic chat interface
 - If Enhanced Lyrixafails → Standard Lyrixa
 - If all GUI fails → CLI interface
 

@@ -30,7 +30,7 @@
     "package-manager",
     "marketplace",
     "plugins",
-    "neuroplug"
+    "aetherplug"
   ],
   "author": "aetherra Team",
   "license": "GPL-3.0",

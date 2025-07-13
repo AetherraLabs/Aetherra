@@ -291,7 +291,7 @@ if __name__ == "__main__":
         print("✅ Created demo_enhancements.py")
     except UnicodeEncodeError:
         # Fallback: Remove emoji and write as ASCII
-        safe_content = demo_content.replace("🧬", "[NEURO]").replace("🚀", "[LAUNCH]")
+        safe_content = demo_content.replace("🧬", "[aether]").replace("🚀", "[LAUNCH]")
         demo_file.write_text(safe_content, encoding="utf-8")
         print("[OK] Created demo_enhancements.py (ASCII-safe)")
 

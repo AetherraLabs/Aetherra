@@ -17,13 +17,13 @@ This document summarizes all the emoji removals performed across the aetherra Pr
    - Removed emojis from aetherhub server UI elements and controls
    - Standardized all user-facing text
 
-2. `src/aetherra/ui/neuro_ui.py`
+2. `src/aetherra/ui/aether_ui.py`
    - Removed emoji from module docstring header
    - Removed emojis from print statements (replaced with "Error:", "Warning:", etc.)
    - Removed emojis from QLabel headers and button texts
    - Removed emojis from analysis text sections and memory statistics
 
-3. `src/aetherra/ui/neuro_chat.py`
+3. `src/aetherra/ui/aether_chat.py`
    - Removed emoji from module docstring header
    - Removed emojis from print statements and error messages
    - Removed emojis from QLabel headers and button texts

@@ -168,7 +168,7 @@ end
 - Block parsing state display
 
 **Key Files:**
-- `ui/neuro_ui.py` - Enhanced UI with block support
+- `ui/aether_ui.py` - Enhanced UI with block support
 - Syntax highlighting for control flow keywords
 - Simulation results display panel
 
@@ -205,7 +205,7 @@ end
    - Integration with block executor
    - Seamless routing between single-line and block commands
 
-4. **Enhanced UI (`ui/neuro_ui.py`)**
+4. **Enhanced UI (`ui/aether_ui.py`)**
    - Block execution interface
    - Simulation mode controls
    - Advanced syntax highlighting
@@ -309,7 +309,7 @@ end
 - `core/block_executor.py`: ~400 lines
 - `core/ast_parser.py`: ~430 lines
 - Enhanced `core/interpreter.py`: +60 lines
-- Enhanced `ui/neuro_ui.py`: +50 lines
+- Enhanced `ui/aether_ui.py`: +50 lines
 - Demo files: ~200 lines
 
 **Total: ~1,140 lines of advanced functionality**

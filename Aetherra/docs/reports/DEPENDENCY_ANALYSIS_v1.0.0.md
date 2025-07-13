@@ -27,7 +27,7 @@ Comprehensive analysis of all import statements and dependencies across the Aeth
 - **`llama-cpp-python>=0.2.0`** - ✅ Used in `core/multi_llm_manager.py` (optional import)
 
 ### **Optional UI Frameworks**
-- **`PySide6>=6.5.0`** - ✅ Used in `ui/Lyrixa_gui.py` and `ui/neuro_ui.py` (optional import)
+- **`PySide6>=6.5.0`** - ✅ Used in `ui/Lyrixa_gui.py` and `ui/aether_ui.py` (optional import)
 - **`PyQt6>=6.5.0`** - ✅ Used as fallback in `ui/Lyrixa_gui.py` (optional import)
 
 ---
@@ -80,8 +80,8 @@ Comprehensive analysis of all import statements and dependencies across the Aeth
 
 | Package               | Used In                         | Purpose                  | Status     |
 | --------------------- | ------------------------------- | ------------------------ | ---------- |
-| `lark`                | `core/Aetherra_grammar.py`     | .aether file parsing     | ✅ Required |
-| `streamlit`           | `ui/Aetherra_playground.py`    | Interactive playground   | ✅ Required |
+| `lark`                | `core/Aetherra_grammar.py`      | .aether file parsing     | ✅ Required |
+| `streamlit`           | `ui/Aetherra_playground.py`     | Interactive playground   | ✅ Required |
 | `openai`              | `core/multi_llm_manager.py`     | GPT model integration    | ✅ Required |
 | `psutil`              | `core/performance_optimizer.py` | System monitoring        | ✅ Required |
 | `anthropic`           | `core/multi_llm_manager.py`     | Claude AI (optional)     | ⚙️ Optional |

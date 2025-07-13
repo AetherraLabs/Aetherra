@@ -53,7 +53,7 @@ All modular packages are now error-free:
 ### 2. Memory Module Import
 **Problem**: Core package couldn't find `aetherraMemory` class
 **Solution**: Updated import path:
-- `from .memory import aetherraMemory` → `from .memory.base import NeuroMemory as aetherraMemory`
+- `from .memory import aetherraMemory` → `from .memory.base import aetherMemory as aetherraMemory`
 
 ### 3. Core Module Import Paths
 **Problem**: Core package using incorrect import paths

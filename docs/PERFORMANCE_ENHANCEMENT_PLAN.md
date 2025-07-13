@@ -6,7 +6,7 @@
 ### **1. Neural Inference Engine**
 ```python
 # core/neural_engine.py - NEW MODULE
-class NeuroInferenceEngine:
+class aetherInferenceEngine:
     """Ultra-fast local AI processing engine"""
 
     def __init__(self):
@@ -66,7 +66,7 @@ pip install pinecone-client weaviate-client
 
 ### **3. Real-Time Compilation Engine**
 ```python
-# core/neuro_compiler.py - NEW MODULE
+# core/aether_compiler.py - NEW MODULE
 class aetherraCompiler:
     """JIT compilation of aetherra to optimized bytecode"""
 
@@ -82,7 +82,7 @@ class aetherraCompiler:
         bytecode = self.generate_bytecode(optimized_ast)
         return CompiledProgram(bytecode, metadata={"source": source})
 
-    def optimize_ast(self, ast: NeuroAST) -> NeuroAST:
+    def optimize_ast(self, ast: aetherAST) -> aetherAST:
         """Apply AI-driven optimizations"""
         # Pattern-based optimization
         # Dead code elimination
@@ -179,8 +179,8 @@ class UniversalLanguageBridge:
     def import_from_language(self, language: str, modules: List[str]):
         """Import and use modules from any language"""
         bridge = self.transpilers[language]
-        neuro_wrapper = bridge.create_neuro_wrapper(modules)
-        return neuro_wrapper
+        aether_wrapper = bridge.create_aether_wrapper(modules)
+        return aether_wrapper
 
     def export_to_language(self, aetherra: str, target_language: str):
         """Export aetherra to any target language"""
@@ -253,7 +253,7 @@ end
 ### **10. Collective Intelligence Network**
 ```python
 # core/collective_intelligence.py - NEW MODULE
-class GlobalNeuroNetwork:
+class GlobalaetherNetwork:
     """Shared learning across all aetherra instances"""
 
     def __init__(self):

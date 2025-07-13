@@ -28,7 +28,7 @@ aetherra/
 ├── 📁 ui/                     # User interfaces
 │   ├── aetherra_playground.py # Interactive playground
 │   ├── Lyrixa_gui.py       # GUI interface
-│   ├── neuro_chat.py          # Chat interface
+│   ├── aether_chat.py          # Chat interface
 │   └── PLAYGROUND_README.md   # UI documentation
 │
 ├── 📁 tools/                  # Development tools
@@ -38,7 +38,7 @@ aetherra/
 │   └── setup_multi_llm.py    # Multi-LLM configuration
 │
 ├── 📁 tests/                  # Test suite
-│   ├── test_neuro_parser.py  # Parser tests
+│   ├── test_aether_parser.py  # Parser tests
 │   ├── test_multi_llm_integration.py # LLM tests
 │   ├── test_playground_components.py # UI tests
 │   └── [5+ test files]       # Complete test coverage
@@ -75,7 +75,7 @@ aetherra/
    - `aetherra_engine.py`, `aetherra.py`, `natural_translator.py`, `comprehensive_demo.py`
 
 2. **UI Components**: Moved to `ui/` directory
-   - `aetherra_playground.py`, `Lyrixa_gui.py`, `neuro_chat.py`
+   - `aetherra_playground.py`, `Lyrixa_gui.py`, `aether_chat.py`
    - `PLAYGROUND_README.md`, `Lyrixa_GUI_STATUS.md`
 
 3. **Development Tools**: Moved to `tools/` directory

@@ -40,7 +40,7 @@ data/memory/
 - Simple text-based memory storage
 - Tag and category organization
 - Time-based filtering and search
-- Full backward compatibility with original `NeuroMemory`
+- Full backward compatibility with original `aetherMemory`
 
 #### Vector Memory (`VectorMemory`)
 - Semantic similarity search using embeddings
@@ -107,9 +107,9 @@ data/memory/
 
 ### Basic Operations (Backward Compatible)
 ```python
-from core.memory import NeuroMemory
+from core.memory import aetherMemory
 
-memory = NeuroMemory()  # Uses new modular system internally
+memory = aetherMemory()  # Uses new modular system internally
 memory.remember("Test memory", ["test"], "example")
 results = memory.recall(tags=["test"])
 ```
@@ -167,7 +167,7 @@ weekly_summary = reflection_manager.generate_weekly_summary()
 
 ### Phase 1: Backward Compatibility ✅
 - All existing code continues to work unchanged
-- `NeuroMemory` class uses new modular system internally
+- `aetherMemory` class uses new modular system internally
 - Legacy file formats automatically migrated
 
 ### Phase 2: Gradual Adoption

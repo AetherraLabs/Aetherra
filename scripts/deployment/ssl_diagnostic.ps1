@@ -1,8 +1,8 @@
 # SSL Certificate & Domain Diagnostic Script
-# Checks the SSL status and configuration for neuro-code.dev
+# Checks the SSL status and configuration for aether-code.dev
 
 param(
-    [string]$Domain = "neuro-code.dev"
+    [string]$Domain = "aether-code.dev"
 )
 
 Write-Host "🔍 Diagnosing SSL Certificate for: $Domain" -ForegroundColor Cyan
@@ -73,9 +73,11 @@ function Test-SslCertificate {
 
         if ($cert2.NotAfter -lt (Get-Date)) {
             Write-Host "   ❌ Certificate has EXPIRED!" -ForegroundColor Red
-        } elseif ($cert2.NotAfter -lt (Get-Date).AddDays(30)) {
+        }
+        elseif ($cert2.NotAfter -lt (Get-Date).AddDays(30)) {
             Write-Host "   ⚠️ Certificate expires soon!" -ForegroundColor Yellow
-        } else {
+        }
+        else {
             Write-Host "   ✅ Certificate is valid" -ForegroundColor Green
         }
 

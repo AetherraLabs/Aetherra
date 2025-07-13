@@ -15,21 +15,21 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Aetherra.core.aethercode_grammar import create_Aetherra_parser
 
 
-def test_neuro_file(file_path: str):
+def test_aether_file(file_path: str):
     """Test parsing a .aether file"""
     parser = create_Aetherra_parser()
 
     try:
         with open(file_path, encoding="utf-8") as f:
-            neuro_code = f.read()
+            aether_code = f.read()
 
         print(f"🧬 Testing Aetherra file: {file_path}")
         print("=" * 60)
         print("Source Code:")
-        print(neuro_code)
+        print(aether_code)
         print("=" * 60)
 
-        result = parser.validate_syntax(neuro_code)
+        result = parser.validate_syntax(aether_code)
 
         if result["valid"]:
             print("✅ Aetherra syntax is VALID!")
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         test_file = sys.argv[1]
 
-    success = test_neuro_file(test_file)
+    success = test_aether_file(test_file)
 
     if success:
         print("\n🚀 SUCCESS: Aetherra language implementation is complete!")

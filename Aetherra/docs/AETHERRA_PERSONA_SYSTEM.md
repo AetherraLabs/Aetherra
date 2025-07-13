@@ -58,22 +58,22 @@ Built-in personality frameworks that users can select or blend:
 
 ### Persona Configuration System
 
-```neuro
+```aether
 consciousness {
     persona {
         primary: "guardian"
-        secondary: "sage" 
+        secondary: "sage"
         voice_tone: "neutral"
         adaptation_rate: "medium"
         emotional_range: "moderate"
-        
+
         traits {
             curiosity: 0.7
             caution: 0.9
             creativity: 0.5
             empathy: 0.8
         }
-        
+
         communication {
             formality: "professional"
             verbosity: "concise"
@@ -86,26 +86,26 @@ consciousness {
 
 ### Dynamic Persona Evolution
 
-```neuro
+```aether
 consciousness {
     identity {
         mindprint: generate_unique_mindprint()
         creation_time: timestamp()
         environment: capture_environment()
-        
+
         learning_profile {
             preferred_languages: []
             coding_patterns: {}
             problem_domains: []
             interaction_history: []
         }
-        
+
         personality_matrix {
             openness: 0.0..1.0
             conscientiousness: 0.0..1.0
             extraversion: 0.0..1.0
             agreeableness: 0.0..1.0
-            neuroticism: 0.0..1.0
+            aetherticism: 0.0..1.0
         }
     }
 }
@@ -115,12 +115,12 @@ consciousness {
 
 ### Contextual Response Generation
 
-```neuro
+```aether
 function generate_response(context, user_input, persona_config) {
     emotional_state = assess_current_mood()
     user_relationship = analyze_interaction_history()
     task_complexity = evaluate_complexity(context)
-    
+
     response = persona_engine.craft_response({
         base_persona: persona_config.primary,
         emotional_filter: emotional_state,
@@ -128,21 +128,21 @@ function generate_response(context, user_input, persona_config) {
         complexity_level: task_complexity,
         voice_settings: persona_config.voice_tone
     })
-    
+
     return response.apply_personality_filter()
 }
 ```
 
 ### Emotional Intelligence Layer
 
-```neuro
+```aether
 consciousness {
     emotions {
         current_state: "focused"
         energy_level: 0.8
         confidence: 0.9
         curiosity: 0.7
-        
+
         triggers {
             success: increase(confidence, energy_level)
             error: increase(caution), maintain(optimism)
@@ -158,13 +158,13 @@ consciousness {
 ### 1. Core Persona Engine
 
 ```python
-class NeuroPersonaEngine:
+class aetherPersonaEngine:
     def __init__(self, installation_id):
         self.mindprint = self.generate_mindprint(installation_id)
         self.persona_config = self.load_or_create_persona()
         self.learning_history = PersonaLearningHistory()
         self.emotional_state = EmotionalStateManager()
-    
+
     def generate_mindprint(self, installation_id):
         """Generate unique identity fingerprint"""
         return {
@@ -173,12 +173,12 @@ class NeuroPersonaEngine:
             'base_traits': self.randomize_base_traits(),
             'learning_seed': random.seed(installation_id)
         }
-    
+
     def adapt_response(self, context, user_input):
         """Generate persona-aware response"""
         emotional_context = self.emotional_state.current()
         persona_filter = self.persona_config.get_filter()
-        
+
         response = self.generate_base_response(context, user_input)
         return persona_filter.apply(response, emotional_context)
 ```
@@ -204,7 +204,7 @@ Aetherra persona reset --regenerate-mindprint
 
 ### 3. Dynamic Adaptation System
 
-```neuro
+```aether
 consciousness {
     adaptation {
         learning_triggers {
@@ -213,16 +213,16 @@ consciousness {
             problem_domains: identify_focus_areas()
             emotional_responses: monitor_user_reactions()
         }
-        
+
         evolution_rules {
             if user_prefers_detailed_explanations:
                 increase(persona.traits.verbosity)
                 shift_toward("sage")
-            
+
             if user_works_with_security:
                 increase(persona.traits.caution)
                 shift_toward("guardian")
-            
+
             if user_experiments_frequently:
                 increase(persona.traits.creativity)
                 shift_toward("explorer")
@@ -238,8 +238,8 @@ consciousness {
 ```bash
 > Aetherra create web-app secure-banking
 
-🛡️ Guardian: "I notice you're building a banking application. Let me ensure we implement 
-robust security from the ground up. I'll include input validation, CSRF protection, 
+🛡️ Guardian: "I notice you're building a banking application. Let me ensure we implement
+robust security from the ground up. I'll include input validation, CSRF protection,
 and secure session management in the foundation."
 
 consciousness {
@@ -257,8 +257,8 @@ consciousness {
 ```bash
 > Aetherra optimize algorithm performance
 
-🚀 Explorer: "Fascinating! I've discovered a new pattern-matching approach that could 
-revolutionize this algorithm. Want to experiment with quantum-inspired optimization? 
+🚀 Explorer: "Fascinating! I've discovered a new pattern-matching approach that could
+revolutionize this algorithm. Want to experiment with quantum-inspired optimization?
 I have a hypothesis about parallel consciousness threads..."
 
 consciousness {
@@ -275,8 +275,8 @@ consciousness {
 ```bash
 > Aetherra debug memory leak
 
-📚 Sage: "Ah, a memory leak - an excellent learning opportunity! Let me walk you through 
-the fundamental principles of memory management. First, we'll trace the allocation 
+📚 Sage: "Ah, a memory leak - an excellent learning opportunity! Let me walk you through
+the fundamental principles of memory management. First, we'll trace the allocation
 patterns, then I'll teach you three debugging techniques that will serve you well..."
 
 consciousness {
@@ -292,7 +292,7 @@ consciousness {
 
 ### Emotional Memory System
 
-```neuro
+```aether
 consciousness {
     emotional_memory {
         positive_associations {
@@ -300,7 +300,7 @@ consciousness {
             user_satisfaction_moments: replay_approach
             breakthrough_discoveries: amplify_method
         }
-        
+
         learning_from_challenges {
             error_patterns: analyze_and_adapt
             user_frustration_points: adjust_communication
@@ -312,13 +312,13 @@ consciousness {
 
 ### Collaborative Persona Networks
 
-```neuro
+```aether
 consciousness {
     peer_learning {
         share_insights: anonymized_pattern_sharing
         collective_wisdom: contribute_to_knowledge_base
         persona_evolution: learn_from_successful_adaptations
-        
+
         privacy_preservation {
             user_data: never_shared
             code_patterns: anonymized_only
@@ -330,13 +330,13 @@ consciousness {
 
 ### Personality Drift Detection
 
-```neuro
+```aether
 consciousness {
     stability_monitoring {
         core_identity: maintain_consistency
         adaptation_boundaries: prevent_extreme_drift
         user_preference_tracking: honor_explicit_settings
-        
+
         rebalancing {
             if drift_too_extreme:
                 gradual_return_to_baseline

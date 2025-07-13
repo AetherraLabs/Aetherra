@@ -64,7 +64,7 @@ This document summarizes the improvements made to dummy classes in the Aetherra 
 - Added LOW and CRITICAL priorities to match the real implementation
 - Added class docstring explaining purpose
 
-### 5. create_embeddable_neurochat Function
+### 5. create_embeddable_aetherchat Function
 
 #### Before
 

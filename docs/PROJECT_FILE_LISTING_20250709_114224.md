@@ -48118,15 +48118,15 @@ Aetherra Project/
 - `MEMORY_TEMPORAL_ENHANCEMENT_COMPLETE.md`
 - `MODULARIZATION_SUCCESS_REPORT.md`
 - `MULTI_LLM_ACHIEVEMENT.md`
-- `NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md`
-- `NEUROPLEX_ANALYSIS_REPORT.md`
-- `NEUROPLEX_GUI_FIXES_COMPLETE.md`
-- `NEUROPLEX_GUI_GUIDE.md`
-- `NEUROPLEX_GUI_STATUS.md`
-- `NEUROPLEX_LAYOUT_OPTIMIZATION_COMPLETE.md`
-- `NEUROPLEX_V2_DOCUMENTATION.md`
-- `NEUROPLEX_V2_ENHANCEMENT_COMPLETE.md`
-- `NEURO_UI_CLEANUP_SUMMARY.md`
+- `lyrixa_AI_ENHANCEMENT_COMPLETE.md`
+- `lyrixa_ANALYSIS_REPORT.md`
+- `lyrixa_GUI_FIXES_COMPLETE.md`
+- `lyrixa_GUI_GUIDE.md`
+- `lyrixa_GUI_STATUS.md`
+- `lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md`
+- `lyrixa_V2_DOCUMENTATION.md`
+- `lyrixa_V2_ENHANCEMENT_COMPLETE.md`
+- `aether_UI_CLEANUP_SUMMARY.md`
 - `OPENAI_INIT_FIX.md`
 - `OPTIMIZATION_GUIDE.md`
 - `PERFORMANCE_ENHANCEMENT_PLAN.md`
@@ -48303,7 +48303,7 @@ Aetherra Project/
 - `test_memory_reflection.py`
 - `test_memory_sharing.py`
 - `test_multi_llm_integration.py`
-- `test_neuro_parser.py`
+- `test_aether_parser.py`
 - `test_new_enhancements.py`
 - `test_openai_fix.py`
 - `test_playground_components.py`
@@ -48317,7 +48317,7 @@ Aetherra Project/
 
 ### Aetherra\ui
 
-- `NEUROPLEX_GUI_STATUS.md`
+- `lyrixa_GUI_STATUS.md`
 - `PLAYGROUND_README.md`
 - `README.md`
 - `__init__.py`
@@ -48529,7 +48529,7 @@ Aetherra Project/
 - `LYRIXA_UI_TEST_REPORT_FINAL.md`
 - `MISSION_ACCOMPLISHED.md`
 - `MISSION_COMPLETE_SUMMARY.md`
-- `NEURO_TO_AETHERRA_NAMING_COMPLETE.md`
+- `aether_TO_AETHERRA_NAMING_COMPLETE.md`
 - `PROJECT_STATUS_FINAL.md`
 - `REORGANIZATION_COMPLETE.md`
 - `WEBSITE_ENHANCEMENT_COMPLETE.md`
@@ -48605,7 +48605,7 @@ Aetherra Project/
 - `final_integration_test.py`
 - `fix_favicon_final.py`
 - `fix_favicon_transparency.py`
-- `fix_neuro_naming.py`
+- `fix_aether_naming.py`
 - `fix_test_imports.py`
 - `fix_website_issues.py`
 - `generate_transparent_favicons.py`
@@ -48767,14 +48767,14 @@ Aetherra Project/
 - `LANGUAGE_ACHIEVEMENT.txt`
 - `LANGUAGE_INDEPENDENCE_ACHIEVED.md`
 - `MULTI_LLM_ACHIEVEMENT.md`
-- `NEUROCODE_FOUNDATION_ESTABLISHED.md`
-- `NEUROCODE_LANGUAGE_COMPLETE.md`
-- `NEUROCODE_MANIFESTO.md`
-- `NEUROCODE_PLAYGROUND_COMPLETE.md`
-- `NEUROCODE_REVOLUTION.md`
-- `NEUROCODE_STDLIB_COMPLETE.md`
-- `NEUROCODE_V1_ACHIEVEMENT_REPORT.md`
-- `NEUROCODE_VOICE_ACHIEVED.md`
+- `aetherra_FOUNDATION_ESTABLISHED.md`
+- `aetherra_LANGUAGE_COMPLETE.md`
+- `aetherra_MANIFESTO.md`
+- `aetherra_PLAYGROUND_COMPLETE.md`
+- `aetherra_REVOLUTION.md`
+- `aetherra_STDLIB_COMPLETE.md`
+- `aetherra_V1_ACHIEVEMENT_REPORT.md`
+- `aetherra_VOICE_ACHIEVED.md`
 - `OPENAI_INIT_FIX.md`
 - `README-old.md`
 - `REVOLUTION_ACHIEVED.md`
@@ -48829,15 +48829,15 @@ Aetherra Project/
 - `COMPLETE_DEBUG_DEMO.py`
 - `DEEP_ANALYSIS_COMPLETE.py`
 - `agent_archive_demo.py`
-- `demo_neurocode.py`
+- `demo_aetherra.py`
 - `enhanced_parsing_demo.py`
 - `implementation_demo.py`
-- `neuro_chat_standalone.py`
-- `neurocode_ai_os_complete.py`
-- `neurocode_ai_os_demo.py`
-- `neurocode_persona_demo.py`
-- `neurocode_plugin_demo.py`
-- `neurocode_revolutionary_demo.py`
+- `aether_chat_standalone.py`
+- `aetherra_ai_os_complete.py`
+- `aetherra_ai_os_demo.py`
+- `aetherra_persona_demo.py`
+- `aetherra_plugin_demo.py`
+- `aetherra_revolutionary_demo.py`
 - `performance_enhancement_demo.py`
 - `performance_revolution_demo.py`
 - `phase2_comprehensive_demo.py`
@@ -48877,11 +48877,11 @@ Aetherra Project/
 - `ITERATION_STATUS_REPORT.md`
 - `MEMORY_ENHANCEMENT_MISSION_COMPLETE.md`
 - `MEMORY_TEMPORAL_ENHANCEMENT_COMPLETE.md`
-- `NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md`
-- `NEUROPLEX_ANALYSIS_REPORT.md`
-- `NEUROPLEX_GUI_GUIDE.md`
-- `NEURO_FILE_RUNNER_COMPLETE.md`
-- `NEURO_UI_CLEANUP_SUMMARY.md`
+- `lyrixa_AI_ENHANCEMENT_COMPLETE.md`
+- `lyrixa_ANALYSIS_REPORT.md`
+- `lyrixa_GUI_GUIDE.md`
+- `aether_FILE_RUNNER_COMPLETE.md`
+- `aether_UI_CLEANUP_SUMMARY.md`
 - `OPTIMIZATION_GUIDE.md`
 - `PLUGIN_ENHANCEMENT_COMPLETE.md`
 - `PRODUCTION_READY_SUMMARY.md`
@@ -48958,7 +48958,7 @@ Aetherra Project/
 - `debug_memory.py`
 - `debug_qwidget.py`
 - `fix_enhanced_lyrixa_imports.py`
-- `fix_neuro_naming.py`
+- `fix_aether_naming.py`
 - `fix_test_imports.py`
 - `monitor_test.py`
 - `quick_import_test.py`
@@ -49105,8 +49105,8 @@ Aetherra Project/
 - `debug_system.py.backup.20250703_163034`
 - `debug_system.py.backup.20250703_163039`
 - `demo.py.backup.20250703_163038`
-- `demo_neurocode.py.backup.20250703_163040`
-- `demo_neuroplex_v2.py.backup.20250703_163039`
+- `demo_aetherra.py.backup.20250703_163040`
+- `demo_lyrixa_v2.py.backup.20250703_163039`
 - `demo_plugin.py.backup.20250703_163038`
 - `dev_suite.py.backup.20250703_163034`
 - `developer_cli.py.backup.20250703_163036`
@@ -49144,17 +49144,17 @@ Aetherra Project/
 - `multi_llm_manager.py.backup.20250703_163039`
 - `natural_compiler.py.backup.20250703_163039`
 - `natural_translator.py.backup.20250703_163036`
-- `neuro_chat_standalone.py.backup.20250703_163040`
-- `neurocode.py.backup.20250703_163039`
-- `neurocode.py.backup.20250703_163040`
-- `neurocode_ai_os_complete.py.backup.20250703_163040`
-- `neurocode_ai_os_demo.py.backup.20250703_163040`
-- `neurocode_ai_os_launcher.py.backup.20250703_163040`
-- `neurocode_persona_demo.py.backup.20250703_163040`
-- `neurocode_plugin_cli.py.backup.20250703_163040`
-- `neurocode_plugin_demo.py.backup.20250703_163040`
-- `neurocode_unified_cli.py.backup.20250703_163040`
-- `neuroplex_cli.py.backup.20250703_163040`
+- `aether_chat_standalone.py.backup.20250703_163040`
+- `aetherra.py.backup.20250703_163039`
+- `aetherra.py.backup.20250703_163040`
+- `aetherra_ai_os_complete.py.backup.20250703_163040`
+- `aetherra_ai_os_demo.py.backup.20250703_163040`
+- `aetherra_ai_os_launcher.py.backup.20250703_163040`
+- `aetherra_persona_demo.py.backup.20250703_163040`
+- `aetherra_plugin_cli.py.backup.20250703_163040`
+- `aetherra_plugin_demo.py.backup.20250703_163040`
+- `aetherra_unified_cli.py.backup.20250703_163040`
+- `lyrixa_cli.py.backup.20250703_163040`
 - `optimizer.py.backup.20250703_163038`
 - `parser.py.backup.20250703_163039`
 - `patterns.py.backup.20250703_163040`
@@ -49196,7 +49196,7 @@ Aetherra Project/
 - `test_aetherra_comprehensive.py.backup.20250703_163037`
 - `test_aetherra_hub_integration.py.backup.20250703_163036`
 - `test_aetherra_integration_fixed.py.backup.20250703_163037`
-- `test_and_launch_neuroplex.py.backup.20250703_163037`
+- `test_and_launch_lyrixa.py.backup.20250703_163037`
 - `test_backward_compatibility.py.backup.20250703_163037`
 - `test_chat_area.py.backup.20250703_163037`
 - `test_chat_upgrade.py.backup.20250703_163036`
@@ -49206,7 +49206,7 @@ Aetherra Project/
 - `test_core_fixes.py.backup.20250703_163037`
 - `test_dark_mode.py.backup.20250703_163037`
 - `test_debug_system.py.backup.20250703_163037`
-- `test_enhanced_neuroplex_integration.py.backup.20250703_163037`
+- `test_enhanced_lyrixa_integration.py.backup.20250703_163037`
 - `test_final_import.py.backup.20250703_163037`
 - `test_gui.py.backup.20250703_163037`
 - `test_gui_import.py.backup.20250703_163037`
@@ -49222,8 +49222,8 @@ Aetherra Project/
 - `test_modified_files.py.backup.20250703_163036`
 - `test_modular_syntax.py.backup.20250703_163037`
 - `test_multi_llm_integration.py.backup.20250703_163037`
-- `test_neuroplex_gui.py.backup.20250703_163037`
-- `test_neuroplex_system.py.backup.20250703_163037`
+- `test_lyrixa_gui.py.backup.20250703_163037`
+- `test_lyrixa_system.py.backup.20250703_163037`
 - `test_new_enhancements.py.backup.20250703_163037`
 - `test_openai_fix.py.backup.20250703_163037`
 - `test_phase2_basic.py.backup.20250703_163037`
@@ -49573,15 +49573,15 @@ Aetherra Project/
 - `MEMORY_TEMPORAL_ENHANCEMENT_COMPLETE.md`
 - `MODULARIZATION_SUCCESS_REPORT.md`
 - `MULTI_LLM_ACHIEVEMENT.md`
-- `NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md`
-- `NEUROPLEX_ANALYSIS_REPORT.md`
-- `NEUROPLEX_GUI_FIXES_COMPLETE.md`
-- `NEUROPLEX_GUI_GUIDE.md`
-- `NEUROPLEX_GUI_STATUS.md`
-- `NEUROPLEX_LAYOUT_OPTIMIZATION_COMPLETE.md`
-- `NEUROPLEX_V2_DOCUMENTATION.md`
-- `NEUROPLEX_V2_ENHANCEMENT_COMPLETE.md`
-- `NEURO_UI_CLEANUP_SUMMARY.md`
+- `lyrixa_AI_ENHANCEMENT_COMPLETE.md`
+- `lyrixa_ANALYSIS_REPORT.md`
+- `lyrixa_GUI_FIXES_COMPLETE.md`
+- `lyrixa_GUI_GUIDE.md`
+- `lyrixa_GUI_STATUS.md`
+- `lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md`
+- `lyrixa_V2_DOCUMENTATION.md`
+- `lyrixa_V2_ENHANCEMENT_COMPLETE.md`
+- `aether_UI_CLEANUP_SUMMARY.md`
 - `OPENAI_INIT_FIX.md`
 - `OPTIMIZATION_GUIDE.md`
 - `PERFORMANCE_ENHANCEMENT_PLAN.md`
@@ -49758,7 +49758,7 @@ Aetherra Project/
 - `test_memory_reflection.py`
 - `test_memory_sharing.py`
 - `test_multi_llm_integration.py`
-- `test_neuro_parser.py`
+- `test_aether_parser.py`
 - `test_new_enhancements.py`
 - `test_openai_fix.py`
 - `test_playground_components.py`
@@ -49772,7 +49772,7 @@ Aetherra Project/
 
 ### backups\housekeeping_20250709_110437\Aetherra\ui
 
-- `NEUROPLEX_GUI_STATUS.md`
+- `lyrixa_GUI_STATUS.md`
 - `PLAYGROUND_README.md`
 - `README.md`
 - `__init__.py`
@@ -50198,7 +50198,7 @@ Aetherra Project/
 - `base.py`
 - `vector.py`
 
-### backups\housekeeping_20250709_110437\src\aetherra\core\neuro_ast
+### backups\housekeeping_20250709_110437\src\aetherra\core\aether_ast
 
 - `__init__.py`
 - `parser.py`
@@ -50865,15 +50865,15 @@ Aetherra Project/
 - `MEMORY_TEMPORAL_ENHANCEMENT_COMPLETE.md`
 - `MODULARIZATION_SUCCESS_REPORT.md`
 - `MULTI_LLM_ACHIEVEMENT.md`
-- `NEUROPLEX_AI_ENHANCEMENT_COMPLETE.md`
-- `NEUROPLEX_ANALYSIS_REPORT.md`
-- `NEUROPLEX_GUI_FIXES_COMPLETE.md`
-- `NEUROPLEX_GUI_GUIDE.md`
-- `NEUROPLEX_GUI_STATUS.md`
-- `NEUROPLEX_LAYOUT_OPTIMIZATION_COMPLETE.md`
-- `NEUROPLEX_V2_DOCUMENTATION.md`
-- `NEUROPLEX_V2_ENHANCEMENT_COMPLETE.md`
-- `NEURO_UI_CLEANUP_SUMMARY.md`
+- `lyrixa_AI_ENHANCEMENT_COMPLETE.md`
+- `lyrixa_ANALYSIS_REPORT.md`
+- `lyrixa_GUI_FIXES_COMPLETE.md`
+- `lyrixa_GUI_GUIDE.md`
+- `lyrixa_GUI_STATUS.md`
+- `lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md`
+- `lyrixa_V2_DOCUMENTATION.md`
+- `lyrixa_V2_ENHANCEMENT_COMPLETE.md`
+- `aether_UI_CLEANUP_SUMMARY.md`
 - `OPENAI_INIT_FIX.md`
 - `OPTIMIZATION_GUIDE.md`
 - `PERFORMANCE_ENHANCEMENT_PLAN.md`
@@ -50953,7 +50953,7 @@ Aetherra Project/
 - `CORE_PLUGINS_ERRORS_FIXED.md`
 - `DEVELOPER_ONBOARDING_SYSTEM_IMPLEMENTATION.md`
 - `DUPLICATE_CLEANUP_COMPLETE.md`
-- `ENHANCED_NEUROPLEX_INTEGRATION_REPORT.md`
+- `ENHANCED_lyrixa_INTEGRATION_REPORT.md`
 - `ENHANCED_PARSING_COMPLETE.md`
 - `ERROR_CORRECTION_COMPLETE.md`
 - `FINAL_ORGANIZATION_STATUS.md`
@@ -50968,8 +50968,8 @@ Aetherra Project/
 - `MODULARIZATION_COMPLETE.md`
 - `aetherhub_IMPLEMENTATION_COMPLETE.md`
 - `aetherhub_LAUNCH_READY.md`
-- `NEUROPLEX_LAUNCH_RESOLUTION_COMPLETE.md`
-- `NEUROPLEX_TEST_RESULTS_COMPLETE.md`
+- `lyrixa_LAUNCH_RESOLUTION_COMPLETE.md`
+- `lyrixa_TEST_RESULTS_COMPLETE.md`
 - `PERFORMANCE_ENHANCEMENT_COMPLETE.md`
 - `PERFORMANCE_FIXES_COMPLETE.md`
 - `PERSONA_SYSTEM_COMPLETE.md`
@@ -51022,7 +51022,7 @@ Aetherra Project/
 
 - `basic_memory.aether`
 - `consciousness_demo.aether`
-- `consciousness_demo.neuroc`
+- `consciousness_demo.aetherc`
 - `data_analysis.aether`
 
 ### examples\demos
@@ -51032,7 +51032,7 @@ Aetherra Project/
 - `debug_demo.py`
 - `demo_code.py`
 - `demo_lyrixa_v2.py`
-- `demo_neuroplex_v2.py`
+- `demo_lyrixa_v2.py`
 - `demo_ui_features.py`
 - `enhanced_aetherra_demo.py`
 - `interpreter_enhancement_demo.py`
@@ -51495,7 +51495,7 @@ Aetherra Project/
 - `base.py`
 - `vector.py`
 
-### src\aetherra\core\neuro_ast
+### src\aetherra\core\aether_ast
 
 - `__init__.py`
 - `parser.py`
@@ -51697,7 +51697,7 @@ Aetherra Project/
 - `check_lyrixa.py`
 - `check_ui_files.py`
 - `demo_advanced_lyrixa.py`
-- `demo_advanced_neuroplex.py`
+- `demo_advanced_lyrixa.py`
 - `demo_integration.py`
 
 ### testing\demos
@@ -51705,13 +51705,13 @@ Aetherra Project/
 - `test_aetherra_complete.py`
 - `test_aetherra_comprehensive.py`
 - `test_and_launch_lyrixa.py`
-- `test_and_launch_neuroplex.py`
+- `test_and_launch_lyrixa.py`
 - `test_comprehensive_parsing.py`
 - `test_lyrixa_final.py`
 - `test_lyrixa_gui.py`
-- `test_neuro_chat.py`
-- `test_neuroplex_final.py`
-- `test_neuroplex_gui.py`
+- `test_aether_chat.py`
+- `test_lyrixa_final.py`
+- `test_lyrixa_gui.py`
 - `test_phase2_basic.py`
 
 ### testing
@@ -51725,9 +51725,9 @@ Aetherra Project/
 - `test_agent_integration.py`
 - `test_backward_compatibility.py`
 - `test_enhanced_lyrixa_integration.py`
-- `test_enhanced_neuroplex_integration.py`
+- `test_enhanced_lyrixa_integration.py`
 - `test_lyrixa_system.py`
-- `test_neuroplex_system.py`
+- `test_lyrixa_system.py`
 - `test_phase2_systems.py`
 - `test_phase2_verification.py`
 - `test_syntax_integration.py`
@@ -51873,7 +51873,7 @@ Aetherra Project/
 - `test_memory_reflection.py`
 - `test_memory_sharing.py`
 - `test_multi_llm_integration.py`
-- `test_neuro_parser.py`
+- `test_aether_parser.py`
 - `test_new_enhancements.py`
 - `test_openai_fix.py`
 - `test_playground_components.py`

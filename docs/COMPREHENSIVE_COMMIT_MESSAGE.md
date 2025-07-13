@@ -25,7 +25,7 @@ This massive commit encompasses the complete reorganization and fixing of the Ae
 - Renamed files: aetherra_launcher.py, data/aetherra_functions.json.example
 - Renamed src/aetherra/ → src/aetherra/ directory
 - Renamed 7 test files from *Lyrixa* → *lyrixa*
-- Updated website domain: neuro-code.dev → aetherra.dev
+- Updated website domain: aether-code.dev → aetherra.dev
 
 ## 🔄 Backward Compatibility:
 - Added legacy aliases: parse_aetherra → parse_aetherra, compile_aetherra → compile_aetherra
@@ -36,7 +36,7 @@ This massive commit encompasses the complete reorganization and fixing of the Ae
 ## 📦 Core System Improvements:
 - Fixed core/memory module: proper imports, type safety, pattern analysis
 - Updated Aetherra parser functions and demo text
-- Fixed interpreter block types (neuro_block → aetherra_block)
+- Fixed interpreter block types (aether_block → aetherra_block)
 - Enhanced error handling and connection management
 - Improved type annotations and code quality throughout
 

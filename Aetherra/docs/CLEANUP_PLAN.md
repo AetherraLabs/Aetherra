@@ -39,10 +39,10 @@ Remove redundant documentation:
 - WORKSPACE_ANALYSIS_COMPLETE.md
 
 ### 5. Redundant UI Files
-- ui/neuro_chat.py (functionality integrated into main GUI)
-- ui/neuro_chat_console.py
-- ui/neuro_chat_fixed.py
-- ui/neuro_ui.py (superseded by Lyrixa_gui.py)
+- ui/aether_chat.py (functionality integrated into main GUI)
+- ui/aether_chat_console.py
+- ui/aether_chat_fixed.py
+- ui/aether_ui.py (superseded by Lyrixa_gui.py)
 
 ### 6. Test Files (Keep only essential ones)
 - demo_code.py

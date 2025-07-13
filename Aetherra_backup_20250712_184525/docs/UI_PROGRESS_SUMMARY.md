@@ -115,9 +115,9 @@
 ### Core UI Files
 
 - `src/aetherra/ui/Lyrixa.py`
-- `src/aetherra/ui/neuro_ui.py`
-- `src/aetherra/ui/neuro_chat.py`
-- `src/aetherra/ui/neuro_chat_console.py`
+- `src/aetherra/ui/aether_ui.py`
+- `src/aetherra/ui/aether_chat.py`
+- `src/aetherra/ui/aether_chat_console.py`
 - `src/aetherra/ui/Lyrixa_agent_integration.py`
 - `src/aetherra/ui/aetherra_playground.py`
 - `src/aetherra/ui/__init__.py`

@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Code syntax highlighting (simple version)
-    const codeBlocks = document.querySelectorAll('code.language-neuro');
+    const codeBlocks = document.querySelectorAll('code.language-aether');
     codeBlocks.forEach(block => {
         highlightaetherra(block);
     });

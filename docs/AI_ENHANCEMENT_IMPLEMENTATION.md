@@ -47,7 +47,7 @@ class VectorMemory:
     def __init__(self):
         import chromadb
         self.client = chromadb.Client()
-        self.collection = self.client.create_collection("neuro_memories")
+        self.collection = self.client.create_collection("aether_memories")
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
     def remember_with_vectors(self, content, tags=None):

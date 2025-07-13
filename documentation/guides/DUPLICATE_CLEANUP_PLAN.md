@@ -57,7 +57,7 @@
 ### **SCRIPTS** (Multiple versions)
 
 #### Potential Script Duplicates
-- `scripts/neuro_runner.py` vs `scripts/neuro_runner_standalone.py`
+- `scripts/aether_runner.py` vs `scripts/aether_runner_standalone.py`
 - `scripts/resolve_dependencies.py` vs `scripts/resolve_dependencies_clean.py`
 - Multiple empty debug scripts (`parse_debug*.py`, `tokenize_debug.py`, etc.)
 

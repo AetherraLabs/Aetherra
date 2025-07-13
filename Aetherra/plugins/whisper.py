@@ -138,7 +138,7 @@ def whisper_voice_command(command_text: str) -> Dict[str, Any]:
 
 
 @register_plugin(
-    name="voice_to_neuro",
+    name="voice_to_aether",
     description="Convert natural voice input to AetherraCode commands",
     capabilities=["voice_conversion", "aethercode_generation", "natural_language"],
     version="1.0.0",

@@ -52,7 +52,7 @@ The issue was caused by multiple import path problems throughout the codebase:
 
 **Changes:**
 - Added `create_interpreter`, `create_memory_system`, `create_parser` exports
-- Fixed class name from `DebugSystem` to `NeuroDebugSystem`
+- Fixed class name from `DebugSystem` to `aetherDebugSystem`
 - Fixed class name from `EnhancedInterpreter` to `EnhancedaetherraInterpreter`
 - Fixed memory system imports and class names
 - Added placeholder for missing `ask_ai` function

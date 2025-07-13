@@ -27,7 +27,7 @@ Comprehensive analysis of all import statements and dependencies across the aeth
 - **`llama-cpp-python>=0.2.0`** - ✅ Used in `core/multi_llm_manager.py` (optional import)
 
 ### **Optional UI Frameworks**
-- **`PySide6>=6.5.0`** - ✅ Used in `ui/Lyrixa_gui.py` and `ui/neuro_ui.py` (optional import)
+- **`PySide6>=6.5.0`** - ✅ Used in `ui/Lyrixa_gui.py` and `ui/aether_ui.py` (optional import)
 - **`PyQt6>=6.5.0`** - ✅ Used as fallback in `ui/Lyrixa_gui.py` (optional import)
 
 ---

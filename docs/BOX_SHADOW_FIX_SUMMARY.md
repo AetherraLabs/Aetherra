@@ -11,7 +11,7 @@ Successfully removed all instances of `box-shadow` properties from the Qt styles
 - **Total instances removed**: 21 `box-shadow: none !important;` properties
 - **Files modified**: 1 (Lyrixa.py)
 - **Methods affected**:
-  - `apply_dark_theme_to_neurochat()`
+  - `apply_dark_theme_to_aetherchat()`
   - `apply_dark_theme_recursive()`
   - `apply_delayed_chat_styling()`
   - `create_embedded_chat()`
@@ -33,7 +33,7 @@ These files are for web use only and do not affect the desktop Qt application.
 ## Result
 🎉 **SUCCESS**: The "Unknown property box-shadow" warnings have been completely eliminated from the LyrixaAI Assistant while preserving all functionality and dark theme styling.
 
-The NeuroChat interface remains:
+The aetherChat interface remains:
 - ✅ Fully dark mode
 - ✅ No chat bubbles
 - ✅ Compact, professional spacing

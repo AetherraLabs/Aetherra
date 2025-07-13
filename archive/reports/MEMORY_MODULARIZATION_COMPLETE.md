@@ -107,7 +107,7 @@ data/memory/                 # Organized data storage
 
 ### Phase 1: Backward Compatibility (COMPLETE) ✅
 - All existing code continues to work unchanged
-- `NeuroMemory` class powered by new modular system internally
+- `aetherMemory` class powered by new modular system internally
 - Legacy file formats automatically migrated
 - No action required from users
 
@@ -127,9 +127,9 @@ data/memory/                 # Organized data storage
 
 ### Existing Code (No Changes Required)
 ```python
-from core.memory import NeuroMemory
+from core.memory import aetherMemory
 
-memory = NeuroMemory()  # Now uses modular system internally
+memory = aetherMemory()  # Now uses modular system internally
 memory.remember("Test memory", ["test"], "example")
 results = memory.recall(tags=["test"])
 ```

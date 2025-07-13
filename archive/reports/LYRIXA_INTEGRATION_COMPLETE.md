@@ -40,7 +40,7 @@ The Aetherra project has been streamlined with a single, powerful Lyrixainterfac
 
 ### **AI Chat Integration**
 - **Required Component**: Aetherra Chat Router
-- **Built-in Chat**: Custom embedded interface if NeuroChat unavailable
+- **Built-in Chat**: Custom embedded interface if aetherChat unavailable
 - **Personalities**: Default, Mentor, Sassy, Dev-Focused
 - **Real-time Interaction**: Direct chat with AI assistant
 

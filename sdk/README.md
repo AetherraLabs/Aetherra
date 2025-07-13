@@ -6,7 +6,7 @@ The Aetherra Plugin SDK lets you extend the language with intelligent, modular c
 
 A plugin is a Python file that registers new commands into the Aetherra runtime. These commands can be called from `.aether` files like:
 
-```neuro
+```aether
 plugin: whisper.transcribe "meeting.wav"
 plugin: git.commit "Refactored memory engine"
 plugin: example.calculate "2 + 3 * 4"
@@ -144,13 +144,13 @@ def analyze(data: str, method: str = "basic") -> Dict[str, Any]:
 ## 🎯 Plugin Usage in .aether Files
 
 ### Basic Syntax
-```neuro
+```aether
 plugin: plugin_name.function_name "argument"
 plugin: plugin_name.function_name arg1 arg2 arg3
 ```
 
 ### Examples
-```neuro
+```aether
 # Voice transcription
 plugin: whisper.transcribe "meeting_audio.wav"
 
@@ -269,12 +269,12 @@ def memory_aware_function(data: str) -> Dict[str, Any]:
    ```
 
 3. **Test in .aether code:**
-   ```neuro
+   ```aether
    plugin: my_plugin.my_function "test data" "custom value"
    ```
 
 4. **Check plugin is loaded:**
-   ```neuro
+   ```aether
    system: list_plugins
    ```
 

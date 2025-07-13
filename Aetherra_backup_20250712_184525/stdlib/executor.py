@@ -406,9 +406,9 @@ class ExecutorPlugin:
 
         try:
             # Determine command type and execute accordingly
-            if command.startswith("neuro:"):
+            if command.startswith("aether:"):
                 # AetherraCode-specific command
-                result = self._execute_neuro_command(command[6:], context)
+                result = self._execute_aether_command(command[6:], context)
             elif command.startswith("sys:"):
                 # System command
                 result = self._execute_system_command(command[4:], context)
@@ -417,7 +417,7 @@ class ExecutorPlugin:
                 result = self._execute_python_code(command[7:], context)
             else:
                 # Default: treat as AetherraCode command
-                result = self._execute_neuro_command(command, context)
+                result = self._execute_aether_command(command, context)
 
             execution_record["completed_at"] = datetime.now()
             execution_record["result"] = result
@@ -434,7 +434,7 @@ class ExecutorPlugin:
             self.execution_history.append(execution_record)
             raise e
 
-    def _execute_neuro_command(self, command: str, context: Dict[str, Any]) -> str:
+    def _execute_aether_command(self, command: str, context: Dict[str, Any]) -> str:
         """Execute a AetherraCode-specific command"""
         # This would integrate with the main AetherraCode interpreter
         # For now, return a mock response

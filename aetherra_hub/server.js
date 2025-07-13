@@ -36,12 +36,12 @@ let plugins = [
         tags: ['audio', 'transcription', 'nlp', 'consciousness'],
         downloads: 45200,
         rating: 4.8,
-        author: 'neuro_audio_team',
+        author: 'aether_audio_team',
         createdAt: '2025-01-15T10:30:00Z',
         updatedAt: '2025-06-20T14:22:00Z',
         size: '2.3MB',
         license: 'MIT',
-        repository: 'https://github.com/neuro_audio_team/transcriber',
+        repository: 'https://github.com/aether_audio_team/transcriber',
         dependencies: ['aetherra-core>=2.0.0'],
         featured: true
     },
@@ -76,7 +76,7 @@ let plugins = [
         size: '3.1MB',
         license: 'GPL-3.0',
         repository: 'https://github.com/consciousness_lab/reflector',
-        dependencies: ['aetherra-core>=2.1.0', 'neuro-analytics>=1.0.0'],
+        dependencies: ['aetherra-core>=2.1.0', 'aether-analytics>=1.0.0'],
         featured: true
     },
     {

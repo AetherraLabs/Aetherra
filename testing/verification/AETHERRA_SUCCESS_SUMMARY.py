@@ -25,7 +25,7 @@ def main():
     print("   • Lyrixa → Lyrixa: ✅ COMPLETE")
     print("   • AetherraChat → Lyrixa Assistant: ✅ COMPLETE")
     print("   • File extensions: .aether → .aether: ✅ COMPLETE")
-    print("   • CLI commands: neuro → lyrixa: ✅ COMPLETE")
+    print("   • CLI commands: aether → lyrixa: ✅ COMPLETE")
     print()
 
     print("✅ KEY COMPONENTS VERIFIED:")

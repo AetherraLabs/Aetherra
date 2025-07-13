@@ -37,7 +37,7 @@ aetherra v1.0 has been successfully reorganized into a clean, professional file 
 #### **Test Files → `tests/`**
 - ✅ `test_grammar_fix.py` → `tests/test_grammar_fix.py`
 - ✅ `test_multi_llm_integration.py` → `tests/test_multi_llm_integration.py`
-- ✅ `test_neuro_parser.py` → `tests/test_neuro_parser.py`
+- ✅ `test_aether_parser.py` → `tests/test_aether_parser.py`
 - ✅ `test_playground_components.py` → `tests/test_playground_components.py`
 - ✅ `test_stdlib_integration.py` → `tests/test_stdlib_integration.py`
 

@@ -62,7 +62,7 @@ if memory.pattern("recurring plugin error"):
 - **Memory-Driven Justification**: `justify_self_editing()`
 - **Pattern Recognition**: Detect recurring issues and improvement opportunities
 
-### Enhanced UI (`ui/neuro_ui.py`)
+### Enhanced UI (`ui/aether_ui.py`)
 - **Pending Fixes Panel**: Visual management of proposed changes
 - **Self-Edit Controls**: Safety toggles and workflow management
 - **Enhanced Suggestions**: Context-aware recommendations including self-editing

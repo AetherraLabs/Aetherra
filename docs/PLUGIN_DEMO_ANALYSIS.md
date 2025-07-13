@@ -85,7 +85,7 @@ All created plugins include:
 
 The demo file will now work properly with these corrections:
 
-```neuro
+```aether
 # These commands now have working implementations:
 plugin: search_query "Self-evolving AI systems in programming"
 plugin: memory_clear "short_term"

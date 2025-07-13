@@ -14,7 +14,7 @@ analyze "filename.py"                 # Deep analysis of loaded code
 ```aetherra
 refactor "filename.py" "target"       # Suggest improvements for specific target
 refactor "core/memory.py" "performance optimization"
-refactor "ui/neuro_ui.py" "better error handling"
+refactor "ui/aether_ui.py" "better error handling"
 ```
 
 ### 3. Review and Apply Changes

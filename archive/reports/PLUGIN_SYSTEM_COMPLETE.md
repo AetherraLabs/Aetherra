@@ -32,14 +32,14 @@ We have successfully implemented a comprehensive and powerful plugin system for 
 ### **Official Plugins (4 New + Enhanced)**
 
 #### 1. **Git Plugin** (`git_plugin.py`)
-```neuro
+```aether
 plugin: git_status
 plugin: git_commit "Added new feature"
 plugin: git_log 5
 ```
 
 #### 2. **File Tools** (`file_tools.py`)
-```neuro
+```aether
 plugin: create_file "utils.py" "def hello(): pass"
 plugin: read_file "config.json"
 plugin: list_files "src" "*.py"
@@ -47,7 +47,7 @@ plugin: delete_file "temp.txt" true
 ```
 
 #### 3. **Local LLM** (`local_llm.py`)
-```neuro
+```aether
 plugin: ollama_chat "llama2" "Explain Python decorators"
 plugin: ollama_list_models
 plugin: huggingface_local "gpt2" "Once upon a time"
@@ -55,7 +55,7 @@ plugin: llamacpp_chat "model.gguf" "Hello world"
 ```
 
 #### 4. **Enhanced Whisper** (`whisper.py`)
-```neuro
+```aether
 plugin: whisper_transcribe "meeting.wav"
 plugin: whisper_voice_command "remember to commit changes"
 ```
@@ -113,7 +113,7 @@ plugin: whisper_voice_command "remember to commit changes"
 ## 🎯 **Real-World Usage Examples:**
 
 ### **Development Workflow**
-```neuro
+```aether
 # Check project status
 plugin: git_status
 
@@ -128,7 +128,7 @@ plugin: ollama_chat "codellama" "Generate a simple chatbot class in Python"
 ```
 
 ### **Audio Processing Pipeline**
-```neuro
+```aether
 # Transcribe meeting recording
 plugin: whisper_transcribe "team_meeting.wav"
 
@@ -140,7 +140,7 @@ plugin: create_file "meeting_notes.md" $transcription_result
 ```
 
 ### **File Management**
-```neuro
+```aether
 # List all Python files
 plugin: list_files "src" "*.py"
 

@@ -1,6 +1,6 @@
-# 🔒 SSL Certificate Fix Guide for neuro-code.dev
+# 🔒 SSL Certificate Fix Guide for aether-code.dev
 
-**Issue**: "Your connection is not private" error when accessing https://neuro-code.dev
+**Issue**: "Your connection is not private" error when accessing https://aether-code.dev
 
 ## 🔍 Problem Diagnosis
 
@@ -17,7 +17,7 @@ Based on your setup, the SSL certificate issue is likely caused by:
 ### Step 1: Fix CNAME Configuration
 
 **Current Issue**: You have conflicting CNAME files:
-- `CNAME` (root): `neuro-code.dev`
+- `CNAME` (root): `aether-code.dev`
 - `website/CNAME`: `aetherra.dev` (missing hyphen)
 
 **Action Required**: Choose one domain and update all CNAME files consistently.
@@ -26,7 +26,7 @@ Based on your setup, the SSL certificate issue is likely caused by:
 
 1. **Go to your GitHub repository settings**
    - Navigate to: `Settings` > `Pages`
-   - Under "Custom domain", ensure it shows: `neuro-code.dev`
+   - Under "Custom domain", ensure it shows: `aether-code.dev`
    - Check "Enforce HTTPS" option
 
 2. **If SSL certificate isn't available yet**:
@@ -60,10 +60,10 @@ Values:
 
 ### Update CNAME Files (Choose one domain):
 
-**Option A**: Use `neuro-code.dev` (recommended - matches your current setup)
+**Option A**: Use `aether-code.dev` (recommended - matches your current setup)
 ```bash
 # Update website CNAME to match root CNAME
-echo "neuro-code.dev" > website/CNAME
+echo "aether-code.dev" > website/CNAME
 ```
 
 **Option B**: Use `aetherra.dev` (no hyphen)
@@ -95,10 +95,10 @@ git push origin main
 ### Check SSL Certificate Status:
 ```bash
 # Test SSL certificate
-curl -I https://neuro-code.dev
+curl -I https://aether-code.dev
 
 # Check certificate details
-openssl s_client -connect neuro-code.dev:443 -servername neuro-code.dev
+openssl s_client -connect aether-code.dev:443 -servername aether-code.dev
 ```
 
 ### Verify DNS Propagation:
@@ -145,7 +145,7 @@ After implementing these fixes:
 
 ## 📋 Next Steps
 
-1. **Choose your preferred domain** (`neuro-code.dev` or `aetherra.dev`)
+1. **Choose your preferred domain** (`aether-code.dev` or `aetherra.dev`)
 2. **Update CNAME files** to use consistent domain
 3. **Commit and push changes**
 4. **Check GitHub Pages settings** in repository

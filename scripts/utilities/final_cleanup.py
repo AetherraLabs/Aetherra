@@ -80,7 +80,7 @@ remaining_docs = [
     "Lyrixa_LAYOUT_OPTIMIZATION_COMPLETE.md",
     "Lyrixa_V2_DOCUMENTATION.md",
     "Lyrixa_V2_ENHANCEMENT_COMPLETE.md",
-    "NEURO_UI_CLEANUP_SUMMARY.md",
+    "aether_UI_CLEANUP_SUMMARY.md",
     "OPENAI_INIT_FIX.md",
     "OPTIMIZATION_GUIDE.md",
     "PERFORMANCE_ENHANCEMENT_PLAN.md",
