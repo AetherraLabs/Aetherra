@@ -149,13 +149,25 @@ class MultiLLMManager:
                 }
             )
 
-        # Ollama models (local)
+        # Ollama models (local) - using exact model names from ollama list
         if LLMProvider.OLLAMA in self.providers:
             self.model_configs.update(
                 {
                     "mistral": LLMConfig(
                         provider=LLMProvider.OLLAMA,
-                        model_name="mistral",
+                        model_name="mistral:latest",  # Exact name
+                        base_url="http://localhost:11434",
+                        context_window=4096,
+                    ),
+                    "llama3": LLMConfig(
+                        provider=LLMProvider.OLLAMA,
+                        model_name="llama3:latest",  # Exact name
+                        base_url="http://localhost:11434",
+                        context_window=8192,
+                    ),
+                    "llama3.2:3b": LLMConfig(
+                        provider=LLMProvider.OLLAMA,
+                        model_name="llama3.2:3b",  # Exact name
                         base_url="http://localhost:11434",
                         context_window=4096,
                     ),
@@ -367,12 +379,27 @@ class OllamaProvider:
     def is_model_available(self, config: LLMConfig) -> bool:
         """Check if model is available in Ollama"""
         try:
-            models = self.client.list()
-            available_models = [
-                model["name"].split(":")[0] for model in models["models"]
-            ]
-            return config.model_name in available_models
-        except Exception:
+            models_response = self.client.list()
+            available_models = []
+
+            # Get both full names and base names for matching
+            for model in models_response.models:  # Use .models instead of ["models"]
+                if hasattr(model, "model") and model.model:
+                    full_name = model.model  # Use .model instead of ["name"]
+                    base_name = full_name.split(":")[0]
+                    available_models.extend([full_name, base_name])
+
+            # Debug: print available models
+            logger.info(f"🔍 Ollama available models: {available_models}")
+
+            # Check if the config model name matches any available model
+            result = config.model_name in available_models
+            logger.info(
+                f"🔍 Checking '{config.model_name}' -> {'✅ Available' if result else '❌ Not found'}"
+            )
+            return result
+        except Exception as e:
+            logger.warning(f"⚠️ Error checking Ollama model availability: {e}")
             return False
 
     async def generate(self, config: LLMConfig, prompt: str, **kwargs) -> str:

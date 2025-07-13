@@ -561,3 +561,304 @@ Top Categories: {", ".join([f"{cat}({count})" for cat, count in patterns["most_f
                 tags=insight.get("tags", ["insight"]),
                 category="insights",
             )
+
+
+# Additional memory classes for compatibility
+
+
+class BasicMemory:
+    """Basic memory implementation for simple storage needs"""
+
+    def __init__(self):
+        self.memories = []
+        self._patterns = {}
+
+    @property
+    def memory(self):
+        """Property to access memories (for compatibility)"""
+        return self.memories
+
+    def store(self, memory):
+        """Store a memory entry"""
+        self.memories.append(memory)
+
+    def retrieve(self, query, limit=None):
+        """Retrieve memories based on query"""
+        # Simple text matching for now
+        results = []
+        for memory in self.memories:
+            if isinstance(memory, dict):
+                memory_text = str(memory.get("text", ""))
+            else:
+                memory_text = str(memory)
+
+            if query.lower() in memory_text.lower():
+                results.append(memory)
+
+        if limit:
+            results = results[:limit]
+
+        return results
+
+    def remember(self, text, tags=None, category="general"):
+        """Store text with metadata"""
+        memory_entry = {
+            "text": text,
+            "timestamp": str(datetime.now()),
+            "tags": tags or [],
+            "category": category,
+        }
+        self.store(memory_entry)
+        return memory_entry
+
+    def recall(self, tags=None, category=None, limit=None, time_filter=None):
+        """Recall memories with filters"""
+        results = []
+        for memory in self.memories:
+            if not isinstance(memory, dict):
+                continue
+
+            # Apply filters
+            if tags and not any(tag in memory.get("tags", []) for tag in tags):
+                continue
+            if category and memory.get("category") != category:
+                continue
+
+            results.append(memory["text"])
+
+        if limit:
+            results = results[:limit]
+
+        return results
+
+    def search(self, query, case_sensitive=False):
+        """Search memories"""
+        if not case_sensitive:
+            query = query.lower()
+
+        results = []
+        for memory in self.memories:
+            memory_text = str(memory)
+            if not case_sensitive:
+                memory_text = memory_text.lower()
+
+            if query in memory_text:
+                results.append(memory)
+
+        return results
+
+    def get_tags(self):
+        """Get all unique tags"""
+        tags = set()
+        for memory in self.memories:
+            if isinstance(memory, dict) and "tags" in memory:
+                tags.update(memory["tags"])
+        return list(tags)
+
+    def get_categories(self):
+        """Get all unique categories"""
+        categories = set()
+        for memory in self.memories:
+            if isinstance(memory, dict) and "category" in memory:
+                categories.add(memory["category"])
+        return list(categories)
+
+    def get_memory_summary(self):
+        """Get memory summary statistics"""
+        return {
+            "total_memories": len(self.memories),
+            "categories": len(self.get_categories()),
+            "tags": len(self.get_tags()),
+        }
+
+    def patterns(self):
+        """Get stored patterns"""
+        return self._patterns
+
+    def get_memories_by_timeframe(self, hours):
+        """Get memories from last N hours"""
+        cutoff = datetime.now() - timedelta(hours=hours)
+        results = []
+
+        for memory in self.memories:
+            if isinstance(memory, dict) and "timestamp" in memory:
+                try:
+                    mem_time = datetime.fromisoformat(memory["timestamp"])
+                    if mem_time >= cutoff:
+                        results.append(memory)
+                except Exception:
+                    continue
+
+        return results
+
+    def delete_memories_by_tag(self, tag):
+        """Delete memories with specific tag"""
+        original_count = len(self.memories)
+        self.memories = [
+            m
+            for m in self.memories
+            if not (isinstance(m, dict) and tag in m.get("tags", []))
+        ]
+        return original_count - len(self.memories)
+
+    def get_memory_stats(self):
+        """Get detailed memory statistics"""
+        stats = {
+            "total": len(self.memories),
+            "by_category": defaultdict(int),
+            "by_tag": defaultdict(int),
+        }
+
+        for memory in self.memories:
+            if isinstance(memory, dict):
+                category = memory.get("category", "unknown")
+                stats["by_category"][category] += 1
+
+                for tag in memory.get("tags", []):
+                    stats["by_tag"][tag] += 1
+
+        return stats
+
+    def temporal_analysis(self, timeframe=None, granularity="day"):
+        """Perform temporal analysis on memories"""
+        analysis = {
+            "timeframe": timeframe,
+            "granularity": granularity,
+            "memory_count": len(self.memories),
+            "patterns": [],
+        }
+
+        if timeframe:
+            # Filter memories by timeframe
+            cutoff = datetime.now() - timedelta(days=timeframe)
+            recent_memories = []
+
+            for memory in self.memories:
+                if isinstance(memory, dict) and "timestamp" in memory:
+                    try:
+                        mem_time = datetime.fromisoformat(memory["timestamp"])
+                        if mem_time >= cutoff:
+                            recent_memories.append(memory)
+                    except Exception:
+                        continue
+
+            analysis["recent_memory_count"] = len(recent_memories)
+            analysis["memories"] = recent_memories
+        else:
+            analysis["memories"] = self.memories
+
+        return analysis
+
+
+class PatternAnalyzer:
+    """Pattern analysis for memory systems"""
+
+    def __init__(self, memory_system=None):
+        self.memory_system = memory_system
+        self.patterns = {}
+
+    def analyze_patterns(self, memories):
+        """Analyze patterns in memories"""
+        patterns = {
+            "frequency": defaultdict(int),
+            "temporal": [],
+            "semantic": [],
+        }
+
+        for memory in memories:
+            if isinstance(memory, dict):
+                # Frequency analysis
+                category = memory.get("category", "unknown")
+                patterns["frequency"][category] += 1
+
+                # Temporal patterns
+                if "timestamp" in memory:
+                    patterns["temporal"].append(
+                        {"timestamp": memory["timestamp"], "category": category}
+                    )
+
+        return patterns
+
+    def detect_recurring_themes(self, memories):
+        """Detect recurring themes in memories"""
+        themes = defaultdict(int)
+
+        for memory in memories:
+            if isinstance(memory, dict):
+                text = memory.get("text", "")
+                words = text.lower().split()
+
+                # Simple word frequency as theme detection
+                for word in words:
+                    if len(word) > 3:  # Skip short words
+                        themes[word] += 1
+
+        # Return top themes
+        sorted_themes = sorted(themes.items(), key=lambda x: x[1], reverse=True)
+        return dict(sorted_themes[:10])  # Top 10 themes
+
+    def get_pattern_summary(self):
+        """Get summary of detected patterns"""
+        return {
+            "total_patterns": len(self.patterns),
+            "pattern_types": list(self.patterns.keys()),
+            "analysis_timestamp": str(datetime.now()),
+        }
+
+    def detect_text_patterns(self, min_frequency=2, timeframe_days=None):
+        """Detect text patterns in memories"""
+        patterns = defaultdict(int)
+
+        memories_to_analyze = self.memory_system.memories if self.memory_system else []
+
+        # Filter by timeframe if specified
+        if timeframe_days:
+            cutoff = datetime.now() - timedelta(days=timeframe_days)
+            filtered_memories = []
+
+            for memory in memories_to_analyze:
+                if isinstance(memory, dict) and "timestamp" in memory:
+                    try:
+                        mem_time = datetime.fromisoformat(memory["timestamp"])
+                        if mem_time >= cutoff:
+                            filtered_memories.append(memory)
+                    except Exception:
+                        continue
+            memories_to_analyze = filtered_memories
+
+        # Analyze text patterns
+        for memory in memories_to_analyze:
+            if isinstance(memory, dict):
+                text = memory.get("text", "")
+                words = text.lower().split()
+
+                # Count word patterns
+                for word in words:
+                    if len(word) > 3:  # Skip short words
+                        patterns[word] += 1
+
+                # Count phrase patterns (2-word combinations)
+                for i in range(len(words) - 1):
+                    phrase = f"{words[i]} {words[i + 1]}"
+                    if len(phrase) > 6:  # Skip short phrases
+                        patterns[phrase] += 1
+
+        # Filter by minimum frequency
+        frequent_patterns = {
+            pattern: count
+            for pattern, count in patterns.items()
+            if count >= min_frequency
+        }
+
+        # Sort by frequency
+        sorted_patterns = sorted(
+            frequent_patterns.items(), key=lambda x: x[1], reverse=True
+        )
+
+        return {
+            "patterns": dict(sorted_patterns),
+            "total_patterns": len(frequent_patterns),
+            "min_frequency": min_frequency,
+            "timeframe_days": timeframe_days,
+            "analysis_timestamp": str(datetime.now()),
+        }

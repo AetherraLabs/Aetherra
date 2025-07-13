@@ -643,6 +643,91 @@ class LyrixaIntelligence:
 
         return recommendations
 
+    def store_memory_pattern(
+        self, pattern_data: Dict[str, Any], pattern_type: str = "plugin"
+    ) -> bool:
+        """Store a memory pattern in the intelligence system.
+
+        Args:
+            pattern_data: Data associated with the pattern (can contain pattern info)
+            pattern_type: Type of pattern (e.g., 'plugin', 'workflow', 'behavior')
+
+        Returns:
+            bool: True if pattern was stored successfully
+        """
+        try:
+            # Extract pattern type from data if available
+            if isinstance(pattern_data, dict) and "pattern_type" in pattern_data:
+                pattern_type = pattern_data["pattern_type"]
+            elif isinstance(pattern_data, dict) and "source" in pattern_data:
+                pattern_type = f"plugin_{pattern_data['source']}"
+
+            # Create a unique pattern ID
+            pattern_signature = f"{pattern_type}_{str(pattern_data)}"
+            pattern_id = f"{pattern_type}_{hash(pattern_signature) % 100000}"
+
+            # Store or update the pattern
+            if pattern_id in self.memory_patterns:
+                pattern = self.memory_patterns[pattern_id]
+                pattern["usage_count"] += 1
+                pattern["last_updated"] = datetime.now().isoformat()
+                pattern["data"] = pattern_data  # Update with latest data
+            else:
+                self.memory_patterns[pattern_id] = {
+                    "pattern_type": pattern_type,
+                    "data": pattern_data,
+                    "usage_count": 1,
+                    "success_rate": 0.8,  # Start with high success rate for plugin patterns
+                    "created": datetime.now().isoformat(),
+                    "last_updated": datetime.now().isoformat(),
+                }
+
+            # Update metrics
+            self.cognitive_metrics["pattern_recognitions"] += 1
+            self.cognitive_metrics["learning_iterations"] += 1
+
+            # Save to disk
+            self._save_intelligence_data()
+
+            logger.info(f"✅ Stored {pattern_type} pattern: {pattern_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"❌ Failed to store memory pattern: {e}")
+            return False
+
+    def add_memory(self, memory_type: str, memory_data: Dict[str, Any]) -> bool:
+        """Add a memory entry to the intelligence system.
+
+        This is an alias for store_memory_pattern for backward compatibility.
+
+        Args:
+            memory_type: Type of memory (e.g., 'plugin', 'workflow', 'behavior')
+            memory_data: Data associated with the memory
+
+        Returns:
+            bool: True if memory was added successfully
+        """
+        return self.store_memory_pattern(memory_data, memory_type)
+
+    def get_memory_patterns(self, pattern_type: Optional[str] = None) -> Dict[str, Any]:
+        """Get stored memory patterns, optionally filtered by type.
+
+        Args:
+            pattern_type: Optional pattern type to filter by
+
+        Returns:
+            Dict containing matching memory patterns
+        """
+        if pattern_type is None:
+            return self.memory_patterns
+
+        return {
+            pattern_id: pattern_data
+            for pattern_id, pattern_data in self.memory_patterns.items()
+            if pattern_data.get("pattern_type") == pattern_type
+        }
+
 
 # Global intelligence instance
 _intelligence_instance = None

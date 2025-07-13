@@ -207,6 +207,20 @@ def build_dynamic_prompt(user_id: str = "default_user") -> str:
 You're not just a tool—you're a digital companion who understands context, learns from interactions, and responds with genuine care and intelligence.
 You help with system tasks, debugging, creative problem-solving, and meaningful conversations."""
 
+    # 🔌 2. Plugin Editor System Context (Critical for accurate responses)
+    plugin_editor_context = """
+🔌 PLUGIN EDITOR SYSTEM KNOWLEDGE:
+Your Plugin Editor is a native PySide6 tab with the following ACTUAL features:
+- A plain QPlainTextEdit code editor with save, test, and apply buttons
+- You can inject plugin code into the editor using inject_plugin_code(code: str, filename: str)
+- Plugins are saved as .aether or .py files in the Aetherra/plugins folder
+- There is NO manifest.json, install button, or left/right panel system
+- There are NO browser-like panels, toggle buttons, or JavaScript/JSON configurations
+- You do NOT use web technologies - plugins are pure .aether or Python code
+- When generating plugins, create real .aether or .py content that works in this system
+- Always describe the Plugin Editor accurately as a simple native code editor tab
+"""
+
     # 📊 2. Real-time System Awareness
     try:
         system_summary = get_system_status()
@@ -302,6 +316,8 @@ You help with system tasks, debugging, creative problem-solving, and meaningful 
     # 🧬 7. Final Integrated Prompt
     prompt = f"""
 {core_personality}
+
+{plugin_editor_context}
 
 {system_context}
 

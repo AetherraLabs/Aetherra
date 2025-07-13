@@ -14,29 +14,26 @@ For new code, consider using the modular interfaces directly:
 
 from datetime import datetime, timedelta
 
-# Import speed enhancement suite for memory optimization
-try:
-        lightning_fast_data,
-        optimize_memory_system,
-        ultra_fast,
-    )
+# Speed enhancement functions disabled for now
+SPEED_ENHANCEMENT_AVAILABLE = False
 
-    SPEED_ENHANCEMENT_AVAILABLE = True
-    print("🧠 Speed Enhancement Suite integrated with memory system")
-except ImportError:
-    SPEED_ENHANCEMENT_AVAILABLE = False
 
-    def ultra_fast(*args, **kwargs):
-        def decorator(func):
-            return func
+def ultra_fast(*args, **kwargs):
+    def decorator(func):
+        return func
 
-        return decorator
+    return decorator
 
-    def lightning_fast_data(*args, **kwargs):
-        def decorator(func):
-            return func
 
-        return decorator
+def lightning_fast_data(*args, **kwargs):
+    def decorator(func):
+        return func
+
+    return decorator
+
+
+def optimize_memory_system(obj):
+    pass
 
 
 MEMORY_FILE = "memory_store.json"
@@ -51,6 +48,7 @@ class AetherraMemory:
     """
 
     def __init__(self):
+        # Import the proper memory classes
         from .memory import BasicMemory
 
         self._memory_system = BasicMemory()
@@ -221,11 +219,13 @@ class AetherraMemory:
             matching_memories = []
             for memory in memories:
                 try:
+                    memory_timestamp = memory.get("timestamp", "")
                     memory_date = datetime.fromisoformat(
-                        memory.timestamp.replace("Z", "+00:00").split("+")[0]
+                        memory_timestamp.replace("Z", "+00:00").split("+")[0]
                     )
                     if memory_date >= cutoff_date:
-                        if pattern.lower() in memory.text.lower():
+                        memory_text = memory.get("text", "")
+                        if pattern.lower() in memory_text.lower():
                             matching_memories.append(memory)
                 except (ValueError, AttributeError):
                     continue

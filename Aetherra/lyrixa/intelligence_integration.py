@@ -44,19 +44,24 @@ class LyrixaIntelligenceStack:
     by integrating all core Aetherra AI OS system plugins and modules.
     """
 
-    def __init__(self, workspace_path: str, aether_runtime=None):
+    def __init__(self, workspace_path: str, aether_runtime=None, gui_interface=None):
         self.workspace_path = workspace_path
         self.aether_runtime = aether_runtime or (
             AetherRuntime() if AetherRuntime else None
         )
+        self.gui_interface = gui_interface  # Store GUI interface reference
 
-        # Initialize conversation manager
+        # Initialize conversation manager with GUI interface
         if CONVERSATION_MANAGER_AVAILABLE and LyrixaConversationManager:
             try:
                 self.conversation_manager = LyrixaConversationManager(
-                    workspace_path=workspace_path, aether_runtime=self.aether_runtime
+                    workspace_path=workspace_path,
+                    aether_runtime=self.aether_runtime,
+                    gui_interface=gui_interface,  # Pass GUI interface to conversation manager
                 )
-                print("✅ LLM-powered conversation manager initialized")
+                print(
+                    "✅ LLM-powered conversation manager initialized with GUI integration"
+                )
             except Exception as e:
                 print(f"⚠️ Failed to initialize conversation manager: {e}")
                 self.conversation_manager = None
@@ -75,12 +80,36 @@ class LyrixaIntelligenceStack:
 
         # Agent analytics for dashboard
         self.agent_analytics = {
-            "LyrixaAI": {"success_rate": 0.95, "avg_response_time": 0.8, "total_requests": 24},
-            "GoalAgent": {"success_rate": 0.98, "avg_response_time": 0.6, "total_requests": 12},
-            "PluginAgent": {"success_rate": 0.92, "avg_response_time": 1.2, "total_requests": 8},
-            "ReflectionAgent": {"success_rate": 0.96, "avg_response_time": 0.9, "total_requests": 6},
-            "EscalationAgent": {"success_rate": 1.0, "avg_response_time": 0.5, "total_requests": 2},
-            "SelfEvaluationAgent": {"success_rate": 0.94, "avg_response_time": 1.1, "total_requests": 4}
+            "LyrixaAI": {
+                "success_rate": 0.95,
+                "avg_response_time": 0.8,
+                "total_requests": 24,
+            },
+            "GoalAgent": {
+                "success_rate": 0.98,
+                "avg_response_time": 0.6,
+                "total_requests": 12,
+            },
+            "PluginAgent": {
+                "success_rate": 0.92,
+                "avg_response_time": 1.2,
+                "total_requests": 8,
+            },
+            "ReflectionAgent": {
+                "success_rate": 0.96,
+                "avg_response_time": 0.9,
+                "total_requests": 6,
+            },
+            "EscalationAgent": {
+                "success_rate": 1.0,
+                "avg_response_time": 0.5,
+                "total_requests": 2,
+            },
+            "SelfEvaluationAgent": {
+                "success_rate": 0.94,
+                "avg_response_time": 1.1,
+                "total_requests": 4,
+            },
         }
 
         # System workflow status
@@ -111,6 +140,36 @@ class LyrixaIntelligenceStack:
         self.last_intelligence_update = None
 
         # Initialize plugin system integration with graceful fallback
+        # Initialize intelligence system first
+        try:
+            # Import directly from the intelligence module file
+            import importlib.util
+
+            intelligence_path = Path(__file__).parent / "intelligence.py"
+            spec = importlib.util.spec_from_file_location(
+                "intelligence", intelligence_path
+            )
+            intelligence_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(intelligence_module)
+
+            self.intelligence = intelligence_module.LyrixaIntelligence(workspace_path)
+            print("✅ Intelligence system connected")
+        except Exception as e:
+            print(f"⚠️ Intelligence system not available: {e}")
+            self.intelligence = None
+
+        # Initialize plugin-intelligence bridge for plugin awareness
+        try:
+            from Aetherra.lyrixa.core.plugin_intelligence_bridge import (
+                PluginIntelligenceBridge,
+            )
+
+            self.plugin_bridge = PluginIntelligenceBridge(self.intelligence)
+            print("✅ Plugin-Intelligence Bridge initialized")
+        except ImportError as e:
+            print(f"⚠️ Plugin-Intelligence Bridge not available: {e}")
+            self.plugin_bridge = None
+
         self.plugin_manager = None
         self.self_improvement_dashboard = None
         self.aetherra_hub_client = None
@@ -119,7 +178,10 @@ class LyrixaIntelligenceStack:
         try:
             # Try to connect to enhanced plugin manager
             try:
-                from Aetherra.lyrixa.plugins.enhanced_plugin_manager import PluginManager
+                from Aetherra.lyrixa.plugins.enhanced_plugin_manager import (
+                    PluginManager,
+                )
+
                 self.plugin_manager = PluginManager()
                 print("✅ Connected to Enhanced Plugin Manager")
             except ImportError:
@@ -127,7 +189,10 @@ class LyrixaIntelligenceStack:
 
             # Try basic plugin manager as fallback
             try:
-                from Aetherra.core.plugin_manager import PluginManager as BasicPluginManager
+                from Aetherra.core.plugin_manager import (
+                    PluginManager as BasicPluginManager,
+                )
+
                 if not self.plugin_manager:
                     self.plugin_manager = BasicPluginManager()
                     print("✅ Connected to Basic Plugin Manager")
@@ -150,7 +215,10 @@ class LyrixaIntelligenceStack:
         try:
             # Try to connect to enhanced plugin manager
             try:
-                from Aetherra.lyrixa.plugins.enhanced_plugin_manager import PluginManager
+                from Aetherra.lyrixa.plugins.enhanced_plugin_manager import (
+                    PluginManager,
+                )
+
                 self.plugin_manager = PluginManager()
                 print("✅ Connected to Enhanced Plugin Manager")
             except ImportError:
@@ -159,7 +227,10 @@ class LyrixaIntelligenceStack:
 
             # Try to connect to self-improvement dashboard
             try:
-                from Aetherra.lyrixa.self_improvement_dashboard import selfimprovementdashboard
+                from Aetherra.lyrixa.self_improvement_dashboard import (
+                    selfimprovementdashboard,
+                )
+
                 self.self_improvement_dashboard = selfimprovementdashboard()
                 print("✅ Connected to Self-Improvement Dashboard")
             except ImportError:
@@ -169,6 +240,7 @@ class LyrixaIntelligenceStack:
             # Try to connect to AetherHub client
             try:
                 import requests
+
                 # Test AetherHub connection
                 response = requests.get("http://localhost:3001/health", timeout=1)
                 if response.status_code == 200:
@@ -188,23 +260,28 @@ class LyrixaIntelligenceStack:
     def get_real_time_metrics(self) -> Dict[str, Any]:
         """Get comprehensive real-time system metrics for dashboard"""
         try:
-            import psutil
             import time
+
+            import psutil
 
             # Update performance metrics
             cpu_percent = psutil.cpu_percent(interval=0.1)
             memory = psutil.virtual_memory()
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
 
             # Get current timestamp
             current_time = time.time()
 
             # Calculate uptime (initialize start time if not set)
-            if not hasattr(self, '_start_time'):
+            if not hasattr(self, "_start_time"):
                 self._start_time = current_time
             uptime_seconds = current_time - self._start_time
             uptime_hours = uptime_seconds / 3600
-            uptime_str = f"{uptime_hours:.1f}h" if uptime_hours >= 1 else f"{uptime_seconds/60:.1f}m"
+            uptime_str = (
+                f"{uptime_hours:.1f}h"
+                if uptime_hours >= 1
+                else f"{uptime_seconds / 60:.1f}m"
+            )
 
             # Calculate system health scores
             intelligence_health = self._calculate_intelligence_health()
@@ -219,11 +296,18 @@ class LyrixaIntelligenceStack:
             performance_score = overall_health / 100.0
 
             # Get total insights (from cache and workflows)
-            total_insights = len(getattr(self, 'intelligence_cache', {})) + len(getattr(self, 'workflow_history', []))
+            total_insights = len(getattr(self, "intelligence_cache", {})) + len(
+                getattr(self, "workflow_history", [])
+            )
 
             # Calculate recent activity (last 5 minutes)
-            recent_activity = len([w for w in getattr(self, 'workflow_history', [])
-                                 if hasattr(w, 'get') and w.get('end_time', 0) > (current_time - 300)])
+            recent_activity = len(
+                [
+                    w
+                    for w in getattr(self, "workflow_history", [])
+                    if hasattr(w, "get") and w.get("end_time", 0) > (current_time - 300)
+                ]
+            )
 
             # Status message
             status_msg = f"✅ All systems operational\n🔌 Plugin Manager: {'Connected' if self.plugin_manager else 'Disconnected'}\n💾 Cache: {len(getattr(self, 'intelligence_cache', {}))} items"
@@ -236,46 +320,73 @@ class LyrixaIntelligenceStack:
                 "total_insights": total_insights,
                 "recent_activity": recent_activity,
                 "status": status_msg,
-
                 # Additional detailed metrics
                 "intelligence": {
                     "status": "✅ Active",
-                    "modules": len(getattr(self, 'active_modules', [])),
+                    "modules": len(getattr(self, "active_modules", [])),
                     "health": intelligence_health,
-                    "cache_size": len(getattr(self, 'intelligence_cache', {}))
+                    "cache_size": len(getattr(self, "intelligence_cache", {})),
                 },
                 "workflows": {
-                    "active": len(getattr(self, 'active_workflows', {})),
-                    "completed": len(getattr(self, 'workflow_history', [])),
+                    "active": len(getattr(self, "active_workflows", {})),
+                    "completed": len(getattr(self, "workflow_history", [])),
                     "health": workflow_health,
-                    "success_rate": 96.5
+                    "success_rate": 96.5,
                 },
                 "modules": {
-                    "loaded": len(getattr(self, 'active_modules', [])),
+                    "loaded": len(getattr(self, "active_modules", [])),
                     "health": module_health,
-                    "plugin_manager": "✅ Connected" if self.plugin_manager else "⚠️ Disconnected"
+                    "plugin_manager": "✅ Connected"
+                    if self.plugin_manager
+                    else "⚠️ Disconnected",
                 },
                 "performance": {
                     "cpu": cpu_percent,
                     "memory": memory.percent,
-                    "disk": disk.percent if hasattr(disk, 'percent') else 0
+                    "disk": disk.percent if hasattr(disk, "percent") else 0,
                 },
                 "overall_health": overall_health,
                 "agent_analytics": {
                     "agents": {
-                        "LyrixaAI": {"status": "active", "performance": 95.5, "tasks_completed": 847},
-                        "GoalAgent": {"status": "active", "performance": 92.3, "tasks_completed": 234},
-                        "PluginAgent": {"status": "active", "performance": 88.7, "tasks_completed": 156},
-                        "ReflectionAgent": {"status": "active", "performance": 91.2, "tasks_completed": 89},
-                        "EscalationAgent": {"status": "standby", "performance": 94.8, "tasks_completed": 23},
-                        "SelfEvaluationAgent": {"status": "active", "performance": 89.9, "tasks_completed": 112}
+                        "LyrixaAI": {
+                            "status": "active",
+                            "performance": 95.5,
+                            "tasks_completed": 847,
+                        },
+                        "GoalAgent": {
+                            "status": "active",
+                            "performance": 92.3,
+                            "tasks_completed": 234,
+                        },
+                        "PluginAgent": {
+                            "status": "active",
+                            "performance": 88.7,
+                            "tasks_completed": 156,
+                        },
+                        "ReflectionAgent": {
+                            "status": "active",
+                            "performance": 91.2,
+                            "tasks_completed": 89,
+                        },
+                        "EscalationAgent": {
+                            "status": "standby",
+                            "performance": 94.8,
+                            "tasks_completed": 23,
+                        },
+                        "SelfEvaluationAgent": {
+                            "status": "active",
+                            "performance": 89.9,
+                            "tasks_completed": 112,
+                        },
                     },
                     "overall_efficiency": 92.1,
                     "total_interactions": 1461,
-                    "success_rate": 96.3
+                    "success_rate": 96.3,
                 },
                 "timestamp": current_time,
-                "last_update": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(current_time))
+                "last_update": time.strftime(
+                    "%Y-%m-%d %H:%M:%S", time.localtime(current_time)
+                ),
             }
 
         except Exception as e:
@@ -294,7 +405,7 @@ class LyrixaIntelligenceStack:
                 "modules": {"loaded": 0, "health": 0},
                 "performance": {"cpu": 0, "memory": 0, "disk": 0},
                 "overall_health": 0,
-                "agent_analytics": {"agents": {}, "overall_efficiency": 0}
+                "agent_analytics": {"agents": {}, "overall_efficiency": 0},
             }
 
     def _calculate_intelligence_health(self) -> float:
@@ -303,7 +414,7 @@ class LyrixaIntelligenceStack:
             base_health = 85.0
             if self.plugin_manager:
                 base_health += 10.0
-            if hasattr(self, 'intelligence_cache') and self.intelligence_cache:
+            if hasattr(self, "intelligence_cache") and self.intelligence_cache:
                 base_health += 5.0
             return min(base_health, 100.0)
         except:
@@ -312,11 +423,13 @@ class LyrixaIntelligenceStack:
     def _calculate_workflow_health(self) -> float:
         """Calculate workflow system health score"""
         try:
-            if not hasattr(self, 'workflow_history') or not self.workflow_history:
+            if not hasattr(self, "workflow_history") or not self.workflow_history:
                 return 95.0
 
             recent_workflows = self.workflow_history[-10:]
-            success_count = sum(1 for w in recent_workflows if w.get('status') == 'completed')
+            success_count = sum(
+                1 for w in recent_workflows if w.get("status") == "completed"
+            )
             return (success_count / len(recent_workflows)) * 100
         except:
             return 85.0
@@ -325,10 +438,81 @@ class LyrixaIntelligenceStack:
         """Calculate module system health score"""
         try:
             base_health = 80.0
-            active_modules = len(getattr(self, 'active_modules', []))
+            active_modules = len(getattr(self, "active_modules", []))
             return min(base_health + (active_modules * 5), 100.0)
         except:
             return 80.0
+
+    def get_status(self) -> Dict[str, Any]:
+        """Get intelligence system status for GUI display"""
+        try:
+            # Get cognitive metrics from intelligence system if available
+            if hasattr(self, "intelligence") and self.intelligence:
+                cognitive_metrics = getattr(self.intelligence, "cognitive_metrics", {})
+            else:
+                # Default cognitive metrics if intelligence system not available
+                cognitive_metrics = {
+                    "total_decisions": 0,
+                    "successful_predictions": 0,
+                    "pattern_recognitions": 0,
+                    "adaptive_adjustments": 0,
+                    "learning_iterations": 0,
+                }
+
+            # Add system-level status information
+            status = {
+                # Core cognitive metrics that GUI expects
+                "learning_iterations": cognitive_metrics.get("learning_iterations", 0),
+                "pattern_recognitions": cognitive_metrics.get(
+                    "pattern_recognitions", 0
+                ),
+                "total_decisions": cognitive_metrics.get("total_decisions", 0),
+                "successful_predictions": cognitive_metrics.get(
+                    "successful_predictions", 0
+                ),
+                "adaptive_adjustments": cognitive_metrics.get(
+                    "adaptive_adjustments", 0
+                ),
+                # Additional status information
+                "intelligence_health": self._calculate_intelligence_health(),
+                "workflow_health": self._calculate_workflow_health(),
+                "module_health": self._calculate_module_health(),
+                "overall_health": (
+                    self._calculate_intelligence_health()
+                    + self._calculate_workflow_health()
+                    + self._calculate_module_health()
+                )
+                / 3,
+                # System component status
+                "intelligence_available": hasattr(self, "intelligence")
+                and self.intelligence is not None,
+                "plugin_manager_available": self.plugin_manager is not None,
+                "conversation_manager_available": self.conversation_manager is not None,
+                # Timestamp
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            return status
+
+        except Exception as e:
+            # Fallback status if there's any error
+            print(f"⚠️ Error getting intelligence status: {e}")
+            return {
+                "learning_iterations": 0,
+                "pattern_recognitions": 0,
+                "total_decisions": 0,
+                "successful_predictions": 0,
+                "adaptive_adjustments": 0,
+                "intelligence_health": 75.0,
+                "workflow_health": 85.0,
+                "module_health": 80.0,
+                "overall_health": 80.0,
+                "intelligence_available": False,
+                "plugin_manager_available": False,
+                "conversation_manager_available": False,
+                "timestamp": datetime.now().isoformat(),
+                "error": str(e),
+            }
 
     async def initialize_intelligence_layer(self) -> Dict[str, Any]:
         """Initialize all intelligence layer components"""
@@ -914,7 +1098,9 @@ class LyrixaIntelligenceStack:
                         # Try different execution methods
                         if hasattr(self.aether_runtime, "execute_async"):
                             try:
-                                result = self.aether_runtime.execute_async(workflow_code, params)
+                                result = self.aether_runtime.execute_async(
+                                    workflow_code, params
+                                )
                             except:
                                 result = {"status": "executed", "runtime": "basic"}
                         else:
@@ -924,10 +1110,87 @@ class LyrixaIntelligenceStack:
                         print(f"⚠️ Aether execution failed: {e}")
                         result = {"status": "failed", "error": str(e)}
 
-                return result if isinstance(result, dict) else {"status": "no_runtime", "workflow": workflow_name}
+                return (
+                    result
+                    if isinstance(result, dict)
+                    else {"status": "no_runtime", "workflow": workflow_name}
+                )
             else:
                 return {"status": "not_found", "workflow": workflow_name}
 
         except Exception as e:
             print(f"❌ Workflow execution error: {e}")
             return {"status": "error", "error": str(e)}
+
+    async def initialize_plugin_discovery_integration(self):
+        """
+        🔗 Initialize Plugin Discovery Integration
+
+        This method implements the critical missing functionality to connect
+        plugin discovery to Lyrixa's intelligence system for AI awareness
+        """
+        if not self.plugin_bridge:
+            print("⚠️ Plugin-Intelligence Bridge not available")
+            return False
+
+        try:
+            print("🔍 Discovering and integrating plugins with intelligence...")
+
+            # Discover all available plugins
+            discovered_plugins = await self.plugin_bridge.discover_all_plugins()
+            print(f"✅ Discovered {len(discovered_plugins)} plugins")
+
+            # Store plugin metadata in intelligence memory
+            stored_successfully = (
+                await self.plugin_bridge.store_plugins_in_intelligence_memory()
+            )
+
+            if stored_successfully:
+                print("✅ Plugin metadata stored in intelligence memory")
+                print("🧠 Lyrixa can now reference, rank, and recommend plugins!")
+                return True
+            else:
+                print("❌ Failed to store plugin metadata in intelligence memory")
+                return False
+
+        except Exception as e:
+            print(f"❌ Error in plugin discovery integration: {e}")
+            return False
+
+    async def get_plugin_recommendations_for_lyrixa(
+        self, query: str
+    ) -> List[Dict[str, Any]]:
+        """
+        Get plugin recommendations for Lyrixa to use in conversations
+
+        This enables Lyrixa to intelligently suggest relevant plugins
+        """
+        if not self.plugin_bridge:
+            return []
+
+        try:
+            recommendations = await self.plugin_bridge.query_plugins_for_lyrixa(query)
+            return recommendations
+        except Exception as e:
+            print(f"❌ Error getting plugin recommendations: {e}")
+            return []
+
+    async def update_gui_plugin_display(self, gui_manager=None):
+        """
+        Update GUI plugin displays with real discovery data
+
+        This connects plugin discovery to user-facing interfaces
+        """
+        if not self.plugin_bridge:
+            return False
+
+        try:
+            return await self.plugin_bridge.integrate_with_gui(gui_manager)
+        except Exception as e:
+            print(f"❌ Error updating GUI plugin display: {e}")
+            return False
+
+    @property
+    def intelligence_system(self):
+        """Compatibility property for GUI - provides access to intelligence system"""
+        return self.intelligence

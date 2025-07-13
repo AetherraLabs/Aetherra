@@ -21,11 +21,109 @@ try:
     from sentence_transformers import SentenceTransformer
 
     VECTOR_SUPPORT = True
-except ImportError:
+    logging.info("✅ Vector support enabled (sentence-transformers + faiss)")
+except ImportError as e:
     VECTOR_SUPPORT = False
-    logging.warning(
-        "Vector support not available. Install sentence-transformers and faiss-cpu"
-    )
+    # Check what exactly is missing
+    try:
+        import faiss
+
+        faiss_available = True
+    except ImportError:
+        faiss_available = False
+
+    try:
+        import torch
+
+        torch_available = True
+    except ImportError:
+        torch_available = False
+
+    # More specific error message
+    if faiss_available and torch_available:
+        logging.warning(
+            f"⚠️ Vector embeddings disabled due to sentence-transformers import issue: {e}"
+        )
+        logging.info(
+            "💡 Core functionality remains unaffected - faiss and torch are working"
+        )
+    else:
+        logging.warning(
+            "Vector support not available. Install sentence-transformers and faiss-cpu"
+        )
+
+
+# Fallback embedding system when sentence-transformers is not available
+class SimpleFallbackEmbedding:
+    """Simple text embedding fallback using basic hashing and TF-IDF-like features"""
+
+    def __init__(self):
+        self.vocab = {}
+        self.doc_count = 0
+
+    def encode(self, texts, **kwargs):
+        """Simple encoding fallback"""
+        if isinstance(texts, str):
+            texts = [texts]
+
+        embeddings = []
+        for text in texts:
+            # Simple word-based feature extraction
+            words = text.lower().split()
+            features = [0.0] * 384  # Match typical sentence-transformer dimensions
+
+            # Simple hash-based encoding
+            for i, word in enumerate(words[:20]):  # Limit to first 20 words
+                hash_val = hash(word) % 384
+                features[hash_val] += 1.0 / (i + 1)  # Weight by position
+
+            # Normalize
+            magnitude = sum(f * f for f in features) ** 0.5
+            if magnitude > 0:
+                features = [f / magnitude for f in features]
+
+            embeddings.append(features)
+
+        # Import numpy for fallback
+        try:
+            import numpy as np_fallback
+        except ImportError:
+            # Create minimal numpy-like interface
+            class MinimalNumpyLike:
+                @staticmethod
+                def array(data):
+                    return data
+
+            np_fallback = MinimalNumpyLike()
+
+        return (
+            np_fallback.array(embeddings)
+            if len(embeddings) > 1
+            else np_fallback.array([embeddings[0]])
+        )
+
+
+if not VECTOR_SUPPORT:
+    # Create fallback system
+    SentenceTransformer = SimpleFallbackEmbedding
+    np = __import__("numpy") if "numpy" in locals() else None
+    if np is None:
+        try:
+            import numpy as np
+        except ImportError:
+            # Create minimal numpy-like interface for basic operations
+            class MinimalNumpyLike:
+                @staticmethod
+                def array(data):
+                    return data
+
+                @staticmethod
+                def zeros(shape):
+                    if isinstance(shape, int):
+                        return [0.0] * shape
+                    return [[0.0] * shape[1] for _ in range(shape[0])]
+
+            np = MinimalNumpyLike()
 
 
 class AdvancedMemorySystem:

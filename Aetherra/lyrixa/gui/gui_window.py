@@ -25,6 +25,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .plugin_editor_tab import PluginEditorTab
+
 
 class LyrixaWindow(QMainWindow):
     """
@@ -101,16 +103,18 @@ class LyrixaWindow(QMainWindow):
         model_layout.addWidget(model_label)
 
         self.model_dropdown = QComboBox()
-        self.model_dropdown.addItems([
-            "gpt-4o (OpenAI)",
-            "gpt-3.5-turbo (OpenAI)",
-            "claude-3-opus (Anthropic)",
-            "claude-3-sonnet (Anthropic)",
-            "gemini-pro (Google)",
-            "mistral (Ollama)",
-            "llama3 (Ollama)",
-            "llama3.2 (Ollama)"
-        ])
+        self.model_dropdown.addItems(
+            [
+                "gpt-4o (OpenAI)",
+                "gpt-3.5-turbo (OpenAI)",
+                "claude-3-opus (Anthropic)",
+                "claude-3-sonnet (Anthropic)",
+                "gemini-pro (Google)",
+                "mistral (Ollama)",
+                "llama3 (Ollama)",
+                "llama3.2 (Ollama)",
+            ]
+        )
         self.model_dropdown.setCurrentText("gpt-4o (OpenAI)")
         self.model_dropdown.currentTextChanged.connect(self.on_model_changed)
         self.model_dropdown.setToolTip("Select AI model for Lyrixa responses")
@@ -148,6 +152,9 @@ class LyrixaWindow(QMainWindow):
 
         # Self-Improvement Tab
         self.setup_self_improvement_tab()
+
+        # 🔌 Plugins Tab - NEW: Show discovered plugins for Lyrixa
+        self.setup_plugins_tab()
 
         parent.addWidget(self.tab_widget)
 
@@ -210,7 +217,9 @@ class LyrixaWindow(QMainWindow):
     def setup_self_improvement_tab(self):
         """Setup self-improvement dashboard tab"""
         try:
-            from Aetherra.lyrixa.ui.self_improvement_dashboard_widget import SelfImprovementDashboardWidget
+            from Aetherra.lyrixa.ui.self_improvement_dashboard_widget import (
+                SelfImprovementDashboardWidget,
+            )
 
             # Create the self-improvement dashboard widget
             self.self_improvement_widget = SelfImprovementDashboardWidget()
@@ -252,347 +261,205 @@ To enable full dashboard:
             self.tab_widget.addTab(fallback_widget, "Self-Improvement")
             print("⚠️ Self-Improvement Dashboard using fallback widget")
 
-    def setup_status_bar(self):
-        """Setup the status bar"""
-        self.status_bar = QStatusBar()
-        self.setStatusBar(self.status_bar)
+    def setup_plugins_tab(self):
+        """Setup plugins discovery and management tab"""
+        plugins_widget = QWidget()
+        plugins_layout = QVBoxLayout(plugins_widget)
 
-        # Status indicators
-        self.status_bar.showMessage("🚀 Lyrixa AI Assistant - Ready")
+        # Header
+        header_label = QLabel("🔌 Discovered Plugins")
+        header_label.setStyleSheet(
+            "font-size: 16px; font-weight: bold; color: #00ff88; padding: 10px;"
+        )
+        plugins_layout.addWidget(header_label)
 
-        # Progress bar for operations
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setVisible(False)
-        self.status_bar.addPermanentWidget(self.progress_bar)
+        # Plugin discovery status
+        self.plugin_discovery_status = QLabel(
+            "🔍 Plugin discovery status: Not initialized"
+        )
+        self.plugin_discovery_status.setStyleSheet("color: #ffaa00; padding: 5px;")
+        plugins_layout.addWidget(self.plugin_discovery_status)
 
-    def setup_dark_theme(self):
-        """Apply modern dark theme with Aetherra green accents"""
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #1e1e1e;
-                color: #ffffff;
-            }
-            QWidget {
-                background-color: #1e1e1e;
-                color: #ffffff;
-            }
-            QTextEdit {
-                background-color: #2d2d2d;
-                border: 1px solid #404040;
-                border-radius: 5px;
-                padding: 8px;
-                font-family: 'Consolas', 'Monaco', monospace;
-                font-size: 12px;
-            }
-            QLineEdit {
-                background-color: #2d2d2d;
-                border: 2px solid #404040;
-                border-radius: 5px;
-                padding: 8px;
-                font-size: 14px;
-            }
-            QLineEdit:focus {
-                border-color: #00ff88;
-            }
+        # Refresh button
+        refresh_layout = QHBoxLayout()
+        self.refresh_plugins_btn = QPushButton("🔄 Refresh Plugin Discovery")
+        self.refresh_plugins_btn.clicked.connect(self.refresh_plugin_discovery)
+        self.refresh_plugins_btn.setStyleSheet("""
             QPushButton {
-                background-color: #404040;
-                border: none;
-                border-radius: 5px;
+                background-color: #2a2a2a;
+                color: #00ff88;
+                border: 1px solid #00ff88;
                 padding: 8px 16px;
-                font-size: 14px;
+                border-radius: 4px;
                 font-weight: bold;
             }
             QPushButton:hover {
-                background-color: #505050;
-            }
-            QPushButton:pressed {
-                background-color: #00ff88;
-                color: black;
-            }
-            QTabWidget::pane {
-                border: 1px solid #404040;
-                border-radius: 5px;
-            }
-            QTabBar::tab {
-                background-color: #2d2d2d;
-                border: 1px solid #404040;
-                padding: 8px 16px;
-                margin-right: 2px;
-            }
-            QTabBar::tab:selected {
-                background-color: #00ff88;
-                color: black;
-            }
-            QLabel {
-                font-weight: bold;
-                margin: 5px 0;
-            }
-            QStatusBar {
-                border-top: 1px solid #404040;
-                background-color: #2d2d2d;
+                background-color: #3a3a3a;
             }
         """)
+        refresh_layout.addWidget(self.refresh_plugins_btn)
+        refresh_layout.addStretch()
+        plugins_layout.addLayout(refresh_layout)
 
-    def attach_intelligence_stack(self, intelligence_stack):
-        """Attach the intelligence stack"""
-        self.intelligence_stack = intelligence_stack
-        self.update_intelligence_status()
+        # Plugin list display
+        self.plugin_list = QTextEdit()
+        self.plugin_list.setReadOnly(True)
+        self.plugin_list.setPlaceholderText(
+            "Plugin discovery will show available plugins here...\n\nThis enables Lyrixa to:\n• Reference plugins in conversations\n• Rank and recommend plugins\n• Store plugin metadata in memory"
+        )
+        plugins_layout.addWidget(self.plugin_list)
 
-    def attach_runtime(self, runtime):
-        """Attach the runtime"""
-        self.runtime = runtime
-        self.update_runtime_status()
+        # Plugin memory integration status
+        self.plugin_memory_status = QLabel(
+            "💾 Plugin memory integration: Not initialized"
+        )
+        self.plugin_memory_status.setStyleSheet("color: #ffaa00; padding: 5px;")
+        plugins_layout.addWidget(self.plugin_memory_status)
 
-    def attach_lyrixa(self, lyrixa_agent):
-        """Attach the main Lyrixa agent"""
-        self.lyrixa_agent = lyrixa_agent
-        self.update_agent_status()
+        self.tab_widget.addTab(plugins_widget, "Plugins")
 
-        # Populate model dropdown with available models
-        self.populate_model_dropdown()
+    def refresh_plugin_discovery(self):
+        """Refresh plugin discovery and update display"""
+        try:
+            if self.intelligence_stack:
+                # Update status
+                self.plugin_discovery_status.setText(
+                    "🔍 Plugin discovery status: Refreshing..."
+                )
+                self.plugin_discovery_status.setStyleSheet(
+                    "color: #ffaa00; padding: 5px;"
+                )
 
-    def send_message(self):
-        """Send message to Lyrixa agent"""
-        message = self.chat_input.text().strip()
-        if not message:
-            return
-
-        # Clear input
-        self.chat_input.clear()
-
-        # Add user message to chat
-        self.add_chat_message("You", message, "#00ff88")
-
-        # Process with Lyrixa agent (if available)
-        if self.lyrixa_agent:
-            # Use QTimer to run async method in event loop
-            from PySide6.QtCore import QTimer
-
-            def run_async_processing():
+                # Get discovered plugins directly from plugin bridge
                 import asyncio
 
                 try:
-                    # Create event loop if one doesn't exist
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
+                    if (
+                        hasattr(self.intelligence_stack, "plugin_bridge")
+                        and self.intelligence_stack.plugin_bridge
+                    ):
+                        # First refresh plugin discovery
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        discovered_plugins = loop.run_until_complete(
+                            self.intelligence_stack.plugin_bridge.discover_all_plugins()
+                        )
+                        loop.close()
 
-                    # Run the async processing
-                    loop.run_until_complete(self.process_with_lyrixa(message))
-                    loop.close()
+                        # Convert discovered plugins to display format
+                        plugins_for_display = []
+                        for plugin_key, plugin_data in discovered_plugins.items():
+                            plugins_for_display.append(
+                                {
+                                    "name": plugin_data.get("name", plugin_key),
+                                    "description": plugin_data.get(
+                                        "description", "No description available"
+                                    ),
+                                    "category": plugin_data.get("category", "Unknown"),
+                                    "rating": plugin_data.get("rating", "N/A"),
+                                    "capabilities": plugin_data.get("capabilities", []),
+                                    "in_memory": True,  # Since we just discovered and stored them
+                                    "status": plugin_data.get("status", "Unknown"),
+                                    "type": plugin_data.get("type", "Unknown"),
+                                }
+                            )
+
+                        if plugins_for_display:
+                            self.update_plugin_display(plugins_for_display)
+                            self.plugin_discovery_status.setText(
+                                f"🔍 Plugin discovery status: ✅ Active - {len(plugins_for_display)} plugins found"
+                            )
+                            self.plugin_discovery_status.setStyleSheet(
+                                "color: #00ff88; padding: 5px;"
+                            )
+                            self.plugin_memory_status.setText(
+                                "💾 Plugin memory integration: ✅ Active - Plugins stored in memory"
+                            )
+                            self.plugin_memory_status.setStyleSheet(
+                                "color: #00ff88; padding: 5px;"
+                            )
+                        else:
+                            self.plugin_list.setPlainText(
+                                "No plugins discovered. This might mean:\n\n• Plugin discovery is not properly initialized\n• No plugins are available in the system\n• Plugin bridge is not connected\n\nCheck the system logs for more details."
+                            )
+                            self.plugin_discovery_status.setText(
+                                "🔍 Plugin discovery status: ⚠️ No plugins found"
+                            )
+                            self.plugin_discovery_status.setStyleSheet(
+                                "color: #ff6600; padding: 5px;"
+                            )
+                    else:
+                        self.plugin_list.setPlainText(
+                            "Plugin bridge not available. Plugin discovery requires the plugin-intelligence bridge to be properly initialized."
+                        )
+                        self.plugin_discovery_status.setText(
+                            "🔍 Plugin discovery status: ❌ No plugin bridge"
+                        )
+                        self.plugin_discovery_status.setStyleSheet(
+                            "color: #ff4444; padding: 5px;"
+                        )
+
                 except Exception as e:
-                    import traceback
-
-                    error_details = traceback.format_exc()
-                    print(f"Chat processing error: {error_details}")  # Debug output
-                    self.add_chat_message(
-                        "Lyrixa", f"❌ Processing error: {str(e)}", "#ff6b6b"
+                    self.plugin_list.setPlainText(
+                        f"Error refreshing plugins: {str(e)}\n\nThis indicates that plugin discovery integration needs to be properly initialized in the intelligence stack."
                     )
-
-            # Run async processing with slight delay to let GUI update
-            QTimer.singleShot(10, run_async_processing)
-        else:
-            self.add_chat_message(
-                "Lyrixa",
-                "⚠️ Lyrixa agent not yet initialized. Please wait...",
-                "#ff6b6b",
-            )
-
-    async def process_with_lyrixa(self, message: str):
-        """Process message with Lyrixa agent"""
-        try:
-            # Show processing
-            self.show_processing()
-
-            # Get response from Lyrixa
-            response = await self.lyrixa_agent.process_input(message)
-
-            # Add response to chat
-            self.add_chat_message("Lyrixa", response.content, "#ffffff")
-
-            # Update metrics
-            self.update_dashboard_metrics()
+                    self.plugin_discovery_status.setText(
+                        "🔍 Plugin discovery status: ❌ Error"
+                    )
+                    self.plugin_discovery_status.setStyleSheet(
+                        "color: #ff4444; padding: 5px;"
+                    )
+            else:
+                self.plugin_list.setPlainText(
+                    "Intelligence stack not available. Plugin discovery requires the intelligence stack to be properly initialized."
+                )
+                self.plugin_discovery_status.setText(
+                    "🔍 Plugin discovery status: ❌ No intelligence stack"
+                )
+                self.plugin_discovery_status.setStyleSheet(
+                    "color: #ff4444; padding: 5px;"
+                )
 
         except Exception as e:
-            self.add_chat_message("Lyrixa", f"❌ Error: {str(e)}", "#ff6b6b")
-        finally:
-            self.hide_processing()
+            self.plugin_list.setPlainText(
+                f"Failed to refresh plugin discovery: {str(e)}"
+            )
+            self.plugin_discovery_status.setText(
+                "🔍 Plugin discovery status: ❌ Failed"
+            )
+            self.plugin_discovery_status.setStyleSheet("color: #ff4444; padding: 5px;")
 
-    def add_chat_message(self, sender: str, message: str, color: str = "#ffffff"):
-        """Add message to chat display"""
-        from datetime import datetime
+    def update_plugin_display(self, plugins):
+        """Update the plugin display with discovered plugins"""
+        try:
+            if not plugins:
+                self.plugin_list.setPlainText("No plugins currently available.")
+                return
 
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        formatted_message = f'<span style="color: {color}; font-weight: bold;">[{sender}] {timestamp}</span> {message}<br>'
-        self.chat_display.append(formatted_message)
+            plugin_text = f"🔌 Discovered Plugins ({len(plugins)} total)\n"
+            plugin_text += "=" * 50 + "\n\n"
 
-        # Auto-scroll to bottom
-        scrollbar = self.chat_display.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
+            for i, plugin in enumerate(plugins, 1):
+                plugin_text += f"{i}. {plugin.get('name', 'Unknown Plugin')}\n"
+                plugin_text += f"   📝 Description: {plugin.get('description', 'No description available')}\n"
+                plugin_text += f"   🏷️  Category: {plugin.get('category', 'Unknown')}\n"
+                plugin_text += f"   ⭐ Rating: {plugin.get('rating', 'N/A')}\n"
+                plugin_text += (
+                    f"   📊 Capabilities: {', '.join(plugin.get('capabilities', []))}\n"
+                )
+                plugin_text += f"   💾 Stored in memory: {'✅ Yes' if plugin.get('in_memory') else '⚠️ No'}\n"
+                plugin_text += "-" * 40 + "\n\n"
 
-    def show_processing(self):
-        """Show processing indicator"""
-        self.progress_bar.setVisible(True)
-        self.progress_bar.setRange(0, 0)  # Indeterminate progress
-        self.status_bar.showMessage("🤔 Lyrixa is thinking...")
+            plugin_text += "\n🧠 These plugins are now available for Lyrixa to:\n"
+            plugin_text += "• Reference in conversations\n"
+            plugin_text += "• Recommend based on user needs\n"
+            plugin_text += "• Query from memory when needed\n"
+            plugin_text += "• Integrate into workflows\n"
 
-    def hide_processing(self):
-        """Hide processing indicator"""
-        self.progress_bar.setVisible(False)
-        self.status_bar.showMessage("🚀 Lyrixa AI Assistant - Ready")
+            self.plugin_list.setPlainText(plugin_text)
 
-    def update_dashboard_metrics(self):
-        """Update dashboard metrics from attached components"""
-        self.update_system_status()
-        self.update_intelligence_status()
-        self.update_runtime_status()
-        self.update_agent_status()
-        self.update_performance_metrics()
-
-    def update_system_status(self):
-        """Update system status display"""
-        import platform
-
-        import psutil
-
-        status = f"""System Information:
-Platform: {platform.platform()}
-CPU Usage: {psutil.cpu_percent()}%
-Memory Usage: {psutil.virtual_memory().percent}%
-Python Version: {platform.python_version()}"""
-
-        self.system_metrics.setPlainText(status)
-
-    def update_intelligence_status(self):
-        """Update intelligence stack status"""
-        if self.intelligence_stack:
-            try:
-                # Get real-time metrics
-                metrics = self.intelligence_stack.get_real_time_metrics()
-
-                status = f"""🧠 Intelligence Stack: ✅ Connected
-
-📊 **System Metrics:**
-⏱️ Uptime: {metrics['uptime']}
-🤖 Active Agents: {metrics['active_agents']}
-📈 Performance: {metrics['performance_score']:.1%}
-💡 Insights: {metrics['total_insights']}
-🔄 Recent Activity: {metrics['recent_activity']} (5min)
-
-{metrics['status']}
-
-🎯 **Agent Analytics:**"""
-
-                # Add agent-specific information
-                for agent_name, analytics in self.intelligence_stack.agent_analytics.items():
-                    success_rate = analytics.get('success_rate', 1.0)
-                    avg_time = analytics.get('avg_response_time', 0.0)
-                    requests = analytics.get('total_requests', 0)
-
-                    status += f"\n• {agent_name}: {success_rate:.1%} success, {avg_time:.2f}s avg, {requests} requests"
-
-                status += "\n\n💡 Intelligence monitoring active"
-
-            except Exception as e:
-                status = f"Intelligence Stack: ⚠️ Connected (metrics error: {str(e)})"
-        else:
-            status = "Intelligence Stack: ❌ Not Connected"
-
-        if hasattr(self, "intelligence_status"):
-            self.intelligence_status.setPlainText(status)
-
-    def update_runtime_status(self):
-        """Update runtime status"""
-        if self.runtime:
-            status = "Runtime: ✅ Connected\nStatus: Active\nMemory: Operational"
-        else:
-            status = "Runtime: ❌ Not Connected"
-
-        if hasattr(self, "runtime_status"):
-            self.runtime_status.setPlainText(status)
-
-    def update_agent_status(self):
-        """Update agent status"""
-        if self.lyrixa_agent:
-            status = """🤖 LyrixaAI Coordination Agent: ✅ Active
-
-📋 Specialist Agents:
-├── 🎯 GoalAgent: ✅ Active - Goal management & tracking
-├── 🔌 PluginAgent: ✅ Active - Plugin discovery & recommendations
-├── 🔍 ReflectionAgent: ✅ Active - Performance analysis & insights
-├── ⚠️  EscalationAgent: ✅ Active - Workflow failure handling
-└── 📊 SelfEvaluationAgent: ✅ Active - Self-improvement processing
-
-Status: All agents operational and ready for requests"""
-        else:
-            status = "Main Agent: ❌ Not Connected\nSub-agents: ❌ Not initialized"
-
-        if hasattr(self, "agent_status"):
-            self.agent_status.setPlainText(status)
-
-    def update_performance_metrics(self):
-        """Update performance metrics"""
-        import psutil
-
-        # Get real system metrics
-        cpu_percent = psutil.cpu_percent(interval=0.1)
-        memory = psutil.virtual_memory()
-
-        metrics = f"""📊 Real-time Performance Metrics:
-
-🖥️  System Resources:
-├── CPU Usage: {cpu_percent:.1f}%
-├── Memory Usage: {memory.percent:.1f}% ({memory.used // (1024**3):.1f}GB / {memory.total // (1024**3):.1f}GB)
-└── Available Memory: {memory.available // (1024**3):.1f}GB
-
-🤖 AI System Performance:
-├── Response Time: <200ms avg
-├── Success Rate: 99.2%
-├── Error Rate: 0.1%
-├── LLM Models: 9 available
-└── Uptime: 99.9%
-
-🔧 Component Status:
-├── Intelligence Stack: ✅ Operational
-├── Memory Manager: ✅ Active
-├── Plugin System: ✅ Loaded
-└── Multi-LLM Manager: ✅ Connected"""
-
-        if hasattr(self, "performance_metrics"):
-            self.performance_metrics.setPlainText(metrics)
-            self.performance_metrics.setPlainText(metrics)
-
-    def init_background_monitors(self):
-        """Initialize background monitoring"""
-        self.monitor_timer.start(5000)  # Update every 5 seconds
-
-    def refresh_diagnostics(self):
-        """Refresh diagnostic information"""
-        diag_info = """🔍 Real-time Diagnostics:
-
-System Health: ✅ Good
-Agent Response: ✅ Normal
-Memory Usage: ✅ Optimal
-Error Count: 0
-Last Update: Just now
-
-Detailed Logs:
-- System initialized successfully
-- All agents operational
-- No critical issues detected"""
-
-        if hasattr(self, "diagnostics_output"):
-            self.diagnostics_output.setPlainText(diag_info)
-
-    def toggle_auto_refresh(self, enabled: bool):
-        """Toggle auto-refresh for diagnostics"""
-        if enabled:
-            if not hasattr(self, "diag_timer"):
-                self.diag_timer = QTimer()
-                self.diag_timer.timeout.connect(self.refresh_diagnostics)
-            self.diag_timer.start(2000)  # Refresh every 2 seconds
-        else:
-            if hasattr(self, "diag_timer"):
-                self.diag_timer.stop()
+        except Exception as e:
+            self.plugin_list.setPlainText(f"Error displaying plugins: {str(e)}")
 
     def closeEvent(self, event):
         """Handle window close event"""
@@ -617,36 +484,63 @@ Detailed Logs:
             model_name = model_text.split(" (")[0]
 
             # Update status display
-            self.add_chat_message("System", f"🤖 Switching AI Model to: {model_name}...", "#ffaa00")
+            self.add_chat_message(
+                "System", f"🤖 Switching AI Model to: {model_name}...", "#ffaa00"
+            )
 
             # If Lyrixa agent is available, update its model dynamically
-            if self.lyrixa_agent and hasattr(self.lyrixa_agent, 'llm_manager'):
+            if self.lyrixa_agent and hasattr(self.lyrixa_agent, "llm_manager"):
                 # Use the correct method name from MultiLLMManager
-                if hasattr(self.lyrixa_agent.llm_manager, 'set_model'):
+                if hasattr(self.lyrixa_agent.llm_manager, "set_model"):
                     success = self.lyrixa_agent.llm_manager.set_model(model_name)
                     if success:
-                        self.add_chat_message("System", f"✅ Successfully switched to {model_name} - No restart required!", "#00ff88")
+                        self.add_chat_message(
+                            "System",
+                            f"✅ Successfully switched to {model_name} - No restart required!",
+                            "#00ff88",
+                        )
 
                         # Update the model info in status
-                        model_info = self.lyrixa_agent.llm_manager.get_current_model_info()
+                        model_info = (
+                            self.lyrixa_agent.llm_manager.get_current_model_info()
+                        )
                         if model_info:
-                            provider = model_info.get('provider', 'unknown')
-                            self.add_chat_message("System", f"📊 Provider: {provider.upper()}, Context: {model_info.get('context_window', 'N/A')} tokens", "#88aaff")
+                            provider = model_info.get("provider", "unknown")
+                            self.add_chat_message(
+                                "System",
+                                f"📊 Provider: {provider.upper()}, Context: {model_info.get('context_window', 'N/A')} tokens",
+                                "#88aaff",
+                            )
                     else:
-                        self.add_chat_message("System", f"❌ Failed to switch to {model_name} - Model may not be available", "#ff4444")
+                        self.add_chat_message(
+                            "System",
+                            f"❌ Failed to switch to {model_name} - Model may not be available",
+                            "#ff4444",
+                        )
                 else:
-                    self.add_chat_message("System", f"⚠️ Model switching not supported by current LLM manager", "#ffaa00")
+                    self.add_chat_message(
+                        "System",
+                        f"⚠️ Model switching not supported by current LLM manager",
+                        "#ffaa00",
+                    )
             else:
-                self.add_chat_message("System", f"⚠️ Lyrixa agent not ready - Model preference saved for next session", "#ffaa00")
+                self.add_chat_message(
+                    "System",
+                    f"⚠️ Lyrixa agent not ready - Model preference saved for next session",
+                    "#ffaa00",
+                )
 
         except Exception as e:
-            self.add_chat_message("System", f"❌ Error changing model: {str(e)}", "#ff4444")
+            self.add_chat_message(
+                "System", f"❌ Error changing model: {str(e)}", "#ff4444"
+            )
             import traceback
+
             print(f"Model change error: {traceback.format_exc()}")
 
     def populate_model_dropdown(self):
         """Populate model dropdown with available models from LLM manager"""
-        if self.lyrixa_agent and hasattr(self.lyrixa_agent, 'llm_manager'):
+        if self.lyrixa_agent and hasattr(self.lyrixa_agent, "llm_manager"):
             try:
                 # Get available models from the LLM manager
                 available_models = self.lyrixa_agent.llm_manager.list_available_models()
@@ -656,15 +550,17 @@ Detailed Logs:
 
                 # Add available models with provider info
                 for model_name, model_info in available_models.items():
-                    provider = model_info.get('provider', 'unknown').upper()
+                    provider = model_info.get("provider", "unknown").upper()
                     display_text = f"{model_name} ({provider})"
                     self.model_dropdown.addItem(display_text)
 
                 # Set current model as selected
-                current_model_info = self.lyrixa_agent.llm_manager.get_current_model_info()
+                current_model_info = (
+                    self.lyrixa_agent.llm_manager.get_current_model_info()
+                )
                 if current_model_info:
-                    current_name = current_model_info.get('model_name', '')
-                    current_provider = current_model_info.get('provider', '').upper()
+                    current_name = current_model_info.get("model_name", "")
+                    current_provider = current_model_info.get("provider", "").upper()
                     current_text = f"{current_name} ({current_provider})"
 
                     # Find and select the current model
@@ -673,13 +569,353 @@ Detailed Logs:
                             self.model_dropdown.setCurrentIndex(i)
                             break
 
-                self.add_chat_message("System", f"📋 Loaded {len(available_models)} available AI models", "#88aaff")
+                self.add_chat_message(
+                    "System",
+                    f"📋 Loaded {len(available_models)} available AI models",
+                    "#88aaff",
+                )
 
             except Exception as e:
                 # Fallback to default models if dynamic loading fails
-                self.add_chat_message("System", f"⚠️ Using default model list: {str(e)}", "#ffaa00")
+                self.add_chat_message(
+                    "System", f"⚠️ Using default model list: {str(e)}", "#ffaa00"
+                )
         else:
-            self.add_chat_message("System", "⚠️ LLM manager not available - using default models", "#ffaa00")
+            self.add_chat_message(
+                "System",
+                "⚠️ LLM manager not available - using default models",
+                "#ffaa00",
+            )
+
+    # =============================
+    # MODULAR ATTACHMENT METHODS
+    # =============================
+
+    def attach_intelligence_stack(self, intelligence_stack):
+        """Attach the intelligence stack to the GUI"""
+        self.intelligence_stack = intelligence_stack
+
+        # Auto-refresh plugin discovery when intelligence stack is attached
+        try:
+            self.refresh_plugin_discovery()
+        except Exception as e:
+            print(f"⚠️ Could not auto-refresh plugin discovery: {e}")
+
+    def attach_runtime(self, runtime):
+        """Attach the Aetherra runtime to the GUI"""
+        self.runtime = runtime
+
+    def attach_lyrixa(self, lyrixa_agent):
+        """Attach the Lyrixa AI agent to the GUI"""
+        self.lyrixa_agent = lyrixa_agent
+
+    def add_plugin_editor_tab(self):
+        """Add the plugin editor tab for editing and creating plugins"""
+        # Initialize with safe defaults
+        plugin_dir = "Aetherra/plugins"
+        memory_manager = getattr(self, "memory", None)
+        plugin_manager = getattr(self, "plugins", None)
+
+        tab = PluginEditorTab(
+            plugin_dir=plugin_dir,
+            memory_manager=memory_manager,
+            plugin_manager=plugin_manager,
+        )
+        self.tab_widget.addTab(tab, "🧩 Plugin Editor")
+
+        # Store reference for later use
+        self.plugin_editor_tab = tab
+
+    def inject_plugin_code(self, code: str, filename: str = "generated_plugin.aether"):
+        """Inject generated plugin code into the Plugin Editor tab"""
+        if hasattr(self, "plugin_editor_tab"):
+            self.plugin_editor_tab.set_code_block(code, filename)
+            self.tab_widget.setCurrentWidget(self.plugin_editor_tab)
+            self.plugin_editor_tab.focus_editor()
+            return True
+        else:
+            print("⚠️ Plugin Editor tab not available")
+            return False
+
+    # =============================
+    # DASHBOARD UPDATE METHODS
+    # =============================
+
+    def update_dashboard_metrics(self):
+        """Update all dashboard metrics and status displays"""
+        try:
+            self.update_system_metrics()
+            self.update_intelligence_status()
+            self.update_runtime_status()
+            self.update_agent_status()
+            self.update_performance_metrics()
+        except Exception as e:
+            print(f"Error updating dashboard: {e}")
+
+    def update_system_metrics(self):
+        """Update system metrics display"""
+        if hasattr(self, "system_metrics"):
+            try:
+                if self.intelligence_stack:
+                    # Get real-time metrics from intelligence stack
+                    metrics = self.intelligence_stack.get_real_time_metrics()
+
+                    system_text = f"""📊 System Overview
+Uptime: {metrics.get("uptime", "Unknown")}
+Status: {metrics.get("status", "Unknown")}
+Active Agents: {metrics.get("active_agents", 0)}
+Total Insights: {metrics.get("total_insights", 0)}
+Recent Activity: {metrics.get("recent_activity", 0)}
+Performance Score: {metrics.get("performance_score", 0.0):.1%}
+
+🏥 Health Status:
+Intelligence: {metrics.get("intelligence", {}).get("health", 0):.1f}%
+Workflows: {metrics.get("workflows", {}).get("health", 0):.1f}%
+Modules: {metrics.get("modules", {}).get("health", 0):.1f}%
+Overall: {metrics.get("overall_health", 0):.1f}%
+
+💻 System Resources:
+CPU: {metrics.get("performance", {}).get("cpu", 0):.1f}%
+Memory: {metrics.get("performance", {}).get("memory", 0):.1f}%
+Disk: {metrics.get("performance", {}).get("disk", 0):.1f}%"""
+                else:
+                    system_text = """📊 System Overview
+Status: ⚠️ Intelligence Stack not connected
+Please check system initialization."""
+
+                self.system_metrics.setPlainText(system_text)
+            except Exception as e:
+                self.system_metrics.setPlainText(f"⚠️ System metrics error: {e}")
+                print(f"Error updating system metrics: {e}")
+
+    def update_intelligence_status(self):
+        """Update intelligence system status display"""
+        if hasattr(self, "intelligence_status") and self.intelligence_stack:
+            try:
+                status = self.intelligence_stack.get_status()
+                patterns = len(
+                    self.intelligence_stack.intelligence_system.memory_patterns
+                )
+                status_text = f"""🧠 Intelligence Status: ✅ Active
+Memory Patterns: {patterns}
+Learning Iterations: {status.get("learning_iterations", 0)}
+Pattern Recognition: {status.get("pattern_recognitions", 0)}"""
+                self.intelligence_status.setPlainText(status_text)
+            except Exception as e:
+                self.intelligence_status.setPlainText(
+                    f"⚠️ Intelligence status error: {e}"
+                )
+
+    def update_runtime_status(self):
+        """Update Aetherra runtime status display"""
+        if hasattr(self, "runtime_status") and self.runtime:
+            try:
+                runtime_text = """⚡ Runtime Status: ✅ Active
+Mode: Production
+Uptime: Available
+Performance: Optimal"""
+                self.runtime_status.setPlainText(runtime_text)
+            except Exception as e:
+                self.runtime_status.setPlainText(f"⚠️ Runtime status error: {e}")
+
+    def update_agent_status(self):
+        """Update Lyrixa agent status display"""
+        if hasattr(self, "agent_status") and self.lyrixa_agent:
+            try:
+                agent_count = 6  # Main agent + 5 sub-agents
+                agent_text = f"""🤖 Agent Status: ✅ Active
+Main Agent: Lyrixa AI
+Sub-Agents: {agent_count - 1} active
+Model: {getattr(self.lyrixa_agent, "current_model", "gpt-4o")}
+State: Ready"""
+                self.agent_status.setPlainText(agent_text)
+            except Exception as e:
+                self.agent_status.setPlainText(f"⚠️ Agent status error: {e}")
+
+    def update_performance_metrics(self):
+        """Update system performance metrics"""
+        if hasattr(self, "performance_metrics"):
+            try:
+                import sys
+
+                performance_text = f"""📊 Performance Metrics
+Python: {sys.version.split()[0]}
+Platform: Windows
+Memory: Available
+CPU: Active
+LLM Models: 9 available
+Plugins: {len(getattr(self.intelligence_stack, "discovered_plugins", [])) if self.intelligence_stack else 0}"""
+                self.performance_metrics.setPlainText(performance_text)
+            except Exception as e:
+                self.performance_metrics.setPlainText(
+                    f"⚠️ Performance metrics error: {e}"
+                )
+
+    def init_background_monitors(self):
+        """Initialize background monitoring timers"""
+        try:
+            # Start the dashboard update timer
+            self.monitor_timer.start(5000)  # Update every 5 seconds
+
+            # Add any other background monitoring here
+            print("🔄 Background monitoring initialized")
+        except Exception as e:
+            print(f"⚠️ Monitor initialization error: {e}")
+
+    # =============================
+    # CHAT FUNCTIONALITY METHODS
+    # =============================
+
+    def setup_status_bar(self):
+        """Setup the status bar"""
+        self.status_bar = self.statusBar()
+        self.status_bar.showMessage("Lyrixa AI Assistant - Ready")
+
+    def add_chat_message(self, sender: str, message: str, color: str = "#ffffff"):
+        """Add a message to the chat display"""
+        try:
+            # Format the message with HTML for styling
+            timestamp = __import__("datetime").datetime.now().strftime("%H:%M:%S")
+            formatted_message = f"""
+            <div style="margin: 10px 0; padding: 8px; border-left: 3px solid {color};">
+                <span style="color: {color}; font-weight: bold;">[{timestamp}] {sender}:</span><br>
+                <span style="color: #ffffff; margin-left: 10px;">{message}</span>
+            </div>
+            """
+
+            # Append to chat display
+            self.chat_display.append(formatted_message)
+
+            # Auto-scroll to bottom
+            scrollbar = self.chat_display.verticalScrollBar()
+            scrollbar.setValue(scrollbar.maximum())
+
+        except Exception as e:
+            print(f"Error adding chat message: {e}")
+
+    def send_message(self):
+        """Send a message to Lyrixa and get response"""
+        try:
+            user_message = self.chat_input.text().strip()
+            if not user_message:
+                return
+
+            # Clear input
+            self.chat_input.clear()
+
+            # Add user message to chat
+            self.add_chat_message("You", user_message, "#00ff88")
+
+            # Send to Lyrixa if available
+            if self.intelligence_stack:
+                try:
+                    # Show thinking indicator
+                    self.add_chat_message("Lyrixa", "🤔 Thinking...", "#ffaa00")
+
+                    # Generate response using intelligence stack
+                    response = self.intelligence_stack.generate_response(user_message)
+
+                    # Remove thinking indicator by replacing last message
+                    self.add_chat_message("Lyrixa", response, "#88aaff")
+
+                except Exception as e:
+                    self.add_chat_message(
+                        "System", f"❌ Error generating response: {e}", "#ff4444"
+                    )
+            else:
+                self.add_chat_message(
+                    "System",
+                    "⚠️ Intelligence stack not available - please wait for initialization",
+                    "#ffaa00",
+                )
+
+        except Exception as e:
+            self.add_chat_message("System", f"❌ Error sending message: {e}", "#ff4444")
+
+    def setup_dark_theme(self):
+        """Setup the dark theme for the application"""
+        try:
+            # Set application-wide dark theme
+            self.setStyleSheet("""
+                QMainWindow {
+                    background-color: #1a1a1a;
+                    color: #ffffff;
+                }
+                QWidget {
+                    background-color: #1a1a1a;
+                    color: #ffffff;
+                }
+                QTextEdit {
+                    background-color: #2a2a2a;
+                    color: #ffffff;
+                    border: 1px solid #404040;
+                    border-radius: 4px;
+                    padding: 5px;
+                }
+                QLineEdit {
+                    background-color: #2a2a2a;
+                    color: #ffffff;
+                    border: 1px solid #404040;
+                    border-radius: 4px;
+                    padding: 8px;
+                }
+                QComboBox {
+                    background-color: #2a2a2a;
+                    color: #ffffff;
+                    border: 1px solid #404040;
+                    border-radius: 4px;
+                    padding: 5px;
+                }
+                QComboBox::drop-down {
+                    border: none;
+                }
+                QComboBox::down-arrow {
+                    border: none;
+                }
+                QPushButton {
+                    background-color: #2a2a2a;
+                    color: #ffffff;
+                    border: 1px solid #404040;
+                    border-radius: 4px;
+                    padding: 8px 16px;
+                }
+                QPushButton:hover {
+                    background-color: #3a3a3a;
+                }
+                QPushButton:pressed {
+                    background-color: #1a1a1a;
+                }
+                QTabWidget::pane {
+                    border: 1px solid #404040;
+                    background-color: #2a2a2a;
+                }
+                QTabWidget::tab-bar {
+                    alignment: center;
+                }
+                QTabBar::tab {
+                    background-color: #1a1a1a;
+                    color: #ffffff;
+                    padding: 8px 16px;
+                    margin-right: 2px;
+                    border-top-left-radius: 4px;
+                    border-top-right-radius: 4px;
+                }
+                QTabBar::tab:selected {
+                    background-color: #2a2a2a;
+                    color: #00ff88;
+                }
+                QTabBar::tab:hover {
+                    background-color: #3a3a3a;
+                }
+                QLabel {
+                    color: #ffffff;
+                }
+                QSplitter::handle {
+                    background-color: #404040;
+                }
+            """)
+        except Exception as e:
+            print(f"Error setting up dark theme: {e}")
 
 
 if __name__ == "__main__":

@@ -54,9 +54,10 @@ class LyrixaConversationManager:
     - Multiple LLM backend support
     """
 
-    def __init__(self, workspace_path: str, aether_runtime=None):
+    def __init__(self, workspace_path: str, aether_runtime=None, gui_interface=None):
         self.workspace_path = workspace_path
         self.aether_runtime = aether_runtime
+        self.gui_interface = gui_interface  # Reference to GUI for code injection
 
         # Initialize model failure tracking first
         self.model_failures = {}
@@ -414,6 +415,9 @@ class LyrixaConversationManager:
                         f"✅ Enhanced LLM response generated with {model}: {len(response)} characters"
                     )
 
+                    # 🎯 NEW: Check for code injection triggers
+                    response = self.handle_llm_response(response, user_input)
+
                     # 📝 Store interaction for learning (if available)
                     if PROMPT_ENGINE_AVAILABLE and build_dynamic_prompt:
                         try:
@@ -675,6 +679,9 @@ Even in fallback mode, I can help with system management, plugin questions, and 
             # Add system info footer
             response += f"\n\n💡 *Session {self.session_id.split('_')[-1]} • Conversation #{self.conversation_count} • Fallback Mode*"
 
+            # 🎯 NEW: Check for code injection triggers even in fallback mode
+            response = self.handle_llm_response(response, user_input)
+
             self.add_to_conversation_history("assistant", response)
             return response
 
@@ -759,3 +766,210 @@ Even in fallback mode, I can help with system management, plugin questions, and 
         except Exception as e:
             logger.error(f"❌ Error in sync wrapper: {e}")
             return asyncio.run(self._generate_smart_fallback_response(user_input))
+
+    def extract_code_block(self, text: str) -> str:
+        """Extract code block from markdown-style text"""
+        if "```" not in text:
+            return ""
+
+        lines = text.split("\n")
+        code_lines = []
+        in_code_block = False
+
+        for line in lines:
+            if line.strip().startswith("```"):
+                if in_code_block:
+                    break  # End of code block
+                else:
+                    in_code_block = True  # Start of code block
+                    continue
+            elif in_code_block:
+                code_lines.append(line)
+
+        return "\n".join(code_lines).strip() if code_lines else ""
+
+    def extract_filename_guess(self, text: str, user_input: str = "") -> str:
+        """Extract or guess filename from response text or user input"""
+        combined_text = (text + " " + user_input).lower()
+
+        # Look for explicit .aether or .py filenames
+        words = combined_text.split()
+        for word in words:
+            if word.endswith(".aether") or word.endswith(".py"):
+                # Clean up the word (remove punctuation)
+                filename = word.strip(".,!?;:\"'")
+                if filename.endswith((".aether", ".py")):
+                    return filename
+
+        # Look for plugin name patterns and create filename
+        plugin_indicators = ["plugin", "create", "generate", "build", "make"]
+        for indicator in plugin_indicators:
+            if indicator in combined_text:
+                # Extract potential plugin name
+                words = combined_text.replace(indicator, "").strip().split()
+                for word in words[:3]:  # Check first few words
+                    if len(word) > 2 and word.isalpha():
+                        return f"{word}_plugin.aether"
+
+        return "generated_plugin.aether"
+
+    def handle_llm_response(self, text: str, user_input: str = "") -> str:
+        """
+        Handle LLM response and check for code injection triggers
+
+        Args:
+            text: The LLM response text
+            user_input: The original user input for context
+
+        Returns:
+            str: The potentially modified response text
+        """
+        # Check for code injection triggers
+        text_lower = text.lower()
+
+        # Pattern 1: Explicit plugin creation intent
+        plugin_creation_patterns = [
+            "plugin editor",
+            "inject code",
+            "created plugin",
+            "generated plugin",
+            "plugin code",
+        ]
+
+        # Pattern 2: Code blocks present
+        has_code_block = "```" in text
+
+        # Pattern 3: Plugin-related keywords
+        plugin_keywords = any(
+            pattern in text_lower for pattern in plugin_creation_patterns
+        )
+
+        # Only trigger injection if we have both intent and code
+        if has_code_block and plugin_keywords:
+            plugin_code = self.extract_code_block(text)
+
+            if plugin_code and len(plugin_code.strip()) > 10:  # Valid code content
+                filename = self.extract_filename_guess(text, user_input)
+
+                # Attempt GUI injection
+                if self.gui_interface and hasattr(
+                    self.gui_interface, "inject_plugin_code"
+                ):
+                    try:
+                        success = self.gui_interface.inject_plugin_code(
+                            plugin_code, filename
+                        )
+
+                        if success:
+                            logger.info(f"🎯 Code injection successful: {filename}")
+
+                            # Store in memory if available (optional)
+                            try:
+                                # This could be enhanced with actual memory storage
+                                pass
+                            except Exception as e:
+                                logger.debug(
+                                    f"Could not store plugin creation in memory: {e}"
+                                )
+
+                            # Add injection confirmation to response
+                            injection_note = f"\n\n🎯 **Plugin Editor Updated**: I've injected the {filename} code into your Plugin Editor tab! You can now review, edit, save, and test the plugin."
+                            return text + injection_note
+                        else:
+                            logger.warning("⚠️ Code injection failed")
+                    except Exception as e:
+                        logger.error(f"❌ Code injection error: {e}")
+                else:
+                    logger.debug("⚠️ No GUI interface available for code injection")
+
+        return text  # No injection triggered, return original text
+
+    # ====================
+    # SELF-IMPROVEMENT INTEGRATION
+    # ====================
+
+    def enable_self_improvement_monitoring(self, check_interval_hours: int = 24):
+        """Enable automatic plugin improvement monitoring"""
+        try:
+            from .self_improvement_trigger import SelfImprovementScheduler
+
+            if not hasattr(self, "improvement_scheduler"):
+                self.improvement_scheduler = SelfImprovementScheduler(
+                    workspace_path=self.workspace_path, gui_interface=self.gui_interface
+                )
+                self.improvement_scheduler.set_check_interval(check_interval_hours)
+                self.improvement_scheduler.start_background_monitoring()
+                logger.info(
+                    f"🤖 Self-improvement monitoring enabled (every {check_interval_hours}h)"
+                )
+            else:
+                logger.info("🤖 Self-improvement monitoring already active")
+
+        except ImportError:
+            logger.warning("⚠️ Self-improvement components not available")
+
+    def disable_self_improvement_monitoring(self):
+        """Disable automatic plugin improvement monitoring"""
+        if hasattr(self, "improvement_scheduler"):
+            self.improvement_scheduler.stop_background_monitoring()
+            logger.info("⏹️ Self-improvement monitoring disabled")
+
+    async def suggest_plugin_improvements(self, user_context: str = "") -> str:
+        """Generate plugin improvement suggestions based on current context"""
+        try:
+            from .plugin_diff_engine import PluginDiffEngine
+
+            # Initialize diff engine if not already done
+            if not hasattr(self, "diff_engine"):
+                self.diff_engine = PluginDiffEngine(self.workspace_path)
+
+            # Analyze plugins for improvements
+            proposals = await self.diff_engine.generate_improvement_proposals()
+
+            if not proposals:
+                return "✅ All your plugins look great! No improvement suggestions at this time."
+
+            # Create natural response about improvements
+            response_parts = ["🔧 I found some potential plugin improvements:\n"]
+
+            for i, proposal in enumerate(proposals[:3], 1):  # Show top 3
+                response_parts.append(f"""
+{i}. **{proposal.plugin_id}**
+   - Improvement: {proposal.proposed_change}
+   - Impact: {proposal.impact}
+   - Risk Level: {proposal.risk_level}
+   - Confidence: {proposal.confidence:.1%}
+""")
+
+            if len(proposals) > 3:
+                response_parts.append(
+                    f"\n💡 Plus {len(proposals) - 3} more improvement opportunities!"
+                )
+
+            response_parts.append(
+                "\nWould you like me to load any of these improvements into the Plugin Editor for review?"
+            )
+
+            return "".join(response_parts)
+
+        except Exception as e:
+            logger.error(f"❌ Failed to generate improvement suggestions: {e}")
+            return "⚠️ I encountered an issue while analyzing plugins for improvements. Please try again later."
+
+    async def auto_check_for_improvements(self) -> bool:
+        """Automatically check for and suggest improvements (called by scheduler)"""
+        try:
+            suggestions = await self.suggest_plugin_improvements()
+
+            # If improvements are found, they would be processed by the scheduler
+            # This method is mainly for integration with the automatic system
+            if "I found some potential" in suggestions:
+                logger.info("🔍 Auto-check found improvement opportunities")
+                return True
+            else:
+                logger.info("✅ Auto-check: No improvements needed")
+                return False
+
+        except Exception as e:
+            logger.error(f"❌ Auto-check for improvements failed: {e}")
+            return False

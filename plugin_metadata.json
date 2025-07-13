@@ -1,0 +1,247 @@
+{
+  "agent_plugin": {
+    "plugin_id": "agent_plugin",
+    "description": "Perform AI agent reflection on a given topic",
+    "tags": [
+      "monitoring",
+      "security"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.8999999999999999,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "file_tools": {
+    "plugin_id": "file_tools",
+    "description": "Create a new file with optional content",
+    "tags": [
+      "file_management",
+      "web",
+      "security"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.8999999999999999,
+    "last_used": "2025-07-13T03:42:53.647160",
+    "success_rate": 1.0,
+    "performance_score": 0.0
+  },
+  "git_plugin": {
+    "plugin_id": "git_plugin",
+    "description": "Get comprehensive Git repository status",
+    "tags": [
+      "file_management",
+      "monitoring",
+      "web",
+      "security"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.8999999999999999,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "greet_plugin": {
+    "plugin_id": "greet_plugin",
+    "description": "Generate a personalized greeting",
+    "tags": [
+      "security"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.8999999999999999,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "local_llm": {
+    "plugin_id": "local_llm",
+    "description": "Chat with local LLM models using Ollama",
+    "tags": [
+      "file_management",
+      "async",
+      "monitoring",
+      "security",
+      "web"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.8999999999999999,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "manager": {
+    "plugin_id": "manager",
+    "description": "\ud83d\udd0c Aetherra Plugin Registry System\nAdvanced plugin management with registry integration for AI-consciousness programming.\n\nThis is the enhanced plugin system that integrates with the central Aetherra\nPlugin Registry, enabling discovery, installation, and management of community\nAI-consciousness modules.\n\nLicense: GPL-3.0",
+    "tags": [
+      "file_management",
+      "monitoring",
+      "web",
+      "security"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.9999999999999999,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "math_plugin": {
+    "plugin_id": "math_plugin",
+    "description": "Safely evaluate mathematical expressions",
+    "tags": [
+      "monitoring",
+      "security"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.8999999999999999,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "memory_plugin": {
+    "plugin_id": "memory_plugin",
+    "description": "Clear specified type of memory",
+    "tags": [
+      "monitoring",
+      "security"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.8999999999999999,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "search_plugin": {
+    "plugin_id": "search_plugin",
+    "description": "Perform web search using DuckDuckGo",
+    "tags": [
+      "database",
+      "web",
+      "security"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.8999999999999999,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "summarizer_plugin": {
+    "plugin_id": "summarizer_plugin",
+    "description": "Aetherra Summarizer Plugin\nProvides text summarization capabilities using various AI models.",
+    "tags": [
+      "async",
+      "monitoring",
+      "security",
+      "visualization"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.9999999999999999,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "system_plugin": {
+    "plugin_id": "system_plugin",
+    "description": "Get comprehensive system status information",
+    "tags": [
+      "automation",
+      "monitoring",
+      "security"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.8999999999999999,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "whisper": {
+    "plugin_id": "whisper",
+    "description": "Transcribe audio files using OpenAI Whisper",
+    "tags": [
+      "file_management",
+      "database",
+      "security"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.8999999999999999,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "aetherra_greeting_module": {
+    "plugin_id": "aetherra_greeting_module",
+    "description": "",
+    "tags": [],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.6,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "example_plugin": {
+    "plugin_id": "example_plugin",
+    "description": "",
+    "tags": [
+      "file_management"
+    ],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.5,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  },
+  "holiday_greeting": {
+    "plugin_id": "holiday_greeting",
+    "description": "",
+    "tags": [],
+    "input_types": [],
+    "output_types": [],
+    "collaborates_with": [],
+    "use_cases": [],
+    "confidence_score": 0.5,
+    "last_used": null,
+    "success_rate": 0.0,
+    "performance_score": 0.0
+  }
+}
