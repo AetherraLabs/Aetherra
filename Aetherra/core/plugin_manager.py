@@ -648,5 +648,33 @@ def execute_plugin_command(command: str) -> Dict[str, Any]:
         }
 
 
+class PluginManager:
+    """Simple Plugin Manager for Lyrixa system compatibility"""
+
+    def __init__(self):
+        self.plugins = {}
+        self.enabled_plugins = set()
+
+    def load_plugins(self):
+        """Load available plugins"""
+        return []
+
+    def get_available_plugins(self):
+        """Get list of available plugins"""
+        return []
+
+    def enable_plugin(self, plugin_name: str):
+        """Enable a plugin"""
+        self.enabled_plugins.add(plugin_name)
+
+    def disable_plugin(self, plugin_name: str):
+        """Disable a plugin"""
+        self.enabled_plugins.discard(plugin_name)
+
+    def is_enabled(self, plugin_name: str) -> bool:
+        """Check if plugin is enabled"""
+        return plugin_name in self.enabled_plugins
+
+
 # Call this at startup to populate PLUGIN_REGISTRY
 load_plugins()

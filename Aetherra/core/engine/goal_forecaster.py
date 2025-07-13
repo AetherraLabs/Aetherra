@@ -60,7 +60,8 @@ try:
 except ImportError as e:
     LocalAIEngine = None
     AETHERRA_NLP_AVAILABLE = False
-    print(f"[GoalForecaster] ⚠️ Aetherra NLP not available: {e}")
+    # Note: This is expected if advanced NLP modules aren't installed
+    # Basic functionality will work with local implementations
 
 
 class PersistentForecastDB:

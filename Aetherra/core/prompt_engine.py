@@ -567,3 +567,28 @@ BEHAVIORAL GUIDELINES:
 """
 
     return personality_layer
+
+
+class PromptEngine:
+    """Basic Prompt Engine for Lyrixa system compatibility"""
+
+    def __init__(self):
+        self.templates = {}
+        self.context = {}
+
+    def add_template(self, name: str, template: str):
+        """Add a prompt template"""
+        self.templates[name] = template
+
+    def generate_prompt(self, template_name: str, **kwargs) -> str:
+        """Generate a prompt from a template"""
+        template = self.templates.get(template_name, "")
+        return template.format(**kwargs)
+
+    def set_context(self, **kwargs):
+        """Set context variables"""
+        self.context.update(kwargs)
+
+    def get_context(self) -> dict:
+        """Get current context"""
+        return self.context.copy()

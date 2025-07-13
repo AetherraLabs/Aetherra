@@ -151,34 +151,85 @@ class MultiLLMManager:
 
         # Ollama models (local)
         if LLMProvider.OLLAMA in self.providers:
-            self.model_configs.update(
-                {
-                    "mistral": LLMConfig(
+            # Check what models are actually available locally
+            try:
+                import ollama
+                client = ollama.Client()
+                available_models_response = client.list()
+                installed_models = [model.model for model in available_models_response.models if model.model]
+                logger.info(f"🦙 Found Ollama models: {installed_models}")
+
+                # Add configurations for actually installed models
+                ollama_configs = {}
+
+                # Configure mistral models
+                mistral_models = [m for m in installed_models if m and "mistral" in m]
+                if mistral_models:
+                    ollama_configs["mistral"] = LLMConfig(
                         provider=LLMProvider.OLLAMA,
-                        model_name="mistral",
+                        model_name=mistral_models[0],
                         base_url="http://localhost:11434",
                         context_window=4096,
-                    ),
-                    "llama2": LLMConfig(
+                    )
+
+                # Configure llama3 models
+                llama3_models = [m for m in installed_models if m and "llama3" in m]
+                if llama3_models:
+                    # Prefer llama3:latest if available, otherwise use first llama3 model
+                    llama3_latest = [m for m in llama3_models if m == "llama3:latest"]
+                    llama3_model = llama3_latest[0] if llama3_latest else llama3_models[0]
+
+                    ollama_configs["llama3"] = LLMConfig(
                         provider=LLMProvider.OLLAMA,
-                        model_name="llama2",
+                        model_name=llama3_model,
                         base_url="http://localhost:11434",
-                        context_window=4096,
-                    ),
-                    "mixtral": LLMConfig(
-                        provider=LLMProvider.OLLAMA,
-                        model_name="mixtral",
-                        base_url="http://localhost:11434",
-                        context_window=32768,
-                    ),
-                    "codellama": LLMConfig(
-                        provider=LLMProvider.OLLAMA,
-                        model_name="codellama",
-                        base_url="http://localhost:11434",
-                        context_window=4096,
-                    ),
-                }
-            )
+                        context_window=8192,
+                    )
+
+                    # Also add llama3.2 if the 3b model is available
+                    llama32_models = [m for m in installed_models if m and "llama3.2" in m]
+                    if llama32_models:
+                        ollama_configs["llama3.2"] = LLMConfig(
+                            provider=LLMProvider.OLLAMA,
+                            model_name=llama32_models[0],
+                            base_url="http://localhost:11434",
+                            context_window=8192,
+                        )
+
+                # Add other common models if found
+                for model_full_name in installed_models:
+                    if model_full_name:  # Ensure model name is not None/empty
+                        model_base = model_full_name.split(":")[0]
+                        if model_base not in ["mistral", "llama3"] and model_base not in ollama_configs:
+                            ollama_configs[model_base] = LLMConfig(
+                                provider=LLMProvider.OLLAMA,
+                                model_name=model_full_name,
+                                base_url="http://localhost:11434",
+                                context_window=4096,
+                            )
+
+                self.model_configs.update(ollama_configs)
+                logger.info(f"✅ Configured {len(ollama_configs)} Ollama models")
+
+            except Exception as e:
+                logger.warning(f"⚠️ Could not detect Ollama models dynamically: {e}")
+                # Fallback to default configurations
+                self.model_configs.update(
+                    {
+                        "mistral": LLMConfig(
+                            provider=LLMProvider.OLLAMA,
+                            model_name="mistral:latest",
+                            base_url="http://localhost:11434",
+                            context_window=4096,
+                        ),
+                        "llama3": LLMConfig(
+                            provider=LLMProvider.OLLAMA,
+                            model_name="llama3:latest",
+                            base_url="http://localhost:11434",
+                            context_window=8192,
+                        ),
+                    }
+                )
 
         # Anthropic models
         if LLMProvider.ANTHROPIC in self.providers:
@@ -367,12 +418,22 @@ class OllamaProvider:
     def is_model_available(self, config: LLMConfig) -> bool:
         """Check if model is available in Ollama"""
         try:
-            models = self.client.list()
-            available_models = [
-                model["name"].split(":")[0] for model in models["models"]
-            ]
-            return config.model_name in available_models
-        except Exception:
+            models_response = self.client.list()
+            available_models = [model.model for model in models_response.models if model.model]
+
+            # Check exact match first
+            if config.model_name in available_models:
+                return True
+
+            # Check base name match (e.g., "mistral" matches "mistral:latest")
+            base_name = config.model_name.split(":")[0]
+            for model in available_models:
+                if model.split(":")[0] == base_name:
+                    return True
+
+            return False
+        except Exception as e:
+            logger.warning(f"⚠️ Error checking Ollama model availability: {e}")
             return False
 
     async def generate(self, config: LLMConfig, prompt: str, **kwargs) -> str:
