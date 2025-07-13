@@ -313,37 +313,70 @@ async def api_plugin_capabilities():
         )
 
 
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    """Basic health check endpoint."""
-    return {"status": "healthy", "service": "Lyrixa Intelligence API"}
+# Enhanced plugin capabilities endpoint
+@app.get("/api/plugins/enhanced_capabilities")
+async def api_enhanced_plugin_capabilities():
+    """Get enhanced plugin capabilities with detailed metadata, confidence scores, and AI recommendations."""
+    try:
+        # Import the capability extractor
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+        from enhanced_plugin_capabilities import PluginCapabilityExtractor
 
+        extractor = PluginCapabilityExtractor()
 
-# Root endpoint
-@app.get("/")
-async def root():
-    """API information endpoint."""
-    return {
-        "service": "Lyrixa Intelligence API",
-        "version": "2.0.0",
-        "endpoints": [
-            "/api/plugins/discovery",
-            "/api/plugins/capabilities",
-            "/api/goals/forecast",
-            "/api/goals/reasoning_context",
-            "/api/agents/list",
-            "/api/agents/register",
-            "/api/agents/suggest_pairings",
-            "/api/agents/enable_chaining",
-            "/api/cognitive_monitor/dashboard",
-            "/api/self_improvement/propose_changes",
-        ],
-    }
+        # Check multiple plugin directories
+        plugins_dirs = [
+            os.path.join(os.path.dirname(__file__), "..", "plugins"),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "Aetherra", "plugins"),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "src", "aetherra", "plugins"),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "plugins")
+        ]
 
+        all_plugins = []
 
-if __name__ == "__main__":
-    import uvicorn
+        for plugins_dir in plugins_dirs:
+            if os.path.exists(plugins_dir):
+                print(f"[Enhanced Capabilities] Scanning: {plugins_dir}")
+                plugins_in_dir = extractor.bulk_extract_plugins(plugins_dir)
+                all_plugins.extend(plugins_in_dir)
 
-    print("🚀 Starting Lyrixa Fixed Intelligence API...")
-    uvicorn.run(app, host="127.0.0.1", port=8005, log_level="info")
+        # Remove duplicates based on plugin name
+        seen_names = set()
+        unique_plugins = []
+        for plugin in all_plugins:
+            if plugin['name'] not in seen_names:
+                seen_names.add(plugin['name'])
+                unique_plugins.append(plugin)
+
+        # Sort by confidence score
+        unique_plugins.sort(key=lambda x: x.get("confidence_score", 0), reverse=True)
+
+        # Add summary statistics
+        summary = {
+            "total_plugins": len(unique_plugins),
+            "high_confidence": len([p for p in unique_plugins if p.get("confidence_score", 0) > 0.8]),
+            "categories": {},
+            "top_capabilities": {}
+        }
+
+        # Calculate category distribution
+        for plugin in unique_plugins:
+            category = plugin.get("category", "unknown")
+            summary["categories"][category] = summary["categories"].get(category, 0) + 1
+
+        # Calculate capability frequency
+        for plugin in unique_plugins:
+            for capability in plugin.get("capabilities", []):
+                summary["top_capabilities"][capability] = summary["top_capabilities"].get(capability, 0) + 1
+
+        return {
+            "plugins": unique_plugins,
+            "summary": summary,
+            "status": "success",
+            "extraction_method": "enhanced_capability_extractor"
+        }
+
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e), "status": "error"}, status_code=500
+        )

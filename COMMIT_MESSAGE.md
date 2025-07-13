@@ -115,8 +115,8 @@ None - all changes are additive and backward compatible.
 
 ---
 
-**Type**: feat  
-**Scope**: core, plugins, ai, ui  
-**Breaking**: false  
-**Tested**: ✅ Comprehensive test suite  
+**Type**: feat
+**Scope**: core, plugins, ai, ui
+**Breaking**: false
+**Tested**: ✅ Comprehensive test suite
 **Documented**: ✅ Implementation summary included

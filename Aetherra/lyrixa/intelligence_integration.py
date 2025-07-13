@@ -25,15 +25,30 @@ except ImportError:
     print("⚠️ Aetherra runtime not available")
     AetherRuntime = None
 
-# Import conversation manager
+# Import conversation manager (lazy import to avoid circular dependencies)
 try:
-    from .conversation_manager import LyrixaConversationManager
-
-    CONVERSATION_MANAGER_AVAILABLE = True
-except ImportError as e:
-    print(f"⚠️ Conversation manager not available: {e}")
+    # Delay import to avoid circular dependency issues
     LyrixaConversationManager = None
     CONVERSATION_MANAGER_AVAILABLE = False
+
+    def _get_conversation_manager():
+        global LyrixaConversationManager, CONVERSATION_MANAGER_AVAILABLE
+        if LyrixaConversationManager is None:
+            try:
+                from .conversation_manager import LyrixaConversationManager
+                CONVERSATION_MANAGER_AVAILABLE = True
+            except ImportError as e:
+                print(f"⚠️ Conversation manager not available: {e}")
+                CONVERSATION_MANAGER_AVAILABLE = False
+        return LyrixaConversationManager
+
+except Exception as e:
+    print(f"⚠️ Conversation manager setup failed: {e}")
+    LyrixaConversationManager = None
+    CONVERSATION_MANAGER_AVAILABLE = False
+
+    def _get_conversation_manager():
+        return None
 
 
 class LyrixaIntelligenceStack:
@@ -51,10 +66,11 @@ class LyrixaIntelligenceStack:
         )
         self.gui_interface = gui_interface  # Store GUI interface reference
 
-        # Initialize conversation manager with GUI interface
-        if CONVERSATION_MANAGER_AVAILABLE and LyrixaConversationManager:
+        # Initialize conversation manager with GUI interface (using lazy import)
+        conversation_manager_class = _get_conversation_manager()
+        if CONVERSATION_MANAGER_AVAILABLE and conversation_manager_class:
             try:
-                self.conversation_manager = LyrixaConversationManager(
+                self.conversation_manager = conversation_manager_class(
                     workspace_path=workspace_path,
                     aether_runtime=self.aether_runtime,
                     gui_interface=gui_interface,  # Pass GUI interface to conversation manager

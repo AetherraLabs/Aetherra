@@ -1,19 +1,64 @@
 # Lyrixa Self-Improvement Dashboard API
-# This file exposes dashboard data to the UI (Flask/FastAPI style, adjust as needed)
+# UPDATED: This file now redirects to the Enhanced API Server for better reliability
+# The enhanced server has all the latest features and proper import handling
 
 import json
 import os
 import sys
+from pathlib import Path
+
+# Add project root to Python path for imports
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+print("🔄 Self-Improvement Dashboard API")
+print("   Redirecting to Enhanced API Server...")
+
+# Check if we should redirect to enhanced server
+enhanced_server_path = project_root / "enhanced_api_server.py"
+if enhanced_server_path.exists():
+    print("✅ Using Enhanced API Server with full features")
+    print("   📍 Location: enhanced_api_server.py")
+    print("   🌐 Port: 8007")
+    print()
+    print("💡 To start the server, use:")
+    print("   python enhanced_api_server.py")
+    print("   OR")
+    print("   python run_self_improvement_api.py")
+    print()
+
+    # Import the enhanced server app for compatibility
+    try:
+        from enhanced_api_server import app
+        print("✅ Enhanced API server imported successfully")
+    except Exception as e:
+        print(f"⚠️ Import note: {e}")
+        print("   Server can still be started directly with the files above")
+else:
+    print("⚠️ Enhanced API server not found, using fallback implementation")
 
 from fastapi import APIRouter, FastAPI, Request
 from fastapi.responses import JSONResponse
 
 # Import plugin managers for discovery
-from Aetherra.lyrixa.core.advanced_plugins import LyrixaAdvancedPluginManager
+try:
+    from Aetherra.lyrixa.core.advanced_plugins import LyrixaAdvancedPluginManager
+except ImportError:
+    print("⚠️ LyrixaAdvancedPluginManager not available - using fallback")
+    LyrixaAdvancedPluginManager = None
 
 # Fix import for memory system
-from Aetherra.lyrixa.core.enhanced_memory import LyrixaEnhancedMemorySystem
-from Aetherra.lyrixa.core.enhanced_self_evaluation_agent import EnhancedSelfEvaluationAgent
+try:
+    from Aetherra.lyrixa.core.enhanced_memory import LyrixaEnhancedMemorySystem
+except ImportError:
+    print("⚠️ LyrixaEnhancedMemorySystem not available - using fallback")
+    LyrixaEnhancedMemorySystem = None
+
+try:
+    from Aetherra.lyrixa.core.enhanced_self_evaluation_agent import EnhancedSelfEvaluationAgent
+except ImportError:
+    print("⚠️ EnhancedSelfEvaluationAgent not available - using fallback")
+    EnhancedSelfEvaluationAgent = None
 
 # Import collaboration and monitoring components
 try:
@@ -75,13 +120,21 @@ app.include_router(router)
 
 # Dependency injection or global instance as appropriate
 def get_agent():
-    memory_system = LyrixaEnhancedMemorySystem()
-    return EnhancedSelfEvaluationAgent(memory_system)
+    if LyrixaEnhancedMemorySystem and EnhancedSelfEvaluationAgent:
+        memory_system = LyrixaEnhancedMemorySystem()
+        return EnhancedSelfEvaluationAgent(memory_system)
+    else:
+        print("⚠️ Memory system or evaluation agent not available")
+        return None
 
 
 def get_plugin_manager():
     """Get the advanced plugin manager instance"""
-    return LyrixaAdvancedPluginManager()
+    if LyrixaAdvancedPluginManager:
+        return LyrixaAdvancedPluginManager()
+    else:
+        print("⚠️ Advanced plugin manager not available")
+        return None
 
 
 def get_enhanced_plugin_manager():
@@ -231,6 +284,93 @@ async def get_plugin_capabilities():
         )
 
 
+@router.get("/api/plugins/enhanced_capabilities")
+async def get_enhanced_plugin_capabilities():
+    """Get enhanced plugin capabilities with detailed metadata, confidence scores, and AI recommendations."""
+    try:
+        # Import the capability extractor
+        import sys
+        import os
+
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+        from enhanced_plugin_capabilities import PluginCapabilityExtractor
+
+        extractor = PluginCapabilityExtractor()
+
+        # Check multiple plugin directories
+        plugins_dirs = [
+            os.path.join(os.path.dirname(__file__), "..", "plugins"),
+            os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                "Aetherra",
+                "plugins",
+            ),
+            os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                "src",
+                "aetherra",
+                "plugins",
+            ),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                "plugins"),
+        ]
+
+        all_plugins = []
+
+        for plugins_dir in plugins_dirs:
+            if os.path.exists(plugins_dir):
+                print(f"[Enhanced Capabilities] Scanning: {plugins_dir}")
+                plugins_in_dir = extractor.bulk_extract_plugins(plugins_dir)
+                all_plugins.extend(plugins_in_dir)
+
+        # Remove duplicates based on plugin name
+        seen_names = set()
+        unique_plugins = []
+        for plugin in all_plugins:
+            if plugin["name"] not in seen_names:
+                seen_names.add(plugin["name"])
+                unique_plugins.append(plugin)
+
+        # Sort by confidence score
+        unique_plugins.sort(
+            key=lambda x: x.get("confidence_score", 0), reverse=True
+        )
+
+        # Add summary statistics
+        summary = {
+            "total_plugins": len(unique_plugins),
+            "high_confidence": len(
+                [p for p in unique_plugins if p.get("confidence_score", 0) > 0.8]
+            ),
+            "categories": {},
+            "top_capabilities": {},
+        }
+
+        # Calculate category distribution
+        for plugin in unique_plugins:
+            category = plugin.get("category", "unknown")
+            summary["categories"][category] = summary["categories"].get(category, 0) + 1
+
+        # Calculate capability frequency
+        for plugin in unique_plugins:
+            for capability in plugin.get("capabilities", []):
+                summary["top_capabilities"][capability] = summary["top_capabilities"].get(
+                    capability, 0
+                ) + 1
+
+        return {
+            "plugins": unique_plugins,
+            "summary": summary,
+            "status": "success",
+            "extraction_method": "enhanced_capability_extractor",
+        }
+
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e), "status": "error"}, status_code=500
+        )
+
+
 @router.post("/api/goals/forecast")
 async def forecast_goal(request: Request):
     """Forecast the outcome of a goal before execution."""
@@ -325,3 +465,35 @@ async def api_cognitive_monitor_dashboard():
         return JSONResponse(
             content={"error": str(e), "status": "error"}, status_code=500
         )
+
+
+# Main execution block
+if __name__ == "__main__":
+    print("\n🚀 Starting Lyrixa Self-Improvement Dashboard API...")
+
+    # Try to start the enhanced server if available
+    enhanced_server_path = project_root / "enhanced_api_server.py"
+
+    if enhanced_server_path.exists():
+        print("✅ Starting Enhanced API Server with full features...")
+        print("   🔗 Port: 8007")
+        print("   📱 Features: Plugin Intelligence, Meta-Reasoning, Goals, Plugin Editor")
+
+        try:
+            # Import and start enhanced server
+            import uvicorn
+            from enhanced_api_server import app as enhanced_app
+
+            uvicorn.run(enhanced_app, host="127.0.0.1", port=8007, log_level="info")
+
+        except Exception as e:
+            print(f"❌ Failed to start enhanced server: {e}")
+            print("\n🔄 Falling back to local server...")
+
+            # Fallback to local app
+            import uvicorn
+            uvicorn.run(app, host="127.0.0.1", port=8005, log_level="info")
+    else:
+        print("⚠️ Enhanced server not found, starting local server...")
+        import uvicorn
+        uvicorn.run(app, host="127.0.0.1", port=8005, log_level="info")

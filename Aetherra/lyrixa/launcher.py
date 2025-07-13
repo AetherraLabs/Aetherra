@@ -1,4 +1,5 @@
 import sys
+import time
 from pathlib import Path
 
 from PySide6.QtWidgets import QApplication
@@ -8,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # Add the main project directory to path so 'Aetherra' module imports work
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from utils.launch_utils import run_self_improvement_api
+from utils.launch_utils import run_self_improvement_api, wait_for_api_server
 from utils.logging_utils import log
 
 # Updated import paths with fallback handling
@@ -172,5 +173,13 @@ def launch_gui():
 
 if __name__ == "__main__":
     log("🚀 Launching Lyrixa Desktop Interface...")
-    run_self_improvement_api()
+
+    # Start API server and wait for it to be ready
+    log("🔧 Starting Enhanced API server first...")
+    api_ready = run_self_improvement_api()
+
+    if not api_ready:
+        log("⚠️ API server not ready - some features may not work", "warning")
+
+    log("🎮 Starting GUI...")
     launch_gui()

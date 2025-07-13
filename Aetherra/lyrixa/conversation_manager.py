@@ -9,10 +9,12 @@ personality, memory integration, and system awareness.
 
 import asyncio
 import logging
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
+import os
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -41,6 +43,28 @@ except ImportError as e:
     logger.warning(f"⚠️ Enhanced prompt engine not available: {e}")
     PROMPT_ENGINE_AVAILABLE = False
     build_dynamic_prompt = None
+
+# Import Plugin Editor Controller
+try:
+    from Aetherra.lyrixa.gui.plugin_editor_controller import PluginEditorController
+
+    PLUGIN_EDITOR_AVAILABLE = True
+    logger.info("✅ Plugin Editor Controller loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Plugin Editor Controller not available: {e}")
+    PLUGIN_EDITOR_AVAILABLE = False
+    PluginEditorController = None
+
+# Import Meta-Reasoning Engine
+try:
+    from Aetherra.lyrixa.intelligence.meta_reasoning import MetaReasoningEngine
+
+    META_REASONING_AVAILABLE = True
+    logger.info("✅ Meta-Reasoning Engine loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Meta-Reasoning Engine not available: {e}")
+    META_REASONING_AVAILABLE = False
+    MetaReasoningEngine = None
 
 
 class LyrixaConversationManager:
@@ -99,13 +123,48 @@ class LyrixaConversationManager:
         self.conversation_history = []
         self.max_history_length = 20
 
-        # System context cache
-        self.system_context_cache = {}
-        self.last_context_update = None
-
-        # Initialize conversation tracking
-        self.session_id = f"lyrixa_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        # Session tracking
+        self.session_id = f"lyrixa_{int(datetime.now().timestamp())}"
         self.conversation_count = 0
+        self.last_context_update = None
+        self.system_context_cache = {}
+
+        # 🎯 Initialize Plugin Editor Controller
+        if PLUGIN_EDITOR_AVAILABLE and PluginEditorController:
+            try:
+                self.plugin_editor_controller = PluginEditorController.get_instance(
+                    gui_interface=gui_interface,
+                    plugin_dir=os.path.join(workspace_path, "plugins") if workspace_path else "plugins"
+                )
+                logger.info("✅ Plugin Editor Controller initialized")
+            except Exception as e:
+                logger.warning(f"⚠️ Plugin Editor Controller initialization failed: {e}")
+                self.plugin_editor_controller = None
+        else:
+            self.plugin_editor_controller = None
+
+        # 🧠 Initialize Meta-Reasoning Engine
+        if META_REASONING_AVAILABLE and MetaReasoningEngine:
+            try:
+                # We'll need a mock memory system for now
+                class MockMemory:
+                    def store(self, data):
+                        logger.debug(f"Meta-reasoning trace: {data.get('type', 'unknown')}")
+
+                class MockPluginManager:
+                    def list_plugin_names(self):
+                        return ["assistant_trainer", "data_processor", "automation", "utility"]
+
+                self.meta_reasoning_engine = MetaReasoningEngine(
+                    memory=MockMemory(),
+                    plugin_manager=MockPluginManager()
+                )
+                logger.info("✅ Meta-Reasoning Engine initialized")
+            except Exception as e:
+                logger.warning(f"⚠️ Meta-Reasoning Engine initialization failed: {e}")
+                self.meta_reasoning_engine = None
+        else:
+            self.meta_reasoning_engine = None
 
     def _select_best_model(self) -> str:
         """Select the best available model from preferences with failure tracking"""
@@ -327,6 +386,15 @@ class LyrixaConversationManager:
             if not self.llm_enabled or not self.llm_manager:
                 logger.info("💬 Using fallback response (LLM not available)")
                 return await self._generate_smart_fallback_response(user_input)
+
+            # 🎯 PLUGIN EDITOR INTENT DETECTION
+            # Check if this is a plugin editor intent before generating LLM response
+            plugin_intent_detected, plugin_response = await self._handle_plugin_editor_intent(
+                user_input
+            )
+            if plugin_intent_detected:
+                logger.info(f"🎯 Plugin editor intent handled: {user_input[:50]}...")
+                return plugin_response
 
             # 🧠 Use enhanced dynamic prompt engine if available
             if PROMPT_ENGINE_AVAILABLE and build_dynamic_prompt:
@@ -973,3 +1041,153 @@ Even in fallback mode, I can help with system management, plugin questions, and 
         except Exception as e:
             logger.error(f"❌ Auto-check for improvements failed: {e}")
             return False
+
+    # ====================
+    # PLUGIN EDITOR INTEGRATION
+    # ====================
+
+    async def _handle_plugin_editor_intent(self, user_input: str) -> tuple[bool, str]:
+        """
+        🎯 Handle plugin editor intents and route to appropriate actions
+        Returns: (intent_detected, response_message)
+        """
+        try:
+            # Check if this is a plugin editor related intent
+            text = user_input.lower()
+            plugin_keywords = ["plugin", "editor"]
+            action_keywords = ["load", "create", "generate", "inject", "populate", "fill", "open", "show"]
+
+            # Must have at least one plugin keyword and one action keyword
+            has_plugin_keyword = any(keyword in text for keyword in plugin_keywords)
+            has_action_keyword = any(keyword in text for keyword in action_keywords)
+
+            if not (has_plugin_keyword and has_action_keyword):
+                return False, ""
+
+            # Detect intent confidence
+            keyword_count = sum(1 for keyword in plugin_keywords + action_keywords if keyword in text)
+            confidence = min(0.5 + (keyword_count * 0.1), 0.9)
+
+            # Route to plugin editor controller if available
+            if self.plugin_editor_controller:
+                success, response, action_data = self.plugin_editor_controller.handle_plugin_editor_intent(
+                    user_input=user_input,
+                    detected_intent="plugin_editor_action",
+                    meta_reasoning_engine=self.meta_reasoning_engine
+                )
+
+                # Add conversation to history
+                self.add_to_conversation_history("user", user_input)
+                self.add_to_conversation_history("assistant", response)
+
+                return True, response
+
+            # Fallback if no controller available
+            else:
+                fallback_response = self._generate_plugin_editor_fallback(user_input, confidence)
+
+                # Add to history
+                self.add_to_conversation_history("user", user_input)
+                self.add_to_conversation_history("assistant", fallback_response)
+
+                return True, fallback_response
+
+        except Exception as e:
+            logger.error(f"❌ Plugin editor intent handling failed: {e}")
+            return False, ""
+
+    def _generate_plugin_editor_fallback(self, user_input: str, confidence: float) -> str:
+        """Generate fallback response for plugin editor intents when controller unavailable"""
+        text = user_input.lower()
+
+        if "load" in text and "plugin" in text:
+            return """🎯 I understand you want me to load a plugin into the editor! However, I don't currently have access to the Plugin Editor interface.
+
+To load a plugin manually:
+1. Click on the "Plugin Editor" tab
+2. Use "Open Plugin File" to browse and load your plugin
+3. The plugin code will appear in the editor for review and editing
+
+Would you like me to help you with something else regarding plugins?"""
+
+        elif any(word in text for word in ["create", "generate", "make"]) and "plugin" in text:
+            return """🔧 I'd love to help you create a plugin! While I can't directly inject code into the Plugin Editor right now, I can help you in other ways:
+
+**Plugin Creation Options:**
+1. **Manual Creation**: I can provide you with plugin templates and code examples
+2. **Code Generation**: I can generate plugin code that you can copy into the editor
+3. **Step-by-Step Guide**: I can walk you through the plugin creation process
+
+What type of plugin would you like to create? (e.g., assistant trainer, data processor, automation tool)"""
+
+        elif "inject" in text or "populate" in text:
+            return """📝 I understand you want me to populate the Plugin Editor with code! This feature requires direct GUI integration which isn't currently available.
+
+**Alternative approaches:**
+1. I can generate the plugin code and you can copy it into the editor
+2. I can save the code to a file that you can open in the editor
+3. I can provide step-by-step instructions for manual code entry
+
+Would you like me to generate some plugin code for you to use?"""
+
+        else:
+            return f"""🎯 I detected that you want to work with the Plugin Editor (confidence: {confidence:.1%})!
+
+While I can't directly control the Plugin Editor interface right now, I can:
+• Generate plugin code and templates
+• Explain plugin development concepts
+• Help you plan plugin functionality
+• Provide coding assistance and debugging
+
+What specific plugin-related task can I help you with?"""
+
+    # ====================
+    # ENHANCED INTENT ROUTING WITH META-REASONING
+    # ====================
+
+    def _classify_user_intent(self, user_input: str) -> dict:
+        """
+        🧠 Classify user intent with meta-reasoning tracking
+        """
+        text = user_input.lower()
+
+        # Plugin Editor Intent
+        if any(word in text for word in ["plugin", "editor"]) and any(word in text for word in ["load", "create", "inject", "open"]):
+            intent_data = {
+                "category": "plugin_editor",
+                "confidence": 0.8,
+                "keywords": ["plugin", "editor"],
+                "actions": ["load", "create", "inject", "open"]
+            }
+        # System Status Intent
+        elif any(word in text for word in ["status", "health", "running", "working"]):
+            intent_data = {
+                "category": "system_status",
+                "confidence": 0.7,
+                "keywords": ["status", "system"],
+                "actions": ["check", "monitor"]
+            }
+        # General Conversation
+        else:
+            intent_data = {
+                "category": "general_conversation",
+                "confidence": 0.5,
+                "keywords": [],
+                "actions": ["respond"]
+            }
+
+        # Track intent classification with meta-reasoning
+        if self.meta_reasoning_engine:
+            try:
+                self.meta_reasoning_engine.explain_intent_routing(
+                    user_input=user_input,
+                    detected_intent=intent_data["category"],
+                    confidence=intent_data["confidence"],
+                    routing_decision=f"route_to_{intent_data['category']}",
+                    available_routes=["plugin_editor", "system_status", "general_conversation", "fallback"],
+                    reasoning=f"Detected keywords: {intent_data['keywords']}, Actions: {intent_data['actions']}"
+                )
+            except Exception as e:
+                logger.debug(f"Meta-reasoning intent tracking failed: {e}")
+
+        return intent_data
