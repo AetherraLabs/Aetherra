@@ -13,6 +13,28 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+# Import the new plugin editor refactor functionality
+try:
+    from .plugin_editor_refactor import smart_code_merge, replace_block
+    REFACTOR_AVAILABLE = True
+    print("✅ Plugin editor refactor functionality loaded")
+except ImportError:
+    REFACTOR_AVAILABLE = False
+    print("⚠️ Plugin editor refactor not available - using fallback mode")
+
+    # Fallback functions if import fails
+    def smart_code_merge(existing_code: str, new_code: str, merge_strategy: str = "append") -> str:
+        """Fallback smart merge function"""
+        if merge_strategy == "append":
+            if not existing_code.endswith('\n'):
+                existing_code += '\n'
+            return existing_code + '\n# ✏️ Additional functionality:\n' + new_code
+        return new_code
+
+    def replace_block(existing_code: str, new_block: str) -> str:
+        """Fallback block replace function"""
+        return existing_code + '\n\n' + new_block
+
 
 class PluginEditorTab(QWidget):
     def __init__(self, plugin_dir, memory_manager, plugin_manager):
@@ -369,26 +391,31 @@ class PluginEditorTab(QWidget):
         self.current_file_path = os.path.join(self.plugin_dir, filename)
 
     def apply_code_edit(self, new_code: str, filename: Optional[str] = None, merge_mode: bool = True):
-        """Apply incremental edits to existing code instead of replacing everything"""
+        """Apply incremental edits to existing code with intelligent merging"""
         try:
             if merge_mode and self.editor.toPlainText().strip():
-                # If there's existing code, try to merge intelligently
                 existing_code = self.editor.toPlainText()
 
-                # Simple heuristic: if new code looks like it's adding to existing code
-                if len(new_code) > len(existing_code) and existing_code.strip() in new_code:
-                    # New code contains existing code - safe to replace
-                    self.editor.setPlainText(new_code)
-                    print("🔄 Applied code edit: Replaced with enhanced version")
+                if REFACTOR_AVAILABLE:
+                    # Use the advanced smart merging functionality
+                    merged_code = smart_code_merge(existing_code, new_code, "intelligent")
+                    self.editor.setPlainText(merged_code)
+                    print("🔄 Applied code edit: Smart merge with refactor functionality")
                 else:
-                    # Try to append new functionality
-                    if not existing_code.endswith('\n'):
-                        existing_code += '\n'
+                    # Fallback to previous logic
+                    if len(new_code) > len(existing_code) and existing_code.strip() in new_code:
+                        # New code contains existing code - safe to replace
+                        self.editor.setPlainText(new_code)
+                        print("🔄 Applied code edit: Replaced with enhanced version")
+                    else:
+                        # Try to append new functionality
+                        if not existing_code.endswith('\n'):
+                            existing_code += '\n'
 
-                    # Add separator comment and new code
-                    combined_code = existing_code + "\n# ✏️ Additional functionality:\n" + new_code
-                    self.editor.setPlainText(combined_code)
-                    print("🔄 Applied code edit: Appended new functionality")
+                        # Add separator comment and new code
+                        combined_code = existing_code + "\n# ✏️ Additional functionality:\n" + new_code
+                        self.editor.setPlainText(combined_code)
+                        print("🔄 Applied code edit: Appended new functionality")
             else:
                 # First time or force replace
                 self.editor.setPlainText(new_code)
@@ -403,6 +430,121 @@ class PluginEditorTab(QWidget):
             print(f"❌ Failed to apply code edit: {e}")
             return False
 
+    def replace_function_or_class(self, new_block: str) -> bool:
+        """Replace a specific function or class in the current code"""
+        try:
+            if not REFACTOR_AVAILABLE:
+                print("⚠️ Advanced block replacement not available")
+                return False
+
+            existing_code = self.editor.toPlainText()
+            if not existing_code.strip():
+                print("⚠️ No existing code to replace")
+                return False
+
+            updated_code = replace_block(existing_code, new_block)
+            self.editor.setPlainText(updated_code)
+            print("✅ Successfully replaced function/class block")
+            return True
+        except Exception as e:
+            print(f"❌ Failed to replace block: {e}")
+            return False
+
     def focus_editor(self):
         """Focus the editor widget"""
         self.editor.setFocus()
+
+    def analyze_plugin_structure(self, code: str):
+        """
+        🧠 Analyze plugin structure using AST-aware analysis
+        """
+        try:
+            # Try to use advanced analysis
+            if REFACTOR_AVAILABLE:
+                from .plugin_editor_refactor import analyze_code_structure, parse_plugin_metadata
+
+                # Get structure analysis
+                analysis = analyze_code_structure(code)
+                metadata = parse_plugin_metadata(code)
+
+                return {
+                    "analysis": analysis,
+                    "metadata": metadata,
+                    "has_advanced_features": True
+                }
+            else:
+                # Basic analysis fallback
+                return {
+                    "analysis": {"valid_syntax": True, "message": "Basic analysis only"},
+                    "metadata": None,
+                    "has_advanced_features": False
+                }
+        except Exception as e:
+            print(f"⚠️ Plugin analysis failed: {e}")
+            return {
+                "analysis": {"valid_syntax": False, "error": str(e)},
+                "metadata": None,
+                "has_advanced_features": False
+            }
+
+    def generate_plugin_test(self, function_info: dict) -> str:
+        """
+        🧪 Generate test case for plugin function
+        """
+        try:
+            if REFACTOR_AVAILABLE:
+                from .plugin_editor_refactor import generate_test_case_for_function
+                return generate_test_case_for_function(function_info)
+            else:
+                # Basic test generation
+                func_name = function_info.get("name", "test_function")
+                return f'''
+def test_{func_name}():
+    """Basic test for {func_name}"""
+    # TODO: Implement test logic
+    pass
+'''
+        except Exception as e:
+            print(f"⚠️ Test generation failed: {e}")
+            return f"# Test generation failed: {e}"
+
+    def create_plugin_metadata_template(self, plugin_name: str = "", functions=None, classes=None):
+        """
+        📝 Create metadata template for current plugin
+        """
+        try:
+            if REFACTOR_AVAILABLE:
+                from .plugin_editor_refactor import create_metadata_template
+                return create_metadata_template(plugin_name, functions, classes)
+            else:
+                # Basic template
+                functions = functions or []
+                classes = classes or []
+                return f'''# @plugin: {plugin_name}
+# @functions: {', '.join(functions)}
+# @classes: {', '.join(classes)}
+# @version: 1.0
+# @description: Plugin description
+
+"""
+{plugin_name} Plugin
+"""
+
+'''
+        except Exception as e:
+            print(f"⚠️ Template generation failed: {e}")
+            return f"# Template generation failed: {e}"
+
+    def get_editing_insights(self):
+        """
+        📊 Get insights from editing history
+        """
+        try:
+            if REFACTOR_AVAILABLE:
+                from .plugin_editor_refactor import get_learning_insights
+                return get_learning_insights()
+            else:
+                return {"message": "Learning insights not available"}
+        except Exception as e:
+            print(f"⚠️ Getting insights failed: {e}")
+            return {"error": str(e)}

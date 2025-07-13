@@ -598,6 +598,277 @@ async def goals_reasoning_context(request: Request):
             content={"error": str(e), "endpoint": "reasoning_context"}
         )
 
+# Advanced Plugin Editor functionality
+@app.post("/api/plugin_editor/smart_edit")
+async def plugin_editor_smart_edit(request: Request):
+    """Apply smart code edits to plugin code using the refactor functionality"""
+    try:
+        # Handle empty or malformed request body gracefully
+        try:
+            data = await request.json()
+        except Exception as json_error:
+            print(f"⚠️ JSON parsing failed for plugin editor, using defaults: {json_error}")
+            data = {}
+
+        existing_code = data.get("existing_code", "")
+        new_code = data.get("new_code", "")
+        merge_strategy = data.get("strategy", "intelligent")
+
+        if not new_code:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "new_code is required", "endpoint": "plugin_editor_smart_edit"}
+            )
+
+        # Import the refactor functionality
+        try:
+            import sys
+            import os
+            current_dir = os.path.dirname(__file__)
+            sys.path.insert(0, os.path.join(current_dir, "Aetherra", "lyrixa", "gui"))
+            from plugin_editor_refactor import smart_code_merge, replace_block
+
+            if merge_strategy == "block_replace":
+                result_code = replace_block(existing_code, new_code)
+                operation = "block_replacement"
+            else:
+                result_code = smart_code_merge(existing_code, new_code, merge_strategy)
+                operation = f"smart_merge_{merge_strategy}"
+
+            return {
+                "success": True,
+                "operation": operation,
+                "original_length": len(existing_code),
+                "new_length": len(result_code),
+                "result_code": result_code,
+                "strategy_used": merge_strategy,
+                "improvement_detected": len(result_code) > len(existing_code)
+            }
+
+        except ImportError as e:
+            # Fallback if refactor module not available
+            if not existing_code:
+                result_code = new_code
+            else:
+                result_code = existing_code + "\n\n# Added functionality:\n" + new_code
+
+            return {
+                "success": True,
+                "operation": "fallback_append",
+                "result_code": result_code,
+                "warning": f"Advanced refactor not available: {e}"
+            }
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e), "endpoint": "plugin_editor_smart_edit"}
+        )
+
+# Advanced Code Analysis endpoints
+@app.post("/api/code_analysis/parse_metadata")
+async def parse_plugin_metadata(request: Request):
+    """Parse plugin metadata from code"""
+    try:
+        data = await request.json()
+        code = data.get("code", "")
+
+        if not code:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "code is required"}
+            )
+
+        # Import advanced functionality
+        try:
+            import sys
+            import os
+            current_dir = os.path.dirname(__file__)
+            sys.path.insert(0, os.path.join(current_dir, "Aetherra", "lyrixa", "gui"))
+            from plugin_editor_refactor import parse_plugin_metadata
+
+            metadata = parse_plugin_metadata(code)
+            if metadata:
+                return {
+                    "success": True,
+                    "metadata": {
+                        "name": metadata.name,
+                        "functions": metadata.functions,
+                        "classes": metadata.classes,
+                        "version": metadata.version,
+                        "description": metadata.description,
+                        "dependencies": metadata.dependencies
+                    }
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": "Failed to parse metadata"
+                }
+
+        except ImportError:
+            return {
+                "success": False,
+                "message": "Advanced metadata parsing not available"
+            }
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+@app.post("/api/code_analysis/analyze_structure")
+async def analyze_code_structure(request: Request):
+    """Analyze code structure using AST"""
+    try:
+        data = await request.json()
+        code = data.get("code", "")
+
+        if not code:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "code is required"}
+            )
+
+        # Import advanced functionality
+        try:
+            import sys
+            import os
+            current_dir = os.path.dirname(__file__)
+            sys.path.insert(0, os.path.join(current_dir, "Aetherra", "lyrixa", "gui"))
+            from plugin_editor_refactor import analyze_code_structure
+
+            analysis = analyze_code_structure(code)
+            return {
+                "success": True,
+                "analysis": analysis
+            }
+
+        except ImportError:
+            return {
+                "success": False,
+                "message": "Advanced code analysis not available"
+            }
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+@app.get("/api/code_analysis/learning_insights")
+async def get_learning_insights():
+    """Get learning insights from code editing history"""
+    try:
+        # Import advanced functionality
+        try:
+            import sys
+            import os
+            current_dir = os.path.dirname(__file__)
+            sys.path.insert(0, os.path.join(current_dir, "Aetherra", "lyrixa", "gui"))
+            from plugin_editor_refactor import get_learning_insights
+
+            insights = get_learning_insights()
+            return {
+                "success": True,
+                "insights": insights
+            }
+
+        except ImportError:
+            return {
+                "success": False,
+                "message": "Learning insights not available"
+            }
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+@app.post("/api/code_analysis/generate_test")
+async def generate_test_case(request: Request):
+    """Generate test case for a function"""
+    try:
+        data = await request.json()
+        function_info = data.get("function_info", {})
+
+        if not function_info:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "function_info is required"}
+            )
+
+        # Import advanced functionality
+        try:
+            import sys
+            import os
+            current_dir = os.path.dirname(__file__)
+            sys.path.insert(0, os.path.join(current_dir, "Aetherra", "lyrixa", "gui"))
+            from plugin_editor_refactor import generate_test_case_for_function
+
+            test_code = generate_test_case_for_function(function_info)
+            return {
+                "success": True,
+                "test_code": test_code
+            }
+
+        except ImportError:
+            return {
+                "success": False,
+                "message": "Test generation not available"
+            }
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+@app.post("/api/code_analysis/create_metadata_template")
+async def create_metadata_template(request: Request):
+    """Create metadata template for a plugin"""
+    try:
+        data = await request.json()
+        plugin_name = data.get("plugin_name", "")
+        functions = data.get("functions", [])
+        classes = data.get("classes", [])
+        version = data.get("version", "1.0")
+        description = data.get("description", "")
+
+        if not plugin_name:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "plugin_name is required"}
+            )
+
+        # Import advanced functionality
+        try:
+            import sys
+            import os
+            current_dir = os.path.dirname(__file__)
+            sys.path.insert(0, os.path.join(current_dir, "Aetherra", "lyrixa", "gui"))
+            from plugin_editor_refactor import create_metadata_template
+
+            template = create_metadata_template(plugin_name, functions, classes, version, description)
+            return {
+                "success": True,
+                "template": template
+            }
+
+        except ImportError:
+            return {
+                "success": False,
+                "message": "Metadata template generation not available"
+            }
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
 if __name__ == "__main__":
     import uvicorn
     print("🚀 Starting Fast Enhanced Lyrixa API Server...")
