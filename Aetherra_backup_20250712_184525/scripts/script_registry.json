@@ -1,0 +1,433 @@
+{
+    "registry_info": {
+        "name": "Aetherra Core Script Registry",
+        "version": "1.0.0",
+        "description": "Central registry for all .aether library scripts in the AI OS",
+        "created": "2025-07-07",
+        "last_updated": "2025-07-07"
+    },
+    "categories": {
+        "memory": {
+            "description": "Memory management and analysis scripts",
+            "icon": "🧠",
+            "priority": "high"
+        },
+        "system": {
+            "description": "System maintenance and diagnostics scripts",
+            "icon": "⚙️",
+            "priority": "critical"
+        },
+        "user": {
+            "description": "User-facing productivity and analysis scripts",
+            "icon": "👤",
+            "priority": "high"
+        },
+        "agents": {
+            "description": "Autonomous agent scripts and self-reflection systems",
+            "icon": "🤖",
+            "priority": "high"
+        }
+    },
+    "scripts": {
+        "memory_scan": {
+            "path": "aetherra/scripts/memory/memory_scan.aether",
+            "category": "memory",
+            "name": "Memory Scanner",
+            "description": "Recall and tag matching memories for efficient retrieval",
+            "tags": [
+                "memory",
+                "tagging",
+                "analysis",
+                "patterns"
+            ],
+            "complexity": "medium",
+            "execution_time": "5-15 seconds",
+            "dependencies": [],
+            "parameters": {
+                "scan_criteria": {
+                    "type": "object",
+                    "description": "Criteria for memory scanning",
+                    "optional": true
+                }
+            },
+            "commands": [
+                "scan_memory",
+                "tag_memories",
+                "analyze_memory_patterns"
+            ],
+            "output_format": "detailed_report",
+            "use_cases": [
+                "Finding relevant past experiences",
+                "Organizing memory by importance",
+                "Identifying learning patterns"
+            ],
+            "status": "active"
+        },
+        "summarize_day": {
+            "path": "aetherra/scripts/memory/summarize_day.aether",
+            "category": "memory",
+            "name": "Daily Summarizer",
+            "description": "Run summarizer agents on today's logs and activities",
+            "tags": [
+                "summarization",
+                "daily",
+                "analysis",
+                "insights"
+            ],
+            "complexity": "medium",
+            "execution_time": "10-30 seconds",
+            "dependencies": [],
+            "parameters": {
+                "time_window": {
+                    "type": "string",
+                    "description": "Time period to summarize",
+                    "default": "today",
+                    "optional": true
+                }
+            },
+            "commands": [
+                "summarize_day",
+                "daily_summary",
+                "analyze_today"
+            ],
+            "output_format": "structured_summary",
+            "use_cases": [
+                "End-of-day reflection",
+                "Progress tracking",
+                "Identifying daily patterns"
+            ],
+            "status": "active"
+        },
+        "clear_goals": {
+            "path": "aetherra/scripts/memory/clear_goals.aether",
+            "category": "memory",
+            "name": "Goal Queue Manager",
+            "description": "Flush goal queue safely with proper cleanup and archival",
+            "tags": [
+                "goals",
+                "cleanup",
+                "archival",
+                "management"
+            ],
+            "complexity": "high",
+            "execution_time": "15-45 seconds",
+            "dependencies": [],
+            "parameters": {},
+            "commands": [
+                "clear_goals",
+                "flush_goal_queue",
+                "archive_goals",
+                "goal_statistics",
+                "backup_goals"
+            ],
+            "output_format": "cleanup_report",
+            "use_cases": [
+                "Goal queue maintenance",
+                "System cleanup",
+                "Goal archival"
+            ],
+            "status": "active",
+            "safety_level": "high_confirmation_required"
+        },
+        "plugin_diagnostics": {
+            "path": "aetherra/scripts/memory/plugin_diagnostics.aether",
+            "category": "memory",
+            "name": "Plugin Diagnostics",
+            "description": "Run plugin scoring and log comprehensive diagnostic results",
+            "tags": [
+                "plugins",
+                "diagnostics",
+                "performance",
+                "security"
+            ],
+            "complexity": "high",
+            "execution_time": "30-60 seconds",
+            "dependencies": [],
+            "parameters": {},
+            "commands": [
+                "plugin_diagnostics",
+                "diagnose_plugins",
+                "plugin_health",
+                "scan_plugins"
+            ],
+            "output_format": "diagnostic_report",
+            "use_cases": [
+                "Plugin health assessment",
+                "Performance optimization",
+                "Security auditing"
+            ],
+            "status": "active"
+        },
+        "daily_maintenance": {
+            "path": "aetherra/scripts/system/daily_maintenance.aether",
+            "category": "system",
+            "name": "System Maintenance",
+            "description": "Plugin cleanup, goal summarization, memory pruning, and system optimization",
+            "tags": [
+                "maintenance",
+                "cleanup",
+                "optimization",
+                "system"
+            ],
+            "complexity": "high",
+            "execution_time": "2-5 minutes",
+            "dependencies": [
+                "memory_scan",
+                "plugin_diagnostics"
+            ],
+            "parameters": {},
+            "commands": [
+                "daily_maintenance",
+                "system_maintenance",
+                "run_maintenance",
+                "maintenance_status"
+            ],
+            "output_format": "maintenance_report",
+            "use_cases": [
+                "Scheduled system maintenance",
+                "Performance optimization",
+                "System health maintenance"
+            ],
+            "status": "active",
+            "scheduling": {
+                "recommended_frequency": "daily",
+                "optimal_time": "02:00",
+                "can_run_background": true
+            }
+        },
+        "agent_diagnostics": {
+            "path": "aetherra/scripts/system/agent_diagnostics.aether",
+            "category": "system",
+            "name": "Agent Performance Diagnostics",
+            "description": "Test agent performance across tasks and evaluate system capabilities",
+            "tags": [
+                "diagnostics",
+                "performance",
+                "testing",
+                "evaluation"
+            ],
+            "complexity": "high",
+            "execution_time": "5-10 minutes",
+            "dependencies": [],
+            "parameters": {},
+            "commands": [
+                "agent_diagnostics",
+                "test_performance",
+                "run_diagnostics",
+                "system_health_check"
+            ],
+            "output_format": "comprehensive_diagnostic_report",
+            "use_cases": [
+                "Performance benchmarking",
+                "Capability assessment",
+                "System health evaluation"
+            ],
+            "status": "active",
+            "scheduling": {
+                "recommended_frequency": "weekly",
+                "intensive_operation": true
+            }
+        },
+        "bootstrap": {
+            "path": "aetherra/scripts/system/bootstrap.aether",
+            "category": "system",
+            "name": "System Bootstrap",
+            "description": "Initialize system components and core services",
+            "tags": [
+                "bootstrap",
+                "initialization",
+                "startup",
+                "system"
+            ],
+            "complexity": "high",
+            "execution_time": "30-60 seconds",
+            "dependencies": [],
+            "parameters": {},
+            "commands": [
+                "bootstrap",
+                "initialize_system",
+                "startup"
+            ],
+            "output_format": "initialization_report",
+            "use_cases": [
+                "System startup",
+                "Component initialization",
+                "Service activation"
+            ],
+            "status": "active",
+            "execution_context": "system_startup"
+        },
+        "generate_plugin": {
+            "path": "aetherra/scripts/user/generate_plugin.aether",
+            "category": "user",
+            "name": "Declarative Plugin Generator",
+            "description": "Generate plugins using natural language specifications",
+            "tags": [
+                "generation",
+                "plugins",
+                "declarative",
+                "automation"
+            ],
+            "complexity": "high",
+            "execution_time": "1-3 minutes",
+            "dependencies": [],
+            "parameters": {
+                "specification": {
+                    "type": "string",
+                    "description": "Natural language plugin specification",
+                    "required": true
+                }
+            },
+            "commands": [
+                "generate_plugin",
+                "create_plugin",
+                "build_plugin_spec",
+                "plugin_templates"
+            ],
+            "output_format": "plugin_package",
+            "use_cases": [
+                "Rapid plugin development",
+                "Automated code generation",
+                "Plugin prototyping"
+            ],
+            "status": "active"
+        },
+        "analyze_project": {
+            "path": "aetherra/scripts/user/analyze_project.aether",
+            "category": "user",
+            "name": "Project Analyzer",
+            "description": "Recall project files, summarize, identify goals and provide insights",
+            "tags": [
+                "analysis",
+                "projects",
+                "insights",
+                "architecture"
+            ],
+            "complexity": "high",
+            "execution_time": "2-5 minutes",
+            "dependencies": [],
+            "parameters": {
+                "project_path": {
+                    "type": "string",
+                    "description": "Path to the project directory",
+                    "required": true
+                }
+            },
+            "commands": [
+                "analyze_project",
+                "project_analysis",
+                "quick_project_summary",
+                "project_insights"
+            ],
+            "output_format": "comprehensive_analysis_report",
+            "use_cases": [
+                "Project assessment",
+                "Architecture analysis",
+                "Goal identification",
+                "Quality evaluation"
+            ],
+            "status": "active"
+        },
+        "reflect": {
+            "path": "aetherra/scripts/agents/reflect.aether",
+            "category": "agents",
+            "name": "Reflexive Agent",
+            "description": "Run Reflexive Agent on recent actions, store self-feedback and improve performance",
+            "tags": [
+                "reflection",
+                "self-improvement",
+                "analysis",
+                "learning"
+            ],
+            "complexity": "high",
+            "execution_time": "1-2 minutes",
+            "dependencies": [],
+            "parameters": {
+                "time_period": {
+                    "type": "string",
+                    "description": "Time period for reflection analysis",
+                    "default": "recent",
+                    "optional": true
+                }
+            },
+            "commands": [
+                "reflect",
+                "self_reflect",
+                "analyze_performance",
+                "continuous_reflection",
+                "behavioral_patterns"
+            ],
+            "output_format": "reflection_report",
+            "use_cases": [
+                "Performance self-assessment",
+                "Continuous improvement",
+                "Pattern recognition",
+                "Self-optimization"
+            ],
+            "status": "active",
+            "scheduling": {
+                "recommended_frequency": "daily",
+                "supports_continuous": true
+            }
+        }
+    },
+    "execution_statistics": {
+        "total_scripts": 10,
+        "by_category": {
+            "memory": 4,
+            "system": 3,
+            "user": 2,
+            "agents": 1
+        },
+        "by_complexity": {
+            "medium": 2,
+            "high": 8
+        },
+        "total_commands": 40,
+        "maintenance_scripts": 2,
+        "user_facing_scripts": 3,
+        "diagnostic_scripts": 2
+    },
+    "integration_info": {
+        "lyrixa_integration": {
+            "all_scripts_accessible": true,
+            "command_prefix": "run ",
+            "natural_language_support": true,
+            "context_aware_suggestions": true
+        },
+        "scheduling_support": {
+            "automated_scheduling": true,
+            "background_execution": true,
+            "priority_based_execution": true
+        },
+        "dependency_management": {
+            "automatic_resolution": true,
+            "circular_dependency_detection": true,
+            "execution_order_optimization": true
+        }
+    },
+    "usage_guidelines": {
+        "script_selection": "Choose scripts based on current needs and context",
+        "execution_frequency": "Follow recommended scheduling for optimal performance",
+        "parameter_handling": "Provide required parameters, optional ones have sensible defaults",
+        "output_processing": "All scripts return structured data for further processing",
+        "error_handling": "Scripts include comprehensive error handling and recovery",
+        "safety_considerations": "High-impact scripts require confirmation or have safety checks"
+    },
+    "development_roadmap": {
+        "planned_scripts": [
+            "network_diagnostics.aether",
+            "security_audit.aether",
+            "performance_optimizer.aether",
+            "knowledge_consolidator.aether",
+            "collaboration_enhancer.aether"
+        ],
+        "enhancement_priorities": [
+            "Add more granular parameter controls",
+            "Implement script chaining capabilities",
+            "Add real-time monitoring integration",
+            "Enhance error recovery mechanisms",
+            "Develop script performance analytics"
+        ]
+    }
+}

@@ -1,0 +1,20 @@
+# Test enhanced plugin system
+goal: test enhanced stdlib integration priority: high
+agent: on
+
+remember("Testing enhanced plugin system") as "testing"
+
+# Test listing plugins
+list plugins
+
+# Test plugin info
+plugin info sysmon
+
+# Test executing a standard library plugin
+plugin: sysmon system_status
+
+# Test learning and optimization
+learn from "plugin_test_results"
+optimize for "plugin_performance"
+
+remember("Plugin system tests completed") as "testing"

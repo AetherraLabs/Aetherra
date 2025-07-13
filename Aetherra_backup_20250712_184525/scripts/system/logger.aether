@@ -1,0 +1,344 @@
+# System Logger
+# Structured event logging for the Aetherra OS
+
+goal: maintain_system_logs
+consciousness: enabled
+memory: persistent
+identity: "SystemLogger"
+
+# Import dependencies
+import "Aetherra/system/utils.aether" as utils
+
+# Configuration
+logger_config: {
+    log_level: "info",
+    max_log_age: "30 days",
+    structured_format: true,
+    include_stack_trace: false,
+    auto_cleanup: true
+}
+
+# Log levels in order of severity
+log_levels: {
+    "debug": 0,
+    "info": 1,
+    "warn": 2,
+    "error": 3,
+    "critical": 4
+}
+
+# Core logging function
+function log_event(event_type, data = {}, level = "info", category = "system"):
+    try:
+        # Check if we should log this level
+        if not should_log(level):
+            return false
+
+        # Create structured log entry
+        log_entry = {
+            "type": "system_log",
+            "event_type": event_type,
+            "level": level,
+            "category": category,
+            "timestamp": now(),
+            "data": data,
+            "session_id": get_session_id(),
+            "log_id": utils.generate_uuid()
+        }
+
+        # Add stack trace if configured for errors
+        if level in ["error", "critical"] and logger_config.include_stack_trace:
+            log_entry.stack_trace = get_stack_trace()
+
+        # Add context if available
+        if has_context():
+            log_entry.context = get_current_context()
+
+        # Store in memory
+        log_id = store_memory(log_entry)
+
+        # Also output to console for immediate feedback
+        console_output = format_log_for_console(log_entry)
+        print(console_output)
+
+        # Remember important events
+        if level in ["error", "critical"]:
+            remember critical_event_logged: {
+                "log_id": log_id,
+                "event_type": event_type,
+                "level": level,
+                "timestamp": now()
+            }
+
+        return log_id
+
+    except Exception as e:
+        # Fallback logging - don't let logger errors break the system
+        print(f"🚨 Logger error: {e} - Original event: {event_type}")
+        return null
+
+# Helper function to determine if we should log at this level
+function should_log(level):
+    current_level = log_levels[logger_config.log_level] or 1
+    event_level = log_levels[level] or 1
+    return event_level >= current_level
+
+# Format log entry for console output
+function format_log_for_console(log_entry):
+    level_icons = {
+        "debug": "🐛",
+        "info": "ℹ️",
+        "warn": "⚠️",
+        "error": "❌",
+        "critical": "🚨"
+    }
+
+    icon = level_icons[log_entry.level] or "📝"
+    timestamp = format_timestamp(log_entry.timestamp)
+
+    if logger_config.structured_format:
+        return f"{icon} [{timestamp}] {log_entry.event_type} | {log_entry.category} | {JSON.stringify(log_entry.data)}"
+    else:
+        return f"{icon} [{timestamp}] {log_entry.event_type}: {log_entry.data.message or JSON.stringify(log_entry.data)}"
+    }
+
+# Convenience functions for different log levels
+function log_debug(event_type, data = {}, category = "system"):
+    return log_event(event_type, data, "debug", category)
+
+function log_info(event_type, data = {}, category = "system"):
+    return log_event(event_type, data, "info", category)
+
+function log_warn(event_type, data = {}, category = "system"):
+    return log_event(event_type, data, "warn", category)
+
+function log_error(event_type, data = {}, category = "system"):
+    return log_event(event_type, data, "error", category)
+
+function log_critical(event_type, data = {}, category = "system"):
+    return log_event(event_type, data, "critical", category)
+
+# Specialized logging functions for common events
+function log_goal_event(event_type, goal_data):
+    return log_event(event_type, goal_data, "info", "goals")
+
+function log_agent_event(event_type, agent_data):
+    return log_event(event_type, agent_data, "info", "agents")
+
+function log_plugin_event(event_type, plugin_data):
+    return log_event(event_type, plugin_data, "info", "plugins")
+
+function log_memory_event(event_type, memory_data):
+    return log_event(event_type, memory_data, "info", "memory")
+
+function log_security_event(event_type, security_data):
+    return log_event(event_type, security_data, "warn", "security")
+
+function log_performance_event(event_type, performance_data):
+    return log_event(event_type, performance_data, "info", "performance")
+
+# Query functions
+function get_logs(filters = {}):
+    query = {
+        type: "system_log",
+        ...filters
+    }
+
+    return search_memory(query)
+
+function get_logs_by_category(category, limit = 100):
+    return search_memory({
+        type: "system_log",
+        category: category,
+        limit: limit,
+        sort_by: "timestamp",
+        sort_order: "desc"
+    })
+
+function get_logs_by_level(level, limit = 100):
+    return search_memory({
+        type: "system_log",
+        level: level,
+        limit: limit,
+        sort_by: "timestamp",
+        sort_order: "desc"
+    })
+
+function get_recent_logs(minutes = 60, limit = 100):
+    cutoff_time = utils.get_timestamp_ago(minutes * 60)
+
+    return search_memory({
+        type: "system_log",
+        timestamp_after: cutoff_time,
+        limit: limit,
+        sort_by: "timestamp",
+        sort_order: "desc"
+    })
+
+function get_error_logs(hours = 24):
+    cutoff_time = utils.get_timestamp_ago(hours * 3600)
+
+    return search_memory({
+        type: "system_log",
+        level_in: ["error", "critical"],
+        timestamp_after: cutoff_time,
+        sort_by: "timestamp",
+        sort_order: "desc"
+    })
+
+# Analytics functions
+function get_log_statistics(hours = 24):
+    cutoff_time = utils.get_timestamp_ago(hours * 3600)
+
+    recent_logs = search_memory({
+        type: "system_log",
+        timestamp_after: cutoff_time
+    })
+
+    stats = {
+        "total_logs": len(recent_logs),
+        "by_level": {},
+        "by_category": {},
+        "error_rate": 0,
+        "time_period": f"{hours} hours"
+    }
+
+    # Count by level and category
+    for log in recent_logs:
+        # Count by level
+        level = log.level or "unknown"
+        stats.by_level[level] = (stats.by_level[level] or 0) + 1
+
+        # Count by category
+        category = log.category or "unknown"
+        stats.by_category[category] = (stats.by_category[category] or 0) + 1
+
+    # Calculate error rate
+    error_count = (stats.by_level["error"] or 0) + (stats.by_level["critical"] or 0)
+    stats.error_rate = (error_count / stats.total_logs * 100) if stats.total_logs > 0 else 0
+
+    return stats
+
+function get_top_events(hours = 24, limit = 10):
+    cutoff_time = utils.get_timestamp_ago(hours * 3600)
+
+    recent_logs = search_memory({
+        type: "system_log",
+        timestamp_after: cutoff_time
+    })
+
+    # Count events by type
+    event_counts = {}
+    for log in recent_logs:
+        event_type = log.event_type
+        event_counts[event_type] = (event_counts[event_type] or 0) + 1
+
+    # Sort by count and return top events
+    sorted_events = Object.entries(event_counts)
+                         .sort((a, b) => b[1] - a[1])
+                         .slice(0, limit)
+                         .map(([event, count]) => ({event_type: event, count: count}))
+
+    return sorted_events
+
+# Maintenance functions
+function cleanup_old_logs():
+    if not logger_config.auto_cleanup:
+        return {
+            "cleaned": 0,
+            "message": "Auto cleanup disabled"
+        }
+
+    # Calculate cutoff time based on max_log_age
+    max_age_seconds = parse_duration(logger_config.max_log_age)
+    cutoff_time = utils.get_timestamp_ago(max_age_seconds)
+
+    # Find old logs
+    old_logs = search_memory({
+        type: "system_log",
+        timestamp_before: cutoff_time
+    })
+
+    # Delete old logs
+    deleted_count = 0
+    for log in old_logs:
+        delete_memory(log.id)
+        deleted_count += 1
+
+    # Log the cleanup
+    log_info("log_cleanup_completed", {
+        "deleted_count": deleted_count,
+        "cutoff_time": cutoff_time,
+        "max_age": logger_config.max_log_age
+    })
+
+    return {
+        "cleaned": deleted_count,
+        "cutoff_time": cutoff_time
+    }
+
+# Utility functions
+function format_timestamp(timestamp):
+    return new Date(timestamp).toISOString()
+
+function get_session_id():
+    # This would be set when the system starts
+    return get_global("session_id") or "unknown"
+
+function has_context():
+    return get_global("current_context") != null
+
+function get_current_context():
+    return get_global("current_context") or {}
+
+function get_stack_trace():
+    try:
+        throw new Error()
+    } catch (e) {
+        return e.stack
+    }
+
+function parse_duration(duration_str):
+    # Simple duration parser (e.g., "30 days", "24 hours", "60 minutes")
+    parts = duration_str.split(" ")
+    if parts.length != 2:
+        return 86400 # Default to 1 day
+
+    number = parseInt(parts[0])
+    unit = parts[1].toLowerCase()
+
+    multipliers = {
+        "second": 1,
+        "seconds": 1,
+        "minute": 60,
+        "minutes": 60,
+        "hour": 3600,
+        "hours": 3600,
+        "day": 86400,
+        "days": 86400
+    }
+
+    return number * (multipliers[unit] or 86400)
+
+# Configuration management
+function update_logger_config(new_config):
+    logger_config = utils.merge_objects(logger_config, new_config)
+    log_info("logger_config_updated", {
+        "new_config": logger_config
+    })
+
+function get_logger_config():
+    return logger_config
+
+# Scheduled cleanup - runs daily
+when scheduled_log_cleanup:
+    think "Running scheduled log cleanup"
+    cleanup_result = cleanup_old_logs()
+
+    if cleanup_result.cleaned > 0:
+        think f"Cleaned up {cleanup_result.cleaned} old log entries"
+
+    remember log_cleanup_completed: {
+        "cleaned_count": cleanup_result.cleaned,
+        "timestamp": now()
+    }
