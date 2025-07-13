@@ -16,6 +16,8 @@ CRITICAL INTEGRATION:
 
 import logging
 import sys
+import asyncio
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
@@ -45,11 +47,55 @@ class PluginIntelligenceBridge:
         self.plugin_managers = []
         self.discovered_plugins = {}
         self.plugin_metadata_cache = {}
+        self.retry_count = 3  # Number of retries for intermittent failures
+        self.retry_delay = 1.0  # Seconds to wait between retries
 
         # Initialize plugin managers
         self._initialize_plugin_managers()
-
         logger.info("🔗 Plugin-Intelligence Bridge initialized")
+
+    async def _retry_operation(self, operation, *args, **kwargs):
+        """Retry an operation with exponential backoff to handle intermittent failures"""
+        last_exception = None
+
+        for attempt in range(self.retry_count):
+            try:
+                if asyncio.iscoroutinefunction(operation):
+                    return await operation(*args, **kwargs)
+                else:
+                    return operation(*args, **kwargs)
+            except Exception as e:
+                last_exception = e
+                if attempt < self.retry_count - 1:
+                    wait_time = self.retry_delay * (2**attempt)  # Exponential backoff
+                    logger.warning(
+                        f"⚠️ Operation failed (attempt {attempt + 1}/{self.retry_count}), retrying in {wait_time}s: {e}"
+                    )
+                    await asyncio.sleep(wait_time)
+                else:
+                    logger.error(
+                        f"❌ Operation failed after {self.retry_count} attempts: {e}"
+                    )
+
+        if last_exception:
+            raise last_exception
+        else:
+            raise RuntimeError("Operation failed without specific exception")
+
+    def _validate_manager_connection(self, manager_type: str, manager) -> bool:
+        """Validate that a plugin manager is properly connected and responsive"""
+        try:
+            # Basic connectivity tests for different manager types
+            if manager_type == "enhanced":
+                return hasattr(manager, "list_plugins") or hasattr(manager, "discover_plugins")
+            elif manager_type == "core":
+                return hasattr(manager, "plugin_info") or hasattr(manager, "plugins")
+            elif manager_type == "system":
+                return hasattr(manager, "list_all_plugins") or hasattr(manager, "get_plugins")
+            return True
+        except Exception as e:
+            logger.warning(f"⚠️ Manager validation failed for {manager_type}: {e}")
+            return False
 
     def _initialize_plugin_managers(self):
         """Initialize all available plugin managers"""
@@ -100,8 +146,17 @@ class PluginIntelligenceBridge:
 
         for manager_type, manager in self.plugin_managers:
             try:
-                # Try different discovery methods based on manager type
-                plugins = await self._discover_from_manager(manager_type, manager)
+                # Validate manager connection before discovery
+                if not self._validate_manager_connection(manager_type, manager):
+                    logger.warning(
+                        f"⚠️ Skipping {manager_type} manager - connection not valid"
+                    )
+                    continue
+
+                # Use retry logic for discovery to handle intermittent failures
+                plugins = await self._retry_operation(
+                    self._discover_from_manager, manager_type, manager
+                )
 
                 # Merge discovered plugins with namespace prefix
                 for plugin_name, plugin_data in plugins.items():

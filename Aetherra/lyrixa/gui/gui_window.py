@@ -629,7 +629,18 @@ To enable full dashboard:
     def inject_plugin_code(self, code: str, filename: str = "generated_plugin.aether"):
         """Inject generated plugin code into the Plugin Editor tab"""
         if hasattr(self, "plugin_editor_tab"):
-            self.plugin_editor_tab.set_code_block(code, filename)
+            # Check if there's already content in the editor
+            existing_content = self.plugin_editor_tab.editor.toPlainText().strip()
+
+            if existing_content and hasattr(self.plugin_editor_tab, 'apply_code_edit'):
+                # Use incremental edit mode for subsequent injections
+                print("🔄 Applying incremental edit to existing plugin code")
+                self.plugin_editor_tab.apply_code_edit(code, filename, merge_mode=True)
+            else:
+                # First time or fallback to replace mode
+                print("📝 Setting initial plugin code")
+                self.plugin_editor_tab.set_code_block(code, filename)
+
             self.tab_widget.setCurrentWidget(self.plugin_editor_tab)
             self.plugin_editor_tab.focus_editor()
             return True

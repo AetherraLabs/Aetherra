@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -366,6 +367,41 @@ class PluginEditorTab(QWidget):
         self.editor.setPlainText(code)
         self.label.setText(f"📝 Generated: {filename}")
         self.current_file_path = os.path.join(self.plugin_dir, filename)
+
+    def apply_code_edit(self, new_code: str, filename: Optional[str] = None, merge_mode: bool = True):
+        """Apply incremental edits to existing code instead of replacing everything"""
+        try:
+            if merge_mode and self.editor.toPlainText().strip():
+                # If there's existing code, try to merge intelligently
+                existing_code = self.editor.toPlainText()
+
+                # Simple heuristic: if new code looks like it's adding to existing code
+                if len(new_code) > len(existing_code) and existing_code.strip() in new_code:
+                    # New code contains existing code - safe to replace
+                    self.editor.setPlainText(new_code)
+                    print("🔄 Applied code edit: Replaced with enhanced version")
+                else:
+                    # Try to append new functionality
+                    if not existing_code.endswith('\n'):
+                        existing_code += '\n'
+
+                    # Add separator comment and new code
+                    combined_code = existing_code + "\n# ✏️ Additional functionality:\n" + new_code
+                    self.editor.setPlainText(combined_code)
+                    print("🔄 Applied code edit: Appended new functionality")
+            else:
+                # First time or force replace
+                self.editor.setPlainText(new_code)
+                print("🔄 Applied code edit: Initial content set")
+
+            if filename:
+                self.label.setText(f"📝 Edited: {filename}")
+                self.current_file_path = os.path.join(self.plugin_dir, filename)
+
+            return True
+        except Exception as e:
+            print(f"❌ Failed to apply code edit: {e}")
+            return False
 
     def focus_editor(self):
         """Focus the editor widget"""
