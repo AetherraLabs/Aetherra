@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,23 +12,34 @@
             font-family: 'JetBrains Mono', monospace;
             padding: 20px;
         }
+
         .test-result {
             margin: 10px 0;
             padding: 10px;
             border: 1px solid #00ff88;
             border-radius: 4px;
         }
-        .success { border-color: #00ff88; background: rgba(0, 255, 136, 0.1); }
-        .error { border-color: #ff0088; background: rgba(255, 0, 136, 0.1); color: #ff0088; }
+
+        .success {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .error {
+            border-color: #ff0088;
+            background: rgba(255, 0, 136, 0.1);
+            color: #ff0088;
+        }
     </style>
 </head>
+
 <body>
     <h1>🔧 Aetherra JavaScript Diagnostic</h1>
     <div id="results"></div>
 
     <script>
         const results = document.getElementById('results');
-        
+
         function addResult(message, isSuccess = true) {
             const div = document.createElement('div');
             div.className = `test-result ${isSuccess ? 'success' : 'error'}`;
@@ -75,15 +87,15 @@
             })
             .then(content => {
                 if (content.length > 1000) {
-                    addResult('✅ JS bundle has content (' + Math.round(content.length/1024) + 'KB)');
-                    
+                    addResult('✅ JS bundle has content (' + Math.round(content.length / 1024) + 'KB)');
+
                     // Check for React
                     if (content.includes('React') || content.includes('react')) {
                         addResult('✅ React detected in bundle');
                     } else {
                         addResult('⚠️ React not detected in bundle', false);
                     }
-                    
+
                     // Check for syntax errors
                     if (content.includes('SyntaxError') || content.includes('Unexpected')) {
                         addResult('❌ Potential syntax errors in bundle', false);
@@ -130,20 +142,20 @@
         script.onerror = (e) => {
             addResult('❌ Main script failed to load: ' + e.message, false);
         };
-        
+
         // Add a root div for React
         const rootDiv = document.createElement('div');
         rootDiv.id = 'root';
         document.body.appendChild(rootDiv);
-        
+
         // Add the script
         document.head.appendChild(script);
-        
+
         // Error handling
         window.addEventListener('error', (e) => {
             addResult('❌ Global error: ' + e.message + ' at ' + e.filename + ':' + e.lineno, false);
         });
-        
+
         window.addEventListener('unhandledrejection', (e) => {
             addResult('❌ Unhandled promise rejection: ' + e.reason, false);
         });
@@ -155,4 +167,5 @@
         }, 5000);
     </script>
 </body>
+
 </html>
