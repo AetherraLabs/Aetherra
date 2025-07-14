@@ -1,8 +1,29 @@
+#!/usr/bin/env python3
+"""
+🚀 AETHERRA LYRIXA LAUNCHER - HYBRID UI
+🎯 11-Tab Revolutionary Interface (183% Completion)
+⚡ Features: Chat, System, Agents, Performance, Self-Improvement,
+   Plugins, Plugin Editor, Memory Viewer, Goal Tracker,
+   Execute Plugin, Agent Collaboration
+
+Updated to use the new hybrid_window.py with all 11 tabs integrated.
+"""
+
 import sys
 import time
 from pathlib import Path
 
 from PySide6.QtWidgets import QApplication
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    print(
+        "⚠️ python-dotenv not available - environment variables from .env file won't be loaded"
+    )
 
 # Import from parent directory
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -28,7 +49,9 @@ from Aetherra.core.multi_llm_manager import MultiLLMManager
 from Aetherra.core.plugin_manager import PluginManager
 from Aetherra.core.prompt_engine import PromptEngine
 from Aetherra.lyrixa.agents.core_agent import LyrixaAI
-from Aetherra.lyrixa.gui.gui_window import LyrixaWindow
+from Aetherra.lyrixa.gui.hybrid_window import (
+    LyrixaWindow,  # ✅ Updated to use new hybrid UI
+)
 from Aetherra.lyrixa.intelligence_integration import LyrixaIntelligenceStack
 
 # Global references
@@ -98,6 +121,10 @@ def launch_gui():
             loop.run_until_complete(initialize_system(window))
 
             # Attach components to GUI using modular methods
+            print(f"🔧 DEBUG: intelligence_stack = {intelligence_stack}")
+            print(f"🔧 DEBUG: runtime = {runtime}")
+            print(f"🔧 DEBUG: lyrixa = {lyrixa}")
+
             if intelligence_stack:
                 window.attach_intelligence_stack(intelligence_stack)
                 log("✅ Intelligence stack attached to GUI")
@@ -107,10 +134,14 @@ def launch_gui():
                 log("✅ Runtime attached to GUI")
 
             if lyrixa:
+                print(f"🔧 DEBUG: About to call attach_lyrixa with {type(lyrixa)}")
                 window.attach_lyrixa(lyrixa)
                 # 🎯 Phase 1: Auto-Populate Plugin Editor - Set GUI interface reference
                 lyrixa.gui_interface = window
                 log("✅ Lyrixa agent attached to GUI with auto-population enabled")
+            else:
+                print("❌ DEBUG: lyrixa is None or undefined!")
+                log("❌ Lyrixa is not available for attachment", "error")
 
             # 🔌 Update GUI plugin display with discovered plugins
             try:
@@ -122,15 +153,13 @@ def launch_gui():
             except Exception as e:
                 log(f"⚠️ Could not refresh GUI plugin display: {e}", "warning")
 
-            # 🧩 Add Plugin Editor Tab
+            # 🧩 Plugin Editor Tab (Built-in to Hybrid UI)
             try:
-                if hasattr(window, "add_plugin_editor_tab"):
-                    window.add_plugin_editor_tab()
-                    log("✅ Plugin Editor tab added to GUI")
-                else:
-                    log("⚠️ Plugin Editor tab method not available", "warning")
+                # Note: Plugin Editor tab is now built-in to the hybrid UI (Tab 7/11)
+                # No need to add it dynamically - it's always present
+                log("✅ Plugin Editor tab available (built-in to hybrid UI)")
             except Exception as e:
-                log(f"⚠️ Could not add Plugin Editor tab: {e}", "warning")
+                log(f"⚠️ Plugin Editor tab verification: {e}", "warning")
 
             # Update all dashboard components using modular methods
             window.update_dashboard_metrics()

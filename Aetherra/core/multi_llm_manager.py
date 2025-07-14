@@ -103,10 +103,15 @@ class MultiLLMManager:
             logger.warning("⚠️ Anthropic not available (pip install anthropic)")
 
         # Google Gemini Provider
-        if importlib.util.find_spec("google.generativeai") is not None:
-            self.providers[LLMProvider.GEMINI] = GeminiProvider()
-            logger.info("✅ Gemini provider initialized")
-        else:
+        try:
+            if importlib.util.find_spec("google.generativeai") is not None:
+                self.providers[LLMProvider.GEMINI] = GeminiProvider()
+                logger.info("✅ Gemini provider initialized")
+            else:
+                logger.warning(
+                    "⚠️ Gemini not available (pip install google-generativeai)"
+                )
+        except (ImportError, ModuleNotFoundError):
             logger.warning("⚠️ Gemini not available (pip install google-generativeai)")
 
     def _load_model_configs(self):
@@ -154,9 +159,14 @@ class MultiLLMManager:
             # Check what models are actually available locally
             try:
                 import ollama
+
                 client = ollama.Client()
                 available_models_response = client.list()
-                installed_models = [model.model for model in available_models_response.models if model.model]
+                installed_models = [
+                    model.model
+                    for model in available_models_response.models
+                    if model.model
+                ]
                 logger.info(f"🦙 Found Ollama models: {installed_models}")
 
                 # Add configurations for actually installed models
@@ -177,7 +187,9 @@ class MultiLLMManager:
                 if llama3_models:
                     # Prefer llama3:latest if available, otherwise use first llama3 model
                     llama3_latest = [m for m in llama3_models if m == "llama3:latest"]
-                    llama3_model = llama3_latest[0] if llama3_latest else llama3_models[0]
+                    llama3_model = (
+                        llama3_latest[0] if llama3_latest else llama3_models[0]
+                    )
 
                     ollama_configs["llama3"] = LLMConfig(
                         provider=LLMProvider.OLLAMA,
@@ -187,7 +199,9 @@ class MultiLLMManager:
                     )
 
                     # Also add llama3.2 if the 3b model is available
-                    llama32_models = [m for m in installed_models if m and "llama3.2" in m]
+                    llama32_models = [
+                        m for m in installed_models if m and "llama3.2" in m
+                    ]
                     if llama32_models:
                         ollama_configs["llama3.2"] = LLMConfig(
                             provider=LLMProvider.OLLAMA,
@@ -200,7 +214,10 @@ class MultiLLMManager:
                 for model_full_name in installed_models:
                     if model_full_name:  # Ensure model name is not None/empty
                         model_base = model_full_name.split(":")[0]
-                        if model_base not in ["mistral", "llama3"] and model_base not in ollama_configs:
+                        if (
+                            model_base not in ["mistral", "llama3"]
+                            and model_base not in ollama_configs
+                        ):
                             ollama_configs[model_base] = LLMConfig(
                                 provider=LLMProvider.OLLAMA,
                                 model_name=model_full_name,
@@ -419,7 +436,9 @@ class OllamaProvider:
         """Check if model is available in Ollama"""
         try:
             models_response = self.client.list()
-            available_models = [model.model for model in models_response.models if model.model]
+            available_models = [
+                model.model for model in models_response.models if model.model
+            ]
 
             # Check exact match first
             if config.model_name in available_models:

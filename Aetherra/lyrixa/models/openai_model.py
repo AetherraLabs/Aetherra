@@ -5,6 +5,7 @@ OpenAI Model Integration for Lyrixa
 GPT-4 and ChatGPT model integration with intelligent routing and context management.
 """
 
+import os
 from typing import Dict, List, Optional
 
 import openai
@@ -86,5 +87,10 @@ class OpenAIModel:
         }
 
 
-# Default instance
-default_openai_model = OpenAIModel()
+# Default instance - only create if API key is available
+default_openai_model = None
+if os.getenv("OPENAI_API_KEY"):
+    try:
+        default_openai_model = OpenAIModel()
+    except Exception:
+        default_openai_model = None
