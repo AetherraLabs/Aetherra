@@ -1,32 +1,201 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/Aetherra/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aetherra - AI-Native Operating System</title>
-    <meta name="description" content="An operating system that thinks. A companion that learns. Welcome to Aetherra." />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://zyonic88.github.io/Aetherra/" />
-    <meta property="og:title" content="Aetherra - AI-Native Operating System" />
-    <meta property="og:description" content="An operating system that thinks. A companion that learns. Welcome to Aetherra." />
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://zyonic88.github.io/Aetherra/" />
-    <meta property="twitter:title" content="Aetherra - AI-Native Operating System" />
-    <meta property="twitter:description" content="An operating system that thinks. A companion that learns. Welcome to Aetherra." />
-    
-    <!-- Preload fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/Aetherra/assets/index-CrucG-ix.js"></script>
-    <link rel="stylesheet" crossorigin href="/Aetherra/assets/index-BBvNqUrG.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/Aetherra/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aetherra - AI-Native Operating System</title>
+  <meta name="description" content="An operating system that thinks. A companion that learns. Welcome to Aetherra." />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://zyonic88.github.io/Aetherra/" />
+  <meta property="og:title" content="Aetherra - AI-Native Operating System" />
+  <meta property="og:description"
+    content="An operating system that thinks. A companion that learns. Welcome to Aetherra." />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://zyonic88.github.io/Aetherra/" />
+  <meta property="twitter:title" content="Aetherra - AI-Native Operating System" />
+  <meta property="twitter:description"
+    content="An operating system that thinks. A companion that learns. Welcome to Aetherra." />
+
+  <!-- Preload fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- React Debugging Script -->
+  <script>
+    console.log('🚀 AETHERRA REACT DEBUGGING - ' + new Date().toISOString());
+
+    let reactMountAttempts = 0;
+    let debugInfo = {
+      scriptsLoaded: 0,
+      reactDetected: false,
+      routerDetected: false,
+      errors: [],
+      timeline: []
+    };
+
+    function addTimeline(event) {
+      debugInfo.timeline.push({
+        time: Date.now(),
+        event: event
+      });
+      console.log('📍 ' + event);
+    }
+
+    addTimeline('HTML loaded');
+
+    // Monitor script loading
+    const scripts = document.querySelectorAll('script[src]');
+    scripts.forEach(script => {
+      script.addEventListener('load', () => {
+        debugInfo.scriptsLoaded++;
+        addTimeline(`Script loaded: ${script.src}`);
+      });
+      script.addEventListener('error', (e) => {
+        debugInfo.errors.push(`Script failed: ${script.src} - ${e.message}`);
+        addTimeline(`Script error: ${script.src}`);
+      });
+    });
+
+    // React mount detection
+    function checkReactMount() {
+      const root = document.getElementById('root');
+      if (root && root.children.length > 0) {
+        addTimeline('✅ React app mounted successfully!');
+        console.log('🎉 SUCCESS: React app is now visible');
+        return true;
+      }
+      return false;
+    }
+
+    // Error handlers
+    window.addEventListener('error', function (e) {
+      const error = `${e.message} at ${e.filename}:${e.lineno}`;
+      debugInfo.errors.push(error);
+      addTimeline(`❌ Error: ${error}`);
+      console.error('❌ Global error:', e.error);
+    });
+
+    window.addEventListener('unhandledrejection', function (e) {
+      debugInfo.errors.push(`Promise rejection: ${e.reason}`);
+      addTimeline(`❌ Promise rejection: ${e.reason}`);
+      console.error('❌ Unhandled promise rejection:', e.reason);
+    });
+
+    // Check for React and Router in window
+    function checkLibraries() {
+      if (window.React) {
+        debugInfo.reactDetected = true;
+        addTimeline('✅ React library detected');
+      }
+      if (window.ReactRouter || (window.React && window.React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED)) {
+        debugInfo.routerDetected = true;
+        addTimeline('✅ React Router detected');
+      }
+    }
+
+    // Monitoring intervals
+    const checkInterval = setInterval(() => {
+      checkLibraries();
+      if (checkReactMount()) {
+        clearInterval(checkInterval);
+      }
+    }, 500);
+
+    // Timeout handler
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      const root = document.getElementById('root');
+
+      if (!root || root.children.length === 0) {
+        addTimeline('❌ TIMEOUT: React failed to mount after 15 seconds');
+
+        console.log('🔍 DEBUGGING SUMMARY:', debugInfo);
+
+        // Show debugging overlay
+        root.innerHTML = `
+            <div style="padding: 20px; background: #0a0a0a; color: #00ff88; font-family: 'JetBrains Mono', monospace; min-height: 100vh;">
+              <h1 style="color: #ff0088; text-align: center;">⚠️ AETHERRA REACT DEBUGGING</h1>
+              <div style="max-width: 800px; margin: 0 auto;">
+                <h2>📊 Diagnostic Results:</h2>
+                <div style="background: #1a1a1a; padding: 15px; margin: 10px 0; border-radius: 5px;">
+                  <strong>Scripts Loaded:</strong> ${debugInfo.scriptsLoaded}<br>
+                  <strong>React Detected:</strong> ${debugInfo.reactDetected ? '✅ Yes' : '❌ No'}<br>
+                  <strong>Router Detected:</strong> ${debugInfo.routerDetected ? '✅ Yes' : '❌ No'}<br>
+                  <strong>Errors:</strong> ${debugInfo.errors.length}
+                </div>
+
+                ${debugInfo.errors.length > 0 ? `
+                <h3 style="color: #ff0088;">🚨 Errors Found:</h3>
+                <div style="background: #2a0a0a; padding: 15px; margin: 10px 0; border-radius: 5px;">
+                  ${debugInfo.errors.map(error => `<div style="margin: 5px 0;">• ${error}</div>`).join('')}
+                </div>
+                ` : ''}
+
+                <h3>📋 Timeline:</h3>
+                <div style="background: #1a1a1a; padding: 15px; margin: 10px 0; border-radius: 5px;">
+                  ${debugInfo.timeline.map(item => `<div style="margin: 2px 0; font-size: 0.9em;">${item.event}</div>`).join('')}
+                </div>
+
+                <div style="text-align: center; margin: 20px 0;">
+                  <button onclick="location.reload()" style="background: #00ff88; color: #0a0a0a; border: none; padding: 10px 20px; border-radius: 5px; font-family: inherit; cursor: pointer;">🔄 Reload Page</button>
+                  <a href="/Aetherra/jstest.html" style="display: inline-block; margin-left: 10px; background: #333; color: #00ff88; padding: 10px 20px; text-decoration: none; border-radius: 5px;">🔧 Advanced Diagnostics</a>
+                </div>
+              </div>
+            </div>
+          `;
+      }
+    }, 15000);
+
+    addTimeline('Debugging script initialized');
+  </script>
+
+  <script type="module" crossorigin src="/Aetherra/assets/index-CrucG-ix.js"></script>
+  <link rel="stylesheet" crossorigin href="/Aetherra/assets/index-BBvNqUrG.css">
+</head>
+
+<body>
+  <div id="root">
+    <div
+      style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #0a0a0a; color: #00ff88; font-family: 'JetBrains Mono', monospace; text-align: center;">
+      <div>
+        <div
+          style="font-size: 3rem; margin-bottom: 1rem; text-shadow: 0 0 20px #00ff88; animation: pulse 2s ease-in-out infinite;">
+          AETHERRA</div>
+        <div style="margin-bottom: 1rem;">Neural pathways initializing...</div>
+        <div
+          style="width: 40px; height: 40px; border: 3px solid #00ff88; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; margin: 0 auto;">
+        </div>
+        <div style="margin-top: 1rem; font-size: 0.8rem; opacity: 0.7;">Loading React application...</div>
+      </div>
+    </div>
+    <style>
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes pulse {
+
+        0%,
+        100% {
+          transform: scale(1);
+        }
+
+        50% {
+          transform: scale(1.05);
+        }
+      }
+    </style>
+  </div>
+
+</body>
+
 </html>
