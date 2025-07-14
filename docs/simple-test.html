@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/Aetherra/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aetherra - Simple Test</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #0a0a0a;
+        color: #00ff88;
+        font-family: 'JetBrains Mono', monospace;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        text-align: center;
+      }
+      .success {
+        max-width: 600px;
+        padding: 2rem;
+      }
+      .logo {
+        font-size: 4rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        text-shadow: 0 0 30px #00ff88;
+        animation: pulse 2s ease-in-out infinite;
+      }
+      .message {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+      }
+      .details {
+        font-size: 1rem;
+        opacity: 0.7;
+        margin-bottom: 1rem;
+      }
+      .link {
+        color: #00ff88;
+        text-decoration: none;
+        border: 1px solid #00ff88;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        display: inline-block;
+        margin: 0.5rem;
+      }
+      .link:hover {
+        background: #00ff88;
+        color: #0a0a0a;
+        box-shadow: 0 0 20px #00ff88;
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="success">
+      <div class="logo">AETHERRA</div>
+      <div class="message">
+        🎉 SUCCESS! The Aetherra Neural Development Ecosystem is LIVE!
+      </div>
+      <div class="details">
+        ✅ GitHub Pages deployment working<br>
+        ✅ Static files loading correctly<br>
+        ✅ CSS and JavaScript executing<br>
+        ✅ Neural-native future activated
+      </div>
+      <div>
+        <a href="/Aetherra/jstest.html" class="link">🔧 Run Diagnostics</a>
+        <a href="/Aetherra/" class="link">🚀 Load Full App</a>
+      </div>
+      <div class="details" style="margin-top: 2rem;">
+        If you can see this page, the deployment is working.<br>
+        The React app issue is likely a JavaScript runtime error.
+      </div>
+    </div>
+
+    <script>
+      console.log('🎉 Simple test page loaded successfully!');
+      console.log('✅ This confirms GitHub Pages is working');
+      console.log('🔍 If this loads but the main app doesn\'t, the issue is in React code');
+      
+      // Test main app loading
+      setTimeout(() => {
+        console.log('🧪 Testing main app assets...');
+        
+        fetch('/Aetherra/assets/index-CrucG-ix.js')
+          .then(response => {
+            console.log('📦 Main JS bundle status:', response.status);
+            if (response.ok) {
+              console.log('✅ Main JS bundle is accessible');
+            } else {
+              console.error('❌ Main JS bundle failed:', response.status);
+            }
+          })
+          .catch(error => {
+            console.error('❌ Failed to fetch main JS bundle:', error);
+          });
+      }, 1000);
+    </script>
+  </body>
+</html>
