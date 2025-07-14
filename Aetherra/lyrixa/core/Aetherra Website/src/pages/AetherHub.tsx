@@ -5,6 +5,24 @@ import PluginSearch from '../components/PluginSearch';
 import ContributionPanel from '../components/ContributionPanel';
 import pluginData from '../data/plugin_metadata.json';
 
+// Type assertion for the plugin data
+interface Plugin {
+  id: string;
+  name: string;
+  description: string;
+  version: string;
+  author: string;
+  category: string;
+  tags: string[];
+  downloads: number;
+  rating: number;
+  confidence_score: number;
+  install_status: 'installed' | 'available' | 'updating' | 'beta';
+  last_updated: string;
+  size: string;
+  features: string[];
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -35,19 +53,22 @@ export default function AetherHub() {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('popularity');
 
+  // Type assert the plugin data
+  const typedPlugins = pluginData.plugins as Plugin[];
+
   // Extract unique categories and tags
   const availableCategories = useMemo(() => {
-    return Array.from(new Set(pluginData.plugins.map(p => p.category)));
+    return Array.from(new Set(typedPlugins.map(p => p.category)));
   }, []);
 
   const availableTags = useMemo(() => {
-    const allTags = pluginData.plugins.flatMap(p => p.tags);
+    const allTags = typedPlugins.flatMap(p => p.tags);
     return Array.from(new Set(allTags));
   }, []);
 
   // Filter and sort plugins
   const filteredPlugins = useMemo(() => {
-    let filtered = pluginData.plugins.filter(plugin => {
+    let filtered = typedPlugins.filter(plugin => {
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -124,13 +145,13 @@ export default function AetherHub() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
             <div>
               <div className="text-2xl font-bold text-aetherra-green">
-                {pluginData.plugins.length}
+                {typedPlugins.length}
               </div>
               <div className="text-sm text-zinc-400">Available Plugins</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-blue-400">
-                {pluginData.plugins.reduce((sum, p) => sum + p.downloads, 0).toLocaleString()}
+                {typedPlugins.reduce((sum, p) => sum + p.downloads, 0).toLocaleString()}
               </div>
               <div className="text-sm text-zinc-400">Total Downloads</div>
             </div>
@@ -142,7 +163,7 @@ export default function AetherHub() {
             </div>
             <div>
               <div className="text-2xl font-bold text-yellow-400">
-                {Math.round(pluginData.plugins.reduce((sum, p) => sum + p.rating, 0) / pluginData.plugins.length * 10) / 10}
+                {Math.round(typedPlugins.reduce((sum, p) => sum + p.rating, 0) / typedPlugins.length * 10) / 10}
               </div>
               <div className="text-sm text-zinc-400">Avg Rating</div>
             </div>
@@ -208,7 +229,7 @@ export default function AetherHub() {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
             {availableCategories.map((category) => {
-              const categoryPlugins = pluginData.plugins.filter(p => p.category === category);
+              const categoryPlugins = typedPlugins.filter(p => p.category === category);
               const categoryIcons = {
                 performance: '⚡',
                 memory: '🧠',

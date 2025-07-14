@@ -9360,6 +9360,259 @@
       "success_rate": 0.8,
       "created": "2025-07-13T18:50:38.052550",
       "last_updated": "2025-07-13T18:50:38.052552"
+    },
+    "plugin_5487": {
+      "pattern_type": "plugin",
+      "data": {
+        "type": "plugin",
+        "plugin_id": "enhanced:ai_plugin_generator_v2",
+        "plugin_name": "ai_plugin_generator_v2",
+        "plugin_type": "enhanced",
+        "status": "disabled",
+        "description": "",
+        "capabilities": [],
+        "category": "utility",
+        "version": "unknown",
+        "author": "unknown",
+        "discovered_from": "enhanced",
+        "last_updated": "2025-07-13T18:53:57.864458",
+        "searchable_content": "ai_plugin_generator_v2 utility unknown",
+        "recommendation_score": 0.5
+      },
+      "usage_count": 1,
+      "success_rate": 0.8,
+      "created": "2025-07-13T18:53:57.864498",
+      "last_updated": "2025-07-13T18:53:57.864501"
+    },
+    "plugin_64754": {
+      "pattern_type": "plugin",
+      "data": {
+        "type": "plugin",
+        "plugin_id": "enhanced:assistant_trainer_plugin",
+        "plugin_name": "assistant_trainer_plugin",
+        "plugin_type": "enhanced",
+        "status": "disabled",
+        "description": "",
+        "capabilities": [],
+        "category": "utility",
+        "version": "unknown",
+        "author": "unknown",
+        "discovered_from": "enhanced",
+        "last_updated": "2025-07-13T18:53:57.875373",
+        "searchable_content": "assistant_trainer_plugin utility unknown",
+        "recommendation_score": 0.5
+      },
+      "usage_count": 1,
+      "success_rate": 0.8,
+      "created": "2025-07-13T18:53:57.875425",
+      "last_updated": "2025-07-13T18:53:57.875427"
+    },
+    "plugin_54880": {
+      "pattern_type": "plugin",
+      "data": {
+        "type": "plugin",
+        "plugin_id": "enhanced:context_aware_surfacing",
+        "plugin_name": "context_aware_surfacing",
+        "plugin_type": "enhanced",
+        "status": "disabled",
+        "description": "",
+        "capabilities": [],
+        "category": "utility",
+        "version": "unknown",
+        "author": "unknown",
+        "discovered_from": "enhanced",
+        "last_updated": "2025-07-13T18:53:57.886271",
+        "searchable_content": "context_aware_surfacing utility unknown",
+        "recommendation_score": 0.5
+      },
+      "usage_count": 1,
+      "success_rate": 0.8,
+      "created": "2025-07-13T18:53:57.886310",
+      "last_updated": "2025-07-13T18:53:57.886313"
+    },
+    "plugin_12633": {
+      "pattern_type": "plugin",
+      "data": {
+        "type": "plugin",
+        "plugin_id": "enhanced:introspector_plugin",
+        "plugin_name": "introspector_plugin",
+        "plugin_type": "enhanced",
+        "status": "disabled",
+        "description": "",
+        "capabilities": [],
+        "category": "utility",
+        "version": "unknown",
+        "author": "unknown",
+        "discovered_from": "enhanced",
+        "last_updated": "2025-07-13T18:53:57.898359",
+        "searchable_content": "introspector_plugin utility unknown",
+        "recommendation_score": 0.5
+      },
+      "usage_count": 1,
+      "success_rate": 0.8,
+      "created": "2025-07-13T18:53:57.898400",
+      "last_updated": "2025-07-13T18:53:57.898404"
+    },
+    "plugin_1718": {
+      "pattern_type": "plugin",
+      "data": {
+        "type": "plugin",
+        "plugin_id": "enhanced:plugin_creation_wizard",
+        "plugin_name": "plugin_creation_wizard",
+        "plugin_type": "enhanced",
+        "status": "disabled",
+        "description": "",
+        "capabilities": [],
+        "category": "utility",
+        "version": "unknown",
+        "author": "unknown",
+        "discovered_from": "enhanced",
+        "last_updated": "2025-07-13T18:53:57.910891",
+        "searchable_content": "plugin_creation_wizard utility unknown",
+        "recommendation_score": 0.5
+      },
+      "usage_count": 1,
+      "success_rate": 0.8,
+      "created": "2025-07-13T18:53:57.910932",
+      "last_updated": "2025-07-13T18:53:57.910934"
+    },
+    "plugin_83503": {
+      "pattern_type": "plugin",
+      "data": {
+        "type": "plugin",
+        "plugin_id": "enhanced:plugin_discovery",
+        "plugin_name": "plugin_discovery",
+        "plugin_type": "enhanced",
+        "status": "disabled",
+        "description": "",
+        "capabilities": [],
+        "category": "utility",
+        "version": "unknown",
+        "author": "unknown",
+        "discovered_from": "enhanced",
+        "last_updated": "2025-07-13T18:53:57.926122",
+        "searchable_content": "plugin_discovery utility unknown",
+        "recommendation_score": 0.5
+      },
+      "usage_count": 1,
+      "success_rate": 0.8,
+      "created": "2025-07-13T18:53:57.926150",
+      "last_updated": "2025-07-13T18:53:57.926152"
+    },
+    "plugin_20465": {
+      "pattern_type": "plugin",
+      "data": {
+        "type": "plugin",
+        "plugin_id": "enhanced:plugin_generator_plugin",
+        "plugin_name": "plugin_generator_plugin",
+        "plugin_type": "enhanced",
+        "status": "disabled",
+        "description": "",
+        "capabilities": [],
+        "category": "utility",
+        "version": "unknown",
+        "author": "unknown",
+        "discovered_from": "enhanced",
+        "last_updated": "2025-07-13T18:53:57.936946",
+        "searchable_content": "plugin_generator_plugin utility unknown",
+        "recommendation_score": 0.5
+      },
+      "usage_count": 1,
+      "success_rate": 0.8,
+      "created": "2025-07-13T18:53:57.936988",
+      "last_updated": "2025-07-13T18:53:57.936991"
+    },
+    "plugin_90002": {
+      "pattern_type": "plugin",
+      "data": {
+        "type": "plugin",
+        "plugin_id": "enhanced:plugin_lifecycle_memory",
+        "plugin_name": "plugin_lifecycle_memory",
+        "plugin_type": "enhanced",
+        "status": "disabled",
+        "description": "",
+        "capabilities": [],
+        "category": "utility",
+        "version": "unknown",
+        "author": "unknown",
+        "discovered_from": "enhanced",
+        "last_updated": "2025-07-13T18:53:57.948416",
+        "searchable_content": "plugin_lifecycle_memory utility unknown",
+        "recommendation_score": 0.5
+      },
+      "usage_count": 1,
+      "success_rate": 0.8,
+      "created": "2025-07-13T18:53:57.948446",
+      "last_updated": "2025-07-13T18:53:57.948448"
+    },
+    "plugin_39311": {
+      "pattern_type": "plugin",
+      "data": {
+        "type": "plugin",
+        "plugin_id": "enhanced:sample_plugin_1",
+        "plugin_name": "sample_plugin_1",
+        "plugin_type": "enhanced",
+        "status": "disabled",
+        "description": "",
+        "capabilities": [],
+        "category": "utility",
+        "version": "unknown",
+        "author": "unknown",
+        "discovered_from": "enhanced",
+        "last_updated": "2025-07-13T18:53:57.959205",
+        "searchable_content": "sample_plugin_1 utility unknown",
+        "recommendation_score": 0.5
+      },
+      "usage_count": 1,
+      "success_rate": 0.8,
+      "created": "2025-07-13T18:53:57.959241",
+      "last_updated": "2025-07-13T18:53:57.959243"
+    },
+    "plugin_86399": {
+      "pattern_type": "plugin",
+      "data": {
+        "type": "plugin",
+        "plugin_id": "enhanced:sample_plugin_2",
+        "plugin_name": "sample_plugin_2",
+        "plugin_type": "enhanced",
+        "status": "disabled",
+        "description": "",
+        "capabilities": [],
+        "category": "utility",
+        "version": "unknown",
+        "author": "unknown",
+        "discovered_from": "enhanced",
+        "last_updated": "2025-07-13T18:53:57.970697",
+        "searchable_content": "sample_plugin_2 utility unknown",
+        "recommendation_score": 0.5
+      },
+      "usage_count": 1,
+      "success_rate": 0.8,
+      "created": "2025-07-13T18:53:57.970730",
+      "last_updated": "2025-07-13T18:53:57.970732"
+    },
+    "plugin_32235": {
+      "pattern_type": "plugin",
+      "data": {
+        "type": "plugin",
+        "plugin_id": "enhanced:workflow_builder_plugin",
+        "plugin_name": "workflow_builder_plugin",
+        "plugin_type": "enhanced",
+        "status": "disabled",
+        "description": "",
+        "capabilities": [],
+        "category": "utility",
+        "version": "unknown",
+        "author": "unknown",
+        "discovered_from": "enhanced",
+        "last_updated": "2025-07-13T18:53:57.981487",
+        "searchable_content": "workflow_builder_plugin utility unknown",
+        "recommendation_score": 0.5
+      },
+      "usage_count": 1,
+      "success_rate": 0.8,
+      "created": "2025-07-13T18:53:57.981519",
+      "last_updated": "2025-07-13T18:53:57.981521"
     }
   },
   "learned_behaviors": {},
@@ -9367,9 +9620,9 @@
   "cognitive_metrics": {
     "total_decisions": 0,
     "successful_predictions": 0,
-    "pattern_recognitions": 407,
+    "pattern_recognitions": 418,
     "adaptive_adjustments": 0,
-    "learning_iterations": 407
+    "learning_iterations": 418
   },
-  "last_updated": "2025-07-13T18:50:38.052556"
+  "last_updated": "2025-07-13T18:53:57.981525"
 }

@@ -57,8 +57,8 @@ lyrixa.log("Script execution complete!");`;
 
   const validateScript = async (scriptContent: string) => {
     try {
-      const errors = await validator.current.validate(scriptContent);
-      setValidationErrors(errors);
+      const result = await validator.current.validate(scriptContent);
+      setValidationErrors(result.errors);
     } catch (error) {
       console.error('Validation error:', error);
     }
@@ -91,10 +91,11 @@ lyrixa.log("Script execution complete!");`;
       // This would typically call a history function from the ExecutionHistoryPanel
       
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setExecutionState(prev => ({
         ...prev,
         isExecuting: false,
-        output: `Error: ${error.message}`
+        output: `Error: ${errorMessage}`
       }));
     }
   };
@@ -297,13 +298,15 @@ lyrixa.log("Script execution complete!");`;
                 {showAutocomplete && (
                   <div className="absolute z-10">
                     <AutoCompleteHelper
-                      onSelect={(completion) => {
-                        // Handle completion selection
+                      value={script}
+                      onInsert={(completion: string) => {
+                        // Handle completion insertion
+                        setScript(prev => prev + completion);
                         setShowAutocomplete(false);
                       }}
                       onClose={() => setShowAutocomplete(false)}
-                      currentScript={script}
                       cursorPosition={cursorPosition}
+                      isVisible={showAutocomplete}
                     />
                   </div>
                 )}

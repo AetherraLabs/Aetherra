@@ -123,7 +123,8 @@ export default function LiveAetherConsole({
         await executeAetherScript(command);
       }
     } catch (error) {
-      addLine('error', `Error: ${error.message || 'Unknown error occurred'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      addLine('error', `Error: ${errorMessage}`);
     } finally {
       setIsExecuting(false);
     }

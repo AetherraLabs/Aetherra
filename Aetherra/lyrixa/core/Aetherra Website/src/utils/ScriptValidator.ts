@@ -38,7 +38,7 @@ export class ScriptValidator {
     const suggestions: ValidationError[] = [];
 
     // Check for basic syntax issues
-    this.validateSyntax(lines, errors, suggestions);
+    this.validateSyntax(lines, errors, suggestions, warnings);
     
     // Check for semantic issues
     this.validateSemantics(lines, warnings, suggestions);
@@ -54,7 +54,11 @@ export class ScriptValidator {
     };
   }
 
-  private validateSyntax(lines: string[], errors: ValidationError[], suggestions: ValidationError[]): void {
+  public validate(script: string): Promise<ValidationResult> {
+    return Promise.resolve(this.validateScript(script));
+  }
+
+  private validateSyntax(lines: string[], errors: ValidationError[], suggestions: ValidationError[], warnings: ValidationError[]): void {
     let braceCount = 0;
     let parenthesesCount = 0;
     let inString = false;
