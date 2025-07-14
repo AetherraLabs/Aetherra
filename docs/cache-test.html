@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,15 +15,16 @@
         }
     </style>
 </head>
+
 <body>
     <h1>Cache Test Success!</h1>
     <p>If you can see this, GitHub Pages is working correctly.</p>
     <p>Timestamp: ${new Date().toISOString()}</p>
     <a href="/Aetherra/" style="color: #00ff88;">← Back to Main Site</a>
-    
+
     <script>
         console.log('Cache test page loaded successfully at:', new Date().toISOString());
-        
+
         // Test if main assets are accessible
         fetch('/Aetherra/assets/index-CrucG-ix.js')
             .then(response => {
@@ -33,7 +35,7 @@
                 console.error('JS bundle error:', err);
                 document.body.innerHTML += '<p>Main JS Bundle: ❌ Network Error</p>';
             });
-            
+
         fetch('/Aetherra/assets/index-BBvNqUrG.css')
             .then(response => {
                 console.log('Main CSS bundle status:', response.status);
@@ -45,4 +47,5 @@
             });
     </script>
 </body>
+
 </html>

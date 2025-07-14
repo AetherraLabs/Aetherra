@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aetherra - JavaScript Test</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #00ff88;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+        }
+        .success { border-color: #00ff88; background: rgba(0, 255, 136, 0.1); }
+        .error { border-color: #ff0088; background: rgba(255, 0, 136, 0.1); color: #ff0088; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Aetherra JavaScript Diagnostic</h1>
+    <div id="results"></div>
+
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(message, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `test-result ${isSuccess ? 'success' : 'error'}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+
+        // Test 1: Basic JavaScript
+        try {
+            addResult('✅ Basic JavaScript execution: OK');
+        } catch (e) {
+            addResult('❌ Basic JavaScript failed: ' + e.message, false);
+        }
+
+        // Test 2: ES6 Features
+        try {
+            const testArrow = () => 'arrow function works';
+            const testTemplate = `template literal works`;
+            addResult('✅ ES6 Features (arrow functions, template literals): OK');
+        } catch (e) {
+            addResult('❌ ES6 Features failed: ' + e.message, false);
+        }
+
+        // Test 3: Module loading
+        try {
+            if (typeof import !== 'undefined') {
+                addResult('✅ ES6 Modules supported');
+            } else {
+                addResult('⚠️ ES6 Modules may not be supported', false);
+            }
+        } catch (e) {
+            addResult('❌ Module test failed: ' + e.message, false);
+        }
+
+        // Test 4: Fetch main JS bundle
+        fetch('/Aetherra/assets/index-CrucG-ix.js')
+            .then(response => {
+                if (response.ok) {
+                    addResult('✅ Main JS bundle accessible: ' + response.status);
+                    return response.text();
+                } else {
+                    addResult('❌ Main JS bundle failed: ' + response.status, false);
+                    throw new Error('Bundle not accessible');
+                }
+            })
+            .then(content => {
+                if (content.length > 1000) {
+                    addResult('✅ JS bundle has content (' + Math.round(content.length/1024) + 'KB)');
+                    
+                    // Check for React
+                    if (content.includes('React') || content.includes('react')) {
+                        addResult('✅ React detected in bundle');
+                    } else {
+                        addResult('⚠️ React not detected in bundle', false);
+                    }
+                    
+                    // Check for syntax errors
+                    if (content.includes('SyntaxError') || content.includes('Unexpected')) {
+                        addResult('❌ Potential syntax errors in bundle', false);
+                    } else {
+                        addResult('✅ No obvious syntax errors in bundle');
+                    }
+                } else {
+                    addResult('❌ JS bundle seems empty or truncated', false);
+                }
+            })
+            .catch(error => {
+                addResult('❌ Bundle fetch failed: ' + error.message, false);
+            });
+
+        // Test 5: CSS bundle
+        fetch('/Aetherra/assets/index-BBvNqUrG.css')
+            .then(response => {
+                if (response.ok) {
+                    addResult('✅ CSS bundle accessible: ' + response.status);
+                } else {
+                    addResult('❌ CSS bundle failed: ' + response.status, false);
+                }
+            })
+            .catch(error => {
+                addResult('❌ CSS fetch failed: ' + error.message, false);
+            });
+
+        // Test 6: Try loading the main script manually
+        addResult('🔍 Attempting to load main script...');
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = '/Aetherra/assets/index-CrucG-ix.js';
+        script.onload = () => {
+            addResult('✅ Main script loaded successfully');
+            setTimeout(() => {
+                const root = document.getElementById('root');
+                if (root && root.children.length > 0) {
+                    addResult('✅ React app mounted!');
+                } else {
+                    addResult('❌ React app failed to mount - check console for errors', false);
+                }
+            }, 2000);
+        };
+        script.onerror = (e) => {
+            addResult('❌ Main script failed to load: ' + e.message, false);
+        };
+        
+        // Add a root div for React
+        const rootDiv = document.createElement('div');
+        rootDiv.id = 'root';
+        document.body.appendChild(rootDiv);
+        
+        // Add the script
+        document.head.appendChild(script);
+        
+        // Error handling
+        window.addEventListener('error', (e) => {
+            addResult('❌ Global error: ' + e.message + ' at ' + e.filename + ':' + e.lineno, false);
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            addResult('❌ Unhandled promise rejection: ' + e.reason, false);
+        });
+
+        // Final summary after 5 seconds
+        setTimeout(() => {
+            addResult('📊 Diagnostic complete. Check results above.');
+            addResult('🔗 If all tests pass but React fails to mount, there may be a runtime error in the React code.');
+        }, 5000);
+    </script>
+</body>
+</html>

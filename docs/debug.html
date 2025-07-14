@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/Aetherra/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aetherra - AI-Native Operating System</title>
+    <meta name="description" content="An operating system that thinks. A companion that learns. Welcome to Aetherra." />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://zyonic88.github.io/Aetherra/" />
+    <meta property="og:title" content="Aetherra - AI-Native Operating System" />
+    <meta property="og:description"
+        content="An operating system that thinks. A companion that learns. Welcome to Aetherra." />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://zyonic88.github.io/Aetherra/" />
+    <meta property="twitter:title" content="Aetherra - AI-Native Operating System" />
+    <meta property="twitter:description"
+        content="An operating system that thinks. A companion that learns. Welcome to Aetherra." />
+
+    <!-- Preload fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Debug logging -->
+    <script>
+        console.log('🔍 Debug: HTML loaded at', new Date().toISOString());
+        console.log('🔍 Debug: User agent', navigator.userAgent);
+        console.log('🔍 Debug: Location', window.location.href);
+
+        // Add cache-busting timestamp
+        const timestamp = Date.now();
+        console.log('🔍 Debug: Cache bust timestamp', timestamp);
+    </script>
+
+    <script type="module" crossorigin src="/Aetherra/assets/index-CrucG-ix.js?v=<?= time() ?>"></script>
+    <link rel="stylesheet" crossorigin href="/Aetherra/assets/index-BBvNqUrG.css?v=<?= time() ?>">
+
+    <style>
+        /* Fallback styling if JS fails */
+        #root:empty:before {
+            content: "Loading Aetherra...";
+            display: block;
+            text-align: center;
+            padding: 50px;
+            color: #00ff88;
+            font-family: 'JetBrains Mono', monospace;
+            background: #0a0a0a;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script>
+        console.log('🔍 Debug: Body script executing');
+
+        // Check if root element exists
+        const root = document.getElementById('root');
+        console.log('🔍 Debug: Root element found:', !!root);
+
+        // Monitor for React mounting
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type === 'childList' && mutation.target.id === 'root') {
+                    console.log('🔍 Debug: React app mounted, children count:', mutation.target.children.length);
+                    if (mutation.target.children.length > 0) {
+                        observer.disconnect();
+                    }
+                }
+            });
+        });
+
+        observer.observe(root, { childList: true, subtree: true });
+
+        // Timeout check
+        setTimeout(() => {
+            if (root.children.length === 0) {
+                console.error('❌ Debug: React app failed to mount after 10 seconds');
+                root.innerHTML = `
+            <div style="padding: 50px; text-align: center; color: #00ff88; font-family: 'JetBrains Mono', monospace; background: #0a0a0a; min-height: 100vh;">
+              <h1>🔧 Aetherra Debug Mode</h1>
+              <p>React app failed to mount. Check console for errors.</p>
+              <p>Timestamp: ${new Date().toISOString()}</p>
+              <p><a href="/Aetherra/cache-test.html" style="color: #00ff88;">→ Run Cache Test</a></p>
+            </div>
+          `;
+            }
+        }, 10000);
+
+        // Error handling
+        window.addEventListener('error', function (e) {
+            console.error('❌ Debug: Global error:', e.error);
+        });
+
+        window.addEventListener('unhandledrejection', function (e) {
+            console.error('❌ Debug: Unhandled promise rejection:', e.reason);
+        });
+    </script>
+</body>
+
+</html>

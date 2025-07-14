@@ -94,9 +94,15 @@ src/
 This project is configured for deployment to GitHub Pages:
 
 ```bash
-# Deploy to GitHub Pages
+# Method 1: Automated deploy (may fail on Windows due to path length)
 npm run deploy
+
+# Method 2: Manual deploy (recommended for Windows)
+npm run build
+# Then copy dist/* to docs/ folder manually
 ```
+
+**Note**: If `npm run deploy` fails with `ENAMETOOLONG` error on Windows, use the manual method.
 
 The site will be available at: `https://zyonic88.github.io/Aetherra/`
 

@@ -23,10 +23,75 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Error handling and debugging -->
+    <script>
+      console.log('🚀 Aetherra loading...', new Date().toISOString());
+      
+      // Global error handler
+      window.addEventListener('error', function(e) {
+        console.error('❌ Global error:', e.error);
+        const root = document.getElementById('root');
+        if (root && root.children.length === 0) {
+          root.innerHTML = `
+            <div style="padding: 50px; text-align: center; color: #ff0088; font-family: 'JetBrains Mono', monospace; background: #0a0a0a; min-height: 100vh;">
+              <h1>⚠️ Aetherra Loading Error</h1>
+              <p>JavaScript Error: ${e.message}</p>
+              <p>File: ${e.filename}:${e.lineno}</p>
+              <p><a href="/Aetherra/jstest.html" style="color: #00ff88;">→ Run Diagnostic Test</a></p>
+            </div>
+          `;
+        }
+      });
+      
+      // Promise rejection handler
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('❌ Unhandled promise rejection:', e.reason);
+      });
+      
+      // Loading timeout
+      setTimeout(() => {
+        const root = document.getElementById('root');
+        if (root && root.children.length === 0) {
+          console.warn('⚠️ React app failed to mount after 10 seconds');
+          root.innerHTML = `
+            <div style="padding: 50px; text-align: center; color: #00ff88; font-family: 'JetBrains Mono', monospace; background: #0a0a0a; min-height: 100vh;">
+              <h1>🔄 Aetherra Loading...</h1>
+              <p>React app is taking longer than expected to load.</p>
+              <p>This may be due to slow network or JavaScript execution issues.</p>
+              <div style="margin: 20px 0;">
+                <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #00ff88; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite;"></div>
+              </div>
+              <p><a href="/Aetherra/jstest.html" style="color: #00ff88;">→ Run Diagnostic Test</a></p>
+              <style>
+                @keyframes spin {
+                  to { transform: rotate(360deg); }
+                }
+              </style>
+            </div>
+          `;
+        }
+      }, 10000);
+    </script>
+    
     <script type="module" crossorigin src="/Aetherra/assets/index-CrucG-ix.js"></script>
     <link rel="stylesheet" crossorigin href="/Aetherra/assets/index-BBvNqUrG.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="padding: 50px; text-align: center; color: #00ff88; font-family: 'JetBrains Mono', monospace; background: #0a0a0a; min-height: 100vh;">
+        <div style="font-size: 3rem; margin-bottom: 1rem; text-shadow: 0 0 20px #00ff88;">AETHERRA</div>
+        <div>Neural pathways initializing...</div>
+        <div style="margin: 20px 0;">
+          <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #00ff88; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite;"></div>
+        </div>
+        <style>
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        </style>
+      </div>
+    </div>
+
   </body>
 </html>
