@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cache Test - Aetherra</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #00ff88;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+            padding: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cache Test Success!</h1>
+    <p>If you can see this, GitHub Pages is working correctly.</p>
+    <p>Timestamp: ${new Date().toISOString()}</p>
+    <a href="/Aetherra/" style="color: #00ff88;">← Back to Main Site</a>
+    
+    <script>
+        console.log('Cache test page loaded successfully at:', new Date().toISOString());
+        
+        // Test if main assets are accessible
+        fetch('/Aetherra/assets/index-CrucG-ix.js')
+            .then(response => {
+                console.log('Main JS bundle status:', response.status);
+                document.body.innerHTML += '<p>Main JS Bundle: ' + (response.ok ? '✅ OK' : '❌ Failed') + '</p>';
+            })
+            .catch(err => {
+                console.error('JS bundle error:', err);
+                document.body.innerHTML += '<p>Main JS Bundle: ❌ Network Error</p>';
+            });
+            
+        fetch('/Aetherra/assets/index-BBvNqUrG.css')
+            .then(response => {
+                console.log('Main CSS bundle status:', response.status);
+                document.body.innerHTML += '<p>Main CSS Bundle: ' + (response.ok ? '✅ OK' : '❌ Failed') + '</p>';
+            })
+            .catch(err => {
+                console.error('CSS bundle error:', err);
+                document.body.innerHTML += '<p>Main CSS Bundle: ❌ Network Error</p>';
+            });
+    </script>
+</body>
+</html>
