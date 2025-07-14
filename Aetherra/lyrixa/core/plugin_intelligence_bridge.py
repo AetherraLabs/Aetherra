@@ -91,7 +91,8 @@ class PluginIntelligenceBridge:
             elif manager_type == "core":
                 return hasattr(manager, "plugin_info") or hasattr(manager, "plugins")
             elif manager_type == "system":
-                return hasattr(manager, "list_all_plugins") or hasattr(manager, "get_plugins")
+                # Fix: Check for correct method names that actually exist in LyrixaPluginSystem
+                return hasattr(manager, "list_plugins") or hasattr(manager, "get_plugin_info")
             return True
         except Exception as e:
             logger.warning(f"⚠️ Manager validation failed for {manager_type}: {e}")
