@@ -1,0 +1,129 @@
+/*
+Lyrixa Hybrid UI Styles - Terminal Dark Theme
+==============================================
+Modern dark styling with signature green accents for the hybrid PySide6 + WebView interface
+*/
+
+/* Base styling */
+QMainWindow {
+    background-color: #0a0a0a;
+    color: #00ff88;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13pt;
+}
+
+/* Sidebar (QListWidget) */
+QListWidget {
+    background-color: #1a1a1a;
+    color: #00ff88;
+    border: none;
+    padding: 10px;
+}
+QListWidget::item {
+    padding: 8px;
+    margin: 2px;
+}
+QListWidget::item:selected {
+    background-color: #00ff88;
+    color: #0a0a0a;
+    border-radius: 4px;
+}
+
+/* Tab container */
+QTabWidget::pane {
+    border: 1px solid #00ff88;
+    border-radius: 6px;
+    margin: 6px;
+}
+QTabBar::tab {
+    background: #1a1a1a;
+    color: #00ff88;
+    padding: 8px 16px;
+    border-radius: 4px;
+    margin-right: 4px;
+}
+QTabBar::tab:selected {
+    background: #00ff88;
+    color: #0a0a0a;
+}
+
+/* QTextEdit */
+QTextEdit {
+    background-color: #1a1a1a;
+    color: #00ff88;
+    border: 1px solid #00ff88;
+    border-radius: 6px;
+    padding: 8px;
+}
+
+/* QPushButton */
+QPushButton {
+    background-color: #00ff88;
+    color: #0a0a0a;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+}
+QPushButton:hover {
+    background-color: #00cc70;
+}
+QPushButton:pressed {
+    background-color: #009955;
+}
+
+/* Labels */
+QLabel {
+    color: #00ff88;
+}
+
+/* Scrollbars (minimal style) */
+QScrollBar:vertical,
+QScrollBar:horizontal {
+    background: #1a1a1a;
+    width: 10px;
+}
+QScrollBar::handle {
+    background: #00ff88;
+    border-radius: 4px;
+}
+QScrollBar::add-line,
+QScrollBar::sub-line {
+    background: none;
+}
+
+/* Web Engine View - Dark theme compatible */
+QWebEngineView {
+    border: 1px solid #00ff88;
+    border-radius: 6px;
+    background-color: #1a1a1a;
+}
+
+/* Menu Bar - Dark theme */
+QMenuBar {
+    background-color: #0a0a0a;
+    border-bottom: 1px solid #00ff88;
+    padding: 4px;
+}
+
+QMenuBar::item {
+    padding: 8px 12px;
+    border-radius: 4px;
+    color: #00ff88;
+}
+
+QMenuBar::item:selected {
+    background-color: #00ff88;
+    color: #0a0a0a;
+}
+
+/* Status Bar - Dark theme */
+QStatusBar {
+    background-color: #0a0a0a;
+    border-top: 1px solid #00ff88;
+    color: #00ff88;
+    font-size: 12px;
+}
+
+QStatusBar::item {
+    border: none;
+}
