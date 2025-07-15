@@ -51,38 +51,64 @@ def check_port_available(port, host="127.0.0.1"):
 
 
 def start_api_server():
-    """Start the Enhanced API server in the background."""
+    """Start the Enhanced API server embedded (no separate window)."""
     try:
-        # Check if server is already running
+        # Check if server is already running (port not available = server running)
         if not check_port_available(8007):
             print("✅ API server already running on port 8007")
             return True
 
-        print("🚀 Starting Enhanced API Server...")
-        server_path = project_root / "enhanced_api_server.py"
+        print("🚀 Starting Enhanced Self-Improvement Server (Embedded)...")
 
-        if not server_path.exists():
-            print("❌ Enhanced API server file not found")
-            return False
+        # Import and start the embedded server
+        try:
+            from enhanced_self_improvement_server import start_server_thread
 
-        # Start server in background
-        process = subprocess.Popen(
-            [sys.executable, str(server_path)],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            cwd=str(project_root),
-        )
+            # Start server in background thread (no separate console window)
+            success = start_server_thread()
 
-        # Wait a moment for server to start
-        time.sleep(2)
+            if success:
+                print("✅ Enhanced Self-Improvement Server started successfully")
+                print("   • Running on http://127.0.0.1:8007")
+                print("   • No separate console window")
+                print("   • Integrated with Lyrixa GUI")
+                return True
+            else:
+                print("❌ Failed to start embedded server")
+                return False
 
-        # Check if server is now running
-        if not check_port_available(8007):
-            print("✅ Enhanced API Server started successfully on port 8007")
-            return True
-        else:
-            print("❌ Failed to start API server")
-            return False
+        except ImportError as e:
+            print(f"❌ Failed to import embedded server: {e}")
+            print("   Falling back to external server...")
+
+            # Fallback to external server (but without console window)
+            server_path = project_root / "enhanced_api_server.py"
+
+            if not server_path.exists():
+                print("❌ Enhanced API server file not found")
+                return False
+
+            # Start server in background WITHOUT console window
+            process = subprocess.Popen(
+                [sys.executable, str(server_path)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd=str(project_root),
+                creationflags=subprocess.CREATE_NO_WINDOW
+                if sys.platform == "win32"
+                else 0,
+            )
+
+            # Wait for server to start
+            time.sleep(3)
+
+            # Check if server is now running
+            if not check_port_available(8007):
+                print("✅ Enhanced API Server started successfully on port 8007")
+                return True
+            else:
+                print("❌ Failed to start API server")
+                return False
 
     except Exception as e:
         print(f"❌ Error starting API server: {e}")

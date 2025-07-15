@@ -47,8 +47,7 @@ def test_window_factory():
     print("\n🏭 Testing window factory...")
 
     try:
-        from Aetherra.lyrixa.gui.gui_window import LyrixaWindow
-        from Aetherra.lyrixa.gui.hybrid_window import LyrixaHybridWindow
+        from Aetherra.lyrixa.gui.hybrid_window import LyrixaHybridWindow, LyrixaWindow
         from Aetherra.lyrixa.gui.window_factory import get_window_class
 
         # Test classic mode

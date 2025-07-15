@@ -125,7 +125,7 @@ def test_gui_plugin_display():
 
     try:
         # Test if GUI has the plugin tab functionality
-        from Aetherra.lyrixa.gui.gui_window import LyrixaWindow
+        from Aetherra.lyrixa.gui.hybrid_window import LyrixaWindow
 
         # Check if the GUI has the plugin methods we added
         has_plugin_tab = hasattr(LyrixaWindow, "setup_plugins_tab")

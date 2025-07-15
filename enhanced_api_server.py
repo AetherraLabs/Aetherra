@@ -7,8 +7,8 @@ Direct implementation to ensure it works
 import json
 import os
 import sys
-from pathlib import Path
 import time
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -22,9 +22,10 @@ app = FastAPI(title="Enhanced Lyrixa API", version="2.1.0")
 # Import the capability extractor
 try:
     from enhanced_plugin_capabilities import PluginCapabilityExtractor
-    print("✅ Enhanced capability extractor imported successfully")
+
+    print("Enhanced capability extractor imported successfully")
 except Exception as e:
-    print(f"❌ Failed to import enhanced capabilities: {e}")
+    print(f"Failed to import enhanced capabilities: {e}")
     PluginCapabilityExtractor = None
 
 
@@ -34,18 +35,17 @@ async def get_enhanced_plugin_capabilities():
     try:
         if not PluginCapabilityExtractor:
             return JSONResponse(
-                content={"error": "Enhanced capability extractor not available", "status": "error"},
-                status_code=500
+                content={
+                    "error": "Enhanced capability extractor not available",
+                    "status": "error",
+                },
+                status_code=500,
             )
 
         extractor = PluginCapabilityExtractor()
 
         # Check multiple plugin directories
-        plugins_dirs = [
-            "Aetherra/plugins",
-            "src/aetherra/plugins",
-            "plugins"
-        ]
+        plugins_dirs = ["Aetherra/plugins", "src/aetherra/plugins", "plugins"]
 
         all_plugins = []
 
@@ -59,8 +59,8 @@ async def get_enhanced_plugin_capabilities():
         seen_names = set()
         unique_plugins = []
         for plugin in all_plugins:
-            if plugin['name'] not in seen_names:
-                seen_names.add(plugin['name'])
+            if plugin["name"] not in seen_names:
+                seen_names.add(plugin["name"])
                 unique_plugins.append(plugin)
 
         # Sort by confidence score
@@ -69,9 +69,11 @@ async def get_enhanced_plugin_capabilities():
         # Add summary statistics
         summary = {
             "total_plugins": len(unique_plugins),
-            "high_confidence": len([p for p in unique_plugins if p.get("confidence_score", 0) > 0.8]),
+            "high_confidence": len(
+                [p for p in unique_plugins if p.get("confidence_score", 0) > 0.8]
+            ),
             "categories": {},
-            "top_capabilities": {}
+            "top_capabilities": {},
         }
 
         # Calculate category distribution
@@ -82,7 +84,9 @@ async def get_enhanced_plugin_capabilities():
         # Calculate capability frequency
         for plugin in unique_plugins:
             for capability in plugin.get("capabilities", []):
-                summary["top_capabilities"][capability] = summary["top_capabilities"].get(capability, 0) + 1
+                summary["top_capabilities"][capability] = (
+                    summary["top_capabilities"].get(capability, 0) + 1
+                )
 
         print(f"[Enhanced API] Returning {len(unique_plugins)} plugins")
 
@@ -90,7 +94,7 @@ async def get_enhanced_plugin_capabilities():
             "plugins": unique_plugins,
             "summary": summary,
             "status": "success",
-            "extraction_method": "enhanced_capability_extractor_v2"
+            "extraction_method": "enhanced_capability_extractor_v2",
         }
 
     except Exception as e:
@@ -130,27 +134,24 @@ async def goals_forecast(request: Request):
                     "key_factors": [
                         "Strong plugin ecosystem",
                         "Active development cycle",
-                        "Enhanced intelligence capabilities"
+                        "Enhanced intelligence capabilities",
                     ],
                     "recommendations": [
                         "Continue iterative improvements",
                         "Focus on user feedback integration",
-                        "Maintain code quality standards"
-                    ]
+                        "Maintain code quality standards",
+                    ],
                 },
                 "trends": {
                     "performance": "improving",
                     "stability": "high",
-                    "user_satisfaction": "increasing"
+                    "user_satisfaction": "increasing",
                 },
-                "status": "success"
+                "status": "success",
             }
 
     except Exception as e:
-        return {
-            "error": f"Forecast generation failed: {str(e)}",
-            "status": "error"
-        }
+        return {"error": f"Forecast generation failed: {str(e)}", "status": "error"}
 
 
 @app.post("/api/goals/reasoning_context")
@@ -183,61 +184,61 @@ async def goals_reasoning_context(request: Request):
                         "current_state": "System showing strong performance with active enhancement cycle",
                         "desired_state": f"Achieve optimal {goal.lower()} with measurable improvements",
                         "gap_analysis": "Primary gaps in automation and intelligent decision-making",
-                        "approach": "Iterative development with continuous feedback integration"
+                        "approach": "Iterative development with continuous feedback integration",
                     },
                     "decision_factors": [
                         {
                             "factor": "Technical Feasibility",
                             "weight": 0.3,
                             "score": 0.9,
-                            "reasoning": "Strong technical foundation with proven capability extraction"
+                            "reasoning": "Strong technical foundation with proven capability extraction",
                         },
                         {
                             "factor": "Resource Availability",
                             "weight": 0.25,
                             "score": 0.8,
-                            "reasoning": "Adequate development resources and time allocation"
+                            "reasoning": "Adequate development resources and time allocation",
                         },
                         {
                             "factor": "User Impact",
                             "weight": 0.3,
                             "score": 0.85,
-                            "reasoning": "High potential for positive user experience improvements"
+                            "reasoning": "High potential for positive user experience improvements",
                         },
                         {
                             "factor": "Risk Assessment",
                             "weight": 0.15,
                             "score": 0.75,
-                            "reasoning": "Moderate risk with good fallback mechanisms in place"
-                        }
+                            "reasoning": "Moderate risk with good fallback mechanisms in place",
+                        },
                     ],
                     "reasoning_chain": [
                         "Analyze current system capabilities and performance metrics",
                         "Identify specific enhancement opportunities through plugin analysis",
                         "Evaluate technical feasibility and resource requirements",
                         "Develop implementation strategy with incremental milestones",
-                        "Execute with continuous monitoring and feedback integration"
+                        "Execute with continuous monitoring and feedback integration",
                     ],
                     "confidence_factors": {
                         "data_quality": 0.8,
                         "model_reliability": 0.85,
                         "historical_accuracy": 0.75,
-                        "expert_validation": 0.9
-                    }
+                        "expert_validation": 0.9,
+                    },
                 },
                 "recommendations": [
                     "Prioritize high-impact, low-risk enhancements",
                     "Implement robust testing and validation procedures",
                     "Establish clear success metrics and monitoring",
-                    "Maintain user feedback loops throughout development"
+                    "Maintain user feedback loops throughout development",
                 ],
-                "status": "success"
+                "status": "success",
             }
 
     except Exception as e:
         return {
             "error": f"Reasoning context generation failed: {str(e)}",
-            "status": "error"
+            "status": "error",
         }
 
 
@@ -254,7 +255,9 @@ async def propose_changes():
         # Import the self-evaluation agent
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), "Aetherra"))
         from Aetherra.lyrixa.core.enhanced_memory import LyrixaEnhancedMemorySystem
-        from Aetherra.lyrixa.core.enhanced_self_evaluation_agent import EnhancedSelfEvaluationAgent
+        from Aetherra.lyrixa.core.enhanced_self_evaluation_agent import (
+            EnhancedSelfEvaluationAgent,
+        )
 
         # Create agent instance
         memory_system = LyrixaEnhancedMemorySystem()
@@ -274,38 +277,38 @@ async def propose_changes():
                     "action": "🔧 Optimize plugin loading performance",
                     "description": "Implement lazy loading for plugins to reduce startup time",
                     "priority": "medium",
-                    "estimated_impact": "Faster system startup"
+                    "estimated_impact": "Faster system startup",
                 },
                 {
                     "category": "UI Enhancement",
                     "action": "🎨 Add plugin sorting by usage frequency",
                     "description": "Track plugin usage and sort by most frequently used",
                     "priority": "low",
-                    "estimated_impact": "Improved user experience"
+                    "estimated_impact": "Improved user experience",
                 },
                 {
                     "category": "Intelligence Enhancement",
                     "action": "🧠 Enhance confidence scoring algorithm",
                     "description": "Incorporate user feedback into plugin confidence calculations",
                     "priority": "high",
-                    "estimated_impact": "Better plugin recommendations"
+                    "estimated_impact": "Better plugin recommendations",
                 },
                 {
                     "category": "System Enhancement",
                     "action": "📊 Add plugin performance monitoring",
                     "description": "Track execution time and success rates for all plugins",
                     "priority": "medium",
-                    "estimated_impact": "Better system insights"
-                }
+                    "estimated_impact": "Better system insights",
+                },
             ],
             "summary": {
                 "total_proposals": 4,
                 "high_priority": 1,
                 "medium_priority": 2,
-                "low_priority": 1
+                "low_priority": 1,
             },
             "status": "success",
-            "note": "Fallback proposals - Enhanced agent not available"
+            "note": "Fallback proposals - Enhanced agent not available",
         }
         return fallback_response
 
@@ -324,15 +327,24 @@ async def get_reasoning_history(limit: int = 10):
         # Try to import meta-reasoning system
         try:
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), "Aetherra"))
-            from Aetherra.lyrixa.intelligence.meta_reasoning import MetaReasoningEngine, DecisionType
+            from Aetherra.lyrixa.intelligence.meta_reasoning import (
+                DecisionType,
+                MetaReasoningEngine,
+            )
 
             # Create mock systems for demo
             class MockMemory:
-                def store(self, data): pass
+                def store(self, data):
+                    pass
 
             class MockPluginManager:
                 def list_plugin_names(self):
-                    return ["summarizer", "file_manager", "goal_tracker", "memory_analyzer"]
+                    return [
+                        "summarizer",
+                        "file_manager",
+                        "goal_tracker",
+                        "memory_analyzer",
+                    ]
 
             memory = MockMemory()
             plugin_manager = MockPluginManager()
@@ -348,7 +360,7 @@ async def get_reasoning_history(limit: int = 10):
                         "timestamp": time.time() - 300,
                         "decision": "summarizer_plugin",
                         "confidence": 0.87,
-                        "explanation": "Plugin optimized for data summarization tasks"
+                        "explanation": "Plugin optimized for data summarization tasks",
                     },
                     {
                         "trace_id": "demo_trace_2",
@@ -356,11 +368,11 @@ async def get_reasoning_history(limit: int = 10):
                         "timestamp": time.time() - 150,
                         "decision": "multi_step_plan",
                         "confidence": 0.82,
-                        "explanation": "Complex request requires structured approach"
-                    }
+                        "explanation": "Complex request requires structured approach",
+                    },
                 ],
                 "total_traces": len(history),
-                "status": "success"
+                "status": "success",
             }
 
         except ImportError:
@@ -373,18 +385,22 @@ async def get_reasoning_history(limit: int = 10):
                         "timestamp": time.time() - 600,
                         "context": {
                             "goal": "Analyze user request for task automation",
-                            "user_input": "Help me organize my workflow"
+                            "user_input": "Help me organize my workflow",
                         },
                         "decision": "workflow_optimizer_plugin",
-                        "alternatives": ["general_assistant", "task_manager", "scheduler"],
+                        "alternatives": [
+                            "general_assistant",
+                            "task_manager",
+                            "scheduler",
+                        ],
                         "confidence": 0.89,
                         "confidence_level": "high",
                         "explanation": "Workflow optimizer has 89% success rate for organization tasks and strong pattern matching",
                         "metadata": {
                             "plugin_success_rate": 0.89,
                             "usage_count": 23,
-                            "context_similarity": 0.76
-                        }
+                            "context_similarity": 0.76,
+                        },
                     },
                     {
                         "trace_id": "sample_trace_2",
@@ -393,7 +409,7 @@ async def get_reasoning_history(limit: int = 10):
                         "context": {
                             "user_request": "Show me my progress this week",
                             "steps_count": 3,
-                            "complexity_estimate": "moderate"
+                            "complexity_estimate": "moderate",
                         },
                         "decision": "multi_step_plan_3",
                         "alternatives": ["single_step", "alternative_breakdown"],
@@ -401,8 +417,12 @@ async def get_reasoning_history(limit: int = 10):
                         "confidence_level": "high",
                         "explanation": "Multi-step approach needed for comprehensive progress analysis",
                         "metadata": {
-                            "planned_steps": ["gather_weekly_data", "analyze_patterns", "generate_summary"]
-                        }
+                            "planned_steps": [
+                                "gather_weekly_data",
+                                "analyze_patterns",
+                                "generate_summary",
+                            ]
+                        },
                     },
                     {
                         "trace_id": "sample_trace_3",
@@ -411,34 +431,42 @@ async def get_reasoning_history(limit: int = 10):
                         "context": {
                             "question": "What improvements can I make?",
                             "question_type": "explanatory",
-                            "sources_count": 3
+                            "sources_count": 3,
                         },
                         "decision": "insight_based_response",
-                        "alternatives": ["direct_answer", "researched_answer", "memory_based"],
+                        "alternatives": [
+                            "direct_answer",
+                            "researched_answer",
+                            "memory_based",
+                        ],
                         "confidence": 0.78,
                         "confidence_level": "high",
                         "explanation": "Using insight-based approach with multiple data sources for comprehensive improvement suggestions",
                         "metadata": {
-                            "sources_used": ["performance_data", "user_patterns", "system_analytics"]
-                        }
-                    }
+                            "sources_used": [
+                                "performance_data",
+                                "user_patterns",
+                                "system_analytics",
+                            ]
+                        },
+                    },
                 ][:limit],
                 "summary": {
                     "total_traces": 3,
                     "confidence_trends": {
                         "plugin_selection": 0.89,
                         "goal_planning": 0.85,
-                        "answer_generation": 0.78
+                        "answer_generation": 0.78,
                     },
-                    "average_confidence": 0.84
+                    "average_confidence": 0.84,
                 },
-                "status": "success"
+                "status": "success",
             }
 
     except Exception as e:
         return {
             "error": f"Failed to retrieve reasoning history: {str(e)}",
-            "status": "error"
+            "status": "error",
         }
 
 
@@ -450,10 +478,7 @@ async def explain_decision(request: Request):
         trace_id = data.get("trace_id")
 
         if not trace_id:
-            return {
-                "error": "trace_id is required",
-                "status": "error"
-            }
+            return {"error": "trace_id is required", "status": "error"}
 
         # For demo, return detailed explanation
         return {
@@ -466,14 +491,14 @@ async def explain_decision(request: Request):
                     "user_input": "Help me streamline my daily tasks",
                     "intent": "workflow_optimization",
                     "memory_links": ["previous_optimizations", "user_preferences"],
-                    "available_plugins_count": 8
+                    "available_plugins_count": 8,
                 },
                 "decision": "workflow_optimizer_plugin",
                 "alternatives": [
                     "general_assistant_plugin",
                     "task_manager_plugin",
                     "scheduler_plugin",
-                    "automation_engine"
+                    "automation_engine",
                 ],
                 "confidence": 0.89,
                 "confidence_level": "high",
@@ -483,29 +508,26 @@ async def explain_decision(request: Request):
                     "Retrieved similar past requests from memory system",
                     "Evaluated plugin performance metrics for this task type",
                     "Calculated confidence based on success patterns",
-                    "Selected highest-scoring option with validation"
+                    "Selected highest-scoring option with validation",
                 ],
                 "metadata": {
                     "plugin_success_rate": 0.89,
                     "previous_usage_count": 23,
                     "context_similarity": 0.76,
                     "user_satisfaction_score": 0.92,
-                    "execution_time": "average_2.3s"
+                    "execution_time": "average_2.3s",
                 },
                 "learning_insights": [
                     "User prefers automated solutions over manual guidance",
                     "Workflow optimization requests typically occur in morning hours",
-                    "Success rate increases when providing step-by-step breakdown"
-                ]
+                    "Success rate increases when providing step-by-step breakdown",
+                ],
             },
-            "status": "success"
+            "status": "success",
         }
 
     except Exception as e:
-        return {
-            "error": f"Failed to explain decision: {str(e)}",
-            "status": "error"
-        }
+        return {"error": f"Failed to explain decision: {str(e)}", "status": "error"}
 
 
 @app.get("/api/meta_reasoning/analytics")
@@ -518,63 +540,60 @@ async def get_reasoning_analytics():
                     "total_decisions": 156,
                     "avg_confidence": 0.82,
                     "success_rate": 0.91,
-                    "learning_patterns": 23
+                    "learning_patterns": 23,
                 },
                 "confidence_trends": {
                     "plugin_selection": 0.87,
                     "goal_planning": 0.84,
                     "answer_generation": 0.79,
                     "context_analysis": 0.83,
-                    "error_handling": 0.76
+                    "error_handling": 0.76,
                 },
                 "decision_distribution": {
                     "plugin_selection": 45,
                     "goal_planning": 32,
                     "answer_generation": 41,
                     "context_analysis": 28,
-                    "error_handling": 10
+                    "error_handling": 10,
                 },
                 "top_performing_decisions": [
                     {
                         "decision": "summarizer_plugin",
                         "success_rate": 0.94,
                         "usage_count": 28,
-                        "avg_confidence": 0.91
+                        "avg_confidence": 0.91,
                     },
                     {
                         "decision": "workflow_optimizer_plugin",
                         "success_rate": 0.89,
                         "usage_count": 23,
-                        "avg_confidence": 0.87
+                        "avg_confidence": 0.87,
                     },
                     {
                         "decision": "multi_step_planning",
                         "success_rate": 0.86,
                         "usage_count": 32,
-                        "avg_confidence": 0.84
-                    }
+                        "avg_confidence": 0.84,
+                    },
                 ],
                 "learning_insights": [
                     "Users respond positively to detailed explanations",
                     "Multi-step approaches increase satisfaction by 23%",
                     "Morning requests have 15% higher success rates",
-                    "Confidence scores correlate strongly with user feedback"
+                    "Confidence scores correlate strongly with user feedback",
                 ],
                 "improvement_opportunities": [
                     "Enhance error handling decision confidence",
                     "Improve context analysis for edge cases",
-                    "Develop better fallback strategies for low-confidence decisions"
-                ]
+                    "Develop better fallback strategies for low-confidence decisions",
+                ],
             },
             "last_updated": time.time(),
-            "status": "success"
+            "status": "success",
         }
 
     except Exception as e:
-        return {
-            "error": f"Failed to generate analytics: {str(e)}",
-            "status": "error"
-        }
+        return {"error": f"Failed to generate analytics: {str(e)}", "status": "error"}
 
 
 @app.post("/api/meta_reasoning/add_feedback")
@@ -589,7 +608,7 @@ async def add_reasoning_feedback(request: Request):
         if not trace_id or feedback_score is None:
             return {
                 "error": "trace_id and feedback_score are required",
-                "status": "error"
+                "status": "error",
             }
 
         # For demo, acknowledge feedback
@@ -602,21 +621,19 @@ async def add_reasoning_feedback(request: Request):
                 "learning_adjustments": [
                     f"Updated confidence model for similar decisions",
                     f"Adjusted plugin ranking based on user preference",
-                    f"Stored pattern for future reference"
-                ]
+                    f"Stored pattern for future reference",
+                ],
             },
             "message": "Thank you! Your feedback helps improve future decisions.",
-            "status": "success"
+            "status": "success",
         }
 
     except Exception as e:
-        return {
-            "error": f"Failed to process feedback: {str(e)}",
-            "status": "error"
-        }
+        return {"error": f"Failed to process feedback: {str(e)}", "status": "error"}
 
 
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 Starting Enhanced Lyrixa API Server...")
+
+    print("Starting Enhanced Lyrixa API Server...")
     uvicorn.run(app, host="127.0.0.1", port=8007, log_level="info")

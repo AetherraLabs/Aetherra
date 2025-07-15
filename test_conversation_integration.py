@@ -27,7 +27,7 @@ def test_conversation_integration():
         print("✅ Intelligence stack imported successfully")
 
         # Test GUI import
-        from Aetherra.lyrixa.gui.gui_window import LyrixaWindow
+        from Aetherra.lyrixa.gui.hybrid_window import LyrixaWindow
 
         print("✅ GUI window imported successfully")
 
@@ -54,7 +54,6 @@ def test_conversation_integration():
             return False
 
         # Test GUI methods exist
-        import PySide6
         from PySide6.QtWidgets import QApplication
 
         app = QApplication.instance() or QApplication(sys.argv)
