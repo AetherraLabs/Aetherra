@@ -5,7 +5,7 @@ on:
     branches: [ main ]
     paths: 
       - 'Aetherra/lyrixa/core/Aetherra Website/**'
-      - 'CNAME'
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
@@ -42,17 +42,12 @@ jobs:
         working-directory: 'Aetherra/lyrixa/core/Aetherra Website'
         run: npm run build
 
-      - name: Update built files for custom domain
+      - name: Copy built files to docs directory
         run: |
-          # Update meta tags for custom domain
-          sed -i 's|https://zyonic88.github.io/Aetherra/|https://aetherra.dev/|g' "Aetherra/lyrixa/core/Aetherra Website/dist/index.html"
-          # Fix asset paths for custom domain - remove /Aetherra/ from all paths
-          sed -i 's|href="/Aetherra/|href="/|g' "Aetherra/lyrixa/core/Aetherra Website/dist/index.html"
-          sed -i 's|src="/Aetherra/|src="/|g' "Aetherra/lyrixa/core/Aetherra Website/dist/index.html"
-          # Fix remaining asset paths that might be absolute
-          sed -i 's|="/Aetherra/|="/|g' "Aetherra/lyrixa/core/Aetherra Website/dist/index.html"
-          # Copy CNAME to dist folder
-          cp CNAME "Aetherra/lyrixa/core/Aetherra Website/dist/"
+          # Copy the built website to docs directory
+          cp -r "Aetherra/lyrixa/core/Aetherra Website/dist/"* docs/
+          # Ensure CNAME file is in docs
+          cp CNAME docs/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -60,7 +55,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'Aetherra/lyrixa/core/Aetherra Website/dist'
+          path: 'docs'
 
       - name: Deploy to GitHub Pages
         id: deployment
