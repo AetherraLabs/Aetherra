@@ -1,8 +1,11 @@
-name: Deploy Aetherra to GitHub Pages
+name: Deploy Aetherra Website to GitHub Pages
 
 on:
   push:
     branches: [ main ]
+    paths: 
+      - 'Aetherra/lyrixa/core/Aetherra Website/**'
+      - 'CNAME'
   workflow_dispatch:
 
 permissions:
@@ -15,7 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -24,13 +27,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'Aetherra/lyrixa/core/Aetherra Website/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: 'Aetherra/lyrixa/core/Aetherra Website'
+        run: npm ci
+
+      - name: Build website
+        working-directory: 'Aetherra/lyrixa/core/Aetherra Website'
+        run: npm run build
+
+      - name: Update built files for custom domain
+        run: |
+          # Update meta tags for custom domain
+          sed -i 's|https://zyonic88.github.io/Aetherra/|https://aetherra.dev/|g' "Aetherra/lyrixa/core/Aetherra Website/dist/index.html"
+          # Fix asset paths for custom domain
+          sed -i 's|href="/Aetherra/|href="/|g' "Aetherra/lyrixa/core/Aetherra Website/dist/index.html"
+          sed -i 's|src="/Aetherra/|src="/|g' "Aetherra/lyrixa/core/Aetherra Website/dist/index.html"
+          # Copy CNAME to dist folder
+          cp CNAME "Aetherra/lyrixa/core/Aetherra Website/dist/"
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: 'Aetherra/lyrixa/core/Aetherra Website/dist'
 
       - name: Deploy to GitHub Pages
         id: deployment
