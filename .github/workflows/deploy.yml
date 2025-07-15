@@ -3,7 +3,15 @@ name: Deploy Aetherra Website
 on:
   push:
     branches: [ main ]
-    paths: [ 'website/**' ]
+    paths: [ 
+      'index.html',
+      'assets/**',
+      'favicon.svg',
+      'CNAME',
+      '*.html',
+      '*.css',
+      '*.js'
+    ]
 
 permissions:
   contents: read
@@ -30,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './website'
+          path: '.'
           
       - name: Deploy to GitHub Pages
         id: deployment

@@ -302,7 +302,7 @@ Join the Aetherra community and help shape the future of AI-native development:
 - 🐦 **[Follow us on X/Twitter](https://x.com/AetherraProject)** - Latest updates and news
 
 ### **Stay Connected**
-- 🌐 **Website**: [zyonic88.github.io/Aetherra](https://zyonic88.github.io/Aetherra/)
+- 🌐 **Website**: [aetherra.dev](https://aetherra.dev)
 - 🐦 **X/Twitter**: [@AetherraProject](https://x.com/AetherraProject)
 - 📁 **GitHub**: [Zyonic88/Aetherra](https://github.com/Zyonic88/Aetherra)
 
@@ -435,10 +435,10 @@ Special thanks to:
 </p>
 
 <p align="center">
-  <a href="https://zyonic88.github.io/Aetherra">🌐 Live Website</a> •
+  <a href="https://aetherra.dev">🌐 Live Website</a> •
   <a href="https://github.com/Zyonic88/Aetherra">💻 GitHub</a> •
-  <a href="https://github.com/Zyonic88/Aetherra/discussions">� Discussions</a> •
-  <a href="https://github.com/Zyonic88/Aetherra/issues">� Issues</a>
+  <a href="https://github.com/Zyonic88/Aetherra/discussions">💬 Discussions</a> •
+  <a href="https://github.com/Zyonic88/Aetherra/issues">🐛 Issues</a>
 </p>
 
 <p align="center">
