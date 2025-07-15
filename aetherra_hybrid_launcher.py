@@ -17,7 +17,11 @@ Environment Variables:
 
 import asyncio
 import os
+import socket
+import subprocess
 import sys
+import threading
+import time
 from pathlib import Path
 
 # Set environment for hybrid UI
@@ -34,6 +38,68 @@ from dotenv import load_dotenv
 load_dotenv()
 load_dotenv(project_root / "Aetherra" / "lyrixa" / "gui" / "ui_config.env")
 
+
+def check_port_available(port, host="127.0.0.1"):
+    """Check if a port is available."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(1)
+            result = sock.connect_ex((host, port))
+            return result != 0  # Port is available if connection fails
+    except Exception:
+        return True
+
+
+def start_api_server():
+    """Start the Enhanced API server in the background."""
+    try:
+        # Check if server is already running
+        if not check_port_available(8007):
+            print("✅ API server already running on port 8007")
+            return True
+
+        print("🚀 Starting Enhanced API Server...")
+        server_path = project_root / "enhanced_api_server.py"
+
+        if not server_path.exists():
+            print("❌ Enhanced API server file not found")
+            return False
+
+        # Start server in background
+        process = subprocess.Popen(
+            [sys.executable, str(server_path)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=str(project_root),
+        )
+
+        # Wait a moment for server to start
+        time.sleep(2)
+
+        # Check if server is now running
+        if not check_port_available(8007):
+            print("✅ Enhanced API Server started successfully on port 8007")
+            return True
+        else:
+            print("❌ Failed to start API server")
+            return False
+
+    except Exception as e:
+        print(f"❌ Error starting API server: {e}")
+        return False
+
+
+def start_api_server_async():
+    """Start API server in a separate thread."""
+
+    def run_server():
+        start_api_server()
+
+    server_thread = threading.Thread(target=run_server, daemon=True)
+    server_thread.start()
+    return server_thread
+
+
 # Import and modify the launcher
 try:
     # Import from the original launcher
@@ -46,6 +112,10 @@ try:
         """Main function for hybrid UI launcher"""
         print("🌟 Lyrixa Hybrid UI Launcher Starting...")
         print(f"UI Mode: {os.getenv('LYRIXA_UI_MODE', 'classic')}")
+
+        # Start API server automatically
+        print("🔧 Initializing API services...")
+        start_api_server_async()
 
         # Create Qt application
         app = QApplication(sys.argv)

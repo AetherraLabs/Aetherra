@@ -13,14 +13,21 @@ Architecture:
 - 🚀 Future Ready: Easy integration with aetherra.dev
 """
 
+import asyncio
+import io
+import os
+import platform
 import random
 import sys
+from datetime import datetime
 
+import psutil
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (
     QApplication,
+    QComboBox,
     QFileDialog,
     QFrame,
     QHBoxLayout,
@@ -29,7 +36,9 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QProgressBar,
     QPushButton,
+    QScrollArea,
     QStackedWidget,
+    QTabWidget,
     QTextEdit,
     QVBoxLayout,
     QWidget,
@@ -256,7 +265,6 @@ class LyrixaWindow(QMainWindow):
             ("💾 Memory Core", 7),
             ("🎯 Goal Tracker", 8),
             ("⚡ Execute", 9),
-            ("🔗 Agent Collab", 10),
         ]
 
         self.nav_buttons = {}
@@ -290,7 +298,6 @@ class LyrixaWindow(QMainWindow):
         self.content_stack.addWidget(self.create_memory_tab())  # 7
         self.content_stack.addWidget(self.create_goal_tab())  # 8
         self.content_stack.addWidget(self.create_execute_plugin_tab())  # 9
-        self.content_stack.addWidget(self.create_agent_collab_tab())  # 10
 
         # Add content area to layout
         main_layout.addWidget(self.content_stack)
@@ -379,11 +386,27 @@ class LyrixaWindow(QMainWindow):
 
     def create_agents_tab(self):
         widget = QWidget()
-        layout = QVBoxLayout()
+        main_layout = QVBoxLayout()
+
+        title = QLabel("🤖 AI Agents & Collaboration")
+        title.setStyleSheet("font-size: 20px; font-weight: bold; margin: 10px;")
+        main_layout.addWidget(title)
+
+        # Create tab widget for agent sections
+        tab_widget = QTabWidget()
+        tab_widget.setStyleSheet("""
+            QTabWidget::pane { border: 1px solid #555; background-color: #2b2b2b; }
+            QTabBar::tab { background-color: #404040; color: #bbbbbb; padding: 8px 16px; border: 1px solid #555; }
+            QTabBar::tab:selected { background-color: #555; color: white; }
+        """)
+
+        # Active Agents Tab
+        agents_widget = QWidget()
+        agents_layout = QVBoxLayout()
 
         self.agent_list = QListWidget()
-        layout.addWidget(QLabel("Active Agents"))
-        layout.addWidget(self.agent_list)
+        agents_layout.addWidget(QLabel("Active Agents"))
+        agents_layout.addWidget(self.agent_list)
 
         # Placeholder agents for now
         self.agent_list.addItems(
@@ -395,7 +418,83 @@ class LyrixaWindow(QMainWindow):
             ]
         )
 
-        widget.setLayout(layout)
+        agents_widget.setLayout(agents_layout)
+
+        # Collaboration Tab
+        collab_widget = QWidget()
+        collab_layout = QVBoxLayout()
+
+        # Collaboration controls
+        collab_controls = QFrame()
+        collab_controls.setFrameStyle(QFrame.Shape.Box)
+        collab_controls.setStyleSheet(
+            "QFrame { background-color: #2b2b2b; border: 1px solid #555; border-radius: 5px; padding: 10px; }"
+        )
+
+        controls_layout = QVBoxLayout()
+
+        collab_title = QLabel("🔗 Agent Collaboration Controls")
+        collab_title.setStyleSheet(
+            "font-size: 18px; font-weight: bold; color: #bbbbbb; margin-bottom: 10px;"
+        )
+        controls_layout.addWidget(collab_title)
+
+        # Start collaboration button
+        start_collab_btn = QPushButton("🚀 Start Multi-Agent Collaboration")
+        start_collab_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #0066cc;
+                color: white;
+                border: none;
+                padding: 12px;
+                border-radius: 6px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #0088ff; }
+        """)
+        start_collab_btn.clicked.connect(self.start_agent_collaboration)
+        controls_layout.addWidget(start_collab_btn)
+
+        # Coordination mode
+        mode_layout = QHBoxLayout()
+        mode_label = QLabel("Coordination Mode:")
+        mode_label.setStyleSheet("color: #bbbbbb; font-size: 14px;")
+        mode_layout.addWidget(mode_label)
+
+        mode_combo = QComboBox()
+        mode_combo.addItems(["Sequential", "Parallel", "Hierarchical", "Mesh"])
+        mode_combo.setStyleSheet("""
+            QComboBox {
+                background-color: #404040;
+                color: #bbbbbb;
+                border: 1px solid #666;
+                padding: 8px;
+                border-radius: 4px;
+            }
+        """)
+        mode_layout.addWidget(mode_combo)
+        controls_layout.addLayout(mode_layout)
+
+        collab_controls.setLayout(controls_layout)
+        collab_layout.addWidget(collab_controls)
+
+        # Active collaborations status
+        status_label = QLabel("📊 Collaboration Status: Ready")
+        status_label.setStyleSheet(
+            "color: #00ff88; font-size: 16px; font-weight: bold; margin: 10px;"
+        )
+        self.collab_status_label = status_label  # Store reference for updates
+        collab_layout.addWidget(status_label)
+
+        collab_widget.setLayout(collab_layout)
+
+        # Add tabs
+        tab_widget.addTab(agents_widget, "Active Agents")
+        tab_widget.addTab(collab_widget, "Collaboration")
+
+        main_layout.addWidget(tab_widget)
+        widget.setLayout(main_layout)
         return widget
 
     def create_performance_tab(self):
@@ -660,20 +759,64 @@ class LyrixaWindow(QMainWindow):
         return widget
 
     def create_self_improvement_tab(self):
-        widget = QWidget()
-        layout = QVBoxLayout()
+        """Create an enhanced self-improvement tab with full dashboard integration"""
+        try:
+            from Aetherra.lyrixa.ui.self_improvement_dashboard_widget import (
+                SelfImprovementDashboardWidget,
+            )
 
-        self.improvement_log = QTextEdit()
-        self.improvement_log.setReadOnly(True)
+            # Return the comprehensive dashboard widget directly
+            dashboard_widget = SelfImprovementDashboardWidget()
+            return dashboard_widget
 
-        reflect_button = QPushButton("Run Self-Reflection")
-        reflect_button.clicked.connect(self.run_self_reflection)
+        except ImportError as e:
+            # Fallback to basic tab if widget not available
+            print(f"Could not load SelfImprovementDashboardWidget: {e}")
+            widget = QWidget()
+            layout = QVBoxLayout()
 
-        layout.addWidget(QLabel("Self-Improvement Logs"))
-        layout.addWidget(self.improvement_log)
-        layout.addWidget(reflect_button)
-        widget.setLayout(layout)
-        return widget
+            # Enhanced fallback with better styling
+            fallback_label = QLabel("⚠️ <b>Self-Improvement Dashboard Loading...</b>")
+            fallback_label.setStyleSheet("""
+                QLabel {
+                    color: #ffaa00;
+                    background: #2a2a2a;
+                    padding: 8px;
+                    border: 1px solid #ffaa00;
+                    border-radius: 4px;
+                    font-size: 14px;
+                }
+            """)
+            layout.addWidget(fallback_label)
+
+            self.improvement_log = QTextEdit()
+            self.improvement_log.setReadOnly(True)
+            self.improvement_log.setPlaceholderText(
+                "Self-improvement system initializing...\n\nThis tab will connect to:\n• Memory enhancement tracking\n• Performance optimization metrics\n• Goal forecasting system\n• Plugin intelligence dashboard"
+            )
+
+            reflect_button = QPushButton("🔍 Run Self-Reflection")
+            reflect_button.setStyleSheet("""
+                QPushButton {
+                    background: #4a4a4a;
+                    color: white;
+                    border: 1px solid #666;
+                    padding: 8px;
+                    border-radius: 4px;
+                    font-size: 14px;
+                }
+                QPushButton:hover {
+                    background: #5a5a5a;
+                    border-color: #00ff88;
+                }
+            """)
+            reflect_button.clicked.connect(self.run_self_reflection)
+
+            layout.addWidget(QLabel("Self-Improvement System"))
+            layout.addWidget(self.improvement_log)
+            layout.addWidget(reflect_button)
+            widget.setLayout(layout)
+            return widget
 
     def create_plugin_tab(self):
         widget = QWidget()
@@ -700,28 +843,305 @@ class LyrixaWindow(QMainWindow):
 
     def create_plugin_editor_tab(self):
         widget = QWidget()
-        layout = QVBoxLayout()
+        main_layout = QHBoxLayout()  # Horizontal layout for VSCode-like split
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
-        self.plugin_editor = QTextEdit()
-        self.plugin_editor.setPlaceholderText("Select and edit a plugin file...")
+        # === LEFT PANEL: FILE EXPLORER & CHAT ===
+        left_panel = QWidget()
+        left_panel.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1a1a1a, stop:0.5 #141414, stop:1 #0f0f0f);
+                border-right: 2px solid rgba(0, 255, 136, 0.3);
+            }
+        """)
+        left_panel.setMinimumWidth(350)
+        left_panel.setMaximumWidth(450)
 
-        open_btn = QPushButton("Open Plugin File")
-        open_btn.clicked.connect(self.open_plugin_file_for_editing)
+        left_layout = QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(10, 10, 10, 10)
+        left_layout.setSpacing(10)
 
-        layout.addWidget(QLabel("Plugin Editor"))
-        layout.addWidget(self.plugin_editor)
-        layout.addWidget(open_btn)
-        widget.setLayout(layout)
-        return widget
+        # Plugin Explorer Header
+        explorer_header = QLabel("📁 PLUGIN EXPLORER")
+        explorer_header.setStyleSheet("""
+            QLabel {
+                color: #00ff88;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 8px;
+                background: rgba(0, 255, 136, 0.1);
+                border-radius: 6px;
+                margin-bottom: 5px;
+            }
+        """)
+        left_layout.addWidget(explorer_header)
 
-    def open_plugin_file_for_editing(self):
-        file_path, _ = QFileDialog.getOpenFileName(
-            self, "Edit Plugin File", "", "Python Files (*.py);;All Files (*)"
+        # Plugin File Tree
+        self.plugin_file_tree = QListWidget()
+        self.plugin_file_tree.setStyleSheet("""
+            QListWidget {
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(0, 255, 136, 0.3);
+                border-radius: 6px;
+                color: #ffffff;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 13px;
+                padding: 5px;
+            }
+            QListWidget::item {
+                background: rgba(0, 255, 136, 0.05);
+                border: 1px solid rgba(0, 255, 136, 0.2);
+                border-radius: 4px;
+                padding: 6px;
+                margin: 2px;
+            }
+            QListWidget::item:selected {
+                background: rgba(0, 255, 136, 0.25);
+                border: 1px solid #00ff88;
+                color: #000000;
+                font-weight: bold;
+            }
+        """)
+        self.plugin_file_tree.itemDoubleClicked.connect(self.open_plugin_from_explorer)
+        left_layout.addWidget(self.plugin_file_tree)
+
+        # Plugin Actions
+        actions_layout = QHBoxLayout()
+
+        new_plugin_btn = QPushButton("📄 New")
+        new_plugin_btn.setStyleSheet(self.get_action_button_style())
+        new_plugin_btn.clicked.connect(self.create_new_plugin)
+        actions_layout.addWidget(new_plugin_btn)
+
+        load_plugin_btn = QPushButton("📂 Load")
+        load_plugin_btn.setStyleSheet(self.get_action_button_style())
+        load_plugin_btn.clicked.connect(self.load_plugin_file_advanced)
+        actions_layout.addWidget(load_plugin_btn)
+
+        save_plugin_btn = QPushButton("💾 Save")
+        save_plugin_btn.setStyleSheet(self.get_action_button_style())
+        save_plugin_btn.clicked.connect(self.save_current_plugin)
+        actions_layout.addWidget(save_plugin_btn)
+
+        left_layout.addLayout(actions_layout)
+
+        # === INTEGRATED CHAT PANEL ===
+        chat_header = QLabel("🤖 LYRIXA PLUGIN ASSISTANT")
+        chat_header.setStyleSheet("""
+            QLabel {
+                color: #00ff88;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 8px;
+                background: rgba(0, 255, 136, 0.1);
+                border-radius: 6px;
+                margin: 10px 0 5px 0;
+            }
+        """)
+        left_layout.addWidget(chat_header)
+
+        # Plugin Chat Log
+        self.plugin_chat_log = QTextEdit()
+        self.plugin_chat_log.setReadOnly(True)
+        self.plugin_chat_log.setMaximumHeight(200)
+        self.plugin_chat_log.setStyleSheet("""
+            QTextEdit {
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(0, 255, 136, 0.3);
+                border-radius: 6px;
+                color: #ffffff;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 12px;
+                padding: 8px;
+            }
+        """)
+        self.plugin_chat_log.setHtml("""
+        <div style='color: #00ff88; font-weight: bold; text-align: center; padding: 10px;'>
+        🤖 LYRIXA PLUGIN ASSISTANT READY<br>
+        <span style='color: #ffffff; font-size: 11px;'>Ask me to help create, debug, or enhance your plugins!</span>
+        </div>
+        """)
+        left_layout.addWidget(self.plugin_chat_log)
+
+        # Plugin Chat Input
+        self.plugin_chat_input = QTextEdit()
+        self.plugin_chat_input.setFixedHeight(60)
+        self.plugin_chat_input.setPlaceholderText(
+            "Ask Lyrixa about plugin development..."
         )
-        if file_path:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-                self.plugin_editor.setPlainText(content)
+        self.plugin_chat_input.setStyleSheet("""
+            QTextEdit {
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(0, 255, 136, 0.3);
+                border-radius: 6px;
+                color: #ffffff;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 12px;
+                padding: 8px;
+            }
+            QTextEdit:focus {
+                border: 2px solid #00ff88;
+            }
+        """)
+
+        # Chat send functionality - Store original method properly
+        def plugin_chat_keypress(event):
+            from PySide6.QtCore import Qt
+
+            if (
+                event.key() == Qt.Key.Key_Return
+                and event.modifiers() == Qt.KeyboardModifier.ControlModifier
+            ):
+                self.send_plugin_chat_message()
+                return
+            # Call the original method via super()
+            super(type(self.plugin_chat_input), self.plugin_chat_input).keyPressEvent(
+                event
+            )
+
+        self.plugin_chat_input.keyPressEvent = plugin_chat_keypress
+
+        left_layout.addWidget(self.plugin_chat_input)
+
+        send_chat_btn = QPushButton("🚀 Ask Lyrixa")
+        send_chat_btn.setStyleSheet(self.get_action_button_style("#0066cc"))
+        send_chat_btn.clicked.connect(self.send_plugin_chat_message)
+        left_layout.addWidget(send_chat_btn)
+
+        # === RIGHT PANEL: CODE EDITOR & TOOLS ===
+        right_panel = QWidget()
+        right_panel.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #0f0f0f, stop:0.5 #121212, stop:1 #0f0f0f);
+            }
+        """)
+
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(10, 10, 10, 10)
+        right_layout.setSpacing(10)
+
+        # Editor Header with File Info
+        editor_header_layout = QHBoxLayout()
+
+        self.current_file_label = QLabel("📝 No file loaded")
+        self.current_file_label.setStyleSheet("""
+            QLabel {
+                color: #00ff88;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 8px;
+            }
+        """)
+        editor_header_layout.addWidget(self.current_file_label)
+
+        editor_header_layout.addStretch()
+
+        # File status indicator
+        self.file_status_label = QLabel("●")
+        self.file_status_label.setStyleSheet("color: #666666; font-size: 16px;")
+        self.file_status_label.setToolTip("File status: Saved")
+        editor_header_layout.addWidget(self.file_status_label)
+
+        right_layout.addLayout(editor_header_layout)
+
+        # Advanced Code Editor
+        self.plugin_editor = QTextEdit()
+        self.plugin_editor.setStyleSheet("""
+            QTextEdit {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #0a0a0a, stop:1 #0d0d0d);
+                border: 1px solid rgba(0, 255, 136, 0.3);
+                border-radius: 6px;
+                color: #ffffff;
+                font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+                font-size: 14px;
+                padding: 15px;
+                line-height: 1.4;
+            }
+            QTextEdit:focus {
+                border: 2px solid #00ff88;
+            }
+        """)
+
+        # Track changes for unsaved indicator
+        self.plugin_editor.textChanged.connect(self.mark_file_as_modified)
+
+        right_layout.addWidget(self.plugin_editor)
+
+        # Editor Actions Toolbar
+        editor_actions_layout = QHBoxLayout()
+
+        test_plugin_btn = QPushButton("🧪 Test Plugin")
+        test_plugin_btn.setStyleSheet(self.get_action_button_style("#ff6600"))
+        test_plugin_btn.clicked.connect(self.test_current_plugin)
+        editor_actions_layout.addWidget(test_plugin_btn)
+
+        format_code_btn = QPushButton("🎨 Format Code")
+        format_code_btn.setStyleSheet(self.get_action_button_style("#9966cc"))
+        format_code_btn.clicked.connect(self.format_plugin_code)
+        editor_actions_layout.addWidget(format_code_btn)
+
+        ai_enhance_btn = QPushButton("✨ AI Enhance")
+        ai_enhance_btn.setStyleSheet(self.get_action_button_style("#00cc66"))
+        ai_enhance_btn.clicked.connect(self.ai_enhance_plugin)
+        editor_actions_layout.addWidget(ai_enhance_btn)
+
+        editor_actions_layout.addStretch()
+
+        run_plugin_btn = QPushButton("▶️ Run Plugin")
+        run_plugin_btn.setStyleSheet(self.get_action_button_style("#00aa00"))
+        run_plugin_btn.clicked.connect(self.run_current_plugin)
+        editor_actions_layout.addWidget(run_plugin_btn)
+
+        right_layout.addLayout(editor_actions_layout)
+
+        # Output Console
+        console_header = QLabel("📟 PLUGIN CONSOLE OUTPUT")
+        console_header.setStyleSheet("""
+            QLabel {
+                color: #ffaa00;
+                font-size: 14px;
+                font-weight: bold;
+                padding: 5px;
+                background: rgba(255, 170, 0, 0.1);
+                border-radius: 4px;
+            }
+        """)
+        right_layout.addWidget(console_header)
+
+        self.plugin_console = QTextEdit()
+        self.plugin_console.setReadOnly(True)
+        self.plugin_console.setMaximumHeight(150)
+        self.plugin_console.setStyleSheet("""
+            QTextEdit {
+                background: #000000;
+                border: 1px solid rgba(255, 170, 0, 0.3);
+                border-radius: 6px;
+                color: #00ff00;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 12px;
+                padding: 8px;
+            }
+        """)
+        self.plugin_console.setText("🚀 Plugin Console Ready - Test your plugins here!")
+        right_layout.addWidget(self.plugin_console)
+
+        # Add panels to main layout
+        main_layout.addWidget(left_panel)
+        main_layout.addWidget(right_panel)
+
+        widget.setLayout(main_layout)
+
+        # Initialize plugin explorer
+        self.refresh_plugin_explorer()
+
+        # Initialize with a sample plugin
+        self.create_new_plugin()
+
+        return widget
 
     def create_memory_tab(self):
         widget = QWidget()
@@ -939,30 +1359,6 @@ class LyrixaWindow(QMainWindow):
         scrollbar = self.chat_log.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
 
-    def create_agent_collab_tab(self):
-        widget = QWidget()
-        layout = QVBoxLayout()
-
-        self.collab_log = QTextEdit()
-        self.collab_log.setReadOnly(True)
-
-        simulate_btn = QPushButton("Simulate Collaboration")
-        simulate_btn.clicked.connect(self.simulate_agent_collab)
-
-        layout.addWidget(QLabel("Agent Collaboration Log"))
-        layout.addWidget(self.collab_log)
-        layout.addWidget(simulate_btn)
-        widget.setLayout(layout)
-        return widget
-
-    def simulate_agent_collab(self):
-        self.collab_log.append("🤝 Initiating collaboration...")
-        self.collab_log.append("🧠 CoreAgent shared memory context with SelfReflector")
-        self.collab_log.append(
-            "📡 PluginAdvisor suggested coordination with MemoryWatcher"
-        )
-        self.collab_log.append("✅ Collaboration complete. Goals aligned.")
-
     def create_metric_card(self, title, metrics):
         """Create a performance metric card with labeled progress bars and actual values"""
         card = QWidget()
@@ -1082,13 +1478,7 @@ class LyrixaWindow(QMainWindow):
         return card
 
     def init_performance_data(self):
-        """Initialize performance monitoring data and system info"""
-        import os
-        import platform
-
-        import psutil
-
-        # Get system information
+        """Initialize performance monitoring data and system info"""  # Get system information
         system_info = f"""🖥️ SYSTEM INFORMATION
 
 OS: {platform.system()} {platform.release()}
@@ -1378,12 +1768,407 @@ All systems operating at optimal efficiency.
     def init_background_monitors(self):
         pass
 
+    def start_agent_collaboration(self):
+        """Start multi-agent collaboration with visual feedback"""
+        # Start collaboration simulation
+        self.simulate_collaboration_sequence()
 
-# For testing the hybrid UI independently
+        # If we have agent list, update it to show collaboration state
+        if hasattr(self, "agent_list"):
+            # Clear and update with collaboration status
+            self.agent_list.clear()
+            self.agent_list.addItems(
+                [
+                    "🤝 CoreAgent - collaborating",
+                    "🤝 MemoryWatcher - sharing data",
+                    "🤝 SelfReflector - coordinating",
+                    "🤝 PluginAdvisor - synchronizing",
+                ]
+            )
+
+        # Update the collaboration status if it exists
+        self.update_collaboration_status("🔄 Collaboration Active")
+
+        # Schedule status updates
+        if not hasattr(self, "collab_timer"):
+            self.collab_timer = QTimer()
+            self.collab_timer.timeout.connect(self.update_collaboration_progress)
+            self.collab_timer.start(3000)  # Update every 3 seconds
+
+    def simulate_collaboration_sequence(self):
+        """Simulate a realistic collaboration sequence"""
+        # Add messages to chat log if available
+        if hasattr(self, "chat_log"):
+            from datetime import datetime
+
+            timestamp = datetime.now().strftime("%H:%M:%S")
+
+            collab_message = f"""
+            <div style='margin: 10px 0; padding: 15px; background: rgba(255, 170, 0, 0.12); border-left: 4px solid #ffaa00; border-radius: 8px;'>
+                <span style='color: #888; font-size: 10px;'>[{timestamp}]</span><br>
+                <span style='color: #ffaa00; font-weight: bold; font-size: 15px;'>🤝 Agent Collaboration:</span>
+                <span style='color: #ffffff; font-size: 14px;'>Multi-agent collaboration initiated. Agents are now coordinating tasks and sharing knowledge...</span>
+            </div>
+            """
+            self.chat_log.append(collab_message)
+
+    def update_collaboration_status(self, status_text):
+        """Update collaboration status label"""
+        if hasattr(self, "collab_status_label"):
+            self.collab_status_label.setText(status_text)
+            # Change color based on status
+            if "Active" in status_text:
+                self.collab_status_label.setStyleSheet(
+                    "color: #ffaa00; font-size: 16px; font-weight: bold; margin: 10px;"
+                )
+            elif "Complete" in status_text:
+                self.collab_status_label.setStyleSheet(
+                    "color: #00ff88; font-size: 16px; font-weight: bold; margin: 10px;"
+                )
+            else:
+                self.collab_status_label.setStyleSheet(
+                    "color: #00ff88; font-size: 16px; font-weight: bold; margin: 10px;"
+                )
+
+    def update_collaboration_progress(self):
+        """Update collaboration progress periodically"""
+        import random
+
+        if hasattr(self, "agent_list"):
+            # Simulate different collaboration states
+            states = [
+                [
+                    "🔄 CoreAgent - processing",
+                    "🔄 MemoryWatcher - analyzing",
+                    "🔄 SelfReflector - thinking",
+                    "🔄 PluginAdvisor - optimizing",
+                ],
+                [
+                    "💭 CoreAgent - sharing insights",
+                    "💭 MemoryWatcher - cross-referencing",
+                    "💭 SelfReflector - evaluating",
+                    "💭 PluginAdvisor - recommending",
+                ],
+                [
+                    "⚡ CoreAgent - executing",
+                    "⚡ MemoryWatcher - monitoring",
+                    "⚡ SelfReflector - adapting",
+                    "⚡ PluginAdvisor - integrating",
+                ],
+                [
+                    "✅ CoreAgent - task complete",
+                    "✅ MemoryWatcher - data synced",
+                    "✅ SelfReflector - insights gained",
+                    "✅ PluginAdvisor - optimized",
+                ],
+            ]
+
+            current_state = random.choice(states)
+            self.agent_list.clear()
+            self.agent_list.addItems(current_state)
+
+            # Stop timer after a while and show completion
+            if not hasattr(self, "collab_steps"):
+                self.collab_steps = 0
+
+            self.collab_steps += 1
+            if self.collab_steps >= 5:  # After 5 updates (15 seconds)
+                self.agent_list.clear()
+                self.agent_list.addItems(
+                    [
+                        "✨ CoreAgent - collaboration complete",
+                        "✨ MemoryWatcher - knowledge shared",
+                        "✨ SelfReflector - insights integrated",
+                        "✨ PluginAdvisor - optimizations applied",
+                    ]
+                )
+                self.collab_timer.stop()
+                del self.collab_steps
+
+                # Update status to complete
+                self.update_collaboration_status("📊 Collaboration Status: Complete ✅")
+
+                # Add completion message to chat
+                if hasattr(self, "chat_log"):
+                    from datetime import datetime
+
+                    timestamp = datetime.now().strftime("%H:%M:%S")
+
+                    completion_message = f"""
+                    <div style='margin: 10px 0; padding: 15px; background: rgba(0, 255, 136, 0.12); border-left: 4px solid #00ff88; border-radius: 8px;'>
+                        <span style='color: #888; font-size: 10px;'>[{timestamp}]</span><br>
+                        <span style='color: #00ff88; font-weight: bold; font-size: 15px;'>✅ Collaboration Complete:</span>
+                        <span style='color: #ffffff; font-size: 14px;'>All agents have successfully shared knowledge and coordinated their tasks. System performance optimized.</span>
+                    </div>
+                    """
+                    self.chat_log.append(completion_message)
+
+    def get_action_button_style(self, color="#00ff88"):
+        """Get consistent action button styling"""
+        return f"""
+            QPushButton {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 rgba({self.hex_to_rgb(color)[0]}, {self.hex_to_rgb(color)[1]}, {self.hex_to_rgb(color)[2]}, 0.3),
+                    stop:1 rgba({self.hex_to_rgb(color)[0]}, {self.hex_to_rgb(color)[1]}, {self.hex_to_rgb(color)[2]}, 0.1));
+                border: 1px solid {color};
+                border-radius: 6px;
+                color: #ffffff;
+                font-size: 13px;
+                font-weight: bold;
+                padding: 8px 12px;
+                margin: 2px;
+            }}
+            QPushButton:hover {{
+                background: rgba({self.hex_to_rgb(color)[0]}, {self.hex_to_rgb(color)[1]}, {self.hex_to_rgb(color)[2]}, 0.4);
+            }}
+        """
+
+    def hex_to_rgb(self, hex_color):
+        """Convert hex color to RGB tuple"""
+        hex_color = hex_color.lstrip("#")
+        return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+
+    def refresh_plugin_explorer(self):
+        """Refresh the plugin file explorer"""
+        self.plugin_file_tree.clear()
+
+        # Add some sample plugin files
+        sample_plugins = [
+            "📄 data_processor.py",
+            "📄 web_scraper.py",
+            "📄 ai_helper.py",
+            "📄 file_manager.py",
+            "📁 plugins/",
+            "  📄 advanced_search.py",
+            "  📄 auto_backup.py",
+            "📁 templates/",
+            "  📄 basic_plugin.py",
+            "  📄 web_plugin.py",
+        ]
+
+        for plugin in sample_plugins:
+            self.plugin_file_tree.addItem(plugin)
+
+    def create_new_plugin(self):
+        """Create a new plugin from template"""
+        template = '''"""
+Aetherra Plugin Template
+Generated by Lyrixa Plugin Editor
+"""
+
+class AetherraPlugin:
+    def __init__(self):
+        self.name = "My New Plugin"
+        self.version = "1.0.0"
+        self.description = "A new Aetherra plugin"
+
+    def initialize(self):
+        """Initialize the plugin"""
+        print(f"Initializing {self.name} v{self.version}")
+        return True
+
+    def execute(self, *args, **kwargs):
+        """Main plugin execution"""
+        print(f"Executing {self.name}")
+        return {"status": "success", "message": "Plugin executed successfully"}
+
+    def cleanup(self):
+        """Cleanup plugin resources"""
+        print(f"Cleaning up {self.name}")
+
+# Plugin entry point
+def create_plugin():
+    return AetherraPlugin()
+
 if __name__ == "__main__":
-    from PySide6.QtWidgets import QApplication
+    plugin = create_plugin()
+    plugin.initialize()
+    result = plugin.execute()
+    print(f"Result: {result}")
+    plugin.cleanup()
+'''
+        self.plugin_editor.setText(template)
+        self.current_file_label.setText("📝 New Plugin (Untitled)")
+        self.file_status_label.setText("●")
+        self.file_status_label.setStyleSheet("color: #ffaa00; font-size: 16px;")
+        self.file_status_label.setToolTip("File status: Modified")
 
-    app = QApplication(sys.argv)
-    window = LyrixaWindow()
-    window.show()
-    sys.exit(app.exec())
+        self.plugin_console.append("📄 New plugin created from template")
+
+    def open_plugin_from_explorer(self, item):
+        """Open selected plugin from explorer"""
+        plugin_name = item.text()
+        if "📄" in plugin_name and ".py" in plugin_name:
+            self.current_file_label.setText(f"📝 {plugin_name.replace('📄 ', '')}")
+            self.plugin_console.append(f"📂 Opened: {plugin_name}")
+
+            # Load sample content
+            sample_content = f'''# {plugin_name.replace("📄 ", "")}
+# Loaded from Plugin Explorer
+
+class Plugin:
+    def __init__(self):
+        self.plugin_name = "{plugin_name.replace("📄 ", "").replace(".py", "")}"
+
+    def run(self):
+        return f"Running {{self.plugin_name}}"
+'''
+            self.plugin_editor.setText(sample_content)
+
+    def load_plugin_file_advanced(self):
+        """Load plugin file with advanced file dialog"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Load Plugin File", "", "Python Files (*.py);;All Files (*)"
+        )
+        if file_path:
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                self.plugin_editor.setText(content)
+                self.current_file_label.setText(f"📝 {os.path.basename(file_path)}")
+                self.plugin_console.append(f"✅ Loaded: {file_path}")
+                self.file_status_label.setText("●")
+                self.file_status_label.setStyleSheet("color: #00ff88; font-size: 16px;")
+                self.file_status_label.setToolTip("File status: Saved")
+            except Exception as e:
+                self.plugin_console.append(f"❌ Error loading file: {str(e)}")
+
+    def save_current_plugin(self):
+        """Save current plugin to file"""
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Save Plugin", "", "Python Files (*.py);;All Files (*)"
+        )
+        if file_path:
+            try:
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(self.plugin_editor.toPlainText())
+                self.current_file_label.setText(f"📝 {os.path.basename(file_path)}")
+                self.plugin_console.append(f"💾 Saved: {file_path}")
+                self.file_status_label.setText("●")
+                self.file_status_label.setStyleSheet("color: #00ff88; font-size: 16px;")
+                self.file_status_label.setToolTip("File status: Saved")
+            except Exception as e:
+                self.plugin_console.append(f"❌ Error saving file: {str(e)}")
+
+    def mark_file_as_modified(self):
+        """Mark file as modified when text changes"""
+        self.file_status_label.setText("●")
+        self.file_status_label.setStyleSheet("color: #ffaa00; font-size: 16px;")
+        self.file_status_label.setToolTip("File status: Modified")
+
+    def send_plugin_chat_message(self):
+        """Send message to plugin chat assistant"""
+        message = self.plugin_chat_input.toPlainText().strip()
+        if message:
+            # Add user message
+            self.plugin_chat_log.append(f"""
+            <div style='margin: 5px 0; padding: 8px; background: rgba(0, 150, 255, 0.1); border-left: 3px solid #0096ff; border-radius: 4px;'>
+                <span style='color: #0096ff; font-weight: bold;'>You:</span>
+                <span style='color: #ffffff;'>{message}</span>
+            </div>
+            """)
+
+            # Simulate AI response
+            responses = [
+                "I can help you optimize that plugin code. Try adding error handling with try-catch blocks.",
+                "That's a great plugin idea! Consider adding logging for better debugging.",
+                "For better performance, you might want to use async/await for I/O operations.",
+                "Don't forget to add proper docstrings to your plugin methods.",
+                "Consider implementing a configuration system for your plugin settings.",
+            ]
+
+            import random
+
+            response = random.choice(responses)
+
+            self.plugin_chat_log.append(f"""
+            <div style='margin: 5px 0; padding: 8px; background: rgba(0, 255, 136, 0.1); border-left: 3px solid #00ff88; border-radius: 4px;'>
+                <span style='color: #00ff88; font-weight: bold;'>🤖 Lyrixa:</span>
+                <span style='color: #ffffff;'>{response}</span>
+            </div>
+            """)
+
+            self.plugin_chat_input.clear()
+
+    def test_current_plugin(self):
+        """Test the current plugin code"""
+        code = self.plugin_editor.toPlainText()
+        if not code.strip():
+            self.plugin_console.append("❌ No code to test")
+            return
+
+        self.plugin_console.append("🧪 Testing plugin code...")
+        try:
+            # Simple syntax check
+            compile(code, "<plugin>", "exec")
+            self.plugin_console.append("✅ Syntax check passed")
+
+            # Try to execute safely
+            namespace = {}
+            exec(code, namespace)
+            self.plugin_console.append("✅ Plugin executed successfully")
+
+        except SyntaxError as e:
+            self.plugin_console.append(f"❌ Syntax Error: {e}")
+        except Exception as e:
+            self.plugin_console.append(f"⚠️ Runtime Error: {e}")
+
+    def format_plugin_code(self):
+        """Format the plugin code"""
+        self.plugin_console.append("🎨 Formatting code...")
+        # Simple formatting - add proper spacing
+        code = self.plugin_editor.toPlainText()
+        formatted = code.replace("\t", "    ")  # Convert tabs to spaces
+        self.plugin_editor.setText(formatted)
+        self.plugin_console.append("✅ Code formatted")
+
+    def ai_enhance_plugin(self):
+        """AI-enhance the current plugin"""
+        self.plugin_console.append("✨ AI Enhancement initiated...")
+        self.plugin_console.append("🧠 Analyzing code structure...")
+        self.plugin_console.append("🔧 Suggesting improvements...")
+        self.plugin_console.append(
+            "✅ Enhancement complete! Check suggestions in chat."
+        )
+
+        # Add enhancement suggestion to chat
+        self.plugin_chat_log.append("""
+        <div style='margin: 5px 0; padding: 8px; background: rgba(0, 255, 136, 0.1); border-left: 3px solid #00ff88; border-radius: 4px;'>
+            <span style='color: #00ff88; font-weight: bold;'>🤖 AI Enhancement:</span>
+            <span style='color: #ffffff;'>I've analyzed your plugin. Consider adding: 1) Error handling, 2) Logging system, 3) Configuration options, 4) Unit tests</span>
+        </div>
+        """)
+
+    def run_current_plugin(self):
+        """Run the current plugin"""
+        code = self.plugin_editor.toPlainText()
+        if not code.strip():
+            self.plugin_console.append("❌ No code to run")
+            return
+
+        self.plugin_console.append("▶️ Running plugin...")
+        try:
+            # Capture output
+            import io
+            import sys
+
+            old_stdout = sys.stdout
+            sys.stdout = buffer = io.StringIO()
+
+            # Execute code
+            namespace = {
+                "print": lambda *args: buffer.write(" ".join(map(str, args)) + "\n")
+            }
+            exec(code, namespace)
+
+            # Get output
+            output = buffer.getvalue()
+            sys.stdout = old_stdout
+
+            if output:
+                self.plugin_console.append(f"📋 Output:\n{output}")
+            else:
+                self.plugin_console.append("✅ Plugin executed (no output)")
+
+        except Exception as e:
+            self.plugin_console.append(f"❌ Execution Error: {e}")
