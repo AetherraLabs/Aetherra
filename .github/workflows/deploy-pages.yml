@@ -46,9 +46,11 @@ jobs:
         run: |
           # Update meta tags for custom domain
           sed -i 's|https://zyonic88.github.io/Aetherra/|https://aetherra.dev/|g' "Aetherra/lyrixa/core/Aetherra Website/dist/index.html"
-          # Fix asset paths for custom domain
+          # Fix asset paths for custom domain - remove /Aetherra/ from all paths
           sed -i 's|href="/Aetherra/|href="/|g' "Aetherra/lyrixa/core/Aetherra Website/dist/index.html"
           sed -i 's|src="/Aetherra/|src="/|g' "Aetherra/lyrixa/core/Aetherra Website/dist/index.html"
+          # Fix remaining asset paths that might be absolute
+          sed -i 's|="/Aetherra/|="/|g' "Aetherra/lyrixa/core/Aetherra Website/dist/index.html"
           # Copy CNAME to dist folder
           cp CNAME "Aetherra/lyrixa/core/Aetherra Website/dist/"
 
