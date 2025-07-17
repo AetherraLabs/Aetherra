@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,21 +19,25 @@
       height: 100vh;
       text-align: center;
     }
+
     .redirect-message {
       max-width: 600px;
       padding: 2rem;
     }
+
     .logo {
       font-size: 3rem;
       font-weight: bold;
       margin-bottom: 1rem;
       text-shadow: 0 0 20px #00ff88;
     }
+
     .message {
       font-size: 1.2rem;
       margin-bottom: 2rem;
       opacity: 0.8;
     }
+
     .loading {
       display: inline-block;
       width: 20px;
@@ -42,28 +47,32 @@
       border-top-color: transparent;
       animation: spin 1s ease-in-out infinite;
     }
+
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
   </style>
   <script>
     // Redirect to the correct path for GitHub Pages SPA routing
-    (function() {
+    (function () {
       var redirect = sessionStorage.redirect;
       delete sessionStorage.redirect;
       if (redirect && redirect !== location.href) {
         history.replaceState(null, null, redirect);
       }
     })();
-    
+
     // If no redirect found, go to home
-    setTimeout(function() {
+    setTimeout(function () {
       if (!sessionStorage.redirect) {
         window.location.href = '/Aetherra/';
       }
     }, 2000);
   </script>
 </head>
+
 <body>
   <div class="redirect-message">
     <div class="logo">AETHERRA</div>
@@ -74,4 +83,5 @@
     <div class="loading"></div>
   </div>
 </body>
+
 </html>

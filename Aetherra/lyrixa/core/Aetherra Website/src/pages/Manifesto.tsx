@@ -30,8 +30,8 @@ export default function Manifesto() {
                                 🌟 The Dawn of AI-Native Computing
                             </h2>
                             <p className="text-lg leading-relaxed mb-6">
-                                We stand at the threshold of the most significant paradigm shift in computing since the invention of the graphical user interface. 
-                                <strong className="text-aetherra-green"> Aetherra represents the world's first AI-native programming language and cognitive computing platform</strong> — 
+                                We stand at the threshold of the most significant paradigm shift in computing since the invention of the graphical user interface.
+                                <strong className="text-aetherra-green"> Aetherra represents the world's first AI-native programming language and cognitive computing platform</strong> —
                                 where artificial intelligence isn't an add-on feature, but the fundamental foundation of how software thinks, learns, and evolves.
                             </p>
                             <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30 mb-8">
@@ -39,7 +39,7 @@ export default function Manifesto() {
                                     "We're not building better tools. We're building thinking tools."
                                 </p>
                                 <p className="text-lg">
-                                    Aetherra introduces code that doesn't just execute — it reasons, remembers, and evolves. 
+                                    Aetherra introduces code that doesn't just execute — it reasons, remembers, and evolves.
                                     It's the missing link between human intent and machine intelligence.
                                 </p>
                             </div>
@@ -55,7 +55,7 @@ export default function Manifesto() {
                                 🧠 Meet Lyrixa: Your AI Collaborator
                             </h2>
                             <p className="text-lg leading-relaxed mb-6">
-                                <strong className="text-aetherra-green">Lyrixa</strong> is not just an AI assistant — she is Aetherra's consciousness made manifest. 
+                                <strong className="text-aetherra-green">Lyrixa</strong> is not just an AI assistant — she is Aetherra's consciousness made manifest.
                                 Through our revolutionary modular interface architecture, Lyrixa serves as the bridge between human creativity and machine intelligence.
                             </p>
                             <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -99,7 +99,7 @@ export default function Manifesto() {
                                         <li><strong>Live Website</strong>: aetherra.dev with interactive demos and documentation</li>
                                     </ul>
                                 </div>
-                                
+
                                 <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30">
                                     <h3 className="text-xl font-semibold mb-3 text-aetherra-green flex items-center gap-2">
                                         🧠 Advanced Cognitive Computing Engine
@@ -352,7 +352,7 @@ export default function Manifesto() {
                                 <strong>The future of computing is AI-native. The future of AI is open source. The future is Aetherra.</strong>
                             </p>
                             <p className="text-lg leading-relaxed mb-8">
-                                We're not just building a programming language. We're not just creating an operating system. 
+                                We're not just building a programming language. We're not just creating an operating system.
                                 We're pioneering a new form of human-AI collaboration that will define the next era of computing.
                             </p>
                             <div className="flex flex-wrap gap-4 mb-8">
