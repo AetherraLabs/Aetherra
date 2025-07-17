@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 interface PluginSubmissionData {
   name: string;
@@ -93,7 +93,7 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
       ...prev,
       [field]: value
     }));
-    
+
     // Clear error for this field
     if (errors[field]) {
       setErrors(prev => {
@@ -141,7 +141,7 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
     if (!files) return;
 
     if (field === 'screenshots') {
-      const newScreenshots = Array.from(files).filter(file => 
+      const newScreenshots = Array.from(files).filter(file =>
         file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024 // 5MB limit
       );
       handleInputChange('screenshots', [...formData.screenshots, ...newScreenshots].slice(0, 5));
@@ -164,18 +164,18 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
         if (!formData.email.trim()) newErrors.email = 'Email is required';
         if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Valid email is required';
         break;
-      
+
       case 2:
         if (!formData.category) newErrors.category = 'Category is required';
         if (formData.tags.length === 0) newErrors.tags = 'At least one tag is required';
         if (!formData.license) newErrors.license = 'License is required';
         break;
-      
+
       case 3:
         if (formData.compatibility.length === 0) newErrors.compatibility = 'At least one compatibility requirement is required';
         if (!formData.repositoryUrl.trim()) newErrors.repositoryUrl = 'Repository URL is required';
         break;
-      
+
       case 4:
         if (!formData.pluginFile) newErrors.pluginFile = 'Plugin file is required';
         if (!formData.termsAccepted) newErrors.termsAccepted = 'You must accept the terms and conditions';
@@ -200,13 +200,13 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
     if (!validateStep(4)) return;
 
     setIsSubmitting(true);
-    
+
     try {
       // Simulate submission delay
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       onSubmit?.(formData);
-      
+
       // Reset form
       setFormData({
         name: '',
@@ -228,7 +228,7 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
         openSource: false
       });
       setCurrentStep(1);
-      
+
       alert('Plugin submitted successfully! We will review it and get back to you.');
     } catch (error) {
       alert('Submission failed. Please try again.');
@@ -240,7 +240,7 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
   const renderStep1 = () => (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-white mb-4">Basic Information</h3>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1">
           Plugin Name *
@@ -249,9 +249,8 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
           type="text"
           value={formData.name}
           onChange={(e) => handleInputChange('name', e.target.value)}
-          className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${
-            errors.name ? 'border-red-500' : 'border-gray-600'
-          }`}
+          className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${errors.name ? 'border-red-500' : 'border-gray-600'
+            }`}
           placeholder="e.g., Neural Optimizer Pro"
         />
         {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
@@ -265,9 +264,8 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
           rows={4}
-          className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green resize-none ${
-            errors.description ? 'border-red-500' : 'border-gray-600'
-          }`}
+          className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green resize-none ${errors.description ? 'border-red-500' : 'border-gray-600'
+            }`}
           placeholder="Describe what your plugin does and its key features..."
         />
         {errors.description && <p className="text-red-400 text-xs mt-1">{errors.description}</p>}
@@ -282,9 +280,8 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
             type="text"
             value={formData.author}
             onChange={(e) => handleInputChange('author', e.target.value)}
-            className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${
-              errors.author ? 'border-red-500' : 'border-gray-600'
-            }`}
+            className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${errors.author ? 'border-red-500' : 'border-gray-600'
+              }`}
             placeholder="Your name or organization"
           />
           {errors.author && <p className="text-red-400 text-xs mt-1">{errors.author}</p>}
@@ -298,9 +295,8 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
             type="email"
             value={formData.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
-            className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${
-              errors.email ? 'border-red-500' : 'border-gray-600'
-            }`}
+            className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${errors.email ? 'border-red-500' : 'border-gray-600'
+              }`}
             placeholder="your@email.com"
           />
           {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
@@ -325,7 +321,7 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
   const renderStep2 = () => (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-white mb-4">Category & Metadata</h3>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1">
           Category *
@@ -333,9 +329,8 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
         <select
           value={formData.category}
           onChange={(e) => handleInputChange('category', e.target.value)}
-          className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${
-            errors.category ? 'border-red-500' : 'border-gray-600'
-          }`}
+          className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${errors.category ? 'border-red-500' : 'border-gray-600'
+            }`}
         >
           <option value="">Select a category</option>
           {categories.map(category => (
@@ -444,7 +439,7 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
   const renderStep3 = () => (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-white mb-4">Compatibility & Links</h3>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1">
           Compatibility Requirements *
@@ -495,10 +490,9 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
           type="url"
           value={formData.repositoryUrl}
           onChange={(e) => handleInputChange('repositoryUrl', e.target.value)}
-          className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${
-            errors.repositoryUrl ? 'border-red-500' : 'border-gray-600'
-          }`}
-          placeholder="https://github.com/username/plugin-name"
+          className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${errors.repositoryUrl ? 'border-red-500' : 'border-gray-600'
+            }`}
+          placeholder="https://github.com/Zyonic88/plugin-name"
         />
         {errors.repositoryUrl && <p className="text-red-400 text-xs mt-1">{errors.repositoryUrl}</p>}
       </div>
@@ -539,7 +533,7 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
   const renderStep4 = () => (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-white mb-4">Plugin File & Terms</h3>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-1">
           Plugin File * (.aether or .zip)
@@ -548,9 +542,8 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
           type="file"
           accept=".aether,.zip"
           onChange={(e) => handleFileChange('pluginFile', e.target.files)}
-          className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${
-            errors.pluginFile ? 'border-red-500' : 'border-gray-600'
-          }`}
+          className={`w-full bg-gray-700 border rounded px-3 py-2 text-white focus:outline-none focus:border-aetherra-green ${errors.pluginFile ? 'border-red-500' : 'border-gray-600'
+            }`}
         />
         {formData.pluginFile && (
           <div className="mt-2 text-sm text-gray-400">
@@ -569,8 +562,8 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
             className="rounded"
           />
           <span className="text-sm text-gray-300">
-            I accept the <a href="#" className="text-aetherra-green hover:underline">Terms and Conditions</a> and 
-            <a href="#" className="text-aetherra-green hover:underline ml-1">Plugin Guidelines</a> *
+            I accept the <a href="/terms" className="text-aetherra-green hover:underline">Terms and Conditions</a> and
+            <a href="/plugin-guidelines" className="text-aetherra-green hover:underline ml-1">Plugin Guidelines</a> *
           </span>
         </label>
         {errors.termsAccepted && <p className="text-red-400 text-xs">{errors.termsAccepted}</p>}
@@ -627,18 +620,17 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
             ×
           </button>
         </div>
-        
+
         {/* Progress Steps */}
         <div className="flex items-center justify-center mt-4 space-x-4">
           {[1, 2, 3, 4].map(step => (
             <div key={step} className="flex items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                step === currentStep 
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step === currentStep
                   ? 'bg-aetherra-green text-black'
                   : step < currentStep
                     ? 'bg-green-600 text-white'
                     : 'bg-gray-600 text-gray-300'
-              }`}>
+                }`}>
                 {step < currentStep ? '✓' : step}
               </div>
               {step < 4 && (
@@ -647,7 +639,7 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
             </div>
           ))}
         </div>
-        
+
         <div className="text-center mt-2 text-sm text-gray-400">
           Step {currentStep} of 4
         </div>
@@ -674,15 +666,14 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
           <button
             onClick={prevStep}
             disabled={currentStep === 1}
-            className={`px-4 py-2 rounded font-medium transition-colors ${
-              currentStep === 1
+            className={`px-4 py-2 rounded font-medium transition-colors ${currentStep === 1
                 ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                 : 'bg-gray-700 text-white hover:bg-gray-600'
-            }`}
+              }`}
           >
             ← Previous
           </button>
-          
+
           {currentStep < 4 ? (
             <button
               onClick={nextStep}
@@ -694,11 +685,10 @@ export default function PluginSubmissionForm({ onSubmit, onCancel }: PluginSubmi
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className={`px-6 py-2 rounded font-medium transition-colors ${
-                isSubmitting
+              className={`px-6 py-2 rounded font-medium transition-colors ${isSubmitting
                   ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                   : 'bg-aetherra-green text-black hover:bg-green-400'
-              }`}
+                }`}
             >
               {isSubmitting ? (
                 <div className="flex items-center space-x-2">

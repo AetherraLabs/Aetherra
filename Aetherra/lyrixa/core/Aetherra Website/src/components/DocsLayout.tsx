@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
@@ -102,7 +102,7 @@ export default function DocsLayout({ onClose, initialSection = 'index' }: DocsLa
     try {
       // Simulate loading documentation content
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       const sampleContent = getSampleContent(sectionId);
       setContent(sampleContent);
     } catch (error) {
@@ -452,7 +452,7 @@ const results = shared.read(0, trainingResults.length);
 // Set up memory monitoring
 lyrixa.onMemoryWarning(function(info) {
   lyrixa.warn("Low memory: " + info.free + " bytes remaining");
-  
+
   // Trigger cleanup
   lyrixa.garbageCollect();
 });
@@ -568,36 +568,36 @@ my-plugin/
 const plugin = {
   name: "my-awesome-plugin",
   version: "1.0.0",
-  
+
   // Plugin initialization
   initialize: function() {
     lyrixa.log("Plugin initialized: " + this.name);
     return true;
   },
-  
+
   // Main plugin functionality
   process: function(input, options) {
     // Your plugin logic here
     return this.enhanceData(input);
   },
-  
+
   // Helper methods
   enhanceData: function(data) {
     // AI enhancement logic
     const enhanced = this.neuralEnhance(data);
     return enhanced;
   },
-  
+
   // Neural processing
   neuralEnhance: function(data) {
     const network = new NeuralNetwork();
     network.addLayer(256, "relu");
     network.addLayer(128, "relu");
     network.addLayer(64, "sigmoid");
-    
+
     return network.process(data);
   },
-  
+
   // Cleanup
   cleanup: function() {
     lyrixa.log("Plugin cleanup completed");
@@ -615,34 +615,34 @@ module.exports = plugin;
 @neural
 function createClassifier() {
   const network = new NeuralNetwork();
-  
+
   // Input layer
   network.addLayer(784, "relu"); // 28x28 image input
-  
+
   // Hidden layers
   network.addLayer(512, "relu");
   network.addLayer(256, "relu");
   network.addLayer(128, "relu");
-  
+
   // Output layer
   network.addLayer(10, "softmax"); // 10 classes
-  
+
   // Configure training
   network.setLearningRate(0.001);
   network.setOptimizer("adam");
   network.setBatchSize(32);
-  
+
   return network;
 }
 
 function trainClassifier(network, trainingData) {
   lyrixa.log("Starting neural network training...");
-  
+
   // Training loop with progress reporting
   network.onEpochComplete = function(epoch, metrics) {
     lyrixa.log("Epoch " + epoch + " - Accuracy: " + metrics.accuracy.toFixed(4));
   };
-  
+
   return network.train(trainingData);
 }
 \`\`\`
@@ -655,15 +655,15 @@ function trainClassifier(network, trainingData) {
 function quantumOptimize(parameters) {
   // Create quantum circuit for optimization
   const qubits = quantum.createQubits(8);
-  
+
   // Initialize superposition
   for (let i = 0; i < qubits.length; i++) {
     quantum.hadamard(qubits[i]);
   }
-  
+
   // Apply optimization algorithm
   quantumAnneal(qubits, parameters);
-  
+
   // Measure results
   const results = quantum.measure(qubits);
   return results;
@@ -744,18 +744,18 @@ plugin.ui.notify("Plugin operation completed", "success");
 // tests/test.aether
 const testSuite = {
   name: "My Plugin Tests",
-  
+
   testInitialization: function() {
     const result = plugin.initialize();
     assert(result === true, "Plugin should initialize successfully");
   },
-  
+
   testProcessing: function() {
     const input = [1, 2, 3, 4, 5];
     const output = plugin.process(input);
     assert(output.length === input.length, "Output should match input length");
   },
-  
+
   testNeuralEnhancement: function() {
     const data = generateTestData();
     const enhanced = plugin.neuralEnhance(data);
@@ -774,13 +774,13 @@ lyrixa.runTests(testSuite);
 function integrationTest() {
   // Load plugin
   const loadedPlugin = lyrixa.loadPlugin("./my-awesome-plugin");
-  
+
   // Test with system resources
   const result = loadedPlugin.process(systemData);
-  
+
   // Verify integration
   assert(result.success === true, "Plugin should integrate successfully");
-  
+
   // Cleanup
   lyrixa.unloadPlugin("my-awesome-plugin");
 }
@@ -863,10 +863,10 @@ plugin.process = function(input, options) {
     return this.safeProcess(input, options);
   } catch (error) {
     lyrixa.error("Plugin error: " + error.message);
-    
+
     // Report to system
     lyrixa.reportError("my-awesome-plugin", error);
-    
+
     // Graceful fallback
     return this.fallbackProcess(input);
   }
@@ -876,9 +876,9 @@ plugin.process = function(input, options) {
 ## Resources
 
 - [Plugin API Reference](api-reference)
-- [Example Plugins Repository](https://github.com/aetherra/example-plugins)
-- [Community Forum](https://community.aetherra.ai/plugins)
-- [Plugin Development Discord](https://discord.gg/aetherra-dev)
+- [GitHub Repository](https://github.com/Zyonic88/Aetherra)
+- [Discord Community](https://discord.gg/9Xw28xgEQ3)
+- [Development Discord](https://discord.gg/9Xw28xgEQ3)
 
 Happy plugin development! 🚀`;
 
@@ -904,7 +904,7 @@ Use the AI Assistant (🤖) for interactive help with any Aetherra topic.`;
     code({ node, inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || '');
       const language = match ? match[1] : '';
-      
+
       return !inline && language ? (
         <SyntaxHighlighter
           style={atomDark}
@@ -1035,11 +1035,10 @@ Use the AI Assistant (🤖) for interactive help with any Aetherra topic.`;
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full text-left p-3 rounded-lg transition-colors ${
-                    activeSection === section.id
+                  className={`w-full text-left p-3 rounded-lg transition-colors ${activeSection === section.id
                       ? 'bg-green-400/20 text-green-400 border border-green-400/30'
                       : 'text-gray-300 hover:bg-gray-700'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-3">
                     <span className="text-lg">{section.icon}</span>
@@ -1057,11 +1056,10 @@ Use the AI Assistant (🤖) for interactive help with any Aetherra topic.`;
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full p-2 rounded text-center transition-colors ${
-                    activeSection === section.id
+                  className={`w-full p-2 rounded text-center transition-colors ${activeSection === section.id
                       ? 'bg-green-400/20 text-green-400'
                       : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                  }`}
+                    }`}
                   title={section.title}
                 >
                   {section.icon}
@@ -1099,15 +1097,14 @@ Use the AI Assistant (🤖) for interactive help with any Aetherra topic.`;
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowAssistant(!showAssistant)}
-              className={`px-3 py-2 rounded-lg transition-colors ${
-                showAssistant
+              className={`px-3 py-2 rounded-lg transition-colors ${showAssistant
                   ? 'bg-green-400/20 text-green-400 border border-green-400/30'
                   : 'text-gray-400 hover:text-white hover:bg-gray-700'
-              }`}
+                }`}
               title="Toggle AI Assistant"
             >
               🤖 AI Help

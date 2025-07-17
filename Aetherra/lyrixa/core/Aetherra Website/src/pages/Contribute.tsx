@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 
 const containerVariants = {
@@ -27,7 +26,7 @@ export default function Contribute() {
   return (
     <div className="min-h-screen bg-aetherra-dark text-white">
       {/* Hero Section */}
-      <motion.section 
+      <motion.section
         className="bg-gradient-to-br from-aetherra-dark via-aetherra-gray to-aetherra-dark border-b border-aetherra-green/20 py-16"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -44,7 +43,7 @@ export default function Contribute() {
       </motion.section>
 
       {/* Main Content */}
-      <motion.main 
+      <motion.main
         className="max-w-4xl mx-auto px-6 py-12"
         variants={containerVariants}
         initial="hidden"
@@ -53,7 +52,7 @@ export default function Contribute() {
         {/* Getting Started */}
         <motion.section variants={itemVariants} className="mb-16">
           <h2 className="text-3xl font-bold gradient-text mb-8">Getting Started</h2>
-          
+
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-aetherra-gray p-6 rounded-xl border border-aetherra-green/20">
               <div className="text-3xl mb-4">👨‍💻</div>
@@ -104,7 +103,7 @@ export default function Contribute() {
         {/* Development Workflow */}
         <motion.section variants={itemVariants} className="mb-16">
           <h2 className="text-3xl font-bold gradient-text mb-8">Development Workflow</h2>
-          
+
           <div className="bg-aetherra-gray p-8 rounded-xl border border-aetherra-green/20">
             <div className="space-y-8">
               {/* Step 1 */}
@@ -116,7 +115,7 @@ export default function Contribute() {
                   <h3 className="text-lg font-semibold mb-2">Setup Development Environment</h3>
                   <div className="bg-aetherra-dark p-4 rounded-lg font-mono text-sm mb-3">
                     <div className="text-zinc-500"># Clone the repository</div>
-                    <div className="text-aetherra-green">git clone https://github.com/aetherra/core.git</div>
+                    <div className="text-aetherra-green">git clone https://github.com/Zyonic88/Aetherra.git</div>
                     <div className="text-zinc-500 mt-2"># Install dependencies</div>
                     <div className="text-aetherra-green">cd aetherra && npm install</div>
                     <div className="text-zinc-500 mt-2"># Start development server</div>
@@ -179,7 +178,7 @@ export default function Contribute() {
         {/* Code Examples */}
         <motion.section variants={itemVariants} className="mb-16">
           <h2 className="text-3xl font-bold gradient-text mb-8">Plugin Example</h2>
-          
+
           <div className="bg-aetherra-gray p-6 rounded-xl border border-aetherra-green/20">
             <h3 className="text-lg font-semibold mb-4">Basic Plugin Structure</h3>
             <div className="bg-aetherra-dark p-6 rounded-lg font-mono text-sm overflow-x-auto">
@@ -193,7 +192,7 @@ export default function Contribute() {
   "entry": "index.js",
   "permissions": ["memory.read", "network.request"]
 }`}</div>
-              
+
               <div className="text-zinc-500 mt-6">// index.js</div>
               <div className="text-white">{`class ExamplePlugin {
   constructor(aetherra) {
@@ -202,7 +201,7 @@ export default function Contribute() {
 
   async initialize() {
     console.log('Example plugin initialized');
-    
+
     // Register event handlers
     this.aetherra.on('message', this.handleMessage);
   }
@@ -230,10 +229,10 @@ module.exports = ExamplePlugin;`}</div>
         {/* Resources */}
         <motion.section variants={itemVariants} className="mb-16">
           <h2 className="text-3xl font-bold gradient-text mb-8">Resources & Documentation</h2>
-          
+
           <div className="grid md:grid-cols-2 gap-6">
             <motion.a
-              href="https://docs.aetherra.ai/plugin-sdk"
+              href="https://github.com/Zyonic88/Aetherra"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.02 }}
@@ -247,7 +246,7 @@ module.exports = ExamplePlugin;`}</div>
             </motion.a>
 
             <motion.a
-              href="https://github.com/aetherra/examples"
+              href="https://github.com/Zyonic88/Aetherra"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.02 }}
@@ -261,7 +260,7 @@ module.exports = ExamplePlugin;`}</div>
             </motion.a>
 
             <motion.a
-              href="https://discord.gg/aetherra"
+              href="https://discord.gg/9Xw28xgEQ3"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.02 }}
@@ -275,7 +274,7 @@ module.exports = ExamplePlugin;`}</div>
             </motion.a>
 
             <motion.a
-              href="https://github.com/aetherra/core/issues"
+              href="https://github.com/Zyonic88/Aetherra/issues"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.02 }}

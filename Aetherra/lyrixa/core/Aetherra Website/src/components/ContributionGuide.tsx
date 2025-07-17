@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 interface ContributionGuideProps {
   onNavigateToSubmission?: () => void;
@@ -27,7 +27,7 @@ export default function ContributionGuide({ onNavigateToSubmission }: Contributi
             <div>
               <h2 className="text-2xl font-bold text-aetherra-green mb-4">Welcome to Aetherra Development! 🌟</h2>
               <p className="text-gray-300 mb-4">
-                Thank you for your interest in contributing to the Aetherra AI-Native Operating System! 
+                Thank you for your interest in contributing to the Aetherra AI-Native Operating System!
                 Whether you're a seasoned developer, UI designer, or AI enthusiast, there's a place for you in our community.
               </p>
             </div>
@@ -69,7 +69,7 @@ export default function ContributionGuide({ onNavigateToSubmission }: Contributi
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-aetherra-green mb-4">🚀 Getting Started</h2>
-            
+
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <h3 className="text-lg font-semibold text-white mb-3">Prerequisites</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -98,7 +98,7 @@ export default function ContributionGuide({ onNavigateToSubmission }: Contributi
               <h3 className="text-lg font-semibold text-white mb-3">⚡ Quick Setup</h3>
               <div className="bg-black rounded p-4 font-mono text-sm">
                 <div className="text-aetherra-green"># Clone the repository</div>
-                <div className="text-white">git clone https://github.com/aetherra/aetherra.git</div>
+                <div className="text-white">git clone https://github.com/Zyonic88/Aetherra.git</div>
                 <div className="text-gray-500 mt-2"># Navigate to project</div>
                 <div className="text-white">cd aetherra</div>
                 <div className="text-gray-500 mt-2"># Install dependencies</div>
@@ -124,7 +124,7 @@ export default function ContributionGuide({ onNavigateToSubmission }: Contributi
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-aetherra-green mb-4">💻 Development Workflow</h2>
-            
+
             <div className="space-y-4">
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <h3 className="text-lg font-semibold text-white mb-3">🔄 Development Process</h3>
@@ -190,7 +190,7 @@ export default function ContributionGuide({ onNavigateToSubmission }: Contributi
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-aetherra-green mb-4">🔌 Plugin Development</h2>
-            
+
             <div className="bg-gradient-to-r from-purple-600/20 to-aetherra-green/20 rounded-lg p-6 border border-purple-600/30">
               <h3 className="text-xl font-semibold text-white mb-3">Plugin Architecture</h3>
               <p className="text-gray-300 mb-4">
@@ -260,7 +260,7 @@ export default function ContributionGuide({ onNavigateToSubmission }: Contributi
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-aetherra-green mb-4">🎨 UI Contributions</h2>
-            
+
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <h3 className="text-lg font-semibold text-white mb-3">Design System</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -329,7 +329,7 @@ export default function ContributionGuide({ onNavigateToSubmission }: Contributi
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-aetherra-green mb-4">📚 Documentation</h2>
-            
+
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <h3 className="text-lg font-semibold text-white mb-3">Documentation Types</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -388,7 +388,7 @@ export default function ContributionGuide({ onNavigateToSubmission }: Contributi
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-aetherra-green mb-4">👥 Community</h2>
-            
+
             <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg p-6 border border-blue-600/30">
               <h3 className="text-xl font-semibold text-white mb-3">Join Our Community</h3>
               <p className="text-gray-300 mb-4">
@@ -453,7 +453,7 @@ export default function ContributionGuide({ onNavigateToSubmission }: Contributi
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-aetherra-green mb-4">📝 Guidelines</h2>
-            
+
             <div className="bg-red-900/30 border border-red-600 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-red-300 mb-3">⚠️ Code of Conduct</h3>
               <div className="space-y-2 text-sm text-red-200">
@@ -548,11 +548,10 @@ export default function ContributionGuide({ onNavigateToSubmission }: Contributi
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
-              className={`w-full text-left p-3 rounded-lg mb-1 transition-colors ${
-                activeSection === section.id
+              className={`w-full text-left p-3 rounded-lg mb-1 transition-colors ${activeSection === section.id
                   ? 'bg-aetherra-green text-black font-medium'
                   : 'text-gray-300 hover:bg-gray-700'
-              }`}
+                }`}
             >
               <span className="mr-2">{section.icon}</span>
               {section.title}

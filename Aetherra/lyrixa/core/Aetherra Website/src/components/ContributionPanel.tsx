@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 
 interface ContributionPanelProps {
@@ -61,7 +60,7 @@ export default function ContributionPanel({ className = '' }: ContributionPanelP
       <div className="grid md:grid-cols-2 gap-4 mb-6">
         {/* GitHub Contribution */}
         <motion.a
-          href="https://github.com/aetherra/core"
+          href="https://github.com/Zyonic88/Aetherra"
           target="_blank"
           rel="noopener noreferrer"
           whileHover={{ scale: 1.02 }}
@@ -91,7 +90,7 @@ export default function ContributionPanel({ className = '' }: ContributionPanelP
 
         {/* Discord Community */}
         <motion.a
-          href="https://discord.gg/aetherra"
+          href="https://discord.gg/9Xw28xgEQ3"
           target="_blank"
           rel="noopener noreferrer"
           whileHover={{ scale: 1.02 }}
