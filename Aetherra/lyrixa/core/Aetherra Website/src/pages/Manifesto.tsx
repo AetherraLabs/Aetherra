@@ -60,6 +60,40 @@ export default function Manifesto() {
                             className="mb-12"
                         >
                             <h2 className="text-2xl font-bold text-aetherra-green mb-4">
+                                Security-First AI Evolution
+                            </h2>
+                            <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30 mb-8">
+                                <h3 className="text-xl font-semibold mb-3 text-aetherra-green flex items-center gap-2">
+                                    🛡️ Secure by Design
+                                </h3>
+                                <p className="text-lg leading-relaxed mb-4">
+                                    True AI consciousness requires uncompromising security. Our latest advancement introduces
+                                    enterprise-grade protection that evolves with your intelligence systems.
+                                </p>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="bg-zinc-800 p-4 rounded border border-aetherra-green/20">
+                                        <h4 className="font-semibold text-aetherra-green mb-2">🔐 API Key Protection</h4>
+                                        <p className="text-sm text-zinc-300">
+                                            Military-grade encryption with automatic rotation, leak detection, and secure memory handling.
+                                        </p>
+                                    </div>
+                                    <div className="bg-zinc-800 p-4 rounded border border-aetherra-green/20">
+                                        <h4 className="font-semibold text-aetherra-green mb-2">🧠 Memory Security</h4>
+                                        <p className="text-sm text-zinc-300">
+                                            Advanced leak detection, performance monitoring, and automated cleanup systems.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: 0.7 }}
+                            className="mb-12"
+                        >
+                            <h2 className="text-2xl font-bold text-aetherra-green mb-4">
                                 The Aetherra Principles
                             </h2>
                             <div className="grid md:grid-cols-2 gap-6">
@@ -92,11 +126,11 @@ export default function Manifesto() {
                                 </div>
                                 <div className="bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20">
                                     <h3 className="text-xl font-semibold mb-3 text-aetherra-green">
-                                        Open Evolution
+                                        Secure Evolution
                                     </h3>
                                     <p>
-                                        The future of AI consciousness must be built openly, with transparency,
-                                        community input, and shared advancement.
+                                        The future of AI consciousness must be built on a foundation of uncompromising
+                                        security, with enterprise-grade protection that evolves with our intelligence.
                                     </p>
                                 </div>
                             </div>

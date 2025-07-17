@@ -1,0 +1,17 @@
+# Aetherra Security System Requirements
+# These packages are required for the security system to function properly
+
+# Encryption and Security
+cryptography>=41.0.0
+keyring>=24.0.0
+
+# Memory Management
+psutil>=5.9.0
+
+# Data Processing
+weakref-backport>=1.0.0; python_version < "3.9"
+
+# Development and Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0

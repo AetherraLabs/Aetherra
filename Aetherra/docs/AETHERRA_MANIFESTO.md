@@ -162,6 +162,16 @@ It's not meant to replace traditional coding — but to offer a new layer of int
 - **Neural Processing**: AI-powered code analysis and optimization tools
 - **Global Deployment**: Cloudflare CDN with automatic GitHub deployments
 
+#### **🤖 Lyrixa Discord Bot - AI Community Assistant**
+- **Intelligent Q&A**: Natural language responses about Aetherra, AI consciousness, and development
+- **GitHub Integration**: Real-time commit notifications and repository monitoring with automated changelog
+- **System Monitoring**: Uptime tracking, diagnostics, and health checks with comprehensive admin commands
+- **Multi-AI Support**: Fallback systems with both full Lyrixa AI and simplified AI instances for reliability
+- **Community Management**: Automated moderation, role management, spam detection, and user onboarding
+- **Background Intelligence**: Periodic reflections, goal tracking, and self-evaluation reports
+- **Plugin Integration**: Direct Discord notifications from Aetherra plugin executions and system events
+- **Advanced Commands**: `/uptime`, `/diagnostics`, `/system_health`, `/reboot_lyrixa` for administrative control
+
 ---
 
 ## 🛠️ **CAPABILITIES: What Aetherra Can Do**
@@ -298,6 +308,14 @@ Aetherra now features a complete desktop application with:
 - **Performance Optimization**: Real-time monitoring and intelligent resource management
 - **Error Handling**: Graceful degradation and self-healing systems
 - **Deployment Pipeline**: Automated builds and deployments with CI/CD
+
+### **🤖 Community Intelligence Platform**
+- **Lyrixa Discord Bot**: AI-powered community assistant with multi-AI support and fallback systems
+- **GitHub Integration**: Real-time repository monitoring with automated commit notifications
+- **System Administration**: Advanced monitoring with `/uptime`, `/diagnostics`, and `/system_health` commands
+- **Intelligent Moderation**: Automated spam detection, link filtering, and community management
+- **Background Processing**: Periodic reflections, self-evaluation, and goal tracking reports
+- **Plugin Ecosystem Integration**: Direct Discord notifications from Aetherra plugin executions
 
 ---
 
@@ -645,6 +663,7 @@ Just as Linux democratized server computing, **Aetherra AI OS will democratize i
 - **Live Deployments**: Aetherra.dev playground and documentation portal
 - **Plugin Ecosystem**: AetherHub marketplace with intelligent discovery
 - **Global Community**: Growing network of AI-native developers and researchers
+- **🤖 Lyrixa Discord Bot**: AI-powered community assistant with GitHub integration and system monitoring
 
 ---
 
