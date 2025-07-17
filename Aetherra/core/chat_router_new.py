@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
-ðŸŽ¯ Chat Router System for Lyrixa
+🎯 Chat Router System for Lyrixa
 ===============================
 
 This module implements intelligent routing for natural language interaction
@@ -99,7 +99,7 @@ class ChatMessage:
     timestamp: datetime
     user_id: str = "default"
     session_id: str = "default"
-    metadata: Dict[str, Any] = None
+    metadata: Optional[Dict[str, Any]] = None
 
     def __post_init__(self):
         if self.metadata is None:
@@ -119,7 +119,7 @@ class RoutingResult:
 
 
 class ChatRouter:
-    """ðŸŽ¯ Intelligent Chat Router for Lyrixa with Aetherra Integration"""
+    """🎯 Intelligent Chat Router for Lyrixa with Aetherra Integration"""
 
     def __init__(self, workspace_path: str = "."):
         self.workspace_path = workspace_path
@@ -133,12 +133,12 @@ class ChatRouter:
             self.reasoning_engine = ReasoningEngine()
             self.introspection_controller = IntrospectionController()
             self.self_improvement_engine = SelfImprovementEngine()
-            logger.info("âœ… Chat Router initialized with Aetherra engines")
+            logger.info("✅ Chat Router initialized with Aetherra engines")
         else:
             self.reasoning_engine = ReasoningEngine()
             self.introspection_controller = IntrospectionController()
             self.self_improvement_engine = SelfImprovementEngine()
-            logger.info("âš ï¸ Chat Router initialized with mock engines")
+            logger.info("⚠️ Chat Router initialized with mock engines")
 
         # Router statistics
         self.stats = {
@@ -152,7 +152,7 @@ class ChatRouter:
         # Initialize default routes
         self._setup_default_routes()
 
-        logger.info("ðŸŽ¯ Chat Router System initialized")
+        logger.info("🎯 Chat Router System initialized")
 
     def _setup_default_routes(self):
         """Setup default routing rules"""
@@ -231,12 +231,12 @@ class ChatRouter:
     def add_route(self, route: RouteDefinition):
         """Add a new route definition"""
         self.routes.append(route)
-        logger.info(f"ðŸ“ Route added: {route.pattern} -> {route.handler}")
+        logger.info(f"📍 Route added: {route.pattern} -> {route.handler}")
 
     def register_handler(self, name: str, handler: Callable):
         """Register a message handler"""
         self.handlers[name] = handler
-        logger.info(f"ðŸ”Œ Handler registered: {name}")
+        logger.info(f"🔌 Handler registered: {name}")
 
     async def route_message(self, message: ChatMessage) -> RoutingResult:
         """Route a message to the appropriate handler"""
@@ -275,7 +275,7 @@ class ChatRouter:
             # Update statistics
             self._update_stats(result, start_time)
 
-            logger.info(f"ðŸ“¤ Message routed: {route.handler} (confidence: {result.confidence:.2f})")
+            logger.info(f"📤 Message routed: {route.handler} (confidence: {result.confidence:.2f})")
 
             return result
 
@@ -562,7 +562,7 @@ class ChatRouter:
             del self.session_history[session_id]
         if session_id in self.context_cache:
             del self.context_cache[session_id]
-        logger.info(f"ðŸ§¹ Session cleared: {session_id}")
+        logger.info(f"🧹 Session cleared: {session_id}")
 
 
 # Factory function for easy integration

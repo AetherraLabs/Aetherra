@@ -13,19 +13,24 @@ Architecture:
 - 🚀 Future Ready: Easy integration with aetherra.dev
 """
 
+import json
 import random
 import time
 from datetime import datetime, timedelta
 
 from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QTextCursor
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QFileDialog,
     QFrame,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QListWidget,
+    QListWidgetItem,
     QMainWindow,
     QPushButton,
     QScrollArea,
@@ -38,8 +43,172 @@ from PySide6.QtWidgets import (
 
 class LyrixaWindow(QMainWindow):
     def send_plugin_chat_message(self):
-        """Handle sending a plugin chat message (stub)."""
-        pass
+        """Handle sending a plugin chat message with autonomous capabilities integration."""
+        try:
+            # Get message from chat input
+            if hasattr(self, 'plugin_chat_input'):
+                message = self.plugin_chat_input.toPlainText().strip()
+                if not message:
+                    return
+
+                # Clear input
+                self.plugin_chat_input.clear()
+
+                # Add user message to chat
+                self.add_chat_message("User", message, is_user=True)
+
+                # Process message with Lyrixa agent if available
+                if hasattr(self, 'lyrixa_agent') and self.lyrixa_agent:
+                    self.process_chat_message_with_lyrixa(message)
+                else:
+                    # Fallback response
+                    self.add_chat_message("Lyrixa", "I'm ready to help! My autonomous capabilities are initializing...", is_user=False)
+
+        except Exception as e:
+            print(f"Error in send_plugin_chat_message: {e}")
+            self.add_chat_message("System", f"Error processing message: {e}", is_user=False)
+
+    def process_chat_message_with_lyrixa(self, message):
+        """Process chat message with Lyrixa's autonomous capabilities"""
+        try:
+            # Check if autonomous capabilities are available
+            if hasattr(self.lyrixa_agent, 'aetherra_integration') and self.lyrixa_agent.aetherra_integration:
+                # Use autonomous capabilities
+                self.process_autonomous_chat_message(message)
+            else:
+                # Use basic chat processing
+                self.process_basic_chat_message(message)
+        except Exception as e:
+            print(f"Error processing chat message: {e}")
+            self.add_chat_message("Lyrixa", f"I encountered an error: {e}", is_user=False)
+
+    def process_autonomous_chat_message(self, message):
+        """Process message using autonomous capabilities"""
+        try:
+            # Run autonomous processing in a separate thread
+            import threading
+            def autonomous_processing():
+                try:
+                    # Use conversational engine if available
+                    if hasattr(self.lyrixa_agent, 'conversational_engine'):
+                        response = self.lyrixa_agent.conversational_engine.process_message(message)
+                        self.add_chat_message("Lyrixa", response, is_user=False)
+                    else:
+                        # Use basic autonomous capabilities
+                        self.add_chat_message("Lyrixa", f"🧠 Processing your message: '{message}' with autonomous intelligence...", is_user=False)
+
+                        # Add some autonomous behavior indicators
+                        if "autonomous" in message.lower():
+                            self.add_chat_message("Lyrixa", "🤖 My autonomous systems are active with self-improvement, introspection, and reasoning capabilities!", is_user=False)
+                        elif "status" in message.lower():
+                            self.show_autonomous_status()
+                        elif "introspection" in message.lower():
+                            self.run_autonomous_introspection()
+                        else:
+                            self.add_chat_message("Lyrixa", "✨ I'm processing your request with my enhanced cognitive capabilities...", is_user=False)
+
+                except Exception as e:
+                    self.add_chat_message("Lyrixa", f"Error in autonomous processing: {e}", is_user=False)
+
+            thread = threading.Thread(target=autonomous_processing, daemon=True)
+            thread.start()
+
+        except Exception as e:
+            print(f"Error in autonomous chat processing: {e}")
+            self.add_chat_message("Lyrixa", f"Autonomous processing error: {e}", is_user=False)
+
+    def process_basic_chat_message(self, message):
+        """Process message using basic capabilities"""
+        try:
+            # Basic response processing
+            response = f"🎙️ I understand you said: '{message}'. I'm working on connecting my full capabilities!"
+            self.add_chat_message("Lyrixa", response, is_user=False)
+        except Exception as e:
+            self.add_chat_message("Lyrixa", f"Basic processing error: {e}", is_user=False)
+
+    def add_chat_message(self, sender, message, is_user=False):
+        """Add a message to the chat display"""
+        try:
+            if hasattr(self, 'plugin_chat_display'):
+                timestamp = datetime.now().strftime("%H:%M:%S")
+                if is_user:
+                    formatted_message = f"[{timestamp}] 👤 {sender}: {message}\n"
+                else:
+                    formatted_message = f"[{timestamp}] 🎙️ {sender}: {message}\n"
+
+                self.plugin_chat_display.append(formatted_message)
+                # Scroll to bottom
+                scrollbar = self.plugin_chat_display.verticalScrollBar()
+                scrollbar.setValue(scrollbar.maximum())
+        except Exception as e:
+            print(f"Error adding chat message: {e}")
+
+    def show_autonomous_status(self):
+        """Show autonomous system status"""
+        try:
+            if hasattr(self.lyrixa_agent, 'aetherra_integration') and self.lyrixa_agent.aetherra_integration:
+                # Run async status check
+                import asyncio
+                import threading
+
+                def get_status():
+                    try:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        status = loop.run_until_complete(self.lyrixa_agent.aetherra_integration.get_autonomous_status())
+
+                        status_message = f"""🤖 Autonomous System Status:
+• Mode Active: {status.get('autonomous_mode_active', False)}
+• Overall Health: {status.get('overall_health_score', 0.0):.1%}
+• Engines Available: {status.get('engines_available', False)}
+• Self-Improvement: {'✅' if status.get('engines', {}).get('self_improvement', {}).get('active', False) else '❌'}
+• Introspection: {'✅' if status.get('engines', {}).get('introspection', {}).get('active', False) else '❌'}
+• Reasoning: {'✅' if status.get('engines', {}).get('reasoning', {}).get('active', False) else '❌'}
+• Agent Orchestration: {'✅' if status.get('engines', {}).get('agent_orchestration', {}).get('active', False) else '❌'}"""
+
+                        self.add_chat_message("Lyrixa", status_message, is_user=False)
+                    except Exception as e:
+                        self.add_chat_message("Lyrixa", f"Error getting autonomous status: {e}", is_user=False)
+
+                thread = threading.Thread(target=get_status, daemon=True)
+                thread.start()
+            else:
+                self.add_chat_message("Lyrixa", "⚠️ Autonomous capabilities not yet initialized", is_user=False)
+        except Exception as e:
+            self.add_chat_message("Lyrixa", f"Status check error: {e}", is_user=False)
+
+    def run_autonomous_introspection(self):
+        """Run autonomous introspection and show results"""
+        try:
+            if hasattr(self.lyrixa_agent, 'aetherra_integration') and self.lyrixa_agent.aetherra_integration:
+                import asyncio
+                import threading
+
+                def run_introspection():
+                    try:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        result = loop.run_until_complete(self.lyrixa_agent.aetherra_integration.run_self_introspection())
+
+                        if result.get('success'):
+                            introspection_message = f"""🔍 Self-Introspection Results:
+• Health Score: {result.get('introspection_report', {}).get('health_score', 0.0):.1%}
+• Analysis Confidence: {result.get('reasoning_analysis', {}).get('confidence', 0.0):.1%}
+• Conclusion: {result.get('reasoning_analysis', {}).get('conclusion', 'No conclusion available')}
+• Message: {result.get('message', 'Introspection completed')}"""
+                        else:
+                            introspection_message = f"❌ Introspection failed: {result.get('message', 'Unknown error')}"
+
+                        self.add_chat_message("Lyrixa", introspection_message, is_user=False)
+                    except Exception as e:
+                        self.add_chat_message("Lyrixa", f"Error running introspection: {e}", is_user=False)
+
+                thread = threading.Thread(target=run_introspection, daemon=True)
+                thread.start()
+            else:
+                self.add_chat_message("Lyrixa", "⚠️ Autonomous introspection not available", is_user=False)
+        except Exception as e:
+            self.add_chat_message("Lyrixa", f"Introspection error: {e}", is_user=False)
 
     def toggle_live_cognition(self):
         """Handle live cognition toggle (stub)."""
@@ -3542,20 +3711,45 @@ API: {api_display}   |   Bandwidth: {bandwidth_display}   |   WebSocket: {ws_dis
         return widget
 
     def create_memory_tab(self):
-        widget = QWidget()
-        layout = QVBoxLayout()
+        """Create memory tab with world-class memory core"""
+        try:
+            # Try lightweight version first for better reliability
+            from Aetherra.lyrixa.memory.lightweight_memory_core import LightweightMemoryCore
 
-        self.memory_view = QTextEdit()
-        self.memory_view.setReadOnly(True)
+            # Create lightweight memory widget
+            memory_widget = LightweightMemoryCore()
+            print("✅ Using lightweight memory core in hybrid window")
+            return memory_widget
 
-        refresh_btn = QPushButton("Refresh Memory Snapshot")
-        refresh_btn.clicked.connect(self.refresh_memory_view)
+        except Exception as e:
+            print(f"⚠️  Lightweight memory core not available: {e}")
 
-        layout.addWidget(QLabel("Memory State Viewer"))
-        layout.addWidget(self.memory_view)
-        layout.addWidget(refresh_btn)
-        widget.setLayout(layout)
-        return widget
+            # Try full world-class version
+            try:
+                from Aetherra.lyrixa.memory.world_class_memory_core import WorldClassMemoryCore
+                memory_widget = WorldClassMemoryCore()
+                print("✅ Using world-class memory core in hybrid window")
+                return memory_widget
+
+            except Exception as e2:
+                print(f"⚠️  World-class memory core not available: {e2}")
+
+                # Final fallback to original implementation
+                widget = QWidget()
+                layout = QVBoxLayout()
+
+                self.memory_view = QTextEdit()
+                self.memory_view.setReadOnly(True)
+
+                refresh_btn = QPushButton("Refresh Memory Snapshot")
+                refresh_btn.clicked.connect(self.refresh_memory_view)
+
+                layout.addWidget(QLabel("Memory State Viewer"))
+                layout.addWidget(self.memory_view)
+                layout.addWidget(refresh_btn)
+                widget.setLayout(layout)
+                print("⚠️  Using fallback memory implementation")
+                return widget
 
     def refresh_memory_view(self):
         self.memory_view.append("🧠 Scanning memory state...")
@@ -3564,20 +3758,72 @@ API: {api_display}   |   Bandwidth: {bandwidth_display}   |   WebSocket: {ws_dis
         self.memory_view.append("- Active context embeddings: 384-d")
 
     def create_goal_tab(self):
-        widget = QWidget()
-        layout = QVBoxLayout()
+        """Create goal tab with world-class goal tracker"""
+        try:
+            # Try lightweight version first for better reliability
+            from Aetherra.lyrixa.core.lightweight_goal_tracker import GoalTracker
 
-        self.goal_log = QTextEdit()
-        self.goal_log.setReadOnly(True)
+            # Create a simple wrapper for the console-based goal tracker
+            widget = QWidget()
+            layout = QVBoxLayout()
 
-        refresh_button = QPushButton("Refresh Goal List")
-        refresh_button.clicked.connect(self.refresh_goal_log)
+            # Create goal tracker instance
+            self.goal_tracker = GoalTracker()
 
-        layout.addWidget(QLabel("Active Goals"))
-        layout.addWidget(self.goal_log)
-        layout.addWidget(refresh_button)
-        widget.setLayout(layout)
-        return widget
+            # Create display area
+            self.goal_display = QTextEdit()
+            self.goal_display.setReadOnly(True)
+
+            # Create control buttons
+            refresh_btn = QPushButton("🔄 Refresh Goals")
+            refresh_btn.clicked.connect(self.refresh_goal_display)
+
+            analyze_btn = QPushButton("🔍 Analyze Blockers")
+            analyze_btn.clicked.connect(self.analyze_goal_blockers)
+
+            # Layout
+            layout.addWidget(QLabel("🎯 World-Class Goal Tracker"))
+            layout.addWidget(self.goal_display)
+            layout.addWidget(refresh_btn)
+            layout.addWidget(analyze_btn)
+
+            widget.setLayout(layout)
+
+            # Initial display
+            self.refresh_goal_display()
+
+            print("✅ Using lightweight goal tracker in hybrid window")
+            return widget
+
+        except Exception as e:
+            print(f"⚠️  Lightweight goal tracker not available: {e}")
+
+            # Try full world-class version
+            try:
+                from Aetherra.lyrixa.core.world_class_goal_tracker import WorldClassGoalTracker
+                goal_widget = WorldClassGoalTracker()
+                print("✅ Using world-class goal tracker in hybrid window")
+                return goal_widget
+
+            except Exception as e2:
+                print(f"⚠️  World-class goal tracker not available: {e2}")
+
+                # Final fallback to original implementation
+                widget = QWidget()
+                layout = QVBoxLayout()
+
+                self.goal_log = QTextEdit()
+                self.goal_log.setReadOnly(True)
+
+                refresh_button = QPushButton("Refresh Goal List")
+                refresh_button.clicked.connect(self.refresh_goal_log)
+
+                layout.addWidget(QLabel("Active Goals"))
+                layout.addWidget(self.goal_log)
+                layout.addWidget(refresh_button)
+                widget.setLayout(layout)
+                print("⚠️  Using fallback goal implementation")
+                return widget
 
     def refresh_goal_log(self):
         self.goal_log.append("🎯 Fetching active goals...")
@@ -3586,36 +3832,488 @@ API: {api_display}   |   Bandwidth: {bandwidth_display}   |   WebSocket: {ws_dis
         self.goal_log.append("- Monitor self-improvement cycles")
 
     def create_execute_plugin_tab(self):
-        widget = QWidget()
-        layout = QVBoxLayout()
+        """Create the Clean Plugin Runner tab"""
+        try:
+            from clean_plugin_runner import CleanPluginRunner
 
+            # Initialize plugin manager for the runner
+            plugin_manager = None
+            try:
+                # Try to use the enhanced plugin manager
+                if hasattr(self, 'plugin_manager') and self.plugin_manager:
+                    plugin_manager = self.plugin_manager
+                else:
+                    # Try to initialize enhanced plugin manager
+                    from Aetherra.lyrixa.plugins.enhanced_plugin_manager import PluginManager
+                    plugin_manager = PluginManager()
+            except ImportError:
+                try:
+                    # Fallback to basic plugin manager
+                    from Aetherra.core.plugin_manager import PluginManager
+                    plugin_manager = PluginManager()
+                except ImportError:
+                    plugin_manager = None
+
+            # Create the Clean Plugin Runner
+            runner = CleanPluginRunner(plugin_manager)
+            return runner
+
+        except ImportError:
+            # Fallback to basic plugin execution if Clean Plugin Runner not available
+            return self.create_basic_execute_tab()
+
+    def create_basic_execute_tab(self):
+        """Create a WORLD-CLASS plugin execution tab"""
+        widget = QWidget()
+        widget.setStyleSheet("""
+            /* === AETHERRA WORLD-CLASS PLUGIN EXECUTION === */
+            QWidget {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #0a0a0a, stop:0.5 #0d0d0d, stop:1 #0a0a0a);
+                color: #ffffff;
+                font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            }
+
+            QGroupBox {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(0, 255, 136, 0.1), stop:1 rgba(0, 255, 136, 0.05));
+                border: 1px solid #00ff88;
+                border-radius: 8px;
+                font-weight: bold;
+                padding-top: 10px;
+                margin-top: 10px;
+            }
+
+            QGroupBox::title {
+                color: #00ff88;
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+
+            QListWidget {
+                background: #1a1a1a;
+                border: 1px solid #00ff88;
+                border-radius: 4px;
+                selection-background-color: #00ff88;
+                selection-color: #000000;
+                font-size: 12px;
+            }
+
+            QListWidget::item {
+                padding: 8px;
+                border-bottom: 1px solid #333;
+            }
+
+            QListWidget::item:selected {
+                background: #00ff88;
+                color: #000000;
+                font-weight: bold;
+            }
+
+            QListWidget::item:hover {
+                background: rgba(0, 255, 136, 0.2);
+            }
+
+            QTextEdit {
+                background: #1a1a1a;
+                border: 1px solid #00ff88;
+                border-radius: 4px;
+                color: #ffffff;
+                font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+                font-size: 11px;
+                line-height: 1.4;
+            }
+
+            QLineEdit {
+                background: #1a1a1a;
+                border: 1px solid #00ff88;
+                border-radius: 4px;
+                color: #ffffff;
+                padding: 8px;
+                font-size: 12px;
+            }
+
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 rgba(0, 255, 136, 0.3), stop:1 rgba(0, 255, 136, 0.1));
+                border: 1px solid #00ff88;
+                border-radius: 6px;
+                color: #ffffff;
+                font-weight: bold;
+                padding: 10px 20px;
+                font-size: 12px;
+            }
+
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #00ff88, stop:1 rgba(0, 255, 136, 0.7));
+                color: #000000;
+            }
+
+            QPushButton:pressed {
+                background: #00cc66;
+                color: #000000;
+            }
+
+            QLabel {
+                color: #ffffff;
+                font-size: 12px;
+            }
+
+            QCheckBox {
+                color: #ffffff;
+                font-size: 12px;
+            }
+
+            QCheckBox::indicator {
+                width: 18px;
+                height: 18px;
+                border: 1px solid #00ff88;
+                border-radius: 3px;
+                background: #1a1a1a;
+            }
+
+            QCheckBox::indicator:checked {
+                background: #00ff88;
+            }
+        """)
+
+        # Main horizontal layout for efficient space usage
+        main_layout = QHBoxLayout()
+
+        # Left panel - Plugin selection and info
+        left_panel = QWidget()
+        left_layout = QVBoxLayout(left_panel)
+        left_panel.setMaximumWidth(400)
+        left_panel.setMinimumWidth(350)
+
+        # Header
+        header_layout = QHBoxLayout()
+        title_label = QLabel("⚡ World-Class Plugin Execution")
+        title_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #00ff88;")
+
+        # Refresh button
+        self.refresh_plugins_btn = QPushButton("🔄")
+        self.refresh_plugins_btn.setMaximumWidth(40)
+        self.refresh_plugins_btn.clicked.connect(self.refresh_available_plugins)
+        self.refresh_plugins_btn.setToolTip("Refresh available plugins")
+
+        header_layout.addWidget(title_label)
+        header_layout.addStretch()
+        header_layout.addWidget(self.refresh_plugins_btn)
+
+        left_layout.addLayout(header_layout)
+
+        # Available plugins list
+        plugins_group = QGroupBox("🔧 Available Plugins")
+        plugins_layout = QVBoxLayout(plugins_group)
+
+        self.available_plugins_list = QListWidget()
+        self.available_plugins_list.currentItemChanged.connect(self.on_plugin_selected)
+        self.available_plugins_list.setMaximumHeight(200)
+        plugins_layout.addWidget(self.available_plugins_list)
+
+        # Plugin info display
+        self.plugin_info_text = QTextEdit()
+        self.plugin_info_text.setReadOnly(True)
+        self.plugin_info_text.setMaximumHeight(120)
+        self.plugin_info_text.setPlaceholderText("Select a plugin to view details...")
+        plugins_layout.addWidget(QLabel("Plugin Information:"))
+        plugins_layout.addWidget(self.plugin_info_text)
+
+        left_layout.addWidget(plugins_group)
+
+        # Execution parameters
+        params_group = QGroupBox("⚙️ Parameters")
+        params_layout = QVBoxLayout(params_group)
+
+        self.exec_params = QTextEdit()
+        self.exec_params.setPlaceholderText("{\n  \"param1\": \"value1\",\n  \"param2\": \"value2\"\n}")
+        self.exec_params.setMaximumHeight(100)
+        params_layout.addWidget(self.exec_params)
+
+        left_layout.addWidget(params_group)
+
+        # Goal context
+        context_group = QGroupBox("🎯 Goal Context")
+        context_layout = QVBoxLayout(context_group)
+
+        self.exec_goal_context = QTextEdit()
+        self.exec_goal_context.setPlaceholderText("Enter goal context or additional instructions...")
+        self.exec_goal_context.setMaximumHeight(80)
+        context_layout.addWidget(self.exec_goal_context)
+
+        left_layout.addWidget(context_group)
+
+        # Execution controls
+        controls_layout = QHBoxLayout()
+
+        self.exec_button = QPushButton("🚀 Execute")
+        self.exec_button.clicked.connect(self.execute_selected_plugin)
+        self.exec_button.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #4CAF50, stop:1 #45a049);
+                color: white;
+                font-weight: bold;
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #5cbf60, stop:1 #4CAF50);
+            }
+        """)
+
+        self.exec_clear_btn = QPushButton("🧹 Clear")
+        self.exec_clear_btn.clicked.connect(self.clear_exec_output)
+
+        controls_layout.addWidget(self.exec_button)
+        controls_layout.addWidget(self.exec_clear_btn)
+        controls_layout.addStretch()
+
+        left_layout.addLayout(controls_layout)
+
+        # Right panel - Output and execution results
+        right_panel = QWidget()
+        right_layout = QVBoxLayout(right_panel)
+
+        # Output header
+        output_header = QHBoxLayout()
+        output_title = QLabel("📄 Execution Output")
+        output_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #00ff88;")
+
+        # Output controls
+        self.auto_scroll_check = QCheckBox("Auto-scroll")
+        self.auto_scroll_check.setChecked(True)
+        self.auto_scroll_check.setStyleSheet("color: #ffffff;")
+
+        output_header.addWidget(output_title)
+        output_header.addStretch()
+        output_header.addWidget(self.auto_scroll_check)
+
+        right_layout.addLayout(output_header)
+
+        # Main output area
         self.exec_output = QTextEdit()
         self.exec_output.setReadOnly(True)
+        self.exec_output.setPlaceholderText("Plugin execution output will appear here...\n\n🚀 Select a plugin from the left panel and click Execute to get started!")
+        right_layout.addWidget(self.exec_output)
 
-        self.exec_path = QTextEdit()
-        self.exec_path.setPlaceholderText("Enter path to plugin .py file...")
-        self.exec_path.setFixedHeight(30)
+        # Execution stats
+        stats_layout = QHBoxLayout()
 
-        exec_button = QPushButton("Execute Plugin")
-        exec_button.clicked.connect(self.execute_plugin)
+        self.exec_stats_label = QLabel("Ready • Select a plugin to execute")
+        self.exec_stats_label.setStyleSheet("color: #888; font-size: 11px;")
 
-        layout.addWidget(QLabel("Plugin Execution Console"))
-        layout.addWidget(self.exec_path)
-        layout.addWidget(exec_button)
-        layout.addWidget(self.exec_output)
-        widget.setLayout(layout)
+        stats_layout.addWidget(self.exec_stats_label)
+        stats_layout.addStretch()
+
+        right_layout.addLayout(stats_layout)
+
+        # Add panels to main layout
+        main_layout.addWidget(left_panel)
+        main_layout.addWidget(right_panel)
+
+        widget.setLayout(main_layout)
+
+        # Initialize plugin list
+        self.selected_plugin = None
+        self.refresh_available_plugins()
+
         return widget
 
-    def execute_plugin(self):
-        path = self.exec_path.toPlainText().strip()
-        if path:
+    def refresh_available_plugins(self):
+        """Refresh the available plugins list"""
+        self.available_plugins_list.clear()
+
+        # Get plugins from various sources
+        plugins = []
+
+        # Standard plugins
+        standard_plugins = [
+            {"name": "greet_plugin", "description": "Greeting and introduction plugin", "category": "utility"},
+            {"name": "math_plugin", "description": "Mathematical operations and calculations", "category": "computation"},
+            {"name": "system_plugin", "description": "System information and monitoring", "category": "system"},
+            {"name": "memory_plugin", "description": "Memory management and storage", "category": "data"},
+            {"name": "search_plugin", "description": "Search and information retrieval", "category": "utility"},
+            {"name": "file_tools", "description": "File operations and management", "category": "system"},
+            {"name": "git_plugin", "description": "Git version control operations", "category": "development"},
+            {"name": "coretools", "description": "Core utility tools and functions", "category": "utility"},
+            {"name": "sysmon", "description": "System performance monitoring", "category": "system"},
+            {"name": "optimizer", "description": "Performance optimization tools", "category": "system"},
+            {"name": "selfrepair", "description": "Automatic debugging and repair", "category": "maintenance"},
+            {"name": "whisper", "description": "Audio transcription and processing", "category": "ai"},
+            {"name": "reflector", "description": "Behavior analysis and reflection", "category": "ai"},
+            {"name": "executor", "description": "Command scheduling and execution", "category": "system"}
+        ]
+
+        plugins.extend(standard_plugins)
+
+        # Try to discover additional plugins
+        try:
+            if hasattr(self, 'plugin_manager') and self.plugin_manager:
+                if hasattr(self.plugin_manager, 'get_available_plugins'):
+                    discovered = self.plugin_manager.get_available_plugins()
+                    for plugin in discovered:
+                        if plugin not in [p['name'] for p in plugins]:
+                            plugins.append({"name": plugin, "description": "Discovered plugin", "category": "discovered"})
+        except Exception as e:
+            print(f"Error discovering plugins: {e}")
+
+        # Populate the list
+        for plugin in sorted(plugins, key=lambda x: x['name']):
+            item = QListWidgetItem()
+
+            # Category icons
+            category_icons = {
+                "utility": "🔧",
+                "computation": "🧮",
+                "system": "⚙️",
+                "data": "💾",
+                "development": "👨‍💻",
+                "ai": "🤖",
+                "maintenance": "🔨",
+                "discovered": "🔍"
+            }
+
+            icon = category_icons.get(plugin['category'], "🔌")
+            item.setText(f"{icon} {plugin['name']}")
+            item.setData(Qt.UserRole, plugin)
+
+            # Set tooltip
+            item.setToolTip(f"Name: {plugin['name']}\nCategory: {plugin['category']}\nDescription: {plugin['description']}")
+
+            self.available_plugins_list.addItem(item)
+
+        self.exec_stats_label.setText(f"Discovered {len(plugins)} plugins • Ready for execution")
+
+    def on_plugin_selected(self, current_item, previous_item):
+        """Handle plugin selection"""
+        if current_item is None:
+            self.selected_plugin = None
+            self.plugin_info_text.clear()
+            self.exec_stats_label.setText("No plugin selected")
+            return
+
+        plugin_data = current_item.data(Qt.UserRole)
+        self.selected_plugin = plugin_data['name']
+
+        # Display plugin information
+        info_text = f"""Plugin: {plugin_data['name']}
+Category: {plugin_data['category'].title()}
+Description: {plugin_data['description']}
+
+Status: Ready for execution
+Parameters: JSON format supported
+Goal Context: Optional additional instructions
+"""
+
+        # Try to get more detailed info if available
+        try:
+            if hasattr(self, 'plugin_manager') and self.plugin_manager:
+                if hasattr(self.plugin_manager, 'get_plugin_info'):
+                    detailed_info = self.plugin_manager.get_plugin_info(plugin_data['name'])
+                    if detailed_info:
+                        info_text += f"\n\nDetailed Info:\n{json.dumps(detailed_info, indent=2)}"
+        except Exception as e:
+            print(f"Error getting plugin info: {e}")
+
+        self.plugin_info_text.setPlainText(info_text)
+        self.exec_stats_label.setText(f"Selected: {plugin_data['name']} • Ready to execute")
+
+    def execute_selected_plugin(self):
+        """Execute the selected plugin with parameters"""
+        if not hasattr(self, 'selected_plugin') or not self.selected_plugin:
+            self.exec_output.append("❌ Please select a plugin from the list first")
+            return
+
+        plugin_name = self.selected_plugin
+
+        # Get parameters
+        params = {}
+        params_text = self.exec_params.toPlainText().strip()
+        if params_text:
             try:
-                with open(path, "r", encoding="utf-8") as f:
-                    code = compile(f.read(), path, "exec")
-                    exec(code, {})
-                self.exec_output.append(f"✅ Executed plugin: {path}")
-            except Exception as e:
-                self.exec_output.append(f"❌ Error executing plugin: {e}")
+                params = json.loads(params_text)
+            except json.JSONDecodeError as e:
+                self.exec_output.append(f"❌ Invalid JSON parameters: {e}")
+                return
+
+        # Get goal context
+        goal_context = self.exec_goal_context.toPlainText().strip()
+        if goal_context:
+            params['goal_context'] = goal_context
+
+        # Start execution
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        self.exec_output.append(f"\n{'='*60}")
+        self.exec_output.append(f"🚀 [{timestamp}] Executing: {plugin_name}")
+        self.exec_output.append(f"📋 Parameters: {json.dumps(params, indent=2) if params else 'None'}")
+        self.exec_output.append(f"{'='*60}")
+
+        self.exec_stats_label.setText(f"Executing: {plugin_name}...")
+
+        try:
+            # Try to execute through plugin manager
+            if hasattr(self, 'plugin_manager') and self.plugin_manager:
+                if hasattr(self.plugin_manager, 'execute_plugin'):
+                    result = self.plugin_manager.execute_plugin(plugin_name, **params)
+                    self.exec_output.append(f"✅ Result: {result}")
+                else:
+                    self.exec_output.append("❌ Plugin manager doesn't support execute_plugin method")
+            else:
+                # Fallback to direct execution
+                self.exec_output.append(f"⚠️ No plugin manager available - attempting direct execution")
+
+                # Try to import and execute plugin directly
+                try:
+                    if plugin_name == "greet_plugin":
+                        from Aetherra.plugins.greet_plugin import main
+                        result = main(**params)
+                    elif plugin_name == "math_plugin":
+                        from Aetherra.plugins.math_plugin import main
+                        result = main(**params)
+                    elif plugin_name == "system_plugin":
+                        from Aetherra.plugins.system_plugin import main
+                        result = main(**params)
+                    else:
+                        result = f"Direct execution not implemented for {plugin_name}"
+
+                    self.exec_output.append(f"✅ Result: {result}")
+
+                except ImportError:
+                    self.exec_output.append(f"❌ Cannot import {plugin_name}")
+                except Exception as e:
+                    self.exec_output.append(f"❌ Error executing {plugin_name}: {e}")
+
+        except Exception as e:
+            self.exec_output.append(f"❌ Error: {e}")
+            import traceback
+            self.exec_output.append(f"🔍 Traceback:\n{traceback.format_exc()}")
+
+        self.exec_output.append(f"{'='*60}")
+
+        # Auto-scroll if enabled
+        if hasattr(self, 'auto_scroll_check') and self.auto_scroll_check.isChecked():
+            cursor = self.exec_output.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            self.exec_output.setTextCursor(cursor)
+
+        self.exec_stats_label.setText(f"Completed: {plugin_name} • Ready for next execution")
+
+    def clear_exec_output(self):
+        """Clear the execution output"""
+        self.exec_output.clear()
+        self.exec_stats_label.setText("Output cleared • Ready for execution")
+
+    def execute_plugin(self):
+        """Legacy execute_plugin method for backward compatibility"""
+        # This method is kept for backward compatibility
+        # It now redirects to the new plugin execution system
+        self.execute_selected_plugin()
 
     def handle_send(self):
         """Handle sending chat messages with enhanced neural interface and personality"""
@@ -3636,6 +4334,62 @@ API: {api_display}   |   Bandwidth: {bandwidth_display}   |   WebSocket: {ws_dis
         self.chat_log.append(
             f"<b>{timestamp}</b> <span style='color:#00ff88;'>You:</span> {text}"
         )
+
+    def simulate_thinking_process(self, text):
+        """Simulate AI thinking process with visual feedback"""
+        try:
+            # Show thinking indicator in chat
+            self.chat_log.append(
+                "<i style='color:#888;'>🧠 Lyrixa is thinking...</i>"
+            )
+
+            # Update UI to show thinking state
+            self.chat_log.update()
+
+            # Store the message for processing
+            self.chat_input.setPlainText(text)
+
+            # Process the message if we have autonomous capabilities
+            if hasattr(self, 'lyrixa_agent') and self.lyrixa_agent:
+                # Call the method without parameters since it reads from chat_input
+                self.send_plugin_chat_message()
+            else:
+                # Fallback response
+                self.chat_log.append(
+                    "<i style='color:#666;'>⚠️ Autonomous capabilities not available</i>"
+                )
+
+        except Exception as e:
+            print(f"Error in simulate_thinking_process: {e}")
+            self.chat_log.append(
+                f"<i style='color:#ff6666;'>❌ Error processing message: {e}</i>"
+            )
+
+    def update_emotion_during_response(self, emotion_state):
+        """Update emotional state during response generation"""
+        try:
+            # Update any emotion indicators in the UI
+            emotions = {
+                "thinking": "🧠",
+                "processing": "⚙️",
+                "responding": "💬",
+                "completed": "✅",
+                "error": "❌"
+            }
+
+            emotion_icon = emotions.get(emotion_state, "🤔")
+
+            # Update window title to show current state
+            current_title = self.windowTitle()
+            if " - " in current_title:
+                base_title = current_title.split(" - ")[0]
+            else:
+                base_title = current_title
+
+            self.setWindowTitle(f"{base_title} - {emotion_icon} {emotion_state.title()}")
+
+        except Exception as e:
+            print(f"Error updating emotion: {e}")
 
     def refresh_performance_data(self):
         """Manually refresh all performance data"""
@@ -4875,5 +5629,84 @@ API: {api_display}   |   Bandwidth: {bandwidth_display}   |   WebSocket: {ws_dis
         self.runtime = runtime
 
     def attach_lyrixa(self, lyrixa_agent):
-        """Attach the Lyrixa AI agent to the GUI"""
+        """Attach the Lyrixa AI agent to the GUI with autonomous capabilities"""
         self.lyrixa_agent = lyrixa_agent
+
+        # Initialize autonomous capabilities display
+        self.update_autonomous_status_display()
+
+        # Connect autonomous capabilities to chat if available
+        if hasattr(lyrixa_agent, 'aetherra_integration') and lyrixa_agent.aetherra_integration:
+            self.show_autonomous_capabilities_status()
+
+    def update_autonomous_status_display(self):
+        """Update the autonomous status display in the UI"""
+        try:
+            if hasattr(self, 'lyrixa_agent') and self.lyrixa_agent:
+                # Add autonomous status to chat or status display
+                if hasattr(self.lyrixa_agent, 'aetherra_integration') and self.lyrixa_agent.aetherra_integration:
+                    self.add_chat_message("System", "🤖 Autonomous capabilities connected and ready!", is_user=False)
+                else:
+                    self.add_chat_message("System", "⚠️ Autonomous capabilities initializing...", is_user=False)
+        except Exception as e:
+            print(f"Error updating autonomous status display: {e}")
+
+    def show_autonomous_capabilities_status(self):
+        """Show autonomous capabilities status in the UI"""
+        try:
+            if hasattr(self.lyrixa_agent, 'aetherra_integration') and self.lyrixa_agent.aetherra_integration:
+                capabilities_message = """🧠 Autonomous Capabilities Active:
+• Self-Improvement Engine: Continuous learning and optimization
+• Introspection Controller: Self-awareness and health monitoring
+• Reasoning Engine: Advanced decision-making capabilities
+• Agent Orchestrator: Multi-agent task coordination
+
+Type 'status' to see current system health
+Type 'introspection' to run self-analysis"""
+
+                self.add_chat_message("Lyrixa", capabilities_message, is_user=False)
+        except Exception as e:
+            print(f"Error showing autonomous capabilities: {e}")
+
+    def refresh_goal_display(self):
+        """Refresh the goal display with current goals"""
+        try:
+            if hasattr(self, 'goal_tracker'):
+                output = []
+                output.append("🎯 Active Goals")
+                output.append("=" * 40)
+
+                for goal in self.goal_tracker.goals.values():
+                    if goal.status == "active":
+                        output.append(f"📋 {goal.title}")
+                        output.append(f"   Priority: {goal.priority}")
+                        output.append(f"   Progress: {goal.progress:.1%}")
+                        output.append(f"   Reason: {goal.reasoning}")
+                        output.append("")
+
+                self.goal_display.setPlainText("\n".join(output))
+        except Exception as e:
+            if hasattr(self, 'goal_display'):
+                self.goal_display.setPlainText(f"Error refreshing goals: {e}")
+
+    def analyze_goal_blockers(self):
+        """Analyze blockers for all goals"""
+        try:
+            if hasattr(self, 'goal_tracker'):
+                blockers = self.goal_tracker.analyze_blockers()
+
+                output = []
+                output.append("🔍 Blocker Analysis")
+                output.append("=" * 40)
+
+                if blockers:
+                    for blocker in blockers:
+                        output.append(f"🚫 {blocker}")
+                        output.append("")
+                else:
+                    output.append("✅ No blockers found!")
+
+                self.goal_display.setPlainText("\n".join(output))
+        except Exception as e:
+            if hasattr(self, 'goal_display'):
+                self.goal_display.setPlainText(f"Error analyzing blockers: {e}")

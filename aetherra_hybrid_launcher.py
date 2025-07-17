@@ -153,6 +153,9 @@ try:
         window.show()
 
         try:
+            # Import asyncio explicitly to avoid scope issues
+            import asyncio
+
             # Create event loop for async initialization
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
@@ -181,9 +184,26 @@ try:
             if lyrixa:
                 print(f"🔧 DEBUG: About to call attach_lyrixa with {type(lyrixa)}")
                 window.attach_lyrixa(lyrixa)
-                # Set GUI interface reference
-                lyrixa.gui_interface = window
-                print("✅ Lyrixa agent attached to GUI with auto-population enabled")
+                # GUI interface connection handled by attach_lyrixa method
+
+                # Initialize autonomous capabilities in the GUI
+                print("🧠 Initializing autonomous capabilities in GUI...")
+                if hasattr(lyrixa, 'aetherra_integration') and lyrixa.aetherra_integration:
+                    print("✅ Autonomous capabilities detected - starting autonomous mode")
+                    # Start autonomous mode
+                    try:
+                        import asyncio
+                        autonomous_result = asyncio.run(lyrixa.aetherra_integration.start_autonomous_mode())
+                        if autonomous_result.get('success'):
+                            print("✅ Autonomous mode started successfully")
+                        else:
+                            print(f"⚠️ Autonomous mode start result: {autonomous_result}")
+                    except Exception as e:
+                        print(f"⚠️ Error starting autonomous mode: {e}")
+                else:
+                    print("⚠️ No autonomous capabilities found")
+
+                print("✅ Lyrixa agent attached to GUI with autonomous capabilities enabled")
             else:
                 print("❌ DEBUG: lyrixa is None or undefined!")
 

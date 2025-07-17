@@ -3,7 +3,7 @@ name: Deploy Aetherra Website to GitHub Pages
 on:
   push:
     branches: [ main ]
-    paths: 
+    paths:
       - 'Aetherra/lyrixa/core/Aetherra Website/**'
       - 'docs/**'
   workflow_dispatch:

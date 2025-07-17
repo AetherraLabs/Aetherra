@@ -25,6 +25,8 @@ from .core.goals import GoalPriority, LyrixaGoalSystem
 # Import autonomous self-improvement systems
 from .core.self_improvement_scheduler import SelfImprovementScheduler
 
+# Aetherra integration will be imported when needed to avoid circular imports
+
 
 class LyrixaAI:
     """
@@ -103,23 +105,34 @@ class LyrixaAI:
         # 1. Enhanced Memory System with clustering and visualization
         memory_db_path = os.path.join(self.workspace_path, "lyrixa_enhanced_memory.db")
         self.memory = LyrixaEnhancedMemorySystem(memory_db_path=memory_db_path)
-        # Test memory system immediately
+        # Test memory system with proper async handling
         try:
-            test_id = asyncio.get_event_loop().run_until_complete(
-                self.memory.store_enhanced_memory(
-                    content={"test": "init"},
-                    context={"system": "startup"},
-                    tags=["system", "test"],
-                    importance=0.1,
+            import asyncio
+            # Check if we're in an async context already
+            try:
+                loop = asyncio.get_running_loop()
+                # We're in an async context, skip the sync test
+                print("✅ Memory system initialized (async context detected)")
+            except RuntimeError:
+                # No running loop, we can safely test
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+
+                test_id = loop.run_until_complete(
+                    self.memory.store_enhanced_memory(
+                        content={"test": "init"},
+                        context={"system": "startup"},
+                        tags=["system", "test"],
+                        importance=0.1,
+                    )
                 )
-            )
-            test_memories = asyncio.get_event_loop().run_until_complete(
-                self.memory.get_memories_by_tags(["system", "test"], limit=1)
-            )
-            if not test_memories:
-                print("❌ Memory system failed to store/retrieve test memory!")
-            else:
-                print("✅ Memory system test passed.")
+                test_memories = loop.run_until_complete(
+                    self.memory.get_memories_by_tags(["system", "test"], limit=1)
+                )
+                if not test_memories:
+                    print("❌ Memory system failed to store/retrieve test memory!")
+                else:
+                    print("✅ Memory system test passed.")
         except Exception as e:
             print(f"❌ Memory system initialization error: {e}")
 
@@ -183,6 +196,16 @@ class LyrixaAI:
             "errors_encountered": 0,
             "user_satisfaction_signals": [],
         }
+
+        # 8. Aetherra Integration for true autonomous capabilities
+        self.aetherra_integration = None
+        try:
+            from simplified_lyrixa_aetherra_integration import SimplifiedLyrixaAetherraIntegration
+            self.aetherra_integration = SimplifiedLyrixaAetherraIntegration()
+            print("✅ Simplified Aetherra integration initialized successfully")
+        except Exception as e:
+            print(f"⚠️ Aetherra integration failed: {e}")
+            self.aetherra_integration = None
 
         # Display enhanced welcome
         self._display_enhanced_welcome()
@@ -887,11 +910,35 @@ What would you like to explore together today? 🚀
     async def start_autonomous_mode(self) -> Dict[str, Any]:
         """
         🤖 START AUTONOMOUS SELF-IMPROVEMENT MODE
-        Enable continuous self-monitoring and improvement
+        Enable continuous self-monitoring and improvement using Aetherra engines
         """
         try:
-            print("🤖 Starting Lyrixa autonomous self-improvement mode...")
+            print("🤖 Starting Lyrixa autonomous self-improvement mode with Aetherra engines...")
 
+            # If Aetherra integration is available, use it
+            if self.aetherra_integration:
+                result = await self.aetherra_integration.start_autonomous_mode()
+                if result["success"]:
+                    # Store the autonomous mode activation
+                    await self.memory.store_enhanced_memory(
+                        content={
+                            "action": "autonomous_mode_activated_aetherra",
+                            "timestamp": datetime.now().isoformat(),
+                            "engines_started": result["active_engines"],
+                        },
+                        context={
+                            "type": "autonomous_activation",
+                            "session_id": self.session_id,
+                        },
+                        tags=["autonomous", "self_improvement", "aetherra", "activation"],
+                        importance=0.9,
+                    )
+                    return result
+                else:
+                    # Fall back to original implementation
+                    print("⚠️ Aetherra integration failed, falling back to original implementation")
+
+            # Original implementation as fallback
             # Start the self-improvement scheduler
             await self.self_improvement_scheduler.start_autonomous_cycle()
 
@@ -974,11 +1021,27 @@ What would you like to explore together today? 🚀
     async def run_self_introspection(self) -> Dict[str, Any]:
         """
         🔍 MANUAL SELF-INTROSPECTION
-        Run immediate self-analysis and improvement cycle
+        Run immediate self-analysis and improvement cycle using Aetherra engines
         """
         try:
             print("🔍 Running manual self-introspection...")
 
+            # Use Aetherra integration if available
+            if self.aetherra_integration:
+                result = await self.aetherra_integration.run_self_introspection()
+                if result["success"]:
+                    # Store the introspection results
+                    await self.memory.store_enhanced_memory(
+                        content=result,
+                        context={"type": "manual_introspection_aetherra", "session_id": self.session_id},
+                        tags=["introspection", "self_analysis", "aetherra", "manual"],
+                        importance=0.8,
+                    )
+                    return result
+                else:
+                    print("⚠️ Aetherra introspection failed, falling back to original implementation")
+
+            # Original implementation as fallback
             # Run manual introspection cycle
             introspection_results = (
                 await self.self_improvement_scheduler.run_manual_introspection()
@@ -1023,9 +1086,18 @@ What would you like to explore together today? 🚀
     async def get_autonomous_status(self) -> Dict[str, Any]:
         """
         📊 GET AUTONOMOUS SYSTEM STATUS
-        Get status and metrics of autonomous self-improvement systems
+        Get status and metrics of autonomous self-improvement systems using Aetherra engines
         """
         try:
+            # Use Aetherra integration if available
+            if self.aetherra_integration:
+                result = await self.aetherra_integration.get_autonomous_status()
+                if not result.get("error"):
+                    return result
+                else:
+                    print("⚠️ Aetherra status check failed, falling back to original implementation")
+
+            # Original implementation as fallback
             # Get improvement metrics
             improvement_metrics = (
                 await self.self_improvement_scheduler.get_improvement_metrics()

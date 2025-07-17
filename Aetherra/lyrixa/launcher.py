@@ -48,7 +48,7 @@ from Aetherra.core.memory_manager import MemoryManager
 from Aetherra.core.multi_llm_manager import MultiLLMManager
 from Aetherra.core.plugin_manager import PluginManager
 from Aetherra.core.prompt_engine import PromptEngine
-from Aetherra.lyrixa.agents.core_agent import LyrixaAI
+from Aetherra.lyrixa.assistant import LyrixaAI  # ✅ Use the main assistant class with autonomous capabilities
 from Aetherra.lyrixa.gui.hybrid_window import (
     LyrixaWindow,  # ✅ Updated to use new hybrid UI
 )
@@ -75,10 +75,12 @@ async def initialize_system(gui_window=None):
     )
 
     runtime = AetherRuntime()
-    lyrixa = LyrixaAI(runtime, memory, prompt_engine, llm_manager, intelligence_stack)
 
-    # Initialize the Lyrixa agent and its sub-agents
-    await lyrixa.initialize()
+    # Initialize the enhanced Lyrixa AI with autonomous capabilities
+    lyrixa = LyrixaAI(workspace_path=workspace_path)
+
+    # Initialize the Lyrixa agent (no await needed - it's synchronous)
+    log("🎙️ Lyrixa AI initialized with autonomous capabilities")
 
     # 🔗 CRITICAL FIX: Initialize plugin discovery integration
     log("🔍 Initializing plugin discovery integration...")
@@ -136,9 +138,9 @@ def launch_gui():
             if lyrixa:
                 print(f"🔧 DEBUG: About to call attach_lyrixa with {type(lyrixa)}")
                 window.attach_lyrixa(lyrixa)
-                # 🎯 Phase 1: Auto-Populate Plugin Editor - Set GUI interface reference
-                lyrixa.gui_interface = window
-                log("✅ Lyrixa agent attached to GUI with auto-population enabled")
+                # Connect Lyrixa to the window (but don't set gui_interface since it doesn't exist)
+                # The window will handle the connection through attach_lyrixa method
+                log("✅ Lyrixa agent attached to GUI with autonomous capabilities")
             else:
                 print("❌ DEBUG: lyrixa is None or undefined!")
                 log("❌ Lyrixa is not available for attachment", "error")
@@ -162,13 +164,36 @@ def launch_gui():
                 log(f"⚠️ Plugin Editor tab verification: {e}", "warning")
 
             # Update all dashboard components using modular methods
-            window.update_dashboard_metrics()
+            if hasattr(window, "update_dashboard_metrics"):
+                window.update_dashboard_metrics()
+                log("✅ Dashboard metrics updated")
+            else:
+                log("⚠️ Dashboard metrics method not available")
 
             # Update individual status displays using modular methods
-            window.update_intelligence_status()
-            window.update_runtime_status()
-            window.update_agent_status()
-            window.update_performance_metrics()
+            if hasattr(window, "update_intelligence_status"):
+                window.update_intelligence_status()
+                log("✅ Intelligence status updated")
+            else:
+                log("⚠️ Intelligence status method not available")
+
+            if hasattr(window, "update_runtime_status"):
+                window.update_runtime_status()
+                log("✅ Runtime status updated")
+            else:
+                log("⚠️ Runtime status method not available")
+
+            if hasattr(window, "update_agent_status"):
+                window.update_agent_status()
+                log("✅ Agent status updated")
+            else:
+                log("⚠️ Agent status method not available")
+
+            if hasattr(window, "update_performance_metrics"):
+                window.update_performance_metrics()
+                log("✅ Performance metrics updated")
+            else:
+                log("⚠️ Performance metrics method not available")
 
             # Populate the model dropdown if available
             try:
@@ -182,6 +207,8 @@ def launch_gui():
             if hasattr(window, "init_background_monitors"):
                 window.init_background_monitors()
                 log("✅ Background monitoring initialized")
+            else:
+                log("⚠️ Background monitoring method not available")
 
             loop.close()
             log("🎯 GUI initialization complete")
