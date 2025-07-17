@@ -1,148 +1,226 @@
 {
   "plugins": [
     {
-      "id": "neural-optimizer",
-      "name": "Neural Pathway Optimizer",
-      "description": "Advanced neural network optimization using reinforcement learning algorithms",
-      "version": "2.1.4",
+      "id": "coretools",
+      "name": "Core Tools",
+      "description": "File access and core utility tools for Aetherra operations",
+      "version": "1.0.0",
+      "author": "Aetherra Core Team",
+      "category": "development",
+      "tags": [
+        "core",
+        "files",
+        "utilities",
+        "essential"
+      ],
+      "downloads": 0,
+      "rating": 5.0,
+      "confidence_score": 1.0,
+      "install_status": "installed",
+      "last_updated": "2025-07-17",
+      "documentation_url": "#",
+      "github_url": "https://github.com/aetherra/aetherra",
+      "size": "1.2 MB",
+      "dependencies": [],
+      "features": [
+        "File reading and writing",
+        "Data encoding/decoding",
+        "Hash generation",
+        "Directory operations"
+      ],
+      "is_real": true
+    },
+    {
+      "id": "sysmon",
+      "name": "System Monitor",
+      "description": "System performance monitoring and diagnostics for Aetherra",
+      "version": "1.0.0",
       "author": "Aetherra Core Team",
       "category": "performance",
-      "tags": ["optimization", "neural", "ai", "performance"],
-      "downloads": 15847,
-      "rating": 4.9,
-      "confidence_score": 0.94,
+      "tags": [
+        "monitoring",
+        "performance",
+        "system",
+        "diagnostics"
+      ],
+      "downloads": 0,
+      "rating": 5.0,
+      "confidence_score": 1.0,
       "install_status": "installed",
-      "last_updated": "2024-12-15",
-      "documentation_url": "https://docs.aetherra.ai/plugins/neural-optimizer",
-      "github_url": "https://github.com/aetherra/neural-optimizer",
-      "size": "2.3 MB",
-      "dependencies": ["core-engine", "memory-manager"],
+      "last_updated": "2025-07-17",
+      "documentation_url": "#",
+      "github_url": "https://github.com/aetherra/aetherra",
+      "size": "0.8 MB",
+      "dependencies": [
+        "coretools"
+      ],
       "features": [
-        "Real-time pathway optimization",
-        "Memory leak detection", 
+        "CPU and memory monitoring",
         "Performance analytics",
-        "Auto-tuning parameters"
-      ]
+        "System health checks",
+        "Resource optimization"
+      ],
+      "is_real": true
     },
     {
-      "id": "memory-consolidator",
-      "name": "Adaptive Memory Consolidator",
-      "description": "Dynamic memory management with intelligent compression and retrieval",
-      "version": "1.8.2",
-      "author": "CogniDev Labs",
-      "category": "memory",
-      "tags": ["memory", "compression", "retrieval", "adaptive"],
-      "downloads": 12043,
-      "rating": 4.7,
-      "confidence_score": 0.89,
-      "install_status": "available",
-      "last_updated": "2024-12-10",
-      "documentation_url": "https://docs.aetherra.ai/plugins/memory-consolidator",
-      "github_url": "https://github.com/cognilabs/memory-consolidator",
-      "size": "1.7 MB",
-      "dependencies": ["core-engine"],
+      "id": "optimizer",
+      "name": "Code Optimizer",
+      "description": "Code and system performance optimization tools",
+      "version": "1.0.0",
+      "author": "Aetherra Core Team",
+      "category": "performance",
+      "tags": [
+        "optimization",
+        "performance",
+        "code",
+        "analysis"
+      ],
+      "downloads": 0,
+      "rating": 5.0,
+      "confidence_score": 1.0,
+      "install_status": "installed",
+      "last_updated": "2025-07-17",
+      "documentation_url": "#",
+      "github_url": "https://github.com/aetherra/aetherra",
+      "size": "1.1 MB",
+      "dependencies": [
+        "coretools"
+      ],
       "features": [
-        "Intelligent compression",
-        "Contextual retrieval",
-        "Memory defragmentation",
-        "Usage analytics"
-      ]
+        "Code performance analysis",
+        "Optimization suggestions",
+        "Memory usage optimization",
+        "Runtime improvements"
+      ],
+      "is_real": true
     },
     {
-      "id": "emotion-engine",
-      "name": "Emotional Intelligence Module",
-      "description": "Advanced emotional understanding and response generation system",
-      "version": "3.0.1",
-      "author": "EmotiAI Collective",
-      "category": "personality",
-      "tags": ["emotion", "personality", "empathy", "social"],
-      "downloads": 8765,
-      "rating": 4.8,
-      "confidence_score": 0.92,
-      "install_status": "updating",
-      "last_updated": "2024-12-18",
-      "documentation_url": "https://docs.aetherra.ai/plugins/emotion-engine",
-      "github_url": "https://github.com/emotiAI/emotion-engine",
-      "size": "4.1 MB",
-      "dependencies": ["core-engine", "personality-framework"],
-      "features": [
-        "Emotion recognition",
-        "Empathy simulation",
-        "Contextual responses",
-        "Mood tracking"
-      ]
-    },
-    {
-      "id": "security-guardian",
-      "name": "Security & Privacy Guardian",
-      "description": "Comprehensive security monitoring and privacy protection system",
-      "version": "1.5.7",
-      "author": "SecureAI Foundation",
-      "category": "security",
-      "tags": ["security", "privacy", "monitoring", "protection"],
-      "downloads": 9832,
-      "rating": 4.6,
-      "confidence_score": 0.88,
-      "install_status": "available",
-      "last_updated": "2024-12-12",
-      "documentation_url": "https://docs.aetherra.ai/plugins/security-guardian",
-      "github_url": "https://github.com/secureAI/security-guardian",
-      "size": "3.2 MB",
-      "dependencies": ["core-engine", "network-monitor"],
-      "features": [
-        "Real-time threat detection",
-        "Data encryption",
-        "Privacy auditing",
-        "Access control"
-      ]
-    },
-    {
-      "id": "creative-studio",
-      "name": "AI Creative Studio",
-      "description": "Multi-modal creative content generation and artistic expression tools",
-      "version": "2.3.0",
-      "author": "CreativeMinds Inc",
-      "category": "creativity",
-      "tags": ["creativity", "art", "generation", "multimodal"],
-      "downloads": 6543,
-      "rating": 4.5,
-      "confidence_score": 0.85,
-      "install_status": "available",
-      "last_updated": "2024-12-14",
-      "documentation_url": "https://docs.aetherra.ai/plugins/creative-studio",
-      "github_url": "https://github.com/creativeminds/ai-studio",
-      "size": "5.8 MB",
-      "dependencies": ["core-engine", "media-processor"],
-      "features": [
-        "Image generation",
-        "Music composition",
-        "Story writing",
-        "Style transfer"
-      ]
-    },
-    {
-      "id": "code-architect",
-      "name": "Autonomous Code Architect",
-      "description": "Self-improving code generation and architecture optimization system",
-      "version": "1.2.8",
-      "author": "DevAI Consortium",
+      "id": "selfrepair",
+      "name": "Self-Repair System",
+      "description": "Automatic debugging and repair system for Aetherra",
+      "version": "1.0.0",
+      "author": "Aetherra Core Team",
       "category": "development",
-      "tags": ["coding", "architecture", "automation", "optimization"],
-      "downloads": 4231,
-      "rating": 4.4,
-      "confidence_score": 0.83,
-      "install_status": "beta",
-      "last_updated": "2024-12-16",
-      "documentation_url": "https://docs.aetherra.ai/plugins/code-architect",
-      "github_url": "https://github.com/devAI/code-architect",
-      "size": "3.9 MB",
-      "dependencies": ["core-engine", "language-parser"],
+      "tags": [
+        "debugging",
+        "repair",
+        "automation",
+        "maintenance"
+      ],
+      "downloads": 0,
+      "rating": 5.0,
+      "confidence_score": 1.0,
+      "install_status": "installed",
+      "last_updated": "2025-07-17",
+      "documentation_url": "#",
+      "github_url": "https://github.com/aetherra/aetherra",
+      "size": "1.5 MB",
+      "dependencies": [
+        "coretools"
+      ],
       "features": [
-        "Code generation",
-        "Architecture analysis",
-        "Bug detection",
-        "Performance optimization"
-      ]
+        "Automatic error detection",
+        "Self-healing capabilities",
+        "Debug assistance",
+        "System maintenance"
+      ],
+      "is_real": true
+    },
+    {
+      "id": "whisper",
+      "name": "Audio Transcription",
+      "description": "Audio transcription and speech processing using Whisper AI",
+      "version": "1.0.0",
+      "author": "Aetherra Core Team",
+      "category": "ai",
+      "tags": [
+        "audio",
+        "transcription",
+        "speech",
+        "whisper"
+      ],
+      "downloads": 0,
+      "rating": 5.0,
+      "confidence_score": 1.0,
+      "install_status": "installed",
+      "last_updated": "2025-07-17",
+      "documentation_url": "#",
+      "github_url": "https://github.com/aetherra/aetherra",
+      "size": "2.1 MB",
+      "dependencies": [
+        "coretools"
+      ],
+      "features": [
+        "Speech-to-text conversion",
+        "Multiple language support",
+        "Audio file processing",
+        "Real-time transcription"
+      ],
+      "is_real": true
+    },
+    {
+      "id": "reflector",
+      "name": "Behavior Reflector",
+      "description": "Behavior analysis and self-reflection tools for AI consciousness",
+      "version": "1.0.0",
+      "author": "Aetherra Core Team",
+      "category": "ai",
+      "tags": [
+        "reflection",
+        "behavior",
+        "analysis",
+        "consciousness"
+      ],
+      "downloads": 0,
+      "rating": 5.0,
+      "confidence_score": 1.0,
+      "install_status": "installed",
+      "last_updated": "2025-07-17",
+      "documentation_url": "#",
+      "github_url": "https://github.com/aetherra/aetherra",
+      "size": "1.3 MB",
+      "dependencies": [
+        "coretools"
+      ],
+      "features": [
+        "Behavioral pattern analysis",
+        "Self-reflection capabilities",
+        "Decision tracking",
+        "Learning optimization"
+      ],
+      "is_real": true
+    },
+    {
+      "id": "executor",
+      "name": "Command Executor",
+      "description": "Command scheduling and execution management system",
+      "version": "1.0.0",
+      "author": "Aetherra Core Team",
+      "category": "development",
+      "tags": [
+        "execution",
+        "commands",
+        "scheduling",
+        "automation"
+      ],
+      "downloads": 0,
+      "rating": 5.0,
+      "confidence_score": 1.0,
+      "install_status": "installed",
+      "last_updated": "2025-07-17",
+      "documentation_url": "#",
+      "github_url": "https://github.com/aetherra/aetherra",
+      "size": "0.9 MB",
+      "dependencies": [
+        "coretools"
+      ],
+      "features": [
+        "Command scheduling",
+        "Execution management",
+        "Task automation",
+        "Process monitoring"
+      ],
+      "is_real": true
     }
   ]
 }

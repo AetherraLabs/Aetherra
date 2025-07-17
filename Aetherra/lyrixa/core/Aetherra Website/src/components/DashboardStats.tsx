@@ -1,15 +1,15 @@
-import React from 'react';
 
 export default function DashboardStats() {
   return (
     <div className="bg-aetherra-gray p-4 rounded-2xl shadow-xl border border-aetherra-green/20">
       <h2 className="text-xl font-bold mb-2 gradient-text">📊 System Dashboard</h2>
+      <div className="text-xs text-zinc-500 mb-3">Demo Values - Live in Development</div>
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <span className="text-zinc-300">🧠 Memory Usage:</span>
           <div className="flex items-center space-x-2">
             <div className="w-24 bg-aetherra-dark rounded-full h-2">
-              <div className="bg-aetherra-green h-2 rounded-full" style={{width: '72%'}}></div>
+              <div className="bg-aetherra-green h-2 rounded-full" style={{ width: '72%' }}></div>
             </div>
             <span className="text-aetherra-green font-mono text-sm">72%</span>
           </div>
@@ -31,5 +31,5 @@ export default function DashboardStats() {
   );
 }
 
-// Also export as named export for backward compatibility  
+// Also export as named export for backward compatibility
 export { DashboardStats };

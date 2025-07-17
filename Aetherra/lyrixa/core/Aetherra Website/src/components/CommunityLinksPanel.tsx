@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 interface CommunityLink {
   id: string;
@@ -27,7 +27,7 @@ export default function CommunityLinksPanel({ onLinkClick }: CommunityLinksPanel
       url: 'https://github.com/aetherra/aetherra',
       icon: '🐙',
       color: 'bg-gray-700 hover:bg-gray-600 border-gray-600',
-      members: '2.1k+ developers',
+      members: 'Open Source',
       activity: 'Active development'
     },
     {
@@ -37,8 +37,8 @@ export default function CommunityLinksPanel({ onLinkClick }: CommunityLinksPanel
       url: 'https://discord.gg/aetherra',
       icon: '💬',
       color: 'bg-indigo-700 hover:bg-indigo-600 border-indigo-600',
-      members: '8.5k+ members',
-      activity: 'Very active'
+      members: 'Coming Soon',
+      activity: 'Setting up community'
     },
     {
       id: 'twitter',
@@ -47,7 +47,7 @@ export default function CommunityLinksPanel({ onLinkClick }: CommunityLinksPanel
       url: 'https://twitter.com/aetherra_ai',
       icon: '🐦',
       color: 'bg-blue-700 hover:bg-blue-600 border-blue-600',
-      members: '12.3k+ followers',
+      members: 'Coming Soon',
       activity: 'Daily updates'
     }
   ];
@@ -63,10 +63,10 @@ export default function CommunityLinksPanel({ onLinkClick }: CommunityLinksPanel
       case 'github':
         return {
           stats: [
-            { label: 'Stars', value: '1.2k+' },
-            { label: 'Forks', value: '340+' },
-            { label: 'Issues', value: '23 open' },
-            { label: 'PRs', value: '7 open' }
+            { label: 'Stars', value: 'TBD' },
+            { label: 'Forks', value: 'TBD' },
+            { label: 'Issues', value: 'TBD' },
+            { label: 'PRs', value: 'TBD' }
           ],
           highlights: [
             'Open source and transparent development',
@@ -78,8 +78,8 @@ export default function CommunityLinksPanel({ onLinkClick }: CommunityLinksPanel
       case 'discord':
         return {
           stats: [
-            { label: 'Channels', value: '25+' },
-            { label: 'Online', value: '400+' },
+            { label: 'Channels', value: 'TBD' },
+            { label: 'Online', value: 'TBD' },
             { label: 'Events', value: 'Weekly' },
             { label: 'Bots', value: 'AI helpers' }
           ],
@@ -93,7 +93,7 @@ export default function CommunityLinksPanel({ onLinkClick }: CommunityLinksPanel
       case 'twitter':
         return {
           stats: [
-            { label: 'Tweets', value: '890+' },
+            { label: 'Tweets', value: 'TBD' },
             { label: 'Engagement', value: 'High' },
             { label: 'Hashtag', value: '#AetherraAI' },
             { label: 'Lists', value: 'AI Tech' }
@@ -154,7 +154,7 @@ export default function CommunityLinksPanel({ onLinkClick }: CommunityLinksPanel
                     <p className="text-gray-300 text-sm mb-3 leading-relaxed">
                       {link.description}
                     </p>
-                    
+
                     {/* Quick Stats */}
                     {hoveredLink === link.id && (
                       <motion.div
@@ -171,7 +171,7 @@ export default function CommunityLinksPanel({ onLinkClick }: CommunityLinksPanel
                             </div>
                           ))}
                         </div>
-                        
+
                         <div className="bg-black bg-opacity-30 rounded-lg p-3">
                           <h4 className="text-white font-medium text-sm mb-2">Platform Highlights:</h4>
                           <ul className="space-y-1">
@@ -286,19 +286,19 @@ export default function CommunityLinksPanel({ onLinkClick }: CommunityLinksPanel
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-aetherra-green">23k+</div>
+              <div className="text-2xl font-bold text-aetherra-green">TBD</div>
               <div className="text-gray-400 text-sm">Total Members</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-purple-400">150+</div>
+              <div className="text-2xl font-bold text-purple-400">TBD</div>
               <div className="text-gray-400 text-sm">Countries</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-blue-400">500+</div>
+              <div className="text-2xl font-bold text-blue-400">TBD</div>
               <div className="text-gray-400 text-sm">Contributors</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-yellow-400">1.2M+</div>
+              <div className="text-2xl font-bold text-yellow-400">TBD</div>
               <div className="text-gray-400 text-sm">Code Commits</div>
             </div>
           </div>

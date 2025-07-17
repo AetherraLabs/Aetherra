@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 
 interface Plugin {
@@ -16,6 +15,7 @@ interface Plugin {
   last_updated: string;
   size: string;
   features: string[];
+  is_real?: boolean;
 }
 
 interface PluginCardProps {
@@ -67,7 +67,7 @@ export default function PluginCard({ plugin, onInstall, onPreview }: PluginCardP
         );
       case 'beta':
         return (
-          <button 
+          <button
             onClick={() => onInstall?.(plugin.id)}
             className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm"
           >
@@ -76,7 +76,7 @@ export default function PluginCard({ plugin, onInstall, onPreview }: PluginCardP
         );
       default:
         return (
-          <button 
+          <button
             onClick={() => onInstall?.(plugin.id)}
             className="px-4 py-2 bg-aetherra-green hover:bg-aetherra-green/80 text-aetherra-dark rounded-lg transition-colors text-sm font-semibold"
           >
@@ -91,8 +91,19 @@ export default function PluginCard({ plugin, onInstall, onPreview }: PluginCardP
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.02 }}
-      className="bg-aetherra-gray p-6 rounded-xl border border-zinc-700/50 hover:border-aetherra-green/30 transition-all"
+      className="relative bg-aetherra-gray p-6 rounded-xl border border-zinc-700/50 hover:border-aetherra-green/30 transition-all"
     >
+      {/* Coming Soon Overlay for non-real plugins */}
+      {plugin.is_real === false && (
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
+          <div className="text-center">
+            <div className="text-2xl mb-2">🚀</div>
+            <div className="text-lg font-bold text-aetherra-green mb-1">Coming Soon</div>
+            <div className="text-sm text-zinc-300">Placeholder Plugin</div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
@@ -123,7 +134,7 @@ export default function PluginCard({ plugin, onInstall, onPreview }: PluginCardP
       {/* Tags */}
       <div className="flex flex-wrap gap-2 mb-4">
         {plugin.tags.slice(0, 4).map((tag) => (
-          <span 
+          <span
             key={tag}
             className="px-2 py-1 bg-aetherra-dark text-zinc-300 rounded text-xs"
           >

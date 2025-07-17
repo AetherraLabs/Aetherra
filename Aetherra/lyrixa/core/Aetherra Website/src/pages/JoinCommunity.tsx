@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import communityData from '../data/community_activity.json';
 
@@ -46,7 +45,7 @@ export default function JoinCommunity() {
   return (
     <div className="min-h-screen bg-aetherra-dark text-white">
       {/* Hero Section */}
-      <motion.section 
+      <motion.section
         className="bg-gradient-to-br from-aetherra-dark via-aetherra-gray to-aetherra-dark border-b border-aetherra-green/20 py-16"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -57,10 +56,10 @@ export default function JoinCommunity() {
             💫 Join the Aetherra Community
           </h1>
           <p className="text-xl text-zinc-300 mb-8 max-w-3xl mx-auto">
-            Connect with developers, researchers, and enthusiasts building the future of AI-native computing. 
+            Connect with developers, researchers, and enthusiasts building the future of AI-native computing.
             Share ideas, get support, and collaborate on groundbreaking projects.
           </p>
-          
+
           {/* Community Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
             <div>
@@ -92,7 +91,7 @@ export default function JoinCommunity() {
       </motion.section>
 
       {/* Main Content */}
-      <motion.main 
+      <motion.main
         className="max-w-6xl mx-auto px-6 py-12"
         variants={containerVariants}
         initial="hidden"
@@ -101,7 +100,7 @@ export default function JoinCommunity() {
         {/* Join Platforms */}
         <motion.section variants={itemVariants} className="mb-16">
           <h2 className="text-3xl font-bold gradient-text mb-8 text-center">Connect With Us</h2>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {/* Discord */}
             <motion.div
@@ -117,7 +116,7 @@ export default function JoinCommunity() {
                 <div className="text-lg font-semibold text-blue-300">
                   {communityData.stats.discord_members.toLocaleString()} members
                 </div>
-                <div className="text-sm text-zinc-400">1,247 online now</div>
+                <div className="text-sm text-zinc-400">Coming Soon</div>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -165,7 +164,7 @@ export default function JoinCommunity() {
               </p>
               <div className="mb-6">
                 <div className="text-lg font-semibold text-slate-300">
-                  15.2k followers
+                  Coming Soon
                 </div>
                 <div className="text-sm text-zinc-400">Daily updates & insights</div>
               </div>
@@ -183,7 +182,7 @@ export default function JoinCommunity() {
         {/* Community Activity Feed */}
         <motion.section variants={itemVariants} className="mb-16">
           <h2 className="text-3xl font-bold gradient-text mb-8">Recent Community Activity</h2>
-          
+
           <div className="grid lg:grid-cols-2 gap-8">
             <div className="space-y-4">
               {communityData.activity.slice(0, 4).map((activity) => (
@@ -196,12 +195,11 @@ export default function JoinCommunity() {
                     <div className="text-2xl">{getActivityIcon(activity.type)}</div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          activity.type === 'plugin_release' ? 'bg-green-900 text-green-200' :
-                          activity.type === 'community_contribution' ? 'bg-blue-900 text-blue-200' :
-                          activity.type === 'discussion' ? 'bg-purple-900 text-purple-200' :
-                          'bg-zinc-900 text-zinc-200'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs ${activity.type === 'plugin_release' ? 'bg-green-900 text-green-200' :
+                            activity.type === 'community_contribution' ? 'bg-blue-900 text-blue-200' :
+                              activity.type === 'discussion' ? 'bg-purple-900 text-purple-200' :
+                                'bg-zinc-900 text-zinc-200'
+                          }`}>
                           {activity.type.replace('_', ' ')}
                         </span>
                         <span className="text-xs text-zinc-500">by @{activity.author}</span>
@@ -235,12 +233,11 @@ export default function JoinCommunity() {
                     <div className="text-2xl">{getActivityIcon(activity.type)}</div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          activity.type === 'plugin_release' ? 'bg-green-900 text-green-200' :
-                          activity.type === 'community_contribution' ? 'bg-blue-900 text-blue-200' :
-                          activity.type === 'discussion' ? 'bg-purple-900 text-purple-200' :
-                          'bg-zinc-900 text-zinc-200'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs ${activity.type === 'plugin_release' ? 'bg-green-900 text-green-200' :
+                            activity.type === 'community_contribution' ? 'bg-blue-900 text-blue-200' :
+                              activity.type === 'discussion' ? 'bg-purple-900 text-purple-200' :
+                                'bg-zinc-900 text-zinc-200'
+                          }`}>
                           {activity.type.replace('_', ' ')}
                         </span>
                         <span className="text-xs text-zinc-500">by @{activity.author}</span>
@@ -268,7 +265,7 @@ export default function JoinCommunity() {
         {/* Trending Topics */}
         <motion.section variants={itemVariants} className="mb-16">
           <h2 className="text-3xl font-bold gradient-text mb-8">Trending Topics</h2>
-          
+
           <div className="bg-aetherra-gray p-8 rounded-xl border border-aetherra-green/20">
             <div className="flex flex-wrap gap-3">
               {communityData.trending_tags.map((tag, index) => (
@@ -276,12 +273,11 @@ export default function JoinCommunity() {
                   key={tag}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                    index === 0 ? 'bg-aetherra-green text-aetherra-dark' :
-                    index === 1 ? 'bg-blue-600 text-white' :
-                    index === 2 ? 'bg-purple-600 text-white' :
-                    'bg-zinc-700 text-zinc-200 hover:bg-zinc-600'
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${index === 0 ? 'bg-aetherra-green text-aetherra-dark' :
+                      index === 1 ? 'bg-blue-600 text-white' :
+                        index === 2 ? 'bg-purple-600 text-white' :
+                          'bg-zinc-700 text-zinc-200 hover:bg-zinc-600'
+                    }`}
                 >
                   #{tag}
                 </motion.button>

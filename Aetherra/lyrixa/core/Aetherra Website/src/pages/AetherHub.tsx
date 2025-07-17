@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useMemo, useState } from 'react';
+import ContributionPanel from '../components/ContributionPanel';
 import PluginCard from '../components/PluginCard';
 import PluginSearch from '../components/PluginSearch';
-import ContributionPanel from '../components/ContributionPanel';
 import pluginData from '../data/plugin_metadata.json';
 
 // Type assertion for the plugin data
@@ -21,6 +21,7 @@ interface Plugin {
   last_updated: string;
   size: string;
   features: string[];
+  is_real?: boolean;
 }
 
 const containerVariants = {
@@ -72,12 +73,12 @@ export default function AetherHub() {
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           plugin.name.toLowerCase().includes(query) ||
           plugin.description.toLowerCase().includes(query) ||
           plugin.author.toLowerCase().includes(query) ||
           plugin.tags.some(tag => tag.toLowerCase().includes(query));
-        
+
         if (!matchesSearch) return false;
       }
 
@@ -126,7 +127,7 @@ export default function AetherHub() {
   return (
     <div className="min-h-screen bg-aetherra-dark text-white">
       {/* Hero Header */}
-      <motion.section 
+      <motion.section
         className="bg-gradient-to-br from-aetherra-dark via-aetherra-gray to-aetherra-dark border-b border-aetherra-green/20 py-16"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -137,10 +138,10 @@ export default function AetherHub() {
             AetherHub Marketplace
           </h1>
           <p className="text-xl text-zinc-300 mb-8 max-w-3xl mx-auto">
-            Discover, install, and contribute to the growing ecosystem of AI-native plugins. 
+            Discover, install, and contribute to the growing ecosystem of AI-native plugins.
             Enhance your Aetherra experience with community-driven innovations.
           </p>
-          
+
           {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
             <div>
@@ -172,7 +173,7 @@ export default function AetherHub() {
       </motion.section>
 
       {/* Main Content */}
-      <motion.main 
+      <motion.main
         className="max-w-7xl mx-auto px-6 py-12"
         variants={containerVariants}
         initial="hidden"
@@ -238,7 +239,7 @@ export default function AetherHub() {
                 creativity: '🎨',
                 development: '👨‍💻'
               };
-              
+
               return (
                 <motion.button
                   key={category}
