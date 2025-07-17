@@ -118,11 +118,11 @@ export default function DocsLayout({ onClose, initialSection = 'index' }: DocsLa
       case 'index':
         return `# Welcome to Aetherra Documentation
 
-Welcome to the comprehensive documentation for **Aetherra**, the world's first AI-Native Operating System. This documentation will guide you through every aspect of using and developing with Aetherra.
+Welcome to the comprehensive documentation for **Aetherra**, an AI-Native Operating System project. This documentation will guide you through every aspect of using and developing with Aetherra.
 
 ## What is Aetherra?
 
-Aetherra is a revolutionary operating system built from the ground up to be AI-native. Unlike traditional operating systems that treat AI as an add-on, Aetherra integrates artificial intelligence into its core architecture.
+Aetherra is an AI-native operating system built from the ground up with artificial intelligence integrated into its core architecture. Unlike traditional operating systems that treat AI as an add-on, Aetherra places AI at the center of its design.
 
 ### Key Features
 

@@ -296,7 +296,7 @@ module.exports = ExamplePlugin;`}</div>
               Ready to Start Contributing?
             </h2>
             <p className="text-zinc-300 mb-6">
-              Join thousands of developers building the future of AI-native computing
+              Join our growing community of developers building the future of AI-native computing
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <motion.button

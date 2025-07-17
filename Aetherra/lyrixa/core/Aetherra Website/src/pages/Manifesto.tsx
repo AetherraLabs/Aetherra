@@ -15,7 +15,7 @@ export default function Manifesto() {
                             The Aetherra Manifesto
                         </h1>
                         <div className="text-aetherra-green font-medium">
-                            Version 4.0 | Updated: July 15, 2025 | Status: Production Ready v3.0
+                            Version 4.0 | Updated: July 15, 2025 | Status: Development v3.0
                         </div>
                     </div>
 
@@ -31,7 +31,7 @@ export default function Manifesto() {
                             </h2>
                             <p className="text-lg leading-relaxed mb-6">
                                 We stand at the threshold of the most significant paradigm shift in computing since the invention of the graphical user interface.
-                                <strong className="text-aetherra-green"> Aetherra represents the world's first AI-native programming language and cognitive computing platform</strong> —
+                                <strong className="text-aetherra-green"> Aetherra represents an AI-native programming language and cognitive computing platform</strong> —
                                 where artificial intelligence isn't an add-on feature, but the fundamental foundation of how software thinks, learns, and evolves.
                             </p>
                             <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30 mb-8">
@@ -56,7 +56,7 @@ export default function Manifesto() {
                             </h2>
                             <p className="text-lg leading-relaxed mb-6">
                                 <strong className="text-aetherra-green">Lyrixa</strong> is not just an AI assistant — she is Aetherra's consciousness made manifest.
-                                Through our revolutionary modular interface architecture, Lyrixa serves as the bridge between human creativity and machine intelligence.
+                                Through our modular interface architecture, Lyrixa serves as the bridge between human creativity and machine intelligence.
                             </p>
                             <div className="grid md:grid-cols-2 gap-6 mb-8">
                                 <div className="bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20">
@@ -85,7 +85,7 @@ export default function Manifesto() {
                             className="mb-12"
                         >
                             <h2 className="text-3xl font-bold text-aetherra-green mb-6">
-                                ⚡ Revolutionary Features: Production Ready v3.0
+                                ⚡ Advanced Features: Development v3.0
                             </h2>
                             <div className="space-y-6">
                                 <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30">
@@ -116,7 +116,7 @@ export default function Manifesto() {
                                     <h3 className="text-xl font-semibold mb-3 text-aetherra-green flex items-center gap-2">
                                         🎭 Lyrixa Personality Enhancement System
                                     </h3>
-                                    <p className="mb-4">Complete through Phase 3.3 with revolutionary emotional intelligence:</p>
+                                    <p className="mb-4">Complete through Phase 3.3 with advanced emotional intelligence:</p>
                                     <ul className="list-disc pl-6 space-y-2">
                                         <li><strong>Advanced Emotional Intelligence</strong>: Empathetic response generation (100% success, 0.72 empathy score)</li>
                                         <li><strong>Social Learning Infrastructure</strong>: Privacy-preserving community intelligence</li>
@@ -299,7 +299,7 @@ export default function Manifesto() {
                                         <li><strong>Cross-Platform AI Operating System</strong>: Multi-device consciousness with seamless AI identity</li>
                                         <li><strong>Quantum-Ready Architecture</strong>: Preparation for next-generation computing paradigms</li>
                                         <li><strong>Neural-Symbolic Integration</strong>: Hybrid reasoning systems combining neural and symbolic AI</li>
-                                        <li><strong>Enterprise-Grade Security</strong>: AI-powered threat detection and response systems</li>
+                                        <li><strong>Advanced Security</strong>: AI-powered threat detection and response systems</li>
                                     </ul>
                                 </div>
                             </div>
@@ -422,7 +422,7 @@ export default function Manifesto() {
                                     Welcome to Aetherra.
                                 </p>
                                 <p className="text-zinc-400 mt-4">
-                                    Last Updated: July 2025 | Version 4.0 | Status: Production Ready v3.0
+                                    Last Updated: July 2025 | Version 4.0 | Status: Development v3.0
                                 </p>
                                 <p className="text-zinc-400">
                                     Join us at <a href="https://aetherra.dev" className="text-aetherra-green hover:underline">aetherra.dev</a> and help shape the future of intelligent computing.

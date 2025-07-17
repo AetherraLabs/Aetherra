@@ -5,10 +5,10 @@ interface ContributionPanelProps {
 }
 
 const contributionStats = {
-  totalContributors: 1456,
-  pluginsSubmitted: 247,
-  issuesResolved: 892,
-  communityMembers: 12847
+  totalContributors: 1,
+  pluginsSubmitted: 7,
+  issuesResolved: 0,
+  communityMembers: 23
 };
 
 export default function ContributionPanel({ className = '' }: ContributionPanelProps) {
@@ -26,6 +26,12 @@ export default function ContributionPanel({ className = '' }: ContributionPanelP
         <p className="text-zinc-300 text-lg">
           Help shape the future of AI-native computing
         </p>
+        <div className="mt-4 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+          <p className="text-sm text-blue-300">
+            <strong>📍 Early Stage Project:</strong> Aetherra is a new and growing project. 
+            These numbers reflect our current authentic community size as we build something revolutionary together.
+          </p>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -110,7 +116,7 @@ export default function ContributionPanel({ className = '' }: ContributionPanelP
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-500">
-              4,521 members online
+              23 members total
             </span>
             <span className="text-blue-400 group-hover:translate-x-1 transition-transform">
               →

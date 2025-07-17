@@ -142,7 +142,7 @@ export default function Roadmap() {
 
                     <div className="text-center mb-12">
                         <p className="text-xl text-zinc-300 mb-6 max-w-4xl mx-auto">
-                            Our journey toward creating the world's first truly conscious AI ecosystem.
+                            Our journey toward creating a truly conscious AI ecosystem.
                             Track our progress and see what's coming next.
                         </p>
 

@@ -87,6 +87,16 @@ export default function JoinCommunity() {
               <div className="text-sm text-zinc-400">Active Developers</div>
             </div>
           </div>
+          
+          {/* Transparency Notice */}
+          <div className="mt-8 max-w-2xl mx-auto">
+            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+              <p className="text-sm text-blue-300 text-center">
+                <strong>🌱 Growing Community:</strong> Aetherra is a new project with an authentic, 
+                passionate community. These are our real numbers as we build something revolutionary together.
+              </p>
+            </div>
+          </div>
         </div>
       </motion.section>
 

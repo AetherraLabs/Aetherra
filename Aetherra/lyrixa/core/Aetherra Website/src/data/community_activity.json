@@ -1,9 +1,9 @@
 {
   "stats": {
-    "community_members": 47,
+    "community_members": 23,
     "discord_members": 23,
-    "github_stars": 12,
-    "active_developers": 3
+    "github_stars": 8,
+    "active_developers": 1
   },
   "trending_tags": [
     "ai-native",
@@ -76,7 +76,7 @@
     {
       "id": 5,
       "type": "platform_update",
-      "title": "Aetherra v3.0 Production Ready",
+      "title": "Aetherra v3.0 Development Release",
       "description": "Complete AI-native development platform with 400+ modules and comprehensive testing",
       "author": "aetherra-core",
       "timestamp": "2025-07-05T10:00:00Z",

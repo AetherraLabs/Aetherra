@@ -1,8 +1,8 @@
 # Welcome to Aetherra Documentation
 
-**The World's First AI-Native Operating System**
+**An AI-Native Operating System**
 
-Welcome to the comprehensive documentation for Aetherra, a revolutionary operating system built from the ground up to be AI-native. Unlike traditional operating systems that treat artificial intelligence as an add-on, Aetherra integrates AI into its core architecture, making every component intelligent and adaptive.
+Welcome to the comprehensive documentation for Aetherra, an AI-native operating system built from the ground up with artificial intelligence at its core. Unlike traditional operating systems that treat AI as an add-on, Aetherra integrates AI into its core architecture, making every component intelligent and adaptive.
 
 ## What Makes Aetherra Special?
 
