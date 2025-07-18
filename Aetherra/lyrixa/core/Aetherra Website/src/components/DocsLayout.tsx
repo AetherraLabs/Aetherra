@@ -1036,8 +1036,8 @@ Use the AI Assistant (🤖) for interactive help with any Aetherra topic.`;
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full text-left p-3 rounded-lg transition-colors ${activeSection === section.id
-                      ? 'bg-green-400/20 text-green-400 border border-green-400/30'
-                      : 'text-gray-300 hover:bg-gray-700'
+                    ? 'bg-green-400/20 text-green-400 border border-green-400/30'
+                    : 'text-gray-300 hover:bg-gray-700'
                     }`}
                 >
                   <div className="flex items-center space-x-3">
@@ -1057,8 +1057,8 @@ Use the AI Assistant (🤖) for interactive help with any Aetherra topic.`;
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full p-2 rounded text-center transition-colors ${activeSection === section.id
-                      ? 'bg-green-400/20 text-green-400'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                    ? 'bg-green-400/20 text-green-400'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
                     }`}
                   title={section.title}
                 >
@@ -1102,8 +1102,8 @@ Use the AI Assistant (🤖) for interactive help with any Aetherra topic.`;
             <button
               onClick={() => setShowAssistant(!showAssistant)}
               className={`px-3 py-2 rounded-lg transition-colors ${showAssistant
-                  ? 'bg-green-400/20 text-green-400 border border-green-400/30'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                ? 'bg-green-400/20 text-green-400 border border-green-400/30'
+                : 'text-gray-400 hover:text-white hover:bg-gray-700'
                 }`}
               title="Toggle AI Assistant"
             >

@@ -59,7 +59,7 @@ export default function AetherHubGallery({ onInstallPlugin, onViewDetails }: Aet
         category: 'Performance',
         tags: ['optimization', 'neural', 'performance', 'memory'],
         rating: 4.9,
-        downloads: 15420,
+        downloads: 45,
         lastUpdated: new Date(Date.now() - 86400000 * 2), // 2 days ago
         featured: true,
         verified: true,
@@ -80,7 +80,7 @@ export default function AetherHubGallery({ onInstallPlugin, onViewDetails }: Aet
         category: 'Visualization',
         tags: ['visualization', 'graphics', 'neural', 'ui'],
         rating: 4.7,
-        downloads: 8934,
+        downloads: 23,
         lastUpdated: new Date(Date.now() - 86400000 * 5), // 5 days ago
         featured: true,
         verified: true,
@@ -100,7 +100,7 @@ export default function AetherHubGallery({ onInstallPlugin, onViewDetails }: Aet
         category: 'Research',
         tags: ['quantum', 'experimental', 'research', 'hybrid'],
         rating: 4.2,
-        downloads: 1247,
+        downloads: 12,
         lastUpdated: new Date(Date.now() - 86400000 * 1), // 1 day ago
         featured: false,
         verified: false,
@@ -121,7 +121,7 @@ export default function AetherHubGallery({ onInstallPlugin, onViewDetails }: Aet
         category: 'AI Enhancement',
         tags: ['emotion', 'sentiment', 'ai', 'nlp'],
         rating: 4.8,
-        downloads: 12890,
+        downloads: 31,
         lastUpdated: new Date(Date.now() - 86400000 * 3), // 3 days ago
         featured: true,
         verified: true,
@@ -141,7 +141,7 @@ export default function AetherHubGallery({ onInstallPlugin, onViewDetails }: Aet
         category: 'Development',
         tags: ['data', 'pipeline', 'visualization', 'debug'],
         rating: 4.5,
-        downloads: 6543,
+        downloads: 18,
         lastUpdated: new Date(Date.now() - 86400000 * 7), // 1 week ago
         featured: false,
         verified: true,
@@ -161,7 +161,7 @@ export default function AetherHubGallery({ onInstallPlugin, onViewDetails }: Aet
         category: 'Security',
         tags: ['security', 'monitoring', 'threat-detection', 'protection'],
         rating: 4.6,
-        downloads: 9876,
+        downloads: 26,
         lastUpdated: new Date(Date.now() - 86400000 * 4), // 4 days ago
         featured: false,
         verified: true,

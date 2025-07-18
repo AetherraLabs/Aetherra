@@ -28,7 +28,7 @@ export default function ContributionPanel({ className = '' }: ContributionPanelP
         </p>
         <div className="mt-4 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
           <p className="text-sm text-blue-300">
-            <strong>📍 Early Stage Project:</strong> Aetherra is a new and growing project. 
+            <strong>📍 Early Stage Project:</strong> Aetherra is a new and growing project.
             These numbers reflect our current authentic community size as we build something revolutionary together.
           </p>
         </div>

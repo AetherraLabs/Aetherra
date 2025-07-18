@@ -123,20 +123,20 @@ export default function CommunityHub() {
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
               <div className="text-center">
-                <div className="text-2xl font-bold text-aetherra-green">150+</div>
+                <div className="text-2xl font-bold text-aetherra-green">7</div>
                 <div className="text-sm text-gray-400">Plugins</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-400">23k+</div>
-                <div className="text-sm text-gray-400">Developers</div>
+                <div className="text-2xl font-bold text-purple-400">1</div>
+                <div className="text-sm text-gray-400">Developer</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">500+</div>
-                <div className="text-sm text-gray-400">Contributors</div>
+                <div className="text-2xl font-bold text-blue-400">1</div>
+                <div className="text-sm text-gray-400">Contributor</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400">89%</div>
-                <div className="text-sm text-gray-400">Satisfaction</div>
+                <div className="text-2xl font-bold text-yellow-400">New</div>
+                <div className="text-sm text-gray-400">Project</div>
               </div>
             </div>
           </motion.div>

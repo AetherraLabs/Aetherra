@@ -225,9 +225,9 @@ export default function Roadmap() {
                             <div key={index} className="relative">
                                 <div className="flex items-start space-x-4">
                                     <div className={`flex-shrink-0 w-4 h-4 mt-2 rounded-full ${phase.color === 'green' ? 'bg-green-500' :
-                                            phase.color === 'blue' ? 'bg-blue-500' :
-                                                phase.color === 'purple' ? 'bg-purple-500' :
-                                                    'bg-yellow-500'
+                                        phase.color === 'blue' ? 'bg-blue-500' :
+                                            phase.color === 'purple' ? 'bg-purple-500' :
+                                                'bg-yellow-500'
                                         }`} />
                                     <div className="flex-1 bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20">
                                         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
@@ -235,9 +235,9 @@ export default function Roadmap() {
                                             <div className="flex items-center space-x-4">
                                                 <span className="text-zinc-400">{phase.timeframe}</span>
                                                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${phase.status === 'In Progress' ? 'bg-yellow-900 text-yellow-300' :
-                                                        phase.status === 'Planned' ? 'bg-blue-900 text-blue-300' :
-                                                            phase.status === 'Future' ? 'bg-purple-900 text-purple-300' :
-                                                                'bg-zinc-800 text-zinc-300'
+                                                    phase.status === 'Planned' ? 'bg-blue-900 text-blue-300' :
+                                                        phase.status === 'Future' ? 'bg-purple-900 text-purple-300' :
+                                                            'bg-zinc-800 text-zinc-300'
                                                     }`}>
                                                     {phase.status}
                                                 </span>

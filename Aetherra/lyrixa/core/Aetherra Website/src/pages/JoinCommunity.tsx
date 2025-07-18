@@ -87,12 +87,12 @@ export default function JoinCommunity() {
               <div className="text-sm text-zinc-400">Active Developers</div>
             </div>
           </div>
-          
+
           {/* Transparency Notice */}
           <div className="mt-8 max-w-2xl mx-auto">
             <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
               <p className="text-sm text-blue-300 text-center">
-                <strong>🌱 Growing Community:</strong> Aetherra is a new project with an authentic, 
+                <strong>🌱 Growing Community:</strong> Aetherra is a new project with an authentic,
                 passionate community. These are our real numbers as we build something revolutionary together.
               </p>
             </div>
@@ -206,9 +206,9 @@ export default function JoinCommunity() {
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
                         <span className={`px-2 py-1 rounded text-xs ${activity.type === 'plugin_release' ? 'bg-green-900 text-green-200' :
-                            activity.type === 'community_contribution' ? 'bg-blue-900 text-blue-200' :
-                              activity.type === 'discussion' ? 'bg-purple-900 text-purple-200' :
-                                'bg-zinc-900 text-zinc-200'
+                          activity.type === 'community_contribution' ? 'bg-blue-900 text-blue-200' :
+                            activity.type === 'discussion' ? 'bg-purple-900 text-purple-200' :
+                              'bg-zinc-900 text-zinc-200'
                           }`}>
                           {activity.type.replace('_', ' ')}
                         </span>
@@ -244,9 +244,9 @@ export default function JoinCommunity() {
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
                         <span className={`px-2 py-1 rounded text-xs ${activity.type === 'plugin_release' ? 'bg-green-900 text-green-200' :
-                            activity.type === 'community_contribution' ? 'bg-blue-900 text-blue-200' :
-                              activity.type === 'discussion' ? 'bg-purple-900 text-purple-200' :
-                                'bg-zinc-900 text-zinc-200'
+                          activity.type === 'community_contribution' ? 'bg-blue-900 text-blue-200' :
+                            activity.type === 'discussion' ? 'bg-purple-900 text-purple-200' :
+                              'bg-zinc-900 text-zinc-200'
                           }`}>
                           {activity.type.replace('_', ' ')}
                         </span>
@@ -284,9 +284,9 @@ export default function JoinCommunity() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className={`px-4 py-2 rounded-lg text-sm transition-colors ${index === 0 ? 'bg-aetherra-green text-aetherra-dark' :
-                      index === 1 ? 'bg-blue-600 text-white' :
-                        index === 2 ? 'bg-purple-600 text-white' :
-                          'bg-zinc-700 text-zinc-200 hover:bg-zinc-600'
+                    index === 1 ? 'bg-blue-600 text-white' :
+                      index === 2 ? 'bg-purple-600 text-white' :
+                        'bg-zinc-700 text-zinc-200 hover:bg-zinc-600'
                     }`}
                 >
                   #{tag}
