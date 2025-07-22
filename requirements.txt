@@ -1,166 +1,88 @@
-# aetherra v2.0.0 - AI-Native Programming Language Requirements
-# Production-ready dependencies for the world's first AI-native language
+# AETHERRA LYRIXA - CURRENT REQUIREMENTS (Updated July 2025)
+# Dependencies for the Lyrixa AI Assistant and Aetherra Language
 
 # === CORE REQUIREMENTS (ALWAYS NEEDED) ===
-lark>=1.1.7                      # Grammar parser for .aether files (used in multiple parsers)
-numpy>=1.24.0                    # Fast numerical operations (used in engine components)
-requests>=2.28.0                 # HTTP client for plugin registry and webhook functionality
+# Core libraries used throughout the system
+requests>=2.28.0                 # HTTP client for API calls and plugin registry
+psutil>=5.9.0                    # System resource monitoring and performance metrics
+pyyaml>=6.0                      # YAML configuration file processing
+typing-extensions>=4.0.0         # Enhanced typing support
 
-# === SYSTEM MONITORING ===
-psutil>=5.9.0                    # System resource monitoring (used in performance modules)
+# === GUI FRAMEWORK (REQUIRED FOR MAIN INTERFACE) ===
+# Lyrixa uses PySide6 for the 11-tab hybrid interface
+PySide6>=6.4.0                   # Qt6 framework for desktop GUI
+PySide6-Addons>=6.4.0           # Additional Qt components (WebEngine, etc.)
 
-# === API SERVER REQUIREMENTS (for REST API functionality) ===
-fastapi>=0.104.0                 # Modern, fast web framework for building APIs
-uvicorn[standard]>=0.24.0        # ASGI server for FastAPI applications
-pydantic>=2.5.0                  # Data validation and settings management
-python-multipart>=0.0.6          # Multipart form data parser for FastAPI
+# === API SERVER (REQUIRED FOR SELF-IMPROVEMENT) ===
+# FastAPI backend for self-improvement dashboard and plugin communication
+fastapi>=0.104.0                 # Modern async web framework
+uvicorn[standard]>=0.24.0        # ASGI server for FastAPI
+pydantic>=2.5.0                  # Data validation and settings
+python-multipart>=0.0.6          # File upload support
 
-# === GUI FRAMEWORKS (for desktop applications) ===
-PySide6>=6.4.0                   # Primary Qt backend for GUI apps (cross-platform)
-# PyQt6>=6.5.0                   # Alternative Qt backend
+# === AI PROVIDERS (AT LEAST ONE REQUIRED) ===
+# Choose based on your preference - OpenAI recommended for best experience
+openai>=1.0.0,<2.0.0            # OpenAI GPT models (recommended)
+anthropic>=0.7.0                 # Claude AI models (optional)
 
-# === DEVELOPMENT AND TESTING ===
-pytest>=7.0.0                    # Testing framework (used in test suite)
-# pytest-cov>=4.0.0              # Test coverage reports
+# === OPTIONAL ENHANCEMENTS ===
+# Uncomment for additional features
+python-dotenv>=1.0.0            # Environment variable management (.env file support)
+# ollama>=0.1.0                  # Local AI models (privacy-focused)
+# streamlit>=1.28.0              # Web-based playground interface
+
+# === DEVELOPMENT TOOLS (OPTIONAL) ===
+# Uncomment for development work
+# pytest>=7.0.0                  # Testing framework
 # black>=22.0.0                  # Code formatter
-# mypy>=1.0.0                    # Static type checker
-
-# === AI & LLM PROVIDERS (OPTIONAL - Install as needed) ===
-# At least ONE AI provider is recommended for full functionality
-openai>=1.0.0,<2.0.0            # OpenAI GPT models (used in ai_runtime.py)
-anthropic>=0.7.0                 # Claude AI integration (optional but recommended)
-# google-generativeai>=0.3.0    # Gemini AI integration
-
-# === LOCAL AI SUPPORT (OPTIONAL) ===
-# ollama>=0.1.0                  # Local model server (Mistral, LLaMA, etc.)
-# llama-cpp-python>=0.2.0       # Direct GGUF model loading
-
-# === WEB INTERFACE (OPTIONAL) ===
-# streamlit>=1.28.0              # Interactive playground interface (src/aetherra/ui/playground)
-
-# === ADDITIONAL UTILITIES ===
-pyyaml>=6.0                      # YAML file processing (used in agent configurations)
-typing-extensions>=4.0.0         # Enhanced typing support for older Python versions
-
-# === PLUGIN SYSTEM (OPTIONAL) ===
-# requests>=2.31.0               # HTTP client for plugin registry
-
-# === ENHANCED FEATURES (OPTIONAL BUT RECOMMENDED) ===
-# Uncomment any of these for enhanced functionality:
-
-# === TEXT PROCESSING ===
-# markdown>=3.4.0                # Markdown rendering for chat enhancements
-
-# === GUI FRAMEWORKS (for advanced UI) ===
-# PySide6>=6.5.0                 # Primary Qt backend for GUI apps
-# PyQt6>=6.5.0                   # Alternative Qt backend
-
-# === PERFORMANCE & ANALYTICS ===
-# numpy>=1.24.0                  # Fast numerical operations (moved to core requirements)
-# scipy>=1.9.0                   # Scientific computing
-# memory-profiler>=0.61.0        # Memory usage analysis
-
-# === MACHINE LEARNING (for advanced AI features) ===
-# transformers>=4.30.0           # Hugging Face transformers
-# torch>=2.0.0                   # PyTorch for local AI models
-# sentence-transformers>=2.2.0   # Semantic embeddings
-
-# === VECTOR DATABASES (for semantic memory) ===
-# chromadb>=0.4.0                # Vector database for AI memory
-# faiss-cpu>=1.7.0               # Facebook AI similarity search
-# pinecone-client>=3.0.0         # Pinecone vector database
-
-# === VISUALIZATION ===
-# matplotlib>=3.7.0              # Plotting and visualization
-# networkx>=3.1.0                # Graph algorithms for neural networks
-
-# === NATURAL LANGUAGE PROCESSING ===
-# spacy>=3.6.0                   # Advanced NLP capabilities
-# textblob>=0.17.0               # Simple NLP and sentiment analysis
-
-# === CODE INTELLIGENCE ===
-# pygments>=2.15.0               # Syntax highlighting
-# tree-sitter>=0.20.0            # Advanced code parsing
-
-# === UTILITIES (OPTIONAL) ===
-# colorama>=0.4.6                # Colored terminal output
-# rich>=13.0.0                   # Enhanced terminal formatting
-# loguru>=0.7.0                  # Advanced logging
-
-# === AUDIO & SPEECH (EXPERIMENTAL) ===
-# openai-whisper>=20230314       # Speech recognition (large download)
-# pyttsx3>=2.90                  # Text-to-speech
-# speechrecognition>=3.10.0      # Speech input
-
-# === HIGH-PERFORMANCE STORAGE ===
-# redis>=4.5.0                   # High-performance caching
-# weaviate-client>=3.0.0         # Weaviate vector database
+# mypy>=1.0.0                    # Type checker
 
 # ===============================================================================
 # INSTALLATION GUIDE:
 # ===============================================================================
 #
-# MINIMAL INSTALL (Core functionality only):
-#   pip install lark numpy requests psutil
-#
-# RECOMMENDED INSTALL (With AI provider and GUI):
-#   pip install lark numpy requests psutil openai PySide6
-#
-# API SERVER INSTALL (For REST API functionality):
-#   pip install lark numpy requests psutil fastapi uvicorn pydantic python-multipart
-#
-# DEVELOPMENT INSTALL (With testing framework):
-#   pip install lark numpy requests psutil pytest
-#
-# FULL INSTALL (All features):
+# QUICK START (Recommended):
 #   pip install -r requirements.txt
 #
-# DEVELOPMENT INSTALL:
-#   pip install -r requirements_dev.txt
+# MINIMAL INSTALL (Core functionality only):
+#   pip install requests psutil pyyaml typing-extensions PySide6 fastapi uvicorn pydantic python-multipart openai
+#
+# DEVELOPMENT INSTALL (With testing tools):
+#   pip install -r requirements.txt pytest black mypy
 #
 # ===============================================================================
-# DEPENDENCIES EXPLAINED:
+# POST-INSTALLATION SETUP:
 # ===============================================================================
 #
-# REQUIRED:
-# - lark: Parses .aether files using grammar definitions
-# - numpy: Fast numerical operations for engine components
-# - requests: HTTP client for plugin registry and webhooks
-# - psutil: System monitoring for performance optimization
+# 1. Set up API keys (create .env file in project root):
+#    OPENAI_API_KEY=your_openai_key_here
+#    ANTHROPIC_API_KEY=your_anthropic_key_here  # optional
 #
-# API SERVER:
-# - fastapi: Modern web framework for REST API
-# - uvicorn: ASGI server for FastAPI
-# - pydantic: Data validation and serialization
-# - python-multipart: Multipart form data support
+# 2. Launch Lyrixa:
+#    python Aetherra/lyrixa/launcher.py
 #
-# GUI APPLICATIONS:
-# - PySide6: Cross-platform Qt-based GUI framework
-#
-# AI PROVIDERS (Choose at least one):
-# - openai: GPT-3.5/GPT-4 integration via OpenAI API
-# - anthropic: Claude AI integration via Anthropic API
-# - google-generativeai: Gemini AI integration via Google API
-# - ollama: Local model server for privacy-focused AI
-# - llama-cpp-python: Direct GGUF model loading
-#
-# OPTIONAL FEATURES:
-# - streamlit: Web-based playground interface
-# - pyyaml: YAML configuration file support
-# - typing-extensions: Enhanced typing for older Python versions
-# - pytest: Testing framework for development
-# - anthropic: Claude AI integration
-# - PySide6: Advanced GUI applications
+# 3. Alternative launchers:
+#    python tools/quickstart.py           # Menu-driven launcher
+#    python Aetherra/lyrixa/gui/unified/main.py  # Unified GUI launcher
 #
 # ===============================================================================
-# ALTERNATIVE REQUIREMENT FILES:
+# DEPENDENCY NOTES:
 # ===============================================================================
 #
-# For specific use cases, see these alternative requirement files:
-# - config/requirements/requirements_minimal.txt: Absolute minimum dependencies
-# - config/requirements/requirements_enhanced.txt: Full feature set
-# - config/requirements/requirements_dev.txt: Development tools
-# - Aetherra/api/requirements.txt: API server only
-# - config/requirements/playground_requirements.txt: Playground interface
+# REQUIRED FOR MAIN INTERFACE:
+# - PySide6: Provides the 11-tab hybrid GUI interface
+# - PySide6-Addons: Needed for web engine and advanced Qt components
+# - FastAPI/Uvicorn: Powers the self-improvement API dashboard
+# - OpenAI or Anthropic: At least one AI provider is required
+#
+# CORE LIBRARIES:
+# - requests: HTTP client for external API calls
+# - psutil: System monitoring and performance metrics
+# - pyyaml: Configuration file processing
+# - pydantic: Data validation throughout the system
+#
+# OPTIONAL BUT RECOMMENDED:
+# - python-dotenv: Automatic .env file loading for API keys
+# - ollama: Local AI models for privacy-focused usage
 #
 # ===============================================================================
