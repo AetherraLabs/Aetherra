@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aetherra Neural Interface - Lyrixa Cognitive OS</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Cyberpunk Neural Interface Styles */
+        :root {
+            --neural-green: #00ff88;
+            --pure-black: #0a0a0a;
+            --soft-gray: #1a1a1a;
+            --medium-gray: #2a2a2a;
+            --text-gray: #cccccc;
+            --accent-blue: #00ccff;
+            --warning-amber: #ffaa00;
+            --danger-red: #ff4444;
+            --glow-intensity: 0.8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--pure-black);
+            color: var(--text-gray);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Aura Background Effect */
+        .aura-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%,
+                    rgba(0, 255, 136, 0.03) 0%,
+                    rgba(0, 255, 136, 0.01) 30%,
+                    transparent 60%);
+            animation: auraPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes auraPulse {
+
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: scale(1.1);
+            }
+        }
+
+        /* Main Interface Layout */
+        .neural-interface {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+            gap: 1px;
+            background: var(--pure-black);
+        }
+
+        /* Header */
+        .neural-header {
+            grid-column: 1 / -1;
+            background: var(--soft-gray);
+            border-bottom: 1px solid var(--neural-green);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+        }
+
+        .neural-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--neural-green);
+        }
+
+        .neural-logo i {
+            font-size: 24px;
+            animation: logoGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes logoGlow {
+
+            0%,
+            100% {
+                text-shadow: 0 0 5px var(--neural-green);
+            }
+
+            50% {
+                text-shadow: 0 0 15px var(--neural-green), 0 0 25px var(--neural-green);
+            }
+        }
+
+        .system-vitals {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+        }
+
+        .vital-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .vital-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--neural-green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Model Selector */
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--medium-gray);
+            border: 1px solid var(--neural-green);
+            border-radius: 4px;
+            padding: 8px 12px;
+        }
+
+        .model-selector label {
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+        .model-selector select {
+            background: var(--pure-black);
+            border: 1px solid var(--neural-green);
+            border-radius: 3px;
+            padding: 4px 8px;
+            color: var(--neural-green);
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .model-selector select:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
+        }
+
+        .model-status {
+            font-size: 10px;
+            color: var(--accent-blue);
+        }
+
+        /* Side Panels */
+        .left-panel,
+        .right-panel {
+            background: var(--soft-gray);
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            margin: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            background: var(--medium-gray);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--neural-green);
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        /* Core Panel */
+        .core-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .metric-value {
+            color: var(--neural-green);
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--medium-gray);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neural-green), var(--accent-blue));
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        /* Memory Graph */
+        .memory-graph {
+            background: var(--pure-black);
+            border: 1px solid var(--neural-green);
+            border-radius: 4px;
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .graph-node {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--neural-green);
+            box-shadow: 0 0 10px var(--neural-green);
+            animation: nodeGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes nodeGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 5px var(--neural-green);
+            }
+
+            50% {
+                box-shadow: 0 0 15px var(--neural-green), 0 0 25px var(--neural-green);
+            }
+        }
+
+        /* Central Display */
+        .central-display {
+            background: var(--soft-gray);
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .display-tabs {
+            display: flex;
+            background: var(--medium-gray);
+            border-bottom: 1px solid var(--neural-green);
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: var(--medium-gray);
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border-right: 1px solid var(--soft-gray);
+        }
+
+        .tab.active {
+            background: var(--neural-green);
+            color: var(--pure-black);
+            font-weight: 500;
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--soft-gray);
+            color: var(--neural-green);
+        }
+
+        .tab-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            scroll-behavior: smooth;
+            max-height: calc(100vh - 200px);
+        }
+
+        .message {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            background: var(--medium-gray);
+            border-left: 3px solid var(--neural-green);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: var(--neural-green);
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--medium-gray);
+            border: 1px solid var(--neural-green);
+            border-radius: 4px;
+            padding: 12px;
+            color: var(--text-gray);
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .send-button {
+            background: var(--neural-green);
+            color: var(--pure-black);
+            border: none;
+            border-radius: 4px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .send-button:hover {
+            background: var(--accent-blue);
+            box-shadow: 0 0 15px rgba(0, 204, 255, 0.3);
+        }
+
+        /* Command Palette */
+        .command-palette {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--soft-gray);
+            border: 2px solid var(--neural-green);
+            border-radius: 8px;
+            width: 500px;
+            max-height: 400px;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.2);
+        }
+
+        .command-palette.active {
+            display: flex;
+        }
+
+        .command-input {
+            background: var(--pure-black);
+            border: none;
+            padding: 16px 20px;
+            color: var(--neural-green);
+            font-family: inherit;
+            font-size: 16px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .command-input:focus {
+            outline: none;
+        }
+
+        .command-suggestions {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+
+        .command-suggestion {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--medium-gray);
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .command-suggestion:hover,
+        .command-suggestion.selected {
+            background: var(--neural-green);
+            color: var(--pure-black);
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.8);
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .neural-interface {
+                grid-template-columns: 250px 1fr 250px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .neural-interface {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 1fr;
+            }
+
+            .left-panel,
+            .right-panel {
+                display: none;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--soft-gray);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--neural-green);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--medium-gray);
+            border-radius: 50%;
+            border-top-color: var(--neural-green);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="aura-background"></div>
+
+    <!-- Overlay for command palette -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Command Palette -->
+    <div class="command-palette" id="commandPalette">
+        <input type="text" class="command-input" id="commandInput" placeholder="Enter command...">
+        <div class="command-suggestions" id="commandSuggestions">
+            <div class="command-suggestion">memory.search <span style="color: #666;">- Search memory contents</span>
+            </div>
+            <div class="command-suggestion">agent.status <span style="color: #666;">- Show agent status</span></div>
+            <div class="command-suggestion">system.diagnostics <span style="color: #666;">- Run system
+                    diagnostics</span></div>
+            <div class="command-suggestion">reflection.analyze <span style="color: #666;">- Analyze recent
+                    reflections</span></div>
+        </div>
+    </div>
+
+    <div class="neural-interface">
+        <!-- Header -->
+        <header class="neural-header">
+            <div class="neural-logo">
+                <i class="fas fa-brain"></i>
+                <span>AETHERRA NEURAL INTERFACE</span>
+                <span style="font-size: 12px; color: #666; margin-left: 10px;">Lyrixa Cognitive OS v6.0</span>
+            </div>
+
+            <div class="model-selector">
+                <label for="modelSelect">AI Model:</label>
+                <select id="modelSelect">
+                    <option value="mistral">Mistral (Local)</option>
+                    <option value="llama3.2:3b">Llama 3.2 3B (Local)</option>
+                    <option value="llama3">Llama 3 (Local)</option>
+                    <option value="gpt-4o">GPT-4o (Cloud)</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Cloud)</option>
+                    <option value="claude-3-sonnet">Claude 3 Sonnet (Cloud)</option>
+                </select>
+                <span class="model-status" id="modelStatus">Loading...</span>
+            </div>
+
+            <div class="system-vitals">
+                <div class="vital-indicator">
+                    <div class="vital-dot"></div>
+                    <span>Core Active</span>
+                </div>
+                <div class="vital-indicator">
+                    <div class="vital-dot" style="background: #00ccff;"></div>
+                    <span>Memory Online</span>
+                </div>
+                <div class="vital-indicator">
+                    <div class="vital-dot" style="background: #ffaa00;"></div>
+                    <span>Learning Mode</span>
+                </div>
+                <div class="vital-indicator">
+                    <span id="systemTime">--:--:--</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Left Panel - Core Metrics -->
+        <aside class="left-panel">
+            <div class="panel-header">
+                <i class="fas fa-microchip"></i>
+                <span>LYRIXA CORE</span>
+            </div>
+            <div class="panel-content">
+                <div class="core-metrics">
+                    <div class="metric">
+                        <span>Confidence</span>
+                        <span class="metric-value" id="confidence">87.2%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 87.2%"></div>
+                    </div>
+
+                    <div class="metric">
+                        <span>Curiosity</span>
+                        <span class="metric-value" id="curiosity">64.8%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 64.8%"></div>
+                    </div>
+
+                    <div class="metric">
+                        <span>Activity</span>
+                        <span class="metric-value" id="activity">78.5%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 78.5%"></div>
+                    </div>
+
+                    <div class="metric">
+                        <span>Memory Load</span>
+                        <span class="metric-value" id="memoryLoad">45.7%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 45.7%"></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h4 style="color: var(--neural-green); margin-bottom: 10px;">Current Goals</h4>
+                    <ul style="list-style: none; font-size: 12px;" id="currentGoals">
+                        <li style="padding: 4px 0;">→ Implement web-based GUI</li>
+                        <li style="padding: 4px 0;">→ Optimize memory retrieval</li>
+                        <li style="padding: 4px 0;">→ Enhance NL understanding</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Central Display -->
+        <main class="central-display">
+            <div class="display-tabs">
+                <button class="tab active" data-tab="chat">Neural Chat</button>
+                <button class="tab" data-tab="memory">Memory Graph</button>
+                <button class="tab" data-tab="insights">Insight Stream</button>
+                <button class="tab" data-tab="agents">Agent Management</button>
+            </div>
+
+            <!-- Chat Tab -->
+            <div class="tab-content">
+                <div class="tab-panel active" id="chat">
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message">
+                                <div class="message-header">
+                                    <span>Lyrixa</span>
+                                    <span id="timestamp1">14:32:18</span>
+                                </div>
+                                <div>🧠 Neural interface initialized successfully. All cognitive systems are online and
+                                    ready for interaction.</div>
+                            </div>
+                            <div class="message">
+                                <div class="message-header">
+                                    <span>System</span>
+                                    <span id="timestamp2">14:32:19</span>
+                                </div>
+                                <div>✅ Web-based GUI architecture implemented. Press <strong>Ctrl+K</strong> for command
+                                    palette.</div>
+                            </div>
+                        </div>
+                        <div class="chat-input-container">
+                            <input type="text" class="chat-input" id="chatInput"
+                                placeholder="Enter your message or command...">
+                            <button class="send-button" id="sendButton">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Memory Graph Tab -->
+                <div class="tab-panel" id="memory">
+                    <h3 style="color: var(--neural-green); margin-bottom: 20px;">
+                        <i class="fas fa-project-diagram"></i> FractalMesh Memory Graph
+                    </h3>
+                    <div class="memory-graph" id="memoryGraph">
+                        <!-- Memory nodes will be dynamically generated -->
+                    </div>
+                    <div style="margin-top: 20px; font-size: 14px;">
+                        <div style="margin-bottom: 10px;">
+                            <strong>Total Nodes:</strong> <span style="color: var(--neural-green);">1,247</span>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>Active Connections:</strong> <span style="color: var(--neural-green);">3,891</span>
+                        </div>
+                        <div>
+                            <strong>Recent Memories:</strong> <span style="color: var(--neural-green);">23</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights Tab -->
+                <div class="tab-panel" id="insights">
+                    <h3 style="color: var(--neural-green); margin-bottom: 20px;">
+                        <i class="fas fa-lightbulb"></i> Insight Stream
+                    </h3>
+                    <div id="insightStream">
+                        <div class="message">
+                            <div class="message-header">
+                                <span>Reflection</span>
+                                <span>14:30:45</span>
+                            </div>
+                            <div>User prefers web-based interfaces over desktop applications. This aligns with modern
+                                development trends and cross-platform compatibility needs.</div>
+                        </div>
+                        <div class="message">
+                            <div class="message-header">
+                                <span>Pattern Recognition</span>
+                                <span>14:28:12</span>
+                            </div>
+                            <div>Strong correlation detected between aesthetic feedback and interface adoption rates.
+                                Visual appeal significantly impacts user engagement.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agents Tab -->
+                <div class="tab-panel" id="agents">
+                    <h3 style="color: var(--neural-green); margin-bottom: 20px;">
+                        <i class="fas fa-users"></i> Agent Management
+                    </h3>
+                    <div class="core-metrics">
+                        <div class="metric">
+                            <span>🧠 LyrixaCore</span>
+                            <span class="metric-value">Active (45.2%)</span>
+                        </div>
+                        <div class="metric">
+                            <span>💾 MemoryEngine</span>
+                            <span class="metric-value">Active (23.7%)</span>
+                        </div>
+                        <div class="metric">
+                            <span>🎭 PersonalityEngine</span>
+                            <span class="metric-value">Idle (8.1%)</span>
+                        </div>
+                        <div class="metric">
+                            <span>🔍 ReflectionSystem</span>
+                            <span class="metric-value">Active (12.4%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Panel - System Info -->
+        <aside class="right-panel">
+            <div class="panel-header">
+                <i class="fas fa-chart-line"></i>
+                <span>SYSTEM ANALYTICS</span>
+            </div>
+            <div class="panel-content">
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--neural-green); margin-bottom: 10px;">Performance</h4>
+                    <div class="metric">
+                        <span>CPU</span>
+                        <span class="metric-value">23.4%</span>
+                    </div>
+                    <div class="metric">
+                        <span>Memory</span>
+                        <span class="metric-value">412 MB</span>
+                    </div>
+                    <div class="metric">
+                        <span>Network</span>
+                        <span class="metric-value">Connected</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: var(--neural-green); margin-bottom: 10px;">Cognitive Load</h4>
+                    <div class="memory-graph" style="height: 120px;" id="cognitiveGraph">
+                        <!-- Cognitive load visualization -->
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="color: var(--neural-green); margin-bottom: 10px;">Recent Activity</h4>
+                    <div style="font-size: 12px;">
+                        <div style="padding: 4px 0; color: #999;">14:32 - GUI interface loaded</div>
+                        <div style="padding: 4px 0; color: #999;">14:31 - Memory system initialized</div>
+                        <div style="padding: 4px 0; color: #999;">14:30 - WebSocket connected</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+    <script>
+        // Neural Interface JavaScript
+        class AetherraInterface {
+            constructor() {
+                this.socket = io();
+                this.initializeInterface();
+                this.initializeSocket();
+                this.startAnimations();
+            }
+
+            initializeInterface() {
+                // Tab switching
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        const tabId = e.target.getAttribute('data-tab');
+                        this.switchTab(tabId);
+                    });
+                });
+
+                // Command palette
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 'k') {
+                        e.preventDefault();
+                        this.toggleCommandPalette();
+                    }
+                    if (e.key === 'Escape') {
+                        this.hideCommandPalette();
+                    }
+                });
+
+                // Chat functionality
+                const chatInput = document.getElementById('chatInput');
+                const sendButton = document.getElementById('sendButton');
+
+                sendButton.addEventListener('click', () => this.sendMessage());
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+
+                // Command palette input
+                document.getElementById('commandInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.executeCommand(e.target.value);
+                    }
+                });
+
+                // Overlay click
+                document.getElementById('overlay').addEventListener('click', () => {
+                    this.hideCommandPalette();
+                });
+
+                // Update system time
+                this.updateSystemTime();
+                setInterval(() => this.updateSystemTime(), 1000);
+            }
+
+            initializeSocket() {
+                this.socket.on('connect', () => {
+                    console.log('Connected to Aetherra Neural Interface');
+                    this.addSystemMessage('🌐 Connected to neural interface server');
+                    // Request available models on connect
+                    this.socket.emit('get_available_models');
+                });
+
+                this.socket.on('disconnect', () => {
+                    console.log('Disconnected from server');
+                    this.addSystemMessage('⚠️ Connection lost - attempting reconnection...');
+                });
+
+                this.socket.on('command_result', (data) => {
+                    this.addSystemMessage(`💬 ${data.result}`);
+                });
+
+                this.socket.on('aura_update', (data) => {
+                    this.updateAura(data);
+                });
+
+                this.socket.on('system_update', (data) => {
+                    this.updateSystemMetrics(data);
+                });
+
+                // Handle real message responses from Lyrixa
+                this.socket.on('message_response', (data) => {
+                    this.addLyrixaMessage(data.response);
+                });
+
+                // Handle model switching responses
+                this.socket.on('model_switched', (data) => {
+                    if (data.success) {
+                        this.addSystemMessage(`🔄 Switched to model: ${data.model_name}`);
+                        document.getElementById('modelStatus').textContent = `Active: ${data.model_name}`;
+                    } else {
+                        this.addSystemMessage(`❌ Failed to switch model: ${data.message}`);
+                    }
+                });
+
+                // Handle available models response
+                this.socket.on('available_models', (data) => {
+                    this.updateModelSelector(data);
+                });
+            }
+
+            switchTab(tabId) {
+                // Update tab buttons
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+
+                // Update tab panels
+                document.querySelectorAll('.tab-panel').forEach(panel => {
+                    panel.classList.remove('active');
+                });
+                document.getElementById(tabId).classList.add('active');
+
+                // Initialize tab-specific content
+                if (tabId === 'memory') {
+                    this.initializeMemoryGraph();
+                } else if (tabId === 'insights') {
+                    this.updateInsightStream();
+                }
+            }
+
+            toggleCommandPalette() {
+                const palette = document.getElementById('commandPalette');
+                const overlay = document.getElementById('overlay');
+
+                if (palette.classList.contains('active')) {
+                    this.hideCommandPalette();
+                } else {
+                    overlay.classList.add('active');
+                    palette.classList.add('active');
+                    document.getElementById('commandInput').focus();
+                }
+            }
+
+            hideCommandPalette() {
+                document.getElementById('commandPalette').classList.remove('active');
+                document.getElementById('overlay').classList.remove('active');
+                document.getElementById('commandInput').value = '';
+            }
+
+            executeCommand(command) {
+                if (command.trim()) {
+                    this.socket.emit('execute_command', { command: command.trim() });
+                    this.addUserMessage(`> ${command}`);
+                    this.hideCommandPalette();
+                }
+            }
+
+            sendMessage() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+
+                if (message) {
+                    this.addUserMessage(message);
+                    input.value = '';
+
+                    // Send real message via WebSocket
+                    this.socket.emit('send_message', { message: message });
+                }
+            }
+
+            addUserMessage(message) {
+                this.addMessage('User', message, '#00ccff');
+            }
+
+            addLyrixaMessage(message) {
+                this.addMessage('Lyrixa', message, '#00ff88');
+            }
+
+            addSystemMessage(message) {
+                this.addMessage('System', message, '#ffaa00');
+            }
+
+            addMessage(sender, content, color = '#cccccc') {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+
+                const timestamp = new Date().toLocaleTimeString();
+                messageDiv.innerHTML = `
+                    <div class="message-header">
+                        <span style="color: ${color};">${sender}</span>
+                        <span>${timestamp}</span>
+                    </div>
+                    <div>${content}</div>
+                `;
+
+                messagesContainer.appendChild(messageDiv);
+
+                // Enhanced auto-scroll with timeout to ensure DOM is updated
+                setTimeout(() => {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    // Smooth scroll fallback
+                    messagesContainer.scrollTo({
+                        top: messagesContainer.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 10);
+            }
+
+            initializeMemoryGraph() {
+                const graph = document.getElementById('memoryGraph');
+                graph.innerHTML = ''; // Clear existing nodes
+
+                // Generate random memory nodes
+                for (let i = 0; i < 15; i++) {
+                    const node = document.createElement('div');
+                    node.className = 'graph-node';
+                    node.style.left = Math.random() * (graph.offsetWidth - 12) + 'px';
+                    node.style.top = Math.random() * (graph.offsetHeight - 12) + 'px';
+                    node.style.animationDelay = Math.random() * 3 + 's';
+                    graph.appendChild(node);
+                }
+            }
+
+            updateInsightStream() {
+                // In a real implementation, this would fetch actual insights
+                console.log('Updating insight stream...');
+            }
+
+            updateSystemTime() {
+                const now = new Date();
+                document.getElementById('systemTime').textContent = now.toLocaleTimeString();
+            }
+
+            updateSystemMetrics(data) {
+                if (data.confidence) {
+                    document.getElementById('confidence').textContent = data.confidence + '%';
+                }
+                if (data.curiosity) {
+                    document.getElementById('curiosity').textContent = data.curiosity + '%';
+                }
+                if (data.activity) {
+                    document.getElementById('activity').textContent = data.activity + '%';
+                }
+            }
+
+            updateAura(data) {
+                // Update aura effects based on system state
+                const aura = document.querySelector('.aura-background');
+                const intensity = (data.confidence + data.curiosity + data.activity) / 300;
+                aura.style.opacity = Math.max(0.2, intensity);
+            }
+
+            updateModelSelector(data) {
+                const modelSelect = document.getElementById('modelSelect');
+                const modelStatus = document.getElementById('modelStatus');
+
+                // Clear existing options
+                modelSelect.innerHTML = '';
+
+                // Add available models to dropdown
+                if (data.available_models && data.available_models.length > 0) {
+                    data.available_models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = this.formatModelName(model);
+                        if (model === data.current_model) {
+                            option.selected = true;
+                        }
+                        modelSelect.appendChild(option);
+                    });
+                } else {
+                    // Fallback if no models available
+                    const option = document.createElement('option');
+                    option.value = 'fallback';
+                    option.textContent = 'Intelligent Fallback';
+                    option.selected = true;
+                    modelSelect.appendChild(option);
+                }
+
+                // Update status
+                if (data.llm_enabled) {
+                    modelStatus.textContent = `Active: ${data.current_model}`;
+                    modelStatus.style.color = '#00ff88';
+                } else {
+                    modelStatus.textContent = 'Fallback Mode';
+                    modelStatus.style.color = '#ffaa00';
+                }
+
+                // Add event listener for model changes
+                modelSelect.addEventListener('change', (e) => {
+                    this.switchModel(e.target.value);
+                });
+            }
+
+            formatModelName(model) {
+                const modelNames = {
+                    'mistral': 'Mistral (Local)',
+                    'llama3.2:3b': 'Llama 3.2 3B (Local)',
+                    'llama3': 'Llama 3 (Local)',
+                    'gpt-4o': 'GPT-4o (Cloud)',
+                    'gpt-4-turbo': 'GPT-4 Turbo (Cloud)',
+                    'gpt-3.5-turbo': 'GPT-3.5 Turbo (Cloud)',
+                    'claude-3-sonnet': 'Claude 3 Sonnet (Cloud)',
+                    'claude-3-opus': 'Claude 3 Opus (Cloud)',
+                    'gemini-pro': 'Gemini Pro (Cloud)'
+                };
+                return modelNames[model] || model;
+            }
+
+            switchModel(modelName) {
+                if (modelName) {
+                    this.addSystemMessage(`🔄 Switching to model: ${modelName}...`);
+                    this.socket.emit('switch_model', { model_name: modelName });
+                }
+            }
+
+            startAnimations() {
+                // Request aura updates
+                setInterval(() => {
+                    this.socket.emit('request_aura_update');
+                }, 2000);
+
+                // Simulate real-time metric updates
+                setInterval(() => {
+                    const confidence = 85 + Math.random() * 10;
+                    const curiosity = 60 + Math.random() * 20;
+                    const activity = 70 + Math.random() * 20;
+
+                    this.updateSystemMetrics({
+                        confidence: confidence.toFixed(1),
+                        curiosity: curiosity.toFixed(1),
+                        activity: activity.toFixed(1)
+                    });
+                }, 3000);
+            }
+        }
+
+        // Initialize interface when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.aetherraInterface = new AetherraInterface();
+        });
+    </script>
+</body>
+
+</html>
