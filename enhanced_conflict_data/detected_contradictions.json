@@ -1,0 +1,296 @@
+{
+  "conflict_logical_20250722_225005_0": {
+    "contradiction_id": "conflict_logical_20250722_225005_0",
+    "contradiction_type": "logical",
+    "title": "Plugin A safety contradiction",
+    "description": "Plugin A is safe vs Plugin A caused memory corruption",
+    "confidence_score": 0.9,
+    "severity": "high",
+    "evidence_for": [
+      {
+        "content": "Plugin A is safe and reliable",
+        "timestamp": "2024-01-10",
+        "source": "plugin_evaluation"
+      },
+      {
+        "content": "Plugin A passed all security tests",
+        "timestamp": "2024-01-08",
+        "source": "security_audit"
+      }
+    ],
+    "evidence_against": [
+      {
+        "content": "Plugin A caused memory corruption in session 1247",
+        "timestamp": "2024-01-15",
+        "source": "error_log"
+      },
+      {
+        "content": "System instability detected after Plugin A activation",
+        "timestamp": "2024-01-15",
+        "source": "system_monitor"
+      }
+    ],
+    "context_factors": [
+      "cluster_divergence: 0.85",
+      "conflict_type: factual_contradiction",
+      "temporal_analysis",
+      "confidence_weighting"
+    ],
+    "potential_causes": [
+      "belief_evolution",
+      "context_dependent_preferences",
+      "incomplete_information",
+      "temporal_change"
+    ],
+    "resolution_strategies": [],
+    "first_detected": "2025-07-22T22:50:05.607718",
+    "last_updated": "2025-07-22T22:50:59.239488",
+    "resolution_status": "investigating",
+    "resolution_notes": "Needs further investigation: Evidence confidence too close - need additional data"
+  },
+  "conflict_behavioral_20250722_225005_1": {
+    "contradiction_id": "conflict_behavioral_20250722_225005_1",
+    "contradiction_type": "behavioral",
+    "title": "User preference complexity contradiction",
+    "description": "The user prefers clarity vs The user praised complexity in latest interaction",
+    "confidence_score": 0.8,
+    "severity": "medium",
+    "evidence_for": [
+      {
+        "content": "User consistently requests simple, clear explanations",
+        "timestamp": "2024-01-05",
+        "source": "interaction_pattern"
+      },
+      {
+        "content": "User feedback: 'I like when things are explained simply'",
+        "timestamp": "2024-01-03",
+        "source": "user_feedback"
+      }
+    ],
+    "evidence_against": [
+      {
+        "content": "User praised complex technical analysis in yesterday's interaction",
+        "timestamp": "2024-01-16",
+        "source": "recent_interaction"
+      },
+      {
+        "content": "User specifically requested 'deeper technical details'",
+        "timestamp": "2024-01-16",
+        "source": "user_request"
+      }
+    ],
+    "context_factors": [
+      "cluster_divergence: 0.72",
+      "conflict_type: preference_contradiction",
+      "temporal_analysis",
+      "confidence_weighting"
+    ],
+    "potential_causes": [
+      "belief_evolution",
+      "context_dependent_preferences",
+      "incomplete_information",
+      "temporal_change"
+    ],
+    "resolution_strategies": [],
+    "first_detected": "2025-07-22T22:50:05.607742",
+    "last_updated": "2025-07-22T22:50:59.253138",
+    "resolution_status": "resolved",
+    "resolution_notes": "Context-dependent resolution: User preferences may be context-dependent - both valid in different situations"
+  },
+  "conflict_temporal_20250722_225005_2": {
+    "contradiction_id": "conflict_temporal_20250722_225005_2",
+    "contradiction_type": "temporal",
+    "title": "Learning approach evolution",
+    "description": "Structured learning preference contradicted by recent exploratory engagement",
+    "confidence_score": 0.75,
+    "severity": "low",
+    "evidence_for": [
+      {
+        "content": "Structured learning approaches work best for me",
+        "timestamp": "2024-01-01",
+        "source": "self_reflection"
+      },
+      {
+        "content": "Step-by-step tutorials are most effective",
+        "timestamp": "2023-12-28",
+        "source": "learning_assessment"
+      }
+    ],
+    "evidence_against": [
+      {
+        "content": "High engagement with exploratory learning session",
+        "timestamp": "2024-01-14",
+        "source": "activity_log"
+      },
+      {
+        "content": "User requested 'let me figure this out myself'",
+        "timestamp": "2024-01-12",
+        "source": "user_request"
+      }
+    ],
+    "context_factors": [
+      "cluster_divergence: 0.63",
+      "conflict_type: belief_evolution",
+      "temporal_analysis",
+      "confidence_weighting"
+    ],
+    "potential_causes": [
+      "belief_evolution",
+      "context_dependent_preferences",
+      "incomplete_information",
+      "temporal_change"
+    ],
+    "resolution_strategies": [],
+    "first_detected": "2025-07-22T22:50:05.607755",
+    "last_updated": "2025-07-22T22:50:59.267611",
+    "resolution_status": "resolved",
+    "resolution_notes": "Temporal evolution accepted: Natural evolution/learning over time - accept newer perspective"
+  },
+  "conflict_logical_20250722_225059_0": {
+    "contradiction_id": "conflict_logical_20250722_225059_0",
+    "contradiction_type": "logical",
+    "title": "Plugin A safety contradiction",
+    "description": "Plugin A is safe vs Plugin A caused memory corruption",
+    "confidence_score": 0.9,
+    "severity": "high",
+    "evidence_for": [
+      {
+        "content": "Plugin A is safe and reliable",
+        "timestamp": "2024-01-10",
+        "source": "plugin_evaluation"
+      },
+      {
+        "content": "Plugin A passed all security tests",
+        "timestamp": "2024-01-08",
+        "source": "security_audit"
+      }
+    ],
+    "evidence_against": [
+      {
+        "content": "Plugin A caused memory corruption in session 1247",
+        "timestamp": "2024-01-15",
+        "source": "error_log"
+      },
+      {
+        "content": "System instability detected after Plugin A activation",
+        "timestamp": "2024-01-15",
+        "source": "system_monitor"
+      }
+    ],
+    "context_factors": [
+      "cluster_divergence: 0.85",
+      "conflict_type: factual_contradiction",
+      "temporal_analysis",
+      "confidence_weighting"
+    ],
+    "potential_causes": [
+      "belief_evolution",
+      "context_dependent_preferences",
+      "incomplete_information",
+      "temporal_change"
+    ],
+    "resolution_strategies": [],
+    "first_detected": "2025-07-22T22:50:59.235435",
+    "last_updated": "2025-07-22T22:50:59.281767",
+    "resolution_status": "investigating",
+    "resolution_notes": "Needs further investigation: Evidence confidence too close - need additional data"
+  },
+  "conflict_behavioral_20250722_225059_1": {
+    "contradiction_id": "conflict_behavioral_20250722_225059_1",
+    "contradiction_type": "behavioral",
+    "title": "User preference complexity contradiction",
+    "description": "The user prefers clarity vs The user praised complexity in latest interaction",
+    "confidence_score": 0.8,
+    "severity": "medium",
+    "evidence_for": [
+      {
+        "content": "User consistently requests simple, clear explanations",
+        "timestamp": "2024-01-05",
+        "source": "interaction_pattern"
+      },
+      {
+        "content": "User feedback: 'I like when things are explained simply'",
+        "timestamp": "2024-01-03",
+        "source": "user_feedback"
+      }
+    ],
+    "evidence_against": [
+      {
+        "content": "User praised complex technical analysis in yesterday's interaction",
+        "timestamp": "2024-01-16",
+        "source": "recent_interaction"
+      },
+      {
+        "content": "User specifically requested 'deeper technical details'",
+        "timestamp": "2024-01-16",
+        "source": "user_request"
+      }
+    ],
+    "context_factors": [
+      "cluster_divergence: 0.72",
+      "conflict_type: preference_contradiction",
+      "temporal_analysis",
+      "confidence_weighting"
+    ],
+    "potential_causes": [
+      "belief_evolution",
+      "context_dependent_preferences",
+      "incomplete_information",
+      "temporal_change"
+    ],
+    "resolution_strategies": [],
+    "first_detected": "2025-07-22T22:50:59.235462",
+    "last_updated": "2025-07-22T22:50:59.295877",
+    "resolution_status": "resolved",
+    "resolution_notes": "Context-dependent resolution: User preferences may be context-dependent - both valid in different situations"
+  },
+  "conflict_temporal_20250722_225059_2": {
+    "contradiction_id": "conflict_temporal_20250722_225059_2",
+    "contradiction_type": "temporal",
+    "title": "Learning approach evolution",
+    "description": "Structured learning preference contradicted by recent exploratory engagement",
+    "confidence_score": 0.75,
+    "severity": "low",
+    "evidence_for": [
+      {
+        "content": "Structured learning approaches work best for me",
+        "timestamp": "2024-01-01",
+        "source": "self_reflection"
+      },
+      {
+        "content": "Step-by-step tutorials are most effective",
+        "timestamp": "2023-12-28",
+        "source": "learning_assessment"
+      }
+    ],
+    "evidence_against": [
+      {
+        "content": "High engagement with exploratory learning session",
+        "timestamp": "2024-01-14",
+        "source": "activity_log"
+      },
+      {
+        "content": "User requested 'let me figure this out myself'",
+        "timestamp": "2024-01-12",
+        "source": "user_request"
+      }
+    ],
+    "context_factors": [
+      "cluster_divergence: 0.63",
+      "conflict_type: belief_evolution",
+      "temporal_analysis",
+      "confidence_weighting"
+    ],
+    "potential_causes": [
+      "belief_evolution",
+      "context_dependent_preferences",
+      "incomplete_information",
+      "temporal_change"
+    ],
+    "resolution_strategies": [],
+    "first_detected": "2025-07-22T22:50:59.235475",
+    "last_updated": "2025-07-22T22:50:59.311696",
+    "resolution_status": "resolved",
+    "resolution_notes": "Temporal evolution accepted: Natural evolution/learning over time - accept newer perspective"
+  }
+}

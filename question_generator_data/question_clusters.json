@@ -1,0 +1,78 @@
+{
+  "cluster_deep_why_20250722_224522": {
+    "cluster_id": "cluster_deep_why_20250722_224522",
+    "theme": "Deep Why Exploration",
+    "questions": [
+      "sq_story_1_deep_why_20250722_224522",
+      "sq_story_2_deep_why_20250722_224522",
+      "rq_refl_1_deep_why_20250722_224522",
+      "rq_refl_2_deep_why_20250722_224522"
+    ],
+    "cluster_priority": 0.85,
+    "estimated_exploration_time": "80-160 minutes",
+    "synergy_score": 0.8,
+    "timestamp": "2025-07-22T22:45:22.155090"
+  },
+  "cluster_what_if_20250722_224522": {
+    "cluster_id": "cluster_what_if_20250722_224522",
+    "theme": "What If Exploration",
+    "questions": [
+      "sq_story_1_what_if_20250722_224522",
+      "sq_story_2_what_if_20250722_224522"
+    ],
+    "cluster_priority": 0.8999999999999999,
+    "estimated_exploration_time": "40-80 minutes",
+    "synergy_score": 0.8,
+    "timestamp": "2025-07-22T22:45:22.155111"
+  },
+  "cluster_how_to_20250722_224522": {
+    "cluster_id": "cluster_how_to_20250722_224522",
+    "theme": "How To Exploration",
+    "questions": [
+      "sq_story_1_how_to_20250722_224522",
+      "sq_story_2_how_to_20250722_224522",
+      "rq_refl_1_how_to_20250722_224522",
+      "rq_refl_2_how_to_20250722_224522"
+    ],
+    "cluster_priority": 0.85,
+    "estimated_exploration_time": "80-160 minutes",
+    "synergy_score": 0.8,
+    "timestamp": "2025-07-22T22:45:22.155123"
+  },
+  "cluster_impact_20250722_224522": {
+    "cluster_id": "cluster_impact_20250722_224522",
+    "theme": "Impact Exploration",
+    "questions": [
+      "sq_story_1_impact_20250722_224522",
+      "sq_story_2_impact_20250722_224522"
+    ],
+    "cluster_priority": 0.8999999999999999,
+    "estimated_exploration_time": "40-80 minutes",
+    "synergy_score": 0.8,
+    "timestamp": "2025-07-22T22:45:22.155133"
+  },
+  "cluster_when_will_20250722_224522": {
+    "cluster_id": "cluster_when_will_20250722_224522",
+    "theme": "When Will Exploration",
+    "questions": [
+      "rq_refl_1_when_will_20250722_224522",
+      "rq_refl_2_when_will_20250722_224522"
+    ],
+    "cluster_priority": 0.8,
+    "estimated_exploration_time": "40-80 minutes",
+    "synergy_score": 0.8,
+    "timestamp": "2025-07-22T22:45:22.155142"
+  },
+  "cluster_why_not_20250722_224522": {
+    "cluster_id": "cluster_why_not_20250722_224522",
+    "theme": "Why Not Exploration",
+    "questions": [
+      "rq_refl_1_why_not_20250722_224522",
+      "rq_refl_2_why_not_20250722_224522"
+    ],
+    "cluster_priority": 0.8,
+    "estimated_exploration_time": "40-80 minutes",
+    "synergy_score": 0.8,
+    "timestamp": "2025-07-22T22:45:22.155151"
+  }
+}

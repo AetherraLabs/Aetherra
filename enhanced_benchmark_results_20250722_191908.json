@@ -1,0 +1,161 @@
+{
+  "benchmark_timestamp": "2025-07-22T19:19:08.550526",
+  "memory_profiling_enabled": true,
+  "test_results": {
+    "substage_analysis": {
+      "mode": "async",
+      "mean_duration_ms": 78.66475799586624,
+      "p95_duration_ms": 80.10649995412678,
+      "success_rate": 100.0,
+      "performance_grade": "GOOD",
+      "bottleneck_stage": "graph_lookup",
+      "peak_memory_mb": 0.1511821746826172,
+      "substage_breakdown": {
+        "input_processing": {
+          "mean_ms": 0.04176799673587084,
+          "median_ms": 0.03185000969097018,
+          "max_ms": 0.4198000533506274,
+          "min_ms": 0.015600002370774746,
+          "percentage": 0.05338838160727956
+        },
+        "vector_embedding": {
+          "mean_ms": 15.4559539956972,
+          "median_ms": 15.732300002127886,
+          "max_ms": 16.097200103104115,
+          "min_ms": 13.72709998395294,
+          "percentage": 19.755995846412603
+        },
+        "graph_lookup": {
+          "mean_ms": 16.245363999623805,
+          "median_ms": 16.208550019655377,
+          "max_ms": 18.586999969556928,
+          "min_ms": 14.918100088834763,
+          "percentage": 20.76502969595901
+        },
+        "concept_clustering": {
+          "mean_ms": 15.127840004861355,
+          "median_ms": 15.378099982626736,
+          "max_ms": 16.014099936001003,
+          "min_ms": 12.172200018540025,
+          "percentage": 19.336596394142788
+        },
+        "database_write": {
+          "mean_ms": 15.79310999950394,
+          "median_ms": 15.941799967549741,
+          "max_ms": 16.779799945652485,
+          "min_ms": 14.901400078088045,
+          "percentage": 20.186952914003083
+        },
+        "index_updates": {
+          "mean_ms": 15.57020800653845,
+          "median_ms": 15.840050007682294,
+          "max_ms": 16.07110002078116,
+          "min_ms": 14.317200053483248,
+          "percentage": 19.902036767875238
+        }
+      }
+    },
+    "async": {
+      "mode": "async",
+      "mean_duration_ms": 30.91739999363199,
+      "p95_duration_ms": 34.26230000331998,
+      "success_rate": 100.0,
+      "performance_grade": "EXCELLENT",
+      "bottleneck_stage": "async_retrieval",
+      "peak_memory_mb": 0.2005147933959961,
+      "substage_breakdown": {
+        "async_storage": {
+          "mean_ms": 14.444406675950935,
+          "median_ms": 14.476899988949299,
+          "max_ms": 23.87190004810691,
+          "min_ms": 7.837700075469911,
+          "percentage": 47.11768928044933
+        },
+        "async_retrieval": {
+          "mean_ms": 16.211609984748065,
+          "median_ms": 16.392799967434257,
+          "max_ms": 18.793000024743378,
+          "min_ms": 12.200099998153746,
+          "percentage": 52.88231071955066
+        }
+      }
+    },
+    "sync": {
+      "mode": "sync",
+      "mean_duration_ms": 19.089089982056368,
+      "p95_duration_ms": 20.200800034217536,
+      "success_rate": 100.0,
+      "performance_grade": "EXCELLENT",
+      "bottleneck_stage": "sync_retrieval",
+      "peak_memory_mb": 0.3336601257324219,
+      "substage_breakdown": {
+        "sync_storage": {
+          "mean_ms": 7.000073332649966,
+          "median_ms": 6.636750011239201,
+          "max_ms": 16.66929991915822,
+          "min_ms": 5.953100044280291,
+          "percentage": 37.05596613414762
+        },
+        "sync_retrieval": {
+          "mean_ms": 11.890469980426133,
+          "median_ms": 11.869249981828034,
+          "max_ms": 12.715899967588484,
+          "min_ms": 11.070300010032952,
+          "percentage": 62.94403386585239
+        }
+      }
+    },
+    "memory_intensive": {
+      "mode": "async",
+      "mean_duration_ms": 101.29079999751411,
+      "p95_duration_ms": 120.14869996346533,
+      "success_rate": 100.0,
+      "performance_grade": "ACCEPTABLE",
+      "bottleneck_stage": "batch_storage",
+      "peak_memory_mb": 5.388456344604492,
+      "substage_breakdown": {
+        "large_content_processing": {
+          "mean_ms": 0.12877999106422067,
+          "median_ms": 0.08814997272565961,
+          "max_ms": 0.2691000699996948,
+          "min_ms": 0.06740004755556583,
+          "percentage": 0.1275222266039832
+        },
+        "batch_storage": {
+          "mean_ms": 72.3919150128495,
+          "median_ms": 71.29690004512668,
+          "max_ms": 87.44809997733682,
+          "min_ms": 65.2434000512585,
+          "percentage": 71.68487988138807
+        },
+        "complex_search": {
+          "mean_ms": 18.107329990016297,
+          "median_ms": 18.397299980279058,
+          "max_ms": 19.488599966280162,
+          "min_ms": 13.903000042773783,
+          "percentage": 17.93047987577862
+        },
+        "memory_cleanup": {
+          "mean_ms": 10.358284995891154,
+          "median_ms": 9.382050018757582,
+          "max_ms": 23.48599990364164,
+          "min_ms": 3.1220000237226486,
+          "percentage": 10.257118016229336
+        }
+      }
+    }
+  },
+  "performance_summary": {
+    "overall_mean_ms": 57.49051199226718,
+    "overall_p95_ms": 63.679574988782406,
+    "overall_success_rate": 100.0,
+    "tests_meeting_target": 4,
+    "total_tests": 4
+  },
+  "recommendations": [
+    "\ud83c\udfaf substage_analysis: Focus optimization on graph_lookup stage",
+    "\ud83c\udfaf async: Focus optimization on async_retrieval stage",
+    "\ud83c\udfaf sync: Focus optimization on sync_retrieval stage",
+    "\ud83c\udfaf memory_intensive: Focus optimization on batch_storage stage"
+  ]
+}

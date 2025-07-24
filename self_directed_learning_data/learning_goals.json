@@ -1,0 +1,138 @@
+{
+  "learning_goal_gap_20250722_231243_0": {
+    "goal_id": "learning_goal_gap_20250722_231243_0",
+    "title": "Fill Knowledge Gap: Limited understanding of async programming patterns in Pytho...",
+    "description": "Address gap: Limited understanding of async programming patterns in Python",
+    "goal_type": "knowledge_acquisition",
+    "priority": "high",
+    "source_type": "gap",
+    "source_ids": [
+      "gap_async_001"
+    ],
+    "sub_goals": [],
+    "success_criteria": [
+      "Successfully address the gap",
+      "Demonstrate improved understanding or resolution",
+      "Update memory system with new knowledge",
+      "Validate solution effectiveness"
+    ],
+    "learning_methods": [
+      "reflection",
+      "experimentation",
+      "research"
+    ],
+    "progress_percentage": 25.0,
+    "status": "pending",
+    "related_gaps": [
+      "gap_async_001"
+    ],
+    "related_questions": [],
+    "related_contradictions": [],
+    "created_timestamp": "2025-07-22T23:12:43.341953",
+    "last_updated": "2025-07-22T23:12:43.353866",
+    "estimated_completion_time": "2025-07-29T23:12:43.341963",
+    "activation_timestamp": null,
+    "completion_timestamp": null
+  },
+  "learning_goal_contradiction_20250722_231243_1": {
+    "goal_id": "learning_goal_contradiction_20250722_231243_1",
+    "title": "Resolve Contradiction: User feedback conflicts: prefers simple explanations vs appr...",
+    "description": "Address contradiction: User feedback conflicts: prefers simple explanations vs appreciates detailed technical analysis",
+    "goal_type": "contradiction_resolution",
+    "priority": "medium",
+    "source_type": "contradiction",
+    "source_ids": [
+      "contradiction_feedback_001"
+    ],
+    "sub_goals": [],
+    "success_criteria": [
+      "Successfully address the contradiction",
+      "Demonstrate improved understanding or resolution",
+      "Update memory system with new knowledge",
+      "Validate solution effectiveness"
+    ],
+    "learning_methods": [
+      "reflection",
+      "experimentation",
+      "research"
+    ],
+    "progress_percentage": 65.0,
+    "status": "pending",
+    "related_gaps": [],
+    "related_questions": [],
+    "related_contradictions": [
+      "contradiction_feedback_001"
+    ],
+    "created_timestamp": "2025-07-22T23:12:43.345434",
+    "last_updated": "2025-07-22T23:12:43.355736",
+    "estimated_completion_time": "2025-07-29T23:12:43.345446",
+    "activation_timestamp": null,
+    "completion_timestamp": null
+  },
+  "learning_goal_inconsistency_20250722_231243_2": {
+    "goal_id": "learning_goal_inconsistency_20250722_231243_2",
+    "title": "Improve Consistency: Memory recall patterns show variable confidence in debugging...",
+    "description": "Address inconsistency: Memory recall patterns show variable confidence in debugging approaches",
+    "goal_type": "consistency_improvement",
+    "priority": "low",
+    "source_type": "inconsistency",
+    "source_ids": [
+      "inconsistency_debug_001"
+    ],
+    "sub_goals": [],
+    "success_criteria": [
+      "Successfully address the inconsistency",
+      "Demonstrate improved understanding or resolution",
+      "Update memory system with new knowledge",
+      "Validate solution effectiveness"
+    ],
+    "learning_methods": [
+      "reflection",
+      "experimentation",
+      "research"
+    ],
+    "progress_percentage": 90.0,
+    "status": "pending",
+    "related_gaps": [],
+    "related_questions": [],
+    "related_contradictions": [],
+    "created_timestamp": "2025-07-22T23:12:43.348450",
+    "last_updated": "2025-07-22T23:12:43.357537",
+    "estimated_completion_time": "2025-07-29T23:12:43.348457",
+    "activation_timestamp": null,
+    "completion_timestamp": null
+  },
+  "learning_goal_knowledge_void_20250722_231243_3": {
+    "goal_id": "learning_goal_knowledge_void_20250722_231243_3",
+    "title": "Learning Goal: No understanding of advanced memory optimization techniques...",
+    "description": "Address knowledge_void: No understanding of advanced memory optimization techniques",
+    "goal_type": "general_learning",
+    "priority": "critical",
+    "source_type": "knowledge_void",
+    "source_ids": [
+      "void_memory_opt_001"
+    ],
+    "sub_goals": [],
+    "success_criteria": [
+      "Successfully address the knowledge_void",
+      "Demonstrate improved understanding or resolution",
+      "Update memory system with new knowledge",
+      "Validate solution effectiveness"
+    ],
+    "learning_methods": [
+      "reflection",
+      "experimentation",
+      "research"
+    ],
+    "progress_percentage": 100.0,
+    "status": "completed",
+    "related_gaps": [],
+    "related_questions": [],
+    "related_contradictions": [],
+    "created_timestamp": "2025-07-22T23:12:43.351018",
+    "last_updated": "2025-07-22T23:12:43.359020",
+    "estimated_completion_time": "2025-07-29T23:12:43.351027",
+    "activation_timestamp": null,
+    "completion_timestamp": "2025-07-22T23:12:43.359025"
+  }
+}

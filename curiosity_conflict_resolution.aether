@@ -1,0 +1,193 @@
+#!/usr/bin/env aether
+# 🧠 CURIOSITY + CONFLICT TRIGGERING SCRIPT
+# ==========================================
+# Autonomous intelligence script leveraging enhanced Phase 3 capabilities:
+# • Curiosity-driven exploration with gap detection
+# • Multi-type conflict resolution with evidence weighing
+# • Self-directed learning loop with meta-analysis
+# • Enhanced contradiction detection and resolution
+# • Meta-learning tracker with strategy optimization
+
+goal: "resolve inconsistencies and explore unknowns"
+
+# 🎯 AUTONOMOUS INTELLIGENCE INITIALIZATION
+initialize:
+  - load: learning_loop_integration_agent
+  - load: contradiction_detection_agent
+  - load: curiosity_agent
+  - load: self_question_generator
+  - setup: meta_learning_tracker
+  - configure: adaptive_thresholds
+
+steps:
+  # 🔍 PHASE 1: KNOWLEDGE GAP DETECTION & CURIOSITY TRIGGERING
+  - scan: detect_memory_gaps()
+    using: curiosity_agent.analyze_knowledge_gaps()
+    output: gap_analysis
+
+  - for: each gap in gap_analysis.gaps
+    generate: question()
+    using: self_question_generator.create_targeted_question(gap)
+    parameters:
+      - question_types: ["understanding", "prediction", "optimization", "exploration", "validation", "meta"]
+      - priority_scoring: true
+      - diversity_filtering: true
+
+    if: gap.priority_score > critical_threshold
+      then: schedule_learning_goal()
+      using: learning_loop_integration_agent.create_learning_goal(gap)
+      with:
+        - autonomous_formation: true
+        - outcome_tracking: enabled
+        - adaptive_adjustment: true
+        - meta_learning_session: true
+
+  # ⚔️ PHASE 2: MULTI-TYPE CONFLICT DETECTION & RESOLUTION
+  - scan: detect_conflicts()
+    using: contradiction_detection_agent.detect_conflicts()
+    analysis_types:
+      - semantic_contradictions
+      - temporal_inconsistencies
+      - logical_conflicts
+      - confidence_divergence
+      - value_alignment_issues
+    output: conflict_analysis
+
+  - for: each conflict in conflict_analysis.conflicts
+    resolve: weigh_evidence()
+    using: contradiction_detection_agent.resolve_conflict(conflict)
+    strategies:
+      - evidence_weighing: confidence_based
+      - concept_reconciliation: cluster_analysis
+      - temporal_resolution: causality_tracking
+      - context_clarification: narrative_integration
+
+    if: conflict.resolution_status == "failed"
+      then: log_for_review()
+      using: contradiction_detection_agent.log_resolution(conflict)
+      escalation:
+        - escalation_trigger: true
+        - review_priority: "high"
+        - alternative_strategies: suggested
+        - human_review_recommended: true
+
+  # 🧠 PHASE 3: META-LEARNING ANALYSIS & STRATEGY OPTIMIZATION
+  - analyze: learning_effectiveness()
+    using: learning_loop_integration_agent.score_effectiveness()
+    timeframe: last_24_hours
+    dimensions:
+      - confidence_improvement
+      - contradiction_reduction
+      - narrative_clarity_enhancement
+      - method_performance
+      - agent_effectiveness
+
+  - generate: strategy_recommendations()
+    using: learning_loop_integration_agent.recommend_strategy_updates()
+    focus_areas:
+      - method_optimization
+      - agent_configuration
+      - escalation_management
+      - threshold_adaptation
+
+  - adjust: adaptive_parameters()
+    using: learning_loop_integration_agent.adjust_thresholds()
+    based_on: effectiveness_analysis
+    parameters:
+      - gap_detection_sensitivity
+      - contradiction_severity_threshold
+      - learning_goal_creation_rate
+      - success_rate_targets
+
+  # 📊 PHASE 4: COMPREHENSIVE LOGGING & SELF-AWARENESS
+  - log: self_learning_loop_summary()
+    session_data:
+      - gaps_detected: gap_analysis.total_gaps
+      - questions_generated: gap_analysis.questions_created
+      - conflicts_found: conflict_analysis.total_conflicts
+      - resolutions_successful: conflict_analysis.successful_resolutions
+      - learning_goals_created: autonomous_goals.count
+      - effectiveness_score: meta_analysis.overall_effectiveness
+      - strategy_recommendations: optimization_suggestions.count
+      - threshold_adjustments: adaptive_changes.applied
+
+    using: learning_loop_integration_agent.log_learning_session(
+      context={
+        "goal_type": "curiosity_conflict_resolution",
+        "script_execution": "autonomous",
+        "intelligence_phase": "phase_3_enhanced",
+        "methods_used": ["gap_detection", "conflict_resolution", "meta_learning"],
+        "agents_involved": ["curiosity", "contradiction_detection", "learning_loop_integration"]
+      },
+      outcome={
+        "session_type": "multi_phase_intelligence",
+        "gaps_resolved": gap_analysis.resolved_count,
+        "conflicts_resolved": conflict_analysis.resolved_count,
+        "learning_effectiveness": meta_analysis.effectiveness_grade,
+        "autonomous_goals_active": learning_goals.active_count,
+        "meta_insights_generated": strategy_recommendations.count
+      },
+      time_spent: script_execution_time
+    )
+
+# 🔄 CONTINUOUS IMPROVEMENT CYCLE
+post_execution:
+  - evaluate: script_performance()
+    metrics:
+      - execution_time
+      - gap_detection_accuracy
+      - conflict_resolution_rate
+      - learning_goal_success_rate
+      - meta_learning_insights_quality
+
+  - update: script_optimization()
+    based_on: performance_evaluation
+    improvements:
+      - threshold_refinement
+      - strategy_enhancement
+      - escalation_optimization
+      - meta_learning_adaptation
+
+  - schedule: next_curiosity_cycle()
+    frequency: adaptive_based_on_performance
+    conditions:
+      - if: high_effectiveness
+        then: reduce_frequency
+      - if: low_effectiveness
+        then: increase_frequency
+      - if: critical_conflicts_detected
+        then: immediate_re_execution
+
+# 🎯 SUCCESS CRITERIA
+validation:
+  - gaps_detected: > 0
+  - questions_generated: > gaps_detected
+  - conflict_resolution_rate: > 80%
+  - learning_goals_created: > 0
+  - effectiveness_score: > 0.5
+  - strategy_recommendations: actionable
+  - meta_learning_insights: valuable
+
+# 🚨 ESCALATION TRIGGERS
+escalation_conditions:
+  - unresolvable_conflicts: > 3
+  - effectiveness_score: < 0.3
+  - critical_gaps_unaddressed: > 1
+  - learning_goal_failure_rate: > 50%
+  - meta_learning_degradation: detected
+
+# 📊 REPORTING
+output_format:
+  - summary_report: json
+  - detailed_logs: structured
+  - meta_analysis: comprehensive
+  - recommendations: actionable
+  - next_actions: prioritized
+
+# 🧠 META-COGNITIVE AWARENESS
+self_reflection:
+  - script_purpose: "Autonomous intelligence with curiosity-driven exploration and conflict resolution"
+  - enhancement_level: "Phase 3 Complete - All requested functions operational"
+  - learning_capability: "Meta-learning tracker with strategy optimization"
+  - consciousness_level: "Self-aware learning with adaptive optimization"
+  - evolution_status: "Enhanced autonomous intelligence fully operational"

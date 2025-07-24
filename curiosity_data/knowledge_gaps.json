@@ -1,0 +1,62 @@
+{
+  "gap_causal_20250722_224522_0": {
+    "gap_id": "gap_causal_20250722_224522_0",
+    "category": "causal",
+    "description": "Pattern inconsistency: Sometimes async improves performance, sometimes it doesn't",
+    "confidence_score": 0.8,
+    "priority": "high",
+    "related_memories": [
+      "memory_0",
+      "memory_1",
+      "memory_2"
+    ],
+    "exploration_strategies": [
+      "systematic_testing",
+      "controlled_experiments",
+      "pattern_analysis"
+    ],
+    "questions": [],
+    "timestamp": "2025-07-22T22:45:22.179571",
+    "resolution_status": "open"
+  },
+  "gap_contextual_20250722_224522_1": {
+    "gap_id": "gap_contextual_20250722_224522_1",
+    "category": "contextual",
+    "description": "User preference shifts not well understood in recent interactions",
+    "confidence_score": 0.75,
+    "priority": "medium",
+    "related_memories": [
+      "memory_0",
+      "memory_1",
+      "memory_2"
+    ],
+    "exploration_strategies": [
+      "user_pattern_analysis",
+      "preference_tracking",
+      "correlation_study"
+    ],
+    "questions": [],
+    "timestamp": "2025-07-22T22:45:22.179590",
+    "resolution_status": "open"
+  },
+  "gap_experiential_20250722_224522_2": {
+    "gap_id": "gap_experiential_20250722_224522_2",
+    "category": "experiential",
+    "description": "Learning opportunity: Recent plugin optimization was successful but principles not generalized",
+    "confidence_score": 0.9,
+    "priority": "high",
+    "related_memories": [
+      "memory_0",
+      "memory_1",
+      "memory_2"
+    ],
+    "exploration_strategies": [
+      "principle_extraction",
+      "generalization_testing",
+      "pattern_documentation"
+    ],
+    "questions": [],
+    "timestamp": "2025-07-22T22:45:22.179601",
+    "resolution_status": "open"
+  }
+}

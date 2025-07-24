@@ -1,0 +1,118 @@
+{
+  "systematic_exploration": {
+    "strategy_id": "systematic_exploration",
+    "strategy_name": "Systematic Exploration",
+    "description": "Break down complex topics into smaller, explorable components",
+    "applicable_goal_types": [
+      "knowledge_gap",
+      "pattern_exploration"
+    ],
+    "success_rate": 0.75,
+    "typical_duration": "hours",
+    "resources_required": [
+      "time",
+      "focus",
+      "analysis_tools"
+    ],
+    "steps": [
+      "Identify the scope of exploration",
+      "Break into smaller sub-components",
+      "Explore each component systematically",
+      "Synthesize findings across components",
+      "Validate understanding through application"
+    ],
+    "success_indicators": [
+      "Clear understanding achieved",
+      "Can explain to others",
+      "Can apply knowledge"
+    ],
+    "timestamp": "2025-07-22T22:14:53.734614"
+  },
+  "contradiction_resolution": {
+    "strategy_id": "contradiction_resolution",
+    "strategy_name": "Contradiction Resolution",
+    "description": "Resolve contradictions through evidence gathering and analysis",
+    "applicable_goal_types": [
+      "contradiction_resolution",
+      "validation"
+    ],
+    "success_rate": 0.68,
+    "typical_duration": "hours",
+    "resources_required": [
+      "evidence_sources",
+      "analysis_time",
+      "critical_thinking"
+    ],
+    "steps": [
+      "Clearly define the contradiction",
+      "Gather additional evidence for both sides",
+      "Identify contextual factors",
+      "Analyze evidence quality and reliability",
+      "Form resolution or refined understanding"
+    ],
+    "success_indicators": [
+      "Contradiction resolved",
+      "Evidence-based conclusion",
+      "Improved confidence"
+    ],
+    "timestamp": "2025-07-22T22:14:53.734635"
+  },
+  "experimental_validation": {
+    "strategy_id": "experimental_validation",
+    "strategy_name": "Experimental Validation",
+    "description": "Test hypotheses through controlled experiments or observations",
+    "applicable_goal_types": [
+      "validation",
+      "skill_improvement"
+    ],
+    "success_rate": 0.82,
+    "typical_duration": "days",
+    "resources_required": [
+      "experimentation_environment",
+      "measurement_tools",
+      "analysis_capability"
+    ],
+    "steps": [
+      "Form testable hypothesis",
+      "Design experiment or observation protocol",
+      "Execute experiment with careful measurement",
+      "Analyze results objectively",
+      "Draw conclusions and refine understanding"
+    ],
+    "success_indicators": [
+      "Hypothesis tested",
+      "Clear results obtained",
+      "Learning documented"
+    ],
+    "timestamp": "2025-07-22T22:14:53.734641"
+  },
+  "iterative_improvement": {
+    "strategy_id": "iterative_improvement",
+    "strategy_name": "Iterative Improvement",
+    "description": "Gradually improve through repeated practice and refinement",
+    "applicable_goal_types": [
+      "skill_improvement",
+      "optimization"
+    ],
+    "success_rate": 0.88,
+    "typical_duration": "weeks",
+    "resources_required": [
+      "practice_opportunities",
+      "feedback_mechanisms",
+      "patience"
+    ],
+    "steps": [
+      "Establish baseline performance",
+      "Identify specific improvement targets",
+      "Practice with focus on targets",
+      "Gather feedback and adjust approach",
+      "Measure progress and continue iteration"
+    ],
+    "success_indicators": [
+      "Measurable improvement",
+      "Consistent performance",
+      "Skill transfer"
+    ],
+    "timestamp": "2025-07-22T22:14:53.734646"
+  }
+}

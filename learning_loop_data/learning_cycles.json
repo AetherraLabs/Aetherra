@@ -1,0 +1,20 @@
+{
+  "cycle_exploration_20250722_224522": {
+    "cycle_id": "cycle_exploration_20250722_224522",
+    "cycle_name": "Exploration Cycle - Jul 22",
+    "goals": [
+      "goal_integration_20250722_224522"
+    ],
+    "cycle_type": "exploration",
+    "current_phase": "planning",
+    "progress_percentage": 0.0,
+    "start_timestamp": "2025-07-22T22:45:22.187025",
+    "estimated_completion": "2025-07-29T22:45:22.187029",
+    "insights_gained": [],
+    "goals_completed": 0,
+    "goals_abandoned": 0,
+    "next_cycle_topics": [],
+    "unresolved_fragments": [],
+    "actual_completion": null
+  }
+}

@@ -1,0 +1,362 @@
+{
+  "learning_gap_plugin_optimization_success_20250722_220728": {
+    "gap_id": "learning_gap_plugin_optimization_success_20250722_220728",
+    "category": "experiential",
+    "description": "Learning opportunity: Recent plugin optimization was successful but principles not generalized",
+    "confidence_score": 0.9,
+    "priority": "high",
+    "related_memories": [
+      "plugin_optimization_success"
+    ],
+    "questions": [
+      "What principles can I extract from plugin_optimization_success?",
+      "How can I apply this learning to other situations?",
+      "What made plugin_optimization_success successful?"
+    ],
+    "exploration_strategies": [
+      "principle_extraction",
+      "pattern_generalization",
+      "transfer_testing"
+    ],
+    "timestamp": "2025-07-22T22:07:28.204435",
+    "resolution_status": "open"
+  },
+  "pattern_gap_async_performance_20250722_220728": {
+    "gap_id": "pattern_gap_async_performance_20250722_220728",
+    "category": "causal",
+    "description": "Pattern inconsistency: Sometimes async improves performance, sometimes it doesn't",
+    "confidence_score": 0.8,
+    "priority": "high",
+    "related_memories": [
+      "async_mem_1",
+      "async_mem_2",
+      "async_mem_3"
+    ],
+    "questions": [
+      "What determines when async_performance works well?",
+      "What are the key variables affecting async_performance?",
+      "Can I identify the conditions that predict success?"
+    ],
+    "exploration_strategies": [
+      "controlled_testing",
+      "variable_isolation",
+      "correlation_analysis"
+    ],
+    "timestamp": "2025-07-22T22:07:28.204015",
+    "resolution_status": "open"
+  },
+  "causal_gap_performance_improvement_20250722_220728": {
+    "gap_id": "causal_gap_performance_improvement_20250722_220728",
+    "category": "causal",
+    "description": "Incomplete causal understanding: Performance improved but mechanism unclear",
+    "confidence_score": 0.7,
+    "priority": "medium",
+    "related_memories": [
+      "performance_improvement"
+    ],
+    "questions": [
+      "What was the actual mechanism behind Performance improved but mechanism unclear?",
+      "What steps were involved in performance_improvement?",
+      "How can I track the causal pathway more clearly?"
+    ],
+    "exploration_strategies": [
+      "step_by_step_analysis",
+      "mechanism_tracing",
+      "hypothesis_testing"
+    ],
+    "timestamp": "2025-07-22T22:07:28.204160",
+    "resolution_status": "open"
+  },
+  "context_gap_user_response_quality_20250722_220728": {
+    "gap_id": "context_gap_user_response_quality_20250722_220728",
+    "category": "contextual",
+    "description": "Context-dependent variation: Response quality varies by time",
+    "confidence_score": 0.6,
+    "priority": "medium",
+    "related_memories": [
+      "user_response_quality"
+    ],
+    "questions": [
+      "Why does user_response_quality vary across morning, evening, weekend?",
+      "What contextual factors influence user_response_quality?",
+      "Can I predict user_response_quality based on context?"
+    ],
+    "exploration_strategies": [
+      "contextual_observation",
+      "factor_analysis",
+      "controlled_context_testing"
+    ],
+    "timestamp": "2025-07-22T22:07:28.204305",
+    "resolution_status": "open"
+  },
+  "learning_gap_plugin_optimization_success_20250722_221222": {
+    "gap_id": "learning_gap_plugin_optimization_success_20250722_221222",
+    "category": "experiential",
+    "description": "Learning opportunity: Recent plugin optimization was successful but principles not generalized",
+    "confidence_score": 0.9,
+    "priority": "high",
+    "related_memories": [
+      "plugin_optimization_success"
+    ],
+    "questions": [
+      "What principles can I extract from plugin_optimization_success?",
+      "How can I apply this learning to other situations?",
+      "What made plugin_optimization_success successful?"
+    ],
+    "exploration_strategies": [
+      "principle_extraction",
+      "pattern_generalization",
+      "transfer_testing"
+    ],
+    "timestamp": "2025-07-22T22:12:22.456456",
+    "resolution_status": "open"
+  },
+  "pattern_gap_async_performance_20250722_221222": {
+    "gap_id": "pattern_gap_async_performance_20250722_221222",
+    "category": "causal",
+    "description": "Pattern inconsistency: Sometimes async improves performance, sometimes it doesn't",
+    "confidence_score": 0.8,
+    "priority": "high",
+    "related_memories": [
+      "async_mem_1",
+      "async_mem_2",
+      "async_mem_3"
+    ],
+    "questions": [
+      "What determines when async_performance works well?",
+      "What are the key variables affecting async_performance?",
+      "Can I identify the conditions that predict success?"
+    ],
+    "exploration_strategies": [
+      "controlled_testing",
+      "variable_isolation",
+      "correlation_analysis"
+    ],
+    "timestamp": "2025-07-22T22:12:22.456115",
+    "resolution_status": "open"
+  },
+  "causal_gap_performance_improvement_20250722_221222": {
+    "gap_id": "causal_gap_performance_improvement_20250722_221222",
+    "category": "causal",
+    "description": "Incomplete causal understanding: Performance improved but mechanism unclear",
+    "confidence_score": 0.7,
+    "priority": "medium",
+    "related_memories": [
+      "performance_improvement"
+    ],
+    "questions": [
+      "What was the actual mechanism behind Performance improved but mechanism unclear?",
+      "What steps were involved in performance_improvement?",
+      "How can I track the causal pathway more clearly?"
+    ],
+    "exploration_strategies": [
+      "step_by_step_analysis",
+      "mechanism_tracing",
+      "hypothesis_testing"
+    ],
+    "timestamp": "2025-07-22T22:12:22.456241",
+    "resolution_status": "open"
+  },
+  "context_gap_user_response_quality_20250722_221222": {
+    "gap_id": "context_gap_user_response_quality_20250722_221222",
+    "category": "contextual",
+    "description": "Context-dependent variation: Response quality varies by time",
+    "confidence_score": 0.6,
+    "priority": "medium",
+    "related_memories": [
+      "user_response_quality"
+    ],
+    "questions": [
+      "Why does user_response_quality vary across morning, evening, weekend?",
+      "What contextual factors influence user_response_quality?",
+      "Can I predict user_response_quality based on context?"
+    ],
+    "exploration_strategies": [
+      "contextual_observation",
+      "factor_analysis",
+      "controlled_context_testing"
+    ],
+    "timestamp": "2025-07-22T22:12:22.456348",
+    "resolution_status": "open"
+  },
+  "learning_gap_plugin_optimization_success_20250722_221323": {
+    "gap_id": "learning_gap_plugin_optimization_success_20250722_221323",
+    "category": "experiential",
+    "description": "Learning opportunity: Recent plugin optimization was successful but principles not generalized",
+    "confidence_score": 0.9,
+    "priority": "high",
+    "related_memories": [
+      "plugin_optimization_success"
+    ],
+    "questions": [
+      "What principles can I extract from plugin_optimization_success?",
+      "How can I apply this learning to other situations?",
+      "What made plugin_optimization_success successful?"
+    ],
+    "exploration_strategies": [
+      "principle_extraction",
+      "pattern_generalization",
+      "transfer_testing"
+    ],
+    "timestamp": "2025-07-22T22:13:23.212963",
+    "resolution_status": "open"
+  },
+  "pattern_gap_async_performance_20250722_221323": {
+    "gap_id": "pattern_gap_async_performance_20250722_221323",
+    "category": "causal",
+    "description": "Pattern inconsistency: Sometimes async improves performance, sometimes it doesn't",
+    "confidence_score": 0.8,
+    "priority": "high",
+    "related_memories": [
+      "async_mem_1",
+      "async_mem_2",
+      "async_mem_3"
+    ],
+    "questions": [
+      "What determines when async_performance works well?",
+      "What are the key variables affecting async_performance?",
+      "Can I identify the conditions that predict success?"
+    ],
+    "exploration_strategies": [
+      "controlled_testing",
+      "variable_isolation",
+      "correlation_analysis"
+    ],
+    "timestamp": "2025-07-22T22:13:23.212563",
+    "resolution_status": "open"
+  },
+  "causal_gap_performance_improvement_20250722_221323": {
+    "gap_id": "causal_gap_performance_improvement_20250722_221323",
+    "category": "causal",
+    "description": "Incomplete causal understanding: Performance improved but mechanism unclear",
+    "confidence_score": 0.7,
+    "priority": "medium",
+    "related_memories": [
+      "performance_improvement"
+    ],
+    "questions": [
+      "What was the actual mechanism behind Performance improved but mechanism unclear?",
+      "What steps were involved in performance_improvement?",
+      "How can I track the causal pathway more clearly?"
+    ],
+    "exploration_strategies": [
+      "step_by_step_analysis",
+      "mechanism_tracing",
+      "hypothesis_testing"
+    ],
+    "timestamp": "2025-07-22T22:13:23.212711",
+    "resolution_status": "open"
+  },
+  "context_gap_user_response_quality_20250722_221323": {
+    "gap_id": "context_gap_user_response_quality_20250722_221323",
+    "category": "contextual",
+    "description": "Context-dependent variation: Response quality varies by time",
+    "confidence_score": 0.6,
+    "priority": "medium",
+    "related_memories": [
+      "user_response_quality"
+    ],
+    "questions": [
+      "Why does user_response_quality vary across morning, evening, weekend?",
+      "What contextual factors influence user_response_quality?",
+      "Can I predict user_response_quality based on context?"
+    ],
+    "exploration_strategies": [
+      "contextual_observation",
+      "factor_analysis",
+      "controlled_context_testing"
+    ],
+    "timestamp": "2025-07-22T22:13:23.212827",
+    "resolution_status": "open"
+  },
+  "learning_gap_plugin_optimization_success_20250722_221453": {
+    "gap_id": "learning_gap_plugin_optimization_success_20250722_221453",
+    "category": "experiential",
+    "description": "Learning opportunity: Recent plugin optimization was successful but principles not generalized",
+    "confidence_score": 0.9,
+    "priority": "high",
+    "related_memories": [
+      "plugin_optimization_success"
+    ],
+    "questions": [
+      "What principles can I extract from plugin_optimization_success?",
+      "How can I apply this learning to other situations?",
+      "What made plugin_optimization_success successful?"
+    ],
+    "exploration_strategies": [
+      "principle_extraction",
+      "pattern_generalization",
+      "transfer_testing"
+    ],
+    "timestamp": "2025-07-22T22:14:53.736133",
+    "resolution_status": "open"
+  },
+  "pattern_gap_async_performance_20250722_221453": {
+    "gap_id": "pattern_gap_async_performance_20250722_221453",
+    "category": "causal",
+    "description": "Pattern inconsistency: Sometimes async improves performance, sometimes it doesn't",
+    "confidence_score": 0.8,
+    "priority": "high",
+    "related_memories": [
+      "async_mem_1",
+      "async_mem_2",
+      "async_mem_3"
+    ],
+    "questions": [
+      "What determines when async_performance works well?",
+      "What are the key variables affecting async_performance?",
+      "Can I identify the conditions that predict success?"
+    ],
+    "exploration_strategies": [
+      "controlled_testing",
+      "variable_isolation",
+      "correlation_analysis"
+    ],
+    "timestamp": "2025-07-22T22:14:53.735708",
+    "resolution_status": "open"
+  },
+  "causal_gap_performance_improvement_20250722_221453": {
+    "gap_id": "causal_gap_performance_improvement_20250722_221453",
+    "category": "causal",
+    "description": "Incomplete causal understanding: Performance improved but mechanism unclear",
+    "confidence_score": 0.7,
+    "priority": "medium",
+    "related_memories": [
+      "performance_improvement"
+    ],
+    "questions": [
+      "What was the actual mechanism behind Performance improved but mechanism unclear?",
+      "What steps were involved in performance_improvement?",
+      "How can I track the causal pathway more clearly?"
+    ],
+    "exploration_strategies": [
+      "step_by_step_analysis",
+      "mechanism_tracing",
+      "hypothesis_testing"
+    ],
+    "timestamp": "2025-07-22T22:14:53.735852",
+    "resolution_status": "open"
+  },
+  "context_gap_user_response_quality_20250722_221453": {
+    "gap_id": "context_gap_user_response_quality_20250722_221453",
+    "category": "contextual",
+    "description": "Context-dependent variation: Response quality varies by time",
+    "confidence_score": 0.6,
+    "priority": "medium",
+    "related_memories": [
+      "user_response_quality"
+    ],
+    "questions": [
+      "Why does user_response_quality vary across morning, evening, weekend?",
+      "What contextual factors influence user_response_quality?",
+      "Can I predict user_response_quality based on context?"
+    ],
+    "exploration_strategies": [
+      "contextual_observation",
+      "factor_analysis",
+      "controlled_context_testing"
+    ],
+    "timestamp": "2025-07-22T22:14:53.735997",
+    "resolution_status": "open"
+  }
+}

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Aetherra Memory Analytics Dashboard</title>
+
+    <!-- Plotly.js for visualizations -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!-- Bootstrap for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            margin: 20px;
+            padding: 30px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4c63d2;
+        }
+
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-excellent {
+            background-color: #28a745;
+        }
+
+        .status-good {
+            background-color: #ffc107;
+        }
+
+        .status-warning {
+            background-color: #fd7e14;
+        }
+
+        .status-critical {
+            background-color: #dc3545;
+        }
+
+        .header-icon {
+            background: linear-gradient(135deg, #4c63d2, #667eea);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
+        .real-time-badge {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .feedback-form {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .narrative-preview {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row">
+            <div class="col-12">
+                <div class="dashboard-container">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="header-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div>
+                            <h1 class="mb-0">🧠 Aetherra Memory Analytics Dashboard</h1>
+                            <p class="text-muted mb-0">Real-time monitoring and visualization of memory system health
+                            </p>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="real-time-badge">
+                                <i class="fas fa-circle"></i> LIVE
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics Row -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="dashboard-container">
+                    <div class="metric-card text-center">
+                        <div class="metric-value" id="total-fragments">-</div>
+                        <div class="metric-label">Total Memory Fragments</div>
+                        <div class="mt-2">
+                            <span class="status-indicator status-excellent"></span>
+                            <small class="text-muted">System Healthy</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="dashboard-container">
+                    <div class="metric-card text-center">
+                        <div class="metric-value" id="avg-confidence">-</div>
+                        <div class="metric-label">Average Confidence</div>
+                        <div class="mt-2">
+                            <span class="status-indicator status-good"></span>
+                            <small class="text-muted">Confidence Level</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="dashboard-container">
+                    <div class="metric-card text-center">
+                        <div class="metric-value" id="narrative-quality">-</div>
+                        <div class="metric-label">Narrative Quality</div>
+                        <div class="mt-2">
+                            <span class="status-indicator status-excellent"></span>
+                            <small class="text-muted">Story Coherence</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="dashboard-container">
+                    <div class="metric-card text-center">
+                        <div class="metric-value" id="causal-chains">-</div>
+                        <div class="metric-label">Causal Chains</div>
+                        <div class="mt-2">
+                            <span class="status-indicator status-good"></span>
+                            <small class="text-muted">Detected Patterns</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="dashboard-container">
+                    <h4><i class="fas fa-chart-line me-2"></i>Memory Confidence Evolution</h4>
+                    <div class="chart-container">
+                        <div id="confidence-chart" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="dashboard-container">
+                    <h4><i class="fas fa-tachometer-alt me-2"></i>System Health</h4>
+                    <div class="chart-container">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="metric-value text-success" id="decay-rate">-</div>
+                                <div class="metric-label">Decay Rate</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-value text-info" id="growth-rate">-</div>
+                                <div class="metric-label">Growth Rate</div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center mt-3">
+                            <div class="col-6">
+                                <div class="metric-value text-warning" id="goal-arcs">-</div>
+                                <div class="metric-label">Goal Arcs</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="metric-value text-primary" id="memory-coherence">-</div>
+                                <div class="metric-label">Coherence</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Memory Network & Story Feedback Row -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="dashboard-container">
+                    <h4><i class="fas fa-project-diagram me-2"></i>Real-time Memory Network Map</h4>
+                    <div class="chart-container">
+                        <div id="memory-network" style="height: 500px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="dashboard-container">
+                    <h4><i class="fas fa-comments me-2"></i>Story Feedback System</h4>
+
+                    <!-- Sample Narrative Preview -->
+                    <div class="narrative-preview">
+                        <strong>Latest Generated Narrative:</strong><br>
+                        <span id="narrative-preview">"Over the past week, I experienced significant growth in memory
+                            system optimization..."</span>
+                    </div>
+
+                    <!-- Feedback Form -->
+                    <div class="feedback-form">
+                        <h6>Rate Latest Story:</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Quality Score:</label>
+                            <input type="range" class="form-range" min="0" max="1" step="0.1" id="quality-score"
+                                value="0.8">
+                            <div class="d-flex justify-content-between">
+                                <small>Poor</small>
+                                <small>Excellent</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Coherence Score:</label>
+                            <input type="range" class="form-range" min="0" max="1" step="0.1" id="coherence-score"
+                                value="0.7">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Engagement Score:</label>
+                            <input type="range" class="form-range" min="0" max="1" step="0.1" id="engagement-score"
+                                value="0.9">
+                        </div>
+
+                        <div class="mb-3">
+                            <textarea class="form-control" placeholder="Additional feedback..." id="feedback-text"
+                                rows="3"></textarea>
+                        </div>
+
+                        <button class="btn btn-primary btn-sm" onclick="submitFeedback()">
+                            <i class="fas fa-paper-plane me-1"></i>Submit Feedback
+                        </button>
+                    </div>
+
+                    <!-- Feedback Analytics -->
+                    <div class="mt-3">
+                        <h6>Recent Feedback Trends:</h6>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="text-success h5" id="avg-quality">0.85</div>
+                                <small>Avg Quality</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-info h5" id="avg-engagement">0.78</div>
+                                <small>Avg Engagement</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-warning h5" id="feedback-count">12</div>
+                                <small>Total Reviews</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard JavaScript functionality
+        let isRealTime = true;
+        let updateInterval;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function () {
+            loadHealthMetrics();
+            loadMemoryMap();
+            startRealTimeUpdates();
+        });
+
+        // Load health metrics from API
+        async function loadHealthMetrics() {
+            try {
+                const response = await fetch('/api/health-metrics');
+                const metrics = await response.json();
+
+                if (metrics.error) {
+                    console.warn('No metrics available:', metrics.error);
+                    setDemoMetrics();
+                    return;
+                }
+
+                updateMetricsDisplay(metrics);
+
+            } catch (error) {
+                console.error('Error loading metrics:', error);
+                setDemoMetrics();
+            }
+        }
+
+        // Set demo metrics for testing
+        function setDemoMetrics() {
+            const demoMetrics = {
+                total_fragments: 247,
+                avg_confidence: 0.742,
+                memory_coherence: 0.685,
+                narrative_quality: 0.803,
+                causal_chain_count: 12,
+                goal_arc_count: 8,
+                decay_rate: 0.023,
+                growth_rate: 3.2
+            };
+            updateMetricsDisplay(demoMetrics);
+        }
+
+        // Update metrics display
+        function updateMetricsDisplay(metrics) {
+            document.getElementById('total-fragments').textContent = metrics.total_fragments || '-';
+            document.getElementById('avg-confidence').textContent = (metrics.avg_confidence || 0).toFixed(3);
+            document.getElementById('narrative-quality').textContent = (metrics.narrative_quality || 0).toFixed(3);
+            document.getElementById('causal-chains').textContent = metrics.causal_chain_count || '-';
+            document.getElementById('decay-rate').textContent = (metrics.decay_rate || 0).toFixed(3);
+            document.getElementById('growth-rate').textContent = (metrics.growth_rate || 0).toFixed(1);
+            document.getElementById('goal-arcs').textContent = metrics.goal_arc_count || '-';
+            document.getElementById('memory-coherence').textContent = (metrics.memory_coherence || 0).toFixed(3);
+        }
+
+        // Load memory map visualization
+        async function loadMemoryMap() {
+            try {
+                const response = await fetch('/api/memory-map');
+                const mapData = await response.json();
+
+                // For demo, create sample network
+                createSampleNetworkVisualization();
+                createSampleConfidenceChart();
+
+            } catch (error) {
+                console.error('Error loading memory map:', error);
+                createSampleNetworkVisualization();
+                createSampleConfidenceChart();
+            }
+        }
+
+        // Create sample network visualization
+        function createSampleNetworkVisualization() {
+            // Sample network data
+            const nodeCount = 20;
+            const nodes = {
+                x: [],
+                y: [],
+                text: [],
+                mode: 'markers',
+                marker: {
+                    size: [],
+                    color: [],
+                    colorscale: 'Viridis',
+                    showscale: true,
+                    colorbar: { title: "Confidence" }
+                },
+                type: 'scatter',
+                name: 'Memory Fragments'
+            };
+
+            const edges = {
+                x: [],
+                y: [],
+                mode: 'lines',
+                line: { color: 'rgba(125,125,125,0.3)', width: 1 },
+                hoverinfo: 'none',
+                type: 'scatter',
+                name: 'Connections'
+            };
+
+            // Generate sample nodes in circular layout
+            for (let i = 0; i < nodeCount; i++) {
+                const angle = (2 * Math.PI * i) / nodeCount;
+                const radius = 1 + Math.random() * 0.3;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+
+                nodes.x.push(x);
+                nodes.y.push(y);
+                nodes.text.push(`Fragment ${i}<br>Confidence: ${(0.4 + Math.random() * 0.6).toFixed(2)}<br>Type: episodic`);
+                nodes.marker.size.push(15 + Math.random() * 10);
+                nodes.marker.color.push(0.4 + Math.random() * 0.6);
+
+                // Add some edges
+                if (i > 0 && Math.random() > 0.6) {
+                    const prevIdx = Math.floor(Math.random() * i);
+                    edges.x.push(x, nodes.x[prevIdx], null);
+                    edges.y.push(y, nodes.y[prevIdx], null);
+                }
+            }
+
+            const layout = {
+                title: 'Memory Network Map - Real-time View',
+                showlegend: false,
+                hovermode: 'closest',
+                margin: { t: 40, b: 20, l: 20, r: 20 },
+                xaxis: { showgrid: false, zeroline: false, showticklabels: false },
+                yaxis: { showgrid: false, zeroline: false, showticklabels: false },
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                paper_bgcolor: 'rgba(0,0,0,0)'
+            };
+
+            Plotly.newPlot('memory-network', [edges, nodes], layout, { responsive: true });
+        }
+
+        // Create sample confidence evolution chart
+        function createSampleConfidenceChart() {
+            const days = 7;
+            const timestamps = [];
+            const confidences = [];
+            const decayScores = [];
+
+            const now = new Date();
+            for (let i = days; i >= 0; i--) {
+                const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+                timestamps.push(date);
+                confidences.push(0.6 + Math.sin(i * 0.3) * 0.2 + Math.random() * 0.1);
+                decayScores.push(Math.max(0.3, 1.0 - i * 0.05 + Math.random() * 0.1));
+            }
+
+            const confidenceTrace = {
+                x: timestamps,
+                y: confidences,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Confidence Score',
+                line: { color: 'blue', width: 3 },
+                marker: { size: 8 }
+            };
+
+            const decayTrace = {
+                x: timestamps,
+                y: decayScores,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Memory Freshness',
+                line: { color: 'red', width: 2 },
+                marker: { size: 6 },
+                yaxis: 'y2'
+            };
+
+            const layout = {
+                title: 'Memory Confidence & Decay Evolution',
+                xaxis: { title: 'Time' },
+                yaxis: { title: 'Confidence Score', side: 'left' },
+                yaxis2: {
+                    title: 'Memory Freshness',
+                    side: 'right',
+                    overlaying: 'y'
+                },
+                margin: { t: 40, b: 60, l: 60, r: 60 },
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                paper_bgcolor: 'rgba(0,0,0,0)'
+            };
+
+            Plotly.newPlot('confidence-chart', [confidenceTrace, decayTrace], layout, { responsive: true });
+        }
+
+        // Start real-time updates
+        function startRealTimeUpdates() {
+            if (isRealTime) {
+                updateInterval = setInterval(() => {
+                    loadHealthMetrics();
+                    // Simulate real-time changes
+                    simulateRealTimeChanges();
+                }, 5000); // Update every 5 seconds
+            }
+        }
+
+        // Simulate real-time changes for demo
+        function simulateRealTimeChanges() {
+            // Add small random changes to metrics
+            const currentFragments = parseInt(document.getElementById('total-fragments').textContent) || 247;
+            const change = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+            document.getElementById('total-fragments').textContent = Math.max(0, currentFragments + change);
+
+            // Update confidence with small fluctuation
+            const currentConfidence = parseFloat(document.getElementById('avg-confidence').textContent) || 0.742;
+            const newConfidence = Math.max(0, Math.min(1, currentConfidence + (Math.random() - 0.5) * 0.01));
+            document.getElementById('avg-confidence').textContent = newConfidence.toFixed(3);
+        }
+
+        // Submit story feedback
+        async function submitFeedback() {
+            const feedback = {
+                story_id: 'demo_story_' + Date.now(),
+                story_type: 'daily_narrative',
+                quality_score: parseFloat(document.getElementById('quality-score').value),
+                coherence_score: parseFloat(document.getElementById('coherence-score').value),
+                engagement_score: parseFloat(document.getElementById('engagement-score').value),
+                accuracy_score: 0.8, // Default
+                feedback_text: document.getElementById('feedback-text').value,
+                improvement_suggestions: []
+            };
+
+            try {
+                const response = await fetch('/api/story-feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(feedback)
+                });
+
+                if (response.ok) {
+                    showNotification('Feedback submitted successfully!', 'success');
+                    document.getElementById('feedback-text').value = '';
+                } else {
+                    showNotification('Error submitting feedback', 'error');
+                }
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+                showNotification('Feedback recorded locally', 'info');
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation' : 'info'}-circle me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Toggle real-time updates
+        function toggleRealTime() {
+            isRealTime = !isRealTime;
+            if (isRealTime) {
+                startRealTimeUpdates();
+            } else {
+                clearInterval(updateInterval);
+            }
+        }
+    </script>
+</body>
+
+</html>

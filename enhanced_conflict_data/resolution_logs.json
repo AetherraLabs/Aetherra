@@ -1,0 +1,254 @@
+[
+  {
+    "log_id": "resolution_conflict_logical_20250722_225005_0_20250722_225005",
+    "conflict_id": "conflict_logical_20250722_225005_0",
+    "resolution_timestamp": "2025-07-22T22:50:05.611166",
+    "resolution_method": "auto",
+    "analysis_details": {
+      "confidence_weights": {
+        "evidence_for": 0.8,
+        "evidence_against": 0.9,
+        "confidence_difference": 0.09999999999999998
+      },
+      "context_relevance": {
+        "temporal_relevance": 0.6,
+        "interaction_relevance": 0.7,
+        "system_relevance": 0.8
+      },
+      "temporal_factors": {
+        "evidence_age_difference": "moderate",
+        "evolution_likelihood": "medium",
+        "stability_over_time": "stable"
+      }
+    },
+    "decision_rationale": "Evidence confidence too close - need additional data",
+    "action_taken": "Marked for further investigation - insufficient evidence",
+    "resolution_quality": "high",
+    "learning_notes": [
+      "Similar conflicts can use this resolution pattern",
+      "Evidence weighting methodology validated",
+      "Context separation effective for preference contradictions"
+    ],
+    "future_prevention": [
+      "Monitor for similar evidence patterns",
+      "Implement confidence decay for temporal contradictions",
+      "Add context tags to prevent future conflicts"
+    ]
+  },
+  {
+    "log_id": "resolution_conflict_logical_20250722_225005_0_20250722_225059",
+    "conflict_id": "conflict_logical_20250722_225005_0",
+    "resolution_timestamp": "2025-07-22T22:50:59.239480",
+    "resolution_method": "auto",
+    "analysis_details": {
+      "confidence_weights": {
+        "evidence_for": 0.8,
+        "evidence_against": 0.9,
+        "confidence_difference": 0.09999999999999998
+      },
+      "context_relevance": {
+        "temporal_relevance": 0.6,
+        "interaction_relevance": 0.7,
+        "system_relevance": 0.8
+      },
+      "temporal_factors": {
+        "evidence_age_difference": "moderate",
+        "evolution_likelihood": "medium",
+        "stability_over_time": "stable"
+      }
+    },
+    "decision_rationale": "Evidence confidence too close - need additional data",
+    "action_taken": "Marked for further investigation - insufficient evidence",
+    "resolution_quality": "high",
+    "learning_notes": [
+      "Similar conflicts can use this resolution pattern",
+      "Evidence weighting methodology validated",
+      "Context separation effective for preference contradictions"
+    ],
+    "future_prevention": [
+      "Monitor for similar evidence patterns",
+      "Implement confidence decay for temporal contradictions",
+      "Add context tags to prevent future conflicts"
+    ]
+  },
+  {
+    "log_id": "resolution_conflict_behavioral_20250722_225005_1_20250722_225059",
+    "conflict_id": "conflict_behavioral_20250722_225005_1",
+    "resolution_timestamp": "2025-07-22T22:50:59.253128",
+    "resolution_method": "auto",
+    "analysis_details": {
+      "confidence_weights": {
+        "evidence_for": 0.8,
+        "evidence_against": 0.9,
+        "confidence_difference": 0.09999999999999998
+      },
+      "context_relevance": {
+        "temporal_relevance": 0.6,
+        "interaction_relevance": 0.9,
+        "system_relevance": 0.5
+      },
+      "temporal_factors": {
+        "evidence_age_difference": "significant",
+        "evolution_likelihood": "medium",
+        "stability_over_time": "decreasing"
+      }
+    },
+    "decision_rationale": "User preferences may be context-dependent - both valid in different situations",
+    "action_taken": "Separated evidence by context - both valid in different situations",
+    "resolution_quality": "high",
+    "learning_notes": [
+      "Similar conflicts can use this resolution pattern",
+      "Evidence weighting methodology validated",
+      "Context separation effective for preference contradictions"
+    ],
+    "future_prevention": [
+      "Monitor for similar evidence patterns",
+      "Implement confidence decay for temporal contradictions",
+      "Add context tags to prevent future conflicts"
+    ]
+  },
+  {
+    "log_id": "resolution_conflict_temporal_20250722_225005_2_20250722_225059",
+    "conflict_id": "conflict_temporal_20250722_225005_2",
+    "resolution_timestamp": "2025-07-22T22:50:59.267604",
+    "resolution_method": "auto",
+    "analysis_details": {
+      "confidence_weights": {
+        "evidence_for": 0.8,
+        "evidence_against": 0.9,
+        "confidence_difference": 0.09999999999999998
+      },
+      "context_relevance": {
+        "temporal_relevance": 0.8,
+        "interaction_relevance": 0.7,
+        "system_relevance": 0.5
+      },
+      "temporal_factors": {
+        "evidence_age_difference": "moderate",
+        "evolution_likelihood": "high",
+        "stability_over_time": "stable"
+      }
+    },
+    "decision_rationale": "Natural evolution/learning over time - accept newer perspective",
+    "action_taken": "Accepted as natural evolution/learning over time",
+    "resolution_quality": "high",
+    "learning_notes": [
+      "Similar conflicts can use this resolution pattern",
+      "Evidence weighting methodology validated",
+      "Context separation effective for preference contradictions"
+    ],
+    "future_prevention": [
+      "Monitor for similar evidence patterns",
+      "Implement confidence decay for temporal contradictions",
+      "Add context tags to prevent future conflicts"
+    ]
+  },
+  {
+    "log_id": "resolution_conflict_logical_20250722_225059_0_20250722_225059",
+    "conflict_id": "conflict_logical_20250722_225059_0",
+    "resolution_timestamp": "2025-07-22T22:50:59.281760",
+    "resolution_method": "auto",
+    "analysis_details": {
+      "confidence_weights": {
+        "evidence_for": 0.8,
+        "evidence_against": 0.9,
+        "confidence_difference": 0.09999999999999998
+      },
+      "context_relevance": {
+        "temporal_relevance": 0.6,
+        "interaction_relevance": 0.7,
+        "system_relevance": 0.8
+      },
+      "temporal_factors": {
+        "evidence_age_difference": "moderate",
+        "evolution_likelihood": "medium",
+        "stability_over_time": "stable"
+      }
+    },
+    "decision_rationale": "Evidence confidence too close - need additional data",
+    "action_taken": "Marked for further investigation - insufficient evidence",
+    "resolution_quality": "high",
+    "learning_notes": [
+      "Similar conflicts can use this resolution pattern",
+      "Evidence weighting methodology validated",
+      "Context separation effective for preference contradictions"
+    ],
+    "future_prevention": [
+      "Monitor for similar evidence patterns",
+      "Implement confidence decay for temporal contradictions",
+      "Add context tags to prevent future conflicts"
+    ]
+  },
+  {
+    "log_id": "resolution_conflict_behavioral_20250722_225059_1_20250722_225059",
+    "conflict_id": "conflict_behavioral_20250722_225059_1",
+    "resolution_timestamp": "2025-07-22T22:50:59.295869",
+    "resolution_method": "auto",
+    "analysis_details": {
+      "confidence_weights": {
+        "evidence_for": 0.8,
+        "evidence_against": 0.9,
+        "confidence_difference": 0.09999999999999998
+      },
+      "context_relevance": {
+        "temporal_relevance": 0.6,
+        "interaction_relevance": 0.9,
+        "system_relevance": 0.5
+      },
+      "temporal_factors": {
+        "evidence_age_difference": "significant",
+        "evolution_likelihood": "medium",
+        "stability_over_time": "decreasing"
+      }
+    },
+    "decision_rationale": "User preferences may be context-dependent - both valid in different situations",
+    "action_taken": "Separated evidence by context - both valid in different situations",
+    "resolution_quality": "high",
+    "learning_notes": [
+      "Similar conflicts can use this resolution pattern",
+      "Evidence weighting methodology validated",
+      "Context separation effective for preference contradictions"
+    ],
+    "future_prevention": [
+      "Monitor for similar evidence patterns",
+      "Implement confidence decay for temporal contradictions",
+      "Add context tags to prevent future conflicts"
+    ]
+  },
+  {
+    "log_id": "resolution_conflict_temporal_20250722_225059_2_20250722_225059",
+    "conflict_id": "conflict_temporal_20250722_225059_2",
+    "resolution_timestamp": "2025-07-22T22:50:59.311687",
+    "resolution_method": "auto",
+    "analysis_details": {
+      "confidence_weights": {
+        "evidence_for": 0.8,
+        "evidence_against": 0.9,
+        "confidence_difference": 0.09999999999999998
+      },
+      "context_relevance": {
+        "temporal_relevance": 0.8,
+        "interaction_relevance": 0.7,
+        "system_relevance": 0.5
+      },
+      "temporal_factors": {
+        "evidence_age_difference": "moderate",
+        "evolution_likelihood": "high",
+        "stability_over_time": "stable"
+      }
+    },
+    "decision_rationale": "Natural evolution/learning over time - accept newer perspective",
+    "action_taken": "Accepted as natural evolution/learning over time",
+    "resolution_quality": "high",
+    "learning_notes": [
+      "Similar conflicts can use this resolution pattern",
+      "Evidence weighting methodology validated",
+      "Context separation effective for preference contradictions"
+    ],
+    "future_prevention": [
+      "Monitor for similar evidence patterns",
+      "Implement confidence decay for temporal contradictions",
+      "Add context tags to prevent future conflicts"
+    ]
+  }
+]

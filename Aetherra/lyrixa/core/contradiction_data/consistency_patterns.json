@@ -1,0 +1,30 @@
+{
+  "consistency_performance_20250722_221453": {
+    "pattern_id": "consistency_performance_20250722_221453",
+    "pattern_type": "consistent",
+    "topic": "performance",
+    "memory_ids": [
+      "mem_1",
+      "mem_2",
+      "mem_4",
+      "mem_5"
+    ],
+    "consistency_score": 0.9629629629629629,
+    "confidence_trend": [
+      0.6,
+      0.95,
+      0.7,
+      0.8
+    ],
+    "temporal_span": 3.9999999894444445,
+    "context_factors": [
+      "small_applications",
+      "memory_systems",
+      "programming"
+    ],
+    "insights": [
+      "High consistency (score: 0.96) indicates stable understanding"
+    ],
+    "timestamp": "2025-07-22T22:14:53.755121"
+  }
+}

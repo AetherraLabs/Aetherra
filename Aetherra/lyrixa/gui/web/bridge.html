@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qt WebChannel Bridge</title>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+
+<body>
+    <script>
+        // This script is injected to setup the Qt WebChannel bridge
+        console.log('Qt WebChannel bridge script loaded');
+
+        // Setup communication with Qt
+        if (typeof qt !== 'undefined' && qt.webChannelTransport) {
+            new QWebChannel(qt.webChannelTransport, function (channel) {
+                console.log('Qt WebChannel established');
+                window.qtBridge = channel.objects.bridge;
+
+                // Notify main interface that Qt bridge is ready
+                if (window.lyrixaInterface) {
+                    window.lyrixaInterface.qtBridge = window.qtBridge;
+                }
+
+                // Emit ready event
+                document.dispatchEvent(new CustomEvent('qtBridgeReady'));
+            });
+        } else {
+            console.log('Qt WebChannel not available - running in standalone mode');
+        }
+    </script>
+</body>
+
+</html>
