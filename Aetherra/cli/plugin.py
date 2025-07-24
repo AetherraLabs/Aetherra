@@ -25,12 +25,12 @@ License: GPL-3.0
 import sys
 from pathlib import Path
 
-# Add core directory to path for imports
-core_dir = Path(__file__).parent.parent / "core"
-sys.path.insert(0, str(core_dir))
+# Add plugin directory to path for imports
+plugins_dir = Path(__file__).parent.parent / "lyrixa" / "plugins"
+sys.path.insert(0, str(plugins_dir))
 
 try:
-    from enhanced_plugin_manager import EnhancedPluginManager
+    from enhanced_plugin_manager import PluginManager as EnhancedPluginManager
 except ImportError:
     print("❌ Error: Could not import AetherraCode plugin management system")
     print("   Make sure you're running this from the AetherraCode project directory")

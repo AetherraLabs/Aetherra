@@ -1,11 +1,48 @@
 from typing import Any, Dict, Optional
 
-from .agent_base import AgentBase, AgentResponse
-from .escalation_agent import EscalationAgent
-from .goal_agent import GoalAgent
-from .plugin_agent import PluginAgent
-from .reflection_agent import ReflectionAgent
-from .self_evaluation_agent import SelfEvaluationAgent
+try:
+    # Try relative imports first (when used as a package)
+    from .agent_base import AgentBase, AgentResponse
+    from .escalation_agent import EscalationAgent
+    from .goal_agent import GoalAgent
+    from .plugin_agent import PluginAgent
+    from .reflection_agent import ReflectionAgent
+    from .self_evaluation_agent import SelfEvaluationAgent
+except ImportError:
+    # Fall back to absolute imports (when imported directly)
+    try:
+        from Aetherra.lyrixa.agents.agent_base import AgentBase, AgentResponse
+        from Aetherra.lyrixa.agents.escalation_agent import EscalationAgent
+        from Aetherra.lyrixa.agents.goal_agent import GoalAgent
+        from Aetherra.lyrixa.agents.plugin_agent import PluginAgent
+        from Aetherra.lyrixa.agents.reflection_agent import ReflectionAgent
+        from Aetherra.lyrixa.agents.self_evaluation_agent import SelfEvaluationAgent
+    except ImportError:
+        # If all imports fail, create placeholder classes for graceful degradation
+        print("⚠️ Agent dependencies not available, using placeholder classes")
+        from datetime import datetime
+
+        class AgentBase:
+            def __init__(self, *args, **kwargs):
+                self.name = kwargs.get("name", "placeholder")
+
+            def log(self, message):
+                print(f"[{self.name}] {message}")
+
+            def process(self, input_data, context=None):
+                return AgentResponse("Agent not available", "placeholder")
+
+        class AgentResponse:
+            def __init__(self, content="", agent_type="placeholder", confidence=0.0, agent_name="", metadata=None):
+                self.content = content
+                self.agent_type = agent_type
+                self.confidence = confidence
+                self.agent_name = agent_name
+                self.metadata = metadata or {}
+                self.timestamp = datetime.now()
+
+        # Create placeholder classes for all agents
+        EscalationAgent = GoalAgent = PluginAgent = ReflectionAgent = SelfEvaluationAgent = AgentBase
 
 
 class LyrixaAI(AgentBase):
