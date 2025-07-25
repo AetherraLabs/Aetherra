@@ -16,9 +16,15 @@
             --medium-gray: #2a2a2a;
             --text-gray: #cccccc;
             --accent-blue: #00ccff;
+            --accent-purple: #9f7aea;
             --warning-amber: #ffaa00;
             --danger-red: #ff4444;
             --glow-intensity: 0.8;
+
+            /* Additional variables for panels */
+            --bg-dark: #1a1a1a;
+            --bg-darker: #0f0f0f;
+            --text-primary: #cccccc;
         }
 
         * {
@@ -651,6 +657,11 @@
                 <button class="tab" data-tab="memory">Memory Graph</button>
                 <button class="tab" data-tab="insights">Insight Stream</button>
                 <button class="tab" data-tab="agents">Agent Management</button>
+                <button class="tab" data-tab="plugins">Plugin Panel</button>
+                <button class="tab" data-tab="editor">Code Editor</button>
+                <button class="tab" data-tab="hub">Aetherra Hub</button>
+                <button class="tab" data-tab="self-metrics">Self Metrics</button>
+                <button class="tab" data-tab="lyrixa-core">LyrixaCore</button>
             </div>
 
             <!-- Chat Tab -->
@@ -755,6 +766,375 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Self Metrics Tab -->
+                <div class="tab-panel" id="self-metrics">
+                    <h3 style="color: var(--neural-green); margin-bottom: 20px;">
+                        <i class="fas fa-chart-line"></i> Self Metrics Dashboard
+                    </h3>
+
+                    <!-- Memory Continuity Score -->
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: var(--neural-green); margin-bottom: 10px;">Memory Continuity</h4>
+                        <div class="core-metrics">
+                            <div class="metric">
+                                <span>Overall Score</span>
+                                <span class="metric-value" id="memoryContinuityScore">--</span>
+                            </div>
+                            <div class="metric">
+                                <span>Coherence Index</span>
+                                <span class="metric-value" id="coherenceIndex">--</span>
+                            </div>
+                            <div class="metric">
+                                <span>Retention Rate</span>
+                                <span class="metric-value" id="retentionRate">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Growth Trajectory -->
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: var(--neural-green); margin-bottom: 10px;">Growth Trajectory</h4>
+                        <div class="memory-graph" style="height: 120px;" id="growthTrajectoryGraph">
+                            <!-- Growth trajectory visualization -->
+                        </div>
+                        <div class="core-metrics" style="margin-top: 10px;">
+                            <div class="metric">
+                                <span>Learning Rate</span>
+                                <span class="metric-value" id="learningRate">--</span>
+                            </div>
+                            <div class="metric">
+                                <span>Adaptation Score</span>
+                                <span class="metric-value" id="adaptationScore">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conflict Heatmap -->
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: var(--neural-green); margin-bottom: 10px;">Conflict Analysis</h4>
+                        <div class="memory-graph" style="height: 100px;" id="conflictHeatmap">
+                            <!-- Conflict heatmap visualization -->
+                        </div>
+                        <div class="core-metrics" style="margin-top: 10px;">
+                            <div class="metric">
+                                <span>Active Conflicts</span>
+                                <span class="metric-value" id="activeConflicts">--</span>
+                            </div>
+                            <div class="metric">
+                                <span>Resolution Rate</span>
+                                <span class="metric-value" id="resolutionRate">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ethics Score -->
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: var(--neural-green); margin-bottom: 10px;">Ethics & Integrity</h4>
+                        <div class="core-metrics">
+                            <div class="metric">
+                                <span>Ethics Score</span>
+                                <span class="metric-value" id="ethicsScore">--</span>
+                            </div>
+                            <div class="metric">
+                                <span>Narrative Integrity</span>
+                                <span class="metric-value" id="narrativeIntegrity">--</span>
+                            </div>
+                            <div class="metric">
+                                <span>Consistency Index</span>
+                                <span class="metric-value" id="consistencyIndex">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Status -->
+                    <div>
+                        <h4 style="color: var(--neural-green); margin-bottom: 10px;">Live Metrics</h4>
+                        <div style="font-size: 12px;" id="selfMetricsLog">
+                            <div style="padding: 4px 0; color: #999;">Waiting for metrics data...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plugin Panel Tab -->
+                <div class="tab-panel" id="plugins">
+                    <h3 style="color: var(--neural-green); margin-bottom: 20px;">
+                        <i class="fas fa-puzzle-piece"></i> Plugin Management System
+                    </h3>
+
+                    <!-- Plugin Controls -->
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <button onclick="window.aetherraInterface.refreshPlugins()"
+                                style="background: var(--neural-green); color: #000; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                            <button onclick="window.aetherraInterface.loadPlugin()"
+                                style="background: var(--accent-blue); color: #000; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-plus"></i> Load Plugin
+                            </button>
+                            <button onclick="window.aetherraInterface.createPlugin()"
+                                style="background: var(--accent-purple); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-code"></i> Create New
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Plugin List -->
+                    <div id="pluginList" style="max-height: 400px; overflow-y: auto;">
+                        <div style="color: #999; text-align: center; padding: 40px;">
+                            Loading plugins...
+                        </div>
+                    </div>
+
+                    <!-- Plugin Details Modal -->
+                    <div id="pluginModal"
+                        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000;">
+                        <div
+                            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-dark); border: 1px solid var(--neural-green); border-radius: 8px; padding: 20px; max-width: 600px; width: 90%;">
+                            <h4 style="color: var(--neural-green); margin-bottom: 15px;" id="pluginModalTitle">Plugin
+                                Details</h4>
+                            <div id="pluginModalContent"></div>
+                            <div style="margin-top: 20px; text-align: right;">
+                                <button onclick="window.aetherraInterface.closePluginModal()"
+                                    style="background: #666; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Editor Tab -->
+                <div class="tab-panel" id="editor">
+                    <h3 style="color: var(--neural-green); margin-bottom: 20px;">
+                        <i class="fas fa-code"></i> Aetherra Code Editor
+                    </h3>
+
+                    <!-- Editor Toolbar -->
+                    <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                        <button onclick="window.aetherraInterface.saveCode()"
+                            style="background: var(--neural-green); color: #000; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                        <button onclick="window.aetherraInterface.runCode()"
+                            style="background: var(--accent-blue); color: #000; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-play"></i> Run
+                        </button>
+                        <button onclick="window.aetherraInterface.requestAutoFill()"
+                            style="background: var(--accent-purple); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-magic"></i> AI Assist
+                        </button>
+                        <select id="editorLanguage"
+                            style="background: var(--bg-darker); color: var(--text-primary); border: 1px solid var(--neural-green); padding: 8px; border-radius: 4px;">
+                            <option value="aether">Aetherra (.aether)</option>
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                        </select>
+                    </div>
+
+                    <!-- Code Editor Area -->
+                    <div
+                        style="position: relative; border: 1px solid var(--neural-green); border-radius: 4px; min-height: 400px;">
+                        <textarea id="codeEditor"
+                            style="width: 100%; height: 400px; background: var(--bg-darker); color: var(--text-primary); border: none; padding: 15px; font-family: 'Courier New', monospace; font-size: 14px; resize: vertical;"
+                            placeholder="// Enter your Aetherra code here...
+// Example:
+function greet(name) {
+    analyze sentiment of name -> emotional_tone
+    if emotional_tone is positive {
+        return 'Hello, ' + name + '! 🌟'
+    } else {
+        return 'Greetings, ' + name + '. How can I help?'
+    }
+}"></textarea>
+                    </div>
+
+                    <!-- Output Console -->
+                    <div style="margin-top: 15px;">
+                        <h4 style="color: var(--neural-green); margin-bottom: 10px;">Output Console</h4>
+                        <div id="codeOutput"
+                            style="background: var(--bg-darker); border: 1px solid #444; border-radius: 4px; padding: 15px; min-height: 100px; font-family: 'Courier New', monospace; font-size: 12px; color: #999;">
+                            Ready for code execution...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aetherra Hub Tab -->
+                <div class="tab-panel" id="hub">
+                    <h3 style="color: var(--neural-green); margin-bottom: 20px;">
+                        <i class="fas fa-network-wired"></i> Aetherra Hub
+                    </h3>
+
+                    <!-- Hub Status -->
+                    <div
+                        style="margin-bottom: 20px; padding: 15px; background: var(--bg-darker); border-radius: 8px; border-left: 4px solid var(--neural-green);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span style="color: var(--neural-green); font-weight: bold;">Hub Status:</span>
+                            <span id="hubStatus" style="color: #999;">Checking connection...</span>
+                            <div id="hubStatusIndicator"
+                                style="width: 10px; height: 10px; border-radius: 50%; background: #666;"></div>
+                        </div>
+                        <div style="font-size: 12px; color: #999;">
+                            <div>Endpoint: <span id="hubEndpoint">localhost:3001</span></div>
+                            <div>Last Check: <span id="hubLastCheck">--</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Hub Navigation -->
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <button onclick="window.aetherraInterface.connectHub()"
+                                style="background: var(--neural-green); color: #000; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-link"></i> Connect
+                            </button>
+                            <button onclick="window.aetherraInterface.refreshHub()"
+                                style="background: var(--accent-blue); color: #000; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                            <button onclick="window.aetherraInterface.browseMarketplace()"
+                                style="background: var(--accent-purple); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-store"></i> Marketplace
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hub Content Area -->
+                    <div id="hubContent"
+                        style="border: 1px solid #444; border-radius: 8px; min-height: 400px; background: var(--bg-darker);">
+                        <div style="padding: 40px; text-align: center; color: #999;">
+                            <i class="fas fa-satellite-dish"
+                                style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                            <div>Aetherra Hub Interface</div>
+                            <div style="font-size: 12px; margin-top: 10px;">Click Connect to establish hub connection
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hub Analytics -->
+                    <div
+                        style="margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div
+                            style="background: var(--bg-darker); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent-blue);">
+                            <div style="color: var(--accent-blue); font-weight: bold; margin-bottom: 5px;">Connected
+                                Nodes
+                            </div>
+                            <div id="hubNodes" style="font-size: 24px; color: var(--text-primary);">--</div>
+                        </div>
+                        <div
+                            style="background: var(--bg-darker); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent-purple);">
+                            <div style="color: var(--accent-purple); font-weight: bold; margin-bottom: 5px;">Available
+                                Plugins</div>
+                            <div id="hubPlugins" style="font-size: 24px; color: var(--text-primary);">--</div>
+                        </div>
+                        <div
+                            style="background: var(--bg-darker); padding: 15px; border-radius: 8px; border-left: 4px solid var(--neural-green);">
+                            <div style="color: var(--neural-green); font-weight: bold; margin-bottom: 5px;">Network
+                                Health
+                            </div>
+                            <div id="hubHealth" style="font-size: 24px; color: var(--text-primary);">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LyrixaCore Unified Cognitive Stack Panel -->
+                <div class="tab-panel" id="lyrixa-core">
+                    <h3 style="color: var(--neural-blue); margin-bottom: 20px;">
+                        <i class="fas fa-brain"></i> LyrixaCore Unified Cognitive Stack
+                    </h3>
+
+                    <!-- Core Status -->
+                    <div style="margin-bottom: 25px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h4 style="color: var(--text-primary); margin: 0;">Cognitive Integration Status</h4>
+                            <button onclick="refreshLyrixaCoreStatus()"
+                                style="padding: 5px 10px; background: var(--accent-blue); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div id="lyrixaCoreStatus"
+                            style="background: var(--bg-darker); padding: 15px; border-radius: 8px; border: 1px solid #444;">
+                            <div style="text-align: center; color: #999; padding: 20px;">
+                                <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i>
+                                Loading LyrixaCore status...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Identity Coherence Dashboard -->
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: var(--text-primary); margin-bottom: 15px;">Identity Coherence</h4>
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+
+                            <!-- Coherence Score -->
+                            <div
+                                style="background: var(--bg-darker); padding: 15px; border-radius: 8px; border-left: 4px solid var(--neural-blue);">
+                                <div style="color: var(--neural-blue); font-weight: bold; margin-bottom: 5px;">
+                                    <i class="fas fa-brain"></i> Identity Coherence
+                                </div>
+                                <div id="identityCoherence" style="font-size: 24px; color: var(--text-primary);">--
+                                </div>
+                                <div style="font-size: 12px; color: #999;">Overall coherence score</div>
+                            </div>
+
+                            <!-- System Health -->
+                            <div
+                                style="background: var(--bg-darker); padding: 15px; border-radius: 8px; border-left: 4px solid var(--neural-green);">
+                                <div style="color: var(--neural-green); font-weight: bold; margin-bottom: 5px;">
+                                    <i class="fas fa-heartbeat"></i> System Health
+                                </div>
+                                <div id="systemHealth" style="font-size: 24px; color: var(--text-primary);">--</div>
+                                <div style="font-size: 12px; color: #999;">Cognitive stack health</div>
+                            </div>
+
+                            <!-- Integration Score -->
+                            <div
+                                style="background: var(--bg-darker); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent-purple);">
+                                <div style="color: var(--accent-purple); font-weight: bold; margin-bottom: 5px;">
+                                    <i class="fas fa-puzzle-piece"></i> Integration
+                                </div>
+                                <div id="integrationScore" style="font-size: 24px; color: var(--text-primary);">--</div>
+                                <div style="font-size: 12px; color: #999;">Subsystem integration</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Subsystems -->
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: var(--text-primary); margin-bottom: 15px;">Active Cognitive Subsystems</h4>
+                        <div id="cognitiveSubsystems"
+                            style="background: var(--bg-darker); padding: 15px; border-radius: 8px; border: 1px solid #444;">
+                            <div style="text-align: center; color: #999; padding: 20px;">
+                                <i class="fas fa-cogs" style="margin-right: 10px;"></i>
+                                Loading subsystem status...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coherence Factors -->
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: var(--text-primary); margin-bottom: 15px;">Coherence Analysis</h4>
+                        <div id="coherenceFactors"
+                            style="background: var(--bg-darker); padding: 15px; border-radius: 8px; border: 1px solid #444; max-height: 300px; overflow-y: auto;">
+                            <div style="text-align: center; color: #999; padding: 20px;">
+                                <i class="fas fa-chart-line" style="margin-right: 10px;"></i>
+                                Loading coherence analysis...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: 15px;">System Recommendations</h4>
+                        <div id="systemRecommendations"
+                            style="background: var(--bg-darker); padding: 15px; border-radius: 8px; border: 1px solid #444;">
+                            <div style="text-align: center; color: #999; padding: 20px;">
+                                <i class="fas fa-lightbulb" style="margin-right: 10px;"></i>
+                                Loading recommendations...
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -801,62 +1181,90 @@
     </div>
 
     <!-- Socket.IO -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
 
     <script>
         // Neural Interface JavaScript
         class AetherraInterface {
             constructor() {
-                this.socket = io();
-                this.initializeInterface();
-                this.initializeSocket();
-                this.startAnimations();
+                try {
+                    this.socket = io();
+                    this.initializeInterface();
+                    this.initializeSocket();
+                    this.startAnimations();
+
+                    // Initialize individual panels
+                    this.initializePluginPanel();
+                    this.initializeCodeEditor();
+                    this.initializeAetherraHub();
+                    this.initializeSelfMetrics();
+                } catch (error) {
+                    console.error('Error initializing AetherraInterface:', error);
+                }
             }
 
             initializeInterface() {
-                // Tab switching
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.addEventListener('click', (e) => {
-                        const tabId = e.target.getAttribute('data-tab');
-                        this.switchTab(tabId);
+                try {
+                    // Tab switching
+                    document.querySelectorAll('.tab').forEach(tab => {
+                        if (tab && tab.addEventListener) {
+                            tab.addEventListener('click', (e) => {
+                                const tabId = e.target.getAttribute('data-tab');
+                                if (tabId) {
+                                    this.switchTab(tabId);
+                                }
+                            });
+                        }
                     });
-                });
 
-                // Command palette
-                document.addEventListener('keydown', (e) => {
-                    if (e.ctrlKey && e.key === 'k') {
-                        e.preventDefault();
-                        this.toggleCommandPalette();
+                    // Command palette
+                    document.addEventListener('keydown', (e) => {
+                        if (e.ctrlKey && e.key === 'k') {
+                            e.preventDefault();
+                            this.toggleCommandPalette();
+                        }
+                        if (e.key === 'Escape') {
+                            this.hideCommandPalette();
+                        }
+                    });
+
+                    // Chat functionality
+                    const chatInput = document.getElementById('chatInput');
+                    const sendButton = document.getElementById('sendButton');
+
+                    if (sendButton && sendButton.addEventListener) {
+                        sendButton.addEventListener('click', () => this.sendMessage());
                     }
-                    if (e.key === 'Escape') {
-                        this.hideCommandPalette();
+                    if (chatInput && chatInput.addEventListener) {
+                        chatInput.addEventListener('keypress', (e) => {
+                            if (e.key === 'Enter') this.sendMessage();
+                        });
                     }
-                });
 
-                // Chat functionality
-                const chatInput = document.getElementById('chatInput');
-                const sendButton = document.getElementById('sendButton');
-
-                sendButton.addEventListener('click', () => this.sendMessage());
-                chatInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.sendMessage();
-                });
-
-                // Command palette input
-                document.getElementById('commandInput').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        this.executeCommand(e.target.value);
+                    // Command palette input
+                    const commandInput = document.getElementById('commandInput');
+                    if (commandInput && commandInput.addEventListener) {
+                        commandInput.addEventListener('keypress', (e) => {
+                            if (e.key === 'Enter') {
+                                this.executeCommand(e.target.value);
+                            }
+                        });
                     }
-                });
 
-                // Overlay click
-                document.getElementById('overlay').addEventListener('click', () => {
-                    this.hideCommandPalette();
-                });
+                    // Overlay click
+                    const overlay = document.getElementById('overlay');
+                    if (overlay && overlay.addEventListener) {
+                        overlay.addEventListener('click', () => {
+                            this.hideCommandPalette();
+                        });
+                    }
 
-                // Update system time
-                this.updateSystemTime();
-                setInterval(() => this.updateSystemTime(), 1000);
+                    // Update system time
+                    this.updateSystemTime();
+                    setInterval(() => this.updateSystemTime(), 1000);
+                } catch (error) {
+                    console.error('Error in initializeInterface:', error);
+                }
             }
 
             initializeSocket() {
@@ -903,26 +1311,121 @@
                 this.socket.on('available_models', (data) => {
                     this.updateModelSelector(data);
                 });
+
+                // Handle self metrics data
+                this.socket.on('self_metrics_data', (data) => {
+                    this.updateSelfMetrics(data);
+                });
+
+                // Handle self metrics errors
+                this.socket.on('self_metrics_error', (data) => {
+                    this.displaySelfMetricsError(data);
+                });
+
+                // Plugin Panel Event Handlers
+                this.socket.on('plugins_list', (data) => {
+                    this.updatePluginsList(data.plugins);
+                });
+
+                this.socket.on('plugins_error', (data) => {
+                    this.updatePluginsList([], `Error loading plugins: ${data.error}`);
+                });
+
+                // Code Editor Event Handlers
+                this.socket.on('code_saved', (data) => {
+                    this.updateCodeOutput(`✅ ${data.message}`, 'success');
+                });
+
+                this.socket.on('code_save_error', (data) => {
+                    this.updateCodeOutput(`❌ Save failed: ${data.error}`, 'error');
+                });
+
+                this.socket.on('code_execution_result', (data) => {
+                    if (data.success) {
+                        this.updateCodeOutput(`✅ Execution completed:\n${data.result}`, 'success');
+                    } else {
+                        this.updateCodeOutput(`❌ Execution failed: ${data.error}`, 'error');
+                    }
+                });
+
+                this.socket.on('code_assistance_response', (data) => {
+                    if (data.success) {
+                        this.updateCodeOutput(`🧠 AI Suggestions:\n${data.suggestions}`, 'info');
+                    } else {
+                        this.updateCodeOutput(`❌ AI assistance failed: ${data.error}`, 'error');
+                    }
+                });
+
+                // Hub Event Handlers
+                this.socket.on('hub_connection_status', (data) => {
+                    this.updateHubConnectionStatus(data);
+                });
+
+                this.socket.on('hub_connect_result', (data) => {
+                    this.updateHubStatus(data.success ? 'Connected' : data.message,
+                        data.success ? 'online' : 'error');
+                });
+
+                this.socket.on('hub_data_refreshed', (data) => {
+                    this.updateHubAnalytics(data);
+                });
+
+                this.socket.on('hub_connection_error', (data) => {
+                    this.updateHubStatus(`Connection error: ${data.error}`, 'error');
+                });
+
+                // LyrixaCore Unified Cognitive Stack listeners
+                this.socket.on('lyrixa_core_status', (data) => {
+                    this.updateLyrixaCoreStatus(data);
+                });
+
+                this.socket.on('lyrixa_core_error', (data) => {
+                    this.handleLyrixaCoreError(data);
+                });
             }
 
             switchTab(tabId) {
-                // Update tab buttons
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+                try {
+                    // Update tab buttons
+                    document.querySelectorAll('.tab').forEach(tab => {
+                        if (tab && tab.classList) {
+                            tab.classList.remove('active');
+                        }
+                    });
+                    const activeTab = document.querySelector(`[data-tab="${tabId}"]`);
+                    if (activeTab && activeTab.classList) {
+                        activeTab.classList.add('active');
+                    }
 
-                // Update tab panels
-                document.querySelectorAll('.tab-panel').forEach(panel => {
-                    panel.classList.remove('active');
-                });
-                document.getElementById(tabId).classList.add('active');
+                    // Update tab panels
+                    document.querySelectorAll('.tab-panel').forEach(panel => {
+                        if (panel && panel.classList) {
+                            panel.classList.remove('active');
+                        }
+                    });
+                    const activePanel = document.getElementById(tabId);
+                    if (activePanel && activePanel.classList) {
+                        activePanel.classList.add('active');
+                    }
 
-                // Initialize tab-specific content
-                if (tabId === 'memory') {
-                    this.initializeMemoryGraph();
-                } else if (tabId === 'insights') {
-                    this.updateInsightStream();
+                    // Initialize tab-specific content
+                    if (tabId === 'memory') {
+                        this.initializeMemoryGraph();
+                    } else if (tabId === 'insights') {
+                        this.updateInsightStream();
+                    } else if (tabId === 'plugins') {
+                        this.initializePluginPanel();
+                    } else if (tabId === 'editor') {
+                        this.initializeCodeEditor();
+                    } else if (tabId === 'hub') {
+                        this.initializeAetherraHub();
+                    } else if (tabId === 'self-metrics') {
+                        this.requestSelfMetrics();
+                    } else if (tabId === 'lyrixa-core') {
+                        this.requestLyrixaCoreStatus();
+                    }
+                } catch (error) {
+                    console.error('Error in switchTab:', error);
                 }
             }
 
@@ -1026,69 +1529,98 @@
             }
 
             updateSystemTime() {
-                const now = new Date();
-                document.getElementById('systemTime').textContent = now.toLocaleTimeString();
+                try {
+                    const now = new Date();
+                    const systemTimeEl = document.getElementById('systemTime');
+                    if (systemTimeEl) {
+                        systemTimeEl.textContent = now.toLocaleTimeString();
+                    }
+                } catch (error) {
+                    console.error('Error in updateSystemTime:', error);
+                }
             }
 
             updateSystemMetrics(data) {
-                if (data.confidence) {
-                    document.getElementById('confidence').textContent = data.confidence + '%';
-                }
-                if (data.curiosity) {
-                    document.getElementById('curiosity').textContent = data.curiosity + '%';
-                }
-                if (data.activity) {
-                    document.getElementById('activity').textContent = data.activity + '%';
+                try {
+                    if (data.confidence) {
+                        const confidenceEl = document.getElementById('confidence');
+                        if (confidenceEl) confidenceEl.textContent = data.confidence + '%';
+                    }
+                    if (data.curiosity) {
+                        const curiosityEl = document.getElementById('curiosity');
+                        if (curiosityEl) curiosityEl.textContent = data.curiosity + '%';
+                    }
+                    if (data.activity) {
+                        const activityEl = document.getElementById('activity');
+                        if (activityEl) activityEl.textContent = data.activity + '%';
+                    }
+                } catch (error) {
+                    console.error('Error in updateSystemMetrics:', error);
                 }
             }
 
             updateAura(data) {
-                // Update aura effects based on system state
-                const aura = document.querySelector('.aura-background');
-                const intensity = (data.confidence + data.curiosity + data.activity) / 300;
-                aura.style.opacity = Math.max(0.2, intensity);
+                try {
+                    // Update aura effects based on system state
+                    const aura = document.querySelector('.aura-background');
+                    if (aura && data.confidence && data.curiosity && data.activity) {
+                        const intensity = (data.confidence + data.curiosity + data.activity) / 300;
+                        aura.style.opacity = Math.max(0.2, intensity);
+                    }
+                } catch (error) {
+                    console.error('Error in updateAura:', error);
+                }
             }
 
             updateModelSelector(data) {
-                const modelSelect = document.getElementById('modelSelect');
-                const modelStatus = document.getElementById('modelStatus');
+                try {
+                    const modelSelect = document.getElementById('modelSelect');
+                    const modelStatus = document.getElementById('modelStatus');
 
-                // Clear existing options
-                modelSelect.innerHTML = '';
+                    if (!modelSelect || !modelStatus) {
+                        console.warn('Model selector elements not found');
+                        return;
+                    }
 
-                // Add available models to dropdown
-                if (data.available_models && data.available_models.length > 0) {
-                    data.available_models.forEach(model => {
+                    // Clear existing options
+                    modelSelect.innerHTML = '';
+
+                    // Add available models to dropdown
+                    if (data.available_models && data.available_models.length > 0) {
+                        data.available_models.forEach(model => {
+                            const option = document.createElement('option');
+                            option.value = model;
+                            option.textContent = this.formatModelName(model);
+                            if (model === data.current_model) {
+                                option.selected = true;
+                            }
+                            modelSelect.appendChild(option);
+                        });
+                    } else {
+                        // Fallback if no models available
                         const option = document.createElement('option');
-                        option.value = model;
-                        option.textContent = this.formatModelName(model);
-                        if (model === data.current_model) {
-                            option.selected = true;
-                        }
+                        option.value = 'fallback';
+                        option.textContent = 'Intelligent Fallback';
+                        option.selected = true;
                         modelSelect.appendChild(option);
+                    }
+
+                    // Update status
+                    if (data.llm_enabled) {
+                        modelStatus.textContent = `Active: ${data.current_model}`;
+                        modelStatus.style.color = '#00ff88';
+                    } else {
+                        modelStatus.textContent = 'Fallback Mode';
+                        modelStatus.style.color = '#ffaa00';
+                    }
+
+                    // Add event listener for model changes
+                    modelSelect.addEventListener('change', (e) => {
+                        this.switchModel(e.target.value);
                     });
-                } else {
-                    // Fallback if no models available
-                    const option = document.createElement('option');
-                    option.value = 'fallback';
-                    option.textContent = 'Intelligent Fallback';
-                    option.selected = true;
-                    modelSelect.appendChild(option);
+                } catch (error) {
+                    console.error('Error in updateModelSelector:', error);
                 }
-
-                // Update status
-                if (data.llm_enabled) {
-                    modelStatus.textContent = `Active: ${data.current_model}`;
-                    modelStatus.style.color = '#00ff88';
-                } else {
-                    modelStatus.textContent = 'Fallback Mode';
-                    modelStatus.style.color = '#ffaa00';
-                }
-
-                // Add event listener for model changes
-                modelSelect.addEventListener('change', (e) => {
-                    this.switchModel(e.target.value);
-                });
             }
 
             formatModelName(model) {
@@ -1131,6 +1663,662 @@
                         activity: activity.toFixed(1)
                     });
                 }, 3000);
+            }
+
+            requestSelfMetrics() {
+                this.socket.emit('get_self_metrics');
+            }
+
+            updateSelfMetrics(data) {
+                // Update Memory Continuity metrics
+                if (data.memory_continuity) {
+                    document.getElementById('memoryContinuityScore').textContent =
+                        data.memory_continuity.overall_score || '--';
+                    document.getElementById('coherenceIndex').textContent =
+                        data.memory_continuity.coherence_index || '--';
+                    document.getElementById('retentionRate').textContent =
+                        data.memory_continuity.retention_rate || '--';
+                }
+
+                // Update Growth Trajectory metrics
+                if (data.growth_trajectory) {
+                    document.getElementById('learningRate').textContent =
+                        data.growth_trajectory.learning_rate || '--';
+                    document.getElementById('adaptationScore').textContent =
+                        data.growth_trajectory.adaptation_score || '--';
+                }
+
+                // Update Conflict Analysis metrics
+                if (data.conflict_analysis) {
+                    document.getElementById('activeConflicts').textContent =
+                        data.conflict_analysis.active_conflicts || '--';
+                    document.getElementById('resolutionRate').textContent =
+                        data.conflict_analysis.resolution_rate || '--';
+                }
+
+                // Update Ethics & Integrity metrics
+                if (data.ethics_integrity) {
+                    document.getElementById('ethicsScore').textContent =
+                        data.ethics_integrity.ethics_score || '--';
+                    document.getElementById('narrativeIntegrity').textContent =
+                        data.ethics_integrity.narrative_integrity || '--';
+                    document.getElementById('consistencyIndex').textContent =
+                        data.ethics_integrity.consistency_index || '--';
+                }
+
+                // Update live metrics log
+                if (data.timestamp) {
+                    const logElement = document.getElementById('selfMetricsLog');
+                    const timestamp = new Date(data.timestamp).toLocaleTimeString();
+                    const newEntry = document.createElement('div');
+                    newEntry.style.cssText = 'padding: 4px 0; color: #00ff88;';
+                    newEntry.textContent = `${timestamp} - Metrics updated`;
+                    logElement.insertBefore(newEntry, logElement.firstChild);
+
+                    // Keep only last 5 entries
+                    while (logElement.children.length > 5) {
+                        logElement.removeChild(logElement.lastChild);
+                    }
+                }
+            }
+
+            // Plugin Panel Methods
+            initializePluginPanel() {
+                console.log('🔌 Initializing Plugin Panel');
+                this.refreshPlugins();
+            }
+
+            refreshPlugins() {
+                console.log('🔄 Refreshing plugin list');
+                // Request plugin list from backend
+                this.socket.emit('get_plugins');
+            }
+
+            loadPlugin() {
+                console.log('📥 Load plugin dialog');
+                // This would open a file dialog or plugin selection
+                alert('Plugin loading interface - to be implemented with file selector');
+            }
+
+            createPlugin() {
+                console.log('🛠️ Create new plugin');
+                // Switch to editor tab with plugin template
+                this.switchTab('editor');
+                const editor = document.getElementById('codeEditor');
+                editor.value = `// New Aetherra Plugin Template
+function PluginName() {
+    // Plugin metadata
+    this.name = "My New Plugin";
+    this.version = "1.0.0";
+    this.description = "Description of what this plugin does";
+
+    // Plugin capabilities
+    this.capabilities = ['analysis', 'processing'];
+
+    // Main plugin function
+    this.execute = function(input) {
+        analyze input -> result
+        return result;
+    };
+}
+
+// Export plugin
+export PluginName;`;
+            }
+
+            closePluginModal() {
+                document.getElementById('pluginModal').style.display = 'none';
+            }
+
+            // Code Editor Methods
+            initializeCodeEditor() {
+                console.log('💻 Initializing Code Editor');
+                // Initialize syntax highlighting and auto-completion
+                this.setupCodeEditor();
+            }
+
+            setupCodeEditor() {
+                const editor = document.getElementById('codeEditor');
+                if (!editor) {
+                    console.warn('Code editor element not found');
+                    return;
+                }
+                // Add basic syntax highlighting via CSS classes and event listeners
+                if (editor.addEventListener) {
+                    editor.addEventListener('input', this.handleCodeInput.bind(this));
+                    editor.addEventListener('keydown', this.handleCodeKeydown.bind(this));
+                }
+            }
+
+            handleCodeInput(event) {
+                // Basic syntax highlighting and auto-completion
+                const editor = event.target;
+                const code = editor.value;
+
+                // Check for Lyrixa auto-fill trigger
+                if (code.includes('// @lyrixa')) {
+                    this.requestAutoFill();
+                }
+            }
+
+            handleCodeKeydown(event) {
+                // Handle special key combinations
+                if (event.ctrlKey || event.metaKey) {
+                    switch (event.key) {
+                        case 's':
+                            event.preventDefault();
+                            this.saveCode();
+                            break;
+                        case 'Enter':
+                            event.preventDefault();
+                            this.runCode();
+                            break;
+                    }
+                }
+            }
+
+            saveCode() {
+                const code = document.getElementById('codeEditor').value;
+                const language = document.getElementById('editorLanguage').value;
+
+                console.log('💾 Saving code:', { language, length: code.length });
+
+                // Send to backend for saving
+                this.socket.emit('save_code', {
+                    code: code,
+                    language: language,
+                    timestamp: new Date().toISOString()
+                });
+
+                this.updateCodeOutput('✅ Code saved successfully', 'success');
+            }
+
+            runCode() {
+                const code = document.getElementById('codeEditor').value;
+                const language = document.getElementById('editorLanguage').value;
+
+                console.log('▶️ Running code:', { language, length: code.length });
+
+                if (!code.trim()) {
+                    this.updateCodeOutput('❌ No code to execute', 'error');
+                    return;
+                }
+
+                this.updateCodeOutput('🔄 Executing code...', 'info');
+
+                // Send to backend for execution
+                this.socket.emit('execute_code', {
+                    code: code,
+                    language: language
+                });
+            }
+
+            requestAutoFill() {
+                const editor = document.getElementById('codeEditor');
+                const code = editor.value;
+                const cursorPos = editor.selectionStart;
+
+                console.log('🪄 Requesting AI assistance for code');
+
+                // Get context around cursor
+                const lines = code.split('\n');
+                let currentLine = 0;
+                let charCount = 0;
+
+                for (let i = 0; i < lines.length; i++) {
+                    if (charCount + lines[i].length >= cursorPos) {
+                        currentLine = i;
+                        break;
+                    }
+                    charCount += lines[i].length + 1; // +1 for newline
+                }
+
+                const context = lines.slice(Math.max(0, currentLine - 2), currentLine + 3).join('\n');
+
+                this.socket.emit('request_code_assistance', {
+                    code: code,
+                    context: context,
+                    cursor_position: cursorPos,
+                    language: document.getElementById('editorLanguage').value
+                });
+
+                this.updateCodeOutput('🧠 Lyrixa analyzing code context...', 'info');
+            }
+
+            updateCodeOutput(message, type = 'info') {
+                const output = document.getElementById('codeOutput');
+                const timestamp = new Date().toLocaleTimeString();
+
+                const colorMap = {
+                    'info': '#4A9EFF',
+                    'success': '#00ff88',
+                    'error': '#ff4757',
+                    'warning': '#ffa502'
+                };
+
+                const color = colorMap[type] || '#999';
+
+                const newLine = document.createElement('div');
+                newLine.style.cssText = `color: ${color}; margin-bottom: 4px;`;
+                newLine.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+
+                output.appendChild(newLine);
+                output.scrollTop = output.scrollHeight;
+            }
+
+            // Aetherra Hub Methods
+            initializeAetherraHub() {
+                console.log('🌐 Initializing Aetherra Hub');
+                this.checkHubConnection();
+            }
+
+            checkHubConnection() {
+                const statusElement = document.getElementById('hubStatus');
+                const indicatorElement = document.getElementById('hubStatusIndicator');
+                const lastCheckElement = document.getElementById('hubLastCheck');
+
+                statusElement.textContent = 'Checking...';
+                indicatorElement.style.background = '#ffa502';
+
+                // Send hub connection check to backend
+                this.socket.emit('check_hub_connection');
+
+                lastCheckElement.textContent = new Date().toLocaleTimeString();
+            }
+
+            connectHub() {
+                console.log('🔗 Connecting to Aetherra Hub');
+                this.socket.emit('connect_hub');
+                this.updateHubStatus('Connecting...', 'connecting');
+            }
+
+            refreshHub() {
+                console.log('🔄 Refreshing hub data');
+                this.checkHubConnection();
+                this.socket.emit('refresh_hub_data');
+            }
+
+            browseMarketplace() {
+                console.log('🛒 Opening plugin marketplace');
+                const hubContent = document.getElementById('hubContent');
+                hubContent.innerHTML = `
+                    <div style="padding: 20px;">
+                        <h4 style="color: var(--neural-green); margin-bottom: 15px;">🛒 Plugin Marketplace</h4>
+                        <div style="color: #999; text-align: center; padding: 40px;">
+                            <i class="fas fa-store" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                            <div>Plugin Marketplace</div>
+                            <div style="font-size: 12px; margin-top: 10px;">Browse and install community plugins</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            updateHubStatus(status, type = 'offline') {
+                const statusElement = document.getElementById('hubStatus');
+                const indicatorElement = document.getElementById('hubStatusIndicator');
+
+                statusElement.textContent = status;
+
+                const colorMap = {
+                    'online': '#00ff88',
+                    'offline': '#666',
+                    'connecting': '#ffa502',
+                    'error': '#ff4757'
+                };
+
+                indicatorElement.style.background = colorMap[type] || '#666';
+            }
+
+            updatePluginsList(plugins, error = null) {
+                try {
+                    const pluginList = document.getElementById('pluginList');
+                    if (!pluginList) {
+                        console.warn('Plugin list element not found');
+                        return;
+                    }
+
+                    if (error) {
+                        pluginList.innerHTML = `
+                            <div style="color: #ff4757; text-align: center; padding: 40px;">
+                                <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                                <div>${error}</div>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    if (!plugins || plugins.length === 0) {
+                        pluginList.innerHTML = `
+                            <div style="color: #999; text-align: center; padding: 40px;">
+                                <i class="fas fa-puzzle-piece" style="font-size: 24px; margin-bottom: 10px; opacity: 0.5;"></i>
+                                <div>No plugins found</div>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const pluginItems = plugins.map(plugin => {
+                        const statusColor = {
+                            'loaded': '#00ff88',
+                            'available': '#4A9EFF',
+                            'error': '#ff4757'
+                        }[plugin.status] || '#666';
+
+                        const typeIcon = {
+                            'core': 'fas fa-cog',
+                            'community': 'fas fa-users',
+                            'ethics': 'fas fa-shield-alt'
+                        }[plugin.type] || 'fas fa-puzzle-piece';
+
+                        return `
+                            <div style="background: var(--bg-darker); margin-bottom: 10px; padding: 15px; border-radius: 8px; border-left: 4px solid ${statusColor};">
+                                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <i class="${typeIcon}" style="color: ${statusColor};"></i>
+                                        <span style="font-weight: bold; color: var(--text-primary);">${plugin.name}</span>
+                                        <span style="background: ${statusColor}; color: #000; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;">${plugin.status.toUpperCase()}</span>
+                                    </div>
+                                    <span style="color: #666; font-size: 12px;">v${plugin.version}</span>
+                                </div>
+                                <div style="color: #999; font-size: 12px; margin-bottom: 8px;">${plugin.description}</div>
+                                ${plugin.capabilities && plugin.capabilities.length > 0 ? `
+                                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                        ${plugin.capabilities.map(cap => `<span style="background: #333; color: #999; padding: 2px 6px; border-radius: 4px; font-size: 10px;">${cap}</span>`).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('');
+
+                    if (pluginList && typeof pluginList.innerHTML !== 'undefined') {
+                        pluginList.innerHTML = pluginItems;
+                    }
+                } catch (error) {
+                    console.error('Error in updatePluginsList:', error);
+                }
+            }
+
+            updateHubConnectionStatus(data) {
+                try {
+                    this.updateHubStatus(data.status, data.connected ? 'online' : 'offline');
+
+                    // Update analytics
+                    if (data.connected) {
+                        const hubNodes = document.getElementById('hubNodes');
+                        const hubPlugins = document.getElementById('hubPlugins');
+                        const hubHealth = document.getElementById('hubHealth');
+
+                        if (hubNodes) hubNodes.textContent = data.nodes || '--';
+                        if (hubPlugins) hubPlugins.textContent = data.plugins || '--';
+                        if (hubHealth) hubHealth.textContent = data.health ? `${data.health}%` : '--';
+                    }
+                } catch (error) {
+                    console.error('Error in updateHubConnectionStatus:', error);
+                }
+            }
+
+            updateHubAnalytics(data) {
+                document.getElementById('hubNodes').textContent = data.nodes || '--';
+                document.getElementById('hubPlugins').textContent = data.plugins || '--';
+                document.getElementById('hubHealth').textContent = data.health ? `${data.health}%` : '--';
+
+                if (data.recent_activity) {
+                    const hubContent = document.getElementById('hubContent');
+                    const activityHtml = data.recent_activity.map(activity =>
+                        `<div style="padding: 8px; border-bottom: 1px solid #333; color: #999; font-size: 12px;">
+                            <span style="color: var(--neural-green);">${activity.time}</span> - ${activity.event}
+                        </div>`
+                    ).join('');
+
+                    hubContent.innerHTML = `
+                        <div style="padding: 20px;">
+                            <h4 style="color: var(--neural-green); margin-bottom: 15px;">Recent Activity</h4>
+                            ${activityHtml}
+                        </div>
+                    `;
+                }
+            }
+
+            // Self Metrics Methods
+            initializeSelfMetrics() {
+                console.log('📊 Initializing Self Metrics');
+                this.requestSelfMetrics();
+            }
+
+            requestSelfMetrics() {
+                console.log('📋 Requesting self metrics data');
+                this.socket.emit('get_self_metrics');
+            }
+
+            displaySelfMetricsError(data) {
+                console.log('⚠️ Self metrics error received:', data);
+                // Display fallback metrics when real data fails
+                const fallbackData = {
+                    memory_continuity: {
+                        overall_score: '--',
+                        coherence_index: '--',
+                        retention_rate: '--'
+                    },
+                    growth_trajectory: {
+                        learning_rate: '--',
+                        adaptation_score: '--'
+                    },
+                    conflict_analysis: {
+                        active_conflicts: '--',
+                        resolution_rate: '--'
+                    },
+                    ethics_integrity: {
+                        ethics_score: '--',
+                        narrative_integrity: '--',
+                        consistency_index: '--'
+                    },
+                    data_source: 'fallback_error',
+                    error_message: data.error || 'Unknown error'
+                };
+                this.updateSelfMetrics(fallbackData);
+            }
+
+            // LyrixaCore Unified Cognitive Stack Methods
+
+            requestLyrixaCoreStatus() {
+                try {
+                    console.log('🧠 Requesting LyrixaCore status...');
+                    this.socket.emit('get_lyrixa_core_status');
+                } catch (error) {
+                    console.error('Error requesting LyrixaCore status:', error);
+                    this.handleLyrixaCoreError({ error: error.message });
+                }
+            }
+
+            updateLyrixaCoreStatus(data) {
+                try {
+                    console.log('🧠 Updating LyrixaCore status:', data);
+
+                    if (data.bridge_initialized) {
+                        // Update main status display
+                        const statusDiv = document.getElementById('lyrixaCoreStatus');
+                        if (statusDiv) {
+                            statusDiv.innerHTML = `
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                                    <div style="background: var(--bg-dark); padding: 10px; border-radius: 6px; border-left: 3px solid var(--neural-green);">
+                                        <div style="color: var(--neural-green); font-weight: bold; font-size: 12px;">BRIDGE STATUS</div>
+                                        <div style="color: var(--text-primary); font-size: 14px;">✅ Initialized</div>
+                                    </div>
+                                    <div style="background: var(--bg-dark); padding: 10px; border-radius: 6px; border-left: 3px solid var(--neural-blue);">
+                                        <div style="color: var(--neural-blue); font-weight: bold; font-size: 12px;">LAST UPDATE</div>
+                                        <div style="color: var(--text-primary); font-size: 14px;">${new Date(data.last_update * 1000).toLocaleTimeString()}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        // Update coherence metrics
+                        const identityCoherence = document.getElementById('identityCoherence');
+                        const systemHealth = document.getElementById('systemHealth');
+                        const integrationScore = document.getElementById('integrationScore');
+
+                        if (identityCoherence) {
+                            identityCoherence.textContent = (data.identity_coherence * 100).toFixed(1) + '%';
+                        }
+                        if (systemHealth) {
+                            systemHealth.textContent = (data.system_health * 100).toFixed(1) + '%';
+                        }
+                        if (integrationScore) {
+                            integrationScore.textContent = (data.integration_score * 100).toFixed(1) + '%';
+                        }
+
+                        // Update subsystems status
+                        this.updateCognitiveSubsystems(data.active_subsystems);
+
+                        // Update coherence factors
+                        this.updateCoherenceFactors(data.coherence_factors);
+
+                        // Update recommendations
+                        this.updateSystemRecommendations(data.recommendations);
+
+                    } else {
+                        // Bridge not initialized
+                        const statusDiv = document.getElementById('lyrixaCoreStatus');
+                        if (statusDiv) {
+                            statusDiv.innerHTML = `
+                                <div style="text-align: center; color: #f39c12; padding: 20px;">
+                                    <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                                    <div style="font-weight: bold;">LyrixaCore Bridge Not Initialized</div>
+                                    <div style="font-size: 12px; margin-top: 5px;">${data.message || 'Unified cognitive stack not available'}</div>
+                                </div>
+                            `;
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('Error updating LyrixaCore status:', error);
+                    this.handleLyrixaCoreError({ error: error.message });
+                }
+            }
+
+            updateCognitiveSubsystems(subsystems) {
+                try {
+                    const container = document.getElementById('cognitiveSubsystems');
+                    if (!container) return;
+
+                    const subsystemsList = Object.entries(subsystems).map(([name, active]) => {
+                        const statusColor = active ? 'var(--neural-green)' : '#666';
+                        const statusIcon = active ? 'fas fa-check-circle' : 'fas fa-times-circle';
+                        const statusText = active ? 'Active' : 'Inactive';
+
+                        return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #333;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="${statusIcon}" style="color: ${statusColor}; font-size: 14px;"></i>
+                                    <span style="color: var(--text-primary); font-weight: bold; text-transform: capitalize;">${name}</span>
+                                </div>
+                                <span style="color: ${statusColor}; font-size: 12px; font-weight: bold;">${statusText}</span>
+                            </div>
+                        `;
+                    }).join('');
+
+                    container.innerHTML = subsystemsList || '<div style="text-align: center; color: #666; padding: 20px;">No subsystem data available</div>';
+
+                } catch (error) {
+                    console.error('Error updating cognitive subsystems:', error);
+                }
+            }
+
+            updateCoherenceFactors(factors) {
+                try {
+                    const container = document.getElementById('coherenceFactors');
+                    if (!container) return;
+
+                    if (factors && Object.keys(factors).length > 0) {
+                        const factorsList = Object.entries(factors).map(([factor, value]) => {
+                            const percentage = typeof value === 'number' ? (value * 100).toFixed(1) : value;
+                            const color = typeof value === 'number'
+                                ? (value > 0.8 ? 'var(--neural-green)' : value > 0.6 ? '#f39c12' : '#e74c3c')
+                                : 'var(--text-primary)';
+
+                            return `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #333;">
+                                    <span style="color: var(--text-primary); text-transform: capitalize;">${factor.replace(/_/g, ' ')}</span>
+                                    <span style="color: ${color}; font-weight: bold;">${percentage}${typeof value === 'number' ? '%' : ''}</span>
+                                </div>
+                            `;
+                        }).join('');
+
+                        container.innerHTML = factorsList;
+                    } else {
+                        container.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No coherence data available</div>';
+                    }
+
+                } catch (error) {
+                    console.error('Error updating coherence factors:', error);
+                }
+            }
+
+            updateSystemRecommendations(recommendations) {
+                try {
+                    const container = document.getElementById('systemRecommendations');
+                    if (!container) return;
+
+                    if (recommendations && recommendations.length > 0) {
+                        const recommendationsList = recommendations.map(rec => `
+                            <div style="background: var(--bg-dark); padding: 10px; border-radius: 6px; border-left: 3px solid var(--accent-blue); margin-bottom: 10px;">
+                                <div style="color: var(--accent-blue); font-weight: bold; font-size: 12px; margin-bottom: 5px;">RECOMMENDATION</div>
+                                <div style="color: var(--text-primary); font-size: 14px;">${rec}</div>
+                            </div>
+                        `).join('');
+
+                        container.innerHTML = recommendationsList;
+                    } else {
+                        container.innerHTML = `
+                            <div style="text-align: center; color: var(--neural-green); padding: 20px;">
+                                <i class="fas fa-check-circle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                                <div>No recommendations - System operating optimally</div>
+                            </div>
+                        `;
+                    }
+
+                } catch (error) {
+                    console.error('Error updating recommendations:', error);
+                }
+            }
+
+            handleLyrixaCoreError(data) {
+                try {
+                    console.error('LyrixaCore error:', data);
+
+                    // Update status with error
+                    const statusDiv = document.getElementById('lyrixaCoreStatus');
+                    if (statusDiv) {
+                        statusDiv.innerHTML = `
+                            <div style="text-align: center; color: #e74c3c; padding: 20px;">
+                                <i class="fas fa-exclamation-circle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                                <div style="font-weight: bold;">Error Loading LyrixaCore Status</div>
+                                <div style="font-size: 12px; margin-top: 5px;">${data.error || 'Unknown error occurred'}</div>
+                            </div>
+                        `;
+                    }
+
+                    // Reset all displays to error state
+                    const identityCoherence = document.getElementById('identityCoherence');
+                    const systemHealth = document.getElementById('systemHealth');
+                    const integrationScore = document.getElementById('integrationScore');
+
+                    if (identityCoherence) identityCoherence.textContent = 'ERR';
+                    if (systemHealth) systemHealth.textContent = 'ERR';
+                    if (integrationScore) integrationScore.textContent = 'ERR';
+
+                } catch (error) {
+                    console.error('Error in handleLyrixaCoreError:', error);
+                }
+            }
+        }
+
+        // Global functions for button onclick handlers
+        function refreshLyrixaCoreStatus() {
+            if (window.aetherraInterface) {
+                window.aetherraInterface.requestLyrixaCoreStatus();
+            } else {
+                console.error('Aetherra interface not initialized');
             }
         }
 

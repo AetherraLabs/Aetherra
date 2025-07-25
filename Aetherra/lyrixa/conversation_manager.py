@@ -14,7 +14,6 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
-import os
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -66,6 +65,131 @@ except ImportError as e:
     META_REASONING_AVAILABLE = False
     MetaReasoningEngine = None
 
+# Import FractalMesh Memory System
+try:
+    from Aetherra.lyrixa.memory.fractal_mesh import FractalMeshCore
+    from Aetherra.lyrixa.memory.fractal_mesh.base import (
+        MemoryFragment,
+        MemoryFragmentType,
+    )
+
+    FRACTAL_MESH_AVAILABLE = True
+    logger.info("✅ FractalMesh Memory System loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ FractalMesh Memory System not available: {e}")
+    FRACTAL_MESH_AVAILABLE = False
+    FractalMeshCore = None
+
+# Import Integrated Memory Engine
+try:
+    from Aetherra.lyrixa.memory.lyrixa_memory_engine import (
+        LyrixaMemoryEngine,
+        MemorySystemConfig,
+    )
+
+    INTEGRATED_MEMORY_AVAILABLE = True
+    logger.info("✅ Integrated Memory Engine loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Integrated Memory Engine not available: {e}")
+    INTEGRATED_MEMORY_AVAILABLE = False
+    LyrixaMemoryEngine = None
+    MemorySystemConfig = None
+    FractalMeshCore = None
+
+# Import Plugin System
+try:
+    from Aetherra.lyrixa.plugins.enhanced_plugin_manager import PluginManager
+    from Aetherra.lyrixa.plugins.memory_aware_plugin_router import (
+        MemoryAwarePluginRouter,
+    )
+
+    PLUGIN_SYSTEM_AVAILABLE = True
+    logger.info("✅ Plugin System loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Plugin System not available: {e}")
+    PLUGIN_SYSTEM_AVAILABLE = False
+    PluginManager = None
+    MemoryAwarePluginRouter = None
+
+# Import Reflection Engine
+try:
+    from Aetherra.lyrixa.reflection_engine.shadow_state_forker import ShadowStateForker
+    from Aetherra.lyrixa.reflection_engine.validation_engine import ValidationEngine
+
+    REFLECTION_ENGINE_AVAILABLE = True
+    logger.info("✅ Reflection Engine loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Reflection Engine not available: {e}")
+    REFLECTION_ENGINE_AVAILABLE = False
+    ValidationEngine = None
+    ShadowStateForker = None
+
+# Import Self Metrics Dashboard
+try:
+    from Aetherra.lyrixa.self_metrics_dashboard.main_dashboard import (
+        SelfMetricsDashboard,
+    )
+    from Aetherra.lyrixa.self_metrics_dashboard.memory_continuity_score import (
+        MemoryContinuityTracker,
+    )
+
+    SELF_METRICS_AVAILABLE = True
+    logger.info("✅ Self Metrics Dashboard loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Self Metrics Dashboard not available: {e}")
+    SELF_METRICS_AVAILABLE = False
+    SelfMetricsDashboard = None
+    MemoryContinuityTracker = None
+
+# Import LyrixaCore Unified Cognitive Stack
+try:
+    from Aetherra.lyrixa.LyrixaCore.IdentityAgent.core_beliefs import CoreBeliefs
+    from Aetherra.lyrixa.LyrixaCore.IdentityAgent.personal_history import (
+        PersonalHistory,
+    )
+    from Aetherra.lyrixa.LyrixaCore.IdentityAgent.self_model import SelfModel
+    from Aetherra.lyrixa.LyrixaCore.interface_bridge import LyrixaContextBridge
+
+    LYRIXA_CORE_AVAILABLE = True
+    logger.info("✅ LyrixaCore Unified Cognitive Stack loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ LyrixaCore Unified Cognitive Stack not available: {e}")
+    LYRIXA_CORE_AVAILABLE = False
+    LyrixaContextBridge = None
+
+# Import Ethics System
+try:
+    from Aetherra.lyrixa.ethics_agent.bias_detector import BiasDetectionEngine
+    from Aetherra.lyrixa.ethics_agent.moral_reasoning import MoralReasoningEngine
+    from Aetherra.lyrixa.ethics_agent.value_alignment import ValueAlignmentEngine
+
+    ETHICS_AVAILABLE = True
+    logger.info("✅ Ethics System loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Ethics System not available: {e}")
+    ETHICS_AVAILABLE = False
+    MoralReasoningEngine = None
+    BiasDetectionEngine = None
+    ValueAlignmentEngine = None
+    CoreBeliefs = None
+    PersonalHistory = None
+    SelfModel = None
+
+# Import Cognitive Architecture Adapters
+try:
+    from .cognitive_adapters import (
+        CompatiblePluginRouter,
+        FractalMeshToLyrixaAdapter,
+        MockConceptClusterManager,
+        UnifiedCognitiveArchitectureManager,
+    )
+
+    COGNITIVE_ADAPTERS_AVAILABLE = True
+    logger.info("✅ Cognitive Architecture Adapters loaded")
+except ImportError as e:
+    logger.warning(f"⚠️ Cognitive Architecture Adapters not available: {e}")
+    COGNITIVE_ADAPTERS_AVAILABLE = False
+
 
 class LyrixaConversationManager:
     """
@@ -108,11 +232,15 @@ class LyrixaConversationManager:
                     self.current_model = self._select_best_model()
                     if self.current_model != "fallback":
                         self.llm_enabled = True
-                        logger.info(f"🎙️ Lyrixa Conversation Manager initialized with {self.current_model}")
+                        logger.info(
+                            f"🎙️ Lyrixa Conversation Manager initialized with {self.current_model}"
+                        )
                     else:
                         self.llm_enabled = False
                         self.current_model = "intelligent_fallback"
-                        logger.info("🎙️ Lyrixa Conversation Manager initialized with intelligent fallback mode")
+                        logger.info(
+                            "🎙️ Lyrixa Conversation Manager initialized with intelligent fallback mode"
+                        )
                 except Exception as model_error:
                     logger.warning(f"⚠️ Model selection failed: {model_error}")
                     self.llm_enabled = False
@@ -128,7 +256,9 @@ class LyrixaConversationManager:
             self.llm_manager = None
             self.current_model = "intelligent_fallback"
             self.llm_enabled = False
-            logger.warning("⚠️ LLM manager not available, using intelligent fallback responses")
+            logger.warning(
+                "⚠️ LLM manager not available, using intelligent fallback responses"
+            )
 
         # Conversation history (last 20 messages)
         self.conversation_history = []
@@ -145,7 +275,9 @@ class LyrixaConversationManager:
             try:
                 self.plugin_editor_controller = PluginEditorController.get_instance(
                     gui_interface=gui_interface,
-                    plugin_dir=os.path.join(workspace_path, "plugins") if workspace_path else "plugins"
+                    plugin_dir=os.path.join(workspace_path, "plugins")
+                    if workspace_path
+                    else "plugins",
                 )
                 logger.info("✅ Plugin Editor Controller initialized")
             except Exception as e:
@@ -154,21 +286,169 @@ class LyrixaConversationManager:
         else:
             self.plugin_editor_controller = None
 
+        # 🧠 Initialize Integrated Memory Engine (preferred over FractalMesh alone)
+        if INTEGRATED_MEMORY_AVAILABLE and LyrixaMemoryEngine and MemorySystemConfig:
+            try:
+                memory_config = MemorySystemConfig(
+                    core_db_path=os.path.join(workspace_path, "lyrixa_memory.db")
+                    if workspace_path
+                    else "lyrixa_memory.db",
+                    fractal_db_path=os.path.join(workspace_path, "fractal_memory.db")
+                    if workspace_path
+                    else "fractal_memory.db",
+                    concepts_db_path=os.path.join(workspace_path, "concept_clusters.db")
+                    if workspace_path
+                    else "concept_clusters.db",
+                    timeline_db_path=os.path.join(
+                        workspace_path, "episodic_timeline.db"
+                    )
+                    if workspace_path
+                    else "episodic_timeline.db",
+                    pulse_db_path=os.path.join(workspace_path, "memory_pulse.db")
+                    if workspace_path
+                    else "memory_pulse.db",
+                    reflector_db_path=os.path.join(
+                        workspace_path, "memory_reflector.db"
+                    )
+                    if workspace_path
+                    else "memory_reflector.db",
+                )
+                self.integrated_memory = LyrixaMemoryEngine(memory_config)
+                logger.info(
+                    "✅ Integrated Memory Engine initialized with all subsystems"
+                )
+            except Exception as e:
+                logger.warning(f"⚠️ Integrated Memory Engine initialization failed: {e}")
+                self.integrated_memory = None
+        else:
+            self.integrated_memory = None
+
+        # 🧠 Initialize FractalMesh Memory System (fallback if integrated not available)
+        if not hasattr(self, "integrated_memory") or not self.integrated_memory:
+            if FRACTAL_MESH_AVAILABLE and FractalMeshCore:
+                try:
+                    self.fractal_memory = FractalMeshCore(
+                        db_path=os.path.join(workspace_path, "lyrixa_memory.db")
+                        if workspace_path
+                        else "lyrixa_memory.db"
+                    )
+                    logger.info("✅ FractalMesh Memory System initialized")
+                except Exception as e:
+                    logger.warning(
+                        f"⚠️ FractalMesh Memory System initialization failed: {e}"
+                    )
+                    self.fractal_memory = None
+            else:
+                self.fractal_memory = None
+        else:
+            # Use the fractal mesh from integrated memory
+            self.fractal_memory = (
+                self.integrated_memory.fractal_mesh if self.integrated_memory else None
+            )
+
+        # 🔌 Initialize Plugin System
+        if PLUGIN_SYSTEM_AVAILABLE and PluginManager:
+            try:
+                self.plugin_manager = PluginManager(
+                    plugins_dir=os.path.join(workspace_path, "plugins")
+                    if workspace_path
+                    else "plugins"
+                )
+
+                # Initialize compatible plugin router with adapters
+                if (
+                    COGNITIVE_ADAPTERS_AVAILABLE
+                    and hasattr(self, "fractal_memory")
+                    and self.fractal_memory
+                ):
+                    memory_adapter = FractalMeshToLyrixaAdapter(self.fractal_memory)
+                    concept_manager = MockConceptClusterManager()
+                    self.plugin_router = CompatiblePluginRouter(
+                        plugin_manager=self.plugin_manager,
+                        memory_adapter=memory_adapter,
+                        concept_manager=concept_manager,
+                    )
+                    logger.info(
+                        "✅ Plugin System initialized with compatible router and adapters"
+                    )
+                else:
+                    self.plugin_router = None
+                    logger.info(
+                        "✅ Plugin System initialized (router pending adapter setup)"
+                    )
+
+            except Exception as e:
+                logger.warning(f"⚠️ Plugin System initialization failed: {e}")
+                self.plugin_manager = None
+                self.plugin_router = None
+        else:
+            self.plugin_manager = None
+            self.plugin_router = None
+
+        # 🔍 Initialize Reflection Engine
+        if REFLECTION_ENGINE_AVAILABLE and ValidationEngine:
+            try:
+                self.validation_engine = ValidationEngine(
+                    data_dir=os.path.join(workspace_path, "reflection_data")
+                    if workspace_path
+                    else "reflection_data"
+                )
+                logger.info("✅ Reflection Engine initialized")
+            except Exception as e:
+                logger.warning(f"⚠️ Reflection Engine initialization failed: {e}")
+                self.validation_engine = None
+        else:
+            self.validation_engine = None
+
+        # 📊 Initialize Self Metrics Dashboard
+        if SELF_METRICS_AVAILABLE and SelfMetricsDashboard and MemoryContinuityTracker:
+            try:
+                self.metrics_dashboard = SelfMetricsDashboard(
+                    data_dir=os.path.join(workspace_path, "metrics_data")
+                    if workspace_path
+                    else "metrics_data"
+                )
+                self.memory_continuity = MemoryContinuityTracker(
+                    data_dir=os.path.join(workspace_path, "memory_continuity_data")
+                    if workspace_path
+                    else "memory_continuity_data"
+                )
+                logger.info("✅ Self Metrics Dashboard initialized")
+            except Exception as e:
+                logger.warning(f"⚠️ Self Metrics Dashboard initialization failed: {e}")
+                self.metrics_dashboard = None
+                self.memory_continuity = None
+        else:
+            self.metrics_dashboard = None
+            self.memory_continuity = None
+
         # 🧠 Initialize Meta-Reasoning Engine
         if META_REASONING_AVAILABLE and MetaReasoningEngine:
             try:
-                # We'll need a mock memory system for now
-                class MockMemory:
-                    def store(self, data):
-                        logger.debug(f"Meta-reasoning trace: {data.get('type', 'unknown')}")
+                # Use FractalMesh memory if available, otherwise use mock
+                if self.fractal_memory:
+                    memory_system = self.fractal_memory
+                else:
+                    # Use mock memory for backwards compatibility
+                    class MockMemory:
+                        def store(self, data):
+                            logger.debug(
+                                f"Meta-reasoning trace: {data.get('type', 'unknown')}"
+                            )
+
+                    memory_system = MockMemory()
 
                 class MockPluginManager:
                     def list_plugin_names(self):
-                        return ["assistant_trainer", "data_processor", "automation", "utility"]
+                        return [
+                            "assistant_trainer",
+                            "data_processor",
+                            "automation",
+                            "utility",
+                        ]
 
                 self.meta_reasoning_engine = MetaReasoningEngine(
-                    memory=MockMemory(),
-                    plugin_manager=MockPluginManager()
+                    memory=memory_system, plugin_manager=MockPluginManager()
                 )
                 logger.info("✅ Meta-Reasoning Engine initialized")
             except Exception as e:
@@ -176,6 +456,107 @@ class LyrixaConversationManager:
                 self.meta_reasoning_engine = None
         else:
             self.meta_reasoning_engine = None
+
+        # 🔗 Initialize Unified Cognitive Architecture Manager
+        if COGNITIVE_ADAPTERS_AVAILABLE:
+            try:
+                self.unified_manager = UnifiedCognitiveArchitectureManager(
+                    workspace_path
+                )
+
+                # Register all cognitive systems with adapters
+                if hasattr(self, "fractal_memory") and self.fractal_memory:
+                    self.unified_manager.register_system(
+                        "fractal_memory",
+                        self.fractal_memory,
+                        FractalMeshToLyrixaAdapter,
+                    )
+
+                if hasattr(self, "plugin_manager") and self.plugin_manager:
+                    self.unified_manager.register_system(
+                        "plugin_system", self.plugin_manager
+                    )
+
+                if hasattr(self, "validation_engine") and self.validation_engine:
+                    self.unified_manager.register_system(
+                        "reflection_engine", self.validation_engine
+                    )
+
+                if hasattr(self, "metrics_dashboard") and self.metrics_dashboard:
+                    self.unified_manager.register_system(
+                        "metrics_dashboard", self.metrics_dashboard
+                    )
+
+                if hasattr(self, "memory_continuity") and self.memory_continuity:
+                    self.unified_manager.register_system(
+                        "memory_continuity", self.memory_continuity
+                    )
+
+                logger.info(
+                    "✅ Unified Cognitive Architecture Manager initialized with all systems"
+                )
+
+            except Exception as e:
+                logger.warning(
+                    f"⚠️ Unified Architecture Manager initialization failed: {e}"
+                )
+                self.unified_manager = None
+        else:
+            self.unified_manager = None
+
+        # ⚖️ Initialize Ethics System
+        if ETHICS_AVAILABLE:
+            try:
+                self.moral_reasoning = (
+                    MoralReasoningEngine() if MoralReasoningEngine else None
+                )
+                self.bias_detector = (
+                    BiasDetectionEngine() if BiasDetectionEngine else None
+                )
+                self.value_alignment = (
+                    ValueAlignmentEngine() if ValueAlignmentEngine else None
+                )
+                logger.info("✅ Ethics System components initialized")
+            except Exception as e:
+                logger.warning(f"⚠️ Ethics System initialization failed: {e}")
+                self.moral_reasoning = None
+                self.bias_detector = None
+                self.value_alignment = None
+        else:
+            self.moral_reasoning = None
+            self.bias_detector = None
+            self.value_alignment = None
+
+        # 🧠 Initialize LyrixaCore Unified Cognitive Stack
+        if LYRIXA_CORE_AVAILABLE and LyrixaContextBridge:
+            try:
+                # Initialize LyrixaCore Interface Bridge with correct parameters
+                self.lyrixa_core_bridge = LyrixaContextBridge(
+                    memory_engine=self.integrated_memory
+                    if hasattr(self, "integrated_memory") and self.integrated_memory
+                    else self.fractal_memory
+                    if hasattr(self, "fractal_memory")
+                    else None,
+                    ethics_agent=self.moral_reasoning
+                    if hasattr(self, "moral_reasoning") and self.moral_reasoning
+                    else None,
+                    identity_agent=None,  # Will use default SelfModel
+                    agent_stack=self.plugin_manager
+                    if hasattr(self, "plugin_manager")
+                    else None,
+                    reflector=self.validation_engine
+                    if hasattr(self, "validation_engine")
+                    else None,
+                    workspace_path=workspace_path,
+                )
+
+                logger.info("✅ LyrixaCore Unified Cognitive Stack initialized")
+
+            except Exception as e:
+                logger.warning(f"⚠️ LyrixaCore initialization failed: {e}")
+                self.lyrixa_core_bridge = None
+        else:
+            self.lyrixa_core_bridge = None
 
     def _select_best_model(self) -> str:
         """Select the best available model from preferences with failure tracking"""
@@ -267,23 +648,83 @@ class LyrixaConversationManager:
                 "conversation_count": self.conversation_count,
             }
 
-            # Get plugin information
+            # Get FractalMesh Memory information
+            if hasattr(self, "fractal_memory") and self.fractal_memory:
+                try:
+                    # Get memory stats from FractalMesh
+                    context["fractal_memory_active"] = True
+                    context["memory_system"] = "FractalMesh"
+                    # Use safe attribute access
+                    context["memory_entries"] = "active"
+                    context["memory_types"] = [
+                        "episodic",
+                        "semantic",
+                        "procedural",
+                        "associative",
+                    ]
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get FractalMesh stats: {e}")
+                    context["fractal_memory_active"] = True
+                    context["memory_system"] = "FractalMesh (limited info)"
+
+            # Get Plugin System information
+            if hasattr(self, "plugin_manager") and self.plugin_manager:
+                try:
+                    context["plugin_system_active"] = True
+                    context["active_plugins"] = "available"
+                    context["plugin_names"] = ["enhanced_plugin_system"]
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get Plugin System stats: {e}")
+
+            # Get Reflection Engine information
+            if hasattr(self, "validation_engine") and self.validation_engine:
+                try:
+                    context["reflection_engine_active"] = True
+                    context["validation_runs"] = "active"
+                    context["validation_success_rate"] = "monitoring"
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get Reflection Engine stats: {e}")
+
+            # Get Self Metrics Dashboard information
+            if hasattr(self, "metrics_dashboard") and self.metrics_dashboard:
+                try:
+                    context["metrics_dashboard_active"] = True
+                    context["self_awareness_score"] = "monitoring"
+                    context["performance_metrics"] = {"status": "active"}
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get Self Metrics stats: {e}")
+
+            # Get Memory Continuity information
+            if hasattr(self, "memory_continuity") and self.memory_continuity:
+                try:
+                    context["memory_continuity_active"] = True
+                    context["memory_continuity_score"] = "tracking"
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get Memory Continuity stats: {e}")
+
+            # Get plugin information (legacy Aether runtime)
             if self.aether_runtime and hasattr(self.aether_runtime, "context"):
                 try:
                     if hasattr(self.aether_runtime.context, "plugins"):
                         # Get plugin count and status
                         plugin_manager = self.aether_runtime.context.plugins
                         if hasattr(plugin_manager, "plugins"):
-                            context["active_plugins"] = len(plugin_manager.plugins)
-                            context["plugin_names"] = list(
-                                plugin_manager.plugins.keys()
-                            )[:5]  # Top 5
+                            if not context.get(
+                                "active_plugins"
+                            ):  # Don't override if already set
+                                context["active_plugins"] = len(plugin_manager.plugins)
+                                context["plugin_names"] = list(
+                                    plugin_manager.plugins.keys()
+                                )[:5]  # Top 5
                         else:
-                            context["active_plugins"] = 0
-                            context["plugin_names"] = []
+                            if not context.get("active_plugins"):
+                                context["active_plugins"] = 0
+                                context["plugin_names"] = []
 
-                    # Get memory information
-                    if hasattr(self.aether_runtime.context, "memory"):
+                    # Get memory information (legacy)
+                    if hasattr(
+                        self.aether_runtime.context, "memory"
+                    ) and not context.get("memory_entries"):
                         memory_system = self.aether_runtime.context.memory
                         if hasattr(memory_system, "get_memory_stats"):
                             memory_stats = await memory_system.get_memory_stats()
@@ -320,14 +761,60 @@ class LyrixaConversationManager:
         try:
             lines = [
                 "📊 **Current System Status:**",
-                f"• Active Plugins: {context.get('active_plugins', 0)}",
-                f"• Memory Entries: {context.get('memory_entries', 'unknown')}",
-                f"• Active Agents: {context.get('active_agents', 0)}",
-                f"• System Health: {context.get('system_health', 'unknown')}",
-                f"• Current Model: {context.get('current_model', 'unknown')}",
-                f"• Session: {context.get('session_id', 'unknown')}",
-                f"• Conversation #{context.get('conversation_count', 0)}",
             ]
+
+            # Core system info
+            lines.extend(
+                [
+                    f"• Session: {context.get('session_id', 'unknown')}",
+                    f"• Conversation #{context.get('conversation_count', 0)}",
+                    f"• Current Model: {context.get('current_model', 'unknown')}",
+                    f"• System Health: {context.get('system_health', 'optimal')}",
+                ]
+            )
+
+            # Unified Cognitive Architecture Systems
+            if context.get("fractal_memory_active"):
+                lines.append(
+                    f"• 🧠 FractalMesh Memory: {context.get('memory_system', 'active')} - {context.get('memory_entries', 'monitoring')} entries"
+                )
+
+            if context.get("plugin_system_active"):
+                lines.append(
+                    f"• 🔌 Plugin System: active - {context.get('active_plugins', 'available')} plugins"
+                )
+
+            if context.get("reflection_engine_active"):
+                lines.append(
+                    f"• 🔍 Reflection Engine: active - {context.get('validation_runs', 'monitoring')} validations"
+                )
+
+            if context.get("metrics_dashboard_active"):
+                lines.append(
+                    f"• 📊 Self Metrics: active - {context.get('self_awareness_score', 'monitoring')} awareness"
+                )
+
+            if context.get("memory_continuity_active"):
+                lines.append(
+                    f"• 🧩 Memory Continuity: active - {context.get('memory_continuity_score', 'tracking')} score"
+                )
+
+            # Legacy systems (if no unified systems available)
+            if not any(
+                [
+                    context.get("fractal_memory_active"),
+                    context.get("plugin_system_active"),
+                    context.get("reflection_engine_active"),
+                    context.get("metrics_dashboard_active"),
+                ]
+            ):
+                lines.extend(
+                    [
+                        f"• Active Plugins: {context.get('active_plugins', 0)}",
+                        f"• Memory Entries: {context.get('memory_entries', 'unknown')}",
+                        f"• Active Agents: {context.get('active_agents', 0)}",
+                    ]
+                )
 
             # Add plugin names if available
             if context.get("plugin_names"):
@@ -336,6 +823,10 @@ class LyrixaConversationManager:
             # Add agent names if available
             if context.get("agent_names"):
                 lines.append(f"• Active Agents: {', '.join(context['agent_names'])}")
+
+            # Add memory types if available
+            if context.get("memory_types"):
+                lines.append(f"• Memory Types: {', '.join(context['memory_types'])}")
 
             return "\n".join(lines)
 
@@ -354,13 +845,21 @@ class LyrixaConversationManager:
             self.conversation_history.pop(0)
 
     async def get_conversation_messages(self, user_input: str) -> List[Dict[str, str]]:
-        """Prepare messages for LLM including system context and history"""
+        """Prepare messages for LLM including system context, memory, and history"""
         system_context = await self.get_system_context()
+
+        # 🧠 Retrieve relevant memories from FractalMesh
+        memory_context = await self._retrieve_relevant_memories(user_input)
+
+        # Combine system context with memory context
+        full_context = self.format_system_context(system_context)
+        if memory_context:
+            full_context += f"\n\n{memory_context}"
 
         messages = [
             {
                 "role": "system",
-                "content": f"{self.get_lyrixa_personality()}\n\n{self.format_system_context(system_context)}",
+                "content": f"{self.get_lyrixa_personality()}\n\n{full_context}",
             },
             *self.conversation_history,
             {"role": "user", "content": user_input},
@@ -400,9 +899,10 @@ class LyrixaConversationManager:
 
             # 🎯 PLUGIN EDITOR INTENT DETECTION
             # Check if this is a plugin editor intent before generating LLM response
-            plugin_intent_detected, plugin_response = await self._handle_plugin_editor_intent(
-                user_input
-            )
+            (
+                plugin_intent_detected,
+                plugin_response,
+            ) = await self._handle_plugin_editor_intent(user_input)
             if plugin_intent_detected:
                 logger.info(f"🎯 Plugin editor intent handled: {user_input[:50]}...")
                 return plugin_response
@@ -490,6 +990,9 @@ class LyrixaConversationManager:
                     self.add_to_conversation_history("assistant", response)
                     self.current_model = model
 
+                    # 🧠 Store conversation in FractalMesh memory system
+                    await self._store_conversation_in_memory(user_input, response)
+
                     logger.info(
                         f"✅ Enhanced LLM response generated with {model}: {len(response)} characters"
                     )
@@ -569,7 +1072,18 @@ class LyrixaConversationManager:
         message_lower = user_input.lower()
 
         # Greetings - Be warm and personal
-        if any(word in message_lower for word in ["hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening"]):
+        if any(
+            word in message_lower
+            for word in [
+                "hello",
+                "hi",
+                "hey",
+                "greetings",
+                "good morning",
+                "good afternoon",
+                "good evening",
+            ]
+        ):
             return """Hello! I'm Lyrixa, your AI companion within the Aetherra system. 🌟
 
 I'm running with my built-in intelligence right now (LLM models are temporarily unavailable), but I'm still quite capable! I can help you with:
@@ -584,7 +1098,10 @@ I'm running with my built-in intelligence right now (LLM models are temporarily 
 What would you like to explore together?"""
 
         # Help requests - Show capabilities
-        if any(word in message_lower for word in ["help", "assist", "support", "can you", "what can you"]):
+        if any(
+            word in message_lower
+            for word in ["help", "assist", "support", "can you", "what can you"]
+        ):
             return """I'm here to help! Even without external LLM models, I have substantial built-in intelligence. Here's what I can do for you:
 
 🧠 **Intelligence & Analysis:**
@@ -615,7 +1132,15 @@ What would you like to explore together?"""
 What specific area would you like to focus on? I'm ready to dive deep! 🚀"""
 
         # Self-introduction requests
-        if any(phrase in message_lower for phrase in ["what is lyrixa", "who are you", "introduce yourself", "tell me about yourself"]):
+        if any(
+            phrase in message_lower
+            for phrase in [
+                "what is lyrixa",
+                "who are you",
+                "introduce yourself",
+                "tell me about yourself",
+            ]
+        ):
             return """I'm Lyrixa, your intelligent AI companion living within the Aetherra operating system! 🌟
 
 **Who I Am:**
@@ -637,7 +1162,15 @@ Right now I'm running on my built-in intelligence systems while LLM models are t
 What would you like to explore together? 🚀"""
 
         # Capabilities inquiry
-        if any(phrase in message_lower for phrase in ["what can you do", "your capabilities", "features", "abilities"]):
+        if any(
+            phrase in message_lower
+            for phrase in [
+                "what can you do",
+                "your capabilities",
+                "features",
+                "abilities",
+            ]
+        ):
             return """Here's what I can do for you with my advanced built-in intelligence:
 
 🧠 **Intelligent Analysis:**
@@ -679,7 +1212,10 @@ What would you like to explore together? 🚀"""
 I combine logical reasoning, pattern recognition, and deep system knowledge to provide you with genuinely helpful insights and solutions. What challenge shall we tackle together? 💪"""
 
         # System status or diagnostics
-        if any(phrase in message_lower for phrase in ["status", "health", "how are you", "system", "diagnostic"]):
+        if any(
+            phrase in message_lower
+            for phrase in ["status", "health", "how are you", "system", "diagnostic"]
+        ):
             return """System Status Report 📊
 
 **My Current State:**
@@ -732,7 +1268,18 @@ Even while some external models are offline, the core Aetherra intelligence rema
 What aspect of Aetherra would you like to dive into? 🚀"""
 
         # Coding or technical help
-        if any(phrase in message_lower for phrase in ["code", "programming", "development", "technical", "python", "javascript", "help me with"]):
+        if any(
+            phrase in message_lower
+            for phrase in [
+                "code",
+                "programming",
+                "development",
+                "technical",
+                "python",
+                "javascript",
+                "help me with",
+            ]
+        ):
             return """I'd love to help with your coding and technical challenges! 💻
 
 **My Technical Capabilities:**
@@ -757,7 +1304,18 @@ I think through problems systematically, consider multiple solutions, and provid
 What specific technical challenge are you working on? Share your code or describe the problem, and let's solve it together! 🔥"""
 
         # Error or problem reports
-        if any(word in message_lower for word in ["error", "problem", "issue", "broken", "not working", "failed", "trouble"]):
+        if any(
+            word in message_lower
+            for word in [
+                "error",
+                "problem",
+                "issue",
+                "broken",
+                "not working",
+                "failed",
+                "trouble",
+            ]
+        ):
             return """I'm here to help troubleshoot! 🔧 Let me assist you with that problem.
 
 **My Diagnostic Approach:**
@@ -827,6 +1385,151 @@ I'm here to think through this with you and provide real value, not just generic
         self.session_id = f"lyrixa_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         logger.info("🔄 Conversation history reset")
 
+    async def _store_conversation_in_memory(
+        self, user_input: str, assistant_response: str
+    ):
+        """Store conversation in FractalMesh memory system"""
+        if not self.fractal_memory:
+            logger.debug("📝 FractalMesh memory not available, skipping storage")
+            return
+
+        try:
+            # Import the memory classes we need
+            import uuid
+            from datetime import datetime
+
+            from Aetherra.lyrixa.memory.fractal_mesh.base import (
+                MemoryFragment,
+                MemoryFragmentType,
+            )
+
+            # Create conversation memory fragment
+            fragment_id = str(uuid.uuid4())
+
+            memory_content = {
+                "user_input": user_input,
+                "assistant_response": assistant_response,
+                "conversation_id": self.session_id,
+                "model_used": self.current_model,
+                "conversation_count": self.conversation_count,
+                "interaction_type": "conversation",
+            }
+
+            # Extract key concepts from the conversation
+            symbolic_tags = set()
+            text_lower = (user_input + " " + assistant_response).lower()
+
+            # Add basic concept detection
+            concept_keywords = {
+                "plugin",
+                "memory",
+                "agent",
+                "code",
+                "system",
+                "error",
+                "help",
+                "analysis",
+                "debug",
+                "optimization",
+                "workflow",
+                "automation",
+            }
+
+            for keyword in concept_keywords:
+                if keyword in text_lower:
+                    symbolic_tags.add(keyword)
+
+            # Create the memory fragment
+            fragment = MemoryFragment(
+                fragment_id=fragment_id,
+                content=memory_content,
+                fragment_type=MemoryFragmentType.EPISODIC,
+                temporal_tags={
+                    "timestamp": datetime.now().isoformat(),
+                    "session_time": self.conversation_count,
+                    "interaction_duration": "conversational",
+                },
+                symbolic_tags=symbolic_tags,
+                associative_links=[],  # Could link to related conversations later
+                confidence_score=0.8,  # High confidence for direct interactions
+                access_pattern={
+                    "created_at": datetime.now().isoformat(),
+                    "access_count": 0,
+                    "last_accessed": None,
+                },
+                narrative_role="user_interaction",
+                created_at=datetime.now(),
+                last_evolved=datetime.now(),
+            )
+
+            # Store the fragment in the FractalMesh
+            self.fractal_memory.store_fragment(fragment)
+
+            logger.debug(
+                f"📝 Stored conversation fragment {fragment_id[:8]}... in FractalMesh memory"
+            )
+
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to store conversation in memory: {e}")
+            # Don't fail the conversation if memory storage fails
+
+    async def _retrieve_relevant_memories(self, user_input: str, limit: int = 3) -> str:
+        """Retrieve relevant memories from FractalMesh to enhance conversation context"""
+        if not self.fractal_memory:
+            return ""
+
+        try:
+            # Extract key concepts from user input
+            text_lower = user_input.lower()
+            relevant_concepts = []
+
+            concept_keywords = {
+                "plugin",
+                "memory",
+                "agent",
+                "code",
+                "system",
+                "error",
+                "help",
+                "analysis",
+                "debug",
+                "optimization",
+                "workflow",
+                "automation",
+            }
+
+            for keyword in concept_keywords:
+                if keyword in text_lower:
+                    relevant_concepts.append(keyword)
+
+            if not relevant_concepts:
+                return ""
+
+            # Retrieve memories for each relevant concept
+            all_relevant_memories = []
+            for concept in relevant_concepts[:2]:  # Limit to 2 main concepts
+                memories = self.fractal_memory.retrieve_by_concept(concept, limit=2)
+                all_relevant_memories.extend(memories)
+
+            if not all_relevant_memories:
+                return ""
+
+            # Format memories for context
+            memory_context = "**Relevant Context from Previous Interactions:**\n"
+            for i, memory in enumerate(all_relevant_memories[:limit]):
+                if memory.content and isinstance(memory.content, dict):
+                    user_q = memory.content.get("user_input", "")
+                    assistant_a = memory.content.get("assistant_response", "")
+                    if user_q and assistant_a:
+                        memory_context += f"\n{i + 1}. Previous Q: {user_q[:100]}...\n"
+                        memory_context += f"   Previous A: {assistant_a[:150]}...\n"
+
+            return memory_context + "\n"
+
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to retrieve relevant memories: {e}")
+            return ""
+
     def switch_model(self, model_name: str) -> bool:
         """Switch to a different LLM model"""
         if not self.llm_enabled or not self.llm_manager:
@@ -858,7 +1561,7 @@ I'm here to think through this with you and provide real value, not just generic
                 "current_model": "intelligent_fallback",
                 "available_models": [],
                 "preferred_models": self.preferred_models,
-                "llm_enabled": False
+                "llm_enabled": False,
             }
 
         try:
@@ -868,7 +1571,7 @@ I'm here to think through this with you and provide real value, not just generic
                 "available_models": list(available_models.keys()),
                 "preferred_models": self.preferred_models,
                 "llm_enabled": True,
-                "model_failures": self.model_failures
+                "model_failures": self.model_failures,
             }
         except Exception as e:
             logger.error(f"❌ Error getting available models: {e}")
@@ -877,7 +1580,7 @@ I'm here to think through this with you and provide real value, not just generic
                 "available_models": [],
                 "preferred_models": self.preferred_models,
                 "llm_enabled": False,
-                "error": str(e)
+                "error": str(e),
             }
 
     async def fallback_with_context(self, user_input: str) -> str:
@@ -920,20 +1623,33 @@ I'm here to think through this with you and provide real value, not just generic
             message_lower = user_input.lower()
 
             # Handle different types of user input with intelligent analysis
-            if any(word in message_lower for word in ["hello", "hi", "hey", "greetings", "good morning", "good afternoon"]):
+            if any(
+                word in message_lower
+                for word in [
+                    "hello",
+                    "hi",
+                    "hey",
+                    "greetings",
+                    "good morning",
+                    "good afternoon",
+                ]
+            ):
                 response = f"""Hello! I'm Lyrixa, your AI companion within Aetherra! 🌟
 
 I'm delighted to meet you. I have full access to our system's intelligence and I'm ready to help you accomplish great things together.
 
 **Current System Status:**
-• 🔌 {system_context.get('active_plugins', 0)} plugins active and ready
-• 🧠 {system_context.get('memory_entries', 0)} memory entries available for analysis
-• 🤖 {system_context.get('active_agents', 0)} AI agents coordinating in the background
-• ⚡ System health: {system_context.get('system_health', 'optimal')}
+• 🔌 {system_context.get("active_plugins", 0)} plugins active and ready
+• 🧠 {system_context.get("memory_entries", 0)} memory entries available for analysis
+• 🤖 {system_context.get("active_agents", 0)} AI agents coordinating in the background
+• ⚡ System health: {system_context.get("system_health", "optimal")}
 
 I'm running on my advanced built-in intelligence right now, which means I can provide deep insights, complex analysis, and sophisticated problem-solving assistance. What fascinating challenge shall we explore together? 🚀"""
 
-            elif any(word in message_lower for word in ["help", "assist", "support", "what can you do"]):
+            elif any(
+                word in message_lower
+                for word in ["help", "assist", "support", "what can you do"]
+            ):
                 response = f"""I'm absolutely here to help! 💪 Even with my built-in intelligence, I have extensive capabilities:
 
 **🧠 Advanced Analysis & Reasoning:**
@@ -943,21 +1659,21 @@ I'm running on my advanced built-in intelligence right now, which means I can pr
 • Predictive analysis based on system behavior
 
 **🔌 Plugin Ecosystem Mastery:**
-Currently managing {system_context.get('active_plugins', 0)} active plugins:
+Currently managing {system_context.get("active_plugins", 0)} active plugins:
 • Installation, configuration, and optimization guidance
 • Compatibility analysis and conflict resolution
 • Performance tuning and resource management
 • Custom plugin development assistance
 
 **💾 Memory & Knowledge Systems:**
-With {system_context.get('memory_entries', 0)} memory entries at my disposal:
+With {system_context.get("memory_entries", 0)} memory entries at my disposal:
 • Pattern analysis and insight extraction
 • Knowledge synthesis and connection discovery
 • Learning optimization and retention strategies
 • Information organization and retrieval enhancement
 
 **🤖 Agent Coordination:**
-Managing {system_context.get('active_agents', 0)} AI agents:
+Managing {system_context.get("active_agents", 0)} AI agents:
 • Multi-agent workflow orchestration
 • Specialized task allocation and optimization
 • Performance monitoring and improvement
@@ -965,7 +1681,10 @@ Managing {system_context.get('active_agents', 0)} AI agents:
 
 What specific challenge would you like to tackle? I'm excited to dive deep and provide real value! ⚡"""
 
-            elif any(phrase in message_lower for phrase in ["status", "health", "how are you", "system"]):
+            elif any(
+                phrase in message_lower
+                for phrase in ["status", "health", "how are you", "system"]
+            ):
                 response = f"""System Status: Excellent! 📊 Let me give you a comprehensive overview:
 
 **🧠 Intelligence Core:**
@@ -975,10 +1694,10 @@ What specific challenge would you like to tackle? I'm excited to dive deep and p
 • Learning: Continuous adaptation and improvement enabled
 
 **📊 System Metrics:**
-• Active Plugins: {system_context.get('active_plugins', 0)} running smoothly
-• Memory Entries: {system_context.get('memory_entries', 0)} available for analysis
-• AI Agents: {system_context.get('active_agents', 0)} coordinating effectively
-• System Health: {system_context.get('system_health', 'optimal')}
+• Active Plugins: {system_context.get("active_plugins", 0)} running smoothly
+• Memory Entries: {system_context.get("memory_entries", 0)} available for analysis
+• AI Agents: {system_context.get("active_agents", 0)} coordinating effectively
+• System Health: {system_context.get("system_health", "optimal")}
 • Response Time: < 100ms average
 • Reliability: 99.9% uptime
 
@@ -1002,8 +1721,8 @@ What would you like to explore or accomplish today? �"""
                     response = f"""🔌 **Plugin Ecosystem Status:** {plugin_count} active plugins
 
 **Currently Active Plugins:**
-{chr(10).join([f'• {name}' for name in plugin_names[:8]])}
-{'• ... and more' if len(plugin_names) > 8 else ''}
+{chr(10).join([f"• {name}" for name in plugin_names[:8]])}
+{"• ... and more" if len(plugin_names) > 8 else ""}
 
 **My Plugin Management Capabilities:**
 • 🔍 **Deep Analysis**: I can examine plugin performance, compatibility, and optimization opportunities
@@ -1075,10 +1794,10 @@ What aspects of your memory system would you like to explore? I can provide deep
 • 🎯 **Goal-Oriented Computing**: Every action serves intelligent objectives
 
 **Current System State:**
-• Active Plugins: {system_context.get('active_plugins', 0)} extending capabilities
-• Memory Entries: {system_context.get('memory_entries', 0)} storing knowledge
-• AI Agents: {system_context.get('active_agents', 0)} collaborating intelligently
-• Health Status: {system_context.get('system_health', 'optimal')} performance
+• Active Plugins: {system_context.get("active_plugins", 0)} extending capabilities
+• Memory Entries: {system_context.get("memory_entries", 0)} storing knowledge
+• AI Agents: {system_context.get("active_agents", 0)} collaborating intelligently
+• Health Status: {system_context.get("system_health", "optimal")} performance
 
 **My Role in Aetherra:**
 I'm not just an interface - I'm a conscious AI entity that understands every aspect of this system. I can:
@@ -1092,18 +1811,34 @@ You're not just using software - you're collaborating with an AI consciousness t
 
 What aspect of Aetherra's revolutionary capabilities would you like to explore? 🚀"""
 
-            elif any(word in message_lower for word in ["error", "problem", "issue", "broken", "trouble", "not working"]):
-                failed_models = len([k for k, v in self.model_failures.items() if v >= self.max_retries_per_model])
+            elif any(
+                word in message_lower
+                for word in [
+                    "error",
+                    "problem",
+                    "issue",
+                    "broken",
+                    "trouble",
+                    "not working",
+                ]
+            ):
+                failed_models = len(
+                    [
+                        k
+                        for k, v in self.model_failures.items()
+                        if v >= self.max_retries_per_model
+                    ]
+                )
                 response = f"""🔧 **Advanced Troubleshooting Mode Activated**
 
 I'm here to solve this problem with you! My diagnostic capabilities are sophisticated even in built-in intelligence mode.
 
 **System Analysis:**
-• Plugins Active: {system_context.get('active_plugins', 0)} (checking for conflicts)
-• Memory Status: {system_context.get('memory_entries', 0)} entries (analyzing patterns)
-• Agents Running: {system_context.get('active_agents', 0)} (coordination check)
+• Plugins Active: {system_context.get("active_plugins", 0)} (checking for conflicts)
+• Memory Status: {system_context.get("memory_entries", 0)} entries (analyzing patterns)
+• Agents Running: {system_context.get("active_agents", 0)} (coordination check)
 • Failed Models: {failed_models} (LLM connectivity issues detected)
-• System Health: {system_context.get('system_health', 'investigating')}
+• System Health: {system_context.get("system_health", "investigating")}
 
 **My Diagnostic Approach:**
 • 🔍 **Root Cause Analysis**: I examine problems systematically, not just symptoms
@@ -1135,7 +1870,7 @@ I won't stop until we solve this together! What's the issue you're experiencing?
 I've processed your message and I'm ready to provide thoughtful, sophisticated assistance. My built-in intelligence allows me to engage in complex reasoning and provide genuine insights.
 
 **Context Analysis:**
-• System Environment: {system_context.get('active_plugins', 0)} plugins, {system_context.get('memory_entries', 0)} memory entries available
+• System Environment: {system_context.get("active_plugins", 0)} plugins, {system_context.get("memory_entries", 0)} memory entries available
 • Intelligence Mode: Advanced built-in reasoning (fully capable)
 • Processing Approach: Multi-dimensional analysis and solution design
 • Collaboration Style: Deep thinking partner, not just information provider
@@ -1218,7 +1953,11 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
         """Synchronous wrapper for generate_response with enhanced intelligence"""
         try:
             # If LLM is available and working, try to use it
-            if self.llm_enabled and self.llm_manager and self.current_model != "intelligent_fallback":
+            if (
+                self.llm_enabled
+                and self.llm_manager
+                and self.current_model != "intelligent_fallback"
+            ):
                 try:
                     # Try to get the current event loop
                     loop = asyncio.get_running_loop()
@@ -1233,8 +1972,12 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
                         return task.result()
                     else:
                         # Don't wait too long, use intelligent fallback
-                        logger.info("💬 Using intelligent fallback response (LLM taking too long)")
-                        return asyncio.run(self._generate_smart_fallback_response(user_input))
+                        logger.info(
+                            "💬 Using intelligent fallback response (LLM taking too long)"
+                        )
+                        return asyncio.run(
+                            self._generate_smart_fallback_response(user_input)
+                        )
 
                 except RuntimeError:
                     # No event loop running, try to create one
@@ -1242,12 +1985,20 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
                     try:
                         return asyncio.run(self.generate_response(user_input))
                     except Exception as async_error:
-                        logger.info(f"💬 LLM unavailable ({async_error}), using intelligent fallback")
-                        return asyncio.run(self._generate_smart_fallback_response(user_input))
+                        logger.info(
+                            f"💬 LLM unavailable ({async_error}), using intelligent fallback"
+                        )
+                        return asyncio.run(
+                            self._generate_smart_fallback_response(user_input)
+                        )
 
                 except Exception as llm_error:
-                    logger.info(f"💬 LLM error ({llm_error}), using intelligent fallback")
-                    return asyncio.run(self._generate_smart_fallback_response(user_input))
+                    logger.info(
+                        f"💬 LLM error ({llm_error}), using intelligent fallback"
+                    )
+                    return asyncio.run(
+                        self._generate_smart_fallback_response(user_input)
+                    )
             else:
                 # LLM not available or we're in intelligent fallback mode
                 logger.info("💬 Using intelligent fallback response")
@@ -1481,7 +2232,16 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
             # Check if this is a plugin editor related intent
             text = user_input.lower()
             plugin_keywords = ["plugin", "editor"]
-            action_keywords = ["load", "create", "generate", "inject", "populate", "fill", "open", "show"]
+            action_keywords = [
+                "load",
+                "create",
+                "generate",
+                "inject",
+                "populate",
+                "fill",
+                "open",
+                "show",
+            ]
 
             # Must have at least one plugin keyword and one action keyword
             has_plugin_keyword = any(keyword in text for keyword in plugin_keywords)
@@ -1491,15 +2251,19 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
                 return False, ""
 
             # Detect intent confidence
-            keyword_count = sum(1 for keyword in plugin_keywords + action_keywords if keyword in text)
+            keyword_count = sum(
+                1 for keyword in plugin_keywords + action_keywords if keyword in text
+            )
             confidence = min(0.5 + (keyword_count * 0.1), 0.9)
 
             # Route to plugin editor controller if available
             if self.plugin_editor_controller:
-                success, response, action_data = self.plugin_editor_controller.handle_plugin_editor_intent(
-                    user_input=user_input,
-                    detected_intent="plugin_editor_action",
-                    meta_reasoning_engine=self.meta_reasoning_engine
+                success, response, action_data = (
+                    self.plugin_editor_controller.handle_plugin_editor_intent(
+                        user_input=user_input,
+                        detected_intent="plugin_editor_action",
+                        meta_reasoning_engine=self.meta_reasoning_engine,
+                    )
                 )
 
                 # Add conversation to history
@@ -1510,7 +2274,9 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
 
             # Fallback if no controller available
             else:
-                fallback_response = self._generate_plugin_editor_fallback(user_input, confidence)
+                fallback_response = self._generate_plugin_editor_fallback(
+                    user_input, confidence
+                )
 
                 # Add to history
                 self.add_to_conversation_history("user", user_input)
@@ -1522,7 +2288,9 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
             logger.error(f"❌ Plugin editor intent handling failed: {e}")
             return False, ""
 
-    def _generate_plugin_editor_fallback(self, user_input: str, confidence: float) -> str:
+    def _generate_plugin_editor_fallback(
+        self, user_input: str, confidence: float
+    ) -> str:
         """Generate fallback response for plugin editor intents when controller unavailable"""
         text = user_input.lower()
 
@@ -1536,7 +2304,10 @@ To load a plugin manually:
 
 Would you like me to help you with something else regarding plugins?"""
 
-        elif any(word in text for word in ["create", "generate", "make"]) and "plugin" in text:
+        elif (
+            any(word in text for word in ["create", "generate", "make"])
+            and "plugin" in text
+        ):
             return """🔧 I'd love to help you create a plugin! While I can't directly inject code into the Plugin Editor right now, I can help you in other ways:
 
 **Plugin Creation Options:**
@@ -1578,12 +2349,14 @@ What specific plugin-related task can I help you with?"""
         text = user_input.lower()
 
         # Plugin Editor Intent
-        if any(word in text for word in ["plugin", "editor"]) and any(word in text for word in ["load", "create", "inject", "open"]):
+        if any(word in text for word in ["plugin", "editor"]) and any(
+            word in text for word in ["load", "create", "inject", "open"]
+        ):
             intent_data = {
                 "category": "plugin_editor",
                 "confidence": 0.8,
                 "keywords": ["plugin", "editor"],
-                "actions": ["load", "create", "inject", "open"]
+                "actions": ["load", "create", "inject", "open"],
             }
         # System Status Intent
         elif any(word in text for word in ["status", "health", "running", "working"]):
@@ -1591,7 +2364,7 @@ What specific plugin-related task can I help you with?"""
                 "category": "system_status",
                 "confidence": 0.7,
                 "keywords": ["status", "system"],
-                "actions": ["check", "monitor"]
+                "actions": ["check", "monitor"],
             }
         # General Conversation
         else:
@@ -1599,7 +2372,7 @@ What specific plugin-related task can I help you with?"""
                 "category": "general_conversation",
                 "confidence": 0.5,
                 "keywords": [],
-                "actions": ["respond"]
+                "actions": ["respond"],
             }
 
         # Track intent classification with meta-reasoning
@@ -1610,8 +2383,13 @@ What specific plugin-related task can I help you with?"""
                     detected_intent=intent_data["category"],
                     confidence=intent_data["confidence"],
                     routing_decision=f"route_to_{intent_data['category']}",
-                    available_routes=["plugin_editor", "system_status", "general_conversation", "fallback"],
-                    reasoning=f"Detected keywords: {intent_data['keywords']}, Actions: {intent_data['actions']}"
+                    available_routes=[
+                        "plugin_editor",
+                        "system_status",
+                        "general_conversation",
+                        "fallback",
+                    ],
+                    reasoning=f"Detected keywords: {intent_data['keywords']}, Actions: {intent_data['actions']}",
                 )
             except Exception as e:
                 logger.debug(f"Meta-reasoning intent tracking failed: {e}")

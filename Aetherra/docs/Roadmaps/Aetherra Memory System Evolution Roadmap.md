@@ -1,4 +1,5 @@
 # 🧠 Aetherra Memory System Evolution Roadmap
+Aetherra\lyrixa\memory
 
 *Inspired by Synthetic Soul's QSFS & observer models*
 

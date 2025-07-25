@@ -7,13 +7,68 @@ subsystems, ensuring coherent integration and consistent identity representation
 """
 
 import time
+import uuid
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from .IdentityAgent.core_beliefs import CoreBeliefs
 from .IdentityAgent.personal_history import EventType, PersonalHistory
 from .IdentityAgent.self_model import SelfModel
+
+# Import FractalMesh Memory System
+try:
+    from ..memory.fractal_mesh import FractalMeshCore
+    from ..memory.fractal_mesh.base import MemoryFragment, MemoryFragmentType
+
+    FRACTAL_MESH_AVAILABLE = True
+    print("[LyrixaCore] ✅ FractalMesh Memory System available")
+except ImportError as e:
+    print(f"[LyrixaCore] ⚠️ FractalMesh Memory System not available: {e}")
+    FRACTAL_MESH_AVAILABLE = False
+    FractalMeshCore = None
+    MemoryFragment = None
+    MemoryFragmentType = None
+
+# Import Plugin System
+try:
+    from ..plugins.enhanced_plugin_manager import PluginManager
+    from ..plugins.memory_aware_plugin_router import MemoryAwarePluginRouter
+
+    PLUGIN_SYSTEM_AVAILABLE = True
+    print("[LyrixaCore] ✅ Plugin System available")
+except ImportError as e:
+    print(f"[LyrixaCore] ⚠️ Plugin System not available: {e}")
+    PLUGIN_SYSTEM_AVAILABLE = False
+    PluginManager = None
+    MemoryAwarePluginRouter = None
+
+# Import Reflection Engine
+try:
+    from ..reflection_engine.shadow_state_forker import ShadowStateForker
+    from ..reflection_engine.validation_engine import ValidationEngine
+
+    REFLECTION_ENGINE_AVAILABLE = True
+    print("[LyrixaCore] ✅ Reflection Engine available")
+except ImportError as e:
+    print(f"[LyrixaCore] ⚠️ Reflection Engine not available: {e}")
+    REFLECTION_ENGINE_AVAILABLE = False
+    ValidationEngine = None
+    ShadowStateForker = None
+
+# Import Self Metrics Dashboard
+try:
+    from ..self_metrics_dashboard.main_dashboard import SelfMetricsDashboard
+    from ..self_metrics_dashboard.memory_continuity_score import MemoryContinuityTracker
+
+    SELF_METRICS_AVAILABLE = True
+    print("[LyrixaCore] ✅ Self Metrics Dashboard available")
+except ImportError as e:
+    print(f"[LyrixaCore] ⚠️ Self Metrics Dashboard not available: {e}")
+    SELF_METRICS_AVAILABLE = False
+    SelfMetricsDashboard = None
+    MemoryContinuityTracker = None
 
 
 class ContextType(Enum):
@@ -63,6 +118,7 @@ class LyrixaContextBridge:
         identity_agent: SelfModel = None,
         agent_stack=None,
         reflector=None,
+        workspace_path: str = None,
     ):
         """Initialize the unified interface with all cognitive subsystems"""
 
@@ -73,6 +129,142 @@ class LyrixaContextBridge:
         self.agents = agent_stack
         self.reflector = reflector
 
+        # 🧠 Initialize FractalMesh Memory System for LyrixaCore
+        if FRACTAL_MESH_AVAILABLE and FractalMeshCore:
+            try:
+                import os
+
+                db_path = "lyrixacore_memory.db"
+                if workspace_path:
+                    db_path = os.path.join(workspace_path, "lyrixacore_memory.db")
+
+                self.fractal_memory = FractalMeshCore(db_path=db_path)
+                print("[LyrixaCore] ✅ FractalMesh Memory System initialized")
+
+                # If no memory engine was provided, use FractalMesh as the memory system
+                if not self.memory:
+                    self.memory = self.fractal_memory
+                    print("[LyrixaCore] 🧠 Using FractalMesh as primary memory engine")
+
+            except Exception as e:
+                print(f"[LyrixaCore] ⚠️ FractalMesh initialization failed: {e}")
+                self.fractal_memory = None
+        else:
+            self.fractal_memory = None
+
+        # 🔌 Initialize Plugin System
+        if PLUGIN_SYSTEM_AVAILABLE and PluginManager:
+            try:
+                import os  # Ensure os is imported
+
+                plugin_dir = "plugins"
+                if workspace_path:
+                    plugin_dir = os.path.join(
+                        workspace_path, "Aetherra", "lyrixa", "plugins"
+                    )
+
+                self.plugin_manager = PluginManager(plugins_dir=plugin_dir)
+
+                # Initialize memory-aware plugin router if available
+                if MemoryAwarePluginRouter and self.fractal_memory:
+                    # We'll need to create a concept manager for the router
+                    try:
+                        from ..memory.fractal_mesh.concepts.concept_clusters import (
+                            ConceptClusterManager,
+                        )
+
+                        concept_manager = ConceptClusterManager()
+
+                        # Use a wrapper for the memory engine since the router expects LyrixaMemoryEngine
+                        class FractalMeshWrapper:
+                            def __init__(self, fractal_mesh):
+                                self.fractal_mesh = fractal_mesh
+
+                            def get_recent_fragments(self, limit=10):
+                                return list(self.fractal_mesh.fragments.values())[
+                                    -limit:
+                                ]
+
+                        memory_wrapper = FractalMeshWrapper(self.fractal_memory)
+
+                        self.plugin_router = MemoryAwarePluginRouter(
+                            memory_engine=memory_wrapper,
+                            concept_manager=concept_manager,
+                        )
+                        print("[LyrixaCore] ✅ Memory-aware Plugin Router initialized")
+                    except Exception as router_error:
+                        print(
+                            f"[LyrixaCore] ⚠️ Plugin Router init failed: {router_error}"
+                        )
+                        self.plugin_router = None
+                else:
+                    self.plugin_router = None
+
+                print("[LyrixaCore] ✅ Plugin System initialized")
+            except Exception as e:
+                print(f"[LyrixaCore] ⚠️ Plugin System initialization failed: {e}")
+                self.plugin_manager = None
+                self.plugin_router = None
+        else:
+            self.plugin_manager = None
+            self.plugin_router = None
+
+        # 🔍 Initialize Reflection Engine
+        if REFLECTION_ENGINE_AVAILABLE and ValidationEngine:
+            try:
+                validation_dir = "validation_data"
+                if workspace_path:
+                    validation_dir = os.path.join(workspace_path, "validation_data")
+
+                self.validation_engine = ValidationEngine(data_dir=validation_dir)
+
+                if ShadowStateForker:
+                    # The ValidationEngine creates its own ShadowStateForker, so we reference that
+                    self.shadow_forker = self.validation_engine.shadow_forker
+                    print(
+                        "[LyrixaCore] ✅ Shadow State Forker referenced from ValidationEngine"
+                    )
+                else:
+                    self.shadow_forker = None
+
+                print("[LyrixaCore] ✅ Reflection Engine initialized")
+            except Exception as e:
+                print(f"[LyrixaCore] ⚠️ Reflection Engine initialization failed: {e}")
+                self.validation_engine = None
+                self.shadow_forker = None
+        else:
+            self.validation_engine = None
+            self.shadow_forker = None
+
+        # 📊 Initialize Self Metrics Dashboard
+        if SELF_METRICS_AVAILABLE and SelfMetricsDashboard:
+            try:
+                metrics_dir = "self_metrics_data"
+                if workspace_path:
+                    metrics_dir = os.path.join(workspace_path, "self_metrics_data")
+
+                self.metrics_dashboard = SelfMetricsDashboard(data_dir=metrics_dir)
+
+                if MemoryContinuityTracker and self.fractal_memory:
+                    # The SelfMetricsDashboard creates its own trackers, so we reference those
+                    self.memory_continuity = self.metrics_dashboard.memory_tracker
+                    print(
+                        "[LyrixaCore] ✅ Memory Continuity Tracker referenced from dashboard"
+                    )
+                else:
+                    self.memory_continuity = None
+
+                print("[LyrixaCore] ✅ Self Metrics Dashboard initialized")
+            except Exception as e:
+                print(
+                    f"[LyrixaCore] ⚠️ Self Metrics Dashboard initialization failed: {e}"
+                )
+                self.metrics_dashboard = None
+                self.memory_continuity = None
+        else:
+            self.metrics_dashboard = None
+            self.memory_continuity = None
+
         # Interface state
         self.active_requests = {}
         self.context_history = []
@@ -81,6 +273,8 @@ class LyrixaContextBridge:
             "failed_integrations": 0,
             "average_coherence": 0.8,
             "response_times": [],
+            "memory_fragments_stored": 0,
+            "memory_retrievals": 0,
         }
 
         # Coherence thresholds
@@ -91,7 +285,9 @@ class LyrixaContextBridge:
             "ethics_alignment": 0.8,
         }
 
-        print("[LyrixaContextBridge] Unified cognitive interface initialized")
+        print(
+            "[LyrixaContextBridge] Unified cognitive interface initialized with FractalMesh integration"
+        )
 
     def get_context_summary(
         self,
@@ -147,17 +343,53 @@ class LyrixaContextBridge:
                     print(f"[Bridge] Ethics context error: {e}")
                     context["ethics"] = {"alignment_score": 0.8, "status": "limited"}
 
-            # Memory context
+            # Memory context - Enhanced with FractalMesh
             if self.memory:
                 try:
-                    memory_health = getattr(
-                        self.memory, "get_health_metrics", lambda: {"coherence": 0.8}
-                    )()
-                    context["memory"] = {
-                        "health_score": memory_health.get("coherence", 0.8),
-                        "recent_entries": getattr(self.memory, "recent_count", 0),
-                        "confidence_avg": memory_health.get("confidence_avg", 0.8),
-                    }
+                    # Use FractalMesh if available for enhanced memory context
+                    if self.fractal_memory:
+                        fragment_count = len(self.fractal_memory.fragments)
+                        cluster_count = len(self.fractal_memory.concept_clusters)
+                        chain_count = len(self.fractal_memory.episodic_chains)
+
+                        # Calculate memory health from FractalMesh
+                        if fragment_count > 0:
+                            # Average confidence from recent fragments
+                            recent_fragments = list(
+                                self.fractal_memory.fragments.values()
+                            )[-10:]
+                            avg_confidence = (
+                                sum(f.confidence_score for f in recent_fragments)
+                                / len(recent_fragments)
+                                if recent_fragments
+                                else 0.8
+                            )
+                        else:
+                            avg_confidence = 0.8
+
+                        context["memory"] = {
+                            "health_score": avg_confidence,
+                            "fragment_count": fragment_count,
+                            "concept_clusters": cluster_count,
+                            "episodic_chains": chain_count,
+                            "memory_type": "FractalMesh",
+                            "confidence_avg": avg_confidence,
+                            "status": "enhanced",
+                        }
+                    else:
+                        # Fallback to generic memory health
+                        memory_health = getattr(
+                            self.memory,
+                            "get_health_metrics",
+                            lambda: {"coherence": 0.8},
+                        )()
+                        context["memory"] = {
+                            "health_score": memory_health.get("coherence", 0.8),
+                            "recent_entries": getattr(self.memory, "recent_count", 0),
+                            "confidence_avg": memory_health.get("confidence_avg", 0.8),
+                            "memory_type": "generic",
+                            "status": "standard",
+                        }
                 except Exception as e:
                     print(f"[Bridge] Memory context error: {e}")
                     context["memory"] = {"health_score": 0.8, "status": "limited"}
@@ -195,6 +427,87 @@ class LyrixaContextBridge:
                 except Exception as e:
                     print(f"[Bridge] Reflection context error: {e}")
                     context["reflection"] = {"insight_score": 0.8, "status": "limited"}
+
+            # 🔌 Plugin System context
+            if self.plugin_manager:
+                try:
+                    plugin_count = len(getattr(self.plugin_manager, "plugins", {}))
+                    active_plugins = len(
+                        [
+                            p
+                            for p, state in getattr(
+                                self.plugin_manager, "plugin_states", {}
+                            ).items()
+                            if state == "active"
+                        ]
+                    )
+
+                    context["plugins"] = {
+                        "total_plugins": plugin_count,
+                        "active_plugins": active_plugins,
+                        "plugin_router_available": self.plugin_router is not None,
+                        "memory_aware_routing": self.plugin_router is not None
+                        and self.fractal_memory is not None,
+                        "status": "operational",
+                    }
+                except Exception as e:
+                    print(f"[Bridge] Plugin system context error: {e}")
+                    context["plugins"] = {"status": "limited"}
+
+            # 🔍 Reflection Engine context
+            if self.validation_engine:
+                try:
+                    pending_validations = len(
+                        getattr(self.validation_engine, "pending_validations", {})
+                    )
+                    completed_validations = len(
+                        getattr(self.validation_engine, "completed_validations", [])
+                    )
+                    approved_changes = len(
+                        getattr(self.validation_engine, "approved_changes", [])
+                    )
+
+                    context["validation"] = {
+                        "pending_validations": pending_validations,
+                        "completed_validations": completed_validations,
+                        "approved_changes": approved_changes,
+                        "shadow_forker_available": self.shadow_forker is not None,
+                        "validation_health": "operational"
+                        if pending_validations < 10
+                        else "busy",
+                        "status": "operational",
+                    }
+                except Exception as e:
+                    print(f"[Bridge] Validation engine context error: {e}")
+                    context["validation"] = {"status": "limited"}
+
+            # 📊 Self Metrics Dashboard context
+            if self.metrics_dashboard:
+                try:
+                    # Get latest metrics if available
+                    latest_metrics = getattr(
+                        self.metrics_dashboard, "get_current_snapshot", lambda: None
+                    )()
+
+                    if latest_metrics:
+                        context["self_metrics"] = {
+                            "memory_continuity": latest_metrics.memory_continuity_score,
+                            "narrative_integrity": latest_metrics.narrative_integrity_index,
+                            "ethics_alignment": latest_metrics.ethics_alignment_score,
+                            "conflict_resolution": latest_metrics.conflict_resolution_efficiency,
+                            "growth_trajectory": getattr(
+                                latest_metrics, "growth_score", 0.8
+                            ),
+                            "status": "operational",
+                        }
+                    else:
+                        context["self_metrics"] = {
+                            "status": "initializing",
+                            "trackers_available": self.memory_continuity is not None,
+                        }
+                except Exception as e:
+                    print(f"[Bridge] Self metrics context error: {e}")
+                    context["self_metrics"] = {"status": "limited"}
 
             # Calculate overall system coherence
             coherence_scores = []
@@ -275,8 +588,81 @@ class LyrixaContextBridge:
 
             # Decision logic
             if ethical_approved and identity_coherent:
-                # Store in memory system
-                if self.memory:
+                # Store in memory system - Enhanced with FractalMesh
+                if (
+                    self.fractal_memory
+                    and FRACTAL_MESH_AVAILABLE
+                    and MemoryFragment
+                    and MemoryFragmentType
+                ):
+                    try:
+                        # Create FractalMesh memory fragment
+                        fragment_id = str(uuid.uuid4())
+
+                        # Extract key concepts
+                        symbolic_tags = set()
+                        content_text = str(fragment.get("content", "")) + str(
+                            fragment.get("summary", "")
+                        )
+                        concept_keywords = {
+                            "decision",
+                            "learning",
+                            "ethics",
+                            "identity",
+                            "coherence",
+                            "integration",
+                            "system",
+                            "memory",
+                            "agent",
+                            "reflection",
+                        }
+
+                        for keyword in concept_keywords:
+                            if keyword.lower() in content_text.lower():
+                                symbolic_tags.add(keyword)
+
+                        # Create memory fragment
+                        memory_fragment = MemoryFragment(
+                            fragment_id=fragment_id,
+                            content=fragment,
+                            fragment_type=MemoryFragmentType.EPISODIC,
+                            temporal_tags={
+                                "timestamp": datetime.now().isoformat(),
+                                "source": "lyrixa_core_bridge",
+                                "ethical_score": ethical_score,
+                            },
+                            symbolic_tags=symbolic_tags,
+                            associative_links=[],
+                            confidence_score=fragment.get("confidence", 0.8),
+                            access_pattern={
+                                "created_at": datetime.now().isoformat(),
+                                "access_count": 0,
+                                "last_accessed": None,
+                            },
+                            narrative_role="cognitive_integration",
+                            created_at=datetime.now(),
+                            last_evolved=datetime.now(),
+                        )
+
+                        # Store in FractalMesh
+                        self.fractal_memory.store_fragment(memory_fragment)
+                        self.integration_metrics["memory_fragments_stored"] += 1
+                        print(
+                            f"[Bridge] 🧠 Stored fragment {fragment_id[:8]}... in FractalMesh"
+                        )
+
+                    except Exception as e:
+                        print(f"[Bridge] FractalMesh storage error: {e}")
+                        # Fallback to generic memory storage
+                        if self.memory:
+                            try:
+                                getattr(self.memory, "store", lambda x: True)(fragment)
+                            except Exception as fallback_error:
+                                print(
+                                    f"[Bridge] Memory storage fallback error: {fallback_error}"
+                                )
+                                return False
+                elif self.memory:
                     try:
                         getattr(self.memory, "store", lambda x: True)(fragment)
                     except Exception as e:
@@ -328,6 +714,86 @@ class LyrixaContextBridge:
             self.integration_metrics["failed_integrations"] += 1
             return False
 
+    def retrieve_relevant_memories(
+        self, query_context: Dict[str, Any], limit: int = 5
+    ) -> List[Dict[str, Any]]:
+        """
+        Retrieve relevant memories from FractalMesh based on context
+
+        Args:
+            query_context: Context information for memory search
+            limit: Maximum number of memories to retrieve
+
+        Returns:
+            List of relevant memory fragments
+        """
+        try:
+            if not self.fractal_memory or not FRACTAL_MESH_AVAILABLE:
+                print("[Bridge] FractalMesh not available for memory retrieval")
+                return []
+
+            # Extract concepts from query context
+            query_text = str(query_context.get("summary", "")) + str(
+                query_context.get("content", "")
+            )
+            concept_keywords = {
+                "decision",
+                "learning",
+                "ethics",
+                "identity",
+                "coherence",
+                "integration",
+                "system",
+                "memory",
+                "agent",
+                "reflection",
+            }
+
+            relevant_concepts = []
+            for keyword in concept_keywords:
+                if keyword.lower() in query_text.lower():
+                    relevant_concepts.append(keyword)
+
+            if not relevant_concepts:
+                return []
+
+            # Retrieve memories for each concept
+            all_memories = []
+            for concept in relevant_concepts[:3]:  # Limit to top 3 concepts
+                try:
+                    memories = self.fractal_memory.retrieve_by_concept(concept, limit=2)
+                    all_memories.extend(memories)
+                except Exception as e:
+                    print(
+                        f"[Bridge] Memory retrieval error for concept '{concept}': {e}"
+                    )
+
+            # Convert to dictionaries and sort by relevance
+            memory_dicts = []
+            for memory in all_memories[:limit]:
+                try:
+                    memory_dict = {
+                        "fragment_id": memory.fragment_id,
+                        "content": memory.content,
+                        "confidence": memory.confidence_score,
+                        "narrative_role": memory.narrative_role,
+                        "symbolic_tags": list(memory.symbolic_tags),
+                        "created_at": memory.created_at.isoformat()
+                        if hasattr(memory.created_at, "isoformat")
+                        else str(memory.created_at),
+                    }
+                    memory_dicts.append(memory_dict)
+                except Exception as e:
+                    print(f"[Bridge] Error converting memory to dict: {e}")
+
+            self.integration_metrics["memory_retrievals"] += 1
+            print(f"[Bridge] 🔍 Retrieved {len(memory_dicts)} relevant memories")
+            return memory_dicts
+
+        except Exception as e:
+            print(f"[Bridge] Memory retrieval error: {e}")
+            return []
+
     def evaluate_decision(self, decision_context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Evaluate a decision through unified cognitive assessment
@@ -345,7 +811,21 @@ class LyrixaContextBridge:
                 "approved": False,
                 "confidence": 0.0,
                 "recommendations": [],
+                "memory_context": [],
             }
+
+            # 🧠 Retrieve relevant memories for decision context
+            try:
+                relevant_memories = self.retrieve_relevant_memories(
+                    decision_context, limit=3
+                )
+                evaluation["memory_context"] = relevant_memories
+                if relevant_memories:
+                    print(
+                        f"[Bridge] 🧠 Using {len(relevant_memories)} memory fragments for decision context"
+                    )
+            except Exception as e:
+                print(f"[Bridge] Error retrieving decision context memories: {e}")
 
             scores = {}
 

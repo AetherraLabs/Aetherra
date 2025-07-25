@@ -75,39 +75,58 @@ class MultiLLMManager:
         """Initialize all supported LLM providers"""
 
         # OpenAI Provider
-        if importlib.util.find_spec("openai") is not None:
-            self.providers[LLMProvider.OPENAI] = OpenAIProvider()
-            logger.info("✅ OpenAI provider initialized")
-        else:
-            logger.warning("⚠️ OpenAI not available (pip install openai)")
+        try:
+            if importlib.util.find_spec("openai") is not None:
+                self.providers[LLMProvider.OPENAI] = OpenAIProvider()
+                logger.info("✅ OpenAI provider initialized")
+            else:
+                logger.warning("⚠️ OpenAI not available (pip install openai)")
+        except Exception as e:
+            logger.warning(f"⚠️ OpenAI provider initialization failed: {e}")
 
         # Ollama Provider (for local Mistral, LLaMA, etc.)
-        if importlib.util.find_spec("ollama") is not None:
-            self.providers[LLMProvider.OLLAMA] = OllamaProvider()
-            logger.info("✅ Ollama provider initialized")
-        else:
-            logger.warning("⚠️ Ollama not available (pip install ollama)")
+        try:
+            if importlib.util.find_spec("ollama") is not None:
+                self.providers[LLMProvider.OLLAMA] = OllamaProvider()
+                logger.info("✅ Ollama provider initialized")
+            else:
+                logger.warning("⚠️ Ollama not available (pip install ollama)")
+        except Exception as e:
+            logger.warning(f"⚠️ Ollama provider initialization failed: {e}")
 
         # llama-cpp-python Provider (for GGUF models)
-        if importlib.util.find_spec("llama_cpp") is not None:
-            self.providers[LLMProvider.LLAMACPP] = LlamaCppProvider()
-            logger.info("✅ LlamaCpp provider initialized")
-        else:
-            logger.warning("⚠️ LlamaCpp not available (pip install llama-cpp-python)")
+        try:
+            if importlib.util.find_spec("llama_cpp") is not None:
+                self.providers[LLMProvider.LLAMACPP] = LlamaCppProvider()
+                logger.info("✅ LlamaCpp provider initialized")
+            else:
+                logger.warning(
+                    "⚠️ LlamaCpp not available (pip install llama-cpp-python)"
+                )
+        except Exception as e:
+            logger.warning(f"⚠️ LlamaCpp provider initialization failed: {e}")
 
         # Anthropic Provider
-        if importlib.util.find_spec("anthropic") is not None:
-            self.providers[LLMProvider.ANTHROPIC] = AnthropicProvider()
-            logger.info("✅ Anthropic provider initialized")
-        else:
-            logger.warning("⚠️ Anthropic not available (pip install anthropic)")
+        try:
+            if importlib.util.find_spec("anthropic") is not None:
+                self.providers[LLMProvider.ANTHROPIC] = AnthropicProvider()
+                logger.info("✅ Anthropic provider initialized")
+            else:
+                logger.warning("⚠️ Anthropic not available (pip install anthropic)")
+        except Exception as e:
+            logger.warning(f"⚠️ Anthropic provider initialization failed: {e}")
 
         # Google Gemini Provider
-        if importlib.util.find_spec("google.generativeai") is not None:
-            self.providers[LLMProvider.GEMINI] = GeminiProvider()
-            logger.info("✅ Gemini provider initialized")
-        else:
-            logger.warning("⚠️ Gemini not available (pip install google-generativeai)")
+        try:
+            if importlib.util.find_spec("google.generativeai") is not None:
+                self.providers[LLMProvider.GEMINI] = GeminiProvider()
+                logger.info("✅ Gemini provider initialized")
+            else:
+                logger.warning(
+                    "⚠️ Gemini not available (pip install google-generativeai)"
+                )
+        except Exception as e:
+            logger.warning(f"⚠️ Gemini provider initialization failed: {e}")
 
     def _load_model_configs(self):
         """Load model configurations from file or defaults"""
@@ -242,6 +261,10 @@ class MultiLLMManager:
                 }
 
         return models
+
+    def get_available_models(self) -> list[str]:
+        """Get list of available model names (simple interface)"""
+        return list(self.list_available_models().keys())
 
     def set_model(self, model_name: str, **kwargs) -> bool:
         """Set the current model for AetherraCode"""

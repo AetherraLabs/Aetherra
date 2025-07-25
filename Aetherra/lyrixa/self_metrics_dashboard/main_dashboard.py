@@ -224,7 +224,7 @@ class SelfMetricsDashboard:
     async def _get_narrative_integrity_index(self) -> float:
         """Get current narrative integrity index"""
         if self.narrative_monitor:
-            return await self.narrative_monitor.calculate_integrity_index()
+            return self.narrative_monitor.get_narrative_integrity_index()
         else:
             # Placeholder calculation
             return 0.82  # Simulated good integrity
@@ -232,7 +232,7 @@ class SelfMetricsDashboard:
     async def _get_ethics_alignment_score(self) -> float:
         """Get current ethics alignment score"""
         if self.ethics_tracker:
-            return await self.ethics_tracker.calculate_alignment_score()
+            return self.ethics_tracker.get_current_ethics_score()
         else:
             # Placeholder calculation
             return 0.91  # Simulated good alignment
@@ -240,7 +240,13 @@ class SelfMetricsDashboard:
     async def _get_conflict_resolution_efficiency(self) -> float:
         """Get current conflict resolution efficiency"""
         if self.conflict_generator:
-            return await self.conflict_generator.calculate_resolution_efficiency()
+            heatmap_data = self.conflict_generator.get_conflict_heatmap_data()
+            total_conflicts = heatmap_data.get('total_conflicts', 0)
+            resolved_conflicts = heatmap_data.get('resolved_conflicts', 0)
+            if total_conflicts > 0:
+                return resolved_conflicts / total_conflicts
+            else:
+                return 0.78  # Default when no conflicts
         else:
             # Placeholder calculation
             return 0.78  # Simulated good efficiency
