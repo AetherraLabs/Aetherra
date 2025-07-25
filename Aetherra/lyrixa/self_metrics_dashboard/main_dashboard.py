@@ -241,8 +241,8 @@ class SelfMetricsDashboard:
         """Get current conflict resolution efficiency"""
         if self.conflict_generator:
             heatmap_data = self.conflict_generator.get_conflict_heatmap_data()
-            total_conflicts = heatmap_data.get('total_conflicts', 0)
-            resolved_conflicts = heatmap_data.get('resolved_conflicts', 0)
+            total_conflicts = heatmap_data.get("total_conflicts", 0)
+            resolved_conflicts = heatmap_data.get("resolved_conflicts", 0)
             if total_conflicts > 0:
                 return resolved_conflicts / total_conflicts
             else:

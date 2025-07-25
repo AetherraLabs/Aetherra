@@ -12,7 +12,7 @@ echo.
 echo 3. RECOMMENDED CLEANUP STRATEGY:
 echo.
 echo    OPTION A - Conservative (Recommended):
-echo    - Stage only the essential modified files 
+echo    - Stage only the essential modified files
 echo    - Leave the deletions for a separate cleanup commit
 echo.
 echo    OPTION B - Aggressive Cleanup:

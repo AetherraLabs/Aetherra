@@ -10,7 +10,7 @@ Remove-Item ".git\index.lock" -Force -ErrorAction SilentlyContinue
 # List of files we want to commit (our neural interface changes)
 $filesToCommit = @(
     "Aetherra/lyrixa/conversation_manager.py",
-    "Aetherra/lyrixa/gui/web_interface_server.py", 
+    "Aetherra/lyrixa/gui/web_interface_server.py",
     "Aetherra/lyrixa/gui/web_templates/neural_interface.html"
 )
 
@@ -19,7 +19,8 @@ foreach ($file in $filesToCommit) {
     if (Test-Path $file) {
         Write-Host "  ✓ $file" -ForegroundColor Green
         git add $file
-    } else {
+    }
+    else {
         Write-Host "  ⚠️ $file (not found)" -ForegroundColor Yellow
     }
 }
@@ -34,7 +35,7 @@ $commitMessage = @"
 
 🔧 Enhanced Features:
 - Ollama models prioritized in conversation manager
-- Real-time model switching dropdown in web interface  
+- Real-time model switching dropdown in web interface
 - Auto-scrolling chat with smooth animation
 - Enhanced WebSocket communication for model management
 
@@ -45,7 +46,7 @@ $commitMessage = @"
 
 ✅ All requested features now working:
 • Set Ollama as primary model ✓
-• Model selector dropdown without restart ✓  
+• Model selector dropdown without restart ✓
 • Auto-scrolling chat panel ✓
 "@
 
@@ -59,9 +60,10 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Commit successful!" -ForegroundColor Green
     Write-Host "`n📊 Repository status:" -ForegroundColor Yellow
     git status --porcelain | Measure-Object | ForEach-Object { Write-Host "  $($_.Count) files still pending" }
-    
+
     Write-Host "`n🚀 Ready to push:" -ForegroundColor Green
     Write-Host "  git push origin main" -ForegroundColor Cyan
-} else {
+}
+else {
     Write-Host "❌ Commit failed" -ForegroundColor Red
 }

@@ -23,7 +23,7 @@ git commit -m "Neural Interface: Ollama prioritization + Model selector + Auto-s
 
 Enhanced Features:
 - Ollama models prioritized in conversation manager
-- Real-time model switching dropdown in web interface  
+- Real-time model switching dropdown in web interface
 - Auto-scrolling chat with smooth animation
 - Enhanced WebSocket communication for model management
 
@@ -33,7 +33,7 @@ Files Modified:
 - neural_interface.html: Model selector UI + enhanced auto-scroll functionality
 
 All requested features now working:
-- Set Ollama as primary model 
+- Set Ollama as primary model
 - Model selector dropdown without restart
 - Auto-scrolling chat panel"
 

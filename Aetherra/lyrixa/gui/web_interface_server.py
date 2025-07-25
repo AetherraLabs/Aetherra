@@ -1016,8 +1016,12 @@ class AetherraWebServer:
                         ),
                         "last_update": status_report.get("timestamp", 0),
                         "subsystem_status": status_report.get("subsystem_status", {}),
-                        "coherence_maintenance": status_report.get("coherence_maintenance", {}),
-                        "integration_metrics": status_report.get("integration_metrics", {}),
+                        "coherence_maintenance": status_report.get(
+                            "coherence_maintenance", {}
+                        ),
+                        "integration_metrics": status_report.get(
+                            "integration_metrics", {}
+                        ),
                         "data_source": "lyrixa_core_real",
                     }
 
