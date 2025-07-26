@@ -1,0 +1,106 @@
+{
+  "report_metadata": {
+    "generated_at": "2025-07-25 21:05:17",
+    "qfac_version": "1.0.0",
+    "analyzer_version": "1.0.0"
+  },
+  "executive_summary": {
+    "timestamp": 1753499117.1810262,
+    "system_health": 0.7008977205606682,
+    "total_fragments_analyzed": 6,
+    "average_compression_ratio": 2.6456438722733484,
+    "fidelity_distribution": {
+      "degraded": 6
+    },
+    "memory_type_distribution": {
+      "structured": 2,
+      "conversation": 2,
+      "text": 2
+    },
+    "performance_by_type": {
+      "text": {
+        "avg_compression_ratio": 1.1667729018016495,
+        "avg_compression_time": 0.029,
+        "sample_count": 2,
+        "fidelity_distribution": {
+          "degraded": 2
+        }
+      },
+      "structured": {
+        "avg_compression_ratio": 3.375322215487718,
+        "avg_compression_time": 0.193,
+        "sample_count": 2,
+        "fidelity_distribution": {
+          "degraded": 2
+        }
+      },
+      "conversation": {
+        "avg_compression_ratio": 3.394836499530678,
+        "avg_compression_time": 0.16,
+        "sample_count": 2,
+        "fidelity_distribution": {
+          "degraded": 2
+        }
+      }
+    },
+    "performance_issues": [
+      "Poor compression ratio for text: 1.2x"
+    ],
+    "optimization_suggestions": [
+      "Consider adjusting compression schemas for underperforming memory types",
+      "Monitor access patterns to optimize compression strategies"
+    ],
+    "recent_activity_count": 6
+  },
+  "detailed_analysis": {
+    "compression_effectiveness": {
+      "overall_rating": "fair",
+      "compression_ratio_analysis": {
+        "average": 2.6456438722733484,
+        "rating": "needs_improvement"
+      },
+      "fidelity_analysis": {
+        "distribution": {
+          "degraded": 6
+        },
+        "quality_score": 0.10000000000000002
+      }
+    },
+    "performance_analysis": {
+      "speed_analysis": {
+        "text": {
+          "compression_time_ms": 29.0,
+          "rating": "fast"
+        },
+        "structured": {
+          "compression_time_ms": 193.0,
+          "rating": "acceptable"
+        },
+        "conversation": {
+          "compression_time_ms": 160.0,
+          "rating": "acceptable"
+        }
+      },
+      "efficiency_analysis": {
+        "text": {
+          "compression_ratio": 1.1667729018016495,
+          "efficiency_score": 40.23354833798791
+        },
+        "structured": {
+          "compression_ratio": 3.375322215487718,
+          "efficiency_score": 17.48871614242341
+        },
+        "conversation": {
+          "compression_ratio": 3.394836499530678,
+          "efficiency_score": 21.217728122066738
+        }
+      },
+      "bottlenecks": []
+    },
+    "recommendations": [
+      "Consider more aggressive compression strategies for better space savings",
+      "System health is below optimal - investigate performance issues",
+      "High degraded fidelity rate - review compression parameters"
+    ]
+  }
+}
