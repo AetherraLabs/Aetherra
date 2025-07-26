@@ -1,0 +1,87 @@
+# Aetherra Pre-commit Configuration
+# Ensures code quality before commits
+
+repos:
+  # Built-in hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(unused|backup|archive)/
+      - id: end-of-file-fixer
+        exclude: ^(unused|backup|archive)/
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # Python code formatting
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        exclude: ^(unused|backup|archive)/
+        args: [--line-length=120]
+
+  # Import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        exclude: ^(unused|backup|archive)/
+        args: [--profile=black, --line-length=120]
+
+  # Linting
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        exclude: ^(unused|backup|archive)/
+        args: [--max-line-length=120, --max-complexity=12, --ignore=E203,W503]
+
+  # Security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        exclude: ^(unused|backup|archive|tests)/
+        args: [-ll]
+
+  # Type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1
+    hooks:
+      - id: mypy
+        exclude: ^(unused|backup|archive)/
+        additional_dependencies: [types-requests, types-PyYAML]
+        args: [--ignore-missing-imports, --no-strict-optional]
+
+  # Dependency vulnerability checking
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.2
+    hooks:
+      - id: python-safety-dependencies-check
+        files: requirements.*\.txt$
+
+  # Documentation
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        exclude: ^(unused|backup|archive|tests)/
+        args: [--convention=google]
+
+# Configuration
+default_stages: [commit, push]
+fail_fast: false
+
+# Custom settings
+ci:
+  autofix_prs: true
+  autoupdate_schedule: monthly

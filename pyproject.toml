@@ -1,0 +1,216 @@
+# Aetherra Testing Configuration
+# This file configures pytest for the Aetherra project
+
+[tool.pytest.ini_options]
+# Test discovery
+minversion = "7.0"
+testpaths = [
+    "tests",
+    "integration_tests",
+    "src"  # For doctests
+]
+
+# Test patterns
+python_files = [
+    "test_*.py",
+    "*_test.py",
+    "tests.py"
+]
+
+python_classes = [
+    "Test*",
+    "*Tests"
+]
+
+python_functions = [
+    "test_*"
+]
+
+# Output and reporting
+addopts = [
+    # Verbose output
+    "-v",
+
+    # Show local variables in tracebacks
+    "-l",
+
+    # Show extra test summary info
+    "-ra",
+
+    # Coverage reporting
+    "--cov=src",
+    "--cov=Aetherra",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml:coverage.xml",
+
+    # Coverage configuration
+    "--cov-fail-under=70",
+    "--cov-branch",
+
+    # Doctests
+    "--doctest-modules",
+    "--doctest-ignore-import-errors",
+
+    # Performance
+    "--durations=10",
+
+    # Warnings
+    "--strict-warnings",
+    "--strict-markers",
+
+    # Output formatting
+    "--tb=short",
+
+    # Parallel execution (uncomment if needed)
+    # "-n", "auto",
+]
+
+# Test markers for categorization
+markers = [
+    "unit: Unit tests for individual components",
+    "integration: Integration tests for component interactions",
+    "e2e: End-to-end tests for complete workflows",
+    "slow: Tests that take a significant amount of time",
+    "fast: Quick tests that run in under 1 second",
+    "memory: Tests related to memory systems",
+    "agents: Tests for agent functionality",
+    "analytics: Tests for analytics and reporting",
+    "ui: User interface tests",
+    "api: API endpoint tests",
+    "database: Database operation tests",
+    "neural: Neural interface tests",
+    "quantum: Quantum computing integration tests",
+    "security: Security and authentication tests",
+    "performance: Performance and benchmarking tests",
+    "smoke: Basic smoke tests for deployment verification",
+    "regression: Regression tests for bug fixes",
+    "experimental: Tests for experimental features",
+    "critical: Critical path tests that must always pass",
+    "network: Tests requiring network access",
+    "gpu: Tests requiring GPU resources",
+    "external: Tests that depend on external services"
+]
+
+# Filtering
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    # Ignore specific library warnings
+    "ignore::ImportWarning",
+    "ignore:.*deprecated.*:DeprecationWarning",
+    # TensorFlow warnings
+    "ignore:.*TensorFlow.*:UserWarning",
+    # NumPy warnings
+    "ignore:.*numpy.*:DeprecationWarning",
+    # Matplotlib warnings
+    "ignore:.*matplotlib.*:UserWarning"
+]
+
+# Test execution configuration
+console_output_style = "progress"
+log_level = "INFO"
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+# Timeout configuration
+timeout = 300  # 5 minutes default timeout
+timeout_method = "thread"
+
+# Test collection
+collect_ignore = [
+    "setup.py",
+    "build",
+    "dist",
+    ".tox",
+    ".git",
+    "node_modules",
+    "__pycache__",
+    "*.egg-info",
+    "venv",
+    ".venv",
+    "env",
+    ".env",
+    "unused",
+    "backup*",
+    "old*",
+    "legacy*"
+]
+
+# Doctest configuration
+doctest_optionflags = [
+    "NORMALIZE_WHITESPACE",
+    "IGNORE_EXCEPTION_DETAIL",
+    "ELLIPSIS"
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = [
+    "src",
+    "Aetherra"
+]
+
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*_test.py",
+    "*/setup.py",
+    "*/conftest.py",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/.venv/*",
+    "*/build/*",
+    "*/dist/*",
+    "*/__pycache__/*",
+    "*/node_modules/*",
+    "*/unused/*",
+    "*/backup*/*",
+    "*/old*/*",
+    "*/legacy*/*"
+]
+
+branch = true
+parallel = true
+
+[tool.coverage.report]
+# Fail if coverage falls below this percentage
+fail_under = 70
+
+# Show missing lines
+show_missing = true
+
+# Skip covered files in report
+skip_covered = false
+
+# Skip empty files
+skip_empty = true
+
+# Exclude lines from coverage
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+]
+
+# Sort by coverage percentage
+sort = "Cover"
+
+[tool.coverage.html]
+directory = "htmlcov"
+title = "Aetherra Test Coverage Report"
+
+[tool.coverage.xml]
+output = "coverage.xml"

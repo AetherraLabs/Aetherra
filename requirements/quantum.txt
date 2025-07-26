@@ -1,0 +1,32 @@
+# Quantum Computing Dependencies
+# Optional quantum memory and computing support
+
+# IBM Qiskit (Primary quantum framework)
+qiskit>=0.44.0
+qiskit-aer>=0.12.0
+qiskit-ibm-runtime>=0.11.0
+
+# Google Cirq (Alternative quantum framework)
+cirq>=1.2.0
+cirq-google>=1.2.0
+
+# Microsoft Q# Support
+qsharp>=1.0.0
+
+# Quantum Machine Learning
+pennylane>=0.32.0
+pennylane-qiskit>=0.32.0
+
+# Quantum Algorithms
+qiskit-algorithms>=0.2.0
+qiskit-optimization>=0.6.0
+
+# Noise Simulation
+qiskit-nature>=0.7.0
+
+# Visualization
+qiskit-textbook>=0.1.0
+
+# Note: Quantum dependencies are optional
+# Install with: pip install -r quantum.txt
+# Fallback to classical simulation if not available

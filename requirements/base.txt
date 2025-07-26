@@ -1,0 +1,41 @@
+# Core Aetherra Dependencies
+# Base requirements for running Aetherra
+
+# Web Framework
+flask>=2.3.0
+flask-socketio>=5.3.0
+werkzeug>=2.3.0
+
+# AI and Language Models
+openai>=1.0.0
+anthropic>=0.7.0
+google-generativeai>=0.3.0
+
+# Local AI Support
+requests>=2.31.0
+httpx>=0.25.0
+
+# Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.11.0
+
+# Memory and Database
+sqlite3
+faiss-cpu>=1.7.0
+sentence-transformers>=2.2.0
+
+# System Utilities
+psutil>=5.9.0
+pathlib2>=2.3.0
+
+# Configuration
+python-dotenv>=1.0.0
+pyyaml>=6.0
+
+# Async Support
+asyncio
+aiohttp>=3.8.0
+
+# Date/Time Utilities
+python-dateutil>=2.8.0

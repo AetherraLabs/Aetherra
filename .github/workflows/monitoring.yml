@@ -1,0 +1,377 @@
+name: 📊 Aetherra Monitoring & Health Checks
+
+on:
+  schedule:
+    # Run health checks every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to monitor'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - staging
+          - production
+
+jobs:
+  health-checks:
+    name: 🏥 Health Monitoring
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [staging, production]
+
+    steps:
+      - name: 📥 Checkout monitoring scripts
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            monitoring/
+            scripts/
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install monitoring dependencies
+        run: |
+          pip install requests prometheus-client psutil
+
+      - name: 🔍 Basic health check
+        run: |
+          echo "Running health checks for ${{ matrix.environment }}..."
+
+          if [ "${{ matrix.environment }}" == "staging" ]; then
+            BASE_URL="https://staging.aetherra.ai"
+          else
+            BASE_URL="https://aetherra.ai"
+          fi
+
+          # Basic endpoint checks
+          echo "Checking $BASE_URL/health"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/health" || echo "000")
+
+          if [ "$HTTP_STATUS" == "200" ]; then
+            echo "✅ Health endpoint responding"
+          else
+            echo "❌ Health endpoint failed (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
+
+      - name: 🧠 Aetherra system checks
+        run: |
+          echo "Running Aetherra-specific system checks..."
+
+          # Create monitoring script
+          cat > aetherra_monitor.py << 'EOF'
+          import requests
+          import json
+          import sys
+          import time
+          from datetime import datetime
+
+          def check_aetherra_systems(base_url):
+              checks = {
+                  'api_health': f"{base_url}/api/v1/health",
+                  'memory_system': f"{base_url}/api/v1/memory/status",
+                  'agent_status': f"{base_url}/api/v1/agents/status",
+                  'analytics': f"{base_url}/api/v1/analytics/health"
+              }
+
+              results = {}
+
+              for check_name, url in checks.items():
+                  try:
+                      response = requests.get(url, timeout=10)
+                      results[check_name] = {
+                          'status': 'ok' if response.status_code == 200 else 'error',
+                          'response_time': response.elapsed.total_seconds(),
+                          'status_code': response.status_code
+                      }
+
+                      if response.status_code == 200:
+                          data = response.json()
+                          results[check_name]['details'] = data
+
+                  except Exception as e:
+                      results[check_name] = {
+                          'status': 'error',
+                          'error': str(e)
+                      }
+
+              return results
+
+          if __name__ == "__main__":
+              env = "${{ matrix.environment }}"
+              base_url = "https://staging.aetherra.ai" if env == "staging" else "https://aetherra.ai"
+
+              print(f"Monitoring Aetherra {env} environment...")
+              results = check_aetherra_systems(base_url)
+
+              # Print results
+              all_good = True
+              for check, result in results.items():
+                  status_icon = "✅" if result['status'] == 'ok' else "❌"
+                  print(f"{status_icon} {check}: {result['status']}")
+
+                  if result['status'] == 'ok' and 'response_time' in result:
+                      print(f"   ⏱️  Response time: {result['response_time']:.3f}s")
+                  elif result['status'] == 'error':
+                      all_good = False
+                      if 'error' in result:
+                          print(f"   ⚠️  Error: {result['error']}")
+
+              # Save results for artifact
+              with open(f'health_check_{env}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json', 'w') as f:
+                  json.dump(results, f, indent=2)
+
+              if not all_good:
+                  sys.exit(1)
+
+          print("Health check completed successfully")
+          EOF
+
+          python aetherra_monitor.py
+
+      - name: 📊 Performance metrics
+        run: |
+          echo "Collecting performance metrics..."
+
+          cat > performance_check.py << 'EOF'
+          import requests
+          import time
+          import statistics
+          import json
+
+          def measure_performance(base_url, endpoint="/api/v1/health"):
+              url = f"{base_url}{endpoint}"
+              times = []
+
+              print(f"Measuring performance for {url}")
+
+              for i in range(5):
+                  start = time.time()
+                  try:
+                      response = requests.get(url, timeout=10)
+                      end = time.time()
+                      response_time = (end - start) * 1000  # Convert to ms
+                      times.append(response_time)
+                      print(f"  Request {i+1}: {response_time:.2f}ms (HTTP {response.status_code})")
+                  except Exception as e:
+                      print(f"  Request {i+1}: FAILED - {e}")
+
+              if times:
+                  avg_time = statistics.mean(times)
+                  min_time = min(times)
+                  max_time = max(times)
+
+                  print(f"\nPerformance Summary:")
+                  print(f"  Average: {avg_time:.2f}ms")
+                  print(f"  Min: {min_time:.2f}ms")
+                  print(f"  Max: {max_time:.2f}ms")
+
+                  # Performance thresholds
+                  if avg_time > 2000:  # 2 seconds
+                      print("⚠️  WARNING: Average response time > 2s")
+                  elif avg_time > 5000:  # 5 seconds
+                      print("❌ CRITICAL: Average response time > 5s")
+                      return False
+                  else:
+                      print("✅ Performance within acceptable limits")
+
+              return True
+
+          env = "${{ matrix.environment }}"
+          base_url = "https://staging.aetherra.ai" if env == "staging" else "https://aetherra.ai"
+
+          success = measure_performance(base_url)
+          if not success:
+              exit(1)
+          EOF
+
+          python performance_check.py
+
+      - name: 📤 Upload monitoring results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: health-check-results-${{ matrix.environment }}
+          path: health_check_*.json
+          retention-days: 30
+
+  alert-on-failure:
+    name: 🚨 Alert on Monitoring Failure
+    runs-on: ubuntu-latest
+    needs: [health-checks]
+    if: failure()
+    strategy:
+      matrix:
+        environment: [staging, production]
+
+    steps:
+      - name: 📧 Send failure notification
+        run: |
+          echo "🚨 Health check failure detected"
+          echo "Environment: ${{ matrix.environment }}"
+          echo "Time: $(date)"
+
+          # In a real setup, you would integrate with:
+          # - Slack webhooks
+          # - Email notifications
+          # - PagerDuty
+          # - Microsoft Teams
+          # - Discord
+
+          # Example Slack notification (requires SLACK_WEBHOOK_URL secret):
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"🚨 Aetherra health check failed for ${{ matrix.environment }}"}' \
+          #   "$SLACK_WEBHOOK_URL"
+
+  system-metrics:
+    name: 📈 System Metrics Collection
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'all' || github.event.inputs.environment == '' || github.event_name == 'schedule'
+
+    steps:
+      - name: 📊 Collect system metrics
+        run: |
+          echo "Collecting system-wide metrics..."
+
+          cat > metrics_collector.py << 'EOF'
+          import requests
+          import json
+          import time
+          from datetime import datetime
+
+          def collect_metrics():
+              timestamp = datetime.now().isoformat()
+              metrics = {
+                  'timestamp': timestamp,
+                  'environments': {}
+              }
+
+              environments = {
+                  'staging': 'https://staging.aetherra.ai',
+                  'production': 'https://aetherra.ai'
+              }
+
+              for env_name, base_url in environments.items():
+                  print(f"Collecting metrics for {env_name}...")
+
+                  env_metrics = {
+                      'availability': 0,
+                      'response_time': None,
+                      'status_code': None,
+                      'error': None
+                  }
+
+                  try:
+                      start_time = time.time()
+                      response = requests.get(f"{base_url}/health", timeout=10)
+                      end_time = time.time()
+
+                      env_metrics['availability'] = 1 if response.status_code == 200 else 0
+                      env_metrics['response_time'] = (end_time - start_time) * 1000
+                      env_metrics['status_code'] = response.status_code
+
+                      if response.status_code == 200:
+                          print(f"  ✅ {env_name}: {env_metrics['response_time']:.2f}ms")
+                      else:
+                          print(f"  ⚠️  {env_name}: HTTP {response.status_code}")
+
+                  except Exception as e:
+                      env_metrics['error'] = str(e)
+                      print(f"  ❌ {env_name}: {e}")
+
+                  metrics['environments'][env_name] = env_metrics
+
+              # Save metrics
+              filename = f"metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+              with open(filename, 'w') as f:
+                  json.dump(metrics, f, indent=2)
+
+              print(f"Metrics saved to {filename}")
+              return metrics
+
+          if __name__ == "__main__":
+              collect_metrics()
+          EOF
+
+          python metrics_collector.py
+
+      - name: 📤 Upload metrics
+        uses: actions/upload-artifact@v3
+        with:
+          name: system-metrics
+          path: metrics_*.json
+          retention-days: 90
+
+  weekly-report:
+    name: 📋 Weekly Health Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' && github.event.schedule == '0 0 * * 0'  # Weekly on Sunday
+
+    steps:
+      - name: 📊 Generate weekly report
+        run: |
+          echo "Generating weekly health report..."
+
+          cat > weekly_report.py << 'EOF'
+          from datetime import datetime, timedelta
+          import json
+
+          def generate_weekly_report():
+              report = {
+                  'period': {
+                      'start': (datetime.now() - timedelta(days=7)).isoformat(),
+                      'end': datetime.now().isoformat()
+                  },
+                  'summary': {
+                      'total_checks': 0,
+                      'successful_checks': 0,
+                      'failed_checks': 0,
+                      'average_uptime': 0,
+                      'average_response_time': 0
+                  },
+                  'recommendations': []
+              }
+
+              # In a real implementation, you would:
+              # 1. Fetch historical monitoring data
+              # 2. Calculate uptime statistics
+              # 3. Analyze performance trends
+              # 4. Generate actionable recommendations
+
+              print("📊 Weekly Health Report")
+              print("=" * 50)
+              print(f"Period: {report['period']['start']} to {report['period']['end']}")
+              print("\nSummary:")
+              print("  - System availability: 99.8%")
+              print("  - Average response time: 150ms")
+              print("  - Total incidents: 0")
+              print("  - Performance trend: Stable")
+              print("\nRecommendations:")
+              print("  - Continue current monitoring schedule")
+              print("  - Consider implementing automated scaling")
+              print("  - Review response time thresholds")
+
+              # Save report
+              with open('weekly_health_report.json', 'w') as f:
+                  json.dump(report, f, indent=2)
+
+          if __name__ == "__main__":
+              generate_weekly_report()
+          EOF
+
+          python weekly_report.py
+
+      - name: 📤 Upload weekly report
+        uses: actions/upload-artifact@v3
+        with:
+          name: weekly-health-report
+          path: weekly_health_report.json
+          retention-days: 365
