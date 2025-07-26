@@ -148,6 +148,28 @@ except ImportError as e:
     ETHICS_AGENTS_AVAILABLE = False
     ethics_imports = {}
 
+# Try to import quantum memory components
+try:
+    import sys
+    import os
+
+    # Add project root to path for quantum bridge import
+    project_root = Path(__file__).parent.parent.parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+
+    from quantum_memory_bridge import QuantumMemoryBridge
+    from Aetherra.lyrixa.memory.quantum_memory_integration import (
+        create_quantum_enhanced_memory_engine,
+        QuantumEnhancedMemoryEngine
+    )
+
+    QUANTUM_MEMORY_AVAILABLE = True
+    logger.info("✅ Quantum memory integration available")
+except ImportError as e:
+    logger.warning(f"⚠️ Quantum memory integration not available: {e}")
+    QUANTUM_MEMORY_AVAILABLE = False
+
 # Try to import memory systems
 try:
     from Aetherra.lyrixa.memory.lyrixa_memory_engine import LyrixaMemoryEngine
@@ -196,6 +218,7 @@ class AetherraWebServer:
         self.agents = {}
         self.ethics_agents = {}
         self.memory_engine = None
+        self.quantum_memory_engine = None
 
         # Initialize Intelligence Stack
         if INTELLIGENCE_AVAILABLE:
@@ -330,12 +353,26 @@ class AetherraWebServer:
             except Exception as e:
                 logger.error(f"❌ Failed to initialize memory engine: {e}")
 
+        # Initialize Quantum Memory Engine
+        if QUANTUM_MEMORY_AVAILABLE:
+            try:
+                self.quantum_memory_engine = create_quantum_enhanced_memory_engine()
+                logger.info("✅ Quantum Memory Engine initialized")
+            except Exception as e:
+                logger.error(f"❌ Failed to initialize quantum memory engine: {e}")
+                self.quantum_memory_engine = None
+
     def _setup_routes(self):
         """Setup Flask routes for the web interface"""
 
         @self.app.route("/")
         def index():
             return render_template("neural_interface.html")
+
+        @self.app.route("/quantum")
+        def quantum_dashboard():
+            """Quantum memory dashboard page"""
+            return render_template("quantum_dashboard.html")
 
         @self.app.route("/api/system/status")
         def system_status():
@@ -496,6 +533,115 @@ class AetherraWebServer:
                 return jsonify(metrics)
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
+
+        # Quantum Memory API Endpoints
+        @self.app.route("/api/quantum/status")
+        def quantum_status():
+            """Get quantum memory system status"""
+            try:
+                if not QUANTUM_MEMORY_AVAILABLE or not self.quantum_memory_engine:
+                    return jsonify({
+                        "quantum_available": False,
+                        "message": "Quantum memory system not available"
+                    })
+
+                # Get quantum system status
+                status = self.quantum_memory_engine.get_quantum_system_status()
+                return jsonify(status)
+            except Exception as e:
+                logger.error(f"Error getting quantum status: {e}")
+                return jsonify({"error": str(e)}), 500
+
+        @self.app.route("/api/quantum/metrics")
+        def quantum_metrics():
+            """Get quantum memory metrics and states"""
+            try:
+                if not QUANTUM_MEMORY_AVAILABLE or not self.quantum_memory_engine:
+                    return jsonify({
+                        "quantum_available": False,
+                        "quantum_states": [],
+                        "metrics": {}
+                    })
+
+                # Get quantum states information
+                quantum_states = []
+                for state_id, quantum_state in self.quantum_memory_engine.quantum_states.items():
+                    state_info = {
+                        "state_id": state_id,
+                        "memory_id": getattr(quantum_state, 'memory_id', 'unknown'),
+                        "qubit_count": getattr(quantum_state, 'qubit_count', 0),
+                        "encoding_fidelity": getattr(quantum_state, 'encoding_fidelity', 0.0),
+                        "creation_timestamp": getattr(quantum_state, 'creation_timestamp', datetime.now()).isoformat()
+                    }
+                    quantum_states.append(state_info)
+
+                # Get coherence history
+                coherence_history = []
+                for timestamp, coherence in self.quantum_memory_engine.quantum_coherence_history[-10:]:  # Last 10 measurements
+                    coherence_history.append({
+                        "timestamp": timestamp.isoformat(),
+                        "coherence": coherence
+                    })
+
+                return jsonify({
+                    "quantum_available": True,
+                    "quantum_states": quantum_states,
+                    "coherence_history": coherence_history,
+                    "total_states": len(quantum_states)
+                })
+            except Exception as e:
+                logger.error(f"Error getting quantum metrics: {e}")
+                return jsonify({"error": str(e)}), 500
+
+        @self.app.route("/api/quantum/operations")
+        def quantum_operations():
+            """Get quantum operation statistics"""
+            try:
+                if not QUANTUM_MEMORY_AVAILABLE or not self.quantum_memory_engine:
+                    return jsonify({
+                        "quantum_available": False,
+                        "operations": {}
+                    })
+
+                operations = self.quantum_memory_engine.quantum_operation_stats.copy()
+                operations["quantum_available"] = True
+                operations["timestamp"] = datetime.now().isoformat()
+
+                return jsonify(operations)
+            except Exception as e:
+                logger.error(f"Error getting quantum operations: {e}")
+                return jsonify({"error": str(e)}), 500
+
+        @self.app.route("/api/quantum/coherence-check", methods=["POST"])
+        def quantum_coherence_check():
+            """Trigger quantum coherence check"""
+            try:
+                if not QUANTUM_MEMORY_AVAILABLE or not self.quantum_memory_engine:
+                    return jsonify({
+                        "success": False,
+                        "message": "Quantum memory system not available"
+                    })
+
+                # Run coherence check asynchronously
+                import asyncio
+
+                async def run_check():
+                    return await self.quantum_memory_engine.check_quantum_coherence()
+
+                # Create new event loop for this thread if needed
+                try:
+                    loop = asyncio.get_event_loop()
+                except RuntimeError:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+
+                result = loop.run_until_complete(run_check())
+                result["success"] = True
+
+                return jsonify(result)
+            except Exception as e:
+                logger.error(f"Error running quantum coherence check: {e}")
+                return jsonify({"success": False, "error": str(e)}), 500
 
     def _setup_socketio_handlers(self):
         """Setup WebSocket handlers for real-time communication"""
