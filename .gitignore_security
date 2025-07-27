@@ -1,0 +1,10 @@
+# Additional security patterns
+secrets/
+*.key
+*.pem
+*.p12
+*.jks
+api_keys.txt
+credentials.json
+config/secrets.yaml
+config/secrets.json
