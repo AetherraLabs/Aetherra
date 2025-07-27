@@ -21,9 +21,11 @@ pandas>=2.0.0
 scipy>=1.11.0
 
 # Memory and Database
-sqlite3
+# sqlite3  # Built into Python, no need to install separately
 faiss-cpu>=1.7.0
 sentence-transformers>=2.2.0
+sqlalchemy>=2.0.0
+alembic>=1.8.0
 
 # System Utilities
 psutil>=5.9.0
@@ -34,7 +36,7 @@ python-dotenv>=1.0.0
 pyyaml>=6.0
 
 # Async Support
-asyncio
+# asyncio  # Built into Python, no need to install separately
 aiohttp>=3.8.0
 
 # Date/Time Utilities

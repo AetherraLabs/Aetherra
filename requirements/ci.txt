@@ -1,0 +1,30 @@
+# Aetherra CI/CD Requirements
+# Minimal requirements for CI/CD pipeline testing
+
+# Web Framework
+flask>=2.3.0
+flask-socketio>=5.3.0
+werkzeug>=2.3.0
+
+# Core Dependencies
+requests>=2.31.0
+psutil>=5.9.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Database (SQLite3 is built into Python)
+sqlalchemy>=2.0.0
+alembic>=1.8.0
+
+# Development Tools
+pytest>=7.0.0
+black>=22.0.0
+flake8>=6.0.0
+
+# HTTP Support
+aiohttp>=3.8.0
+httpx>=0.25.0
