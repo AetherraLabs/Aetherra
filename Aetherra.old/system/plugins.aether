@@ -1,0 +1,382 @@
+# Plugin Health and Diagnostics System
+# Monitors plugin performance, health status, and availability
+
+plugin plugins {
+    description: "Plugin health monitoring and diagnostics for the Aetherra OS."
+    memory_access: read-write
+    tags: [plugins, health, diagnostics, monitoring]
+
+    # Configuration
+    config: {
+        health_check_timeout: 5000, // 5 seconds
+        unhealthy_threshold: 3, // failures before marking unhealthy
+        response_time_threshold: 2000, // 2 seconds
+        cleanup_interval_hours: 24
+    }
+
+    # Check if a plugin exists
+    fn exists(id_or_name) {
+        return search_memory_one({
+            type: "plugin",
+            name: id_or_name
+        }) != null || search_memory_one({
+            type: "plugin",
+            id: id_or_name
+        }) != null
+    }
+
+    # Check if a plugin is healthy and responsive
+    fn check_plugin_health(plugin_name) {
+        if not plugin_name {
+            return false
+        }
+
+        let plugin_info = get_plugin_info(plugin_name)
+        if not plugin_info {
+            log "❌ Plugin {plugin_name} not found"
+            return false
+        }
+
+        # Check if plugin is enabled
+        if plugin_info.status != "enabled" {
+            log "⚠️ Plugin {plugin_name} is disabled"
+            return false
+        }
+
+        # Check recent failures
+        let recent_failures = get_recent_plugin_failures(plugin_name, 1) // last hour
+        if recent_failures >= config.unhealthy_threshold {
+            log "❌ Plugin {plugin_name} has {recent_failures} recent failures"
+            return false
+        }
+
+        # Check response time
+        let avg_response_time = get_average_response_time(plugin_name, 1)
+        if avg_response_time > config.response_time_threshold {
+            log "⚠️ Plugin {plugin_name} has slow response time: {avg_response_time}ms"
+            return false
+        }
+
+        # Try a basic health ping
+        try {
+            let ping_start = now()
+            let ping_result = call_plugin_health_check(plugin_name)
+            let ping_time = now() - ping_start
+
+            if ping_result and ping_time < config.health_check_timeout {
+                log "✅ Plugin {plugin_name} health check passed ({ping_time}ms)"
+                record_plugin_health_check(plugin_name, true, ping_time)
+                return true
+            } else {
+                log "❌ Plugin {plugin_name} health check failed"
+                record_plugin_health_check(plugin_name, false, ping_time)
+                return false
+            }
+        } catch (error) {
+            log "❌ Plugin {plugin_name} health check error: {error.message}"
+            record_plugin_health_check(plugin_name, false, 0, error.message)
+            return false
+        }
+    }
+
+    # Get comprehensive plugin information
+    fn get_plugin_info(plugin_name) {
+        return search_memory({
+            type: "plugin",
+            name: plugin_name
+        })[0] || null
+    }
+
+    # Get all available plugins with their status
+    fn get_all_plugins() {
+        return search_memory({
+            type: "plugin"
+        }).map(plugin => {
+            return {
+                name: plugin.name,
+                status: plugin.status,
+                version: plugin.version,
+                description: plugin.description,
+                health: get_plugin_health_summary(plugin.name)
+            }
+        })
+    }
+
+    # Get plugin health summary
+    fn get_plugin_health_summary(plugin_name, hours = 24) {
+        let cutoff_time = now() - (hours * 3600)
+
+        let health_checks = search_memory({
+            type: "plugin_health_check",
+            plugin_name: plugin_name,
+            timestamp_gte: cutoff_time
+        })
+
+        if health_checks.length == 0 {
+            return {
+                status: "unknown",
+                checks: 0,
+                success_rate: 0,
+                avg_response_time: 0
+            }
+        }
+
+        let successful_checks = health_checks.filter(check => check.success)
+        let total_response_time = health_checks.sum(check => check.response_time)
+
+        return {
+            status: successful_checks.length > 0 ? "healthy" : "unhealthy",
+            checks: health_checks.length,
+            success_rate: (successful_checks.length / health_checks.length) * 100,
+            avg_response_time: total_response_time / health_checks.length,
+            last_check: health_checks.sort_by(check => check.timestamp).reverse()[0]
+        }
+    }
+
+    # Record plugin health check result
+    fn record_plugin_health_check(plugin_name, success, response_time, error_message = null) {
+        let health_check = {
+            type: "plugin_health_check",
+            plugin_name: plugin_name,
+            success: success,
+            response_time: response_time,
+            error_message: error_message,
+            timestamp: now()
+        }
+
+        store_memory(health_check)
+    }
+
+    # Get recent plugin failures
+    fn get_recent_plugin_failures(plugin_name, hours = 1) {
+        let cutoff_time = now() - (hours * 3600)
+
+        return search_memory({
+            type: "plugin_health_check",
+            plugin_name: plugin_name,
+            success: false,
+            timestamp_gte: cutoff_time
+        }).length
+    }
+
+    # Get average response time for a plugin
+    fn get_average_response_time(plugin_name, hours = 1) {
+        let cutoff_time = now() - (hours * 3600)
+
+        let recent_checks = search_memory({
+            type: "plugin_health_check",
+            plugin_name: plugin_name,
+            timestamp_gte: cutoff_time
+        })
+
+        if recent_checks.length == 0 {
+            return 0
+        }
+
+        let total_time = recent_checks.sum(check => check.response_time)
+        return total_time / recent_checks.length
+    }
+
+    # Attempt to call plugin health check
+    fn call_plugin_health_check(plugin_name) {
+        try {
+            # Try to call the plugin's health check method
+            if has_method(plugin_name, "health_check") {
+                return call plugin_name.health_check()
+            }
+
+            # Fallback: try basic ping
+            if has_method(plugin_name, "ping") {
+                return call plugin_name.ping()
+            }
+
+            # Last resort: check if plugin responds to basic call
+            return call plugin_name.status() != null
+        } catch (error) {
+            return false
+        }
+    }
+
+    # Enable a plugin
+    fn enable_plugin(plugin_name) {
+        let plugin = get_plugin_info(plugin_name)
+        if not plugin {
+            return false
+        }
+
+        update_memory(plugin.id, {
+            status: "enabled",
+            enabled_at: now()
+        })
+
+        log "✅ Enabled plugin: {plugin_name}"
+        return true
+    }
+
+    # Disable a plugin
+    fn disable_plugin(plugin_name, reason = "manual") {
+        let plugin = get_plugin_info(plugin_name)
+        if not plugin {
+            return false
+        }
+
+        update_memory(plugin.id, {
+            status: "disabled",
+            disabled_at: now(),
+            disabled_reason: reason
+        })
+
+        log "🚫 Disabled plugin: {plugin_name} (reason: {reason})"
+        return true
+    }
+
+    # Get system-wide plugin statistics
+    fn get_plugin_statistics() {
+        let all_plugins = get_all_plugins()
+
+        let stats = {
+            total_plugins: all_plugins.length,
+            enabled_plugins: all_plugins.filter(p => p.status == "enabled").length,
+            disabled_plugins: all_plugins.filter(p => p.status == "disabled").length,
+            healthy_plugins: all_plugins.filter(p => p.health.status == "healthy").length,
+            unhealthy_plugins: all_plugins.filter(p => p.health.status == "unhealthy").length,
+            unknown_health: all_plugins.filter(p => p.health.status == "unknown").length,
+            avg_success_rate: all_plugins.average(p => p.health.success_rate),
+            avg_response_time: all_plugins.average(p => p.health.avg_response_time)
+        }
+
+        return stats
+    }
+
+    # Run comprehensive plugin diagnostics
+    fn run_plugin_diagnostics() {
+        log "🔍 Running comprehensive plugin diagnostics..."
+
+        let all_plugins = get_all_plugins()
+        let results = {
+            timestamp: now(),
+            total_tested: 0,
+            healthy: 0,
+            unhealthy: 0,
+            errors: [],
+            recommendations: []
+        }
+
+        for plugin in all_plugins {
+            if plugin.status == "enabled" {
+                results.total_tested++
+
+                let is_healthy = check_plugin_health(plugin.name)
+                if is_healthy {
+                    results.healthy++
+                } else {
+                    results.unhealthy++
+                    results.errors.push({
+                        plugin: plugin.name,
+                        issue: "Health check failed"
+                    })
+
+                    # Add recommendation
+                    let failure_count = get_recent_plugin_failures(plugin.name, 24)
+                    if failure_count > config.unhealthy_threshold * 2 {
+                        results.recommendations.push({
+                            plugin: plugin.name,
+                            action: "Consider disabling plugin due to persistent failures",
+                            priority: "high"
+                        })
+                    }
+                }
+            }
+        }
+
+        # Store diagnostic results
+        store_memory({
+            type: "plugin_diagnostic_report",
+            results: results,
+            timestamp: now()
+        })
+
+        log "📊 Plugin diagnostics complete: {results.healthy}/{results.total_tested} healthy"
+        return results
+    }
+
+    # Clean up old plugin health data
+    fn cleanup_old_health_data() {
+        let cutoff_time = now() - (config.cleanup_interval_hours * 3600)
+
+        let old_checks = search_memory({
+            type: "plugin_health_check",
+            timestamp_lt: cutoff_time
+        })
+
+        for check in old_checks {
+            delete_memory(check.id)
+        }
+
+        log "🧹 Cleaned up {old_checks.length} old plugin health records"
+        return old_checks.length
+    }
+
+    # Get recent plugin summary for daily reflector
+    fn get_recent_plugin_summary(since_time) {
+        let all_plugins = get_available_plugins()
+        let recent_health_checks = search_memory({
+            type: "plugin_health_check",
+            timestamp_gte: since_time
+        })
+
+        let healthy_plugins = all_plugins.filter(p => p.health == "healthy")
+        let unhealthy_plugins = all_plugins.filter(p => p.health == "unhealthy")
+        let disabled_plugins = all_plugins.filter(p => p.status == "disabled")
+
+        let failed_checks = recent_health_checks.filter(c => c.success == false)
+        let slow_responses = recent_health_checks.filter(c => c.response_time > config.response_time_threshold)
+
+        let summary = []
+
+        summary.append("🔌 Plugin System Status:")
+        summary.append("  • Total Plugins: {all_plugins.length}")
+        summary.append("  • Healthy: {healthy_plugins.length}")
+        summary.append("  • Unhealthy: {unhealthy_plugins.length}")
+        summary.append("  • Disabled: {disabled_plugins.length}")
+
+        if recent_health_checks.length > 0 {
+            summary.append("📊 Recent Health Checks: {recent_health_checks.length}")
+            summary.append("  • Failed: {failed_checks.length}")
+            summary.append("  • Slow Responses: {slow_responses.length}")
+        }
+
+        if unhealthy_plugins.length > 0 {
+            summary.append("⚠️ Unhealthy Plugins:")
+            for plugin in unhealthy_plugins.slice(0, 3) {
+                summary.append("  • {plugin.name} - {plugin.last_error || 'Unknown issue'}")
+            }
+        }
+
+        if slow_responses.length > 0 {
+            summary.append("🐌 Slow Responses:")
+            for check in slow_responses.slice(0, 3) {
+                summary.append("  • {check.plugin_name}: {check.response_time}ms")
+            }
+        }
+
+        return summary.join("\n")
+    }
+    
+    # Mark plugin as unhealthy for watchdog system
+    fn mark_unhealthy(name, reason) {
+        let plugin = get_plugin_info(name)
+        if not plugin {
+            return false
+        }
+
+        update_memory(plugin.id, {
+            status: "unhealthy",
+            last_issue: reason,
+            last_checked: now()
+        })
+
+        log "⚠️ Marked plugin as unhealthy: {name} (reason: {reason})"
+        return true
+    }
+}

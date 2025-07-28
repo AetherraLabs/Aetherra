@@ -1,0 +1,2740 @@
+{
+  "version": "1.0",
+  "timestamp": "20250726_real_discovery",
+  "total_agents": 527,
+  "categories": {
+    "general_agent": 220,
+    "lyrixa_agent": 76,
+    "agent_file": 96,
+    "aetherra_agent": 117,
+    "cognitive_agent": 8,
+    "personality_agent": 1,
+    "orchestrator_agent": 9
+  },
+  "agents_by_category": {
+    "general_agent": [
+      {
+        "file": "agent_base.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\agent_base.py",
+        "class_name": "AgentResponse",
+        "methods": [
+          "__post_init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agent_base_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\agent_base.py",
+        "class_name": "AgentBase",
+        "methods": [
+          "__init__",
+          "log",
+          "_update_activity",
+          "_increment_success",
+          "_increment_error"
+        ],
+        "description": "Agent class with 5 methods"
+      },
+      {
+        "file": "contradiction_detection_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\contradiction_detection_agent.py",
+        "class_name": "ContradictionType",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "contradiction_detection_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\contradiction_detection_agent.py",
+        "class_name": "DetectedContradiction",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "contradiction_detection_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\contradiction_detection_agent.py",
+        "class_name": "ResolutionStrategy",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "contradiction_detection_agent_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\contradiction_detection_agent.py",
+        "class_name": "ContradictionDetectionAgent",
+        "methods": [
+          "__init__",
+          "_initialize_memory_components",
+          "get_contradiction_summary",
+          "_format_findings",
+          "_format_recommendations",
+          "_format_severity_breakdown",
+          "_load_persistence_data",
+          "_save_persistence_data"
+        ],
+        "description": "Agent class with 8 methods"
+      },
+      {
+        "file": "core_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\core_agent.py",
+        "class_name": "AgentBase",
+        "methods": [
+          "__init__",
+          "log",
+          "process"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "core_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\core_agent.py",
+        "class_name": "AgentResponse",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "curiosity_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\curiosity_agent.py",
+        "class_name": "KnowledgeGap",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "curiosity_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\curiosity_agent.py",
+        "class_name": "CuriosityQuestion",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "curiosity_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\curiosity_agent.py",
+        "class_name": "CuriosityAgent",
+        "methods": [
+          "__init__",
+          "_initialize_memory_components",
+          "get_curiosity_summary",
+          "_load_persistence_data",
+          "_save_persistence_data"
+        ],
+        "description": "Agent class with 5 methods"
+      },
+      {
+        "file": "curiosity_agent_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\curiosity_agent.py",
+        "class_name": "AgentBase",
+        "methods": [
+          "__init__",
+          "log",
+          "process"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "curiosity_agent_4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\curiosity_agent.py",
+        "class_name": "AgentResponse",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "escalation_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\escalation_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\escalation_agent.py",
+        "class_name": "EscalationLevel",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "escalation_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\escalation_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\escalation_agent.py",
+        "class_name": "EscalationAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "goal_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\goal_agent.py",
+        "class_name": "Goal",
+        "methods": [
+          "__post_init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "goal_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\goal_agent.py",
+        "class_name": "GoalAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "learning_loop_integration_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\learning_loop_integration_agent.py",
+        "class_name": "LearningGoal",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "learning_loop_integration_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\learning_loop_integration_agent.py",
+        "class_name": "LearningCycle",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "learning_loop_integration_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\learning_loop_integration_agent.py",
+        "class_name": "LearningLoopIntegrationAgent",
+        "methods": [
+          "__init__",
+          "_initialize_components",
+          "_calculate_improvement_score",
+          "_determine_success_level",
+          "_analyze_memory_changes",
+          "_extract_learning_insights",
+          "_calculate_goal_duration",
+          "_generate_outcome_recommendation",
+          "_generate_improvement_recommendations",
+          "_calculate_session_effectiveness"
+        ],
+        "description": "Agent class with 38 methods"
+      },
+      {
+        "file": "plugin_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\plugin_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\plugin_agent.py",
+        "class_name": "PluginAgent",
+        "methods": [
+          "__init__",
+          "_extract_plugin_name",
+          "_detect_plugin_type"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "reflection_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\reflection_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\reflection_agent.py",
+        "class_name": "ReflectionAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "self_evaluation_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_evaluation_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\self_evaluation_agent.py",
+        "class_name": "SelfEvaluationAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "self_question_generator_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\self_question_generator_agent.py",
+        "class_name": "GeneratedQuestion",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "self_question_generator_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\self_question_generator_agent.py",
+        "class_name": "QuestionCluster",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "self_question_generator_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\self_question_generator_agent.py",
+        "class_name": "SelfQuestionGeneratorAgent",
+        "methods": [
+          "__init__",
+          "_initialize_memory_components",
+          "get_question_summary",
+          "_format_category_breakdown",
+          "_load_persistence_data",
+          "_save_persistence_data"
+        ],
+        "description": "Agent class with 6 methods"
+      },
+      {
+        "file": "__init___1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "AgentBase",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "__init___2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "AgentResponse",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "__init___3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "EscalationAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "__init___4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "GoalAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "__init___5.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___5.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "PluginAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "__init___6.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___6.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "ReflectionAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "__init___7.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___7.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "SelfEvaluationAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "comprehensive_agent_discovery.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\comprehensive_agent_discovery.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\comprehensive_agent_discovery.py",
+        "class_name": "ComprehensiveAgentDiscovery",
+        "methods": [
+          "__init__",
+          "comprehensive_agent_scan",
+          "_analyze_file_for_agents",
+          "_analyze_class_node",
+          "_analyze_function_node",
+          "_analyze_content_patterns",
+          "_print_agent_discovery_results",
+          "prioritize_agents_for_migration",
+          "create_agent_migration_plan",
+          "save_discovery_results"
+        ],
+        "description": "Agent class with 10 methods"
+      },
+      {
+        "file": "real_agent_discovery.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\real_agent_discovery.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\real_agent_discovery.py",
+        "class_name": "RealAgentDiscovery",
+        "methods": [
+          "__init__",
+          "find_real_agents",
+          "_find_agent_directories",
+          "_analyze_agent_directory",
+          "_find_agent_files",
+          "_find_agent_classes",
+          "_is_excluded_path",
+          "_is_likely_real_agent_file",
+          "_is_likely_agent_class",
+          "_analyze_agent_file"
+        ],
+        "description": "Agent class with 12 methods"
+      },
+      {
+        "file": "smart_agent_migrator.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\smart_agent_migrator.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\smart_agent_migrator.py",
+        "class_name": "SmartAgentMigrator",
+        "methods": [
+          "__init__",
+          "load_discovery_report",
+          "smart_filter_agents",
+          "migrate_smart_filtered_agents",
+          "create_agent_integration_bridge",
+          "create_agent_launcher",
+          "update_main_launcher_with_agents"
+        ],
+        "description": "Agent class with 7 methods"
+      },
+      {
+        "file": "test_integration.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\test_integration.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\tests\\test_integration.py",
+        "class_name": "TestMemoryAgentIntegration",
+        "methods": [
+          "memory_agent_setup",
+          "test_memory_retrieval_through_agent",
+          "test_memory_agent_performance"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "aetherra_parser.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\aetherra_parser.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\aetherra_parser.py",
+        "class_name": "AgentNode",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "agent_orchestrator.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\agent_orchestrator.py",
+        "class_name": "AgentStatus",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "agent_orchestrator_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\agent_orchestrator.py",
+        "class_name": "AgentCapability",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "agent_orchestrator_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\agent_orchestrator.py",
+        "class_name": "Agent",
+        "methods": [
+          "__post_init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agent_orchestrator_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\agent_orchestrator.py",
+        "class_name": "AgentInterface",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agent_orchestrator_4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\agent_orchestrator.py",
+        "class_name": "ExampleAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "chat_router_old.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\chat_router_old.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\chat_router_old.py",
+        "class_name": "MultiAgentManager",
+        "methods": [
+          "assign_task",
+          "execute_task",
+          "coordinate_multi_agent_task",
+          "get_agent_status"
+        ],
+        "description": "Agent class with 4 methods"
+      },
+      {
+        "file": "collaborative_multi_agent_system.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\collaborative_multi_agent_system.py",
+        "class_name": "AgentRole",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "collaborative_multi_agent_system_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\collaborative_multi_agent_system.py",
+        "class_name": "AgentContribution",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "collaborative_multi_agent_system_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\collaborative_multi_agent_system.py",
+        "class_name": "BaseAgent",
+        "methods": [
+          "__init__",
+          "update_performance_metrics"
+        ],
+        "description": "Agent class with 2 methods"
+      },
+      {
+        "file": "collaborative_multi_agent_system_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\collaborative_multi_agent_system.py",
+        "class_name": "ArchitectAgent",
+        "methods": [
+          "__init__",
+          "_assess_structural_complexity",
+          "_identify_design_patterns",
+          "_analyze_dependencies",
+          "_recommend_approach",
+          "_create_blueprint",
+          "_check_architectural_compliance",
+          "_check_design_consistency",
+          "_assess_scalability",
+          "_provide_architectural_recommendations"
+        ],
+        "description": "Agent class with 10 methods"
+      },
+      {
+        "file": "collaborative_multi_agent_system_4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\collaborative_multi_agent_system.py",
+        "class_name": "RefactorSpecialistAgent",
+        "methods": [
+          "__init__",
+          "_identify_code_smells",
+          "_find_refactoring_opportunities",
+          "_assess_code_quality",
+          "_refactor_code",
+          "_create_refactoring_guidelines",
+          "_rate_code_quality",
+          "_suggest_refactoring_improvements",
+          "_assess_maintainability"
+        ],
+        "description": "Agent class with 9 methods"
+      },
+      {
+        "file": "collaborative_multi_agent_system_5.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_5.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\collaborative_multi_agent_system.py",
+        "class_name": "TestEngineerAgent",
+        "methods": [
+          "__init__",
+          "_identify_test_types",
+          "_estimate_test_coverage",
+          "_identify_testing_challenges",
+          "_generate_test_code",
+          "_create_test_plan",
+          "_assess_testability",
+          "_suggest_additional_tests",
+          "_identify_edge_cases"
+        ],
+        "description": "Agent class with 9 methods"
+      },
+      {
+        "file": "collaborative_multi_agent_system_6.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_6.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\collaborative_multi_agent_system.py",
+        "class_name": "CollaborativeMultiAgentSystem",
+        "methods": [
+          "__init__",
+          "_initialize_agents",
+          "_get_agent_by_id",
+          "_determine_contribution_order",
+          "_integrate_contributions",
+          "_calculate_quality_score",
+          "_extract_lessons_learned",
+          "get_system_metrics",
+          "_analyze_collaboration_patterns"
+        ],
+        "description": "Agent class with 9 methods"
+      },
+      {
+        "file": "agent_base_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\agent_base.py",
+        "class_name": "AgentResponse",
+        "methods": [
+          "__post_init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agent_base_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\agent_base.py",
+        "class_name": "AgentBase",
+        "methods": [
+          "__init__",
+          "log",
+          "_update_activity",
+          "_increment_success",
+          "_increment_error"
+        ],
+        "description": "Agent class with 5 methods"
+      },
+      {
+        "file": "contradiction_detection_agent_4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\contradiction_detection_agent.py",
+        "class_name": "ContradictionDetectionAgent",
+        "methods": [
+          "__init__",
+          "_initialize_memory_components",
+          "get_contradiction_summary",
+          "_format_findings",
+          "_format_recommendations",
+          "_format_severity_breakdown",
+          "_load_persistence_data",
+          "_save_persistence_data"
+        ],
+        "description": "Agent class with 8 methods"
+      },
+      {
+        "file": "core_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\core_agent.py",
+        "class_name": "AgentBase",
+        "methods": [
+          "__init__",
+          "log",
+          "process"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "core_agent_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\core_agent.py",
+        "class_name": "AgentResponse",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "curiosity_agent_5.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_5.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\curiosity_agent.py",
+        "class_name": "CuriosityAgent",
+        "methods": [
+          "__init__",
+          "_initialize_memory_components",
+          "get_curiosity_summary",
+          "_load_persistence_data",
+          "_save_persistence_data"
+        ],
+        "description": "Agent class with 5 methods"
+      },
+      {
+        "file": "curiosity_agent_6.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_6.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\curiosity_agent.py",
+        "class_name": "AgentBase",
+        "methods": [
+          "__init__",
+          "log",
+          "process"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "curiosity_agent_7.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_7.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\curiosity_agent.py",
+        "class_name": "AgentResponse",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "escalation_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\escalation_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\escalation_agent.py",
+        "class_name": "EscalationAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "goal_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\goal_agent.py",
+        "class_name": "GoalAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "learning_loop_integration_agent_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\learning_loop_integration_agent.py",
+        "class_name": "LearningLoopIntegrationAgent",
+        "methods": [
+          "__init__",
+          "_initialize_components",
+          "_calculate_improvement_score",
+          "_determine_success_level",
+          "_analyze_memory_changes",
+          "_extract_learning_insights",
+          "_calculate_goal_duration",
+          "_generate_outcome_recommendation",
+          "_generate_improvement_recommendations",
+          "_calculate_session_effectiveness"
+        ],
+        "description": "Agent class with 38 methods"
+      },
+      {
+        "file": "plugin_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\plugin_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\plugin_agent.py",
+        "class_name": "PluginAgent",
+        "methods": [
+          "__init__",
+          "_extract_plugin_name",
+          "_detect_plugin_type"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "reflection_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\reflection_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\reflection_agent.py",
+        "class_name": "ReflectionAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "self_evaluation_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_evaluation_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\self_evaluation_agent.py",
+        "class_name": "SelfEvaluationAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "self_question_generator_agent_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\self_question_generator_agent.py",
+        "class_name": "SelfQuestionGeneratorAgent",
+        "methods": [
+          "__init__",
+          "_initialize_memory_components",
+          "get_question_summary",
+          "_format_category_breakdown",
+          "_load_persistence_data",
+          "_save_persistence_data"
+        ],
+        "description": "Agent class with 6 methods"
+      },
+      {
+        "file": "__init___8.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___8.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "AgentBase",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "__init___9.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___9.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "AgentResponse",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "__init___10.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___10.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "EscalationAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "__init___11.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___11.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "GoalAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "__init___12.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___12.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "PluginAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "__init___13.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___13.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "ReflectionAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "__init___14.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___14.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "SelfEvaluationAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "agents.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "AgentType",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "agents_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "AgentTask",
+        "methods": [
+          "__post_init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agents_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "AgentCapability",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "agents_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "PlannerAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agents_4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "CoderAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agents_5.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_5.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "AnalyzerAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agents_6.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_6.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "DebuggerAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agents_7.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_7.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "TesterAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agents_8.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_8.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "DocumenterAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agents_9.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_9.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "OptimizerAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agents_10.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_10.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "ResearcherAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "curiosity_agent_8.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_8.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\curiosity_agent.py",
+        "class_name": "CuriosityAgent",
+        "methods": [
+          "__init__",
+          "_initialize_memory_components",
+          "_deduplicate_gaps",
+          "_prioritize_gaps",
+          "_extract_key_concept",
+          "_classify_question_type",
+          "_determine_urgency",
+          "_suggest_exploration_method",
+          "_predict_outcome",
+          "_similarity_score"
+        ],
+        "description": "Agent class with 19 methods"
+      },
+      {
+        "file": "enhanced_self_evaluation_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\enhanced_self_evaluation_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\enhanced_self_evaluation_agent.py",
+        "class_name": "EnhancedSelfEvaluationAgent",
+        "methods": [
+          "__init__",
+          "_analyze_conversation_patterns"
+        ],
+        "description": "Agent class with 2 methods"
+      },
+      {
+        "file": "multi_agent_system.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\multi_agent_system.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\multi_agent_system.py",
+        "class_name": "AgentRole",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "multi_agent_system_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\multi_agent_system_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\multi_agent_system.py",
+        "class_name": "Agent",
+        "methods": [
+          "__init__",
+          "can_handle",
+          "assign_task",
+          "complete_task",
+          "get_status"
+        ],
+        "description": "Agent class with 5 methods"
+      },
+      {
+        "file": "aetherra_neural_interface.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\aetherra_neural_interface.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\gui\\aetherra_neural_interface.py",
+        "class_name": "AgentManagementPanel",
+        "methods": [
+          "__init__",
+          "init_ui"
+        ],
+        "description": "Agent class with 2 methods"
+      },
+      {
+        "file": "critique_agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\critique_agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\personality\\critique_agent.py",
+        "class_name": "ResponseCritiqueAgent",
+        "methods": [
+          "__init__",
+          "_analyze_conversation_flow",
+          "_analyze_personality_consistency",
+          "_analyze_contextual_appropriateness",
+          "_check_emotional_alignment",
+          "_check_length_appropriateness",
+          "_check_technical_level_matching",
+          "_analyze_learning_opportunities",
+          "_calculate_enhancement_score",
+          "_generate_flow_suggestions"
+        ],
+        "description": "Agent class with 11 methods"
+      },
+      {
+        "file": "collaboration.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaboration.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\ai\\collaboration.py",
+        "class_name": "AgentRole",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "collaboration_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaboration_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\ai\\collaboration.py",
+        "class_name": "AgentResponse",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "collaboration_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaboration_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\ai\\collaboration.py",
+        "class_name": "AIAgent",
+        "methods": [
+          "__init__",
+          "get_capabilities"
+        ],
+        "description": "Agent class with 2 methods"
+      },
+      {
+        "file": "agent_orchestrator_5.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_5.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\agent_orchestrator.py",
+        "class_name": "AgentStatus",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "agent_orchestrator_6.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_6.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\agent_orchestrator.py",
+        "class_name": "AgentCapability",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "agent_orchestrator_7.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_7.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\agent_orchestrator.py",
+        "class_name": "Agent",
+        "methods": [
+          "__post_init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agent_orchestrator_8.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_8.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\agent_orchestrator.py",
+        "class_name": "AgentInterface",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "agent_orchestrator_9.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_9.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\agent_orchestrator.py",
+        "class_name": "ExampleAgent",
+        "methods": [
+          "__init__"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "goal_forecaster.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_forecaster.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\goal_forecaster.py",
+        "class_name": "AnalyzerAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "goal_forecaster_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_forecaster_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\goal_forecaster.py",
+        "class_name": "PlannerAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "goal_forecaster_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_forecaster_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\goal_forecaster.py",
+        "class_name": "ExecutorAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "goal_forecaster_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_forecaster_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\goal_forecaster.py",
+        "class_name": "ValidatorAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\interpreter\\agent.py",
+        "class_name": "InterpreterAgent",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "aetherra_parser_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\aetherra_parser_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\parser\\aetherra_parser.py",
+        "class_name": "AgentNode",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "parser.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\parser.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\parser\\parser.py",
+        "class_name": "AgentNode",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      }
+    ],
+    "lyrixa_agent": [
+      {
+        "file": "core_agent_4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\core_agent.py",
+        "class_name": "LyrixaAI",
+        "methods": [
+          "__init__",
+          "set_intelligence_stack",
+          "inject_plugin"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "__init___15.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___15.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "LyrixaAI",
+        "methods": [
+          "respond"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "simplified_lyrixa_aetherra_integration.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\simplified_lyrixa_aetherra_integration.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\simplified_lyrixa_aetherra_integration.py",
+        "class_name": "SimplifiedLyrixaAetherraIntegration",
+        "methods": [
+          "__init__",
+          "_initialize_aetherra_engines",
+          "_create_mock_engine",
+          "_extract_reasoning_result"
+        ],
+        "description": "Agent class with 4 methods"
+      },
+      {
+        "file": "web_bridge.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\web_bridge.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\web\\server\\web_bridge.py",
+        "class_name": "LyrixaWebView",
+        "methods": [
+          "__init__",
+          "setup_ui",
+          "setup_web_channel",
+          "load_web_interface",
+          "load_fallback_interface",
+          "handle_web_message",
+          "send_chat_response",
+          "update_stats",
+          "update_thought_log",
+          "update_improvement_feed"
+        ],
+        "description": "Agent class with 15 methods"
+      },
+      {
+        "file": "prompt_engine.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\prompt_engine.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\prompt_engine.py",
+        "class_name": "LyrixaLearningEngine",
+        "methods": [
+          "__init__",
+          "analyze_user_interaction_style"
+        ],
+        "description": "Agent class with 2 methods"
+      },
+      {
+        "file": "conversation_manager.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\conversation_manager.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\conversation_manager.py",
+        "class_name": "LyrixaConversationManager",
+        "methods": [
+          "__init__",
+          "_select_best_model",
+          "_record_model_failure",
+          "get_lyrixa_personality",
+          "format_system_context",
+          "add_to_conversation_history",
+          "format_messages_as_prompt",
+          "_generate_fallback_response",
+          "reset_conversation",
+          "switch_model"
+        ],
+        "description": "Agent class with 21 methods"
+      },
+      {
+        "file": "enhanced_conversation_manager.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\enhanced_conversation_manager.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\enhanced_conversation_manager.py",
+        "class_name": "EnhancedLyrixaConversationManager",
+        "methods": [
+          "__init__",
+          "format_memory_context",
+          "get_memory_aware_personality"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "intelligence.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\intelligence.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\intelligence.py",
+        "class_name": "LyrixaIntelligence",
+        "methods": [
+          "__init__",
+          "_load_intelligence_data",
+          "_save_intelligence_data",
+          "analyze_context",
+          "_classify_context",
+          "_calculate_complexity",
+          "_find_similar_patterns",
+          "_calculate_similarity",
+          "_generate_recommendations",
+          "_calculate_confidence"
+        ],
+        "description": "Agent class with 28 methods"
+      },
+      {
+        "file": "intelligence_integration.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\intelligence_integration.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\intelligence_integration.py",
+        "class_name": "LyrixaIntelligenceStack",
+        "methods": [
+          "__init__",
+          "_initialize_modular_connections",
+          "get_real_time_metrics",
+          "_calculate_intelligence_health",
+          "_calculate_workflow_health",
+          "_calculate_module_health",
+          "get_status",
+          "_process_memory_results",
+          "_generate_contextual_response",
+          "generate_response"
+        ],
+        "description": "Agent class with 11 methods"
+      },
+      {
+        "file": "lyrixa_script_integration.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\lyrixa_script_integration.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\runtime\\lyrixa_script_integration.py",
+        "class_name": "LyrixaScriptIntegration",
+        "methods": [
+          "__init__",
+          "initialize",
+          "handle_script_request",
+          "get_script_suggestions",
+          "get_available_categories",
+          "execute_script",
+          "get_script_insights",
+          "get_registry_info",
+          "is_script_command",
+          "get_quick_help"
+        ],
+        "description": "Agent class with 10 methods"
+      },
+      {
+        "file": "enhanced_lyrixa.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\enhanced_lyrixa.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\ui\\enhanced_lyrixa.py",
+        "class_name": "EnhancedLyrixaWindow",
+        "methods": [
+          "__init__",
+          "_setup_qt_window",
+          "execute_code",
+          "send_message",
+          "activate_plugin",
+          "show",
+          "close"
+        ],
+        "description": "Agent class with 7 methods"
+      },
+      {
+        "file": "core_agent_5.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_5.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\core_agent.py",
+        "class_name": "LyrixaAI",
+        "methods": [
+          "__init__",
+          "set_intelligence_stack",
+          "inject_plugin"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "__init___16.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___16.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\__init__.py",
+        "class_name": "LyrixaAI",
+        "methods": [
+          "respond"
+        ],
+        "description": "Agent class with 1 methods"
+      },
+      {
+        "file": "advanced_plugins.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\advanced_plugins.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\advanced_plugins.py",
+        "class_name": "LyrixaAdvancedPluginManager",
+        "methods": [
+          "__init__",
+          "_extract_plugin_functions",
+          "execute_chain",
+          "_generate_plugin_template",
+          "_calculate_relevance_score",
+          "discover_plugins"
+        ],
+        "description": "Agent class with 6 methods"
+      },
+      {
+        "file": "agents_11.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_11.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "LyrixaAgent",
+        "methods": [
+          "__init__",
+          "get_capabilities",
+          "update_performance_metrics"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "conversation.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\conversation.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\conversation.py",
+        "class_name": "LyrixaConversationalEngine",
+        "methods": [
+          "__init__",
+          "_initialize_personalities",
+          "_analyze_user_input",
+          "switch_personality",
+          "set_tone_mode",
+          "set_persona_mode",
+          "adjust_personality_settings",
+          "get_personality_status",
+          "export_personality_profile",
+          "import_personality_profile"
+        ],
+        "description": "Agent class with 12 methods"
+      },
+      {
+        "file": "goals.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goals.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\goals.py",
+        "class_name": "LyrixaGoalSystem",
+        "methods": [
+          "__init__",
+          "_load_goals",
+          "_save_goals",
+          "get_goal",
+          "list_goals",
+          "get_active_goals",
+          "get_overdue_goals",
+          "get_goal_statistics"
+        ],
+        "description": "Agent class with 8 methods"
+      },
+      {
+        "file": "multi_agent_system_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\multi_agent_system_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\multi_agent_system.py",
+        "class_name": "LyrixaMultiAgentSystem",
+        "methods": [
+          "__init__",
+          "_create_default_agents",
+          "add_agent",
+          "remove_agent",
+          "create_task",
+          "assign_task",
+          "_find_best_agent",
+          "complete_task",
+          "fail_task",
+          "get_system_status"
+        ],
+        "description": "Agent class with 15 methods"
+      },
+      {
+        "file": "plugin_system.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\plugin_system.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\plugin_system.py",
+        "class_name": "LyrixaPluginSystem",
+        "methods": [
+          "__init__",
+          "_load_plugin_registry",
+          "_save_plugin_registry",
+          "_discover_plugins",
+          "install_plugin",
+          "_install_from_zip",
+          "_install_from_directory",
+          "uninstall_plugin",
+          "activate_plugin",
+          "deactivate_plugin"
+        ],
+        "description": "Agent class with 15 methods"
+      },
+      {
+        "file": "reflexive_loop.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\reflexive_loop.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\reflexive_loop.py",
+        "class_name": "LyrixaReflexiveLoop",
+        "methods": [
+          "__init__",
+          "_extract_memory_content",
+          "_extract_memory_tags",
+          "_extract_project_information"
+        ],
+        "description": "Agent class with 4 methods"
+      },
+      {
+        "file": "system_bootstrap.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\system_bootstrap.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\system_bootstrap.py",
+        "class_name": "LyrixaSystemBootstrap",
+        "methods": [
+          "__init__",
+          "format_startup_message"
+        ],
+        "description": "Agent class with 2 methods"
+      },
+      {
+        "file": "mini_lyrixa_avatar.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\mini_lyrixa_avatar.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\gui\\mini_lyrixa_avatar.py",
+        "class_name": "MiniLyrixaAvatar",
+        "methods": [
+          "__init__",
+          "update_cognitive_state",
+          "get_emotional_color",
+          "paintEvent",
+          "draw_energy_rings",
+          "draw_ai_glyph",
+          "draw_confidence_core",
+          "set_reasoning_mode",
+          "start_expansion_animation",
+          "set_emotional_state"
+        ],
+        "description": "Agent class with 10 methods"
+      },
+      {
+        "file": "web_bridge_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\web_bridge_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\gui\\web_bridge.py",
+        "class_name": "LyrixaWebView",
+        "methods": [
+          "__init__",
+          "setup_ui",
+          "setup_web_channel",
+          "load_web_interface",
+          "load_fallback_interface",
+          "handle_web_message",
+          "send_chat_response",
+          "update_stats",
+          "update_thought_log",
+          "update_improvement_feed"
+        ],
+        "description": "Agent class with 15 methods"
+      },
+      {
+        "file": "lyrixa_agent_integration.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\lyrixa_agent_integration.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\interfaces\\lyrixa_agent_integration.py",
+        "class_name": "LyrixaAgentInterface",
+        "methods": [
+          "__init__",
+          "get_task_queue",
+          "get_communication_log",
+          "__repr__"
+        ],
+        "description": "Agent class with 4 methods"
+      },
+      {
+        "file": "lyrixa_assistant.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\lyrixa_assistant.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\interfaces\\lyrixa_assistant.py",
+        "class_name": "LyrixaAssistant",
+        "methods": [
+          "__init__",
+          "get_conversation_history",
+          "get_active_tasks",
+          "__repr__"
+        ],
+        "description": "Agent class with 4 methods"
+      },
+      {
+        "file": "optimized_integration.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\optimized_integration.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\memory\\optimized_integration.py",
+        "class_name": "OptimizedLyrixaMemoryEngine",
+        "methods": [
+          "__init__",
+          "get_optimization_report"
+        ],
+        "description": "Agent class with 2 methods"
+      },
+      {
+        "file": "optimized_memory_engine.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\optimized_memory_engine.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\memory\\optimized_memory_engine.py",
+        "class_name": "OptimizedLyrixaMemoryEngine",
+        "methods": [
+          "__init__",
+          "_start_async_processor",
+          "_schedule_concept_processing",
+          "_schedule_timeline_processing",
+          "get_optimization_metrics",
+          "cleanup_optimized"
+        ],
+        "description": "Agent class with 6 methods"
+      },
+      {
+        "file": "__init___17.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___17.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\memory\\__init__.py",
+        "class_name": "LyrixaMemorySystem",
+        "methods": [],
+        "description": "Agent class with 0 methods"
+      },
+      {
+        "file": "personality_engine.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\personality_engine.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\personality\\personality_engine.py",
+        "class_name": "LyrixaPersonality",
+        "methods": [
+          "__init__",
+          "detect_user_emotion",
+          "modulate_emotion",
+          "get_personality_modifier",
+          "wrap_response",
+          "learn_from_interaction",
+          "_get_timestamp",
+          "_extract_pattern",
+          "_get_active_traits",
+          "get_personality_summary"
+        ],
+        "description": "Agent class with 10 methods"
+      }
+    ],
+    "agent_file": [
+      {
+        "file": "contradiction_detection_agent_5.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_5.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\contradiction_detection_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 4 agents"
+      },
+      {
+        "file": "core_agent_6.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_6.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\core_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 3 agents"
+      },
+      {
+        "file": "curiosity_agent_9.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_9.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\curiosity_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 5 agents"
+      },
+      {
+        "file": "escalation_agent_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\escalation_agent_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\escalation_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 2 agents"
+      },
+      {
+        "file": "goal_agent_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_agent_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\goal_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 2 agents"
+      },
+      {
+        "file": "learning_loop_integration_agent_4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent_4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\learning_loop_integration_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 3 agents"
+      },
+      {
+        "file": "plugin_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\plugin_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\plugin_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "reflection_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\reflection_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\reflection_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "self_evaluation_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_evaluation_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\self_evaluation_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "self_question_generator_agent_4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent_4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\self_question_generator_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 3 agents"
+      },
+      {
+        "file": "curiosity_agent_10.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_10.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\curiosity_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 3 agents"
+      },
+      {
+        "file": "enhanced_self_evaluation_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\enhanced_self_evaluation_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\enhanced_self_evaluation_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "critique_agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\critique_agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\personality\\critique_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "agent_discovery_and_integration.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_discovery_and_integration.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\agent_discovery_and_integration.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 2 agents"
+      },
+      {
+        "file": "agent_orchestrator_10.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_10.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\agent_orchestrator.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 12 agents"
+      },
+      {
+        "file": "agent_plugin.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_plugin.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\agent_plugin.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 2 agents"
+      },
+      {
+        "file": "agent_base_4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base_4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\agent_base.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 2 agents"
+      },
+      {
+        "file": "agent_orchestrator_11.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_11.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\agent_orchestrator.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 12 agents"
+      },
+      {
+        "file": "agent_discovery_and_integration_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_discovery_and_integration_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\agent_discovery_and_integration.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 2 agents"
+      },
+      {
+        "file": "comprehensive_agent_discovery_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\comprehensive_agent_discovery_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\comprehensive_agent_discovery.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "real_agent_discovery_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\real_agent_discovery_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\real_agent_discovery.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "smart_agent_migrator_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\smart_agent_migrator_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\smart_agent_migrator.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "agent_orchestrator_12.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_12.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\agent_orchestrator.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 12 agents"
+      },
+      {
+        "file": "collaborative_multi_agent_system_7.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_7.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\collaborative_multi_agent_system.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 10 agents"
+      },
+      {
+        "file": "agent_plugin_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_plugin_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\agent_plugin.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 2 agents"
+      },
+      {
+        "file": "agent_base_5.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base_5.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\agent_base.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 2 agents"
+      },
+      {
+        "file": "contradiction_detection_agent_6.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_6.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\contradiction_detection_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 4 agents"
+      },
+      {
+        "file": "core_agent_7.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_7.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\core_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 3 agents"
+      },
+      {
+        "file": "curiosity_agent_11.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_11.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\curiosity_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 5 agents"
+      },
+      {
+        "file": "escalation_agent_4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\escalation_agent_4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\escalation_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 2 agents"
+      },
+      {
+        "file": "goal_agent_4.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_agent_4.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\goal_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 2 agents"
+      },
+      {
+        "file": "learning_loop_integration_agent_5.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent_5.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\learning_loop_integration_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 3 agents"
+      },
+      {
+        "file": "plugin_agent_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\plugin_agent_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\plugin_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "reflection_agent_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\reflection_agent_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\reflection_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "self_evaluation_agent_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_evaluation_agent_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\self_evaluation_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "self_question_generator_agent_5.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent_5.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\agents\\self_question_generator_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 3 agents"
+      },
+      {
+        "file": "agents_12.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_12.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 14 agents"
+      },
+      {
+        "file": "curiosity_agent_12.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_12.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\curiosity_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 3 agents"
+      },
+      {
+        "file": "enhanced_self_evaluation_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\enhanced_self_evaluation_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\enhanced_self_evaluation_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "multi_agent_system_3.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\multi_agent_system_3.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\multi_agent_system.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 5 agents"
+      },
+      {
+        "file": "lyrixa_agent_integration_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\lyrixa_agent_integration_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\interfaces\\lyrixa_agent_integration.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "critique_agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\critique_agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\personality\\critique_agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 1 agents"
+      },
+      {
+        "file": "agent_orchestrator_13.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_13.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\agent_orchestrator.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 12 agents"
+      },
+      {
+        "file": "agent_2.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_2.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\interpreter\\agent.py",
+        "class_name": null,
+        "methods": [],
+        "description": "Agent file containing 2 agents"
+      }
+    ],
+    "aetherra_agent": [
+      {
+        "file": "agent_discovery_and_integration.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\agent_discovery_and_integration.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\agent_discovery_and_integration.py",
+        "class_name": "AetherraComponentDiscovery",
+        "methods": [
+          "__init__",
+          "discover_all_components",
+          "_discover_agents",
+          "_discover_ethics_agents",
+          "_discover_intelligence_systems",
+          "_discover_memory_systems",
+          "_discover_conversation_managers",
+          "_discover_gui_components",
+          "_discover_other_components",
+          "_scan_directory_for_classes"
+        ],
+        "description": "Agent class with 17 methods"
+      },
+      {
+        "file": "lyrixa_aetherra_integration.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\lyrixa_aetherra_integration.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa_aetherra_integration.py",
+        "class_name": "SimpleAetherraEngine",
+        "methods": [
+          "__init__",
+          "execute_aetherra"
+        ],
+        "description": "Agent class with 2 methods"
+      },
+      {
+        "file": "cleanup_project.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\cleanup_project.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Scripts\\cleanup_project.py",
+        "class_name": "AetherraCleanup",
+        "methods": [
+          "__init__",
+          "create_directory_structure",
+          "backup_current_state",
+          "categorize_files",
+          "_determine_category",
+          "_matches_pattern",
+          "_should_exclude",
+          "organize_files",
+          "_move_file",
+          "clean_empty_directories"
+        ],
+        "description": "Agent class with 15 methods"
+      },
+      {
+        "file": "web_interface_server.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\web_interface_server.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\web\\server\\web_interface_server.py",
+        "class_name": "AetherraWebServer",
+        "methods": [
+          "__init__",
+          "_initialize_lyrixa_components",
+          "_setup_routes",
+          "_setup_socketio_handlers",
+          "_initialize_mock_data",
+          "_generate_mock_response",
+          "_process_conversation_message",
+          "_execute_agent_command",
+          "_get_real_system_status",
+          "_get_real_agent_data"
+        ],
+        "description": "Agent class with 13 methods"
+      },
+      {
+        "file": "aetherra_grammar.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_grammar.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\aetherra_grammar.py",
+        "class_name": "AetherraCodeTransformer",
+        "methods": [
+          "program",
+          "goal_statement",
+          "priority_clause",
+          "agent_statement",
+          "model_statement",
+          "model_config",
+          "model_param",
+          "assistant_statement",
+          "assistant_task",
+          "remember_stmt"
+        ],
+        "description": "Agent class with 55 methods"
+      },
+      {
+        "file": "aetherra_grammar_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_grammar_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\aetherra_grammar.py",
+        "class_name": "AetherraParser",
+        "methods": [
+          "__init__",
+          "parse",
+          "_preprocess_source",
+          "validate_syntax",
+          "get_ast_info",
+          "_analyze_ast"
+        ],
+        "description": "Agent class with 6 methods"
+      },
+      {
+        "file": "aetherra_interpreter.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_interpreter.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\aetherra_interpreter.py",
+        "class_name": "AetherraInterpreter",
+        "methods": [
+          "__init__",
+          "execute"
+        ],
+        "description": "Agent class with 2 methods"
+      },
+      {
+        "file": "aetherra_interpreter_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_interpreter_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\aetherra_interpreter.py",
+        "class_name": "AetherraInterpreter",
+        "methods": [
+          "__init__",
+          "execute"
+        ],
+        "description": "Agent class with 2 methods"
+      },
+      {
+        "file": "aetherra_parser.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_parser.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\aetherra_parser.py",
+        "class_name": "AetherraParser",
+        "methods": [
+          "__init__",
+          "advance",
+          "expect",
+          "skip_newlines",
+          "parse_goal",
+          "parse_agent",
+          "parse_memory",
+          "parse_intent_action",
+          "parse_conditional",
+          "parse_plugin"
+        ],
+        "description": "Agent class with 12 methods"
+      },
+      {
+        "file": "agent.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\agent.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\agent.py",
+        "class_name": "AetherraAgent",
+        "methods": [
+          "__init__",
+          "detect_memory_patterns",
+          "analyze_behavior",
+          "suggest_evolution",
+          "adaptive_suggest",
+          "get_command_type",
+          "suggest_self_editing_opportunities",
+          "justify_self_editing"
+        ],
+        "description": "Agent class with 8 methods"
+      },
+      {
+        "file": "chat_router_old.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\chat_router_old.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\chat_router_old.py",
+        "class_name": "AetherraChatRouter",
+        "methods": [
+          "__init__",
+          "_load_aether_functions",
+          "route_message",
+          "_parse_intent",
+          "_parse_params",
+          "execute_aether_code",
+          "run_aether_command",
+          "_create_conversational_prompt",
+          "_replace_variables"
+        ],
+        "description": "Agent class with 9 methods"
+      },
+      {
+        "file": "enhanced_language.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\enhanced_language.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\enhanced_language.py",
+        "class_name": "EnhancedAetherraLanguage",
+        "methods": [
+          "__init__",
+          "parse",
+          "execute",
+          "execute_ast",
+          "validate_syntax",
+          "get_language_info"
+        ],
+        "description": "Agent class with 6 methods"
+      },
+      {
+        "file": "security_system.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\security_system.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\security\\security_system.py",
+        "class_name": "AetherraSecuritySystem",
+        "methods": [
+          "__init__",
+          "_setup_logging",
+          "_initialize_aetherra_security",
+          "_setup_secure_environment",
+          "_configure_secure_api_access",
+          "_initialize_memory_protection",
+          "start_monitoring",
+          "stop_monitoring",
+          "_run_security_scan",
+          "_scan_api_keys"
+        ],
+        "description": "Agent class with 22 methods"
+      },
+      {
+        "file": "aetherra_main_window_hybrid.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_main_window_hybrid.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\gui\\aetherra_main_window_hybrid.py",
+        "class_name": "AetherraMainWindow",
+        "methods": [
+          "__init__",
+          "setup_hybrid_interface",
+          "add_dashboard_tab",
+          "add_chat_tab",
+          "send_chat_message",
+          "update_context_display",
+          "add_memory_tab",
+          "add_reflection_tab",
+          "add_plugins_tab",
+          "add_goals_tab"
+        ],
+        "description": "Agent class with 40 methods"
+      },
+      {
+        "file": "data_manager.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\data_manager.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\gui\\data_manager.py",
+        "class_name": "AetherraDataManager",
+        "methods": [
+          "__init__",
+          "initialize_systems",
+          "update_fast_data",
+          "update_slow_data",
+          "update_memory_data",
+          "update_identity_data",
+          "update_reflection_data",
+          "update_ethics_data",
+          "update_system_status",
+          "update_night_cycle_data"
+        ],
+        "description": "Agent class with 13 methods"
+      },
+      {
+        "file": "web_interface_server_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\web_interface_server_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\gui\\web_interface_server.py",
+        "class_name": "AetherraWebServer",
+        "methods": [
+          "__init__",
+          "_initialize_lyrixa_components",
+          "_setup_routes",
+          "_setup_socketio_handlers",
+          "_initialize_mock_data",
+          "_generate_mock_response",
+          "_process_conversation_message",
+          "_execute_agent_command",
+          "_get_real_system_status",
+          "_get_real_agent_data"
+        ],
+        "description": "Agent class with 13 methods"
+      },
+      {
+        "file": "llm_integration.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\llm_integration.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\ai\\llm_integration.py",
+        "class_name": "AetherraCodeLLMIntegration",
+        "methods": [
+          "__init__",
+          "execute_model_statement",
+          "execute_assistant_statement",
+          "_build_context_prompt",
+          "list_available_models",
+          "get_current_model_status",
+          "switch_model_for_task",
+          "get_conversation_history",
+          "clear_conversation_history",
+          "save_model_preferences"
+        ],
+        "description": "Agent class with 11 methods"
+      },
+      {
+        "file": "aetherra_engine.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_engine.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\aetherra_engine.py",
+        "class_name": "aetherraEngine",
+        "methods": [
+          "__init__",
+          "_initialize_models",
+          "execute_aetherra_file",
+          "execute_aetherra",
+          "_execute_statement",
+          "_execute_model_statement",
+          "_execute_assistant_statement",
+          "_execute_goal_statement",
+          "_execute_agent_statement",
+          "_execute_remember_statement"
+        ],
+        "description": "Agent class with 20 methods"
+      },
+      {
+        "file": "agent_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\agent_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\interpreter\\agent.py",
+        "class_name": "AetherraAgent",
+        "methods": [
+          "__init__",
+          "get_agent_state",
+          "_store_execution_memory",
+          "detect_patterns",
+          "set_ai_provider",
+          "get_execution_summary"
+        ],
+        "description": "Agent class with 6 methods"
+      },
+      {
+        "file": "base.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\base.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\interpreter\\base.py",
+        "class_name": "AetherraInterpreter",
+        "methods": [
+          "__init__",
+          "execute",
+          "_try_enhanced_parsing",
+          "_parse_enhanced_remember",
+          "_parse_enhanced_goal",
+          "_parse_enhanced_agent",
+          "_parse_enhanced_plugin",
+          "_track_command",
+          "_route_command",
+          "_handle_remember"
+        ],
+        "description": "Agent class with 48 methods"
+      },
+      {
+        "file": "base_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\base_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\interpreter\\base.py",
+        "class_name": "AetherraAgent",
+        "methods": [
+          "__init__",
+          "activate",
+          "deactivate",
+          "get_command_type",
+          "detect_memory_patterns",
+          "analyze_behavior",
+          "suggest_evolution",
+          "adaptive_suggest",
+          "suggest_self_editing_opportunities",
+          "justify_self_editing"
+        ],
+        "description": "Agent class with 10 methods"
+      },
+      {
+        "file": "enhanced.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\enhanced.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\interpreter\\enhanced.py",
+        "class_name": "EnhancedAetherraInterpreter",
+        "methods": [
+          "__init__",
+          "execute",
+          "execute_aetherra",
+          "_is_natural_language",
+          "_handle_natural_language_intent",
+          "_handle_intent_command",
+          "_handle_ai_command",
+          "_handle_semantic_recall",
+          "_handle_pattern_analysis",
+          "_handle_local_ai_command"
+        ],
+        "description": "Agent class with 15 methods"
+      },
+      {
+        "file": "enhanced_interpreter.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\enhanced_interpreter.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\interpreter\\enhanced_interpreter.py",
+        "class_name": "AetherraEnhancedInterpreter",
+        "methods": [
+          "__init__",
+          "execute",
+          "_execute_node",
+          "_execute_if",
+          "_execute_for",
+          "_execute_while",
+          "_execute_try",
+          "_execute_match",
+          "_execute_wait",
+          "_execute_break"
+        ],
+        "description": "Agent class with 21 methods"
+      },
+      {
+        "file": "aetherra_parser_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_parser_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\parser\\aetherra_parser.py",
+        "class_name": "AetherraParser",
+        "methods": [
+          "__init__",
+          "advance",
+          "expect",
+          "skip_newlines",
+          "parse_goal",
+          "parse_agent",
+          "parse_memory",
+          "parse_intent_action",
+          "parse_conditional",
+          "parse_plugin"
+        ],
+        "description": "Agent class with 12 methods"
+      },
+      {
+        "file": "enhanced_parser.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\enhanced_parser.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\parser\\enhanced_parser.py",
+        "class_name": "EnhancedAetherraInterpreter",
+        "methods": [
+          "__init__",
+          "execute_enhanced",
+          "_execute_ast_node",
+          "_execute_remember",
+          "_execute_recall",
+          "_execute_goal",
+          "_execute_function_def",
+          "_reconstruct_command"
+        ],
+        "description": "Agent class with 8 methods"
+      },
+      {
+        "file": "grammar.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\grammar.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\parser\\grammar.py",
+        "class_name": "AetherraCodeTransformer",
+        "methods": [
+          "program",
+          "goal_statement",
+          "priority_clause",
+          "agent_statement",
+          "model_statement",
+          "model_config",
+          "model_param",
+          "assistant_statement",
+          "assistant_task",
+          "remember_stmt"
+        ],
+        "description": "Agent class with 43 methods"
+      },
+      {
+        "file": "grammar_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\grammar_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\parser\\grammar.py",
+        "class_name": "AetherraParser",
+        "methods": [
+          "__init__",
+          "parse",
+          "_preprocess_source",
+          "validate_syntax",
+          "get_ast_info",
+          "_analyze_ast"
+        ],
+        "description": "Agent class with 6 methods"
+      },
+      {
+        "file": "natural_compiler.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\natural_compiler.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\parser\\natural_compiler.py",
+        "class_name": "AetherraCodeIDE",
+        "methods": [
+          "__init__",
+          "natural_to_aetherra",
+          "interactive_programming"
+        ],
+        "description": "Agent class with 3 methods"
+      },
+      {
+        "file": "parser.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\parser.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\parser\\parser.py",
+        "class_name": "AetherraParser",
+        "methods": [
+          "__init__",
+          "advance",
+          "expect",
+          "skip_newlines",
+          "parse_goal",
+          "parse_agent",
+          "parse_memory",
+          "parse_intent_action",
+          "parse_conditional",
+          "parse_plugin"
+        ],
+        "description": "Agent class with 12 methods"
+      },
+      {
+        "file": "parser_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\parser_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\syntax\\parser.py",
+        "class_name": "AetherraParser",
+        "methods": [
+          "__init__",
+          "parse",
+          "_parse_block",
+          "_parse_line",
+          "_is_block_start"
+        ],
+        "description": "Agent class with 5 methods"
+      }
+    ],
+    "cognitive_agent": [
+      {
+        "file": "plugin_state_memory.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\cognitive\\plugin_state_memory.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\plugin_state_memory.py",
+        "class_name": "CognitivePluginMemory",
+        "methods": [
+          "__init__",
+          "remember_interaction",
+          "get_plugin_insights",
+          "suggest_optimization"
+        ],
+        "description": "Agent class with 4 methods"
+      }
+    ],
+    "orchestrator_agent": [
+      {
+        "file": "agent_orchestrator.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\orchestration\\agent_orchestrator.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\agent_orchestrator.py",
+        "class_name": "AgentOrchestrator",
+        "methods": [
+          "__init__",
+          "_init_database",
+          "register_agent",
+          "unregister_agent",
+          "get_system_status",
+          "get_agent_status",
+          "get_task_status"
+        ],
+        "description": "Agent class with 7 methods"
+      },
+      {
+        "file": "agents.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\orchestration\\agents.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\core\\agents.py",
+        "class_name": "AgentOrchestrator",
+        "methods": [
+          "__init__",
+          "_initialize_builtin_agents",
+          "_can_execute_task",
+          "get_task_status",
+          "get_agent_status",
+          "get_orchestrator_stats"
+        ],
+        "description": "Agent class with 6 methods"
+      },
+      {
+        "file": "agent_orchestrator_1.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\orchestration\\agent_orchestrator_1.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\agent_orchestrator.py",
+        "class_name": "AgentOrchestrator",
+        "methods": [
+          "__init__",
+          "_init_database",
+          "register_agent",
+          "unregister_agent",
+          "get_system_status",
+          "get_agent_status",
+          "get_task_status"
+        ],
+        "description": "Agent class with 7 methods"
+      },
+      {
+        "file": "goal_forecaster.py",
+        "path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\orchestration\\goal_forecaster.py",
+        "original_path": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\core\\engine\\goal_forecaster.py",
+        "class_name": "MultiAgentOrchestrator",
+        "methods": [
+          "__init__",
+          "_init_agents"
+        ],
+        "description": "Agent class with 2 methods"
+      }
+    ]
+  },
+  "agent_locations": {
+    "agent_base.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base.py",
+    "agent_base_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base_1.py",
+    "contradiction_detection_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent.py",
+    "contradiction_detection_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_1.py",
+    "contradiction_detection_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_2.py",
+    "contradiction_detection_agent_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_3.py",
+    "core_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent.py",
+    "core_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_1.py",
+    "curiosity_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent.py",
+    "curiosity_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_1.py",
+    "curiosity_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_2.py",
+    "curiosity_agent_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_3.py",
+    "curiosity_agent_4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_4.py",
+    "escalation_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\escalation_agent.py",
+    "escalation_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\escalation_agent_1.py",
+    "goal_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_agent.py",
+    "goal_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_agent_1.py",
+    "learning_loop_integration_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent.py",
+    "learning_loop_integration_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent_1.py",
+    "learning_loop_integration_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent_2.py",
+    "plugin_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\plugin_agent.py",
+    "reflection_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\reflection_agent.py",
+    "self_evaluation_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_evaluation_agent.py",
+    "self_question_generator_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent.py",
+    "self_question_generator_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent_1.py",
+    "self_question_generator_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent_2.py",
+    "__init___1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___1.py",
+    "__init___2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___2.py",
+    "__init___3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___3.py",
+    "__init___4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___4.py",
+    "__init___5.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___5.py",
+    "__init___6.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___6.py",
+    "__init___7.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___7.py",
+    "comprehensive_agent_discovery.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\comprehensive_agent_discovery.py",
+    "real_agent_discovery.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\real_agent_discovery.py",
+    "smart_agent_migrator.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\smart_agent_migrator.py",
+    "test_integration.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\test_integration.py",
+    "aetherra_parser.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_parser.py",
+    "agent_orchestrator.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\orchestration\\agent_orchestrator.py",
+    "agent_orchestrator_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\orchestration\\agent_orchestrator_1.py",
+    "agent_orchestrator_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_2.py",
+    "agent_orchestrator_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_3.py",
+    "agent_orchestrator_4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_4.py",
+    "chat_router_old.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\chat_router_old.py",
+    "collaborative_multi_agent_system.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system.py",
+    "collaborative_multi_agent_system_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_1.py",
+    "collaborative_multi_agent_system_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_2.py",
+    "collaborative_multi_agent_system_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_3.py",
+    "collaborative_multi_agent_system_4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_4.py",
+    "collaborative_multi_agent_system_5.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_5.py",
+    "collaborative_multi_agent_system_6.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_6.py",
+    "agent_base_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base_2.py",
+    "agent_base_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base_3.py",
+    "contradiction_detection_agent_4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_4.py",
+    "core_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_2.py",
+    "core_agent_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_3.py",
+    "curiosity_agent_5.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_5.py",
+    "curiosity_agent_6.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_6.py",
+    "curiosity_agent_7.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_7.py",
+    "escalation_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\escalation_agent_2.py",
+    "goal_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_agent_2.py",
+    "learning_loop_integration_agent_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent_3.py",
+    "plugin_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\plugin_agent_1.py",
+    "reflection_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\reflection_agent_1.py",
+    "self_evaluation_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_evaluation_agent_1.py",
+    "self_question_generator_agent_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent_3.py",
+    "__init___8.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___8.py",
+    "__init___9.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___9.py",
+    "__init___10.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___10.py",
+    "__init___11.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___11.py",
+    "__init___12.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___12.py",
+    "__init___13.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___13.py",
+    "__init___14.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___14.py",
+    "agents.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\orchestration\\agents.py",
+    "agents_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_1.py",
+    "agents_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_2.py",
+    "agents_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_3.py",
+    "agents_4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_4.py",
+    "agents_5.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_5.py",
+    "agents_6.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_6.py",
+    "agents_7.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_7.py",
+    "agents_8.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_8.py",
+    "agents_9.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_9.py",
+    "agents_10.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_10.py",
+    "curiosity_agent_8.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_8.py",
+    "enhanced_self_evaluation_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\enhanced_self_evaluation_agent.py",
+    "multi_agent_system.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\multi_agent_system.py",
+    "multi_agent_system_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\multi_agent_system_1.py",
+    "aetherra_neural_interface.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\aetherra_neural_interface.py",
+    "critique_agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\critique_agent.py",
+    "collaboration.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaboration.py",
+    "collaboration_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaboration_1.py",
+    "collaboration_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaboration_2.py",
+    "agent_orchestrator_5.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_5.py",
+    "agent_orchestrator_6.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_6.py",
+    "agent_orchestrator_7.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_7.py",
+    "agent_orchestrator_8.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_8.py",
+    "agent_orchestrator_9.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_9.py",
+    "goal_forecaster.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\orchestration\\goal_forecaster.py",
+    "goal_forecaster_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_forecaster_1.py",
+    "goal_forecaster_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_forecaster_2.py",
+    "goal_forecaster_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_forecaster_3.py",
+    "agent.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\agent.py",
+    "aetherra_parser_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_parser_1.py",
+    "parser.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\parser.py",
+    "core_agent_4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_4.py",
+    "__init___15.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___15.py",
+    "simplified_lyrixa_aetherra_integration.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\simplified_lyrixa_aetherra_integration.py",
+    "web_bridge.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\web_bridge.py",
+    "prompt_engine.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\prompt_engine.py",
+    "conversation_manager.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\conversation_manager.py",
+    "enhanced_conversation_manager.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\enhanced_conversation_manager.py",
+    "intelligence.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\intelligence.py",
+    "intelligence_integration.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\intelligence_integration.py",
+    "lyrixa_script_integration.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\lyrixa_script_integration.py",
+    "enhanced_lyrixa.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\enhanced_lyrixa.py",
+    "core_agent_5.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_5.py",
+    "__init___16.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___16.py",
+    "advanced_plugins.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\advanced_plugins.py",
+    "agents_11.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_11.py",
+    "conversation.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\conversation.py",
+    "goals.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goals.py",
+    "multi_agent_system_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\multi_agent_system_2.py",
+    "plugin_system.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\plugin_system.py",
+    "reflexive_loop.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\reflexive_loop.py",
+    "system_bootstrap.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\system_bootstrap.py",
+    "mini_lyrixa_avatar.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\mini_lyrixa_avatar.py",
+    "web_bridge_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\web_bridge_1.py",
+    "lyrixa_agent_integration.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\lyrixa_agent_integration.py",
+    "lyrixa_assistant.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\lyrixa_assistant.py",
+    "optimized_integration.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\optimized_integration.py",
+    "optimized_memory_engine.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\optimized_memory_engine.py",
+    "__init___17.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\__init___17.py",
+    "personality_engine.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\personality_engine.py",
+    "contradiction_detection_agent_5.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_5.py",
+    "core_agent_6.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_6.py",
+    "curiosity_agent_9.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_9.py",
+    "escalation_agent_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\escalation_agent_3.py",
+    "goal_agent_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_agent_3.py",
+    "learning_loop_integration_agent_4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent_4.py",
+    "plugin_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\plugin_agent_2.py",
+    "reflection_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\reflection_agent_2.py",
+    "self_evaluation_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_evaluation_agent_2.py",
+    "self_question_generator_agent_4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent_4.py",
+    "curiosity_agent_10.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_10.py",
+    "enhanced_self_evaluation_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\enhanced_self_evaluation_agent_1.py",
+    "critique_agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\critique_agent_1.py",
+    "agent_discovery_and_integration.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\agent_discovery_and_integration.py",
+    "agent_orchestrator_10.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_10.py",
+    "agent_plugin.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_plugin.py",
+    "agent_base_4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base_4.py",
+    "agent_orchestrator_11.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_11.py",
+    "agent_discovery_and_integration_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_discovery_and_integration_1.py",
+    "comprehensive_agent_discovery_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\comprehensive_agent_discovery_1.py",
+    "real_agent_discovery_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\real_agent_discovery_1.py",
+    "smart_agent_migrator_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\smart_agent_migrator_1.py",
+    "agent_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\agent_1.py",
+    "agent_orchestrator_12.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_12.py",
+    "collaborative_multi_agent_system_7.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\collaborative_multi_agent_system_7.py",
+    "agent_plugin_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_plugin_1.py",
+    "agent_base_5.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_base_5.py",
+    "contradiction_detection_agent_6.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\contradiction_detection_agent_6.py",
+    "core_agent_7.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\core_agent_7.py",
+    "curiosity_agent_11.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_11.py",
+    "escalation_agent_4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\escalation_agent_4.py",
+    "goal_agent_4.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\goal_agent_4.py",
+    "learning_loop_integration_agent_5.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\learning_loop_integration_agent_5.py",
+    "plugin_agent_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\plugin_agent_3.py",
+    "reflection_agent_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\reflection_agent_3.py",
+    "self_evaluation_agent_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_evaluation_agent_3.py",
+    "self_question_generator_agent_5.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\self_question_generator_agent_5.py",
+    "agents_12.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agents_12.py",
+    "curiosity_agent_12.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\curiosity_agent_12.py",
+    "enhanced_self_evaluation_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\enhanced_self_evaluation_agent_2.py",
+    "multi_agent_system_3.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\multi_agent_system_3.py",
+    "lyrixa_agent_integration_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\lyrixa_agent_integration_1.py",
+    "critique_agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\critique_agent_2.py",
+    "agent_orchestrator_13.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_orchestrator_13.py",
+    "agent_2.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\agents\\agent_2.py",
+    "lyrixa_aetherra_integration.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\lyrixa_aetherra_integration.py",
+    "cleanup_project.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\cleanup_project.py",
+    "web_interface_server.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\web_interface_server.py",
+    "aetherra_grammar.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_grammar.py",
+    "aetherra_grammar_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_grammar_1.py",
+    "aetherra_interpreter.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_interpreter.py",
+    "aetherra_interpreter_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_interpreter_1.py",
+    "enhanced_language.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\enhanced_language.py",
+    "security_system.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\security_system.py",
+    "aetherra_main_window_hybrid.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_main_window_hybrid.py",
+    "data_manager.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\data_manager.py",
+    "web_interface_server_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\web_interface_server_1.py",
+    "llm_integration.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\llm_integration.py",
+    "aetherra_engine.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\aetherra_engine.py",
+    "base.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\base.py",
+    "base_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\base_1.py",
+    "enhanced.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\enhanced.py",
+    "enhanced_interpreter.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\enhanced_interpreter.py",
+    "enhanced_parser.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\enhanced_parser.py",
+    "grammar.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\grammar.py",
+    "grammar_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\grammar_1.py",
+    "natural_compiler.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\natural_compiler.py",
+    "parser_1.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\core\\agents\\parser_1.py",
+    "plugin_state_memory.py": "c:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra_v2\\lyrixa\\cognitive\\plugin_state_memory.py"
+  }
+}

@@ -1,0 +1,240 @@
+# System Logger
+# Structured event logging for the Aetherra OS
+
+plugin logger {
+    description: "Structured event logging system for OS events and diagnostics."
+    memory_access: write-only
+    tags: [logging, events, diagnostics, system]
+
+    # Configuration
+    config: {
+        max_log_entries: 10000,
+        auto_cleanup_days: 30,
+        log_levels: ["debug", "info", "warning", "error", "critical"],
+        default_level: "info"
+    }
+
+    # Log an event with structured data
+    fn log_event(event_type, data, level = "info") {
+        let log_entry = {
+            type: "system_log",
+            event_type: event_type,
+            level: level,
+            timestamp: now(),
+            data: data,
+            source: "system_logger",
+            session_id: get_session_id()
+        }
+
+        # Add context if available
+        if has_context() {
+            log_entry.context = get_current_context()
+        }
+
+        # Store in memory
+        store_memory(log_entry)
+
+        # Also output to console for immediate visibility
+        let level_icon = get_level_icon(level)
+        log "{level_icon} [{event_type}] {format_log_data(data)}"
+
+        # Trigger cleanup if needed
+        if should_cleanup_logs() {
+            trigger_log_cleanup()
+        }
+
+        return log_entry.id
+    }
+
+    # Get logs by type with optional filters
+    fn get_logs_by_type(event_type, limit = 50, since_hours = 24) {
+        let cutoff_time = now() - (since_hours * 3600)
+
+        return search_memory({
+            type: "system_log",
+            event_type: event_type,
+            timestamp_gte: cutoff_time
+        }).sort_by(log => log.timestamp).reverse().slice(0, limit)
+    }
+
+    # Get logs by level
+    fn get_logs_by_level(level, limit = 50) {
+        return search_memory({
+            type: "system_log",
+            level: level
+        }).sort_by(log => log.timestamp).reverse().slice(0, limit)
+    }
+
+    # Search logs with flexible criteria
+    fn search_logs(criteria, limit = 100) {
+        let base_criteria = {type: "system_log"}
+        let full_criteria = base_criteria.merge(criteria)
+
+        return search_memory(full_criteria)
+            .sort_by(log => log.timestamp)
+            .reverse()
+            .slice(0, limit)
+    }
+
+    # Get logs since a specific timestamp
+    fn get_logs_since(timestamp, limit = 1000) {
+        return search_memory({
+            type: "system_log",
+            timestamp_gte: timestamp
+        }).sort_by(log => log.timestamp).reverse().slice(0, limit)
+    }
+
+    # Log error with stack trace if available
+    fn log_error(event_type, error, additional_data = {}) {
+        let error_data = {
+            error_message: error.message || error,
+            error_type: error.type || "unknown",
+            stack_trace: error.stack || null
+        }.merge(additional_data)
+
+        return log_event(event_type, error_data, "error")
+    }
+
+    # Log warning
+    fn log_warning(event_type, message, data = {}) {
+        let warning_data = {
+            message: message
+        }.merge(data)
+
+        return log_event(event_type, warning_data, "warning")
+    }
+
+    # Log critical system event
+    fn log_critical(event_type, message, data = {}) {
+        let critical_data = {
+            message: message,
+            requires_attention: true
+        }.merge(data)
+
+        return log_event(event_type, critical_data, "critical")
+    }
+
+    # Get system health metrics from logs
+    fn get_system_health_metrics(hours = 24) {
+        let cutoff_time = now() - (hours * 3600)
+
+        let recent_logs = search_memory({
+            type: "system_log",
+            timestamp_gte: cutoff_time
+        })
+
+        let metrics = {
+            total_events: recent_logs.length,
+            error_count: recent_logs.filter(l => l.level == "error").length,
+            warning_count: recent_logs.filter(l => l.level == "warning").length,
+            critical_count: recent_logs.filter(l => l.level == "critical").length,
+            most_common_events: get_event_frequency(recent_logs),
+            health_score: calculate_health_score(recent_logs)
+        }
+
+        return metrics
+    }
+
+    # Helper: Get level icon for console output
+    fn get_level_icon(level) {
+        let icons = {
+            "debug": "🔍",
+            "info": "ℹ️",
+            "warning": "⚠️",
+            "error": "❌",
+            "critical": "🚨"
+        }
+        return icons[level] || "📝"
+    }
+
+    # Helper: Format log data for readable output
+    fn format_log_data(data) {
+        if typeof(data) == "string" {
+            return data
+        }
+
+        if data.goal_id {
+            return "Goal {data.goal_id}: {data.goal_title || 'Unnamed'}"
+        }
+
+        if data.message {
+            return data.message
+        }
+
+        return JSON.stringify(data)
+    }
+
+    # Helper: Check if log cleanup is needed
+    fn should_cleanup_logs() {
+        let total_logs = search_memory({type: "system_log"}).length
+        return total_logs > config.max_log_entries
+    }
+
+    # Helper: Clean up old logs
+    fn trigger_log_cleanup() {
+        let cutoff_time = now() - (config.auto_cleanup_days * 24 * 3600)
+
+        let old_logs = search_memory({
+            type: "system_log",
+            timestamp_lt: cutoff_time
+        })
+
+        for log_entry in old_logs {
+            delete_memory(log_entry.id)
+        }
+
+        log "🧹 Cleaned up {old_logs.length} old log entries"
+    }
+
+    # Helper: Get event frequency statistics
+    fn get_event_frequency(logs) {
+        let frequency = {}
+
+        for log_entry in logs {
+            let event_type = log_entry.event_type
+            frequency[event_type] = (frequency[event_type] || 0) + 1
+        }
+
+        return Object.entries(frequency)
+            .sort_by(entry => entry[1])
+            .reverse()
+            .slice(0, 10)
+    }
+
+    # Helper: Calculate system health score based on logs
+    fn calculate_health_score(logs) {
+        if logs.length == 0 {
+            return 100
+        }
+
+        let error_weight = 10
+        let warning_weight = 3
+        let critical_weight = 20
+
+        let error_count = logs.filter(l => l.level == "error").length
+        let warning_count = logs.filter(l => l.level == "warning").length
+        let critical_count = logs.filter(l => l.level == "critical").length
+
+        let penalty = (error_count * error_weight) +
+                     (warning_count * warning_weight) +
+                     (critical_count * critical_weight)
+
+        let score = Math.max(0, 100 - penalty)
+        return score
+    }
+
+    # Get current session ID for log correlation
+    fn get_session_id() {
+        return get_global("session_id") || "unknown"
+    }
+    
+    # Get plugin-specific logs for watchdog system
+    fn get_plugin_logs(name, since_time) {
+        return search_memory({
+            type: "system_log",
+            event_type_in: ["plugin_used", "plugin_error"],
+            source: name,
+            timestamp_gte: since_time
+        }).sort_by(log => log.timestamp).reverse()
+    }
+}

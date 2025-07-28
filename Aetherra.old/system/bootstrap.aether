@@ -1,0 +1,36 @@
+# bootstrap.aether - AI OS Kernel Bootstrap Script
+# This script demonstrates the core capabilities of the Aether Runtime
+
+goal "Initialize AI OS and summarize today's memory"
+
+# Set up initial variables
+$today = "2025-07-07"
+$context = "AI OS Kernel Bootstrap"
+
+# Use plugins for daily operations
+use plugin "DailyLogSummarizer"
+use plugin "MemoryIndexer"
+
+# Recall today's memory and activities
+recall "today's memory" → $log
+recall "recent goals" → $goals
+recall "system status" → $status
+
+# Run summarization agent with the recalled data
+run agent "Summarizer" with $log
+run agent "GoalAnalyzer" with $goals
+
+# Store the results back into memory
+store $last_output in memory as "daily_summary"
+store $GoalAnalyzer_output in memory as "goal_analysis"
+
+# Display status
+status
+show variables
+show goals
+
+# Set completion flag
+$bootstrap_complete = true
+store $bootstrap_complete in memory as "bootstrap_status"
+
+goal "Bootstrap sequence completed successfully"

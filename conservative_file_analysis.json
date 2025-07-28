@@ -1,0 +1,19 @@
+{
+  "analysis_type": "conservative",
+  "analysis_timestamp": "C:\\Users\\enigm\\Desktop\\Aetherra Project",
+  "lyrixa_analysis": {
+    "safe_to_move": [],
+    "protected_count": 404,
+    "safe_count": 0
+  },
+  "aetherra_analysis": {
+    "safe_to_move": [
+      {
+        "path": "Aetherra\\docs\\LANGUAGE_ACHIEVEMENT.txt",
+        "reason": "Safe extension: .txt"
+      }
+    ],
+    "protected_count": 323,
+    "safe_count": 1
+  }
+}
