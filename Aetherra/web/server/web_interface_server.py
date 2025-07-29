@@ -1,7 +1,7 @@
-
 # Clean Architecture Imports
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from integration.bridges.aetherra_lyrixa_bridge import bridge
@@ -9,9 +9,7 @@ from integration.bridges.aetherra_lyrixa_bridge import bridge
 # Memory Integration
 from integration.bridges.memory_adapter_impl import memory_adapter_impl
 
-
 from web.server.web_adapter import web_adapter
-
 
 """
 Aetherra Web Interface Server - Hybrid AI Terminal
@@ -173,7 +171,7 @@ try:
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
-    from Aetherra.lyrixa.memory.quantum_memory_integration import (
+    from Aetherra.memory.quantum_memory_integration import (
         QuantumEnhancedMemoryEngine,
         create_quantum_enhanced_memory_engine,
     )
@@ -187,7 +185,7 @@ except ImportError as e:
 
 # Try to import memory systems
 try:
-    from Aetherra.lyrixa.memory.lyrixa_memory_engine import LyrixaMemoryEngine
+    from Aetherra.memory.lyrixa_memory_engine import LyrixaMemoryEngine
 
     MEMORY_ENGINE_AVAILABLE = True
     logger.info("✅ Memory engine available")
@@ -359,7 +357,7 @@ class AetherraWebServer:
         # Initialize Memory Engine
         if MEMORY_ENGINE_AVAILABLE:
             try:
-                from Aetherra.lyrixa.memory.lyrixa_memory_engine import (
+                from Aetherra.memory.lyrixa_memory_engine import (
                     LyrixaMemoryEngine,
                 )
 

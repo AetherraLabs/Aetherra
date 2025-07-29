@@ -23,12 +23,12 @@ from typing import Optional
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-from Aetherra.lyrixa.memory.lyrixa_memory_engine import LyrixaMemoryEngine
 from Aetherra.lyrixa.plugins.enhanced_plugin_manager import PluginManager
 from Aetherra.lyrixa.plugins.memory_aware_plugin_router import (
     MemoryAwarePluginRouter,
     MemoryEnhancedPluginManager,
 )
+from Aetherra.memory.lyrixa_memory_engine import LyrixaMemoryEngine
 
 # Set up logging
 logging.basicConfig(

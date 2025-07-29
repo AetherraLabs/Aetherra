@@ -1,254 +1,248 @@
-# core/agent.py
-# Removed dangling import statement - functions can be imported when needed
+"""
+Aetherra Interpreter Agent
+Enhanced agent system for interpreter functionality
+"""
 
-# Stub functions for missing dependencies
-def analyze_memory_patterns(memories, tag_frequency, category_frequency):
-    """Placeholder for memory pattern analysis"""
-    return {"patterns": [], "insights": "Analysis pending implementation"}
+import asyncio
+import json
+import logging
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Union
 
-
-def analyze_user_behavior(memories, context):
-    """Placeholder for user behavior analysis"""
-    return {"behavior_summary": "Analysis pending implementation"}
-
-
-def suggest_system_evolution(memory_summary, function_count, context):
-    """Placeholder for system evolution suggestions"""
-    return {"suggestions": ["Evolution analysis pending implementation"]}
-
-
-def provide_adaptive_suggestions(
-    context, recent_memories, available_tags, function_names
-):
-    """Placeholder for adaptive suggestions"""
-    return {"suggestions": ["Adaptive suggestions pending implementation"]}
-
-
-def memory_driven_code_suggestion(all_memories, pattern_summary):
-    """Placeholder for memory-driven code suggestions"""
-    return {"suggestions": ["Code suggestions pending implementation"]}
-
-
-def justify_self_editing_decision(filename, analysis_result, memory_context):
-    """Placeholder for self-editing justification"""
-    return {"justification": "Self-editing analysis pending implementation"}
+logger = logging.getLogger(__name__)
 
 
 class AetherraAgent:
-    """Manages autonomous behavior, pattern detection, and long-term goals"""
+    """
+    Enhanced Aetherra Agent for interpreter functionality
+    Manages autonomous behavior, code execution, and AI interactions
+    """
 
-    def __init__(self, memory, functions, command_history):
-        self.memory = memory
-        self.functions = functions
-        self.command_history = command_history
+    def __init__(self, memory=None, functions=None, command_history=None):
+        """Initialize the Aetherra Agent"""
+        self.memory = memory or []
+        self.functions = functions or {}
+        self.command_history = command_history or []
 
-    def detect_memory_patterns(self):
-        """Detect patterns in stored memories and suggest behaviors"""
-        if not self.memory.memory:
-            return "[Pattern Detection] No memories to analyze"
+        # Agent state
+        self.is_active = True
+        self.current_task = None
+        self.execution_context = {}
 
-        # Get all memories with metadata
-        memories = self.memory.memory
+        # AI Integration
+        self.ai_providers = {}
+        self.current_model = "gpt-4o"
 
-        # Analyze tag patterns
-        tag_frequency = {}
-        category_frequency = {}
+        # Performance tracking
+        self.execution_stats = {
+            "commands_executed": 0,
+            "errors_encountered": 0,
+            "successful_completions": 0,
+            "start_time": datetime.now(),
+        }
 
-        for mem in memories:
-            # Count tag frequencies
-            for tag in mem.get("tags", []):
-                tag_frequency[tag] = tag_frequency.get(tag, 0) + 1
+    async def execute_command(
+        self, command: str, context: Dict = None
+    ) -> Dict[str, Any]:
+        """Execute a command with AI assistance"""
+        try:
+            self.execution_stats["commands_executed"] += 1
 
-            # Count category frequencies
-            category = mem.get("category", "general")
-            category_frequency[category] = category_frequency.get(category, 0) + 1
+            # Log command execution
+            logger.info(f"🤖 Executing command: {command}")
 
-        # Generate pattern analysis
+            # Prepare execution context
+            exec_context = {
+                "command": command,
+                "timestamp": datetime.now().isoformat(),
+                "context": context or {},
+                "agent_state": self.get_agent_state(),
+            }
+
+            # Execute command logic
+            result = await self._process_command(command, exec_context)
+
+            # Store in memory
+            self._store_execution_memory(command, result, exec_context)
+
+            self.execution_stats["successful_completions"] += 1
+            return result
+
+        except Exception as e:
+            self.execution_stats["errors_encountered"] += 1
+            logger.error(f"❌ Command execution failed: {e}")
+            return {
+                "status": "error",
+                "error": str(e),
+                "command": command,
+                "timestamp": datetime.now().isoformat(),
+            }
+
+    async def _process_command(self, command: str, context: Dict) -> Dict[str, Any]:
+        """Process the actual command execution"""
+        # This is where the main command processing logic would go
+        # For now, return a basic response structure
+
+        return {
+            "status": "success",
+            "command": command,
+            "result": f"Command '{command}' processed successfully",
+            "timestamp": datetime.now().isoformat(),
+            "context": context,
+        }
+
+    def get_agent_state(self) -> Dict[str, Any]:
+        """Get current agent state"""
+        return {
+            "is_active": self.is_active,
+            "current_task": self.current_task,
+            "memory_count": len(self.memory) if isinstance(self.memory, list) else 0,
+            "function_count": len(self.functions),
+            "execution_stats": self.execution_stats.copy(),
+        }
+
+    def _store_execution_memory(self, command: str, result: Dict, context: Dict):
+        """Store execution details in memory"""
+        try:
+            memory_entry = {
+                "type": "command_execution",
+                "command": command,
+                "result": result,
+                "context": context,
+                "timestamp": datetime.now().isoformat(),
+                "agent_id": id(self),
+            }
+
+            # Store in memory system
+            if hasattr(self.memory, "store"):
+                self.memory.store(memory_entry)
+            elif isinstance(self.memory, list):
+                self.memory.append(memory_entry)
+
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to store execution memory: {e}")
+
+    def detect_patterns(self) -> List[Dict[str, Any]]:
+        """Detect patterns in execution history"""
         patterns = []
 
-        # Most frequent tags
-        if tag_frequency:
-            top_tags = sorted(tag_frequency.items(), key=lambda x: x[1], reverse=True)[
-                :3
-            ]
-            patterns.append(
-                f"Most frequent tags: {', '.join([f'{tag}({count})' for tag, count in top_tags])}"
-            )
+        try:
+            # Analyze command frequency
+            command_freq = {}
+            for entry in self.memory if isinstance(self.memory, list) else []:
+                if isinstance(entry, dict) and "command" in entry:
+                    cmd = entry["command"]
+                    command_freq[cmd] = command_freq.get(cmd, 0) + 1
 
-        # Dominant categories
-        if category_frequency:
-            top_categories = sorted(
-                category_frequency.items(), key=lambda x: x[1], reverse=True
-            )[:3]
-            patterns.append(
-                f"Dominant categories: {', '.join([f'{cat}({count})' for cat, count in top_categories])}"
-            )
+            # Find frequent patterns
+            for cmd, freq in command_freq.items():
+                if freq > 2:  # Commands used more than twice
+                    patterns.append(
+                        {
+                            "type": "frequent_command",
+                            "command": cmd,
+                            "frequency": freq,
+                            "pattern_strength": min(freq / 10.0, 1.0),
+                        }
+                    )
 
-        # AI pattern analysis
-        ai_analysis = analyze_memory_patterns(
-            memories, tag_frequency, category_frequency
+        except Exception as e:
+            logger.warning(f"⚠️ Pattern detection failed: {e}")
+
+        return patterns
+
+    async def suggest_next_action(self, current_context: Dict = None) -> Dict[str, Any]:
+        """Suggest next action based on patterns and context"""
+        try:
+            patterns = self.detect_patterns()
+            context = current_context or {}
+
+            suggestions = []
+
+            # Based on patterns
+            for pattern in patterns:
+                if pattern["type"] == "frequent_command":
+                    suggestions.append(
+                        {
+                            "action": f"Consider automating: {pattern['command']}",
+                            "reason": f"Used {pattern['frequency']} times",
+                            "priority": pattern["pattern_strength"],
+                        }
+                    )
+
+            # Based on current state
+            if self.execution_stats["errors_encountered"] > 0:
+                error_rate = self.execution_stats["errors_encountered"] / max(
+                    self.execution_stats["commands_executed"], 1
+                )
+                if error_rate > 0.1:  # More than 10% error rate
+                    suggestions.append(
+                        {
+                            "action": "Review and debug recent commands",
+                            "reason": f"High error rate: {error_rate:.1%}",
+                            "priority": 0.8,
+                        }
+                    )
+
+            return {
+                "suggestions": suggestions,
+                "context": context,
+                "timestamp": datetime.now().isoformat(),
+            }
+
+        except Exception as e:
+            logger.error(f"❌ Suggestion generation failed: {e}")
+            return {"suggestions": [], "error": str(e)}
+
+    def set_ai_provider(self, provider_name: str, provider_config: Dict):
+        """Set AI provider configuration"""
+        self.ai_providers[provider_name] = provider_config
+
+    def get_execution_summary(self) -> Dict[str, Any]:
+        """Get execution summary and statistics"""
+        uptime = datetime.now() - self.execution_stats["start_time"]
+
+        return {
+            "agent_id": id(self),
+            "uptime_seconds": uptime.total_seconds(),
+            "commands_executed": self.execution_stats["commands_executed"],
+            "successful_completions": self.execution_stats["successful_completions"],
+            "errors_encountered": self.execution_stats["errors_encountered"],
+            "success_rate": (
+                self.execution_stats["successful_completions"]
+                / max(self.execution_stats["commands_executed"], 1)
+            ),
+            "memory_entries": len(self.memory) if isinstance(self.memory, list) else 0,
+            "available_functions": len(self.functions),
+            "current_model": self.current_model,
+            "is_active": self.is_active,
+        }
+
+    async def shutdown(self):
+        """Graceful shutdown of the agent"""
+        logger.info("🔄 Shutting down Aetherra Agent...")
+        self.is_active = False
+
+        # Save final state
+        final_summary = self.get_execution_summary()
+        logger.info(
+            f"📊 Final execution summary: {json.dumps(final_summary, indent=2)}"
         )
 
-        result = "[Pattern Detection] Analysis Results:\n"
-        for pattern in patterns:
-            result += f"  📊 {pattern}\n"
-        result += f"\n[AI Pattern Analysis]\n{ai_analysis}"
+        return final_summary
 
-        return result
 
-    def analyze_behavior(self):
-        """Analyze user behavior patterns and suggest optimizations"""
-        # Analyze command usage patterns
-        command_types = {}
-        for cmd in self.command_history:
-            cmd_type = cmd["command_type"]
-            command_types[cmd_type] = command_types.get(cmd_type, 0) + 1
+# Compatibility aliases and helper functions
+class InterpreterAgent(AetherraAgent):
+    """Alias for backward compatibility"""
 
-        # Get recent command patterns
-        recent_commands = [cmd["command"] for cmd in self.command_history[-10:]]
+    pass
 
-        # Get all memories
-        all_memories = self.memory.recall()
 
-        # AI behavior analysis
-        behavior_analysis = analyze_user_behavior(
-            all_memories,
-            {
-                "command_types": command_types,
-                "recent_commands": recent_commands,
-                "functions": self.functions.functions,
-                "command_count": len(self.command_history),
-            },
-        )
+def create_agent(memory=None, functions=None, command_history=None) -> AetherraAgent:
+    """Factory function to create an Aetherra Agent"""
+    return AetherraAgent(memory, functions, command_history)
 
-        result = "[Behavior Analysis]\n"
-        result += f"📈 Total memories: {len(all_memories)}\n"
-        result += f"🔧 Defined functions: {self.functions.get_function_count()}\n"
-        result += f"📊 Command patterns: {dict(sorted(command_types.items(), key=lambda x: x[1], reverse=True))}\n"
-        result += f"\n[AI Behavior Analysis]\n{behavior_analysis}"
 
-        return result
-
-    def suggest_evolution(self, context=""):
-        """Suggest system evolution based on usage patterns"""
-        memory_summary = self.memory.get_memory_summary()
-        memory_summary["recent_memories"] = self.memory.recall()[
-            -5:
-        ]  # Add recent memories
-        function_count = self.functions.get_function_count()
-
-        evolution_suggestions = suggest_system_evolution(
-            memory_summary, function_count, context
-        )
-
-        result = "[System Evolution Suggestions]\n"
-        result += f"🧠 System maturity: {memory_summary['total_memories']} memories, {function_count} functions\n"
-        result += f"📊 Knowledge areas: {', '.join(memory_summary['categories'])}\n"
-        result += f"\n[AI Evolution Analysis]\n{evolution_suggestions}"
-
-        return result
-
-    def adaptive_suggest(self, context=""):
-        """Provide context-aware suggestions based on current state"""
-        recent_memories = self.memory.recall()[-3:] if self.memory.recall() else []
-        available_tags = self.memory.get_tags()
-        function_names = self.functions.get_function_names()
-
-        suggestions = provide_adaptive_suggestions(
-            context, recent_memories, available_tags, function_names
-        )
-
-        result = "[Adaptive Suggestions]\n"
-        if context:
-            result += f"🎯 Context: {context}\n"
-        result += f"📚 Recent activity: {len(recent_memories)} recent memories\n"
-        result += f"🔧 Available tools: {len(function_names)} functions, {len(available_tags)} tag categories\n"
-        result += f"\n[AI Adaptive Suggestions]\n{suggestions}"
-
-        return result
-
-    def get_command_type(self, line):
-        """Categorize command type for pattern analysis"""
-        if line.startswith("remember"):
-            return "memory_store"
-        elif line.startswith("recall"):
-            return "memory_recall"
-        elif line.startswith("reflect"):
-            return "ai_reflection"
-        elif line.startswith("define"):
-            return "function_define"
-        elif line.startswith("call"):
-            return "function_call"
-        elif line.startswith("memory"):
-            return "memory_management"
-        elif line.startswith("learn"):
-            return "learning"
-        elif line.startswith("assistant"):
-            return "ai_query"
-        elif (
-            line.startswith("detect")
-            or line.startswith("analyze")
-            or line.startswith("suggest")
-        ):
-            return "pattern_analysis"
-        elif (
-            line.startswith("load")
-            or line.startswith("refactor")
-            or line.startswith("apply")
-            or line.startswith("backup")
-            or line.startswith("diff")
-        ):
-            return "self_editing"
-        else:
-            return "other"
-
-    def suggest_self_editing_opportunities(self):
-        """Analyze memory patterns to suggest proactive self-editing opportunities"""
-        if not self.memory.memory:
-            return "[Self-Edit Suggestions] No memory patterns to analyze"
-
-        # Get memories related to errors, patterns, and code issues
-        error_memories = self.memory.recall(tags=["error", "bug", "issue"])
-        pattern_memories = self.memory.recall(tags=["pattern", "recurring"])
-        code_memories = self.memory.recall(category="code_management")
-
-        # Combine for context
-        all_memories = error_memories + pattern_memories + code_memories
-
-        if not all_memories:
-            return "[Self-Edit Suggestions] No relevant memory patterns found"
-
-        # Use AI to analyze patterns and suggest self-editing
-        pattern_summary = self.memory.get_memory_stats()
-        suggestions_data = memory_driven_code_suggestion(all_memories, pattern_summary)
-        suggestions = str(suggestions_data)  # Convert to string for slicing
-
-        # Store this analysis for future reference
-        self.memory.remember(
-            f"Self-editing analysis: {suggestions[:100]}...",
-            tags=["self_edit_suggestion", "proactive_analysis"],
-            category="system_evolution",
-        )
-
-        return f"[Self-Edit Opportunities] {suggestions}"
-
-    def justify_self_editing(self, filename, analysis_result):
-        """Provide memory-driven justification for self-editing a specific file"""
-        relevant_memories = self.memory.recall(
-            tags=["code_analysis", "error", "pattern"]
-        )
-        memory_context = "\n".join([m["text"] for m in relevant_memories[-5:]])
-
-        justification_data = justify_self_editing_decision(
-            filename, analysis_result, memory_context
-        )
-        justification = str(justification_data)  # Convert to string for slicing
-
-        # Remember this justification
-        self.memory.remember(
-            f"Justified self-editing {filename}: {justification[:100]}...",
-            tags=["justification", "self_editing", "decision"],
-            category="code_management",
-        )
-
-        return justification
+# Export main classes
+__all__ = ["AetherraAgent", "InterpreterAgent", "create_agent"]

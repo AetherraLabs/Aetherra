@@ -1,0 +1,7 @@
+{
+    "quantum_backend": "simulator",
+    "fidelity_mode": "adaptive",
+    "compression_threshold": 0.72,
+    "allow_observer_mutation": true,
+    "enable_branching": true
+}

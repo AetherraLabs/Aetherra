@@ -1,0 +1,45 @@
+# Aetherra GUI Python Deprecation List
+
+The following files/folders are being deprecated in favor of the new React/Vite frontend:
+
+- panels/
+- plugins/
+- web/
+- web_templates/
+- utils/
+- managers/
+- core/
+- editors/
+- analytics/
+- intelligence/
+- config/
+- src/ (except for AetherraGUI.jsx, if present)
+- all __init__.py in GUI
+- aetherra_main_window.py
+- aetherra_main_window_hybrid.py
+- aetherra_neural_interface.py
+- analytics_dashboard.py
+- analytics_dashboard_minimal.py
+- clean_intelligence_window.py
+- context_summary_line.py
+- data_manager.py
+- hybrid_window.py
+- intelligence_panel_manager.py
+- launch_aetherra_gui.py
+- lyrixa_connector.py
+- main.py
+- mini_lyrixa_avatar.py
+- panel_initializer.py
+- plugin_editor_controller.py
+- real_agent_manager.py
+- real_confidence_manager.py
+- real_emotional_feedback_manager.py
+- real_goal_manager.py
+- real_plugin_manager.py
+- self_extending_panel_system.py
+- test_aetherra_gui.html
+- web_bridge.py
+- web_interface_server.py
+- window_factory.py
+- __pycache__/
+- web_static/
