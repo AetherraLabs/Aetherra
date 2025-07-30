@@ -1,3 +1,8 @@
+# Minimal compatibility for file router
+def reflect_on_file(path):
+    print(f"[lyrixa_memory_engine] Reflected on memory file: {path}")
+
+
 """
 🧠 LyrixaMemoryEngine - Next-Generation Memory System
 ====================================================

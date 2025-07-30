@@ -1,0 +1,88 @@
+# Aetherra System Logger
+# Monitors key system events, memory activity, plugin usage, and performance metrics.
+# Logs are stored in memory and optionally persisted to disk for long-term analysis.
+
+goal: "Establish intelligent system logging for Aetherra runtime"
+
+# === Logger Initialization ===
+define log_stream as new_log_stream("system_logs")
+define log_buffer as []
+
+# === Event Triggers ===
+on event "plugin_executed":
+    log_entry: {
+        type: "plugin_execution",
+        plugin: event_data.plugin_name,
+        timestamp: now(),
+        status: event_data.status,
+        duration: event_data.execution_time
+    }
+    append log_entry to log_buffer
+
+on event "memory_updated":
+    log_entry: {
+        type: "memory_update",
+        key: event_data.memory_key,
+        update_type: event_data.change_type,
+        timestamp: now()
+    }
+    append log_entry to log_buffer
+
+on event "system_error":
+    log_entry: {
+        type: "error",
+        location: event_data.module,
+        error_message: event_data.message,
+        timestamp: now()
+    }
+    append log_entry to log_buffer
+    if severity(event_data.message) >= "critical":
+        alert("Critical system error logged")
+
+on event "goal_started":
+    log_entry: {
+        type: "goal_start",
+        goal: event_data.goal,
+        initiator: event_data.initiator,
+        timestamp: now()
+    }
+    append log_entry to log_buffer
+
+on event "goal_completed":
+    log_entry: {
+        type: "goal_complete",
+        goal: event_data.goal,
+        success: event_data.success,
+        timestamp: now()
+    }
+    append log_entry to log_buffer
+
+# === Scheduled Persistence ===
+every 5 minutes:
+    if log_buffer not empty:
+        write log_buffer to disk at "system/logs/log_{date(now())}.json"
+        clear log_buffer
+
+# === Reflection Utilities ===
+command: "show_recent_logs"
+    input: optional_filter
+    output: recent_entries
+
+    recent_entries: get_last_n_from("system_logs", 20)
+    if optional_filter exists:
+        recent_entries: filter recent_entries where entry.type == optional_filter
+
+    return recent_entries
+
+command: "search_logs"
+    input: search_term
+    output: matches
+
+    all_logs: read_all_logs_from("system/logs/")
+    matches: find all_logs where any value contains search_term
+    return matches
+
+# === Memory Summary Hook ===
+on memory event "daily_reflection":
+    summarize "system_logs" into summary
+    remember summary as "daily_system_log_summary_{date(now())}"

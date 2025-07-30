@@ -1,0 +1,347 @@
+[
+  {
+    "file": "aetherra_main_window_hybrid.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\gui\\aetherra_main_window_hybrid.py",
+    "type": "gui"
+  },
+  {
+    "file": "aetherra_neural_interface.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\gui\\aetherra_neural_interface.py",
+    "type": "gui"
+  },
+  {
+    "file": "gui_generator.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\gui\\gui_generator.py",
+    "type": "gui"
+  },
+  {
+    "file": "interface_bridge.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\gui\\interface_bridge.py",
+    "type": "gui"
+  },
+  {
+    "file": "launch_aetherra_gui.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\gui\\launch_aetherra_gui.py",
+    "type": "gui"
+  },
+  {
+    "file": "main_dashboard.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\gui\\main_dashboard.py",
+    "type": "gui"
+  },
+  {
+    "file": "qfac_dashboard.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\gui\\qfac_dashboard.py",
+    "type": "gui"
+  },
+  {
+    "file": "quantum_web_dashboard.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\gui\\quantum_web_dashboard.py",
+    "type": "gui"
+  },
+  {
+    "file": "web_interface_server.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\gui\\web_interface_server.py",
+    "type": "gui"
+  },
+  {
+    "file": "web_interface_server_1.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\gui\\web_interface_server_1.py",
+    "type": "gui"
+  },
+  {
+    "file": "emotional_intelligence.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa_plugins\\emotional_intelligence.py",
+    "type": "lyrixa_plugins"
+  },
+  {
+    "file": "emotional_intelligence_integration.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa_plugins\\emotional_intelligence_integration.py",
+    "type": "lyrixa_plugins"
+  },
+  {
+    "file": "emotion_detector.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa_plugins\\emotion_detector.py",
+    "type": "lyrixa_plugins"
+  },
+  {
+    "file": "mini_lyrixa_avatar.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa_plugins\\mini_lyrixa_avatar.py",
+    "type": "lyrixa_plugins"
+  },
+  {
+    "file": "compression.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\compression.py",
+    "type": "memory"
+  },
+  {
+    "file": "compression_analyzer.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\compression_analyzer.py",
+    "type": "memory"
+  },
+  {
+    "file": "compression_metrics.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\compression_metrics.py",
+    "type": "memory"
+  },
+  {
+    "file": "episodic_timeline.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\episodic_timeline.py",
+    "type": "memory"
+  },
+  {
+    "file": "fractal_encoder.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\fractal_encoder.py",
+    "type": "memory"
+  },
+  {
+    "file": "fractal_hierarchies.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\fractal_hierarchies.py",
+    "type": "memory"
+  },
+  {
+    "file": "fractal_replay_engine.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\fractal_replay_engine.py",
+    "type": "memory"
+  },
+  {
+    "file": "lyrixa_memory_engine.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\lyrixa_memory_engine.py",
+    "type": "memory"
+  },
+  {
+    "file": "memory_core.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\system\\memory_core.py",
+    "type": "system"
+  },
+  {
+    "file": "observer_effects.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\observer_effects.py",
+    "type": "memory"
+  },
+  {
+    "file": "observer_effect_simulator.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\observer_effect_simulator.py",
+    "type": "memory"
+  },
+  {
+    "file": "optimized_memory_engine.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\optimized_memory_engine.py",
+    "type": "memory"
+  },
+  {
+    "file": "agent_1.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\agent_1.py",
+    "type": "plugins"
+  },
+  {
+    "file": "agent_base.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\agent_base.py",
+    "type": "plugins"
+  },
+  {
+    "file": "agent_bridge.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\agent_bridge.py",
+    "type": "plugins"
+  },
+  {
+    "file": "agent_discovery_and_integration.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\agent_discovery_and_integration.py",
+    "type": "plugins"
+  },
+  {
+    "file": "agent_orchestrator.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\agent_orchestrator.py",
+    "type": "plugins"
+  },
+  {
+    "file": "agent_orchestrator_1.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\agent_orchestrator_1.py",
+    "type": "plugins"
+  },
+  {
+    "file": "agent_plugin.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\agent_plugin.py",
+    "type": "plugins"
+  },
+  {
+    "file": "ai_plugin_generator_v2.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\ai_plugin_generator_v2.py",
+    "type": "plugins"
+  },
+  {
+    "file": "collaborative_multi_agent_system.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\collaborative_multi_agent_system.py",
+    "type": "plugins"
+  },
+  {
+    "file": "comprehensive_agent_discovery.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\comprehensive_agent_discovery.py",
+    "type": "plugins"
+  },
+  {
+    "file": "curiosity_agent_8.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\curiosity_agent_8.py",
+    "type": "plugins"
+  },
+  {
+    "file": "enhanced_plugin_manager.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\enhanced_plugin_manager.py",
+    "type": "plugins"
+  },
+  {
+    "file": "lyrixa_agent_integration.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\lyrixa_agent_integration.py",
+    "type": "plugins"
+  },
+  {
+    "file": "memory_aware_plugin_router.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\memory_aware_plugin_router.py",
+    "type": "plugins"
+  },
+  {
+    "file": "memory_plugin_bridge.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\memory_plugin_bridge.py",
+    "type": "plugins"
+  },
+  {
+    "file": "multi_agent_system.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\multi_agent_system.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_agent.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_agent.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_analytics.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_analytics.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_api.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_api.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_chain_executor.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_chain_executor.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_creation_wizard.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_creation_wizard.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_discovery.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_discovery.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_generator_plugin.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_generator_plugin.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_lifecycle_memory.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_lifecycle_memory.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_manager.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_manager.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_quality_control.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_quality_control.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_registry.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_registry.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_sdk.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_sdk.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_state_memory.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_state_memory.py",
+    "type": "plugins"
+  },
+  {
+    "file": "plugin_system.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\plugin_system.py",
+    "type": "plugins"
+  },
+  {
+    "file": "real_agent_discovery.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\real_agent_discovery.py",
+    "type": "plugins"
+  },
+  {
+    "file": "reflector.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\reflector.py",
+    "type": "plugins"
+  },
+  {
+    "file": "sample_plugin_1.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\sample_plugin_1.py",
+    "type": "plugins"
+  },
+  {
+    "file": "sample_plugin_2.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\sample_plugin_2.py",
+    "type": "plugins"
+  },
+  {
+    "file": "smart_agent_migrator.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\smart_agent_migrator.py",
+    "type": "plugins"
+  },
+  {
+    "file": "coretools.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\system\\coretools.py",
+    "type": "system"
+  },
+  {
+    "file": "core_agent.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\system\\core_agent.py",
+    "type": "system"
+  },
+  {
+    "file": "ethics_score_tracker.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\system\\ethics_score_tracker.py",
+    "type": "system"
+  },
+  {
+    "file": "lightweight_memory_core.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\system\\lightweight_memory_core.py",
+    "type": "system"
+  },
+  {
+    "file": "memory_core.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\system\\memory_core.py",
+    "type": "system"
+  },
+  {
+    "file": "memory_core_adapter.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\system\\memory_core_adapter.py",
+    "type": "system"
+  },
+  {
+    "file": "world_class_memory_core.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\system\\world_class_memory_core.py",
+    "type": "system"
+  },
+  {
+    "file": "episodic_timeline.py",
+    "to": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\memory\\episodic_timeline.py",
+    "type": "memory"
+  }
+]
