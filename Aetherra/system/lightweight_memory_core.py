@@ -1,43 +1,21 @@
-#!/usr/bin/env python3
 """
-Lightweight World-Class Memory Core
-===================================
-🧠 Interactive Memory Management with Core Features
-🎯 Focus on: Search, Goal Relevance, Memory Injection
+DEPRECATED: lightweight_memory_core.py is now an adapter for QuantumEnhancedMemoryEngine.
+All memory operations are delegated to the canonical engine.
 """
 
-import os
-import json
-import time
-import random
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from pathlib import Path
-
-try:
-    from PySide6.QtWidgets import (
-        QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QTreeWidget, QTreeWidgetItem,
-        QPushButton, QLabel, QLineEdit, QTextEdit, QComboBox, QSpinBox,
-        QGroupBox, QTabWidget, QListWidget, QListWidgetItem, QProgressBar,
-        QMessageBox, QDialog, QDialogButtonBox, QSlider, QCheckBox,
-        QFrame, QScrollArea, QTableWidget, QTableWidgetItem, QHeaderView,
-        QApplication, QMenu, QFormLayout
-    )
-    from PySide6.QtCore import Qt, QTimer, Signal
-    from PySide6.QtGui import QFont, QColor, QIcon, QAction
-    HAS_PYSIDE6 = True
-except ImportError:
-    HAS_PYSIDE6 = False
-    print("⚠️  PySide6 not available - running in console mode")
+from ..memory.QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
 
 
-@dataclass
-class Memory:
-    """Enhanced memory entry with clustering and context"""
-    id: str
-    content: str
-    timestamp: datetime
+class LightweightMemoryCore:
+    def __init__(self, *args, **kwargs):
+        self.engine = QuantumEnhancedMemoryEngine()
+
+    def store(self, memory_entry: dict) -> dict:
+        return self.engine.store(memory_entry)
+
+    def retrieve(self, query: str, context: dict = None) -> dict:
+        return self.engine.retrieve(query, context)
+
     memory_type: str = "general"  # general, goal, insight, experience, knowledge
     importance: float = 0.5  # 0.0 to 1.0
     confidence: float = 0.8  # 0.0 to 1.0
@@ -52,6 +30,7 @@ class Memory:
 @dataclass
 class Goal:
     """Goal for memory relevance"""
+
     id: str
     description: str
     priority: float = 0.5
@@ -77,49 +56,49 @@ class MemoryCore:
                 "memory_type": "knowledge",
                 "importance": 0.8,
                 "tags": ["health", "cognitive", "exercise"],
-                "timestamp": datetime.now() - timedelta(days=2)
+                "timestamp": datetime.now() - timedelta(days=2),
             },
             {
                 "content": "Goal: Complete the AI memory system by end of week",
                 "memory_type": "goal",
                 "importance": 0.9,
                 "tags": ["work", "ai", "deadline"],
-                "timestamp": datetime.now() - timedelta(days=1)
+                "timestamp": datetime.now() - timedelta(days=1),
             },
             {
                 "content": "Had insight about using graph visualization for memory connections",
                 "memory_type": "insight",
                 "importance": 0.7,
                 "tags": ["visualization", "memory", "graph"],
-                "timestamp": datetime.now() - timedelta(hours=3)
+                "timestamp": datetime.now() - timedelta(hours=3),
             },
             {
                 "content": "Experienced breakthrough in understanding memory clustering algorithms",
                 "memory_type": "experience",
                 "importance": 0.6,
                 "tags": ["algorithm", "clustering", "breakthrough"],
-                "timestamp": datetime.now() - timedelta(hours=1)
+                "timestamp": datetime.now() - timedelta(hours=1),
             },
             {
                 "content": "Remember to follow up with team about project timeline",
                 "memory_type": "general",
                 "importance": 0.5,
                 "tags": ["team", "timeline", "followup"],
-                "timestamp": datetime.now() - timedelta(minutes=30)
-            }
+                "timestamp": datetime.now() - timedelta(minutes=30),
+            },
         ]
 
         # Create memory objects
         for i, mem_data in enumerate(sample_memories):
             memory = Memory(
-                id=f"mem_{i+1}",
+                id=f"mem_{i + 1}",
                 content=mem_data["content"],
                 memory_type=mem_data["memory_type"],
                 importance=mem_data["importance"],
                 tags=mem_data["tags"],
                 timestamp=mem_data["timestamp"],
                 confidence=0.8,
-                access_count=random.randint(0, 10)
+                access_count=random.randint(0, 10),
             )
             self.memories[memory.id] = memory
 
@@ -129,17 +108,19 @@ class MemoryCore:
                 id="goal_1",
                 description="Complete AI memory system implementation",
                 priority=0.9,
-                status="active"
+                status="active",
             ),
             Goal(
                 id="goal_2",
                 description="Improve memory clustering algorithms",
                 priority=0.7,
-                status="active"
-            )
+                status="active",
+            ),
         ]
 
-    def search_memories(self, query: str, filters: Dict[str, Any] = None) -> List[Memory]:
+    def search_memories(
+        self, query: str, filters: Dict[str, Any] = None
+    ) -> List[Memory]:
         """Search memories with filters"""
         results = []
 
@@ -191,7 +172,7 @@ class MemoryCore:
             target_goal = max(
                 [g for g in self.current_goals if g.status == "active"],
                 key=lambda g: g.priority,
-                default=None
+                default=None,
             )
 
         if not target_goal:
@@ -214,7 +195,10 @@ class MemoryCore:
         relevance = 0.0
 
         # Direct goal linking
-        if "linked_goals" in memory.context and goal.id in memory.context["linked_goals"]:
+        if (
+            "linked_goals" in memory.context
+            and goal.id in memory.context["linked_goals"]
+        ):
             relevance += 0.5
 
         # Keyword matching
@@ -231,13 +215,19 @@ class MemoryCore:
             relevance += 0.1
 
         # Importance weighting
-        relevance *= (0.5 + memory.importance * 0.5)
+        relevance *= 0.5 + memory.importance * 0.5
 
         return min(relevance, 1.0)
 
-    def inject_memory(self, content: str, memory_type: str = "general",
-                     importance: float = 0.5, confidence: float = 0.8,
-                     tags: List[str] = None, auto_link: bool = True) -> Memory:
+    def inject_memory(
+        self,
+        content: str,
+        memory_type: str = "general",
+        importance: float = 0.5,
+        confidence: float = 0.8,
+        tags: List[str] = None,
+        auto_link: bool = True,
+    ) -> Memory:
         """Inject a new memory"""
         memory_id = f"mem_{len(self.memories) + 1}"
 
@@ -249,7 +239,7 @@ class MemoryCore:
             confidence=confidence,
             tags=tags or [],
             timestamp=datetime.now(),
-            access_count=0
+            access_count=0,
         )
 
         self.memories[memory_id] = memory
@@ -282,7 +272,9 @@ class MemoryCore:
                 memory_keywords = memory.content.lower().split()
 
                 if any(keyword in memory_keywords for keyword in goal_keywords):
-                    memory.context["linked_goals"] = memory.context.get("linked_goals", [])
+                    memory.context["linked_goals"] = memory.context.get(
+                        "linked_goals", []
+                    )
                     memory.context["linked_goals"].append(goal.id)
 
     def get_memory_stats(self) -> Dict[str, Any]:
@@ -310,11 +302,14 @@ class MemoryCore:
             "type_distribution": type_counts,
             "avg_importance": avg_importance,
             "avg_confidence": avg_confidence,
-            "active_goals": len([g for g in self.current_goals if g.status == "active"])
+            "active_goals": len(
+                [g for g in self.current_goals if g.status == "active"]
+            ),
         }
 
 
 if HAS_PYSIDE6:
+
     class MemorySearchWidget(QWidget):
         """Advanced memory search widget"""
 
@@ -351,7 +346,9 @@ if HAS_PYSIDE6:
 
             # Memory type filter
             self.type_filter = QComboBox()
-            self.type_filter.addItems(["All Types", "General", "Goal", "Insight", "Experience", "Knowledge"])
+            self.type_filter.addItems(
+                ["All Types", "General", "Goal", "Insight", "Experience", "Knowledge"]
+            )
 
             # Importance filter
             self.importance_filter = QSlider(Qt.Horizontal)
@@ -360,7 +357,9 @@ if HAS_PYSIDE6:
 
             # Time filter
             self.time_filter = QComboBox()
-            self.time_filter.addItems(["All Time", "Last Hour", "Last Day", "Last Week", "Last Month"])
+            self.time_filter.addItems(
+                ["All Time", "Last Hour", "Last Day", "Last Week", "Last Month"]
+            )
 
             filters_layout.addWidget(QLabel("Type:"))
             filters_layout.addWidget(self.type_filter)
@@ -389,7 +388,7 @@ if HAS_PYSIDE6:
             filters = {
                 "type": self.type_filter.currentText(),
                 "importance": self.importance_filter.value() / 100.0,
-                "time": self.time_filter.currentText()
+                "time": self.time_filter.currentText(),
             }
 
             results = self.memory_core.search_memories(query, filters)
@@ -408,7 +407,7 @@ if HAS_PYSIDE6:
                     "goal": "🎯",
                     "insight": "💡",
                     "experience": "🔥",
-                    "knowledge": "📚"
+                    "knowledge": "📚",
                 }.get(memory.memory_type, "💭")
 
                 item.setText(f"{type_icon} {memory.content[:80]}...")
@@ -423,7 +422,6 @@ if HAS_PYSIDE6:
             memory = item.data(Qt.UserRole)
             if memory:
                 self.memory_selected.emit(memory)
-
 
     class MemoryInjectionDialog(QDialog):
         """Dialog for injecting new memories"""
@@ -455,7 +453,9 @@ if HAS_PYSIDE6:
             props_layout = QFormLayout(props_group)
 
             self.type_combo = QComboBox()
-            self.type_combo.addItems(["general", "goal", "insight", "experience", "knowledge"])
+            self.type_combo.addItems(
+                ["general", "goal", "insight", "experience", "knowledge"]
+            )
 
             self.importance_slider = QSlider(Qt.Horizontal)
             self.importance_slider.setRange(0, 100)
@@ -484,9 +484,12 @@ if HAS_PYSIDE6:
                 "content": self.content_input.toPlainText(),
                 "memory_type": self.type_combo.currentText(),
                 "importance": self.importance_slider.value() / 100.0,
-                "tags": [tag.strip() for tag in self.tags_input.text().split(",") if tag.strip()]
+                "tags": [
+                    tag.strip()
+                    for tag in self.tags_input.text().split(",")
+                    if tag.strip()
+                ],
             }
-
 
     class LightweightMemoryCore(QWidget):
         """Lightweight memory management system"""
@@ -504,10 +507,14 @@ if HAS_PYSIDE6:
             # Header
             header_layout = QHBoxLayout()
             title_label = QLabel("🧠 World-Class Memory Core")
-            title_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #2E8B57;")
+            title_label.setStyleSheet(
+                "font-size: 18px; font-weight: bold; color: #2E8B57;"
+            )
 
             stats = self.memory_core.get_memory_stats()
-            self.stats_label = QLabel(f"📊 {stats['total']} memories • {stats['active_goals']} active goals")
+            self.stats_label = QLabel(
+                f"📊 {stats['total']} memories • {stats['active_goals']} active goals"
+            )
 
             header_layout.addWidget(title_label)
             header_layout.addStretch()
@@ -569,9 +576,11 @@ if HAS_PYSIDE6:
                     content=data["content"],
                     memory_type=data["memory_type"],
                     importance=data["importance"],
-                    tags=data["tags"]
+                    tags=data["tags"],
                 )
-                self.status_label.setText(f"✅ Memory injected: {memory.content[:50]}...")
+                self.status_label.setText(
+                    f"✅ Memory injected: {memory.content[:50]}..."
+                )
                 self.update_stats()
 
         def show_relevant_memories(self):
@@ -579,17 +588,24 @@ if HAS_PYSIDE6:
             relevant_memories = self.memory_core.get_relevant_memories()
 
             if not relevant_memories:
-                QMessageBox.information(self, "No Relevant Memories",
-                                      "No memories found relevant to current goals.")
+                QMessageBox.information(
+                    self,
+                    "No Relevant Memories",
+                    "No memories found relevant to current goals.",
+                )
                 return
 
             self.search_widget.update_results(relevant_memories)
             self.tabs.setCurrentIndex(0)  # Switch to search tab
 
-            goal = next((g for g in self.memory_core.current_goals
-                        if g.status == "active"), None)
+            goal = next(
+                (g for g in self.memory_core.current_goals if g.status == "active"),
+                None,
+            )
             if goal:
-                self.status_label.setText(f"🎯 Showing {len(relevant_memories)} memories relevant to: {goal.description}")
+                self.status_label.setText(
+                    f"🎯 Showing {len(relevant_memories)} memories relevant to: {goal.description}"
+                )
 
         def on_memory_selected(self, memory: Memory):
             """Handle memory selection"""
@@ -605,10 +621,10 @@ Type: {memory.memory_type.title()}
 Content: {memory.content}
 Importance: {memory.importance:.1%}
 Confidence: {memory.confidence:.1%}
-Created: {memory.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
-Last Accessed: {memory.last_accessed.strftime('%Y-%m-%d %H:%M:%S') if memory.last_accessed else 'Never'}
+Created: {memory.timestamp.strftime("%Y-%m-%d %H:%M:%S")}
+Last Accessed: {memory.last_accessed.strftime("%Y-%m-%d %H:%M:%S") if memory.last_accessed else "Never"}
 Access Count: {memory.access_count}
-Tags: {', '.join(memory.tags) if memory.tags else 'None'}
+Tags: {", ".join(memory.tags) if memory.tags else "None"}
 
 Connected Memories: {len(memory.connections)}
 {chr(10).join([f"  • {conn_id}" for conn_id in memory.connections[:5]])}
@@ -627,24 +643,48 @@ Relevance Score: {memory.relevance_score:.2f}
 📊 Memory Analytics
 ===================
 
-Total Memories: {stats['total']}
-Active Goals: {stats['active_goals']}
-Average Importance: {stats['avg_importance']:.1%}
-Average Confidence: {stats['avg_confidence']:.1%}
+Total Memories: {stats["total"]}
+Active Goals: {stats["active_goals"]}
+Average Importance: {stats["avg_importance"]:.1%}
+Average Confidence: {stats["avg_confidence"]:.1%}
 
 Memory Type Distribution:
-{chr(10).join([f"  {mtype.title()}: {count} ({count/stats['total']:.1%})"
-              for mtype, count in stats['type_distribution'].items()])}
+{
+                chr(10).join(
+                    [
+                        f"  {mtype.title()}: {count} ({count / stats['total']:.1%})"
+                        for mtype, count in stats["type_distribution"].items()
+                    ]
+                )
+            }
 
 Most Accessed Memories:
-{chr(10).join([f"  • {mem.content[:50]}... (accessed {mem.access_count} times)"
-              for mem in sorted(self.memory_core.memories.values(),
-                               key=lambda m: m.access_count, reverse=True)[:5]])}
+{
+                chr(10).join(
+                    [
+                        f"  • {mem.content[:50]}... (accessed {mem.access_count} times)"
+                        for mem in sorted(
+                            self.memory_core.memories.values(),
+                            key=lambda m: m.access_count,
+                            reverse=True,
+                        )[:5]
+                    ]
+                )
+            }
 
 Recent Memories:
-{chr(10).join([f"  • {mem.timestamp.strftime('%H:%M')} - {mem.content[:40]}..."
-              for mem in sorted(self.memory_core.memories.values(),
-                               key=lambda m: m.timestamp, reverse=True)[:5]])}
+{
+                chr(10).join(
+                    [
+                        f"  • {mem.timestamp.strftime('%H:%M')} - {mem.content[:40]}..."
+                        for mem in sorted(
+                            self.memory_core.memories.values(),
+                            key=lambda m: m.timestamp,
+                            reverse=True,
+                        )[:5]
+                    ]
+                )
+            }
 """
 
             self.analytics_widget.setPlainText(analytics_text)
@@ -652,7 +692,9 @@ Recent Memories:
         def update_stats(self):
             """Update statistics display"""
             stats = self.memory_core.get_memory_stats()
-            self.stats_label.setText(f"📊 {stats['total']} memories • {stats['active_goals']} active goals")
+            self.stats_label.setText(
+                f"📊 {stats['total']} memories • {stats['active_goals']} active goals"
+            )
             self.update_analytics()
 
 
@@ -685,11 +727,16 @@ def console_demo():
             relevant = core.get_relevant_memories()
             print(f"\n🎯 Found {len(relevant)} relevant memories:")
             for i, memory in enumerate(relevant, 1):
-                print(f"{i}. [Score: {memory.relevance_score:.2f}] {memory.content[:60]}...")
+                print(
+                    f"{i}. [Score: {memory.relevance_score:.2f}] {memory.content[:60]}..."
+                )
 
         elif choice == "3":
             content = input("Enter memory content: ")
-            memory_type = input("Enter type (general/goal/insight/experience/knowledge): ") or "general"
+            memory_type = (
+                input("Enter type (general/goal/insight/experience/knowledge): ")
+                or "general"
+            )
             importance = float(input("Enter importance (0.0-1.0): ") or "0.5")
             tags = input("Enter tags (comma-separated): ").split(",")
             tags = [tag.strip() for tag in tags if tag.strip()]
@@ -731,14 +778,17 @@ def main():
         window.show()
 
         # Show welcome message
-        QMessageBox.information(window, "🧠 World-Class Memory Core",
-                              "Welcome to the World-Class Memory Core!\n\n"
-                              "Features:\n"
-                              "🔍 Advanced memory search with filters\n"
-                              "🎯 Goal-relevant memory discovery\n"
-                              "💉 Memory injection with auto-linking\n"
-                              "📊 Comprehensive analytics\n\n"
-                              "Try 'Show Relevant to Goal' to see intelligent discovery!")
+        QMessageBox.information(
+            window,
+            "🧠 World-Class Memory Core",
+            "Welcome to the World-Class Memory Core!\n\n"
+            "Features:\n"
+            "🔍 Advanced memory search with filters\n"
+            "🎯 Goal-relevant memory discovery\n"
+            "💉 Memory injection with auto-linking\n"
+            "📊 Comprehensive analytics\n\n"
+            "Try 'Show Relevant to Goal' to see intelligent discovery!",
+        )
 
         app.exec()
     else:

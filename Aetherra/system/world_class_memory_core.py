@@ -1,43 +1,21 @@
-#!/usr/bin/env python3
 """
-World-Class Memory Core
-=======================
-🧠 Interactive Memory Management with Clustering and Context Linking
-🔍 Smart search, drill-down, and memory injection capabilities
-🎯 "Show most relevant memory to current goal" intelligence
+DEPRECATED: world_class_memory_core.py is now an adapter for QuantumEnhancedMemoryEngine.
+All memory operations are delegated to the canonical engine.
 """
 
-import os
-import json
-import time
-import math
-import random
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from pathlib import Path
-
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QTreeWidget, QTreeWidgetItem,
-    QPushButton, QLabel, QLineEdit, QTextEdit, QComboBox, QSpinBox,
-    QGroupBox, QTabWidget, QListWidget, QListWidgetItem, QProgressBar,
-    QMessageBox, QDialog, QDialogButtonBox, QSlider, QCheckBox,
-    QGraphicsView, QGraphicsScene, QGraphicsItem, QGraphicsEllipseItem,
-    QGraphicsLineItem, QGraphicsTextItem, QFrame, QScrollArea,
-    QTableWidget, QTableWidgetItem, QHeaderView, QApplication,
-    QGraphicsProxyWidget, QMenu
-)
-from PySide6.QtCore import Qt, QTimer, QThread, Signal, QPointF, QRectF
-from PySide6.QtGui import (
-    QFont, QColor, QPen, QBrush, QPainter, QPixmap, QIcon,
-    QLinearGradient, QRadialGradient, QPalette, QCursor, QAction
-)
+from ..memory.QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
 
 
-@dataclass
-class Memory:
-    """Enhanced memory entry with clustering and context"""
-    id: str
+class WorldClassMemoryCore:
+    def __init__(self, *args, **kwargs):
+        self.engine = QuantumEnhancedMemoryEngine()
+
+    def store(self, memory_entry: dict) -> dict:
+        return self.engine.store(memory_entry)
+
+    def retrieve(self, query: str, context: dict = None) -> dict:
+        return self.engine.retrieve(query, context)
+
     content: str
     timestamp: datetime
     memory_type: str = "general"  # general, goal, insight, experience, knowledge
@@ -56,6 +34,7 @@ class Memory:
 @dataclass
 class MemoryCluster:
     """Memory cluster for visualization"""
+
     id: str
     name: str
     center: Tuple[float, float]
@@ -68,6 +47,7 @@ class MemoryCluster:
 @dataclass
 class Goal:
     """Goal for memory relevance"""
+
     id: str
     description: str
     priority: float = 0.5
@@ -106,11 +86,11 @@ class MemoryGraphNode(QGraphicsEllipseItem):
         """Update node appearance based on memory properties"""
         # Color based on type
         type_colors = {
-            "general": "#87CEEB",    # Sky blue
-            "goal": "#FFD700",       # Gold
-            "insight": "#FF69B4",    # Hot pink
+            "general": "#87CEEB",  # Sky blue
+            "goal": "#FFD700",  # Gold
+            "insight": "#FF69B4",  # Hot pink
             "experience": "#90EE90",  # Light green
-            "knowledge": "#DDA0DD"   # Plum
+            "knowledge": "#DDA0DD",  # Plum
         }
 
         base_color = type_colors.get(self.memory.memory_type, "#87CEEB")
@@ -141,7 +121,12 @@ class MemoryGraphNode(QGraphicsEllipseItem):
 class MemoryConnection(QGraphicsLineItem):
     """Connection line between memory nodes"""
 
-    def __init__(self, start_node: MemoryGraphNode, end_node: MemoryGraphNode, strength: float = 0.5):
+    def __init__(
+        self,
+        start_node: MemoryGraphNode,
+        end_node: MemoryGraphNode,
+        strength: float = 0.5,
+    ):
         super().__init__()
         self.start_node = start_node
         self.end_node = end_node
@@ -181,7 +166,7 @@ class MemoryGraphView(QGraphicsView):
 
         # Memory nodes and connections
         self.memory_nodes = {}  # memory_id -> MemoryGraphNode
-        self.connections = []   # List of MemoryConnection
+        self.connections = []  # List of MemoryConnection
 
         # Layout parameters
         self.center_x = 0
@@ -195,7 +180,9 @@ class MemoryGraphView(QGraphicsView):
     def add_memory_node(self, memory: Memory):
         """Add a memory node to the graph"""
         # Calculate position (simple circular layout for now)
-        angle = len(self.memory_nodes) * (2 * math.pi / max(len(self.memory_nodes) + 1, 8))
+        angle = len(self.memory_nodes) * (
+            2 * math.pi / max(len(self.memory_nodes) + 1, 8)
+        )
         x = self.center_x + math.cos(angle) * self.radius_multiplier
         y = self.center_y + math.sin(angle) * self.radius_multiplier
 
@@ -238,8 +225,9 @@ class MemoryGraphView(QGraphicsView):
             cluster_radius = 80 + (cluster.size * 20)
 
             # Create cluster background
-            cluster_bg = QGraphicsEllipseItem(-cluster_radius, -cluster_radius,
-                                            cluster_radius * 2, cluster_radius * 2)
+            cluster_bg = QGraphicsEllipseItem(
+                -cluster_radius, -cluster_radius, cluster_radius * 2, cluster_radius * 2
+            )
             cluster_bg.setPos(cx, cy)
             cluster_bg.setBrush(QBrush(QColor(cluster.color).lighter(150)))
             cluster_bg.setPen(QPen(QColor(cluster.color), 2))
@@ -333,7 +321,9 @@ class MemorySearchWidget(QWidget):
 
         # Memory type filter
         self.type_filter = QComboBox()
-        self.type_filter.addItems(["All Types", "General", "Goal", "Insight", "Experience", "Knowledge"])
+        self.type_filter.addItems(
+            ["All Types", "General", "Goal", "Insight", "Experience", "Knowledge"]
+        )
 
         # Importance filter
         self.importance_filter = QSlider(Qt.Horizontal)
@@ -343,11 +333,15 @@ class MemorySearchWidget(QWidget):
 
         # Time filter
         self.time_filter = QComboBox()
-        self.time_filter.addItems(["All Time", "Last Hour", "Last Day", "Last Week", "Last Month"])
+        self.time_filter.addItems(
+            ["All Time", "Last Hour", "Last Day", "Last Week", "Last Month"]
+        )
 
         # Sort options
         self.sort_combo = QComboBox()
-        self.sort_combo.addItems(["Relevance", "Newest", "Oldest", "Most Important", "Most Accessed"])
+        self.sort_combo.addItems(
+            ["Relevance", "Newest", "Oldest", "Most Important", "Most Accessed"]
+        )
 
         filters_layout.addWidget(QLabel("Type:"))
         filters_layout.addWidget(self.type_filter)
@@ -384,7 +378,7 @@ class MemorySearchWidget(QWidget):
             "type": self.type_filter.currentText(),
             "importance": self.importance_filter.value() / 100.0,
             "time": self.time_filter.currentText(),
-            "sort": self.sort_combo.currentText()
+            "sort": self.sort_combo.currentText(),
         }
 
         self.search_performed.emit(query, filters)
@@ -402,7 +396,7 @@ class MemorySearchWidget(QWidget):
                 "goal": "🎯",
                 "insight": "💡",
                 "experience": "🔥",
-                "knowledge": "📚"
+                "knowledge": "📚",
             }.get(memory.memory_type, "💭")
 
             importance_stars = "⭐" * int(memory.importance * 5)
@@ -415,8 +409,8 @@ class MemorySearchWidget(QWidget):
 Type: {memory.memory_type.title()}
 Importance: {importance_stars}
 Confidence: {memory.confidence:.1%}
-Created: {memory.timestamp.strftime('%Y-%m-%d %H:%M')}
-Tags: {', '.join(memory.tags) if memory.tags else 'None'}
+Created: {memory.timestamp.strftime("%Y-%m-%d %H:%M")}
+Tags: {", ".join(memory.tags) if memory.tags else "None"}
 Access Count: {memory.access_count}
 """
             item.setToolTip(tooltip)
@@ -454,7 +448,9 @@ class MemoryInjectionDialog(QDialog):
         content_layout = QVBoxLayout(content_group)
 
         self.content_input = QTextEdit()
-        self.content_input.setPlaceholderText("Enter the memory content, insight, or knowledge...")
+        self.content_input.setPlaceholderText(
+            "Enter the memory content, insight, or knowledge..."
+        )
         content_layout.addWidget(self.content_input)
 
         layout.addWidget(content_group)
@@ -467,7 +463,9 @@ class MemoryInjectionDialog(QDialog):
         type_layout = QHBoxLayout()
         type_layout.addWidget(QLabel("Type:"))
         self.type_combo = QComboBox()
-        self.type_combo.addItems(["general", "goal", "insight", "experience", "knowledge"])
+        self.type_combo.addItems(
+            ["general", "goal", "insight", "experience", "knowledge"]
+        )
         type_layout.addWidget(self.type_combo)
         props_layout.addLayout(type_layout)
 
@@ -540,9 +538,11 @@ class MemoryInjectionDialog(QDialog):
             "memory_type": self.type_combo.currentText(),
             "importance": self.importance_slider.value() / 100.0,
             "confidence": self.confidence_slider.value() / 100.0,
-            "tags": [tag.strip() for tag in self.tags_input.text().split(",") if tag.strip()],
+            "tags": [
+                tag.strip() for tag in self.tags_input.text().split(",") if tag.strip()
+            ],
             "auto_link": self.auto_link_cb.isChecked(),
-            "goal_relevance": self.goal_relevance_cb.isChecked()
+            "goal_relevance": self.goal_relevance_cb.isChecked(),
         }
 
 
@@ -728,7 +728,9 @@ class WorldClassMemoryCore(QWidget):
         title_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #00ff88;")
 
         # Memory stats
-        self.stats_label = QLabel(f"📊 {len(self.memories)} memories • {len(self.clusters)} clusters")
+        self.stats_label = QLabel(
+            f"📊 {len(self.memories)} memories • {len(self.clusters)} clusters"
+        )
         self.stats_label.setStyleSheet("font-size: 12px; color: #ffffff;")
 
         header_layout.addWidget(title_label)
@@ -793,7 +795,9 @@ class WorldClassMemoryCore(QWidget):
         controls_layout = QHBoxLayout()
 
         self.layout_combo = QComboBox()
-        self.layout_combo.addItems(["Circular", "Clustered", "Force-directed", "Hierarchical"])
+        self.layout_combo.addItems(
+            ["Circular", "Clustered", "Force-directed", "Hierarchical"]
+        )
         self.layout_combo.currentTextChanged.connect(self.change_graph_layout)
 
         self.show_connections_cb = QCheckBox("Show Connections")
@@ -885,9 +889,9 @@ class WorldClassMemoryCore(QWidget):
         # Memory table
         self.memory_table = QTableWidget()
         self.memory_table.setColumnCount(6)
-        self.memory_table.setHorizontalHeaderLabels([
-            "Type", "Content", "Importance", "Confidence", "Created", "Actions"
-        ])
+        self.memory_table.setHorizontalHeaderLabels(
+            ["Type", "Content", "Importance", "Confidence", "Created", "Actions"]
+        )
         self.memory_table.horizontalHeader().setStretchLastSection(True)
 
         self.populate_memory_table()
@@ -925,49 +929,49 @@ class WorldClassMemoryCore(QWidget):
                 "memory_type": "knowledge",
                 "importance": 0.8,
                 "tags": ["health", "cognitive", "exercise"],
-                "timestamp": datetime.now() - timedelta(days=2)
+                "timestamp": datetime.now() - timedelta(days=2),
             },
             {
                 "content": "Goal: Complete the AI memory system by end of week",
                 "memory_type": "goal",
                 "importance": 0.9,
                 "tags": ["work", "ai", "deadline"],
-                "timestamp": datetime.now() - timedelta(days=1)
+                "timestamp": datetime.now() - timedelta(days=1),
             },
             {
                 "content": "Had insight about using graph visualization for memory connections",
                 "memory_type": "insight",
                 "importance": 0.7,
                 "tags": ["visualization", "memory", "graph"],
-                "timestamp": datetime.now() - timedelta(hours=3)
+                "timestamp": datetime.now() - timedelta(hours=3),
             },
             {
                 "content": "Experienced breakthrough in understanding memory clustering algorithms",
                 "memory_type": "experience",
                 "importance": 0.6,
                 "tags": ["algorithm", "clustering", "breakthrough"],
-                "timestamp": datetime.now() - timedelta(hours=1)
+                "timestamp": datetime.now() - timedelta(hours=1),
             },
             {
                 "content": "Remember to follow up with team about project timeline",
                 "memory_type": "general",
                 "importance": 0.5,
                 "tags": ["team", "timeline", "followup"],
-                "timestamp": datetime.now() - timedelta(minutes=30)
-            }
+                "timestamp": datetime.now() - timedelta(minutes=30),
+            },
         ]
 
         # Create memory objects
         for i, mem_data in enumerate(sample_memories):
             memory = Memory(
-                id=f"mem_{i+1}",
+                id=f"mem_{i + 1}",
                 content=mem_data["content"],
                 memory_type=mem_data["memory_type"],
                 importance=mem_data["importance"],
                 tags=mem_data["tags"],
                 timestamp=mem_data["timestamp"],
                 confidence=0.8,
-                access_count=random.randint(0, 10)
+                access_count=random.randint(0, 10),
             )
             self.memories[memory.id] = memory
 
@@ -980,7 +984,7 @@ class WorldClassMemoryCore(QWidget):
                 memories=["mem_2", "mem_5"],
                 color="#FFD700",
                 size=0.8,
-                coherence=0.7
+                coherence=0.7,
             ),
             MemoryCluster(
                 id="cluster_2",
@@ -989,7 +993,7 @@ class WorldClassMemoryCore(QWidget):
                 memories=["mem_1", "mem_3"],
                 color="#87CEEB",
                 size=0.6,
-                coherence=0.8
+                coherence=0.8,
             ),
             MemoryCluster(
                 id="cluster_3",
@@ -998,8 +1002,8 @@ class WorldClassMemoryCore(QWidget):
                 memories=["mem_3", "mem_4"],
                 color="#FF69B4",
                 size=0.7,
-                coherence=0.6
-            )
+                coherence=0.6,
+            ),
         ]
 
         # Sample goals
@@ -1008,14 +1012,14 @@ class WorldClassMemoryCore(QWidget):
                 id="goal_1",
                 description="Complete AI memory system implementation",
                 priority=0.9,
-                status="active"
+                status="active",
             ),
             Goal(
                 id="goal_2",
                 description="Improve memory clustering algorithms",
                 priority=0.7,
-                status="active"
-            )
+                status="active",
+            ),
         ]
 
     def populate_memory_graph(self):
@@ -1069,7 +1073,9 @@ class WorldClassMemoryCore(QWidget):
         self.clusters_list.clear()
 
         for cluster in self.clusters:
-            item = QListWidgetItem(f"🎯 {cluster.name} ({len(cluster.memories)} memories)")
+            item = QListWidgetItem(
+                f"🎯 {cluster.name} ({len(cluster.memories)} memories)"
+            )
             item.setData(Qt.UserRole, cluster)
             self.clusters_list.addItem(item)
 
@@ -1100,7 +1106,7 @@ Average Importance: {avg_importance:.1%}
 Average Confidence: {avg_confidence:.1%}
 
 Memory Type Distribution:
-{chr(10).join([f"  {mtype.title()}: {count} ({count/total_memories:.1%})" for mtype, count in type_counts.items()])}
+{chr(10).join([f"  {mtype.title()}: {count} ({count / total_memories:.1%})" for mtype, count in type_counts.items()])}
 
 Most Accessed Memories:
 {chr(10).join([f"  • {mem.content[:50]}... (accessed {mem.access_count} times)" for mem in sorted(self.memories.values(), key=lambda m: m.access_count, reverse=True)[:3]])}
@@ -1113,7 +1119,9 @@ Recent Activity:
 
     def update_timeline(self):
         """Update memory timeline"""
-        sorted_memories = sorted(self.memories.values(), key=lambda m: m.timestamp, reverse=True)
+        sorted_memories = sorted(
+            self.memories.values(), key=lambda m: m.timestamp, reverse=True
+        )
 
         timeline_text = "📈 Memory Timeline\n" + "=" * 20 + "\n\n"
 
@@ -1123,7 +1131,7 @@ Recent Activity:
                 "goal": "🎯",
                 "insight": "💡",
                 "experience": "🔥",
-                "knowledge": "📚"
+                "knowledge": "📚",
             }.get(memory.memory_type, "💭")
 
             timeline_text += f"{memory.timestamp.strftime('%Y-%m-%d %H:%M')} {type_icon} {memory.content[:80]}...\n"
@@ -1149,7 +1157,7 @@ Recent Activity:
             confidence=data["confidence"],
             tags=data["tags"],
             timestamp=datetime.now(),
-            access_count=0
+            access_count=0,
         )
 
         self.memories[memory_id] = memory
@@ -1187,20 +1195,24 @@ Recent Activity:
                 memory_keywords = memory.content.lower().split()
 
                 if any(keyword in memory_keywords for keyword in goal_keywords):
-                    memory.context["linked_goals"] = memory.context.get("linked_goals", [])
+                    memory.context["linked_goals"] = memory.context.get(
+                        "linked_goals", []
+                    )
                     memory.context["linked_goals"].append(goal.id)
 
     def show_relevant_memories(self):
         """Show memories most relevant to current goal"""
         if not self.current_goals:
-            QMessageBox.information(self, "No Goals", "No active goals found to show relevant memories.")
+            QMessageBox.information(
+                self, "No Goals", "No active goals found to show relevant memories."
+            )
             return
 
         # Get current goal (highest priority active goal)
         current_goal = max(
             [g for g in self.current_goals if g.status == "active"],
             key=lambda g: g.priority,
-            default=None
+            default=None,
         )
 
         if not current_goal:
@@ -1228,14 +1240,19 @@ Recent Activity:
         relevant_ids = [m.id for m in relevant_memories]
         self.memory_graph.highlight_relevant_memories(relevant_ids)
 
-        self.status_label.setText(f"🎯 Showing {len(relevant_memories)} memories relevant to: {current_goal.description}")
+        self.status_label.setText(
+            f"🎯 Showing {len(relevant_memories)} memories relevant to: {current_goal.description}"
+        )
 
     def calculate_goal_relevance(self, memory: Memory, goal: Goal) -> float:
         """Calculate how relevant a memory is to a goal"""
         relevance = 0.0
 
         # Direct goal linking
-        if "linked_goals" in memory.context and goal.id in memory.context["linked_goals"]:
+        if (
+            "linked_goals" in memory.context
+            and goal.id in memory.context["linked_goals"]
+        ):
             relevance += 0.5
 
         # Keyword matching
@@ -1246,8 +1263,8 @@ Recent Activity:
         relevance += min(len(keyword_overlap) * 0.1, 0.3)
 
         # Tag matching
-        if hasattr(goal, 'tags') and memory.tags:
-            tag_overlap = set(goal.context.get('tags', [])) & set(memory.tags)
+        if hasattr(goal, "tags") and memory.tags:
+            tag_overlap = set(goal.context.get("tags", [])) & set(memory.tags)
             relevance += min(len(tag_overlap) * 0.15, 0.3)
 
         # Memory type bonus
@@ -1257,7 +1274,7 @@ Recent Activity:
             relevance += 0.1
 
         # Importance weighting
-        relevance *= (0.5 + memory.importance * 0.5)
+        relevance *= 0.5 + memory.importance * 0.5
 
         return min(relevance, 1.0)
 
@@ -1297,16 +1314,20 @@ Recent Activity:
                     memories=[m.id for m in cluster_memories],
                     color=f"#{random.randint(0, 255):02x}{random.randint(0, 255):02x}{random.randint(0, 255):02x}",
                     size=len(cluster_memories) / 10.0,
-                    coherence=0.7
+                    coherence=0.7,
                 )
                 self.clusters.append(cluster)
 
         # Refresh UI
         self.refresh_ui()
 
-        self.status_label.setText(f"✅ Auto-clustered into {len(self.clusters)} clusters")
+        self.status_label.setText(
+            f"✅ Auto-clustered into {len(self.clusters)} clusters"
+        )
 
-    def calculate_cluster_similarity(self, memory: Memory, cluster_memories: List[Memory]) -> float:
+    def calculate_cluster_similarity(
+        self, memory: Memory, cluster_memories: List[Memory]
+    ) -> float:
         """Calculate similarity between memory and cluster"""
         if not cluster_memories:
             return 0.0
@@ -1316,10 +1337,14 @@ Recent Activity:
         for cluster_memory in cluster_memories:
             # Tag similarity
             tag_overlap = set(memory.tags) & set(cluster_memory.tags)
-            tag_similarity = len(tag_overlap) / max(len(memory.tags), len(cluster_memory.tags), 1)
+            tag_similarity = len(tag_overlap) / max(
+                len(memory.tags), len(cluster_memory.tags), 1
+            )
 
             # Type similarity
-            type_similarity = 1.0 if memory.memory_type == cluster_memory.memory_type else 0.0
+            type_similarity = (
+                1.0 if memory.memory_type == cluster_memory.memory_type else 0.0
+            )
 
             # Combined similarity
             similarity = (tag_similarity * 0.6) + (type_similarity * 0.4)
@@ -1337,7 +1362,10 @@ Recent Activity:
                 continue
 
             # Type filter
-            if filters["type"] != "All Types" and memory.memory_type != filters["type"].lower():
+            if (
+                filters["type"] != "All Types"
+                and memory.memory_type != filters["type"].lower()
+            ):
                 continue
 
             # Importance filter
@@ -1365,7 +1393,9 @@ Recent Activity:
         # Update search results
         self.search_widget.update_results(results)
 
-        self.status_label.setText(f"🔍 Found {len(results)} memories matching search criteria")
+        self.status_label.setText(
+            f"🔍 Found {len(results)} memories matching search criteria"
+        )
 
     def get_time_delta(self, time_filter: str) -> timedelta:
         """Get time delta for filtering"""
@@ -1394,10 +1424,10 @@ Type: {memory.memory_type.title()}
 Content: {memory.content}
 Importance: {memory.importance:.1%}
 Confidence: {memory.confidence:.1%}
-Created: {memory.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
-Last Accessed: {memory.last_accessed.strftime('%Y-%m-%d %H:%M:%S') if memory.last_accessed else 'Never'}
+Created: {memory.timestamp.strftime("%Y-%m-%d %H:%M:%S")}
+Last Accessed: {memory.last_accessed.strftime("%Y-%m-%d %H:%M:%S") if memory.last_accessed else "Never"}
 Access Count: {memory.access_count}
-Tags: {', '.join(memory.tags) if memory.tags else 'None'}
+Tags: {", ".join(memory.tags) if memory.tags else "None"}
 
 Connected Memories: {len(memory.connections)}
 {chr(10).join([f"  • {self.memories[conn_id].content[:50]}..." for conn_id in memory.connections[:3] if conn_id in self.memories])}
@@ -1442,7 +1472,7 @@ Connected Memories: {len(memory.connections)}
                     "tags": mem.tags,
                     "timestamp": mem.timestamp.isoformat(),
                     "access_count": mem.access_count,
-                    "connections": mem.connections
+                    "connections": mem.connections,
                 }
                 for mem in self.memories.values()
             ],
@@ -1453,24 +1483,30 @@ Connected Memories: {len(memory.connections)}
                     "memories": cluster.memories,
                     "color": cluster.color,
                     "size": cluster.size,
-                    "coherence": cluster.coherence
+                    "coherence": cluster.coherence,
                 }
                 for cluster in self.clusters
             ],
-            "export_timestamp": datetime.now().isoformat()
+            "export_timestamp": datetime.now().isoformat(),
         }
 
         # In a real implementation, this would open a file dialog
         filename = f"memory_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
         try:
-            with open(filename, 'w') as f:
+            with open(filename, "w") as f:
                 json.dump(export_data, f, indent=2)
 
-            QMessageBox.information(self, "Export Complete", f"Memories exported to {filename}")
-            self.status_label.setText(f"📤 Exported {len(self.memories)} memories to {filename}")
+            QMessageBox.information(
+                self, "Export Complete", f"Memories exported to {filename}"
+            )
+            self.status_label.setText(
+                f"📤 Exported {len(self.memories)} memories to {filename}"
+            )
         except Exception as e:
-            QMessageBox.critical(self, "Export Error", f"Failed to export memories: {str(e)}")
+            QMessageBox.critical(
+                self, "Export Error", f"Failed to export memories: {str(e)}"
+            )
 
     def refresh_memory_data(self):
         """Refresh memory data from memory manager"""
@@ -1479,7 +1515,9 @@ Connected Memories: {len(memory.connections)}
             pass
 
         # Update UI elements
-        self.stats_label.setText(f"📊 {len(self.memories)} memories • {len(self.clusters)} clusters")
+        self.stats_label.setText(
+            f"📊 {len(self.memories)} memories • {len(self.clusters)} clusters"
+        )
 
     def refresh_ui(self):
         """Refresh all UI elements"""

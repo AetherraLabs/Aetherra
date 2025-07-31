@@ -1,43 +1,20 @@
-# Minimal compatibility for file router
-def reflect_on_file(path):
-    print(f"[lyrixa_memory_engine] Reflected on memory file: {path}")
-
-
-"""
-🧠 LyrixaMemoryEngine - Next-Generation Memory System
-====================================================
-
-Integrated memory architecture combining vector storage, episodic continuity,
 symbolic reasoning, and narrative generation. Inspired by Synthetic Soul's approach.
-
-Core Components:
-- VectorStore: Fast similarity search and retrieval
-- FractalMesh: Multi-dimensional memory organization
-- MemoryNarrator: Story-like memory synthesis
-- MemoryPulse: Health monitoring and drift detection
-- MemoryReflector: Meta-cognitive analysis and insights
+"""
+DEPRECATED: LyrixaMemoryEngine is now an adapter for QuantumEnhancedMemoryEngine.
+All memory operations are delegated to the canonical engine.
 """
 
-import asyncio
-import json
-import uuid
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from .QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
 
-from .fractal_mesh.analogs import CrossContextAnalogies
-from .fractal_mesh.base import (
-    ConceptCluster,
-    EpisodicChain,
-    FractalMeshCore,
-    MemoryFragment,
-    MemoryFragmentType,
-)
-from .fractal_mesh.concepts import ConceptClusterManager
-from .fractal_mesh.timelines import EpisodicTimeline
+class LyrixaMemoryEngine:
+    def __init__(self, *args, **kwargs):
+        self.engine = QuantumEnhancedMemoryEngine()
 
-# Import existing memory components
+    def store(self, memory_entry: dict) -> dict:
+        return self.engine.store(memory_entry)
+
+    def retrieve(self, query: str, context: dict = None) -> dict:
+        return self.engine.retrieve(query, context)
 from .memory_core import LyrixaMemorySystem
 from .narrator import MemoryNarrative, MemoryNarrator
 from .pulse import DriftAlert, MemoryHealth, MemoryPulseMonitor

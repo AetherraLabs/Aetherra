@@ -1,43 +1,20 @@
 """
-🚀 Optimized LyrixaMemoryEngine Integration
-===========================================
-
-Enhanced memory engine with performance optimizations:
-1. Batch-mode writes with 100ms flush intervals
-2. Write-ahead buffer in FractalMesh
-3. Binary/JSON optimization with ujson fallback
-4. Asynchronous tagging and scoring (1-2 tick delay)
+DEPRECATED: OptimizedLyrixaMemoryEngine is now an adapter for QuantumEnhancedMemoryEngine.
+All memory operations are delegated to the canonical engine.
 """
 
-import asyncio
-import time
-from datetime import datetime
-from typing import Any, Dict, List, Optional
-
-from .fractal_mesh.base import MemoryFragment, MemoryFragmentType
-from .lyrixa_memory_engine import LyrixaMemoryEngine, MemorySystemConfig
-from .optimized_storage import AsyncMemoryProcessor, OptimizedMemoryStorage
+from .QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
 
 
-class OptimizedLyrixaMemoryEngine(LyrixaMemoryEngine):
-    """
-    High-performance version of LyrixaMemoryEngine with storage optimizations
-    """
+class OptimizedLyrixaMemoryEngine:
+    def __init__(self, *args, **kwargs):
+        self.engine = QuantumEnhancedMemoryEngine()
 
-    def __init__(self, config: Optional[MemorySystemConfig] = None):
-        # Initialize parent class
-        super().__init__(config)
+    def store(self, memory_entry: dict) -> dict:
+        return self.engine.store(memory_entry)
 
-        # Replace fractal mesh storage with optimized version
-        self.optimized_storage = OptimizedMemoryStorage(
-            db_path=self.config.fractal_db_path.replace(".db", "_optimized.db"),
-            batch_size=50,
-            flush_interval_ms=100,
-        )
-
-        # Initialize async processor
-        self.async_processor = AsyncMemoryProcessor()
-        self.processor_task: Optional[asyncio.Task] = None
+    def retrieve(self, query: str, context: dict = None) -> dict:
+        return self.engine.retrieve(query, context)
 
         # Performance tracking
         self.optimization_metrics = {

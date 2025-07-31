@@ -1,0 +1,16 @@
+{
+    "default_ai_model": "lyrixa-v2",
+    "memory_thresholds": {
+        "max_entries": 100000,
+        "prune_on_start": true
+    },
+    "plugin_directories": [
+        "Aetherra/plugins/core",
+        "Aetherra/plugins/lifecycle",
+        "Aetherra/plugins/memory_hooks",
+        "Aetherra/plugins/agent_adapters"
+    ],
+    "system_mode": "development", // options: development, simulation, live
+    "ui_theme": "cyberpunk",
+    "dashboard_port": 8686
+}

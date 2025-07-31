@@ -1,42 +1,20 @@
-#!/usr/bin/env python3
 """
-🧠 LYRIXA MEMORY SYSTEM
-======================
-
-Lyrixa's memory capabilities for learning, context retention, and user preferences.
-Manages conversational memory, project context, and long-term learning.
+DEPRECATED: memory_core.py is now an adapter for QuantumEnhancedMemoryEngine.
+All memory operations are delegated to the canonical engine.
 """
 
-import hashlib
-import json
-import sqlite3
-from contextlib import contextmanager
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
-
-# Webhook manager import disabled - not currently available
-# from src.aetherra.core.webhook_manager import WebhookManager
+from ..memory.QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
 
 
-@dataclass
-class Memory:
-    """Represents a single memory entry"""
+class MemoryCore:
+    def __init__(self, *args, **kwargs):
+        self.engine = QuantumEnhancedMemoryEngine()
 
-    id: str
-    content: Dict[str, Any]
-    context: Dict[str, Any]
-    tags: List[str]
-    importance: float  # 0.0 to 1.0
-    created_at: datetime
-    last_accessed: datetime
-    access_count: int
-    memory_type: str  # conversation, project, preference, learning
+    def store(self, memory_entry: dict) -> dict:
+        return self.engine.store(memory_entry)
 
-
-@dataclass
-class MemoryQuery:
-    """Represents a memory search query"""
+    def retrieve(self, query: str, context: dict = None) -> dict:
+        return self.engine.retrieve(query, context)
 
     text: Optional[str] = None
     tags: Optional[List[str]] = None
