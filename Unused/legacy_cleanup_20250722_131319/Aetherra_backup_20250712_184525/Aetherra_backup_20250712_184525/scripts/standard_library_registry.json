@@ -1,0 +1,115 @@
+{
+    "version": "1.0",
+    "scripts": [
+        {
+            "name": "bootstrap",
+            "path": "aetherra/scripts/system/bootstrap.aether",
+            "category": "system",
+            "description": "Initializes the OS: loads memory, prepares plugins, starts agents.",
+            "tags": [
+                "init",
+                "startup",
+                "system"
+            ]
+        },
+        {
+            "name": "summarize_day",
+            "path": "aetherra/scripts/memory/summarize_day.aether",
+            "category": "memory",
+            "description": "Summarizes today's memory logs and stores a digest.",
+            "tags": [
+                "summary",
+                "memory",
+                "daily"
+            ]
+        },
+        {
+            "name": "memory_scan",
+            "path": "aetherra/scripts/memory/memory_scan.aether",
+            "category": "memory",
+            "description": "Scans memory for patterns and consolidates insights.",
+            "tags": [
+                "scan",
+                "memory",
+                "analysis"
+            ]
+        },
+        {
+            "name": "clear_goals",
+            "path": "aetherra/scripts/memory/clear_goals.aether",
+            "category": "memory",
+            "description": "Clears completed or obsolete goals from memory.",
+            "tags": [
+                "goals",
+                "cleanup",
+                "memory"
+            ]
+        },
+        {
+            "name": "plugin_diagnostics",
+            "path": "aetherra/scripts/memory/plugin_diagnostics.aether",
+            "category": "memory",
+            "description": "Diagnoses plugin performance and stores results.",
+            "tags": [
+                "plugin",
+                "diagnostics",
+                "performance"
+            ]
+        },
+        {
+            "name": "daily_maintenance",
+            "path": "aetherra/scripts/system/daily_maintenance.aether",
+            "category": "system",
+            "description": "Cleans up unused goals, scores plugins, prunes old memories.",
+            "tags": [
+                "maintenance",
+                "cleanup",
+                "health"
+            ]
+        },
+        {
+            "name": "agent_diagnostics",
+            "path": "aetherra/scripts/system/agent_diagnostics.aether",
+            "category": "system",
+            "description": "Runs diagnostics on all active agents and reports status.",
+            "tags": [
+                "diagnostics",
+                "agents",
+                "health"
+            ]
+        },
+        {
+            "name": "generate_plugin",
+            "path": "aetherra/scripts/user/generate_plugin.aether",
+            "category": "user",
+            "description": "Prompts the user and generates a plugin using the assistant.",
+            "tags": [
+                "plugin",
+                "generation",
+                "developer"
+            ]
+        },
+        {
+            "name": "analyze_project",
+            "path": "aetherra/scripts/user/analyze_project.aether",
+            "category": "user",
+            "description": "Recalls all memory tagged with 'project', summarizes status, and identifies goals.",
+            "tags": [
+                "project",
+                "analysis",
+                "status"
+            ]
+        },
+        {
+            "name": "reflect",
+            "path": "aetherra/scripts/user/reflect.aether",
+            "category": "user",
+            "description": "Runs reflexive analysis on recent memory and stores findings.",
+            "tags": [
+                "reflection",
+                "learning",
+                "agent"
+            ]
+        }
+    ]
+}

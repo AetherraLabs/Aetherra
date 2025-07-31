@@ -1,0 +1,26 @@
+plugin "api_interaction":
+  description: "Interacts with an external API and processes the response"
+
+  trigger:
+    schedule: hourly
+
+  memory:
+    store:
+      into: "api.responses"
+
+  ai:
+    goal: "Process the API response and extract key information"
+    model: gpt-4o
+    constraints:
+      - handle errors gracefully
+      - log all interactions
+    output: processed_data
+
+  actions:
+    - memory.save("api.responses", processed_data)
+    - notify(user: "api_data_ready", content: processed_data)
+
+  feedback:
+    expect: confirmation from user within 1h
+    if no_response:
+      retry("api_call")

@@ -1,0 +1,29 @@
+plugin "user_feedback_collector":
+  description: "Collects and analyzes user feedback for product improvement"
+
+  trigger:
+    schedule: weekly on "Friday at 18:00"
+
+  memory:
+    retrieve:
+      from: "feedback.raw"
+      limit: 1w
+    store:
+      into: "feedback.analyzed"
+
+  ai:
+    goal: "Summarize user feedback and identify key improvement areas"
+    model: gpt-4o
+    constraints:
+      - group feedback by category
+      - highlight recurring issues
+    output: feedback_summary
+
+  actions:
+    - memory.save("feedback.analyzed", feedback_summary)
+    - notify(team: "product", content: feedback_summary)
+
+  feedback:
+    expect: acknowledgment from team within 24h
+    if no_response:
+      escalate_to("product_manager")

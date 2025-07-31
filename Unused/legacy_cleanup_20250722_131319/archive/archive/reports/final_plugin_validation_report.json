@@ -1,0 +1,36 @@
+{
+  "valid_plugins": [
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\ai_plugin_generator_v2.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\assistant_trainer_plugin.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\enhanced_plugin_manager.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\plugin_analytics.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\plugin_creation_wizard.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\plugin_discovery.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\plugin_generator_plugin.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\plugin_lifecycle_memory.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\plugin_quality_control.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\sample_plugin_1.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\sample_plugin_2.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\workflow_builder_plugin.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\agent_plugin.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\demo_plugin.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\file_tools.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\git_plugin.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\greet_plugin.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\local_llm.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\manager.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\math_plugin.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\memory_plugin.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\search_plugin.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\system_plugin.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\src\\aetherra\\plugins\\whisper.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\sdk\\plugins\\calculator.py",
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\sdk\\plugins\\example.py"
+  ],
+  "invalid_plugins": [
+    "C:\\Users\\enigm\\Desktop\\Aetherra Project\\lyrixa\\plugins\\context_aware_surfacing.py"
+  ],
+  "fixed_plugins": [],
+  "total_scanned": 27,
+  "success_rate": 96.29629629629629
+}

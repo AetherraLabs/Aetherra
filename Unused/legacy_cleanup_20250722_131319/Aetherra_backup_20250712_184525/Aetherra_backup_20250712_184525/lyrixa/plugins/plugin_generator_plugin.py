@@ -1,0 +1,656 @@
+"""
+🔌 PLUGIN GENERATOR PLUGIN
+==========================
+
+A flagship meta-plugin that can generate new plugins for the Lyrixa system.
+Features plugin scaffolding, template generation, code generation, and
+plugin packaging for distribution.
+"""
+
+import os
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+
+class PluginTemplate:
+    """Represents a plugin template for generation."""
+    # Required plugin metadata
+    name = "plugin_generator_plugin"
+    description = "PluginTemplate - Auto-generated description"
+    input_schema = {
+        "type": "object",
+        "properties": {
+            "input": {"type": "string", "description": "Input data"}
+        },
+        "required": ["input"]
+    }
+    output_schema = {
+        "type": "object",
+        "properties": {
+            "result": {"type": "string", "description": "Processing result"},
+            "status": {"type": "string", "description": "Operation status"}
+        }
+    }
+    created_by = "Plugin System Auto-Fixer"
+
+
+    def __init__(self, template_id: str, name: str, description: str, category: str):
+        self.template_id = template_id
+        self.name = name
+        self.description = description
+        self.category = category  # ui, data, ml, utility, integration
+        self.files = {}  # filename -> content
+        self.dependencies = []
+        self.config_schema = {}
+
+    def add_file(self, filename: str, content: str):
+        """Add a file to the template."""
+        self.files[filename] = content
+
+    def add_dependency(self, package: str, version: str = "latest"):
+        """Add a dependency to the template."""
+        self.dependencies.append({"package": package, "version": version})
+
+
+class GeneratedPlugin:
+    """Represents a generated plugin."""
+
+    def __init__(self, plugin_id: str, name: str, template_id: str):
+        self.plugin_id = plugin_id
+        self.name = name
+        self.template_id = template_id
+        self.generated_at = datetime.now().isoformat()
+        self.files = {}
+        self.config = {}
+        self.status = "generated"  # generated, installed, active
+
+
+class PluginGeneratorPlugin:
+    """Flagship plugin for generating new plugins."""
+
+    def __init__(self):
+        self.name = "PluginGenerator"
+        self.version = "1.0.0"
+        self.author = "Lyrixa Team"
+        self.description = "Advanced plugin generation and scaffolding system"
+        self.templates = {}
+        self.generated_plugins = {}
+        self._load_default_templates()
+
+    def _load_default_templates(self):
+        """Load default plugin templates."""
+
+        # UI Widget Template
+        ui_template = PluginTemplate(
+            "ui_widget", "UI Widget", "Creates a custom UI widget plugin", "ui"
+        )
+        ui_template.add_file("__init__.py", self._generate_ui_widget_init())
+        ui_template.add_file("widget.py", self._generate_ui_widget_code())
+        ui_template.add_file("styles.css", self._generate_ui_widget_styles())
+        ui_template.add_dependency("PyQt5")
+        self.templates["ui_widget"] = ui_template
+
+        # Data Processor Template
+        data_template = PluginTemplate(
+            "data_processor",
+            "Data Processor",
+            "Creates a data processing plugin",
+            "data",
+        )
+        data_template.add_file("__init__.py", self._generate_data_processor_init())
+        data_template.add_file("processor.py", self._generate_data_processor_code())
+        data_template.add_file("config.json", self._generate_data_processor_config())
+        data_template.add_dependency("pandas")
+        data_template.add_dependency("numpy")
+        self.templates["data_processor"] = data_template
+
+        # ML Model Template
+        ml_template = PluginTemplate(
+            "ml_model", "ML Model", "Creates a machine learning model plugin", "ml"
+        )
+        ml_template.add_file("__init__.py", self._generate_ml_model_init())
+        ml_template.add_file("model.py", self._generate_ml_model_code())
+        ml_template.add_file("trainer.py", self._generate_ml_trainer_code())
+        ml_template.add_dependency("scikit-learn")
+        ml_template.add_dependency("torch", "1.12+")
+        self.templates["ml_model"] = ml_template
+
+        # API Integration Template
+        api_template = PluginTemplate(
+            "api_integration",
+            "API Integration",
+            "Creates an API integration plugin",
+            "integration",
+        )
+        api_template.add_file("__init__.py", self._generate_api_integration_init())
+        api_template.add_file("client.py", self._generate_api_client_code())
+        api_template.add_file("auth.py", self._generate_api_auth_code())
+        api_template.add_dependency("requests")
+        api_template.add_dependency("aiohttp")
+        self.templates["api_integration"] = api_template
+
+    def _generate_ui_widget_init(self) -> str:
+        return '''"""
+{plugin_name} Plugin
+Generated by Lyrixa Plugin Generator on {timestamp}
+"""
+
+from .widget import {class_name}Plugin
+
+plugin_data = {{
+    "name": "{plugin_name}",
+    "version": "1.0.0",
+    "author": "Generated Plugin",
+    "description": "{description}",
+    "ui_component": {class_name}Plugin().get_ui_component,
+    "plugin_instance": {class_name}Plugin()
+}}
+'''
+
+    def _generate_ui_widget_code(self) -> str:
+        return '''"""
+{plugin_name} Widget Implementation
+"""
+
+class {class_name}Plugin:
+    def __init__(self):
+        self.name = "{plugin_name}"
+        self.version = "1.0.0"
+        self.author = "Generated Plugin"
+        self.description = "{description}"
+
+    def get_ui_component(self):
+        return {{
+            "type": "custom_widget",
+            "layout": "vertical",
+            "components": [
+                {{"type": "label", "text": "Welcome to {plugin_name}!"}},
+                {{"type": "button", "text": "Click Me", "action": "handle_click"}},
+                {{"type": "text_input", "placeholder": "Enter text here..."}}
+            ]
+        }}
+
+    def handle_click(self):
+        return "Button clicked in {plugin_name}!"
+
+    def apply_theme(self, theme: str):
+        if theme == "dark":
+            return {{
+                "background": "#2b2b2b",
+                "text": "#ffffff",
+                "accent": "#00d4ff"
+            }}
+        else:
+            return {{
+                "background": "#ffffff",
+                "text": "#333333",
+                "accent": "#007acc"
+            }}
+
+    def get_info(self):
+        return {{
+            "name": self.name,
+            "version": self.version,
+            "author": self.author,
+            "description": self.description,
+            "features": ["Custom UI widget", "Theme support", "Interactive components"]
+        }}
+'''
+
+    def _generate_ui_widget_styles(self) -> str:
+        return """/* {{plugin_name}} Widget Styles */
+
+.{{plugin_class}}-container {{
+    padding: 20px;
+    border-radius: 8px;
+    margin: 10px;
+}}
+
+.{{plugin_class}}-button {{
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}}
+
+.{{plugin_class}}-button:hover {{
+    opacity: 0.8;
+}}
+
+.{{plugin_class}}-input {{
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin: 5px 0;
+}}
+"""
+
+    def _generate_data_processor_init(self) -> str:
+        return '''"""
+{plugin_name} Data Processor Plugin
+"""
+
+from .processor import {class_name}Processor
+
+plugin_data = {{
+    "name": "{plugin_name}",
+    "version": "1.0.0",
+    "author": "Generated Plugin",
+    "description": "{description}",
+    "processor_instance": {class_name}Processor()
+}}
+'''
+
+    def _generate_data_processor_code(self) -> str:
+        return '''"""
+{plugin_name} Data Processing Implementation
+"""
+
+import pandas as pd
+import numpy as np
+
+class {class_name}Processor:
+    def __init__(self):
+        self.name = "{plugin_name}"
+        self.version = "1.0.0"
+        self.supported_formats = ["csv", "json", "xlsx"]
+
+    def process_data(self, data, config=None):
+        """Process the input data according to configuration."""
+        if isinstance(data, str):
+            # Assume it's a file path
+            return self.load_and_process(data, config)
+        elif isinstance(data, pd.DataFrame):
+            return self.process_dataframe(data, config)
+        else:
+            raise ValueError("Unsupported data type")
+
+    def load_and_process(self, file_path, config=None):
+        """Load and process data from file."""
+        if file_path.endswith('.csv'):
+            df = pd.read_csv(file_path)
+        elif file_path.endswith('.json'):
+            df = pd.read_json(file_path)
+        elif file_path.endswith('.xlsx'):
+            df = pd.read_excel(file_path)
+        else:
+            raise ValueError("Unsupported file format")
+
+        return self.process_dataframe(df, config)
+
+    def process_dataframe(self, df, config=None):
+        """Process a pandas DataFrame."""
+        config = config or {{}}
+
+        # Example processing steps
+        if config.get('remove_nulls', True):
+            df = df.dropna()
+
+        if config.get('normalize', False):
+            numeric_cols = df.select_dtypes(include=[np.number]).columns
+            df[numeric_cols] = (df[numeric_cols] - df[numeric_cols].mean()) / df[numeric_cols].std()
+
+        return df
+
+    def get_info(self):
+        return {{
+            "name": self.name,
+            "version": self.version,
+            "supported_formats": self.supported_formats,
+            "features": ["Data loading", "Null value handling", "Data normalization"]
+        }}
+'''
+
+    def _generate_data_processor_config(self) -> str:
+        return """{{
+    "default_config": {{
+        "remove_nulls": true,
+        "normalize": false,
+        "output_format": "csv"
+    }},
+    "schema": {{
+        "remove_nulls": {{"type": "boolean", "description": "Remove rows with null values"}},
+        "normalize": {{"type": "boolean", "description": "Normalize numeric columns"}},
+        "output_format": {{"type": "string", "enum": ["csv", "json", "xlsx"]}}
+    }}
+}}"""
+
+    def _generate_ml_model_init(self) -> str:
+        return '''"""
+{plugin_name} ML Model Plugin
+"""
+
+from .model import {class_name}Model
+
+plugin_data = {{
+    "name": "{plugin_name}",
+    "version": "1.0.0",
+    "author": "Generated Plugin",
+    "description": "{description}",
+    "model_instance": {class_name}Model()
+}}
+'''
+
+    def _generate_ml_model_code(self) -> str:
+        return '''"""
+{plugin_name} ML Model Implementation
+"""
+
+import numpy as np
+from sklearn.base import BaseEstimator
+
+class {class_name}Model(BaseEstimator):
+    def __init__(self):
+        self.name = "{plugin_name}"
+        self.version = "1.0.0"
+        self.is_trained = False
+        self.model = None
+
+    def fit(self, X, y):
+        """Train the model."""
+        # Implement your training logic here
+        self.is_trained = True
+        return self
+
+    def predict(self, X):
+        """Make predictions."""
+        if not self.is_trained:
+            raise ValueError("Model must be trained before making predictions")
+        # Implement your prediction logic here
+        return np.zeros(X.shape[0])  # Placeholder
+
+    def get_info(self):
+        return {{
+            "name": self.name,
+            "version": self.version,
+            "is_trained": self.is_trained,
+            "features": ["Machine learning model", "Training capabilities", "Prediction support"]
+        }}
+'''
+
+    def _generate_ml_trainer_code(self) -> str:
+        return '''"""
+{plugin_name} Model Trainer
+"""
+
+class {class_name}Trainer:
+    def __init__(self, model):
+        self.model = model
+        self.training_history = []
+
+    def train(self, X, y, epochs=10, validation_split=0.2):
+        """Train the model with the given data."""
+        # Implement training logic here
+        for epoch in range(epochs):
+            # Simulate training
+            loss = 1.0 / (epoch + 1)  # Placeholder decreasing loss
+            self.training_history.append({{"epoch": epoch, "loss": loss}})
+
+        self.model.fit(X, y)
+        return self.training_history
+
+    def get_training_history(self):
+        return self.training_history
+'''
+
+    def _generate_api_integration_init(self) -> str:
+        return '''"""
+{plugin_name} API Integration Plugin
+"""
+
+from .client import {class_name}Client
+
+plugin_data = {{
+    "name": "{plugin_name}",
+    "version": "1.0.0",
+    "author": "Generated Plugin",
+    "description": "{description}",
+    "client_instance": {class_name}Client()
+}}
+'''
+
+    def _generate_api_client_code(self) -> str:
+        return '''"""
+{plugin_name} API Client Implementation
+"""
+
+import requests
+from typing import Dict, Any
+
+class {class_name}Client:
+    def __init__(self, base_url="https://api.example.com"):
+        self.name = "{plugin_name}"
+        self.version = "1.0.0"
+        self.base_url = base_url
+        self.session = requests.Session()
+
+    def make_request(self, endpoint: str, method: str = "GET", data: Dict = None) -> Dict[str, Any]:
+        """Make a request to the API."""
+        url = f"{{self.base_url}}/{{endpoint}}"
+
+        try:
+            if method.upper() == "GET":
+                response = self.session.get(url, params=data)
+            elif method.upper() == "POST":
+                response = self.session.post(url, json=data)
+            elif method.upper() == "PUT":
+                response = self.session.put(url, json=data)
+            elif method.upper() == "DELETE":
+                response = self.session.delete(url)
+            else:
+                raise ValueError(f"Unsupported HTTP method: {{method}}")
+
+            response.raise_for_status()
+            return response.json()
+
+        except requests.exceptions.RequestException as e:
+            return {{"error": str(e)}}
+
+    def get_info(self):
+        return {{
+            "name": self.name,
+            "version": self.version,
+            "base_url": self.base_url,
+            "features": ["HTTP API integration", "Request/response handling", "Error management"]
+        }}
+'''
+
+    def _generate_api_auth_code(self) -> str:
+        return '''"""
+{plugin_name} API Authentication
+"""
+
+class {class_name}Auth:
+    def __init__(self, auth_type="api_key"):
+        self.auth_type = auth_type
+        self.credentials = {{}}
+
+    def set_credentials(self, **kwargs):
+        """Set authentication credentials."""
+        self.credentials.update(kwargs)
+
+    def get_auth_header(self):
+        """Get authentication header for requests."""
+        if self.auth_type == "api_key":
+            return {{"Authorization": f"Bearer {{self.credentials.get('api_key', '')}}"}}
+        elif self.auth_type == "basic":
+            import base64
+            username = self.credentials.get('username', '')
+            password = self.credentials.get('password', '')
+            credentials = base64.b64encode(f"{{username}}:{{password}}".encode()).decode()
+            return {{"Authorization": f"Basic {{credentials}}"}}
+        return {{}}
+'''
+
+    def generate_plugin(
+        self,
+        template_id: str,
+        plugin_name: str,
+        description: str = "",
+        config: Optional[Dict] = None,
+    ) -> str:
+        """Generate a new plugin from a template."""
+        if template_id not in self.templates:
+            raise ValueError(f"Template '{template_id}' not found")
+
+        template = self.templates[template_id]
+        plugin_id = (
+            f"gen_{len(self.generated_plugins) + 1}_{int(datetime.now().timestamp())}"
+        )
+
+        generated = GeneratedPlugin(plugin_id, plugin_name, template_id)
+
+        # Generate class name from plugin name
+        class_name = "".join(word.capitalize() for word in plugin_name.split())
+        plugin_class = plugin_name.lower().replace(" ", "_")
+
+        # Process template files
+        for filename, content_template in template.files.items():
+            content = content_template.format(
+                plugin_name=plugin_name,
+                class_name=class_name,
+                plugin_class=plugin_class,
+                description=description or f"Generated {plugin_name} plugin",
+                timestamp=datetime.now().isoformat(),
+            )
+            generated.files[filename] = content
+
+        generated.config = config or {}
+        self.generated_plugins[plugin_id] = generated
+
+        return plugin_id
+
+    def save_plugin_to_disk(self, plugin_id: str, output_dir: str) -> bool:
+        """Save a generated plugin to disk."""
+        if plugin_id not in self.generated_plugins:
+            return False
+
+        plugin = self.generated_plugins[plugin_id]
+        plugin_dir = (
+            Path(output_dir) / f"{plugin.name.lower().replace(' ', '_')}_plugin"
+        )
+        plugin_dir.mkdir(parents=True, exist_ok=True)
+
+        for filename, content in plugin.files.items():
+            file_path = plugin_dir / filename
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+        plugin.status = "saved"
+        return True
+
+    def list_templates(self) -> List[Dict]:
+        """List all available templates."""
+        return [
+            {
+                "id": template.template_id,
+                "name": template.name,
+                "description": template.description,
+                "category": template.category,
+                "files": list(template.files.keys()),
+                "dependencies": template.dependencies,
+            }
+            for template in self.templates.values()
+        ]
+
+    def list_generated_plugins(self) -> List[Dict]:
+        """List all generated plugins."""
+        return [
+            {
+                "id": plugin.plugin_id,
+                "name": plugin.name,
+                "template": plugin.template_id,
+                "status": plugin.status,
+                "generated_at": plugin.generated_at,
+                "files": list(plugin.files.keys()),
+            }
+            for plugin in self.generated_plugins.values()
+        ]
+
+    def get_ui_component(self):
+        """Return UI component description for the plugin generator."""
+        return {
+            "type": "plugin_generator",
+            "layout": "wizard",
+            "steps": [
+                {
+                    "name": "Template Selection",
+                    "content": f"Choose from {len(self.templates)} available templates",
+                },
+                {
+                    "name": "Plugin Configuration",
+                    "content": "Configure plugin name, description, and settings",
+                },
+                {
+                    "name": "Code Generation",
+                    "content": "Generate plugin code and files",
+                },
+                {
+                    "name": "Export & Install",
+                    "content": "Save plugin and optionally install to Lyrixa",
+                },
+            ],
+            "features": [
+                "Plugin template library",
+                "Code generation wizard",
+                "Dependency management",
+                "Plugin packaging",
+                "Installation integration",
+            ],
+        }
+
+    def apply_theme(self, theme: str):
+        """Apply theme styling to the plugin generator."""
+        if theme == "dark":
+            return {
+                "background": "#2b2b2b",
+                "text": "#ffffff",
+                "accent": "#9c88ff",
+                "wizard_step": "#404040",
+                "code_preview": "#1e1e1e",
+                "template_card": "#333333",
+            }
+        else:
+            return {
+                "background": "#ffffff",
+                "text": "#333333",
+                "accent": "#8e44ad",
+                "wizard_step": "#f8f9fa",
+                "code_preview": "#f5f5f5",
+                "template_card": "#ffffff",
+            }
+
+    def get_info(self):
+        """Get plugin information."""
+        return {
+            "name": self.name,
+            "version": self.version,
+            "author": self.author,
+            "description": self.description,
+            "features": [
+                "Plugin template library",
+                "Code generation",
+                "Multiple plugin types",
+                "Dependency management",
+                "Plugin packaging",
+            ],
+            "stats": {
+                "templates_available": len(self.templates),
+                "plugins_generated": len(self.generated_plugins),
+                "categories": len(set(t.category for t in self.templates.values())),
+            },
+        }
+
+
+# Plugin registration data
+plugin_data = {
+    "name": "PluginGenerator",
+    "version": "1.0.0",
+    "author": "Lyrixa Team",
+    "description": "Advanced plugin generation and scaffolding system",
+    "ui_component": PluginGeneratorPlugin().get_ui_component,
+    "plugin_instance": PluginGeneratorPlugin(),
+}

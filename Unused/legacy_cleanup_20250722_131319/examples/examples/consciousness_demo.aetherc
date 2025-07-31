@@ -1,0 +1,69 @@
+{
+  "version": "2.0.0",
+  "source_file": "examples\\consciousness_demo.aether",
+  "compiled_at": "2025-06-29T20:46:04.222467",
+  "statements": [
+    {
+      "type": "goal",
+      "line": 5,
+      "content": "goal: optimize system performance by 25%",
+      "filename": "examples\\consciousness_demo.aether",
+      "objective": "optimize system performance by 25%"
+    },
+    {
+      "type": "agent",
+      "line": 8,
+      "content": "agent: on",
+      "filename": "examples\\consciousness_demo.aether",
+      "command": "on"
+    },
+    {
+      "type": "memory",
+      "line": 11,
+      "content": "remember(\"aetherra enables AI-consciousness programming\")",
+      "filename": "examples\\consciousness_demo.aether",
+      "operation": "remember"
+    },
+    {
+      "type": "conditional",
+      "line": 14,
+      "content": "when system_load > 80%:",
+      "filename": "examples\\consciousness_demo.aether"
+    },
+    {
+      "type": "ai_suggestion",
+      "line": 15,
+      "content": "suggest fix for \"high system load\"",
+      "filename": "examples\\consciousness_demo.aether"
+    },
+    {
+      "type": "optimization",
+      "line": 18,
+      "content": "optimize for \"memory efficiency\"",
+      "filename": "examples\\consciousness_demo.aether"
+    },
+    {
+      "type": "ai_suggestion",
+      "line": 21,
+      "content": "suggest improvements for \"code quality\"",
+      "filename": "examples\\consciousness_demo.aether"
+    },
+    {
+      "type": "memory",
+      "line": 24,
+      "content": "recall()",
+      "filename": "examples\\consciousness_demo.aether",
+      "operation": "recall"
+    },
+    {
+      "type": "statement",
+      "line": 26,
+      "content": "print(\"\ud83e\uddec aetherra consciousness awakening complete!\")",
+      "filename": "examples\\consciousness_demo.aether"
+    }
+  ],
+  "metadata": {
+    "lines": 26,
+    "consciousness_level": "enhanced"
+  }
+}

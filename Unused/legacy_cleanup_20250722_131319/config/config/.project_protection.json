@@ -1,0 +1,32 @@
+{
+  "protected_files": [
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+    "requirements.txt",
+    "CHANGE_MANAGEMENT_PROTOCOL.md",
+    "DOMAIN_SETUP_GUIDE.md",
+    "MISSION_COMPLETE.md",
+    "SUCCESS_SUMMARY.md"
+  ],
+  "protected_directories": [
+    "core/",
+    "src/",
+    "docs/",
+    "examples/",
+    "tests/",
+    "data/"
+  ],
+  "critical_extensions": [
+    ".py",
+    ".aether",
+    ".md",
+    ".json",
+    ".toml",
+    ".yaml",
+    ".yml"
+  ],
+  "backup_frequency": "daily",
+  "max_backups": 30,
+  "protection_enabled": true
+}

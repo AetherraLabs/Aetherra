@@ -1,0 +1,56 @@
+plugin plugin_watchdog {
+  description: "Monitors plugin behavior, flags instability, and takes action on unhealthy plugins."
+  memory_access: read-write
+  schedule: every 6 hours
+  tags: [os, plugins, watchdog, diagnostics]
+
+  config: {
+    error_threshold: 5,
+    slow_response_threshold_ms: 2000,
+    disable_on_failure: true,
+    log_all_actions: true
+  }
+
+  on_run {
+    let since = call system/utils.hours_ago(24)
+    let plugins = call system/plugins.get_all_plugins()
+    let unhealthy = []
+
+    for plugin in plugins {
+      let logs = call system/logger.get_plugin_logs(plugin.name, since)
+
+      let errors = logs.filter(l => l.level == "error").length
+      let avg_time = average(logs.map(l => l.latency_ms or 0))
+
+      if errors >= config.error_threshold or avg_time >= config.slow_response_threshold_ms {
+        let reason =
+          if errors >= config.error_threshold { "error threshold exceeded" }
+          else { "slow response" }
+
+        call system/plugins.mark_unhealthy(plugin.name, reason)
+        unhealthy.append(plugin.name)
+
+        if config.disable_on_failure {
+          call system/plugins.disable_plugin(plugin.name)
+        }
+
+        if config.log_all_actions {
+          call system/logger.log_event("plugin_flagged", {
+            name: plugin.name,
+            reason: reason,
+            avg_latency: avg_time,
+            error_count: errors
+          })
+        }
+      }
+    }
+
+    call system/logger.log_event("plugin_watchdog_complete", {
+      scanned: plugins.length,
+      flagged: unhealthy.length,
+      timestamp: now()
+    })
+
+    return "Plugin watchdog complete"
+  }
+}

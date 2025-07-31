@@ -1,0 +1,25 @@
+# Aetherra Plugin Example Demo
+# This file demonstrates how to use plugins in Aetherra
+
+# Basic greeting plugin
+plugin: example.hello_world "Aetherra SDK"
+
+# Personalized greeting
+plugin: example.greet "Developer"
+
+# Mathematical calculations
+plugin: example.calculate "2 + 3 * 4"
+plugin: example.calculate "10 / 2"
+plugin: example.calculate "2 ** 8"
+
+# Plugin status
+plugin: example.status
+
+# Error handling examples
+plugin: example.calculate "invalid expression"
+plugin: example.calculate ""
+
+# Different greeting names
+plugin: example.greet "Alice"
+plugin: example.greet "Bob"
+plugin: example.greet ""

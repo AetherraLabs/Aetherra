@@ -1,0 +1,3 @@
+# Disable Jekyll processing for custom HTML/CSS/JS
+# This allows GitHub Pages to serve the Aetherra website exactly as designed
+# with all interactive features, animations, and PWA capabilities intact

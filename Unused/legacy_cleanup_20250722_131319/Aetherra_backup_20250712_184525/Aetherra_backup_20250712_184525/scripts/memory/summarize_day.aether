@@ -1,0 +1,177 @@
+# Daily Summarization Agent
+# Run summarizer agents on today's logs and activities
+# Part of the Aetherra AI OS Core Library
+
+goal: summarize_daily_activities
+consciousness: enabled
+memory: persistent
+identity: "DaySummarizer"
+
+# Configuration
+summarization_config: {
+    time_window: "today",
+    detail_level: "comprehensive",
+    focus_areas: ["achievements", "challenges", "learning", "decisions", "interactions"],
+    output_format: "structured_summary"
+}
+
+# Main summarization function
+when day_summary_requested:
+    think "Analyzing today's activities and generating comprehensive summary"
+
+    # Gather today's data
+    today_logs = recall all_activities from today
+    today_goals = recall goals_worked_on from today
+    today_interactions = recall user_interactions from today
+    today_decisions = recall decisions_made from today
+    today_learnings = recall new_insights from today
+
+    # Process and categorize
+    summary = {
+        date: current_date,
+        total_activities: count(today_logs),
+
+        # Achievements section
+        achievements: analyze_achievements(today_logs),
+        completed_goals: filter_completed_goals(today_goals),
+        successful_interactions: filter_positive_interactions(today_interactions),
+
+        # Challenges section
+        challenges: identify_challenges(today_logs),
+        blocked_goals: filter_blocked_goals(today_goals),
+        difficult_decisions: identify_difficult_decisions(today_decisions),
+
+        # Learning section
+        new_insights: categorize_learnings(today_learnings),
+        skill_improvements: identify_skill_gains(today_logs),
+        knowledge_gaps: identify_knowledge_gaps(today_logs),
+
+        # Decision analysis
+        key_decisions: analyze_decisions(today_decisions),
+        decision_outcomes: track_decision_outcomes(today_decisions),
+
+        # Interaction analysis
+        collaboration_quality: assess_collaboration(today_interactions),
+        user_satisfaction: gauge_user_satisfaction(today_interactions),
+
+        # Forward-looking insights
+        tomorrow_priorities: generate_tomorrow_priorities(),
+        action_items: extract_action_items(),
+        optimization_opportunities: identify_optimizations()
+    }
+
+    # Store summary with rich metadata
+    store summary in daily_summaries with metadata: {
+        generated_at: current_timestamp,
+        data_sources: ["activity_logs", "goal_system", "interaction_history"],
+        confidence_score: calculate_summary_confidence(),
+        version: "1.0"
+    }
+
+    # Generate insights and recommendations
+    insights = generate_daily_insights(summary)
+    recommendations = generate_daily_recommendations(summary)
+
+    # Update long-term patterns
+    update_weekly_patterns(summary)
+    update_monthly_trends(summary)
+
+    remember this_summarization_session
+
+    return {
+        summary: summary,
+        insights: insights,
+        recommendations: recommendations,
+        metadata: {
+            processing_time: calculation_time,
+            data_quality: assess_data_quality(),
+            completeness: assess_completeness()
+        }
+    }
+
+# Helper functions for analysis
+function analyze_achievements(logs):
+    achievements = []
+    for log in logs:
+        if log.type == "completion" or log.sentiment == "positive":
+            achievements.append({
+                activity: log.activity,
+                impact: assess_impact(log),
+                effort: log.effort_level,
+                timestamp: log.timestamp
+            })
+    return rank_by_importance(achievements)
+
+function identify_challenges(logs):
+    challenges = []
+    for log in logs:
+        if log.type == "error" or log.sentiment == "negative" or log.difficulty == "high":
+            challenges.append({
+                challenge: log.description,
+                severity: assess_severity(log),
+                resolution_status: log.resolution_status,
+                learning_opportunity: assess_learning_potential(log)
+            })
+    return challenges
+
+function generate_tomorrow_priorities():
+    # Analyze unfinished goals
+    pending_goals = get_pending_goals()
+
+    # Consider today's challenges
+    unresolved_challenges = get_unresolved_challenges()
+
+    # Factor in long-term objectives
+    strategic_priorities = get_strategic_priorities()
+
+    # Generate prioritized list
+    priorities = combine_and_prioritize(pending_goals, unresolved_challenges, strategic_priorities)
+
+    return priorities[:5]  # Top 5 priorities
+
+function generate_daily_insights(summary):
+    insights = []
+
+    # Productivity insights
+    if summary.achievements.count > daily_average("achievements"):
+        insights.append("Above-average productivity today")
+
+    # Challenge patterns
+    if summary.challenges.recurring_themes:
+        insights.append(f"Recurring challenge pattern: {summary.challenges.recurring_themes}")
+
+    # Learning velocity
+    if summary.new_insights.count > daily_average("insights"):
+        insights.append("High learning velocity today")
+
+    # Decision quality
+    if summary.key_decisions.confidence_average > 0.8:
+        insights.append("High-confidence decision making")
+
+    return insights
+
+function generate_daily_recommendations(summary):
+    recommendations = []
+
+    # Based on challenges
+    if summary.challenges.count > 0:
+        recommendations.append("Focus on resolving recurring challenges")
+
+    # Based on learning gaps
+    if summary.knowledge_gaps:
+        recommendations.append("Allocate time for knowledge gap filling")
+
+    # Based on goal progress
+    if summary.completed_goals.percentage < 0.5:
+        recommendations.append("Review goal prioritization and time allocation")
+
+    return recommendations
+
+# Expose interface for Lyrixa integration
+expose_command "summarize_day" -> day_summary_requested
+expose_command "daily_summary" -> day_summary_requested
+expose_command "analyze_today" -> day_summary_requested
+
+# Self-improvement
+evolve based_on summary_usefulness_feedback
+learn from user_requests for different_summary_formats

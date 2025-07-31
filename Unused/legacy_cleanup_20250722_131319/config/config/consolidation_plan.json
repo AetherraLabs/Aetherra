@@ -1,0 +1,110 @@
+{
+  "timestamp": "2025-07-09T10:55:23.249786",
+  "summary": {
+    "total_files": 52982,
+    "test_files": 3858,
+    "documentation_files": 1582,
+    "backup_files": 753,
+    "temp_files": 7043,
+    "duplicates": 900
+  },
+  "recommendations": [
+    {
+      "action": "remove",
+      "category": "temporary_files",
+      "files": [
+        "error_tracker.log",
+        "write_guard.log",
+        "__pycache__\\comprehensive_feature_test.cpython-313.pyc",
+        "__pycache__\\comprehensive_housekeeping.cpython-313.pyc",
+        "__pycache__\\corruption_detector.cpython-313.pyc",
+        "__pycache__\\corruption_prevention_system.cpython-313.pyc",
+        "__pycache__\\debug_console_demo.cpython-313.pyc",
+        "__pycache__\\debug_status.cpython-313.pyc",
+        "__pycache__\\debug_unsafe_plugin.cpython-313.pyc",
+        "__pycache__\\demo_brain_loop.cpython-313.pyc"
+      ],
+      "total_count": 7043,
+      "priority": "high",
+      "safe": true
+    },
+    {
+      "action": "consolidate",
+      "category": "test_files",
+      "target_structure": {
+        "tests/unit/": "Unit tests",
+        "tests/integration/": "Integration tests",
+        "testing/verification/": "Verification scripts"
+      },
+      "file_count": 3858,
+      "priority": "medium",
+      "safe": true
+    },
+    {
+      "action": "archive",
+      "category": "old_documentation",
+      "files": [
+        "ADVANCED_TOOLS_IMPLEMENTATION_COMPLETE.md",
+        "AETHERRA_API_IMPLEMENTATION_COMPLETE.md",
+        "AETHERRA_PARSER_FIX_SUMMARY.md",
+        "AI_OS_KERNEL_IMPLEMENTATION_COMPLETE.md",
+        "ANALYTICS_DASHBOARD_FIXES.md"
+      ],
+      "total_count": 300,
+      "target": "archive/documentation/",
+      "priority": "low",
+      "safe": true
+    },
+    {
+      "action": "deduplicate",
+      "category": "duplicate_files",
+      "duplicates": [
+        {
+          "filename": "demo_phase4_features.py",
+          "paths": [
+            "demo_phase4_features.py",
+            "backups\\phase4_complete\\phase4_implementation\\demo_phase4_features.py"
+          ],
+          "count": 2
+        },
+        {
+          "filename": "demo_plugin_chaining.py",
+          "paths": [
+            "demo_plugin_chaining.py",
+            "backups\\plugin_chaining_complete\\plugin_chaining_final_20250706_221355\\demo_plugin_chaining.py",
+            "backups\\plugin_chaining_complete\\plugin_chaining_final_20250706_221504\\demo_plugin_chaining.py"
+          ],
+          "count": 3
+        },
+        {
+          "filename": "demo_plugin_rewriter.py",
+          "paths": [
+            "demo_plugin_rewriter.py",
+            "backups\\phase5_complete\\phase5_ai_rewriter_20250706_224608\\demo_plugin_rewriter.py"
+          ],
+          "count": 2
+        },
+        {
+          "filename": "minimal_lyrixa_gui.py",
+          "paths": [
+            "minimal_lyrixa_gui.py",
+            "backups\\final_consolidation_backup\\backup_20250705_170219\\minimal_lyrixa_gui.py",
+            "archive\\legacy_guis_launchers\\minimal_lyrixa_gui.py"
+          ],
+          "count": 3
+        },
+        {
+          "filename": "validate_plugin_rewriter.py",
+          "paths": [
+            "validate_plugin_rewriter.py",
+            "backups\\phase5_complete\\phase5_ai_rewriter_20250706_224608\\validate_plugin_rewriter.py"
+          ],
+          "count": 2
+        }
+      ],
+      "total_count": 900,
+      "priority": "medium",
+      "safe": false
+    }
+  ]
+}

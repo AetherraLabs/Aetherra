@@ -1,0 +1,69 @@
+# 🧬 Aetherra Standard Library Demo
+# This example demonstrates all core plugins in the Aetherra Standard Library
+
+# Goal: Demonstrate comprehensive standard library usage
+goal: "demonstrate_stdlib_capabilities" priority: high
+
+# Agent activation for stdlib management
+agent: "stdlib_manager"
+
+# Memory for plugin status
+remember("stdlib_plugins_loaded") as "plugin_status"
+
+# System monitoring with sysmon plugin
+analyze for "system_health"
+use plugin: "sysmon.status"
+
+# Performance optimization with optimizer plugin
+optimize for "performance"
+use plugin: "optimizer.analyze_performance"
+
+# File operations with coretools plugin
+create file: "demo_output.txt"
+use plugin: "coretools.write_file"
+use plugin: "coretools.list_files"
+
+# Command execution with executor plugin
+execute command: "echo 'test'"
+use plugin: "executor.execute_now"
+schedule command: "system_check" for "+30s"
+use plugin: "executor.schedule_command"
+
+# Behavior analysis with reflector plugin
+analyze for "behavior_patterns"
+use plugin: "reflector.analyze_behavior"
+use plugin: "reflector.pattern_analysis"
+
+# System repair with selfrepair plugin
+detect for "system_errors"
+use plugin: "selfrepair.detect_errors"
+repair with: "auto_suggestions"
+use plugin: "selfrepair.suggest_fixes"
+
+# Audio processing with whisper plugin (if available)
+transcribe from: "audio_files"
+use plugin: "whisper.list_files"
+
+# Variable assignments for configuration
+demo_enabled = true
+plugin_count = 7
+output_format = "json"
+
+# Memory operations for results
+remember("stdlib_demo_complete") as "demo_status"
+recall("plugin_status")
+
+# Plugin status checks
+sysmon_status = plugin("sysmon.status")
+optimizer_status = plugin("optimizer.status")
+coretools_status = plugin("coretools.status")
+executor_status = plugin("executor.status")
+reflector_status = plugin("reflector.status")
+selfrepair_status = plugin("selfrepair.status")
+whisper_status = plugin("whisper.status")
+
+# Final analysis
+analyze for "stdlib_effectiveness"
+learn from "plugin_usage_patterns"
+
+# End of Aetherra Standard Library Demo
