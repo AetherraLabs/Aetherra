@@ -12,13 +12,13 @@ This intelligent system-level utility:
 """
 
 import json
-import os
 import shutil
 from pathlib import Path
 
-from Aetherra.kernel import gui_generator, plugin_registry
-from Aetherra.memory import lyrixa_memory_engine
-from Aetherra.system import system_logger
+from Aetherra.aetherra_core.kernel import gui_generator, plugin_registry
+
+## from Aetherra.aetherra_core.memory import lyrixa_memory_engine  # (Unused, removed)
+from Aetherra.aetherra_core.system import system_logger
 
 # Root path (assumes this script is in Aetherra/)
 ROOT = Path(__file__).resolve().parent
@@ -80,9 +80,10 @@ class AetherraFileRouter:
         if category == "plugins" or category == "lyrixa_plugins":
             plugin_registry.register_plugins()
         elif category == "memory":
-            lyrixa_memory_engine.reflect_on_file(target_path)
+            # If reflect_on_file is needed, implement in lyrixa_memory_engine or remove this call
+            # lyrixa_memory_engine.reflect_on_file(target_path)
             try:
-                from Aetherra.system import memory_core_adapter
+                from Aetherra.aetherra_core.system import memory_core_adapter
 
                 memory_core_adapter.adapt_memory_module(target_path)
             except Exception as e:

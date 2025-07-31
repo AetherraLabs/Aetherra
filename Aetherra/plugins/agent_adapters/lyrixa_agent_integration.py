@@ -28,16 +28,32 @@ logger = logging.getLogger(__name__)
 
 # Import Aetherra agent components
 try:
-    from core.agent_executor import AgentExecutor
-    from core.multi_agent_manager import AgentRole, AgentTask, MultiAgentManager
+    # Try modular imports first
+    try:
+        from Aetherra.aetherra_core.system.core_migrated.agents.agents.agent_executor import AgentExecutor
+        from Aetherra.aetherra_core.system.core_migrated.agents.agents.multi_agent_manager import AgentRole, AgentTask, MultiAgentManager
+        AGENT_SYSTEM_AVAILABLE = True
+    except ImportError as e:
+        logger.warning(f"⚠️ Agent system not available: {e}")
+        # Fallback: define stubs for graceful degradation
+        AGENT_SYSTEM_AVAILABLE = False
+        class AgentExecutor:
+            def __init__(self, *args, **kwargs):
+                pass
+            def execute(self, *args, **kwargs):
+                logger.warning("AgentExecutor not available.")
 
-    AGENT_SYSTEM_AVAILABLE = True
-except ImportError as e:
-    logger.warning(f"⚠️ Agent system not available: {e}")
-    MultiAgentManager = None
-    AgentRole = None
-    AgentTask = None
-    AgentExecutor = None
+        class AgentRole:
+            pass
+
+        class AgentTask:
+            pass
+
+        class MultiAgentManager:
+            def __init__(self, *args, **kwargs):
+                pass
+            def manage(self, *args, **kwargs):
+                logger.warning("MultiAgentManager not available.")
     AGENT_SYSTEM_AVAILABLE = False
 
 

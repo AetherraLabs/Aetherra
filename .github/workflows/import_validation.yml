@@ -1,0 +1,32 @@
+# Aetherra CI Import Validation
+
+name: Import Structure Validation
+
+on:
+  pull_request:
+    paths:
+      - '**.py'
+      - 'verify_imports.py'
+      - 'docs/import_map.md'
+      - '.github/workflows/import_validation.yml'
+  push:
+    branches:
+      - main
+
+jobs:
+  verify-imports:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Run import verification
+        run: |
+          python verify_imports.py

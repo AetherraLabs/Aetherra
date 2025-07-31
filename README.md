@@ -216,6 +216,54 @@ display result with style="elegant"
 
 ---
 
+
+---
+
+## 🧩 **Modular Import Structure**
+
+**Aetherra** now uses a fully modular Python import structure. All imports should use the canonical modular paths:
+
+```python
+from aetherra_core.memory import FractalEncoder
+from lyrixa_core.plugins import PluginManager
+from Aetherra.plugins.agent_adapters.agent_base import AgentBase
+```
+
+**Valid import prefixes:**
+- `Aetherra.`
+- `Lyrixa.`
+- `aetherra_core.`
+- `lyrixa_core.`
+- Relative imports (e.g., `from .module import X`)
+
+**Invalid/deprecated:**
+- Absolute imports outside these namespaces
+- Legacy paths (e.g., `from core.plugin_api import ...`)
+
+### Example: Canonical Imports
+
+```python
+# Good:
+from aetherra_core.memory.fractal_encoder import FractalEncoder
+from lyrixa_core.plugins.plugin_manager import PluginManager
+
+# Bad (deprecated):
+from core.plugin_api import register_plugin
+```
+
+### Architecture Diagram (Simplified)
+
+```plaintext
+Aetherra/
+├── aetherra_core/   # Core memory, kernel, system
+├── lyrixa_core/     # Lyrixa AI, plugins, interface
+├── plugins/         # Modular plugin ecosystem
+└── ...
+```
+
+For more details, see `docs/import_map.md`.
+
+---
 ## 🛡️ **Security & Privacy**
 
 ### **Enterprise-Grade Security System**

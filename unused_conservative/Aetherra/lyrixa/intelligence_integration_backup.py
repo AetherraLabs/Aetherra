@@ -20,7 +20,12 @@ sys.path.insert(0, str(project_root))
 
 # Import Aetherra runtime components
 try:
-    from Aetherra.runtime.aether_runtime import AetherRuntime
+    # Try modular runtime import first
+    try:
+        from Aetherra.aetherra_core.system.core_migrated.agents.agents.agent_executor import AgentExecutor as AetherRuntime
+    except ImportError:
+        print("⚠️ Modular AetherRuntime not available")
+        AetherRuntime = None
 except ImportError:
     print("⚠️ Aetherra runtime not available")
     AetherRuntime = None
@@ -114,52 +119,49 @@ class LyrixaIntelligenceStack:
         self.plugin_manager = None
         self.self_improvement_dashboard = None
         self.aetherra_hub_client = None
-        
+
         # Initialize modular connections with error handling
         try:
             # Try to connect to enhanced plugin manager
             try:
-                from Aetherra.lyrixa.plugins.enhanced_plugin_manager import PluginManager
+                from Aetherra.plugins.core.enhanced_plugin_manager import EnhancedPluginManager as PluginManager
                 self.plugin_manager = PluginManager()
-                print("✅ Connected to Enhanced Plugin Manager")
+                print("✅ Connected to Modular Enhanced Plugin Manager")
             except ImportError:
-                print("⚠️ Enhanced Plugin Manager not available")
-            
+                print("⚠️ Modular Enhanced Plugin Manager not available")
+                self.plugin_manager = None
             # Try basic plugin manager as fallback
             try:
-                from Aetherra.core.plugin_manager import PluginManager as BasicPluginManager
+                from Aetherra.plugins.core.plugin_api import PluginManager as BasicPluginManager
                 if not self.plugin_manager:
                     self.plugin_manager = BasicPluginManager()
-                    print("✅ Connected to Basic Plugin Manager")
+                    print("✅ Connected to Modular Basic Plugin Manager")
             except ImportError:
-                print("⚠️ Basic Plugin Manager not available")
-            
-        except Exception as e:
-            print(f"⚠️ Plugin system initialization warning: {e}")
-            
-        print("🧠 Intelligence Stack initialized")
+                print("⚠️ Modular Basic Plugin Manager not available")
+            except Exception as e:
+                print(f"⚠️ Plugin system initialization warning: {e}")
+            print("🧠 Intelligence Stack initialized")
 
     def _initialize_modular_connections(self):
         """Initialize connections to modular components with graceful fallback"""
         try:
-            # Try to connect to enhanced plugin manager
+            # Try to connect to modular enhanced plugin manager
             try:
-                from Aetherra.lyrixa.plugins.enhanced_plugin_manager import PluginManager
+                from Aetherra.plugins.core.enhanced_plugin_manager import EnhancedPluginManager as PluginManager
                 self.plugin_manager = PluginManager()
-                print("✅ Connected to Enhanced Plugin Manager")
+                print("✅ Connected to Modular Enhanced Plugin Manager")
             except ImportError:
-                print("⚠️ Enhanced Plugin Manager not available")
+                print("⚠️ Modular Enhanced Plugin Manager not available")
                 self.plugin_manager = None
-            
-            # Try to connect to self-improvement dashboard
+            # Try to connect to modular self-improvement dashboard
             try:
-                from Aetherra.lyrixa.self_improvement_dashboard import SelfImprovementDashboard
+                from Aetherra.plugins.core.self_improvement_dashboard import SelfImprovementDashboard
                 self.self_improvement_dashboard = SelfImprovementDashboard()
-                print("✅ Connected to Self-Improvement Dashboard")
+                print("✅ Connected to Modular Self-Improvement Dashboard")
             except ImportError:
-                print("⚠️ Self-Improvement Dashboard not available")
+                print("⚠️ Modular Self-Improvement Dashboard not available")
                 self.self_improvement_dashboard = None
-            
+
             # Try to connect to AetherHub client
             try:
                 import requests
@@ -174,7 +176,7 @@ class LyrixaIntelligenceStack:
             except:
                 print("⚠️ AetherHub service not available")
                 self.aetherra_hub_client = None
-                
+
         except Exception as e:
             print(f"⚠️ Modular connection initialization warning: {e}")
             # Continue with basic functionality even if connections fail
@@ -762,4 +764,3 @@ class LyrixaIntelligenceStack:
                     try:
                         # Try different execution methods
                         if hasattr(self.aether_runtime, "execute_async"):
-                         

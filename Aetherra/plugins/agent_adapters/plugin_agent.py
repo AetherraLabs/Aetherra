@@ -37,7 +37,7 @@ class PluginAgent(AgentBase):
                 ):
                     result = await self._search_plugins(input_text, context)
                 else:
-                    result = await self._list_plugins(input_text, context)
+                    result = await self._list_plugins(context)
             elif operation_type == "plugin_management":
                 if any(keyword in input_text.lower() for keyword in ["install", "add"]):
                     result = await self._install_plugin(input_text, context)
@@ -73,7 +73,7 @@ class PluginAgent(AgentBase):
                     keyword in input_lower
                     for keyword in ["list", "show all", "available"]
                 ):
-                    result = await self._list_plugins(input_text, context)
+                    result = await self._list_plugins(context)
                 elif any(
                     keyword in input_lower
                     for keyword in ["info", "about", "details", "explain"]
@@ -388,8 +388,8 @@ What would you like to do with plugins?"""
     ) -> AgentResponse:
         """Handle plugin generation requests using the PluginGeneratorPlugin"""
         try:
-            # Import and initialize the plugin generator
-            from Aetherra.lyrixa.plugins.plugin_generator_plugin import (
+            # Import and initialize the plugin generator (updated modular path)
+            from Aetherra.plugins.core.plugin_generator_plugin import (
                 PluginGeneratorPlugin,
             )
 

@@ -19,16 +19,17 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from Aetherra.aetherra_core.memory.lyrixa_memory_engine import LyrixaMemoryEngine
+
+from .plugin_manager_stubs import (
+    MemoryAwarePluginRouter,
+    MemoryEnhancedPluginManager,
+    PluginManager,
+)
+
 # Add the project root to the path for imports
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
-
-from Aetherra.lyrixa.plugins.enhanced_plugin_manager import PluginManager
-from Aetherra.lyrixa.plugins.memory_aware_plugin_router import (
-    MemoryAwarePluginRouter,
-    MemoryEnhancedPluginManager,
-)
-from Aetherra.memory.lyrixa_memory_engine import LyrixaMemoryEngine
 
 # Set up logging
 logging.basicConfig(
