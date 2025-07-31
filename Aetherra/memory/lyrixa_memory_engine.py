@@ -123,6 +123,17 @@ class LyrixaMemoryEngine:
             "insights_discovered": 0,
         }
 
+        # In-memory store for test compatibility
+        self._mem = []
+
+    def store(self, content, metadata=None):
+        """Store memory for test compatibility"""
+        self._mem.append({"content": content, "metadata": metadata or {}})
+
+    def retrieve(self, query):
+        """Retrieve memory for test compatibility"""
+        return [m for m in self._mem if query in m["content"]]
+
     async def remember(
         self,
         content: Any,

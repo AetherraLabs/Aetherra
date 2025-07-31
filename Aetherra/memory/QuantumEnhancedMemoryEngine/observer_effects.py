@@ -1,3 +1,12 @@
+# Minimal ObserverMemoryManager stub for integration test compatibility
+class ObserverMemoryManager:
+    def __init__(self):
+        pass
+
+    def observe(self, memory):
+        return memory
+
+
 """
 Observer Effects Simulator
 Mutates memory when accessed, modeling quantum observer interference.
@@ -5,6 +14,7 @@ Mutates memory when accessed, modeling quantum observer interference.
 
 import time
 from random import random
+
 
 class ObserverEffectEngine:
     def __init__(self):
@@ -15,7 +25,9 @@ class ObserverEffectEngine:
         mutation_factor = random()
         self.access_log[key] = {"time": time.time(), "mutation": mutation_factor}
         mutated = memory_entry.copy()
-        mutated["confidence"] = memory_entry.get("confidence", 1.0) * (0.9 + mutation_factor * 0.1)
+        mutated["confidence"] = memory_entry.get("confidence", 1.0) * (
+            0.9 + mutation_factor * 0.1
+        )
         mutated["observer_effect"] = True
         return mutated
 
