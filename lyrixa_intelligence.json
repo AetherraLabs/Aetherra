@@ -17,16 +17,260 @@
       "success_rate": 0.5,
       "created": "2025-07-23T20:55:54.228177",
       "last_used": "2025-07-23T20:55:54.228181"
+    },
+    "pattern_84240": {
+      "context_signature": "{'type': 'programming', 'task': 'debug', 'language': 'python'}",
+      "context_type": "programming",
+      "complexity_score": 0.362,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:21:56.567432",
+      "last_used": "2025-07-31T22:21:56.567450"
+    },
+    "pattern_84892": {
+      "context_signature": "{'type': 'conversation', 'topic': 'ai', 'complexity': 'high'}",
+      "context_type": "conversational",
+      "complexity_score": 0.361,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:21:56.568556",
+      "last_used": "2025-07-31T22:21:56.568561"
+    },
+    "pattern_98889": {
+      "context_signature": "{'type': 'analysis', 'data': 'user_behavior', 'timeframe': 'weekly'}",
+      "context_type": "analytical",
+      "complexity_score": 0.368,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:21:56.569101",
+      "last_used": "2025-07-31T22:21:56.569104"
+    },
+    "pattern_88263": {
+      "context_signature": "{'type': 'goal', 'objective': 'learning', 'priority': 'high'}",
+      "context_type": "general",
+      "complexity_score": 0.361,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:21:56.570860",
+      "last_used": "2025-07-31T22:21:56.570865"
+    },
+    "pattern_58241": {
+      "context_signature": "{'topic': 'algorithms', 'difficulty': 'recursive', 'user_state': 'struggling', 'complexity': 'high'}",
+      "context_type": "general",
+      "complexity_score": 0.5,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:21:56.594843",
+      "last_used": "2025-07-31T22:21:56.594847"
+    },
+    "pattern_38280": {
+      "context_signature": "{'task': 'brainstorming', 'domain': 'user_interface'}",
+      "context_type": "goal_oriented",
+      "complexity_score": 0.253,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:21:56.611543",
+      "last_used": "2025-07-31T22:21:56.611548"
+    },
+    "pattern_34317": {
+      "context_signature": "{'user_state': 'frustrated', 'task': 'debugging'}",
+      "context_type": "goal_oriented",
+      "complexity_score": 0.249,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:21:56.612193",
+      "last_used": "2025-07-31T22:21:56.612197"
+    },
+    "pattern_80837": {
+      "context_signature": "{'type': 'programming', 'task': 'debug', 'language': 'python'}",
+      "context_type": "programming",
+      "complexity_score": 0.362,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:23:49.936848",
+      "last_used": "2025-07-31T22:23:49.936866"
+    },
+    "pattern_33887": {
+      "context_signature": "{'type': 'conversation', 'topic': 'ai', 'complexity': 'high'}",
+      "context_type": "conversational",
+      "complexity_score": 0.361,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:23:49.937593",
+      "last_used": "2025-07-31T22:23:49.937598"
+    },
+    "pattern_8310": {
+      "context_signature": "{'type': 'analysis', 'data': 'user_behavior', 'timeframe': 'weekly'}",
+      "context_type": "analytical",
+      "complexity_score": 0.368,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:23:49.938182",
+      "last_used": "2025-07-31T22:23:49.938186"
+    },
+    "pattern_43270": {
+      "context_signature": "{'type': 'goal', 'objective': 'learning', 'priority': 'high'}",
+      "context_type": "general",
+      "complexity_score": 0.361,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:23:49.938766",
+      "last_used": "2025-07-31T22:23:49.938770"
+    },
+    "pattern_43248": {
+      "context_signature": "['unit_tests_first', 'integration_tests_first', 'e2e_tests_first']",
+      "context_type": "general",
+      "complexity_score": 0.066,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:23:49.970877",
+      "last_used": "2025-07-31T22:23:49.970883"
+    },
+    "pattern_51169": {
+      "context_signature": "{'domain': 'programming', 'complexity': 'high', 'user_skill': 'intermediate', 'problem_type': 'debugging'}",
+      "context_type": "programming",
+      "complexity_score": 0.506,
+      "usage_count": 1,
+      "success_rate": 1.0,
+      "created": "2025-07-31T22:23:49.989965",
+      "last_used": "2025-07-31T22:23:49.989982"
+    },
+    "pattern_33488": {
+      "context_signature": "{'global_test': true, 'integration': 'personality'}",
+      "context_type": "general",
+      "complexity_score": 0.251,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:23:50.008189",
+      "last_used": "2025-07-31T22:23:50.008191"
+    },
+    "pattern_13103": {
+      "context_signature": "['detailed_explanation', 'simple_overview', 'code_example']",
+      "context_type": "general",
+      "complexity_score": 0.059,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:23:50.022589",
+      "last_used": "2025-07-31T22:23:50.022599"
+    },
+    "pattern_99416": {
+      "context_signature": "{'task': 'debug', 'language': 'python', 'error_type': 'syntax'}",
+      "context_type": "goal_oriented",
+      "complexity_score": 0.363,
+      "usage_count": 1,
+      "success_rate": 1.0,
+      "created": "2025-07-31T22:23:50.054810",
+      "last_used": "2025-07-31T22:23:50.054817"
+    },
+    "pattern_18844": {
+      "context_signature": "{'task': 'debug', 'language': 'python', 'error_type': 'logic'}",
+      "context_type": "goal_oriented",
+      "complexity_score": 0.362,
+      "usage_count": 1,
+      "success_rate": 1.0,
+      "created": "2025-07-31T22:23:50.056531",
+      "last_used": "2025-07-31T22:23:50.056536"
+    },
+    "pattern_19061": {
+      "context_signature": "{'task': 'debug', 'language': 'javascript', 'error_type': 'syntax'}",
+      "context_type": "goal_oriented",
+      "complexity_score": 0.367,
+      "usage_count": 1,
+      "success_rate": 1.0,
+      "created": "2025-07-31T22:23:50.059041",
+      "last_used": "2025-07-31T22:23:50.059046"
+    },
+    "pattern_10493": {
+      "context_signature": "{'task': 'debug', 'language': 'python', 'error_type': 'runtime'}",
+      "context_type": "goal_oriented",
+      "complexity_score": 0.364,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:23:50.061124",
+      "last_used": "2025-07-31T22:23:50.061128"
+    },
+    "pattern_25460": {
+      "context_signature": "['agile_methodology', 'waterfall_methodology', 'hybrid_approach']",
+      "context_type": "general",
+      "complexity_score": 0.065,
+      "usage_count": 1,
+      "success_rate": 0.5,
+      "created": "2025-07-31T22:23:50.076125",
+      "last_used": "2025-07-31T22:23:50.076134"
     }
   },
-  "learned_behaviors": {},
-  "decision_history": [],
+  "learned_behaviors": {
+    "goal_oriented_implement_unit_tests": {
+      "total_attempts": 1,
+      "successful_attempts": 1,
+      "adaptations": []
+    },
+    "programming_step_by_step_explanation": {
+      "total_attempts": 1,
+      "successful_attempts": 1,
+      "adaptations": []
+    },
+    "goal_oriented_thorough_review": {
+      "total_attempts": 1,
+      "successful_attempts": 1,
+      "adaptations": []
+    },
+    "goal_oriented_systematic_debugging": {
+      "total_attempts": 3,
+      "successful_attempts": 3,
+      "adaptations": []
+    }
+  },
+  "decision_history": [
+    {
+      "decision": "implement_unit_tests",
+      "context_type": "goal_oriented",
+      "success": true,
+      "timestamp": "2025-07-31T22:23:49.953129",
+      "details": {}
+    },
+    {
+      "decision": "step_by_step_explanation",
+      "context_type": "programming",
+      "success": true,
+      "timestamp": "2025-07-31T22:23:49.991369",
+      "details": {}
+    },
+    {
+      "decision": "thorough_review",
+      "context_type": "goal_oriented",
+      "success": true,
+      "timestamp": "2025-07-31T22:23:50.037896",
+      "details": {}
+    },
+    {
+      "decision": "systematic_debugging",
+      "context_type": "goal_oriented",
+      "success": true,
+      "timestamp": "2025-07-31T22:23:50.055638",
+      "details": {}
+    },
+    {
+      "decision": "systematic_debugging",
+      "context_type": "goal_oriented",
+      "success": true,
+      "timestamp": "2025-07-31T22:23:50.057653",
+      "details": {}
+    },
+    {
+      "decision": "systematic_debugging",
+      "context_type": "goal_oriented",
+      "success": true,
+      "timestamp": "2025-07-31T22:23:50.059932",
+      "details": {}
+    }
+  ],
   "cognitive_metrics": {
-    "total_decisions": 0,
-    "successful_predictions": 0,
-    "pattern_recognitions": 2,
-    "adaptive_adjustments": 0,
+    "total_decisions": 6,
+    "successful_predictions": 6,
+    "pattern_recognitions": 22,
+    "adaptive_adjustments": 6,
     "learning_iterations": 0
   },
-  "last_updated": "2025-07-23T20:55:54.228186"
+  "last_updated": "2025-07-31T22:23:50.076139"
 }

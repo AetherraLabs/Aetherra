@@ -79,6 +79,18 @@ class EpisodicChain:
 
 
 class FractalMeshCore:
+    def mutate_fragment(
+        self, fragment: MemoryFragment, mutation_type: str = "observer_effect"
+    ) -> MemoryFragment:
+        # Stub: Mark the fragment as mutated (for test/demo purposes)
+        fragment.content["mutated"] = True
+        fragment.content["mutation_type"] = mutation_type
+        return fragment
+
+    def simulate_causal_branch(self, branch_id: str):
+        # Stub: Return a simple simulated branch result
+        return {"branch_id": branch_id, "status": "simulated", "fragments": []}
+
     """
     Core engine for multi-dimensional memory management
 

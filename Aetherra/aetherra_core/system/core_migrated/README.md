@@ -1,1 +1,0 @@
-This directory contains modules migrated from the old core/ directory. These include agent logic, personality, reflection, metrics dashboards, tools, plugins, intelligence, events, cognitive modules, memory, and config. See subfolders for details.

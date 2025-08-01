@@ -21,19 +21,19 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
-from .fractal_mesh.analogs import CrossContextAnalogies
-from .fractal_mesh.base import (
+from ..memory.fractal_mesh.analogs import CrossContextAnalogies
+from ..memory.fractal_mesh.base import (
     ConceptCluster,
     EpisodicChain,
     FractalMeshCore,
     MemoryFragment,
     MemoryFragmentType,
 )
-from .fractal_mesh.concepts import ConceptClusterManager
-from .fractal_mesh.timelines import EpisodicTimeline
+from ..memory.fractal_mesh.concepts import ConceptClusterManager
+from ..memory.fractal_mesh.timelines import EpisodicTimeline
 
 # Import existing memory components
-from .memory_core import LyrixaMemorySystem
+from ..memory.memory_core import LyrixaMemorySystem
 from .narrator import MemoryNarrative, MemoryNarrator
 from .pulse import DriftAlert, MemoryHealth, MemoryPulseMonitor
 from .reflector import MemoryReflector, ReflectionInsight
@@ -73,9 +73,9 @@ class MemoryOperationResult:
     success: bool
     operation_type: str
     fragment_id: Optional[str] = None
-    insights: List[ReflectionInsight] = None
-    narrative: Optional[MemoryNarrative] = None
-    alerts: List[DriftAlert] = None
+    # insights: List["ReflectionInsight"] = None
+    # narrative: Optional["MemoryNarrative"] = None
+    # alerts: List["DriftAlert"] = None
     message: str = ""
 
 
@@ -303,7 +303,7 @@ class LyrixaMemoryEngine:
         narrative_type: str = "daily",
         time_range: Optional[tuple] = None,
         theme: Optional[str] = None,
-    ) -> MemoryNarrative:
+    ):
         """Generate a narrative from recent memories"""
 
         # Get relevant fragments
@@ -340,7 +340,7 @@ class LyrixaMemoryEngine:
 
     async def run_reflection(
         self, reflection_type: str = "past_week", target_concept: Optional[str] = None
-    ) -> List[ReflectionInsight]:
+    ):
         """Run reflective analysis on memories"""
 
         fragments = list(self.fractal_mesh.fragments.values())
@@ -375,7 +375,7 @@ class LyrixaMemoryEngine:
 
         return insights
 
-    async def check_memory_health(self) -> MemoryHealth:
+    async def check_memory_health(self):
         """Check overall memory system health"""
 
         fragments = list(self.fractal_mesh.fragments.values())
