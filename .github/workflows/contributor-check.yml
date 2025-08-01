@@ -1,0 +1,65 @@
+name: 🤝 Contributor Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  contributor-checks:
+    name: 🔍 Contributor Environment Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: ✅ Validate requirements.txt
+      run: |
+        echo "Checking requirements.txt..."
+        if [ -f requirements.txt ]; then
+          echo "✅ requirements.txt found"
+          pip install -r requirements.txt --dry-run
+          echo "✅ requirements.txt is valid"
+        else
+          echo "❌ requirements.txt missing"
+          exit 1
+        fi
+
+    - name: ✅ Check for .env.example
+      run: |
+        if [ -f .env.example ]; then
+          echo "✅ .env.example found"
+        else
+          echo "❌ .env.example missing"
+          exit 1
+        fi
+
+    - name: ✅ Validate core imports
+      run: |
+        pip install -r requirements.txt
+        python -c "
+        try:
+            import flask
+            import flask_socketio
+            print('✅ Core web dependencies work')
+        except ImportError as e:
+            print(f'❌ Core import failed: {e}')
+            exit(1)
+        "
+
+    - name: ✅ Check web interface syntax
+      run: |
+        python -m py_compile Aetherra/gui/web_interface_server.py
+        echo "✅ Web interface syntax is valid"
+
+    - name: ✅ Check AI OS launcher syntax
+      run: |
+        if [ -f aetherra_os_launcher.py ]; then
+          python -m py_compile aetherra_os_launcher.py
+          echo "✅ OS launcher syntax is valid"
+        fi
