@@ -1,0 +1,282 @@
+# ===================================================================
+# Aetherra AI Operating System - .gitignore
+# ===================================================================
+# This file specifies which files and directories Git should ignore
+# ===================================================================
+
+# ===== ENVIRONMENT VARIABLES & SECRETS =====
+# Never commit API keys, passwords, or sensitive configuration
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+.env.test
+*.env
+
+# ===== PYTHON CACHE & BYTECODE =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ===== VIRTUAL ENVIRONMENTS =====
+venv/
+env/
+ENV/
+.venv/
+.env/
+virtualenv/
+.virtualenv/
+
+# ===== IDE & EDITOR FILES =====
+# Visual Studio Code
+.vscode/
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ===== OPERATING SYSTEM FILES =====
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===== LOGS & TEMPORARY FILES =====
+*.log
+logs/
+*.tmp
+*.temp
+temp/
+tmp/
+*.bak
+*.backup
+*.swp
+*.swo
+
+# ===== AETHERRA RUNTIME FILES =====
+# These files contain sensitive user data or temporary runtime state
+
+# User data stores
+memory_store.json
+goals_store.json
+aetherra_functions.json
+user_data.json
+*.user.json
+
+# Runtime state files
+live_file_index.json
+evolution_history.aether
+self_organizer.aether
+*.aether
+
+# Database files (contain user data)
+*.db
+*.sqlite
+*.sqlite3
+aetherra.db
+aetherra_*.db
+
+# AI model caches
+model_cache/
+embeddings_cache/
+.cache/
+
+# Generated reports and outputs
+debug_output/
+test_output/
+reports/
+*.report.json
+cleanup_report.json
+
+# Backup files
+backups/
+*.backup.*
+backup_*/
+
+# ===== TESTING & COVERAGE =====
+.pytest_cache/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.tox/
+htmlcov/
+.nyc_output
+
+# ===== DOCUMENTATION BUILDS =====
+docs/_build/
+docs/build/
+site/
+
+# ===== JUPYTER NOTEBOOKS =====
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# ===== NODE.JS (for frontend components) =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ===== COMPILED EXTENSIONS =====
+*.pyd
+*.dll
+*.dylib
+
+# ===== PROFILING DATA =====
+.prof
+*.prof
+
+# ===== SECURITY SCANNERS =====
+.bandit
+safety-report.txt
+
+# ===== DEPLOYMENT FILES =====
+docker-compose.override.yml
+.dockerignore
+
+# ===== PROJECT-SPECIFIC EXCLUSIONS =====
+# Cleanup and maintenance scripts
+repository_cleanup*.py
+cleanup_*.py
+*_cleanup.py
+
+# Temporary development files
+scratch/
+playground/
+experiments/
+dev_test/
+
+# Large binary files that shouldn't be versioned
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.mp3
+*.wav
+*.flac
+
+# Generated or downloaded models
+models/
+weights/
+checkpoints/
+*.bin
+*.pt
+*.pth
+*.ckpt
+
+# ===== IGNORE PATTERNS FOR COMMON MISTAKES =====
+# Backup files from editors
+*~
+*.orig
+*.rej
+
+# Compressed archives
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.7z
+*.rar
+
+# ===== ALLOW THESE IMPORTANT FILES =====
+# Make sure these files are never ignored (override any patterns above)
+!requirements.txt
+!.env.example
+!.gitignore
+!README.md
+!CONTRIBUTING.md
+!LICENSE
+!.github/
+
+# ===== VIRTUAL ENVIRONMENT BINARIES =====
+# Ignore virtual environment executables but allow the structure
+Scripts/*.exe
+Scripts/*.bat
+Scripts/*.cmd
+scripts/*.exe
+scripts/*.bat
+scripts/*.cmd
+
+# ===== FINAL CATCH-ALL =====
+# Any additional files that shouldn't be committed
+.aetherra_temp*
+*.tmp.*
+temp_*
+*_temp.*
