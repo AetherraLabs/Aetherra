@@ -272,6 +272,35 @@ Aetherra/
 - Optimize database queries
 - Consider memory usage for large operations
 
+### Recommended VS Code Extensions
+
+For the best development experience, we recommend installing these VS Code extensions:
+
+#### Essential Extensions
+- **[GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)** (`eamodio.gitlens`)
+  - 🔍 See git blame annotations and code authorship at a glance
+  - 📊 Rich git visualizations and powerful comparison commands
+  - 🌊 Navigate git history and explore repositories seamlessly
+  - Perfect for understanding code changes and contributor history
+
+#### Additional Helpful Extensions
+- **[Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)** - Python language support
+- **[Pylance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance)** - Fast Python language server
+- **[Black Formatter](https://marketplace.visualstudio.com/items?itemName=ms-python.black-formatter)** - Code formatting
+- **[autoDocstring](https://marketplace.visualstudio.com/items?itemName=njpwerner.autodocstring)** - Generate docstrings
+- **[Thunder Client](https://marketplace.visualstudio.com/items?itemName=rangav.vscode-thunder-client)** - API testing
+
+#### Quick Install
+You can install GitLens directly from VS Code:
+1. Open VS Code Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+2. Type: `Extensions: Install Extensions`
+3. Search for "GitLens" and install `eamodio.gitlens`
+
+Or use the VS Code command line:
+```bash
+code --install-extension eamodio.gitlens
+```
+
 ## 📚 Resources
 
 ### Documentation

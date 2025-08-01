@@ -63,3 +63,11 @@ jobs:
           python -m py_compile aetherra_os_launcher.py
           echo "✅ OS launcher syntax is valid"
         fi
+
+    - name: 💡 Recommend VS Code Extensions
+      run: |
+        echo "💡 Recommended VS Code Extensions for contributors:"
+        echo "   - GitLens (eamodio.gitlens) - Track code changes and authorship"
+        echo "   - Python (ms-python.python) - Python language support"
+        echo "   - Pylance (ms-python.vscode-pylance) - Enhanced Python IntelliSense"
+        echo "   Install via: code --install-extension eamodio.gitlens"

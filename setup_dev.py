@@ -217,6 +217,11 @@ except ImportError as e:
    - README.md for project overview
    - CONTRIBUTING.md for contribution guidelines
 
+6. 🧩 Install recommended VS Code extensions:
+   - GitLens (eamodio.gitlens) - Essential for tracking code changes
+   - Python (ms-python.python) - Python language support
+   - Pylance (ms-python.vscode-pylance) - Fast Python IntelliSense
+
 🔗 Useful URLs:
    - Web Interface: http://127.0.0.1:8686
    - GitHub Repo: https://github.com/AetherraLabs/Aetherra
