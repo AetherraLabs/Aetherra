@@ -121,6 +121,33 @@ try:
         agent_imports["GoalAgent"] = GoalAgent
     except ImportError:
         pass
+
+    # Enhanced Specialized Agents
+    try:
+        from Aetherra.lyrixa.agents.data_agent import DataAgent
+
+        agent_imports["DataAgent"] = DataAgent
+    except ImportError:
+        pass
+    try:
+        from Aetherra.lyrixa.agents.technical_agent import TechnicalAgent
+
+        agent_imports["TechnicalAgent"] = TechnicalAgent
+    except ImportError:
+        pass
+    try:
+        from Aetherra.lyrixa.agents.support_agent import SupportAgent
+
+        agent_imports["SupportAgent"] = SupportAgent
+    except ImportError:
+        pass
+    try:
+        from Aetherra.lyrixa.agents.security_agent import SecurityAgent
+
+        agent_imports["SecurityAgent"] = SecurityAgent
+    except ImportError:
+        pass
+
     AGENTS_AVAILABLE = len(agent_imports) > 0
     logger.info(f"✅ {len(agent_imports)} agents available")
 except ImportError as e:

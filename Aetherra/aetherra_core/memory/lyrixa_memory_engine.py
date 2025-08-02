@@ -1,10 +1,13 @@
-symbolic reasoning, and narrative generation. Inspired by Synthetic Soul's approach.
 """
+LyrixaMemoryEngine - Advanced cognitive memory system with symbolic reasoning,
+and narrative generation. Inspired by Synthetic Soul's approach.
+
 DEPRECATED: LyrixaMemoryEngine is now an adapter for QuantumEnhancedMemoryEngine.
 All memory operations are delegated to the canonical engine.
 """
 
 from .QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
+
 
 class LyrixaMemoryEngine:
     def __init__(self, *args, **kwargs):
@@ -15,10 +18,13 @@ class LyrixaMemoryEngine:
 
     def retrieve(self, query: str, context: dict = None) -> dict:
         return self.engine.retrieve(query, context)
+
+
 from .memory_core import LyrixaMemorySystem
 from .narrator import MemoryNarrative, MemoryNarrator
 from .pulse import DriftAlert, MemoryHealth, MemoryPulseMonitor
 from .reflector import MemoryReflector, ReflectionInsight
+from dataclasses import dataclass
 
 
 @dataclass
