@@ -69,6 +69,38 @@ python aetherra_os_launcher.py --mode test
 pytest
 ```
 
+### 5. Fix Import Issues (If Any)
+
+If you encounter import errors after cloning/forking, run our automated fix script:
+
+```bash
+# Fix common import issues automatically
+python fix_imports.py
+```
+
+This will:
+- ✅ Create missing `__init__.py` files
+- ✅ Check Python version compatibility  
+- ✅ Install missing dependencies
+- ✅ Test import patterns
+- ✅ Generate a detailed report
+
+For manual troubleshooting, see [IMPORT_FIXES.md](IMPORT_FIXES.md).
+
+**Common import errors and quick fixes:**
+
+```bash
+# Error: ModuleNotFoundError: No module named 'aetherra_core'
+# Fix: Missing __init__.py files (run fix_imports.py)
+
+# Error: No module named 'flask' or 'aiohttp'  
+# Fix: Install dependencies
+pip install -r requirements.txt
+
+# Error: VS Code import warnings
+# Fix: Select correct Python interpreter (Ctrl+Shift+P -> "Python: Select Interpreter")
+```
+
 ## 🛠️ Development Workflow
 
 ### 1. Create a Feature Branch
