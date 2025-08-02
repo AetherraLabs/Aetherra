@@ -24,22 +24,30 @@ ImportError: No module named 'aiohttp'
 
 ## Quick Fix (Automated)
 
-Run our automated import fixer:
+**Option 1: Quick Fix (Recommended for most users)**
 
 ```bash
-# Make sure you're in the project root directory
-cd path/to/Aetherra-Project
+# Fast fix without heavy dependencies (recommended first)
+python quick_fix_imports.py
+```
 
-# Run the automated fix script
+**Option 2: Full Fix (if you need dependency management)**
+
+```bash
+# Complete fix with dependency installation (may take longer)
 python fix_imports.py
 ```
 
-This script will:
+The quick fix script will:
 - ✅ Create missing `__init__.py` files
-- ✅ Check your Python version
-- ✅ Install missing dependencies
-- ✅ Test common import patterns
-- ✅ Generate a detailed report
+- ✅ Check your Python version  
+- ✅ Test basic import patterns
+- ✅ Complete in under 30 seconds
+
+The full fix script additionally:
+- ✅ Install missing dependencies (may timeout on slow connections)
+- ✅ Generate detailed diagnostic report
+- ✅ Test advanced import patterns
 
 ## Manual Fix Steps
 
@@ -213,16 +221,20 @@ Once your imports are working:
 ---
 
 **Quick Commands Summary:**
+
 ```bash
-# One-command fix for most issues
+# Fast fix for most issues (recommended first)
+python quick_fix_imports.py
+
+# Full fix with dependency management  
 python fix_imports.py
 
-# Manual installation
+# Manual installation if needed
 pip install -r requirements.txt
 
 # Development setup
 pip install -e ".[dev]"
 
 # Test basic imports
-python -c "from Aetherra.aetherra_core import get_system_status; print('✅ Imports working!')"
+python test_imports.py
 ```

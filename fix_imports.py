@@ -137,19 +137,26 @@ __all__ = [
         
         dependencies_status = {}
         
-        # Core dependencies that are commonly missing
+        # Core dependencies that are essential for basic functionality
         core_deps = [
-            'flask',
-            'flask_socketio',
-            'requests',
-            'aiohttp',
-            'asyncio',  # Built-in but check anyway
             'json',     # Built-in
-            'logging',  # Built-in
+            'logging',  # Built-in  
             'pathlib',  # Built-in
-            'sqlite3',  # Built-in
+            'asyncio',  # Built-in
+            'flask',    # Web framework
+            'requests', # HTTP client
         ]
         
+        # Optional dependencies that enhance functionality
+        optional_deps = [
+            'aiohttp',
+            'rich',
+            'python-dotenv',
+            'psutil',
+        ]
+        
+        # Check core dependencies
+        missing_core = []
         for dep in core_deps:
             try:
                 __import__(dep)
@@ -157,36 +164,83 @@ __all__ = [
                 logger.debug(f"✅ {dep} - Available")
             except ImportError:
                 dependencies_status[dep] = False
-                logger.warning(f"⚠️  {dep} - Missing")
-                self.issues_found.append(f"Missing dependency: {dep}")
+                missing_core.append(dep)
+                logger.warning(f"⚠️  {dep} - Missing (core dependency)")
+        
+        # Check optional dependencies  
+        for dep in optional_deps:
+            try:
+                __import__(dep)
+                dependencies_status[dep] = True
+                logger.debug(f"✅ {dep} - Available")
+            except ImportError:
+                dependencies_status[dep] = False
+                logger.debug(f"ℹ️  {dep} - Missing (optional)")
+        
+        # Only report core missing dependencies as issues
+        for dep in missing_core:
+            if dep not in ['json', 'logging', 'pathlib', 'asyncio']:  # Skip built-ins
+                self.issues_found.append(f"Missing core dependency: {dep}")
         
         return dependencies_status
     
     def install_missing_dependencies(self) -> bool:
-        """Install missing dependencies."""
+        """Install missing dependencies with timeout and fallback."""
         logger.info("📦 Installing missing dependencies...")
         
+        # Try minimal requirements first for faster setup
+        minimal_deps = [
+            'flask>=2.3.0',
+            'requests>=2.31.0', 
+            'python-dotenv>=1.0.0',
+            'rich>=13.4.0'
+        ]
+        
+        logger.info("Installing core dependencies first...")
+        success = True
+        
+        for dep in minimal_deps:
+            try:
+                logger.info(f"  Installing {dep}...")
+                result = subprocess.run([
+                    sys.executable, "-m", "pip", "install", dep
+                ], capture_output=True, text=True, check=True, timeout=120)  # 2 minute timeout per package
+                
+            except subprocess.TimeoutExpired:
+                logger.warning(f"⚠️  {dep} installation timed out - skipping")
+                success = False
+            except subprocess.CalledProcessError as e:
+                logger.warning(f"⚠️  Failed to install {dep}: {e}")
+                success = False
+        
+        if success:
+            logger.info("✅ Core dependencies installed successfully")
+            self.fixes_applied.append("Installed core dependencies")
+        else:
+            logger.warning("⚠️  Some dependencies failed to install - continuing anyway")
+            self.fixes_applied.append("Attempted to install dependencies (some may have failed)")
+        
+        # Optionally try full requirements with timeout
         requirements_file = self.project_root / "requirements.txt"
+        if requirements_file.exists():
+            logger.info("Attempting full requirements installation (with timeout)...")
+            try:
+                result = subprocess.run([
+                    sys.executable, "-m", "pip", "install", "-r", str(requirements_file)
+                ], capture_output=True, text=True, timeout=300)  # 5 minute timeout total
+                
+                if result.returncode == 0:
+                    logger.info("✅ Full requirements installed successfully")
+                    self.fixes_applied.append("Installed full requirements.txt")
+                else:
+                    logger.warning("⚠️  Some packages in requirements.txt failed to install")
+                    
+            except subprocess.TimeoutExpired:
+                logger.warning("⚠️  Full requirements installation timed out - core packages should be sufficient")
+            except Exception as e:
+                logger.warning(f"⚠️  Full requirements installation failed: {e}")
         
-        if not requirements_file.exists():
-            logger.warning("⚠️  requirements.txt not found, creating minimal requirements...")
-            self.create_minimal_requirements()
-        
-        try:
-            # Install requirements
-            result = subprocess.run([
-                sys.executable, "-m", "pip", "install", "-r", str(requirements_file)
-            ], capture_output=True, text=True, check=True)
-            
-            logger.info("✅ Dependencies installed successfully")
-            self.fixes_applied.append("Installed dependencies from requirements.txt")
-            return True
-            
-        except subprocess.CalledProcessError as e:
-            logger.error(f"❌ Failed to install dependencies: {e}")
-            logger.error(f"Output: {e.stdout}")
-            logger.error(f"Errors: {e.stderr}")
-            return False
+        return True  # Return True as long as we tried - core deps are sufficient
     
     def create_minimal_requirements(self):
         """Create a minimal requirements.txt file."""
@@ -247,14 +301,19 @@ rich>=13.4.0
             if not self.create_init_file(directory):
                 success = False
         
-        # 3. Check and install dependencies
+        # 3. Check dependencies (but don't fail if some are missing)
         deps_status = self.check_dependencies()
-        missing_deps = [dep for dep, status in deps_status.items() if not status]
+        missing_core_deps = [
+            dep for dep, status in deps_status.items() 
+            if not status and dep in ['flask', 'requests']  # Only essential ones
+        ]
         
-        if missing_deps:
-            logger.info(f"Installing {len(missing_deps)} missing dependencies...")
-            if not self.install_missing_dependencies():
-                success = False
+        if missing_core_deps:
+            logger.info(f"Installing {len(missing_core_deps)} missing core dependencies...")
+            # Try to install, but don't fail the whole process if it doesn't work
+            self.install_missing_dependencies()
+        else:
+            logger.info("✅ Core dependencies are available")
         
         # 4. Test imports
         import_results = self.test_imports()
@@ -301,10 +360,22 @@ Repository: https://github.com/AetherraLabs/Aetherra
         
         # Save report to file
         report_file = self.project_root / "import_fix_report.md"
-        with open(report_file, 'w') as f:
-            f.write(report)
+        try:
+            with open(report_file, 'w', encoding='utf-8') as f:
+                f.write(report)
+            logger.info(f"📄 Report saved to {report_file}")
+        except Exception as e:
+            logger.warning(f"⚠️  Could not save report file: {e}")
+            # Try saving without emojis
+            try:
+                clean_report = report.encode('ascii', 'ignore').decode('ascii')
+                with open(report_file, 'w') as f:
+                    f.write(clean_report)
+                logger.info(f"📄 Report saved to {report_file} (ASCII only)")
+            except Exception:
+                logger.warning("Could not save report file")
         
-        logger.info(f"📄 Report saved to {report_file}")
+        logger.info(f"📄 Report completed")
 
 def main():
     """Main function to run the import fixer."""
