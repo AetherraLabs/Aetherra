@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from integration.bridges.aetherra_lyrixa_bridge import bridge
+from Aetherra.integration.bridges.aetherra_lyrixa_bridge import bridge
 from web.server.web_adapter import web_adapter
 
 

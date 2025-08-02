@@ -13,8 +13,8 @@ from pathlib import Path
 # Add clean architecture to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from integration.bridges.aetherra_lyrixa_bridge import bridge
-from web.server.web_adapter import web_adapter
+from Aetherra.integration.bridges.aetherra_lyrixa_bridge import bridge
+from Aetherra.web.server.web_adapter import web_adapter
 
 async def main():
     """Enhanced launcher with web interface integration"""

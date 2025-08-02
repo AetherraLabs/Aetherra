@@ -10,8 +10,8 @@ from pathlib import Path
 # Add clean architecture paths
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from integration.bridges.aetherra_lyrixa_bridge import bridge
-from integration.bridges.memory_adapter import memory_adapter
+from Aetherra.integration.bridges.aetherra_lyrixa_bridge import bridge
+from Aetherra.integration.bridges.memory_adapter import memory_adapter
 
 logger = logging.getLogger(__name__)
 
