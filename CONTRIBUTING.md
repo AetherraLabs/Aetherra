@@ -58,12 +58,36 @@ TELEGRAM_BOT_TOKEN=your_telegram_token_here
 
 ### 4. Test Your Setup
 
+**🎨 Testing the Unified GUI (Recommended)**
+
+The Aetherra project now features a unified React + Flask GUI system. This is the easiest way to test your setup:
+
 ```bash
-# Run the web interface to test everything works
+# Install Node.js/npm dependencies for React frontend
+cd Aetherra/lyrixa_core/gui
+npm install
+
+# Return to project root and launch unified GUI
+cd ../../../
+python Aetherra/gui/launch_aetherra_gui.py
+```
+
+This will start:
+- **React Frontend**: http://localhost:3000 (Modern cyberpunk interface)
+- **Flask API Server**: http://localhost:8686 (Backend with Socket.IO)
+- **Real-time Communication**: WebSocket connection between frontend and backend
+
+**🔧 Testing Individual Components**
+
+```bash
+# Test core AI OS launcher
+python aetherra_os_launcher.py --mode test
+
+# Test API server only (Flask backend)
 python Aetherra/gui/web_interface_server.py --debug
 
-# Test the core AI OS launcher
-python aetherra_os_launcher.py --mode test
+# Test React frontend only (requires separate API server)
+cd Aetherra/lyrixa_core/gui && npm run dev
 
 # Run tests (if available)
 pytest
@@ -130,7 +154,14 @@ isort .
 # Run any available tests
 pytest
 
-# Test the web interface
+# Test the unified GUI (recommended)
+python Aetherra/gui/launch_aetherra_gui.py
+
+# Or test components individually:
+# React frontend only
+cd Aetherra/lyrixa_core/gui && npm run dev
+
+# Flask API server only
 python Aetherra/gui/web_interface_server.py --debug
 
 # Test core functionality
