@@ -40,7 +40,7 @@ python fix_imports.py
 
 The quick fix script will:
 - ✅ Create missing `__init__.py` files
-- ✅ Check your Python version  
+- ✅ Check your Python version
 - ✅ Test basic import patterns
 - ✅ Complete in under 30 seconds
 
@@ -226,7 +226,7 @@ Once your imports are working:
 # Fast fix for most issues (recommended first)
 python quick_fix_imports.py
 
-# Full fix with dependency management  
+# Full fix with dependency management
 python fix_imports.py
 
 # Manual installation if needed

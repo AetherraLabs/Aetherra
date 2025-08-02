@@ -80,7 +80,7 @@ python fix_imports.py
 
 This will:
 - ✅ Create missing `__init__.py` files
-- ✅ Check Python version compatibility  
+- ✅ Check Python version compatibility
 - ✅ Install missing dependencies
 - ✅ Test import patterns
 - ✅ Generate a detailed report
@@ -93,7 +93,7 @@ For manual troubleshooting, see [IMPORT_FIXES.md](IMPORT_FIXES.md).
 # Error: ModuleNotFoundError: No module named 'aetherra_core'
 # Fix: Missing __init__.py files (run fix_imports.py)
 
-# Error: No module named 'flask' or 'aiohttp'  
+# Error: No module named 'flask' or 'aiohttp'
 # Fix: Install dependencies
 pip install -r requirements.txt
 

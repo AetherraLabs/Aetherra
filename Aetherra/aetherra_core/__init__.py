@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 # Try to import core components with fallbacks
 try:
     from . import memory
+
     MEMORY_AVAILABLE = True
 except ImportError as e:
     logger.debug(f"Memory system not available: {e}")
@@ -29,6 +30,7 @@ except ImportError as e:
 
 try:
     from . import engine
+
     ENGINE_AVAILABLE = True
 except ImportError as e:
     logger.debug(f"Engine system not available: {e}")
@@ -36,6 +38,7 @@ except ImportError as e:
 
 try:
     from . import orchestration
+
     ORCHESTRATION_AVAILABLE = True
 except ImportError as e:
     logger.debug(f"Orchestration system not available: {e}")
@@ -43,6 +46,7 @@ except ImportError as e:
 
 try:
     from . import plugins
+
     PLUGINS_AVAILABLE = True
 except ImportError as e:
     logger.debug(f"Plugin system not available: {e}")
@@ -50,6 +54,7 @@ except ImportError as e:
 
 try:
     from . import config
+
     CONFIG_AVAILABLE = True
 except ImportError as e:
     logger.debug(f"Config system not available: {e}")
@@ -57,38 +62,41 @@ except ImportError as e:
 
 # Availability flags for external components
 CORE_SYSTEMS = {
-    'memory': MEMORY_AVAILABLE,
-    'engine': ENGINE_AVAILABLE,
-    'orchestration': ORCHESTRATION_AVAILABLE,
-    'plugins': PLUGINS_AVAILABLE,
-    'config': CONFIG_AVAILABLE,
+    "memory": MEMORY_AVAILABLE,
+    "engine": ENGINE_AVAILABLE,
+    "orchestration": ORCHESTRATION_AVAILABLE,
+    "plugins": PLUGINS_AVAILABLE,
+    "config": CONFIG_AVAILABLE,
 }
+
 
 def get_system_status():
     """Get the status of all core systems."""
     return CORE_SYSTEMS.copy()
 
+
 def check_dependencies():
     """Check if all required dependencies are available."""
     missing = []
-    
+
     # Check essential Python modules
     try:
         import asyncio
     except ImportError:
         missing.append("asyncio")
-    
+
     try:
         import json
     except ImportError:
         missing.append("json")
-    
+
     try:
         import logging
     except ImportError:
         missing.append("logging")
-    
+
     return missing
+
 
 # Module-level constants
 CORE_MODULE_PATH = Path(__file__).parent
@@ -96,14 +104,14 @@ PROJECT_ROOT = CORE_MODULE_PATH.parent.parent
 
 # Export main components
 __all__ = [
-    'get_system_status',
-    'check_dependencies',
-    'CORE_SYSTEMS',
-    'CORE_MODULE_PATH',
-    'PROJECT_ROOT',
-    'MEMORY_AVAILABLE',
-    'ENGINE_AVAILABLE',
-    'ORCHESTRATION_AVAILABLE',
-    'PLUGINS_AVAILABLE',
-    'CONFIG_AVAILABLE',
+    "get_system_status",
+    "check_dependencies",
+    "CORE_SYSTEMS",
+    "CORE_MODULE_PATH",
+    "PROJECT_ROOT",
+    "MEMORY_AVAILABLE",
+    "ENGINE_AVAILABLE",
+    "ORCHESTRATION_AVAILABLE",
+    "PLUGINS_AVAILABLE",
+    "CONFIG_AVAILABLE",
 ]
