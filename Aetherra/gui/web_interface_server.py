@@ -1,5 +1,4 @@
-
-# Aetherra Web Interface Server - Hybrid AI Terminal  
+# Aetherra Web Interface Server - Hybrid AI Terminal
 # Clean Architecture Imports
 import asyncio
 import io
@@ -167,11 +166,12 @@ try:
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
+    from quantum_memory_bridge import QuantumMemoryBridge
+
     from Aetherra.lyrixa.memory.quantum_memory_integration import (
         QuantumEnhancedMemoryEngine,
         create_quantum_enhanced_memory_engine,
     )
-    from quantum_memory_bridge import QuantumMemoryBridge
 
     QUANTUM_MEMORY_AVAILABLE = True
     logger.info("✅ Quantum memory integration available")
@@ -201,7 +201,13 @@ class AetherraWebServer:
         )
         self.app.config["SECRET_KEY"] = "aetherra_neural_interface_2025"
         self.socketio = SocketIO(
-            self.app, cors_allowed_origins="*", logger=True, engineio_logger=True
+            self.app,
+            cors_allowed_origins="*",
+            logger=True,
+            engineio_logger=True,
+            async_mode="threading",
+            ping_timeout=60,
+            ping_interval=25,
         )
 
         # Track connected clients
