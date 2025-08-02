@@ -1,17 +1,25 @@
 
+# Aetherra Web Interface Server - Hybrid AI Terminal  
 # Clean Architecture Imports
+import asyncio
+import io
+import json
+import logging
+import os
+import random
+import sqlite3
 import sys
+import threading
+import webbrowser
+from contextlib import redirect_stderr, redirect_stdout
+from datetime import datetime, timedelta
 from pathlib import Path
+
+from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask_socketio import SocketIO, emit, join_room, leave_room
+
+# Add the Aetherra directory to the Python path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-from integration.bridges.aetherra_lyrixa_bridge import bridge
-
-# Memory Integration
-from integration.bridges.memory_adapter_impl import memory_adapter_impl
-
-
-from web.server.web_adapter import web_adapter
-
 
 """
 Aetherra Web Interface Server - Hybrid AI Terminal
@@ -31,20 +39,6 @@ beautiful interface using modern web technologies.
 
 Server runs on: http://localhost:8686
 """
-
-import asyncio
-import json
-import logging
-import os
-import sqlite3
-import sys
-import threading
-import webbrowser
-from datetime import datetime, timedelta
-from pathlib import Path
-
-from flask import Flask, jsonify, render_template, request, send_from_directory
-from flask_socketio import SocketIO, emit, join_room, leave_room
 
 # Add the Aetherra directory to the Python path for imports
 project_root = Path(__file__).parent.parent.parent
