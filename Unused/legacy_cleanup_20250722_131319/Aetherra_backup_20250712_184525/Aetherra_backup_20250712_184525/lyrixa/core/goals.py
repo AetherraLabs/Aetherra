@@ -156,7 +156,7 @@ class LyrixaGoalSystem:
                 )
 
             except Exception as e:
-                print(f"❌ Failed to load goals: {e}")
+                print(f"[ERROR] Failed to load goals: {e}")
         else:
             print("📝 No existing goals file found, starting fresh")
 
@@ -202,7 +202,7 @@ class LyrixaGoalSystem:
                 json.dump(data, f, indent=2, ensure_ascii=False)
 
         except Exception as e:
-            print(f"❌ Failed to save goals: {e}")
+            print(f"[ERROR] Failed to save goals: {e}")
 
     async def create_goal(
         self,

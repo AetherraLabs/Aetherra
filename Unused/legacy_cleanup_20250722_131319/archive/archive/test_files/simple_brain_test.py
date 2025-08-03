@@ -9,7 +9,7 @@ def test_brain_loop_simple():
 
     try:
         # Test import
-        print("📦 Importing LyrixaAI...")
+        print("[DISC] Importing LyrixaAI...")
         from lyrixa.assistant import LyrixaAI
         print("✅ Import successful!")
 

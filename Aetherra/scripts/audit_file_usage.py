@@ -99,7 +99,7 @@ class AetherraFileAuditor:
             file_size = file_path.stat().st_size
             if file_size > 1024 * 1024:  # Skip files larger than 1MB
                 print(
-                    f"⚠️  Skipping large file: {file_path} ({file_size / 1024 / 1024:.1f} MB)"
+                    f"[WARN]  Skipping large file: {file_path} ({file_size / 1024 / 1024:.1f} MB)"
                 )
                 return
 
@@ -122,7 +122,7 @@ class AetherraFileAuditor:
                                 self.imports[file_path].add(full_name)
 
             except (SyntaxError, RecursionError, MemoryError) as e:
-                print(f"⚠️  Parse error in {file_path}: {type(e).__name__}")
+                print(f"[WARN]  Parse error in {file_path}: {type(e).__name__}")
 
             # Look for string references to other files (simplified)
             py_references = re.findall(
@@ -261,7 +261,7 @@ class AetherraFileAuditor:
         if len(report["unused_files"]) > 20:
             print(f"   ... and {len(report['unused_files']) - 20} more")
 
-        print("\n📦 LARGE UNUSED FILES:")
+        print("\n[DISC] LARGE UNUSED FILES:")
         for large_file in sorted(
             report["large_unused_files"], key=lambda x: x["size_kb"], reverse=True
         )[:10]:

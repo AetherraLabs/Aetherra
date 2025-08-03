@@ -18,7 +18,7 @@ def test_meta_reasoning_direct():
 
     try:
         # Try to import the classes directly
-        print("📦 Importing meta-reasoning modules...")
+        print("[DISC] Importing meta-reasoning modules...")
 
         # Read the file content directly and test classes
         meta_reasoning_path = os.path.join("Aetherra", "lyrixa", "intelligence", "meta_reasoning.py")
@@ -48,7 +48,7 @@ def test_meta_reasoning_direct():
                 'add_feedback'
             ]
 
-            print(f"\n🔧 Key methods present:")
+            print(f"\n[TOOL] Key methods present:")
             for method in key_methods:
                 present = method in content
                 print(f"   • {method}: {'✅' if present else '❌'}")
@@ -153,7 +153,7 @@ def show_meta_reasoning_summary():
     for feature in features:
         print(f"   {feature}")
 
-    print(f"\n🔧 Integration Points:")
+    print(f"\n[TOOL] Integration Points:")
     integration_points = [
         "Conversation Manager - track plugin selection",
         "Intent Resolver - trace intent detection decisions",
@@ -199,5 +199,5 @@ if __name__ == "__main__":
         print("📝 Ready for integration into Lyrixa systems")
         print("💡 Next: Integrate into conversation_manager.py")
     else:
-        print("⚠️ Some verification steps failed")
+        print("[WARN] Some verification steps failed")
         print("💡 Check file paths and imports")

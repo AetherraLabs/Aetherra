@@ -185,10 +185,10 @@ class EnhancedAetherraInterpreter:
                 )
             else:
                 print(
-                    "⚠️  Enhanced AetherraCode Interpreter initialized with partial AI capabilities"
+                    "[WARN]  Enhanced AetherraCode Interpreter initialized with partial AI capabilities"
                 )
         except Exception as e:
-            print(f"⚠️  Enhancement initialization failed: {e}")
+            print(f"[WARN]  Enhancement initialization failed: {e}")
             self.local_ai = None
             self.vector_memory = None
             self.intent_parser = None
@@ -480,7 +480,7 @@ Generated AetherraCode:
 
             response = "📊 Performance Analysis\n\n"
             if "suggestions" in report and report["suggestions"]:
-                response += "🔧 Recent Optimization Suggestions:\n"
+                response += "[TOOL] Recent Optimization Suggestions:\n"
                 for suggestion in list(report["suggestions"].values())[
                     :3
                 ]:  # Top 3 suggestions
@@ -622,7 +622,7 @@ Generated AetherraCode:
         demo = "🚀 AetherraCode Enhanced Features Demo\n\n"
 
         if not ENHANCEMENTS_AVAILABLE:
-            return demo + "⚠️  No enhancements available - basic interpreter only"
+            return demo + "[WARN]  No enhancements available - basic interpreter only"
 
         demo += "Available Enhancement Commands:\n\n"
         demo += "🧠 Natural Language:\n"

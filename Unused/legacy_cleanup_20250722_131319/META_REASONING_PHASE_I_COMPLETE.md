@@ -54,7 +54,7 @@ The Meta-Reasoning Engine has been successfully implemented with all Phase I fea
     └── generate_reasoning_report() - Comprehensive analytics
 ```
 
-### 🔧 **Integration Points Ready**
+### [TOOL] **Integration Points Ready**
 
 1. **Conversation Manager** - Hook into plugin selection
 2. **Intent Resolver** - Track intent detection decisions

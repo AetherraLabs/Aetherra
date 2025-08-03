@@ -134,7 +134,7 @@ def example_plugin_system():
     print("🚀 Executing plugins with security monitoring...")
 
     for plugin in plugins:
-        print(f"\n  📦 Running {plugin['name']}...")
+        print(f"\n  [DISC] Running {plugin['name']}...")
 
         # Use memory context for each plugin
         with security_system.memory_manager.memory_context(f"plugin_{plugin['name']}"):
@@ -156,7 +156,7 @@ def example_plugin_system():
     print(f"\n🔍 Checking for memory leaks...")
     leaks = security_system.memory_manager.check_memory_leaks()
     if leaks:
-        print(f"  ⚠️  {len(leaks)} potential memory leaks detected")
+        print(f"  [WARN]  {len(leaks)} potential memory leaks detected")
     else:
         print(f"  ✅ No memory leaks detected")
 

@@ -40,7 +40,7 @@ def test_response_system():
         if method:
             print("✅ Test 2 PASSED: Neural chat message processor exists")
         else:
-            print("❌ Test 2 FAILED: Neural chat processor missing")
+            print("[ERROR] Test 2 FAILED: Neural chat processor missing")
 
         # Test 3: Check QTimer integration
         import inspect
@@ -49,18 +49,18 @@ def test_response_system():
         if "QTimer.singleShot" in source:
             print("✅ Test 3 PASSED: Thread-safe GUI updates implemented")
         else:
-            print("❌ Test 3 FAILED: Thread safety missing")
+            print("[ERROR] Test 3 FAILED: Thread safety missing")
 
         # Test 4: Check debug output
         if "DEBUG: Available lyrixa_agent attributes" in source:
             print("✅ Test 4 PASSED: Debug information enabled")
         else:
-            print("❌ Test 4 FAILED: Debug output missing")
+            print("[ERROR] Test 4 FAILED: Debug output missing")
 
         return True
 
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         return False
 
 
@@ -74,10 +74,10 @@ if test_response_system():
     print("✅ Fallback responses for when conversational engine isn't available")
     print("\n💡 The neural chat should now provide responses!")
     print(
-        "🔧 Check the terminal output for debug information about available attributes"
+        "[TOOL] Check the terminal output for debug information about available attributes"
     )
     print(
         "🚀 Try sending messages like 'hello', 'status', 'help' in the Neural Chat tab!"
     )
 else:
-    print("\n❌ Tests failed - check the implementation")
+    print("\n[ERROR] Tests failed - check the implementation")

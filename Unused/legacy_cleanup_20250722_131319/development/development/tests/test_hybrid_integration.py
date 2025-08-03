@@ -3,7 +3,7 @@
 World-Class Components Integration Test
 ======================================
 🧪 Test integration of world-class components with aetherra_hybrid_launcher.py
-🔧 Verify imports, initialization, and hybrid window compatibility
+[TOOL] Verify imports, initialization, and hybrid window compatibility
 """
 
 import sys
@@ -37,12 +37,12 @@ def test_imports():
         return True
 
     except Exception as e:
-        print(f"❌ Import failed: {e}")
+        print(f"[ERROR] Import failed: {e}")
         return False
 
 def test_component_initialization():
     """Test component initialization"""
-    print("\n🔧 Testing Component Initialization...")
+    print("\n[TOOL] Testing Component Initialization...")
 
     try:
         # Test memory core initialization
@@ -74,7 +74,7 @@ def test_component_initialization():
         return True
 
     except Exception as e:
-        print(f"❌ Component initialization failed: {e}")
+        print(f"[ERROR] Component initialization failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -118,11 +118,11 @@ def test_hybrid_window_integration():
             return True
 
         except ImportError:
-            print("⚠️  PySide6 not available - GUI testing skipped")
+            print("[WARN]  PySide6 not available - GUI testing skipped")
             return True
 
     except Exception as e:
-        print(f"❌ Hybrid window integration failed: {e}")
+        print(f"[ERROR] Hybrid window integration failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -159,14 +159,14 @@ def test_launcher_compatibility():
         return True
 
     except Exception as e:
-        print(f"❌ Launcher compatibility failed: {e}")
+        print(f"[ERROR] Launcher compatibility failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 def test_modular_access():
     """Test modular access patterns for world-class components"""
-    print("\n🔧 Testing Modular Access...")
+    print("\n[TOOL] Testing Modular Access...")
 
     try:
         # Test direct import patterns used by launcher
@@ -197,7 +197,7 @@ def test_modular_access():
         return True
 
     except Exception as e:
-        print(f"❌ Modular access failed: {e}")
+        print(f"[ERROR] Modular access failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -222,7 +222,7 @@ def main():
             result = test_func()
             results.append((test_name, result))
         except Exception as e:
-            print(f"❌ {test_name} test crashed: {e}")
+            print(f"[ERROR] {test_name} test crashed: {e}")
             results.append((test_name, False))
 
     print("\n" + "=" * 50)
@@ -231,7 +231,7 @@ def main():
 
     all_passed = True
     for test_name, result in results:
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "✅ PASS" if result else "[ERROR] FAIL"
         print(f"{status} {test_name}")
         if not result:
             all_passed = False
@@ -242,7 +242,7 @@ def main():
         print("🎉 ALL TESTS PASSED! World-class components are properly integrated.")
         print("🚀 Ready for use with aetherra_hybrid_launcher.py")
     else:
-        print("⚠️  Some tests failed. Integration may need fixes.")
+        print("[WARN]  Some tests failed. Integration may need fixes.")
 
     return all_passed
 

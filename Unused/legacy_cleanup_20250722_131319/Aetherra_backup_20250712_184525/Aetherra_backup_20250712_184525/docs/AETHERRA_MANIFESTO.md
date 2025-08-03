@@ -49,7 +49,7 @@ Just as Linux democratized server computing, **Aetherra aims to democratize inte
 - **Interactive Demos**: Real-time Aetherra execution and terminal simulation
 - **Global Infrastructure**: Cloudflare CDN with 99.9%+ uptime
 
-#### **🔧 Developer Experience**
+#### **[TOOL] Developer Experience**
 - **Advanced Persona System**: Contextual adaptation with emotional intelligence
 - **Plugin Ecosystem**: Extensible architecture with clean APIs
 - **Modern GUI**: Beautiful PySide6 interface with modular components
@@ -337,7 +337,7 @@ evolve: collective_intelligence()
 Just as Linux democratized server computing, **Aetherra AI OS will democratize intelligent computing**:
 
 - **🔓 Open Source**: No corporate AI gatekeepers or proprietary limitations
-- **🔧 Extensible**: Plugin ecosystem for infinite AI capabilities
+- **[TOOL] Extensible**: Plugin ecosystem for infinite AI capabilities
 - **👥 Community-Driven**: Collective intelligence development by global community
 - **🌍 Universal**: Runs on any hardware, works with any AI model
 - **🔍 Transparent**: Open algorithms, auditable AI decisions, no black boxes
@@ -410,7 +410,7 @@ Just as Linux democratized server computing, **Aetherra AI OS will democratize i
 **Aetherra is growing rapidly:**
 - **🌐 Global Website**: [Aetherra.dev](https://Aetherra.dev) with interactive demos
 - **⭐ GitHub Repository**: [github.com/Zyonic88/Aetherra](https://github.com/Zyonic88/Aetherra)
-- **📦 Plugin Ecosystem**: Extensible AI capabilities through aetherhub registry
+- **[DISC] Plugin Ecosystem**: Extensible AI capabilities through aetherhub registry
 - **👥 Developer Community**: Contributors from around the world
 - **📚 Comprehensive Documentation**: Guides, tutorials, and API references
 

@@ -130,7 +130,7 @@ aetherra Project/
     └── ui/                   # UI tests
 ```
 
-### 🔧 Key Components to Implement
+### [TOOL] Key Components to Implement
 
 #### 1. Enhanced UI System
 ```python

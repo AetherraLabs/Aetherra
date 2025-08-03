@@ -40,7 +40,7 @@ def func1():
         if metadata:
             print(f"✅ Metadata parsing works - plugin: {metadata.name}")
         else:
-            print("⚠️ Metadata parsing returned None")
+            print("[WARN] Metadata parsing returned None")
 
         # Test structure analysis
         analysis = analyze_code_structure(sample_code)
@@ -156,19 +156,19 @@ def test_api_integration():
                 print(f"    Success: {result.get('success', False)}")
                 return True
             else:
-                print(f"⚠️ Smart edit API returned {response.status_code}")
+                print(f"[WARN] Smart edit API returned {response.status_code}")
                 return False
         else:
-            print(f"⚠️ API server health check failed: {response.status_code}")
+            print(f"[WARN] API server health check failed: {response.status_code}")
             return False
 
 
     except ImportError:
-        print("⚠️ Requests library not available - skipping API tests")
+        print("[WARN] Requests library not available - skipping API tests")
         return True
     except Exception as e:
         if "requests" in str(type(e)) or "RequestException" in str(type(e)):
-            print("⚠️ API server not accessible - skipping API tests")
+            print("[WARN] API server not accessible - skipping API tests")
             return True
         else:
             print(f"❌ API integration test failed: {e}")
@@ -206,7 +206,7 @@ def main():
     if passed == len(results):
         print("🎉 All tests passed! Advanced features are working correctly.")
     else:
-        print("⚠️ Some tests failed. Check the output above for details.")
+        print("[WARN] Some tests failed. Check the output above for details.")
 
 if __name__ == "__main__":
     main()

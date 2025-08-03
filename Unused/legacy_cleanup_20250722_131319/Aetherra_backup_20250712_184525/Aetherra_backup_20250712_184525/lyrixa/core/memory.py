@@ -113,7 +113,7 @@ class LyrixaMemorySystem:
             print("✅ Lyrixa memory system initialized")
 
         except Exception as e:
-            print(f"❌ Failed to initialize memory database: {e}")
+            print(f"[ERROR] Failed to initialize memory database: {e}")
 
     def normalize_importance(self, value: Any) -> float:
         """Normalize importance to a float between 0.0 and 1.0."""
@@ -210,11 +210,11 @@ class LyrixaMemorySystem:
             return memory_id
 
         except (ValueError, TypeError) as e:
-            print(f"❌ Failed to store memory due to type error: {e}")
+            print(f"[ERROR] Failed to store memory due to type error: {e}")
             return ""
 
         except Exception as e:
-            print(f"❌ Failed to store memory: {e}")
+            print(f"[ERROR] Failed to store memory: {e}")
             return ""
 
     async def recall_memories(
@@ -278,7 +278,7 @@ class LyrixaMemorySystem:
             return memories
 
         except Exception as e:
-            print(f"❌ Failed to recall memories: {e}")
+            print(f"[ERROR] Failed to recall memories: {e}")
             return []
 
     async def get_conversation_context(
@@ -404,7 +404,7 @@ class LyrixaMemorySystem:
             print("🧠 Memory consolidation completed")
 
         except Exception as e:
-            print(f"❌ Memory consolidation failed: {e}")
+            print(f"[ERROR] Memory consolidation failed: {e}")
 
     async def _update_memory_access(self, memory_id: str):
         """Update memory access statistics"""
@@ -433,7 +433,7 @@ class LyrixaMemorySystem:
             print("🧠 Memory access updated")
 
         except Exception as e:
-            print(f"❌ Memory access update failed: {e}")
+            print(f"[ERROR] Memory access update failed: {e}")
 
     def _generate_memory_id(
         self, content: Dict[str, Any], context: Optional[Dict[str, Any]]
@@ -530,7 +530,7 @@ class LyrixaMemorySystem:
                 return memories
 
             except Exception as e:
-                print(f"❌ Memory search failed: {e}")
+                print(f"[ERROR] Memory search failed: {e}")
                 return []
 
     async def get_memory_stats(self) -> Dict[str, Any]:
@@ -568,7 +568,7 @@ class LyrixaMemorySystem:
             }
 
         except Exception as e:
-            print(f"❌ Failed to get memory stats: {e}")
+            print(f"[ERROR] Failed to get memory stats: {e}")
             return {}
 
     def _prepare_query_params(self, query):
@@ -610,7 +610,7 @@ class LyrixaMemorySystem:
 
             print(f"🧠 Memory exported to {file_path}")
         except Exception as e:
-            print(f"❌ Memory export failed: {e}")
+            print(f"[ERROR] Memory export failed: {e}")
 
     def import_memory(self, file_path: str):
         """Imports memory data from a file."""
@@ -630,7 +630,7 @@ class LyrixaMemorySystem:
             self.ensure_connection().commit()
             print(f"🧠 Memory imported from {file_path}")
         except Exception as e:
-            print(f"❌ Memory import failed: {e}")
+            print(f"[ERROR] Memory import failed: {e}")
 
     def close_connection(self):
         """Closes the database connection if open."""
@@ -640,7 +640,7 @@ class LyrixaMemorySystem:
                 self.conn = None
                 print("✅ Database connection closed.")
         except Exception as e:
-            print(f"❌ Failed to close database connection: {e}")
+            print(f"[ERROR] Failed to close database connection: {e}")
 
     @contextmanager
     def db_session(self):
@@ -654,7 +654,7 @@ class LyrixaMemorySystem:
             else:
                 raise RuntimeError("Database connection is not initialized.")
         except Exception as e:
-            print(f"❌ Database operation failed: {e}")
+            print(f"[ERROR] Database operation failed: {e}")
             if self.conn:
                 self.conn.rollback()
         finally:

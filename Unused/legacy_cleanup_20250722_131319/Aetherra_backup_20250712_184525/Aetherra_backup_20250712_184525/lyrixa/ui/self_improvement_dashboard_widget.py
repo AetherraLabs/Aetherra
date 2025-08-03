@@ -66,7 +66,7 @@ class SelfImprovementDashboardWidget(QWidget):
         self._check_api_connectivity()
 
     def show_error(self, message):
-        self.status_bar.setText(f"❌ {message}")
+        self.status_bar.setText(f"[ERROR] {message}")
         self.status_bar.setStyleSheet(
             "color: #fff; background: #c00; padding: 4px; border-radius: 4px;"
         )
@@ -196,7 +196,7 @@ class SelfImprovementDashboardWidget(QWidget):
                     "status": "offline_mode",
                     "message": "Self-Improvement Dashboard - Offline Mode",
                     "suggestions": [
-                        "🔧 Optimize memory usage patterns",
+                        "[TOOL] Optimize memory usage patterns",
                         "⚡ Enhance response time algorithms",
                         "🧠 Improve context understanding",
                         "📊 Better performance analytics",
@@ -242,7 +242,7 @@ class SelfImprovementDashboardWidget(QWidget):
                     {"name": "coretools", "status": "active", "description": "File access and core utility tools"}
                 ]
                 for plugin in offline_plugins:
-                    item = QListWidgetItem(f"📦 {plugin['name']} - {plugin['description']}")
+                    item = QListWidgetItem(f"[DISC] {plugin['name']} - {plugin['description']}")
                     item.setToolTip(f"Status: {plugin['status']}\nOffline mode - Connect API for real-time data")
                     self.plugin_list.addItem(item)
             else:
@@ -351,9 +351,9 @@ class SelfImprovementDashboardWidget(QWidget):
             if response.status_code == 200:
                 self.show_success("✅ API Server Connected - Real-time mode active")
             else:
-                self.show_error("⚠️ API Server responding but unhealthy - Offline mode")
+                self.show_error("[WARN] API Server responding but unhealthy - Offline mode")
         except Exception as e:
-            self.show_error("⚠️ API Server offline - Using offline mode with cached data")
+            self.show_error("[WARN] API Server offline - Using offline mode with cached data")
 
 
 # To use this widget, import and add to your main window or launcher.

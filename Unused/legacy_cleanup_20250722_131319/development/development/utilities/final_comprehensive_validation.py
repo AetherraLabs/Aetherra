@@ -372,7 +372,7 @@ def main():
         print("🌟 Revolutionary 11-tab interface validated!")
     else:
         print("❌ SOME VALIDATIONS FAILED!")
-        print("🔧 Please review failed tests above")
+        print("[TOOL] Please review failed tests above")
 
     print("=" * 60)
 

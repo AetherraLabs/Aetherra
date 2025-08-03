@@ -35,7 +35,7 @@ async def test_generator_fixes():
         "Organize files in directory by date created"
     ]
 
-    print(f"\n🔧 Testing {len(test_cases)} cases that previously caused errors...")
+    print(f"\n[TOOL] Testing {len(test_cases)} cases that previously caused errors...")
 
     for i, test_case in enumerate(test_cases, 1):
         print(f"\n📝 Test {i}: {test_case}")
@@ -91,7 +91,7 @@ async def test_specific_api_case():
     try:
         result = await generator.generate_aether_from_natural_language(api_description)
 
-        print(f"🔧 API Integration Test:")
+        print(f"[TOOL] API Integration Test:")
         print(f"   Input: {api_description}")
 
         if "error" in result:

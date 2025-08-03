@@ -82,7 +82,7 @@ python launch_Lyrixa_v2.py
 4. Create component templates for new panels
 5. Add comprehensive testing
 
-## 🔧 **Development Workflow**
+## [TOOL] **Development Workflow**
 
 ### **Working on Components:**
 1. Edit individual component files in `ui/components/panels/`

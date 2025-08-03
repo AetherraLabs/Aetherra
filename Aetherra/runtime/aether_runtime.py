@@ -108,7 +108,7 @@ class AetherRuntime:
     def execute(self):
         """Execute the loaded script."""
         if not self.script_lines:
-            print("⚠️ No script loaded")
+            print("[WARN] No script loaded")
             return False
 
         self.running = True
@@ -292,7 +292,7 @@ class AetherRuntime:
             print(f"   📋 Queue size: {stats['queue_size']}")
 
         else:
-            print(f"⚠️ Unknown command: {line}")
+            print(f"[WARN] Unknown command: {line}")
             print(
                 "   💡 Available commands: goal, use plugin, recall, run agent, store, $var=value, show variables, show goals, status"
             )

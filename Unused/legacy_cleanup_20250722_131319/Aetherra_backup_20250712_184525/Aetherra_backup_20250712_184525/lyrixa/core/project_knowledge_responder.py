@@ -125,7 +125,7 @@ class ProjectKnowledgeResponder:
             return content
 
         except Exception as e:
-            print(f"⚠️ Error in ProjectKnowledgeResponder: {e}")
+            print(f"[WARN] Error in ProjectKnowledgeResponder: {e}")
             return "I encountered an issue retrieving that information. Please try rephrasing your question."
 
     async def _recall_memories(
@@ -153,11 +153,11 @@ class ProjectKnowledgeResponder:
                 return memories if memories else []
 
             else:
-                print("⚠️ No search methods available in memory system")
+                print("[WARN] No search methods available in memory system")
                 return []
 
         except Exception as e:
-            print(f"⚠️ Memory recall failed: {e}")
+            print(f"[WARN] Memory recall failed: {e}")
             return []
 
     def _extract_content(self, memory: Dict[str, Any]) -> str:

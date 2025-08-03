@@ -65,7 +65,7 @@ from Aetherra.lyrixa.personality.multimodal_coordinator import ...
 - No need to decide "what phase" something belongs to
 - Components are organized by function, not development timeline
 
-## 📦 Updated Package Structure
+## [DISC] Updated Package Structure
 
 ### Core Components (Root Level)
 All major personality system components:

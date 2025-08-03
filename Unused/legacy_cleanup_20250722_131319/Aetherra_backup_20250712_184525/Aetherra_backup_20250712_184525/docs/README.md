@@ -69,7 +69,7 @@ website/
 - **Accessibility**: WCAG compliant
 - **SEO**: Optimized for search engines
 
-## 🔧 Technologies
+## [TOOL] Technologies
 
 - **HTML5**: Semantic markup
 - **CSS3**: Modern CSS with custom properties

@@ -390,6 +390,39 @@ def initialize_quantum_memory(coherence_decay_rate: float = 0.1) -> QuantumMemor
 
 
 # Integration functions for Lyrixa Memory Engine
+class QuantumEnhancedMemoryEngine:
+    """Enhanced memory engine with quantum capabilities"""
+
+    def __init__(self):
+        self.quantum_layer = initialize_quantum_memory()
+        self.is_available = True
+
+    async def store_memory(self, content: Any, context: Optional[Dict] = None) -> str:
+        """Store memory with quantum enhancement"""
+        return self.quantum_layer.create_quantum_memory(content, context)
+
+    async def retrieve_memory(self, memory_id: str) -> Optional[Any]:
+        """Retrieve memory with quantum lookup"""
+        return self.quantum_layer.quantum_observe(memory_id)
+
+    async def search_memories(self, query: str) -> List[Tuple[str, float]]:
+        """Search memories using quantum algorithms"""
+        return self.quantum_layer.quantum_search(query)
+
+    def get_quantum_status(self) -> Dict[str, Any]:
+        """Get quantum memory status"""
+        return {
+            "coherence": self.quantum_layer.get_quantum_statistics(),
+            "node_count": len(self.quantum_layer.nodes),
+            "is_available": self.is_available
+        }
+
+
+def create_quantum_enhanced_memory_engine() -> QuantumEnhancedMemoryEngine:
+    """Create a quantum-enhanced memory engine instance"""
+    return QuantumEnhancedMemoryEngine()
+
+
 def create_quantum_enhanced_memory():
     """Create a quantum-enhanced memory system."""
     quantum_layer = initialize_quantum_memory()

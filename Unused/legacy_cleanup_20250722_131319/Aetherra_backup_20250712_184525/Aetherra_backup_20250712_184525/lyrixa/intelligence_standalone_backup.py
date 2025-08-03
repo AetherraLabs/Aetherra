@@ -106,7 +106,7 @@ class LyrixaIntelligenceStack:
         # Agent-based recommendations
         for agent_name, analytics in self.agent_analytics.items():
             if analytics.get("success_rate", 1.0) < 0.8:
-                recommendations.append(f"🔧 {agent_name}: Success rate low ({analytics['success_rate']:.1%}), consider optimization")
+                recommendations.append(f"[TOOL] {agent_name}: Success rate low ({analytics['success_rate']:.1%}), consider optimization")
 
             if analytics.get("avg_response_time", 0) > 2.0:
                 recommendations.append(f"⚡ {agent_name}: Average response time high ({analytics['avg_response_time']:.2f}s), consider caching")

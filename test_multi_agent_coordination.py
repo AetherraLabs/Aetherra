@@ -54,7 +54,7 @@ class MultiAgentCoordinationTestSuite(unittest.TestCase):
             print("✅ Multi-Agent Coordination system loaded successfully")
         except ImportError as e:
             # Create mock multi-agent system for testing
-            print(f"⚠️ Using mock multi-agent system: {e}")
+            print(f"[WARN] Using mock multi-agent system: {e}")
             self.coordinator = self._create_mock_coordinator()
             self.agent_classes = self._create_mock_agent_classes()
 
@@ -474,7 +474,7 @@ class MultiAgentCoordinationTestSuite(unittest.TestCase):
 
     def test_automated_fix_coordination(self):
         """Test 010: Automated fix coordination and implementation"""
-        print("🔧 Testing automated fix coordination...")
+        print("[TOOL] Testing automated fix coordination...")
 
         # Create fix coordination team
         planner = self.agent_classes["PlannerAgent"]("fix_planner")
@@ -862,8 +862,8 @@ def run_multi_agent_coordination_tests():
 
     print(f"📊 Total Tests: {total_tests}")
     print(f"✅ Passed: {passed}")
-    print(f"❌ Failed: {failures}")
-    print(f"⚠️ Errors: {errors}")
+    print(f"[ERROR] Failed: {failures}")
+    print(f"[WARN] Errors: {errors}")
     print(f"⏭️ Skipped: {skipped}")
     print(f"📈 Success Rate: {success_rate:.1f}%")
 
@@ -920,14 +920,14 @@ def run_multi_agent_coordination_tests():
         )
 
     if result.failures:
-        print(f"\n❌ FAILURES ({len(result.failures)}):")
+        print(f"\n[ERROR] FAILURES ({len(result.failures)}):")
         for test, traceback in result.failures:
             print(
                 f"  • {test}: {traceback.split('AssertionError:')[-1].strip() if 'AssertionError:' in traceback else 'Unknown failure'}"
             )
 
     if result.errors:
-        print(f"\n⚠️ ERRORS ({len(result.errors)}):")
+        print(f"\n[WARN] ERRORS ({len(result.errors)}):")
         for test, traceback in result.errors:
             error_msg = traceback.split("\n")[-2] if "\n" in traceback else traceback
             print(f"  • {test}: {error_msg}")
@@ -996,7 +996,7 @@ def run_multi_agent_coordination_tests():
             for error in result.errors
             for test in tests
         )
-        status = "✅ OPERATIONAL" if capability_working else "❌ NEEDS ATTENTION"
+        status = "✅ OPERATIONAL" if capability_working else "[ERROR] NEEDS ATTENTION"
         print(f"  {capability}: {status}")
 
     print("\n🌟 MULTI-AGENT COORDINATION ASSESSMENT COMPLETE!")

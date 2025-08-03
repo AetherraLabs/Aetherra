@@ -19,7 +19,7 @@ def test_api_startup():
         import enhanced_api_server
         print("✅ enhanced_api_server imports successfully")
     except Exception as e:
-        print(f"❌ Import failed: {e}")
+        print(f"[ERROR] Import failed: {e}")
         return False
 
     # Test 2: Check if we can start the server
@@ -42,10 +42,10 @@ def test_api_startup():
                 print("✅ Server started and responding on port 8007")
                 server_working = True
             else:
-                print(f"⚠️ Server responding but with status {response.status_code}")
+                print(f"[WARN] Server responding but with status {response.status_code}")
                 server_working = False
         except requests.exceptions.ConnectionError:
-            print("❌ Server not responding")
+            print("[ERROR] Server not responding")
             server_working = False
 
         # Cleanup
@@ -55,7 +55,7 @@ def test_api_startup():
         return server_working
 
     except Exception as e:
-        print(f"❌ Server startup failed: {e}")
+        print(f"[ERROR] Server startup failed: {e}")
         return False
 
 def test_launch_utils():
@@ -72,15 +72,15 @@ def test_launch_utils():
         if not result:
             print("✅ wait_for_api_server correctly detected no server")
         else:
-            print("⚠️ wait_for_api_server unexpected result")
+            print("[WARN] wait_for_api_server unexpected result")
 
         return True
     except Exception as e:
-        print(f"❌ Launch utils test failed: {e}")
+        print(f"[ERROR] Launch utils test failed: {e}")
         return False
 
 def main():
-    print("🔧 ENHANCED API SERVER STARTUP TEST")
+    print("[TOOL] ENHANCED API SERVER STARTUP TEST")
     print("Testing the complete startup sequence...")
     print()
 
@@ -90,8 +90,8 @@ def main():
 
     print("\n" + "=" * 50)
     print("🏁 TEST RESULTS:")
-    print(f"   • API Server Startup: {'✅ PASSED' if test1 else '❌ FAILED'}")
-    print(f"   • Launch Utils: {'✅ PASSED' if test2 else '❌ FAILED'}")
+    print(f"   • API Server Startup: {'✅ PASSED' if test1 else '[ERROR] FAILED'}")
+    print(f"   • Launch Utils: {'✅ PASSED' if test2 else '[ERROR] FAILED'}")
 
     if test1 and test2:
         print("\n🎉 ALL TESTS PASSED!")
@@ -99,7 +99,7 @@ def main():
         print("\n💡 To start Lyrixa with API server:")
         print("   python Aetherra/lyrixa/launcher.py")
     else:
-        print("\n❌ Some tests failed - check the errors above")
+        print("\n[ERROR] Some tests failed - check the errors above")
 
 if __name__ == "__main__":
     main()

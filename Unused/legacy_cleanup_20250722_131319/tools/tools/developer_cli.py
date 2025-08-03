@@ -475,7 +475,7 @@ class {name.title().replace("_", "")}Component(QWidget):
         input_text = self.input_field.toPlainText()
 
         if not input_text.strip():
-            self.results_area.setText("⚠️ Please provide input to process.")
+            self.results_area.setText("[WARN] Please provide input to process.")
             return
 
         # Simulate AI processing with adaptation

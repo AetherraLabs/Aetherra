@@ -65,7 +65,7 @@ aetherra is a **revolutionary foundation for next-generation AI operating system
 
 ## 🏗️ **ARCHITECTURE OVERVIEW**
 
-### 📦 **Core Structure**
+### [DISC] **Core Structure**
 
 ```text
 aetherra Project/
@@ -78,7 +78,7 @@ aetherra Project/
 ├── 🧪 tests/                 # 26+ test files
 ├── 📄 docs/                  # 75+ documentation files
 ├── 🎯 examples/              # 19+ examples
-├── 🔧 scripts/               # 12+ utility scripts
+├── [TOOL] scripts/               # 12+ utility scripts
 ├── 💾 data/                  # Configuration & templates
 ├── 🌐 website/               # Live site (httpsaetherra.dev)
 └── 🛡️ protection/           # Project protection system
@@ -161,7 +161,7 @@ python agent_archive_demo.py
 python scripts/developer_wizard.py
 ```
 
-### 🔧 **Core Commands**
+### [TOOL] **Core Commands**
 
 ```powershell
 # Protection system

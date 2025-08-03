@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧 LYRIXA PLUGIN SYSTEM - COMPLETE REBUILD
+[TOOL] LYRIXA PLUGIN SYSTEM - COMPLETE REBUILD
 =========================================
 
 This is the REAL plugin system that Lyrixa needs.
@@ -157,7 +157,7 @@ class LyrixaPluginSystem:
                         f"📋 Loaded plugin registry with {len(data.get('plugins', []))} entries"
                     )
             except Exception as e:
-                print(f"⚠️ Failed to load plugin registry: {e}")
+                print(f"[WARN] Failed to load plugin registry: {e}")
 
     def _save_plugin_registry(self):
         """Save plugin registry to disk using safe file operations"""
@@ -187,7 +187,7 @@ class LyrixaPluginSystem:
             success = safe_write_file(str(self.plugin_registry_file), registry_content)
             if not success:
                 print(
-                    f"⚠️ Failed to safely write plugin registry, falling back to normal write"
+                    f"[WARN] Failed to safely write plugin registry, falling back to normal write"
                 )
                 with open(self.plugin_registry_file, "w") as f:
                     f.write(registry_content)

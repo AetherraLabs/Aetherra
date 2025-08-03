@@ -210,11 +210,11 @@ class LyrixaFeedbackSystem:
                         )
                     return converted_memories
 
-            print("⚠️ No compatible search method found in memory system")
+            print("[WARN] No compatible search method found in memory system")
             return []
 
         except Exception as e:
-            print(f"❌ Error searching memory for patterns: {e}")
+            print(f"[ERROR] Error searching memory for patterns: {e}")
             return []
 
     async def collect_feedback(
@@ -409,7 +409,7 @@ class LyrixaFeedbackSystem:
             )
 
         except Exception as e:
-            print(f"⚠️ Error storing feedback in memory: {e}")
+            print(f"[WARN] Error storing feedback in memory: {e}")
             # The memory storage failed - not critical for feedback collection
             pass
 
@@ -441,7 +441,7 @@ class LyrixaFeedbackSystem:
             print(f"✅ Applied {improvements_applied} improvements based on feedback")
 
         except Exception as e:
-            print(f"⚠️ Error in improvement analysis: {e}")
+            print(f"[WARN] Error in improvement analysis: {e}")
 
     async def _analyze_suggestion_feedback(self) -> List[ImprovementAction]:
         """Analyze suggestion-related feedback"""
@@ -674,7 +674,7 @@ class LyrixaFeedbackSystem:
             return True
 
         except Exception as e:
-            print(f"⚠️ Error applying improvement: {e}")
+            print(f"[WARN] Error applying improvement: {e}")
             return False
 
     async def _update_performance_metrics(self):
@@ -743,7 +743,7 @@ class LyrixaFeedbackSystem:
             self.performance_metrics.last_updated = datetime.now()
 
         except Exception as e:
-            print(f"⚠️ Error updating performance metrics: {e}")
+            print(f"[WARN] Error updating performance metrics: {e}")
 
     def _normalize_rating(self, rating: Union[FeedbackRating, float, int]) -> float:
         """Normalize rating to 0.0-1.0 scale"""
@@ -990,7 +990,7 @@ class FeedbackCollectionGUI:
                     {"text": "🎯 Perfect", "value": "perfect"},
                     {"text": "✅ Good", "value": "good"},
                     {"text": "🤔 Okay", "value": "okay"},
-                    {"text": "❌ Poor", "value": "poor"},
+                    {"text": "[ERROR] Poor", "value": "poor"},
                 ],
                 "detailed_form": {
                     "quality_rating": {"min": 1, "max": 5, "label": "Response quality"},

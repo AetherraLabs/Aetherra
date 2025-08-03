@@ -4,7 +4,7 @@ This document provides a comprehensive mapping of all valid, deprecated, and rec
 
 ---
 
-## 📦 Canonical Import Prefixes
+## [DISC] Canonical Import Prefixes
 
 - `Aetherra.`
 - `Lyrixa.`
@@ -14,7 +14,7 @@ This document provides a comprehensive mapping of all valid, deprecated, and rec
 
 ---
 
-## ✅ Valid Imports (Canonical Examples)
+## [OK] Valid Imports (Canonical Examples)
 
 ```python
 from aetherra_core.memory.fractal_encoder import FractalEncoder

@@ -29,7 +29,7 @@ async def test_system_availability_check():
     print(f"Initial system availability: {status['agent_system_available']}")
 
     # Try to create components
-    print("\n🔧 Attempting to create components (should fail due to unavailability):")
+    print("\n[TOOL] Attempting to create components (should fail due to unavailability):")
     executor = await interface.create_agent_component("executor")
     print(f"  - Executor component created: {executor is not None}")
 

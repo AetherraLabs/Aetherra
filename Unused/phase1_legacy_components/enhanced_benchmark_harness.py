@@ -202,7 +202,7 @@ class EnhancedMemoryBenchmark:
 
     async def initialize_systems(self):
         """Initialize all memory systems for comparison"""
-        self.logger.info("🔧 Initializing memory systems...")
+        self.logger.info("[TOOL] Initializing memory systems...")
 
         try:
             # Initialize async concurrent memory manager
@@ -792,7 +792,7 @@ class EnhancedMemoryBenchmark:
         for test_name, result in self.benchmark_results.items():
             if result.mean_duration_ms > 200:
                 recommendations.append(
-                    f"⚠️ {test_name}: Consider optimization (current: {result.mean_duration_ms:.1f}ms)"
+                    f"[WARN] {test_name}: Consider optimization (current: {result.mean_duration_ms:.1f}ms)"
                 )
 
             if result.bottleneck_stage != "UNKNOWN":
@@ -879,7 +879,7 @@ class EnhancedMemoryBenchmark:
                 json.dump(report, f, indent=2, default=str)
             self.logger.info(f"📁 Detailed results saved to {filename}")
         except Exception as e:
-            self.logger.warning(f"⚠️ Failed to save results: {e}")
+            self.logger.warning(f"[WARN] Failed to save results: {e}")
 
 
 async def main():
@@ -945,7 +945,7 @@ async def main():
             print(f"Memory Delta: {result.avg_memory_delta_mb:.2f}MB")
 
     except KeyboardInterrupt:
-        print("\n⚠️ Benchmark interrupted by user")
+        print("\n[WARN] Benchmark interrupted by user")
     except Exception as e:
         print(f"\n❌ Benchmark failed: {e}")
         raise

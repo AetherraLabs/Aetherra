@@ -15,7 +15,7 @@ try:
 
     print("✅ Test 1 PASSED: Hybrid window imports successfully")
 except Exception as e:
-    print(f"❌ Test 1 FAILED: Import error: {e}")
+    print(f"[ERROR] Test 1 FAILED: Import error: {e}")
     exit(1)
 
 # Test 2: Check if QTimer is properly imported for thread-safe GUI updates
@@ -24,7 +24,7 @@ try:
 
     print("✅ Test 2 PASSED: QTimer available for thread-safe updates")
 except Exception as e:
-    print(f"❌ Test 2 FAILED: QTimer import error: {e}")
+    print(f"[ERROR] Test 2 FAILED: QTimer import error: {e}")
     exit(1)
 
 # Test 3: Verify the process_neural_chat_message method exists
@@ -38,11 +38,11 @@ try:
         if "QTimer.singleShot" in source:
             print("✅ Test 3 PASSED: Neural chat uses thread-safe GUI updates")
         else:
-            print("⚠️ Test 3 WARNING: QTimer.singleShot not found in method")
+            print("[WARN] Test 3 WARNING: QTimer.singleShot not found in method")
     else:
-        print("❌ Test 3 FAILED: process_neural_chat_message method not found")
+        print("[ERROR] Test 3 FAILED: process_neural_chat_message method not found")
 except Exception as e:
-    print(f"❌ Test 3 FAILED: Method inspection error: {e}")
+    print(f"[ERROR] Test 3 FAILED: Method inspection error: {e}")
 
 # Test 4: Check autonomous capability detection
 try:
@@ -51,7 +51,7 @@ try:
 
     print("✅ Test 4 PASSED: Hybrid launcher with autonomous detection loads")
 except Exception as e:
-    print(f"❌ Test 4 FAILED: Launcher import error: {e}")
+    print(f"[ERROR] Test 4 FAILED: Launcher import error: {e}")
 
 print("\n🎯 THREADING FIX SUMMARY:")
 print("=" * 50)

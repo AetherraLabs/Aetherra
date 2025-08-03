@@ -9,7 +9,7 @@
 
 ---
 
-## 📦 **What Was Just Pushed to the Repository**
+## [DISC] **What Was Just Pushed to the Repository**
 
 ### 🚀 **Core Autonomous Systems (3 Major Components)**
 
@@ -30,7 +30,7 @@
    - Coordinated multi-phase collaboration workflow
    - Peer review and quality assurance systems
 
-### 🔧 **Advanced Code Editing Systems**
+### [TOOL] **Advanced Code Editing Systems**
 
 4. **`gui/advanced_code_editor.py`** - AST-aware code editing with intelligent merging
 5. **`gui/advanced_plugin_ui.py`** - Enhanced plugin interface with advanced features

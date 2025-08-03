@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧 LYRIXA INTELLIGENT ERROR HANDLING SYSTEM (#8)
+[TOOL] LYRIXA INTELLIGENT ERROR HANDLING SYSTEM (#8)
 ================================================
 
 Advanced error handling and self-correction system with AI-powered diagnosis,
@@ -8,7 +8,7 @@ automatic fixes, and learning from patterns for Aetherra AI OS.
 
 ROADMAP ITEM #8: Intelligent Error Handling
 - Self-Correction Logic for Plugin Errors
-- Real-time Plugin Execution Monitoring  
+- Real-time Plugin Execution Monitoring
 - AI-powered Error Diagnosis and Fix Suggestions
 - Auto-application of Corrections with User Confirmation
 - Learning from Correction Patterns to Prevent Future Errors
@@ -89,7 +89,7 @@ class ConversationTurn:
 class LyrixaEnhancedConversationManager:
     """
     🧠 Enhanced Lyrixa Conversation Manager - Roadmap Item #7
-    
+
     Advanced conversational AI with multi-turn memory, intent translation,
     and sophisticated context management capabilities.
     """
@@ -98,29 +98,29 @@ class LyrixaEnhancedConversationManager:
         # Core systems
         self.memory_engine = memory_engine
         self.analytics_engine = analytics_engine
-        
+
         # Enhanced conversation state
         self.conversation_threads = {}  # thread_id -> List[ConversationTurn]
         self.active_sessions = {}  # session_id -> ConversationContext
         self.user_personalities = {}  # user_id -> preferred personality
         self.conversation_summaries = {}  # session_id -> summary
-        
+
         # Configuration
         self.context_window_size = 100  # Increased for better memory
         self.max_thread_length = 50
         self.intent_confidence_threshold = 0.7
         self.code_generation_enabled = True
         self.memory_integration_enabled = bool(memory_engine)
-        
+
         # Performance tracking
         self.is_available = True
         self.total_conversations = 0
         self.successful_intent_translations = 0
         self.code_generations = 0
-        
+
         # Intent patterns for natural language processing
         self.intent_patterns = self._initialize_intent_patterns()
-        
+
         logger.info("🧠 Enhanced LyrixaConversationManager (#7) initialized with multi-turn memory support")
 
     def _initialize_intent_patterns(self) -> Dict[str, List[str]]:
@@ -181,7 +181,7 @@ class LyrixaEnhancedConversationManager:
         self, message: str, user_id: str = "default", context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Enhanced message processing with multi-turn memory and intent analysis"""
-        
+
         if context is None:
             context = {}
 
@@ -273,12 +273,12 @@ class LyrixaEnhancedConversationManager:
         for intent_name, patterns in self.intent_patterns.items():
             score = 0.0
             matched_patterns = []
-            
+
             for pattern in patterns:
                 if re.search(pattern, message_lower):
                     score += 1.0
                     matched_patterns.append(pattern)
-            
+
             if score > 0:
                 intent_scores[intent_name] = {
                     "score": score / len(patterns),  # Normalize by pattern count
@@ -288,11 +288,11 @@ class LyrixaEnhancedConversationManager:
         # Determine primary intent
         primary_intent = None
         max_score = 0.0
-        
+
         if intent_scores:
             primary_intent_name = max(intent_scores.keys(), key=lambda k: intent_scores[k]["score"])
             max_score = intent_scores[primary_intent_name]["score"]
-            
+
             if max_score >= self.intent_confidence_threshold:
                 try:
                     primary_intent = IntentType(primary_intent_name)
@@ -331,7 +331,7 @@ class LyrixaEnhancedConversationManager:
             return ConversationType.MEMORY_QUERY
         elif intent == IntentType.EXECUTE_TASK:
             return ConversationType.SYSTEM_COMMAND
-        
+
         # Fallback classification
         if any(word in message_lower for word in ["?", "what", "how", "why", "when", "where"]):
             return ConversationType.QUESTION
@@ -348,7 +348,7 @@ class LyrixaEnhancedConversationManager:
 
         # Context-aware personality selection
         intent = intent_analysis.get("intent")
-        
+
         if intent in [IntentType.CREATE_CODE, IntentType.DEBUG_ISSUE]:
             return "developer"
         elif intent == IntentType.LEARN_TOPIC:
@@ -379,13 +379,13 @@ class LyrixaEnhancedConversationManager:
         """Extract main topic from message"""
         # Simple topic extraction - can be enhanced with NLP
         message_lower = message.lower()
-        
+
         # Programming topics
         programming_topics = ["python", "javascript", "react", "django", "flask", "api", "database", "sql", "html", "css"]
         for topic in programming_topics:
             if topic in message_lower:
                 return topic
-        
+
         # General topics
         if "machine learning" in message_lower or "ml" in message_lower:
             return "machine_learning"
@@ -395,25 +395,25 @@ class LyrixaEnhancedConversationManager:
             return "web_development"
         elif "data science" in message_lower:
             return "data_science"
-        
+
         return None
 
     def _assess_followup_need(self, message: str, intent_scores: Dict[str, Any]) -> bool:
         """Determine if conversation likely needs followup"""
         message_lower = message.lower()
-        
+
         # Questions typically need followup
         if any(word in message_lower for word in ["?", "what", "how", "why", "explain"]):
             return True
-        
+
         # Complex requests need followup
         if any(intent in intent_scores for intent in ["create_code", "debug_issue", "manage_project"]):
             return True
-        
+
         # Learning requests need followup
         if any(word in message_lower for word in ["learn", "tutorial", "guide", "teach"]):
             return True
-        
+
         return False
 
         if context is None:
@@ -585,9 +585,9 @@ class LyrixaEnhancedConversationManager:
 
 
 # Convenience function for easy import
-def get_conversation_manager(memory_engine=None) -> LyrixaConversationManager:
+def get_conversation_manager(memory_engine=None) -> LyrixaEnhancedConversationManager:
     """Get an instance of the conversation manager"""
-    return LyrixaConversationManager(memory_engine)
+    return LyrixaEnhancedConversationManager(memory_engine)
 
 
-__all__ = ["LyrixaConversationManager", "get_conversation_manager"]
+__all__ = ["LyrixaEnhancedConversationManager", "get_conversation_manager"]

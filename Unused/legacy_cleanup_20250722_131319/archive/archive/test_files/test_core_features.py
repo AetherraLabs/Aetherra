@@ -39,7 +39,7 @@ def test_memory_system():
 
 def test_function_system():
     """Test user-defined functions"""
-    print("\n🔧 Testing Function System")
+    print("\n[TOOL] Testing Function System")
     print("-" * 30)
 
     memory = AetherraMemory()

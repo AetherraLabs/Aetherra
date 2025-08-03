@@ -96,7 +96,7 @@ def test_temporal_memory_features():
         # Restore original memories
         memory.memory = original_memories
         memory.save()
-        print("\n🔧 Original memory state restored")
+        print("\n[TOOL] Original memory state restored")
 
 
 if __name__ == "__main__":

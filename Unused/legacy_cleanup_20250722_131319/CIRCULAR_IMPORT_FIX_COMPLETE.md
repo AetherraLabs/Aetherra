@@ -2,13 +2,13 @@
 
 ## ✅ **Problem SOLVED!**
 
-**Issue**: *"⚠️ Meta-Reasoning Engine not available: cannot import name 'LyrixaIntelligenceStack' from 'Aetherra.lyrixa.intelligence_integration' (most likely due to a circular import)"*
+**Issue**: *"[WARN] Meta-Reasoning Engine not available: cannot import name 'LyrixaIntelligenceStack' from 'Aetherra.lyrixa.intelligence_integration' (most likely due to a circular import)"*
 
 **FIXED!** ✅ Circular import resolved using lazy loading pattern for conversation manager import.
 
 ---
 
-## 🔧 **Root Cause Analysis**
+## [TOOL] **Root Cause Analysis**
 
 ### **Circular Import Chain:**
 ```
@@ -40,7 +40,7 @@ def _get_conversation_manager():
             from .conversation_manager import LyrixaConversationManager
             CONVERSATION_MANAGER_AVAILABLE = True
         except ImportError as e:
-            print(f"⚠️ Conversation manager not available: {e}")
+            print(f"[WARN] Conversation manager not available: {e}")
             CONVERSATION_MANAGER_AVAILABLE = False
     return LyrixaConversationManager
 ```

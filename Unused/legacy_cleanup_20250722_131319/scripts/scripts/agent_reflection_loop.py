@@ -30,7 +30,7 @@ try:
     from memory import AetherraMemory
     from aetherra_runner_standalone import StandaloneAetherraRunner
 except ImportError as e:
-    print(f"⚠️ Some components not available: {e}")
+    print(f"[WARN] Some components not available: {e}")
 
 
 class AgentReflectionLoop:
@@ -68,7 +68,7 @@ class AgentReflectionLoop:
     def start(self):
         """Start the autonomous reflection loop"""
         if self.is_running:
-            print("⚠️ Agent already running")
+            print("[WARN] Agent already running")
             return
 
         self.is_running = True
@@ -96,7 +96,7 @@ class AgentReflectionLoop:
                 self._perform_reflection_cycle()
                 time.sleep(self.config["reflection_interval"])
             except Exception as e:
-                print(f"❌ Reflection loop error: {e}")
+                print(f"[ERROR] Reflection loop error: {e}")
                 time.sleep(5)  # Brief pause on error
 
     def _perform_reflection_cycle(self):
@@ -162,7 +162,7 @@ class AgentReflectionLoop:
             insights.extend(gaps)
 
         except Exception as e:
-            print(f"⚠️ Pattern analysis error: {e}")
+            print(f"[WARN] Pattern analysis error: {e}")
 
         self.insights_generated.extend(insights)
 
@@ -387,7 +387,7 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
             success = self._execute_Aetherra(Aetherra)
             self.actions_taken += 1
 
-            print(f"🤖 Auto-executed: {'✅ Success' if success else '❌ Failed'}")
+            print(f"🤖 Auto-executed: {'✅ Success' if success else '[ERROR] Failed'}")
 
             # Notify UI
             if self.on_action_callback:
@@ -416,7 +416,7 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
 
             return results.get("success", False)
         except Exception as e:
-            print(f"❌ Execution error: {e}")
+            print(f"[ERROR] Execution error: {e}")
             return False
 
     def _update_agent_knowledge(self, insights: List[Dict], suggestions: List[Dict]):
@@ -441,7 +441,7 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
                     ["agent_reflection", "meta_learning"],
                 )
             except Exception as e:
-                print(f"⚠️ Failed to store reflection in memory: {e}")
+                print(f"[WARN] Failed to store reflection in memory: {e}")
 
     def get_status(self) -> Dict[str, Any]:
         """Get current agent status for UI display"""
@@ -462,7 +462,7 @@ remember("Basic {domain} concepts established") as "{domain},foundation"''',
     def update_config(self, new_config: Dict[str, Any]):
         """Update agent configuration"""
         self.config.update(new_config)
-        print(f"🔧 Agent configuration updated: {new_config}")
+        print(f"[TOOL] Agent configuration updated: {new_config}")
 
     def set_ui_callbacks(
         self,
@@ -534,7 +534,7 @@ def main():
                 break
 
     except Exception as e:
-        print(f"❌ Agent error: {e}")
+        print(f"[ERROR] Agent error: {e}")
         agent.stop()
 
     print("🏁 Agent Reflection Loop terminated")

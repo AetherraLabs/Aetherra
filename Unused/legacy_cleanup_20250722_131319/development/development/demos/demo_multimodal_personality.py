@@ -304,7 +304,7 @@ class MultiModalPersonalityDemo:
 
         optimizations = result.get("optimizations_applied", [])
         if optimizations:
-            print(f"🔧 Optimizations Applied: {len(optimizations)}")
+            print(f"[TOOL] Optimizations Applied: {len(optimizations)}")
             for opt in optimizations[:2]:  # Show first 2
                 print(f"  • {opt}")
 
@@ -422,7 +422,7 @@ class MultiModalPersonalityDemo:
             print(f"📄 Demo report saved: {filename}")
 
         except Exception as e:
-            print(f"⚠️ Failed to save demo report: {e}")
+            print(f"[WARN] Failed to save demo report: {e}")
 
 
 async def main():

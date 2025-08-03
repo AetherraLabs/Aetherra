@@ -53,7 +53,7 @@ def format_plugin_list(plugins, detailed=False):
             if hasattr(plugin, "loaded") and plugin.loaded:
                 status += " & Loaded"
         else:
-            status = "📦 Available"
+            status = "[DISC] Available"
 
         # Rating stars
         rating_stars = ""
@@ -472,7 +472,7 @@ def main():
     try:
         return commands[command](args, manager)
     except KeyboardInterrupt:
-        print("\n⚠️ Operation cancelled by user")
+        print("\n[WARN] Operation cancelled by user")
         return 130
     except Exception as e:
         print(f"❌ Unexpected error: {e}")

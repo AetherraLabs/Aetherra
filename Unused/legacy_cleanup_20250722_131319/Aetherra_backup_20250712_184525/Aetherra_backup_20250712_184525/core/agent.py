@@ -123,7 +123,7 @@ class AetherraAgent:
 
         result = "[Behavior Analysis]\n"
         result += f"📈 Total memories: {len(all_memories)}\n"
-        result += f"🔧 Defined functions: {self.functions.get_function_count()}\n"
+        result += f"[TOOL] Defined functions: {self.functions.get_function_count()}\n"
         result += f"📊 Command patterns: {dict(sorted(command_types.items(), key=lambda x: x[1], reverse=True))}\n"
         result += f"\n[AI Behavior Analysis]\n{behavior_analysis}"
 
@@ -162,7 +162,7 @@ class AetherraAgent:
         if context:
             result += f"🎯 Context: {context}\n"
         result += f"📚 Recent activity: {len(recent_memories)} recent memories\n"
-        result += f"🔧 Available tools: {len(function_names)} functions, {len(available_tags)} tag categories\n"
+        result += f"[TOOL] Available tools: {len(function_names)} functions, {len(available_tags)} tag categories\n"
         result += f"\n[AI Adaptive Suggestions]\n{suggestions}"
 
         return result

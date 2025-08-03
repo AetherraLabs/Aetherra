@@ -96,7 +96,7 @@ async def test_personality_processor():
 
     # Technical question
     response = await engine.process_conversation_turn("Can you debug this function that's throwing errors?")
-    print(f"\n🔧 Technical question response: {response['text']}")
+    print(f"\n[TOOL] Technical question response: {response['text']}")
 
     # Test 4: Feedback Learning
     print("\n\n📚 TEST 4: Feedback Learning")
@@ -127,7 +127,7 @@ async def test_personality_processor():
 
     # Modify settings
     engine.adjust_personality_settings(warmth=0.5, humor_level=0.5)
-    print("🔧 Modified settings")
+    print("[TOOL] Modified settings")
 
     # Import profile
     success = engine.import_personality_profile(profile)

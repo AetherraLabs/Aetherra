@@ -47,7 +47,7 @@ def print_achievement_summary():
         "🎯 Goal Tracking and Management",
         "📊 Real-time Performance Analytics",
         "🤖 Live Agent Monitoring",
-        "🔧 Comprehensive Plugin Management",
+        "[TOOL] Comprehensive Plugin Management",
         "💬 Enhanced Chat Interface",
         "🔄 Self-Improvement Engine",
         "📊 System Dashboard with Metrics",
@@ -140,7 +140,7 @@ def print_next_steps():
 
     enhancements = [
         "🔒 Plugin sandboxing and security",
-        "📦 Plugin dependency management",
+        "[DISC] Plugin dependency management",
         "📊 Execution logging and monitoring",
         "⚡ Plugin performance profiling",
         "🔗 Real-time plugin communication",

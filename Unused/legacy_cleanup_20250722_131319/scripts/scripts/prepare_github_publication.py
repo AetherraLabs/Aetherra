@@ -22,12 +22,12 @@ def run_command(command, description):
                 print(f"   Output: {result.stdout.strip()}")
             return True
         else:
-            print(f"❌ {description} failed")
+            print(f"[ERROR] {description} failed")
             if result.stderr.strip():
                 print(f"   Error: {result.stderr.strip()}")
             return False
     except Exception as e:
-        print(f"❌ {description} failed with exception: {e}")
+        print(f"[ERROR] {description} failed with exception: {e}")
         return False
 
 
@@ -37,7 +37,7 @@ def check_file_exists(file_path, description):
         print(f"✅ {description}: {file_path}")
         return True
     else:
-        print(f"❌ Missing: {description} - {file_path}")
+        print(f"[ERROR] Missing: {description} - {file_path}")
         return False
 
 
@@ -68,7 +68,7 @@ def main():
             missing_files.append(file_path)
 
     if missing_files:
-        print(f"\n⚠️  Missing {len(missing_files)} essential files")
+        print(f"\n[WARN]  Missing {len(missing_files)} essential files")
         return False
 
     # Check examples directory
@@ -80,13 +80,13 @@ def main():
         for example_file in example_files:
             print(f"   📄 {example_file.name}")
     else:
-        print("❌ Examples directory not found")
+        print("[ERROR] Examples directory not found")
         return False
 
     # Git repository check
-    print("\n🔧 Git Repository Status...")
+    print("\n[TOOL] Git Repository Status...")
     if not run_command("git status --porcelain", "Checking git status"):
-        print("❌ Git repository check failed")
+        print("[ERROR] Git repository check failed")
         return False
 
     # Check for uncommitted changes
@@ -94,7 +94,7 @@ def main():
         "git status --porcelain", shell=True, capture_output=True, text=True
     )
     if git_status.stdout.strip():
-        print("⚠️  Uncommitted changes detected:")
+        print("[WARN]  Uncommitted changes detected:")
         print(git_status.stdout)
 
         commit_choice = input("\n🤔 Commit all changes before preparation? (y/n): ")
@@ -107,7 +107,7 @@ def main():
             ):
                 return False
         else:
-            print("⚠️  Proceeding with uncommitted changes...")
+            print("[WARN]  Proceeding with uncommitted changes...")
 
     # Test core functionality
     print("\n🧪 Testing Core Functionality...")
@@ -127,7 +127,7 @@ def main():
             if not run_command(
                 f"python -m py_compile {test_file}", f"Testing {test_file} syntax"
             ):
-                print(f"❌ Syntax error in {test_file}")
+                print(f"[ERROR] Syntax error in {test_file}")
                 return False
 
     # Test imports
@@ -154,7 +154,7 @@ def main():
     for command, description in import_tests:
         if not run_command(command, f"Testing {description} import"):
             print(
-                f"⚠️  {description} import test failed (may be due to missing dependencies)"
+                f"[WARN]  {description} import test failed (may be due to missing dependencies)"
             )
 
     # Generate final status report
@@ -189,7 +189,7 @@ Generated: {Path(__file__).stat().st_mtime}
 - ✅ Web development patterns
 - ✅ Performance optimization
 
-### 🔧 Technical Quality
+### [TOOL] Technical Quality
 - ✅ All Python files compile without syntax errors
 - ✅ Core modules import successfully
 - ✅ Type annotations and documentation complete

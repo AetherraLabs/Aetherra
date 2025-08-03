@@ -17,7 +17,7 @@ import sys
 
 def install_package(package, description=""):
     """Install a Python package with pip"""
-    print(f"📦 Installing {package}... {description}")
+    print(f"[DISC] Installing {package}... {description}")
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", package])
         print(f"✅ {package} installed successfully")
@@ -78,7 +78,7 @@ def main():
         print("\n4. Test multi-LLM aetherra:")
         print("   python aetherra_engine.py")
     else:
-        print(f"\n⚠️ {failed} packages failed to install.")
+        print(f"\n[WARN] {failed} packages failed to install.")
         print("Please check the errors above and install manually if needed.")
 
     print("\n🧬 aetherra Multi-LLM Setup Complete!")

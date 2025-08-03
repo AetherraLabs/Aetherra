@@ -170,7 +170,7 @@ async def demonstrate_plugin_generation_flow():
         for key, data in mock_memory.stored_memories.items():
             print(f"   • {key[:40]}... (importance: {data['importance']})")
 
-    print(f"\n🔧 STEP 4: Template System Verification")
+    print(f"\n[TOOL] STEP 4: Template System Verification")
     print("-" * 40)
 
     # Test the plugin generator directly
@@ -246,7 +246,7 @@ async def main():
             print(f"\n🎉 DEMONSTRATION SUCCESSFUL!")
             print("All plugin generation features are working correctly.")
         else:
-            print(f"\n⚠️  DEMONSTRATION COMPLETED WITH ISSUES")
+            print(f"\n[WARN]  DEMONSTRATION COMPLETED WITH ISSUES")
             print("Some features may need additional refinement.")
 
     except Exception as e:

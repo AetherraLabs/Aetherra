@@ -84,7 +84,7 @@ def launch_aetherplex_demo():
             # Just show that it can initialize
             print("  ✅ Demo completed successfully!")
         else:
-            print("  ⚠️ Invalid choice, launching default mode...")
+            print("  [WARN] Invalid choice, launching default mode...")
             aethercode_launcher.main()
 
         return True
@@ -108,7 +108,7 @@ def main():
         return False
 
     if not test_aetherplex_ui():
-        print("⚠️ UI tests failed, but proceeding with basic functionality.")
+        print("[WARN] UI tests failed, but proceeding with basic functionality.")
 
     print("\n✅ Lyrixais functional!")
 

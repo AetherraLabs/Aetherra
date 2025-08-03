@@ -143,7 +143,7 @@ def main():
             status = "PASS" if result else "FAIL"
             print(f"📊 {test_name}: {status}")
         except Exception as e:
-            print(f"💥 {test_name}: CRASH - {e}")
+            print(f"[FAIL] {test_name}: CRASH - {e}")
             results.append((test_name, False))
 
     # Summary

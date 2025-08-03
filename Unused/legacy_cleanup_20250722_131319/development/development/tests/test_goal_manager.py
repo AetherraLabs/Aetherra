@@ -10,7 +10,7 @@ try:
     mgr = RealGoalManager()
     print('✅ Goal manager created')
 
-    print(f'Status: {"✅ Connected to real goals" if mgr.is_connected else "❌ Not connected to real goals - using fallback data"}')
+    print(f'Status: {"✅ Connected to real goals" if mgr.is_connected else "[ERROR] Not connected to real goals - using fallback data"}')
 
     # Test current goals
     current_goals = mgr.get_current_goals()
@@ -54,6 +54,6 @@ try:
     print(f"  Average Progress: {stats.get('average_progress', 0.0):.1%}")
 
 except Exception as e:
-    print(f'❌ Error: {e}')
+    print(f'[ERROR] Error: {e}')
     import traceback
     traceback.print_exc()

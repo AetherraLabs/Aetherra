@@ -37,7 +37,7 @@ def verify_phase_1_integration():
 
         print("✅ Phase 1 Core Memory Components: Available")
     except ImportError as e:
-        print(f"❌ Phase 1 Core Components: {e}")
+        print(f"[ERROR] Phase 1 Core Components: {e}")
         return False
 
     try:
@@ -46,7 +46,7 @@ def verify_phase_1_integration():
 
         print("✅ Phase 1 GUI Integration: Memory visualization available")
     except ImportError as e:
-        print(f"❌ Phase 1 GUI Integration: {e}")
+        print(f"[ERROR] Phase 1 GUI Integration: {e}")
         return False
 
     print("🎯 Phase 1 Features:")
@@ -70,7 +70,7 @@ def verify_phase_2_integration():
 
         print("✅ Phase 2 Core Anticipation Components: Available")
     except ImportError as e:
-        print(f"❌ Phase 2 Core Components: {e}")
+        print(f"[ERROR] Phase 2 Core Components: {e}")
         return False
 
     try:
@@ -80,7 +80,7 @@ def verify_phase_2_integration():
 
         print("✅ Phase 2 GUI Integration: Live thinking and suggestions available")
     except ImportError as e:
-        print(f"❌ Phase 2 GUI Integration: {e}")
+        print(f"[ERROR] Phase 2 GUI Integration: {e}")
         return False
 
     print("🎯 Phase 2 Features:")
@@ -104,7 +104,7 @@ def verify_phase_3_integration():
 
         print("✅ Phase 3 Core GUI Components: Available")
     except ImportError as e:
-        print(f"❌ Phase 3 Core Components: {e}")
+        print(f"[ERROR] Phase 3 Core Components: {e}")
         return False
 
     try:
@@ -113,7 +113,7 @@ def verify_phase_3_integration():
 
         print("✅ Phase 3 Enhanced Lyrixa Integration: Available")
     except ImportError as e:
-        print(f"❌ Phase 3 Enhanced Lyrixa Integration: {e}")
+        print(f"[ERROR] Phase 3 Enhanced Lyrixa Integration: {e}")
         return False
 
     print("🎯 Phase 3 Features:")
@@ -138,7 +138,7 @@ def verify_phase_4_integration():
 
         print("✅ Phase 4 Advanced GUI Components: Available")
     except ImportError as e:
-        print(f"❌ Phase 4 Advanced Components: {e}")
+        print(f"[ERROR] Phase 4 Advanced Components: {e}")
         return False
 
     print("🎯 Phase 4 Features:")
@@ -172,7 +172,7 @@ def verify_unified_gui_integration():
         for launcher in available_launchers:
             print(f"   • {launcher.name}")
     else:
-        print("❌ No unified GUI launcher found")
+        print("[ERROR] No unified GUI launcher found")
         return False
 
     # Test if PySide6 is available for GUI
@@ -181,7 +181,7 @@ def verify_unified_gui_integration():
 
         print("✅ PySide6 GUI Framework: Available")
     except ImportError:
-        print("❌ PySide6 GUI Framework: Not available")
+        print("[ERROR] PySide6 GUI Framework: Not available")
         return False
 
     return True
@@ -208,7 +208,7 @@ def create_integration_report():
     passed_phases = sum(1 for result in phase_results.values() if result)
 
     for phase, result in phase_results.items():
-        status = "✅ INTEGRATED" if result else "❌ MISSING"
+        status = "✅ INTEGRATED" if result else "[ERROR] MISSING"
         print(f"{phase:25} {status}")
 
     print(f"\n🎯 OVERALL STATUS: {passed_phases}/{total_phases} phases integrated")
@@ -220,9 +220,9 @@ def create_integration_report():
         print("✅ Next-generation AI assistant complete")
     else:
         print(
-            f"\n⚠️  ATTENTION: {total_phases - passed_phases} phase(s) need integration"
+            f"\n[WARN]  ATTENTION: {total_phases - passed_phases} phase(s) need integration"
         )
-        print("🔧 Review missing components and ensure proper imports")
+        print("[TOOL] Review missing components and ensure proper imports")
 
     print(f"\n📅 Report Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     return passed_phases == total_phases
@@ -235,21 +235,21 @@ def create_integration_checklist():
 
     checklist = {
         "Phase 1 Integration": {
-            "status": "⚠️ Backend Only",
+            "status": "[WARN] Backend Only",
             "items": [
                 "✅ Advanced Memory System implemented",
                 "✅ Enhanced Lyrixa Assistant core implemented",
-                "🔧 Need to connect to GUI for memory visualization",
-                "🔧 Need to integrate with Intelligence Layer display",
+                "[TOOL] Need to connect to GUI for memory visualization",
+                "[TOOL] Need to integrate with Intelligence Layer display",
             ],
         },
         "Phase 2 Integration": {
-            "status": "⚠️ Backend Only",
+            "status": "[WARN] Backend Only",
             "items": [
-                "⚠️ Context Analyzer (may need implementation)",
-                "⚠️ Suggestion Generator (may need implementation)",
-                "⚠️ Proactive Assistant (may need implementation)",
-                "🔧 Need to connect to Notification System GUI",
+                "[WARN] Context Analyzer (may need implementation)",
+                "[WARN] Suggestion Generator (may need implementation)",
+                "[WARN] Proactive Assistant (may need implementation)",
+                "[TOOL] Need to connect to Notification System GUI",
             ],
         },
         "Phase 3 Integration": {
@@ -259,7 +259,7 @@ def create_integration_checklist():
                 "✅ Configuration Manager complete",
                 "✅ Performance Monitor complete",
                 "✅ Suggestion Notification System complete",
-                "🔧 Need to add to Enhanced Lyrixa GUI as tab",
+                "[TOOL] Need to add to Enhanced Lyrixa GUI as tab",
             ],
         },
         "Phase 4 Integration": {
@@ -269,7 +269,7 @@ def create_integration_checklist():
                 "✅ Enhanced Analytics complete",
                 "✅ Web/Mobile Interface complete",
                 "✅ Live Feedback Loop complete",
-                "🔧 Need to add to Enhanced Lyrixa GUI as main widget",
+                "[TOOL] Need to add to Enhanced Lyrixa GUI as main widget",
             ],
         },
     }
@@ -319,7 +319,7 @@ def main():
         print("\n🎉 MISSION ACCOMPLISHED: All phases integrated!")
         return 0
     else:
-        print("\n🔧 ACTION REQUIRED: Complete missing integrations")
+        print("\n[TOOL] ACTION REQUIRED: Complete missing integrations")
         return 1
 
 

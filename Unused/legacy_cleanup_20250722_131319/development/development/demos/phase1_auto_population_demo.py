@@ -28,7 +28,7 @@ def demonstrate_phase1_workflow():
     print("6. Plugin Editor tab receives code and switches to foreground")
     print()
 
-    print("🔧 **Technical Implementation**")
+    print("[TOOL] **Technical Implementation**")
     print("-" * 40)
 
     # Show the key components
@@ -114,7 +114,7 @@ def demonstrate_phase1_workflow():
     print("User: 'Create a plugin for CSV file analysis'")
     print()
     print("Lyrixa Response:")
-    print("🔧 **Plugin Generation System**")
+    print("[TOOL] **Plugin Generation System**")
     print()
     print("**Request**: for CSV file analysis")
     print("**Suggested Name**: CsvFileAnalysisPlugin")

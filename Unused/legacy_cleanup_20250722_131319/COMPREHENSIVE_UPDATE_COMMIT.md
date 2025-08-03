@@ -31,7 +31,7 @@
 - **Documentation**: Improved docs structure with comprehensive guides and reports
 - **Web Assets**: Organized web components in dedicated `web/` directory
 
-### 🔧 **Maintenance Infrastructure**
+### [TOOL] **Maintenance Infrastructure**
 - **Automated Cleanup**: Created ongoing maintenance script for future use
 - **Housekeeping Reports**: Detailed audit trails for all cleanup operations
 - **Performance Optimization**: Significantly improved VS Code performance through file reduction

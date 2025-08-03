@@ -226,7 +226,7 @@ class DataAgent(AgentBase):
                 },
             ],
             "recommendations": [
-                "🔧 Handle missing values through interpolation",
+                "[TOOL] Handle missing values through interpolation",
                 "🎯 Review outliers for data entry errors",
                 "✅ Overall data quality is excellent",
                 "🚀 Ready for advanced analytics",

@@ -102,7 +102,7 @@ System prompts now include:
 4. **Debug logging**: Can be disabled for production
 5. **Backward compatibility**: Works with existing GUI integration
 
-#### 🔧 **Recommended Next Steps**
+#### [TOOL] **Recommended Next Steps**
 1. **Remove debug prints** for production deployment
 2. **Add response caching** to reduce API costs
 3. **Implement response streaming** for better UX

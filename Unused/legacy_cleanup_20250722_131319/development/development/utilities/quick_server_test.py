@@ -34,10 +34,10 @@ def test_server():
             print(f"   Response: {len(response.json())} items")
             return True
         else:
-            print(f"⚠️ Server responded with status {response.status_code}")
+            print(f"[WARN] Server responded with status {response.status_code}")
             return False
     except Exception as e:
-        print(f"❌ Server test failed: {e}")
+        print(f"[ERROR] Server test failed: {e}")
         return False
 
 if __name__ == "__main__":
@@ -46,6 +46,6 @@ if __name__ == "__main__":
         print("\n🎉 Enhanced API Server test PASSED!")
         print("✅ Ready to integrate with Lyrixa launcher")
     else:
-        print("\n❌ Enhanced API Server test FAILED!")
+        print("\n[ERROR] Enhanced API Server test FAILED!")
 
     time.sleep(1)  # Give server time to cleanup

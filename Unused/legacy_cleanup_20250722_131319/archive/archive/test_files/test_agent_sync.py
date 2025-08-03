@@ -40,7 +40,7 @@ def test_agent_sync_functions():
     for func in functions_to_test:
         print(f"  ✓ {func}")
 
-    print("\n🔧 Functions added to agents.aether:")
+    print("\n[TOOL] Functions added to agents.aether:")
     added_functions = [
         "find_agent(agent_id) - Find agent by ID",
         "create_agent(agent_def) - Create new agent",

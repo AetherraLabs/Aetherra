@@ -72,9 +72,9 @@ The core memory architecture has been fully implemented with:
   - ✅ **VALIDATED**: Concurrent optimization components initialized and functioning
   - ✅ **VALIDATED**: Revolutionary performance baseline established for optimization validation
   - ✅ **PERFORMANCE MONITORING**: Key bottlenecks identified for scaling preparation
-    - ⚠️ graph_lookup (20.8%) - Requires index sharding at >50k entries
-    - ⚠️ batch_storage (71.7% memory-intensive) - Needs lazy edge evaluation optimization
-    - ⚠️ Smart clustering queues required for >100 concurrent plugin calls
+    - [WARN] graph_lookup (20.8%) - Requires index sharding at >50k entries
+    - [WARN] batch_storage (71.7% memory-intensive) - Needs lazy edge evaluation optimization
+    - [WARN] Smart clustering queues required for >100 concurrent plugin calls
 
 ### 🚀 Phase 2: Memory Narration & Reflective Storytelling (✅ COMPLETE)
 
@@ -449,7 +449,7 @@ Scenario: Advanced user profiling system implementation
 
 ---
 
-## ⚠️ Performance Monitoring & Scaling Alerts
+## [WARN] Performance Monitoring & Scaling Alerts
 
 Based on enhanced benchmark analysis, the following components require monitoring for scaling:
 
@@ -516,7 +516,7 @@ Based on enhanced benchmark analysis, the following components require monitorin
 
 ---
 
-## ⚠️ Risk Mitigation & Challenges
+## [WARN] Risk Mitigation & Challenges
 
 ### Technical Risks
 - **Memory Performance Degradation**: Implement lazy loading, caching, and efficient indexing

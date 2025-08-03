@@ -56,10 +56,10 @@ async def test_lyrixa_plugin_routing():
                 print(f"Confidence: {response.confidence:.2f}")
                 print(f"Response Preview: {response.content[:200]}...")
             except Exception as e:
-                print(f"❌ Error: {e}")
+                print(f"[ERROR] Error: {e}")
 
         # Test utility methods
-        print(f"\n🔧 Testing utility methods...")
+        print(f"\n[TOOL] Testing utility methods...")
 
         # Test get_available_plugins
         plugins = await lyrixa.get_available_plugins()
@@ -71,13 +71,13 @@ async def test_lyrixa_plugin_routing():
             plugin_name = first_plugin.get("name", "sysmon")
             summary = await lyrixa.summarize_plugin(plugin_name)
             print(
-                f'Plugin summary for "{plugin_name}": {"✅ Found" if summary.get("found") else "❌ Not found"}'
+                f'Plugin summary for "{plugin_name}": {"✅ Found" if summary.get("found") else "[ERROR] Not found"}'
             )
 
         print(f"\n✅ Enhanced plugin routing test complete!")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[ERROR] Error: {e}")
         import traceback
 
         traceback.print_exc()

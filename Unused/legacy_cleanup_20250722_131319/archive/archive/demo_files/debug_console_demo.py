@@ -114,7 +114,7 @@ async def demo_debug_console():
                 print("\n🖥️  CLI Debug Widget Status:")
                 widget.show_status()
         except Exception as e:
-            print(f"⚠️  GUI widget not available: {e}")
+            print(f"[WARN]  GUI widget not available: {e}")
 
         print("\n" + "=" * 50)
         print("🎉 DEBUG CONSOLE FEATURES SUMMARY:")

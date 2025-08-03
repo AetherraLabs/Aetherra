@@ -116,7 +116,7 @@ def demo_plugin_editor():
                 window.plugin_editor.setPlainText(content)
             print(f"✅ Plugin file loaded into editor ({len(content)} characters)")
         except Exception as e:
-            print(f"⚠️ File loading simulation: {e}")
+            print(f"[WARN] File loading simulation: {e}")
 
         # Show window briefly for visual confirmation
         window.show()

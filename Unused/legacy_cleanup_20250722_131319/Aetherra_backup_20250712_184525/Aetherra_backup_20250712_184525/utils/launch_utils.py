@@ -30,10 +30,10 @@ def run_self_improvement_api():
             )
             print("✅ API server started in background")
         else:
-            print(f"⚠️ API script not found at {api_script}")
+            print(f"[WARN] API script not found at {api_script}")
 
     except Exception as e:
-        print(f"❌ Failed to start API server: {e}")
+        print(f"[ERROR] Failed to start API server: {e}")
 
 
 def setup_environment():
@@ -67,7 +67,7 @@ def check_dependencies():
         missing_deps.append("fastapi")
 
     if missing_deps:
-        print(f"❌ Missing dependencies: {', '.join(missing_deps)}")
+        print(f"[ERROR] Missing dependencies: {', '.join(missing_deps)}")
         print("Please install them using: pip install " + " ".join(missing_deps))
         return False
 

@@ -57,7 +57,7 @@ Successfully created and tested a comprehensive test suite for the **Aetherra Ne
 Total Tests: 28
 ✅ Passed: 28
 ❌ Failed: 0
-💥 Errors: 0
+[FAIL] Errors: 0
 📊 Success Rate: 100.0%
 ```
 

@@ -1,5 +1,5 @@
 """
-🎯 FINAL ANALYTICS & INSIGHTS ENGINE DEMO (#6) 
+🎯 FINAL ANALYTICS & INSIGHTS ENGINE DEMO (#6)
 ==============================================
 
 Comprehensive demonstration with immediate insight generation.
@@ -14,31 +14,31 @@ from demo_analytics_standalone import SimpleAnalyticsEngine, SimpleInsightPatter
 
 class FinalAnalyticsEngine(SimpleAnalyticsEngine):
     """Enhanced analytics engine that generates immediate insights"""
-    
+
     async def analyze_immediate_patterns(self):
         """Analyze patterns without time restrictions for demo purposes"""
-        
+
         insights = []
-        
+
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            
+
             # Analyze all response time data (no time filter for demo)
             cursor.execute("""
                 SELECT AVG(value) as avg_response_time, COUNT(*) as count,
                        MIN(value) as min_time, MAX(value) as max_time
-                FROM metrics 
+                FROM metrics
                 WHERE name = 'response_time'
             """)
-            
+
             response_data = cursor.fetchone()
-            
+
             if response_data and response_data[0]:
                 avg_time = response_data[0]
                 count = response_data[1]
                 min_time = response_data[2]
                 max_time = response_data[3]
-                
+
                 if avg_time > 2.0:
                     insights.append(SimpleInsightPattern(
                         pattern_id="critical_response_time",
@@ -50,7 +50,7 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
                         category="performance",
                         discovered_at=datetime.now(),
                         evidence=[{
-                            "avg_response_time": avg_time, 
+                            "avg_response_time": avg_time,
                             "sample_count": count,
                             "min_time": min_time,
                             "max_time": max_time,
@@ -72,26 +72,26 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
                             "performance_rating": "excellent"
                         }]
                     ))
-            
+
             # Analyze memory usage patterns
             cursor.execute("""
                 SELECT AVG(value) as avg_memory, MAX(value) as max_memory,
                        COUNT(*) as count
-                FROM metrics 
+                FROM metrics
                 WHERE name = 'memory_usage'
             """)
-            
+
             memory_data = cursor.fetchone()
-            
+
             if memory_data and memory_data[0]:
                 avg_memory = memory_data[0]
                 max_memory = memory_data[1]
                 count = memory_data[2]
-                
+
                 if avg_memory > 80:
                     insights.append(SimpleInsightPattern(
                         pattern_id="high_memory_usage_alert",
-                        description=f"⚠️ WARNING: High memory usage detected! "
+                        description=f"[WARN] WARNING: High memory usage detected! "
                                   f"Average: {avg_memory:.1f}%, Peak: {max_memory:.1f}%. "
                                   f"Consider scaling resources or optimizing memory usage.",
                         confidence=0.88,
@@ -120,23 +120,23 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
                             "sample_count": count
                         }]
                     ))
-            
+
             # Analyze user engagement patterns
             cursor.execute("""
                 SELECT AVG(value) as avg_engagement, COUNT(*) as samples,
                        MIN(value) as min_engagement, MAX(value) as max_engagement
-                FROM metrics 
+                FROM metrics
                 WHERE name = 'user_engagement'
             """)
-            
+
             engagement_data = cursor.fetchone()
-            
+
             if engagement_data and engagement_data[0]:
                 avg_engagement = engagement_data[0]
                 samples = engagement_data[1]
                 min_engagement = engagement_data[2]
                 max_engagement = engagement_data[3]
-                
+
                 if avg_engagement > 0.8:
                     insights.append(SimpleInsightPattern(
                         pattern_id="exceptional_user_engagement",
@@ -173,20 +173,20 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
                             "engagement_level": "concerning"
                         }]
                     ))
-            
+
             # Analyze conversation success patterns
             cursor.execute("""
                 SELECT AVG(value) as avg_success, COUNT(*) as conversations
-                FROM metrics 
+                FROM metrics
                 WHERE name = 'conversation_success'
             """)
-            
+
             success_data = cursor.fetchone()
-            
+
             if success_data and success_data[0]:
                 avg_success = success_data[0]
                 conversations = success_data[1]
-                
+
                 if avg_success > 0.9:
                     insights.append(SimpleInsightPattern(
                         pattern_id="outstanding_conversation_success",
@@ -203,25 +203,25 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
                             "performance_level": "outstanding"
                         }]
                     ))
-            
+
             # Analyze system load patterns
             cursor.execute("""
                 SELECT AVG(value) as avg_load, MAX(value) as max_load, COUNT(*) as samples
-                FROM metrics 
+                FROM metrics
                 WHERE name = 'system_load'
             """)
-            
+
             load_data = cursor.fetchone()
-            
+
             if load_data and load_data[0]:
                 avg_load = load_data[0]
                 max_load = load_data[1]
                 samples = load_data[2]
-                
+
                 if avg_load > 70:
                     insights.append(SimpleInsightPattern(
                         pattern_id="high_system_load",
-                        description=f"⚠️ HIGH LOAD: System under heavy load! "
+                        description=f"[WARN] HIGH LOAD: System under heavy load! "
                                   f"Average: {avg_load:.1f}%, Peak: {max_load:.1f}%. "
                                   f"Consider load balancing or capacity expansion.",
                         confidence=0.85,
@@ -234,42 +234,42 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
                             "sample_count": samples
                         }]
                     ))
-        
+
         # Store insights
         await self._store_insights(insights)
-        
+
         self.stats["analysis_runs"] += 1
         self.stats["insights_generated"] += len(insights)
         self.stats["patterns_discovered"] += len(insights)
-        
+
         return insights
 
 
 async def run_final_demo():
     """Run the final comprehensive analytics demo"""
-    
+
     print("\n" + "="*80)
     print("🎯 FINAL ANALYTICS & INSIGHTS ENGINE DEMONSTRATION (#6)")
     print("="*80)
     print("🧠 Comprehensive Analytics with Intelligent Insight Generation")
     print(f"⏰ Demo started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*80)
-    
+
     try:
         demo_start = time.time()
-        
+
         # Initialize Enhanced Analytics Engine
-        print("\n🔧 PHASE 1: System Initialization")
+        print("\n[TOOL] PHASE 1: System Initialization")
         print("-" * 50)
         analytics_engine = FinalAnalyticsEngine("final_analytics_demo.db")
-        print("✅ Advanced Analytics & Insights Engine initialized")
-        print("✅ Database schema configured")
-        print("✅ Pattern analysis algorithms loaded")
-        
+        print("[OK] Advanced Analytics & Insights Engine initialized")
+        print("[OK] Database schema configured")
+        print("[OK] Pattern analysis algorithms loaded")
+
         # Collect diverse metrics to trigger insights
         print("\n📊 PHASE 2: Collecting Comprehensive Metrics")
         print("-" * 50)
-        
+
         # Performance metrics - mix of good and problematic
         print("⚡ Collecting performance metrics...")
         for i in range(40):
@@ -278,12 +278,12 @@ async def run_final_demo():
                 response_time = random.uniform(2.5, 4.5)  # Slow responses
             else:
                 response_time = random.uniform(0.1, 0.8)  # Fast responses
-            
+
             await analytics_engine.collect_metric(
                 "response_time", response_time, "performance",
                 {"test_phase": "performance_analysis", "iteration": i}
             )
-        
+
         # Memory usage metrics
         print("🧠 Collecting memory usage metrics...")
         for i in range(35):
@@ -291,12 +291,12 @@ async def run_final_demo():
                 memory_usage = random.uniform(85, 94)  # High memory usage
             else:
                 memory_usage = random.uniform(30, 60)  # Normal memory usage
-            
+
             await analytics_engine.collect_metric(
                 "memory_usage", memory_usage, "performance",
                 {"test_phase": "memory_analysis", "iteration": i}
             )
-        
+
         # User engagement metrics
         print("👤 Collecting user engagement metrics...")
         for i in range(50):
@@ -306,12 +306,12 @@ async def run_final_demo():
                 engagement = random.uniform(0.85, 0.98)  # High engagement
             else:
                 engagement = random.uniform(0.6, 0.8)  # Medium engagement
-                
+
             await analytics_engine.collect_metric(
                 "user_engagement", engagement, "user_behavior",
                 {"test_phase": "engagement_analysis", "iteration": i}
             )
-        
+
         # Conversation success metrics
         print("💬 Collecting conversation success metrics...")
         for i in range(30):
@@ -320,7 +320,7 @@ async def run_final_demo():
                 "conversation_success", success_rate, "conversation",
                 {"test_phase": "conversation_analysis", "iteration": i}
             )
-        
+
         # System load metrics
         print("🖥️ Collecting system load metrics...")
         for i in range(25):
@@ -328,34 +328,34 @@ async def run_final_demo():
                 load = random.uniform(75, 90)  # High load
             else:
                 load = random.uniform(20, 50)  # Normal load
-                
+
             await analytics_engine.collect_metric(
-                "system_load", load, "performance", 
+                "system_load", load, "performance",
                 {"test_phase": "load_analysis", "iteration": i}
             )
-        
+
         # Flush all metrics
         await analytics_engine._flush_metrics_buffer()
-        
+
         stats = analytics_engine.get_analytics_statistics()
-        print(f"✅ Collected {stats['metrics_collected']} comprehensive metrics")
-        
+        print(f"[OK] Collected {stats['metrics_collected']} comprehensive metrics")
+
         # Generate intelligent insights
         print("\n🧠 PHASE 3: Advanced Pattern Analysis & Insight Generation")
         print("-" * 50)
         print("🔍 Analyzing patterns across all metric categories...")
-        
+
         insights = await analytics_engine.analyze_immediate_patterns()
-        
-        print(f"✅ Generated {len(insights)} intelligent insights!")
-        
+
+        print(f"[OK] Generated {len(insights)} intelligent insights!")
+
         if insights:
             print("\n🎯 DISCOVERED INSIGHTS:")
             print("=" * 60)
-            
+
             # Sort insights by impact score
             insights.sort(key=lambda x: x.impact_score, reverse=True)
-            
+
             for i, insight in enumerate(insights, 1):
                 # Get category emoji
                 category_emoji = {
@@ -365,26 +365,26 @@ async def run_final_demo():
                     'memory': '🧠',
                     'system': '🖥️'
                 }.get(insight.category, '📊')
-                
+
                 # Get confidence and impact indicators
                 confidence_indicator = (
                     '🟢' if insight.confidence > 0.9 else
                     '🟡' if insight.confidence > 0.8 else
                     '🟠' if insight.confidence > 0.7 else '🔴'
                 )
-                
+
                 impact_indicator = (
                     '🔴' if insight.impact_score > 0.9 else
                     '🟠' if insight.impact_score > 0.8 else
                     '🟡' if insight.impact_score > 0.7 else '🟢'
                 )
-                
+
                 print(f"\n{i}. {category_emoji} [{insight.category.upper()}] {confidence_indicator}{impact_indicator}")
                 print(f"   📝 {insight.description}")
                 print(f"   📊 Confidence: {insight.confidence:.1%} | Impact: {insight.impact_score:.1%}")
                 print(f"   🆔 Pattern ID: {insight.pattern_id}")
                 print(f"   🕐 Discovered: {insight.discovered_at.strftime('%H:%M:%S')}")
-                
+
                 # Show evidence summary
                 if insight.evidence and len(insight.evidence) > 0:
                     evidence = insight.evidence[0]
@@ -398,28 +398,28 @@ async def run_final_demo():
                         else:
                             print(f"      • {key.replace('_', ' ').title()}: {value}")
         else:
-            print("⚠️ No patterns detected - this indicates extremely stable metrics")
-        
+            print("[WARN] No patterns detected - this indicates extremely stable metrics")
+
         # Performance snapshot
         print(f"\n⚡ PHASE 4: Comprehensive Performance Analysis")
         print("-" * 50)
-        
+
         snapshot = await analytics_engine.get_performance_snapshot()
-        
+
         # System health analysis
         health = snapshot.get('system_health', {})
         health_status = health.get('status', 'unknown')
         health_score = health.get('score', 0)
-        
+
         health_emoji = {
             'excellent': '🟢',
-            'good': '🟡', 
+            'good': '🟡',
             'fair': '🟠',
             'poor': '🔴'
         }.get(health_status, '⚪')
-        
+
         print(f"🏥 Overall System Health: {health_emoji} {health_status.upper()} ({health_score:.0f}%)")
-        
+
         # Health factors breakdown
         factors = health.get('factors', {})
         if factors:
@@ -435,7 +435,7 @@ async def run_final_demo():
                     'critical': '🚨'
                 }.get(status, '❓')
                 print(f"   {factor_emoji} {factor.replace('_', ' ').title()}: {status.upper()}")
-        
+
         # Category performance breakdown
         category_stats = snapshot.get('category_statistics', {})
         if category_stats:
@@ -443,7 +443,7 @@ async def run_final_demo():
             for category, stats in category_stats.items():
                 avg_val = stats.get('average', 0)
                 count = stats.get('count', 0)
-                
+
                 # Performance indicators
                 if category == 'performance':
                     if avg_val > 2.0:
@@ -463,40 +463,40 @@ async def run_final_demo():
                         indicator = '🔴 POOR'
                 else:
                     indicator = '🟡 NORMAL'
-                
+
                 print(f"   {indicator} | {category.title()}: {avg_val:.2f} avg ({count:,} metrics)")
-        
+
         demo_time = time.time() - demo_start
-        
+
         # Final summary
         print(f"\n📋 PHASE 5: Demo Results Summary")
         print("-" * 50)
-        
+
         final_stats = analytics_engine.get_analytics_statistics()
-        
+
         print(f"⏱️  Total execution time: {demo_time:.2f} seconds")
         print(f"📊 Metrics collected: {final_stats['metrics_collected']:,}")
         print(f"🧠 Insights generated: {final_stats['insights_generated']}")
         print(f"🔍 Patterns discovered: {final_stats['patterns_discovered']}")
         print(f"⚡ Analysis cycles: {final_stats['analysis_runs']}")
         print(f"💾 Database: {final_stats['database_path']}")
-        
+
         print("\n🌟 ANALYTICS & INSIGHTS ENGINE CAPABILITIES DEMONSTRATED:")
         print("=" * 60)
-        print("  ✅ Multi-dimensional metrics collection")
-        print("  ✅ Intelligent pattern recognition") 
-        print("  ✅ Advanced insight generation with confidence scoring")
-        print("  ✅ Evidence-based analysis and recommendations")
-        print("  ✅ Real-time performance monitoring")
-        print("  ✅ Comprehensive health assessment")
-        print("  ✅ Category-based performance analysis")
-        print("  ✅ Database persistence and historical tracking")
-        print("  ✅ Configurable thresholds and alerting")
-        print("  ✅ Rich metadata and contextual information")
-        
+        print("  [OK] Multi-dimensional metrics collection")
+        print("  [OK] Intelligent pattern recognition")
+        print("  [OK] Advanced insight generation with confidence scoring")
+        print("  [OK] Evidence-based analysis and recommendations")
+        print("  [OK] Real-time performance monitoring")
+        print("  [OK] Comprehensive health assessment")
+        print("  [OK] Category-based performance analysis")
+        print("  [OK] Database persistence and historical tracking")
+        print("  [OK] Configurable thresholds and alerting")
+        print("  [OK] Rich metadata and contextual information")
+
         print("\n🚀 INTEGRATION READINESS:")
         print("=" * 60)
-        print("  🔧 Core engine architecture validated")
+        print("  [TOOL] Core engine architecture validated")
         print("  📊 Pattern analysis algorithms confirmed")
         print("  🧠 Insight generation system operational")
         print("  💾 Database schema tested and stable")
@@ -504,7 +504,7 @@ async def run_final_demo():
         print("  🌐 Ready for web dashboard integration")
         print("  🤝 Prepared for Enhanced Agents integration")
         print("  🧩 Compatible with Advanced Memory Systems")
-        
+
         print(f"\n" + "="*80)
         print("🎉 ANALYTICS & INSIGHTS ENGINE (#6) DEMONSTRATION COMPLETE!")
         print("="*80)
@@ -513,9 +513,9 @@ async def run_final_demo():
         print("🧠 Intelligent insight generation validated")
         print("🚀 Ready for full Aetherra AI OS integration!")
         print("="*80)
-        
+
         return True
-        
+
     except Exception as e:
         print(f"❌ Demo failed: {e}")
         return False

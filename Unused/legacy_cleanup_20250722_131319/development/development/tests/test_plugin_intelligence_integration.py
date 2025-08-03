@@ -43,7 +43,7 @@ async def test_plugin_intelligence_integration():
         )
         success_count += 1
     except Exception as e:
-        print(f"❌ Bridge initialization failed: {e}")
+        print(f"[ERROR] Bridge initialization failed: {e}")
 
     # Test 2: Plugin Discovery
     print("\n2️⃣ Testing plugin discovery...")
@@ -63,7 +63,7 @@ async def test_plugin_intelligence_integration():
                 print(f"      • {name} ({plugin_type}) - {status}")
         success_count += 1
     except Exception as e:
-        print(f"❌ Plugin discovery failed: {e}")
+        print(f"[ERROR] Plugin discovery failed: {e}")
 
     # Test 3: Intelligence System Integration
     print("\n3️⃣ Testing intelligence system integration...")
@@ -98,10 +98,10 @@ async def test_plugin_intelligence_integration():
             print("   🧠 Lyrixa can now be aware of plugins!")
             success_count += 1
         else:
-            print("❌ Failed to store plugin memories")
+            print("[ERROR] Failed to store plugin memories")
 
     except Exception as e:
-        print(f"❌ Intelligence integration failed: {e}")
+        print(f"[ERROR] Intelligence integration failed: {e}")
 
     # Test 4: Plugin Query/Recommendation
     print("\n4️⃣ Testing plugin recommendations...")
@@ -116,7 +116,7 @@ async def test_plugin_intelligence_integration():
                 print(f"   💡 Recommended: {name}")
         success_count += 1
     except Exception as e:
-        print(f"❌ Plugin recommendations failed: {e}")
+        print(f"[ERROR] Plugin recommendations failed: {e}")
 
     # Test 5: GUI Integration
     print("\n5️⃣ Testing GUI integration...")
@@ -136,7 +136,7 @@ async def test_plugin_intelligence_integration():
                 print(f"      • {plugin_type}: {count}")
         success_count += 1
     except Exception as e:
-        print(f"❌ GUI integration failed: {e}")
+        print(f"[ERROR] GUI integration failed: {e}")
 
     # Test 6: Intelligence Stack Integration
     print("\n6️⃣ Testing full intelligence stack integration...")
@@ -160,11 +160,11 @@ async def test_plugin_intelligence_integration():
                 )
                 success_count += 1
             else:
-                print("❌ Intelligence stack integration failed")
+                print("[ERROR] Intelligence stack integration failed")
         else:
-            print("⚠️ Intelligence stack missing plugin integration method")
+            print("[WARN] Intelligence stack missing plugin integration method")
     except Exception as e:
-        print(f"❌ Intelligence stack integration failed: {e}")
+        print(f"[ERROR] Intelligence stack integration failed: {e}")
 
     # Final Results
     print("\n" + "=" * 50)
@@ -177,7 +177,7 @@ async def test_plugin_intelligence_integration():
         print("🖥️ GUI components can display real plugin data!")
         print("🔗 The critical architectural gap has been closed!")
     else:
-        print("⚠️ Some integration components need attention")
+        print("[WARN] Some integration components need attention")
 
     return success_count >= 4
 
@@ -229,7 +229,7 @@ async def demonstrate_plugin_awareness():
         print("\n✅ Plugin awareness demonstration complete!")
 
     except Exception as e:
-        print(f"❌ Plugin awareness demonstration failed: {e}")
+        print(f"[ERROR] Plugin awareness demonstration failed: {e}")
 
 
 if __name__ == "__main__":
@@ -263,4 +263,4 @@ if __name__ == "__main__":
 
         print("\n🎉 MISSION ACCOMPLISHED: LYRIXA IS NOW PLUGIN-AWARE!")
     else:
-        print("\n⚠️ Integration needs refinement - check component compatibility")
+        print("\n[WARN] Integration needs refinement - check component compatibility")

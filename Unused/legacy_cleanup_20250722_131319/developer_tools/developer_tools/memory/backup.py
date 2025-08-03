@@ -308,7 +308,7 @@ class MemoryWorkflowBackup:
 
         # Confirm restoration
         if not confirm:
-            print(f"⚠️ About to restore backup: {backup_id}")
+            print(f"[WARN] About to restore backup: {backup_id}")
             print(f"   Type: {metadata['backup_type']}")
             print(f"   Created: {metadata['timestamp']}")
             print(f"   Description: {metadata['description']}")
@@ -328,7 +328,7 @@ class MemoryWorkflowBackup:
             # Verify checksum
             current_checksum = self._calculate_checksum(snapshot_path)
             if current_checksum != metadata['checksum']:
-                print(f"⚠️ Checksum mismatch for backup {backup_id}")
+                print(f"[WARN] Checksum mismatch for backup {backup_id}")
                 print("   The backup file may be corrupted")
                 return False
 
@@ -422,7 +422,7 @@ class MemoryWorkflowBackup:
             return False
 
         if not confirm:
-            print(f"⚠️ About to delete backup: {backup_id}")
+            print(f"[WARN] About to delete backup: {backup_id}")
             print(f"   Type: {metadata['backup_type']}")
             print(f"   Created: {metadata['timestamp']}")
 
@@ -572,7 +572,7 @@ class MemoryWorkflowBackup:
                             key = config_file.replace('.json', '').replace('workflow_', '')
                             workflow_data[key] = json.load(f)
                     except Exception as e:
-                        print(f"⚠️ Warning: Could not load {config_file}: {e}")
+                        print(f"[WARN] Warning: Could not load {config_file}: {e}")
 
         return workflow_data
 
@@ -653,7 +653,7 @@ class MemoryWorkflowBackup:
                 with open(self.metadata_file, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
-            print(f"⚠️ Error loading backup metadata: {e}")
+            print(f"[WARN] Error loading backup metadata: {e}")
         return []
 
     def _save_metadata(self, metadata: List[Dict[str, Any]]):
@@ -662,7 +662,7 @@ class MemoryWorkflowBackup:
             with open(self.metadata_file, 'w', encoding='utf-8') as f:
                 json.dump(metadata, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            print(f"⚠️ Error saving backup metadata: {e}")
+            print(f"[WARN] Error saving backup metadata: {e}")
 
     def _load_auto_backup_config(self):
         """Load auto-backup configuration."""
@@ -674,7 +674,7 @@ class MemoryWorkflowBackup:
                     self.auto_backup_interval = config.get('interval', 3600)
                     self.max_auto_backups = config.get('max_backups', 24)
         except Exception as e:
-            print(f"⚠️ Error loading auto-backup config: {e}")
+            print(f"[WARN] Error loading auto-backup config: {e}")
 
     def _save_auto_backup_config(self):
         """Save auto-backup configuration."""
@@ -687,7 +687,7 @@ class MemoryWorkflowBackup:
             with open(self.auto_backup_config, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=2)
         except Exception as e:
-            print(f"⚠️ Error saving auto-backup config: {e}")
+            print(f"[WARN] Error saving auto-backup config: {e}")
 
     def _auto_backup_worker(self):
         """Background worker for automatic backups."""
@@ -718,7 +718,7 @@ class MemoryWorkflowBackup:
                             self.delete_backup(old_backup['backup_id'], confirm=True)
 
             except Exception as e:
-                print(f"⚠️ Auto-backup error: {e}")
+                print(f"[WARN] Auto-backup error: {e}")
                 time.sleep(300)  # Wait 5 minutes before retrying
 
 
@@ -789,7 +789,7 @@ def main():
             tag = [sys.argv[3]] if len(sys.argv) > 3 else None
 
             backups = backup_system.list_backups(backup_type, tag)
-            print(f"📦 Found {len(backups)} backups:")
+            print(f"[DISC] Found {len(backups)} backups:")
 
             for backup in backups:
                 print(f"  {backup['backup_id']}: {backup['backup_type']} - {backup['description']}")

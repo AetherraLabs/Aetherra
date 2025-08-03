@@ -50,9 +50,9 @@ def analyze_project_structure():
         if exists and is_correct_type:
             status["status"] = "✅ Found"
         elif exists and not is_correct_type:
-            status["status"] = "⚠️ Wrong type"
+            status["status"] = "[WARN] Wrong type"
         else:
-            status["status"] = "❌ Missing"
+            status["status"] = "[ERROR] Missing"
             if info["critical"]:
                 critical_missing.append(item)
 
@@ -70,7 +70,7 @@ def analyze_project_structure():
             print(f"  {item}: {status['status']} - {status['description']}")
 
     if critical_missing:
-        print(f"\n❌ Critical items missing: {', '.join(critical_missing)}")
+        print(f"\n[ERROR] Critical items missing: {', '.join(critical_missing)}")
         return False
     else:
         print("\n✅ All critical structure items present")
@@ -98,7 +98,7 @@ def analyze_core_modules():
         status = {"path": module_path, "main_class": main_class}
 
         if not path.exists():
-            status["status"] = "❌ Missing"
+            status["status"] = "[ERROR] Missing"
             status["issues"] = ["File does not exist"]
         else:
             try:
@@ -121,11 +121,11 @@ def analyze_core_modules():
                     status["issues"].append(f"Class {main_class} not found")
 
             except SyntaxError as e:
-                status["status"] = "❌ Syntax Error"
+                status["status"] = "[ERROR] Syntax Error"
                 status["issues"] = [f"Line {e.lineno}: {e.msg}"]
                 syntax_errors.append(module_path)
             except Exception as e:
-                status["status"] = "⚠️ Parse Error"
+                status["status"] = "[WARN] Parse Error"
                 status["issues"] = [str(e)]
 
         module_status[module_path] = status
@@ -133,7 +133,7 @@ def analyze_core_modules():
         # Print result
         print(f"  {module_path}: {status['status']}")
         for issue in status["issues"]:
-            print(f"    ⚠️ {issue}")
+            print(f"    [WARN] {issue}")
 
     return len(syntax_errors) == 0
 
@@ -157,7 +157,7 @@ def analyze_vscode_configuration():
         status = {"required": required}
 
         if not path.exists():
-            status["status"] = "❌ Missing" if required else "⚠️ Missing (optional)"
+            status["status"] = "[ERROR] Missing" if required else "[WARN] Missing (optional)"
             if required:
                 config_issues.append(f"{config_file} missing")
         else:
@@ -185,14 +185,14 @@ def analyze_vscode_configuration():
 
                     if missing_settings:
                         status["missing_settings"] = missing_settings
-                        print(f"    ⚠️ Missing settings: {', '.join(missing_settings)}")
+                        print(f"    [WARN] Missing settings: {', '.join(missing_settings)}")
 
             except json.JSONDecodeError as e:
-                status["status"] = "❌ Invalid JSON"
+                status["status"] = "[ERROR] Invalid JSON"
                 status["error"] = str(e)
                 config_issues.append(f"{config_file} has invalid JSON")
             except Exception as e:
-                status["status"] = "❌ Error"
+                status["status"] = "[ERROR] Error"
                 status["error"] = str(e)
                 config_issues.append(f"{config_file} error: {e}")
 
@@ -204,7 +204,7 @@ def analyze_vscode_configuration():
 
 def analyze_dependencies():
     """Analyze project dependencies and configuration"""
-    print("\n📦 Analyzing Dependencies...")
+    print("\n[DISC] Analyzing Dependencies...")
 
     dep_files = ["pyproject.toml", "requirements.txt"]
     deps_status = {}
@@ -215,7 +215,7 @@ def analyze_dependencies():
         status = {}
 
         if not path.exists():
-            status["status"] = "❌ Missing"
+            status["status"] = "[ERROR] Missing"
             deps_issues.append(f"{dep_file} missing")
         else:
             try:
@@ -248,7 +248,7 @@ def analyze_dependencies():
                     status["package_count"] = len(lines)
 
             except Exception as e:
-                status["status"] = "❌ Error reading"
+                status["status"] = "[ERROR] Error reading"
                 status["error"] = str(e)
                 deps_issues.append(f"{dep_file} error: {e}")
 
@@ -260,7 +260,7 @@ def analyze_dependencies():
                 print(f"    ✅ {section}")
 
         if "package_count" in status:
-            print(f"    📦 {status['package_count']} packages listed")
+            print(f"    [DISC] {status['package_count']} packages listed")
 
     return len(deps_issues) == 0
 
@@ -347,7 +347,7 @@ def main():
             if not result:
                 all_passed = False
         except Exception as e:
-            print(f"❌ Error in {check_name}: {e}")
+            print(f"[ERROR] Error in {check_name}: {e}")
             results[check_name] = False
             all_passed = False
 
@@ -360,7 +360,7 @@ def main():
     print("=" * 60)
 
     for check_name, passed in results.items():
-        status = "✅ PASS" if passed else "❌ FAIL"
+        status = "✅ PASS" if passed else "[ERROR] FAIL"
         print(f"{status} {check_name}")
 
     print("\n📊 Project Statistics:")
@@ -368,7 +368,7 @@ def main():
     print(f"  • Config files: {file_stats['config']['count']}")
     print(f"  • Documentation: {file_stats['docs']['count']}")
 
-    overall_status = "✅ EXCELLENT" if all_passed else "⚠️ NEEDS ATTENTION"
+    overall_status = "✅ EXCELLENT" if all_passed else "[WARN] NEEDS ATTENTION"
     print(f"\n🎯 Overall Status: {overall_status}")
 
     if all_passed:
@@ -392,7 +392,7 @@ def main():
 
         f.write("## Summary\n\n")
         for check_name, passed in results.items():
-            status = "✅ PASS" if passed else "❌ FAIL"
+            status = "✅ PASS" if passed else "[ERROR] FAIL"
             f.write(f"- **{check_name}**: {status}\n")
 
         f.write("\n## File Statistics\n\n")
@@ -407,7 +407,7 @@ def main():
         if all_passed:
             f.write("🎉 Workspace is perfectly structured and ready for production!\n")
         else:
-            f.write("⚠️ Some issues require attention. See detailed analysis above.\n")
+            f.write("[WARN] Some issues require attention. See detailed analysis above.\n")
 
     print(f"\n📄 Detailed report saved to: {report_path}")
 

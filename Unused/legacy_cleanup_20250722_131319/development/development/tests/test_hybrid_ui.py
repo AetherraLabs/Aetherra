@@ -25,7 +25,7 @@ def test_imports():
 
         print("✅ LyrixaHybridWindow imported successfully")
     except ImportError as e:
-        print(f"❌ Failed to import LyrixaHybridWindow: {e}")
+        print(f"[ERROR] Failed to import LyrixaHybridWindow: {e}")
         return False
 
     try:
@@ -36,7 +36,7 @@ def test_imports():
 
         print("✅ Window factory imported successfully")
     except ImportError as e:
-        print(f"❌ Failed to import window factory: {e}")
+        print(f"[ERROR] Failed to import window factory: {e}")
         return False
 
     return True
@@ -69,7 +69,7 @@ def test_window_factory():
         return True
 
     except Exception as e:
-        print(f"❌ Window factory test failed: {e}")
+        print(f"[ERROR] Window factory test failed: {e}")
         return False
 
 
@@ -101,13 +101,13 @@ def test_compatibility_methods():
             if hasattr(window_class, method_name):
                 print(f"✅ {method_name} method exists")
             else:
-                print(f"❌ {method_name} method missing")
+                print(f"[ERROR] {method_name} method missing")
                 return False
 
         return True
 
     except Exception as e:
-        print(f"❌ Compatibility test failed: {e}")
+        print(f"[ERROR] Compatibility test failed: {e}")
         return False
 
 
@@ -130,7 +130,7 @@ def test_file_structure():
         if file_path.exists():
             print(f"✅ {file_name} exists")
         else:
-            print(f"❌ {file_name} missing")
+            print(f"[ERROR] {file_name} missing")
             all_exist = False
 
     return all_exist
@@ -158,9 +158,9 @@ def main():
                 print(f"✅ {test_name} test PASSED")
                 passed += 1
             else:
-                print(f"❌ {test_name} test FAILED")
+                print(f"[ERROR] {test_name} test FAILED")
         except Exception as e:
-            print(f"💥 {test_name} test CRASHED: {e}")
+            print(f"[FAIL] {test_name} test CRASHED: {e}")
 
     print("\n" + "=" * 40)
     print(f"📊 Test Results: {passed}/{total} tests passed")
@@ -169,7 +169,7 @@ def main():
         print("🎉 All tests passed! Hybrid UI is ready for deployment.")
         return 0
     else:
-        print("⚠️  Some tests failed. Check the output above.")
+        print("[WARN]  Some tests failed. Check the output above.")
         return 1
 
 

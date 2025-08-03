@@ -69,4 +69,4 @@ if __name__ == "__main__":
     if success:
         print("🎯 Test completed successfully!")
     else:
-        print("💥 Test failed!")
+        print("[FAIL] Test failed!")

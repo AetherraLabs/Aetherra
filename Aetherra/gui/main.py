@@ -33,7 +33,7 @@ try:
     QT_AVAILABLE = True
     print("✅ Qt GUI framework available")
 except ImportError:
-    print("⚠️ Qt not available - will run in headless mode")
+    print("[WARN] Qt not available - will run in headless mode")
 
     # Create mock classes for runtime when Qt is not available
     class QApplication:
@@ -133,7 +133,7 @@ class UnifiedLyrixaLauncher:
                     try:
                         connect_method(self.memory_system)
                     except Exception as e:
-                        print(f"⚠️ Memory connection failed: {e}")
+                        print(f"[WARN] Memory connection failed: {e}")
                 else:
                     set_method = getattr(
                         self.anticipation_engine, "set_memory_system", None
@@ -142,7 +142,7 @@ class UnifiedLyrixaLauncher:
                         try:
                             set_method(self.memory_system)
                         except Exception as e:
-                            print(f"⚠️ Memory system assignment failed: {e}")
+                            print(f"[WARN] Memory system assignment failed: {e}")
                     else:
                         # Fallback: set memory system as attribute
                         try:
@@ -151,9 +151,9 @@ class UnifiedLyrixaLauncher:
                                 "memory_system",
                                 self.memory_system,
                             )
-                            print("⚠️ Using fallback memory connection method")
+                            print("[WARN] Using fallback memory connection method")
                         except Exception as e:
-                            print(f"⚠️ Fallback memory connection failed: {e}")
+                            print(f"[WARN] Fallback memory connection failed: {e}")
             print("✅ Anticipation Engine ready")
             return True
         except Exception as e:
@@ -163,7 +163,7 @@ class UnifiedLyrixaLauncher:
     def initialize_gui_application(self):
         """Initialize Qt GUI application."""
         if not QT_AVAILABLE:
-            print("⚠️ Running in headless mode - no GUI available")
+            print("[WARN] Running in headless mode - no GUI available")
             return False
 
         try:
@@ -259,7 +259,7 @@ class UnifiedLyrixaLauncher:
     def setup_realtime_integration(self):
         """Setup real-time updates with QTimer."""
         if not QT_AVAILABLE or not self.app:
-            print("⚠️ Real-time integration requires Qt - using fallback polling")
+            print("[WARN] Real-time integration requires Qt - using fallback polling")
             return True
 
         try:
@@ -310,7 +310,7 @@ class UnifiedLyrixaLauncher:
                     pass
 
         except Exception as e:
-            print(f"⚠️ Real-time update error: {e}")
+            print(f"[WARN] Real-time update error: {e}")
 
     async def async_initialize(self):
         """Async initialization of all systems."""
@@ -327,7 +327,7 @@ class UnifiedLyrixaLauncher:
 
             # Phase 3 & 4: GUI and Communication (sync)
             if not self.initialize_gui_application():
-                print("⚠️ GUI initialization failed - continuing in headless mode")
+                print("[WARN] GUI initialization failed - continuing in headless mode")
 
             if not self.setup_cross_phase_communication():
                 return False

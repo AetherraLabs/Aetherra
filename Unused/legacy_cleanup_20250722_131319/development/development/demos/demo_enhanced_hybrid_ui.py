@@ -107,7 +107,7 @@ def demo_usage_instructions():
     print("\n📖 HOW TO USE THE ENHANCED HYBRID UI:")
     print("=" * 50)
 
-    print("\n🔧 Launch Setup:")
+    print("\n[TOOL] Launch Setup:")
     print("1. Set environment: LYRIXA_UI_MODE=hybrid")
     print("2. Launch Lyrixa: py aetherra_hybrid_launcher.py")
     print("3. Wait for all systems to initialize")

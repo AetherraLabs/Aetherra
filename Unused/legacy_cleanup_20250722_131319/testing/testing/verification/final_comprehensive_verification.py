@@ -57,7 +57,7 @@ def test_src_folder_imports():
         result = enhanced.execute('say "Enhanced mode active!"')
         print(f"✅ Enhanced interpreter working: {result[:50]}...")
     except Exception as e:
-        print(f"⚠️ Enhanced interpreter: {e}")
+        print(f"[WARN] Enhanced interpreter: {e}")
         # This is okay if optional modules are missing
 
     # Test 6: CLI functionality (optional)
@@ -69,7 +69,7 @@ def test_src_folder_imports():
             # Don't actually run CLI to avoid blocking
             print("✅ CLI import successful")
     except Exception as e:
-        print(f"⚠️ CLI: {e}")
+        print(f"[WARN] CLI: {e}")
         # This is okay if CLI has dependency issues
 
     # Test 7: UI functionality
@@ -95,7 +95,7 @@ def test_core_folder_imports():
         try:
             print("✅ Core aetherra_engine import working")
         except Exception as e:
-            print(f"⚠️ Core aetherra_engine: {e}")
+            print(f"[WARN] Core aetherra_engine: {e}")
 
     return True
 
@@ -112,14 +112,14 @@ def test_launchers():
             # Test that we can import launcher modules
             print("✅ Lyrixa launcher import working")
         except Exception as e:
-            print(f"⚠️ Lyrixa launcher: {e}")
+            print(f"[WARN] Lyrixa launcher: {e}")
 
     return True
 
 
 def main():
     """Run comprehensive verification"""
-    print("🔧 FINAL aetherra PROJECT VERIFICATION")
+    print("[TOOL] FINAL aetherra PROJECT VERIFICATION")
     print("=" * 50)
 
     all_passed = True
@@ -143,13 +143,13 @@ def main():
         print("✅ Both src structure and legacy core work")
         print("✅ All major components load successfully")
     else:
-        print("⚠️ Some issues detected but core functionality working")
+        print("[WARN] Some issues detected but core functionality working")
 
     print("\n📋 FINAL STATUS:")
     print("• Core aetherra language: ✅ Working")
-    print("• Enhanced interpreter: ⚠️ Partial (missing optional AI modules)")
+    print("• Enhanced interpreter: [WARN] Partial (missing optional AI modules)")
     print("• Lyrixa GUI: ✅ Working")
-    print("• CLI interface: ⚠️ Partial (persona dependencies)")
+    print("• CLI interface: [WARN] Partial (persona dependencies)")
     print("• Parser & AST: ✅ Working")
     print("• Memory system: ✅ Working")
     print("• Legacy compatibility: ✅ Working")

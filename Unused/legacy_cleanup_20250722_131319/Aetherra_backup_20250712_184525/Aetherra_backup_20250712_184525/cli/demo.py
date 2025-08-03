@@ -363,7 +363,7 @@ class RevolutionaryPersonaCLI:
         ai_response = self._generate_contextual_response(situation, guidance)
 
         print("\n🤖 AetherraCode Response:")
-        print(f"🔧 {ai_response}")
+        print(f"[TOOL] {ai_response}")
 
         user_satisfaction = self._get_user_satisfaction()
         self._safe_record_interaction(
@@ -518,7 +518,7 @@ class RevolutionaryPersonaCLI:
                 )
                 self._show_current_persona()
             else:
-                print("\n⚠️ Persona engine not available")
+                print("\n[WARN] Persona engine not available")
         else:
             print("❌ Invalid choice.")
 
@@ -534,13 +534,13 @@ class RevolutionaryPersonaCLI:
             print(f"🧠 Mindprint ID: {persona['mindprint']['installation_id'][:8]}...")
         else:
             print("\n🤖 Current Persona Configuration:")
-            print("⚠️ Persona system not available - running in basic mode")
+            print("[WARN] Persona system not available - running in basic mode")
 
     def _show_adaptation_result(self, adaptation_result):
         """Show the result of contextual adaptation"""
         if not adaptation_result:
             print("\n🔄 Contextual Adaptation:")
-            print("⚠️ Running in basic mode - contextual adaptation not available")
+            print("[WARN] Running in basic mode - contextual adaptation not available")
             return
 
         situation = adaptation_result["situation"]

@@ -168,7 +168,7 @@ class AgentOrchestrator:
                 self.agents[agent_type] = agent
                 print(f"🤖 Initialized {agent_type.value} agent")
             except Exception as e:
-                print(f"❌ Failed to initialize {agent_type.value} agent: {e}")
+                print(f"[ERROR] Failed to initialize {agent_type.value} agent: {e}")
 
     async def initialize(self, orchestrator_context: Dict[str, Any]):
         """Initialize the orchestrator and all agents"""
@@ -289,7 +289,7 @@ class AgentOrchestrator:
             # Update agent performance
             agent.update_performance_metrics(executable_task)
 
-            print(f"❌ Task failed: {executable_task.description} - {e}")
+            print(f"[ERROR] Task failed: {executable_task.description} - {e}")
 
             return {"task_id": executable_task.id, "status": "failed", "error": str(e)}
 

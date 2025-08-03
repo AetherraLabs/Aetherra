@@ -116,7 +116,7 @@ def test_all_endpoints():
         results.append(False)
 
     # Test 6: Self-Improvement (newly added)
-    print("\n🔧 Testing Self-Improvement Endpoint...")
+    print("\n[TOOL] Testing Self-Improvement Endpoint...")
     try:
         response = requests.post(
             f"{API_BASE}/api/self_improvement/propose_changes", json={}, timeout=10
@@ -143,7 +143,7 @@ def test_all_endpoints():
         print("✅ All UI tabs should work without 404 errors")
         return 0
     else:
-        print(f"⚠️  Some tests failed ({passed}/{total})")
+        print(f"[WARN]  Some tests failed ({passed}/{total})")
         print("❌ Some UI tabs may still have connection issues")
         return 1
 

@@ -416,7 +416,7 @@ What would you like to do with plugins?"""
             # Get available templates
             templates = generator.list_templates()
 
-            result_text = "🔧 **Plugin Generation System**\n\n"
+            result_text = "[TOOL] **Plugin Generation System**\n\n"
             result_text += f"**Request**: {plugin_description}\n"
             result_text += f"**Suggested Name**: {plugin_name}\n"
             result_text += f"**Detected Type**: {plugin_type}\n\n"

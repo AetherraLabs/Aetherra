@@ -294,13 +294,13 @@ if __name__ == "__main__":
 
     print("📝 Testing basic safe write...")
     success = writer.safe_write(test_file, test_content)
-    print(f"   Result: {'✅ SUCCESS' if success else '❌ FAILED'}")
+    print(f"   Result: {'✅ SUCCESS' if success else '[ERROR] FAILED'}")
 
     # Test 2: Write to existing file (should create backup)
     print("\n📝 Testing overwrite with backup...")
     new_content = "This is updated content.\nNew line 2\nNew line 3"
     success = writer.safe_write(test_file, new_content)
-    print(f"   Result: {'✅ SUCCESS' if success else '❌ FAILED'}")
+    print(f"   Result: {'✅ SUCCESS' if success else '[ERROR] FAILED'}")
 
     # Test 3: Check corruption report
     print("\n📊 Checking corruption report...")

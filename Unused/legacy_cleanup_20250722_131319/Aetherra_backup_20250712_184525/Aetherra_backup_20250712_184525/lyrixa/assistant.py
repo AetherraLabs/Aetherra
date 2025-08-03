@@ -117,11 +117,11 @@ class LyrixaAI:
                 self.memory.get_memories_by_tags(["system", "test"], limit=1)
             )
             if not test_memories:
-                print("❌ Memory system failed to store/retrieve test memory!")
+                print("[ERROR] Memory system failed to store/retrieve test memory!")
             else:
                 print("✅ Memory system test passed.")
         except Exception as e:
-            print(f"❌ Memory system initialization error: {e}")
+            print(f"[ERROR] Memory system initialization error: {e}")
 
         # 2. Advanced Plugin Ecosystem with auto-discovery
         plugin_dir = os.path.join(self.workspace_path, "plugins")
@@ -139,9 +139,9 @@ class LyrixaAI:
             discovered = self.plugins.discover_plugins()
             print(f"🔌 Plugins discovered at startup: {discovered}")
             if not discovered:
-                print("⚠️ No plugins found in plugin directories!")
+                print("[WARN] No plugins found in plugin directories!")
         except Exception as e:
-            print(f"❌ Plugin system discovery error: {e}")
+            print(f"[ERROR] Plugin system discovery error: {e}")
 
         # 3. Conversational Engine with personalities and emotional intelligence
         self.conversation = LyrixaConversationalEngine(memory_system=self.memory)
@@ -268,7 +268,7 @@ What would you like to explore together today? 🚀
                 asyncio.create_task(self._start_autonomous_systems())
 
         except Exception as e:
-            print(f"❌ Initialization failed: {e}")
+            print(f"[ERROR] Initialization failed: {e}")
             raise
 
     async def chat(
@@ -615,7 +615,7 @@ What would you like to explore together today? 🚀
                         )
 
         except Exception as e:
-            print(f"⚠️ Could not load user profile: {e}")
+            print(f"[WARN] Could not load user profile: {e}")
 
     async def _perform_health_check(self) -> Dict[str, Any]:
         """Perform comprehensive system health check"""
@@ -873,7 +873,7 @@ What would you like to explore together today? 🚀
             # Additional cleanup if needed
             print("✅ Lyrixa cleanup completed")
         except Exception as e:
-            print(f"⚠️ Cleanup warning: {e}")
+            print(f"[WARN] Cleanup warning: {e}")
 
     async def _start_autonomous_systems(self):
         """
@@ -882,7 +882,7 @@ What would you like to explore together today? 🚀
         try:
             await self.start_autonomous_mode()
         except Exception as e:
-            print(f"⚠️ Failed to start autonomous systems: {e}")
+            print(f"[WARN] Failed to start autonomous systems: {e}")
 
     async def start_autonomous_mode(self) -> Dict[str, Any]:
         """

@@ -203,7 +203,7 @@ class MultiModalCoordinator:
 
 ---
 
-## 🔧 Technical Requirements
+## [TOOL] Technical Requirements
 
 ### Infrastructure Needs
 - **Enhanced Memory System**: Vector embeddings for multi-modal data

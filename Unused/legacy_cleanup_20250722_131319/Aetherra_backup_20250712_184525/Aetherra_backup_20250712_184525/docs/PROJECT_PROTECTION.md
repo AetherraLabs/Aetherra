@@ -128,7 +128,7 @@ python scripts/project_protection.py restore README.md
 python scripts/project_protection.py force_delete README.md "Intentional removal for testing"
 ```
 
-## 🔧 Configuration
+## [TOOL] Configuration
 
 ### Protection Settings (`.project_protection.json`)
 
@@ -218,7 +218,7 @@ backups/auto_backups/
 └── deletion_log.json
 ```
 
-## ⚠️ Important Notes
+## [WARN] Important Notes
 
 ### What Protection Does
 - ✅ Prevents accidental deletion of critical files

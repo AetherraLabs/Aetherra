@@ -62,7 +62,7 @@ class MemoryAwarePluginIntegrator:
             if hasattr(self.memory_engine, "concept_manager"):
                 logger.info("✅ Concept manager available")
             else:
-                logger.warning("⚠️ Concept manager not directly accessible")
+                logger.warning("[WARN] Concept manager not directly accessible")
 
         except Exception as e:
             logger.error(f"❌ Failed to initialize memory engine: {e}")
@@ -278,7 +278,7 @@ def update_roadmap_completion():
 
             logger.info("✅ Roadmap updated successfully")
         else:
-            logger.warning("⚠️ Roadmap file not found, skipping update")
+            logger.warning("[WARN] Roadmap file not found, skipping update")
 
     except Exception as e:
         logger.error(f"❌ Failed to update roadmap: {e}")

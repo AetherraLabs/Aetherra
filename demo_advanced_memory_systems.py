@@ -24,7 +24,7 @@ try:
     )
 
     AETHERRA_AVAILABLE = True
-    print("✅ Aetherra Advanced Memory Systems imported successfully")
+    print("[OK] Aetherra Advanced Memory Systems imported successfully")
 except ImportError as e:
     AETHERRA_AVAILABLE = False
     create_enhanced_conversation_manager = None
@@ -72,9 +72,9 @@ class AdvancedMemoryDemo:
                 memory_init_success = await self.memory_manager.initialize()
 
                 if memory_init_success:
-                    print("✅ Advanced Memory Manager initialized")
+                    print("[OK] Advanced Memory Manager initialized")
                 else:
-                    print("⚠️ Memory Manager initialization had issues")
+                    print("[WARN] Memory Manager initialization had issues")
 
                 # Initialize conversation manager
                 if create_enhanced_conversation_manager:
@@ -84,9 +84,9 @@ class AdvancedMemoryDemo:
                     conv_init_success = await self.conversation_manager.initialize()
 
                     if conv_init_success:
-                        print("✅ Enhanced Conversation Manager initialized")
+                        print("[OK] Enhanced Conversation Manager initialized")
                     else:
-                        print("⚠️ Conversation Manager initialization had issues")
+                        print("[WARN] Conversation Manager initialization had issues")
                 else:
                     print("❌ Enhanced Conversation Manager not available")
                     conv_init_success = False
@@ -155,7 +155,7 @@ class AdvancedMemoryDemo:
 
             if storage_result["success"]:
                 print(
-                    f"   ✅ Stored (quantum: {storage_result['quantum_stored']}, patterns: {storage_result['patterns_discovered']})"
+                    f"   [OK] Stored (quantum: {storage_result['quantum_stored']}, patterns: {storage_result['patterns_discovered']})"
                 )
             else:
                 print(
@@ -372,7 +372,7 @@ class AdvancedMemoryDemo:
             print("🧠 Memory System Status:")
             system_status = memory_stats.get("system_status", {})
             for key, value in system_status.items():
-                status_icon = "✅" if value else "❌"
+                status_icon = "[OK]" if value else "❌"
                 print(f"   {status_icon} {key.replace('_', ' ').title()}: {value}")
 
             print("\n📊 Memory Operations:")
@@ -407,7 +407,7 @@ class AdvancedMemoryDemo:
             print("\n💬 Conversation System Status:")
             conv_system_status = conv_stats.get("system_status", {})
             for key, value in conv_system_status.items():
-                status_icon = "✅" if value else "❌"
+                status_icon = "[OK]" if value else "❌"
                 print(f"   {status_icon} {key.replace('_', ' ').title()}: {value}")
 
             print("\n📈 Conversation Metrics:")
@@ -455,15 +455,15 @@ class AdvancedMemoryDemo:
             print("\n" + "=" * 60)
             print("🎉 DEMO COMPLETION SUMMARY")
             print("=" * 60)
-            print(f"✅ Demo completed successfully in {demo_time:.2f} seconds")
+            print(f"[OK] Demo completed successfully in {demo_time:.2f} seconds")
             print(
-                f"📚 Memory storage tests: {'✅ Passed' if storage_results else '❌ Failed'}"
+                f"📚 Memory storage tests: {'[OK] Passed' if storage_results else '❌ Failed'}"
             )
             print(
-                f"🔍 Memory recall tests: {'✅ Passed' if recall_results else '❌ Failed'}"
+                f"🔍 Memory recall tests: {'[OK] Passed' if recall_results else '❌ Failed'}"
             )
             print(
-                f"💬 Enhanced conversations: {'✅ Passed' if conversation_results else '❌ Failed'}"
+                f"💬 Enhanced conversations: {'[OK] Passed' if conversation_results else '❌ Failed'}"
             )
 
             if all([storage_results, recall_results, conversation_results]):
@@ -471,7 +471,7 @@ class AdvancedMemoryDemo:
                 print("✨ Quantum-enhanced memory integration is operational")
                 print("🚀 Aetherra AI OS memory capabilities are fully enhanced")
             else:
-                print("\n⚠️  Some systems had issues - check logs for details")
+                print("\n[WARN]  Some systems had issues - check logs for details")
 
         except Exception as e:
             print(f"\n❌ Demo failed with error: {e}")

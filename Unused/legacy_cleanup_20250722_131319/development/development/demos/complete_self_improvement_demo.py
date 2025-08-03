@@ -104,7 +104,7 @@ async def demo_self_improvement_system():
         # Discover and analyze plugins
         print("\n🔍 Discovering and analyzing plugins...")
         plugins = diff_engine.discover_plugins()
-        print(f"📦 Found {len(plugins)} plugins")
+        print(f"[DISC] Found {len(plugins)} plugins")
 
         if plugins:
             # Analyze a sample plugin
@@ -174,7 +174,7 @@ async def demo_memory_linked_plugins():
         # Discover plugins with metadata
         print("\n📚 Discovering plugins and extracting metadata...")
         plugins_with_metadata = discovery.discover_plugins_with_metadata()
-        print(f"📦 Discovered {len(plugins_with_metadata)} plugins with metadata")
+        print(f"[DISC] Discovered {len(plugins_with_metadata)} plugins with metadata")
 
         # Show sample metadata
         if plugins_with_metadata:
@@ -364,7 +364,7 @@ async def main():
             "🎯 MISSION ACCOMPLISHED: Self-Generated Improvements + Memory-Linked Plugins!"
         )
     else:
-        print("\n⚠️ Some components need attention - check implementation details")
+        print("\n[WARN] Some components need attention - check implementation details")
 
     return all([demo1_success, demo2_success, demo3_success])
 

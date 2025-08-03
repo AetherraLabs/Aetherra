@@ -519,7 +519,7 @@ except Exception as e:
                 report.append(f"Max CPU: {stats.get('max_cpu', 0):.1f}%")
 
                 if stats.get('violations'):
-                    report.append("⚠️ Resource Violations:")
+                    report.append("[WARN] Resource Violations:")
                     for violation in stats['violations']:
                         report.append(f"  - {violation}")
 

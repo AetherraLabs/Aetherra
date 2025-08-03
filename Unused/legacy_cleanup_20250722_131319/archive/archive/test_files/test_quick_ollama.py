@@ -9,7 +9,7 @@ Test the Ollama availability fix directly.
 
 def test_ollama_fix():
     """Test the fixed Ollama model availability"""
-    print("🔧 Testing Ollama Model Availability Fix")
+    print("[TOOL] Testing Ollama Model Availability Fix")
     print("=" * 40)
 
     try:

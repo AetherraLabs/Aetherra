@@ -226,4 +226,4 @@ if __name__ == "__main__":
             "\n🚀 AetherraAgent is fully operational and ready for autonomous behavior!"
         )
     else:
-        print("\n⚠️ Please address the issues before production deployment.")
+        print("\n[WARN] Please address the issues before production deployment.")

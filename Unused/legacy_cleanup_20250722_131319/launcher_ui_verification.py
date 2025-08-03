@@ -36,7 +36,7 @@ def test_launcher_hybrid_ui():
         ):
             print("✅ Launcher imports new hybrid_window.LyrixaWindow")
         else:
-            print("❌ Launcher still using old gui_window import")
+            print("[ERROR] Launcher still using old gui_window import")
             return False
 
         # Check for old import (should not be present)
@@ -44,7 +44,7 @@ def test_launcher_hybrid_ui():
             "from Aetherra.lyrixa.gui.gui_window import LyrixaWindow"
             in launcher_content
         ):
-            print("⚠️ WARNING: Launcher still has old gui_window import")
+            print("[WARN] WARNING: Launcher still has old gui_window import")
             return False
         else:
             print("✅ Old gui_window import removed")
@@ -53,7 +53,7 @@ def test_launcher_hybrid_ui():
         if "HYBRID UI" in launcher_content and "11-Tab" in launcher_content:
             print("✅ Launcher header updated for hybrid UI")
         else:
-            print("⚠️ Launcher header not updated")
+            print("[WARN] Launcher header not updated")
 
         # Test that we can import the hybrid window from launcher path
         sys.path.insert(
@@ -78,7 +78,7 @@ def test_launcher_hybrid_ui():
         if tab_count == 11:
             print(f"✅ Hybrid window has all {tab_count} tabs")
         else:
-            print(f"❌ Hybrid window has {tab_count} tabs, expected 11")
+            print(f"[ERROR] Hybrid window has {tab_count} tabs, expected 11")
             return False
 
         # Check for Agent Collab tab specifically
@@ -86,7 +86,7 @@ def test_launcher_hybrid_ui():
         if last_tab_name == "Agent Collab":
             print("✅ Agent Collaboration tab present (newest feature)")
         else:
-            print(f"❌ Expected 'Agent Collab' tab, found '{last_tab_name}'")
+            print(f"[ERROR] Expected 'Agent Collab' tab, found '{last_tab_name}'")
             return False
 
         print("\n🎉 LAUNCHER VERIFICATION PASSED!")
@@ -95,7 +95,7 @@ def test_launcher_hybrid_ui():
         return True
 
     except Exception as e:
-        print(f"❌ Launcher verification failed: {e}")
+        print(f"[ERROR] Launcher verification failed: {e}")
         import traceback
 
         traceback.print_exc()
@@ -122,14 +122,14 @@ def test_launcher_execution():
         if hasattr(launcher, "launch_gui"):
             print("✅ Launcher has launch_gui function")
         else:
-            print("❌ Launcher missing launch_gui function")
+            print("[ERROR] Launcher missing launch_gui function")
             return False
 
         print("✅ Launcher execution test passed")
         return True
 
     except Exception as e:
-        print(f"❌ Launcher execution test failed: {e}")
+        print(f"[ERROR] Launcher execution test failed: {e}")
         return False
 
 
@@ -148,8 +148,8 @@ def main():
     print("🏆 VERIFICATION RESULTS:")
     print("=" * 25)
 
-    print(f"   {'✅ PASSED' if ui_test else '❌ FAILED'} Hybrid UI Integration")
-    print(f"   {'✅ PASSED' if exec_test else '❌ FAILED'} Launcher Execution")
+    print(f"   {'✅ PASSED' if ui_test else '[ERROR] FAILED'} Hybrid UI Integration")
+    print(f"   {'✅ PASSED' if exec_test else '[ERROR] FAILED'} Launcher Execution")
 
     if ui_test and exec_test:
         print("\n🎉 ALL TESTS PASSED!")
@@ -160,8 +160,8 @@ def main():
         print("   python Aetherra/lyrixa/launcher.py")
         print("\n🌟 Enjoy your revolutionary 11-tab AI interface!")
     else:
-        print("\n❌ SOME TESTS FAILED!")
-        print("🔧 Please review failed tests above")
+        print("\n[ERROR] SOME TESTS FAILED!")
+        print("[TOOL] Please review failed tests above")
 
     print("=" * 50)
 

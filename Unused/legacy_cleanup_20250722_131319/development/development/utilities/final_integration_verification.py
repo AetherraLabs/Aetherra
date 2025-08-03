@@ -46,10 +46,10 @@ def test_launcher_integration():
                 if hasattr(memory_tab, 'memory_core'):
                     print("✅ Memory tab uses world-class memory core")
                 else:
-                    print("⚠️  Memory tab uses fallback implementation")
+                    print("[WARN]  Memory tab uses fallback implementation")
 
             except Exception as e:
-                print(f"⚠️  Memory tab creation issue: {e}")
+                print(f"[WARN]  Memory tab creation issue: {e}")
 
         if hasattr(window, 'create_goal_tab'):
             print("✅ Goal tab method available")
@@ -63,10 +63,10 @@ def test_launcher_integration():
                 if hasattr(goal_tab, 'goals'):
                     print("✅ Goal tab uses world-class goal tracker")
                 else:
-                    print("⚠️  Goal tab uses fallback implementation")
+                    print("[WARN]  Goal tab uses fallback implementation")
 
             except Exception as e:
-                print(f"⚠️  Goal tab creation issue: {e}")
+                print(f"[WARN]  Goal tab creation issue: {e}")
 
         print("✅ Launcher integration successful!")
         return True
@@ -80,7 +80,7 @@ def test_launcher_integration():
 def test_modular_access():
     """Test modular access patterns"""
 
-    print("\n🔧 Testing Modular Access...")
+    print("\n[TOOL] Testing Modular Access...")
 
     try:
         # Test direct component access
@@ -236,7 +236,7 @@ def main():
         print("   - Goal Tracker tab (🎯) will use world-class goal tracking")
         print("   - Both tabs have fallback implementations for reliability")
     else:
-        print("⚠️  Some tests failed. Check issues above.")
+        print("[WARN]  Some tests failed. Check issues above.")
 
     return all_passed
 

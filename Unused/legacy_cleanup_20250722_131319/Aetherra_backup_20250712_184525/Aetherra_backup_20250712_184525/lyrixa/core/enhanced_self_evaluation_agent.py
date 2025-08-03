@@ -83,7 +83,7 @@ class EnhancedSelfEvaluationAgent:
                 await asyncio.sleep(interval_hours * 3600)
 
         except Exception as e:
-            print(f"❌ Self-evaluation agent error: {e}")
+            print(f"[ERROR] Self-evaluation agent error: {e}")
         finally:
             self.is_running = False
 
@@ -212,7 +212,7 @@ class EnhancedSelfEvaluationAgent:
             return analysis
 
         except Exception as e:
-            print(f"⚠️ Error analyzing recent insights: {e}")
+            print(f"[WARN] Error analyzing recent insights: {e}")
             return {"error": str(e)}
 
     async def _detect_patterns(self) -> Dict[str, Any]:
@@ -244,7 +244,7 @@ class EnhancedSelfEvaluationAgent:
             return pattern_analysis
 
         except Exception as e:
-            print(f"⚠️ Error detecting patterns: {e}")
+            print(f"[WARN] Error detecting patterns: {e}")
             return {"error": str(e)}
 
     def _analyze_conversation_patterns(self, memories: List[Dict]) -> Dict[str, Any]:
@@ -671,7 +671,7 @@ class EnhancedSelfEvaluationAgent:
             print("📝 Stored evaluation results in memory")
 
         except Exception as e:
-            print(f"⚠️ Failed to store evaluation results: {e}")
+            print(f"[WARN] Failed to store evaluation results: {e}")
 
     async def get_evaluation_metrics(self, days_back: int = 7) -> Dict[str, Any]:
         """Get metrics on self-evaluation activities"""

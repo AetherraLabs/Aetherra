@@ -29,14 +29,14 @@ def test_method_existence():
             if method in methods:
                 print(f"✅ {method} method exists")
             else:
-                print(f"❌ {method} method missing")
+                print(f"[ERROR] {method} method missing")
                 return False
 
         print("✅ All required methods exist in LyrixaWindow")
         return True
 
     except Exception as e:
-        print(f"❌ Error checking methods: {e}")
+        print(f"[ERROR] Error checking methods: {e}")
         return False
 
 def test_plugin_runner_functionality():
@@ -60,19 +60,19 @@ def test_plugin_runner_functionality():
         if hasattr(runner, 'discover_plugins'):
             print("✅ discover_plugins method exists")
         else:
-            print("❌ discover_plugins method missing")
+            print("[ERROR] discover_plugins method missing")
             return False
 
         if hasattr(runner, 'execute_plugin'):
             print("✅ execute_plugin method exists")
         else:
-            print("❌ execute_plugin method missing")
+            print("[ERROR] execute_plugin method missing")
             return False
 
         return True
 
     except Exception as e:
-        print(f"❌ Plugin runner functionality test failed: {e}")
+        print(f"[ERROR] Plugin runner functionality test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -98,10 +98,10 @@ def main():
                 print(f"✅ {test.__name__} PASSED")
             else:
                 failed += 1
-                print(f"❌ {test.__name__} FAILED")
+                print(f"[ERROR] {test.__name__} FAILED")
         except Exception as e:
             failed += 1
-            print(f"❌ {test.__name__} FAILED with exception: {e}")
+            print(f"[ERROR] {test.__name__} FAILED with exception: {e}")
 
     print("\n" + "=" * 50)
     print(f"🎯 Test Results: {passed} passed, {failed} failed")
@@ -110,7 +110,7 @@ def main():
         print("🎉 Integration tests passed! Clean Plugin Runner is properly integrated.")
         return 0
     else:
-        print("⚠️  Some tests failed. Please check the output above for details.")
+        print("[WARN]  Some tests failed. Please check the output above for details.")
         return 1
 
 if __name__ == "__main__":

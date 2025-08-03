@@ -73,7 +73,7 @@ async def launch_quantum_dashboard(port: int = 8080, mode: str = "web"):
                     category="system_architecture"
                 )
 
-                print("✅ Quantum memory engine initialized with test data")
+                print("[OK] Quantum memory engine initialized with test data")
 
                 # Check quantum system status
                 status = quantum_engine.get_quantum_system_status()
@@ -118,7 +118,7 @@ async def launch_quantum_dashboard(port: int = 8080, mode: str = "web"):
             except KeyboardInterrupt:
                 print(f"\n🛑 Shutting down dashboard...")
                 await dashboard.stop()
-                print("✅ Dashboard stopped successfully")
+                print("[OK] Dashboard stopped successfully")
 
         except Exception as e:
             print(f"❌ Failed to start web dashboard: {e}")

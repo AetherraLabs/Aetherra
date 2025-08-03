@@ -29,7 +29,7 @@ def clean_cache_files(root_path):
                 print(f"  ✅ Removed {pycache_dir}")
                 removed_count += 1
             except Exception as e:
-                print(f"  ⚠️ Could not remove {pycache_dir}: {e}")
+                print(f"  [WARN] Could not remove {pycache_dir}: {e}")
 
     # Remove .pyc files
     pyc_count = 0
@@ -38,7 +38,7 @@ def clean_cache_files(root_path):
             pyc_file.unlink()
             pyc_count += 1
         except Exception as e:
-            print(f"  ⚠️ Could not remove {pyc_file}: {e}")
+            print(f"  [WARN] Could not remove {pyc_file}: {e}")
 
     if pyc_count > 0:
         print(f"  ✅ Removed {pyc_count} .pyc files")
@@ -62,7 +62,7 @@ def clean_temp_files(root_path):
                     print(f"  ✅ Removed {temp_file}")
                     removed_count += 1
                 except Exception as e:
-                    print(f"  ⚠️ Could not remove {temp_file}: {e}")
+                    print(f"  [WARN] Could not remove {temp_file}: {e}")
 
     if removed_count == 0:
         print("  ✨ No temporary files found - already clean!")
@@ -88,7 +88,7 @@ def clean_log_files(root_path):
                     print(f"  ✅ Removed old log: {log_file}")
                     removed_count += 1
                 except Exception as e:
-                    print(f"  ⚠️ Could not remove {log_file}: {e}")
+                    print(f"  [WARN] Could not remove {log_file}: {e}")
 
     if removed_count == 0:
         print("  ✨ No old log files found - already optimized!")
@@ -150,7 +150,7 @@ def optimize_vscode_settings(root_path):
             f.write(optimal_settings)
         print(f"  ✅ Optimized VS Code settings: {settings_file}")
     except Exception as e:
-        print(f"  ⚠️ Could not update VS Code settings: {e}")
+        print(f"  [WARN] Could not update VS Code settings: {e}")
 
 
 def generate_optimization_report(root_path):
@@ -204,7 +204,7 @@ def generate_optimization_report(root_path):
             f.write(report_content)
         print(f"  ✅ Report saved to: {report_path}")
     except Exception as e:
-        print(f"  ⚠️ Could not save report: {e}")
+        print(f"  [WARN] Could not save report: {e}")
 
 
 def main():
@@ -216,7 +216,7 @@ def main():
     root_path = Path(r"c:\Users\enigm\Desktop\aetherra Project")
 
     if not root_path.exists():
-        print(f"❌ Project root not found: {root_path}")
+        print(f"[ERROR] Project root not found: {root_path}")
         sys.exit(1)
 
     print(f"📁 Optimizing workspace: {root_path}")

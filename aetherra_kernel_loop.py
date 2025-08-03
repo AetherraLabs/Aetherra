@@ -87,6 +87,7 @@ class AetherraKernelLoop:
             asyncio.create_task(self._health_monitoring_loop()),
             asyncio.create_task(self._memory_optimization_loop()),
             asyncio.create_task(self._plugin_orchestration_loop()),
+            asyncio.create_task(self._heartbeat_loop()),
         ]
 
         try:
@@ -94,6 +95,17 @@ class AetherraKernelLoop:
         except Exception as e:
             logger.error(f"❌ Kernel loop error: {e}")
             await self.shutdown()
+
+    async def _heartbeat_loop(self):
+        """💓 Send regular heartbeat to service registry."""
+        while self.running:
+            try:
+                if self.service_registry:
+                    await self.service_registry.update_heartbeat("kernel_loop")
+                await asyncio.sleep(60)  # Heartbeat every minute
+            except Exception as e:
+                logger.error(f"❌ Kernel heartbeat error: {e}")
+                await asyncio.sleep(60)
 
     async def _main_processing_loop(self):
         """🔄 Main processing cycle - handles events and orchestration."""
@@ -161,7 +173,7 @@ class AetherraKernelLoop:
                 # Alert on critical issues
                 if health_status.get("critical_issues"):
                     logger.warning(
-                        f"⚠️ Critical issues detected: {health_status['critical_issues']}"
+                        f"[WARN] Critical issues detected: {health_status['critical_issues']}"
                     )
 
                 await asyncio.sleep(30)  # Check every 30 seconds
@@ -229,7 +241,7 @@ class AetherraKernelLoop:
             logger.info("🌙 Night Cycle: Cleanup and Maintenance...")
             await self._cleanup_temporary_files()
 
-            logger.info("✅ Night Cycle completed successfully")
+            logger.info("[OK] Night Cycle completed successfully")
 
         except Exception as e:
             logger.error(f"❌ Night cycle error: {e}")
@@ -263,7 +275,7 @@ class AetherraKernelLoop:
                 if self.lyrixa_engine:
                     await self.lyrixa_engine.process_thought(task_data)
             else:
-                logger.warning(f"⚠️ Unknown task type: {task_type}")
+                logger.warning(f"[WARN] Unknown task type: {task_type}")
 
         except Exception as e:
             logger.error(f"❌ Task execution error: {e}")
@@ -372,7 +384,7 @@ class AetherraKernelLoop:
         # Save final metrics
         await self._save_metrics()
 
-        logger.info("✅ Kernel loop shutdown complete")
+        logger.info("[OK] Kernel loop shutdown complete")
 
     async def _save_metrics(self):
         """💾 Save kernel metrics to file."""
@@ -477,6 +489,6 @@ if __name__ == "__main__":
             await asyncio.wait_for(kernel.start_kernel_loop(), timeout=5.0)
         except asyncio.TimeoutError:
             await kernel.shutdown()
-            print("✅ Kernel loop test completed successfully")
+            print("[OK] Kernel loop test completed successfully")
 
     asyncio.run(test_kernel())

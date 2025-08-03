@@ -156,7 +156,7 @@ class SelfImprovementScheduler:
                     matches = list(self.workspace_path.glob(pattern))
                     target_files.extend([str(f) for f in matches if f.is_file()])
                 except Exception as e:
-                    print(f"⚠️ Error processing pattern '{pattern}': {e}")
+                    print(f"[WARN] Error processing pattern '{pattern}': {e}")
             else:
                 # Handle direct file paths
                 file_path = self.workspace_path / pattern
@@ -256,7 +256,7 @@ class SelfImprovementScheduler:
             print("📝 Stored cycle results in memory")
 
         except Exception as e:
-            print(f"⚠️ Failed to store cycle results: {e}")
+            print(f"[WARN] Failed to store cycle results: {e}")
 
     async def _update_last_run(self, cycle_data: Dict[str, Any]):
         """Update last run timestamp"""
@@ -272,7 +272,7 @@ class SelfImprovementScheduler:
             self.last_run_file.write_text(json.dumps(last_run_data, indent=2))
 
         except Exception as e:
-            print(f"⚠️ Failed to update last run file: {e}")
+            print(f"[WARN] Failed to update last run file: {e}")
 
     async def _execute_auto_remediation(self, action_plan: Dict[str, Any]):
         """Execute automatic remediation for safe, low-risk actions"""
@@ -305,7 +305,7 @@ class SelfImprovementScheduler:
                 await self._store_remediation_result(action, result)
 
             except Exception as e:
-                print(f"⚠️ Auto-remediation failed for action: {e}")
+                print(f"[WARN] Auto-remediation failed for action: {e}")
                 remediation_results.append(
                     {"action": action, "success": False, "error": str(e)}
                 )
@@ -370,7 +370,7 @@ class SelfImprovementScheduler:
             )
 
         except Exception as e:
-            print(f"⚠️ Failed to store remediation result: {e}")
+            print(f"[WARN] Failed to store remediation result: {e}")
 
     async def get_improvement_metrics(self, days_back: int = 7) -> Dict[str, Any]:
         """Get metrics on self-improvement activities"""
@@ -419,7 +419,7 @@ class SelfImprovementScheduler:
             }
 
         except Exception as e:
-            print(f"⚠️ Failed to calculate improvement metrics: {e}")
+            print(f"[WARN] Failed to calculate improvement metrics: {e}")
             return {"error": str(e)}
 
 

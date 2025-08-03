@@ -961,7 +961,7 @@ def run_self_evolving_behavior_tests():
     print(f"Total Tests: {total_tests}")
     print(f"✅ Passed: {passed}")
     print(f"❌ Failed: {failures}")
-    print(f"💥 Errors: {errors}")
+    print(f"[FAIL] Errors: {errors}")
     print(f"📊 Success Rate: {success_rate:.1f}%")
     print("=" * 55)
 
@@ -971,7 +971,7 @@ def run_self_evolving_behavior_tests():
     elif success_rate >= 75:
         print("✅ SELF-EVOLVING BEHAVIOR: GOOD - Functional Adaptation System")
     elif success_rate >= 50:
-        print("⚠️ SELF-EVOLVING BEHAVIOR: FAIR - Basic Evolution Capabilities")
+        print("[WARN] SELF-EVOLVING BEHAVIOR: FAIR - Basic Evolution Capabilities")
     else:
         print("❌ SELF-EVOLVING BEHAVIOR: NEEDS WORK - Limited Learning Ability")
 

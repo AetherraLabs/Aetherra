@@ -29,7 +29,7 @@ try:
 
     GUI_AVAILABLE = True
 except ImportError:
-    print("❌ PySide6 not available")
+    print("[ERROR] PySide6 not available")
     GUI_AVAILABLE = False
     sys.exit(1)
 
@@ -113,7 +113,7 @@ class EnhancedLyrixaLauncher(QMainWindow):
 
         # Status
         status_text = "🔑 OpenAI Integration: " + (
-            "✅ Active" if self.api_key else "❌ No API Key"
+            "✅ Active" if self.api_key else "[ERROR] No API Key"
         )
         self.status_label = QLabel(status_text)
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -149,7 +149,7 @@ class EnhancedLyrixaLauncher(QMainWindow):
         else:
             self.add_chat_message(
                 "System",
-                "⚠️ Add your OpenAI API key to .env file for full AI capabilities",
+                "[WARN] Add your OpenAI API key to .env file for full AI capabilities",
             )
 
     def add_chat_message(self, sender, message):
@@ -194,7 +194,7 @@ class EnhancedLyrixaLauncher(QMainWindow):
 
 def main():
     if not GUI_AVAILABLE:
-        print("❌ GUI not available")
+        print("[ERROR] GUI not available")
         return
 
     app = QApplication(sys.argv)

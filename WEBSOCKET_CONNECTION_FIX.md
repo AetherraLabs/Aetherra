@@ -1,4 +1,4 @@
-# 🔧 WebSocket Connection Fix - August 2025
+# [TOOL] WebSocket Connection Fix - August 2025
 
 ## Issue Summary
 Contributors running the Aetherra web server from forked repositories encountered WebSocket connection failures:
@@ -111,9 +111,9 @@ INFO:Aetherra.gui.web_interface_server: Client connected. Total clients: 1
 ## Contributor Impact
 
 ### Before Fix
-❌ Contributors cloning forks encountered immediate WebSocket errors
-❌ Confusing dual GUI system with unclear setup
-❌ Manual coordination required between React and Flask servers
+[ERROR] Contributors cloning forks encountered immediate WebSocket errors
+[ERROR] Confusing dual GUI system with unclear setup
+[ERROR] Manual coordination required between React and Flask servers
 
 ### After Fix
 ✅ Single command launches complete GUI system: `python Aetherra/gui/launch_aetherra_gui.py`

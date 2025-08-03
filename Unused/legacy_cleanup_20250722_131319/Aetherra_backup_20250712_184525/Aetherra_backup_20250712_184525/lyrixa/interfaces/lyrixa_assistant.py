@@ -33,7 +33,7 @@ try:
 
     LYRIXA_CORE_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"⚠️ Lyrixa core components not available: {e}")
+    logger.warning(f"[WARN] Lyrixa core components not available: {e}")
     LyrixaCore = None
     LyrixaAgentInterface = None
     LYRIXA_CORE_AVAILABLE = False
@@ -93,7 +93,7 @@ class LyrixaAssistant:
         """
         try:
             if not LYRIXA_CORE_AVAILABLE:
-                logger.error("❌ Lyrixa core components not available")
+                logger.error("[ERROR] Lyrixa core components not available")
                 return False
 
             # Initialize Lyrixa core
@@ -123,7 +123,7 @@ class LyrixaAssistant:
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to initialize Lyrixa Assistant: {e}")
+            logger.error(f"[ERROR] Failed to initialize Lyrixa Assistant: {e}")
             return False
 
     async def chat(self, message: str, context: Optional[Dict[str, Any]] = None) -> str:
@@ -172,7 +172,7 @@ class LyrixaAssistant:
             return response
 
         except Exception as e:
-            logger.error(f"❌ Chat processing failed: {e}")
+            logger.error(f"[ERROR] Chat processing failed: {e}")
             return f"I apologize, but I encountered an error while processing your message: {str(e)}"
 
     async def _generate_fallback_response(
@@ -245,7 +245,7 @@ class LyrixaAssistant:
             return result
 
         except Exception as e:
-            logger.error(f"❌ Task execution failed: {e}")
+            logger.error(f"[ERROR] Task execution failed: {e}")
             return {"error": str(e), "task_id": task_id}
 
     async def _execute_task_fallback(self, task_spec: Dict[str, Any]) -> Dict[str, Any]:
@@ -323,7 +323,7 @@ class LyrixaAssistant:
                 core_status = await self.lyrixa_core.get_system_status()
                 status["core_status"] = core_status
             except Exception as e:
-                logger.error(f"❌ Failed to get core status: {e}")
+                logger.error(f"[ERROR] Failed to get core status: {e}")
                 status["core_status"] = {"error": str(e)}
 
         if self.agent_interface:
@@ -331,7 +331,7 @@ class LyrixaAssistant:
                 agent_status = await self.agent_interface.get_agent_status()
                 status["agent_status"] = agent_status
             except Exception as e:
-                logger.error(f"❌ Failed to get agent status: {e}")
+                logger.error(f"[ERROR] Failed to get agent status: {e}")
                 status["agent_status"] = {"error": str(e)}
 
         return status
@@ -435,7 +435,7 @@ class LyrixaAssistant:
             logger.info("✅ Lyrixa Assistant shutdown complete")
 
         except Exception as e:
-            logger.error(f"❌ Shutdown failed: {e}")
+            logger.error(f"[ERROR] Shutdown failed: {e}")
 
     def __repr__(self) -> str:
         return f"LyrixaAssistant(session={self.session_id}, initialized={self.is_initialized})"

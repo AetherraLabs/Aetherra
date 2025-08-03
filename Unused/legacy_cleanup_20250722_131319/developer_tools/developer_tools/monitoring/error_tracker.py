@@ -419,7 +419,7 @@ class ErrorTracker:
             report += f"- **{category.title()}**: {data['count']} occurrences ({data['unique']} unique)\n"
 
         report += f"""
-## ⚠️ Severity Breakdown
+## [WARN] Severity Breakdown
 
 """
 
@@ -450,7 +450,7 @@ class ErrorTracker:
 
         # Add recommendations based on data
         if summary['total_occurrences'] > 50:
-            report += "- ⚠️ High error volume detected - investigate top errors\n"
+            report += "- [WARN] High error volume detected - investigate top errors\n"
 
         if trends['trend'] == 'increasing':
             report += "- 📈 Error rate is increasing - monitor closely\n"

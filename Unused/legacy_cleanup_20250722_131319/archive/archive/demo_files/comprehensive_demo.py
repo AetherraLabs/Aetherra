@@ -72,7 +72,7 @@ def main():
 
     try:
         # Plugin manager not available - skip plugin tests
-        print("⚠️ Plugin manager not available - skipping plugin tests")
+        print("[WARN] Plugin manager not available - skipping plugin tests")
         plugins = []
         print(f"   🔌 Found {len(plugins)} plugins")
 
@@ -174,7 +174,7 @@ memory summary
         if result.returncode == 0:
             print("   ✅ CLI help command successful")
         else:
-            print(f"   ⚠️ CLI help returned code {result.returncode}")
+            print(f"   [WARN] CLI help returned code {result.returncode}")
 
         # Test examples execution
         if (project_root / "examples" / "basic_memory.aether").exists():
@@ -194,7 +194,7 @@ memory summary
             if result.returncode == 0:
                 print("   ✅ Example execution successful")
             else:
-                print(f"   ⚠️ Example execution returned code {result.returncode}")
+                print(f"   [WARN] Example execution returned code {result.returncode}")
 
     except Exception as e:
         print(f"❌ CLI test failed: {e}")

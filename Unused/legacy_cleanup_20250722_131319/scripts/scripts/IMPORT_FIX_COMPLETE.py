@@ -45,7 +45,7 @@ try:
     print("\n   🎯 All core modules importing correctly!")
 
 except Exception as e:
-    print(f"   ❌ Core import issue: {e}")
+    print(f"   [ERROR] Core import issue: {e}")
 
 # Test GUI component availability
 print("\n2. Testing GUI Components:")
@@ -62,12 +62,12 @@ try:
 
             print("   ✅ Qt (PyQt6): Available")
         except ImportError:
-            print("   ❌ Qt: Not available")
+            print("   [ERROR] Qt: Not available")
 
     print("\n   🎯 GUI components ready!")
 
 except Exception as e:
-    print(f"   ❌ GUI component issue: {e}")
+    print(f"   [ERROR] GUI component issue: {e}")
 
 print("\n3. Final Status:")
 print("   ✅ Import errors: RESOLVED")

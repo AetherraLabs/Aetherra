@@ -447,7 +447,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.assertEqual(len(panel.children), 2)
         self.assertTrue(panel.visible)
 
-        print("✅ Dynamic panel creation working")
+        print("[OK] Dynamic panel creation working")
 
     def test_plugin_driven_adaptation(self):
         """Test 002: Plugin-driven interface adaptation"""
@@ -484,7 +484,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.assertEqual(len(self.gui_generator.plugin_states), 2)
         self.assertTrue(self.gui_generator.plugin_states["memory_enhancer"]["active"])
 
-        print("✅ Plugin-driven adaptation working")
+        print("[OK] Plugin-driven adaptation working")
 
     def test_memory_state_ui_adaptation(self):
         """Test 003: Memory state-based UI reconfiguration"""
@@ -517,7 +517,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         # Verify high memory adaptations
         self.assertTrue(adaptations)
 
-        print("✅ Memory state UI adaptation working")
+        print("[OK] Memory state UI adaptation working")
 
     def test_user_preference_adaptation(self):
         """Test 004: User preference-based layout adaptation"""
@@ -541,7 +541,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         # Test preference-driven element generation
         self.gui_generator._apply_preference_adaptations()
 
-        print("✅ User preference adaptation working")
+        print("[OK] User preference adaptation working")
 
     def test_contextual_widget_generation(self):
         """Test 005: Contextual widget generation"""
@@ -568,7 +568,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.assertIn("Development Tools", widget_names)
         self.assertIn("Memory Browser", widget_names)
 
-        print("✅ Contextual widget generation working")
+        print("[OK] Contextual widget generation working")
 
     def test_intelligent_element_hiding(self):
         """Test 006: Intelligent hiding of empty/unused elements"""
@@ -600,7 +600,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.assertFalse(self.gui_generator.element_registry[empty_panel].visible)
         self.assertTrue(self.gui_generator.element_registry[populated_panel].visible)
 
-        print("✅ Intelligent element hiding working")
+        print("[OK] Intelligent element hiding working")
 
     def test_auto_layout_arrangement(self):
         """Test 007: Automatic layout arrangement and optimization"""
@@ -628,7 +628,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.assertTrue(aesthetics_result)
         self.assertTrue(accessibility_result)
 
-        print("✅ Auto layout arrangement working")
+        print("[OK] Auto layout arrangement working")
 
     def test_layout_memory_persistence(self):
         """Test 008: Layout memory and persistence"""
@@ -647,7 +647,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         layout_1_cached = self.gui_generator.adapt_layout_to_plugins(active_plugins)
         self.assertEqual(layout_1, layout_1_cached)
 
-        print("✅ Layout memory persistence working")
+        print("[OK] Layout memory persistence working")
 
     def test_dynamic_theme_application(self):
         """Test 009: Dynamic theme and style application"""
@@ -673,7 +673,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
 
         self.assertTrue(panel.get_property("theme_aware", False))
 
-        print("✅ Dynamic theme application working")
+        print("[OK] Dynamic theme application working")
 
     def test_conditional_ui_display(self):
         """Test 010: Conditional UI element display"""
@@ -695,7 +695,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         # Test condition evaluation
         self.assertTrue(panel.visible)  # Mock implementation returns True
 
-        print("✅ Conditional UI display working")
+        print("[OK] Conditional UI display working")
 
     def test_real_time_interface_updates(self):
         """Test 011: Real-time interface updates and synchronization"""
@@ -718,7 +718,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.assertGreater(len(self.gui_generator.plugin_states), 0)
         self.assertGreater(len(self.gui_generator.memory_state), 0)
 
-        print("✅ Real-time interface updates working")
+        print("[OK] Real-time interface updates working")
 
     def test_widget_factory_operations(self):
         """Test 012: Widget factory operations and management"""
@@ -742,7 +742,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.mock_gui.destroy_widget("test_button")
         self.assertEqual(len(self.mock_gui.widgets), 4)
 
-        print("✅ Widget factory operations working")
+        print("[OK] Widget factory operations working")
 
     def test_responsive_layout_adaptation(self):
         """Test 013: Responsive layout adaptation"""
@@ -760,7 +760,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.assertTrue(layout.responsive)
         self.assertEqual(layout.mode, LayoutMode.ADAPTIVE)
 
-        print("✅ Responsive layout adaptation working")
+        print("[OK] Responsive layout adaptation working")
 
     def test_plugin_ui_dependency_resolution(self):
         """Test 014: Plugin UI dependency resolution"""
@@ -780,7 +780,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.assertEqual(len(dependent_element.dependencies), 1)
         self.assertIn("base_element", dependent_element.dependencies)
 
-        print("✅ Plugin UI dependency resolution working")
+        print("[OK] Plugin UI dependency resolution working")
 
     def test_interface_state_synchronization(self):
         """Test 015: Interface state synchronization"""
@@ -810,7 +810,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         sync_group = element_1.get_property("sync_group")
         self.assertEqual(sync_group, element_2.get_property("sync_group"))
 
-        print("✅ Interface state synchronization working")
+        print("[OK] Interface state synchronization working")
 
     def test_generation_performance_metrics(self):
         """Test 016: Generation performance and metrics tracking"""
@@ -842,7 +842,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.assertLess(generation_time, 1.0)  # Should be fast
 
         print(
-            f"✅ Generation performance metrics working (generated 10 panels in {generation_time:.3f}s)"
+            f"[OK] Generation performance metrics working (generated 10 panels in {generation_time:.3f}s)"
         )
 
     def test_memory_efficient_generation(self):
@@ -875,7 +875,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         # Verify cleanup
         self.assertEqual(len(self.gui_generator.element_registry), initial_elements)
 
-        print("✅ Memory-efficient generation working")
+        print("[OK] Memory-efficient generation working")
 
     def test_accessibility_compliance(self):
         """Test 018: Accessibility compliance in generated UI"""
@@ -901,7 +901,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.assertTrue(panel.get_property("screen_reader_friendly", False))
         self.assertIsNotNone(panel.get_property("aria_label"))
 
-        print("✅ Accessibility compliance working")
+        print("[OK] Accessibility compliance working")
 
     def test_error_recovery_and_fallbacks(self):
         """Test 019: Error recovery and fallback mechanisms"""
@@ -935,7 +935,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         except Exception as e:
             self.fail(f"Dependency error recovery failed: {e}")
 
-        print("✅ Error recovery and fallbacks working")
+        print("[OK] Error recovery and fallbacks working")
 
     def test_generation_rule_system(self):
         """Test 020: Generation rule system and automation"""
@@ -969,7 +969,7 @@ class TestLiveGUIGeneration(unittest.TestCase):
         self.assertIsNotNone(memory_result)
         self.assertEqual(memory_result["action"], "create_memory_panel")
 
-        print("✅ Generation rule system working")
+        print("[OK] Generation rule system working")
 
 
 def run_comprehensive_test():
@@ -1001,9 +1001,9 @@ def run_comprehensive_test():
     print("🧩 LIVE GUI GENERATION TEST RESULTS")
     print("=" * 80)
     print(f"Total Tests: {total_tests}")
-    print(f"✅ Passed: {passed}")
-    print(f"❌ Failed: {failures}")
-    print(f"💥 Errors: {errors}")
+    print(f"[OK] Passed: {passed}")
+    print(f"[ERROR] Failed: {failures}")
+    print(f"[FAIL] Errors: {errors}")
     print(f"📊 Success Rate: {success_rate:.1f}%")
     print()
 
@@ -1012,26 +1012,26 @@ def run_comprehensive_test():
     print()
 
     capabilities = [
-        ("Dynamic Panel Creation", "✅" if passed > 0 else "❌"),
-        ("Plugin-Driven Adaptation", "✅" if passed > 1 else "❌"),
-        ("Memory State UI Adaptation", "✅" if passed > 2 else "❌"),
-        ("User Preference Adaptation", "✅" if passed > 3 else "❌"),
-        ("Contextual Widget Generation", "✅" if passed > 4 else "❌"),
-        ("Intelligent Element Hiding", "✅" if passed > 5 else "❌"),
-        ("Auto Layout Arrangement", "✅" if passed > 6 else "❌"),
-        ("Layout Memory Persistence", "✅" if passed > 7 else "❌"),
-        ("Dynamic Theme Application", "✅" if passed > 8 else "❌"),
-        ("Conditional UI Display", "✅" if passed > 9 else "❌"),
-        ("Real-time Interface Updates", "✅" if passed > 10 else "❌"),
-        ("Widget Factory Operations", "✅" if passed > 11 else "❌"),
-        ("Responsive Layout Adaptation", "✅" if passed > 12 else "❌"),
-        ("UI Dependency Resolution", "✅" if passed > 13 else "❌"),
-        ("Interface State Synchronization", "✅" if passed > 14 else "❌"),
-        ("Performance Metrics Tracking", "✅" if passed > 15 else "❌"),
-        ("Memory-Efficient Generation", "✅" if passed > 16 else "❌"),
-        ("Accessibility Compliance", "✅" if passed > 17 else "❌"),
-        ("Error Recovery Mechanisms", "✅" if passed > 18 else "❌"),
-        ("Generation Rule System", "✅" if passed > 19 else "❌"),
+        ("Dynamic Panel Creation", "[OK]" if passed > 0 else "[ERROR]"),
+        ("Plugin-Driven Adaptation", "[OK]" if passed > 1 else "[ERROR]"),
+        ("Memory State UI Adaptation", "[OK]" if passed > 2 else "[ERROR]"),
+        ("User Preference Adaptation", "[OK]" if passed > 3 else "[ERROR]"),
+        ("Contextual Widget Generation", "[OK]" if passed > 4 else "[ERROR]"),
+        ("Intelligent Element Hiding", "[OK]" if passed > 5 else "[ERROR]"),
+        ("Auto Layout Arrangement", "[OK]" if passed > 6 else "[ERROR]"),
+        ("Layout Memory Persistence", "[OK]" if passed > 7 else "[ERROR]"),
+        ("Dynamic Theme Application", "[OK]" if passed > 8 else "[ERROR]"),
+        ("Conditional UI Display", "[OK]" if passed > 9 else "[ERROR]"),
+        ("Real-time Interface Updates", "[OK]" if passed > 10 else "[ERROR]"),
+        ("Widget Factory Operations", "[OK]" if passed > 11 else "[ERROR]"),
+        ("Responsive Layout Adaptation", "[OK]" if passed > 12 else "[ERROR]"),
+        ("UI Dependency Resolution", "[OK]" if passed > 13 else "[ERROR]"),
+        ("Interface State Synchronization", "[OK]" if passed > 14 else "[ERROR]"),
+        ("Performance Metrics Tracking", "[OK]" if passed > 15 else "[ERROR]"),
+        ("Memory-Efficient Generation", "[OK]" if passed > 16 else "[ERROR]"),
+        ("Accessibility Compliance", "[OK]" if passed > 17 else "[ERROR]"),
+        ("Error Recovery Mechanisms", "[OK]" if passed > 18 else "[ERROR]"),
+        ("Generation Rule System", "[OK]" if passed > 19 else "[ERROR]"),
     ]
 
     for capability, status in capabilities:
@@ -1072,7 +1072,7 @@ def run_comprehensive_test():
         print("🥉 LIVE GUI GENERATION: FUNCTIONAL")
         print("   Core dynamic generation working, improvements needed.")
     else:
-        print("⚠️  LIVE GUI GENERATION: NEEDS ATTENTION")
+        print("[WARN]  LIVE GUI GENERATION: NEEDS ATTENTION")
         print("   Dynamic interface system requires debugging.")
 
     print()

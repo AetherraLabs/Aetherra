@@ -147,7 +147,7 @@ class QFACLauncher:
         print("-" * 40)
 
         optimization = await self.memory_system.optimize_system()
-        print(f"   🔧 Actions taken: {len(optimization['actions_taken'])}")
+        print(f"   [TOOL] Actions taken: {len(optimization['actions_taken'])}")
 
         before_compressed = optimization["before_stats"]["node_statistics"][
             "compressed_nodes"
@@ -155,7 +155,7 @@ class QFACLauncher:
         after_compressed = optimization["after_stats"]["node_statistics"][
             "compressed_nodes"
         ]
-        print(f"   📦 Compressed nodes: {before_compressed} → {after_compressed}")
+        print(f"   [DISC] Compressed nodes: {before_compressed} → {after_compressed}")
 
         # 5. Export reports
         print("\n📄 5. Report Generation")
@@ -257,7 +257,7 @@ class QFACLauncher:
             status = await self.memory_system.get_system_status()
 
             print("💾 Memory System:")
-            print(f"   📦 Total nodes: {status['node_statistics']['total_nodes']}")
+            print(f"   [DISC] Total nodes: {status['node_statistics']['total_nodes']}")
             print(
                 f"   🗜️ Compressed nodes: {status['node_statistics']['compressed_nodes']}"
             )
@@ -381,7 +381,7 @@ class QFACLauncher:
         }
 
         print("\n📊 Benchmark Results:")
-        print(f"   📦 Datasets tested: {results['summary']['total_datasets']}")
+        print(f"   [DISC] Datasets tested: {results['summary']['total_datasets']}")
         print(
             f"   📈 Overall compression: {results['summary']['overall_compression_ratio']:.1f}x"
         )

@@ -2,11 +2,11 @@
 echo 🚀 Building and deploying Aetherra website...
 echo.
 
-echo 📦 Step 1: Building website...
+echo [DISC] Step 1: Building website...
 cd "Aetherra\lyrixa\core\Aetherra Website"
 call npm run build
 if errorlevel 1 (
-    echo ❌ Build failed!
+    echo [ERROR] Build failed!
     pause
     exit /b 1
 )

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🌐 Aetherra Service Registry
+[REGISTRY] Aetherra Service Registry
 ============================
 Live service registration and inter-component communication system.
 
@@ -44,7 +44,7 @@ class ServiceInfo:
 
 class AetherraServiceRegistry:
     """
-    🌐 Central Service Registry
+    [REGISTRY] Central Service Registry
 
     Manages service discovery, health monitoring, and inter-service communication
     for all Aetherra components.
@@ -57,15 +57,15 @@ class AetherraServiceRegistry:
         self._heartbeat_task = None
 
     async def start(self):
-        """🚀 Start the service registry."""
-        logger.info("🌐 Starting Aetherra Service Registry...")
+        """[START] Start the service registry."""
+        logger.info("[REGISTRY] Starting Aetherra Service Registry...")
         self._running = True
         self._heartbeat_task = asyncio.create_task(self._heartbeat_monitor())
-        logger.info("✅ Service Registry is now online")
+        logger.info("[OK] Service Registry is now online")
 
     async def stop(self):
-        """🛑 Stop the service registry."""
-        logger.info("🛑 Stopping Service Registry...")
+        """[STOP] Stop the service registry."""
+        logger.info("[STOP] Stopping Service Registry...")
         self._running = False
 
         if self._heartbeat_task:
@@ -78,7 +78,7 @@ class AetherraServiceRegistry:
         # Notify all services of shutdown
         await self._broadcast_event("system.shutdown", {})
 
-        logger.info("✅ Service Registry stopped")
+        logger.info("[OK] Service Registry stopped")
 
     async def register_service(
         self,
@@ -88,7 +88,7 @@ class AetherraServiceRegistry:
         dependencies: Optional[List[str]] = None,
     ) -> bool:
         """
-        📝 Register a service with the registry.
+        [REGISTER] Register a service with the registry.
 
         Args:
             name: Unique service name
@@ -101,7 +101,7 @@ class AetherraServiceRegistry:
         """
         try:
             if name in self._services:
-                logger.warning(f"⚠️ Service {name} already registered, updating...")
+                logger.warning(f"[WARN] Service {name} already registered, updating...")
 
             service_info = ServiceInfo(
                 name=name,
@@ -112,7 +112,7 @@ class AetherraServiceRegistry:
 
             self._services[name] = service_info
 
-            logger.info(f"✅ Service '{name}' registered successfully")
+            logger.info(f"[OK] Service '{name}' registered successfully")
 
             # Broadcast registration event
             await self._broadcast_event(
@@ -125,12 +125,12 @@ class AetherraServiceRegistry:
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to register service '{name}': {e}")
+            logger.error(f"[ERROR] Failed to register service '{name}': {e}")
             return False
 
     async def unregister_service(self, name: str) -> bool:
         """
-        🗑️ Unregister a service from the registry.
+        [UNREGISTER] Unregister a service from the registry.
 
         Args:
             name: Service name to unregister
@@ -140,7 +140,7 @@ class AetherraServiceRegistry:
         """
         try:
             if name not in self._services:
-                logger.warning(f"⚠️ Service '{name}' not found for unregistration")
+                logger.warning(f"[WARN] Service '{name}' not found for unregistration")
                 return False
 
             # Update status to stopping
@@ -152,7 +152,7 @@ class AetherraServiceRegistry:
             # Remove from registry
             del self._services[name]
 
-            logger.info(f"✅ Service '{name}' unregistered successfully")
+            logger.info(f"[OK] Service '{name}' unregistered successfully")
 
             # Broadcast completion
             await self._broadcast_event("service.unregistered", {"service_name": name})
@@ -160,12 +160,12 @@ class AetherraServiceRegistry:
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to unregister service '{name}': {e}")
+            logger.error(f"[ERROR] Failed to unregister service '{name}': {e}")
             return False
 
     def get_service(self, name: str) -> Optional[Any]:
         """
-        🔍 Get a service instance by name.
+        [GET] Get a service instance by name.
 
         Args:
             name: Service name
@@ -180,7 +180,7 @@ class AetherraServiceRegistry:
 
     def get_service_info(self, name: str) -> Optional[ServiceInfo]:
         """
-        📋 Get service information by name.
+        [INFO] Get service information by name.
 
         Args:
             name: Service name
@@ -194,7 +194,7 @@ class AetherraServiceRegistry:
         self, status_filter: Optional[ServiceStatus] = None
     ) -> Dict[str, ServiceInfo]:
         """
-        📜 List all registered services.
+        [LIST] List all registered services.
 
         Args:
             status_filter: Optional status filter
@@ -214,7 +214,7 @@ class AetherraServiceRegistry:
         self, name: str, status: ServiceStatus, metadata: Optional[Dict] = None
     ):
         """
-        📊 Update service status and metadata.
+        [STATUS] Update service status and metadata.
 
         Args:
             name: Service name
@@ -222,7 +222,7 @@ class AetherraServiceRegistry:
             metadata: Optional metadata updates
         """
         if name not in self._services:
-            logger.warning(f"⚠️ Cannot update status for unknown service '{name}'")
+            logger.warning(f"[WARN] Cannot update status for unknown service '{name}'")
             return
 
         old_status = self._services[name].status
@@ -234,7 +234,7 @@ class AetherraServiceRegistry:
 
         if old_status != status:
             logger.info(
-                f"📊 Service '{name}' status: {old_status.value} → {status.value}"
+                f"[STATUS] Service '{name}' status: {old_status.value} -> {status.value}"
             )
 
             # Broadcast status change
@@ -248,11 +248,20 @@ class AetherraServiceRegistry:
                 },
             )
 
+    async def update_heartbeat(self, name: str):
+        """[HEARTBEAT] Update service heartbeat timestamp."""
+        if name not in self._services:
+            logger.warning(f"[WARN] Cannot update heartbeat for unknown service '{name}'")
+            return
+
+        self._services[name].last_heartbeat = datetime.now()
+        logger.debug(f"[HEARTBEAT] Heartbeat updated for service '{name}'")
+
     async def send_message(
         self, target_service: str, message_type: str, data: Any
     ) -> bool:
         """
-        📤 Send a message to a specific service.
+        [SEND] Send a message to a specific service.
 
         Args:
             target_service: Target service name
@@ -266,7 +275,7 @@ class AetherraServiceRegistry:
             service = self.get_service(target_service)
             if not service:
                 logger.warning(
-                    f"⚠️ Cannot send message to unknown service '{target_service}'"
+                    f"[WARN] Cannot send message to unknown service '{target_service}'"
                 )
                 return False
 
@@ -278,18 +287,18 @@ class AetherraServiceRegistry:
                 await service.on_message(message_type, data)
                 return True
             else:
-                logger.warning(f"⚠️ Service '{target_service}' has no message handler")
+                logger.warning(f"[WARN] Service '{target_service}' has no message handler")
                 return False
 
         except Exception as e:
-            logger.error(f"❌ Failed to send message to '{target_service}': {e}")
+            logger.error(f"[ERROR] Failed to send message to '{target_service}': {e}")
             return False
 
     async def broadcast_message(
         self, message_type: str, data: Any, exclude: Optional[List[str]] = None
     ):
         """
-        📢 Broadcast a message to all services.
+        [BROADCAST] Broadcast a message to all services.
 
         Args:
             message_type: Type of message
@@ -305,11 +314,11 @@ class AetherraServiceRegistry:
             try:
                 await self.send_message(service_name, message_type, data)
             except Exception as e:
-                logger.error(f"❌ Failed to broadcast to '{service_name}': {e}")
+                logger.error(f"[ERROR] Failed to broadcast to '{service_name}': {e}")
 
     def subscribe_to_events(self, event_type: str, handler: Callable):
         """
-        🔔 Subscribe to registry events.
+        [SUBSCRIBE] Subscribe to registry events.
 
         Args:
             event_type: Event type to subscribe to
@@ -319,11 +328,11 @@ class AetherraServiceRegistry:
             self._event_handlers[event_type] = []
 
         self._event_handlers[event_type].append(handler)
-        logger.debug(f"🔔 Subscribed to event '{event_type}'")
+        logger.debug(f"[SUBSCRIBE] Subscribed to event '{event_type}'")
 
     def unsubscribe_from_events(self, event_type: str, handler: Callable):
         """
-        🔕 Unsubscribe from registry events.
+        [UNSUBSCRIBE] Unsubscribe from registry events.
 
         Args:
             event_type: Event type to unsubscribe from
@@ -332,12 +341,12 @@ class AetherraServiceRegistry:
         if event_type in self._event_handlers:
             try:
                 self._event_handlers[event_type].remove(handler)
-                logger.debug(f"🔕 Unsubscribed from event '{event_type}'")
+                logger.debug(f"[UNSUBSCRIBE] Unsubscribed from event '{event_type}'")
             except ValueError:
-                logger.warning(f"⚠️ Handler not found for event '{event_type}'")
+                logger.warning(f"[WARN] Handler not found for event '{event_type}'")
 
     async def _broadcast_event(self, event_type: str, event_data: Dict[str, Any]):
-        """📢 Broadcast an event to all subscribers."""
+        """[BROADCAST] Broadcast an event to all subscribers."""
         if event_type not in self._event_handlers:
             return
 
@@ -348,10 +357,10 @@ class AetherraServiceRegistry:
                 else:
                     handler(event_data)
             except Exception as e:
-                logger.error(f"❌ Event handler error for '{event_type}': {e}")
+                logger.error(f"[ERROR] Event handler error for '{event_type}': {e}")
 
     async def _heartbeat_monitor(self):
-        """💓 Monitor service heartbeats and health."""
+        """[MONITOR] Monitor service heartbeats and health."""
         while self._running:
             try:
                 current_time = datetime.now()
@@ -361,7 +370,7 @@ class AetherraServiceRegistry:
                     if (current_time - service_info.last_heartbeat).seconds > 300:
                         if service_info.status == ServiceStatus.HEALTHY:
                             logger.warning(
-                                f"⚠️ Service '{service_name}' heartbeat stale, marking as degraded"
+                                f"[WARN] Service '{service_name}' heartbeat stale, marking as degraded"
                             )
                             await self.update_service_status(
                                 service_name, ServiceStatus.DEGRADED
@@ -372,7 +381,7 @@ class AetherraServiceRegistry:
                         try:
                             if not service_info.instance.is_alive():
                                 logger.error(
-                                    f"❌ Service '{service_name}' is no longer alive, marking as failed"
+                                    f"[ERROR] Service '{service_name}' is no longer alive, marking as failed"
                                 )
                                 await self.update_service_status(
                                     service_name, ServiceStatus.FAILED
@@ -383,11 +392,11 @@ class AetherraServiceRegistry:
                 await asyncio.sleep(60)  # Check every minute
 
             except Exception as e:
-                logger.error(f"❌ Heartbeat monitor error: {e}")
+                logger.error(f"[ERROR] Heartbeat monitor error: {e}")
                 await asyncio.sleep(60)
 
     async def _check_dependencies(self):
-        """🔗 Check if service dependencies are satisfied."""
+        """[DEPS] Check if service dependencies are satisfied."""
         for service_name, service_info in self._services.items():
             if not service_info.dependencies:
                 continue
@@ -408,7 +417,7 @@ class AetherraServiceRegistry:
                 await self.update_service_status(service_name, ServiceStatus.DEGRADED)
 
     def get_registry_status(self) -> Dict[str, Any]:
-        """📊 Get overall registry status."""
+        """[STATUS] Get overall registry status."""
         service_count_by_status = {}
         for status in ServiceStatus:
             service_count_by_status[status.value] = len(
@@ -436,7 +445,7 @@ _service_registry: Optional[AetherraServiceRegistry] = None
 
 
 async def get_service_registry() -> AetherraServiceRegistry:
-    """🌐 Get the global service registry instance."""
+    """[GLOBAL] Get the global service registry instance."""
     global _service_registry
     if _service_registry is None:
         _service_registry = AetherraServiceRegistry()
@@ -445,19 +454,25 @@ async def get_service_registry() -> AetherraServiceRegistry:
 
 
 async def register_service(name: str, instance: Any, **kwargs) -> bool:
-    """📝 Register a service with the global registry."""
+    """[REGISTER] Register a service with the global registry."""
     registry = await get_service_registry()
     return await registry.register_service(name, instance, **kwargs)
 
 
 async def get_service(name: str) -> Optional[Any]:
-    """🔍 Get a service from the global registry."""
+    """[GET] Get a service from the global registry."""
     registry = await get_service_registry()
     return registry.get_service(name)
 
 
+async def update_heartbeat(name: str):
+    """[HEARTBEAT] Update service heartbeat in the global registry."""
+    registry = await get_service_registry()
+    await registry.update_heartbeat(name)
+
+
 async def shutdown_service_registry():
-    """🛑 Shutdown the global service registry."""
+    """[SHUTDOWN] Shutdown the global service registry."""
     global _service_registry
     if _service_registry:
         await _service_registry.stop()
@@ -497,6 +512,6 @@ if __name__ == "__main__":
         print(f"Registry status: {status}")
 
         await registry.stop()
-        print("✅ Service registry test completed")
+        print("[OK] Service registry test completed")
 
     asyncio.run(test_registry())

@@ -6,10 +6,10 @@ The user identified a critical missing feature where **Plugin discovery was not 
 
 ---
 
-## 🔧 **PROBLEM IDENTIFIED**
+## [TOOL] **PROBLEM IDENTIFIED**
 
 ```
-❌ Missing / To Fix:
+[ERROR] Missing / To Fix:
 - Plugin discovery not being passed back into Lyrixa or the GUI
 - intelligence_stack.plugins.list_plugins() isn't called from anywhere user-facing
 - No clear place where Lyrixa 'knows' what plugins are installed
@@ -86,7 +86,7 @@ class LyrixaPluginAwareChat:
 
 ## 🎯 **WHAT THIS ACCOMPLISHES**
 
-### **Before** ❌
+### **Before** [ERROR]
 - Plugin discovery systems existed but were isolated
 - Lyrixa had no awareness of available plugins
 - No way for Lyrixa to recommend relevant plugins

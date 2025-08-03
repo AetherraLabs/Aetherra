@@ -157,7 +157,7 @@ class MutationEngine:
             },
         }
 
-        print("🔧 Mutation Engine initialized")
+        print("[TOOL] Mutation Engine initialized")
         print(f"   📁 Work directory: {self.work_directory}")
         print(f"   💾 Backup directory: {self.backup_directory}")
         print(f"   📊 Validation level: {self.validation_level.value}")
@@ -228,7 +228,7 @@ class MutationEngine:
                 self._log_mutation(mutation, result)
                 print(f"✅ Applied mutation {mutation_id}")
             else:
-                print(f"❌ Failed to apply mutation {mutation_id}")
+                print(f"[ERROR] Failed to apply mutation {mutation_id}")
 
             return result
 
@@ -272,7 +272,7 @@ class MutationEngine:
                     total_score += 1.0
                     messages.append("✅ Syntax check passed")
                 else:
-                    messages.append("❌ Syntax check failed")
+                    messages.append("[ERROR] Syntax check failed")
                 max_score += 1.0
 
                 # Linting (if validation level allows)
@@ -287,7 +287,7 @@ class MutationEngine:
                         total_score += 1.0
                         messages.append("✅ Linting passed")
                     else:
-                        messages.append("⚠️ Linting issues found")
+                        messages.append("[WARN] Linting issues found")
                     max_score += 1.0
 
                 # Testing (if validation level allows)
@@ -301,7 +301,7 @@ class MutationEngine:
                         total_score += 1.0
                         messages.append("✅ Tests passed")
                     else:
-                        messages.append("❌ Tests failed")
+                        messages.append("[ERROR] Tests failed")
                     max_score += 1.0
 
                 # Security analysis (paranoid level)
@@ -314,7 +314,7 @@ class MutationEngine:
                         total_score += 1.0
                         messages.append("✅ Security check passed")
                     else:
-                        messages.append("⚠️ Security concerns found")
+                        messages.append("[WARN] Security concerns found")
                     max_score += 1.0
 
             # Calculate final score
@@ -338,7 +338,7 @@ class MutationEngine:
             return result
 
         except Exception as e:
-            print(f"❌ Validation error for {mutation_id}: {str(e)}")
+            print(f"[ERROR] Validation error for {mutation_id}: {str(e)}")
             return ValidationResult(
                 passed=False, score=0.0, messages=[f"Validation error: {str(e)}"]
             )
@@ -430,7 +430,7 @@ class MutationEngine:
         )
 
         self._log_mutation(mutation, result)
-        print(f"❌ Rejected mutation {mutation_id}: {reason}")
+        print(f"[ERROR] Rejected mutation {mutation_id}: {reason}")
         return result
 
     def get_mutation_status(self, mutation_id: str) -> Optional[Dict[str, Any]]:
@@ -756,7 +756,7 @@ class MutationEngine:
                 f.write(json.dumps(log_entry) + "\n")
 
         except Exception as e:
-            print(f"⚠️ Failed to log mutation: {str(e)}")
+            print(f"[WARN] Failed to log mutation: {str(e)}")
 
 
 # Convenience functions for common operations

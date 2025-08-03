@@ -98,7 +98,7 @@ def test_launcher_compatibility():
             print("✅ Launcher compatibility test PASSED")
             return True
         else:
-            print("⚠️ Launcher file not found, skipping compatibility test")
+            print("[WARN] Launcher file not found, skipping compatibility test")
             return True
 
     except Exception as e:

@@ -156,9 +156,9 @@ class PluginRewriter:
                         f"✅ Refactor successful. Original backed up to: {backup_path}"
                     )
                 else:
-                    return "❌ Failed to save refactored plugin."
+                    return "[ERROR] Failed to save refactored plugin."
             else:
-                return "❌ Refactored code contains syntax errors. Original code preserved."
+                return "[ERROR] Refactored code contains syntax errors. Original code preserved."
 
         except Exception as e:
             error_msg = f"Failed to refactor plugin '{plugin_name}': {str(e)}"
@@ -217,10 +217,10 @@ class PluginRewriter:
                     )
                     return f"✅ Logging added successfully. Original backed up to: {backup_path}"
                 else:
-                    return "❌ Failed to save plugin with logging."
+                    return "[ERROR] Failed to save plugin with logging."
             else:
                 return (
-                    "❌ Modified code contains syntax errors. Original code preserved."
+                    "[ERROR] Modified code contains syntax errors. Original code preserved."
                 )
 
         except Exception as e:
@@ -243,7 +243,7 @@ class PluginRewriter:
             backup_path = os.path.join(self.history_dir, f"{plugin_name}_{version}.bak")
 
             if not os.path.exists(backup_path):
-                return f"❌ Version {version} not found for plugin {plugin_name}"
+                return f"[ERROR] Version {version} not found for plugin {plugin_name}"
 
             plugin_path = self._get_plugin_path(plugin_name)
 
@@ -266,7 +266,7 @@ class PluginRewriter:
                 )
                 return f"✅ Successfully rolled back {plugin_name} to version {version}"
             else:
-                return "❌ Failed to rollback plugin"
+                return "[ERROR] Failed to rollback plugin"
 
         except Exception as e:
             error_msg = f"Failed to rollback plugin '{plugin_name}': {str(e)}"
@@ -304,9 +304,9 @@ class PluginRewriter:
             path_b = os.path.join(self.history_dir, f"{plugin_name}_{version_b}.bak")
 
             if not os.path.exists(path_a):
-                return f"❌ Version {version_a} not found for plugin {plugin_name}"
+                return f"[ERROR] Version {version_a} not found for plugin {plugin_name}"
             if not os.path.exists(path_b):
-                return f"❌ Version {version_b} not found for plugin {plugin_name}"
+                return f"[ERROR] Version {version_b} not found for plugin {plugin_name}"
 
             with (
                 open(path_a, "r", encoding="utf-8") as f1,

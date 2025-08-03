@@ -26,7 +26,7 @@ def test_dark_theme():
         print(f"   - Text color: White (#ffffff)")
         memory_core.show()
     except Exception as e:
-        print(f"❌ Memory Core: Error - {e}")
+        print(f"[ERROR] Memory Core: Error - {e}")
 
     print("\n🧪 Testing World-Class Goal Tracker Dark Theme...")
     try:
@@ -37,7 +37,7 @@ def test_dark_theme():
         print(f"   - Text color: White (#ffffff)")
         goal_tracker.show()
     except Exception as e:
-        print(f"❌ Goal Tracker: Error - {e}")
+        print(f"[ERROR] Goal Tracker: Error - {e}")
 
     print("\n🎨 Dark Theme Integration Summary:")
     print("=" * 50)

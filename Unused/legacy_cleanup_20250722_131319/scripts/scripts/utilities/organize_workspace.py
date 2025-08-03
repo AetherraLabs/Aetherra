@@ -13,7 +13,7 @@ from pathlib import Path
 
 # Get the workspace root directory
 WORKSPACE_ROOT = Path(r"c:\Users\enigm\Desktop\New aetherra Language")
-print(f"🔧 Organizing aetherra workspace: {WORKSPACE_ROOT}")
+print(f"[TOOL] Organizing aetherra workspace: {WORKSPACE_ROOT}")
 
 
 def create_directory_if_not_exists(path):
@@ -108,7 +108,7 @@ def main():
         move_file_if_exists(WORKSPACE_ROOT / launcher, launchers_dir / launcher)
 
     # 3. Move script files
-    print("\n🔧 Organizing scripts...")
+    print("\n[TOOL] Organizing scripts...")
     scripts_dir = WORKSPACE_ROOT / "scripts"
     create_directory_if_not_exists(scripts_dir / "setup")
     create_directory_if_not_exists(scripts_dir / "tools")
@@ -304,7 +304,7 @@ def main():
     print("📊 Organized files into:")
     print("   📚 docs/")
     print("   🚀 launchers/")
-    print("   🔧 scripts/")
+    print("   [TOOL] scripts/")
     print("   🧪 tests/")
     print("   🎯 examples/")
     print("   💾 data/")

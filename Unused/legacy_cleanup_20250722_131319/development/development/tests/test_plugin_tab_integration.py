@@ -18,7 +18,7 @@ def test_plugin_tab_methods():
         from lyrixa.gui.hybrid_window import LyrixaWindow
 
         # Create a window instance (without showing)
-        print("🔧 Creating LyrixaWindow instance...")
+        print("[TOOL] Creating LyrixaWindow instance...")
         window = LyrixaWindow()
 
         # Test plugin tab methods exist
@@ -57,10 +57,10 @@ def test_plugin_tab_methods():
         return True
 
     except ImportError as e:
-        print(f"❌ Import error: {e}")
+        print(f"[ERROR] Import error: {e}")
         return False
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         return False
 
 
@@ -86,7 +86,7 @@ def test_file_imports():
         return True
 
     except ImportError as e:
-        print(f"❌ Import error: {e}")
+        print(f"[ERROR] Import error: {e}")
         return False
 
 
@@ -110,6 +110,6 @@ if __name__ == "__main__":
     if success:
         print("🎉 ALL TESTS PASSED - Plugin tab integration successful!")
     else:
-        print("❌ SOME TESTS FAILED - Check the output above")
+        print("[ERROR] SOME TESTS FAILED - Check the output above")
 
     sys.exit(0 if success else 1)

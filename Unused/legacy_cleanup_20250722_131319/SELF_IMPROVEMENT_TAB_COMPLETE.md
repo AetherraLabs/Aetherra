@@ -12,7 +12,7 @@ The **Self-Improvement Tab** functionality has been **successfully integrated** 
 - **Intelligent Output**: Simulated self-analysis with meaningful feedback
 - **Ready for Integration**: Prepared for self_introspector.aether module connection
 
-### 🔧 **Technical Implementation**
+### [TOOL] **Technical Implementation**
 - **`create_self_improvement_tab()` method**: Creates the complete self-improvement interface
 - **`self.improvement_log` widget**: QTextEdit for displaying reflection logs
 - **`run_self_reflection()` method**: Handles self-reflection trigger and output
@@ -120,7 +120,7 @@ The Lyrixa Hybrid UI now features:
 - **🔗 Full Launcher Compatibility** maintained
 - **🚀 Production-Ready Interface** for immediate use
 
-## 🔧 **Technical Details**
+## [TOOL] **Technical Details**
 
 ### **Self-Improvement Components**
 - **QTextEdit log display**: Live reflection output

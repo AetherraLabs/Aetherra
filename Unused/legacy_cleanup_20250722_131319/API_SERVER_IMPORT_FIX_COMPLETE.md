@@ -1,4 +1,4 @@
-# 🔧 **API Server Import Fix - COMPLETE!**
+# [TOOL] **API Server Import Fix - COMPLETE!**
 
 ## ✅ **Problem SOLVED!**
 
@@ -8,7 +8,7 @@
 
 ---
 
-## 🔧 **What Was Fixed**
+## [TOOL] **What Was Fixed**
 
 ### **Root Cause:**
 The `self_improvement_dashboard_api.py` file had import path issues because:
@@ -40,7 +40,7 @@ if enhanced_server_path.exists():
 try:
     from Aetherra.lyrixa.core.advanced_plugins import LyrixaAdvancedPluginManager
 except ImportError:
-    print("⚠️ LyrixaAdvancedPluginManager not available - using fallback")
+    print("[WARN] LyrixaAdvancedPluginManager not available - using fallback")
     LyrixaAdvancedPluginManager = None
 ```
 
@@ -190,7 +190,7 @@ For the best experience, use the **Enhanced API Server** approach:
 - [x] **Provide working API** → Enhanced server with full feature set
 
 ### ✅ **What You Get:**
-- **🔧 Fixed Imports**: No more "ModuleNotFoundError: No module named 'Aetherra'"
+- **[TOOL] Fixed Imports**: No more "ModuleNotFoundError: No module named 'Aetherra'"
 - **🚀 Multiple Start Options**: Three different ways to start the API server
 - **📱 Full Feature Set**: Complete plugin intelligence and meta-reasoning APIs
 - **🛡️ Robust Handling**: Graceful fallbacks and clear error messages

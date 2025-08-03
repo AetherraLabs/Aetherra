@@ -289,7 +289,7 @@ except ImportError:
     try:
         from ...stdlib import stdlib_manager
     except ImportError:
-        print("⚠️ Standard library manager not available")
+        print("[WARN] Standard library manager not available")
         stdlib_manager = None
 
 
@@ -329,7 +329,7 @@ class AetherraInterpreter:
         # Standard library manager
         self.stdlib = stdlib_manager
         if self.stdlib is None:
-            print("⚠️ Standard library not available, using basic functionality")
+            print("[WARN] Standard library not available, using basic functionality")
 
         # Create backup directory if it doesn't exist
         if not os.path.exists(self.backup_dir):
@@ -527,7 +527,7 @@ class AetherraInterpreter:
                     plugin_result = f"Plugin '{plugin_name}' not found"
 
                 response = "🔌 Enhanced Plugin Execution\n"
-                response += f"   📦 Plugin: {plugin_name}\n"
+                response += f"   [DISC] Plugin: {plugin_name}\n"
                 if params:
                     response += f"   ⚙️ Parameters: {params}\n"
                 response += f"   📤 Result: {plugin_result}"
@@ -689,7 +689,7 @@ class AetherraInterpreter:
                         f"🤖 [Fix Suggestion] {fix_suggestion.get('fix', 'No fix available')}"
                     )
                     print(f"📊 Confidence: {fix_suggestion.get('confidence', 0)}%")
-                    print(f"⚠️ Risk: {fix_suggestion.get('risk', 'unknown')}")
+                    print(f"[WARN] Risk: {fix_suggestion.get('risk', 'unknown')}")
                     self._last_fix_suggestion = fix_suggestion
                 else:
                     print("❌ No matching error found in history")
@@ -1492,7 +1492,7 @@ Answer this: {query}"""
         if stripped_line.startswith("define "):
             self.block_type = "function"
             func_name = self._extract_function_name(line)
-            return f"🔧 Started function definition: {func_name}\n   📝 Enter function body, use 'end' to complete"
+            return f"[TOOL] Started function definition: {func_name}\n   📝 Enter function body, use 'end' to complete"
 
         elif stripped_line.startswith("agent:"):
             self.block_type = "agent"
@@ -1524,7 +1524,7 @@ Answer this: {query}"""
 
         else:
             self.block_type = "generic"
-            return "📦 Started generic block\n   📋 Enter statements, use 'end' to complete"
+            return "[DISC] Started generic block\n   📋 Enter statements, use 'end' to complete"
 
     def _extract_function_name(self, line):
         """Extract function name from definition line"""
@@ -1612,9 +1612,9 @@ Answer this: {query}"""
 
         self._reset_block_state()
 
-        response = "🔧 Function Definition Complete\n"
+        response = "[TOOL] Function Definition Complete\n"
         response += f"   📝 Function: {func_name}\n"
-        response += f"   🔧 Parameters: {params if params else 'none'}\n"
+        response += f"   [TOOL] Parameters: {params if params else 'none'}\n"
         response += f"   📄 Body: {len(body)} statements\n"
         response += f"   ✅ Ready to call with: call {func_name}({', '.join(['arg'] * len(params))})"
 

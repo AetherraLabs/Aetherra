@@ -144,7 +144,7 @@ class MemoryPerformanceBenchmark:
 
     async def initialize_systems(self):
         """Initialize memory engine and related systems"""
-        logger.info("🔧 Initializing memory systems for benchmarking...")
+        logger.info("[TOOL] Initializing memory systems for benchmarking...")
 
         try:
             # Initialize memory engine
@@ -161,7 +161,7 @@ class MemoryPerformanceBenchmark:
             logger.info("✅ Plugin router initialized")
 
         except Exception as e:
-            logger.error(f"❌ Failed to initialize systems: {e}")
+            logger.error(f"[ERROR] Failed to initialize systems: {e}")
             raise
 
     async def benchmark_memory_storage(self, iterations: int = 50) -> BenchmarkResult:
@@ -588,7 +588,7 @@ class MemoryPerformanceBenchmark:
             return report
 
         except Exception as e:
-            logger.error(f"❌ Benchmark failed: {e}")
+            logger.error(f"[ERROR] Benchmark failed: {e}")
             raise
 
     def _generate_comprehensive_report(self) -> Dict[str, Any]:
@@ -653,7 +653,7 @@ class MemoryPerformanceBenchmark:
             logger.info(f"📊 Benchmark results saved to: {results_file}")
 
         except Exception as e:
-            logger.error(f"❌ Failed to save benchmark results: {e}")
+            logger.error(f"[ERROR] Failed to save benchmark results: {e}")
 
     def print_summary_report(self, report: Dict[str, Any]):
         """Print formatted summary report"""
@@ -675,14 +675,14 @@ class MemoryPerformanceBenchmark:
         if summary["all_tests_passed"]:
             print("\\n🎉 OVERALL RESULT: ✅ PASSED - All performance targets met!")
         else:
-            print("\\n⚠️  OVERALL RESULT: ❌ FAILED - Some performance targets missed")
+            print("\\n[WARN]  OVERALL RESULT: [ERROR] FAILED - Some performance targets missed")
 
         print("\\n" + "-" * 70)
         print("📋 INDIVIDUAL TEST RESULTS")
         print("-" * 70)
 
         for test_name, result in results.items():
-            status = "✅ PASS" if result["passed"] else "❌ FAIL"
+            status = "✅ PASS" if result["passed"] else "[ERROR] FAIL"
             print(f"{test_name:<30} {status}")
             print(
                 f"  Mean: {result['mean_ms']:>8.2f}ms | P95: {result['p95_ms']:>8.2f}ms | Success: {result['success_rate'] * 100:>5.1f}%"
@@ -711,10 +711,10 @@ async def main():
             print("\\n🎪 PHASE 1.3 INTEGRATION TASKS: 100% COMPLETE!")
             print("🚀 All performance targets met - Ready for Phase 2!")
         else:
-            print("\\n⚠️  Performance optimization needed before Phase 2")
+            print("\\n[WARN]  Performance optimization needed before Phase 2")
 
     except Exception as e:
-        print(f"\\n❌ Benchmark execution failed: {e}")
+        print(f"\\n[ERROR] Benchmark execution failed: {e}")
         sys.exit(1)
 
 
@@ -740,10 +740,10 @@ def update_roadmap_performance_validation():
 
             logger.info("✅ Roadmap performance validation marked complete")
         else:
-            logger.warning("⚠️ Roadmap file not found, skipping update")
+            logger.warning("[WARN] Roadmap file not found, skipping update")
 
     except Exception as e:
-        logger.error(f"❌ Failed to update roadmap: {e}")
+        logger.error(f"[ERROR] Failed to update roadmap: {e}")
 
 
 if __name__ == "__main__":

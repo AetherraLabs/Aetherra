@@ -26,7 +26,7 @@
   - Handler registration system
   - Routing statistics and analytics
 
-## 🔧 **Technical Implementation Details:**
+## [TOOL] **Technical Implementation Details:**
 
 ### **Idle Reflection System:**
 ```python
@@ -64,8 +64,8 @@ print(f"Handler: {result['routing_result'].handler}")
 From the test output, we can see:
 - 🎯 Chat Router successfully initializes and processes messages
 - 🧠 Idle Reflection system starts and tracks reflection cycles
-- 🔧 Both systems detect and use available Aetherra engines
-- ⚠️ Graceful fallback when engines are not available
+- [TOOL] Both systems detect and use available Aetherra engines
+- [WARN] Graceful fallback when engines are not available
 - 📈 Systems are ready for production use in Lyrixa
 
 ## 🚀 **Next Steps:**

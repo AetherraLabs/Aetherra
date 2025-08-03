@@ -722,4 +722,4 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"❌ Import test failed: {e}")
     else:
-        print("📦 No archives found for testing")
+        print("[DISC] No archives found for testing")

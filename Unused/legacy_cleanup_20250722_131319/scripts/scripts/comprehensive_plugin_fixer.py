@@ -37,7 +37,7 @@ class ComprehensivePluginFixer:
 
     def fix_all_plugins(self):
         """Fix all plugins in the specified directories."""
-        print("🔧 COMPREHENSIVE PLUGIN FIXER")
+        print("[TOOL] COMPREHENSIVE PLUGIN FIXER")
         print("=" * 50)
 
         total_fixed = 0
@@ -107,7 +107,7 @@ class ComprehensivePluginFixer:
                 return True
 
         except Exception as e:
-            print(f"   ⚠️ Error fixing {file_path}: {e}")
+            print(f"   [WARN] Error fixing {file_path}: {e}")
 
         return False
 

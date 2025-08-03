@@ -14,7 +14,7 @@ Thank you for your interest in contributing to Aetherra, the world's first AI-na
 - Describe the cognitive programming pattern you'd like to see
 - Explain how it would improve AI-native development
 
-### 🔧 Code Contributions
+### [TOOL] Code Contributions
 
 #### Setting Up Development Environment
 ```bash

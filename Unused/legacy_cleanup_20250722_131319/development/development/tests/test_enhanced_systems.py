@@ -25,7 +25,7 @@ def test_idle_reflection():
         # Test status
         status = reflection_system.get_reflection_status()
         print(f"📊 System status: {status['is_running']}")
-        print(f"🔧 Has Aetherra engines: {status['has_aetherra_engines']}")
+        print(f"[TOOL] Has Aetherra engines: {status['has_aetherra_engines']}")
 
         # Test starting the system
         reflection_system.start()
@@ -43,7 +43,7 @@ def test_idle_reflection():
         return True
 
     except Exception as e:
-        print(f"❌ Idle Reflection System test failed: {e}")
+        print(f"[ERROR] Idle Reflection System test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -62,7 +62,7 @@ async def test_chat_router():
         # Test status
         status = router.get_router_status()
         print(f"📊 Router status: {status['routes_count']} routes, {status['handlers_count']} handlers")
-        print(f"🔧 Has Aetherra engines: {status['has_aetherra_engines']}")
+        print(f"[TOOL] Has Aetherra engines: {status['has_aetherra_engines']}")
 
         # Test message processing
         test_messages = [
@@ -82,7 +82,7 @@ async def test_chat_router():
         return True
 
     except Exception as e:
-        print(f"❌ Chat Router System test failed: {e}")
+        print(f"[ERROR] Chat Router System test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -116,7 +116,7 @@ async def test_integration():
         return True
 
     except Exception as e:
-        print(f"❌ System Integration test failed: {e}")
+        print(f"[ERROR] System Integration test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -138,18 +138,18 @@ def main():
     # Summary
     print("\n" + "=" * 60)
     print("📊 Test Summary:")
-    print(f"🧠 Idle Reflection: {'✅ PASS' if reflection_test else '❌ FAIL'}")
-    print(f"🎯 Chat Router: {'✅ PASS' if router_test else '❌ FAIL'}")
-    print(f"🔗 Integration: {'✅ PASS' if integration_test else '❌ FAIL'}")
+    print(f"🧠 Idle Reflection: {'✅ PASS' if reflection_test else '[ERROR] FAIL'}")
+    print(f"🎯 Chat Router: {'✅ PASS' if router_test else '[ERROR] FAIL'}")
+    print(f"🔗 Integration: {'✅ PASS' if integration_test else '[ERROR] FAIL'}")
 
     overall_success = reflection_test and router_test and integration_test
-    print(f"\n🎉 Overall Result: {'✅ ALL TESTS PASSED' if overall_success else '❌ SOME TESTS FAILED'}")
+    print(f"\n🎉 Overall Result: {'✅ ALL TESTS PASSED' if overall_success else '[ERROR] SOME TESTS FAILED'}")
 
     if overall_success:
         print("\n✨ Both idle_reflection.py and chat_router.py are successfully implemented!")
         print("🎯 The systems are ready for integration with Lyrixa!")
     else:
-        print("\n⚠️ Some issues detected - please review the error messages above.")
+        print("\n[WARN] Some issues detected - please review the error messages above.")
 
 if __name__ == "__main__":
     main()

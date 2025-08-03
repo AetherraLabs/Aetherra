@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧 LYRIXA INTELLIGENT ERROR HANDLING SYSTEM (#8)
+[TOOL] LYRIXA INTELLIGENT ERROR HANDLING SYSTEM (#8)
 ================================================
 
 Advanced error handling and self-correction system with AI-powered diagnosis,
@@ -8,7 +8,7 @@ automatic fixes, and learning from patterns for Aetherra AI OS.
 
 ROADMAP ITEM #8: Intelligent Error Handling
 - Self-Correction Logic for Plugin Errors
-- Real-time Plugin Execution Monitoring  
+- Real-time Plugin Execution Monitoring
 - AI-powered Error Diagnosis and Fix Suggestions
 - Auto-application of Corrections with User Confirmation
 - Learning from Correction Patterns to Prevent Future Errors
@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 class ErrorSeverity(Enum):
     """Error severity levels for intelligent prioritization"""
     CRITICAL = "critical"       # System-breaking errors
-    HIGH = "high"              # Feature-breaking errors  
+    HIGH = "high"              # Feature-breaking errors
     MEDIUM = "medium"          # Performance issues
     LOW = "low"                # Minor issues
     INFO = "info"              # Informational warnings
@@ -121,8 +121,8 @@ class ErrorPattern:
 
 class LyrixaIntelligentErrorHandler:
     """
-    🔧 Intelligent Error Handling System - Roadmap Item #8
-    
+    [TOOL] Intelligent Error Handling System - Roadmap Item #8
+
     Advanced error handling with AI-powered diagnosis, automatic fixes,
     and learning from correction patterns for self-improvement.
     """
@@ -131,13 +131,13 @@ class LyrixaIntelligentErrorHandler:
         # Core systems integration
         self.conversation_manager = conversation_manager or self._create_fallback_conversation_manager()
         self.analytics_engine = analytics_engine
-        
+
         # Error tracking and analysis
         self.active_errors = {}  # error_id -> ErrorContext
         self.error_history = []  # Historical error records
         self.error_patterns = {}  # pattern_id -> ErrorPattern
         self.correction_actions = {}  # action_id -> CorrectionAction
-        
+
         # Configuration
         self.auto_correction_enabled = True
         self.learning_enabled = True
@@ -145,20 +145,20 @@ class LyrixaIntelligentErrorHandler:
         self.pattern_detection_threshold = 3
         self.confidence_threshold_auto_fix = 0.8
         self.confidence_threshold_suggest = 0.6
-        
+
         # Performance tracking
         self.total_errors_handled = 0
         self.successful_auto_corrections = 0
         self.successful_suggestions = 0
         self.pattern_matches = 0
-        
+
         # Error diagnosis patterns
         self.error_diagnosis_patterns = self._initialize_diagnosis_patterns()
-        
+
         # Correction strategies registry
         self.correction_strategies = self._initialize_correction_strategies()
-        
-        logger.info("🔧 Intelligent Error Handler (#8) initialized with AI-powered self-correction")
+
+        logger.info("[TOOL] Intelligent Error Handler (#8) initialized with AI-powered self-correction")
 
     def _create_fallback_conversation_manager(self):
         """Create fallback conversation manager if enhanced version not available"""
@@ -241,8 +241,8 @@ class LyrixaIntelligentErrorHandler:
         }
 
     async def handle_error(
-        self, 
-        error: Exception, 
+        self,
+        error: Exception,
         context: Optional[Dict[str, Any]] = None,
         user_id: str = "system"
     ) -> Dict[str, Any]:
@@ -252,32 +252,32 @@ class LyrixaIntelligentErrorHandler:
         try:
             # Create error context
             error_context = await self._create_error_context(error, context)
-            
+
             # Classify and diagnose error
             diagnosis = await self._diagnose_error(error_context)
-            
+
             # Check for existing patterns
             pattern_match = await self._check_error_patterns(error_context)
-            
+
             # Generate correction strategies
             correction_strategies = await self._generate_correction_strategies(
                 error_context, diagnosis, pattern_match
             )
-            
+
             # Apply corrections based on confidence and settings
             correction_result = await self._apply_corrections(
                 error_context, correction_strategies, user_id
             )
-            
+
             # Learn from the handling experience
             await self._learn_from_error(error_context, correction_result)
-            
+
             # Update analytics
             await self._update_error_analytics(error_context, correction_result)
-            
+
             # Communicate with user through enhanced conversation system
             await self._communicate_error_handling(error_context, correction_result, user_id)
-            
+
             return {
                 "error_id": error_context.error_id,
                 "handled": True,
@@ -287,7 +287,7 @@ class LyrixaIntelligentErrorHandler:
                 "confidence": correction_result.get("confidence", 0.0),
                 "timestamp": error_context.timestamp.isoformat()
             }
-            
+
         except Exception as handler_error:
             logger.error(f"Error in error handler: {handler_error}")
             return {
@@ -302,7 +302,7 @@ class LyrixaIntelligentErrorHandler:
         self, error: Exception, context: Optional[Dict[str, Any]] = None
     ) -> ErrorContext:
         """Create rich error context for analysis"""
-        
+
         # Extract stack trace information
         tb = traceback.extract_tb(error.__traceback__)
         if tb:
@@ -314,10 +314,10 @@ class LyrixaIntelligentErrorHandler:
             source_file = "unknown"
             line_number = 0
             source_function = "unknown"
-        
+
         # Generate unique error ID
         error_id = f"error_{int(time.time())}_{hash(str(error)) % 10000}"
-        
+
         # Get system state
         system_state = {
             "memory_usage": self._get_memory_usage(),
@@ -326,7 +326,7 @@ class LyrixaIntelligentErrorHandler:
             "python_version": sys.version,
             "platform": sys.platform
         }
-        
+
         # Create error context
         error_context = ErrorContext(
             error_id=error_id,
@@ -342,16 +342,16 @@ class LyrixaIntelligentErrorHandler:
             system_state=system_state,
             previous_errors=[ctx.error_id for ctx in self.active_errors.values()]
         )
-        
+
         # Store in active errors
         self.active_errors[error_id] = error_context
         self.total_errors_handled += 1
-        
+
         return error_context
 
     async def _diagnose_error(self, error_context: ErrorContext) -> Dict[str, Any]:
         """AI-powered error diagnosis using pattern matching"""
-        
+
         error_text = f"{error_context.error_message}\n{error_context.stack_trace}"
         diagnosis = {
             "category": ErrorCategory.UNKNOWN_ERROR,
@@ -360,7 +360,7 @@ class LyrixaIntelligentErrorHandler:
             "matched_patterns": [],
             "suggested_fixes": []
         }
-        
+
         # Pattern matching against known error types
         for pattern_name, pattern_info in self.error_diagnosis_patterns.items():
             for pattern in pattern_info["patterns"]:
@@ -371,17 +371,17 @@ class LyrixaIntelligentErrorHandler:
                     diagnosis["matched_patterns"].append(pattern_name)
                     diagnosis["suggested_fixes"].extend(pattern_info["common_fixes"])
                     break
-        
+
         # Update error context with diagnosis
         error_context.category = diagnosis["category"]
         error_context.severity = diagnosis["severity"]
-        
+
         # Advanced AI diagnosis if OpenAI available
         if os.getenv("OPENAI_API_KEY") and diagnosis["confidence"] < 0.7:
             ai_diagnosis = await self._get_ai_diagnosis(error_context)
             if ai_diagnosis:
                 diagnosis.update(ai_diagnosis)
-        
+
         return diagnosis
 
     async def _get_ai_diagnosis(self, error_context: ErrorContext) -> Optional[Dict[str, Any]]:
@@ -389,7 +389,7 @@ class LyrixaIntelligentErrorHandler:
         try:
             import openai
             client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-            
+
             diagnosis_prompt = f"""
 Analyze this Python error and provide diagnosis:
 
@@ -413,7 +413,7 @@ Please provide:
 
 Respond in JSON format.
 """
-            
+
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
@@ -423,22 +423,22 @@ Respond in JSON format.
                 max_tokens=500,
                 temperature=0.1
             )
-            
+
             ai_response = response.choices[0].message.content
             if ai_response:
                 return json.loads(ai_response)
             else:
                 return None
-            
+
         except Exception as e:
             logger.warning(f"AI diagnosis failed: {e}")
             return None
 
     async def _check_error_patterns(self, error_context: ErrorContext) -> Optional[ErrorPattern]:
         """Check if this error matches any learned patterns"""
-        
+
         error_signature = self._create_error_signature(error_context)
-        
+
         # Look for exact matches
         if error_signature in self.error_patterns:
             pattern = self.error_patterns[error_signature]
@@ -446,13 +446,13 @@ Respond in JSON format.
             pattern.last_seen = datetime.now()
             self.pattern_matches += 1
             return pattern
-        
+
         # Look for similar patterns
         for pattern_id, pattern in self.error_patterns.items():
             similarity = self._calculate_pattern_similarity(error_signature, pattern.error_signature)
             if similarity > 0.8:  # High similarity threshold
                 return pattern
-        
+
         return None
 
     def _create_error_signature(self, error_context: ErrorContext) -> str:
@@ -461,7 +461,7 @@ Respond in JSON format.
         normalized_error = re.sub(r'\d+', 'N', error_context.error_message)  # Replace numbers
         normalized_error = re.sub(r"'[^']*'", "'STR'", normalized_error)     # Replace strings
         normalized_error = re.sub(r'"[^"]*"', '"STR"', normalized_error)     # Replace strings
-        
+
         return f"{error_context.category.value}:{error_context.source_function}:{normalized_error}"
 
     def _calculate_pattern_similarity(self, sig1: str, sig2: str) -> float:
@@ -469,22 +469,22 @@ Respond in JSON format.
         # Simple Jaccard similarity for now - can be enhanced with ML
         words1 = set(sig1.split())
         words2 = set(sig2.split())
-        
+
         intersection = words1.intersection(words2)
         union = words1.union(words2)
-        
+
         return len(intersection) / len(union) if union else 0.0
 
     async def _generate_correction_strategies(
-        self, 
-        error_context: ErrorContext, 
+        self,
+        error_context: ErrorContext,
         diagnosis: Dict[str, Any],
         pattern_match: Optional[ErrorPattern]
     ) -> List[CorrectionAction]:
         """Generate intelligent correction strategies"""
-        
+
         strategies = []
-        
+
         # Use successful strategies from pattern match
         if pattern_match and pattern_match.successful_corrections:
             for correction in pattern_match.successful_corrections:
@@ -498,7 +498,7 @@ Respond in JSON format.
                         estimated_impact="Based on successful pattern match",
                         user_approval_required=pattern_match.success_rate < 0.9
                     ))
-        
+
         # Generate strategies from diagnosis
         for fix_name in diagnosis.get("suggested_fixes", []):
             if fix_name in self.correction_strategies:
@@ -511,7 +511,7 @@ Respond in JSON format.
                     estimated_impact="Based on error diagnosis",
                     user_approval_required=True
                 ))
-        
+
         # Default fallback strategies
         if not strategies:
             strategies.extend([
@@ -534,20 +534,20 @@ Respond in JSON format.
                     user_approval_required=False
                 )
             ])
-        
+
         # Sort by confidence
         strategies.sort(key=lambda x: x.confidence, reverse=True)
-        
+
         return strategies
 
     async def _apply_corrections(
-        self, 
-        error_context: ErrorContext, 
+        self,
+        error_context: ErrorContext,
         strategies: List[CorrectionAction],
         user_id: str
     ) -> Dict[str, Any]:
         """Apply correction strategies based on confidence and settings"""
-        
+
         result = {
             "corrected": False,
             "strategy": None,
@@ -555,7 +555,7 @@ Respond in JSON format.
             "user_message": "No corrections applied",
             "attempts": []
         }
-        
+
         for strategy in strategies:
             # Check if we should auto-apply
             should_auto_apply = (
@@ -563,18 +563,18 @@ Respond in JSON format.
                 not strategy.user_approval_required and
                 strategy.confidence >= self.confidence_threshold_auto_fix
             )
-            
+
             # Check if we should suggest to user
             should_suggest = (
                 strategy.confidence >= self.confidence_threshold_suggest and
                 strategy.user_approval_required
             )
-            
+
             if should_auto_apply:
                 try:
                     # Apply the correction
                     correction_result = await strategy.implementation(error_context)
-                    
+
                     if correction_result.get("success", False):
                         result.update({
                             "corrected": True,
@@ -591,7 +591,7 @@ Respond in JSON format.
                             "success": False,
                             "message": correction_result.get("message", "Failed")
                         })
-                        
+
                 except Exception as e:
                     logger.error(f"Correction strategy failed: {e}")
                     result["attempts"].append({
@@ -599,7 +599,7 @@ Respond in JSON format.
                         "success": False,
                         "error": str(e)
                     })
-            
+
             elif should_suggest:
                 # Suggest the correction to the user
                 await self._suggest_correction_to_user(strategy, error_context, user_id)
@@ -610,22 +610,22 @@ Respond in JSON format.
                 })
                 self.successful_suggestions += 1
                 break
-        
+
         # Update error context
         error_context.correction_attempts += 1
-        
+
         return result
 
     async def _suggest_correction_to_user(
-        self, 
-        strategy: CorrectionAction, 
+        self,
+        strategy: CorrectionAction,
         error_context: ErrorContext,
         user_id: str
     ):
         """Suggest correction to user through conversation system"""
-        
+
         suggestion_message = f"""
-🔧 **Intelligent Error Handler - Correction Suggestion**
+[TOOL] **Intelligent Error Handler - Correction Suggestion**
 
 **Error**: {error_context.error_message}
 **Source**: {error_context.source_function} in {error_context.source_file}:{error_context.line_number}
@@ -638,7 +638,7 @@ Respond in JSON format.
 
 Would you like me to apply this correction? Reply with 'yes' to proceed or 'no' to skip.
 """
-        
+
         await self.conversation_manager.process_enhanced_message(
             message=suggestion_message,
             user_id=user_id,
@@ -650,17 +650,17 @@ Would you like me to apply this correction? Reply with 'yes' to proceed or 'no' 
         )
 
     async def _learn_from_error(
-        self, 
-        error_context: ErrorContext, 
+        self,
+        error_context: ErrorContext,
         correction_result: Dict[str, Any]
     ):
         """Learn from error handling experience to improve future responses"""
-        
+
         if not self.learning_enabled:
             return
-        
+
         error_signature = self._create_error_signature(error_context)
-        
+
         # Update or create error pattern
         if error_signature not in self.error_patterns:
             self.error_patterns[error_signature] = ErrorPattern(
@@ -671,9 +671,9 @@ Would you like me to apply this correction? Reply with 'yes' to proceed or 'no' 
                 failed_corrections=[],
                 last_seen=datetime.now()
             )
-        
+
         pattern = self.error_patterns[error_signature]
-        
+
         # Record correction success/failure
         if correction_result.get("corrected", False):
             strategy = correction_result.get("strategy")
@@ -685,22 +685,22 @@ Would you like me to apply this correction? Reply with 'yes' to proceed or 'no' 
                     strategy = attempt.get("strategy")
                     if strategy and strategy not in pattern.failed_corrections:
                         pattern.failed_corrections.append(strategy)
-        
+
         # Update success rate
         total_corrections = len(pattern.successful_corrections) + len(pattern.failed_corrections)
         if total_corrections > 0:
             pattern.success_rate = len(pattern.successful_corrections) / total_corrections
 
     async def _update_error_analytics(
-        self, 
-        error_context: ErrorContext, 
+        self,
+        error_context: ErrorContext,
         correction_result: Dict[str, Any]
     ):
         """Update analytics with error handling metrics"""
-        
+
         if not self.analytics_engine:
             return
-        
+
         try:
             metrics = {
                 "error_handling": {
@@ -716,23 +716,23 @@ Would you like me to apply this correction? Reply with 'yes' to proceed or 'no' 
                     "pattern_match": bool(await self._check_error_patterns(error_context))
                 }
             }
-            
+
             await self.analytics_engine.collect_metrics(metrics)
-            
+
         except Exception as e:
             logger.warning(f"Analytics update failed: {e}")
 
     async def _communicate_error_handling(
-        self, 
-        error_context: ErrorContext, 
+        self,
+        error_context: ErrorContext,
         correction_result: Dict[str, Any],
         user_id: str
     ):
         """Communicate error handling results through enhanced conversation system"""
-        
+
         if correction_result.get("corrected", False):
             message = f"""
-✅ **Error Successfully Handled**
+[OK] **Error Successfully Handled**
 
 **Error**: {error_context.error_message}
 **Location**: {error_context.source_function}
@@ -743,7 +743,7 @@ The issue has been automatically resolved. The system is learning from this expe
 """
         else:
             message = f"""
-⚠️ **Error Detected - Manual Attention Required**
+[WARN] **Error Detected - Manual Attention Required**
 
 **Error**: {error_context.error_message}
 **Location**: {error_context.source_function} in {error_context.source_file}:{error_context.line_number}
@@ -754,7 +754,7 @@ The issue has been automatically resolved. The system is learning from this expe
 
 The Intelligent Error Handler is monitoring this issue and will learn from any manual corrections you make.
 """
-        
+
         await self.conversation_manager.process_enhanced_message(
             message=message,
             user_id=user_id,
@@ -766,7 +766,7 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
         )
 
     # Correction Strategy Implementations
-    
+
     async def _strategy_install_plugin(self, error_context: ErrorContext) -> Dict[str, Any]:
         """Strategy: Install missing plugin"""
         try:
@@ -774,11 +774,11 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
             plugin_match = re.search(r"No module named '([^']+)'", error_context.error_message)
             if plugin_match:
                 plugin_name = plugin_match.group(1)
-                
+
                 # Simulate plugin installation (would use actual pip in production)
                 logger.info(f"Installing plugin: {plugin_name}")
                 # subprocess.run([sys.executable, "-m", "pip", "install", plugin_name])
-                
+
                 return {
                     "success": True,
                     "message": f"Successfully installed plugin: {plugin_name}",
@@ -801,7 +801,7 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
             # Extract module name and reload it
             import importlib
             module_name = error_context.source_file.replace('.py', '').replace('/', '.')
-            
+
             if module_name in sys.modules:
                 importlib.reload(sys.modules[module_name])
                 return {
@@ -863,12 +863,12 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
             # Implement retry logic
             max_retries = 3
             base_delay = 1.0
-            
+
             for attempt in range(max_retries):
                 await asyncio.sleep(base_delay * (2 ** attempt))
                 # In real implementation, would retry the failed operation
                 logger.info(f"Retry attempt {attempt + 1}/{max_retries}")
-            
+
             return {
                 "success": True,
                 "message": f"Operation retried {max_retries} times with backoff",
@@ -887,7 +887,7 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
             before_count = len(gc.get_objects())
             collected = gc.collect()
             after_count = len(gc.get_objects())
-            
+
             return {
                 "success": True,
                 "message": f"Garbage collection freed {collected} objects ({before_count} -> {after_count})",
@@ -919,7 +919,7 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
         """Strategy: Check network connectivity"""
         try:
             import socket
-            
+
             # Simple network connectivity check
             socket.create_connection(("8.8.8.8", 53), timeout=3)
             return {
@@ -950,7 +950,7 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
             }
 
     # Utility methods
-    
+
     def _get_memory_usage(self) -> Dict[str, Any]:
         """Get current memory usage statistics"""
         try:
@@ -983,7 +983,7 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
                     "kwargs": str(kwargs)[:100]
                 })
                 raise
-        
+
         @functools.wraps(func)
         def sync_wrapper(*args, **kwargs):
             try:
@@ -996,7 +996,7 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
                     "kwargs": str(kwargs)[:100]
                 }))
                 raise
-        
+
         return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
 
     def get_error_statistics(self) -> Dict[str, Any]:
@@ -1019,7 +1019,7 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
         """Calculate average success rate across all patterns"""
         if not self.error_patterns:
             return 0.0
-        
+
         total_rate = sum(pattern.success_rate for pattern in self.error_patterns.values())
         return total_rate / len(self.error_patterns)
 
@@ -1030,7 +1030,7 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
             key=lambda p: p.occurrence_count,
             reverse=True
         )
-        
+
         return [
             {
                 "pattern_id": p.pattern_id,
@@ -1045,28 +1045,28 @@ The Intelligent Error Handler is monitoring this issue and will learn from any m
     async def cleanup_old_errors(self, max_age_hours: int = 24):
         """Clean up old error records to prevent memory bloat"""
         cutoff_time = datetime.now() - timedelta(hours=max_age_hours)
-        
+
         # Remove old active errors
         old_error_ids = [
             error_id for error_id, error_ctx in self.active_errors.items()
             if error_ctx.timestamp < cutoff_time
         ]
-        
+
         for error_id in old_error_ids:
             del self.active_errors[error_id]
-        
+
         # Trim error history
         self.error_history = [
             error for error in self.error_history
             if error.get("timestamp", datetime.min) > cutoff_time
         ]
-        
+
         logger.info(f"Cleaned up {len(old_error_ids)} old errors")
 
 
 # Convenience function for easy import
 def get_intelligent_error_handler(
-    conversation_manager=None, 
+    conversation_manager=None,
     analytics_engine=None
 ) -> LyrixaIntelligentErrorHandler:
     """Get an instance of the intelligent error handler"""
@@ -1090,11 +1090,11 @@ error_monitor = get_global_error_handler().error_monitoring_decorator
 
 __all__ = [
     "LyrixaIntelligentErrorHandler",
-    "get_intelligent_error_handler", 
+    "get_intelligent_error_handler",
     "get_global_error_handler",
     "error_monitor",
     "ErrorSeverity",
-    "ErrorCategory", 
+    "ErrorCategory",
     "CorrectionStrategy",
     "ErrorContext",
     "CorrectionAction",

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧⚡ Async Memory Manager Integration
+[TOOL]⚡ Async Memory Manager Integration
 =====================================
 
 Integration layer that connects the AsyncConcurrentMemoryManager
@@ -465,7 +465,7 @@ class HybridMemoryManager:
         # Async manager details
         if "async_manager" in stats:
             async_mgr = stats["async_manager"]
-            print("\n🔧 Async Manager Details:")
+            print("\n[TOOL] Async Manager Details:")
 
             if "cache" in async_mgr:
                 cache = async_mgr["cache"]
@@ -522,7 +522,7 @@ async def test_hybrid_memory_integration():
         assert value is not None
 
     sync_time = time.time() - sync_start
-    logger.info(f"✅ Sync operations completed in {sync_time * 1000:.1f}ms")
+    logger.info(f"[OK] Sync operations completed in {sync_time * 1000:.1f}ms")
 
     # Test async interface (new optimized)
     logger.info("⚡ Testing async interface...")
@@ -545,7 +545,7 @@ async def test_hybrid_memory_integration():
     await hybrid_manager.retrieve_batch_async(keys)
 
     async_time = time.time() - async_start
-    logger.info(f"✅ Async operations completed in {async_time * 1000:.1f}ms")
+    logger.info(f"[OK] Async operations completed in {async_time * 1000:.1f}ms")
 
     # Performance comparison
     improvement = sync_time / async_time if async_time > 0 else 1
@@ -583,7 +583,7 @@ async def test_hybrid_memory_integration():
     await concurrent_workload()
 
     concurrent_time = time.time() - concurrent_start
-    logger.info(f"✅ Concurrent load test completed in {concurrent_time * 1000:.1f}ms")
+    logger.info(f"[OK] Concurrent load test completed in {concurrent_time * 1000:.1f}ms")
 
     # Calculate target achievement
     baseline = 4293  # ms from original issue
@@ -595,7 +595,7 @@ async def test_hybrid_memory_integration():
     logger.info(f"   Optimized: {optimized:.1f}ms")
     logger.info(f"   Improvement: {target_achievement:.1f}x")
     logger.info(
-        f"   Target (<500ms): {'✅ ACHIEVED' if optimized < 500 else '❌ MISSED'}"
+        f"   Target (<500ms): {'[OK] ACHIEVED' if optimized < 500 else '❌ MISSED'}"
     )
 
     await hybrid_manager.close_async()

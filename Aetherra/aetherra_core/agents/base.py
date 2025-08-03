@@ -527,7 +527,7 @@ class AetherraInterpreter:
                     plugin_result = f"Plugin '{plugin_name}' not found"
 
                 response = "🔌 Enhanced Plugin Execution\n"
-                response += f"   📦 Plugin: {plugin_name}\n"
+                response += f"   [DISC] Plugin: {plugin_name}\n"
                 if params:
                     response += f"   ⚙️ Parameters: {params}\n"
                 response += f"   📤 Result: {plugin_result}"
@@ -1492,7 +1492,7 @@ Answer this: {query}"""
         if stripped_line.startswith("define "):
             self.block_type = "function"
             func_name = self._extract_function_name(line)
-            return f"🔧 Started function definition: {func_name}\n   📝 Enter function body, use 'end' to complete"
+            return f"[TOOL] Started function definition: {func_name}\n   📝 Enter function body, use 'end' to complete"
 
         elif stripped_line.startswith("agent:"):
             self.block_type = "agent"
@@ -1524,7 +1524,7 @@ Answer this: {query}"""
 
         else:
             self.block_type = "generic"
-            return "📦 Started generic block\n   📋 Enter statements, use 'end' to complete"
+            return "[DISC] Started generic block\n   📋 Enter statements, use 'end' to complete"
 
     def _extract_function_name(self, line):
         """Extract function name from definition line"""
@@ -1612,9 +1612,9 @@ Answer this: {query}"""
 
         self._reset_block_state()
 
-        response = "🔧 Function Definition Complete\n"
+        response = "[TOOL] Function Definition Complete\n"
         response += f"   📝 Function: {func_name}\n"
-        response += f"   🔧 Parameters: {params if params else 'none'}\n"
+        response += f"   [TOOL] Parameters: {params if params else 'none'}\n"
         response += f"   📄 Body: {len(body)} statements\n"
         response += f"   ✅ Ready to call with: call {func_name}({', '.join(['arg'] * len(params))})"
 

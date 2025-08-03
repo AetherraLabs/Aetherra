@@ -7,7 +7,7 @@ Since the automated script had issues finding VS Code in PATH, here are alternat
 
 **Must-Have Extensions:**
 - `ms-python.python` - Python language support
-- `ms-python.vscode-pylance` - Advanced IntelliSense  
+- `ms-python.vscode-pylance` - Advanced IntelliSense
 - `github.copilot` - AI coding assistant
 - `eamodio.gitlens` - Enhanced Git integration
 - `ms-toolsai.jupyter` - Jupyter notebook support
@@ -24,7 +24,7 @@ Since the automated script had issues finding VS Code in PATH, here are alternat
 
 ---
 
-## 🔧 **METHOD 1: VS Code UI Installation (Recommended)**
+## [TOOL] **METHOD 1: VS Code UI Installation (Recommended)**
 
 1. **Open VS Code in this project:**
    - Navigate to your Aetherra folder
@@ -55,7 +55,7 @@ Since the automated script had issues finding VS Code in PATH, here are alternat
 
 ---
 
-## 🔧 **METHOD 2: Command Line Installation**
+## [TOOL] **METHOD 2: Command Line Installation**
 
 If VS Code CLI is available, run these commands:
 
@@ -80,7 +80,7 @@ code --install-extension gruntfuggly.todo-tree
 
 ---
 
-## 🔧 **METHOD 3: Fix VS Code PATH (Advanced)**
+## [TOOL] **METHOD 3: Fix VS Code PATH (Advanced)**
 
 To enable the `code` command in terminal:
 
@@ -135,9 +135,9 @@ After installing extensions:
 
 Once the extensions are installed, your Aetherra development environment will have:
 
-✨ **AI-Powered Development** - Copilot + Continue.dev  
-🔧 **Professional Tooling** - Linting, formatting, debugging  
-🎨 **Beautiful Interface** - Dracula theme + icons  
-🧬 **Aetherra Optimized** - Custom settings for AI-native programming  
+✨ **AI-Powered Development** - Copilot + Continue.dev
+[TOOL] **Professional Tooling** - Linting, formatting, debugging
+🎨 **Beautiful Interface** - Dracula theme + icons
+🧬 **Aetherra Optimized** - Custom settings for AI-native programming
 
 The `.vscode/` folder already contains all the optimized settings - you just need the extensions installed!

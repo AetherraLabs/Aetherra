@@ -104,7 +104,7 @@ async def demo_self_improvement_system():
         # Discover and analyze plugins
         print("\n🔍 Discovering and analyzing plugins...")
         plugins = diff_engine.discover_plugins()
-        print(f"📦 Found {len(plugins)} plugins")
+        print(f"[DISC] Found {len(plugins)} plugins")
 
         if plugins:
             # Analyze a sample plugin
@@ -147,11 +147,11 @@ async def demo_self_improvement_system():
         return True
 
     except ImportError as e:
-        print(f"❌ Import error: {e}")
+        print(f"[ERROR] Import error: {e}")
         print("   Self-improvement components not fully available")
         return False
     except Exception as e:
-        print(f"❌ Error in self-improvement demo: {e}")
+        print(f"[ERROR] Error in self-improvement demo: {e}")
         return False
 
 
@@ -174,7 +174,7 @@ async def demo_memory_linked_plugins():
         # Discover plugins with metadata
         print("\n📚 Discovering plugins and extracting metadata...")
         plugins_with_metadata = discovery.discover_plugins_with_metadata()
-        print(f"📦 Discovered {len(plugins_with_metadata)} plugins with metadata")
+        print(f"[DISC] Discovered {len(plugins_with_metadata)} plugins with metadata")
 
         # Show sample metadata
         if plugins_with_metadata:
@@ -256,11 +256,11 @@ async def demo_memory_linked_plugins():
         return True
 
     except ImportError as e:
-        print(f"❌ Import error: {e}")
+        print(f"[ERROR] Import error: {e}")
         print("   Memory-linked components not fully available")
         return False
     except Exception as e:
-        print(f"❌ Error in memory-linked demo: {e}")
+        print(f"[ERROR] Error in memory-linked demo: {e}")
         return False
 
 
@@ -327,7 +327,7 @@ async def demo_integrated_workflow():
         return True
 
     except Exception as e:
-        print(f"❌ Error in integrated workflow demo: {e}")
+        print(f"[ERROR] Error in integrated workflow demo: {e}")
         return False
 
 
@@ -345,9 +345,9 @@ async def main():
     # Final summary
     print("\n🏆 DEMONSTRATION SUMMARY")
     print("=" * 30)
-    print(f"Self-Improvement System: {'✅ SUCCESS' if demo1_success else '❌ FAILED'}")
-    print(f"Memory-Linked Plugins:   {'✅ SUCCESS' if demo2_success else '❌ FAILED'}")
-    print(f"Integrated Workflow:     {'✅ SUCCESS' if demo3_success else '❌ FAILED'}")
+    print(f"Self-Improvement System: {'✅ SUCCESS' if demo1_success else '[ERROR] FAILED'}")
+    print(f"Memory-Linked Plugins:   {'✅ SUCCESS' if demo2_success else '[ERROR] FAILED'}")
+    print(f"Integrated Workflow:     {'✅ SUCCESS' if demo3_success else '[ERROR] FAILED'}")
 
     if all([demo1_success, demo2_success, demo3_success]):
         print("\n🎉 ALL SYSTEMS OPERATIONAL!")
@@ -364,7 +364,7 @@ async def main():
             "🎯 MISSION ACCOMPLISHED: Self-Generated Improvements + Memory-Linked Plugins!"
         )
     else:
-        print("\n⚠️ Some components need attention - check implementation details")
+        print("\n[WARN] Some components need attention - check implementation details")
 
     return all([demo1_success, demo2_success, demo3_success])
 

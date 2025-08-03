@@ -111,7 +111,7 @@ def test_lyrixa_summarizer_usage():
     • One plugin showing performance degradation
     • Slight increase in error events (12 vs average of 8)
 
-    🔧 Recommendations:
+    [TOOL] Recommendations:
     • Schedule maintenance for slow_responder_plugin
     • Review network configuration for API connections
     • Continue current monitoring patterns

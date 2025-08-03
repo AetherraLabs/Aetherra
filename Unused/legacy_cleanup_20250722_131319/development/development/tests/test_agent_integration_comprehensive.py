@@ -38,7 +38,7 @@ async def run_comprehensive_tests():
     print("=" * 80)
 
     # Initialize the interface
-    print("\n🔧 Initializing agent interface...")
+    print("\n[TOOL] Initializing agent interface...")
     interface = LyrixaAgentInterface(TEST_DIR)
     init_result = await interface.initialize()
 

@@ -91,7 +91,7 @@ class TestCausalBranchSimulator(TestQuantumAwareSimulations):
             print("✅ Causal branch creation working")
 
         except Exception as e:
-            print(f"⚠️ Testing with mock due to import issues: {e}")
+            print(f"[WARN] Testing with mock due to import issues: {e}")
             # Create a basic test that validates the concept
             self.assertTrue(True, "Causal branch creation concept validated")
 
@@ -986,8 +986,8 @@ def run_quantum_simulation_tests():
     print("=" * 80)
     print(f"Total Tests: {total_tests}")
     print(f"✅ Passed: {passed}")
-    print(f"❌ Failed: {failures}")
-    print(f"💥 Errors: {errors}")
+    print(f"[ERROR] Failed: {failures}")
+    print(f"[FAIL] Errors: {errors}")
     print(f"📊 Success Rate: {(passed / total_tests) * 100:.1f}%")
     print("=" * 80)
 
@@ -996,9 +996,9 @@ def run_quantum_simulation_tests():
     elif passed >= total_tests * 0.9:
         print("✅ QUANTUM-AWARE SIMULATIONS: GOOD - Minor Issues Detected")
     elif passed >= total_tests * 0.7:
-        print("⚠️ QUANTUM-AWARE SIMULATIONS: FUNCTIONAL - Some Issues Present")
+        print("[WARN] QUANTUM-AWARE SIMULATIONS: FUNCTIONAL - Some Issues Present")
     else:
-        print("❌ QUANTUM-AWARE SIMULATIONS: NEEDS ATTENTION - Major Issues Detected")
+        print("[ERROR] QUANTUM-AWARE SIMULATIONS: NEEDS ATTENTION - Major Issues Detected")
 
     return passed == total_tests
 

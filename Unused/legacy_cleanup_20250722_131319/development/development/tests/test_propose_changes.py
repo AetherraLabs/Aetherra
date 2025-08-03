@@ -34,7 +34,7 @@ try:
             print(f"      Category: {proposal.get('category', 'Unknown')}")
             print(f"      Priority: {proposal.get('priority', 'Unknown')}")
     else:
-        print(f"❌ Error: {response.text}")
+        print(f"[ERROR] Error: {response.text}")
 
     # Test enhanced capabilities too
     print("\n🧩 Testing enhanced capabilities...")
@@ -44,15 +44,15 @@ try:
         data = response.json()
         print(f"✅ Enhanced capabilities working! Found {data.get('summary', {}).get('total_plugins', 0)} plugins")
     else:
-        print(f"❌ Enhanced capabilities error: {response.text}")
+        print(f"[ERROR] Enhanced capabilities error: {response.text}")
 
     print("\n🎉 API server is ready for use!")
     print("Start with: python enhanced_api_server.py")
     print("UI will connect to: http://127.0.0.1:8007")
 
 except ImportError as e:
-    print(f"❌ Import error: {e}")
+    print(f"[ERROR] Import error: {e}")
 except Exception as e:
-    print(f"❌ Test error: {e}")
+    print(f"[ERROR] Test error: {e}")
     import traceback
     traceback.print_exc()

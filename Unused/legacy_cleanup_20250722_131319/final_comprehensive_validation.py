@@ -80,7 +80,7 @@ def validate_all_tabs():
         return True
 
     except Exception as e:
-        print(f"❌ Tab validation failed: {e}")
+        print(f"[ERROR] Tab validation failed: {e}")
         import traceback
 
         traceback.print_exc()
@@ -138,7 +138,7 @@ def validate_sidebar_integration():
         return True
 
     except Exception as e:
-        print(f"❌ Sidebar validation failed: {e}")
+        print(f"[ERROR] Sidebar validation failed: {e}")
         return False
 
 
@@ -372,7 +372,7 @@ def main():
         print("🌟 Revolutionary 11-tab interface validated!")
     else:
         print("❌ SOME VALIDATIONS FAILED!")
-        print("🔧 Please review failed tests above")
+        print("[TOOL] Please review failed tests above")
 
     print("=" * 60)
 

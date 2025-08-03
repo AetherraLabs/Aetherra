@@ -107,7 +107,7 @@ suggest fix for "memory_leak"
         print(f"✗ AST parsing error: {e}")
 
     # Test 3: Individual Node Types
-    print("\n📦 Test 3: Individual Node Type Testing")
+    print("\n[DISC] Test 3: Individual Node Type Testing")
 
     test_cases = [
         ("goal: reduce latency by 50%", GoalNode),
@@ -130,7 +130,7 @@ suggest fix for "memory_leak"
             print(f"✗ {expected_type.__name__}: {code} - Error: {e}")
 
     # Test 4: Code Compilation
-    print("\n🔧 Test 4: Code Compilation")
+    print("\n[TOOL] Test 4: Code Compilation")
     total += 1
     try:
         compiled = compile_aetherra(aetherra_code)
@@ -283,7 +283,7 @@ apply fix if confidence > 90%
             f"  [{i}] {type(node).__name__}: {getattr(node, 'objective', getattr(node, 'command', getattr(node, 'operation', 'complex')))}"
         )
 
-    print("\n🔧 Compiled Output (Sample):")
+    print("\n[TOOL] Compiled Output (Sample):")
     compiled = compile_aetherra(demo_code)
     lines = compiled.split("\n")[:10]
     for line in lines:

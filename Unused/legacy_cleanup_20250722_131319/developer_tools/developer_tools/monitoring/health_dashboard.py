@@ -364,7 +364,7 @@ class ProjectHealthDashboard:
                 self.last_alert_times[alert_key] = time.time()
 
                 self.logger.warning(f"Health Alert: {alert.message}")
-                print(f"⚠️ {alert.message}")
+                print(f"[WARN] {alert.message}")
 
     def _cleanup_old_data(self) -> None:
         """Remove old metrics and resolved alerts"""
@@ -844,7 +844,7 @@ class ProjectHealthDashboard:
                 ""
             ])
             for check_name, check_data in health_status['checks'].items():
-                status_emoji = "✅" if check_data.get('status') == 'normal' else "⚠️" if check_data.get('status') == 'warning' else "❌"
+                status_emoji = "✅" if check_data.get('status') == 'normal' else "[WARN]" if check_data.get('status') == 'warning' else "❌"
                 if 'value' in check_data:
                     report_lines.append(f"{status_emoji} **{check_name.replace('_', ' ').title()}:** {check_data['value']:.1f}%")
                 else:
@@ -869,7 +869,7 @@ class ProjectHealthDashboard:
             ])
             for alert in recent_alerts[-10:]:  # Last 10 alerts
                 alert_time = datetime.fromtimestamp(alert.timestamp).strftime('%H:%M:%S')
-                level_emoji = "⚠️" if alert.level == 'warning' else "❌"
+                level_emoji = "[WARN]" if alert.level == 'warning' else "❌"
                 report_lines.append(f"{level_emoji} **{alert_time}** - {alert.category}: {alert.message}")
             report_lines.append("")
 

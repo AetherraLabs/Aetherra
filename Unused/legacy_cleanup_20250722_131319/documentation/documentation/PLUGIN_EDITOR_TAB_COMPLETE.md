@@ -6,7 +6,7 @@ The **Plugin Editor Tab** has been **successfully integrated**, achieving **100%
 
 ## ✨ **Plugin Editor Tab Features**
 
-### 🔧 **Core Functionality**
+### [TOOL] **Core Functionality**
 - **📂 File Browser Integration**: QFileDialog for browsing and opening plugin files
 - **✏️ Live Code Editor**: QTextEdit widget for real-time code editing
 - **🔍 Plugin File Support**: Specifically designed for .py plugin files
@@ -61,7 +61,7 @@ Ready for advanced plugin development features:
 - **Large File Support**: Handles files of any size efficiently
 - **Placeholder Text**: User-friendly "Select and edit a plugin file..." prompt
 
-### 🔧 **Developer Experience**
+### [TOOL] **Developer Experience**
 - **Instant Loading**: Quick file opening with visual feedback
 - **Clean Interface**: Minimal, focused editing environment
 - **Future Extensibility**: Ready for advanced IDE features

@@ -37,4 +37,4 @@ if recovered_files == len(files_to_check):
     print("🎯 Core System Status: FULLY RESTORED")
     print("🚀 Ready for GUI redesign phase!")
 else:
-    print(f"⚠️  Missing {len(files_to_check) - recovered_files} files")
+    print(f"[WARN]  Missing {len(files_to_check) - recovered_files} files")

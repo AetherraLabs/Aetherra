@@ -27,7 +27,7 @@ try:
 
     LLM_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"⚠️ MultiLLMManager not available: {e}")
+    logger.warning(f"[WARN] MultiLLMManager not available: {e}")
     MultiLLMManager = None
     LLM_AVAILABLE = False
 
@@ -38,7 +38,7 @@ try:
     PROMPT_ENGINE_AVAILABLE = True
     logger.info("✅ Enhanced prompt engine loaded")
 except ImportError as e:
-    logger.warning(f"⚠️ Enhanced prompt engine not available: {e}")
+    logger.warning(f"[WARN] Enhanced prompt engine not available: {e}")
     PROMPT_ENGINE_AVAILABLE = False
     build_dynamic_prompt = None
 
@@ -84,7 +84,7 @@ class LyrixaConversationManager:
                     f"🎙️ Lyrixa Conversation Manager initialized with {self.current_model}"
                 )
             except Exception as e:
-                logger.error(f"❌ Failed to initialize LLM manager: {e}")
+                logger.error(f"[ERROR] Failed to initialize LLM manager: {e}")
                 self.llm_manager = None
                 self.current_model = "fallback"
                 self.llm_enabled = False
@@ -92,7 +92,7 @@ class LyrixaConversationManager:
             self.llm_manager = None
             self.current_model = "fallback"
             self.llm_enabled = False
-            logger.warning("⚠️ LLM manager not available, using fallback responses")
+            logger.warning("[WARN] LLM manager not available, using fallback responses")
 
         # Conversation history (last 20 messages)
         self.conversation_history = []
@@ -118,7 +118,7 @@ class LyrixaConversationManager:
             for model in self.preferred_models:
                 # Skip models that have failed too many times
                 if self.model_failures.get(model, 0) >= self.max_retries_per_model:
-                    logger.warning(f"⚠️ Skipping {model} - too many failures")
+                    logger.warning(f"[WARN] Skipping {model} - too many failures")
                     continue
 
                 if model in available_models:
@@ -133,21 +133,21 @@ class LyrixaConversationManager:
             if available_models:
                 fallback_model = list(available_models.keys())[0]
                 if self.llm_manager.set_model(fallback_model):
-                    logger.warning(f"⚠️ Using fallback model: {fallback_model}")
+                    logger.warning(f"[WARN] Using fallback model: {fallback_model}")
                     return fallback_model
 
-            logger.error("❌ No available models found!")
+            logger.error("[ERROR] No available models found!")
             return "fallback"
 
         except Exception as e:
-            logger.error(f"❌ Error selecting model: {e}")
+            logger.error(f"[ERROR] Error selecting model: {e}")
             return "fallback"
 
     def _record_model_failure(self, model: str):
         """Record a model failure for tracking"""
         self.model_failures[model] = self.model_failures.get(model, 0) + 1
         logger.warning(
-            f"⚠️ Model {model} failed ({self.model_failures[model]}/{self.max_retries_per_model})"
+            f"[WARN] Model {model} failed ({self.model_failures[model]}/{self.max_retries_per_model})"
         )
 
     def get_lyrixa_personality(self) -> str:
@@ -233,7 +233,7 @@ class LyrixaConversationManager:
                             context["agent_count"] = len(agent_system.agents)
 
                 except Exception as e:
-                    logger.warning(f"⚠️ Could not get runtime context: {e}")
+                    logger.warning(f"[WARN] Could not get runtime context: {e}")
 
             # Update cache
             self.system_context_cache = context
@@ -241,7 +241,7 @@ class LyrixaConversationManager:
             return context
 
         except Exception as e:
-            logger.error(f"❌ Error getting system context: {e}")
+            logger.error(f"[ERROR] Error getting system context: {e}")
             return {"error": str(e)}
 
     def format_system_context(self, context: Dict[str, Any]) -> str:
@@ -269,7 +269,7 @@ class LyrixaConversationManager:
             return "\n".join(lines)
 
         except Exception as e:
-            logger.error(f"❌ Error formatting system context: {e}")
+            logger.error(f"[ERROR] Error formatting system context: {e}")
             return f"📊 **System Status:** Available (conversation #{context.get('conversation_count', 0)})"
 
     def add_to_conversation_history(self, role: str, content: str):
@@ -336,7 +336,7 @@ class LyrixaConversationManager:
                     )
                 except Exception as e:
                     logger.warning(
-                        f"⚠️ Dynamic prompt engine failed, using fallback: {e}"
+                        f"[WARN] Dynamic prompt engine failed, using fallback: {e}"
                     )
                     # Fallback to traditional method
                     messages = await self.get_conversation_messages(user_input)
@@ -380,12 +380,12 @@ class LyrixaConversationManager:
                     # Check if model is available
                     available_models = self.llm_manager.list_available_models()
                     if model not in available_models:
-                        logger.warning(f"⚠️ Model {model} not available, trying next...")
+                        logger.warning(f"[WARN] Model {model} not available, trying next...")
                         continue
 
                     # Set the model
                     if not self.llm_manager.set_model(model):
-                        logger.warning(f"⚠️ Failed to set model {model}, trying next...")
+                        logger.warning(f"[WARN] Failed to set model {model}, trying next...")
                         self._record_model_failure(model)
                         continue
 
@@ -401,7 +401,7 @@ class LyrixaConversationManager:
 
                     # Check if response is valid
                     if not response or len(response.strip()) < 10:
-                        logger.warning(f"⚠️ Empty or too short response from {model}")
+                        logger.warning(f"[WARN] Empty or too short response from {model}")
                         self._record_model_failure(model)
                         continue
 
@@ -429,7 +429,7 @@ class LyrixaConversationManager:
 
                 except Exception as e:
                     error_msg = str(e).lower()
-                    logger.warning(f"⚠️ Model {model} failed: {e}")
+                    logger.warning(f"[WARN] Model {model} failed: {e}")
 
                     # Record failure and check for specific error types
                     self._record_model_failure(model)
@@ -465,7 +465,7 @@ class LyrixaConversationManager:
                         keyword in error_msg
                         for keyword in ["not found", "does not exist", "unavailable"]
                     ):
-                        logger.error(f"❌ {model} not found or unavailable")
+                        logger.error(f"[ERROR] {model} not found or unavailable")
                         self.model_failures[model] = (
                             self.max_retries_per_model
                         )  # Immediately disable
@@ -474,11 +474,11 @@ class LyrixaConversationManager:
                     continue
 
             # If all models fail, use smart fallback
-            logger.error("❌ All models failed, using smart fallback response")
+            logger.error("[ERROR] All models failed, using smart fallback response")
             return await self._generate_smart_fallback_response(user_input)
 
         except Exception as e:
-            logger.error(f"❌ Critical error in generate_response: {e}")
+            logger.error(f"[ERROR] Critical error in generate_response: {e}")
             return await self._generate_smart_fallback_response(user_input)
 
     def _generate_fallback_response(self, user_input: str) -> str:
@@ -529,7 +529,7 @@ I'm Lyrixa, your AI companion within this system. How can I help you explore Aet
     def switch_model(self, model_name: str) -> bool:
         """Switch to a different LLM model"""
         if not self.llm_enabled or not self.llm_manager:
-            logger.error("❌ LLM manager not available")
+            logger.error("[ERROR] LLM manager not available")
             return False
 
         try:
@@ -541,13 +541,13 @@ I'm Lyrixa, your AI companion within this system. How can I help you explore Aet
                     logger.info(f"🔄 Switched to model: {model_name}")
                     return True
                 else:
-                    logger.error(f"❌ Failed to set model: {model_name}")
+                    logger.error(f"[ERROR] Failed to set model: {model_name}")
                     return False
             else:
-                logger.error(f"❌ Model not available: {model_name}")
+                logger.error(f"[ERROR] Model not available: {model_name}")
                 return False
         except Exception as e:
-            logger.error(f"❌ Error switching model: {e}")
+            logger.error(f"[ERROR] Error switching model: {e}")
             return False
 
     async def fallback_with_context(self, user_input: str) -> str:
@@ -572,7 +572,7 @@ I'm Lyrixa, your AI companion within this system. How can I help you explore Aet
             return fallback_response
 
         except Exception as e:
-            logger.error(f"❌ Error in fallback with context: {e}")
+            logger.error(f"[ERROR] Error in fallback with context: {e}")
             return self._generate_fallback_response(user_input)
 
     async def _generate_smart_fallback_response(self, user_input: str) -> str:
@@ -596,7 +596,7 @@ I'm Lyrixa, your AI companion within this system. How can I help you explore Aet
                 response = f"Hello! I'm Lyrixa, your AI assistant for Aetherra. I'm currently running in fallback mode with {system_context.get('active_plugins', 0)} plugins active and ready to help! 🌟"
 
             elif any(word in message_lower for word in ["help", "assist", "support"]):
-                response = f"I'm here to help! Even in fallback mode, I can assist with system management, plugin questions, and general guidance. With {system_context.get('active_plugins', 0)} plugins and {system_context.get('memory_entries', 0)} memory entries available, what would you like to work on? 🔧"
+                response = f"I'm here to help! Even in fallback mode, I can assist with system management, plugin questions, and general guidance. With {system_context.get('active_plugins', 0)} plugins and {system_context.get('memory_entries', 0)} memory entries available, what would you like to work on? [TOOL]"
 
             elif "status" in message_lower or "health" in message_lower:
                 response = f"""📊 **System Status Report:**
@@ -644,7 +644,7 @@ How can I help you explore Aetherra's capabilities? 🚀"""
                 word in message_lower
                 for word in ["error", "problem", "issue", "broken"]
             ):
-                response = f"""🔧 **Troubleshooting Mode:**
+                response = f"""[TOOL] **Troubleshooting Mode:**
 
 I notice you're reporting an issue. Here's what I can help with:
 
@@ -679,7 +679,7 @@ Even in fallback mode, I can help with system management, plugin questions, and 
             return response
 
         except Exception as e:
-            logger.error(f"❌ Error in smart fallback: {e}")
+            logger.error(f"[ERROR] Error in smart fallback: {e}")
             # Ultimate fallback
             return f"I'm Lyrixa, your AI assistant. I'm currently experiencing some technical difficulties but I'm still here to help! You asked: '{user_input}'. How can I assist you today? 🌟"
 
@@ -715,11 +715,11 @@ Even in fallback mode, I can help with system management, plugin questions, and 
                             logger.info("✅ Ollama fallback successful")
                             return response.strip()
                 else:
-                    logger.warning("⚠️ Ollama not available in model list")
+                    logger.warning("[WARN] Ollama not available in model list")
             else:
-                logger.warning("⚠️ LLM manager not available for Ollama fallback")
+                logger.warning("[WARN] LLM manager not available for Ollama fallback")
         except Exception as e:
-            logger.error(f"❌ Ollama fallback failed: {e}")
+            logger.error(f"[ERROR] Ollama fallback failed: {e}")
 
         return "I'm sorry, but I'm unable to generate a response at the moment. Please try again later."
 
@@ -749,7 +749,7 @@ Even in fallback mode, I can help with system management, plugin questions, and 
                         self._generate_smart_fallback_response(user_input)
                     )
             except Exception as task_error:
-                logger.warning(f"⚠️ Task error: {task_error}")
+                logger.warning(f"[WARN] Task error: {task_error}")
                 return asyncio.run(self._generate_smart_fallback_response(user_input))
 
         except RuntimeError:
@@ -757,5 +757,5 @@ Even in fallback mode, I can help with system management, plugin questions, and 
             logger.info("🔄 Creating new event loop for LLM response")
             return asyncio.run(self.generate_response(user_input))
         except Exception as e:
-            logger.error(f"❌ Error in sync wrapper: {e}")
+            logger.error(f"[ERROR] Error in sync wrapper: {e}")
             return asyncio.run(self._generate_smart_fallback_response(user_input))

@@ -82,7 +82,7 @@ goal "script execution completed"
 
         for cmd in test_chat_commands:
             success = runtime.interpret_aether_line(cmd)
-            safe_print(f"   {'✅' if success else '❌'} Chat command: {cmd[:30]}...")
+            safe_print(f"   {'✅' if success else '[ERROR]'} Chat command: {cmd[:30]}...")
 
         # Demonstrate bootstrap capability
         safe_print("\n🎯 FEATURE 4: Bootstrap System")
@@ -91,7 +91,7 @@ goal "script execution completed"
             runtime.load_script(str(bootstrap_path), from_file=True)
             safe_print(f"   ✅ Bootstrap script loaded: {len(runtime.script_lines)} commands")
         else:
-            safe_print("   ❌ Bootstrap script not found")
+            safe_print("   [ERROR] Bootstrap script not found")
 
         # Show final statistics
         safe_print("\n📊 DEPLOYMENT STATISTICS")
@@ -127,10 +127,10 @@ goal "script execution completed"
         return True
 
     except ImportError as e:
-        safe_print(f"❌ Import error: {e}")
+        safe_print(f"[ERROR] Import error: {e}")
         return False
     except Exception as e:
-        safe_print(f"❌ Demonstration failed: {e}")
+        safe_print(f"[ERROR] Demonstration failed: {e}")
         return False
 
 def show_usage_examples():
@@ -163,7 +163,7 @@ def main():
         show_usage_examples()
         safe_print("\n🎉 AI OS KERNEL IS READY FOR PRODUCTION USE!")
     else:
-        safe_print("\n❌ Some issues detected. Review implementation.")
+        safe_print("\n[ERROR] Some issues detected. Review implementation.")
 
 if __name__ == "__main__":
     main()

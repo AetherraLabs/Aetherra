@@ -480,7 +480,7 @@ Generated AetherraCode:
 
             response = "📊 Performance Analysis\n\n"
             if "suggestions" in report and report["suggestions"]:
-                response += "🔧 Recent Optimization Suggestions:\n"
+                response += "[TOOL] Recent Optimization Suggestions:\n"
                 for suggestion in list(report["suggestions"].values())[
                     :3
                 ]:  # Top 3 suggestions

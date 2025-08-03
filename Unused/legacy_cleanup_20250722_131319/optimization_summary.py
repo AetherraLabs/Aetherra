@@ -27,7 +27,7 @@ print("   • Health endpoint responds correctly")
 print("   • Port availability checking works")
 print("   • Server selection logic functional")
 
-print("\n🔧 FILES CREATED/MODIFIED:")
+print("\n[TOOL] FILES CREATED/MODIFIED:")
 print("   • fast_api_server.py - New optimized server")
 print("   • run_self_improvement_api.py - Updated server selection")
 print("   • intelligence_integration.py - Fixed circular imports")
@@ -39,9 +39,9 @@ enhanced_server_exists = os.path.exists("enhanced_api_server.py")
 run_script_exists = os.path.exists("run_self_improvement_api.py")
 
 print(f"\n📁 FILE STATUS:")
-print(f"   • fast_api_server.py: {'✅ EXISTS' if fast_server_exists else '❌ MISSING'}")
-print(f"   • enhanced_api_server.py: {'✅ EXISTS' if enhanced_server_exists else '❌ MISSING'}")
-print(f"   • run_self_improvement_api.py: {'✅ EXISTS' if run_script_exists else '❌ MISSING'}")
+print(f"   • fast_api_server.py: {'✅ EXISTS' if fast_server_exists else '[ERROR] MISSING'}")
+print(f"   • enhanced_api_server.py: {'✅ EXISTS' if enhanced_server_exists else '[ERROR] MISSING'}")
+print(f"   • run_self_improvement_api.py: {'✅ EXISTS' if run_script_exists else '[ERROR] MISSING'}")
 
 if fast_server_exists and run_script_exists:
     print(f"\n🎉 OPTIMIZATION COMPLETE!")
@@ -56,7 +56,7 @@ if fast_server_exists and run_script_exists:
     print(f"   • Health check: curl http://127.0.0.1:8007/health")
     print(f"   • Launcher should work without timeout errors")
 else:
-    print(f"\n⚠️ MISSING FILES - Optimization incomplete")
+    print(f"\n[WARN] MISSING FILES - Optimization incomplete")
 
 print(f"\n" + "=" * 50)
 print(f"🚀 CONTINUE ITERATION: API OPTIMIZATION SUCCESSFUL")

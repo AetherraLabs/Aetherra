@@ -128,7 +128,7 @@ def main():
         print("   • Create custom plugins with templates")
         print("   • All from the Lyrixa interface!")
     else:
-        print("⚠️ Some components need attention")
+        print("[WARN] Some components need attention")
 
     print("=" * 70)
     return 0 if (success1 and success2) else 1

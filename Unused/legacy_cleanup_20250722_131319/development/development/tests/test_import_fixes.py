@@ -27,7 +27,7 @@ try:
     print("\n🎉 ALL IMPORTS AND BASIC FUNCTIONALITY WORKING!")
 
 except Exception as e:
-    print(f"❌ Import/functionality test failed: {e}")
+    print(f"[ERROR] Import/functionality test failed: {e}")
     import traceback
 
     traceback.print_exc()

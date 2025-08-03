@@ -61,7 +61,7 @@ def main():
     qt_available = test_qt_availability()
 
     if not qt_available:
-        print("\n⚠️ No Qt library available!")
+        print("\n[WARN] No Qt library available!")
         print("📋 To use Lyrixav2.0, install a Qt library:")
         print("   pip install PySide6")
         print("   or")

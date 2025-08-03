@@ -13,7 +13,7 @@ Fixed Issues:
 ✅ Safe fallback to pattern responses
 """
 
-print("🔧 NEURAL CHAT ASYNC FIX VERIFICATION")
+print("[TOOL] NEURAL CHAT ASYNC FIX VERIFICATION")
 print("=" * 60)
 
 print("\n✅ FIXES IMPLEMENTED:")
@@ -49,9 +49,9 @@ print("• Falls back to pattern responses if needed")
 print("• No coroutine warnings in terminal")
 
 print("\n📊 DEBUG OUTPUT EXAMPLES:")
-print("🔧 DEBUG: Available conversation methods: ['adjust_personality_settings', ...]")
-print("🔧 DEBUG: Trying conversation.generate_quick_response()")
-print("🔧 DEBUG: generate_quick_response is async, creating simple response")
+print("[TOOL] DEBUG: Available conversation methods: ['adjust_personality_settings', ...]")
+print("[TOOL] DEBUG: Trying conversation.generate_quick_response()")
+print("[TOOL] DEBUG: generate_quick_response is async, creating simple response")
 print("✅ Got response from conversation.generate_quick_response()")
 
 print("\n🚀 SYSTEM STATUS:")

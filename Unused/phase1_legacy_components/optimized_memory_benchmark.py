@@ -140,7 +140,7 @@ class OptimizedMemoryBenchmark:
         Benchmark batch storage operations
         """
         self.logger.info(
-            f"📦 Benchmarking batch operations ({batch_size} fragments per batch)..."
+            f"[DISC] Benchmarking batch operations ({batch_size} fragments per batch)..."
         )
 
         metrics = []
@@ -415,7 +415,7 @@ class OptimizedMemoryBenchmark:
         if report["target_achieved"]:
             print(f"🎉 OVERALL RESULT: ✅ SUCCESS - Target achieved!")
         else:
-            print(f"⚠️  OVERALL RESULT: ❌ FAILED - Optimization needed")
+            print(f"[WARN]  OVERALL RESULT: [ERROR] FAILED - Optimization needed")
 
         print()
         print("-" * 70)
@@ -423,7 +423,7 @@ class OptimizedMemoryBenchmark:
         print("-" * 70)
 
         for test_name, result in report["individual_results"].items():
-            status = "✅ PASS" if result["target_met"] else "❌ FAIL"
+            status = "✅ PASS" if result["target_met"] else "[ERROR] FAIL"
             print(f"{test_name.replace('_', ' ').title():<30} {status}")
             print(
                 f"  Mean: {result['mean_ms']:8.2f}ms | P95: {result['p95_ms']:8.2f}ms | Success: {result['success_rate']:5.1f}%"

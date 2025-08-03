@@ -81,17 +81,17 @@ async def test_chat_responsiveness():
                 print(f"   Preview: {preview}")
 
             except asyncio.TimeoutError:
-                print(f"❌ TIMEOUT - Chat hanging on: '{message}'")
+                print(f"[ERROR] TIMEOUT - Chat hanging on: '{message}'")
                 return False
             except Exception as e:
-                print(f"❌ ERROR: {e}")
+                print(f"[ERROR] ERROR: {e}")
                 return False
 
         print("\n🎉 All chat tests passed - Lyrixa is responsive!")
         return True
 
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         import traceback
 
         traceback.print_exc()
@@ -118,7 +118,7 @@ def main():
         print("✅ Autonomous agents integrated without breaking chat")
         print("\n💡 The chat issue should now be fixed in the app!")
     else:
-        print("❌ FAILED: Chat still has responsiveness issues")
+        print("[ERROR] FAILED: Chat still has responsiveness issues")
         print("   Check error messages above for details")
 
     return success

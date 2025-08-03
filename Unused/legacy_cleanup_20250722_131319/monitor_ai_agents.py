@@ -93,7 +93,7 @@ def monitor_agent_activity():
 
                 # Show recent learning session
                 recent_session = window.agent_learning_data[agent_name]['learning_sessions'][-1]
-                print(f"   📚 Latest learning: {recent_session['type']} - {'✅ Success' if recent_session['success'] else '❌ Failed'}")
+                print(f"   📚 Latest learning: {recent_session['type']} - {'✅ Success' if recent_session['success'] else '[ERROR] Failed'}")
 
                 # Verify it's actually learning (data changed)
                 if after_sessions > before_sessions:
@@ -102,7 +102,7 @@ def monitor_agent_activity():
                     print(f"   🔬 PROOF: Agent updated existing knowledge!")
 
             else:
-                print(f"   ❌ No learning data recorded - agent may not be fully connected")
+                print(f"   [ERROR] No learning data recorded - agent may not be fully connected")
 
             time.sleep(0.5)  # Small delay between agents
 
@@ -118,7 +118,7 @@ def monitor_agent_activity():
                     recent_thought = thoughts[-1] if thoughts else "No thoughts yet"
                     print(f"   🧠 {agent}: {recent_thought[:60]}...")
         else:
-            print("❌ No agent thought streams detected")
+            print("[ERROR] No agent thought streams detected")
 
         # Test real-time collaboration
         print(f"\n🔄 TESTING REAL-TIME COLLABORATION:")
@@ -184,9 +184,9 @@ def monitor_agent_activity():
                     print(f"✅ AI response generated: {response[:80]}...")
                     print("🔬 PROOF: AI is generating real intelligent responses!")
                 else:
-                    print("❌ AI response was empty or too short")
+                    print("[ERROR] AI response was empty or too short")
             except Exception as e:
-                print(f"❌ AI enhancement test failed: {e}")
+                print(f"[ERROR] AI enhancement test failed: {e}")
 
         # Summary of evidence
         print(f"\n🎯 EVIDENCE SUMMARY:")
@@ -216,7 +216,7 @@ def monitor_agent_activity():
         return True
 
     except Exception as e:
-        print(f"❌ Error during monitoring: {e}")
+        print(f"[ERROR] Error during monitoring: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -296,7 +296,7 @@ def continuous_monitoring():
         print(f"\n🛑 Monitoring stopped by user")
         print("✅ Continuous monitoring completed successfully!")
     except Exception as e:
-        print(f"❌ Error in continuous monitoring: {e}")
+        print(f"[ERROR] Error in continuous monitoring: {e}")
 
 def main():
     """Main monitoring function"""

@@ -33,7 +33,7 @@ try:
 
     AGENT_SYSTEM_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"⚠️ Agent system not available: {e}")
+    logger.warning(f"[WARN] Agent system not available: {e}")
     MultiAgentManager = None
     AgentRole = None
     AgentTask = None
@@ -84,7 +84,7 @@ class LyrixaAgentInterface:
         """
         try:
             if not AGENT_SYSTEM_AVAILABLE:
-                logger.error("❌ Agent system not available")
+                logger.error("[ERROR] Agent system not available")
                 return False
 
             # Initialize multi-agent manager
@@ -105,7 +105,7 @@ class LyrixaAgentInterface:
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to initialize agent system: {e}")
+            logger.error(f"[ERROR] Failed to initialize agent system: {e}")
             return False
 
     async def _register_lyrixa_agent(self):
@@ -134,7 +134,7 @@ class LyrixaAgentInterface:
             logger.info(f"✅ Lyrixa agent registered: {self.agent_id}")
 
         except Exception as e:
-            logger.error(f"❌ Failed to register Lyrixa agent: {e}")
+            logger.error(f"[ERROR] Failed to register Lyrixa agent: {e}")
 
     async def execute_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -204,7 +204,7 @@ class LyrixaAgentInterface:
                 return result
 
         except Exception as e:
-            logger.error(f"❌ Task execution failed: {e}")
+            logger.error(f"[ERROR] Task execution failed: {e}")
             return {"error": str(e), "task_id": task_id}
 
     async def _execute_task_fallback(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -276,7 +276,7 @@ class LyrixaAgentInterface:
             return response
 
         except Exception as e:
-            logger.error(f"❌ Communication failed: {e}")
+            logger.error(f"[ERROR] Communication failed: {e}")
             return {"error": str(e), "communication_id": communication_id}
 
     async def get_agent_status(self) -> Dict[str, Any]:
@@ -347,7 +347,7 @@ class LyrixaAgentInterface:
             }
 
         except Exception as e:
-            logger.error(f"❌ Task delegation failed: {e}")
+            logger.error(f"[ERROR] Task delegation failed: {e}")
             return {"error": str(e)}
 
     async def _find_suitable_agent(self, task: Dict[str, Any]) -> Optional[str]:

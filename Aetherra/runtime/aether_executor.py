@@ -33,7 +33,7 @@ try:
     )
     from Aetherra.lyrixa.agents.self_question_generator import SelfQuestionGenerator
 except ImportError:
-    print("⚠️ Using local import paths for demo")
+    print("[WARN] Using local import paths for demo")
     import sys
 
     sys.path.append(".")
@@ -623,7 +623,7 @@ async def main():
 
     except Exception as e:
         print(f"\n❌ Aether script execution encountered an error: {e}")
-        print("🔧 This indicates integration issues that need to be resolved")
+        print("[TOOL] This indicates integration issues that need to be resolved")
         raise
 
 

@@ -48,7 +48,7 @@ def test_window_factory_integration():
         return True
 
     except Exception as e:
-        print(f"❌ Window factory integration test failed: {e}")
+        print(f"[ERROR] Window factory integration test failed: {e}")
         return False
 
 
@@ -98,11 +98,11 @@ def test_launcher_compatibility():
             print("✅ Launcher compatibility test PASSED")
             return True
         else:
-            print("⚠️ Launcher file not found, skipping compatibility test")
+            print("[WARN] Launcher file not found, skipping compatibility test")
             return True
 
     except Exception as e:
-        print(f"❌ Launcher compatibility test failed: {e}")
+        print(f"[ERROR] Launcher compatibility test failed: {e}")
         return False
 
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     if success:
         print_summary()
     else:
-        print("\n❌ INTEGRATION TESTS FAILED")
+        print("\n[ERROR] INTEGRATION TESTS FAILED")
         print("Check the output above for details")
 
     sys.exit(0 if success else 1)

@@ -2,7 +2,7 @@
 """
 Careful World-Class Integration
 ===============================
-🔧 More careful integration approach using proper string replacement
+[TOOL] More careful integration approach using proper string replacement
 """
 
 import sys
@@ -27,7 +27,7 @@ def create_memory_tab_replacement():
             return memory_widget
 
         except Exception as e:
-            print(f"⚠️  World-class memory core not available: {e}")
+            print(f"[WARN]  World-class memory core not available: {e}")
 
             # Fallback to lightweight version
             try:
@@ -36,7 +36,7 @@ def create_memory_tab_replacement():
                 return memory_widget
 
             except Exception as e2:
-                print(f"⚠️  Lightweight memory core not available: {e2}")
+                print(f"[WARN]  Lightweight memory core not available: {e2}")
 
                 # Final fallback to original implementation
                 widget = QWidget()
@@ -68,7 +68,7 @@ def create_goal_tab_replacement():
             return goal_widget
 
         except Exception as e:
-            print(f"⚠️  World-class goal tracker not available: {e}")
+            print(f"[WARN]  World-class goal tracker not available: {e}")
 
             # Fallback to lightweight version
             try:
@@ -107,7 +107,7 @@ def create_goal_tab_replacement():
                 return widget
 
             except Exception as e2:
-                print(f"⚠️  Lightweight goal tracker not available: {e2}")
+                print(f"[WARN]  Lightweight goal tracker not available: {e2}")
 
                 # Final fallback to original implementation
                 widget = QWidget()
@@ -174,7 +174,7 @@ def create_helper_methods():
 def apply_integration():
     """Apply integration using precise string replacement"""
 
-    print("🔧 Applying World-Class Integration...")
+    print("[TOOL] Applying World-Class Integration...")
 
     # Read the file
     hybrid_window_path = project_root / "Aetherra" / "lyrixa" / "gui" / "hybrid_window.py"
@@ -272,7 +272,7 @@ def test_integration():
 def main():
     """Main function"""
 
-    print("🔧 Careful World-Class Integration")
+    print("[TOOL] Careful World-Class Integration")
     print("=" * 40)
 
     if apply_integration():

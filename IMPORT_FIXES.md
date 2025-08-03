@@ -1,4 +1,4 @@
-# 🔧 Fixing Import Errors in Aetherra
+# [TOOL] Fixing Import Errors in Aetherra
 
 When you fork the Aetherra repository, you might encounter import errors. This guide will help you resolve them quickly.
 
@@ -39,15 +39,15 @@ python fix_imports.py
 ```
 
 The quick fix script will:
-- ✅ Create missing `__init__.py` files
-- ✅ Check your Python version
-- ✅ Test basic import patterns
-- ✅ Complete in under 30 seconds
+- [OK] Create missing `__init__.py` files
+- [OK] Check your Python version
+- [OK] Test basic import patterns
+- [OK] Complete in under 30 seconds
 
 The full fix script additionally:
-- ✅ Install missing dependencies (may timeout on slow connections)
-- ✅ Generate detailed diagnostic report
-- ✅ Test advanced import patterns
+- [OK] Install missing dependencies (may timeout on slow connections)
+- [OK] Generate detailed diagnostic report
+- [OK] Test advanced import patterns
 
 ## Manual Fix Steps
 
@@ -79,13 +79,13 @@ Ensure these key directories have `__init__.py` files:
 
 ```
 Aetherra/
-├── __init__.py ✅
+├── __init__.py [OK]
 ├── aetherra_core/
 │   ├── __init__.py ❗ (often missing)
 │   ├── engine/
 │   │   └── __init__.py ❗ (often missing)
 │   ├── memory/
-│   │   └── __init__.py ✅
+│   │   └── __init__.py [OK]
 │   ├── plugins/
 │   │   └── __init__.py ❗ (often missing)
 │   └── orchestration/

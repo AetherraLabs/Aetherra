@@ -23,14 +23,14 @@ def test_async_handling():
         if hasattr(SelfExtendingPanelSystem, '_get_engine_response'):
             print("✅ _get_engine_response method exists")
         else:
-            print("❌ _get_engine_response method missing")
+            print("[ERROR] _get_engine_response method missing")
             return False
 
         print("✅ Self-extending system fixes appear to be working")
         return True
 
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -51,7 +51,7 @@ The async handling issue has been fixed. You can now use:
    /self_expand I need better debugging tools
    /help
 
-🔧 What was fixed:
+[TOOL] What was fixed:
 - LyrixaEngine.process_user_input() returns a coroutine
 - Added _get_engine_response() to handle async properly
 - Fixed all engine calls in the self-extending system
@@ -69,4 +69,4 @@ if __name__ == "__main__":
     if success:
         show_usage_instructions()
     else:
-        print("\n❌ Fixes may need additional work. Check the errors above.")
+        print("\n[ERROR] Fixes may need additional work. Check the errors above.")

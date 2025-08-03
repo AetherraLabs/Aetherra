@@ -143,7 +143,7 @@ class LyrixaReflexiveLoop:
             print("✅ Self-awareness initialized from memory")
 
         except Exception as e:
-            print(f"⚠️ Error initializing self-awareness: {e}")
+            print(f"[WARN] Error initializing self-awareness: {e}")
             # Start with fresh awareness
             await self._initialize_fresh_awareness()
 
@@ -169,7 +169,7 @@ class LyrixaReflexiveLoop:
                 print(f"📝 Updated project understanding: {project_info}")
 
         except Exception as e:
-            print(f"⚠️ Error updating project understanding: {e}")
+            print(f"[WARN] Error updating project understanding: {e}")
 
     async def analyze_user_patterns(self, interaction_data: Dict[str, Any]):
         """Analyze user behavior patterns from recent interactions"""
@@ -195,7 +195,7 @@ class LyrixaReflexiveLoop:
                 await self._update_user_pattern(pattern)
 
         except Exception as e:
-            print(f"⚠️ Error analyzing user patterns: {e}")
+            print(f"[WARN] Error analyzing user patterns: {e}")
 
     async def generate_insights(self) -> List[ConversationInsight]:
         """Generate insights about the user and project based on recent interactions"""
@@ -221,7 +221,7 @@ class LyrixaReflexiveLoop:
             print(f"💡 Generated {len(insights)} insights")
 
         except Exception as e:
-            print(f"⚠️ Error generating insights: {e}")
+            print(f"[WARN] Error generating insights: {e}")
 
         return insights
 
@@ -259,7 +259,7 @@ class LyrixaReflexiveLoop:
             print(f"✅ Completed self-reflection with {len(reflections)} insights")
 
         except Exception as e:
-            print(f"⚠️ Error in self-reflection: {e}")
+            print(f"[WARN] Error in self-reflection: {e}")
 
         return reflections
 
@@ -313,7 +313,7 @@ class LyrixaReflexiveLoop:
                 return tech_insight
 
         except Exception as e:
-            print(f"⚠️ Error generating contextual insight: {e}")
+            print(f"[WARN] Error generating contextual insight: {e}")
 
         return None
 
@@ -433,7 +433,7 @@ class LyrixaReflexiveLoop:
             )
 
         except Exception as e:
-            print(f"⚠️ Error inferring project understanding: {e}")
+            print(f"[WARN] Error inferring project understanding: {e}")
             # Fallback to basic understanding
             self.project_understanding = ProjectUnderstanding(
                 project_name="Current Project",

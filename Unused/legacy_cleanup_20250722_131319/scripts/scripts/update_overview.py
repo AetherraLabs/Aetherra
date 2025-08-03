@@ -244,7 +244,7 @@ class OverviewUpdater:
     def update_overview(self) -> bool:
         """Main method to update the overview file."""
         if not self.overview_file.exists():
-            print(f"❌ Overview file not found: {self.overview_file}")
+            print(f"[ERROR] Overview file not found: {self.overview_file}")
             return False
 
         print("🔍 Analyzing project state...")
@@ -258,7 +258,7 @@ class OverviewUpdater:
             f"📊 Found {stats['files_total']} files, {stats['core_modules']} core modules"
         )
         print(f"🎯 Active goals: {len(goals_info['active_goals'])}")
-        print(f"🌐 Website status: {'✅' if website_status['cname_exists'] else '❌'}")
+        print(f"🌐 Website status: {'✅' if website_status['cname_exists'] else '[ERROR]'}")
 
         # Read current overview content
         with open(self.overview_file, encoding="utf-8") as f:
@@ -319,7 +319,7 @@ class OverviewUpdater:
                 )
                 print("📝 Automatically committed overview updates")
             except subprocess.CalledProcessError:
-                print("⚠️ Could not auto-commit changes")
+                print("[WARN] Could not auto-commit changes")
 
 
 def main():
@@ -334,7 +334,7 @@ def main():
         print("\n🎉 Project overview update complete!")
         print("📖 View the updated overview at PROJECT_OVERVIEW.md")
     else:
-        print("❌ Failed to update project overview")
+        print("[ERROR] Failed to update project overview")
         sys.exit(1)
 
 

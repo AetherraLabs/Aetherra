@@ -76,10 +76,10 @@ def test_performance_dashboard_integration():
         return True
 
     except FileNotFoundError:
-        print(f"❌ File not found: {hybrid_window_path}")
+        print(f"[ERROR] File not found: {hybrid_window_path}")
         return False
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         return False
 
 
@@ -112,7 +112,7 @@ def test_performance_dashboard_configuration():
         return True
 
     except Exception as e:
-        print(f"❌ Performance dashboard configuration test failed: {e}")
+        print(f"[ERROR] Performance dashboard configuration test failed: {e}")
         return False
 
 
@@ -142,6 +142,6 @@ if __name__ == "__main__":
         print("✅ Tab widget properly configured")
         print("✅ Simulation data functional")
     else:
-        print("❌ SOME TESTS FAILED - Check the output above")
+        print("[ERROR] SOME TESTS FAILED - Check the output above")
 
     sys.exit(0 if success else 1)

@@ -163,7 +163,7 @@ class AetherraFileIntelligence:
         # Export live index
         self._export_live_index()
 
-        logger.info(f"✅ Scan complete: {len(self.file_registry)} files analyzed")
+        logger.info(f"[OK] Scan complete: {len(self.file_registry)} files analyzed")
         return self.file_registry
 
     def _analyze_file(self, file_path: Path) -> FileMetadata:
@@ -789,7 +789,7 @@ def main():
     if args.scan:
         logger.info("🔍 Scanning project files...")
         intelligence.scan_project_files()
-        logger.info("✅ File scan complete")
+        logger.info("[OK] File scan complete")
 
     if args.analyze:
         logger.info("🧠 Analyzing system health...")

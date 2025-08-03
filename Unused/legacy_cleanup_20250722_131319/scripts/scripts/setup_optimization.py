@@ -12,7 +12,7 @@ from pathlib import Path
 
 def run_command(command, description):
     """Run a command and handle errors gracefully"""
-    print(f"📦 {description}...")
+    print(f"[DISC] {description}...")
     try:
         result = subprocess.run(
             command, shell=True, check=True, capture_output=True, text=True
@@ -20,7 +20,7 @@ def run_command(command, description):
         print(f"✅ {description} - Success!")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ {description} - Failed: {e.stderr}")
+        print(f"[ERROR] {description} - Failed: {e.stderr}")
         return False
 
 
@@ -28,7 +28,7 @@ def check_python_version():
     """Check if Python version is compatible"""
     version = sys.version_info
     if version.major < 3 or (version.major == 3 and version.minor < 8):
-        print("❌ Python 3.8+ required. Current version:", sys.version)
+        print("[ERROR] Python 3.8+ required. Current version:", sys.version)
         return False
     print(f"✅ Python {version.major}.{version.minor}.{version.micro} detected")
     return True
@@ -45,7 +45,7 @@ def main():
 
     # Check if we're in the right directory
     if not Path("ui/aetherplex_gui.py").exists():
-        print("❌ Please run this script from the aetherra project root directory")
+        print("[ERROR] Please run this script from the aetherra project root directory")
         sys.exit(1)
 
     print("🎯 Installing essential packages for peak performance...")
@@ -119,7 +119,7 @@ def main():
             )
             print(f"✅ {name} working correctly")
         except subprocess.CalledProcessError:
-            print(f"⚠️  {name} installation may have issues")
+            print(f"[WARN]  {name} installation may have issues")
 
     print("\\n🎉 Setup complete!")
     print("\\n📚 Next steps:")
@@ -144,7 +144,7 @@ def main():
         print("✅ aetherra GUI is ready to launch!")
     except subprocess.CalledProcessError as e:
         print(
-            "⚠️  GUI import test failed - but this may be normal if display is not available"
+            "[WARN]  GUI import test failed - but this may be normal if display is not available"
         )
 
     print("\\n🚀 aetherra/Lyrixais optimized and ready!")

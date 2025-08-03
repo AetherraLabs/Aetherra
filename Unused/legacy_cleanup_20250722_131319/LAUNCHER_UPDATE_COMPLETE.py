@@ -32,7 +32,7 @@ def print_launcher_update_summary():
         "🎯 Goal Tracking and Management",
         "📊 Real-time Performance Analytics",
         "🤖 Live Agent Monitoring",
-        "🔧 Comprehensive Plugin Management",
+        "[TOOL] Comprehensive Plugin Management",
         "💬 Enhanced Chat Interface",
         "🔄 Self-Improvement Engine",
     ]
@@ -45,7 +45,7 @@ def print_launcher_update_summary():
     print("🚀 TO START THE NEW HYBRID UI:")
     print("   python Aetherra/lyrixa/launcher.py")
     print("")
-    print("🔧 ALTERNATIVE LAUNCH METHODS:")
+    print("[TOOL] ALTERNATIVE LAUNCH METHODS:")
     print("   python aetherra_hybrid_launcher.py")
     print("   python Aetherra/lyrixa/launcher.py --ui-mode hybrid")
 

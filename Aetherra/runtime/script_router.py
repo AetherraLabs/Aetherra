@@ -77,7 +77,7 @@ class ScriptRouter:
                 f"{i + 1}. **{suggestion['name']}** ({suggestion['category']})\n"
             )
             response += f"   {suggestion['description']}\n"
-            response += f"   ⏱️ {suggestion['execution_time']} | 🔧 {suggestion['complexity']}\n\n"
+            response += f"   ⏱️ {suggestion['execution_time']} | [TOOL] {suggestion['complexity']}\n\n"
 
         if len(suggestions) > 3:
             response += f"... and {len(suggestions) - 3} more scripts available.\n"
@@ -114,7 +114,7 @@ class ScriptRouter:
 
         for script_name, script_data in scripts.items():
             response += f"• **{script_name}**: {script_data['description']}\n"
-            response += f"  ⏱️ {script_data.get('execution_time', 'N/A')} | 🔧 {script_data.get('complexity', 'N/A')}\n\n"
+            response += f"  ⏱️ {script_data.get('execution_time', 'N/A')} | [TOOL] {script_data.get('complexity', 'N/A')}\n\n"
 
         return response
 

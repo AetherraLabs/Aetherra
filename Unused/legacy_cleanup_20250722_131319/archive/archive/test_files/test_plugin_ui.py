@@ -168,4 +168,4 @@ if __name__ == "__main__":
             "\n🎉 All tests passed! The plugin manager should now show your plugins in Lyrixa."
         )
     else:
-        print("\n💥 Tests failed. There may be integration issues.")
+        print("\n[FAIL] Tests failed. There may be integration issues.")

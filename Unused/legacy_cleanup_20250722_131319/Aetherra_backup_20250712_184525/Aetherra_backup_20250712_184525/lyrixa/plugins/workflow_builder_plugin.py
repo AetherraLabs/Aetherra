@@ -1,5 +1,5 @@
 """
-🔧 WORKFLOW BUILDER PLUGIN
+[TOOL] WORKFLOW BUILDER PLUGIN
 ==========================
 
 A flagship plugin that allows users to create, edit, and manage automated workflows

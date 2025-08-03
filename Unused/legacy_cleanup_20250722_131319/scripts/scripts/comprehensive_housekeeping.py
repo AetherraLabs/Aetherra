@@ -184,7 +184,7 @@ class ProjectHousekeeper:
                 })
             except Exception as e:
                 self.cleanup_report["warnings"].append(f"Failed to move {source}: {e}")
-                print(f"    ⚠️ Failed to move {source.name}: {e}")
+                print(f"    [WARN] Failed to move {source.name}: {e}")
         else:
             print(f"    📄 Would move: {source.name} → {target_dir.name}/")
 
@@ -331,7 +331,7 @@ class ProjectHousekeeper:
             report_content += f"- `{target_dir}/` - {description}\n"
 
         if self.cleanup_report["warnings"]:
-            report_content += "\n## ⚠️ Warnings\n\n"
+            report_content += "\n## [WARN] Warnings\n\n"
             for warning in self.cleanup_report["warnings"]:
                 report_content += f"- {warning}\n"
 
@@ -434,7 +434,7 @@ def main():
         housekeeper.run_housekeeping(dry_run=True)
 
     else:
-        print("⚠️ This will reorganize your entire project structure!")
+        print("[WARN] This will reorganize your entire project structure!")
         response = input("Continue? (yes/no): ").lower().strip()
 
         if response == 'yes':
@@ -442,10 +442,10 @@ def main():
             print("\n✅ Housekeeping complete!")
             print(f"📄 Files moved: {len(result['moved_files'])}")
             print(f"📁 Directories created: {len(result['created_directories'])}")
-            print(f"⚠️ Warnings: {len(result['warnings'])}")
+            print(f"[WARN] Warnings: {len(result['warnings'])}")
             print("\n📋 Check HOUSEKEEPING_REPORT.md for details")
         else:
-            print("❌ Housekeeping cancelled")
+            print("[ERROR] Housekeeping cancelled")
 
 
 if __name__ == "__main__":

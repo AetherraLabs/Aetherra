@@ -71,7 +71,7 @@ class LyrixaIntelligence:
                     )
                 logger.info(f"📚 Loaded {len(self.memory_patterns)} memory patterns")
         except Exception as e:
-            logger.warning(f"⚠️ Could not load intelligence data: {e}")
+            logger.warning(f"[WARN] Could not load intelligence data: {e}")
 
     def _save_intelligence_data(self):
         """Save current intelligence data to disk."""
@@ -88,7 +88,7 @@ class LyrixaIntelligence:
             with open(self.intelligence_data_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            logger.error(f"❌ Failed to save intelligence data: {e}")
+            logger.error(f"[ERROR] Failed to save intelligence data: {e}")
 
     def analyze_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -580,7 +580,7 @@ class LyrixaIntelligence:
             logger.info(f"📊 Intelligence report exported to: {output_path}")
             return str(output_path)
         except Exception as e:
-            logger.error(f"❌ Failed to export intelligence report: {e}")
+            logger.error(f"[ERROR] Failed to export intelligence report: {e}")
             return ""
 
     def _get_top_patterns(self, count: int) -> List[Dict[str, Any]]:

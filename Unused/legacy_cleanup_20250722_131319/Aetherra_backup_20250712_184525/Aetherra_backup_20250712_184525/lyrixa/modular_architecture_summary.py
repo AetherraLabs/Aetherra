@@ -77,9 +77,9 @@ def show_modular_status():
             if file_path.exists():
                 print(f"✅ {name:25} | {description}")
             else:
-                print(f"❌ {name:25} | Not found: {path}")
+                print(f"[ERROR] {name:25} | Not found: {path}")
         except Exception as e:
-            print(f"⚠️ {name:25} | Check failed: {e}")
+            print(f"[WARN] {name:25} | Check failed: {e}")
 
     print("\n🎯 RECOMMENDATION: Keep the modular design as-is!")
     print("   Each component works independently and connects when needed.")

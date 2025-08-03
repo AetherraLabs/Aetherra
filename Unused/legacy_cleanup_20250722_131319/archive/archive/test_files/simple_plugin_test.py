@@ -27,7 +27,7 @@ def test_plugin_discovery_simple():
         )
 
         print("✅ Plugin manager imported successfully")
-        print(f"📦 Registry: {len(PLUGIN_REGISTRY)} plugins")
+        print(f"[DISC] Registry: {len(PLUGIN_REGISTRY)} plugins")
         print(f"📋 Metadata: {len(PLUGIN_METADATA)} entries")
         print(f"🎯 Intents: {len(PLUGIN_INTENTS)} entries")
 

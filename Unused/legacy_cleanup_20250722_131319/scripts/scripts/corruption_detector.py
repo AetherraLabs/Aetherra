@@ -72,7 +72,7 @@ class CorruptionDetector:
             print(f"📄 Checking {file_path}...")
 
             if not file_path.exists():
-                print(f"   ❌ MISSING: File not found")
+                print(f"   [ERROR] MISSING: File not found")
                 corruption_report["missing_files"].append(str(file_path))
                 corruption_report["total_issues"] += 1
                 continue
@@ -81,7 +81,7 @@ class CorruptionDetector:
             try:
                 file_size = file_path.stat().st_size
                 if file_size == 0:
-                    print(f"   ❌ EMPTY: File is completely empty")
+                    print(f"   [ERROR] EMPTY: File is completely empty")
                     corruption_report["empty_files"].append(str(file_path))
                     corruption_report["total_issues"] += 1
                     continue
@@ -98,7 +98,7 @@ class CorruptionDetector:
                             missing_signatures.append(signature)
 
                     if missing_signatures:
-                        print(f"   ⚠️ SUSPICIOUS: Missing expected content")
+                        print(f"   [WARN] SUSPICIOUS: Missing expected content")
                         corruption_report["suspicious_files"].append(
                             {
                                 "file": str(file_path),
@@ -112,7 +112,7 @@ class CorruptionDetector:
                 # Check for signs of corruption
                 corruption_indicators = self._detect_corruption_indicators(content)
                 if corruption_indicators:
-                    print(f"   ❌ CORRUPTED: {', '.join(corruption_indicators)}")
+                    print(f"   [ERROR] CORRUPTED: {', '.join(corruption_indicators)}")
                     corruption_report["corrupted_files"].append(
                         {
                             "file": str(file_path),
@@ -126,7 +126,7 @@ class CorruptionDetector:
                 print(f"   ✅ OK: File appears healthy")
 
             except Exception as e:
-                print(f"   ❌ ERROR: Could not read file - {e}")
+                print(f"   [ERROR] ERROR: Could not read file - {e}")
                 corruption_report["corrupted_files"].append(
                     {"file": str(file_path), "error": str(e)}
                 )
@@ -170,7 +170,7 @@ class CorruptionDetector:
             file_path = Path(file_path_str)
             recovery_report["attempted_recoveries"] += 1
 
-            print(f"🔧 Attempting to recover {file_path}...")
+            print(f"[TOOL] Attempting to recover {file_path}...")
 
             # Look for backup files
             backup_found = self._find_and_restore_backup(file_path)
@@ -186,7 +186,7 @@ class CorruptionDetector:
                     }
                 )
             else:
-                print(f"   ❌ No backup found")
+                print(f"   [ERROR] No backup found")
                 recovery_report["failed_recoveries"].append(str(file_path))
                 recovery_report["recovery_details"].append(
                     {
@@ -296,7 +296,7 @@ class CorruptionDetector:
                 json.dump(reports, f, indent=2)
 
         except Exception as e:
-            print(f"⚠️ Failed to log corruption report: {e}")
+            print(f"[WARN] Failed to log corruption report: {e}")
 
     def get_corruption_history(self) -> Dict[str, Any]:
         """Get historical corruption data"""
@@ -351,7 +351,7 @@ def run_corruption_check() -> bool:
             print("🎉 All issues resolved!")
             return True
         else:
-            print(f"⚠️ {post_recovery_report['total_issues']} issues remain")
+            print(f"[WARN] {post_recovery_report['total_issues']} issues remain")
             return False
     else:
         print("🎉 No corruption detected!")
@@ -377,4 +377,4 @@ if __name__ == "__main__":
         print(f"   Recent issues: {summary['recent_issues']}")
         print(f"   Average issues per scan: {summary['average_issues_per_scan']:.1f}")
 
-    print(f"\n🎯 OVERALL STATUS: {'✅ HEALTHY' if success else '⚠️ NEEDS ATTENTION'}")
+    print(f"\n🎯 OVERALL STATUS: {'✅ HEALTHY' if success else '[WARN] NEEDS ATTENTION'}")

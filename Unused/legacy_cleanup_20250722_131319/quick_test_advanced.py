@@ -42,7 +42,7 @@ def hello():
         if metadata:
             print(f"✅ Metadata parsed: {metadata.name}")
         else:
-            print("⚠️ No metadata found")
+            print("[WARN] No metadata found")
 
         # Test intelligent merge
         new_code = '''def goodbye():
@@ -59,7 +59,7 @@ def hello():
         return True
 
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -69,4 +69,4 @@ if __name__ == "__main__":
     if success:
         print("\n🎉 All tests passed! Advanced editor is working correctly.")
     else:
-        print("\n❌ Tests failed.")
+        print("\n[ERROR] Tests failed.")

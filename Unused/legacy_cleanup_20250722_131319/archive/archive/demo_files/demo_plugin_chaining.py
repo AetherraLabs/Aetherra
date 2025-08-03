@@ -46,7 +46,7 @@ class DataGeneratorPlugin(LyrixaPlugin):
         self.chain_priority = 0.9
 
     async def initialize(self, lyrixa_context):
-        print(f"🔧 Initializing {self.name}")
+        print(f"[TOOL] Initializing {self.name}")
         return True
 
     async def execute(self, command, params=None):
@@ -100,7 +100,7 @@ class DataTransformerPlugin(LyrixaPlugin):
         self.chain_priority = 0.7
 
     async def initialize(self, lyrixa_context):
-        print(f"🔧 Initializing {self.name}")
+        print(f"[TOOL] Initializing {self.name}")
         return True
 
     async def execute(self, command, params=None):
@@ -177,7 +177,7 @@ class DataAnalyzerPlugin(LyrixaPlugin):
         self.chain_priority = 0.5
 
     async def initialize(self, lyrixa_context):
-        print(f"🔧 Initializing {self.name}")
+        print(f"[TOOL] Initializing {self.name}")
         return True
 
     async def execute(self, command, params=None):
@@ -254,7 +254,7 @@ async def demonstrate_plugin_chaining():
     print()
 
     # Setup
-    print("🔧 Setting up plugin manager...")
+    print("[TOOL] Setting up plugin manager...")
     manager = LyrixaPluginManager("demo_plugins")
 
     # Register demo plugins
@@ -442,7 +442,7 @@ if __name__ == "__main__":
             print("\n🎯 ALL DEMONSTRATIONS SUCCESSFUL!")
             print("Plugin chaining is fully integrated and working.")
         else:
-            print("\n⚠️  Some issues detected during demonstration.")
+            print("\n[WARN]  Some issues detected during demonstration.")
 
         sys.exit(0 if success else 1)
 

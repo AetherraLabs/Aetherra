@@ -1,4 +1,4 @@
-# 📦 Aetherra Dependencies Guide
+# [DISC] Aetherra Dependencies Guide
 
 This guide explains the different dependency files and installation options for Aetherra v1.0.0.
 
@@ -32,17 +32,17 @@ pip install -r requirements_dev.txt
 
 ## 📋 **Dependency Files Overview**
 
-| File | Purpose | Use Case |
-|------|---------|----------|
-| `requirements_minimal.txt` | Core functionality only | Quick testing, minimal installs |
-| `requirements.txt` | Standard installation | Most users, production deployment |
-| `requirements_enhanced.txt` | Advanced features | AI research, enterprise development |
-| `requirements_dev.txt` | Development tools | Contributors, maintainers |
-| `playground_requirements.txt` | Playground only | Streamlit demo, educational use |
+| File                          | Purpose                 | Use Case                            |
+| ----------------------------- | ----------------------- | ----------------------------------- |
+| `requirements_minimal.txt`    | Core functionality only | Quick testing, minimal installs     |
+| `requirements.txt`            | Standard installation   | Most users, production deployment   |
+| `requirements_enhanced.txt`   | Advanced features       | AI research, enterprise development |
+| `requirements_dev.txt`        | Development tools       | Contributors, maintainers           |
+| `playground_requirements.txt` | Playground only         | Streamlit demo, educational use     |
 
 ---
 
-## 🔧 **Installation by Use Case**
+## [TOOL] **Installation by Use Case**
 
 ### **🎮 Playground Only**
 Just want to try the interactive playground?
@@ -216,12 +216,12 @@ pip install -r requirements.txt
 
 ## 📊 **Installation Size Estimates**
 
-| Installation Type | Disk Space | Download Size |
-|------------------|------------|---------------|
-| Minimal | ~50 MB | ~20 MB |
-| Standard | ~200 MB | ~80 MB |
-| Enhanced | ~2-5 GB | ~1-2 GB |
-| Full (with models) | ~10+ GB | ~5+ GB |
+| Installation Type  | Disk Space | Download Size |
+| ------------------ | ---------- | ------------- |
+| Minimal            | ~50 MB     | ~20 MB        |
+| Standard           | ~200 MB    | ~80 MB        |
+| Enhanced           | ~2-5 GB    | ~1-2 GB       |
+| Full (with models) | ~10+ GB    | ~5+ GB        |
 
 ---
 

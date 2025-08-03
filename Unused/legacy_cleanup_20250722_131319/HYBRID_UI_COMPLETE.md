@@ -31,7 +31,7 @@ The Lyrixa Hybrid UI has been successfully implemented and placed in the correct
 🎉 All tests passed! Hybrid UI is ready for deployment.
 ```
 
-## 🔧 How to Use
+## [TOOL] How to Use
 
 ### Option 1: Environment Variable
 ```bash
@@ -97,14 +97,14 @@ The hybrid UI foundation is complete and ready for:
 
 ## 🔌 Compatibility Matrix
 
-| Feature           | Classic UI | Hybrid UI | Status        |
-| ----------------- | ---------- | --------- | ------------- |
-| Basic Chat        | ✅          | ✅         | ✅ Compatible  |
-| Plugin System     | ✅          | ✅         | ✅ Compatible  |
-| Model Selection   | ✅          | ✅         | ✅ Compatible  |
-| System Monitoring | ✅          | ✅         | ✅ Enhanced    |
-| Web Integration   | ❌          | ✅         | 🆕 New Feature |
-| Modern Styling    | ⚠️ Basic    | ✅         | 🆕 Enhanced    |
+| Feature           | Classic UI   | Hybrid UI | Status        |
+| ----------------- | ------------ | --------- | ------------- |
+| Basic Chat        | ✅            | ✅         | ✅ Compatible  |
+| Plugin System     | ✅            | ✅         | ✅ Compatible  |
+| Model Selection   | ✅            | ✅         | ✅ Compatible  |
+| System Monitoring | ✅            | ✅         | ✅ Enhanced    |
+| Web Integration   | [ERROR]      | ✅         | 🆕 New Feature |
+| Modern Styling    | [WARN] Basic | ✅         | 🆕 Enhanced    |
 
 ---
 

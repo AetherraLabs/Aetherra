@@ -113,7 +113,7 @@ class AetherraFileWatcher(FileSystemEventHandler):
         """Handle file move events."""
         if not event.is_directory:
             if hasattr(event, "dest_path"):
-                logger.info(f"📦 File moved: {event.src_path} -> {event.dest_path}")
+                logger.info(f"[DISC] File moved: {event.src_path} -> {event.dest_path}")
                 if self._should_process_file(event.dest_path):
                     self.pending_changes.add(event.dest_path)
 
@@ -162,7 +162,7 @@ class AetherraFileWatcher(FileSystemEventHandler):
                 # Check for new issues
                 if updated_metadata.risk_level == "high":
                     logger.warning(
-                        f"⚠️ High risk detected in modified file: {file_path}"
+                        f"[WARN] High risk detected in modified file: {file_path}"
                     )
 
             except Exception as e:
@@ -186,7 +186,7 @@ class AetherraFileWatcher(FileSystemEventHandler):
 
     def _handle_system_event(self, event_info: str):
         """Handle system-level events."""
-        logger.info(f"🔧 System event: {event_info}")
+        logger.info(f"[TOOL] System event: {event_info}")
 
         # Schedule analysis based on event type
         if "critical" in event_info.lower():
@@ -204,7 +204,7 @@ class AetherraFileWatcher(FileSystemEventHandler):
 
         if broken_deps:
             logger.warning(
-                f"⚠️ Deletion of {deleted_file} may break dependencies in: {broken_deps}"
+                f"[WARN] Deletion of {deleted_file} may break dependencies in: {broken_deps}"
             )
 
     def _auto_relocate_file(self, file_path: str, target_dir: str):
@@ -260,7 +260,7 @@ class AetherraFileWatcher(FileSystemEventHandler):
                 if os.path.exists(file_path):
                     metadata = self.intelligence._analyze_file(Path(file_path))
                     if metadata.risk_level == "high":
-                        logger.warning(f"⚠️ High risk file detected: {file_path}")
+                        logger.warning(f"[WARN] High risk file detected: {file_path}")
 
             self.pending_changes.clear()
         except Exception as e:
@@ -278,7 +278,7 @@ class AetherraFileWatcher(FileSystemEventHandler):
 
             if low_risk_suggestions:
                 logger.info(
-                    f"🔧 Auto-executing {len(low_risk_suggestions)} low-risk optimizations"
+                    f"[TOOL] Auto-executing {len(low_risk_suggestions)} low-risk optimizations"
                 )
                 results = self.intelligence.execute_safe_optimization(
                     low_risk_suggestions, dry_run=False
@@ -425,7 +425,7 @@ class AetherraFileWatcherDaemon:
         self.is_running = True
         self.start_time = datetime.now()
 
-        logger.info("✅ Aetherra File Watcher Daemon started successfully")
+        logger.info("[OK] Aetherra File Watcher Daemon started successfully")
 
         try:
             while self.is_running:
@@ -448,7 +448,7 @@ class AetherraFileWatcherDaemon:
         self.intelligence._update_database()
 
         runtime = datetime.now() - self.start_time if self.start_time else None
-        logger.info(f"✅ Daemon stopped. Runtime: {runtime}")
+        logger.info(f"[OK] Daemon stopped. Runtime: {runtime}")
 
     def status(self) -> Dict[str, Any]:
         """Get daemon status information."""
@@ -484,7 +484,7 @@ class AetherraFileWatcherDaemon:
         try:
             # This would need integration with the Aetherra runtime
             # For now, just log the trigger
-            logger.info(f"🔧 Triggering Aether script: {script_name}")
+            logger.info(f"[TOOL] Triggering Aether script: {script_name}")
 
             # Example: Execute refactor_orphan_modules.aether
             if script_name == "refactor_orphan_modules":

@@ -59,6 +59,6 @@ try:
     print(f"\n✅ Enhanced capabilities system working! Found {len(all_plugins)} plugins total")
 
 except Exception as e:
-    print(f"❌ Error testing enhanced capabilities: {e}")
+    print(f"[ERROR] Error testing enhanced capabilities: {e}")
     import traceback
     traceback.print_exc()

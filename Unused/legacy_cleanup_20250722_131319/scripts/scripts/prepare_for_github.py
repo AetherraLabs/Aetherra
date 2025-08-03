@@ -158,7 +158,7 @@ Add any other context or examples about the feature request here.
 
 def create_requirements_optimization():
     """Create optimized requirements.txt"""
-    print("📦 Optimizing requirements.txt...")
+    print("[DISC] Optimizing requirements.txt...")
 
     # Read current requirements
     if Path("requirements.txt").exists():
@@ -233,7 +233,7 @@ def verify_structure():
             print(f"  ✅ {file}")
 
     if missing_files:
-        print(f"  ❌ Missing files: {', '.join(missing_files)}")
+        print(f"  [ERROR] Missing files: {', '.join(missing_files)}")
         return False
 
     # Check core directories
@@ -242,7 +242,7 @@ def verify_structure():
         if Path(dir_name).exists():
             print(f"  ✅ {dir_name}/")
         else:
-            print(f"  ❌ Missing directory: {dir_name}/")
+            print(f"  [ERROR] Missing directory: {dir_name}/")
             return False
 
     return True
@@ -278,7 +278,7 @@ git commit -m "🧬 Initial commit: aetherra - The First AI-Native Programming L
 🚀 The future of programming starts here!"
 
 # Add GitHub remote (replace YOUR_USERNAME with your GitHub username)
-echo "⚠️  Replace YOUR_USERNAME with your actual GitHub username:"
+echo "[WARN]  Replace YOUR_USERNAME with your actual GitHub username:"
 echo "git remote add origin https://github.com/YOUR_USERNAME/aetherra.git"
 
 # Set main branch
@@ -320,7 +320,7 @@ git add .
 REM Create initial commit
 git commit -m "🧬 Initial commit: aetherra - The First AI-Native Programming Language"
 
-echo ⚠️  Replace YOUR_USERNAME with your actual GitHub username:
+echo [WARN]  Replace YOUR_USERNAME with your actual GitHub username:
 echo git remote add origin https://github.com/YOUR_USERNAME/aetherra.git
 
 REM Set main branch
@@ -370,7 +370,7 @@ def main():
         print("4. Push your code!")
         print("\n🌟 Your revolutionary AI-native language will be live!")
     else:
-        print("\n⚠️ Some issues need to be fixed before upload.")
+        print("\n[WARN] Some issues need to be fixed before upload.")
         print("Please address the missing files/directories above.")
 
 

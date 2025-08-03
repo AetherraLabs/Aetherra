@@ -53,7 +53,7 @@
 - 💾 **Persistent Memory**: Built-in memory across sessions
 - 🎯 **Goal-Oriented Computing**: Native goal systems
 - 🌍 **Environmental Awareness**: Real-time context awareness
-- 🔧 **Plugin Ecosystem**: Standardized plugin registry
+- [TOOL] **Plugin Ecosystem**: Standardized plugin registry
 - ⚡ **AI OS Foundation**: Complete OS development platform
 
 ### **3. Plugin Registry Demo**
@@ -121,7 +121,7 @@
 - 🔄 **Automatic deployments**: GitHub push → live site updates
 - 📈 **Analytics tracking**: Monitor visitors and performance
 - 🌍 **Community growth**: Share with developers and AI community
-- 🔧 **Feature additions**: Plugin registry API, interactive demos
+- [TOOL] **Feature additions**: Plugin registry API, interactive demos
 
 ---
 

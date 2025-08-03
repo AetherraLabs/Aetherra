@@ -147,7 +147,7 @@ class LyrixaMultiAgentSystem:
         self._create_default_agents()
 
         print("🤖 Lyrixa Multi-Agent System initialized")
-        print(f"   🔧 Created {len(self.agents)} default agents")
+        print(f"   [TOOL] Created {len(self.agents)} default agents")
 
     def _create_default_agents(self):
         """Create default set of agents"""

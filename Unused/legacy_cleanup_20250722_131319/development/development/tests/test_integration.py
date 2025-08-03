@@ -29,6 +29,6 @@ try:
     asyncio.run(test())
 
 except Exception as e:
-    print(f"❌ Error: {e}")
+    print(f"[ERROR] Error: {e}")
     import traceback
     traceback.print_exc()

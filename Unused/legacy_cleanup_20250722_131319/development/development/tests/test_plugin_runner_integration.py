@@ -18,10 +18,10 @@ def test_plugin_runner_import():
         print("✅ Clean Plugin Runner imported successfully")
         return True
     except ImportError as e:
-        print(f"❌ Failed to import Clean Plugin Runner: {e}")
+        print(f"[ERROR] Failed to import Clean Plugin Runner: {e}")
         return False
     except Exception as e:
-        print(f"❌ Unexpected error importing Clean Plugin Runner: {e}")
+        print(f"[ERROR] Unexpected error importing Clean Plugin Runner: {e}")
         return False
 
 def test_enhanced_plugin_manager():
@@ -31,10 +31,10 @@ def test_enhanced_plugin_manager():
         print("✅ Enhanced Plugin Manager imported successfully")
         return True
     except ImportError as e:
-        print(f"❌ Failed to import Enhanced Plugin Manager: {e}")
+        print(f"[ERROR] Failed to import Enhanced Plugin Manager: {e}")
         return False
     except Exception as e:
-        print(f"❌ Unexpected error importing Enhanced Plugin Manager: {e}")
+        print(f"[ERROR] Unexpected error importing Enhanced Plugin Manager: {e}")
         return False
 
 def test_hybrid_window_integration():
@@ -48,27 +48,27 @@ def test_hybrid_window_integration():
         if hasattr(window, 'create_execute_plugin_tab'):
             print("✅ create_execute_plugin_tab method exists")
         else:
-            print("❌ create_execute_plugin_tab method missing")
+            print("[ERROR] create_execute_plugin_tab method missing")
             return False
 
         if hasattr(window, 'create_basic_execute_tab'):
             print("✅ create_basic_execute_tab method exists")
         else:
-            print("❌ create_basic_execute_tab method missing")
+            print("[ERROR] create_basic_execute_tab method missing")
             return False
 
         if hasattr(window, 'execute_selected_plugin'):
             print("✅ execute_selected_plugin method exists")
         else:
-            print("❌ execute_selected_plugin method missing")
+            print("[ERROR] execute_selected_plugin method missing")
             return False
 
         return True
     except ImportError as e:
-        print(f"❌ Failed to import Hybrid Window: {e}")
+        print(f"[ERROR] Failed to import Hybrid Window: {e}")
         return False
     except Exception as e:
-        print(f"❌ Unexpected error with Hybrid Window: {e}")
+        print(f"[ERROR] Unexpected error with Hybrid Window: {e}")
         return False
 
 def test_plugin_discovery():
@@ -88,7 +88,7 @@ def test_plugin_discovery():
 
         return True
     except Exception as e:
-        print(f"❌ Plugin discovery failed: {e}")
+        print(f"[ERROR] Plugin discovery failed: {e}")
         return False
 
 def main():
@@ -114,10 +114,10 @@ def main():
                 print(f"✅ {test.__name__} PASSED")
             else:
                 failed += 1
-                print(f"❌ {test.__name__} FAILED")
+                print(f"[ERROR] {test.__name__} FAILED")
         except Exception as e:
             failed += 1
-            print(f"❌ {test.__name__} FAILED with exception: {e}")
+            print(f"[ERROR] {test.__name__} FAILED with exception: {e}")
 
     print("\n" + "=" * 50)
     print(f"🎯 Test Results: {passed} passed, {failed} failed")
@@ -126,7 +126,7 @@ def main():
         print("🎉 All tests passed! Clean Plugin Runner integration is working correctly.")
         return 0
     else:
-        print("⚠️  Some tests failed. Please check the output above for details.")
+        print("[WARN]  Some tests failed. Please check the output above for details.")
         return 1
 
 if __name__ == "__main__":

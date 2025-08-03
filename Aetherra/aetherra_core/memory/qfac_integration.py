@@ -567,7 +567,7 @@ async def demo_qfac_integration():
     # Get system status
     print("\n📊 System Status:")
     status = await qfac_system.get_system_status()
-    print(f"   📦 Nodes: {status['node_statistics']['total_nodes']}")
+    print(f"   [DISC] Nodes: {status['node_statistics']['total_nodes']}")
     print(f"   🗜️ Compressed: {status['node_statistics']['compressed_nodes']}")
     print(
         f"   📈 Compression ratio: {status['size_statistics']['overall_compression_ratio']:.1f}x"
@@ -586,7 +586,7 @@ async def demo_qfac_integration():
     # Optimize system
     print("\n🎯 Optimizing system...")
     optimization_results = await qfac_system.optimize_system()
-    print(f"   🔧 Actions taken: {len(optimization_results['actions_taken'])}")
+    print(f"   [TOOL] Actions taken: {len(optimization_results['actions_taken'])}")
 
     # Export report
     print("\n📄 Exporting system report...")

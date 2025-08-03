@@ -6,7 +6,7 @@ The **Goal Tracker Tab** has been **triumphantly integrated**, achieving an **ab
 
 ## 🎯 **Goal Tracker Tab Features**
 
-### 🔧 **Core Functionality**
+### [TOOL] **Core Functionality**
 - **🎯 Live Goal Tracking**: Real-time goal monitoring and display
 - **🔄 Refresh Goal List**: On-demand goal updates and synchronization
 - **📊 Active Goal Management**: Current goal status and progress tracking

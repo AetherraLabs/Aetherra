@@ -157,7 +157,7 @@ class LyrixaWindow(QMainWindow):
         status_layout = QVBoxLayout(status_widget)
 
         # System metrics
-        status_layout.addWidget(QLabel("🔧 System Status"))
+        status_layout.addWidget(QLabel("[TOOL] System Status"))
 
         self.system_metrics = QTextEdit()
         self.system_metrics.setReadOnly(True)
@@ -221,13 +221,13 @@ class LyrixaWindow(QMainWindow):
             print("✅ Self-Improvement Dashboard tab added to GUI")
 
         except ImportError as e:
-            print(f"⚠️ Self-Improvement Dashboard widget not available: {e}")
+            print(f"[WARN] Self-Improvement Dashboard widget not available: {e}")
 
             # Create a fallback widget
             fallback_widget = QWidget()
             fallback_layout = QVBoxLayout(fallback_widget)
 
-            fallback_layout.addWidget(QLabel("🔧 Self-Improvement Dashboard"))
+            fallback_layout.addWidget(QLabel("[TOOL] Self-Improvement Dashboard"))
 
             fallback_text = QTextEdit()
             fallback_text.setReadOnly(True)
@@ -250,7 +250,7 @@ To enable full dashboard:
             fallback_layout.addWidget(fallback_text)
 
             self.tab_widget.addTab(fallback_widget, "Self-Improvement")
-            print("⚠️ Self-Improvement Dashboard using fallback widget")
+            print("[WARN] Self-Improvement Dashboard using fallback widget")
 
     def setup_status_bar(self):
         """Setup the status bar"""
@@ -385,7 +385,7 @@ To enable full dashboard:
                     error_details = traceback.format_exc()
                     print(f"Chat processing error: {error_details}")  # Debug output
                     self.add_chat_message(
-                        "Lyrixa", f"❌ Processing error: {str(e)}", "#ff6b6b"
+                        "Lyrixa", f"[ERROR] Processing error: {str(e)}", "#ff6b6b"
                     )
 
             # Run async processing with slight delay to let GUI update
@@ -393,7 +393,7 @@ To enable full dashboard:
         else:
             self.add_chat_message(
                 "Lyrixa",
-                "⚠️ Lyrixa agent not yet initialized. Please wait...",
+                "[WARN] Lyrixa agent not yet initialized. Please wait...",
                 "#ff6b6b",
             )
 
@@ -413,7 +413,7 @@ To enable full dashboard:
             self.update_dashboard_metrics()
 
         except Exception as e:
-            self.add_chat_message("Lyrixa", f"❌ Error: {str(e)}", "#ff6b6b")
+            self.add_chat_message("Lyrixa", f"[ERROR] Error: {str(e)}", "#ff6b6b")
         finally:
             self.hide_processing()
 
@@ -493,9 +493,9 @@ Python Version: {platform.python_version()}"""
                 status += "\n\n💡 Intelligence monitoring active"
 
             except Exception as e:
-                status = f"Intelligence Stack: ⚠️ Connected (metrics error: {str(e)})"
+                status = f"Intelligence Stack: [WARN] Connected (metrics error: {str(e)})"
         else:
-            status = "Intelligence Stack: ❌ Not Connected"
+            status = "Intelligence Stack: [ERROR] Not Connected"
 
         if hasattr(self, "intelligence_status"):
             self.intelligence_status.setPlainText(status)
@@ -505,7 +505,7 @@ Python Version: {platform.python_version()}"""
         if self.runtime:
             status = "Runtime: ✅ Connected\nStatus: Active\nMemory: Operational"
         else:
-            status = "Runtime: ❌ Not Connected"
+            status = "Runtime: [ERROR] Not Connected"
 
         if hasattr(self, "runtime_status"):
             self.runtime_status.setPlainText(status)
@@ -519,12 +519,12 @@ Python Version: {platform.python_version()}"""
 ├── 🎯 GoalAgent: ✅ Active - Goal management & tracking
 ├── 🔌 PluginAgent: ✅ Active - Plugin discovery & recommendations
 ├── 🔍 ReflectionAgent: ✅ Active - Performance analysis & insights
-├── ⚠️  EscalationAgent: ✅ Active - Workflow failure handling
+├── [WARN]  EscalationAgent: ✅ Active - Workflow failure handling
 └── 📊 SelfEvaluationAgent: ✅ Active - Self-improvement processing
 
 Status: All agents operational and ready for requests"""
         else:
-            status = "Main Agent: ❌ Not Connected\nSub-agents: ❌ Not initialized"
+            status = "Main Agent: [ERROR] Not Connected\nSub-agents: [ERROR] Not initialized"
 
         if hasattr(self, "agent_status"):
             self.agent_status.setPlainText(status)
@@ -551,7 +551,7 @@ Status: All agents operational and ready for requests"""
 ├── LLM Models: 9 available
 └── Uptime: 99.9%
 
-🔧 Component Status:
+[TOOL] Component Status:
 ├── Intelligence Stack: ✅ Operational
 ├── Memory Manager: ✅ Active
 ├── Plugin System: ✅ Loaded
@@ -633,14 +633,14 @@ Detailed Logs:
                             provider = model_info.get('provider', 'unknown')
                             self.add_chat_message("System", f"📊 Provider: {provider.upper()}, Context: {model_info.get('context_window', 'N/A')} tokens", "#88aaff")
                     else:
-                        self.add_chat_message("System", f"❌ Failed to switch to {model_name} - Model may not be available", "#ff4444")
+                        self.add_chat_message("System", f"[ERROR] Failed to switch to {model_name} - Model may not be available", "#ff4444")
                 else:
-                    self.add_chat_message("System", f"⚠️ Model switching not supported by current LLM manager", "#ffaa00")
+                    self.add_chat_message("System", f"[WARN] Model switching not supported by current LLM manager", "#ffaa00")
             else:
-                self.add_chat_message("System", f"⚠️ Lyrixa agent not ready - Model preference saved for next session", "#ffaa00")
+                self.add_chat_message("System", f"[WARN] Lyrixa agent not ready - Model preference saved for next session", "#ffaa00")
 
         except Exception as e:
-            self.add_chat_message("System", f"❌ Error changing model: {str(e)}", "#ff4444")
+            self.add_chat_message("System", f"[ERROR] Error changing model: {str(e)}", "#ff4444")
             import traceback
             print(f"Model change error: {traceback.format_exc()}")
 
@@ -677,9 +677,9 @@ Detailed Logs:
 
             except Exception as e:
                 # Fallback to default models if dynamic loading fails
-                self.add_chat_message("System", f"⚠️ Using default model list: {str(e)}", "#ffaa00")
+                self.add_chat_message("System", f"[WARN] Using default model list: {str(e)}", "#ffaa00")
         else:
-            self.add_chat_message("System", "⚠️ LLM manager not available - using default models", "#ffaa00")
+            self.add_chat_message("System", "[WARN] LLM manager not available - using default models", "#ffaa00")
 
 
 if __name__ == "__main__":

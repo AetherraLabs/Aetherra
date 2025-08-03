@@ -32,7 +32,7 @@ def demo_stage3_collaboration():
         from Aetherra.lyrixa.gui.hybrid_window import LyrixaWindow
 
         # Create window instance
-        print("🔧 Initializing Aetherra Neural Interface...")
+        print("[TOOL] Initializing Aetherra Neural Interface...")
         window = LyrixaWindow()
 
         # Check Stage 3 initialization

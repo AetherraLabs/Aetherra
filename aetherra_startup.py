@@ -69,7 +69,7 @@ def aetherra_startup():
         print("📊 Starting Self-Metrics Dashboard...")
         metrics_logger.start_monitoring()
 
-    print("✅ Aetherra OS is now ONLINE.")
+    print("[OK] Aetherra OS is now ONLINE.")
     return True
 
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         if success:
             print("🟢 System Startup Completed Successfully.")
         else:
-            print("⚠️ Startup encountered issues.")
+            print("[WARN] Startup encountered issues.")
     except Exception as e:
         print("❌ Aetherra Startup Failed:")
         traceback.print_exc()

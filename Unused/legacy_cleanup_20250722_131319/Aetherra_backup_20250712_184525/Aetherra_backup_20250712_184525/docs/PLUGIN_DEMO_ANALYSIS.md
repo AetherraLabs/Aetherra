@@ -71,7 +71,7 @@ Your original demo referenced these plugin commands:
 - Uses actual available plugin commands
 - Includes additional demonstrations
 
-## 🔧 Plugin Features
+## [TOOL] Plugin Features
 
 All created plugins include:
 - ✅ **Proper registration** with metadata

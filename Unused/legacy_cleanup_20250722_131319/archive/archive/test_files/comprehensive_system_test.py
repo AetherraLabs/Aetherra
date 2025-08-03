@@ -40,7 +40,7 @@ class SystemTester:
             "details": details,
         }
 
-        status_icon = "✅" if status == "PASS" else "❌" if status == "FAIL" else "⚠️"
+        status_icon = "✅" if status == "PASS" else "❌" if status == "FAIL" else "[WARN]"
         print(f"{status_icon} {test_name}: {message}")
 
         if details and status != "PASS":
@@ -330,7 +330,7 @@ class SystemTester:
 
     def test_archive_structure(self) -> bool:
         """Test archive and backup structure."""
-        print("\n📦 TESTING ARCHIVE STRUCTURE")
+        print("\n[DISC] TESTING ARCHIVE STRUCTURE")
         print("=" * 50)
 
         try:
@@ -462,7 +462,7 @@ class SystemTester:
             print("🎉 ALL SYSTEMS OPERATIONAL!")
             overall_status = "PASS"
         elif passed >= total * 0.75:
-            print("⚠️ MOSTLY OPERATIONAL (minor issues)")
+            print("[WARN] MOSTLY OPERATIONAL (minor issues)")
             overall_status = "WARN"
         else:
             print("❌ CRITICAL ISSUES DETECTED")
@@ -476,7 +476,7 @@ class SystemTester:
                 if result["status"] == "PASS"
                 else "❌"
                 if result["status"] == "FAIL"
-                else "⚠️"
+                else "[WARN]"
             )
             print(f"   {status_icon} {test_name}: {result['message']}")
 

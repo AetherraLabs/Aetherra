@@ -129,7 +129,7 @@ class PersonaCLI:
     def set_persona(self, archetype, blend_ratio=1.0):
         """Set the primary persona archetype"""
         if not PERSONA_ENGINE_AVAILABLE:
-            print("⚠️ Persona system not available - running in fallback mode")
+            print("[WARN] Persona system not available - running in fallback mode")
             print(f"Would set persona to: {archetype}")
             return True
 
@@ -189,7 +189,7 @@ class PersonaCLI:
         if not PERSONA_ENGINE_AVAILABLE:
             print("🤖 AetherraCode Persona Status")
             print("=" * 40)
-            print("⚠️ Persona system not available")
+            print("[WARN] Persona system not available")
             print("Running in fallback mode")
             return True
 

@@ -348,7 +348,7 @@ status
         if self.tests_failed == 0:
             safe_print("\n🎉 ALL TESTS PASSED! AI OS Kernel is ready!")
         else:
-            safe_print(f"\n⚠️  {self.tests_failed} tests failed. Review implementation.")
+            safe_print(f"\n[WARN]  {self.tests_failed} tests failed. Review implementation.")
 
         safe_print("=" * 50)
 

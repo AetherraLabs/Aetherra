@@ -477,7 +477,7 @@ if __name__ == "__main__":
     # Test listing
     archiver = AgentArchiver()
     archives = archiver.list_archives()
-    print(f"📦 Found {len(archives)} archives:")
+    print(f"[DISC] Found {len(archives)} archives:")
     for archive in archives:
         print(
             f"  - {archive.get('name', 'Unknown')} v{archive.get('version', '?')} ({archive.get('file_size', 0)} bytes)"

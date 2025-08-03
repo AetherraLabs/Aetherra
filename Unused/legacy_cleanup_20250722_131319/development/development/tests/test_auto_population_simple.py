@@ -138,13 +138,13 @@ class TestDataVisualizationPlugin:
 
                 return True
             else:
-                print("❌ Injection failed")
+                print("[ERROR] Injection failed")
                 return False
         else:
-            print("❌ No generated code available")
+            print("[ERROR] No generated code available")
             return False
     else:
-        print("❌ Auto-population conditions not met")
+        print("[ERROR] Auto-population conditions not met")
         return False
 
 
@@ -188,7 +188,7 @@ def test_filename_logic():
 
         print(f"   🎯 Result: {filename}")
         print(f"   ✅ Expected: {case['expected']}")
-        print(f"   {'✅ PASS' if filename == case['expected'] else '❌ FAIL'}")
+        print(f"   {'✅ PASS' if filename == case['expected'] else '[ERROR] FAIL'}")
 
     return True
 
@@ -210,5 +210,5 @@ if __name__ == "__main__":
         print("✅ Ready for integration with full Lyrixa system")
         sys.exit(0)
     else:
-        print("\n❌ Some tests failed - auto-population needs fixes")
+        print("\n[ERROR] Some tests failed - auto-population needs fixes")
         sys.exit(1)

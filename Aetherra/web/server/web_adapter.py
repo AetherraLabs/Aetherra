@@ -35,7 +35,7 @@ class WebInterfaceAdapter:
         self.bridge.register_aetherra_handler("web_request", self.handle_web_request)
         self.bridge.register_lyrixa_handler("web_response", self.handle_web_response)
 
-        logger.info("✅ Web systems initialized")
+        logger.info("[OK] Web systems initialized")
 
     async def handle_web_request(self, request_data):
         """Handle requests from web interface"""

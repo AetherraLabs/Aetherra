@@ -22,4 +22,4 @@ try:
     print("🎉 Phase 3.3 is ready for production!")
 
 except Exception as e:
-    print(f"❌ Error: {e}")
+    print(f"[ERROR] Error: {e}")

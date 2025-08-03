@@ -12,7 +12,7 @@ The **Agents Tab** functionality has been **successfully integrated** into the L
 - **Agent Names & Roles**: Clear identification of each agent's purpose
 - **Dynamic Updates**: Automatically populates from `lyrixa.agents` when available
 
-### 🔧 **Technical Implementation**
+### [TOOL] **Technical Implementation**
 - **`create_agents_tab()` method**: Creates the complete agents interface
 - **`self.agent_list` widget**: QListWidget for displaying agents
 - **Placeholder agents**: Default agents for testing and demonstration

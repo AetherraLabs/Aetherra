@@ -316,7 +316,7 @@ class MemorySearchWidget(QWidget):
         layout.addLayout(search_layout)
 
         # Filters
-        filters_group = QGroupBox("🔧 Filters")
+        filters_group = QGroupBox("[TOOL] Filters")
         filters_layout = QHBoxLayout(filters_group)
 
         # Memory type filter

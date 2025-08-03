@@ -80,7 +80,7 @@ def test_main_gui_integration():
             panel_class = getattr(module, class_name)
 
             # Create panel instance
-            print(f"  📦 Creating {class_name} instance...")
+            print(f"  [DISC] Creating {class_name} instance...")
             panel_instance = panel_class()
 
             # Check panel properties
@@ -99,7 +99,7 @@ def test_main_gui_integration():
             print(f"  ✅ Successfully added {panel_name} to tabs")
 
         except Exception as e:
-            print(f"  ❌ Error with {panel_name}: {e}")
+            print(f"  [ERROR] Error with {panel_name}: {e}")
             import traceback
             traceback.print_exc()
 

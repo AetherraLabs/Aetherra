@@ -33,7 +33,7 @@ def get_capability_extractor():
             _capability_extractor = PluginCapabilityExtractor()
             print("✅ Capability extractor loaded on-demand")
         except Exception as e:
-            print(f"⚠️ Failed to load capability extractor: {e}")
+            print(f"[WARN] Failed to load capability extractor: {e}")
             _capability_extractor = False  # Mark as failed to avoid retrying
     return _capability_extractor if _capability_extractor is not False else None
 
@@ -56,7 +56,7 @@ def get_meta_reasoning_engine():
             _meta_reasoning_engine = MetaReasoningEngine(MockMemory(), MockPluginManager())
             print("✅ Meta-reasoning engine loaded on-demand")
         except Exception as e:
-            print(f"⚠️ Failed to load meta-reasoning engine: {e}")
+            print(f"[WARN] Failed to load meta-reasoning engine: {e}")
             _meta_reasoning_engine = False
     return _meta_reasoning_engine if _meta_reasoning_engine is not False else None
 
@@ -398,7 +398,7 @@ async def propose_changes(request: Request):
             data = await request.json()
         except Exception as json_error:
             # If JSON parsing fails, use empty dict as default
-            print(f"⚠️ JSON parsing failed, using defaults: {json_error}")
+            print(f"[WARN] JSON parsing failed, using defaults: {json_error}")
             data = {}
 
         # Generate a realistic improvement proposal
@@ -461,7 +461,7 @@ async def goals_forecast(request: Request):
         try:
             data = await request.json()
         except Exception as json_error:
-            print(f"⚠️ JSON parsing failed for forecast, using defaults: {json_error}")
+            print(f"[WARN] JSON parsing failed for forecast, using defaults: {json_error}")
             data = {}
 
         # Generate realistic goal forecast
@@ -523,7 +523,7 @@ async def goals_reasoning_context(request: Request):
         try:
             data = await request.json()
         except Exception as json_error:
-            print(f"⚠️ JSON parsing failed for reasoning context, using defaults: {json_error}")
+            print(f"[WARN] JSON parsing failed for reasoning context, using defaults: {json_error}")
             data = {}
 
         # Generate comprehensive reasoning context
@@ -607,7 +607,7 @@ async def plugin_editor_smart_edit(request: Request):
         try:
             data = await request.json()
         except Exception as json_error:
-            print(f"⚠️ JSON parsing failed for plugin editor, using defaults: {json_error}")
+            print(f"[WARN] JSON parsing failed for plugin editor, using defaults: {json_error}")
             data = {}
 
         existing_code = data.get("existing_code", "")

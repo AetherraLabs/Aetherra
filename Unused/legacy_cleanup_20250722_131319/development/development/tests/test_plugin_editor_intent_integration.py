@@ -102,7 +102,7 @@ def test_plugin_editor_integration():
         return True
 
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -165,7 +165,7 @@ async def test_async_integration():
         return True
 
     except Exception as e:
-        print(f"❌ Async test failed: {e}")
+        print(f"[ERROR] Async test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -224,7 +224,7 @@ def test_meta_reasoning_integration():
         return True
 
     except Exception as e:
-        print(f"❌ Meta-reasoning test failed: {e}")
+        print(f"[ERROR] Meta-reasoning test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -252,7 +252,7 @@ def show_integration_summary():
     for feature in features:
         print(f"   {feature}")
 
-    print(f"\n🔧 Key Components:")
+    print(f"\n[TOOL] Key Components:")
     components = [
         "LyrixaConversationManager - Main conversation handler with intent routing",
         "PluginEditorController - Bridge between conversation and GUI",
@@ -281,7 +281,7 @@ if __name__ == "__main__":
     try:
         test2_passed = asyncio.run(test_async_integration())
     except Exception as e:
-        print(f"❌ Async test failed: {e}")
+        print(f"[ERROR] Async test failed: {e}")
         test2_passed = False
 
     test3_passed = test_meta_reasoning_integration()
@@ -292,13 +292,13 @@ if __name__ == "__main__":
     # Final results
     print("\n" + "=" * 55)
     print("🏁 Test Results:")
-    print(f"   • Plugin Editor Integration: {'✅ PASSED' if test1_passed else '❌ FAILED'}")
-    print(f"   • Async Conversation Flow: {'✅ PASSED' if test2_passed else '❌ FAILED'}")
-    print(f"   • Meta-Reasoning Integration: {'✅ PASSED' if test3_passed else '❌ FAILED'}")
+    print(f"   • Plugin Editor Integration: {'✅ PASSED' if test1_passed else '[ERROR] FAILED'}")
+    print(f"   • Async Conversation Flow: {'✅ PASSED' if test2_passed else '[ERROR] FAILED'}")
+    print(f"   • Meta-Reasoning Integration: {'✅ PASSED' if test3_passed else '[ERROR] FAILED'}")
 
     if all([test1_passed, test2_passed, test3_passed]):
         print("\n🎉 ALL TESTS PASSED!")
         print("🎯 Plugin Editor Intent Integration is ready!")
         print("💡 Lyrixa will now actually trigger UI actions, not just talk about them!")
     else:
-        print("\n⚠️ Some tests failed. Check the errors above.")
+        print("\n[WARN] Some tests failed. Check the errors above.")

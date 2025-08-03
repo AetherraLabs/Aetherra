@@ -38,7 +38,7 @@ except ImportError:
     SentenceTransformer = None
     VECTOR_EMBEDDINGS_AVAILABLE = False
     print(
-        "[GoalForecaster] ⚠️ Vector embeddings not available - install sentence-transformers"
+        "[GoalForecaster] [WARN] Vector embeddings not available - install sentence-transformers"
     )
 
 try:
@@ -49,7 +49,7 @@ try:
 except ImportError:
     faiss = None
     FAISS_AVAILABLE = False
-    print("[GoalForecaster] ⚠️ FAISS not available - install faiss-cpu")
+    print("[GoalForecaster] [WARN] FAISS not available - install faiss-cpu")
 
 # Import Aetherra's NLP capabilities
 try:
@@ -840,7 +840,7 @@ async def forecast_goal_async(
             entry["orchestration"] = orchestration_result
             print("[GoalForecaster] ✅ Multi-agent orchestration completed")
         except Exception as e:
-            print(f"[GoalForecaster] ⚠️ Orchestration error: {e}")
+            print(f"[GoalForecaster] [WARN] Orchestration error: {e}")
             entry["orchestration"] = {"success": False, "error": str(e)}
 
     print(
@@ -987,7 +987,7 @@ if __name__ == "__main__":
         print(f"\n📋 Goal: {goal}")
         result = forecast_goal(goal)
         print(f"🎯 Forecast: {result['forecast']}")
-        print(f"⚠️ Risk: {result['risk']}")
+        print(f"[WARN] Risk: {result['risk']}")
         print(f"📊 Confidence: {result['confidence']:.1%}")
         print(f"💡 Suggestions: {len(result['suggestions'])} items")
 

@@ -50,17 +50,17 @@ class QFACIntegrationManager:
             # Check for Phase 2: FractalEncoder
             if self._check_component_availability("fractal_encoder"):
                 self.phase2_available = True
-                print("✅ Phase 2 (FractalEncoder) available")
+                print("[OK] Phase 2 (FractalEncoder) available")
 
             # Check for Phase 3: ObserverEffectSimulator
             if self._check_component_availability("observer_effect_simulator"):
                 self.phase3_available = True
-                print("✅ Phase 3 (ObserverEffectSimulator) available")
+                print("[OK] Phase 3 (ObserverEffectSimulator) available")
 
             # Check for Phase 4: CausalBranchSimulator
             if self._check_component_availability("causal_branch_simulator"):
                 self.phase4_available = True
-                print("✅ Phase 4 (CausalBranchSimulator) available")
+                print("[OK] Phase 4 (CausalBranchSimulator) available")
 
         except Exception as e:
             print(f"⚠️ Component discovery failed: {e}")
@@ -196,7 +196,7 @@ class QFACIntegrationManager:
         results["integration_success"] = available_phases >= 2
 
         if results["integration_success"]:
-            print(f"✅ QFAC Pipeline integrated: {available_phases}/3 phases active")
+            print(f"[OK] QFAC Pipeline integrated: {available_phases}/3 phases active")
         else:
             print(f"⚠️ Limited integration: {available_phases}/3 phases active")
 
@@ -229,7 +229,7 @@ class QFACIntegrationManager:
                     metadata=memory_content,
                 )
                 print(
-                    f"   ✅ Fractal patterns: {results['phase2_result'].pattern_count}"
+                    f"   [OK] Fractal patterns: {results['phase2_result'].pattern_count}"
                 )
 
             # Phase 3: Observer Access
@@ -239,7 +239,7 @@ class QFACIntegrationManager:
                     memory_id=memory_id, observer_id="lyrixa_core", access_layer="deep"
                 )
                 print(
-                    f"   ✅ Observer fidelity: {results['phase3_result'].get('fidelity', 'N/A')}"
+                    f"   [OK] Observer fidelity: {results['phase3_result'].get('fidelity', 'N/A')}"
                 )
 
             # Phase 4: Causal Branching
@@ -255,7 +255,7 @@ class QFACIntegrationManager:
                     "probability": branch.probability_weight,
                     "coherence": branch.coherence_score,
                 }
-                print(f"   ✅ Causal branch: {branch.branch_id}")
+                print(f"   [OK] Causal branch: {branch.branch_id}")
 
             results["pipeline_success"] = True
             print("🎉 Integrated processing complete!")
@@ -341,11 +341,11 @@ async def demonstrate_full_integration():
         results = await manager.demonstrate_integrated_memory_processing(test_memory)
 
         print(f"\n📊 INTEGRATION RESULTS:")
-        print(f"   🧬 Phase 2 Success: {'✅' if results['phase2_result'] else '❌'}")
-        print(f"   👁️ Phase 3 Success: {'✅' if results['phase3_result'] else '❌'}")
-        print(f"   🧿 Phase 4 Success: {'✅' if results['phase4_result'] else '❌'}")
+        print(f"   🧬 Phase 2 Success: {'[OK]' if results['phase2_result'] else '❌'}")
+        print(f"   👁️ Phase 3 Success: {'[OK]' if results['phase3_result'] else '❌'}")
+        print(f"   🧿 Phase 4 Success: {'[OK]' if results['phase4_result'] else '❌'}")
         print(
-            f"   🔗 Pipeline Success: {'✅' if results['pipeline_success'] else '❌'}"
+            f"   🔗 Pipeline Success: {'[OK]' if results['pipeline_success'] else '❌'}"
         )
 
     print(f"\n🚀 Integration demonstration complete!")

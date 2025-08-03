@@ -25,7 +25,7 @@ def test_stage3_systems():
     print()
 
     # Test 1: Import and Initialize System
-    print("📦 TEST 1: System Import and Initialization")
+    print("[DISC] TEST 1: System Import and Initialization")
     try:
         from lyrixa.gui.hybrid_window import LyrixaWindow
         from PySide6.QtWidgets import QApplication

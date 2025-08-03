@@ -151,7 +151,7 @@ def main():
     total = len(tests)
 
     for test_name, test_func in tests:
-        print(f"\n🔧 Testing {test_name}...")
+        print(f"\n[TOOL] Testing {test_name}...")
         try:
             if test_func():
                 passed += 1

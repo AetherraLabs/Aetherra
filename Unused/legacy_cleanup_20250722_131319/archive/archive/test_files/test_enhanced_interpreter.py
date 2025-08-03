@@ -97,7 +97,7 @@ end""",
         print("-" * 50)
 
     # Test function calling
-    print("\n🔧 **Testing Function Call:**")
+    print("\n[TOOL] **Testing Function Call:**")
     try:
         result = interpreter.execute('call test_function("hello world")')
         print("📤 **Function Call Result:**")

@@ -13,7 +13,7 @@ Based on comprehensive testing, **aetherra is working perfectly** as a complete 
 - **✅ Code Compilation** - aetherra compiles to executable Python
 - **✅ Advanced Language Constructs** - Conditionals, plugins, memory operations, AI intents
 
-### 🔧 Runtime System
+### [TOOL] Runtime System
 - **✅ Enhanced Interpreter** - Core interpreter system operational
 - **✅ Memory System** - Full memory storage and recall functionality
 - **✅ Plugin System** - 7 standard plugins loaded and working:
@@ -56,10 +56,10 @@ end
 **Results:**
 - 🔤 **Tokenization**: 82 tokens generated correctly
 - 🌳 **AST Generation**: 8 complex nodes created
-- 🔧 **Compilation**: 847 characters of executable code produced
+- [TOOL] **Compilation**: 847 characters of executable code produced
 - ✅ **All language features working perfectly**
 
-## ⚠️ MINOR NON-CRITICAL ISSUES
+## [WARN] MINOR NON-CRITICAL ISSUES
 
 These don't affect core aetherra functionality:
 

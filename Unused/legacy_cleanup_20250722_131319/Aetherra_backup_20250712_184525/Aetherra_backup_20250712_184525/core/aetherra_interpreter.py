@@ -106,7 +106,7 @@ else:
     # Fallback implementation if modular interpreter is not available
     class AetherraInterpreter:
         def __init__(self, *args, **kwargs):
-            print("⚠️  Modular interpreter not found. Using fallback.")
+            print("[WARN]  Modular interpreter not found. Using fallback.")
 
         def execute(self, line):
             return f"Received: {line}"

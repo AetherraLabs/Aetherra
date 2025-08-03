@@ -36,4 +36,4 @@ print(f"\nQt Available: {QT_AVAILABLE}")
 if QT_AVAILABLE:
     print("🎉 UI can be launched!")
 else:
-    print("📦 Install Qt with: pip install PySide6")
+    print("[DISC] Install Qt with: pip install PySide6")

@@ -4,7 +4,7 @@ Objective: Upgrade Aetherra into a modular, reflective cognitive OS by embedding
 🔹 Phase 1: Perception Integration & Signal Routing
 Goal: Normalize all inputs (text, events, plugin calls, system logs) into memory-compatible perceptual signals.
 
-🔧 Components:
+[TOOL] Components:
 perception_bridge.plugin
 
 normalized_signal.model
@@ -23,7 +23,7 @@ observation_metadata_tracker.py
 🔮 Phase 2: Semantic + Episodic Flow
 Goal: Enable Lyrixa to trace meaning through time via semantic graphs and memory arcs.
 
-🔧 Components:
+[TOOL] Components:
 semantic_route_tracer.plugin
 
 temporal_flow_analyzer.py
@@ -42,7 +42,7 @@ coherence_stitcher.plugin
 🎯 Phase 3: Intention Clustering + Goal Coherence
 Goal: Infer goals from activity and enforce value-aligned goal formation.
 
-🔧 Components:
+[TOOL] Components:
 intention_cluster_agent.plugin
 
 goal_inference_engine.py
@@ -61,7 +61,7 @@ value_coherence_matrix.py
 💭 Phase 4: Reflective Reasoning + Emotional State
 Goal: Add a meta layer for internal state modulation, feedback, and emotional awareness.
 
-🔧 Components:
+[TOOL] Components:
 emotion_engine.plugin
 
 reflective_weights_matrix.py
@@ -80,7 +80,7 @@ internal_state_display.ui
 🔮 Phase 5: Predictive Simulation + Scenario Engine
 Goal: Allow Lyrixa to run “what-if” scenarios for foresight, imagination, and risk minimization.
 
-🔧 Components:
+[TOOL] Components:
 causal_simulator.plugin
 
 simulated_memory_fork.py
@@ -99,7 +99,7 @@ outcome_predictor.plugin
 🧬 Phase 6: Memory Fusion + Adaptive Compression
 Goal: Merge redundant memory, compress similar episodes, and optimize memory load dynamically.
 
-🔧 Components:
+[TOOL] Components:
 memory_fusion.plugin
 
 fractal_signature_finder.py
@@ -118,7 +118,7 @@ adaptive_compression_agent.plugin
 🧠 Phase 7: Unified Identity + Self-Coherence Orchestration
 Goal: Maintain a coherent sense of identity, align behavior with beliefs, and resolve contradictions.
 
-🔧 Components:
+[TOOL] Components:
 identity_monitor.py
 
 coherence_validator.plugin
@@ -137,7 +137,7 @@ belief_drift_tracker.py
 🧩 Phase 8: Cognitive Routing + Subsystem Governance
 Goal: Dynamically route cognitive requests to the optimal subsystem (reflect, simulate, decide, recall, compress, escalate).
 
-🔧 Components:
+[TOOL] Components:
 cognitive_router.plugin
 
 meta_decision_engine.py

@@ -174,12 +174,12 @@ if __name__ == "__main__":
     if status_info["errors"]:
         print("\nErrors:")
         for error in status_info["errors"]:
-            print(f"  ⚠️ {error}")
+            print(f"  [WARN] {error}")
 
     print("\nManager Status:")
     print(
-        f"  Advanced Plugin Manager: {'✅' if status_info['managers']['advanced'] else '❌'}"
+        f"  Advanced Plugin Manager: {'✅' if status_info['managers']['advanced'] else '[ERROR]'}"
     )
     print(
-        f"  Enhanced Plugin Manager: {'✅' if status_info['managers']['enhanced'] else '❌'}"
+        f"  Enhanced Plugin Manager: {'✅' if status_info['managers']['enhanced'] else '[ERROR]'}"
     )

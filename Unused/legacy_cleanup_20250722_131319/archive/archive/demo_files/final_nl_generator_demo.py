@@ -167,7 +167,7 @@ async def demonstrate_optimization(generator):
     print(f"   💡 Suggestions: {len(suggestions)}")
 
     if suggestions:
-        print(f"   🔧 Optimization suggestions:")
+        print(f"   [TOOL] Optimization suggestions:")
         for i, suggestion in enumerate(suggestions[:3], 1):
             print(f"      {i}. {suggestion.get('message', 'No message')}")
 

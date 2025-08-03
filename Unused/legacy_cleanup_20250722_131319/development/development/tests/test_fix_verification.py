@@ -27,20 +27,20 @@ def test_propose_changes():
                 print("🎯 Propose Changes endpoint is working correctly!")
                 return True
             else:
-                print("⚠️ Unexpected response format")
+                print("[WARN] Unexpected response format")
                 return False
 
         else:
-            print(f"❌ FAILED: {response.status_code}")
+            print(f"[ERROR] FAILED: {response.status_code}")
             print(f"Response: {response.text}")
             return False
 
     except requests.ConnectionError:
-        print("❌ Connection Error: Server not running on port 8007")
+        print("[ERROR] Connection Error: Server not running on port 8007")
         print("💡 Solution: Run 'python enhanced_api_server.py' first")
         return False
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[ERROR] Error: {e}")
         return False
 
 if __name__ == "__main__":
@@ -54,5 +54,5 @@ if __name__ == "__main__":
         print("🎉 FIX CONFIRMED: Propose Changes is working!")
         print("💡 You can now click 'Propose Changes' in the UI")
     else:
-        print("🔧 ACTION NEEDED: Start the enhanced API server")
+        print("[TOOL] ACTION NEEDED: Start the enhanced API server")
         print("   Command: python enhanced_api_server.py")

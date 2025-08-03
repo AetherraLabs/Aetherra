@@ -761,7 +761,7 @@ class CollaborativeMultiAgentSystem:
                             })
 
             # Phase 4: Integration - Combine contributions into final result
-            logger.info(f"🔧 Phase 4: Integration for task '{task.title}'")
+            logger.info(f"[TOOL] Phase 4: Integration for task '{task.title}'")
             final_code = self._integrate_contributions(contributions)
             quality_score = self._calculate_quality_score(contributions, reviews)
 

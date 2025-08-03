@@ -12,7 +12,7 @@ def show_basic_status():
     print("🤖 AetherraCode CLI Status")
     print("=" * 40)
     print("✅ Core CLI functionality available")
-    print("⚠️ Persona features disabled (missing dependencies)")
+    print("[WARN] Persona features disabled (missing dependencies)")
     print("")
     print("Available commands:")
     print("  --status    Show this status")
@@ -53,7 +53,7 @@ For full features, ensure all dependencies are installed.
     if args.command:
         command_text = " ".join(args.command)
         print(f"🎯 Processing: {command_text}")
-        print("⚠️ Full command processing requires persona modules")
+        print("[WARN] Full command processing requires persona modules")
         print("Command logged for future processing")
 
 if __name__ == "__main__":

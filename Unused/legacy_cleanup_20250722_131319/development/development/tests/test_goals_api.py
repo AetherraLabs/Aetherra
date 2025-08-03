@@ -36,10 +36,10 @@ def test_goals_endpoints():
             print(f"   📈 Prediction: {result['forecast']['prediction']}")
             print(f"   🎲 Confidence: {result['forecast']['confidence']}")
         else:
-            print(f"   ❌ FAILED: {response.text}")
+            print(f"   [ERROR] FAILED: {response.text}")
 
     except Exception as e:
-        print(f"   ❌ ERROR: {e}")
+        print(f"   [ERROR] ERROR: {e}")
 
     # Test 2: Reasoning Context
     print("\n2️⃣ Testing POST /api/goals/reasoning_context")
@@ -64,10 +64,10 @@ def test_goals_endpoints():
             print(f"   📊 Decision Factors: {len(result['reasoning_context']['decision_factors'])}")
             print(f"   🔗 Reasoning Chain: {len(result['reasoning_context']['reasoning_chain'])} steps")
         else:
-            print(f"   ❌ FAILED: {response.text}")
+            print(f"   [ERROR] FAILED: {response.text}")
 
     except Exception as e:
-        print(f"   ❌ ERROR: {e}")
+        print(f"   [ERROR] ERROR: {e}")
 
     print("\n" + "=" * 50)
     print("🏁 Goals API Test Complete!")

@@ -802,7 +802,7 @@ class LyrixaSystemBootstrap:
             StartupContextType.DAILY_RETURN: "🌅 Good to see you again! Ready to continue where we left off?",
             StartupContextType.SESSION_CONTINUATION: "👋 Welcome back! I'm ready to assist you.",
             StartupContextType.PROJECT_RESUMPTION: "🔄 Hello again! Let me catch you up on what's been happening.",
-            StartupContextType.RECOVERY_MODE: "🔧 System recovered! Let me restore your context.",
+            StartupContextType.RECOVERY_MODE: "[TOOL] System recovered! Let me restore your context.",
         }
 
         greeting = greetings.get(context_type, "👋 Hello! I'm here to help.")
@@ -898,7 +898,7 @@ class LyrixaSystemBootstrap:
                         # Would load and deserialize snapshots if needed
                         pass
         except Exception as e:
-            print(f"⚠️ Could not load session history: {e}")
+            print(f"[WARN] Could not load session history: {e}")
             self.last_session_data = None
 
     async def _save_session_data(self, snapshot: SystemSnapshot):
@@ -924,7 +924,7 @@ class LyrixaSystemBootstrap:
                 json.dump(session_data, f, indent=2)
 
         except Exception as e:
-            print(f"⚠️ Could not save session data: {e}")
+            print(f"[WARN] Could not save session data: {e}")
 
     def format_startup_message(self, summary: StartupSummary) -> str:
         """Format startup summary into a user-friendly message"""
@@ -1034,7 +1034,7 @@ class LyrixaSystemBootstrap:
             )
 
             if comp["error_message"]:
-                report_parts.append(f"      ⚠️ {comp['error_message']}")
+                report_parts.append(f"      [WARN] {comp['error_message']}")
 
         # Recommendations
         if status["recommendations"]:

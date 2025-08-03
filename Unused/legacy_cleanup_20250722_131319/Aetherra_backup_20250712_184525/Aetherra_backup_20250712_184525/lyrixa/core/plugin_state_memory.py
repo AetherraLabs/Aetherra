@@ -193,7 +193,7 @@ class PluginStateMemory:
             return True
 
         except Exception as e:
-            print(f"⚠️ Error setting plugin state: {e}")
+            print(f"[WARN] Error setting plugin state: {e}")
             return False
 
     def get_plugin_state(
@@ -260,7 +260,7 @@ class PluginStateMemory:
             return value
 
         except Exception as e:
-            print(f"⚠️ Error getting plugin state: {e}")
+            print(f"[WARN] Error getting plugin state: {e}")
             return default
 
     def delete_plugin_state(
@@ -308,7 +308,7 @@ class PluginStateMemory:
             return True
 
         except Exception as e:
-            print(f"⚠️ Error deleting plugin state: {e}")
+            print(f"[WARN] Error deleting plugin state: {e}")
             return False
 
     def get_plugin_context(
@@ -356,7 +356,7 @@ class PluginStateMemory:
             }
 
         except Exception as e:
-            print(f"⚠️ Error getting plugin context: {e}")
+            print(f"[WARN] Error getting plugin context: {e}")
             return {}
 
     def update_plugin_context(
@@ -436,7 +436,7 @@ class PluginStateMemory:
             return True
 
         except Exception as e:
-            print(f"⚠️ Error updating plugin context: {e}")
+            print(f"[WARN] Error updating plugin context: {e}")
             return False
 
     def set_shared_state(
@@ -509,7 +509,7 @@ class PluginStateMemory:
             return True
 
         except Exception as e:
-            print(f"⚠️ Error setting shared state: {e}")
+            print(f"[WARN] Error setting shared state: {e}")
             return False
 
     def get_shared_state(
@@ -555,7 +555,7 @@ class PluginStateMemory:
                 and requesting_plugin not in allowed_plugins
             ):
                 print(
-                    f"⚠️ Plugin {requesting_plugin} denied access to shared state {namespace}.{state_key}"
+                    f"[WARN] Plugin {requesting_plugin} denied access to shared state {namespace}.{state_key}"
                 )
                 return default
 
@@ -595,7 +595,7 @@ class PluginStateMemory:
             return value
 
         except Exception as e:
-            print(f"⚠️ Error getting shared state: {e}")
+            print(f"[WARN] Error getting shared state: {e}")
             return default
 
     def cleanup_old_states(self, days_old: int = 30) -> int:
@@ -635,7 +635,7 @@ class PluginStateMemory:
             return removed_count
 
         except Exception as e:
-            print(f"⚠️ Error cleaning up old states: {e}")
+            print(f"[WARN] Error cleaning up old states: {e}")
             return 0
 
     def get_plugin_memory_stats(self, plugin_name: str) -> Dict[str, Any]:
@@ -681,7 +681,7 @@ class PluginStateMemory:
             }
 
         except Exception as e:
-            print(f"⚠️ Error getting memory stats: {e}")
+            print(f"[WARN] Error getting memory stats: {e}")
             return {}
 
     def close(self):

@@ -169,7 +169,7 @@ class LyrixaAdvancedPluginManager:
                     await self._load_plugin_from_file(plugin_file)
                     discovered_count += 1
                 except Exception as e:
-                    print(f"⚠️ Failed to load plugin {plugin_file.name}: {e}")
+                    print(f"[WARN] Failed to load plugin {plugin_file.name}: {e}")
 
             # Scan for plugin packages
             for plugin_subdir in plugin_dir.iterdir():
@@ -181,7 +181,7 @@ class LyrixaAdvancedPluginManager:
                             discovered_count += 1
                         except Exception as e:
                             print(
-                                f"⚠️ Failed to load plugin package {plugin_subdir.name}: {e}"
+                                f"[WARN] Failed to load plugin package {plugin_subdir.name}: {e}"
                             )
 
         print(f"🔍 Auto-discovery complete: {discovered_count} plugins found")
@@ -499,7 +499,7 @@ class LyrixaAdvancedPluginManager:
                         if response:
                             return response
                     except Exception as e:
-                        print(f"❌ Error executing plugin {plugin_name}: {e}")
+                        print(f"[ERROR] Error executing plugin {plugin_name}: {e}")
                         continue
 
             # Try to route to plugins using intent routing
@@ -522,7 +522,7 @@ class LyrixaAdvancedPluginManager:
                     if result:
                         return f"I can help you with that using these capabilities: {', '.join(result[:3])}"
             except Exception as e:
-                print(f"❌ Error in async plugin routing: {e}")
+                print(f"[ERROR] Error in async plugin routing: {e}")
 
             # Fallback response
             return "I'm ready to help! What would you like me to assist you with?"
@@ -844,7 +844,7 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
 
                     if missing_fields:
                         print(
-                            f"⚠️ Found corrupted plugin chain: Missing fields: {', '.join(missing_fields)}"
+                            f"[WARN] Found corrupted plugin chain: Missing fields: {', '.join(missing_fields)}"
                         )
                         print(f"🧹 Attempting to clean corrupted chain data...")
                         # Try to delete the corrupted memory entry
@@ -868,14 +868,14 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
                         self.plugin_chains[chain.name] = chain
                     except Exception as chain_error:
                         print(
-                            f"⚠️ Failed to create plugin chain from data: {chain_error}"
+                            f"[WARN] Failed to create plugin chain from data: {chain_error}"
                         )
                         continue
 
             print(f"✅ Loaded {len(self.plugin_chains)} plugin chains from memory")
 
         except Exception as e:
-            print(f"⚠️ Failed to load plugin chains: {e}")
+            print(f"[WARN] Failed to load plugin chains: {e}")
 
     async def _initialize_performance_monitoring(self):
         """Initialize performance monitoring for plugins"""

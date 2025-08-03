@@ -164,7 +164,7 @@ class AetherraCodePersonaInterface:
 ═══════════════════════════════════════════
 
 ⚠️ Persona system not available
-🔧 Running in basic CLI mode
+[TOOL] Running in basic CLI mode
 
 Available commands:
 • Basic AetherraCode execution

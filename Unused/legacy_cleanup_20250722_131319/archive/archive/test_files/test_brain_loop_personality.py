@@ -102,7 +102,7 @@ async def test_brain_loop_with_personality():
     # Technical question
     technical_input = "Generate .aether code for a data processing pipeline"
     response = await lyrixa.brain_loop(technical_input, "text")
-    print(f"\n🔧 Technical request:")
+    print(f"\n[TOOL] Technical request:")
     print(f"Input: {technical_input}")
     print(f"Response: {response['lyrixa_response'][:150]}...")
     print(f"Has .aether code: {bool(response.get('aether_code'))}")
@@ -133,7 +133,7 @@ async def test_brain_loop_with_personality():
 
     # Modify settings
     lyrixa.adjust_personality(warmth=1.0, humor_level=1.0)
-    print("🔧 Modified personality settings")
+    print("[TOOL] Modified personality settings")
 
     # Test response with modified settings
     response = await lyrixa.brain_loop("Hello Lyrixa!", "text")

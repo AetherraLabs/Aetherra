@@ -6,7 +6,7 @@ The **Memory Viewer Tab** has been **successfully integrated**, achieving **BEYO
 
 ## 🧠 **Memory Viewer Tab Features**
 
-### 🔧 **Core Functionality**
+### [TOOL] **Core Functionality**
 - **🧠 Live Memory State Inspection**: Real-time memory scanning and display
 - **🔄 Refresh Button**: On-demand memory snapshot updates
 - **📊 Memory Statistics**: Usage metrics and context information

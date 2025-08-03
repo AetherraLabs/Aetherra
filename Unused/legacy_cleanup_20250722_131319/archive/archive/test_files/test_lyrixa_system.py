@@ -286,7 +286,7 @@ def test_file_structure():
 
 def test_core_dependencies():
     """Test core system dependencies"""
-    print("\n🔧 Testing Core Dependencies...")
+    print("\n[TOOL] Testing Core Dependencies...")
 
     # Check if core modules exist
     core_modules = [

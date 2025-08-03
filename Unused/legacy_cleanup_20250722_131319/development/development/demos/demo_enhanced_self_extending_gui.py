@@ -35,7 +35,7 @@ Demonstration of the enhanced self-extending panel system with your suggestions 
    /ui_history  # See what Lyrixa has created before
    /suggest_improvements  # Get AI recommendations
 
-🔧 Technical Improvements:
+[TOOL] Technical Improvements:
 
 BEFORE (Issues):
 - Panels would vanish due to weak references

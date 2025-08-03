@@ -137,7 +137,7 @@ class Phase2Demo:
         """Run a single demonstration scenario"""
 
         print(f"\n👤 User: {scenario['user_input']}")
-        print(f"🔧 Context: {scenario['context']}")
+        print(f"[TOOL] Context: {scenario['context']}")
 
         start_time = datetime.now()
 
@@ -363,7 +363,7 @@ class Phase2Demo:
             report["report_file"] = report_filename
 
         except Exception as e:
-            print(f"⚠️ Could not save report file: {e}")
+            print(f"[WARN] Could not save report file: {e}")
             report["report_file"] = None
 
         return report

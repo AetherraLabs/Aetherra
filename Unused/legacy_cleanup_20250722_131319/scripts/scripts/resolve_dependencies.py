@@ -27,7 +27,7 @@ class DependencyResolver:
 
     def upgrade_pip(self):
         """Upgrade pip to latest version"""
-        print("🔧 Upgrading pip to latest version...")
+        print("[TOOL] Upgrading pip to latest version...")
         try:
             subprocess.run(
                 [sys.executable, "-m", "pip", "install", "--upgrade", "pip"],
@@ -37,7 +37,7 @@ class DependencyResolver:
             )
             print("✅ pip upgraded successfully")
         except subprocess.CalledProcessError as e:
-            print(f"⚠️  pip upgrade failed: {e}")
+            print(f"[WARN]  pip upgrade failed: {e}")
 
     def uninstall_conflicting_packages(self):
         """Remove packages known to cause conflicts"""
@@ -62,10 +62,10 @@ class DependencyResolver:
     def install_requirements(self, requirements_file):
         """Install requirements from a specific file"""
         if not (self.workspace_path / requirements_file).exists():
-            print(f"⚠️  {requirements_file} not found, skipping...")
+            print(f"[WARN]  {requirements_file} not found, skipping...")
             return False
 
-        print(f"📦 Installing from {requirements_file}...")
+        print(f"[DISC] Installing from {requirements_file}...")
         try:
             result = subprocess.run(
                 [
@@ -86,7 +86,7 @@ class DependencyResolver:
             return True
 
         except subprocess.CalledProcessError as e:
-            print(f"❌ Failed to install from {requirements_file}")
+            print(f"[ERROR] Failed to install from {requirements_file}")
             print(f"Error: {e.stderr}")
             return False
 
@@ -110,7 +110,7 @@ class DependencyResolver:
                 )
                 print(f"   ✅ {package} installed successfully")
             except subprocess.CalledProcessError:
-                print(f"   ⚠️  {package} installation failed (optional - continuing...)")
+                print(f"   [WARN]  {package} installation failed (optional - continuing...)")
 
     def verify_installation(self):
         """Verify that key packages are installed correctly"""
@@ -133,11 +133,11 @@ class DependencyResolver:
                 __import__(package.replace("-", "_"))
                 print(f"   ✅ {package}")
             except ImportError:
-                print(f"   ❌ {package} - FAILED")
+                print(f"   [ERROR] {package} - FAILED")
                 failed_packages.append(package)
 
         if failed_packages:
-            print(f"\n⚠️  Some packages failed to install: {', '.join(failed_packages)}")
+            print(f"\n[WARN]  Some packages failed to install: {', '.join(failed_packages)}")
             print("Run this script again or install manually with:")
             for pkg in failed_packages:
                 print(f"   pip install {pkg}")
@@ -167,7 +167,7 @@ class DependencyResolver:
 
             print("✅ Environment report saved to environment_report.txt")
         except Exception as e:
-            print(f"⚠️  Could not create environment report: {e}")
+            print(f"[WARN]  Could not create environment report: {e}")
 
     def run_resolution(self):
         """Main dependency resolution workflow"""
@@ -202,13 +202,13 @@ class DependencyResolver:
                 print("\n🎉 aetherra dependency resolution completed successfully!")
                 print("🧬 Ready to revolutionize programming with AI!")
             else:
-                print("\n⚠️  Some issues detected. Please review and retry.")
+                print("\n[WARN]  Some issues detected. Please review and retry.")
 
             # Step 7: Create environment report
             self.create_environment_report()
 
         except Exception as e:
-            print(f"\n❌ Dependency resolution failed: {e}")
+            print(f"\n[ERROR] Dependency resolution failed: {e}")
             print("Please check the error messages above and try again.")
             return False
 

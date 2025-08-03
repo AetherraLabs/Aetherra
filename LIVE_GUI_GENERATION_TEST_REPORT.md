@@ -12,7 +12,7 @@
 - **Total Tests Executed:** 20
 - **✅ Tests Passed:** 18
 - **❌ Tests Failed:** 2
-- **💥 Errors:** 0
+- **[FAIL] Errors:** 0
 - **📈 Success Rate:** 90.0%
 
 ---

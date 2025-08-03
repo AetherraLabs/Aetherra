@@ -87,7 +87,7 @@ def demo_intelligence_panel():
 
         print("\n5️⃣ Emotional Feedback:")
         print("   ❤️ Emotional state visualization")
-        print("   ⚠️ Risk warnings")
+        print("   [WARN] Risk warnings")
         print("   📝 Emotional intelligence log")
 
         print("\n" + "=" * 70)

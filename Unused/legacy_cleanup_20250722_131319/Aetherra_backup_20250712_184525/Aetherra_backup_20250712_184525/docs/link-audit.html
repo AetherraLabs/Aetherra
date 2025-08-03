@@ -112,7 +112,7 @@
                     } else if (link.includes('Zyonic88')) {
                         log('html-analysis', `✅ CORRECT LINK: ${link}`, 'success');
                     } else {
-                        log('html-analysis', `⚠️ OTHER GITHUB LINK: ${link}`, 'warning');
+                        log('html-analysis', `[WARN] OTHER GITHUB LINK: ${link}`, 'warning');
                     }
                 });
             } else {
@@ -130,7 +130,7 @@
                 } else if (href.includes('Zyonic88')) {
                     log('runtime-analysis', `✅ RUNTIME CORRECT LINK [${index}]: ${href} (${text})`, 'success');
                 } else {
-                    log('runtime-analysis', `⚠️ RUNTIME OTHER LINK [${index}]: ${href} (${text})`, 'warning');
+                    log('runtime-analysis', `[WARN] RUNTIME OTHER LINK [${index}]: ${href} (${text})`, 'warning');
                 }
             });
 

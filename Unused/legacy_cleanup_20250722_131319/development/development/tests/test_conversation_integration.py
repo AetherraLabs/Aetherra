@@ -46,11 +46,11 @@ def test_conversation_integration():
                 print(f"✅ Response generated: {response[:50]}...")
             except Exception as e:
                 print(
-                    f"⚠️ Response generation failed (expected due to API limits): {str(e)[:100]}..."
+                    f"[WARN] Response generation failed (expected due to API limits): {str(e)[:100]}..."
                 )
 
         else:
-            print("❌ generate_response method missing")
+            print("[ERROR] generate_response method missing")
             return False
 
         # Test GUI methods exist
@@ -63,13 +63,13 @@ def test_conversation_integration():
         if hasattr(window, "add_chat_message"):
             print("✅ add_chat_message method available")
         else:
-            print("❌ add_chat_message method missing")
+            print("[ERROR] add_chat_message method missing")
             return False
 
         if hasattr(window, "send_message"):
             print("✅ send_message method available")
         else:
-            print("❌ send_message method missing")
+            print("[ERROR] send_message method missing")
             return False
 
         if hasattr(window, "attach_intelligence_stack"):
@@ -80,14 +80,14 @@ def test_conversation_integration():
             print("✅ Intelligence stack attached to GUI")
 
         else:
-            print("❌ attach_intelligence_stack method missing")
+            print("[ERROR] attach_intelligence_stack method missing")
             return False
 
         app.quit()
         return True
 
     except Exception as e:
-        print(f"❌ Error in conversation integration test: {e}")
+        print(f"[ERROR] Error in conversation integration test: {e}")
         import traceback
 
         traceback.print_exc()
@@ -109,7 +109,7 @@ def main():
         print("   • All required methods are available")
         print("\n🎯 Conversation manager and GUI integration fixed!")
     else:
-        print("❌ Conversation integration needs more work")
+        print("[ERROR] Conversation integration needs more work")
 
     return success
 

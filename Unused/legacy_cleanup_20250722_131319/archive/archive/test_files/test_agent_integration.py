@@ -90,7 +90,7 @@ def test_agent_executor():
         return True
 
     except ImportError as e:
-        print(f"⚠️ Agent components not available: {e}")
+        print(f"[WARN] Agent components not available: {e}")
         return False
 
 
@@ -133,7 +133,7 @@ def test_agent_state_management():
         return True
 
     except ImportError as e:
-        print(f"⚠️ Agent components not available: {e}")
+        print(f"[WARN] Agent components not available: {e}")
         return False
 
 
@@ -172,7 +172,7 @@ def main():
         print("   • Deep integration with AetherraCode/Lyrixa")
         return 0
     else:
-        print("⚠️ Some tests failed. Check the implementation.")
+        print("[WARN] Some tests failed. Check the implementation.")
         return 1
 
 

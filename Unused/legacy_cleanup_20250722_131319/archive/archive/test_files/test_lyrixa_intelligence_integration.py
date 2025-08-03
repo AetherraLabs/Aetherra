@@ -204,7 +204,7 @@ def main():
             print("\n❌ Some tests failed!")
             return 1
     except Exception as e:
-        print(f"\n💥 Test suite failed with error: {e}")
+        print(f"\n[FAIL] Test suite failed with error: {e}")
         return 1
 
 

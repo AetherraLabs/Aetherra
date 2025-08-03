@@ -53,7 +53,7 @@ def test_ast_parser_comprehensive():
             )
 
     # Test 2: Complex Block Parsing
-    print("\n🔧 Test 2: Complex Block Parsing")
+    print("\n[TOOL] Test 2: Complex Block Parsing")
     complex_block = [
         "define factorial(n)",
         "    if n <= 1",

@@ -359,7 +359,7 @@ async def main():
         print(f"\n🌟 Demo completed successfully at {datetime.now()}")
 
     except Exception as e:
-        print(f"\n💥 Demo failed: {e}")
+        print(f"\n[FAIL] Demo failed: {e}")
         import traceback
 
         traceback.print_exc()

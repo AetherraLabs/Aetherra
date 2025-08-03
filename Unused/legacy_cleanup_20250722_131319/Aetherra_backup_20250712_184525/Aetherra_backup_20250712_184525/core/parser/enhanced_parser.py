@@ -721,7 +721,7 @@ class EnhancedAetherraInterpreter:
 
         if func_name:
             result = self.base_interpreter.functions.define_function(func_name, params, body)
-            return f"🔧 Function defined: {func_name}({', '.join(params)})"
+            return f"[TOOL] Function defined: {func_name}({', '.join(params)})"
 
         return "❌ Invalid function definition"
 

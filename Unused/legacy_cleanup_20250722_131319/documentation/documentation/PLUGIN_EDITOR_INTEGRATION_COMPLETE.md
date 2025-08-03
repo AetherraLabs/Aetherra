@@ -6,13 +6,13 @@ The issue where **"Lyrixa is saying she loaded and populated the plugin, but did
 
 ---
 
-## 🔧 **What Was Fixed**
+## [TOOL] **What Was Fixed**
 
 ### **Before (Broken):**
 ```
 User: "Load the assistant trainer plugin"
 Lyrixa: "I'll load up the Assistant Trainer plugin and apply changes in the Plugin Editor…"
-Result: ❌ Nothing happens in the UI - just empty words
+Result: [ERROR] Nothing happens in the UI - just empty words
 ```
 
 ### **After (WORKING):**
@@ -111,7 +111,7 @@ The controller includes 4 pre-built templates:
 1. **🤖 Assistant Trainer** - For AI training and enhancement
 2. **📊 Data Processor** - For data analysis and transformation
 3. **⚙️ Automation** - For task scheduling and automation
-4. **🔧 Utility** - General purpose utility plugins
+4. **[TOOL] Utility** - General purpose utility plugins
 
 Each template is fully functional with metadata, capabilities, and example functions.
 
@@ -216,7 +216,7 @@ Each template is fully functional with metadata, capabilities, and example funct
 - **🎯 Real Actions**: Lyrixa actually manipulates the UI instead of just talking
 - **🧠 Smart Routing**: Intent detection routes to appropriate handlers
 - **📊 Full Transparency**: Meta-reasoning tracks every decision and action
-- **🔧 Template System**: Pre-built plugins for common use cases
+- **[TOOL] Template System**: Pre-built plugins for common use cases
 - **⚡ Performance**: Fast intent detection with minimal overhead
 - **🛡️ Reliability**: Comprehensive error handling and fallbacks
 

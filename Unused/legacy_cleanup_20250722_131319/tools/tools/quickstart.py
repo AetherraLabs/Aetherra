@@ -45,7 +45,7 @@ def show_menu():
     print("1. 🎮 Launch Interactive Playground")
     print("2. 🧪 Run Multi-LLM Demo")
     print("3. 📖 View Tutorial")
-    print("4. 🔧 Run Status Check")
+    print("4. [TOOL] Run Status Check")
     print("5. 📋 View Examples")
     print("6. 🚪 Exit")
     print()
@@ -117,7 +117,7 @@ def main():
 
     # Run initial status check
     if not run_status_check():
-        print("\n⚠️ Please fix issues before continuing.")
+        print("\n[WARN] Please fix issues before continuing.")
         return
 
     while True:

@@ -511,7 +511,7 @@ implementation.execute();`,
             explanation: `Python is a versatile, readable programming language. Key concepts include:
 
 🐍 **Syntax**: Clean, readable code with meaningful indentation
-📦 **Data Types**: Numbers, strings, lists, dictionaries, sets, tuples
+[DISC] **Data Types**: Numbers, strings, lists, dictionaries, sets, tuples
 🔄 **Control Flow**: if/else, loops, functions, classes
 📚 **Libraries**: Extensive standard library + third-party packages
 🎯 **Applications**: Web development, data science, automation, AI`,
@@ -584,7 +584,7 @@ implementation.execute();`,
             recommendations: [
                 "🏗️ **Modular Structure**: Organize code into logical modules and components",
                 "📁 **Clear Folder Structure**: Separate concerns (components, utils, assets, etc.)",
-                "🔧 **Configuration Management**: Use environment variables and config files",
+                "[TOOL] **Configuration Management**: Use environment variables and config files",
                 "🧪 **Testing Strategy**: Implement unit, integration, and E2E tests",
                 "📚 **Documentation**: Maintain clear README and code documentation",
                 "🔄 **Version Control**: Use meaningful commit messages and branching strategy"
@@ -639,12 +639,12 @@ implementation.execute();`,
 class PluginSDK {
     constructor() {
         this.version = '2.0.0';
-        console.log("🔧 Plugin SDK Phase 2 - Active with creation capabilities");
+        console.log("[TOOL] Plugin SDK Phase 2 - Active with creation capabilities");
     }
 
     createPlugin(config) {
         // Phase 2 implementation
-        console.log("🔧 Creating custom plugin:", config.name);
+        console.log("[TOOL] Creating custom plugin:", config.name);
 
         const plugin = {
             id: config.id || `custom_${Date.now()}`,

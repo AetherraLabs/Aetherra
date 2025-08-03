@@ -26,7 +26,7 @@ async def test_conversation_manager():
 
     print(f"✅ Conversation manager initialized")
     print(f"🎯 Current model: {conversation_manager.current_model}")
-    print(f"🔧 LLM enabled: {conversation_manager.llm_enabled}")
+    print(f"[TOOL] LLM enabled: {conversation_manager.llm_enabled}")
 
     # Test queries
     test_queries = [

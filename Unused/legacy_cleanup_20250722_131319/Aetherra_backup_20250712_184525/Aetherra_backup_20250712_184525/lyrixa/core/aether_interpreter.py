@@ -197,12 +197,12 @@ class AetherInterpreter:
                         importance=result.get("confidence", 0.5)
                     )
                 except Exception as e:
-                    print(f"⚠️ Error storing generation in memory: {e}")
+                    print(f"[WARN] Error storing generation in memory: {e}")
 
             return result
 
         except Exception as e:
-            print(f"❌ Error in .aether generation: {e}")
+            print(f"[ERROR] Error in .aether generation: {e}")
             return {
                 "error": str(e),
                 "aether_code": f"# Error generating workflow from: {intent}",
@@ -326,7 +326,7 @@ class AetherInterpreter:
                         if parameter_name in memory.content:
                             return memory.content[parameter_name]
             except Exception as e:
-                print(f"⚠️ Error searching memory for parameter {parameter_name}: {e}")
+                print(f"[WARN] Error searching memory for parameter {parameter_name}: {e}")
 
         # Default suggestions based on parameter name
         defaults = {

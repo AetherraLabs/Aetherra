@@ -53,7 +53,7 @@ class LyrixaScriptIntegration:
             print("✅ Script Library initialized successfully!")
             print(f"📊 Total scripts: {stats.get('total_scripts', 0)}")
             print(f"📂 Categories: {len(self.registry.get('categories', {}))}")
-            print(f"🔧 Commands: {stats.get('total_commands', 0)}")
+            print(f"[TOOL] Commands: {stats.get('total_commands', 0)}")
 
             self.initialized = True
             return True

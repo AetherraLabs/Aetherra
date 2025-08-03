@@ -36,7 +36,7 @@ class TestPlugin(LyrixaPlugin):
         self.version = "1.0.0"
 
     async def initialize(self, lyrixa_context):
-        print(f"🔧 Initializing {self.name}")
+        print(f"[TOOL] Initializing {self.name}")
 
         # Test state memory
         self.set_state(

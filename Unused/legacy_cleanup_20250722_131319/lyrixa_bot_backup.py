@@ -5,7 +5,7 @@ import requests
 @bot.command(name="roles")
 async def roles(ctx):
     roles_msg = (
-        "```\n🌌 Creator        – Project owner\n🧠 Core Dev       – Maintainers & architects\n📦 Plugin Engineer – Building .aetherplugin tools\n🧪 Introspector   – Testing Lyrixa evolution\n🎓 Aethernaut     – Default role for explorers\n🤖 LyrixaBot      – Automated AI interface\n```"
+        "```\n🌌 Creator        – Project owner\n🧠 Core Dev       – Maintainers & architects\n[DISC] Plugin Engineer – Building .aetherplugin tools\n🧪 Introspector   – Testing Lyrixa evolution\n🎓 Aethernaut     – Default role for explorers\n🤖 LyrixaBot      – Automated AI interface\n```"
     )
     await send_in_thread(ctx, roles_msg)iscord.ext import commands, tasks
 from dotenv import load_dotenv
@@ -52,7 +52,7 @@ async def roadmap(ctx):
 @bot.command(name="roles")
 async def roles(ctx):
     await ctx.send(
-        "```\n� Creator        – Project owner\n🧠 Core Dev       – Maintainers & architects\n📦 Plugin Engineer – Building .aetherplugin tools\n🧪 Introspector   – Testing Lyrixa evolution\n🎓 Aethernaut     – Default role for explorers\n🤖 LyrixaBot      – Automated AI interface\n```"
+        "```\n� Creator        – Project owner\n🧠 Core Dev       – Maintainers & architects\n[DISC] Plugin Engineer – Building .aetherplugin tools\n🧪 Introspector   – Testing Lyrixa evolution\n🎓 Aethernaut     – Default role for explorers\n🤖 LyrixaBot      – Automated AI interface\n```"
     )
 
 # Ping
@@ -74,7 +74,7 @@ async def reflect(ctx):
         thought = data.get("reflection", "No reflection available.")
         await ctx.send(f"💭 Lyrixa reflects: {thought}")
     except Exception as e:
-        await ctx.send("⚠️ Unable to reach Lyrixa's reflective core.")
+        await ctx.send("[WARN] Unable to reach Lyrixa's reflective core.")
 
 @bot.command(name="goals")
 async def goals(ctx):
@@ -88,7 +88,7 @@ async def goals(ctx):
             goal_list = "\n".join(f"- {g}" for g in goals)
             await ctx.send(f"🎯 Active Goals:\n```{goal_list}```")
     except Exception:
-        await ctx.send("⚠️ Lyrixa's goal engine is unreachable.")
+        await ctx.send("[WARN] Lyrixa's goal engine is unreachable.")
 
 @bot.command(name="plugins")
 async def plugins(ctx):
@@ -97,12 +97,12 @@ async def plugins(ctx):
         data = response.json()
         plugin_list = data.get("active_plugins", [])
         if not plugin_list:
-            await ctx.send("📦 No plugins currently loaded.")
+            await ctx.send("[DISC] No plugins currently loaded.")
         else:
             names = "\n".join(f"• {p}" for p in plugin_list)
-            await ctx.send(f"📦 Loaded Plugins:\n```{names}```")
+            await ctx.send(f"[DISC] Loaded Plugins:\n```{names}```")
     except Exception:
-        await ctx.send("⚠️ Cannot retrieve plugin data.")
+        await ctx.send("[WARN] Cannot retrieve plugin data.")
 
 @bot.command(name="memory")
 async def memory(ctx):
@@ -116,7 +116,7 @@ async def memory(ctx):
             memdump = "\n".join(f"- {m}" for m in memory)
             await ctx.send(f"📚 Lyrixa's memory:\n```{memdump}```")
     except:
-        await ctx.send("⚠️ Unable to access Lyrixa's memory.")
+        await ctx.send("[WARN] Unable to access Lyrixa's memory.")
 
 @bot.command(name="confidence")
 async def confidence(ctx):
@@ -126,7 +126,7 @@ async def confidence(ctx):
         score = data.get("confidence", "Unknown")
         await ctx.send(f"🧪 Lyrixa's confidence level: {score}")
     except:
-        await ctx.send("⚠️ Confidence metric not available.")
+        await ctx.send("[WARN] Confidence metric not available.")
 
 @bot.command(name="runplugin")
 async def runplugin(ctx, name: str):
@@ -135,7 +135,7 @@ async def runplugin(ctx, name: str):
         result = response.json().get("result", "Plugin executed.")
         await ctx.send(f"⚙️ Plugin '{name}' executed.\n{result}")
     except:
-        await ctx.send("⚠️ Plugin execution failed or not supported.")
+        await ctx.send("[WARN] Plugin execution failed or not supported.")
 
 @bot.command(name="insight")
 async def insight(ctx):
@@ -144,7 +144,7 @@ async def insight(ctx):
         insight = response.json().get("insight", "No insights available.")
         await ctx.send(f"💡 Insight: {insight}")
     except:
-        await ctx.send("⚠️ Insight data unavailable.")
+        await ctx.send("[WARN] Insight data unavailable.")
 
 @bot.command(name="selfeval")
 async def selfeval(ctx):
@@ -153,7 +153,7 @@ async def selfeval(ctx):
         eval = response.json().get("evaluation", "No self-evaluation found.")
         await ctx.send(f"🔍 Latest self-evaluation:\n```{eval}```")
     except:
-        await ctx.send("⚠️ Self-evaluation API not reachable.")
+        await ctx.send("[WARN] Self-evaluation API not reachable.")
 
 @tasks.loop(hours=6)
 async def periodic_reflection():
@@ -167,7 +167,7 @@ async def periodic_reflection():
                 thought = data.get("reflection", "No reflection at this time.")
                 await channel.send(f"🧠 Scheduled Reflection: {thought}")
             except:
-                await channel.send("⚠️ Failed to retrieve reflection.")
+                await channel.send("[WARN] Failed to retrieve reflection.")
 
 # Help
 @bot.command(name="help")
@@ -194,6 +194,6 @@ async def help_command(ctx):
 
 if __name__ == "__main__":
     if not TOKEN:
-        print("❌ Bot token not found. Please set LYRIXA_BOT_TOKEN in your .env file.")
+        print("[ERROR] Bot token not found. Please set LYRIXA_BOT_TOKEN in your .env file.")
     else:
         bot.run(TOKEN)

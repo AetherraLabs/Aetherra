@@ -108,7 +108,7 @@ async def test_auto_population_flow():
                     else mock_gui.injected_code
                 )
         else:
-            print("❌ AUTO-POPULATION FAILED!")
+            print("[ERROR] AUTO-POPULATION FAILED!")
             print("   No code was injected into mock GUI")
 
         # Check response metadata for auto-population indicators
@@ -126,7 +126,7 @@ async def test_auto_population_flow():
             if plugin_operation == "plugin_generation" and generated_code:
                 print("✅ All metadata requirements met for auto-population")
             else:
-                print("⚠️ Missing metadata requirements for auto-population")
+                print("[WARN] Missing metadata requirements for auto-population")
 
         print()
         print("=" * 60)
@@ -145,11 +145,11 @@ async def test_auto_population_flow():
             print("✅ Auto-population bridge functional")
             return True
         else:
-            print("❌ PHASE 1 AUTO-POPULATION: NEEDS DEBUGGING")
+            print("[ERROR] PHASE 1 AUTO-POPULATION: NEEDS DEBUGGING")
             return False
 
     except Exception as e:
-        print(f"❌ Test failed with error: {e}")
+        print(f"[ERROR] Test failed with error: {e}")
         import traceback
 
         traceback.print_exc()

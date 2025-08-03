@@ -56,7 +56,7 @@ def demonstrate_world_class_components():
             print("✅ Goal relevance features available in world-class interface")
 
         except ImportError:
-            print("⚠️  PySide6 not available - testing lightweight version")
+            print("[WARN]  PySide6 not available - testing lightweight version")
 
             # Fall back to lightweight version
             from Aetherra.lyrixa.memory.lightweight_memory_core import MemoryCore
@@ -110,7 +110,7 @@ def demonstrate_world_class_components():
                 print(f"✅ Goal '{goal.title}': {len(blockers)} blockers identified")
 
         except ImportError:
-            print("⚠️  PySide6 not available - testing lightweight version")
+            print("[WARN]  PySide6 not available - testing lightweight version")
 
             # Fall back to lightweight version
             from Aetherra.lyrixa.core.lightweight_goal_tracker import GoalTracker
@@ -163,18 +163,18 @@ def demonstrate_launcher_integration():
                 memory_tab = window.create_memory_tab()
                 print("✅ Memory tab created successfully")
             else:
-                print("⚠️  Memory tab method not found (placeholder implementation)")
+                print("[WARN]  Memory tab method not found (placeholder implementation)")
         except Exception as e:
-            print(f"⚠️  Memory tab creation: {e}")
+            print(f"[WARN]  Memory tab creation: {e}")
 
         try:
             if hasattr(window, 'create_goal_tab'):
                 goal_tab = window.create_goal_tab()
                 print("✅ Goal tab created successfully")
             else:
-                print("⚠️  Goal tab method not found (placeholder implementation)")
+                print("[WARN]  Goal tab method not found (placeholder implementation)")
         except Exception as e:
-            print(f"⚠️  Goal tab creation: {e}")
+            print(f"[WARN]  Goal tab creation: {e}")
 
         print("✅ Launcher integration verified!")
 
@@ -189,7 +189,7 @@ def show_usage_instructions():
     print("\n📖 Usage Instructions")
     print("=" * 50)
 
-    print("🔧 Component Locations:")
+    print("[TOOL] Component Locations:")
     print("  • Memory Core: Aetherra/lyrixa/memory/world_class_memory_core.py")
     print("  • Goal Tracker: Aetherra/lyrixa/core/world_class_goal_tracker.py")
     print("  • Lightweight Memory: Aetherra/lyrixa/memory/lightweight_memory_core.py")
@@ -239,7 +239,7 @@ def main():
     print("\n" + "=" * 60)
     print("✅ World-Class Components Integration Verified!")
     print("🎉 Ready for use with aetherra_hybrid_launcher.py")
-    print("🔧 Components are properly organized in Aetherra/lyrixa structure")
+    print("[TOOL] Components are properly organized in Aetherra/lyrixa structure")
 
 if __name__ == "__main__":
     main()

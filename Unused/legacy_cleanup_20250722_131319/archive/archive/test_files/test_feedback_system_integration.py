@@ -304,7 +304,7 @@ async def main():
             sys.exit(1)
 
     except Exception as e:
-        print(f"\n💥 Test execution failed: {e}")
+        print(f"\n[FAIL] Test execution failed: {e}")
         import traceback
 
         traceback.print_exc()

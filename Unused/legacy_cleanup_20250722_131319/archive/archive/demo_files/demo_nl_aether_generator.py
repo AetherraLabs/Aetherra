@@ -104,7 +104,7 @@ class NLAetherDemo:
                     break
 
                 if not user_input:
-                    print("⚠️ Please enter a description of your desired workflow.")
+                    print("[WARN] Please enter a description of your desired workflow.")
                     continue
 
                 print("⚡ Generating .aether workflow...")
@@ -133,7 +133,7 @@ class NLAetherDemo:
         template_used = result.get("template_used", "Unknown")
 
         print(f"📊 Confidence: {confidence:.1%}")
-        print(f"🔧 Complexity: {complexity:.1%}")
+        print(f"[TOOL] Complexity: {complexity:.1%}")
         print(f"📋 Template: {template_used}")
 
         # Intent analysis

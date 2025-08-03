@@ -83,7 +83,7 @@ def test_gui_components():
             print("✅ GUI components: Qt framework available")
             return True
         else:
-            print("⚠️  GUI components: Qt not available, but import successful")
+            print("[WARN]  GUI components: Qt not available, but import successful")
             return True
     except Exception as e:
         print(f"❌ GUI components error: {e}")
@@ -236,7 +236,7 @@ def main():
         print("\n🎉 All tests passed! AetherraCode and Lyrixaare ready to use!")
         return 0
     else:
-        print(f"\n⚠️  {failed} test(s) failed. Please check the issues above.")
+        print(f"\n[WARN]  {failed} test(s) failed. Please check the issues above.")
         return 1
 
 

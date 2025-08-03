@@ -18,7 +18,7 @@ sys.path.insert(0, str(src_path))
 
 def test_core_imports():
     """Test all core module imports"""
-    print("🔧 Testing Core Module Imports...")
+    print("[TOOL] Testing Core Module Imports...")
 
     try:
         print("  ✅ Core factory functions imported")
@@ -53,7 +53,7 @@ def test_interpreter_functionality():
             result = interpreter.execute("print('Hello AetherraCode!')")
             print("  ✅ Basic code execution works")
         else:
-            print("  ⚠️ Execute method not available (this is normal)")
+            print("  [WARN] Execute method not available (this is normal)")
 
         return True
     except Exception as e:
@@ -83,14 +83,14 @@ def test_memory_system():
             memory.store("test", "Test memory item")
             print("  ✅ Memory store operation works")
         else:
-            print("  ⚠️ Memory operations not available (using basic implementation)")
+            print("  [WARN] Memory operations not available (using basic implementation)")
 
         # Test vector memory (if available)
         try:
             vector_memory = create_memory_system(vector_enabled=True)
             print("  ✅ Vector memory system created")
         except Exception:
-            print("  ⚠️ Vector memory not available (this is normal)")
+            print("  [WARN] Vector memory not available (this is normal)")
 
         return True
     except Exception as e:
@@ -117,9 +117,9 @@ def test_parser_functionality():
                 result = parser.parse("test code")
                 print("  ✅ Parser parse method works")
             except Exception as e:
-                print(f"  ⚠️ Parser parse failed (expected): {e}")
+                print(f"  [WARN] Parser parse failed (expected): {e}")
         else:
-            print("  ⚠️ Parse method not available")
+            print("  [WARN] Parse method not available")
 
         return True
     except Exception as e:
@@ -193,9 +193,9 @@ def test_stdlib_plugins():
                 if plugin_file.exists():
                     print(f"  ✅ Plugin {plugin} available")
                 else:
-                    print(f"  ⚠️ Plugin {plugin} not found")
+                    print(f"  [WARN] Plugin {plugin} not found")
         else:
-            print("  ⚠️ StdLib directory not found")
+            print("  [WARN] StdLib directory not found")
 
         return True
     except Exception as e:
@@ -234,7 +234,7 @@ def test_performance_engine():
 
             return True
         else:
-            print("  ⚠️ Performance engine file not found")
+            print("  [WARN] Performance engine file not found")
             return False
     except Exception as e:
         print(f"  ❌ Performance engine test failed: {e}")
@@ -296,9 +296,9 @@ def test_aethercode_syntax():
                     result = parser.parse(sample_Aetherra)
                     print("  ✅ AetherraCode syntax parsed successfully")
                 except Exception:
-                    print("  ⚠️ AetherraCode parsing not fully implemented (expected)")
+                    print("  [WARN] AetherraCode parsing not fully implemented (expected)")
         except Exception:
-            print("  ⚠️ Parser not available for syntax testing")
+            print("  [WARN] Parser not available for syntax testing")
 
         return True
     except Exception as e:
@@ -410,7 +410,7 @@ def main():
         print("  • Develop with the AetherraCode language")
         return True
     else:
-        print(f"\n⚠️ {total - passed} tests failed. Check the output above for details.")
+        print(f"\n[WARN] {total - passed} tests failed. Check the output above for details.")
         print("Some components may not be fully functional.")
         return False
 

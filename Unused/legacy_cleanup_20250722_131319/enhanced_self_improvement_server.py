@@ -364,7 +364,7 @@ class EmbeddedServer:
             self.running = False
 
         except Exception as e:
-            print(f"⚠️ Error stopping embedded server: {e}")
+            print(f"[WARN] Error stopping embedded server: {e}")
 
     def is_running(self):
         """Check if server is running"""

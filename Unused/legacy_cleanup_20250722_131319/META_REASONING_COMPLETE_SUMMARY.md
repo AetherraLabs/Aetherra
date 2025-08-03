@@ -94,7 +94,7 @@ class DecisionType(Enum):
 
 ---
 
-## 🔧 **Integration Ready**
+## [TOOL] **Integration Ready**
 
 ### **Quick Integration Example:**
 ```python

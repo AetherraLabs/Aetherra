@@ -37,10 +37,10 @@ def test_ast_integration():
         # Test syntax validation
         valid, error = parser.validate_syntax(code)
         if not valid:
-            print(f"    ⚠️  Validation error: {error}")
+            print(f"    [WARN]  Validation error: {error}")
 
     # Test block parsing
-    print("\n📦 Testing Block Parsing")
+    print("\n[DISC] Testing Block Parsing")
     complex_block = [
         "define factorial(n)",
         "    if n <= 1",
@@ -58,7 +58,7 @@ def test_ast_integration():
     print(f"✓ Parsed {len(block_cmds)} commands from complex block")
 
     # Test variable and evaluation system
-    print("\n🔧 Testing Variable System")
+    print("\n[TOOL] Testing Variable System")
     parser.set_variable("test_var", 42)
     value = parser.get_variable("test_var")
     print(f"✓ Variable storage: {value}")

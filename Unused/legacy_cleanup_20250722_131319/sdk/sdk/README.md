@@ -46,7 +46,7 @@ def hello_world(args):
     return f"Hello from example plugin! Args: {args}"
 ```
 
-## 🔧 Advanced Plugin Template
+## [TOOL] Advanced Plugin Template
 
 ```python
 # sdk/plugins/advanced_example.py
@@ -128,18 +128,18 @@ def analyze(data: str, method: str = "basic") -> Dict[str, Any]:
 | Parameter          | Type      | Description              | Required |
 | ------------------ | --------- | ------------------------ | -------- |
 | `name`             | str       | Plugin identifier        | ✅        |
-| `description`      | str       | Plugin description       | ❌        |
-| `capabilities`     | List[str] | Plugin capabilities      | ❌        |
-| `version`          | str       | Plugin version           | ❌        |
-| `author`           | str       | Plugin author            | ❌        |
-| `category`         | str       | Plugin category          | ❌        |
-| `dependencies`     | List[str] | Required packages        | ❌        |
-| `intent_purpose`   | str       | AI integration purpose   | ❌        |
-| `intent_triggers`  | List[str] | AI trigger words         | ❌        |
-| `intent_scenarios` | List[str] | Use case scenarios       | ❌        |
-| `ai_description`   | str       | AI-readable description  | ❌        |
-| `example_usage`    | str       | Usage example            | ❌        |
-| `confidence_boost` | float     | AI confidence multiplier | ❌        |
+| `description`      | str       | Plugin description       | [ERROR]  |
+| `capabilities`     | List[str] | Plugin capabilities      | [ERROR]  |
+| `version`          | str       | Plugin version           | [ERROR]  |
+| `author`           | str       | Plugin author            | [ERROR]  |
+| `category`         | str       | Plugin category          | [ERROR]  |
+| `dependencies`     | List[str] | Required packages        | [ERROR]  |
+| `intent_purpose`   | str       | AI integration purpose   | [ERROR]  |
+| `intent_triggers`  | List[str] | AI trigger words         | [ERROR]  |
+| `intent_scenarios` | List[str] | Use case scenarios       | [ERROR]  |
+| `ai_description`   | str       | AI-readable description  | [ERROR]  |
+| `example_usage`    | str       | Usage example            | [ERROR]  |
+| `confidence_boost` | float     | AI confidence multiplier | [ERROR]  |
 
 ## 🎯 Plugin Usage in .aether Files
 
@@ -209,7 +209,7 @@ Mathematical operations
 - `solve(equation)` - Solve equations
 - `graph(function)` - Plot mathematical functions
 
-## 🔧 Development Guidelines
+## [TOOL] Development Guidelines
 
 ### 1. Plugin Best Practices
 - ✅ Use clear, descriptive function names

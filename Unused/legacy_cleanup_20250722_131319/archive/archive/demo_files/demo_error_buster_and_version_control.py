@@ -253,7 +253,7 @@ def main():
         )
         safe_print("   • Integrate these tools into your development workflow")
     else:
-        safe_print("⚠️  Some systems may need additional setup")
+        safe_print("[WARN]  Some systems may need additional setup")
 
     safe_print("=" * 60)
 

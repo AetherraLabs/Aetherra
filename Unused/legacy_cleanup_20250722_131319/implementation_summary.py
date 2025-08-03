@@ -22,7 +22,7 @@ def implementation_summary():
     print("-" * 40)
     print()
 
-    print("1. 🔧 PLUGIN DIFF ENGINE (plugin_diff_engine.py)")
+    print("1. [TOOL] PLUGIN DIFF ENGINE (plugin_diff_engine.py)")
     print("   ✅ Automatic plugin analysis and quality scoring")
     print("   ✅ Issue detection (error handling, logging, complexity)")
     print("   ✅ Improvement proposal generation with risk assessment")
@@ -77,7 +77,7 @@ def implementation_summary():
     print("✅ Plugin recommendation engine with scoring")
     print()
 
-    print("🔧 IMPLEMENTATION DETAILS:")
+    print("[TOOL] IMPLEMENTATION DETAILS:")
     print("-" * 25)
 
     print("\n📄 Files Created/Modified:")
@@ -141,7 +141,7 @@ def quick_test_results():
     print("   - Auto-check system operational")
     print("   - Natural language integration successful")
 
-    print("⚠️ Self-Improvement System: PARTIAL (missing 'schedule' module)")
+    print("[WARN] Self-Improvement System: PARTIAL (missing 'schedule' module)")
     print("   - Core plugin analysis engine working")
     print("   - Improvement proposal generation successful")
     print("   - Background monitoring needs dependency")

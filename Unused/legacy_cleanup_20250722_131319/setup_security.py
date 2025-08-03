@@ -369,7 +369,7 @@ def initialize_aetherra_security_setup(workspace_path: Optional[str] = None) -> 
         print("4. Read SECURITY.md for detailed documentation")
 
     except Exception as e:
-        print(f"\n❌ Error initializing security system: {e}")
+        print(f"\n[ERROR] Error initializing security system: {e}")
         import traceback
         traceback.print_exc()
 

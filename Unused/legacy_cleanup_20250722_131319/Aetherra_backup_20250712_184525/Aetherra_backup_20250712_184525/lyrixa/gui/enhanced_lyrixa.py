@@ -268,10 +268,10 @@ class EnhancedLyrixaWindow:
                 print("✅ Qt GUI framework detected")
             else:
                 self.qt_available = False
-                print("⚠️ PySide6 not available - running in console mode")
+                print("[WARN] PySide6 not available - running in console mode")
         except ImportError:
             self.qt_available = False
-            print("⚠️ PySide6 not available - running in console mode")
+            print("[WARN] PySide6 not available - running in console mode")
 
     def _initialize_lyrixa_ai(self):
         """Initialize the real Lyrixa AI system with Phase 1 Advanced Memory."""
@@ -301,7 +301,7 @@ class EnhancedLyrixaWindow:
             self._initialize_advanced_memory()
 
         except Exception as e:
-            print(f"⚠️ Could not initialize Lyrixa AI: {e}")
+            print(f"[WARN] Could not initialize Lyrixa AI: {e}")
             self.lyrixa_ai = None
 
     def _initialize_debug_console(self):
@@ -323,7 +323,7 @@ class EnhancedLyrixaWindow:
             print("   ✅ Decision matrix analysis")
 
         except Exception as e:
-            print(f"⚠️ Could not initialize Debug Console: {e}")
+            print(f"[WARN] Could not initialize Debug Console: {e}")
             self.debug_console_widget = None
 
     def _initialize_advanced_memory(self):
@@ -348,7 +348,7 @@ class EnhancedLyrixaWindow:
                 self.plugins.insert(0, "Advanced Memory")
 
         except Exception as e:
-            print(f"⚠️ Could not initialize Advanced Memory: {e}")
+            print(f"[WARN] Could not initialize Advanced Memory: {e}")
             self.advanced_memory = None
             self.reflection_engine = None
 
@@ -364,7 +364,7 @@ class EnhancedLyrixaWindow:
             print("ℹ️ Phase 3 GUI components will be initialized when showing window")
 
         except Exception as e:
-            print(f"⚠️ Error in Phase 3 initialization: {e}")
+            print(f"[WARN] Error in Phase 3 initialization: {e}")
 
     def _initialize_polish_components(self):
         """Initialize strategic polish components for enhanced UX."""
@@ -405,7 +405,7 @@ class EnhancedLyrixaWindow:
             print("✅ All polish components initialized successfully")
 
         except Exception as e:
-            print(f"⚠️ Error initializing polish components: {e}")
+            print(f"[WARN] Error initializing polish components: {e}")
 
     def _initialize_phase3_gui_components(self):
         """Initialize Phase 3 GUI components after Qt is available."""
@@ -441,7 +441,7 @@ class EnhancedLyrixaWindow:
             print("✅ Phase 3 GUI components integrated successfully")
 
         except Exception as e:
-            print(f"⚠️ Error initializing Phase 3 GUI components: {e}")
+            print(f"[WARN] Error initializing Phase 3 GUI components: {e}")
             # Set components to None if initialization fails
             self.analytics_dashboard = None
             self.notification_system = None
@@ -463,7 +463,7 @@ class EnhancedLyrixaWindow:
             print("✅ Anticipation engine connected to notifications")
 
         except Exception as e:
-            print(f"⚠️ Error connecting anticipation to notifications: {e}")
+            print(f"[WARN] Error connecting anticipation to notifications: {e}")
 
     def show_analytics_dashboard(self):
         """Show the analytics dashboard."""
@@ -856,7 +856,7 @@ class EnhancedLyrixaWindow:
                 self.intelligence_layer.update_display()
 
         except Exception as e:
-            print(f"⚠️ Error updating live components: {e}")
+            print(f"[WARN] Error updating live components: {e}")
 
     def show(self):
         """Show the Enhanced Lyrixa Window."""
@@ -882,7 +882,7 @@ class EnhancedLyrixaWindow:
             self._start_live_refresh()
 
         else:
-            print("⚠️ Qt not available - cannot show GUI window")
+            print("[WARN] Qt not available - cannot show GUI window")
             self.show_console_interface()
 
     def _setup_memory_bindings(self):
@@ -900,7 +900,7 @@ class EnhancedLyrixaWindow:
                 print("✅ Memory system bindings established")
 
         except Exception as e:
-            print(f"⚠️ Error setting up memory bindings: {e}")
+            print(f"[WARN] Error setting up memory bindings: {e}")
 
     def _start_live_refresh(self):
         """Start live refresh for all components."""
@@ -911,7 +911,7 @@ class EnhancedLyrixaWindow:
             print("✅ Live refresh started")
 
         except Exception as e:
-            print(f"⚠️ Error starting live refresh: {e}")
+            print(f"[WARN] Error starting live refresh: {e}")
 
     def show_console_interface(self):
         """Show a console-based interface when Qt is not available."""
@@ -952,7 +952,7 @@ class EnhancedLyrixaWindow:
         ]
 
         for name, component in components:
-            status = "✅ Active" if component else "❌ Inactive"
+            status = "✅ Active" if component else "[ERROR] Inactive"
             print(f"{name:<25} {status}")
 
     def hide(self):
@@ -986,7 +986,7 @@ class EnhancedLyrixaWindow:
             print(f"🧭 Context switched to: {context_type}")
 
         except Exception as e:
-            print(f"⚠️ Error switching context: {e}")
+            print(f"[WARN] Error switching context: {e}")
 
     def add_thought(self, thought: str):
         """Add a thought to the live feed."""
@@ -998,7 +998,7 @@ class EnhancedLyrixaWindow:
                 self.think_feed.append(f"[{timestamp}] {thought}")
 
         except Exception as e:
-            print(f"⚠️ Error adding thought: {e}")
+            print(f"[WARN] Error adding thought: {e}")
 
     def update_confidence(self, confidence: int):
         """Update the confidence bar."""
@@ -1007,7 +1007,7 @@ class EnhancedLyrixaWindow:
                 self.confidence_bar.setValue(max(0, min(100, confidence)))
 
         except Exception as e:
-            print(f"⚠️ Error updating confidence: {e}")
+            print(f"[WARN] Error updating confidence: {e}")
 
     def on_init(self):
         """Phase 4 lifecycle method - called during initialization."""
@@ -1068,7 +1068,7 @@ if __name__ == "__main__":
             sys.exit(app.exec())
 
         except Exception as e:
-            print(f"⚠️ Error running Qt application: {e}")
+            print(f"[WARN] Error running Qt application: {e}")
             print("Falling back to console mode...")
             window.show_console_interface()
     else:

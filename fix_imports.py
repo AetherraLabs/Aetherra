@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧 Aetherra Import Fix Utility
+[TOOL] Aetherra Import Fix Utility
 ==============================
 Fixes common import issues for Aetherra contributors.
 
@@ -47,13 +47,13 @@ class AetherraImportFixer:
             version_info.major == 3 and version_info.minor < 8
         ):
             logger.error(
-                f"❌ Python 3.8+ required, found {version_info.major}.{version_info.minor}"
+                f"[ERROR] Python 3.8+ required, found {version_info.major}.{version_info.minor}"
             )
             self.issues_found.append("Incompatible Python version")
             return False
 
         logger.info(
-            f"✅ Python {version_info.major}.{version_info.minor}.{version_info.micro} - Compatible"
+            f"[OK] Python {version_info.major}.{version_info.minor}.{version_info.micro} - Compatible"
         )
         return True
 
@@ -87,7 +87,7 @@ class AetherraImportFixer:
                 if not init_file.exists():
                     missing_init_dirs.append(dir_path)
                     logger.warning(
-                        f"⚠️  Missing __init__.py in {dir_path.relative_to(self.project_root)}"
+                        f"[WARN]  Missing __init__.py in {dir_path.relative_to(self.project_root)}"
                     )
 
         return missing_init_dirs
@@ -132,18 +132,18 @@ __all__ = [
                 f.write(init_content)
 
             logger.info(
-                f"✅ Created __init__.py in {directory.relative_to(self.project_root)}"
+                f"[OK] Created __init__.py in {directory.relative_to(self.project_root)}"
             )
             self.fixes_applied.append(f"Created __init__.py in {directory.name}")
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to create __init__.py in {directory}: {e}")
+            logger.error(f"[ERROR] Failed to create __init__.py in {directory}: {e}")
             return False
 
     def check_dependencies(self) -> Dict[str, bool]:
         """Check if required dependencies are installed."""
-        logger.info("📦 Checking dependencies...")
+        logger.info("[DISC] Checking dependencies...")
 
         dependencies_status = {}
 
@@ -171,18 +171,18 @@ __all__ = [
             try:
                 __import__(dep)
                 dependencies_status[dep] = True
-                logger.debug(f"✅ {dep} - Available")
+                logger.debug(f"[OK] {dep} - Available")
             except ImportError:
                 dependencies_status[dep] = False
                 missing_core.append(dep)
-                logger.warning(f"⚠️  {dep} - Missing (core dependency)")
+                logger.warning(f"[WARN]  {dep} - Missing (core dependency)")
 
         # Check optional dependencies
         for dep in optional_deps:
             try:
                 __import__(dep)
                 dependencies_status[dep] = True
-                logger.debug(f"✅ {dep} - Available")
+                logger.debug(f"[OK] {dep} - Available")
             except ImportError:
                 dependencies_status[dep] = False
                 logger.debug(f"ℹ️  {dep} - Missing (optional)")
@@ -196,7 +196,7 @@ __all__ = [
 
     def install_missing_dependencies(self) -> bool:
         """Install missing dependencies with timeout and fallback."""
-        logger.info("📦 Installing missing dependencies...")
+        logger.info("[DISC] Installing missing dependencies...")
 
         # Try minimal requirements first for faster setup
         minimal_deps = [
@@ -221,17 +221,17 @@ __all__ = [
                 )  # 2 minute timeout per package
 
             except subprocess.TimeoutExpired:
-                logger.warning(f"⚠️  {dep} installation timed out - skipping")
+                logger.warning(f"[WARN]  {dep} installation timed out - skipping")
                 success = False
             except subprocess.CalledProcessError as e:
-                logger.warning(f"⚠️  Failed to install {dep}: {e}")
+                logger.warning(f"[WARN]  Failed to install {dep}: {e}")
                 success = False
 
         if success:
-            logger.info("✅ Core dependencies installed successfully")
+            logger.info("[OK] Core dependencies installed successfully")
             self.fixes_applied.append("Installed core dependencies")
         else:
-            logger.warning("⚠️  Some dependencies failed to install - continuing anyway")
+            logger.warning("[WARN]  Some dependencies failed to install - continuing anyway")
             self.fixes_applied.append(
                 "Attempted to install dependencies (some may have failed)"
             )
@@ -256,19 +256,19 @@ __all__ = [
                 )  # 5 minute timeout total
 
                 if result.returncode == 0:
-                    logger.info("✅ Full requirements installed successfully")
+                    logger.info("[OK] Full requirements installed successfully")
                     self.fixes_applied.append("Installed full requirements.txt")
                 else:
                     logger.warning(
-                        "⚠️  Some packages in requirements.txt failed to install"
+                        "[WARN]  Some packages in requirements.txt failed to install"
                     )
 
             except subprocess.TimeoutExpired:
                 logger.warning(
-                    "⚠️  Full requirements installation timed out - core packages should be sufficient"
+                    "[WARN]  Full requirements installation timed out - core packages should be sufficient"
                 )
             except Exception as e:
-                logger.warning(f"⚠️  Full requirements installation failed: {e}")
+                logger.warning(f"[WARN]  Full requirements installation failed: {e}")
 
         return True  # Return True as long as we tried - core deps are sufficient
 
@@ -311,10 +311,10 @@ rich>=13.4.0
             try:
                 exec(import_statement)
                 import_tests[name] = True
-                logger.info(f"✅ {name} import - Success")
+                logger.info(f"[OK] {name} import - Success")
             except Exception as e:
                 import_tests[name] = False
-                logger.warning(f"⚠️  {name} import - Failed: {e}")
+                logger.warning(f"[WARN]  {name} import - Failed: {e}")
 
         return import_tests
 
@@ -349,7 +349,7 @@ rich>=13.4.0
             # Try to install, but don't fail the whole process if it doesn't work
             self.install_missing_dependencies()
         else:
-            logger.info("✅ Core dependencies are available")
+            logger.info("[OK] Core dependencies are available")
 
         # 4. Test imports
         import_results = self.test_imports()
@@ -380,10 +380,10 @@ Fixes Applied: {len(self.fixes_applied)}
 {chr(10).join(f"  - {fix}" for fix in self.fixes_applied)}
 
 Dependency Status:
-{chr(10).join(f"  {dep}: {'✅' if status else '❌'}" for dep, status in deps_status.items())}
+{chr(10).join(f"  {dep}: {'[OK]' if status else '[ERROR]'}" for dep, status in deps_status.items())}
 
 Import Tests:
-{chr(10).join(f"  {test}: {'✅' if status else '❌'}" for test, status in import_results.items())}
+{chr(10).join(f"  {test}: {'[OK]' if status else '[ERROR]'}" for test, status in import_results.items())}
 
 Next Steps:
   1. If any imports still fail, check the specific error messages
@@ -403,7 +403,7 @@ Repository: https://github.com/AetherraLabs/Aetherra
                 f.write(report)
             logger.info(f"📄 Report saved to {report_file}")
         except Exception as e:
-            logger.warning(f"⚠️  Could not save report file: {e}")
+            logger.warning(f"[WARN]  Could not save report file: {e}")
             # Try saving without emojis
             try:
                 clean_report = report.encode("ascii", "ignore").decode("ascii")
@@ -426,13 +426,13 @@ def main():
             print("\n🎉 Import fix completed successfully!")
             print("   You should now be able to import Aetherra modules.")
         else:
-            print("\n⚠️  Import fix completed with some issues.")
+            print("\n[WARN]  Import fix completed with some issues.")
             print("   Check the report above for details.")
 
         return 0 if success else 1
 
     except Exception as e:
-        logger.error(f"❌ Unexpected error: {e}")
+        logger.error(f"[ERROR] Unexpected error: {e}")
         return 1
 
 

@@ -22,7 +22,7 @@ try:
 
         # Test discovered plugins property
         discovered = intelligence_stack.plugin_bridge.discovered_plugins
-        print(f"📦 Discovered plugins cache: {len(discovered)} plugins")
+        print(f"[DISC] Discovered plugins cache: {len(discovered)} plugins")
 
         if discovered:
             print("First few plugins:")
@@ -38,10 +38,10 @@ try:
         print(f"   By status: {summary['by_status']}")
 
     else:
-        print("❌ Plugin bridge not available")
+        print("[ERROR] Plugin bridge not available")
 
 except Exception as e:
-    print(f"❌ Error: {e}")
+    print(f"[ERROR] Error: {e}")
     import traceback
 
     traceback.print_exc()

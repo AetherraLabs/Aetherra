@@ -35,7 +35,7 @@ def test_aetherhub_directory():
                 if (aetherhub_path / file).exists():
                     print(f"✅ Found {file}")
                 else:
-                    print(f"⚠️  Missing {file}")
+                    print(f"[WARN]  Missing {file}")
             return True
         else:
             print(f"❌ AetherraHub directory not found: {aetherhub_path}")
@@ -76,7 +76,7 @@ def test_webengine_availability():
         print("✅ WebEngine available for embedded browser")
         return True
     except ImportError as e:
-        print(f"⚠️  WebEngine not available: {e}")
+        print(f"[WARN]  WebEngine not available: {e}")
         print("ℹ️  AetherraHub will use external browser mode")
         return False
 
@@ -187,7 +187,7 @@ def main():
             status = "PASS" if result else "FAIL"
             print(f"📊 {test_name}: {status}")
         except Exception as e:
-            print(f"💥 {test_name}: CRASH - {e}")
+            print(f"[FAIL] {test_name}: CRASH - {e}")
             results.append((test_name, False))
 
     # Summary
@@ -208,7 +208,7 @@ def main():
     print("\n📝 RECOMMENDATIONS:")
 
     if not any(name == "Node.js Availability" and result for name, result in results):
-        print("⚠️  Install Node.js to enable AetherraHub server functionality")
+        print("[WARN]  Install Node.js to enable AetherraHub server functionality")
 
     if not any(name == "WebEngine Availability" and result for name, result in results):
         print(
@@ -219,7 +219,7 @@ def main():
         print("🎉 All tests passed! AetherraHub integration is ready.")
         return True
     else:
-        print("⚠️  Some tests failed. Check the output above for details.")
+        print("[WARN]  Some tests failed. Check the output above for details.")
         return False
 
 

@@ -60,7 +60,7 @@ class AetherraAdvancedHousekeeping:
 
     def create_backup(self):
         """Create a full backup before starting"""
-        print("📦 Creating selective backup before housekeeping...")
+        print("[DISC] Creating selective backup before housekeeping...")
         self.backup_root.mkdir(parents=True, exist_ok=True)
 
         backup_log = {
@@ -128,7 +128,7 @@ class AetherraAdvancedHousekeeping:
                                 f"   🗑️  Removed directory: {path.relative_to(self.root)}"
                             )
                         except Exception as e:
-                            print(f"   ⚠️  Could not remove {path}: {e}")
+                            print(f"   [WARN]  Could not remove {path}: {e}")
             else:
                 # File pattern
                 for path in self.root.rglob(pattern):
@@ -140,7 +140,7 @@ class AetherraAdvancedHousekeeping:
                                 "remove_file", str(path.relative_to(self.root))
                             )
                         except Exception as e:
-                            print(f"   ⚠️  Could not remove {path}: {e}")
+                            print(f"   [WARN]  Could not remove {path}: {e}")
 
         print(f"✅ Removed {removed_count} temporary files/directories")
 
@@ -173,9 +173,9 @@ class AetherraAdvancedHousekeeping:
                             "archive_documentation",
                             str(doc_file.relative_to(self.root)),
                         )
-                        print(f"   📦 Archived: {doc_file.name}")
+                        print(f"   [DISC] Archived: {doc_file.name}")
                     except Exception as e:
-                        print(f"   ⚠️  Could not archive {doc_file.name}: {e}")
+                        print(f"   [WARN]  Could not archive {doc_file.name}: {e}")
 
         print(f"✅ Archived {archived_count} documentation files")
 
@@ -225,13 +225,13 @@ class AetherraAdvancedHousekeeping:
             if full_path.exists():
                 print(f"   ✅ {file_path}")
             else:
-                print(f"   ❌ MISSING: {file_path}")
+                print(f"   [ERROR] MISSING: {file_path}")
                 all_good = False
 
         if all_good:
             print("✅ All critical files verified")
         else:
-            print("⚠️  Some critical files are missing!")
+            print("[WARN]  Some critical files are missing!")
 
         return all_good
 
@@ -272,7 +272,7 @@ class AetherraAdvancedHousekeeping:
 
             # Step 4: Verify important files
             if not self.verify_important_files():
-                print("\n⚠️  CRITICAL: Some important files are missing!")
+                print("\n[WARN]  CRITICAL: Some important files are missing!")
                 print("    Please check the backup and restore if necessary.")
                 return False
 
@@ -284,14 +284,14 @@ class AetherraAdvancedHousekeeping:
 
             print("\n" + "=" * 60)
             print("✅ Housekeeping completed successfully!")
-            print(f"📦 Backup location: {self.backup_root}")
+            print(f"[DISC] Backup location: {self.backup_root}")
             print("🔍 Review the operations log for details.")
 
             return True
 
         except Exception as e:
-            print(f"\n❌ Housekeeping failed: {e}")
-            print(f"📦 Backup available at: {self.backup_root}")
+            print(f"\n[ERROR] Housekeeping failed: {e}")
+            print(f"[DISC] Backup available at: {self.backup_root}")
             return False
 
 
@@ -301,7 +301,7 @@ def main():
 
     print("🏠 Aetherra Advanced Project Housekeeping Tool")
     print(f"📁 Working directory: {root_path}")
-    print("⚠️  Starting automated housekeeping process...")
+    print("[WARN]  Starting automated housekeeping process...")
     print()
 
     # Run housekeeping
@@ -311,7 +311,7 @@ def main():
     if success:
         print("\n🎉 Project housekeeping completed successfully!")
     else:
-        print("\n⚠️  Housekeeping completed with issues. Check the logs.")
+        print("\n[WARN]  Housekeeping completed with issues. Check the logs.")
 
 
 if __name__ == "__main__":

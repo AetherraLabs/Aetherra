@@ -57,7 +57,7 @@ def test_async_method_directly():
 
 
 if __name__ == "__main__":
-    print("🔧 Testing Chat Async Fix")
+    print("[TOOL] Testing Chat Async Fix")
     print("=" * 50)
 
     success1 = test_chat_response()

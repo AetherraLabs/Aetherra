@@ -33,7 +33,7 @@ EMOJI_REPLACEMENTS = {
     # Examples
     "📊": "[CHART]",
     "🖥️": "[COMPUTER]",
-    "🔧": "[WRENCH]",
+    "[TOOL]": "[WRENCH]",
     "📈": "[GRAPH]",
     "⚡": "[LIGHTNING]",
     "📁": "[FOLDER]",

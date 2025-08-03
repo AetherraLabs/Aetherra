@@ -48,18 +48,18 @@ def initialize_web_systems():
         from . import server
 
         WEB_SYSTEMS["server"] = True
-        logger.info("✅ Web server available")
+        logger.info("[OK] Web server available")
     except ImportError:
-        logger.warning("⚠️ Web server not available")
+        logger.warning("[WARN] Web server not available")
 
     # Check components availability
     try:
         from . import components
 
         WEB_SYSTEMS["components"] = True
-        logger.info("✅ Web components available")
+        logger.info("[OK] Web components available")
     except ImportError:
-        logger.warning("⚠️ Web components not available")
+        logger.warning("[WARN] Web components not available")
 
     # Check static files
     from pathlib import Path
@@ -67,17 +67,17 @@ def initialize_web_systems():
     static_path = Path(__file__).parent / "static"
     if static_path.exists():
         WEB_SYSTEMS["static"] = True
-        logger.info("✅ Static files available")
+        logger.info("[OK] Static files available")
     else:
-        logger.warning("⚠️ Static files not available")
+        logger.warning("[WARN] Static files not available")
 
     # Check templates
     templates_path = Path(__file__).parent / "templates"
     if templates_path.exists():
         WEB_SYSTEMS["templates"] = True
-        logger.info("✅ Templates available")
+        logger.info("[OK] Templates available")
     else:
-        logger.warning("⚠️ Templates not available")
+        logger.warning("[WARN] Templates not available")
 
     active_count = sum(WEB_SYSTEMS.values())
     total_count = len(WEB_SYSTEMS)

@@ -153,11 +153,11 @@ async def demonstrate_plugin_generation_flow():
                     print(f"   📁 Generated Files: {', '.join(files)}")
 
             else:
-                print(f"   ❌ Generation failed or incomplete")
+                print(f"   [ERROR] Generation failed or incomplete")
                 if "error" in metadata:
                     print(f"   Error: {metadata['error']}")
         else:
-            print(f"   ❌ Routing failed - got {route} instead of plugin_generation")
+            print(f"   [ERROR] Routing failed - got {route} instead of plugin_generation")
 
     print(f"\n📊 STEP 3: Results Summary")
     print("-" * 40)
@@ -170,7 +170,7 @@ async def demonstrate_plugin_generation_flow():
         for key, data in mock_memory.stored_memories.items():
             print(f"   • {key[:40]}... (importance: {data['importance']})")
 
-    print(f"\n🔧 STEP 4: Template System Verification")
+    print(f"\n[TOOL] STEP 4: Template System Verification")
     print("-" * 40)
 
     # Test the plugin generator directly
@@ -246,11 +246,11 @@ async def main():
             print(f"\n🎉 DEMONSTRATION SUCCESSFUL!")
             print("All plugin generation features are working correctly.")
         else:
-            print(f"\n⚠️  DEMONSTRATION COMPLETED WITH ISSUES")
+            print(f"\n[WARN]  DEMONSTRATION COMPLETED WITH ISSUES")
             print("Some features may need additional refinement.")
 
     except Exception as e:
-        print(f"\n❌ Demonstration failed: {e}")
+        print(f"\n[ERROR] Demonstration failed: {e}")
         import traceback
 
         traceback.print_exc()

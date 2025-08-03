@@ -31,7 +31,7 @@ sdk/plugins/
 └── calculator.py
 ```
 
-## 🔧 Minimal Plugin Example
+## [TOOL] Minimal Plugin Example
 
 ```python
 # sdk/plugins/example.py
@@ -235,7 +235,7 @@ Run with Aetherra to test functionality.
 - [ ] Security considerations are addressed
 - [ ] Plugin is tested with sample `.aether` files
 
-## 🔧 Advanced Features
+## [TOOL] Advanced Features
 
 ### Memory System Integration
 

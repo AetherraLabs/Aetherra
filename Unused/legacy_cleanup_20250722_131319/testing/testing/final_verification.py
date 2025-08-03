@@ -124,4 +124,4 @@ if __name__ == "__main__":
     if all(results.values()):
         print("\n🎉 All UI verification tests passed!")
     else:
-        print("\n⚠️ Some UI verification tests failed.")
+        print("\n[WARN] Some UI verification tests failed.")

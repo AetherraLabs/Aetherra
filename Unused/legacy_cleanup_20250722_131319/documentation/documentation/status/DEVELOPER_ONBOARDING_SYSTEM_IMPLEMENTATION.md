@@ -118,7 +118,7 @@ aetherra help [command]
 
 ---
 
-## 🔧 **Implementation Details**
+## [TOOL] **Implementation Details**
 
 Implementation will include:
 

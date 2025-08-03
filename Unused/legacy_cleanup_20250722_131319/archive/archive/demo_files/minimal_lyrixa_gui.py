@@ -60,7 +60,7 @@ class MinimalLyrixaGUI(QMainWindow):
         layout.addWidget(title)
 
         # Status
-        self.status_label = QLabel("🔧 Starting up...")
+        self.status_label = QLabel("[TOOL] Starting up...")
         self.status_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.status_label)
 

@@ -61,7 +61,7 @@ class StandaloneAetherraRunner:
                 raise ValueError(f"File encoding error: {e}") from e
 
             if not content.strip():
-                print("⚠️ Warning: File is empty")
+                print("[WARN] Warning: File is empty")
                 return {
                     "file_path": str(file_path),
                     "success": True,
@@ -100,7 +100,7 @@ class StandaloneAetherraRunner:
                     self.execution_stats["errors"] += 1
 
                     if self.verbose:
-                        print(f"❌ {error_msg}")
+                        print(f"[ERROR] {error_msg}")
                         print(f"    Line: {line}")
 
                     # Continue execution despite errors (fault tolerance)
@@ -124,7 +124,7 @@ class StandaloneAetherraRunner:
             # Re-raise validation errors for proper test handling
             raise
         except Exception as e:
-            print(f"❌ Critical execution error: {e}")
+            print(f"[ERROR] Critical execution error: {e}")
             if self.verbose:
                 traceback.print_exc()
 
@@ -145,7 +145,7 @@ class StandaloneAetherraRunner:
         print("🧬 AetherraCode Execution Summary")
         print("=" * 50)
 
-        status = "✅ SUCCESS" if results["success"] else "❌ FAILED"
+        status = "✅ SUCCESS" if results["success"] else "[ERROR] FAILED"
         print(f"✅ Status: {status}")
         print(f"📊 Lines executed: {results.get('lines_executed', 0)}")
         print(f"💾 Memories created: {results.get('memories_created', 0)}")
@@ -153,7 +153,7 @@ class StandaloneAetherraRunner:
         print(f"📝 Variables set: {results.get('variables_set', 0)}")
 
         if results.get("errors"):
-            print(f"❌ Errors: {len(results['errors'])}")
+            print(f"[ERROR] Errors: {len(results['errors'])}")
             if self.verbose:
                 for error in results["errors"]:
                     print(f"   • {error}")
@@ -219,7 +219,7 @@ class StandaloneAetherraRunner:
 
         # Unknown - treat as generic command
         else:
-            return f"🔧 Executed: {line}"
+            return f"[TOOL] Executed: {line}"
 
     def _handle_remember(self, line: str) -> str:
         """Handle remember() commands"""
@@ -324,11 +324,11 @@ class StandaloneAetherraRunner:
     def _handle_suggest_fix(self, line: str) -> str:
         """Handle fix suggestions"""
         issue = line.split("suggest fix for")[1].strip().strip('"')
-        return f"🔧 Suggesting fix for: {issue}"
+        return f"[TOOL] Suggesting fix for: {issue}"
 
     def _handle_apply_fix(self, line: str) -> str:
         """Handle fix application"""
-        return "🔧 Fix applied"
+        return "[TOOL] Fix applied"
 
     def _handle_conditional(self, line: str) -> str:
         """Handle conditionals"""
@@ -360,7 +360,7 @@ class StandaloneAetherraRunner:
         success = len(results["errors"]) == 0
 
         print(
-            f"{'✅' if success else '❌'} Status: {'SUCCESS' if success else 'FAILED'}"
+            f"{'✅' if success else '[ERROR]'} Status: {'SUCCESS' if success else 'FAILED'}"
         )
         print(f"📊 Lines executed: {stats['lines_executed']}")
         print(f"💾 Memories created: {stats['memories_created']}")
@@ -368,7 +368,7 @@ class StandaloneAetherraRunner:
         print(f"📝 Variables set: {len(self.variables)}")
 
         if stats["errors"] > 0:
-            print(f"❌ Errors: {stats['errors']}")
+            print(f"[ERROR] Errors: {stats['errors']}")
 
         print("\n🎉 AetherraCode file execution complete!")
 
@@ -401,13 +401,13 @@ This is the foundation for: aetherplex run monitor.aether
         sys.exit(0 if results["success"] else 1)
 
     except FileNotFoundError as e:
-        print(f"❌ File not found: {e}")
+        print(f"[ERROR] File not found: {e}")
         sys.exit(1)
     except ValueError as e:
-        print(f"❌ Invalid file: {e}")
+        print(f"[ERROR] Invalid file: {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ Execution failed: {e}")
+        print(f"[ERROR] Execution failed: {e}")
         traceback.print_exc()
         sys.exit(1)
 

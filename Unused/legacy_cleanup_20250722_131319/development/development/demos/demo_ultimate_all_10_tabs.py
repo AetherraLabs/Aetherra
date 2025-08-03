@@ -79,7 +79,7 @@ def demonstrate_advanced_capabilities():
         "🎯  Goal Tracking and Management",
         "📊  Real-time Performance Analytics",
         "🤖  Live Agent Monitoring",
-        "🔧  Plugin Management System",
+        "[TOOL]  Plugin Management System",
         "💬  Enhanced Chat Interface",
         "🔄  Self-Improvement Engine",
         "📊  System Dashboard",
@@ -202,7 +202,7 @@ def main():
     print("   🎯 Goal Tracker Tab: Objective management")
     print("   📊 Performance Tab: Auto-refresh metrics")
     print("   🤖 Agents Tab: Live monitoring system")
-    print("   🔧 Plugin Tab: Management interface")
+    print("   [TOOL] Plugin Tab: Management interface")
     print("   💬 Chat Tab: Enhanced AI interface")
     print("   🔄 Self-Improvement: Reflection engine")
     print("   📊 System Tab: Real-time dashboard")

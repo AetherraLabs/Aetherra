@@ -49,7 +49,7 @@ def test_phase2_imports():
 
 def test_basic_functionality(results):
     """Test basic functionality of imported systems"""
-    print("\n🔧 Testing Basic Functionality...")
+    print("\n[TOOL] Testing Basic Functionality...")
 
     # Test Stability System
     if (
@@ -202,7 +202,7 @@ def generate_test_report(results):
     else:
         print("\n⚠️ Some systems need attention")
         print(f"✅ {successful_systems}/{total_systems} systems are operational")
-        print("🔧 See individual error messages above for troubleshooting")
+        print("[TOOL] See individual error messages above for troubleshooting")
 
     return successful_systems == total_systems
 

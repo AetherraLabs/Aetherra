@@ -30,7 +30,7 @@ try:
     )
     from ..memory.reflector.reflect_analyzer import ReflectAnalyzer
 except ImportError:
-    print("⚠️ Memory components not available, using mock implementations")
+    print("[WARN] Memory components not available, using mock implementations")
     FractalMesh = None
     ConceptClusterManager = None
     ReflectiveTimelineEngine = None
@@ -116,7 +116,7 @@ class CuriosityAgent:
                 self.reflector = ReflectAnalyzer()
             logging.info("✅ Memory components initialized for curiosity analysis")
         except Exception as e:
-            logging.warning(f"⚠️ Could not initialize memory components: {e}")
+            logging.warning(f"[WARN] Could not initialize memory components: {e}")
 
     async def detect_knowledge_gaps(
         self, timeframe_hours: int = 24
@@ -762,7 +762,7 @@ class CuriosityAgent:
             Success score (0.0 to 1.0)
         """
         if question_id not in self.curiosity_questions:
-            logging.warning(f"⚠️ Question {question_id} not found for success tracking")
+            logging.warning(f"[WARN] Question {question_id} not found for success tracking")
             return 0.0
 
         question = self.curiosity_questions[question_id]
@@ -917,7 +917,7 @@ class CuriosityAgent:
             )
 
         except Exception as e:
-            logging.warning(f"⚠️ Could not load persistence data: {e}")
+            logging.warning(f"[WARN] Could not load persistence data: {e}")
 
     def _save_persistence_data(self):
         """Save persistent data to files"""

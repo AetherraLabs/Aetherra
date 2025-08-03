@@ -1,4 +1,4 @@
-🔧 CHAT ENHANCEMENTS COMPLETE - Script & Model Control
+[TOOL] CHAT ENHANCEMENTS COMPLETE - Script & Model Control
 ========================================================
 
 ## ✅ Enhancement Status: SUCCESSFULLY APPLIED
@@ -7,7 +7,7 @@ Advanced chat features for .aether script execution and runtime AI model switchi
 
 ## 🚀 New Features Added
 
-### 1. **🔧 .aether Script Execution** ✅
+### 1. **[TOOL] .aether Script Execution** ✅
 **Command:** `/run_script [script_name]`
 
 **Implementation:**
@@ -20,9 +20,9 @@ elif command.startswith("/run_script "):
             result = self.engine.plugins.execute_plugin("script_executor", script_name)
             response = f"🧠 Ran script `{script_name}`.\nResult: {result.get('output', 'No output')}"
         else:
-            response = "❌ Plugin system not available."
+            response = "[ERROR] Plugin system not available."
     except Exception as e:
-        response = f"❌ Failed to execute script: {str(e)}"
+        response = f"[ERROR] Failed to execute script: {str(e)}"
 ```
 
 **Features:**
@@ -63,9 +63,9 @@ elif command.startswith("/set_model "):
             response = f"✅ Model switched to: Local"
         else:
             available_models = ["openai", "ollama", "local"]
-            response = f"❌ Unknown model: {model_name}. Available: {', '.join(available_models)}"
+            response = f"[ERROR] Unknown model: {model_name}. Available: {', '.join(available_models)}"
     except Exception as e:
-        response = f"❌ Failed to set model: {e}"
+        response = f"[ERROR] Failed to set model: {e}"
 ```
 
 **Features:**
@@ -145,7 +145,7 @@ def get_current_model(self):
 **Updated `/help` output:**
 
 ```
-🔧 Script & Model Commands:
+[TOOL] Script & Model Commands:
 • /run_script [script_name] - Execute .aether script
 • /set_model [openai|ollama|local] - Switch AI model
 • /current_model - Show current AI model
@@ -159,7 +159,7 @@ def get_current_model(self):
 - Static AI model configuration
 
 ### **After Enhancement:**
-- **🔧 Dynamic Script Execution:** Run .aether scripts directly from chat
+- **[TOOL] Dynamic Script Execution:** Run .aether scripts directly from chat
 - **🤖 Runtime Model Switching:** Change AI models without restart
 - **🔍 Model Visibility:** See current active model
 - **📋 Integrated Help:** All commands documented in /help
@@ -196,7 +196,7 @@ Result: Hello, World! Script executed successfully.
 • /memory summary - Memory system overview
 • /goals - Goal system status
 ...
-🔧 Script & Model Commands:
+[TOOL] Script & Model Commands:
 • /run_script [script_name] - Execute .aether script
 • /set_model [openai|ollama|local] - Switch AI model
 • /current_model - Show current AI model
@@ -232,7 +232,7 @@ Result: Hello, World! Script executed successfully.
 ✅ Found model feature: /current_model
 ✅ Found model feature: openai|ollama|local
 ✅ Found model feature: 🤖 Switching to
-✅ Found help update: 🔧 Script & Model Commands:
+✅ Found help update: [TOOL] Script & Model Commands:
 ✅ Found help update: Execute .aether script
 ✅ Found help update: Switch AI model
 ✅ Engine has method: set_model
@@ -262,7 +262,7 @@ Result: Hello, World! Script executed successfully.
 
 **Lyrixa's chat interface now supports advanced runtime control:**
 
-🔧 **Script Control** → Execute .aether scripts directly from chat
+[TOOL] **Script Control** → Execute .aether scripts directly from chat
 🤖 **Model Control** → Switch AI models without restart
 🔍 **Status Visibility** → See current model and execution status
 📋 **Integrated Help** → All commands documented

@@ -23,7 +23,7 @@ try:
     logger.info("✅ OpenAI library available")
 except ImportError as e:
     OPENAI_AVAILABLE = False
-    logger.warning(f"⚠️ OpenAI library not available: {e}")
+    logger.warning(f"[WARN] OpenAI library not available: {e}")
     OpenAI = None
 
 # Import our advanced memory system
@@ -37,7 +37,7 @@ try:
     logger.info("✅ Advanced Memory Integration available")
 except ImportError as e:
     MEMORY_INTEGRATION_AVAILABLE = False
-    logger.warning(f"⚠️ Advanced Memory Integration not available: {e}")
+    logger.warning(f"[WARN] Advanced Memory Integration not available: {e}")
     AdvancedMemoryManager = None
     create_advanced_memory_manager = None
 
@@ -105,7 +105,7 @@ class EnhancedConversationManager:
                 self.openai_client = OpenAI(api_key=self.api_key)
                 logger.info("✅ OpenAI client initialized")
             else:
-                logger.warning("⚠️ OpenAI not available, using fallback responses")
+                logger.warning("[WARN] OpenAI not available, using fallback responses")
 
             # Initialize advanced memory manager
             if (
@@ -118,7 +118,7 @@ class EnhancedConversationManager:
                 await self.memory_manager.initialize()
                 logger.info("✅ Advanced memory manager initialized")
             else:
-                logger.warning("⚠️ Advanced memory not available")
+                logger.warning("[WARN] Advanced memory not available")
 
             return True
 

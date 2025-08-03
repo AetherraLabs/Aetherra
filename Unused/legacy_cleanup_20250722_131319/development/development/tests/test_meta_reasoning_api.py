@@ -34,10 +34,10 @@ def test_meta_reasoning_endpoints():
                 print(f"   📝 Sample decision: {sample.get('decision')}")
                 print(f"   🎯 Confidence: {sample.get('confidence')}")
         else:
-            print(f"   ❌ FAILED: {response.text}")
+            print(f"   [ERROR] FAILED: {response.text}")
 
     except Exception as e:
-        print(f"   ❌ ERROR: {e}")
+        print(f"   [ERROR] ERROR: {e}")
 
     # Test 2: Explain specific decision
     print("\n2️⃣ Testing POST /api/meta_reasoning/explain_decision")
@@ -58,10 +58,10 @@ def test_meta_reasoning_endpoints():
             print(f"   📈 Confidence: {explanation.get('confidence')}")
             print(f"   🔗 Reasoning steps: {len(explanation.get('reasoning_chain', []))}")
         else:
-            print(f"   ❌ FAILED: {response.text}")
+            print(f"   [ERROR] FAILED: {response.text}")
 
     except Exception as e:
-        print(f"   ❌ ERROR: {e}")
+        print(f"   [ERROR] ERROR: {e}")
 
     # Test 3: Get analytics
     print("\n3️⃣ Testing GET /api/meta_reasoning/analytics")
@@ -78,10 +78,10 @@ def test_meta_reasoning_endpoints():
             print(f"   🎯 Success rate: {overview.get('success_rate')}")
             print(f"   🧠 Learning patterns: {overview.get('learning_patterns')}")
         else:
-            print(f"   ❌ FAILED: {response.text}")
+            print(f"   [ERROR] FAILED: {response.text}")
 
     except Exception as e:
-        print(f"   ❌ ERROR: {e}")
+        print(f"   [ERROR] ERROR: {e}")
 
     # Test 4: Add feedback
     print("\n4️⃣ Testing POST /api/meta_reasoning/add_feedback")
@@ -106,10 +106,10 @@ def test_meta_reasoning_endpoints():
             print(f"   💡 Impact: {result.get('impact')}")
             print(f"   📚 Learning adjustments: {len(result.get('learning_adjustments', []))}")
         else:
-            print(f"   ❌ FAILED: {response.text}")
+            print(f"   [ERROR] FAILED: {response.text}")
 
     except Exception as e:
-        print(f"   ❌ ERROR: {e}")
+        print(f"   [ERROR] ERROR: {e}")
 
     print("\n" + "=" * 45)
     print("🏁 Meta-Reasoning API Test Complete!")
@@ -118,7 +118,7 @@ def test_meta_reasoning_endpoints():
 def test_with_testclient():
     """Test with TestClient if server not running"""
 
-    print("\n🔧 Testing with TestClient (Fallback)")
+    print("\n[TOOL] Testing with TestClient (Fallback)")
     print("=" * 40)
 
     try:
@@ -172,7 +172,7 @@ def test_with_testclient():
         return True
 
     except Exception as e:
-        print(f"❌ TestClient failed: {e}")
+        print(f"[ERROR] TestClient failed: {e}")
         return False
 
 
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     try:
         test_meta_reasoning_endpoints()
     except:
-        print("\n⚠️ Server not available, trying TestClient...")
+        print("\n[WARN] Server not available, trying TestClient...")
         test_with_testclient()
 
     # Show endpoint summary

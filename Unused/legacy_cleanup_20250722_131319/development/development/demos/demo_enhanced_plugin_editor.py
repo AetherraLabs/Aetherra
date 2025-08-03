@@ -83,7 +83,7 @@ def demonstrate_ai_feedback():
         if insights:
             print("  🧠 AI Insights:")
             for insight in insights:
-                severity_icon = {"info": "ℹ️", "warning": "⚠️", "error": "❌", "critical": "🚨"}
+                severity_icon = {"info": "ℹ️", "warning": "[WARN]", "error": "❌", "critical": "🚨"}
                 icon = severity_icon.get(insight.severity, "🔍")
                 print(f"    {icon} {insight.message}")
                 if insight.suggested_action:
@@ -263,7 +263,7 @@ def demonstrate_plugin_validator():
             print(f"    • {error}")
 
     if result.warnings:
-        print("  ⚠️ Warnings:")
+        print("  [WARN] Warnings:")
         for warning in result.warnings:
             print(f"    • {warning}")
 

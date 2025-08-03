@@ -23,7 +23,7 @@ result = execute_plugin_command('plugin: read_file "test_output.txt"')
 print(f"Read result: {result}")
 
 # Test git status (if in git repo)
-print("\n📦 Testing Git Plugin:")
+print("\n[DISC] Testing Git Plugin:")
 result = execute_plugin_command('plugin: git_status')
 print(f"Git status: {result}")
 

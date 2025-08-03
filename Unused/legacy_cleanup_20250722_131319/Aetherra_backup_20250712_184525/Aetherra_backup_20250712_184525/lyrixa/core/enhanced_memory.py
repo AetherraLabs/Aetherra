@@ -174,7 +174,7 @@ class LyrixaEnhancedMemorySystem:
             print("✅ Enhanced memory database initialized")
 
         except Exception as e:
-            print(f"❌ Failed to initialize enhanced memory database: {e}")
+            print(f"[ERROR] Failed to initialize enhanced memory database: {e}")
 
     async def query_memories(
         self, query: str, tags: Optional[List[str]] = None
@@ -213,7 +213,7 @@ class LyrixaEnhancedMemorySystem:
             return memories
 
         except Exception as e:
-            print(f"❌ Failed to search memories: {e}")
+            print(f"[ERROR] Failed to search memories: {e}")
             return []
 
     async def store_enhanced_memory(
@@ -294,7 +294,7 @@ class LyrixaEnhancedMemorySystem:
             return memory_id
 
         except Exception as e:
-            print(f"❌ Failed to store enhanced memory: {e}")
+            print(f"[ERROR] Failed to store enhanced memory: {e}")
             return ""
 
     async def _generate_embedding(
@@ -422,7 +422,7 @@ class LyrixaEnhancedMemorySystem:
             return cluster_id
 
         except Exception as e:
-            print(f"❌ Failed to create cluster: {e}")
+            print(f"[ERROR] Failed to create cluster: {e}")
             return "default_cluster"
 
     async def _update_cluster_center(self, cluster_id: str, new_vector: List[float]):
@@ -464,7 +464,7 @@ class LyrixaEnhancedMemorySystem:
             conn.close()
 
         except Exception as e:
-            print(f"❌ Failed to update cluster center: {e}")
+            print(f"[ERROR] Failed to update cluster center: {e}")
 
     async def _find_related_memories(
         self, embedding_vector: List[float], current_memory_id: str, limit: int = 5
@@ -494,7 +494,7 @@ class LyrixaEnhancedMemorySystem:
             conn.close()
 
         except Exception as e:
-            print(f"❌ Failed to find related memories: {e}")
+            print(f"[ERROR] Failed to find related memories: {e}")
 
         return related
 
@@ -538,7 +538,7 @@ class LyrixaEnhancedMemorySystem:
             conn.close()
 
         except Exception as e:
-            print(f"❌ Failed to create memory relationships: {e}")
+            print(f"[ERROR] Failed to create memory relationships: {e}")
 
     async def recall_with_clustering(
         self, query: str, cluster_filter: Optional[str] = None, limit: int = 10
@@ -621,7 +621,7 @@ class LyrixaEnhancedMemorySystem:
                 await self._update_memory_access(result["id"])
 
         except Exception as e:
-            print(f"❌ Failed to recall memories: {e}")
+            print(f"[ERROR] Failed to recall memories: {e}")
 
         return results
 
@@ -740,7 +740,7 @@ class LyrixaEnhancedMemorySystem:
             )
 
         except Exception as e:
-            print(f"❌ Failed to generate memory visualization: {e}")
+            print(f"[ERROR] Failed to generate memory visualization: {e}")
             return MemoryVisualization({}, [], [], [], {})
 
     async def _generate_memory_timeline(self) -> List[MemoryTimeline]:
@@ -801,7 +801,7 @@ class LyrixaEnhancedMemorySystem:
             conn.close()
 
         except Exception as e:
-            print(f"❌ Failed to generate timeline: {e}")
+            print(f"[ERROR] Failed to generate timeline: {e}")
 
         return timelines
 
@@ -850,7 +850,7 @@ class LyrixaEnhancedMemorySystem:
             conn.close()
 
         except Exception as e:
-            print(f"❌ Failed to calculate memory growth: {e}")
+            print(f"[ERROR] Failed to calculate memory growth: {e}")
 
         return growth[::-1]  # Reverse to get chronological order
 
@@ -873,7 +873,7 @@ class LyrixaEnhancedMemorySystem:
             conn.close()
 
         except Exception as e:
-            print(f"❌ Failed to update memory access: {e}")
+            print(f"[ERROR] Failed to update memory access: {e}")
 
     async def consolidate_memories(self):
         """Advanced memory consolidation with clustering optimization"""
@@ -895,7 +895,7 @@ class LyrixaEnhancedMemorySystem:
             print("✅ Memory consolidation completed")
 
         except Exception as e:
-            print(f"❌ Memory consolidation failed: {e}")
+            print(f"[ERROR] Memory consolidation failed: {e}")
 
     async def _cleanup_old_memories(self):
         """Remove old, unimportant memories"""
@@ -920,7 +920,7 @@ class LyrixaEnhancedMemorySystem:
             print(f"🗑️ Cleaned up {deleted_count} old memories")
 
         except Exception as e:
-            print(f"❌ Failed to cleanup memories: {e}")
+            print(f"[ERROR] Failed to cleanup memories: {e}")
 
     async def _optimize_clusters(self):
         """Optimize memory clusters by merging similar ones"""
@@ -980,7 +980,7 @@ class LyrixaEnhancedMemorySystem:
             }
 
         except Exception as e:
-            print(f"❌ Failed to generate insights: {e}")
+            print(f"[ERROR] Failed to generate insights: {e}")
             return {}
 
     async def _calculate_network_density(self) -> float:
@@ -1004,7 +1004,7 @@ class LyrixaEnhancedMemorySystem:
             return total_relationships / max_possible if max_possible > 0 else 0.0
 
         except Exception as e:
-            print(f"❌ Failed to calculate network density: {e}")
+            print(f"[ERROR] Failed to calculate network density: {e}")
             return 0.0
 
     async def _calculate_learning_velocity(self) -> float:
@@ -1029,7 +1029,7 @@ class LyrixaEnhancedMemorySystem:
             return recent_memories / 7.0  # Memories per day
 
         except Exception as e:
-            print(f"❌ Failed to calculate learning velocity: {e}")
+            print(f"[ERROR] Failed to calculate learning velocity: {e}")
             return 0.0
 
     async def get_memory_stats(self) -> Dict[str, Any]:

@@ -12,7 +12,7 @@ def demonstrate_lyrixa_fixes():
     print("=" * 60)
     print()
 
-    print("🔧 **Fix 1: Enhanced System Prompt**")
+    print("[TOOL] **Fix 1: Enhanced System Prompt**")
     print("-" * 40)
     print("Added to prompt_engine.py:")
     print("""
@@ -31,7 +31,7 @@ Your Plugin Editor is a native PySide6 tab with the following ACTUAL features:
     print("✅ **Result**: Lyrixa now knows the actual Plugin Editor features")
     print()
 
-    print("🔧 **Fix 2: Added inject_plugin() Method**")
+    print("[TOOL] **Fix 2: Added inject_plugin() Method**")
     print("-" * 45)
     print("Added to core_agent.py:")
     print("""
@@ -45,7 +45,7 @@ def inject_plugin(self, code: str, filename: str = "generated_plugin.aether"):
     print("✅ **Result**: Lyrixa can now directly inject plugin code into the GUI")
     print()
 
-    print("🔧 **Fix 3: Updated Response Messages**")
+    print("[TOOL] **Fix 3: Updated Response Messages**")
     print("-" * 40)
     print("Updated plugin_agent.py to say:")
     print("""

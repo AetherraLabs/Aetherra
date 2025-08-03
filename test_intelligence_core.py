@@ -48,10 +48,10 @@ try:
         PersonalityReflectionSystem,
     )
 
-    print("✅ All intelligence core modules imported successfully!")
+    print("[OK] All intelligence core modules imported successfully!")
 
 except ImportError as e:
-    print(f"❌ Import failed: {e}")
+    print(f"[ERROR] Import failed: {e}")
     print("📝 Creating stub modules for testing...")
 
     # Create stub classes for testing if imports fail
@@ -603,15 +603,15 @@ async def run_async_tests():
         "Let's create a comprehensive test suite...",
         {"domain": "testing", "ai_system": "intelligence_core"},
     )
-    print(f"✅ Reflection system processed interaction: {bool(result)}")
+    print(f"[OK] Reflection system processed interaction: {bool(result)}")
 
     # Test insight generation
     insights = await reflexive_loop.generate_insights()
-    print(f"✅ Generated {len(insights)} insights")
+    print(f"[OK] Generated {len(insights)} insights")
 
     # Test self-reflection
     reflections = await reflexive_loop.perform_self_reflection()
-    print(f"✅ Generated {len(reflections)} self-reflections")
+    print(f"[OK] Generated {len(reflections)} self-reflections")
 
     print("🎉 All async intelligence tests completed!")
 
@@ -645,17 +645,17 @@ def main():
     print("\n" + "=" * 60)
     print("🧠 LYRIXA INTELLIGENCE CORE TEST SUMMARY")
     print("=" * 60)
-    print(f"✅ Tests run: {result.testsRun}")
-    print(f"❌ Failures: {len(result.failures)}")
-    print(f"⚠️ Errors: {len(result.errors)}")
+    print(f"[OK] Tests run: {result.testsRun}")
+    print(f"[ERROR] Failures: {len(result.failures)}")
+    print(f"[WARN] Errors: {len(result.errors)}")
 
     if result.failures:
-        print("\n❌ FAILURES:")
+        print("\n[ERROR] FAILURES:")
         for test, traceback in result.failures:
             print(f"  - {test}: {traceback}")
 
     if result.errors:
-        print("\n⚠️ ERRORS:")
+        print("\n[WARN] ERRORS:")
         for test, traceback in result.errors:
             print(f"  - {test}: {traceback}")
 
@@ -663,7 +663,7 @@ def main():
         print("\n🎉 ALL INTELLIGENCE CORE TESTS PASSED!")
         print("   Lyrixa's cognitive capabilities are functioning properly!")
     else:
-        print("\n⚠️ Some tests failed. Please review the failures above.")
+        print("\n[WARN] Some tests failed. Please review the failures above.")
 
     # Run async tests
     try:
@@ -671,7 +671,7 @@ def main():
 
         asyncio.run(run_async_tests())
     except Exception as e:
-        print(f"⚠️ Async tests failed: {e}")
+        print(f"[WARN] Async tests failed: {e}")
 
     return result.wasSuccessful()
 

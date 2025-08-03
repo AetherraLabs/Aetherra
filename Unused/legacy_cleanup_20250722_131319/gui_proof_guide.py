@@ -87,11 +87,11 @@ def show_gui_proof():
 
     print("🎯 WHAT FAKE ANIMATIONS WOULD LOOK LIKE:")
     print("=" * 45)
-    print("❌ Metrics would be static or change predictably")
-    print("❌ Processing times would be instant or identical")
-    print("❌ Learning sessions wouldn't increment")
-    print("❌ No real performance impact on system")
-    print("❌ No actual decision-making logic")
+    print("[ERROR] Metrics would be static or change predictably")
+    print("[ERROR] Processing times would be instant or identical")
+    print("[ERROR] Learning sessions wouldn't increment")
+    print("[ERROR] No real performance impact on system")
+    print("[ERROR] No actual decision-making logic")
     print()
 
     print("🏆 CONCLUSION:")

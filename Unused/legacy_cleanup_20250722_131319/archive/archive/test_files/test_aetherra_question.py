@@ -37,7 +37,7 @@ def test_aetherra_question():
 
 
 if __name__ == "__main__":
-    print("🔧 Testing Aetherra Question Fix")
+    print("[TOOL] Testing Aetherra Question Fix")
     print("=" * 50)
 
     success = test_aetherra_question()

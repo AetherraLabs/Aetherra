@@ -58,7 +58,7 @@ async def quick_test():
                 # Check for placeholders
                 if "<" in aether_code and ">" in aether_code:
                     placeholders = len([p for p in aether_code.split() if p.startswith("<") and p.endswith(">")])
-                    print(f"   ⚠️ {placeholders} placeholder(s) remaining")
+                    print(f"   [WARN] {placeholders} placeholder(s) remaining")
                 else:
                     print(f"   ✅ Fully generated (no placeholders)")
 

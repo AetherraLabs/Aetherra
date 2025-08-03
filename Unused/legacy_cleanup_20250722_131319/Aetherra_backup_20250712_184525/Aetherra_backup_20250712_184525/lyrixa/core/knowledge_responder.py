@@ -180,7 +180,7 @@ class KnowledgeResponder:
                 )
             except (ValueError, TypeError):
                 print(
-                    f"⚠️ Invalid personality in context: {context.get('personality') if context else 'None'}, using default"
+                    f"[WARN] Invalid personality in context: {context.get('personality') if context else 'None'}, using default"
                 )
                 personality = PersonalityType.DEFAULT
 
@@ -192,7 +192,7 @@ class KnowledgeResponder:
                 )
             except (ValueError, TypeError):
                 print(
-                    f"⚠️ Invalid tone_mode in context: {context.get('tone_mode') if context else 'None'}, using adaptive"
+                    f"[WARN] Invalid tone_mode in context: {context.get('tone_mode') if context else 'None'}, using adaptive"
                 )
                 tone_mode = ToneMode.ADAPTIVE
 
@@ -250,7 +250,7 @@ class KnowledgeResponder:
             return result
 
         except Exception as e:
-            logger.error(f"❌ Error generating response: {e}")
+            logger.error(f"[ERROR] Error generating response: {e}")
             return {
                 "response": "I encountered an error processing your question. Could you try rephrasing it?",
                 "confidence": 0.0,
@@ -273,10 +273,10 @@ class KnowledgeResponder:
                 return memories if memories else []
             else:
                 # Fallback for different memory API
-                print("⚠️ Memory search method not available, using empty results")
+                print("[WARN] Memory search method not available, using empty results")
                 return []
         except Exception as e:
-            print(f"⚠️ Memory search failed: {e}")
+            print(f"[WARN] Memory search failed: {e}")
             logger.warning(f"Memory search error for query '{user_input}': {e}")
 
             # Try alternative search methods
@@ -289,7 +289,7 @@ class KnowledgeResponder:
                     print(f"📚 Fallback found {len(memories)} memories")
                     return memories if memories else []
             except Exception as fallback_error:
-                print(f"⚠️ Fallback search also failed: {fallback_error}")
+                print(f"[WARN] Fallback search also failed: {fallback_error}")
 
             return []
 
@@ -493,7 +493,7 @@ class KnowledgeResponder:
         # Get personality templates with fallback to DEFAULT
         templates = self.personality_templates.get(personality)
         if not templates:
-            print(f"⚠️ Unknown personality type: {personality}, using default")
+            print(f"[WARN] Unknown personality type: {personality}, using default")
             templates = self.personality_templates[PersonalityType.DEFAULT]
 
         # Choose appropriate introduction based on confidence

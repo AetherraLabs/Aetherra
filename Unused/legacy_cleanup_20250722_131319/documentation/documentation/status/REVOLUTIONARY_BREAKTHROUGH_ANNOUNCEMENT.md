@@ -38,7 +38,7 @@ We've created a comprehensive system designed specifically for AI-native develop
 - **🏗️ Intelligent Code Scaffolding**: Generate production-ready plugins in minutes
 - **📚 Template-Driven Development**: Best practices built into every component
 - **🌐 Community Integration**: Seamless contribution pathways and knowledge sharing
-- **🔧 Professional CLI Tools**: Unified command interface for all operations
+- **[TOOL] Professional CLI Tools**: Unified command interface for all operations
 
 **Revolutionary Impact:**
 

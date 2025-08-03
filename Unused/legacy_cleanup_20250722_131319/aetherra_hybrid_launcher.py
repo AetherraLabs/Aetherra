@@ -74,18 +74,18 @@ def start_api_server():
                 print("   • Integrated with Lyrixa GUI")
                 return True
             else:
-                print("❌ Failed to start embedded server")
+                print("[ERROR] Failed to start embedded server")
                 return False
 
         except ImportError as e:
-            print(f"❌ Failed to import embedded server: {e}")
+            print(f"[ERROR] Failed to import embedded server: {e}")
             print("   Falling back to external server...")
 
             # Fallback to external server (but without console window)
             server_path = project_root / "enhanced_api_server.py"
 
             if not server_path.exists():
-                print("❌ Enhanced API server file not found")
+                print("[ERROR] Enhanced API server file not found")
                 return False
 
             # Start server in background WITHOUT console window
@@ -107,11 +107,11 @@ def start_api_server():
                 print("✅ Enhanced API Server started successfully on port 8007")
                 return True
             else:
-                print("❌ Failed to start API server")
+                print("[ERROR] Failed to start API server")
                 return False
 
     except Exception as e:
-        print(f"❌ Error starting API server: {e}")
+        print(f"[ERROR] Error starting API server: {e}")
         return False
 
 
@@ -140,7 +140,7 @@ try:
         print(f"UI Mode: {os.getenv('LYRIXA_UI_MODE', 'classic')}")
 
         # Start API server automatically
-        print("🔧 Initializing API services...")
+        print("[TOOL] Initializing API services...")
         start_api_server_async()
 
         # Create Qt application
@@ -169,9 +169,9 @@ try:
             print("🔗 Attaching components to GUI...")
 
             # Attach components to GUI using modular methods
-            print(f"🔧 DEBUG: intelligence_stack = {intelligence_stack}")
-            print(f"🔧 DEBUG: runtime = {runtime}")
-            print(f"🔧 DEBUG: lyrixa = {lyrixa}")
+            print(f"[TOOL] DEBUG: intelligence_stack = {intelligence_stack}")
+            print(f"[TOOL] DEBUG: runtime = {runtime}")
+            print(f"[TOOL] DEBUG: lyrixa = {lyrixa}")
 
             if intelligence_stack:
                 window.attach_intelligence_stack(intelligence_stack)
@@ -182,7 +182,7 @@ try:
                 print("✅ Runtime attached to GUI")
 
             if lyrixa:
-                print(f"🔧 DEBUG: About to call attach_lyrixa with {type(lyrixa)}")
+                print(f"[TOOL] DEBUG: About to call attach_lyrixa with {type(lyrixa)}")
                 window.attach_lyrixa(lyrixa)
                 # GUI interface connection handled by attach_lyrixa method
 
@@ -197,21 +197,21 @@ try:
                         if autonomous_result.get('success'):
                             print("✅ Autonomous mode started successfully")
                         else:
-                            print(f"⚠️ Autonomous mode start result: {autonomous_result}")
+                            print(f"[WARN] Autonomous mode start result: {autonomous_result}")
                     except Exception as e:
-                        print(f"⚠️ Error starting autonomous mode: {e}")
+                        print(f"[WARN] Error starting autonomous mode: {e}")
                 else:
-                    print("⚠️ No autonomous capabilities found")
+                    print("[WARN] No autonomous capabilities found")
 
                 print("✅ Lyrixa agent attached to GUI with autonomous capabilities enabled")
             else:
-                print("❌ DEBUG: lyrixa is None or undefined!")
+                print("[ERROR] DEBUG: lyrixa is None or undefined!")
 
             print("✅ Hybrid UI initialized successfully!")
             print("🎉 Lyrixa is ready with modern hybrid interface!")
 
         except Exception as e:
-            print(f"❌ Error during initialization: {e}")
+            print(f"[ERROR] Error during initialization: {e}")
             import traceback
 
             traceback.print_exc()
@@ -223,7 +223,7 @@ try:
         sys.exit(main())
 
 except ImportError as e:
-    print(f"❌ Import error: {e}")
+    print(f"[ERROR] Import error: {e}")
     print("💡 Make sure PySide6 is installed: py -m pip install PySide6")
     print("💡 Or run: python aetherra_launcher.py (for classic UI)")
     sys.exit(1)

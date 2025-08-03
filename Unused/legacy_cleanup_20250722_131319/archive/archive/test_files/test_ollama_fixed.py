@@ -17,7 +17,7 @@ sys.path.insert(0, str(project_root / "src"))
 
 def test_fixed_ollama():
     """Test Ollama with the fixed configuration"""
-    print("🔧 Testing Fixed Ollama Configuration")
+    print("[TOOL] Testing Fixed Ollama Configuration")
     print("=" * 45)
 
     try:

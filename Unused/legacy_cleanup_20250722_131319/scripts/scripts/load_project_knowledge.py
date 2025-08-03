@@ -79,13 +79,13 @@ class ProjectKnowledgeLoader:
                 except Exception as e:
                     self.stats["errors"] += 1
                     if verbose:
-                        print(f"   ⚠️ Error processing item {i}: {e}")
+                        print(f"   [WARN] Error processing item {i}: {e}")
 
             if verbose:
                 print(f"\n✅ KNOWLEDGE LOADING COMPLETE")
                 print(f"   📊 Loaded: {self.stats['loaded']}")
                 print(f"   ⏭️ Skipped: {self.stats['skipped']}")
-                print(f"   ❌ Errors: {self.stats['errors']}")
+                print(f"   [ERROR] Errors: {self.stats['errors']}")
                 print(
                     f"   📈 Success Rate: {(self.stats['loaded'] / self.stats['total_items'] * 100):.1f}%"
                 )
@@ -250,7 +250,7 @@ async def test_knowledge_loading():
         # Try the Desktop location
         knowledge_file = Path("../lyrixa_project_knowledge_seed.json")
         if not knowledge_file.exists():
-            print("❌ Knowledge seed file not found!")
+            print("[ERROR] Knowledge seed file not found!")
             print("   Expected: lyrixa_project_knowledge_seed.json")
             return
 
@@ -285,7 +285,7 @@ async def test_knowledge_loading():
                 print("No results found")
 
     except Exception as e:
-        print(f"❌ Error during testing: {e}")
+        print(f"[ERROR] Error during testing: {e}")
         import traceback
 
         traceback.print_exc()

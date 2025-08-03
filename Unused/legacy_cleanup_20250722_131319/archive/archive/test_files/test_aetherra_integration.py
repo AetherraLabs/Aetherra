@@ -89,7 +89,7 @@ def test_gui_components():
             print("✅ GUI components: Qt framework available")
             return True
         else:
-            print("⚠️ GUI components: Qt framework not available (optional)")
+            print("[WARN] GUI components: Qt framework not available (optional)")
             return True  # This is not a critical error
     except Exception as e:
         print(f"❌ GUI components error: {e}")
@@ -181,7 +181,7 @@ def run_functional_tests():
         print("🎉 All tests passed! AetherraCode is fully functional.")
         return True
     else:
-        print(f"⚠️ {total - passed} tests failed. Some functionality may be limited.")
+        print(f"[WARN] {total - passed} tests failed. Some functionality may be limited.")
         return False
 
 

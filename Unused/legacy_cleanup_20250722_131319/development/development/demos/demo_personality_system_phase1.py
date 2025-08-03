@@ -190,7 +190,7 @@ class PersonalityDemo:
         )
         print()
 
-        print("🔧 INTEGRATION METRICS:")
+        print("[TOOL] INTEGRATION METRICS:")
         metrics = integration_status["metrics"]
         print(f"   Responses Enhanced: {metrics['responses_enhanced']}")
         print(f"   Responses Critiqued: {metrics['responses_critiqued']}")

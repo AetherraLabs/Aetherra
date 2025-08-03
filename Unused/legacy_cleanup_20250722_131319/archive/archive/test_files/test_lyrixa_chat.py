@@ -56,7 +56,7 @@ def test_lyrixa_chat():
 
         except Exception as e2:
             print(f"❌ Alternative import failed: {e2}")
-            print("\n🔧 Manual testing instructions:")
+            print("\n[TOOL] Manual testing instructions:")
             print("1. Ensure PySide6 is installed: pip install PySide6")
             print("2. Navigate to src/Aetherra/ui/")
             print("3. Run: python lyrixa_chat.py")

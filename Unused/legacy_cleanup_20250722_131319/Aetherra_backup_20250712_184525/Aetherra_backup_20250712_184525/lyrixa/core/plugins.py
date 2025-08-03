@@ -269,7 +269,7 @@ class LyrixaPluginManager:
                 info = plugin_instance.get_info()
                 info.file_path = "built-in"
                 self.plugin_info[plugin_name] = info
-                print(f"   📦 Found built-in plugin: {plugin_name}")
+                print(f"   [DISC] Found built-in plugin: {plugin_name}")
             except Exception as e:
                 print(f"   ❌ Failed to load built-in plugin {plugin_name}: {e}")
 
@@ -305,7 +305,7 @@ class LyrixaPluginManager:
                         self.plugin_info[name] = info
                         self.plugin_registry[name] = obj
 
-                        print(f"   📦 Found external plugin: {name}")
+                        print(f"   [DISC] Found external plugin: {name}")
                         break
 
         except Exception as e:
@@ -498,7 +498,7 @@ class LyrixaPluginManager:
             indexed_count = self.semantic_discovery.discover_and_index_plugins()
             print(f"🔍 Indexed {indexed_count} plugins for semantic discovery")
         except Exception as e:
-            print(f"⚠️ Failed to index plugins for semantic discovery: {e}")
+            print(f"[WARN] Failed to index plugins for semantic discovery: {e}")
 
     async def suggest_plugins_for_goal(self, user_goal: str) -> str:
         """Get plugin suggestions based on user goal using semantic discovery"""
@@ -517,7 +517,7 @@ class LyrixaPluginManager:
             for plugin_name in relevant_plugins:
                 info = self.plugin_info.get(plugin_name)
                 if info:
-                    status = "✅ Enabled" if info.loaded else "⚠️ Available"
+                    status = "✅ Enabled" if info.loaded else "[WARN] Available"
                     suggestions.append(
                         f"• {plugin_name}: {info.description} ({status})"
                     )

@@ -349,7 +349,7 @@ class TextPersonalityInterface:
             "help": " 🤝",
             "think": " 🤔",
             "great": " 😊",
-            "problem": " 🔧",
+            "problem": " [TOOL]",
             "idea": " 💡",
             "create": " ✨",
             "learn": " 📚",

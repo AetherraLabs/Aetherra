@@ -37,7 +37,7 @@ Please provide:
 - **🔍 Vulnerability Type**: Buffer overflow, injection, privilege escalation, etc.
 - **📊 Impact Assessment**: Potential damage or exploitation scenarios
 - **🛠️ Reproduction Steps**: Clear steps to reproduce the vulnerability
-- **🔧 Suggested Fix**: If you have ideas for remediation
+- **[TOOL] Suggested Fix**: If you have ideas for remediation
 - **🌍 Environment Details**: OS, Python version, aetherra version
 
 ## 🎯 **Security Focus Areas**
@@ -163,7 +163,7 @@ We work with security researchers to:
 In case of a security incident:
 1. **🚨 Immediate containment** of the threat
 2. **📊 Impact assessment** and user notification
-3. **🔧 Root cause analysis** and remediation
+3. **[TOOL] Root cause analysis** and remediation
 4. **📝 Post-incident review** and improvements
 5. **🌐 Community communication** and transparency
 

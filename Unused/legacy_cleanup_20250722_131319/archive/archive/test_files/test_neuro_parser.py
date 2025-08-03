@@ -62,4 +62,4 @@ if __name__ == "__main__":
         print("📝 Aetherra files (.aether) can now be parsed with formal grammar!")
         print("🎯 Aetherra is now syntax-native, not Python-wrapped!")
     else:
-        print("\n🔧 Parser needs refinement for complex syntax.")
+        print("\n[TOOL] Parser needs refinement for complex syntax.")

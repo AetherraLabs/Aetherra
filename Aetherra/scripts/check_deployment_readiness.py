@@ -537,7 +537,7 @@ class DeploymentReadinessChecker:
         print(f"\nSummary:")
         print(f"  Total Checks: {self.results['summary']['total_checks']}")
         print(f"  ✅ Passed: {self.results['summary']['passed']}")
-        print(f"  ⚠️  Warnings: {self.results['summary']['warnings']}")
+        print(f"  [WARN]  Warnings: {self.results['summary']['warnings']}")
         print(f"  ❌ Failures: {self.results['summary']['failures']}")
         print(
             f"  🚀 Deployment Ready: {'YES' if self.results['summary']['deployment_ready'] else 'NO'}"
@@ -545,7 +545,7 @@ class DeploymentReadinessChecker:
 
         print(f"\nCheck Results:")
         for check_name, result in self.results["checks"].items():
-            status_icon = {"pass": "✅", "warning": "⚠️ ", "fail": "❌"}.get(
+            status_icon = {"pass": "✅", "warning": "[WARN] ", "fail": "❌"}.get(
                 result["status"], "❓"
             )
 
@@ -600,7 +600,7 @@ def main():
         print("\n🎉 Project is ready for CI/CD deployment!")
         sys.exit(0)
     else:
-        print("\n⚠️  Project needs additional work before deployment.")
+        print("\n[WARN]  Project needs additional work before deployment.")
         sys.exit(1)
 
 

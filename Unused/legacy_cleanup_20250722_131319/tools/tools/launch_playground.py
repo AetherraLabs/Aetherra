@@ -26,7 +26,7 @@ def check_requirements():
 
     if missing_packages:
         print("❌ Missing required packages:", ", ".join(missing_packages))
-        print("📦 Installing requirements...")
+        print("[DISC] Installing requirements...")
 
         # Install missing packages
         parent_dir = Path(__file__).parent.parent

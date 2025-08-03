@@ -214,7 +214,7 @@ class NLAetherGeneratorTester:
 
     async def test_code_generation(self):
         """Test .aether code generation quality"""
-        print("\n🔧 Testing Code Generation...")
+        print("\n[TOOL] Testing Code Generation...")
 
         test_cases = [
             "Process customer data from CSV and generate summary report",

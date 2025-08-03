@@ -17,7 +17,7 @@ We pledge to act and interact in ways that contribute to an open, welcoming, div
 * **🌍 Focusing on what is best** not just for us as individuals, but for the overall community
 * **🚀 Supporting newcomers** and helping them learn AI-native development
 * **📚 Sharing knowledge** and contributing to collective learning
-* **🔧 Collaborating constructively** on technical challenges and solutions
+* **[TOOL] Collaborating constructively** on technical challenges and solutions
 
 ### **❌ Unacceptable Behavior Examples**
 
@@ -35,7 +35,7 @@ We pledge to act and interact in ways that contribute to an open, welcoming, div
 * **🛡️ Responsible AI Development**: Promote safe, ethical, and beneficial AI practices
 * **🔍 Transparent AI Usage**: Be open about AI assistance in contributions and discussions
 * **📊 Share AI Insights**: Contribute learnings about AI behavior and best practices
-* **⚠️ Report AI Safety Issues**: Promptly report potential safety or security concerns
+* **[WARN] Report AI Safety Issues**: Promptly report potential safety or security concerns
 * **🤝 Collaborative AI Learning**: Support others in understanding AI-native development
 * **🎯 Constructive AI Feedback**: Provide helpful feedback on AI-generated solutions
 
@@ -66,7 +66,7 @@ Community leaders will follow these Community Impact Guidelines in determining t
 
 **Consequence**: A private, written warning from community leaders, providing clarity around the nature of the violation and an explanation of why the behavior was inappropriate. A public apology may be requested.
 
-### **2. ⚠️ Warning**
+### **2. [WARN] Warning**
 
 **Community Impact**: A violation through a single incident or series of actions.
 
@@ -128,7 +128,7 @@ Monthly recognition of community members who exemplify our values:
 
 ### **🏅 Contribution Awards**
 Recognition for significant contributions:
-* **🔧 Technical Excellence**: Outstanding code contributions
+* **[TOOL] Technical Excellence**: Outstanding code contributions
 * **📖 Documentation Master**: Exceptional documentation improvements
 * **🐛 Bug Hunter**: Finding and reporting critical issues
 * **🎨 Design Champion**: UI/UX improvements and design contributions

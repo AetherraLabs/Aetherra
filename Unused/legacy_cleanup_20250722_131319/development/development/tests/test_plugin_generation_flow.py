@@ -23,7 +23,7 @@ from Aetherra.lyrixa.plugins.plugin_generator_plugin import PluginGeneratorPlugi
 
 async def test_plugin_generation_flow():
     """Test complete plugin generation workflow"""
-    print("🔧 Testing Plugin Generation Flow")
+    print("[TOOL] Testing Plugin Generation Flow")
     print("=" * 50)
 
     # Initialize components
@@ -82,7 +82,7 @@ async def test_plugin_generation_flow():
 
         if plugin_route != test_case["expected_operation"]:
             print(
-                f"❌ Routing failed! Expected: {test_case['expected_operation']}, Got: {plugin_route}"
+                f"[ERROR] Routing failed! Expected: {test_case['expected_operation']}, Got: {plugin_route}"
             )
             continue
 
@@ -100,9 +100,9 @@ async def test_plugin_generation_flow():
             print(f"📄 Files Generated: {len(metadata.get('files_generated', []))}")
             print(f"🏷️  Template Used: {metadata.get('template_used', 'N/A')}")
         elif "error" in metadata:
-            print(f"❌ Generation error: {metadata['error']}")
+            print(f"[ERROR] Generation error: {metadata['error']}")
         else:
-            print("⚠️  Generation status unclear")
+            print("[WARN]  Generation status unclear")
 
         print()
 
@@ -177,7 +177,7 @@ async def test_memory_integration():
         print(f"🆔 Plugin logged with ID: {metadata['plugin_id']}")
         print("✅ Memory integration working!")
     else:
-        print("⚠️  No plugin ID in metadata")
+        print("[WARN]  No plugin ID in metadata")
 
 
 async def main():
@@ -194,7 +194,7 @@ async def main():
         print("✅ All tests completed!")
 
     except Exception as e:
-        print(f"\n❌ Test suite failed: {e}")
+        print(f"\n[ERROR] Test suite failed: {e}")
         import traceback
 
         traceback.print_exc()

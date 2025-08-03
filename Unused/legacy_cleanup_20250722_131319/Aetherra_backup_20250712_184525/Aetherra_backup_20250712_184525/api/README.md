@@ -66,7 +66,7 @@ The server will start on `http://localhost:8000`
 | `GET`    | `/stats`        | System statistics              |
 | `DELETE` | `/jobs/cleanup` | Clean up old completed jobs    |
 
-## 🔧 Usage Examples
+## [TOOL] Usage Examples
 
 ### Execute a Script
 
@@ -175,7 +175,7 @@ The API automatically discovers `.aether` scripts in:
 - `Aetherra/system/`
 - `Aetherra/scripts/system/`
 
-## 🔧 Development
+## [TOOL] Development
 
 ### Adding New Endpoints
 

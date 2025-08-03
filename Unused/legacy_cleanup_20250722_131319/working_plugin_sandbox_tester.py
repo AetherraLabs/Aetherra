@@ -421,7 +421,7 @@ except Exception as e:
         # Generate recommendations
         recommendations = []
         if failed > 0:
-            recommendations.append(f"🔧 {failed} tests failed - improve error handling")
+            recommendations.append(f"[TOOL] {failed} tests failed - improve error handling")
         if avg_execution_time > 1.0:
             recommendations.append("⚡ Optimize plugin performance")
         if success_rate < 0.8:

@@ -114,23 +114,23 @@ This plugin has been injected into your Plugin Editor. You can now test and save
             )
             print("✅ LLM response successfully triggered GUI code injection")
         else:
-            print("❌ FAILED: No code injection occurred")
+            print("[ERROR] FAILED: No code injection occurred")
             print("   The LLM response was not detected as containing plugin code")
 
         return mock_gui.injection_success
 
     except ImportError as e:
-        print(f"❌ Import error: {e}")
+        print(f"[ERROR] Import error: {e}")
         print("   Make sure all required modules are available")
         return False
     except Exception as e:
-        print(f"❌ Test error: {e}")
+        print(f"[ERROR] Test error: {e}")
         return False
 
 
 async def test_conversation_manager_gui_integration():
     """Test that conversation manager can access GUI interface"""
-    print("\n🔧 Testing Conversation Manager GUI Integration")
+    print("\n[TOOL] Testing Conversation Manager GUI Integration")
     print("-" * 45)
 
     try:
@@ -184,7 +184,7 @@ async def test_conversation_manager_gui_integration():
         return True
 
     except Exception as e:
-        print(f"❌ Integration test error: {e}")
+        print(f"[ERROR] Integration test error: {e}")
         return False
 
 
@@ -203,8 +203,8 @@ if __name__ == "__main__":
         # Summary
         print("\n📊 Test Results Summary")
         print("=" * 25)
-        print(f"GUI Integration Test: {'✅ PASS' if test1_result else '❌ FAIL'}")
-        print(f"Code Injection Test:  {'✅ PASS' if test2_result else '❌ FAIL'}")
+        print(f"GUI Integration Test: {'✅ PASS' if test1_result else '[ERROR] FAIL'}")
+        print(f"Code Injection Test:  {'✅ PASS' if test2_result else '[ERROR] FAIL'}")
 
         if test1_result and test2_result:
             print("\n🎉 ALL TESTS PASSED!")
@@ -213,7 +213,7 @@ if __name__ == "__main__":
                 "✅ The bridge between Lyrixa's language and the Plugin Editor is complete"
             )
         else:
-            print("\n⚠️ Some tests failed - check the implementation")
+            print("\n[WARN] Some tests failed - check the implementation")
 
         return test1_result and test2_result
 

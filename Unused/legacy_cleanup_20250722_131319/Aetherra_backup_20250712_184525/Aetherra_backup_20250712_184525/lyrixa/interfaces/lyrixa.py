@@ -35,7 +35,7 @@ try:
 
     CORE_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"⚠️ Core components not available: {e}")
+    logger.warning(f"[WARN] Core components not available: {e}")
     LyrixaConversationManager = None
     LyrixaIntelligenceStack = None
     AetherRuntime = None
@@ -83,7 +83,7 @@ class LyrixaCore:
         """
         try:
             if not CORE_AVAILABLE:
-                logger.error("❌ Core components not available")
+                logger.error("[ERROR] Core components not available")
                 return False
 
             # Initialize Aether Runtime
@@ -114,7 +114,7 @@ class LyrixaCore:
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to initialize Lyrixa Core: {e}")
+            logger.error(f"[ERROR] Failed to initialize Lyrixa Core: {e}")
             return False
 
     async def _load_plugins(self):
@@ -122,7 +122,7 @@ class LyrixaCore:
         try:
             plugins_dir = Path(__file__).parent.parent / "plugins"
             if not plugins_dir.exists():
-                logger.warning("⚠️ Plugins directory not found")
+                logger.warning("[WARN] Plugins directory not found")
                 return
 
             # Import and register plugins
@@ -143,10 +143,10 @@ class LyrixaCore:
                         self.plugins[module_name] = f"Plugin {module_name} loaded"
                         logger.info(f"✅ Plugin loaded: {module_name}")
                     except Exception as e:
-                        logger.error(f"❌ Failed to load plugin {plugin_file}: {e}")
+                        logger.error(f"[ERROR] Failed to load plugin {plugin_file}: {e}")
 
         except Exception as e:
-            logger.error(f"❌ Failed to load plugins: {e}")
+            logger.error(f"[ERROR] Failed to load plugins: {e}")
 
     async def chat(self, message: str, context: Optional[Dict[str, Any]] = None) -> str:
         """
@@ -163,15 +163,15 @@ class LyrixaCore:
             await self.initialize()
 
         if not self.conversation_manager:
-            return "❌ Conversation manager not available"
+            return "[ERROR] Conversation manager not available"
 
         try:
             # Process message through conversation manager
             response = await self.conversation_manager.generate_response(message)
             return response
         except Exception as e:
-            logger.error(f"❌ Chat processing failed: {e}")
-            return f"❌ Error processing message: {str(e)}"
+            logger.error(f"[ERROR] Chat processing failed: {e}")
+            return f"[ERROR] Error processing message: {str(e)}"
 
     async def get_system_status(self) -> Dict[str, Any]:
         """
@@ -201,7 +201,7 @@ class LyrixaCore:
                 )
                 status["intelligence"] = intelligence_status
             except Exception as e:
-                logger.error(f"❌ Failed to get intelligence status: {e}")
+                logger.error(f"[ERROR] Failed to get intelligence status: {e}")
                 status["intelligence"] = {"error": str(e)}
 
         return status
@@ -241,7 +241,7 @@ class LyrixaCore:
                 return {"error": f"Unknown command: {command}"}
 
         except Exception as e:
-            logger.error(f"❌ Command execution failed: {e}")
+            logger.error(f"[ERROR] Command execution failed: {e}")
             return {"error": str(e)}
 
     async def shutdown(self):
@@ -266,7 +266,7 @@ class LyrixaCore:
             logger.info("✅ Lyrixa Core shutdown complete")
 
         except Exception as e:
-            logger.error(f"❌ Shutdown failed: {e}")
+            logger.error(f"[ERROR] Shutdown failed: {e}")
 
     def __repr__(self) -> str:
         return (

@@ -1,4 +1,4 @@
-# 🔧 Fix for "Propose Changes" 404 Error - RESOLVED
+# [TOOL] Fix for "Propose Changes" 404 Error - RESOLVED
 
 ## 🎯 **Problem Identified**
 The "Propose Changes" button was returning `{"detail": "Not Found"}` because:
@@ -32,7 +32,7 @@ async def propose_changes():
             "proposals": [
                 {
                     "category": "Plugin Enhancement",
-                    "action": "🔧 Optimize plugin loading performance",
+                    "action": "[TOOL] Optimize plugin loading performance",
                     "description": "Implement lazy loading for plugins to reduce startup time",
                     "priority": "medium",
                     "estimated_impact": "Faster system startup"
@@ -99,7 +99,7 @@ taskkill /PID <process_id> /F
   "proposals": [
     {
       "category": "Plugin Enhancement",
-      "action": "🔧 Optimize plugin loading performance",
+      "action": "[TOOL] Optimize plugin loading performance",
       "description": "Implement lazy loading for plugins to reduce startup time",
       "priority": "medium",
       "estimated_impact": "Faster system startup"
@@ -131,7 +131,7 @@ taskkill /PID <process_id> /F
 
 ## 💡 **Benefits**
 
-- **🔧 Self-Improvement**: Get AI-generated suggestions for system improvements
+- **[TOOL] Self-Improvement**: Get AI-generated suggestions for system improvements
 - **🧩 Enhanced Plugins**: Advanced capability analysis and recommendations
 - **🚀 Full Integration**: All features working seamlessly together
 - **⚡ Reliable Fallbacks**: System works even if some components unavailable

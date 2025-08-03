@@ -17,7 +17,7 @@
 - **After**: Embedded server that starts automatically with GUI, no separate process
 - **Implementation**: Thread-based server that integrates seamlessly with PySide6 GUI
 
-## 🔧 **TECHNICAL IMPROVEMENTS**
+## [TOOL] **TECHNICAL IMPROVEMENTS**
 
 ### **Enhanced Server Architecture**
 ```python
@@ -134,13 +134,13 @@ success = start_server_thread()  # No console window!
 ## 🎯 **RESULTS**
 
 ### **Before vs After**
-| Feature             | Before             | After           |
-| ------------------- | ------------------ | --------------- |
-| Console Window      | ❌ Separate window  | ✅ No window     |
-| Startup Reliability | ⚠️ Sometimes failed | ✅ Robust        |
-| GUI Integration     | ❌ External process | ✅ Embedded      |
-| Error Handling      | ⚠️ Basic            | ✅ Comprehensive |
-| User Experience     | ❌ Cluttered        | ✅ Clean         |
+| Feature             | Before                   | After           |
+| ------------------- | ------------------------ | --------------- |
+| Console Window      | [ERROR] Separate window  | ✅ No window     |
+| Startup Reliability | [WARN] Sometimes failed  | ✅ Robust        |
+| GUI Integration     | [ERROR] External process | ✅ Embedded      |
+| Error Handling      | [WARN] Basic             | ✅ Comprehensive |
+| User Experience     | [ERROR] Cluttered        | ✅ Clean         |
 
 ### **Performance Metrics**
 - **Startup Time**: < 1 second (embedded vs ~4 seconds external)

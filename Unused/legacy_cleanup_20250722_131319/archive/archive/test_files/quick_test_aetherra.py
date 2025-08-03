@@ -57,7 +57,7 @@ end
     try:
         print("✅ UI system available")
     except Exception as e:
-        print(f"⚠️ UI system: {e}")
+        print(f"[WARN] UI system: {e}")
 
     print("\n🎉 aetherra IS FUNCTIONAL!")
     print("✅ Language parsing works")
@@ -138,7 +138,7 @@ recall experiences with "session_log"
         # Compile
         compiler = aetherraCompiler()
         compiled_code = compiler.compile(ast)
-        print(f"🔧 Compilation: {len(compiled_code)} chars of executable code")
+        print(f"[TOOL] Compilation: {len(compiled_code)} chars of executable code")
 
         print("\n✅ aetherra LANGUAGE FULLY OPERATIONAL!")
         print("✅ Complete lexical analysis")
@@ -167,4 +167,4 @@ if __name__ == "__main__":
         print("\n🎉 ALL TESTS PASSED!")
         print("🧬 aetherra is ready for use!")
     else:
-        print("\n⚠️ Some tests failed, but core functionality works")
+        print("\n[WARN] Some tests failed, but core functionality works")

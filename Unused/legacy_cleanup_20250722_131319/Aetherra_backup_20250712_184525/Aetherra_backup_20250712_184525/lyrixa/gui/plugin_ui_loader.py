@@ -323,10 +323,10 @@ class PluginUIManager:
                 print(f"     Author: {plugin['author']}")
                 print(f"     Description: {plugin['description']}")
                 print(
-                    f"     UI Component: {'✅' if plugin['has_ui_component'] else '❌'}"
+                    f"     UI Component: {'✅' if plugin['has_ui_component'] else '[ERROR]'}"
                 )
                 print(
-                    f"     Theme Support: {'✅' if plugin['supports_themes'] else '❌'}"
+                    f"     Theme Support: {'✅' if plugin['supports_themes'] else '[ERROR]'}"
                 )
                 print()
         else:
@@ -664,7 +664,7 @@ class PluginUIManager:
             return flagship_plugins
 
         except Exception as e:
-            print(f"⚠️ Could not load flagship plugins: {e}")
+            print(f"[WARN] Could not load flagship plugins: {e}")
             return []
 
     def get_plugin_generator(self):

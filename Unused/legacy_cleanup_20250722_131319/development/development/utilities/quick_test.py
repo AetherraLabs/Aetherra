@@ -39,7 +39,7 @@ async def test_systems():
         print("🎉 idle_reflection.py and chat_router.py are ready for Lyrixa!")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[ERROR] Error: {e}")
         import traceback
         traceback.print_exc()
 

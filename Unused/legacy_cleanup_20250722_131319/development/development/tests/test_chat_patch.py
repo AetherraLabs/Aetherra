@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧 Chat Panel Intelligence Patch Verification
+[TOOL] Chat Panel Intelligence Patch Verification
 ==================================================
 
 Test script to verify that Lyrixa's full intelligence patch
@@ -14,7 +14,7 @@ import traceback
 def test_chat_panel_patch():
     """Test that the chat panel patch was applied correctly"""
 
-    print("🔧 Testing Chat Panel Intelligence Patch...")
+    print("[TOOL] Testing Chat Panel Intelligence Patch...")
     print("=" * 50)
 
     try:
@@ -39,7 +39,7 @@ def test_chat_panel_patch():
             if element in init_source:
                 print(f"✅ Found required element: {element}")
             else:
-                print(f"❌ Missing required element: {element}")
+                print(f"[ERROR] Missing required element: {element}")
                 return False
 
         # Test that process_input_async was enhanced
@@ -56,7 +56,7 @@ def test_chat_panel_patch():
             if feature in process_source:
                 print(f"✅ Intelligence feature found: {feature}")
             else:
-                print(f"❌ Missing intelligence feature: {feature}")
+                print(f"[ERROR] Missing intelligence feature: {feature}")
                 return False
 
         print("\n🎉 Chat Panel Intelligence Patch Verification SUCCESSFUL!")
@@ -65,7 +65,7 @@ def test_chat_panel_patch():
         print("• 🎭 Personality indicator")
         print("• 🧠 Reasoning/thought display")
         print("• 🧠 Persona-aware responses")
-        print("• 🔧 Robust error handling")
+        print("• [TOOL] Robust error handling")
 
         print("\n🚀 Ready to test in Aetherra!")
         print("Usage:")
@@ -77,10 +77,10 @@ def test_chat_panel_patch():
         return True
 
     except ImportError as e:
-        print(f"❌ Import failed: {e}")
+        print(f"[ERROR] Import failed: {e}")
         return False
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"[ERROR] Unexpected error: {e}")
         traceback.print_exc()
         return False
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
         print("🧠 Lyrixa's full intelligence is now enabled in chat!")
     else:
         print("\n" + "=" * 50)
-        print("❌ PATCH STATUS: VERIFICATION FAILED")
-        print("⚠️ Please check the patch application")
+        print("[ERROR] PATCH STATUS: VERIFICATION FAILED")
+        print("[WARN] Please check the patch application")
 
     sys.exit(0 if success else 1)

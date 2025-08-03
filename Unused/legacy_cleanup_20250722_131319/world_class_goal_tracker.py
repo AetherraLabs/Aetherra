@@ -31,7 +31,7 @@ try:
     HAS_PYSIDE6 = True
 except ImportError:
     HAS_PYSIDE6 = False
-    print("⚠️  PySide6 not available - running in console mode")
+    print("[WARN]  PySide6 not available - running in console mode")
 
 
 class GoalStatus(Enum):
@@ -299,7 +299,7 @@ Completed: {len([m for m in self.goal.progress.milestones if m.completed])} mile
 
         if self.goal.reasoning.blockers:
             blocker_info = "\n".join([
-                f"⚠️ {blocker.blocker_type.title()}: {blocker.description} (Severity: {blocker.severity:.1%})"
+                f"[WARN] {blocker.blocker_type.title()}: {blocker.description} (Severity: {blocker.severity:.1%})"
                 for blocker in self.goal.reasoning.blockers
             ])
         else:

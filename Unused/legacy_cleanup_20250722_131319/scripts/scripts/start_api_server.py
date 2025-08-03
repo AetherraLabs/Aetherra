@@ -30,7 +30,7 @@ async def start_server():
         await server.serve()
 
     except Exception as e:
-        print(f"❌ Server startup failed: {e}")
+        print(f"[ERROR] Server startup failed: {e}")
         sys.exit(1)
 
 

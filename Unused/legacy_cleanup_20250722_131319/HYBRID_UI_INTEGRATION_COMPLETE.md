@@ -47,7 +47,7 @@ The streamlined hybrid UI has been perfectly integrated with full launcher compa
 🎉 All tests passed! Streamlined hybrid UI is ready!
 ```
 
-## 🔧 Usage Examples
+## [TOOL] Usage Examples
 
 ### 1. **Direct Usage** (existing code unchanged):
 ```python

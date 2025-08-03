@@ -19,7 +19,7 @@
 - **Natural Language Integration**: Seamless plugin recommendations during conversations
 - **Auto-Check System**: Automatic improvement detection and suggestion generation
 
-## 🔧 Technical Implementation
+## [TOOL] Technical Implementation
 
 ### Core Components Added
 - **Plugin Analysis Engine**: PluginAnalysis and ImprovementProposal classes with comprehensive code metrics

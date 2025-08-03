@@ -109,7 +109,7 @@ def verify_stage3_implementation():
             print("   The agents are no longer fake animations!")
             print("   They now perform real work with genuine intelligence!")
         elif completion_percentage >= 75:
-            print("⚠️ STAGE 3 IMPLEMENTATION: MOSTLY COMPLETE")
+            print("[WARN] STAGE 3 IMPLEMENTATION: MOSTLY COMPLETE")
             print("   A few features may need refinement")
         else:
             print("❌ STAGE 3 IMPLEMENTATION: INCOMPLETE")

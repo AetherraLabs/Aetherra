@@ -87,7 +87,7 @@ class ContextBridge:
             self._setup_component_bindings(phase_name, component)
 
         except Exception as e:
-            logger.error(f"❌ Failed to register {phase_name}: {e}")
+            logger.error(f"[ERROR] Failed to register {phase_name}: {e}")
 
     def _setup_component_bindings(self, phase_name: str, component):
         """Setup automatic event bindings for registered components."""
@@ -128,7 +128,7 @@ class ContextBridge:
                 )
 
         except Exception as e:
-            logger.warning(f"⚠️ Binding setup failed for {phase_name}: {e}")
+            logger.warning(f"[WARN] Binding setup failed for {phase_name}: {e}")
 
     def subscribe(self, event_type: EventType, handler: Callable):
         """Subscribe to a specific event type."""
@@ -167,7 +167,7 @@ class ContextBridge:
                 try:
                     handler(event)
                 except Exception as e:
-                    logger.error(f"❌ Event handler error: {e}")
+                    logger.error(f"[ERROR] Event handler error: {e}")
 
         logger.debug(f"📡 Emitted {event_type.value}: {source_phase} → {target_phase}")
         return event.event_id
@@ -188,7 +188,7 @@ class ContextBridge:
 
             logger.debug("🧠 Memory → Intelligence data routed")
         except Exception as e:
-            logger.error(f"❌ Memory→Intelligence routing failed: {e}")
+            logger.error(f"[ERROR] Memory→Intelligence routing failed: {e}")
 
     def _handle_anticipation_to_notifications(self, event: CrossPhaseEvent):
         """Handle Anticipation → Notifications communication."""
@@ -204,7 +204,7 @@ class ContextBridge:
 
             logger.debug("🔮 Anticipation → Notifications data routed")
         except Exception as e:
-            logger.error(f"❌ Anticipation→Notifications routing failed: {e}")
+            logger.error(f"[ERROR] Anticipation→Notifications routing failed: {e}")
 
     def _handle_performance_to_analytics(self, event: CrossPhaseEvent):
         """Handle Performance Monitor → Analytics communication."""
@@ -220,7 +220,7 @@ class ContextBridge:
 
             logger.debug("⚡ Performance → Analytics data routed")
         except Exception as e:
-            logger.error(f"❌ Performance→Analytics routing failed: {e}")
+            logger.error(f"[ERROR] Performance→Analytics routing failed: {e}")
 
     def _handle_feedback_to_systems(self, event: CrossPhaseEvent):
         """Handle Feedback → Memory+Anticipation communication."""
@@ -243,7 +243,7 @@ class ContextBridge:
 
             logger.debug("💭 Feedback → Systems data routed")
         except Exception as e:
-            logger.error(f"❌ Feedback→Systems routing failed: {e}")
+            logger.error(f"[ERROR] Feedback→Systems routing failed: {e}")
 
     def _update_memory_preferences(self, data: Dict[str, Any]):
         """Update memory system with user preferences."""
@@ -263,7 +263,7 @@ class ContextBridge:
                         "Memory system store_memory is async - preferences not directly stored"
                     )
         except Exception as e:
-            logger.error(f"❌ Memory preference update failed: {e}")
+            logger.error(f"[ERROR] Memory preference update failed: {e}")
 
     # Real-time Synchronization
 
@@ -284,7 +284,7 @@ class ContextBridge:
             logger.debug("🔄 Phase synchronization completed")
 
         except Exception as e:
-            logger.error(f"❌ Phase sync failed: {e}")
+            logger.error(f"[ERROR] Phase sync failed: {e}")
 
     def _collect_system_state(self) -> Dict[str, Any]:
         """Collect current state from all registered components."""

@@ -33,7 +33,7 @@ Aetherra Project/
 └── .github/workflows/deploy-pages.yml  # Simplified workflow
 ```
 
-### 🔧 Simplified Workflow
+### [TOOL] Simplified Workflow
 
 1. **Build**: `npm run build` in the nested directory
 2. **Copy**: Built files `dist/*` → `docs/`

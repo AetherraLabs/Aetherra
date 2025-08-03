@@ -49,7 +49,7 @@ def print_final_verification():
         "🎯 Advanced Goal Management",
         "📊 Real-time Performance Analytics",
         "🤖 Live Agent Monitoring",
-        "🔧 Comprehensive Plugin Management",
+        "[TOOL] Comprehensive Plugin Management",
         "💬 Enhanced Chat Interface",
         "🔄 Self-Improvement Engine",
     ]
@@ -114,7 +114,7 @@ def print_deployment_readiness():
 
     print("\n🎯 DEPLOYMENT INSTRUCTIONS:")
     print("   1. 📁 Use provided folder structure")
-    print("   2. 📦 Install requirements: PySide6>=6.5, PySide6-WebEngine")
+    print("   2. [DISC] Install requirements: PySide6>=6.5, PySide6-WebEngine")
     print("   3. 🔗 Import: from lyrixa.gui.hybrid_window import LyrixaWindow")
     print("   4. 🚀 Launch: python launcher.py --ui-mode hybrid")
     print("   5. ✅ Enjoy 11-tab revolutionary AI interface!")

@@ -17,7 +17,7 @@ WORLD-CLASS PLUGIN EXECUTION TAB: IMPLEMENTATION COMPLETE
 2. COMPREHENSIVE PLUGIN DISCOVERY
    - Lists ALL available plugins in a scrollable list
    - 14 standard plugins including:
-     🔧 greet_plugin, math_plugin, system_plugin
+     [TOOL] greet_plugin, math_plugin, system_plugin
      💾 memory_plugin, search_plugin, file_tools
      👨‍💻 git_plugin, coretools
      ⚙️ sysmon, optimizer, executor
@@ -86,7 +86,7 @@ Key Components:
 - Comprehensive error handling and debugging
 
 Plugin Categories:
-- 🔧 Utility: greet_plugin, search_plugin, coretools
+- [TOOL] Utility: greet_plugin, search_plugin, coretools
 - 🧮 Computation: math_plugin
 - ⚙️ System: system_plugin, sysmon, optimizer, executor
 - 💾 Data: memory_plugin, file_tools

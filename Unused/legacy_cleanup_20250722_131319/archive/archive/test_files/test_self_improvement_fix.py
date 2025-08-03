@@ -44,7 +44,7 @@ def test_self_improvement_fix():
             # Show proposed changes
             changes = data.get("proposed_changes", [])
             if changes:
-                print(f"\n🔧 Proposed Changes ({len(changes)}):")
+                print(f"\n[TOOL] Proposed Changes ({len(changes)}):")
                 for i, change in enumerate(changes[:3], 1):
                     print(f"   {i}. {change.get('title', 'Unknown')}")
                     print(f"      Category: {change.get('category', 'N/A')}")

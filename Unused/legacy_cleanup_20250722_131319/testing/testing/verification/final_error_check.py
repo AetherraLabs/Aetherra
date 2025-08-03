@@ -79,7 +79,7 @@ def check_main_launcher():
         if launcher_path.exists():
             print("✅ Main launcher file exists")
         else:
-            print("⚠️  Main launcher file not found")
+            print("[WARN]  Main launcher file not found")
 
         return True
 
@@ -111,7 +111,7 @@ def main():
     if passed == total:
         print("🎉 All checks passed! AetherraCode is ready to use.")
     else:
-        print("⚠️  Some checks failed. Please review the output above.")
+        print("[WARN]  Some checks failed. Please review the output above.")
 
     return passed == total
 

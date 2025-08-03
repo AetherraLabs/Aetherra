@@ -51,7 +51,7 @@ try:
     from qiskit.circuit.library import QFT, GroverOperator
     from qiskit.algorithms import AmplificationProblem
     QISKIT_AVAILABLE = True
-    print("✅ Qiskit available - IBM Quantum integration enabled")
+    print("[OK] Qiskit available - IBM Quantum integration enabled")
 except ImportError:
     print("⚠️ Qiskit not available - IBM Quantum integration disabled")
 
@@ -59,7 +59,7 @@ try:
     # Try Cirq (Google Quantum)
     import cirq
     CIRQ_AVAILABLE = True
-    print("✅ Cirq available - Google Quantum integration enabled")
+    print("[OK] Cirq available - Google Quantum integration enabled")
 except ImportError:
     print("⚠️ Cirq not available - Google Quantum integration disabled")
 
@@ -80,7 +80,7 @@ try:
     from observer_effect_simulator import ObserverEffectSimulator
     from causal_branch_simulator import CausalBranchSimulator
     PHASE_INTEGRATION = True
-    print("✅ Phase 2-4 integration enabled for quantum bridging")
+    print("[OK] Phase 2-4 integration enabled for quantum bridging")
 except ImportError as e:
     print(f"⚠️ Phase 2-4 components not found - quantum bridge in standalone mode: {e}")
     PHASE_INTEGRATION = False
@@ -232,8 +232,8 @@ class QuantumMemoryBridge:
         print(f"   📁 Data directory: {self.data_dir}")
         print(f"   🧮 Max qubits: {self.max_qubits}")
         print(f"   🖥️ Backend: {self.quantum_backend}")
-        print(f"   ✨ Quantum available: {'✅' if self.quantum_available else '❌'}")
-        print(f"   🔗 Phase integration: {'✅' if PHASE_INTEGRATION else '❌'}")
+        print(f"   ✨ Quantum available: {'[OK]' if self.quantum_available else '❌'}")
+        print(f"   🔗 Phase integration: {'[OK]' if PHASE_INTEGRATION else '❌'}")
 
     def _initialize_quantum_backends(self):
         """Initialize available quantum computing backends"""
@@ -931,7 +931,7 @@ async def demo_quantum_bridge():
     interference_result = await bridge.quantum_interference_experiment(quantum_states)
 
     # Quantum error correction test
-    print("\n🔧 QUANTUM ERROR CORRECTION TEST")
+    print("\n[TOOL] QUANTUM ERROR CORRECTION TEST")
     print("-" * 40)
     error_correction_result = await bridge.quantum_error_correction_test(quantum_state)
 
@@ -941,12 +941,12 @@ async def demo_quantum_bridge():
     print("\n📊 QUANTUM BRIDGE STATISTICS")
     print("-" * 40)
     print(f"⚛️ Quantum operations: {stats['quantum_operations']}")
-    print(f"✅ Successful encodings: {stats['successful_encodings']}")
+    print(f"[OK] Successful encodings: {stats['successful_encodings']}")
     print(f"❌ Failed operations: {stats['failed_operations']}")
     print(f"🧮 Total qubits used: {stats['total_qubits_used']}")
     print(f"📊 Average fidelity: {stats['avg_fidelity']:.3f}")
 
-    print(f"\n🔧 Error correction status:")
+    print(f"\n[TOOL] Error correction status:")
     print(f"   Available: {error_correction_result['error_correction_available']}")
     if error_correction_result['error_correction_available']:
         print(f"   Logical error rate: {error_correction_result['logical_error_rate']:.6f}")

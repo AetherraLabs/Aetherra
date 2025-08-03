@@ -830,7 +830,7 @@ class AnalyticsPanel(QWidget):
         <p><b>⚡ Response Time:</b> Average latency reduced by 150ms</p>
 
         <h4 style="color: {AETHERRA_BRIGHT_GREEN};">Anomalies Detected</h4>
-        <p style="color: {AETHERRA_RED};">⚠️ Slight increase in memory fragmentation</p>
+        <p style="color: {AETHERRA_RED};">[WARN] Slight increase in memory fragmentation</p>
         <p style="color: {AETHERRA_BLUE};">ℹ️ New plugin dependency patterns emerging</p>
         </div>
         """)

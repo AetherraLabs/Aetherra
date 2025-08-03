@@ -280,7 +280,7 @@ suggest: "feature_improvements" based_on "user_feedback"
 - Implement adaptive behavior based on usage patterns
 - Balance performance with maintainability
 
-## 🔧 Advanced Techniques
+## [TOOL] Advanced Techniques
 
 ### **Intent-to-Code Generation**
 ```aetherra

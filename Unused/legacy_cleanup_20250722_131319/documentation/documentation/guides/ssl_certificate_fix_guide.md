@@ -90,7 +90,7 @@ git push origin main
 
 ---
 
-## 🔧 Advanced Troubleshooting
+## [TOOL] Advanced Troubleshooting
 
 ### Check SSL Certificate Status:
 ```bash

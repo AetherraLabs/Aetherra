@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧 SIMPLE MEMORY ENGINE TEST
+[TOOL] SIMPLE MEMORY ENGINE TEST
 ============================
 
 Direct test of the LyrixaMemoryEngine to isolate any issues.
@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 async def test_memory_engine():
     """Test the memory engine directly"""
-    print("🔧 SIMPLE MEMORY ENGINE TEST")
+    print("[TOOL] SIMPLE MEMORY ENGINE TEST")
     print("=" * 35)
 
     try:
@@ -62,15 +62,15 @@ async def test_memory_engine():
 
             return True
         else:
-            print("❌ Memory storage failed!")
+            print("[ERROR] Memory storage failed!")
             return False
 
     except ImportError as e:
-        print(f"❌ Import error: {e}")
+        print(f"[ERROR] Import error: {e}")
         print("💡 The memory system modules may not be available")
         return False
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[ERROR] Error: {e}")
         print(f"   Error type: {type(e).__name__}")
         import traceback
 
@@ -83,4 +83,4 @@ if __name__ == "__main__":
     if success:
         print("🎉 Memory engine is working!")
     else:
-        print("⚠️ Memory engine needs fixing")
+        print("[WARN] Memory engine needs fixing")

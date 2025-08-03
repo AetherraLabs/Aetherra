@@ -70,7 +70,7 @@ class AetherScriptExecutor:
             data_dir="aether_intelligence_data"
         )
         await self.learning_agent.initialize()
-        print("✅ LearningLoopIntegrationAgent: Meta-learning tracker operational")
+        print("[OK] LearningLoopIntegrationAgent: Meta-learning tracker operational")
 
         # Initialize contradiction detection agent (enhanced with resolution)
         self.contradiction_agent = ContradictionDetectionAgent(
@@ -78,14 +78,14 @@ class AetherScriptExecutor:
         )
         await self.contradiction_agent.initialize()
         print(
-            "✅ ContradictionDetectionAgent: Multi-type conflict resolution operational"
+            "[OK] ContradictionDetectionAgent: Multi-type conflict resolution operational"
         )
 
         # Mock other agents for demonstration (would be actual implementations)
-        print("✅ CuriosityAgent: Gap-driven exploration ready")
-        print("✅ SelfQuestionGenerator: Autonomous question creation ready")
-        print("✅ Meta-learning tracker: Strategy optimization enabled")
-        print("✅ Adaptive thresholds: Performance-based adjustment configured")
+        print("[OK] CuriosityAgent: Gap-driven exploration ready")
+        print("[OK] SelfQuestionGenerator: Autonomous question creation ready")
+        print("[OK] Meta-learning tracker: Strategy optimization enabled")
+        print("[OK] Adaptive thresholds: Performance-based adjustment configured")
 
     async def execute_aether_script(self):
         """Execute the curiosity_conflict_resolution.aether script"""
@@ -194,7 +194,7 @@ class AetherScriptExecutor:
 
                 goal_id = await self.learning_agent.create_learning_goal(goal_context)
                 learning_goals_created.append(goal_id)
-                print(f"   ✅ Learning Goal Created: {goal_id}")
+                print(f"   [OK] Learning Goal Created: {goal_id}")
 
         self.script_results["phases_completed"].append(
             {
@@ -210,7 +210,7 @@ class AetherScriptExecutor:
             }
         )
 
-        print("\n✅ Phase 1 Complete:")
+        print("\n[OK] Phase 1 Complete:")
         print(f"   • {len(questions_generated)} questions generated")
         print(f"   • {len(learning_goals_created)} learning goals created")
 
@@ -251,7 +251,7 @@ class AetherScriptExecutor:
             if resolution_result.get("status") == "resolved":
                 resolutions_successful += 1
                 print(
-                    f"   ✅ Resolution: {resolution_result.get('strategy', 'unknown')}"
+                    f"   [OK] Resolution: {resolution_result.get('strategy', 'unknown')}"
                 )
                 print(
                     f"   📊 Resolution Confidence: {resolution_result.get('confidence', 0.0):.2f}"
@@ -293,7 +293,7 @@ class AetherScriptExecutor:
             }
         )
 
-        print("\n✅ Phase 2 Complete:")
+        print("\n[OK] Phase 2 Complete:")
         print(f"   • Resolution rate: {resolution_rate:.2%}")
         print(f"   • Successful resolutions: {resolutions_successful}")
         print(f"   • Failed resolutions: {resolutions_failed}")
@@ -359,7 +359,7 @@ class AetherScriptExecutor:
         if escalation_triggers:
             print(f"   🚨 Escalation Triggers: {len(escalation_triggers)} identified")
         else:
-            print("   ✅ No escalation required - performance within parameters")
+            print("   [OK] No escalation required - performance within parameters")
 
         print("\n🎛️ Adjusting adaptive thresholds based on performance...")
 
@@ -387,7 +387,7 @@ class AetherScriptExecutor:
             }
         )
 
-        print("\n✅ Phase 3 Complete:")
+        print("\n[OK] Phase 3 Complete:")
         print(f"   • Meta-learning analysis performed")
         print(f"   • Strategy optimization recommendations generated")
         print(f"   • Adaptive thresholds updated")
@@ -450,7 +450,7 @@ class AetherScriptExecutor:
             execution_time / 60.0,  # Convert to minutes
         )
 
-        print(f"✅ Learning Session Logged: {session_id}")
+        print(f"[OK] Learning Session Logged: {session_id}")
         print(f"📊 Session Summary:")
         print(f"   • Execution Time: {execution_time:.1f} seconds")
         print(f"   • Gaps Detected: {session_outcome['gaps_detected']}")
@@ -473,7 +473,7 @@ class AetherScriptExecutor:
         )
 
         print(
-            "\n✅ Phase 4 Complete: Comprehensive logging and self-awareness operational"
+            "\n[OK] Phase 4 Complete: Comprehensive logging and self-awareness operational"
         )
 
     async def post_execution_analysis(self):
@@ -531,11 +531,11 @@ class AetherScriptExecutor:
         print(
             f"   • All Phases Completed: {performance_metrics['total_phases_completed']}/4"
         )
-        print("   • Autonomous Intelligence: ✅ Operational")
+        print("   • Autonomous Intelligence: [OK] Operational")
 
-        print("\n✅ Success Criteria Validation:")
+        print("\n[OK] Success Criteria Validation:")
         for criterion, passed in success_criteria.items():
-            status = "✅ PASS" if passed else "❌ FAIL"
+            status = "[OK] PASS" if passed else "❌ FAIL"
             print(f"   • {criterion}: {status}")
 
         # Schedule next curiosity cycle based on performance
@@ -589,12 +589,12 @@ class AetherScriptExecutor:
         print(f"• Phases Completed: {len(self.script_results['phases_completed'])}/4")
 
         print("\n🧠 **ENHANCED AUTONOMOUS INTELLIGENCE VALIDATION**")
-        print("• ✅ Curiosity-driven gap detection and exploration")
-        print("• ✅ Multi-type conflict detection and resolution")
-        print("• ✅ Self-directed learning goal creation and tracking")
-        print("• ✅ Meta-learning effectiveness analysis and optimization")
-        print("• ✅ Adaptive threshold management and strategy recommendations")
-        print("• ✅ Comprehensive session logging with self-awareness")
+        print("• [OK] Curiosity-driven gap detection and exploration")
+        print("• [OK] Multi-type conflict detection and resolution")
+        print("• [OK] Self-directed learning goal creation and tracking")
+        print("• [OK] Meta-learning effectiveness analysis and optimization")
+        print("• [OK] Adaptive threshold management and strategy recommendations")
+        print("• [OK] Comprehensive session logging with self-awareness")
 
         print(f"\n💾 Detailed report saved to: {report_file}")
         print("\n🎉 **AETHER SCRIPT: FULLY OPERATIONAL WITH ENHANCED INTELLIGENCE!**")
@@ -615,15 +615,15 @@ async def main():
 
         print("\n" + "=" * 70)
         print("🏁 AETHER SCRIPT EXECUTION COMPLETED SUCCESSFULLY!")
-        print("✅ All Phase 3 enhanced autonomous intelligence functions operational")
-        print("✅ Curiosity-driven exploration and conflict resolution cycle complete")
-        print("✅ Meta-learning tracker with strategy optimization functional")
-        print("✅ Self-directed learning and adaptive optimization validated")
+        print("[OK] All Phase 3 enhanced autonomous intelligence functions operational")
+        print("[OK] Curiosity-driven exploration and conflict resolution cycle complete")
+        print("[OK] Meta-learning tracker with strategy optimization functional")
+        print("[OK] Self-directed learning and adaptive optimization validated")
         print("=" * 70)
 
     except Exception as e:
         print(f"\n❌ Aether script execution encountered an error: {e}")
-        print("🔧 This indicates integration issues that need to be resolved")
+        print("[TOOL] This indicates integration issues that need to be resolved")
         raise
 
 

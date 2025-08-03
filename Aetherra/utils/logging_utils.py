@@ -32,7 +32,7 @@ def log(message: str, level: str = "INFO"):
     emoji_map = {
         "DEBUG": "🔍",
         "INFO": "ℹ️",
-        "WARNING": "⚠️",
+        "WARNING": "[WARN]",
         "ERROR": "❌",
         "CRITICAL": "🚨",
     }
@@ -97,7 +97,7 @@ def log_startup_banner():
     banner = """
 🧬 ================================ 🧬
 🚀     Lyrixa AI Assistant       🚀
-📦   Modular Agent Architecture   📦
+[DISC]   Modular Agent Architecture   [DISC]
 🧬 ================================ 🧬
 """
     print(banner)

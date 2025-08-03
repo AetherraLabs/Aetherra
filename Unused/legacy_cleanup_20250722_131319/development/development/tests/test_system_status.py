@@ -50,7 +50,7 @@ def test_system_metrics():
         return True
 
     except Exception as e:
-        print(f"❌ System metrics test failed: {e}")
+        print(f"[ERROR] System metrics test failed: {e}")
         import traceback
 
         traceback.print_exc()
@@ -63,4 +63,4 @@ if __name__ == "__main__":
     if success:
         print("🎯 All tests passed! System status panel should be working.")
     else:
-        print("⚠️ Tests failed. Please check the system configuration.")
+        print("[WARN] Tests failed. Please check the system configuration.")

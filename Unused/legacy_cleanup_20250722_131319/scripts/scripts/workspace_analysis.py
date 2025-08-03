@@ -77,7 +77,7 @@ class WorkspaceAnalyzer:
 
     def analyze_python_imports(self):
         """Analyze Python imports across the project"""
-        print("📦 Analyzing Python imports...")
+        print("[DISC] Analyzing Python imports...")
 
         python_files = []
         for root, dirs, files in os.walk(self.workspace_path):
@@ -345,7 +345,7 @@ def main():
 
     # Issues
     if results["issues"]:
-        print(f"\n❌ ISSUES FOUND ({len(results['issues'])}):")
+        print(f"\n[ERROR] ISSUES FOUND ({len(results['issues'])}):")
         for i, issue in enumerate(results["issues"], 1):
             print(f"  {i}. {issue}")
     else:
@@ -356,11 +356,11 @@ def main():
     structure = results["structure"]
     for item, info in structure.items():
         if isinstance(info, dict) and "status" in info:
-            status_icon = "✅" if info["status"] == "found" else "❌"
+            status_icon = "✅" if info["status"] == "found" else "[ERROR]"
             print(f"  {status_icon} {item}: {info['status']}")
 
     # Import summary
-    print("\n📦 IMPORT SUMMARY:")
+    print("\n[DISC] IMPORT SUMMARY:")
     imports = results["imports"]
     print(f"  • Python files: {imports.get('total_python_files', 0)}")
     print(f"  • Unique imports: {len(imports.get('unique_imports', []))}")
@@ -368,7 +368,7 @@ def main():
     if imports.get("module_integrity"):
         print("  • Core module tests:")
         for module, result in imports["module_integrity"].items():
-            status_icon = "✅" if result["status"] == "success" else "❌"
+            status_icon = "✅" if result["status"] == "success" else "[ERROR]"
             print(f"    {status_icon} {module}")
 
     # Recommendations

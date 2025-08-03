@@ -36,7 +36,7 @@ try:
 
     ASSISTANT_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"⚠️ Lyrixa Assistant not available: {e}")
+    logger.warning(f"[WARN] Lyrixa Assistant not available: {e}")
     LyrixaAssistant = None
     ASSISTANT_AVAILABLE = False
 
@@ -93,11 +93,11 @@ class LyrixaConsole:
         """
         try:
             if not ASSISTANT_AVAILABLE:
-                print("❌ Lyrixa Assistant not available")
+                print("[ERROR] Lyrixa Assistant not available")
                 return False
 
             if not LyrixaAssistant:
-                print("❌ Lyrixa Assistant class not available")
+                print("[ERROR] Lyrixa Assistant class not available")
                 return False
 
             # Initialize assistant
@@ -115,8 +115,8 @@ class LyrixaConsole:
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to initialize console: {e}")
-            print(f"❌ Initialization failed: {e}")
+            logger.error(f"[ERROR] Failed to initialize console: {e}")
+            print(f"[ERROR] Initialization failed: {e}")
             return False
 
     async def run_interactive(self):
@@ -158,8 +158,8 @@ class LyrixaConsole:
                 print("\n\n👋 Goodbye!")
                 break
             except Exception as e:
-                logger.error(f"❌ Error in interactive mode: {e}")
-                print(f"❌ Error: {e}")
+                logger.error(f"[ERROR] Error in interactive mode: {e}")
+                print(f"[ERROR] Error: {e}")
 
         await self._shutdown()
 
@@ -172,14 +172,14 @@ class LyrixaConsole:
         if command in self.commands:
             await self.commands[command](args)
         else:
-            print(f"❌ Unknown command: {command}")
+            print(f"[ERROR] Unknown command: {command}")
             print("Type '/help' for available commands")
 
     async def _process_chat(self, message: str):
         """Process chat message"""
         try:
             if not self.assistant:
-                print("❌ Assistant not initialized")
+                print("[ERROR] Assistant not initialized")
                 return
 
             print("🟡 Lyrixa: Thinking...")
@@ -191,8 +191,8 @@ class LyrixaConsole:
             print(f"🟢 Lyrixa: {response}")
 
         except Exception as e:
-            logger.error(f"❌ Chat processing failed: {e}")
-            print(f"❌ Error processing message: {e}")
+            logger.error(f"[ERROR] Chat processing failed: {e}")
+            print(f"[ERROR] Error processing message: {e}")
 
     async def _show_help(self, args: List[str]):
         """Show help information"""
@@ -216,7 +216,7 @@ class LyrixaConsole:
         """Show assistant status"""
         try:
             if not self.assistant:
-                print("❌ Assistant not initialized")
+                print("[ERROR] Assistant not initialized")
                 return
 
             status = await self.assistant.get_status()
@@ -234,8 +234,8 @@ class LyrixaConsole:
             print(f"Timestamp: {status['timestamp']}")
 
         except Exception as e:
-            logger.error(f"❌ Failed to get status: {e}")
-            print(f"❌ Error getting status: {e}")
+            logger.error(f"[ERROR] Failed to get status: {e}")
+            print(f"[ERROR] Error getting status: {e}")
 
     async def _show_history(self, args: List[str]):
         """Show command history"""
@@ -257,7 +257,7 @@ class LyrixaConsole:
     async def _clear_history(self, args: List[str]):
         """Clear conversation history"""
         if not self.assistant:
-            print("❌ Assistant not initialized")
+            print("[ERROR] Assistant not initialized")
             return
 
         await self.assistant.clear_conversation_history()
@@ -267,7 +267,7 @@ class LyrixaConsole:
         """Show active tasks"""
         try:
             if not self.assistant:
-                print("❌ Assistant not initialized")
+                print("[ERROR] Assistant not initialized")
                 return
 
             tasks = self.assistant.get_active_tasks()
@@ -288,14 +288,14 @@ class LyrixaConsole:
                 print("-" * 30)
 
         except Exception as e:
-            logger.error(f"❌ Failed to get tasks: {e}")
-            print(f"❌ Error getting tasks: {e}")
+            logger.error(f"[ERROR] Failed to get tasks: {e}")
+            print(f"[ERROR] Error getting tasks: {e}")
 
     async def _show_capabilities(self, args: List[str]):
         """Show assistant capabilities"""
         try:
             if not self.assistant:
-                print("❌ Assistant not initialized")
+                print("[ERROR] Assistant not initialized")
                 return
 
             capabilities = await self.assistant.get_capabilities()
@@ -307,18 +307,18 @@ class LyrixaConsole:
                 print(f"{i}. {capability}")
 
         except Exception as e:
-            logger.error(f"❌ Failed to get capabilities: {e}")
-            print(f"❌ Error getting capabilities: {e}")
+            logger.error(f"[ERROR] Failed to get capabilities: {e}")
+            print(f"[ERROR] Error getting capabilities: {e}")
 
     async def _execute_task(self, args: List[str]):
         """Execute a task"""
         if not args:
-            print("❌ Please provide a task description")
+            print("[ERROR] Please provide a task description")
             print("Example: /execute Analyze the current project structure")
             return
 
         if not self.assistant:
-            print("❌ Assistant not initialized")
+            print("[ERROR] Assistant not initialized")
             return
 
         task_description = " ".join(args)
@@ -332,18 +332,18 @@ class LyrixaConsole:
             print(f"Result: {result}")
 
         except Exception as e:
-            logger.error(f"❌ Task execution failed: {e}")
-            print(f"❌ Error executing task: {e}")
+            logger.error(f"[ERROR] Task execution failed: {e}")
+            print(f"[ERROR] Error executing task: {e}")
 
     async def _analyze_code(self, args: List[str]):
         """Analyze code"""
         if not args:
-            print("❌ Please provide code to analyze")
+            print("[ERROR] Please provide code to analyze")
             print("Example: /analyze def hello(): print('Hello, world!')")
             return
 
         if not self.assistant:
-            print("❌ Assistant not initialized")
+            print("[ERROR] Assistant not initialized")
             return
 
         code = " ".join(args)
@@ -357,8 +357,8 @@ class LyrixaConsole:
             print(f"Analysis: {result}")
 
         except Exception as e:
-            logger.error(f"❌ Code analysis failed: {e}")
-            print(f"❌ Error analyzing code: {e}")
+            logger.error(f"[ERROR] Code analysis failed: {e}")
+            print(f"[ERROR] Error analyzing code: {e}")
 
     async def _quit(self, args: List[str]):
         """Quit the console"""
@@ -378,7 +378,7 @@ class LyrixaConsole:
             print("✅ Console shutdown complete")
 
         except Exception as e:
-            logger.error(f"❌ Shutdown failed: {e}")
+            logger.error(f"[ERROR] Shutdown failed: {e}")
 
     async def run_batch_command(self, command: str, args: List[str]) -> Dict[str, Any]:
         """
@@ -421,7 +421,7 @@ class LyrixaConsole:
                 return {"error": f"Unknown command: {command}"}
 
         except Exception as e:
-            logger.error(f"❌ Batch command failed: {e}")
+            logger.error(f"[ERROR] Batch command failed: {e}")
             return {"error": str(e)}
         finally:
             await self._shutdown()
@@ -467,8 +467,8 @@ async def main():
     except KeyboardInterrupt:
         print("\n\n🔄 Interrupted by user")
     except Exception as e:
-        logger.error(f"❌ Console error: {e}")
-        print(f"❌ Error: {e}")
+        logger.error(f"[ERROR] Console error: {e}")
+        print(f"[ERROR] Error: {e}")
 
 
 if __name__ == "__main__":

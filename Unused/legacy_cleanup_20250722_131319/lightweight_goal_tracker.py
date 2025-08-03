@@ -274,7 +274,7 @@ class GoalTracker:
     def show_goal_details(self, goal_id: str):
         """Show detailed goal information"""
         if goal_id not in self.goals:
-            print(f"❌ Goal {goal_id} not found")
+            print(f"[ERROR] Goal {goal_id} not found")
             return
 
         goal = self.goals[goal_id]
@@ -480,7 +480,7 @@ class GoalTracker:
             print("4. 📊 Progress analytics")
             print("5. 🚫 Analyze blockers")
             print("6. 📈 Update progress")
-            print("7. ❌ Exit")
+            print("7. [ERROR] Exit")
 
             choice = input("\nEnter your choice (1-7): ").strip()
 
@@ -506,7 +506,7 @@ class GoalTracker:
                 print("👋 Thanks for using World-Class Goal Tracker!")
                 break
             else:
-                print("❌ Invalid choice. Please try again.")
+                print("[ERROR] Invalid choice. Please try again.")
 
 
 def main():

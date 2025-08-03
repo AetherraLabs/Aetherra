@@ -150,11 +150,11 @@ def test_meta_reasoning_engine():
         return True
 
     except ImportError as e:
-        print(f"❌ Import failed: {e}")
+        print(f"[ERROR] Import failed: {e}")
         print("💡 Make sure meta_reasoning.py is in the correct location")
         return False
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -186,7 +186,7 @@ def test_decision_types_and_confidence():
         return True
 
     except Exception as e:
-        print(f"❌ Decision types test failed: {e}")
+        print(f"[ERROR] Decision types test failed: {e}")
         return False
 
 
@@ -218,7 +218,7 @@ async def test_integration_example():
         return True
 
     except Exception as e:
-        print(f"❌ Integration test failed: {e}")
+        print(f"[ERROR] Integration test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -236,17 +236,17 @@ if __name__ == "__main__":
     try:
         test3_passed = asyncio.run(test_integration_example())
     except Exception as e:
-        print(f"❌ Async test failed: {e}")
+        print(f"[ERROR] Async test failed: {e}")
         test3_passed = False
 
     # Final results
     print("\n" + "=" * 50)
     print("🏁 Test Results Summary:")
-    print(f"   • Core Engine Test: {'✅ PASSED' if test1_passed else '❌ FAILED'}")
-    print(f"   • Types & Confidence: {'✅ PASSED' if test2_passed else '❌ FAILED'}")
-    print(f"   • Integration Test: {'✅ PASSED' if test3_passed else '❌ FAILED'}")
+    print(f"   • Core Engine Test: {'✅ PASSED' if test1_passed else '[ERROR] FAILED'}")
+    print(f"   • Types & Confidence: {'✅ PASSED' if test2_passed else '[ERROR] FAILED'}")
+    print(f"   • Integration Test: {'✅ PASSED' if test3_passed else '[ERROR] FAILED'}")
 
     if all([test1_passed, test2_passed, test3_passed]):
         print("\n🎉 All tests passed! Meta-Reasoning Engine is ready for production.")
     else:
-        print("\n⚠️ Some tests failed. Check the errors above.")
+        print("\n[WARN] Some tests failed. Check the errors above.")

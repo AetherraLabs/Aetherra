@@ -1316,7 +1316,7 @@ What specific technical challenge are you working on? Share your code or describ
                 "trouble",
             ]
         ):
-            return """I'm here to help troubleshoot! 🔧 Let me assist you with that problem.
+            return """I'm here to help troubleshoot! [TOOL] Let me assist you with that problem.
 
 **My Diagnostic Approach:**
 • 🔍 **Systematic Analysis**: I'll examine the issue from multiple angles
@@ -1728,7 +1728,7 @@ What would you like to explore or accomplish today? �"""
 • 🔍 **Deep Analysis**: I can examine plugin performance, compatibility, and optimization opportunities
 • 🛠️ **Troubleshooting**: Expert diagnosis of plugin conflicts, errors, and performance issues
 • 📈 **Optimization**: Resource usage analysis and efficiency improvements
-• 🔧 **Configuration**: Advanced setup and customization guidance
+• [TOOL] **Configuration**: Advanced setup and customization guidance
 • 💡 **Recommendations**: Suggest plugins based on your specific needs and workflows
 
 **Advanced Features:**
@@ -1745,7 +1745,7 @@ What specific plugin challenge can I help you solve? I have deep knowledge of th
 • 🎯 **Plugin Discovery**: Help you find the perfect plugins for your needs
 • 🛠️ **Installation & Setup**: Guide you through complex configurations
 • 📊 **Performance Analysis**: Optimize plugin performance and resource usage
-• 🔧 **Development Support**: Assist with creating custom plugins
+• [TOOL] **Development Support**: Assist with creating custom plugins
 • 🤝 **Integration**: Help plugins work together seamlessly
 
 **What I Can Do:**
@@ -1829,7 +1829,7 @@ What aspect of Aetherra's revolutionary capabilities would you like to explore? 
                         if v >= self.max_retries_per_model
                     ]
                 )
-                response = f"""🔧 **Advanced Troubleshooting Mode Activated**
+                response = f"""[TOOL] **Advanced Troubleshooting Mode Activated**
 
 I'm here to solve this problem with you! My diagnostic capabilities are sophisticated even in built-in intelligence mode.
 
@@ -2175,7 +2175,7 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
                 return "✅ All your plugins look great! No improvement suggestions at this time."
 
             # Create natural response about improvements
-            response_parts = ["🔧 I found some potential plugin improvements:\n"]
+            response_parts = ["[TOOL] I found some potential plugin improvements:\n"]
 
             for i, proposal in enumerate(proposals[:3], 1):  # Show top 3
                 response_parts.append(f"""
@@ -2308,7 +2308,7 @@ Would you like me to help you with something else regarding plugins?"""
             any(word in text for word in ["create", "generate", "make"])
             and "plugin" in text
         ):
-            return """🔧 I'd love to help you create a plugin! While I can't directly inject code into the Plugin Editor right now, I can help you in other ways:
+            return """[TOOL] I'd love to help you create a plugin! While I can't directly inject code into the Plugin Editor right now, I can help you in other ways:
 
 **Plugin Creation Options:**
 1. **Manual Creation**: I can provide you with plugin templates and code examples

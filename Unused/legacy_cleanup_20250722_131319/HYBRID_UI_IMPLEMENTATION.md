@@ -31,7 +31,7 @@ aetherra_hybrid_launcher.py # Demo launcher for hybrid UI
 - **🚀 Self-Improvement**: Future self-improvement dashboard
 - **🧩 Plugins Panel**: Enhanced plugin management
 
-## 🔧 Configuration
+## [TOOL] Configuration
 
 ### Environment Variables
 

@@ -6,18 +6,18 @@
 
 #### 1. Website Files (Root vs website/)
 - ✅ **Keep**: `website/` directory (organized structure)
-- ❌ **Delete**: Root copies
+- [ERROR] **Delete**: Root copies
   - `index.html` → `website/index.html` (18,691 bytes, identical)
   - `styles.css` → `website/styles.css` (16,776 bytes, identical)
   - `script.js` → `website/script.js` (8,609 bytes, identical)
 
 #### 2. Overview Scripts
 - ✅ **Keep**: `scripts/update_overview.py` (main working version)
-- ❌ **Delete**: `scripts/update_overview_clean.py` (12,304 bytes, identical)
+- [ERROR] **Delete**: `scripts/update_overview_clean.py` (12,304 bytes, identical)
 
 #### 3. Website Debug Files (Both locations)
 - ✅ **Keep**: `website/` versions (organized)
-- ❌ **Delete**: Root copies
+- [ERROR] **Delete**: Root copies
   - `debug-test.html`
   - `cache-buster-test.html`
   - `link-audit.html`
@@ -41,7 +41,7 @@
 **DECISION**:
 - ✅ **Keep**: `PROJECT_OVERVIEW.md` (current main status)
 - ✅ **Keep**: `SUCCESS_SUMMARY.md` (final project summary)
-- 📦 **Archive**: Move other status files to `archive/status_files/`
+- [DISC] **Archive**: Move other status files to `archive/status_files/`
 
 ### **TEST FILES** (Scattered locations)
 
@@ -52,7 +52,7 @@
 
 **DECISION**:
 - ✅ **Keep**: `tests/unit/` structure (organized)
-- 📦 **Review**: Individual test files for consolidation
+- [DISC] **Review**: Individual test files for consolidation
 
 ### **SCRIPTS** (Multiple versions)
 
@@ -63,8 +63,8 @@
 
 **DECISION**:
 - ✅ **Keep**: Main working versions
-- ❌ **Delete**: Empty/stub files
-- 📦 **Archive**: Legacy versions with "clean" suffix
+- [ERROR] **Delete**: Empty/stub files
+- [DISC] **Archive**: Legacy versions with "clean" suffix
 
 ## 📋 IMMEDIATE CLEANUP PLAN
 

@@ -53,7 +53,7 @@ def format_plugin_list(plugins, detailed=False):
             if hasattr(plugin, "loaded") and plugin.loaded:
                 status += " & Loaded"
         else:
-            status = "📦 Available"
+            status = "[DISC] Available"
 
         # Rating stars
         rating_stars = ""

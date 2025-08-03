@@ -1,5 +1,11 @@
 import math
 import time
+import webbrowser
+try:
+    import requests
+    REQUESTS_AVAILABLE = True
+except ImportError:
+    REQUESTS_AVAILABLE = False
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QBrush, QColor, QPainter, QTextCursor
@@ -97,6 +103,11 @@ class AetherraMainWindow(QMainWindow):
 
         # Setup the hybrid interface
         self.setup_hybrid_interface()
+
+        # Initialize Hub status checker
+        self.hub_status_timer = QTimer()
+        self.hub_status_timer.timeout.connect(self.update_hub_status)
+        self.hub_status_timer.start(30000)  # Check every 30 seconds
 
         # Now setup data connections
         self.setup_data_connections()
@@ -810,20 +821,28 @@ class AetherraMainWindow(QMainWindow):
 
         plugin_details_layout.addWidget(plugin_controls_frame)
 
-        # Add plugin marketplace section
+        # Add Aetherra Hub marketplace section
         marketplace_frame = QFrame()
         marketplace_frame.setStyleSheet("background: #2a2a2a; border-radius: 8px; padding: 15px;")
         marketplace_layout = QVBoxLayout(marketplace_frame)
 
-        marketplace_header = QLabel("Plugin Marketplace")
+        marketplace_header = QLabel("🏪 Aetherra Hub - Plugin Marketplace")
         marketplace_header.setStyleSheet("font-size: 14px; color: #ffffff;")
         marketplace_layout.addWidget(marketplace_header)
 
-        marketplace_content = QLabel("Browse and install new plugins to enhance Lyrixa's capabilities.")
+        # Hub status indicator
+        self.hub_status_label = QLabel("🔗 Connecting to Aetherra Hub...")
+        self.hub_status_label.setStyleSheet("color: #ffaa00; margin: 5px 0;")
+        marketplace_layout.addWidget(self.hub_status_label)
+
+        marketplace_content = QLabel("Discover, install, and manage .aetherplug modules from the AI-native marketplace.")
         marketplace_content.setStyleSheet("color: #cccccc;")
         marketplace_layout.addWidget(marketplace_content)
 
-        browse_button = QPushButton("Browse Marketplace")
+        # Hub control buttons
+        hub_buttons_layout = QHBoxLayout()
+
+        browse_button = QPushButton("🌐 Browse Hub")
         browse_button.setStyleSheet("""
             background: #5544cc;
             color: #ffffff;
@@ -832,7 +851,35 @@ class AetherraMainWindow(QMainWindow):
             padding: 8px 12px;
             font-weight: bold;
         """)
-        marketplace_layout.addWidget(browse_button)
+        browse_button.clicked.connect(self.open_aetherra_hub)
+
+        featured_button = QPushButton("⭐ Featured")
+        featured_button.setStyleSheet("""
+            background: #cc8800;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: bold;
+        """)
+        featured_button.clicked.connect(self.show_featured_plugins)
+
+        search_button = QPushButton("🔍 Search")
+        search_button.setStyleSheet("""
+            background: #00cc66;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: bold;
+        """)
+        search_button.clicked.connect(self.search_hub_plugins)
+
+        hub_buttons_layout.addWidget(browse_button)
+        hub_buttons_layout.addWidget(featured_button)
+        hub_buttons_layout.addWidget(search_button)
+
+        marketplace_layout.addLayout(hub_buttons_layout)
 
         plugin_details_layout.addWidget(marketplace_frame)
 
@@ -2058,6 +2105,272 @@ class AetherraMainWindow(QMainWindow):
 
         # Also print to console for debugging
         print(log_entry)
+
+    # ===== AETHERRA HUB INTEGRATION METHODS =====
+
+    def open_aetherra_hub(self):
+        """Open the Aetherra Hub marketplace in web browser or embedded view"""
+        try:
+            import webbrowser
+            import requests
+
+            # Check if Hub is running locally
+            hub_url = "http://localhost:3001"
+            frontend_url = "http://localhost:8080"
+
+            try:
+                # Try to ping the Hub server
+                response = requests.get(f"{hub_url}/api/v1/health", timeout=2)
+                if response.status_code == 200:
+                    # Hub is running, open the frontend
+                    webbrowser.open(frontend_url)
+                    self.hub_status_label.setText("🟢 Hub online - Opening marketplace...")
+                    self.hub_status_label.setStyleSheet("color: #00ff88;")
+                else:
+                    self.hub_status_label.setText("🔴 Hub not responding")
+                    self.hub_status_label.setStyleSheet("color: #ff4444;")
+            except requests.exceptions.RequestException:
+                # Hub not running, show status
+                self.hub_status_label.setText("🔴 Hub offline - Check OS launcher")
+                self.hub_status_label.setStyleSheet("color: #ff4444;")
+
+        except Exception as e:
+            self.log_debug(f"❌ Error opening Aetherra Hub: {e}")
+            self.hub_status_label.setText("❌ Hub connection error")
+            self.hub_status_label.setStyleSheet("color: #ff4444;")
+
+    def show_featured_plugins(self):
+        """Show featured plugins from the Aetherra Hub"""
+        try:
+            import requests
+
+            hub_url = "http://localhost:3001"
+
+            try:
+                response = requests.get(f"{hub_url}/api/v1/plugins/featured", timeout=3)
+                if response.status_code == 200:
+                    featured_plugins = response.json()
+
+                    # Create a dialog to show featured plugins
+                    from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QScrollArea
+
+                    dialog = QDialog(self)
+                    dialog.setWindowTitle("⭐ Featured Plugins - Aetherra Hub")
+                    dialog.setFixedSize(600, 500)
+                    dialog.setStyleSheet("background: #1a1a1a; color: #ffffff;")
+
+                    layout = QVBoxLayout(dialog)
+
+                    # Header
+                    header = QLabel("⭐ Featured Plugins from Aetherra Hub")
+                    header.setStyleSheet("font-size: 18px; color: #00ff88; margin-bottom: 15px;")
+                    layout.addWidget(header)
+
+                    # Scroll area for plugins
+                    scroll_area = QScrollArea()
+                    scroll_content = QWidget()
+                    scroll_layout = QVBoxLayout(scroll_content)
+
+                    # Display featured plugins
+                    for plugin in featured_plugins.get('plugins', []):
+                        plugin_frame = QFrame()
+                        plugin_frame.setStyleSheet("background: #2a2a2a; border-radius: 8px; padding: 10px; margin: 5px;")
+                        plugin_layout = QVBoxLayout(plugin_frame)
+
+                        plugin_name = QLabel(f"🔌 {plugin.get('name', 'Unknown Plugin')}")
+                        plugin_name.setStyleSheet("font-size: 14px; font-weight: bold; color: #ffffff;")
+                        plugin_layout.addWidget(plugin_name)
+
+                        plugin_desc = QLabel(plugin.get('description', 'No description available'))
+                        plugin_desc.setStyleSheet("color: #cccccc; margin: 5px 0;")
+                        plugin_layout.addWidget(plugin_desc)
+
+                        plugin_info = QLabel(f"Version: {plugin.get('version', 'Unknown')} | Author: {plugin.get('author', 'Unknown')}")
+                        plugin_info.setStyleSheet("color: #888888; font-size: 12px;")
+                        plugin_layout.addWidget(plugin_info)
+
+                        scroll_layout.addWidget(plugin_frame)
+
+                    scroll_area.setWidget(scroll_content)
+                    scroll_area.setStyleSheet("border: none;")
+                    layout.addWidget(scroll_area)
+
+                    # Close button
+                    close_button = QPushButton("Close")
+                    close_button.setStyleSheet("""
+                        background: #444444;
+                        color: #ffffff;
+                        border: none;
+                        border-radius: 8px;
+                        padding: 10px;
+                        font-weight: bold;
+                    """)
+                    close_button.clicked.connect(dialog.close)
+                    layout.addWidget(close_button)
+
+                    dialog.exec_()
+
+                    self.hub_status_label.setText("🟢 Featured plugins loaded")
+                    self.hub_status_label.setStyleSheet("color: #00ff88;")
+
+                else:
+                    self.hub_status_label.setText("🔴 Hub API error")
+                    self.hub_status_label.setStyleSheet("color: #ff4444;")
+
+            except requests.exceptions.RequestException:
+                self.hub_status_label.setText("🔴 Hub offline")
+                self.hub_status_label.setStyleSheet("color: #ff4444;")
+
+        except Exception as e:
+            self.log_debug(f"❌ Error loading featured plugins: {e}")
+            self.hub_status_label.setText("❌ Featured plugins error")
+            self.hub_status_label.setStyleSheet("color: #ff4444;")
+
+    def search_hub_plugins(self):
+        """Open a search dialog for Hub plugins"""
+        try:
+            from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QListWidget, QListWidgetItem
+
+            dialog = QDialog(self)
+            dialog.setWindowTitle("🔍 Search Aetherra Hub Plugins")
+            dialog.setFixedSize(700, 600)
+            dialog.setStyleSheet("background: #1a1a1a; color: #ffffff;")
+
+            layout = QVBoxLayout(dialog)
+
+            # Header
+            header = QLabel("🔍 Search Aetherra Hub Plugin Marketplace")
+            header.setStyleSheet("font-size: 18px; color: #00ff88; margin-bottom: 15px;")
+            layout.addWidget(header)
+
+            # Search input
+            search_layout = QHBoxLayout()
+            search_input = QLineEdit()
+            search_input.setPlaceholder("Enter plugin name, category, or keywords...")
+            search_input.setStyleSheet("""
+                background: #2a2a2a;
+                border: 1px solid #404040;
+                border-radius: 8px;
+                padding: 10px;
+                color: #ffffff;
+                font-size: 14px;
+            """)
+
+            search_button = QPushButton("🔍 Search")
+            search_button.setStyleSheet("""
+                background: #00cc66;
+                color: #ffffff;
+                border: none;
+                border-radius: 8px;
+                padding: 10px 15px;
+                font-weight: bold;
+            """)
+
+            search_layout.addWidget(search_input)
+            search_layout.addWidget(search_button)
+            layout.addLayout(search_layout)
+
+            # Results list
+            results_label = QLabel("Search Results:")
+            results_label.setStyleSheet("font-size: 14px; color: #ffffff; margin-top: 15px;")
+            layout.addWidget(results_label)
+
+            results_list = QListWidget()
+            results_list.setStyleSheet("""
+                background: #2a2a2a;
+                border: 1px solid #404040;
+                border-radius: 8px;
+                color: #cccccc;
+                padding: 5px;
+            """)
+            layout.addWidget(results_list)
+
+            def perform_search():
+                """Perform the actual search"""
+                try:
+                    import requests
+
+                    query = search_input.text().strip()
+                    if not query:
+                        return
+
+                    hub_url = "http://localhost:3001"
+
+                    try:
+                        response = requests.get(f"{hub_url}/api/v1/plugins/search",
+                                              params={"q": query}, timeout=5)
+                        if response.status_code == 200:
+                            search_results = response.json()
+
+                            results_list.clear()
+                            for plugin in search_results.get('plugins', []):
+                                item_text = f"🔌 {plugin.get('name', 'Unknown')} - {plugin.get('description', 'No description')[:50]}..."
+                                list_item = QListWidgetItem(item_text)
+                                list_item.setToolTip(f"Version: {plugin.get('version', 'Unknown')}\nAuthor: {plugin.get('author', 'Unknown')}")
+                                results_list.addItem(list_item)
+
+                            if not search_results.get('plugins'):
+                                no_results = QListWidgetItem("No plugins found matching your search.")
+                                results_list.addItem(no_results)
+
+                        else:
+                            error_item = QListWidgetItem("❌ Search failed - Hub API error")
+                            results_list.addItem(error_item)
+
+                    except requests.exceptions.RequestException:
+                        error_item = QListWidgetItem("❌ Search failed - Hub offline")
+                        results_list.addItem(error_item)
+
+                except Exception as e:
+                    self.log_debug(f"❌ Search error: {e}")
+                    error_item = QListWidgetItem("❌ Search error occurred")
+                    results_list.addItem(error_item)
+
+            search_button.clicked.connect(perform_search)
+            search_input.returnPressed.connect(perform_search)
+
+            # Close button
+            close_button = QPushButton("Close")
+            close_button.setStyleSheet("""
+                background: #444444;
+                color: #ffffff;
+                border: none;
+                border-radius: 8px;
+                padding: 10px;
+                font-weight: bold;
+                margin-top: 10px;
+            """)
+            close_button.clicked.connect(dialog.close)
+            layout.addWidget(close_button)
+
+            dialog.exec_()
+
+        except Exception as e:
+            self.log_debug(f"❌ Error opening search dialog: {e}")
+
+    def update_hub_status(self):
+        """Update the Hub connection status"""
+        try:
+            import requests
+
+            hub_url = "http://localhost:3001"
+
+            try:
+                response = requests.get(f"{hub_url}/api/v1/health", timeout=1)
+                if response.status_code == 200:
+                    self.hub_status_label.setText("🟢 Aetherra Hub online")
+                    self.hub_status_label.setStyleSheet("color: #00ff88;")
+                else:
+                    self.hub_status_label.setText("🔴 Hub not responding")
+                    self.hub_status_label.setStyleSheet("color: #ff4444;")
+            except requests.exceptions.RequestException:
+                self.hub_status_label.setText("🔴 Hub offline")
+                self.hub_status_label.setStyleSheet("color: #ff4444;")
+
+        except Exception as e:
+            self.log_debug(f"❌ Hub status check error: {e}")
+            self.hub_status_label.setText("❌ Hub status unknown")
+            self.hub_status_label.setStyleSheet("color: #ff4444;")
 
     def resizeEvent(self, event):
         """Handle window resize"""

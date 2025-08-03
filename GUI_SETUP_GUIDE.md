@@ -53,7 +53,7 @@ This automatically starts:
 - **Flask API Server**: http://localhost:8686
 - **Socket.IO Connection**: Real-time communication between frontend and backend
 
-## 🔧 Development Workflows
+## [TOOL] Development Workflows
 
 ### Frontend Development (React)
 

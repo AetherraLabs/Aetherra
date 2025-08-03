@@ -259,7 +259,7 @@ function createLyrixaModal() {
                         <div class="message-text">
                             Hello! I'm Lyrixa, your AI programming assistant. I can help you with:
                             <ul>
-                                <li>🔧 Code generation and debugging</li>
+                                <li>[TOOL] Code generation and debugging</li>
                                 <li>🏗️ Architecture design</li>
                                 <li>📚 Documentation writing</li>
                                 <li>🧪 Test creation</li>

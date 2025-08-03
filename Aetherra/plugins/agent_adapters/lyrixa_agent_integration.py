@@ -34,7 +34,7 @@ try:
         from Aetherra.aetherra_core.system.core_migrated.agents.agents.multi_agent_manager import AgentRole, AgentTask, MultiAgentManager
         AGENT_SYSTEM_AVAILABLE = True
     except ImportError as e:
-        logger.warning(f"⚠️ Agent system not available: {e}")
+        logger.warning(f"[WARN] Agent system not available: {e}")
         # Fallback: define stubs for graceful degradation
         AGENT_SYSTEM_AVAILABLE = False
         class AgentExecutor:

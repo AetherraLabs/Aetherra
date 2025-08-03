@@ -31,7 +31,7 @@ class PluginSystemValidator:
 
     def validate_all_plugins(self):
         """Validate all plugins and fix remaining issues."""
-        print("🔧 FINAL PLUGIN SYSTEM VERIFICATION")
+        print("[TOOL] FINAL PLUGIN SYSTEM VERIFICATION")
         print("=" * 50)
 
         for plugin_dir in self.plugin_directories:
@@ -51,14 +51,14 @@ class PluginSystemValidator:
                     print(f"   ✅ Valid: {file_path.name}")
                 else:
                     self.results["invalid_plugins"].append(str(file_path))
-                    print(f"   ❌ Invalid: {file_path.name}")
+                    print(f"   [ERROR] Invalid: {file_path.name}")
 
                     # Try to fix it
                     if self._fix_invalid_plugin(file_path):
                         self.results["fixed_plugins"].append(str(file_path))
                         self.results["valid_plugins"].append(str(file_path))
                         self.results["invalid_plugins"].remove(str(file_path))
-                        print(f"   🔧 Fixed: {file_path.name}")
+                        print(f"   [TOOL] Fixed: {file_path.name}")
 
         self._calculate_success_rate()
         self._generate_report()
@@ -100,7 +100,7 @@ class PluginSystemValidator:
             return len(found_attrs) >= 4
 
         except Exception as e:
-            print(f"   ⚠️ Error validating {file_path}: {e}")
+            print(f"   [WARN] Error validating {file_path}: {e}")
             return False
 
     def _fix_invalid_plugin(self, file_path: Path) -> bool:
@@ -185,7 +185,7 @@ class PluginSystemValidator:
             return True
 
         except Exception as e:
-            print(f"   ⚠️ Error fixing {file_path}: {e}")
+            print(f"   [WARN] Error fixing {file_path}: {e}")
             return False
 
     def _calculate_success_rate(self):
@@ -207,7 +207,7 @@ class PluginSystemValidator:
         print(f"Success rate: {self.results['success_rate']:.1f}%")
 
         if self.results["invalid_plugins"]:
-            print("\\n❌ Remaining invalid plugins:")
+            print("\\n[ERROR] Remaining invalid plugins:")
             for plugin in self.results["invalid_plugins"]:
                 print(f"   - {Path(plugin).name}")
 
@@ -221,7 +221,7 @@ class PluginSystemValidator:
         if self.results["success_rate"] >= 90:
             print("\\n🎉 Plugin system validation SUCCESSFUL!")
         else:
-            print("\\n⚠️ Plugin system needs additional work.")
+            print("\\n[WARN] Plugin system needs additional work.")
 
 
 if __name__ == "__main__":

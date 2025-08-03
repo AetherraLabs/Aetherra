@@ -205,7 +205,7 @@ Examples:
 
     def cmd_export(self, args) -> int:
         """Handle export command"""
-        print(f"📦 Exporting agent '{args.name}'...")
+        print(f"[DISC] Exporting agent '{args.name}'...")
 
         # Try to find the agent instance
         # In a real implementation, this would integrate with the actual aetherra agent system
@@ -281,8 +281,8 @@ Examples:
     def cmd_merge(self, args) -> int:
         """Handle merge command"""
         print("🔀 Merging agents...")
-        print(f"📦 Primary: {args.primary}")
-        print(f"📦 Secondary: {args.secondary}")
+        print(f"[DISC] Primary: {args.primary}")
+        print(f"[DISC] Secondary: {args.secondary}")
 
         try:
             # Perform the merge
@@ -342,7 +342,7 @@ Examples:
                 tags = ", ".join(archive.get("tags", []))
                 created = archive.get("created_at", "Unknown")[:10]  # Date only
 
-                print(f"  📦 {name} v{version}")
+                print(f"  [DISC] {name} v{version}")
                 print(f"     📏 Size: {size_mb:.1f} MB | 📅 {created}")
                 if tags:
                     print(f"     🏷️  Tags: {tags}")

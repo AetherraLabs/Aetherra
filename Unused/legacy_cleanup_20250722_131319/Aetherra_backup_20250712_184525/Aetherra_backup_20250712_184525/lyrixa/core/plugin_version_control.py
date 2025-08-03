@@ -144,7 +144,7 @@ class PluginVersionControl:
             syntax_valid = self._validate_syntax(plugin_code)
             if not syntax_valid:
                 print(
-                    f"⚠️ Warning: Plugin {plugin_name} has syntax errors, saving anyway"
+                    f"[WARN] Warning: Plugin {plugin_name} has syntax errors, saving anyway"
                 )
 
             # Write plugin code to snapshot file
@@ -189,7 +189,7 @@ class PluginVersionControl:
                         )
                     )
                 except Exception as e:
-                    print(f"⚠️ Failed to store snapshot memory: {e}")
+                    print(f"[WARN] Failed to store snapshot memory: {e}")
 
             snapshot = PluginSnapshot(
                 plugin_name, timestamp, str(snapshot_path), confidence_score, metadata
@@ -261,7 +261,7 @@ class PluginVersionControl:
                 plugin_code = f.read()
 
             if not self._validate_syntax(plugin_code):
-                print(f"⚠️ Warning: Snapshot {timestamp} has syntax errors")
+                print(f"[WARN] Warning: Snapshot {timestamp} has syntax errors")
                 response = input("Continue with rollback? (y/N): ")
                 if response.lower() != "y":
                     return False
@@ -291,7 +291,7 @@ class PluginVersionControl:
                         self._store_rollback_memory(plugin_name, timestamp)
                     )
                 except Exception as e:
-                    print(f"⚠️ Failed to store rollback memory: {e}")
+                    print(f"[WARN] Failed to store rollback memory: {e}")
 
             # Update database
             conn = sqlite3.connect(self.db_path)
@@ -446,7 +446,7 @@ class PluginVersionControl:
                     removed_count += 1
 
                 except Exception as e:
-                    print(f"⚠️ Failed to remove snapshot {snapshot.timestamp}: {e}")
+                    print(f"[WARN] Failed to remove snapshot {snapshot.timestamp}: {e}")
 
             conn.commit()
             conn.close()
@@ -552,7 +552,7 @@ class PluginVersionControl:
                     memory_type="project",
                 )
         except Exception as e:
-            print(f"⚠️ Failed to store snapshot memory: {e}")
+            print(f"[WARN] Failed to store snapshot memory: {e}")
 
     async def _store_rollback_memory(self, plugin_name: str, timestamp: str):
         """Store rollback action in Lyrixa memory"""
@@ -573,7 +573,7 @@ class PluginVersionControl:
                     memory_type="project",
                 )
         except Exception as e:
-            print(f"⚠️ Failed to store rollback memory: {e}")
+            print(f"[WARN] Failed to store rollback memory: {e}")
 
 
 # Integration hooks for existing plugin system

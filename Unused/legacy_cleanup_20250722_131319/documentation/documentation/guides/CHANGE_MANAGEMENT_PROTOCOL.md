@@ -11,7 +11,7 @@
 ### **For ALL Major Changes:**
 
 1. **📝 Document First** - Create/update documentation before implementing
-2. **🔧 Implement Changes** - Make the actual code/feature changes
+2. **[TOOL] Implement Changes** - Make the actual code/feature changes
 3. **✅ Test & Verify** - Ensure changes work correctly
 4. **📄 Update Documentation** - Update README, status files, and guides
 5. **💾 Commit & Push** - Version control with descriptive messages
@@ -40,7 +40,7 @@ Create a new status file with format: `{FEATURE_NAME}_COMPLETE.md`
 - Files modified/created
 - Features added
 
-## 🔧 Technical Details
+## [TOOL] Technical Details
 - Implementation approach
 - Dependencies added/removed
 - Architecture changes
@@ -104,14 +104,14 @@ Update relevant documentation files:
 
 ### **Commit Types:**
 - `🚀 Feature:` - New features or capabilities
-- `🔧 Fix:` - Bug fixes or corrections
+- `[TOOL] Fix:` - Bug fixes or corrections
 - `📝 Docs:` - Documentation updates
 - `🏗️ Refactor:` - Code restructuring without new features
 - `✅ Test:` - Testing additions or improvements
 - `🎨 UI:` - User interface improvements
 - `⚡ Performance:` - Performance optimizations
 - `🔒 Security:` - Security improvements
-- `📦 Dependencies:` - Dependency updates
+- `[DISC] Dependencies:` - Dependency updates
 - `🌐 Website:` - Website-specific changes
 
 ### **Branch Strategy:**

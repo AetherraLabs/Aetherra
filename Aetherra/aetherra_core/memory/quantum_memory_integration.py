@@ -1111,7 +1111,7 @@ async def demo_quantum_memory_integration():
             )
 
     # Check quantum system health
-    print("\n🔧 Quantum system health check...")
+    print("\n[TOOL] Quantum system health check...")
     coherence_check = await engine.check_quantum_coherence()
 
     if coherence_check.get("quantum_available"):

@@ -53,9 +53,9 @@ class EnhancedSemanticMemory:
             self.embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
             print("✅ Semantic embedding model loaded")
         except ImportError:
-            print("⚠️  SentenceTransformers not available, using hash-based embeddings")
+            print("[WARN]  SentenceTransformers not available, using hash-based embeddings")
         except Exception as e:
-            print(f"⚠️  Embedding model error: {e}")
+            print(f"[WARN]  Embedding model error: {e}")
 
     def _create_embedding(self, text: str) -> List[float]:
         """Create embedding vector for text"""

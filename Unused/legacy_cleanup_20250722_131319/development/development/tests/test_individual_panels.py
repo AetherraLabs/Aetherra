@@ -41,7 +41,7 @@ def test_system_health_panel():
         sys.exit(app.exec())
 
     except Exception as e:
-        print(f"❌ Error testing System Health Panel: {e}")
+        print(f"[ERROR] Error testing System Health Panel: {e}")
         import traceback
         traceback.print_exc()
 
@@ -72,7 +72,7 @@ def test_settings_personality_panel():
         sys.exit(app.exec())
 
     except Exception as e:
-        print(f"❌ Error testing Settings Personality Panel: {e}")
+        print(f"[ERROR] Error testing Settings Personality Panel: {e}")
         import traceback
         traceback.print_exc()
 
@@ -103,7 +103,7 @@ def test_workflow_script_panel():
         sys.exit(app.exec())
 
     except Exception as e:
-        print(f"❌ Error testing Workflow Script Panel: {e}")
+        print(f"[ERROR] Error testing Workflow Script Panel: {e}")
         import traceback
         traceback.print_exc()
 
@@ -128,7 +128,7 @@ def main():
     elif panel_name == "workflow_script":
         test_workflow_script_panel()
     else:
-        print(f"❌ Unknown panel: {panel_name}")
+        print(f"[ERROR] Unknown panel: {panel_name}")
         print("Available panels: system_health, settings_personality, workflow_script")
 
 if __name__ == "__main__":

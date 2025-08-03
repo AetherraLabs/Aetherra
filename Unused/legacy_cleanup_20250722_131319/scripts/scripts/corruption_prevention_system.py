@@ -42,11 +42,11 @@ def main():
         if corruption_healthy:
             print("✅ Corruption check: PASSED")
         else:
-            print("⚠️ Corruption check: ISSUES FOUND")
+            print("[WARN] Corruption check: ISSUES FOUND")
             overall_health = False
 
     except Exception as e:
-        print(f"❌ Corruption check failed: {e}")
+        print(f"[ERROR] Corruption check failed: {e}")
         overall_health = False
 
     print()
@@ -63,11 +63,11 @@ def main():
         if backup_success:
             print("✅ Backup creation: SUCCESS")
         else:
-            print("❌ Backup creation: FAILED")
+            print("[ERROR] Backup creation: FAILED")
             overall_health = False
 
     except Exception as e:
-        print(f"❌ Backup failed: {e}")
+        print(f"[ERROR] Backup failed: {e}")
         overall_health = False
 
     print()
@@ -92,21 +92,21 @@ def main():
             except:
                 pass
         else:
-            print("❌ Safe file operations: FAILED")
+            print("[ERROR] Safe file operations: FAILED")
             overall_health = False
 
         # Check for any corruption in safe operations
         corruption_report = check_for_corruption()
         if corruption_report.get("corruption_events", 0) > 0:
             print(
-                f"⚠️ Previous corruption events: {corruption_report['corruption_events']}"
+                f"[WARN] Previous corruption events: {corruption_report['corruption_events']}"
             )
             if corruption_report.get("recent_errors", []):
                 print("   Recent errors detected in safe operations")
                 overall_health = False
 
     except Exception as e:
-        print(f"❌ Safe operations test failed: {e}")
+        print(f"[ERROR] Safe operations test failed: {e}")
         overall_health = False
 
     print()
@@ -131,11 +131,11 @@ def main():
             print(f"   - Plugins found: {len(ps.installed_plugins)}")
             print(f"   - Agents created: {len(mas.agents)}")
         except Exception as e:
-            print(f"⚠️ System initialization issues: {e}")
+            print(f"[WARN] System initialization issues: {e}")
             overall_health = False
 
     except Exception as e:
-        print(f"❌ Integration test failed: {e}")
+        print(f"[ERROR] Integration test failed: {e}")
         overall_health = False
 
     print()
@@ -154,9 +154,9 @@ def main():
         print()
         print("🛡️ Your Lyrixa system is protected against corruption!")
     else:
-        print("⚠️ SYSTEM HEALTH: ⚠️ NEEDS ATTENTION")
+        print("[WARN] SYSTEM HEALTH: [WARN] NEEDS ATTENTION")
         print()
-        print("🔧 RECOMMENDED ACTIONS:")
+        print("[TOOL] RECOMMENDED ACTIONS:")
         print("1. Check error messages above for specific issues")
         print("2. Ensure all dependencies are installed")
         print("3. Run individual test scripts to isolate problems")
@@ -189,13 +189,13 @@ def schedule_protection():
 if __name__ == "__main__":
     success = main()
 
-    print("\n🔧 ADDITIONAL TOOLS AVAILABLE:")
+    print("\n[TOOL] ADDITIONAL TOOLS AVAILABLE:")
     print("- corruption_detector.py - Detailed corruption scanning")
     print("- lyrixa_backup_system.py - Manual backup creation")
     print("- safe_file_operations.py - Test safe file writing")
 
     if not success:
-        print("\n⚠️ ATTENTION REQUIRED: System health issues detected")
+        print("\n[WARN] ATTENTION REQUIRED: System health issues detected")
         sys.exit(1)
     else:
         print("\n✅ ALL SYSTEMS HEALTHY: Corruption protection active")

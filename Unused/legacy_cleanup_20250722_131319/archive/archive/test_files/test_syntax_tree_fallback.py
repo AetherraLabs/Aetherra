@@ -80,4 +80,4 @@ if __name__ == "__main__":
         print("🎯 Fallback mode test PASSED!")
         print("✅ All errors in core.syntax_tree.py have been fixed!")
     else:
-        print("💥 Fallback mode test FAILED!")
+        print("[FAIL] Fallback mode test FAILED!")

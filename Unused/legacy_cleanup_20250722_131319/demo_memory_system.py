@@ -156,7 +156,7 @@ async def demo_memory_system():
     print(f"   📊 Total Fragments: {health.total_fragments}")
     print(f"   🎯 Active Concepts: {health.active_concepts}")
     print(f"   ✨ Average Confidence: {health.average_confidence:.2f}")
-    print(f"   ⚠️  Contradictions: {health.contradiction_count}")
+    print(f"   [WARN]  Contradictions: {health.contradiction_count}")
     print(f"   🔗 Coherence Score: {health.coherence_score:.2f}")
     print(f"   📈 Health Trend: {health.health_trend}")
 
@@ -219,7 +219,7 @@ async def demo_memory_system():
     # === DEMONSTRATION 7: MAINTENANCE CYCLE ===
     print("\n🔹 DEMO 7: Automated Maintenance Cycle")
 
-    print("🔧 Running automated maintenance cycle...")
+    print("[TOOL] Running automated maintenance cycle...")
     maintenance_results = await memory.maintenance_cycle()
 
     print("   ✅ Maintenance completed:")

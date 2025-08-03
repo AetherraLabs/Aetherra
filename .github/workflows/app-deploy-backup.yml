@@ -40,7 +40,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: 📦 Install dependencies
+      - name: [DISC] Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements/base.txt
@@ -78,7 +78,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix={{branch}}-
 
-      - name: 🔧 Set up Docker Buildx
+      - name: [TOOL] Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
       - name: 🏗️ Build and push Docker image
@@ -96,7 +96,7 @@ jobs:
             VERSION=${{ steps.version.outputs.version }}
 
   deploy-staging:
-    name: 📦 Deploy to Staging
+    name: [DISC] Deploy to Staging
     runs-on: ubuntu-latest
     needs: [build]
     if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
@@ -112,7 +112,7 @@ jobs:
             docker/
             deploy/
 
-      - name: 🔧 Setup deployment environment
+      - name: [TOOL] Setup deployment environment
         run: |
           echo "Setting up staging deployment..."
           echo "Version: ${{ needs.build.outputs.version }}"
@@ -195,7 +195,7 @@ jobs:
             exit 1
           fi
 
-      - name: 🔧 Setup production environment
+      - name: [TOOL] Setup production environment
         run: |
           echo "Setting up production deployment..."
 

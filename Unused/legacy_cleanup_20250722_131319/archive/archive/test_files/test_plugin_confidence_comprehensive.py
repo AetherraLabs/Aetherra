@@ -569,7 +569,7 @@ def execute(command, **kwargs):
     }
 
     for plugin_name, code in plugins.items():
-        print(f"\n📦 Analyzing: {plugin_name}")
+        print(f"\n[DISC] Analyzing: {plugin_name}")
         print("-" * 40)
 
         analysis = scorer.analyze_plugin(plugin_name.lower().replace(" ", "_"), code)

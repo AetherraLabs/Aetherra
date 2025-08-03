@@ -118,7 +118,7 @@ class EmotionalIntelligenceIntegration:
             }
 
         except Exception as e:
-            print(f"⚠️ Emotional intelligence integration error: {e}")
+            print(f"[WARN] Emotional intelligence integration error: {e}")
 
             # Fallback to basic enhancement
             try:

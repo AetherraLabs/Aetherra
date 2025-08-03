@@ -45,7 +45,7 @@ class EnhancedPluginChainCleaner:
                 self.database_files.append(db_file)
                 print(f"   ✅ Found database: {db_file}")
             except Exception:
-                print(f"   ❌ Invalid database: {db_file}")
+                print(f"   [ERROR] Invalid database: {db_file}")
 
         print(f"📊 Found {len(self.database_files)} valid database files")
 
@@ -89,7 +89,7 @@ class EnhancedPluginChainCleaner:
             conn.close()
 
         except Exception as e:
-            print(f"      ⚠️ Error processing database: {e}")
+            print(f"      [WARN] Error processing database: {e}")
 
     def _clean_table(self, cursor, table_name: str, db_path: Path):
         """Clean corrupted plugin chains from a specific table."""
@@ -118,7 +118,7 @@ class EnhancedPluginChainCleaner:
                     )
 
         except Exception as e:
-            print(f"      ⚠️ Error processing table {table_name}: {e}")
+            print(f"      [WARN] Error processing table {table_name}: {e}")
 
     def _clean_plugin_data_in_column(
         self, cursor, table_name: str, column: str, db_path: Path
@@ -178,7 +178,7 @@ class EnhancedPluginChainCleaner:
                 )
 
         except Exception as e:
-            print(f"      ⚠️ Error cleaning column {column} in {table_name}: {e}")
+            print(f"      [WARN] Error cleaning column {column} in {table_name}: {e}")
 
     def _is_corrupted_plugin_chain(self, data: Dict, raw_content: str) -> bool:
         """Check if data represents a corrupted plugin chain."""

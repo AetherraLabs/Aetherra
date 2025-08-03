@@ -143,6 +143,6 @@ if __name__ == "__main__":
         print("🌟 The future of AI-native programming is here!")
     else:
         print("⚠️  Some enhancements may need additional setup")
-        print("🔧 Run 'python setup_enhancements.py' for full installation")
+        print("[TOOL] Run 'python setup_enhancements.py' for full installation")
 
     print("\n🧬 Aetherra: Where human intent meets AI implementation!")

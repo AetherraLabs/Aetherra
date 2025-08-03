@@ -68,7 +68,7 @@ def test_ui_launch_integration():
         if GUI_AVAILABLE:
             print("✅ GUI components are available")
         else:
-            print("⚠️ GUI running in fallback mode (PySide6 not available)")
+            print("[WARN] GUI running in fallback mode (PySide6 not available)")
 
         return True
     except Exception as e:

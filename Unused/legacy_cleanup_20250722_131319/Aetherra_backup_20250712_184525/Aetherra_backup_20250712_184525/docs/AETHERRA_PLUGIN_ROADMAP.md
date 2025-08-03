@@ -47,7 +47,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
   - 🎯 **Goals**: Objective and intention management
   - 🗣️ **Voice**: Speech and communication interfaces
   - 🤖 **AI Models**: LLM integrations and AI backends
-  - 🔧 **Tools**: Utility and helper functions
+  - [TOOL] **Tools**: Utility and helper functions
 
 ---
 
@@ -178,7 +178,7 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 🌐 registry.aethercode.org
 ├── 📡 API Gateway (authentication, rate limiting)
 ├── 🗄️ Plugin Database (PostgreSQL)
-├── 📦 Package Storage (S3-compatible)
+├── [DISC] Package Storage (S3-compatible)
 ├── 🔍 Search Engine (Elasticsearch)
 ├── 🛡️ Security Scanner (integrated)
 └── 📊 Analytics Dashboard
@@ -186,13 +186,13 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 
 ### **Plugin Distribution**
 ```
-📦 Plugin Package (.npkg)
+[DISC] Plugin Package (.npkg)
 ├── 📋 Aetherra-plugin.json    # Manifest
 ├── 🧠 plugin.aether             # Main implementation
 ├── 🐍 python/                  # Python backends
 ├── 📚 docs/                    # Documentation
 ├── 🧪 tests/                   # Test suites
-└── 🔧 scripts/                 # Build/install scripts
+└── [TOOL] scripts/                 # Build/install scripts
 ```
 
 ### **Integration Points**

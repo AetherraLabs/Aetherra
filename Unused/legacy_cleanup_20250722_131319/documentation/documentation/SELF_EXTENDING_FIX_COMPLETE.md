@@ -1,4 +1,4 @@
-🔧 SELF-EXTENDING SYSTEM FIX COMPLETE
+[TOOL] SELF-EXTENDING SYSTEM FIX COMPLETE
 =====================================
 
 ## ✅ Issue Resolved
@@ -47,7 +47,7 @@ The self-extending system is now fully functional and ready to use!
 /self_expand I need better debugging tools for analyzing AI decision-making processes
 ```
 
-## 🔧 Technical Details
+## [TOOL] Technical Details
 
 ### What Changed:
 1. **Added async handler:** `_get_engine_response()` method properly handles coroutines

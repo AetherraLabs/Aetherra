@@ -33,7 +33,7 @@ Welcome to the official development roadmap for **aetherra** and **Lyrixa** — 
   - Context-aware personality switching (coding vs debugging vs learning)
   - User behavior pattern learning for optimal personality selection
 
-### 🔧 Intelligent Error Handling
+### [TOOL] Intelligent Error Handling
 - [ ] **Self-Correction Logic for Plugin Errors**
   - Real-time plugin execution monitoring
   - AI-powered error diagnosis and fix suggestions
@@ -96,7 +96,7 @@ Welcome to the official development roadmap for **aetherra** and **Lyrixa** — 
 ## 🌌 Phase 3: AI-Native Power Tools
 *Target: Q4 2025*
 
-### 📦 aetherhub Plugin Marketplace
+### [DISC] aetherhub Plugin Marketplace
 - [ ] **Live Plugin Marketplace**
   - Integrated plugin browser and installer within Lyrixa
   - Community-driven plugin repository with ratings and reviews

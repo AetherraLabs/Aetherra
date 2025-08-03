@@ -54,7 +54,7 @@ try:
     QT_AVAILABLE = True
     print("✅ Qt framework available for GUI testing")
 except ImportError:
-    print("⚠️ Qt not available - using mock objects for testing")
+    print("[WARN] Qt not available - using mock objects for testing")
 
     # Create minimal mocks for testing without Qt
     class QApplication:
@@ -97,7 +97,7 @@ try:
 
     GUI_COMPONENTS_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️ GUI components not available: {e}")
+    print(f"[WARN] GUI components not available: {e}")
     GUI_COMPONENTS_AVAILABLE = False
 
     # Create mock classes for testing
@@ -839,7 +839,7 @@ class TestPerformanceMetrics(unittest.TestCase):
 
             print(f"✅ Memory usage increase: {memory_increase:.1f}MB (acceptable)")
         except ImportError:
-            print("⚠️ psutil not available - skipping memory test")
+            print("[WARN] psutil not available - skipping memory test")
         except Exception as e:
             self.fail(f"Memory usage test failed: {e}")
 
@@ -886,19 +886,19 @@ def run_neural_interface_tests():
     print("=" * 50)
     print(f"Total Tests: {total_tests}")
     print(f"✅ Passed: {successes}")
-    print(f"❌ Failed: {failures}")
-    print(f"💥 Errors: {errors}")
+    print(f"[ERROR] Failed: {failures}")
+    print(f"[FAIL] Errors: {errors}")
     print(f"📊 Success Rate: {success_rate:.1f}%")
 
     if failures > 0:
-        print("\n❌ FAILURES:")
+        print("\n[ERROR] FAILURES:")
         for test, traceback in result.failures:
             print(
                 f"  - {test}: {traceback.split('AssertionError: ')[-1].split('\\n')[0]}"
             )
 
     if errors > 0:
-        print("\n💥 ERRORS:")
+        print("\n[FAIL] ERRORS:")
         for test, traceback in result.errors:
             print(f"  - {test}: {traceback.split('\\n')[-2]}")
 
@@ -925,8 +925,8 @@ def generate_neural_interface_test_report(result, success_rate):
 | Category | Status | Details |
 |----------|--------|---------|
 | ✅ Passed | {result.testsRun - len(result.failures) - len(result.errors)} | Successfully validated |
-| ❌ Failed | {len(result.failures)} | Failed assertions |
-| 💥 Errors | {len(result.errors)} | Execution errors |
+| [ERROR] Failed | {len(result.failures)} | Failed assertions |
+| [FAIL] Errors | {len(result.errors)} | Execution errors |
 
 ## Component Testing Overview
 
@@ -993,8 +993,8 @@ def generate_neural_interface_test_report(result, success_rate):
 ## Technical Architecture Validation
 
 ### GUI Framework Integration
-- **Qt/PySide6 Support:** {"✅ Available" if QT_AVAILABLE else "⚠️ Mock Mode"}
-- **Component Loading:** {"✅ Success" if GUI_COMPONENTS_AVAILABLE else "❌ Failed"}
+- **Qt/PySide6 Support:** {"✅ Available" if QT_AVAILABLE else "[WARN] Mock Mode"}
+- **Component Loading:** {"✅ Success" if GUI_COMPONENTS_AVAILABLE else "[ERROR] Failed"}
 - **Cross-Platform Compatibility:** ✅ Verified
 
 ### Real-Time Features
@@ -1060,7 +1060,7 @@ The interface represents a successful implementation of the "Neural Interface (G
 
 ---
 **Test Suite:** Neural Interface Validation
-**Status:** {"✅ PASSED" if success_rate >= 80 else "❌ NEEDS ATTENTION"}
+**Status:** {"✅ PASSED" if success_rate >= 80 else "[ERROR] NEEDS ATTENTION"}
 **Next Steps:** {"Ready for integration testing" if success_rate >= 80 else "Address failing tests before proceeding"}
 """
 

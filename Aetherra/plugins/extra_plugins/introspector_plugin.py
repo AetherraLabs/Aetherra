@@ -448,7 +448,7 @@ class IntrospectorPlugin:
             print("📝 Stored introspection insights in memory")
 
         except Exception as e:
-            print(f"⚠️ Failed to store insights in memory: {e}")
+            print(f"[WARN] Failed to store insights in memory: {e}")
 
     async def get_historical_insights(
         self, days_back: int = 30
@@ -482,7 +482,7 @@ class IntrospectorPlugin:
             return recent_insights
 
         except Exception as e:
-            print(f"⚠️ Failed to retrieve historical insights: {e}")
+            print(f"[WARN] Failed to retrieve historical insights: {e}")
             return []
 
 

@@ -55,7 +55,7 @@ def post_cleanup():
                 total_freed += size_mb
                 print(f"✅ Removed {dir_name}")
             except Exception as e:
-                print(f"❌ Failed to remove {dir_name}: {e}")
+                print(f"[ERROR] Failed to remove {dir_name}: {e}")
 
     # Remove individual files
     for pattern in cleanup_files:
@@ -68,7 +68,7 @@ def post_cleanup():
                     total_freed += size_mb
                     print(f"🗑️  Removed {file_path}")
         except Exception as e:
-            print(f"❌ Failed to remove {pattern}: {e}")
+            print(f"[ERROR] Failed to remove {pattern}: {e}")
 
     # Final file count
     try:
@@ -80,10 +80,10 @@ def post_cleanup():
         if final_count < 5000:
             print("✅ Repository size is now REASONABLE!")
         else:
-            print("⚠️  Still some bloat remaining. Check large directories.")
+            print("[WARN]  Still some bloat remaining. Check large directories.")
 
     except Exception as e:
-        print(f"❌ Error counting files: {e}")
+        print(f"[ERROR] Error counting files: {e}")
 
     print("\n📋 RECOMMENDED NEXT STEPS:")
     print("1. Create new virtual environment: py -m venv .venv")
@@ -112,11 +112,11 @@ def get_dir_size(path):
 
 
 if __name__ == "__main__":
-    print("⚠️  Make sure Aetherra application is CLOSED before running this!")
+    print("[WARN]  Make sure Aetherra application is CLOSED before running this!")
     response = input("Application closed and ready for final cleanup? (yes/no): ")
 
     if response.lower() == "yes":
         post_cleanup()
     else:
-        print("❌ Post-cleanup cancelled.")
+        print("[ERROR] Post-cleanup cancelled.")
         print("💡 Close Aetherra application first, then run this script")

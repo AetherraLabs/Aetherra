@@ -30,7 +30,7 @@ def test_agent_imports():
         print("✅ All agents imported successfully")
         return True
     except ImportError as e:
-        print(f"❌ Import failed: {e}")
+        print(f"[ERROR] Import failed: {e}")
         return False
 
 
@@ -57,7 +57,7 @@ def test_core_agent_autonomous():
         return len(agent.autonomous_agents) > 0
 
     except Exception as e:
-        print(f"❌ Core agent test failed: {e}")
+        print(f"[ERROR] Core agent test failed: {e}")
         return False
 
 
@@ -87,7 +87,7 @@ def test_autonomous_capabilities():
         return capabilities["available"]
 
     except Exception as e:
-        print(f"❌ Capabilities test failed: {e}")
+        print(f"[ERROR] Capabilities test failed: {e}")
         return False
 
 
@@ -114,7 +114,7 @@ def main():
     print("=" * 50)
     passed = 0
     for test_name, result in results:
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "✅ PASS" if result else "[ERROR] FAIL"
         print(f"{status}: {test_name}")
         if result:
             passed += 1
@@ -125,7 +125,7 @@ def main():
         print("🎉 ALL TESTS PASSED - Autonomous agents are integrated!")
         print("🧠 The AWAKENING agents are now available in Lyrixa!")
     else:
-        print("⚠️ Some tests failed - check integration")
+        print("[WARN] Some tests failed - check integration")
 
     return passed == len(tests)
 

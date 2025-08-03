@@ -67,7 +67,7 @@ class LyrixaPluginUIDemo:
 
             print("✅ Sample plugins loaded and assigned to zones")
         except Exception as e:
-            print(f"⚠️ Could not load sample plugins: {e}")
+            print(f"[WARN] Could not load sample plugins: {e}")
 
     def show_ui_layout(self):
         """Display the current UI layout"""
@@ -126,7 +126,7 @@ class LyrixaPluginUIDemo:
 
         print(f"📊 Loaded Plugins: {len(self.plugin_manager.plugins)}")
         print(f"🎨 Current Theme: {self.plugin_manager.theme}")
-        print(f"🔧 Current Mode: {self.plugin_manager.mode}")
+        print(f"[TOOL] Current Mode: {self.plugin_manager.mode}")
 
         print("\n🗂️ Plugin Zones:")
         for zone_name, plugin in self.plugin_manager.zones.items():
@@ -140,7 +140,7 @@ class LyrixaPluginUIDemo:
             else:
                 print(f"  • {zone_name}: [Empty]")
 
-        print("\n📦 Registered Plugins:")
+        print("\n[DISC] Registered Plugins:")
         for i, plugin in enumerate(self.plugin_manager.plugins, 1):
             if isinstance(plugin, dict):
                 name = plugin.get("name", "Unknown")
@@ -222,7 +222,7 @@ class LyrixaPluginUIDemo:
     def demonstrate_mode_switching(self):
         """Demonstrate mode switching functionality"""
         print("\n" + "=" * 60)
-        print("🔧 MODE SWITCHING DEMONSTRATION")
+        print("[TOOL] MODE SWITCHING DEMONSTRATION")
         print("=" * 60)
 
         modes = ["Simple", "Developer", "Live Agent"]

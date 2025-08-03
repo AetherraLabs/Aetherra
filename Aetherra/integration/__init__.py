@@ -90,9 +90,9 @@ def initialize_integration_systems():
             INTEGRATION_SYSTEMS["adapters"] = True
             logger.info("✅ Adapters system available")
         else:
-            logger.warning("⚠️ Adapters system not available")
+            logger.warning("[WARN] Adapters system not available")
     except Exception:
-        logger.warning("⚠️ Adapters system not available")
+        logger.warning("[WARN] Adapters system not available")
 
     # Check bridges availability
     try:
@@ -103,9 +103,9 @@ def initialize_integration_systems():
             INTEGRATION_SYSTEMS["bridges"] = True
             logger.info("✅ Bridges system available")
         else:
-            logger.warning("⚠️ Bridges system not available")
+            logger.warning("[WARN] Bridges system not available")
     except Exception:
-        logger.warning("⚠️ Bridges system not available")
+        logger.warning("[WARN] Bridges system not available")
 
     # Check protocols availability
     try:
@@ -116,9 +116,9 @@ def initialize_integration_systems():
             INTEGRATION_SYSTEMS["protocols"] = True
             logger.info("✅ Protocols system available")
         else:
-            logger.warning("⚠️ Protocols system not available")
+            logger.warning("[WARN] Protocols system not available")
     except Exception:
-        logger.warning("⚠️ Protocols system not available")
+        logger.warning("[WARN] Protocols system not available")
 
     # Check monitoring availability
     try:
@@ -129,9 +129,9 @@ def initialize_integration_systems():
             INTEGRATION_SYSTEMS["monitoring"] = True
             logger.info("✅ Monitoring system available")
         else:
-            logger.warning("⚠️ Monitoring system not available")
+            logger.warning("[WARN] Monitoring system not available")
     except Exception:
-        logger.warning("⚠️ Monitoring system not available")
+        logger.warning("[WARN] Monitoring system not available")
 
     active_count = sum(INTEGRATION_SYSTEMS.values())
     total_count = len(INTEGRATION_SYSTEMS)

@@ -75,7 +75,7 @@
 
 ---
 
-## ⚠️ SAFETY MEASURES
+## [WARN] SAFETY MEASURES
 
 1. **Backup Critical Data**
    - Essential databases

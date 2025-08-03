@@ -382,7 +382,7 @@ class MetaReasoningEngine:
         intent_words = ["plugin", "load", "editor", "create", "generate", "code", "file", "open", "inject", "populate"]
         return [word for word in intent_words if word in text.lower()]
 
-    # 🔧 Helper methods
+    # [TOOL] Helper methods
 
     def _get_plugin_success_rate(self, plugin_name: str) -> float:
         """Calculate success rate for a plugin based on history"""

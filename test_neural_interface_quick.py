@@ -94,7 +94,7 @@ def test_neural_interface_quick():
         return True
 
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         import traceback
 
         traceback.print_exc()

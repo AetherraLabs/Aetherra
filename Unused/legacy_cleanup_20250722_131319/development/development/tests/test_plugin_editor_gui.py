@@ -38,12 +38,12 @@ def test_plugin_editor_tab():
         if hasattr(tab, "generate_new_plugin"):
             print("✅ Plugin generation method available")
         else:
-            print("❌ Plugin generation method missing")
+            print("[ERROR] Plugin generation method missing")
 
         if hasattr(tab, "show_templates"):
             print("✅ Template viewing method available")
         else:
-            print("❌ Template viewing method missing")
+            print("[ERROR] Template viewing method missing")
 
         # Show the tab briefly
         tab.show()
@@ -57,7 +57,7 @@ def test_plugin_editor_tab():
         return True
 
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         import traceback
 
         traceback.print_exc()
@@ -66,7 +66,7 @@ def test_plugin_editor_tab():
 
 def test_plugin_generation_availability():
     """Test that the plugin generation system is accessible"""
-    print("\n🔧 Testing Plugin Generation System Access")
+    print("\n[TOOL] Testing Plugin Generation System Access")
     print("=" * 40)
 
     try:
@@ -87,10 +87,10 @@ def test_plugin_generation_availability():
         return True
 
     except ImportError as e:
-        print(f"❌ Plugin generation system not available: {e}")
+        print(f"[ERROR] Plugin generation system not available: {e}")
         return False
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        print(f"[ERROR] Unexpected error: {e}")
         return False
 
 
@@ -109,7 +109,7 @@ def main():
         print("✅ Plugin generation system is accessible")
         print("✅ GUI components are working correctly")
     else:
-        print("⚠️  SOME TESTS FAILED")
+        print("[WARN]  SOME TESTS FAILED")
         print("Check the errors above for details")
 
 

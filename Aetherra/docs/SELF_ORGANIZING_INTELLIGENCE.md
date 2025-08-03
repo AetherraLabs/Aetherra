@@ -108,7 +108,7 @@ suggestions = analysis.optimization_suggestions
 results = intelligence.execute_safe_optimization(suggestions, dry_run=True)
 ```
 
-## 🔧 Configuration
+## [TOOL] Configuration
 
 ### Monitoring Configuration (`monitor_config.json`)
 ```json

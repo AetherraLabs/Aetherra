@@ -50,7 +50,7 @@ def print_ultimate_achievement():
         "🎯 Goal Tracking and Management",
         "📊 Real-time Performance Analytics",
         "🤖 Live Agent Monitoring",
-        "🔧 Comprehensive Plugin Management",
+        "[TOOL] Comprehensive Plugin Management",
         "💬 Enhanced Chat Interface",
         "🔄 Self-Improvement Engine",
         "📊 System Dashboard with Metrics",
@@ -165,7 +165,7 @@ def print_future_roadmap():
 
     enhancements = [
         "🔒 Advanced agent security protocols",
-        "📦 Cross-agent dependency management",
+        "[DISC] Cross-agent dependency management",
         "📊 Agent performance profiling",
         "⚡ Real-time agent load balancing",
         "🧠 Emergent intelligence monitoring",

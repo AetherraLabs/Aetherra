@@ -76,12 +76,12 @@ def verify_plugin_editor_integration():
             print("🏆 100% Tab Completion Achievement Confirmed!")
             print("🚀 Ready for production use!")
         else:
-            print("\n⚠️ Some verification checks failed")
+            print("\n[WARN] Some verification checks failed")
 
         # Test tab functionality
         plugin_editor_tab = window.create_plugin_editor_tab()
         if plugin_editor_tab:
-            print("\n🔧 Plugin Editor Tab Features Confirmed:")
+            print("\n[TOOL] Plugin Editor Tab Features Confirmed:")
             print("   📂 File browser integration (QFileDialog)")
             print("   ✏️ Live code editor (QTextEdit)")
             print("   🎨 Syntax highlighting ready")

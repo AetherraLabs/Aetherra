@@ -22,7 +22,7 @@ sys.path.insert(0, str(project_root))
 try:
     from Aetherra.runtime.aether_runtime import AetherRuntime
 except ImportError:
-    print("⚠️ Aetherra runtime not available")
+    print("[WARN] Aetherra runtime not available")
     AetherRuntime = None
 
 # Import conversation manager
@@ -31,7 +31,7 @@ try:
 
     CONVERSATION_MANAGER_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️ Conversation manager not available: {e}")
+    print(f"[WARN] Conversation manager not available: {e}")
     LyrixaConversationManager = None
     CONVERSATION_MANAGER_AVAILABLE = False
 
@@ -58,7 +58,7 @@ class LyrixaIntelligenceStack:
                 )
                 print("✅ LLM-powered conversation manager initialized")
             except Exception as e:
-                print(f"⚠️ Failed to initialize conversation manager: {e}")
+                print(f"[WARN] Failed to initialize conversation manager: {e}")
                 self.conversation_manager = None
         else:
             self.conversation_manager = None
@@ -114,7 +114,7 @@ class LyrixaIntelligenceStack:
         self.plugin_manager = None
         self.self_improvement_dashboard = None
         self.aetherra_hub_client = None
-        
+
         # Initialize modular connections with error handling
         try:
             # Try to connect to enhanced plugin manager
@@ -123,8 +123,8 @@ class LyrixaIntelligenceStack:
                 self.plugin_manager = PluginManager()
                 print("✅ Connected to Enhanced Plugin Manager")
             except ImportError:
-                print("⚠️ Enhanced Plugin Manager not available")
-            
+                print("[WARN] Enhanced Plugin Manager not available")
+
             # Try basic plugin manager as fallback
             try:
                 from Aetherra.core.plugin_manager import PluginManager as BasicPluginManager
@@ -132,11 +132,11 @@ class LyrixaIntelligenceStack:
                     self.plugin_manager = BasicPluginManager()
                     print("✅ Connected to Basic Plugin Manager")
             except ImportError:
-                print("⚠️ Basic Plugin Manager not available")
-            
+                print("[WARN] Basic Plugin Manager not available")
+
         except Exception as e:
-            print(f"⚠️ Plugin system initialization warning: {e}")
-            
+            print(f"[WARN] Plugin system initialization warning: {e}")
+
         print("🧠 Intelligence Stack initialized")
 
     def _initialize_modular_connections(self):
@@ -148,18 +148,18 @@ class LyrixaIntelligenceStack:
                 self.plugin_manager = PluginManager()
                 print("✅ Connected to Enhanced Plugin Manager")
             except ImportError:
-                print("⚠️ Enhanced Plugin Manager not available")
+                print("[WARN] Enhanced Plugin Manager not available")
                 self.plugin_manager = None
-            
+
             # Try to connect to self-improvement dashboard
             try:
                 from Aetherra.lyrixa.self_improvement_dashboard import SelfImprovementDashboard
                 self.self_improvement_dashboard = SelfImprovementDashboard()
                 print("✅ Connected to Self-Improvement Dashboard")
             except ImportError:
-                print("⚠️ Self-Improvement Dashboard not available")
+                print("[WARN] Self-Improvement Dashboard not available")
                 self.self_improvement_dashboard = None
-            
+
             # Try to connect to AetherHub client
             try:
                 import requests
@@ -169,14 +169,14 @@ class LyrixaIntelligenceStack:
                     print("✅ AetherHub service detected")
                     self.aetherra_hub_client = "http://localhost:3001"
                 else:
-                    print("⚠️ AetherHub service not responding")
+                    print("[WARN] AetherHub service not responding")
                     self.aetherra_hub_client = None
             except:
-                print("⚠️ AetherHub service not available")
+                print("[WARN] AetherHub service not available")
                 self.aetherra_hub_client = None
-                
+
         except Exception as e:
-            print(f"⚠️ Modular connection initialization warning: {e}")
+            print(f"[WARN] Modular connection initialization warning: {e}")
             # Continue with basic functionality even if connections fail
 
     async def initialize_intelligence_layer(self) -> Dict[str, Any]:
@@ -212,7 +212,7 @@ class LyrixaIntelligenceStack:
             }
 
         except Exception as e:
-            print(f"❌ Intelligence Layer initialization failed: {e}")
+            print(f"[ERROR] Intelligence Layer initialization failed: {e}")
             return {
                 "status": "failed",
                 "error": str(e),
@@ -243,7 +243,7 @@ class LyrixaIntelligenceStack:
             }
 
         except Exception as e:
-            print(f"❌ System Workflows initialization failed: {e}")
+            print(f"[ERROR] System Workflows initialization failed: {e}")
             return {
                 "status": "failed",
                 "error": str(e),
@@ -275,7 +275,7 @@ class LyrixaIntelligenceStack:
             }
 
         except Exception as e:
-            print(f"❌ System Modules initialization failed: {e}")
+            print(f"[ERROR] System Modules initialization failed: {e}")
             return {
                 "status": "failed",
                 "error": str(e),
@@ -335,7 +335,7 @@ class LyrixaIntelligenceStack:
             return result
 
         except Exception as e:
-            print(f"❌ Workflow {workflow_name} failed: {e}")
+            print(f"[ERROR] Workflow {workflow_name} failed: {e}")
             self.workflow_status[workflow_name]["health"] = "error"
             return {"status": "error", "message": str(e)}
 
@@ -372,7 +372,7 @@ class LyrixaIntelligenceStack:
             return reflection_report
 
         except Exception as e:
-            print(f"❌ System reflection failed: {e}")
+            print(f"[ERROR] System reflection failed: {e}")
             return {"status": "error", "message": str(e)}
 
     async def generate_response_async(self, user_message: str) -> str:
@@ -487,7 +487,7 @@ class LyrixaIntelligenceStack:
 
             return None
         except Exception as e:
-            print(f"❌ Error processing memory results: {e}")
+            print(f"[ERROR] Error processing memory results: {e}")
             return None
 
     def _generate_contextual_response(self, user_message: str) -> str:
@@ -565,7 +565,7 @@ class LyrixaIntelligenceStack:
                             return "Conversation manager not available"
 
                 except Exception as e:
-                    print(f"⚠️ LLM conversation manager failed: {e}")
+                    print(f"[WARN] LLM conversation manager failed: {e}")
                     # Fall back to the old system
                     pass
 
@@ -596,7 +596,7 @@ class LyrixaIntelligenceStack:
                 return asyncio.run(self.generate_response_async(user_message))
 
         except Exception as e:
-            print(f"⚠️ Error in generate_response: {e}")
+            print(f"[WARN] Error in generate_response: {e}")
             # Fallback to contextual response if async fails
             try:
                 return self._generate_contextual_response(user_message)
@@ -615,9 +615,9 @@ class LyrixaIntelligenceStack:
                 self.intelligence_status["semantic_memory"] = True
                 print("✅ Semantic memory with confidence scoring - Active")
             else:
-                print("⚠️ memory_ops.aether not found - Semantic memory disabled")
+                print("[WARN] memory_ops.aether not found - Semantic memory disabled")
         except Exception as e:
-            print(f"❌ Semantic memory check failed: {e}")
+            print(f"[ERROR] Semantic memory check failed: {e}")
 
     async def _initialize_system_awareness(self):
         """Initialize real-time system awareness"""
@@ -640,11 +640,11 @@ class LyrixaIntelligenceStack:
                         f"✅ System awareness - Active ({len(available_plugins)} plugins)"
                     )
                 else:
-                    print("⚠️ No system plugins found - System awareness limited")
+                    print("[WARN] No system plugins found - System awareness limited")
             else:
-                print("⚠️ System directory not found - System awareness disabled")
+                print("[WARN] System directory not found - System awareness disabled")
         except Exception as e:
-            print(f"❌ System awareness initialization failed: {e}")
+            print(f"[ERROR] System awareness initialization failed: {e}")
 
     async def _setup_self_reflection(self):
         """Setup AI self-reflection capabilities"""
@@ -659,9 +659,9 @@ class LyrixaIntelligenceStack:
                 self.intelligence_status["self_reflection"] = True
                 print("✅ AI self-reflection - Active")
             else:
-                print("⚠️ daily_reflector.aether not found - Self-reflection disabled")
+                print("[WARN] daily_reflector.aether not found - Self-reflection disabled")
         except Exception as e:
-            print(f"❌ Self-reflection setup failed: {e}")
+            print(f"[ERROR] Self-reflection setup failed: {e}")
 
     async def _initialize_event_correlation(self):
         """Initialize event correlation and reasoning"""
@@ -673,9 +673,9 @@ class LyrixaIntelligenceStack:
                 self.intelligence_status["event_correlation"] = True
                 print("✅ Event correlation + reasoning - Active")
             else:
-                print("⚠️ logger.aether not found - Event correlation disabled")
+                print("[WARN] logger.aether not found - Event correlation disabled")
         except Exception as e:
-            print(f"❌ Event correlation initialization failed: {e}")
+            print(f"[ERROR] Event correlation initialization failed: {e}")
 
     async def _setup_conversational_integration(self):
         """Setup conversational interface integration"""
@@ -684,7 +684,7 @@ class LyrixaIntelligenceStack:
             self.intelligence_status["conversational_integration"] = True
             print("✅ Conversational interface integration - Active")
         except Exception as e:
-            print(f"❌ Conversational integration setup failed: {e}")
+            print(f"[ERROR] Conversational integration setup failed: {e}")
 
     async def _initialize_plugin_monitoring(self):
         """Initialize plugin monitoring capabilities"""
@@ -699,9 +699,9 @@ class LyrixaIntelligenceStack:
                 self.intelligence_status["plugin_monitoring"] = True
                 print("✅ Plugin monitoring - Active")
             else:
-                print("⚠️ plugin_watchdog.aether not found - Plugin monitoring disabled")
+                print("[WARN] plugin_watchdog.aether not found - Plugin monitoring disabled")
         except Exception as e:
-            print(f"❌ Plugin monitoring initialization failed: {e}")
+            print(f"[ERROR] Plugin monitoring initialization failed: {e}")
 
     async def _initialize_workflow(
         self, workflow_name: str, schedule: str, description: str
@@ -719,9 +719,9 @@ class LyrixaIntelligenceStack:
                 self.workflow_status[workflow_name]["health"] = "healthy"
                 print(f"✅ {workflow_name} - Active (Schedule: {schedule})")
             else:
-                print(f"⚠️ {workflow_name}.aether not found - Workflow disabled")
+                print(f"[WARN] {workflow_name}.aether not found - Workflow disabled")
         except Exception as e:
-            print(f"❌ {workflow_name} initialization failed: {e}")
+            print(f"[ERROR] {workflow_name} initialization failed: {e}")
 
     async def _initialize_module(self, module_name: str, description: str):
         """Initialize a specific system module"""
@@ -736,9 +736,9 @@ class LyrixaIntelligenceStack:
                 self.module_status[module_name] = True
                 print(f"✅ {module_name} - Active")
             else:
-                print(f"⚠️ {module_name}.aether not found - Module disabled")
+                print(f"[WARN] {module_name}.aether not found - Module disabled")
         except Exception as e:
-            print(f"❌ {module_name} initialization failed: {e}")
+            print(f"[ERROR] {module_name} initialization failed: {e}")
 
     async def _run_aether_workflow(
         self, workflow_name: str, params: Optional[Dict] = None
@@ -762,4 +762,3 @@ class LyrixaIntelligenceStack:
                     try:
                         # Try different execution methods
                         if hasattr(self.aether_runtime, "execute_async"):
-                         

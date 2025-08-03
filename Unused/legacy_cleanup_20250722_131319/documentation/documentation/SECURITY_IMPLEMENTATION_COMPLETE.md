@@ -42,7 +42,7 @@ I've created a comprehensive enterprise-grade security system that addresses bot
 9. `SECURITY.md` - Complete security documentation
 10. `.env.template` - Secure environment template
 
-## 🔧 **Key Features**
+## [TOOL] **Key Features**
 - **Zero-Configuration**: Works out of the box with sensible defaults
 - **Enterprise-Grade**: Production-ready security measures
 - **Performance Optimized**: Minimal impact on system performance

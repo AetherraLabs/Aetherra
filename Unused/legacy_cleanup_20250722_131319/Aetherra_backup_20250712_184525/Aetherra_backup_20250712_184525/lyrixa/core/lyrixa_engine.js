@@ -28,7 +28,7 @@ class LyrixaCore {
         this.phase2Ready = false;
 
         console.log("🧠 Lyrixa Core Engine Phase 2 initializing...");
-        console.log(`📦 Version: ${this.version}`);
+        console.log(`[DISC] Version: ${this.version}`);
         console.log(`🎯 Status: ${this.status}`);
         console.log(`💬 Conversation ID: ${this.conversationId}`);
 
@@ -105,7 +105,7 @@ Ready for intelligent assistance with plugin power! 🚀
             }
 
         } catch (error) {
-            console.error("❌ Error processing message:", error);
+            console.error("[ERROR] Error processing message:", error);
             return {
                 text: "I apologize, but I encountered an error processing your message. Let me try to help you differently.",
                 context: { error: true },
@@ -179,7 +179,7 @@ Ready for intelligent assistance with plugin power! 🚀
     }
 
     async processWithPhase1(userInput, context, memories, personality) {
-        console.log("📦 Using Phase 1 fallback processing");
+        console.log("[DISC] Using Phase 1 fallback processing");
 
         // Generate intelligent response
         const response = await this.generateResponse(userInput, context, memories, personality);

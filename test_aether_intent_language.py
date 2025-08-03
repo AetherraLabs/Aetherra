@@ -37,7 +37,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
             from Aetherra.runtime.aether_parser import AetherraInterpreter
 
             self.interpreter = AetherraInterpreter()
-            print("✅ AetherraInterpreter loaded successfully")
+            print("[OK] AetherraInterpreter loaded successfully")
         except ImportError as e:
             self.skipTest(f"Cannot import AetherraInterpreter: {e}")
 
@@ -76,7 +76,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         )
         self.assertIn("Memory", result)
 
-        print("✅ Basic memory storage working")
+        print("[OK] Basic memory storage working")
 
     def test_memory_recall_operations(self):
         """Test 002: Memory recall with various patterns"""
@@ -90,7 +90,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute('recall tag: "performance"')
         self.assertIn("performance", result.lower())
 
-        print("✅ Memory recall operations working")
+        print("[OK] Memory recall operations working")
 
     def test_memory_patterns_and_analysis(self):
         """Test 003: Memory pattern detection and analysis"""
@@ -110,7 +110,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute("memory summary")
         self.assertIsInstance(result, str)
 
-        print("✅ Memory pattern analysis working")
+        print("[OK] Memory pattern analysis working")
 
     def test_ai_memory_reflection(self):
         """Test 004: AI-powered memory reflection and insights"""
@@ -128,7 +128,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute('reflect on tags="ai_knowledge"')
         self.assertIn("Reflect", result)
 
-        print("✅ AI memory reflection working")
+        print("[OK] AI memory reflection working")
 
     # ==================== GOAL SYSTEM TESTS ====================
 
@@ -150,7 +150,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute("goal status")
         self.assertIsInstance(result, str)
 
-        print("✅ Goal setting and priorities working")
+        print("[OK] Goal setting and priorities working")
 
     def test_goal_progress_monitoring(self):
         """Test 006: Goal progress tracking and monitoring"""
@@ -167,7 +167,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute("autonomous monitoring")
         self.assertIsInstance(result, str)
 
-        print("✅ Goal progress monitoring working")
+        print("[OK] Goal progress monitoring working")
 
     def test_adaptive_goal_management(self):
         """Test 007: Adaptive goal management and optimization"""
@@ -181,7 +181,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute("suggest next actions")
         self.assertIsInstance(result, str)
 
-        print("✅ Adaptive goal management working")
+        print("[OK] Adaptive goal management working")
 
     # ==================== AGENT CONTROL TESTS ====================
 
@@ -201,11 +201,11 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute("agent: auto")
         self.assertIsInstance(result, str)
 
-        print("✅ Agent activation and modes working")
+        print("[OK] Agent activation and modes working")
 
     def test_agent_specialization(self):
         """Test 009: Agent specialization and capabilities"""
-        print("🔧 Testing agent specialization...")
+        print("[TOOL] Testing agent specialization...")
 
         # Test specialized agent mode
         result = self.interpreter.execute(
@@ -213,7 +213,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         )
         self.assertIsInstance(result, str)
 
-        print("✅ Agent specialization working")
+        print("[OK] Agent specialization working")
 
     # ==================== PLUGIN ORCHESTRATION TESTS ====================
 
@@ -229,7 +229,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute("plugin: demo_plugin")
         self.assertIsInstance(result, str)
 
-        print("✅ Basic plugin execution working")
+        print("[OK] Basic plugin execution working")
 
     def test_plugin_with_parameters(self):
         """Test 011: Plugin execution with parameters and configuration"""
@@ -245,7 +245,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute("meta: system_info")
         self.assertIsInstance(result, str)
 
-        print("✅ Plugin execution with parameters working")
+        print("[OK] Plugin execution with parameters working")
 
     def test_plugin_chaining_and_integration(self):
         """Test 012: Plugin chaining and system integration"""
@@ -259,7 +259,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute("list meta plugins")
         self.assertIsInstance(result, str)
 
-        print("✅ Plugin chaining and integration working")
+        print("[OK] Plugin chaining and integration working")
 
     # ==================== INTENT-DRIVEN PROGRAMMING TESTS ====================
 
@@ -275,7 +275,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute('learn from "user_behavior.log"')
         self.assertIsInstance(result, str)
 
-        print("✅ Natural language intent parsing working")
+        print("[OK] Natural language intent parsing working")
 
     def test_optimization_and_improvement_intents(self):
         """Test 014: Optimization and improvement intent execution"""
@@ -289,7 +289,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute('suggest fix for "performance issue"')
         self.assertIsInstance(result, str)
 
-        print("✅ Optimization and improvement intents working")
+        print("[OK] Optimization and improvement intents working")
 
     def test_contextual_code_understanding(self):
         """Test 015: Contextual code understanding and suggestions"""
@@ -299,7 +299,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute("analyze recent_logs")
         self.assertIsInstance(result, str)
 
-        print("✅ Contextual code understanding working")
+        print("[OK] Contextual code understanding working")
 
     # ==================== CONTROL FLOW TESTS ====================
 
@@ -313,7 +313,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         )
         self.assertIsInstance(result, str)
 
-        print("✅ Conditional statements working")
+        print("[OK] Conditional statements working")
 
     def test_pattern_based_conditions(self):
         """Test 017: Pattern-based conditional execution"""
@@ -323,7 +323,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute('pattern frequency "error" in "weekly"')
         self.assertIsInstance(result, str)
 
-        print("✅ Pattern-based conditions working")
+        print("[OK] Pattern-based conditions working")
 
     # ==================== SELF-EDITING AND EVOLUTION TESTS ====================
 
@@ -347,7 +347,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         finally:
             os.unlink(test_file)
 
-        print("✅ Code loading and analysis working")
+        print("[OK] Code loading and analysis working")
 
     def test_self_editing_safety(self):
         """Test 019: Self-editing safety mechanisms"""
@@ -361,7 +361,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute("backup test_file.py")
         self.assertIsInstance(result, str)
 
-        print("✅ Self-editing safety mechanisms working")
+        print("[OK] Self-editing safety mechanisms working")
 
     # ==================== DEBUG AND INTROSPECTION TESTS ====================
 
@@ -377,7 +377,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         self.interpreter.execute("set auto_debug on 85")
         # This might not return anything, just check it doesn't crash
 
-        print("✅ Debug system integration working")
+        print("[OK] Debug system integration working")
 
     def test_error_pattern_detection(self):
         """Test 021: Error pattern detection and resolution"""
@@ -395,13 +395,13 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute('detect recurring patterns in "error_log"')
         self.assertIsInstance(result, str)
 
-        print("✅ Error pattern detection working")
+        print("[OK] Error pattern detection working")
 
     # ==================== ADVANCED LANGUAGE FEATURES TESTS ====================
 
     def test_function_definition_and_calls(self):
         """Test 022: Function definition and invocation"""
-        print("🔧 Testing function definition and calls...")
+        print("[TOOL] Testing function definition and calls...")
 
         # Test function definition
         result = self.interpreter.execute("define test_func(param): return param")
@@ -411,7 +411,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute('call test_func("hello")')
         self.assertIsInstance(result, str)
 
-        print("✅ Function definition and calls working")
+        print("[OK] Function definition and calls working")
 
     def test_variable_and_context_management(self):
         """Test 023: Variable and context management"""
@@ -421,7 +421,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute("$result = plugin: demo_action")
         self.assertIsInstance(result, str)
 
-        print("✅ Variable and context management working")
+        print("[OK] Variable and context management working")
 
     def test_advanced_memory_queries(self):
         """Test 024: Advanced memory querying and filtering"""
@@ -441,7 +441,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         )
         self.assertIsInstance(result, str)
 
-        print("✅ Advanced memory queries working")
+        print("[OK] Advanced memory queries working")
 
     def test_multi_agent_coordination(self):
         """Test 025: Multi-agent coordination and communication"""
@@ -451,7 +451,7 @@ class AetherIntentLanguageTestSuite(unittest.TestCase):
         result = self.interpreter.execute('agent: coordinate with "research_agent"')
         self.assertIsInstance(result, str)
 
-        print("✅ Multi-agent coordination working")
+        print("[OK] Multi-agent coordination working")
 
 
 def run_aether_intent_language_tests():
@@ -490,9 +490,9 @@ def run_aether_intent_language_tests():
     success_rate = (passed / total_tests * 100) if total_tests > 0 else 0
 
     print(f"📊 Total Tests: {total_tests}")
-    print(f"✅ Passed: {passed}")
-    print(f"❌ Failed: {failures}")
-    print(f"⚠️ Errors: {errors}")
+    print(f"[OK] Passed: {passed}")
+    print(f"[ERROR] Failed: {failures}")
+    print(f"[WARN] Errors: {errors}")
     print(f"⏭️ Skipped: {skipped}")
     print(f"📈 Success Rate: {success_rate:.1f}%")
 
@@ -556,14 +556,14 @@ def run_aether_intent_language_tests():
         )
 
     if result.failures:
-        print(f"\n❌ FAILURES ({len(result.failures)}):")
+        print(f"\n[ERROR] FAILURES ({len(result.failures)}):")
         for test, traceback in result.failures:
             print(
                 f"  • {test}: {traceback.split('AssertionError:')[-1].strip() if 'AssertionError:' in traceback else 'Unknown failure'}"
             )
 
     if result.errors:
-        print(f"\n⚠️ ERRORS ({len(result.errors)}):")
+        print(f"\n[WARN] ERRORS ({len(result.errors)}):")
         for test, traceback in result.errors:
             error_msg = traceback.split("\n")[-2] if "\n" in traceback else traceback
             print(f"  • {test}: {error_msg}")
@@ -624,7 +624,7 @@ def run_aether_intent_language_tests():
             for error in result.errors
             for test in tests
         )
-        status = "✅ OPERATIONAL" if capability_working else "❌ NEEDS ATTENTION"
+        status = "[OK] OPERATIONAL" if capability_working else "[ERROR] NEEDS ATTENTION"
         print(f"  {capability}: {status}")
 
     print("\n🌟 .AETHER INTENT LANGUAGE ASSESSMENT COMPLETE!")

@@ -371,7 +371,7 @@ class RealTimeProductivityWidget(QWidget):  # type: ignore
         if self.metrics.focus_score > 80:
             insights.append("🎯 Excellent focus! You're in the zone.")
         elif self.metrics.focus_score < 50:
-            insights.append("⚠️ Focus seems low. Consider a short break.")
+            insights.append("[WARN] Focus seems low. Consider a short break.")
 
         if self.metrics.goal_progress > 0.8:
             insights.append("🏆 Great progress on your goals!")

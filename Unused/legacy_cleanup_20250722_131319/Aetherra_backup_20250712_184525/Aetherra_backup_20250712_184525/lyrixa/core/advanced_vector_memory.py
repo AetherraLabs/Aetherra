@@ -82,7 +82,7 @@ class AdvancedMemorySystem:
             print(f"   📊 Model: {model_name}")
             print(f"   🔢 Embedding dimension: {self.embedding_dim}")
         else:
-            print("   ⚠️  Vector support disabled (missing dependencies)")
+            print("   [WARN]  Vector support disabled (missing dependencies)")
 
     def _initialize_database(self):
         """Initialize the advanced memory database"""

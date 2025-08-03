@@ -65,8 +65,8 @@ async def test_plugin_discovery_integration():
             return True
 
         else:
-            print("❌ Plugin discovery integration failed")
-            print("🔧 This means:")
+            print("[ERROR] Plugin discovery integration failed")
+            print("[TOOL] This means:")
             print("   • Lyrixa cannot see what plugins are installed")
             print("   • She cannot reference or recommend plugins")
             print("   • Plugin metadata is not stored in memory")
@@ -74,7 +74,7 @@ async def test_plugin_discovery_integration():
             return False
 
     except Exception as e:
-        print(f"❌ Error testing plugin discovery integration: {e}")
+        print(f"[ERROR] Error testing plugin discovery integration: {e}")
         import traceback
 
         traceback.print_exc()
@@ -106,14 +106,14 @@ async def test_plugin_memory_storage():
                 print("🧠 Lyrixa can now query plugins from memory!")
                 return True
             else:
-                print("❌ Failed to store plugins in memory")
+                print("[ERROR] Failed to store plugins in memory")
                 return False
         else:
-            print("⚠️ Plugin bridge not available")
+            print("[WARN] Plugin bridge not available")
             return False
 
     except Exception as e:
-        print(f"❌ Error testing plugin memory storage: {e}")
+        print(f"[ERROR] Error testing plugin memory storage: {e}")
         return False
 
 
@@ -133,13 +133,13 @@ def test_gui_plugin_display():
         has_display_method = hasattr(LyrixaWindow, "update_plugin_display")
 
         print(
-            f"🔌 Plugin tab setup method: {'✅ Available' if has_plugin_tab else '❌ Missing'}"
+            f"🔌 Plugin tab setup method: {'✅ Available' if has_plugin_tab else '[ERROR] Missing'}"
         )
         print(
-            f"🔄 Plugin refresh method: {'✅ Available' if has_refresh_method else '❌ Missing'}"
+            f"🔄 Plugin refresh method: {'✅ Available' if has_refresh_method else '[ERROR] Missing'}"
         )
         print(
-            f"📋 Plugin display method: {'✅ Available' if has_display_method else '❌ Missing'}"
+            f"📋 Plugin display method: {'✅ Available' if has_display_method else '[ERROR] Missing'}"
         )
 
         if has_plugin_tab and has_refresh_method and has_display_method:
@@ -147,11 +147,11 @@ def test_gui_plugin_display():
             print("🎯 Users can now view discovered plugins in the GUI")
             return True
         else:
-            print("⚠️ Some GUI plugin functionality is missing")
+            print("[WARN] Some GUI plugin functionality is missing")
             return False
 
     except Exception as e:
-        print(f"❌ Error testing GUI plugin display: {e}")
+        print(f"[ERROR] Error testing GUI plugin display: {e}")
         return False
 
 
@@ -173,16 +173,16 @@ async def main():
     # Summary
     print("\n📊 Test Results Summary")
     print("======================")
-    print(f"Plugin Discovery Integration: {'✅ PASS' if test1_passed else '❌ FAIL'}")
-    print(f"Plugin Memory Storage: {'✅ PASS' if test2_passed else '❌ FAIL'}")
-    print(f"GUI Plugin Display: {'✅ PASS' if test3_passed else '❌ FAIL'}")
+    print(f"Plugin Discovery Integration: {'✅ PASS' if test1_passed else '[ERROR] FAIL'}")
+    print(f"Plugin Memory Storage: {'✅ PASS' if test2_passed else '[ERROR] FAIL'}")
+    print(f"GUI Plugin Display: {'✅ PASS' if test3_passed else '[ERROR] FAIL'}")
 
     if test1_passed and test2_passed and test3_passed:
         print("\n🎉 ALL TESTS PASSED!")
         print("✅ Plugin discovery is now properly integrated with Lyrixa!")
         print("🧠 Lyrixa can see, reference, and recommend plugins!")
     else:
-        print("\n⚠️ Some tests failed - plugin integration needs work")
+        print("\n[WARN] Some tests failed - plugin integration needs work")
 
     return test1_passed and test2_passed and test3_passed
 

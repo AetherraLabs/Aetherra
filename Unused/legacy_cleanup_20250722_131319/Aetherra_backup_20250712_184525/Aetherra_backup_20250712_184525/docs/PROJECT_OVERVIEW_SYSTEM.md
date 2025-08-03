@@ -148,17 +148,17 @@ Some sections should be manually updated when:
 
 #### Goals Store Missing
 ```bash
-⚠️ goals_store.json not found, using defaults
+[WARN] goals_store.json not found, using defaults
 ```
 **Solution**: Normal if no goals are set. Create goals using the goal system.
 
 #### Git Commands Fail
 ```bash
-⚠️ Could not auto-commit changes
+[WARN] Could not auto-commit changes
 ```
 **Solution**: Ensure git is initialized and you have commit permissions.
 
-### 🔧 **Reset Overview**
+### [TOOL] **Reset Overview**
 
 If the overview becomes corrupted:
 

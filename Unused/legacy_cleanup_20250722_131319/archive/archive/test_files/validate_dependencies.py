@@ -162,7 +162,7 @@ def main():
         return 0
     else:
         print("❌ Some core dependencies are missing")
-        print("🔧 Run: pip install -r requirements.txt")
+        print("[TOOL] Run: pip install -r requirements.txt")
         return 1
 
 

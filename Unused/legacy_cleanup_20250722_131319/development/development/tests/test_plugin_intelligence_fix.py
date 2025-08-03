@@ -1,5 +1,5 @@
 # test_plugin_intelligence_fix.py
-# 🔧 Test the Plugin Intelligence Bridge Fix
+# [TOOL] Test the Plugin Intelligence Bridge Fix
 
 import sys
 from pathlib import Path
@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent / "Aetherra" / "lyrixa"))
 
 def test_plugin_intelligence_bridge_validation():
     """Test that the plugin intelligence bridge validation is fixed"""
-    print("🔧 Testing Plugin Intelligence Bridge Validation Fix")
+    print("[TOOL] Testing Plugin Intelligence Bridge Validation Fix")
     print("=" * 60)
 
     try:
@@ -40,7 +40,7 @@ def test_plugin_intelligence_bridge_validation():
         if is_valid:
             print("🎉 Fix successful! System manager validation now passes")
         else:
-            print("❌ Fix failed - validation still failing")
+            print("[ERROR] Fix failed - validation still failing")
 
         # Test with missing methods
         class MockInvalidManager:
@@ -55,7 +55,7 @@ def test_plugin_intelligence_bridge_validation():
         if not is_invalid:
             print("✅ Correctly rejects invalid managers")
         else:
-            print("⚠️ Still accepting invalid managers")
+            print("[WARN] Still accepting invalid managers")
 
         print("\n🔍 Summary:")
         print(f"   Valid manager passes: {is_valid}")
@@ -64,10 +64,10 @@ def test_plugin_intelligence_bridge_validation():
         if is_valid and not is_invalid:
             print("✅ Plugin Intelligence Bridge validation is working correctly!")
         else:
-            print("❌ Validation logic needs more work")
+            print("[ERROR] Validation logic needs more work")
 
     except Exception as e:
-        print(f"❌ Test failed with error: {e}")
+        print(f"[ERROR] Test failed with error: {e}")
         import traceback
         traceback.print_exc()
 

@@ -18,7 +18,7 @@ async def test_memory_system_detailed():
     try:
         from lyrixa.core.enhanced_memory import LyrixaEnhancedMemorySystem
 
-        print("   📦 Imported LyrixaEnhancedMemorySystem successfully")
+        print("   [DISC] Imported LyrixaEnhancedMemorySystem successfully")
 
         # Create memory system
         memory_system = LyrixaEnhancedMemorySystem(

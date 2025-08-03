@@ -43,7 +43,7 @@ def test_direct_discovery():
 
 def test_main_module_access():
     """Test plugin discovery through main Lyrixa module."""
-    print("\n📦 Testing Main Module Access")
+    print("\n[DISC] Testing Main Module Access")
     print("-" * 40)
 
     try:

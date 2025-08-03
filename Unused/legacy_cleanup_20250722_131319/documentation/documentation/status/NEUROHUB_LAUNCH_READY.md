@@ -15,7 +15,7 @@
 - 🔍 **Search functionality** with real-time filtering
 - 📱 **Responsive design** for all devices
 - 🏷️ **Category filtering** (Memory, Processing, Interface, etc.)
-- 📦 **Featured plugins** showcase with stats
+- [DISC] **Featured plugins** showcase with stats
 - 💻 **Install commands** for each plugin
 - 🎨 **Neural network logo** with animated elements
 
@@ -24,7 +24,7 @@
 - 🔐 **Authentication system** with API keys
 - 📊 **Analytics and stats** tracking
 - ⭐ **Reviews and ratings** system
-- 📦 **Plugin publishing** workflow
+- [DISC] **Plugin publishing** workflow
 - 🚀 **Installation manager** with dependency handling
 
 ### **3. Developer Documentation** (`aetherhub/README.md`)
@@ -122,7 +122,7 @@ consciousness TranscriberPlugin {
 - 📊 **Usage statistics** and trends
 
 ### **Installation System**
-- 📦 **One-command install** via CLI
+- [DISC] **One-command install** via CLI
 - 🔗 **Dependency management** automatic resolution
 - 🔒 **Security validation** and sandboxing
 - 🔄 **Automatic updates** with rollback support
@@ -200,7 +200,7 @@ consciousness TranscriberPlugin {
 
 ### **Unified Ecosystem**
 - 🌐 **aetherra.dev** - Main project website
-- 📦 **aetherhub.dev** - Plugin marketplace
+- [DISC] **aetherhub.dev** - Plugin marketplace
 - 🛠️ **CLI tools** - Unified development experience
 - 📚 **Documentation** - Comprehensive guides
 
@@ -239,5 +239,5 @@ consciousness TranscriberPlugin {
 ---
 
 **🧬 aetherra: Where Computation Becomes Cognition**
-**📦 aetherhub: Where AI Intelligence Modules Find Their Home**
+**[DISC] aetherhub: Where AI Intelligence Modules Find Their Home**
 **🚀 The Future of AI Development Starts Here!**

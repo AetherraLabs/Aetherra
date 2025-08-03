@@ -49,7 +49,7 @@ try:
     from observer_effect_simulator import MemoryAccess, ObserverEffectSimulator
 
     PHASE_INTEGRATION = True
-    print("✅ Phase 2/3 integration enabled")
+    print("[OK] Phase 2/3 integration enabled")
 except ImportError as e:
     print(f"⚠️ Phase 2/3 components not found - running in standalone mode: {e}")
     PHASE_INTEGRATION = False
@@ -192,7 +192,7 @@ class CausalBranchSimulator:
         print(f"   🗃️ Branches DB: {self.db_path}")
         print(f"   ⚛️ Superposition DB: {self.superposition_db_path}")
         print(f"   🌊 Interference DB: {self.interference_db_path}")
-        print(f"   🔗 Phase integration: {'✅' if PHASE_INTEGRATION else '❌'}")
+        print(f"   🔗 Phase integration: {'[OK]' if PHASE_INTEGRATION else '❌'}")
         print(f"   📋 Causal branching databases initialized")
 
     def _init_databases(self):
@@ -1053,11 +1053,11 @@ async def demo_causal_branching():
 
     print("\n🏆 PHASE 4 DEMO RESULTS")
     print("-" * 40)
-    print(f"✅ Branches created: {stats['branches_created']}")
-    print(f"✅ Superpositions formed: {stats['superpositions_formed']}")
-    print(f"✅ Interference events: {stats['interference_events']}")
-    print(f"✅ Coherence collapses: {stats['coherence_collapses']}")
-    print(f"✅ Average coherence: {stats['avg_coherence_score']:.3f}")
+    print(f"[OK] Branches created: {stats['branches_created']}")
+    print(f"[OK] Superpositions formed: {stats['superpositions_formed']}")
+    print(f"[OK] Interference events: {stats['interference_events']}")
+    print(f"[OK] Coherence collapses: {stats['coherence_collapses']}")
+    print(f"[OK] Average coherence: {stats['avg_coherence_score']:.3f}")
     print(f"🏆 Collapsed to branch: {collapsed_branch}")
 
 

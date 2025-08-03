@@ -130,7 +130,7 @@ class TechnicalAgent(AgentBase):
                 },
             ],
             "recommendations": [
-                "🔧 All core systems operating normally",
+                "[TOOL] All core systems operating normally",
                 "⚡ Monitor AI engine timeouts",
                 "💾 Consider memory optimization in 48 hours",
                 "🚀 System ready for enhanced operations",
@@ -297,7 +297,7 @@ class TechnicalAgent(AgentBase):
             "recommendations": [
                 "✅ Configuration is largely optimal",
                 "🔑 Verify API key format for best practices",
-                "📦 Consider updating Flask to latest stable version",
+                "[DISC] Consider updating Flask to latest stable version",
                 "🔒 All security configurations are proper",
             ],
             "fixes_applied": [

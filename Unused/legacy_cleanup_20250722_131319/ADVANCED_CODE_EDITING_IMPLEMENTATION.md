@@ -100,7 +100,7 @@ def test_add():
         print("✅ add test passed")
         return True
     except Exception as e:
-        print(f"❌ add test failed: {e}")
+        print(f"[ERROR] add test failed: {e}")
         return False
 ```
 
@@ -193,7 +193,7 @@ class EditHistory:
 - **Verification**: <25ms for syntax checking
 - **History tracking**: <10ms overhead per edit
 
-## 🔧 Integration with Existing Systems
+## [TOOL] Integration with Existing Systems
 
 ### Plugin Editor Tab Integration
 

@@ -155,7 +155,7 @@ This plugin has been injected into your Plugin Editor. You can now test it using
             print("🎉 SUCCESS! Plugin code automatically injected into GUI!")
             print(f"📁 Filename: {gui.current_filename}")
             print(
-                f"🔧 Code includes FileManager class: {'class FileManager' in gui.current_code}"
+                f"[TOOL] Code includes FileManager class: {'class FileManager' in gui.current_code}"
             )
             print(f"💾 User can now Save/Test/Apply in Plugin Editor")
             print("\n🎯 THE BRIDGE IS COMPLETE!")
@@ -172,7 +172,7 @@ This plugin has been injected into your Plugin Editor. You can now test it using
 
 def show_technical_details():
     """Show the technical implementation details"""
-    print("\n🔧 TECHNICAL IMPLEMENTATION")
+    print("\n[TOOL] TECHNICAL IMPLEMENTATION")
     print("=" * 50)
 
     print("📄 FILES MODIFIED:")

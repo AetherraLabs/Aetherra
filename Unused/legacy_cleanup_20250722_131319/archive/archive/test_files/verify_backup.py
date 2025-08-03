@@ -98,10 +98,10 @@ def main():
 
     if success:
         print("\n🎉 Backup verification PASSED!")
-        print("📦 The plugin chaining system backup is complete and ready for use.")
+        print("[DISC] The plugin chaining system backup is complete and ready for use.")
         sys.exit(0)
     else:
-        print("\n💥 Backup verification FAILED!")
+        print("\n[FAIL] Backup verification FAILED!")
         print("⚠️  Some files are missing from the backup.")
         sys.exit(1)
 

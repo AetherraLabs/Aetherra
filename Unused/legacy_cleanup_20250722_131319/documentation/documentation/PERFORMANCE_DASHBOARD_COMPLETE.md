@@ -12,7 +12,7 @@ The **Performance Dashboard** functionality has been **successfully integrated**
 - **System Latency**: Network/system latency measurement (10-100% simulation)
 - **Visual Indicators**: QProgressBar widgets for clear metric visualization
 
-### 🔧 **Technical Implementation**
+### [TOOL] **Technical Implementation**
 - **`create_performance_tab()` method**: Creates the complete performance interface
 - **Progress bar widgets**: CPU, Memory, and Latency QProgressBar instances
 - **QTimer integration**: Auto-refresh every 1.5 seconds for live updates
@@ -120,7 +120,7 @@ The Lyrixa Hybrid UI now features:
 - **🔗 Full Launcher Compatibility** maintained
 - **🚀 Production-Ready Interface** for immediate use
 
-## 🔧 **Technical Details**
+## [TOOL] **Technical Details**
 
 ### **Performance Metrics Components**
 - **QProgressBar widgets**: Visual metric display

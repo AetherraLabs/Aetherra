@@ -332,7 +332,7 @@ class PerformanceProfiler:
 
         if session.get('bottlenecks'):
             report.extend([
-                "## ⚠️ Performance Bottlenecks",
+                "## [WARN] Performance Bottlenecks",
                 ""
             ])
             for bottleneck in session['bottlenecks']:
@@ -393,7 +393,7 @@ class PerformanceProfiler:
                 time.sleep(1.0)  # Collect metrics every second
 
             except Exception as e:
-                print(f"⚠️ Performance monitoring error: {e}")
+                print(f"[WARN] Performance monitoring error: {e}")
                 time.sleep(5.0)  # Wait before retrying
 
     def _analyze_performance(self):
@@ -470,7 +470,7 @@ class PerformanceProfiler:
                 with open(self.sessions_file, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
-            print(f"⚠️ Error loading sessions: {e}")
+            print(f"[WARN] Error loading sessions: {e}")
         return []
 
     def _save_sessions(self, sessions: List[Dict[str, Any]]):
@@ -479,7 +479,7 @@ class PerformanceProfiler:
             with open(self.sessions_file, 'w', encoding='utf-8') as f:
                 json.dump(sessions, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            print(f"⚠️ Error saving sessions: {e}")
+            print(f"[WARN] Error saving sessions: {e}")
 
 
 def main():

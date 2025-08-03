@@ -191,7 +191,7 @@ try:
     search_memory_one = aetherra_search_memory_one
     get_system_status = aetherra_get_system_status
 except ImportError:
-    logger.info("🔧 Aetherra core modules not available, using local implementations")
+    logger.info("[TOOL] Aetherra core modules not available, using local implementations")
     AETHERRA_AVAILABLE = False
     # Local implementations are already defined above
 
@@ -237,7 +237,7 @@ Your Plugin Editor is a native PySide6 tab with the following ACTUAL features:
     memory_load = system_summary.get("memory_usage", 0)
 
     system_context = f"""
-🔧 CURRENT SYSTEM STATE:
+[TOOL] CURRENT SYSTEM STATE:
 - Running {plugin_count} plugins
 - Active agents: {", ".join(active_agents) if active_agents else "None"}
 - Memory usage: {memory_load}%

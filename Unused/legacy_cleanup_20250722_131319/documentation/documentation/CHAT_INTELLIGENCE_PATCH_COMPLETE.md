@@ -5,7 +5,7 @@
 
 The chat panel has been enhanced to display Lyrixa's full intelligence capabilities.
 
-## 🔧 Changes Applied
+## [TOOL] Changes Applied
 
 ### 1. **Enhanced UI Components** ✅
 **Location:** `chat_panel.py` `__init__()` method
@@ -31,7 +31,7 @@ layout.addWidget(self.personality_label)
 - **🎭 Personality Detection:** Dynamically detects and displays Lyrixa's active personality
 - **🧠 Reasoning Display:** Shows Lyrixa's thought process for decisions/analysis
 - **🎯 Goal Awareness:** Displays current active goals when available
-- **🔧 Robust Error Handling:** Graceful fallbacks for different engine configurations
+- **[TOOL] Robust Error Handling:** Graceful fallbacks for different engine configurations
 
 **Key Implementation:**
 ```python
@@ -45,7 +45,7 @@ try:
             persona_name = current_personality.value
         # ... additional personality detection logic
 except Exception as e:
-    print(f"⚠️ Could not get personality: {e}")
+    print(f"[WARN] Could not get personality: {e}")
 
 # Show response with personality
 self.append_message(f"🧠 {persona_name} says: {response.get('text')}")
@@ -62,7 +62,7 @@ try:
         # Try different goal access methods with fallbacks
         # ... goal detection logic
 except Exception as e:
-    print(f"⚠️ Could not get goal: {e}")
+    print(f"[WARN] Could not get goal: {e}")
 
 self.goal_label.setText(goal_text)
 self.personality_label.setText(f"🎭 Personality: {persona_name}")
@@ -81,7 +81,7 @@ self.personality_label.setText(f"🎭 Personality: {persona_name}")
 - **🎯 Goal Context:** Shows current active goals in real-time
 - **🎭 Personality Display:** Dynamic personality indicator
 - **🧠 Reasoning Transparency:** Shows Lyrixa's thought process
-- **🔧 Adaptive Interface:** Responds to different engine configurations
+- **[TOOL] Adaptive Interface:** Responds to different engine configurations
 
 ## 🚀 Features Enabled
 
@@ -147,7 +147,7 @@ self.personality_label.setText(f"🎭 Personality: {persona_name}")
 🧠 **Intelligence** → Persona-aware responses
 🎯 **Goals** → Real-time objective context
 🎭 **Personality** → Dynamic personality display
-🔧 **Reasoning** → Transparent thought process
+[TOOL] **Reasoning** → Transparent thought process
 💡 **Adaptive** → Responds to different configurations
 
 **The revolutionary AI interface enhancement is complete and ready for use!** 🚀

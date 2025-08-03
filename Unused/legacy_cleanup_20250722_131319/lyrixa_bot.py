@@ -26,7 +26,7 @@ try:
     LYRIXA_AI_AVAILABLE = True
     print("✅ Lyrixa AI Assistant imported successfully")
 except ImportError as e:
-    print(f"⚠️ Lyrixa AI Assistant not available: {e}")
+    print(f"[WARN] Lyrixa AI Assistant not available: {e}")
     LYRIXA_AI_AVAILABLE = False
 
 # Import simplified Lyrixa as fallback
@@ -36,7 +36,7 @@ try:
     SIMPLE_LYRIXA_AVAILABLE = True
     print("✅ Simple Lyrixa AI fallback imported successfully")
 except ImportError as e:
-    print(f"⚠️ Simple Lyrixa AI fallback not available: {e}")
+    print(f"[WARN] Simple Lyrixa AI fallback not available: {e}")
     SIMPLE_LYRIXA_AVAILABLE = False
 
 # Load token and config from .env file
@@ -163,7 +163,7 @@ if LYRIXA_AI_AVAILABLE:
         lyrixa_ai_instance = LyrixaAI()
         print("🧠 Lyrixa AI Assistant initialized successfully")
     except Exception as e:
-        print(f"⚠️ Failed to initialize Lyrixa AI: {e}")
+        print(f"[WARN] Failed to initialize Lyrixa AI: {e}")
         import traceback
 
         traceback.print_exc()
@@ -178,7 +178,7 @@ if SIMPLE_LYRIXA_AVAILABLE:
         simple_lyrixa_instance = SimpleLyrixaAI()
         print("🧠 Simple Lyrixa AI fallback initialized successfully")
     except Exception as e:
-        print(f"⚠️ Failed to initialize Simple Lyrixa AI: {e}")
+        print(f"[WARN] Failed to initialize Simple Lyrixa AI: {e}")
         simple_lyrixa_instance = None
 
 # Mock data storage (fallback)
@@ -239,7 +239,7 @@ async def api_ask(request: Request):
                 print(f"✅ Returning Simple AI response: {answer}")
                 return {"answer": answer}
         except Exception as e:
-            print(f"⚠️ Simple Lyrixa AI error: {e}")
+            print(f"[WARN] Simple Lyrixa AI error: {e}")
 
     # Try to use the actual Lyrixa AI assistant as fallback
     if lyrixa_ai_instance:
@@ -259,14 +259,14 @@ async def api_ask(request: Request):
                 print(f"✅ Returning AI response: {answer}")
                 return {"answer": answer}
             else:
-                print("⚠️ Generic or empty response from Lyrixa AI")
+                print("[WARN] Generic or empty response from Lyrixa AI")
         except Exception as e:
-            print(f"⚠️ Lyrixa AI error: {e}")
+            print(f"[WARN] Lyrixa AI error: {e}")
             import traceback
 
             traceback.print_exc()
 
-    print("⚠️ All AI instances failed, using mock responses")
+    print("[WARN] All AI instances failed, using mock responses")
 
     # Fallback to enhanced mock responses if Lyrixa AI is not available
     question_lower = question.lower()
@@ -442,7 +442,7 @@ async def global_permission_check(ctx):
             await ctx.send(
                 embed=embed_response(
                     "Permission Denied",
-                    f"❌ You need one of these roles to use `/{cmd}`: {', '.join(allowed_roles)}",
+                    f"[ERROR] You need one of these roles to use `/{cmd}`: {', '.join(allowed_roles)}",
                     icon="🔒",
                 )
             )
@@ -539,10 +539,10 @@ async def on_message(message):
     user_message_counts[uid] = user_message_counts.get(uid, 0) + 1
     if user_message_counts[uid] > SPAM_THRESHOLD:
         warning = (
-            f"⚠️ {message.author.mention}, slow down. You're sending too many messages."
+            f"[WARN] {message.author.mention}, slow down. You're sending too many messages."
         )
         await message.channel.send(
-            embed=embed_response("Spam Warning", warning, icon="⚠️")
+            embed=embed_response("Spam Warning", warning, icon="[WARN]")
         )
         user_message_counts[uid] = 0
 
@@ -584,7 +584,7 @@ async def on_message(message):
                 answer = response.get("text", "")
                 print(f"✅ Direct Simple AI response: {answer}")
             except Exception as e:
-                print(f"⚠️ Direct Simple Lyrixa AI error: {e}")
+                print(f"[WARN] Direct Simple Lyrixa AI error: {e}")
 
         # If no direct response, try API
         if not answer:
@@ -596,13 +596,13 @@ async def on_message(message):
                 answer = response.json().get("answer", "")
                 print(f"✅ API response: {answer}")
             except requests.exceptions.ConnectionError:
-                print("⚠️ API connection failed")
+                print("[WARN] API connection failed")
                 answer = ""
             except requests.exceptions.Timeout:
-                print("⚠️ API timeout")
+                print("[WARN] API timeout")
                 answer = ""
             except Exception as e:
-                print(f"⚠️ API error: {e}")
+                print(f"[WARN] API error: {e}")
                 answer = ""
 
         # If still no answer, use enhanced mock responses
@@ -683,8 +683,8 @@ async def on_message(message):
             await target_channel.send(
                 embed=embed_response(
                     "Error",
-                    "⚠️ I'm having trouble processing that question right now. Please try again.",
-                    icon="⚠️",
+                    "[WARN] I'm having trouble processing that question right now. Please try again.",
+                    icon="[WARN]",
                 )
             )
 
@@ -738,7 +738,7 @@ async def discord_invite(ctx):
 
 @bot.command(name="roles")
 async def roles(ctx):
-    roles_msg = "```\n🌌 Creator        – Project owner\n🧠 Core Dev       – Maintainers & architects\n📦 Plugin Engineer – Building .aetherplugin tools\n🧪 Introspector   – Testing Lyrixa evolution\n🎓 Aethernaut     – Default role for explorers\n🤖 LyrixaBot      – Automated AI interface\n```"
+    roles_msg = "```\n🌌 Creator        – Project owner\n🧠 Core Dev       – Maintainers & architects\n[DISC] Plugin Engineer – Building .aetherplugin tools\n🧪 Introspector   – Testing Lyrixa evolution\n🎓 Aethernaut     – Default role for explorers\n🤖 LyrixaBot      – Automated AI interface\n```"
     await send_in_thread(ctx, roles_msg)
 
 
@@ -748,7 +748,7 @@ async def role(ctx, action: str, member: discord.Member, *, role_name: str):
     guild = ctx.guild
     role = discord.utils.get(guild.roles, name=role_name)
     if not role:
-        await send_in_thread(ctx, f"⚠️ Role '{role_name}' not found.")
+        await send_in_thread(ctx, f"[WARN] Role '{role_name}' not found.")
         return
 
     if action.lower() == "add":
@@ -758,7 +758,7 @@ async def role(ctx, action: str, member: discord.Member, *, role_name: str):
         await member.remove_roles(role)
         await send_in_thread(ctx, f"❎ {role.name} role removed from {member.mention}.")
     else:
-        await send_in_thread(ctx, "⚠️ Invalid action. Use 'add' or 'remove'.")
+        await send_in_thread(ctx, "[WARN] Invalid action. Use 'add' or 'remove'.")
 
 
 @bot.command(name="ping")
@@ -783,7 +783,7 @@ async def reflect(ctx):
         thought = data.get("reflection", "No reflection available.")
         await send_in_thread(ctx, f"💭 Lyrixa reflects: {thought}")
     except:
-        await send_in_thread(ctx, "⚠️ Unable to reach Lyrixa's reflective core.")
+        await send_in_thread(ctx, "[WARN] Unable to reach Lyrixa's reflective core.")
 
 
 @bot.command(name="goals")
@@ -798,7 +798,7 @@ async def goals(ctx):
             goal_list = "\n".join(f"- {g}" for g in goals)
             await send_in_thread(ctx, f"🎯 Active Goals:\n```{goal_list}```")
     except:
-        await send_in_thread(ctx, "⚠️ Lyrixa's goal engine is unreachable.")
+        await send_in_thread(ctx, "[WARN] Lyrixa's goal engine is unreachable.")
 
 
 @bot.command(name="plugins")
@@ -808,12 +808,12 @@ async def plugins(ctx):
         data = response.json()
         plugin_list = data.get("active_plugins", [])
         if not plugin_list:
-            await send_in_thread(ctx, "📦 No plugins currently loaded.")
+            await send_in_thread(ctx, "[DISC] No plugins currently loaded.")
         else:
             names = "\n".join(f"• {p}" for p in plugin_list)
-            await send_in_thread(ctx, f"📦 Loaded Plugins:\n```{names}```")
+            await send_in_thread(ctx, f"[DISC] Loaded Plugins:\n```{names}```")
     except:
-        await send_in_thread(ctx, "⚠️ Cannot retrieve plugin data.")
+        await send_in_thread(ctx, "[WARN] Cannot retrieve plugin data.")
 
 
 @bot.command(name="memory")
@@ -828,7 +828,7 @@ async def memory(ctx):
             memdump = "\n".join(f"- {m}" for m in memory)
             await send_in_thread(ctx, f"📚 Lyrixa's memory:\n```{memdump}```")
     except:
-        await send_in_thread(ctx, "⚠️ Unable to access Lyrixa's memory.")
+        await send_in_thread(ctx, "[WARN] Unable to access Lyrixa's memory.")
 
 
 @bot.command(name="confidence")
@@ -839,7 +839,7 @@ async def confidence(ctx):
         score = data.get("confidence", "Unknown")
         await send_in_thread(ctx, f"🧪 Lyrixa's confidence level: {score}")
     except:
-        await send_in_thread(ctx, "⚠️ Confidence metric not available.")
+        await send_in_thread(ctx, "[WARN] Confidence metric not available.")
 
 
 @bot.command(name="runplugin")
@@ -849,7 +849,7 @@ async def runplugin(ctx, name: str):
         result = response.json().get("result", "Plugin executed.")
         await send_in_thread(ctx, f"⚙️ Plugin '{name}' executed.\n{result}")
     except:
-        await send_in_thread(ctx, "⚠️ Plugin execution failed or not supported.")
+        await send_in_thread(ctx, "[WARN] Plugin execution failed or not supported.")
 
 
 @bot.command(name="insight")
@@ -859,7 +859,7 @@ async def insight(ctx):
         insight = response.json().get("insight", "No insights available.")
         await send_in_thread(ctx, f"💡 Insight: {insight}")
     except:
-        await send_in_thread(ctx, "⚠️ Insight data unavailable.")
+        await send_in_thread(ctx, "[WARN] Insight data unavailable.")
 
 
 @bot.command(name="selfeval")
@@ -869,7 +869,7 @@ async def selfeval(ctx):
         eval = response.json().get("evaluation", "No self-evaluation found.")
         await send_in_thread(ctx, f"🔍 Latest self-evaluation:\n```{eval}```")
     except:
-        await send_in_thread(ctx, "⚠️ Self-evaluation API not reachable.")
+        await send_in_thread(ctx, "[WARN] Self-evaluation API not reachable.")
 
 
 @bot.command(name="asklyrixa")
@@ -884,22 +884,22 @@ async def asklyrixa(ctx, *, question: str):
         else:
             print(f"[asklyrixa] API returned status {response.status_code}")
             await send_in_thread(
-                ctx, "⚠️ Unable to process your question through Lyrixa's core."
+                ctx, "[WARN] Unable to process your question through Lyrixa's core."
             )
     except requests.exceptions.ConnectionError:
         print("[asklyrixa] Connection error to API server")
         await send_in_thread(
-            ctx, "⚠️ Lyrixa's AI core is currently offline. Please try again later."
+            ctx, "[WARN] Lyrixa's AI core is currently offline. Please try again later."
         )
     except requests.exceptions.Timeout:
         print("[asklyrixa] Timeout error")
         await send_in_thread(
-            ctx, "⚠️ Lyrixa is taking too long to respond. Please try again."
+            ctx, "[WARN] Lyrixa is taking too long to respond. Please try again."
         )
     except Exception as e:
         print(f"[asklyrixa] Unexpected error: {e}")
         await send_in_thread(
-            ctx, "⚠️ Unable to process your question through Lyrixa's core."
+            ctx, "[WARN] Unable to process your question through Lyrixa's core."
         )
 
 
@@ -1062,12 +1062,12 @@ async def periodic_goals():
                                 f"🎯 Current Active Goals:\n```{goal_list}```"
                             )
                 except requests.exceptions.RequestException as e:
-                    print(f"⚠️ Goals API error: {e}")
+                    print(f"[WARN] Goals API error: {e}")
                     # Silently fail during startup to avoid spam
                 except Exception as e:
-                    print(f"⚠️ Goals task error: {e}")
+                    print(f"[WARN] Goals task error: {e}")
     except Exception as e:
-        print(f"⚠️ Periodic goals task error: {e}")
+        print(f"[WARN] Periodic goals task error: {e}")
 
 
 @tasks.loop(hours=24)
@@ -1088,12 +1088,12 @@ async def daily_self_eval():
                             f"🔁 Daily Self-Evaluation Report:\n```{report}```"
                         )
                 except requests.exceptions.RequestException as e:
-                    print(f"⚠️ Self-eval API error: {e}")
+                    print(f"[WARN] Self-eval API error: {e}")
                     # Silently fail during startup to avoid spam
                 except Exception as e:
-                    print(f"⚠️ Self-eval task error: {e}")
+                    print(f"[WARN] Self-eval task error: {e}")
     except Exception as e:
-        print(f"⚠️ Daily self-eval task error: {e}")
+        print(f"[WARN] Daily self-eval task error: {e}")
 
 
 @tasks.loop(hours=6)
@@ -1111,12 +1111,12 @@ async def periodic_reflection():
                         thought = data.get("reflection", "No reflection at this time.")
                         await channel.send(f"🧠 Scheduled Reflection: {thought}")
                 except requests.exceptions.RequestException as e:
-                    print(f"⚠️ Reflection API error: {e}")
+                    print(f"[WARN] Reflection API error: {e}")
                     # Silently fail during startup to avoid spam
                 except Exception as e:
-                    print(f"⚠️ Reflection task error: {e}")
+                    print(f"[WARN] Reflection task error: {e}")
     except Exception as e:
-        print(f"⚠️ Periodic reflection task error: {e}")
+        print(f"[WARN] Periodic reflection task error: {e}")
 
 
 # Periodic spam reset
@@ -1143,9 +1143,9 @@ async def start_monitoring(ctx):
                 "✅ Started periodic monitoring tasks (reflection, goals, self-eval, GitHub)"
             )
         except Exception as e:
-            await ctx.send(f"⚠️ Error starting monitoring tasks: {e}")
+            await ctx.send(f"[WARN] Error starting monitoring tasks: {e}")
     else:
-        await ctx.send("❌ Only administrators can start monitoring tasks")
+        await ctx.send("[ERROR] Only administrators can start monitoring tasks")
 
 
 @bot.command(name="stop_monitoring")
@@ -1174,9 +1174,9 @@ async def stop_monitoring(ctx):
             else:
                 await ctx.send("ℹ️ No monitoring tasks were running")
         except Exception as e:
-            await ctx.send(f"⚠️ Error stopping monitoring tasks: {e}")
+            await ctx.send(f"[WARN] Error stopping monitoring tasks: {e}")
     else:
-        await ctx.send("❌ Only administrators can stop monitoring tasks")
+        await ctx.send("[ERROR] Only administrators can stop monitoring tasks")
 
 
 @bot.command(name="check_api_config")
@@ -1187,7 +1187,7 @@ async def check_api_config(ctx):
             f"```Current API Configuration:\nAPI_BASE: {API_BASE}\nPort: {API_BASE.split(':')[-1] if ':' in API_BASE else 'Unknown'}\n\nBackground Tasks Status:\nReflection: {'Running' if periodic_reflection.is_running() else 'Stopped'}\nGoals: {'Running' if periodic_goals.is_running() else 'Stopped'}\nSelf-Eval: {'Running' if daily_self_eval.is_running() else 'Stopped'}\nGitHub: {'Running' if check_github.is_running() else 'Stopped'}```"
         )
     else:
-        await ctx.send("❌ Only administrators can check API configuration")
+        await ctx.send("[ERROR] Only administrators can check API configuration")
 
 
 @bot.command(name="reboot_lyrixa")
@@ -1255,15 +1255,15 @@ async def reboot_lyrixa(ctx):
 
         except Exception as e:
             error_embed = embed_response(
-                "❌ Restart Failed",
+                "[ERROR] Restart Failed",
                 f"Failed to restart Lyrixa: {str(e)}\n\n"
                 "Please check the logs or restart manually.",
-                icon="❌",
+                icon="[ERROR]",
             )
             await ctx.send(embed=error_embed)
-            print(f"❌ Restart error: {e}")
+            print(f"[ERROR] Restart error: {e}")
     else:
-        await ctx.send("❌ Only administrators can restart Lyrixa")
+        await ctx.send("[ERROR] Only administrators can restart Lyrixa")
 
 
 @bot.command(name="system_health")
@@ -1335,13 +1335,13 @@ async def system_health(ctx):
 
         except Exception as e:
             error_embed = embed_response(
-                "❌ Health Check Failed",
+                "[ERROR] Health Check Failed",
                 f"Failed to check system health: {str(e)}",
-                icon="❌",
+                icon="[ERROR]",
             )
             await ctx.send(embed=error_embed)
     else:
-        await ctx.send("❌ Only administrators can check system health")
+        await ctx.send("[ERROR] Only administrators can check system health")
 
 
 @bot.command(name="uptime")
@@ -1372,7 +1372,7 @@ async def diagnostics(ctx):
         )
         await send_in_thread(ctx, summary)
     except Exception as e:
-        await send_in_thread(ctx, f"⚠️ Diagnostic error: `{e}`")
+        await send_in_thread(ctx, f"[WARN] Diagnostic error: `{e}`")
 
 
 @bot.command(name="help")
@@ -1418,6 +1418,6 @@ async def help_command(ctx):
 
 if __name__ == "__main__":
     if not TOKEN:
-        print("❌ Bot token not found. Please set LYRIXA_BOT_TOKEN in your .env file.")
+        print("[ERROR] Bot token not found. Please set LYRIXA_BOT_TOKEN in your .env file.")
     else:
         bot.run(TOKEN)

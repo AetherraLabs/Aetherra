@@ -63,7 +63,7 @@ def demo_system_summary():
 def demo_workflow_builder():
     """Demo the Workflow Builder plugin."""
     print("\n" + "=" * 70)
-    print("🔧 WORKFLOW BUILDER PLUGIN DEMO")
+    print("[TOOL] WORKFLOW BUILDER PLUGIN DEMO")
     print("=" * 70)
 
     try:
@@ -203,7 +203,7 @@ def demo_plugin_generator():
 
         # Show generated plugins
         generated = generator.list_generated_plugins()
-        print(f"\n📦 Generated Plugins ({len(generated)}):")
+        print(f"\n[DISC] Generated Plugins ({len(generated)}):")
         for plugin in generated:
             print(f"  🧩 {plugin['name']} (Template: {plugin['template']})")
             print(f"      Status: {plugin['status']}")
@@ -269,7 +269,7 @@ def run_comprehensive_demo():
     print("=" * 70)
     print("Showcasing enhanced capabilities:")
     print("  🧠 System Summary Command")
-    print("  🔧 Workflow Builder Plugin")
+    print("  [TOOL] Workflow Builder Plugin")
     print("  🧠 Assistant Trainer Plugin")
     print("  🔌 Plugin Generator Plugin")
     print("  🌐 Remote Plugin Installation")
@@ -312,7 +312,7 @@ def run_comprehensive_demo():
         print("  ✅ Remote plugin marketplace integration")
         print("  ✅ Comprehensive system monitoring")
     else:
-        print("⚠️ Some features need attention")
+        print("[WARN] Some features need attention")
 
     return passed == total
 

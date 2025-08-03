@@ -2,7 +2,7 @@
 """
 Clean Plugin Runner
 ==================
-🔧 Direct plugin execution interface for Lyrixa Plugin Manager
+[TOOL] Direct plugin execution interface for Lyrixa Plugin Manager
 🚀 Execute plugins with parameters and goal context
 📊 Real-time plugin monitoring and output display
 """
@@ -30,7 +30,7 @@ try:
     HAS_PYSIDE6 = True
 except ImportError:
     HAS_PYSIDE6 = False
-    print("⚠️  PySide6 not available - Clean Plugin Runner requires GUI")
+    print("[WARN]  PySide6 not available - Clean Plugin Runner requires GUI")
 
 
 class PluginExecutionThread(QThread):
@@ -359,7 +359,7 @@ class CleanPluginRunner(QWidget):
         # Header
         header_layout = QHBoxLayout()
 
-        title_label = QLabel("🔧 Clean Plugin Runner")
+        title_label = QLabel("[TOOL] Clean Plugin Runner")
         title_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #00ff88;")
 
         self.status_label = QLabel("Ready")
@@ -468,7 +468,7 @@ class CleanPluginRunner(QWidget):
         layout.addWidget(context_group)
 
         # Execution options
-        options_group = QGroupBox("🔧 Execution Options")
+        options_group = QGroupBox("[TOOL] Execution Options")
         options_layout = QVBoxLayout(options_group)
 
         self.async_checkbox = QCheckBox("Asynchronous execution")
@@ -885,12 +885,12 @@ def main():
 
     # Create and show the plugin runner
     runner = CleanPluginRunner()
-    runner.setWindowTitle("🔧 Clean Plugin Runner")
+    runner.setWindowTitle("[TOOL] Clean Plugin Runner")
     runner.resize(1200, 800)
     runner.show()
 
     # Show welcome message
-    QMessageBox.information(runner, "🔧 Clean Plugin Runner",
+    QMessageBox.information(runner, "[TOOL] Clean Plugin Runner",
                           "Welcome to the Clean Plugin Runner!\n\n"
                           "Features:\n"
                           "🔍 Automatic plugin discovery\n"

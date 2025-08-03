@@ -13,7 +13,7 @@ import requests
 
 def test_ollama_api():
     """Test Ollama API directly"""
-    print("🔧 Testing Ollama API")
+    print("[TOOL] Testing Ollama API")
     print("=" * 25)
 
     try:

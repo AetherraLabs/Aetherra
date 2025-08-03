@@ -48,6 +48,6 @@ try:
     sys.exit(app.exec())
 
 except Exception as e:
-    print(f"❌ Error creating test widget: {e}")
+    print(f"[ERROR] Error creating test widget: {e}")
     import traceback
     traceback.print_exc()

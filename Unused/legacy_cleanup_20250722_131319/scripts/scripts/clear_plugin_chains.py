@@ -83,7 +83,7 @@ class PluginChainCleaner:
                                                 )
                                                 deleted_count += 1
                                                 print(
-                                                    f"      ❌ Deleted corrupted chain (missing: {missing_fields})"
+                                                    f"      [ERROR] Deleted corrupted chain (missing: {missing_fields})"
                                                 )
                                                 break
                                     except (json.JSONDecodeError, TypeError):
@@ -103,7 +103,7 @@ class PluginChainCleaner:
             return deleted_count
 
         except Exception as e:
-            print(f"      ⚠️ Error processing database: {e}")
+            print(f"      [WARN] Error processing database: {e}")
             return 0
 
     def clean_all_databases(self):

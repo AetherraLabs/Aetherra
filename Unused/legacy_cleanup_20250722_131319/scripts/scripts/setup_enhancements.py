@@ -11,17 +11,17 @@ from pathlib import Path
 
 def run_command(command, description):
     """Run a command with error handling"""
-    print(f"🔧 {description}...")
+    print(f"[TOOL] {description}...")
     try:
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
         if result.returncode == 0:
             print(f"✅ {description} completed successfully")
             return True
         else:
-            print(f"❌ {description} failed: {result.stderr}")
+            print(f"[ERROR] {description} failed: {result.stderr}")
             return False
     except Exception as e:
-        print(f"❌ {description} error: {e}")
+        print(f"[ERROR] {description} error: {e}")
         return False
 
 
@@ -29,7 +29,7 @@ def check_python_version():
     """Check if Python version is compatible"""
     version = sys.version_info
     if version.major < 3 or (version.major == 3 and version.minor < 8):
-        print("❌ Python 3.8+ required for aetherra enhancements")
+        print("[ERROR] Python 3.8+ required for aetherra enhancements")
         return False
     print(f"✅ Python {version.major}.{version.minor}.{version.micro} detected")
     return True
@@ -37,7 +37,7 @@ def check_python_version():
 
 def install_core_dependencies():
     """Install core dependencies for enhancements"""
-    print("\n📦 Installing Core Dependencies")
+    print("\n[DISC] Installing Core Dependencies")
     print("=" * 40)
 
     core_packages = [
@@ -224,10 +224,10 @@ def test_enhancements():
         return True
 
     except ImportError as e:
-        print(f"❌ Import error: {e}")
+        print(f"[ERROR] Import error: {e}")
         return False
     except Exception as e:
-        print(f"❌ Test error: {e}")
+        print(f"[ERROR] Test error: {e}")
         return False
 
 
@@ -256,7 +256,7 @@ def run_demo():
     print(f"🚀 Enhancements Available: {status['enhancements_available']}")
 
     if not status['enhancements_available']:
-        print("❌ Enhancements not available. Run setup_enhancements.py first.")
+        print("[ERROR] Enhancements not available. Run setup_enhancements.py first.")
         return
 
     print("\\n🎯 Demo Commands:")
@@ -322,7 +322,7 @@ def main():
         if step_function():
             completed_steps += 1
         else:
-            print("⚠️  Step failed but continuing...")
+            print("[WARN]  Step failed but continuing...")
 
     # Final report
     print("\n" + "=" * 60)
@@ -344,7 +344,7 @@ def main():
 
         print("\n🌟 Welcome to the future of AI-native programming!")
     else:
-        print("\n⚠️  Some enhancements may not be fully functional.")
+        print("\n[WARN]  Some enhancements may not be fully functional.")
         print("   Check error messages above and install missing dependencies.")
 
     print("\n🧬 aetherra: Where human intent meets AI implementation!")

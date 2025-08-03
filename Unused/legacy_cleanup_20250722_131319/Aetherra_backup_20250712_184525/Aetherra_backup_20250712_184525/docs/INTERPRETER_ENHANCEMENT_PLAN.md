@@ -108,7 +108,7 @@ def add_block_parsing():
             self.block_type = 'agent'
             return "🤖 Starting agent block..."
 
-        return f"📦 Starting {self.block_type} block..."
+        return f"[DISC] Starting {self.block_type} block..."
 
     def _add_to_block(self, line):
         """Add line to current block being parsed"""
@@ -162,7 +162,7 @@ def add_block_parsing():
         # Reset block state
         self._reset_block_state()
 
-        return f"🔧 Function '{func_name}' defined with {len(params)} parameters"
+        return f"[TOOL] Function '{func_name}' defined with {len(params)} parameters"
 
     def _reset_block_state(self):
         """Reset block parsing state"""

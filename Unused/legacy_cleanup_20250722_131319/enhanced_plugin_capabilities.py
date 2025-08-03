@@ -417,7 +417,7 @@ def demo_capability_extraction():
             break
 
     if not plugins_dir:
-        print("❌ No plugins directory found")
+        print("[ERROR] No plugins directory found")
         return
 
     print(f"🧩 Extracting capabilities from: {plugins_dir}")

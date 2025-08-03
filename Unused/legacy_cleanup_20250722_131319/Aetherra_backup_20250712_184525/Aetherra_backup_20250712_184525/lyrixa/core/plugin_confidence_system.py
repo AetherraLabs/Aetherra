@@ -717,13 +717,13 @@ def get_plugin_confidence_warning(
     """Generate user-friendly confidence warnings for Lyrixa."""
 
     if risk_level == "CRITICAL":
-        return f"⚠️ Plugin '{plugin_name}' has critical safety issues. Execution blocked for your protection."
+        return f"[WARN] Plugin '{plugin_name}' has critical safety issues. Execution blocked for your protection."
 
     elif risk_level == "HIGH":
         return f"🚨 Plugin '{plugin_name}' has high risk (confidence: {confidence_score:.1%}). Proceed with caution."
 
     elif confidence_score < 0.5:
-        return f"⚠️ Plugin '{plugin_name}' has low confidence ({confidence_score:.1%}). Consider alternatives or improvements."
+        return f"[WARN] Plugin '{plugin_name}' has low confidence ({confidence_score:.1%}). Consider alternatives or improvements."
 
     elif confidence_score < 0.7:
         return f"💡 Plugin '{plugin_name}' has moderate confidence ({confidence_score:.1%}). May need optimization."

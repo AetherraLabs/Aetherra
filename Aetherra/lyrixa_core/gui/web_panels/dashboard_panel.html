@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Interface Dashboard</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+
+<body>
+    <div class="panel-container" data-panel="dashboard">
+        <div class="panel-header">
+            <h1>🧠 Neural Interface Dashboard</h1>
+            <p>Real-time system overview and AI interaction hub</p>
+        </div>
+
+        <div class="panel-content">
+            <!-- Central AI Orb -->
+            <div style="text-align: center; margin: 2rem 0;">
+                <div class="glow-orb"></div>
+                <h2 style="color: var(--aetherra-green); margin-top: 1rem;">
+                    Lyrixa AI Core
+                </h2>
+                <p style="color: var(--aetherra-gray-light);">
+                    Click the orb to interact with the AI consciousness
+                </p>
+            </div>
+
+            <!-- Quick Stats Grid -->
+            <div class="grid grid-4">
+                <div class="metric">
+                    <div class="metric-value" data-metric="memory_load">45</div>
+                    <div class="metric-label">Memory Load %</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" data-metric="cpu_usage">23</div>
+                    <div class="metric-label">CPU Usage %</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" data-metric="agents_active">7</div>
+                    <div class="metric-label">Active Agents</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" data-metric="plugins_loaded">12</div>
+                    <div class="metric-label">Plugins Loaded</div>
+                </div>
+            </div>
+
+            <!-- Action Cards -->
+            <div class="grid grid-2" style="margin-top: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">🔌</div>
+                        <div class="card-title">Plugin Manager</div>
+                    </div>
+                    <p style="color: var(--aetherra-gray-light); margin-bottom: 1rem;">
+                        Manage AI capabilities and extensions
+                    </p>
+                    <button class="btn btn-primary" data-action="open_plugins">
+                        <span>Open Plugin Manager</span>
+                        <span>→</span>
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">💭</div>
+                        <div class="card-title">Memory Browser</div>
+                    </div>
+                    <p style="color: var(--aetherra-gray-light); margin-bottom: 1rem;">
+                        Explore AI memory and knowledge graphs
+                    </p>
+                    <button class="btn btn-primary" data-action="open_memory">
+                        <span>Browse Memory</span>
+                        <span>→</span>
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">📈</div>
+                        <div class="card-title">Performance Monitor</div>
+                    </div>
+                    <p style="color: var(--aetherra-gray-light); margin-bottom: 1rem;">
+                        Real-time system metrics and analytics
+                    </p>
+                    <button class="btn btn-primary" data-action="open_metrics">
+                        <span>View Metrics</span>
+                        <span>→</span>
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">⚙️</div>
+                        <div class="card-title">System Settings</div>
+                    </div>
+                    <p style="color: var(--aetherra-gray-light); margin-bottom: 1rem;">
+                        Configure AI behavior and preferences
+                    </p>
+                    <button class="btn btn-primary" data-action="open_settings">
+                        <span>Open Settings</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="card" style="margin-top: 2rem; background: rgba(0, 255, 136, 0.05);">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <span style="color: var(--aetherra-green); font-weight: bold;">🌟 System Status:</span>
+                        <span style="color: var(--aetherra-white); margin-left: 0.5rem;">All systems operational</span>
+                    </div>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <div class="progress" style="width: 120px;">
+                            <div class="progress-bar" style="width: 85%;"></div>
+                        </div>
+                        <span style="color: var(--aetherra-green); font-weight: bold;">85%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/effects.js"></script>
+</body>
+
+</html>

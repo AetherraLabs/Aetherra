@@ -100,7 +100,7 @@ def test_memory_cleanser_system():
     for entry_type in entry_types:
         print(f"  • {entry_type}")
 
-    print("\n🔧 Deletion Criteria:")
+    print("\n[TOOL] Deletion Criteria:")
     criteria = [
         "low_confidence - Entry confidence below min_confidence threshold",
         "expired - Entry older than max_age_days",

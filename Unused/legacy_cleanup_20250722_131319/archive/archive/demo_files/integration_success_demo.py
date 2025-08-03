@@ -125,7 +125,7 @@ def main():
 
     else:
         print()
-        print("⚠️ Some systems still need attention")
+        print("[WARN] Some systems still need attention")
         print(f"   {total_tests - success_count} test(s) failed")
 
     print("=" * 50)

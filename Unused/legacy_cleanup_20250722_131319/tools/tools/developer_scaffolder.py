@@ -124,7 +124,7 @@ class aetherraScaffolder:
 
     def _setup_dev_environment(self, config: Dict):
         """Setup development environment"""
-        print("\n🔧 Setting up development environment...")
+        print("\n[TOOL] Setting up development environment...")
 
         # Create developer config file
         dev_config_path = self.project_root / "dev_config.json"

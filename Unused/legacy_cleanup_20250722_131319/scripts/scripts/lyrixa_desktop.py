@@ -369,7 +369,7 @@ plugin: load "memory_system"
         edit_menu.addAction("📌 Paste", self.code_editor.paste)
 
         # Tools menu
-        tools_menu = menubar.addMenu("🔧 Tools")
+        tools_menu = menubar.addMenu("[TOOL] Tools")
         tools_menu.addAction("🧠 Memory Viewer", self.show_memory)
         tools_menu.addAction("🐛 Debug Mode", self.toggle_debug)
         tools_menu.addAction("📊 Performance", self.show_performance)
@@ -401,7 +401,7 @@ plugin: load "memory_system"
         """Execute the Aetherra code."""
         code = self.code_editor.toPlainText()
         if not code.strip():
-            self.console.append("❌ No code to execute!")
+            self.console.append("[ERROR] No code to execute!")
             return
 
         self.console.append(f"\n🔥 <b>Executing Aetherra Code:</b>")
@@ -524,7 +524,7 @@ plugin: load "memory_system"
 def main():
     """Main application entry point."""
     if not QT_AVAILABLE:
-        print("❌ PySide6 is required to run Lyrixa Desktop Application")
+        print("[ERROR] PySide6 is required to run Lyrixa Desktop Application")
         print("Install it with: pip install PySide6")
         return
 

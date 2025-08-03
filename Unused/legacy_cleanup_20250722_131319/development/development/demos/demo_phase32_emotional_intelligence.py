@@ -363,7 +363,7 @@ class EmotionalIntelligenceDemo:
                 )
             else:
                 print(
-                    "⚠️ Phase 3.2 performance needs improvement in emotional intelligence areas."
+                    "[WARN] Phase 3.2 performance needs improvement in emotional intelligence areas."
                 )
 
         print()
@@ -425,7 +425,7 @@ class EmotionalIntelligenceDemo:
             return filename
 
         except Exception as e:
-            print(f"⚠️ Could not save report: {e}")
+            print(f"[WARN] Could not save report: {e}")
             return "report_save_failed"
 
 

@@ -105,7 +105,7 @@ def test_memory_viewer_tab():
         return True
 
     except Exception as e:
-        print(f"❌ Memory Viewer Tab Integration Test Failed: {e}")
+        print(f"[ERROR] Memory Viewer Tab Integration Test Failed: {e}")
         import traceback
 
         traceback.print_exc()

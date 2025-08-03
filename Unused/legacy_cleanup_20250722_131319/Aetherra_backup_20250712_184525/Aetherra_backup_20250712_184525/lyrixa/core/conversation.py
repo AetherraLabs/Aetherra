@@ -210,7 +210,7 @@ class PersonalityProcessor:
             try:
                 response = adapter_func(response, context or {})
             except Exception as e:
-                print(f"⚠️ Error in {adapter_name}: {e}")
+                print(f"[WARN] Error in {adapter_name}: {e}")
 
         # Apply learned preferences
         response = self._apply_learned_preferences(response, context or {})
@@ -426,7 +426,7 @@ class PersonalityProcessor:
                     }
                 )
             except Exception as e:
-                print(f"⚠️ Error storing personality feedback: {e}")
+                print(f"[WARN] Error storing personality feedback: {e}")
 
     async def _learn_from_feedback(self, feedback: FeedbackData) -> None:
         """Learn and adapt from user feedback"""
@@ -494,7 +494,7 @@ class PersonalityProcessor:
             return True
 
         except Exception as e:
-            print(f"⚠️ Error importing personality profile: {e}")
+            print(f"[WARN] Error importing personality profile: {e}")
             return False
 
 
@@ -617,7 +617,7 @@ class LyrixaConversationalEngine:
                 )
                 relationship_stage = "familiar" if relationship_memories else "new"
             except Exception as e:
-                print(f"⚠️ Error loading relationship data: {e}")
+                print(f"[WARN] Error loading relationship data: {e}")
                 relationship_stage = "new"
         else:
             relationship_stage = "new"
@@ -695,7 +695,7 @@ class LyrixaConversationalEngine:
                     },
                 )
             except Exception as e:
-                print(f"⚠️ Error storing conversation memory: {e}")
+                print(f"[WARN] Error storing conversation memory: {e}")
 
         return response
 
@@ -825,7 +825,7 @@ class LyrixaConversationalEngine:
                     )
                     return response
             except Exception as e:
-                print(f"   ⚠️ Knowledge Responder error: {e}")
+                print(f"   [WARN] Knowledge Responder error: {e}")
                 # Fall through to normal conversation flow
 
         # Adapt emotional state based on user mood
@@ -867,7 +867,7 @@ class LyrixaConversationalEngine:
             response["adaptation_notes"].append("Applied Personality Processor")
 
         except Exception as e:
-            print(f"⚠️ Personality Processor error: {e}")
+            print(f"[WARN] Personality Processor error: {e}")
             response["text"] = base_text  # Fallback to base text
 
         # Add personality-specific touches (legacy support)
@@ -1068,7 +1068,7 @@ class LyrixaConversationalEngine:
         """Initialize the Project Knowledge Responder for factual queries."""
         try:
             if not self.memory_system:
-                print("   ⚠️ No memory system available for Knowledge Responder")
+                print("   [WARN] No memory system available for Knowledge Responder")
                 return
 
             from .project_knowledge_responder import ProjectKnowledgeResponder
@@ -1076,7 +1076,7 @@ class LyrixaConversationalEngine:
             self.knowledge_responder = ProjectKnowledgeResponder(self.memory_system)
             print("   ✅ Project Knowledge Responder integrated")
         except ImportError as e:
-            print(f"   ⚠️ Could not load Project Knowledge Responder: {e}")
+            print(f"   [WARN] Could not load Project Knowledge Responder: {e}")
             self.knowledge_responder = None
 
 

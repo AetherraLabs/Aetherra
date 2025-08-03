@@ -101,7 +101,7 @@ def show_integration_summary():
     print("   • Right Panel: Enhanced LyrixaChat interface")
     print("   • Seamless integration between coding and AI assistance")
     print()
-    print("🔧 Fallback Strategy:")
+    print("[TOOL] Fallback Strategy:")
     print("   • If LyrixaChat components aren't available, uses basic chat")
     print("   • If Enhanced Lyrixafails, falls back to standard Lyrixa")
     print("   • Graceful degradation ensures functionality")

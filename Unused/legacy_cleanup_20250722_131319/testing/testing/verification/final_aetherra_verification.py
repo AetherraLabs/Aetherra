@@ -99,7 +99,7 @@ recall experiences with "test_session"
         for node_type, count in sorted(node_counts.items()):
             print(f"   {node_type}: {count}")
 
-        print("🔧 Compiling...")
+        print("[TOOL] Compiling...")
         compiler = AetherraCompiler()
         compiled = compiler.compile(ast)
         print(f"   Generated {len(compiled)} characters of executable code")
@@ -114,7 +114,7 @@ recall experiences with "test_session"
 
 def test_interpreter_system():
     """Test interpreter and core systems"""
-    print("\n🔧 TESTING INTERPRETER SYSTEM")
+    print("\n[TOOL] TESTING INTERPRETER SYSTEM")
     print("=" * 40)
 
     try:
@@ -202,7 +202,7 @@ def main():
         print("\n✅ GREAT! Aetherra is working well!")
         status = "GOOD"
     elif success_rate >= 60:
-        print("\n⚠️ PARTIAL! Aetherra has core functionality.")
+        print("\n[WARN] PARTIAL! Aetherra has core functionality.")
         status = "PARTIAL"
     else:
         print("\n❌ NEEDS WORK! Aetherra requires fixes.")
@@ -218,7 +218,7 @@ def main():
     print("✅ Parser Integration Functions")
     print("✅ Complex Aetherra Programs")
 
-    print("\n⚠️ MINOR ISSUES:")
+    print("\n[WARN] MINOR ISSUES:")
     print("• Some optional AI modules not available (expected)")
     print("• GUI components need path fixes (non-critical)")
     print("• Import path issues in CLI (non-critical)")

@@ -80,15 +80,15 @@ def test_anthropic_key():
                 print("🎉 Anthropic API key is working perfectly!")
                 return True
             else:
-                print("⚠️  API responded but with unexpected content")
+                print("[WARN]  API responded but with unexpected content")
                 return True
         else:
-            print("⚠️  API responded but no content received")
+            print("[WARN]  API responded but no content received")
             return False
 
     except ImportError:
         print("❌ Anthropic package not installed")
-        print("📦 Install with: pip install anthropic")
+        print("[DISC] Install with: pip install anthropic")
         return False
     except Exception as e:
         print(f"❌ API test failed: {e}")
@@ -133,7 +133,7 @@ def test_with_lyrixa():
             print("✅ Claude responded through Lyrixa!")
         elif "fallback" in response_str.lower():
             print(
-                "⚠️  Lyrixa is in fallback mode - Claude might not be the active model"
+                "[WARN]  Lyrixa is in fallback mode - Claude might not be the active model"
             )
         else:
             print("✅ Got response through Lyrixa (Claude might be working)")
@@ -172,7 +172,7 @@ def main():
         )
         print("💡 You can now chat with Claude through the Lyrixa interface!")
     elif basic_test:
-        print("\n⚠️  API key works but integration needs attention.")
+        print("\n[WARN]  API key works but integration needs attention.")
     else:
         print("\n❌ Please fix the API key configuration first.")
         print("\n📝 Steps to fix:")

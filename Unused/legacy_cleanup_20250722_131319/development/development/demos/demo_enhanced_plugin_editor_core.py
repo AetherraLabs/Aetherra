@@ -30,7 +30,7 @@ try:
     from Aetherra.lyrixa.gui.plugin_sandbox_tester import PluginSandboxTester, TestScenario
     COMPONENTS_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️  Some components not available: {e}")
+    print(f"[WARN]  Some components not available: {e}")
     COMPONENTS_AVAILABLE = False
 
 
@@ -40,7 +40,7 @@ def demonstrate_ai_feedback():
     print("=" * 50)
 
     if not COMPONENTS_AVAILABLE:
-        print("⚠️  Components not available - showing concept...")
+        print("[WARN]  Components not available - showing concept...")
         return
 
     # Create AI feedback analyzer
@@ -88,7 +88,7 @@ def demonstrate_ai_feedback():
         if insights:
             print("  🧠 AI Insights:")
             for insight in insights:
-                severity_icon = {"info": "ℹ️", "warning": "⚠️", "error": "❌", "critical": "🚨"}
+                severity_icon = {"info": "ℹ️", "warning": "[WARN]", "error": "❌", "critical": "🚨"}
                 icon = severity_icon.get(insight.severity, "🔍")
                 print(f"    {icon} {insight.message}")
                 if insight.suggested_action:
@@ -123,7 +123,7 @@ def demonstrate_plugin_validator():
     print("=" * 50)
 
     if not COMPONENTS_AVAILABLE:
-        print("⚠️  Components not available - showing concept...")
+        print("[WARN]  Components not available - showing concept...")
         return
 
     # Create validator
@@ -192,7 +192,7 @@ def demonstrate_plugin_validator():
             print(f"    • {error}")
 
     if result.warnings:
-        print("  ⚠️ Warnings:")
+        print("  [WARN] Warnings:")
         for warning in result.warnings:
             print(f"    • {warning}")
 
@@ -208,7 +208,7 @@ def demonstrate_sandbox_testing():
     print("=" * 50)
 
     if not COMPONENTS_AVAILABLE:
-        print("⚠️  Components not available - showing concept...")
+        print("[WARN]  Components not available - showing concept...")
         return
 
     # Create sandbox tester
@@ -341,7 +341,7 @@ def main():
             demonstrate_plugin_validator()
             demonstrate_sandbox_testing()
         else:
-            print("⚠️  Running in concept mode (some components not available)")
+            print("[WARN]  Running in concept mode (some components not available)")
 
         # Always show key features
         demonstrate_key_features()
@@ -364,7 +364,7 @@ def main():
             print("  • AI feedback engine: ✅ Ready")
             print("  • Plugin validator: ✅ Ready")
             print("  • Sandbox tester: ✅ Ready")
-            print("  • GUI integration: ⚠️  Requires PySide6 setup")
+            print("  • GUI integration: [WARN]  Requires PySide6 setup")
 
     except Exception as e:
         print(f"\n❌ Demo error: {e}")

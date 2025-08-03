@@ -21,7 +21,7 @@ try:
     print("🔍 Testing Lyrixa v2.0 launch...")
 
     # Test import
-    print("📦 Importing modules...")
+    print("[DISC] Importing modules...")
     from PySide6.QtWidgets import QApplication
 
     from Aetherra.ui.enhanced_lyrixa import (

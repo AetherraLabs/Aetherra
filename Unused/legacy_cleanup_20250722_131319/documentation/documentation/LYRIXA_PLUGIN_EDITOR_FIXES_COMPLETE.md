@@ -4,7 +4,7 @@
 
 **Lyrixa now accurately describes the actual Plugin Editor and can trigger `inject_plugin_code()` with real content!**
 
-## 🔧 Implemented Fixes
+## [TOOL] Implemented Fixes
 
 ### ✅ Fix 1: Enhanced System Prompt (`prompt_engine.py`)
 
@@ -48,10 +48,10 @@ def inject_plugin(self, code: str, filename: str = "generated_plugin.aether"):
             self.log(f"🎯 Plugin injection {'successful' if success else 'failed'}: {filename}")
             return success
         except Exception as e:
-            self.log(f"❌ Plugin injection error: {e}")
+            self.log(f"[ERROR] Plugin injection error: {e}")
             return False
     else:
-        self.log("⚠️ No GUI interface available for plugin injection")
+        self.log("[WARN] No GUI interface available for plugin injection")
         return False
 ```
 
@@ -94,13 +94,13 @@ def inject_plugin(self, code: str, filename: str = "generated_plugin.aether"):
 
 ## 📋 What Lyrixa No Longer Says (Inaccurate)
 
-❌ References to manifest.json files
-❌ Install buttons or toggle buttons
-❌ Left/right panel systems
-❌ Browser-like interfaces
-❌ JavaScript/JSON configurations
-❌ "Plugin Generator UI with visual wizard"
-❌ Web technology descriptions
+[ERROR] References to manifest.json files
+[ERROR] Install buttons or toggle buttons
+[ERROR] Left/right panel systems
+[ERROR] Browser-like interfaces
+[ERROR] JavaScript/JSON configurations
+[ERROR] "Plugin Generator UI with visual wizard"
+[ERROR] Web technology descriptions
 
 ## ✅ What Lyrixa Now Says (Accurate)
 

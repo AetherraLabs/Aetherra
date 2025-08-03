@@ -19,7 +19,7 @@ This document summarizes the removal of emojis from the LyrixaUI components as p
 - Replaced emojis in status messages with text prefixes:
   - "✅" → "Success:" or removed
   - "❌" → "Error:"
-  - "⚠️" → "Warning:"
+  - "[WARN]" → "Warning:"
   - "ℹ️" → "Info:"
   - "🔄" → general text
 

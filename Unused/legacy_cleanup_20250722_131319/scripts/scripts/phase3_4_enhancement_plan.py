@@ -44,7 +44,7 @@ def check_current_gui_state():
 
         print("✅ Phase 3 GUI components available")
     except ImportError as e:
-        print(f"❌ Phase 3 GUI components missing: {e}")
+        print(f"[ERROR] Phase 3 GUI components missing: {e}")
         return False
 
     # Check Phase 4 components
@@ -56,7 +56,7 @@ def check_current_gui_state():
 
         print("✅ Phase 4 GUI components available")
     except ImportError as e:
-        print(f"❌ Phase 4 GUI components missing: {e}")
+        print(f"[ERROR] Phase 4 GUI components missing: {e}")
         return False
 
     # Check Enhanced Lyrixa integration
@@ -65,7 +65,7 @@ def check_current_gui_state():
 
         print("✅ Enhanced Lyrixa GUI available")
     except ImportError as e:
-        print(f"❌ Enhanced Lyrixa GUI missing: {e}")
+        print(f"[ERROR] Enhanced Lyrixa GUI missing: {e}")
         return False
 
     print("\n🎯 INTEGRATION NEEDED:")
@@ -160,7 +160,7 @@ def check_unified_gui_integration():
             print("   ✅ Enhanced Memory System")
             print("   ✅ Advanced Memory System (Vector)")
         except ImportError as e:
-            print(f"   ❌ Missing: {e}")
+            print(f"   [ERROR] Missing: {e}")
 
         # Check if it includes Phase 2 features
         print("\n📋 Phase 2 Integration (Anticipation Engine):")
@@ -175,7 +175,7 @@ def check_unified_gui_integration():
             print("   ✅ Suggestion Generator")
             print("   ✅ Proactive Assistant")
         except ImportError as e:
-            print(f"   ❌ Missing: {e}")
+            print(f"   [ERROR] Missing: {e}")
 
         # Check if it includes Phase 3 features
         print("\n📋 Phase 3 Integration (GUI & Analytics):")
@@ -188,7 +188,7 @@ def check_unified_gui_integration():
             print("   ✅ Configuration Manager")
             print("   ✅ Performance Monitor")
         except ImportError as e:
-            print(f"   ❌ Missing: {e}")
+            print(f"   [ERROR] Missing: {e}")
 
         # Check if it includes Phase 4 features
         print("\n📋 Phase 4 Integration (Advanced GUI Features):")
@@ -203,12 +203,12 @@ def check_unified_gui_integration():
             print("   ✅ Web/Mobile Support")
             print("   ✅ Live Feedback Loop")
         except ImportError as e:
-            print(f"   ❌ Missing: {e}")
+            print(f"   [ERROR] Missing: {e}")
 
         return True
 
     except ImportError as e:
-        print(f"❌ Main GUI not available: {e}")
+        print(f"[ERROR] Main GUI not available: {e}")
         return False
 
 
@@ -298,11 +298,11 @@ def verify_all_phase_documentation():
             with open(doc, "r") as f:
                 print(f"✅ {doc} - Found")
         except FileNotFoundError:
-            print(f"❌ {doc} - Missing")
+            print(f"[ERROR] {doc} - Missing")
             missing_docs.append(doc)
 
     if missing_docs:
-        print(f"\n⚠️ Missing documentation: {missing_docs}")
+        print(f"\n[WARN] Missing documentation: {missing_docs}")
         return False
     else:
         print("\n✅ All phase documentation complete!")

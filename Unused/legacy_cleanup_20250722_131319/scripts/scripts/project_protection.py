@@ -69,7 +69,7 @@ class ProjectProtection:
                         config[key] = value
                 return config
             except Exception as e:
-                print(f"⚠️ Error loading protection config: {e}")
+                print(f"[WARN] Error loading protection config: {e}")
                 return default_config
         else:
             self.save_protection_config(default_config)
@@ -81,7 +81,7 @@ class ProjectProtection:
             with open(self.protection_config, "w") as f:
                 json.dump(config, f, indent=2)
         except Exception as e:
-            print(f"⚠️ Error saving protection config: {e}")
+            print(f"[WARN] Error saving protection config: {e}")
 
     def is_protected_file(self, file_path: str) -> bool:
         """Check if a file is protected."""
@@ -143,7 +143,7 @@ class ProjectProtection:
             return str(backup_path)
 
         except Exception as e:
-            print(f"⚠️ Error creating backup for {file_path}: {e}")
+            print(f"[WARN] Error creating backup for {file_path}: {e}")
             return ""
 
     def backup_critical_files(self) -> List[str]:
@@ -175,7 +175,7 @@ class ProjectProtection:
                 print(f"🗑️ Removed old backup: {old_backup.name}")
 
         except Exception as e:
-            print(f"⚠️ Error cleaning old backups: {e}")
+            print(f"[WARN] Error cleaning old backups: {e}")
 
     def force_delete(self, file_path: str, reason: str = "") -> bool:
         """
@@ -199,12 +199,12 @@ class ProjectProtection:
             # Perform deletion
             Path(file_path).unlink()
             print(f"🗑️ FORCE DELETED: {file_path}")
-            print(f"📦 Backup available at: {backup_path}")
+            print(f"[DISC] Backup available at: {backup_path}")
 
             return True
 
         except Exception as e:
-            print(f"❌ Error force deleting {file_path}: {e}")
+            print(f"[ERROR] Error force deleting {file_path}: {e}")
             return False
 
     def log_deletion(self, log_entry: Dict):
@@ -224,7 +224,7 @@ class ProjectProtection:
                 json.dump(logs, f, indent=2)
 
         except Exception as e:
-            print(f"⚠️ Error logging deletion: {e}")
+            print(f"[WARN] Error logging deletion: {e}")
 
     def restore_file(self, file_path: str, backup_timestamp: str = None) -> bool:
         """Restore a file from backup."""
@@ -244,12 +244,12 @@ class ProjectProtection:
                     reverse=True,
                 )
                 if not backups:
-                    print(f"❌ No backups found for {file_path}")
+                    print(f"[ERROR] No backups found for {file_path}")
                     return False
                 backup_path = backups[0]
 
             if not backup_path.exists():
-                print(f"❌ Backup not found: {backup_path}")
+                print(f"[ERROR] Backup not found: {backup_path}")
                 return False
 
             shutil.copy2(backup_path, source_path)
@@ -257,7 +257,7 @@ class ProjectProtection:
             return True
 
         except Exception as e:
-            print(f"❌ Error restoring {file_path}: {e}")
+            print(f"[ERROR] Error restoring {file_path}: {e}")
             return False
 
     def status_report(self) -> Dict:
@@ -333,7 +333,7 @@ def main():
         print(f"  Backup Count: {status['backup_count']}")
         print(f"  Last Backup: {status['last_backup']}")
         if status["missing_files"]:
-            print(f"  ⚠️ Missing Files: {', '.join(status['missing_files'])}")
+            print(f"  [WARN] Missing Files: {', '.join(status['missing_files'])}")
 
     elif command == "backup":
         print("🔄 Creating backups of critical files...")
@@ -351,7 +351,7 @@ def main():
         protection.force_delete(file_path, reason)
 
     else:
-        print("❌ Invalid command or missing arguments")
+        print("[ERROR] Invalid command or missing arguments")
 
 
 if __name__ == "__main__":

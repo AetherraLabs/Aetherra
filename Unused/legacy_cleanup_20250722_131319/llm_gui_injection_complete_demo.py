@@ -155,24 +155,24 @@ This plugin has been injected into your Plugin Editor. You can now test it using
             print("🎉 SUCCESS! Plugin code automatically injected into GUI!")
             print(f"📁 Filename: {gui.current_filename}")
             print(
-                f"🔧 Code includes FileManager class: {'class FileManager' in gui.current_code}"
+                f"[TOOL] Code includes FileManager class: {'class FileManager' in gui.current_code}"
             )
             print(f"💾 User can now Save/Test/Apply in Plugin Editor")
             print("\n🎯 THE BRIDGE IS COMPLETE!")
             print("   Lyrixa's language → Code detection → GUI injection")
         else:
-            print("❌ No injection occurred")
+            print("[ERROR] No injection occurred")
 
         return gui.current_code is not None
 
     except Exception as e:
-        print(f"❌ Demo error: {e}")
+        print(f"[ERROR] Demo error: {e}")
         return False
 
 
 def show_technical_details():
     """Show the technical implementation details"""
-    print("\n🔧 TECHNICAL IMPLEMENTATION")
+    print("\n[TOOL] TECHNICAL IMPLEMENTATION")
     print("=" * 50)
 
     print("📄 FILES MODIFIED:")
@@ -221,7 +221,7 @@ if __name__ == "__main__":
             print("🎯 RESULT: When Lyrixa says she's populating the Plugin Editor,")
             print("           the Plugin Editor actually gets populated!")
         else:
-            print("❌ Something went wrong in the demonstration")
+            print("[ERROR] Something went wrong in the demonstration")
 
         return success
 

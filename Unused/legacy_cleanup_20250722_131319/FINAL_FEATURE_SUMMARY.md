@@ -31,7 +31,7 @@
 
 ---
 
-## 📦 Packaging Instructions
+## [DISC] Packaging Instructions
 
 ### 📁 Folder Structure Recommendation
 
@@ -90,7 +90,7 @@ from lyrixa.gui.hybrid_window import LyrixaWindow
 - **⚡ Safe Python `exec()` execution**
 - **📂 File path input with validation**
 - **🖥️ Live console output display**
-- **❌ Comprehensive error handling**
+- **[ERROR] Comprehensive error handling**
 
 ### 🧠 AI Memory Inspection
 - **🔍 Memory state snapshots**
@@ -141,7 +141,7 @@ from lyrixa.gui.hybrid_window import LyrixaWindow
 
 ### 🚀 Advanced Features
 - 🔒 Plugin sandboxing and security enhancements
-- 📦 Plugin dependency management
+- [DISC] Plugin dependency management
 - 📊 Advanced performance profiling
 - 🌐 Multi-node agent clustering
 - 💬 Natural language agent commands

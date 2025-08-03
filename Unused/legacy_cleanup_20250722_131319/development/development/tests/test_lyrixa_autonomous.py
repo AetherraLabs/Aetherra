@@ -39,7 +39,7 @@ async def test_lyrixa_autonomous_capabilities():
             print(f"📝 Supported operations: {len(capabilities['supported_operations'])}")
 
         else:
-            print("❌ Aetherra integration not available")
+            print("[ERROR] Aetherra integration not available")
 
         # Test 2: Start autonomous mode
         print("\n🚀 Test 2: Starting Autonomous Mode")
@@ -76,7 +76,7 @@ remember("Lyrixa autonomous test successful", tags="test,autonomous,success")
             if exec_result['success']:
                 print(f"🎯 Execution message: {exec_result['message']}")
         else:
-            print("❌ Aetherra integration not available for code execution")
+            print("[ERROR] Aetherra integration not available for code execution")
 
         # Test 6: Stop autonomous mode
         print("\n🛑 Test 6: Stopping Autonomous Mode")
@@ -93,7 +93,7 @@ remember("Lyrixa autonomous test successful", tags="test,autonomous,success")
         print("✅ Lyrixa's autonomous capabilities with Aetherra integration are operational!")
 
     except Exception as e:
-        print(f"❌ Test failed: {e}")
+        print(f"[ERROR] Test failed: {e}")
         import traceback
         traceback.print_exc()
 

@@ -29,9 +29,9 @@ try:
         print("✅ Response received:")
         print(json.dumps(data, indent=2))
     else:
-        print(f"❌ Error: {response.text}")
+        print(f"[ERROR] Error: {response.text}")
 
 except Exception as e:
-    print(f"❌ Test error: {e}")
+    print(f"[ERROR] Test error: {e}")
     import traceback
     traceback.print_exc()

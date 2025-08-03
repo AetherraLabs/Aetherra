@@ -28,7 +28,7 @@ Create the **first standardized plugin registry** for AI-consciousness programmi
 | **🎯 Goals**         | Objective and intention management       | Task planning, priority optimization, achievement tracking      |
 | **🗣️ Voice**         | Speech and communication interfaces      | TTS engines, emotional modulation, language adaptation          |
 | **🤖 AI Models**     | LLM integrations and AI backends         | GPT connectors, local model interfaces, multi-modal AI          |
-| **🔧 Tools**         | Utility and helper functions             | Data processing, file management, API integrations              |
+| **[TOOL] Tools**    | Utility and helper functions             | Data processing, file management, API integrations              |
 
 ---
 

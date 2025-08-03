@@ -100,8 +100,8 @@ Based on your latest screenshot, everything is set up perfectly:
 
 **What's happening**:
 - ✅ Your `website/index.html` has correct GitHub links
-- ❌ GitHub Pages is serving the Jekyll-generated `README.md` instead
-- ❌ The Jekyll site might have cached/old GitHub links
+- [ERROR] GitHub Pages is serving the Jekyll-generated `README.md` instead
+- [ERROR] The Jekyll site might have cached/old GitHub links
 
 **IMMEDIATE FIX NEEDED**:
 

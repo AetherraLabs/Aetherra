@@ -32,7 +32,7 @@ Successfully reorganized the Aetherra project root directory from 200+ cluttered
 - `neural_chat*.py` - Neural chat development tools
 - `add_*.py` - Feature addition utilities
 
-### 🔧 `/operations/` - Operational Files
+### [TOOL] `/operations/` - Operational Files
 **Purpose**: Contains runtime operational files and system resources
 
 #### `/operations/databases/`

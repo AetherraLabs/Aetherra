@@ -342,7 +342,7 @@ file_validator -> file_organizer""",
             return result
 
         except Exception as e:
-            print(f"❌ Error generating .aether from natural language: {e}")
+            print(f"[ERROR] Error generating .aether from natural language: {e}")
             return {
                 "error": str(e),
                 "aether_code": "# Error: Could not generate workflow",
@@ -636,7 +636,7 @@ file_validator -> file_organizer""",
                             suggestions[key] = content[key]
 
         except Exception as e:
-            print(f"⚠️ Error getting memory suggestions: {e}")
+            print(f"[WARN] Error getting memory suggestions: {e}")
 
         return suggestions
 
@@ -691,7 +691,7 @@ file_validator -> file_organizer""",
             return aether_code
 
         except KeyError as e:
-            print(f"⚠️ Missing parameter for template: {e}")
+            print(f"[WARN] Missing parameter for template: {e}")
             # Create comprehensive fallback parameters
             fallback_params = self._create_comprehensive_fallback_params(template)
             fallback_params.update(parameters)
@@ -709,10 +709,10 @@ file_validator -> file_organizer""",
 
                 return template.pattern.format(**formatted_fallback)
             except KeyError as e2:
-                print(f"⚠️ Still missing parameter after fallback: {e2}")
+                print(f"[WARN] Still missing parameter after fallback: {e2}")
                 return self._create_error_workflow(str(e2), template.name)
         except Exception as e:
-            print(f"❌ Unexpected error in template generation: {e}")
+            print(f"[ERROR] Unexpected error in template generation: {e}")
             return self._create_error_workflow(str(e), template.name)
 
     def _extract_template_placeholders(self, template_pattern: str) -> List[str]:
@@ -1078,7 +1078,7 @@ class WorkflowOptimizer:
                     optimized_code = rule["optimization"](optimized_code)
                     print(f"✅ Applied optimization: {rule['name']}")
                 except Exception as e:
-                    print(f"⚠️ Failed to apply {rule['name']}: {e}")
+                    print(f"[WARN] Failed to apply {rule['name']}: {e}")
 
         return optimized_code
 

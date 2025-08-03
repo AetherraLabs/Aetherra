@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧 Quick Aetherra Import Fix
+[TOOL] Quick Aetherra Import Fix
 ============================
 A fast, lightweight script to fix the most common import issues
 without installing heavy dependencies.
@@ -126,7 +126,7 @@ def test_basic_imports():
             print(f"✅ {name} import - Success")
             passed += 1
         except Exception as e:
-            print(f"⚠️  {name} import - Failed: {e}")
+            print(f"[WARN]  {name} import - Failed: {e}")
 
     return passed
 

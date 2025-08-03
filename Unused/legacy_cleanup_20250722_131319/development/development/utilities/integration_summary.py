@@ -63,7 +63,7 @@ def main():
     print("✅ Component Functionality: Core features working properly")
     print("✅ Modular Access: Import paths compatible with launcher")
     print("✅ Launcher Integration: Window factory creates proper tabs")
-    print("⚠️  GUI Integration: Minor display issues with memory graph (non-critical)")
+    print("[WARN]  GUI Integration: Minor display issues with memory graph (non-critical)")
 
     print("\n🎯 Usage Instructions")
     print("-" * 30)
@@ -72,7 +72,7 @@ def main():
     print("   • Navigate to tab 7 (💾 Memory Core)")
     print("   • Navigate to tab 8 (🎯 Goal Tracker)")
 
-    print("\n🔧 Direct Component Usage:")
+    print("\n[TOOL] Direct Component Usage:")
     print("   python Aetherra/lyrixa/memory/world_class_memory_core.py")
     print("   python Aetherra/lyrixa/core/world_class_goal_tracker.py")
 

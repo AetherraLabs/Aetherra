@@ -40,7 +40,7 @@ async def demonstrate_system_bootstrap():
 
     print(f"\n🌡️ Overall System Health: {status['overall_health']:.1%}")
     print(f"🔍 Issues Detected: {'Yes' if status['issues_detected'] else 'No'}")
-    print(f"🔧 Components Monitored: {len(status['components'])}")
+    print(f"[TOOL] Components Monitored: {len(status['components'])}")
 
     print("\n📊 Component Health:")
     status_emojis = {
@@ -58,7 +58,7 @@ async def demonstrate_system_bootstrap():
         )
 
         if comp["error_message"]:
-            print(f"      ⚠️ {comp['error_message']}")
+            print(f"      [WARN] {comp['error_message']}")
 
     if status["recommendations"]:
         print("\n💡 System Recommendations:")

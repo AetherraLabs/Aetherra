@@ -49,9 +49,9 @@ src/aetherra/core/
 ### Professional Project Structure
 ```
 aetherra Project/ (Ready for rename)
-├── 📦 src/aetherra/    # Main package (85+ files)
+├── [DISC] src/aetherra/    # Main package (85+ files)
 ├── 🚀 launchers/        # Application launchers (11 files)
-├── 🔧 scripts/          # Development tools (12 files)
+├── [TOOL] scripts/          # Development tools (12 files)
 ├── 🧪 tests/            # Test suite (26 files)
 ├── 🎯 examples/         # Examples & demos (19 files)
 ├── 📖 docs/             # Documentation (78 files)

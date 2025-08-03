@@ -153,7 +153,7 @@ consciousness {
 }
 ```
 
-## 🔧 Practical Implementation
+## [TOOL] Practical Implementation
 
 ### 1. Core Persona Engine
 

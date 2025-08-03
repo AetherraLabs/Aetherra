@@ -802,7 +802,7 @@ class LyrixaSystemBootstrap:
             StartupContextType.DAILY_RETURN: "🌅 Good to see you again! Ready to continue where we left off?",
             StartupContextType.SESSION_CONTINUATION: "👋 Welcome back! I'm ready to assist you.",
             StartupContextType.PROJECT_RESUMPTION: "🔄 Hello again! Let me catch you up on what's been happening.",
-            StartupContextType.RECOVERY_MODE: "🔧 System recovered! Let me restore your context.",
+            StartupContextType.RECOVERY_MODE: "[TOOL] System recovered! Let me restore your context.",
         }
 
         greeting = greetings.get(context_type, "👋 Hello! I'm here to help.")

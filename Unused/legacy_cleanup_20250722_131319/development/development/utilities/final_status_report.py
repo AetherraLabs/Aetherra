@@ -28,20 +28,20 @@ def main():
     print("   • Lightweight: Aetherra/lyrixa/core/lightweight_goal_tracker.py")
     print("   • Test: python Aetherra/lyrixa/core/test_goal_tracker.py")
 
-    print("\n🔧 INTEGRATION STATUS")
+    print("\n[TOOL] INTEGRATION STATUS")
     print("-" * 30)
     print("✅ Project Structure: Components properly located in Aetherra/lyrixa/")
     print("✅ Import Paths: Correct modular import paths for launcher")
     print("✅ Fallback System: Lightweight versions for reliability")
     print("✅ Console Support: Works without GUI dependencies")
-    print("⚠️  GUI Integration: Needs refinement for full visual experience")
+    print("[WARN]  GUI Integration: Needs refinement for full visual experience")
 
     print("\n🚀 HYBRID WINDOW INTEGRATION")
     print("-" * 30)
     print("✅ Tab Structure: Memory Core (tab 7) and Goal Tracker (tab 8)")
     print("✅ Fallback Chain: World-class → Lightweight → Basic fallback")
     print("✅ Error Handling: Graceful degradation if components fail")
-    print("⚠️  Visual Display: May show lightweight versions instead of full GUI")
+    print("[WARN]  Visual Display: May show lightweight versions instead of full GUI")
 
     print("\n🎯 CURRENT BEHAVIOR")
     print("-" * 30)
@@ -59,7 +59,7 @@ def main():
     print("✅ Proper project organization for modular access")
     print("✅ Both standalone and integrated usage patterns")
 
-    print("\n⚠️  AREAS FOR IMPROVEMENT")
+    print("\n[WARN]  AREAS FOR IMPROVEMENT")
     print("-" * 30)
     print("• Full GUI components may need display adjustments")
     print("• Memory graph visualization needs refinement")
@@ -73,7 +73,7 @@ def main():
     print("   → Navigate to Memory Core tab (💾)")
     print("   → Navigate to Goal Tracker tab (🎯)")
 
-    print("\n🔧 Direct component usage:")
+    print("\n[TOOL] Direct component usage:")
     print("   python Aetherra/lyrixa/memory/world_class_memory_core.py")
     print("   python Aetherra/lyrixa/core/world_class_goal_tracker.py")
 

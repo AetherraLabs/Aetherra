@@ -37,7 +37,7 @@ def safe_print(message: str) -> None:
         print(
             safe_message.replace("🔍", "[*]")
             .replace("📋", "[*]")
-            .replace("⚠️", "[!]")
+            .replace("[WARN]", "[!]")
             .replace("❌", "[X]")
             .replace("✅", "[OK]")
         )
@@ -989,7 +989,7 @@ Column: {error.column_number}
                 if self.files_scanned % 50 == 0:
                     safe_print(f"   📋 Analyzed {self.files_scanned} files...")
             except KeyboardInterrupt:
-                print("\n⚠️ Analysis interrupted by user")
+                print("\n[WARN] Analysis interrupted by user")
                 break
             except Exception as e:
                 safe_print(f"   ❌ Error analyzing {file_path}: {e}")

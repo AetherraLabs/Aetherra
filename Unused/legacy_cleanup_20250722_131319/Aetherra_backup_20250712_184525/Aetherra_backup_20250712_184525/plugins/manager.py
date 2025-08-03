@@ -337,14 +337,14 @@ class EnhancedPluginManager:
 
             # Check registry availability
             if not self.registry.health_check():
-                logger.error("❌ Plugin registry is not available")
+                logger.error("[ERROR] Plugin registry is not available")
                 return False
 
             # Check if plugin already installed
             plugin_dir = self.plugins_dir / name
             if plugin_dir.exists() and not force:
                 logger.warning(
-                    f"⚠️  Plugin {name} already installed. Use --force to reinstall."
+                    f"[WARN]  Plugin {name} already installed. Use --force to reinstall."
                 )
                 return False
 
@@ -355,7 +355,7 @@ class EnhancedPluginManager:
             if not skip_security:
                 if not self.security.validate_license(plugin_info.manifest.license):
                     logger.error(
-                        f"❌ Plugin license '{plugin_info.manifest.license}' is not GPL-3.0 compatible"
+                        f"[ERROR] Plugin license '{plugin_info.manifest.license}' is not GPL-3.0 compatible"
                     )
                     return False
 
@@ -369,7 +369,7 @@ class EnhancedPluginManager:
                 ]
                 if dangerous_perms:
                     logger.warning(
-                        f"⚠️  Plugin requests dangerous permissions: {dangerous_perms}"
+                        f"[WARN]  Plugin requests dangerous permissions: {dangerous_perms}"
                     )
                     if not self._prompt_user_approval(
                         f"Allow dangerous permissions for {name}?"
@@ -414,7 +414,7 @@ class EnhancedPluginManager:
                 if not skip_security:
                     security_report = self.security.scan_plugin_code(plugin_root)
                     if not security_report["safe"]:
-                        logger.error(f"❌ Security threats found in plugin {name}")
+                        logger.error(f"[ERROR] Security threats found in plugin {name}")
                         for threat in security_report["threats_found"]:
                             logger.error(
                                 f"   {threat['file']}: {threat['pattern']} ({threat['severity']})"
@@ -440,7 +440,7 @@ class EnhancedPluginManager:
                 return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to install plugin {name}: {e}")
+            logger.error(f"[ERROR] Failed to install plugin {name}: {e}")
             return False
 
     def uninstall_plugin(self, name: str) -> bool:
@@ -449,7 +449,7 @@ class EnhancedPluginManager:
             plugin_dir = self.plugins_dir / name
 
             if not plugin_dir.exists():
-                logger.warning(f"⚠️  Plugin {name} not found")
+                logger.warning(f"[WARN]  Plugin {name} not found")
                 return False
 
             # Cleanup loaded plugin
@@ -470,7 +470,7 @@ class EnhancedPluginManager:
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to uninstall plugin {name}: {e}")
+            logger.error(f"[ERROR] Failed to uninstall plugin {name}: {e}")
             return False
 
     def list_installed_plugins(self) -> List[PluginInfo]:
@@ -501,7 +501,7 @@ class EnhancedPluginManager:
                         plugins.append(plugin_info)
 
                     except Exception as e:
-                        logger.warning(f"⚠️  Invalid plugin in {plugin_dir}: {e}")
+                        logger.warning(f"[WARN]  Invalid plugin in {plugin_dir}: {e}")
 
         return sorted(plugins, key=lambda p: p.manifest.name)
 
@@ -541,7 +541,7 @@ class EnhancedPluginManager:
             return plugins
 
         except Exception as e:
-            logger.error(f"❌ Registry search failed: {e}")
+            logger.error(f"[ERROR] Registry search failed: {e}")
             return []
 
     def get_popular_plugins(self, limit: int = 20) -> List[PluginInfo]:
@@ -549,14 +549,14 @@ class EnhancedPluginManager:
         try:
             return self.registry.get_popular_plugins(limit)
         except Exception as e:
-            logger.error(f"❌ Failed to get popular plugins: {e}")
+            logger.error(f"[ERROR] Failed to get popular plugins: {e}")
             return []
 
     def update_plugin(self, name: str) -> bool:
         """Update a plugin to latest version"""
         try:
             if name not in self._plugin_cache or not self._plugin_cache[name].installed:
-                logger.error(f"❌ Plugin {name} is not installed")
+                logger.error(f"[ERROR] Plugin {name} is not installed")
                 return False
 
             current_version = self._plugin_cache[name].manifest.version
@@ -596,7 +596,7 @@ class EnhancedPluginManager:
             return self.install_plugin(name, latest_version, force=True)
 
         except Exception as e:
-            logger.error(f"❌ Failed to update plugin {name}: {e}")
+            logger.error(f"[ERROR] Failed to update plugin {name}: {e}")
             return False
 
     def _parse_manifest(self, manifest_path: Path) -> PluginManifest:
@@ -648,7 +648,7 @@ class EnhancedPluginManager:
                         else None,
                     )
             except Exception as e:
-                logger.warning(f"⚠️  Failed to load plugin cache: {e}")
+                logger.warning(f"[WARN]  Failed to load plugin cache: {e}")
 
     def _save_plugin_cache(self) -> None:
         """Save plugin cache to disk"""
@@ -678,7 +678,7 @@ class EnhancedPluginManager:
             with open(cache_file, "w") as f:
                 json.dump(cache_data, f, indent=2)
         except Exception as e:
-            logger.warning(f"⚠️  Failed to save plugin cache: {e}")
+            logger.warning(f"[WARN]  Failed to save plugin cache: {e}")
 
     def _prompt_user_approval(self, message: str) -> bool:
         """Prompt user for approval (simplified for CLI)"""
@@ -822,7 +822,7 @@ def main():
             print("=" * 70)
 
             for plugin in results:
-                status_icon = "📦"
+                status_icon = "[DISC]"
                 if plugin.installed:
                     status_icon = "✅ Installed"
 
@@ -901,10 +901,10 @@ def main():
                 print(f"Installed: ✅ Yes (Path: {plugin.path})")
                 print(f"Loaded: {'✅ Yes' if plugin.loaded else '⚪ No'}")
             else:
-                print("Installed: ❌ No")
+                print("Installed: [ERROR] No")
 
         except Exception as e:
-            print(f"❌ Failed to get plugin info: {e}")
+            print(f"[ERROR] Failed to get plugin info: {e}")
             sys.exit(1)
 
 

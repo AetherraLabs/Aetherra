@@ -149,7 +149,7 @@ end
 
 def test_interpreter_system():
     """Test the AetherraCode interpreter system."""
-    print("\n🔧 Testing Interpreter System...")
+    print("\n[TOOL] Testing Interpreter System...")
 
     test_results = {}
 
@@ -177,8 +177,8 @@ def test_interpreter_system():
             print("  ✅ Simple code execution completed")
             test_results["basic_execution"] = "✅ SUCCESS"
         except Exception as e:
-            print(f"  ⚠️ Execution test: {e} (Expected - demo only)")
-            test_results["basic_execution"] = f"⚠️ PARTIAL: {e}"
+            print(f"  [WARN] Execution test: {e} (Expected - demo only)")
+            test_results["basic_execution"] = f"[WARN] PARTIAL: {e}"
 
     except Exception as e:
         error_msg = f"❌ FAILED: {e}"
@@ -218,8 +218,8 @@ def test_memory_system():
             print("  ✅ Basic memory operations work")
             test_results["memory_operations"] = "✅ SUCCESS"
         except Exception as e:
-            print(f"  ⚠️ Memory operations: {e} (May need initialization)")
-            test_results["memory_operations"] = f"⚠️ PARTIAL: {e}"
+            print(f"  [WARN] Memory operations: {e} (May need initialization)")
+            test_results["memory_operations"] = f"[WARN] PARTIAL: {e}"
 
     except Exception as e:
         error_msg = f"❌ FAILED: {e}"
@@ -301,7 +301,7 @@ def test_ui_system():
             print("  ✅ PySide6 Qt framework available")
             test_results["qt_framework"] = "✅ SUCCESS"
         except ImportError:
-            print("  ⚠️ PySide6 not available, checking PySide2...")
+            print("  [WARN] PySide6 not available, checking PySide2...")
             try:
                 print("  ✅ PySide2 Qt framework available")
                 test_results["qt_framework"] = "✅ SUCCESS (PySide2)"
@@ -449,7 +449,7 @@ recall experiences with "session_events"
         ast = parser.parse()
         print(f"    Generated {len(ast)} AST nodes")
 
-        print("  🔧 Compiling to executable form...")
+        print("  [TOOL] Compiling to executable form...")
         compiler = AetherraCodeCompiler()
         compiled = compiler.compile(ast)
         print(f"    Generated {len(compiled)} characters of compiled code")
@@ -492,13 +492,13 @@ def generate_test_report(all_results: Dict[str, Dict[str, str]]):
                 passed_tests += 1
             elif "❌ FAILED" in result:
                 failed_tests += 1
-            elif "⚠️ PARTIAL" in result:
+            elif "[WARN] PARTIAL" in result:
                 partial_tests += 1
 
     print("\n📊 SUMMARY:")
     print(f"  Total Tests: {total_tests}")
     print(f"  ✅ Passed: {passed_tests}")
-    print(f"  ⚠️ Partial: {partial_tests}")
+    print(f"  [WARN] Partial: {partial_tests}")
     print(f"  ❌ Failed: {failed_tests}")
 
     success_rate = (
@@ -513,7 +513,7 @@ def generate_test_report(all_results: Dict[str, Dict[str, str]]):
     elif success_rate >= 75:
         print("\n✅ GOOD! AetherraCode is mostly functional with minor issues.")
     elif success_rate >= 50:
-        print("\n⚠️ PARTIAL! AetherraCode has core functionality but needs fixes.")
+        print("\n[WARN] PARTIAL! AetherraCode has core functionality but needs fixes.")
     else:
         print("\n❌ NEEDS WORK! AetherraCode requires significant fixes.")
 

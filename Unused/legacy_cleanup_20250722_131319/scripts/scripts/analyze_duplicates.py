@@ -350,7 +350,7 @@ class DuplicateAnalyzer:
             print("   These are exact duplicates or redundant test files")
             for item in recommendations["delete_immediately"]:
                 rel_path = item["file"].relative_to(self.project_root)
-                print(f"   ❌ {rel_path}")
+                print(f"   [ERROR] {rel_path}")
                 print(f"      Reason: {item['reason']}")
                 if item.get("keep_instead"):
                     keep_path = item["keep_instead"].relative_to(self.project_root)
@@ -359,11 +359,11 @@ class DuplicateAnalyzer:
 
         # Move to archive
         if recommendations["move_to_archive"]:
-            print("📦 MOVE TO ARCHIVE:")
+            print("[DISC] MOVE TO ARCHIVE:")
             print("   These files have historical value but aren't needed actively")
             for item in recommendations["move_to_archive"]:
                 rel_path = item["file"].relative_to(self.project_root)
-                print(f"   📦 {rel_path}")
+                print(f"   [DISC] {rel_path}")
                 print(f"      Reason: {item['reason']}")
                 print()
 
@@ -393,7 +393,7 @@ class DuplicateAnalyzer:
         archive_dir = self.project_root / "archive" / "duplicates"
 
         if move_to_archive:
-            print("\n📦 Moving files to archive...")
+            print("\n[DISC] Moving files to archive...")
             archive_dir.mkdir(parents=True, exist_ok=True)
 
             for item in recommendations["move_to_archive"]:
@@ -405,7 +405,7 @@ class DuplicateAnalyzer:
                     archive_path.parent.mkdir(parents=True, exist_ok=True)
 
                     file_path.rename(archive_path)
-                    print(f"   📦 Moved {rel_path} to archive/duplicates/")
+                    print(f"   [DISC] Moved {rel_path} to archive/duplicates/")
 
         if delete_confirmed:
             print("\n🗑️  Deleting confirmed duplicates...")
@@ -415,7 +415,7 @@ class DuplicateAnalyzer:
                 if file_path.exists():
                     rel_path = file_path.relative_to(self.project_root)
                     file_path.unlink()
-                    print(f"   ❌ Deleted {rel_path}")
+                    print(f"   [ERROR] Deleted {rel_path}")
 
     def run_analysis(self) -> Dict:
         """Run the complete duplicate analysis."""
@@ -455,7 +455,7 @@ def main():
     analyzer.print_analysis_report(recommendations)
 
     if move_to_archive or delete_confirmed:
-        print("\n⚠️  EXECUTING CLEANUP...")
+        print("\n[WARN]  EXECUTING CLEANUP...")
         analyzer.execute_recommendations(
             recommendations, move_to_archive, delete_confirmed
         )

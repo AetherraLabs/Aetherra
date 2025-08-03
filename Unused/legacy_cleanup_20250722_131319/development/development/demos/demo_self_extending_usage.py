@@ -156,7 +156,7 @@ def show_advanced_features():
 
 def show_troubleshooting():
     """Show common issues and solutions"""
-    print("\n🔧 TROUBLESHOOTING:")
+    print("\n[TOOL] TROUBLESHOOTING:")
     print("=" * 50)
 
     issues = [

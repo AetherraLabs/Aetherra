@@ -163,8 +163,8 @@ class AetherraCodePersonaInterface:
 🤖 AetherraCode Persona Status
 ═══════════════════════════════════════════
 
-⚠️ Persona system not available
-🔧 Running in basic CLI mode
+[WARN] Persona system not available
+[TOOL] Running in basic CLI mode
 
 Available commands:
 • Basic AetherraCode execution
@@ -210,7 +210,7 @@ Available commands:
                 installation_id = str(installation_id)[:12] + "..."
 
         except Exception:
-            return "⚠️ Error accessing persona information"
+            return "[WARN] Error accessing persona information"
 
         status = f"""
 🤖 AetherraCode Persona Status
@@ -260,7 +260,7 @@ Available commands:
 
             if archetype_name.lower() in archetype_map:
                 if not PERSONA_AVAILABLE or not self.persona_engine:
-                    return "⚠️ Persona system not available - cannot set archetype"
+                    return "[WARN] Persona system not available - cannot set archetype"
 
                 archetype = archetype_map[archetype_name.lower()]
                 try:
@@ -269,7 +269,7 @@ Available commands:
                     # Update voice configuration based on tone
                     current_voice = self.persona_engine.current_persona["voice"]
                 except Exception as e:
-                    return f"⚠️ Error setting persona: {e}"
+                    return f"[WARN] Error setting persona: {e}"
 
                 # Map voice tones
                 tone_map = {

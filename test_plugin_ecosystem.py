@@ -823,8 +823,8 @@ def run_plugin_ecosystem_tests():
     print("=" * 50)
     print(f"Total Tests: {total_tests}")
     print(f"✅ Passed: {passed}")
-    print(f"❌ Failed: {failures}")
-    print(f"💥 Errors: {errors}")
+    print(f"[ERROR] Failed: {failures}")
+    print(f"[FAIL] Errors: {errors}")
     print(f"📊 Success Rate: {success_rate:.1f}%")
     print("=" * 50)
 
@@ -834,9 +834,9 @@ def run_plugin_ecosystem_tests():
     elif success_rate >= 75:
         print("✅ PLUGIN ECOSYSTEM: GOOD - Minor Issues to Address")
     elif success_rate >= 50:
-        print("⚠️ PLUGIN ECOSYSTEM: FAIR - Several Issues Need Attention")
+        print("[WARN] PLUGIN ECOSYSTEM: FAIR - Several Issues Need Attention")
     else:
-        print("❌ PLUGIN ECOSYSTEM: NEEDS WORK - Major Issues Present")
+        print("[ERROR] PLUGIN ECOSYSTEM: NEEDS WORK - Major Issues Present")
 
     return result
 

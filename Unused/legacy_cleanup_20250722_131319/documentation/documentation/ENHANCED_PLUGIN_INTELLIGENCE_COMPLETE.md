@@ -45,7 +45,7 @@ The enhanced plugin intelligence system has been successfully implemented with a
 - 📝 **Details panel** showing comprehensive plugin information
 
 **Visual Improvements:**
-- 🌟 **Confidence-based icons**: ⭐ High, 📦 Medium, ⚠️ Low
+- 🌟 **Confidence-based icons**: ⭐ High, [DISC] Medium, [WARN] Low
 - 🚀 **Lyrixa Recommended** highlighting
 - 🎨 **Rich tooltips** with capabilities, tags, and metadata
 - 🛠️ **Action buttons**: View, Run, Analyze, Improve

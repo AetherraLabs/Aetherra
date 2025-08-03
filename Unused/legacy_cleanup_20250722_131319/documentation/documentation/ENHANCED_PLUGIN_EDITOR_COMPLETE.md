@@ -62,9 +62,9 @@
   Success: False
   Execution Time: 5.200s
   🧠 AI Insights:
-    ⚠️ Slow execution time: 5.20s
+    [WARN] Slow execution time: 5.20s
       💡 Suggestion: Consider optimizing plugin logic or adding caching
-    ❌ Plugin execution failed: API timeout after 5 seconds
+    [ERROR] Plugin execution failed: API timeout after 5 seconds
       💡 Suggestion: Fix the error and add proper error handling
 ```
 
@@ -76,7 +76,7 @@
   Errors: 0
   Warnings: 1
   Info: 4
-  ⚠️ Warnings:
+  [WARN] Warnings:
     • Plugin requests dangerous capabilities: network_access
 ```
 
@@ -117,7 +117,7 @@
    - End-to-end testing capabilities
    - Production-ready deployment process
 
-## 🔧 Technical Architecture
+## [TOOL] Technical Architecture
 
 ### Core Components:
 1. **PluginOutputAnalyzer** - Analyzes plugin execution data

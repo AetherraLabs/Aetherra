@@ -55,7 +55,7 @@ def test_function_access():
 
         # Check prompt content
         required_sections = [
-            "🔧 CURRENT SYSTEM STATE",
+            "[TOOL] CURRENT SYSTEM STATE",
             "👤 USER PROFILE",
             "⏰ TIME & CONTEXT",
             "💫 INTERACTION GUIDELINES",

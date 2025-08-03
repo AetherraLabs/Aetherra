@@ -1,4 +1,4 @@
-# 🔧 Aetherra Website Deployment Issues - Resolution Summary
+# [TOOL] Aetherra Website Deployment Issues - Resolution Summary
 
 **Date:** July 13, 2025
 **Status:** ✅ **RESOLVED**
@@ -20,12 +20,12 @@
 - **Error:** Asset hash mismatches between HTML and actual files
 - **Impact:** Website loading old cached versions
 
-### 4. **GitHub Pages Configuration Issue** ⚠️ **PRIMARY ROOT CAUSE**
+### 4. **GitHub Pages Configuration Issue** [WARN] **PRIMARY ROOT CAUSE**
 - **Problem:** GitHub Pages was serving Jekyll-processed README.md instead of React website
 - **Error:** Website showing documentation page instead of React application
 - **Impact:** Complete website failure - blank/wrong page displayed
 
-## 🔧 Solutions Implemented
+## [TOOL] Solutions Implemented
 
 ### ✅ **Asset Resolution**
 1. **Added favicon.svg to public folder**

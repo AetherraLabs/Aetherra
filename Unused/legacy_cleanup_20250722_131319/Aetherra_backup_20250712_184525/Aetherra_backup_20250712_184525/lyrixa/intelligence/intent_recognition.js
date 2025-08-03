@@ -20,7 +20,7 @@
  * This file is kept for reference only.
  */
 
-console.log("⚠️ MIGRATION NOTICE: This JavaScript intent recognition has been replaced");
+console.log("[WARN] MIGRATION NOTICE: This JavaScript intent recognition has been replaced");
 console.log("🎙️ Use the new Python-based Lyrixa AI Assistant instead:");
 console.log("   python lyrixa_launcher.py");
 

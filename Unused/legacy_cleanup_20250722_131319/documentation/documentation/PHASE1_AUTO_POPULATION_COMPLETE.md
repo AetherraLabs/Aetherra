@@ -87,7 +87,7 @@ Lyrixa: "Plugin generated! 🎯 Plugin Editor Updated: Code loaded automatically
 *Plugin Editor tab opens with generated code ready for review*
 ```
 
-## 🔧 Technical Implementation Details
+## [TOOL] Technical Implementation Details
 
 ### Auto-Population Detection Logic
 ```python

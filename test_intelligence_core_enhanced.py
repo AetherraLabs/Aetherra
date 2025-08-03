@@ -69,7 +69,7 @@ def try_import_intelligence_modules():
         import intelligence
         import personality_engine
 
-        print("✅ Successfully imported real intelligence modules!")
+        print("[OK] Successfully imported real intelligence modules!")
         USING_REAL_MODULES = True
 
         return {
@@ -80,7 +80,7 @@ def try_import_intelligence_modules():
         }
 
     except ImportError as e:
-        print(f"⚠️ Could not import real modules ({e}), using test stubs...")
+        print(f"[WARN] Could not import real modules ({e}), using test stubs...")
         return create_stub_modules()
 
 
@@ -827,9 +827,9 @@ def run_comprehensive_test_suite():
     print("🧠 COMPREHENSIVE TEST RESULTS SUMMARY")
     print("=" * 70)
     print(f"📊 Total Tests: {result.testsRun}")
-    print(f"✅ Passed: {result.testsRun - len(result.failures) - len(result.errors)}")
-    print(f"❌ Failed: {len(result.failures)}")
-    print(f"⚠️ Errors: {len(result.errors)}")
+    print(f"[OK] Passed: {result.testsRun - len(result.failures) - len(result.errors)}")
+    print(f"[ERROR] Failed: {len(result.failures)}")
+    print(f"[WARN] Errors: {len(result.errors)}")
     print(
         f"📈 Success Rate: {((result.testsRun - len(result.failures) - len(result.errors)) / result.testsRun * 100):.1f}%"
     )
@@ -837,23 +837,23 @@ def run_comprehensive_test_suite():
     # Component-specific results
     print("\n🔍 COMPONENT TEST BREAKDOWN:")
     print(
-        f"  🧠 Intelligence Engine: {'✅ PASS' if result.wasSuccessful() else '⚠️ ISSUES'}"
+        f"  🧠 Intelligence Engine: {'[OK] PASS' if result.wasSuccessful() else '[WARN] ISSUES'}"
     )
     print(
-        f"  🎭 Personality System: {'✅ PASS' if result.wasSuccessful() else '⚠️ ISSUES'}"
+        f"  🎭 Personality System: {'[OK] PASS' if result.wasSuccessful() else '[WARN] ISSUES'}"
     )
     print(
-        f"  🔗 Integration Layer: {'✅ PASS' if result.wasSuccessful() else '⚠️ ISSUES'}"
+        f"  🔗 Integration Layer: {'[OK] PASS' if result.wasSuccessful() else '[WARN] ISSUES'}"
     )
 
     if result.failures:
-        print("\n❌ DETAILED FAILURES:")
+        print("\n[ERROR] DETAILED FAILURES:")
         for i, (test, traceback) in enumerate(result.failures, 1):
             print(f"  {i}. {test}")
             print(f"     {traceback.strip()}")
 
     if result.errors:
-        print("\n⚠️ DETAILED ERRORS:")
+        print("\n[WARN] DETAILED ERRORS:")
         for i, (test, traceback) in enumerate(result.errors, 1):
             print(f"  {i}. {test}")
             print(f"     {traceback.strip()}")
@@ -872,7 +872,7 @@ def run_comprehensive_test_suite():
         )
         print("   ✨ Integration layer enables coordinated learning and responses")
     else:
-        print("\n⚠️ SOME TESTS REQUIRE ATTENTION")
+        print("\n[WARN] SOME TESTS REQUIRE ATTENTION")
         print("   Please review the detailed results above for specific issues.")
 
     print("\n" + "=" * 70)

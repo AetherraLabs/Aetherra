@@ -138,7 +138,7 @@ def main():
         print(f"   ✅ Intelligence monitoring system ready")
         print(f"   🔍 Active memory items: {len(summary.get('active_memory', {}))}")
         print(f"   🎯 Current goals: {len(summary.get('current_goals', []))}")
-        print(f"   ⚠️ Critical alerts: {len(alerts)}")
+        print(f"   [WARN] Critical alerts: {len(alerts)}")
         print()
 
         # Integration Demo

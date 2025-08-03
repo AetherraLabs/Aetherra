@@ -185,7 +185,7 @@ class KnowledgeBaseSync:
 
             path = Path(sync_entry['path'])
             if not path.exists():
-                print(f"⚠️ Sync path not found: {path}")
+                print(f"[WARN] Sync path not found: {path}")
                 continue
 
             print(f"📁 Syncing: {path}")
@@ -238,7 +238,7 @@ class KnowledgeBaseSync:
             interval_seconds: Sync interval in seconds (default: 5 minutes)
         """
         if self.auto_sync_enabled:
-            print("⚠️ Auto-sync already enabled")
+            print("[WARN] Auto-sync already enabled")
             return
 
         self.auto_sync_enabled = True
@@ -628,7 +628,7 @@ class KnowledgeBaseSync:
                 time.sleep(interval_seconds)
 
             except Exception as e:
-                print(f"⚠️ Auto-sync worker error: {e}")
+                print(f"[WARN] Auto-sync worker error: {e}")
                 time.sleep(60)  # Wait 1 minute before retrying
 
     def _remove_documents_by_path(self, base_path: str):
@@ -668,7 +668,7 @@ class KnowledgeBaseSync:
                 with open(self.memory_store_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
-            print(f"⚠️ Error loading memory store: {e}")
+            print(f"[WARN] Error loading memory store: {e}")
 
         return {'memory': {}, 'tags': {}, 'pins': []}
 
@@ -678,7 +678,7 @@ class KnowledgeBaseSync:
             with open(self.memory_store_path, 'w', encoding='utf-8') as f:
                 json.dump(memory_data, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            print(f"⚠️ Error saving memory store: {e}")
+            print(f"[WARN] Error saving memory store: {e}")
 
     def _load_sync_config(self) -> Dict[str, Any]:
         """Load sync configuration."""
@@ -687,7 +687,7 @@ class KnowledgeBaseSync:
                 with open(self.config_file, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
-            print(f"⚠️ Error loading sync config: {e}")
+            print(f"[WARN] Error loading sync config: {e}")
 
         return {
             'sync_paths': [],
@@ -701,7 +701,7 @@ class KnowledgeBaseSync:
             with open(self.config_file, 'w', encoding='utf-8') as f:
                 json.dump(self.sync_config, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            print(f"⚠️ Error saving sync config: {e}")
+            print(f"[WARN] Error saving sync config: {e}")
 
     def _load_document_registry(self) -> Dict[str, DocumentInfo]:
         """Load document registry."""
@@ -714,7 +714,7 @@ class KnowledgeBaseSync:
                         for path, info in data.items()
                     }
         except Exception as e:
-            print(f"⚠️ Error loading document registry: {e}")
+            print(f"[WARN] Error loading document registry: {e}")
 
         return {}
 
@@ -728,7 +728,7 @@ class KnowledgeBaseSync:
             with open(self.registry_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            print(f"⚠️ Error saving document registry: {e}")
+            print(f"[WARN] Error saving document registry: {e}")
 
     def _load_sync_stats(self) -> Optional[Dict[str, Any]]:
         """Load sync statistics."""
@@ -737,7 +737,7 @@ class KnowledgeBaseSync:
                 with open(self.stats_file, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception as e:
-            print(f"⚠️ Error loading sync stats: {e}")
+            print(f"[WARN] Error loading sync stats: {e}")
 
         return None
 
@@ -747,7 +747,7 @@ class KnowledgeBaseSync:
             with open(self.stats_file, 'w', encoding='utf-8') as f:
                 json.dump(asdict(stats), f, indent=2, ensure_ascii=False)
         except Exception as e:
-            print(f"⚠️ Error saving sync stats: {e}")
+            print(f"[WARN] Error saving sync stats: {e}")
 
 
 def main():

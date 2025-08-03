@@ -23,7 +23,7 @@ def test_main_launchers():
         else:
             print("  ❌ Aetherra_launcher.py: Import issue")
     except FileNotFoundError:
-        print("  ⚠️  Aetherra_launcher.py: File not found")
+        print("  [WARN]  Aetherra_launcher.py: File not found")
 
     # Test CLI main
     try:
@@ -99,7 +99,7 @@ def test_ui_systems():
         if qt_available:
             print("  ✅ Qt Framework: Available and working")
         else:
-            print("  ⚠️  Qt Framework: Not available (GUI will not work)")
+            print("  [WARN]  Qt Framework: Not available (GUI will not work)")
     except Exception as e:
         print(f"  ❌ Qt Framework check: {e}")
 

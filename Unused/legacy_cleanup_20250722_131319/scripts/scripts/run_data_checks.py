@@ -26,7 +26,7 @@ def check_plugin_status():
     print("   - Searching for status: 'unhealthy' or 'disabled'")
     print("   ✅ Total plugins: 24")
     print("   ✅ Healthy plugins: 22")
-    print("   ⚠️ Unhealthy plugins: 1 (slow_responder_plugin)")
+    print("   [WARN] Unhealthy plugins: 1 (slow_responder_plugin)")
     print("   🚫 Disabled plugins: 1 (test_plugin)")
     return True
 
@@ -36,7 +36,7 @@ def check_goal_escalations():
     print("\n🎯 Checking Goal Escalations & Retries...")
     print("   - Searching for recent goal activity")
     print("   ✅ Goals completed today: 5")
-    print("   ⚠️ Goals failed: 1 (API connection timeout)")
+    print("   [WARN] Goals failed: 1 (API connection timeout)")
     print("   ⬆️ Goals escalated: 2")
     print("   🔄 Goal retries: 3")
     return True
@@ -61,7 +61,7 @@ def check_system_logs():
     print("   ✅ Plugin events: 523")
     print("   ✅ Goal events: 89")
     print("   ✅ Agent events: 156")
-    print("   ⚠️ Error events: 12")
+    print("   [WARN] Error events: 12")
     return True
 
 
@@ -99,7 +99,7 @@ def main():
         print("   • Memory cleanser maintaining optimal usage")
         print("   • System logging comprehensive and active")
     else:
-        print("⚠️ Overall Status: SOME CHECKS FAILED")
+        print("[WARN] Overall Status: SOME CHECKS FAILED")
 
     print("\n🔄 Next: Testing Lyrixa Intelligence...")
     return passed == total

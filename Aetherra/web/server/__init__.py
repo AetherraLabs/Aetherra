@@ -84,17 +84,17 @@ def initialize_server_systems():
     # Check adapter availability
     adapter = get_web_adapter()
     if adapter:
-        logger.info("✅ Web adapter available")
+        logger.info("[OK] Web adapter available")
 
     # Check bridge availability
     bridge = get_web_bridge()
     if bridge:
-        logger.info("✅ Web bridge available")
+        logger.info("[OK] Web bridge available")
 
     # Check interface server availability
     server = get_interface_server()
     if server:
-        logger.info("✅ Interface server available")
+        logger.info("[OK] Interface server available")
 
     active_count = sum(SERVER_SYSTEMS.values())
     total_count = len(SERVER_SYSTEMS)

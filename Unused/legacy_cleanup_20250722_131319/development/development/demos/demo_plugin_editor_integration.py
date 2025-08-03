@@ -62,7 +62,7 @@ async def demo_plugin_editor_integration():
                 if conversation_manager.plugin_editor_controller:
                     print("   🎯 UI Actions: Plugin Editor Controller engaged!")
                 else:
-                    print("   ⚠️ UI Actions: No controller available (mock mode)")
+                    print("   [WARN] UI Actions: No controller available (mock mode)")
 
             except Exception as e:
                 print(f"   ❌ Error: {e}")
@@ -80,12 +80,12 @@ async def demo_plugin_editor_integration():
 
     except ImportError as e:
         print(f"❌ Import Error: {e}")
-        print("\n🔧 Fix: Make sure you're in the Aetherra Project directory")
+        print("\n[TOOL] Fix: Make sure you're in the Aetherra Project directory")
         print("   and all components are properly installed.")
 
     except Exception as e:
         print(f"❌ System Error: {e}")
-        print("\n🔧 Check the system configuration and try again.")
+        print("\n[TOOL] Check the system configuration and try again.")
 
 async def demo_component_architecture():
     """

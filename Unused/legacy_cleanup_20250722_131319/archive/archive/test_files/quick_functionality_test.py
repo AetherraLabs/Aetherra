@@ -51,7 +51,7 @@ def test_basic_functionality():
         print(f"✅ Core Modules: All {len(core_files)} modules present")
         test_results["core_modules"] = True
     else:
-        print(f"⚠️ Core Modules: {core_exists}/{len(core_files)} modules present")
+        print(f"[WARN] Core Modules: {core_exists}/{len(core_files)} modules present")
         test_results["core_modules"] = core_exists > len(core_files) // 2
 
     # Test 3: Lyrixalaunchers
@@ -83,7 +83,7 @@ def test_basic_functionality():
                     json.load(f)
                 data_status.append(f"✅ {file}: Valid JSON")
             except:
-                data_status.append(f"⚠️ {file}: Invalid JSON")
+                data_status.append(f"[WARN] {file}: Invalid JSON")
         else:
             data_status.append(f"ℹ️ {file}: Will be created on first use")
 
@@ -101,7 +101,7 @@ def test_basic_functionality():
             print("✅ Website: All files present in website/ directory")
             test_results["website"] = True
         else:
-            print(f"⚠️ Website: {len(website_files)}/{len(required)} files present")
+            print(f"[WARN] Website: {len(website_files)}/{len(required)} files present")
             test_results["website"] = False
     else:
         print("❌ Website: Directory not found")
@@ -117,7 +117,7 @@ def test_basic_functionality():
             print(f"✅ Archive: {len(archive_subdirs)} archive directories found")
             test_results["archive"] = True
         else:
-            print("⚠️ Archive: No archive subdirectories found")
+            print("[WARN] Archive: No archive subdirectories found")
             test_results["archive"] = False
     else:
         print("ℹ️ Archive: Directory not found (normal if no cleanup performed)")
@@ -141,7 +141,7 @@ def test_basic_functionality():
         print("🎉 ALL TESTS PASSED - aetherra is ready!")
         return True
     elif passed >= total * 0.8:
-        print("⚠️ MOSTLY READY - Minor issues detected")
+        print("[WARN] MOSTLY READY - Minor issues detected")
         return True
     else:
         print("❌ CRITICAL ISSUES - Manual intervention required")

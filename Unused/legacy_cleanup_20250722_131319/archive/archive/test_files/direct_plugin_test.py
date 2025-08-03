@@ -17,7 +17,7 @@ from lyrixa.core.advanced_plugins import LyrixaAdvancedPluginManager
 
 async def test_plugin_discovery_direct():
     """Test plugin discovery directly without memory system."""
-    print("🔧 DIRECT PLUGIN DISCOVERY TEST")
+    print("[TOOL] DIRECT PLUGIN DISCOVERY TEST")
     print("=" * 40)
 
     try:

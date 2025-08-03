@@ -213,7 +213,7 @@ class AetherraComponentDiscovery:
 
     def _discover_other_components(self) -> List[ComponentInfo]:
         """Discover other important components"""
-        logger.info("🔧 Discovering other components...")
+        logger.info("[TOOL] Discovering other components...")
         other = []
 
         # Search for other important components
@@ -282,7 +282,7 @@ class AetherraComponentDiscovery:
                         components.append(component)
 
         except Exception as e:
-            logger.warning(f"⚠️ Error scanning {file_path}: {e}")
+            logger.warning(f"[WARN] Error scanning {file_path}: {e}")
 
         return components
 
@@ -357,7 +357,7 @@ class AetherraComponentDiscovery:
                         loaded[category][component.name.lower()] = class_obj
                         component.status = 'available'
                         component.error_message = str(init_error)
-                        logger.warning(f"⚠️ {component.name} available but not instantiated: {init_error}")
+                        logger.warning(f"[WARN] {component.name} available but not instantiated: {init_error}")
 
                 except Exception as e:
                     component.status = 'error'
@@ -384,9 +384,9 @@ class AetherraComponentDiscovery:
 
         for category, components in self.discovered_components.items():
             if components:
-                report.append(f"🔧 {category.upper().replace('_', ' ')}:")
+                report.append(f"[TOOL] {category.upper().replace('_', ' ')}:")
                 for component in components:
-                    status_icon = "✅" if component.status == "loaded" else "⚠️" if component.status == "available" else "❌"
+                    status_icon = "✅" if component.status == "loaded" else "[WARN]" if component.status == "available" else "❌"
                     report.append(f"   {status_icon} {component.name} ({component.status})")
                     if component.capabilities:
                         report.append(f"      Capabilities: {', '.join(component.capabilities)}")

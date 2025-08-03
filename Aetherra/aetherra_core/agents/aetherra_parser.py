@@ -773,7 +773,7 @@ end
     for node in ast:
         print(f"  {type(node).__name__}: {node.__dict__}")
 
-    print("\n🔧 Compiled Output:")
+    print("\n[TOOL] Compiled Output:")
     compiled = compile_aetherra(aethercode_source)
     print(compiled)
 

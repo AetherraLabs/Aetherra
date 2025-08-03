@@ -194,13 +194,13 @@ class AetherraCodeErrorAnalyzer:
 
         # Report import issues
         if self.import_issues:
-            report.append("\n📦 Import Issues Found:")
+            report.append("\n[DISC] Import Issues Found:")
             for issue in self.import_issues:
-                report.append(f"  ⚠️ {issue['file']} - {issue['error']}")
+                report.append(f"  [WARN] {issue['file']} - {issue['error']}")
 
         # General errors
         if self.errors:
-            report.append("\n💥 General Errors:")
+            report.append("\n[FAIL] General Errors:")
             for error in self.errors:
                 report.append(f"  ❌ {error['file']} - {error['error']}")
 
@@ -223,7 +223,7 @@ class AetherraCodeErrorAnalyzer:
             )
         else:
             report.append(
-                f"\n🔧 Found {total_syntax_errors + total_import_issues + total_errors} issues that need attention."
+                f"\n[TOOL] Found {total_syntax_errors + total_import_issues + total_errors} issues that need attention."
             )
 
         return "\n".join(report)

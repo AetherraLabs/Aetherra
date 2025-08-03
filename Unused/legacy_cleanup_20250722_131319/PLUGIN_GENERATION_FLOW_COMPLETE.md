@@ -79,7 +79,7 @@ Each generated plugin includes:
 **Template System**: ✅ All 4 templates functional
 **Memory Integration**: ✅ Generated plugins properly logged
 
-## 🔧 Technical Implementation
+## [TOOL] Technical Implementation
 
 ### Key Files Modified/Enhanced:
 1. **`core_agent.py`** - Enhanced routing with plugin operation detection

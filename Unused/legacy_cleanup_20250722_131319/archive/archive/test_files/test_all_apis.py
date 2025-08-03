@@ -57,7 +57,7 @@ def test_openai_key():
             return True
         except Exception as e:
             if "quota" in str(e).lower() or "429" in str(e):
-                print("⚠️  OpenAI API key valid but quota exceeded")
+                print("[WARN]  OpenAI API key valid but quota exceeded")
                 return True
             else:
                 print(f"❌ OpenAI API error: {e}")
@@ -100,7 +100,7 @@ def test_anthropic_key():
             return True
         except Exception as e:
             if "credit" in str(e).lower() or "billing" in str(e).lower():
-                print("⚠️  Anthropic API key valid but needs credits")
+                print("[WARN]  Anthropic API key valid but needs credits")
                 return True
             else:
                 print(f"❌ Anthropic API error: {e}")
@@ -140,7 +140,7 @@ def test_google_key():
             return True
         except Exception as e:
             if "quota" in str(e).lower() or "limit" in str(e).lower():
-                print("⚠️  Google API key valid but quota/limit reached")
+                print("[WARN]  Google API key valid but quota/limit reached")
                 return True
             else:
                 print(f"❌ Google API error: {e}")
@@ -148,7 +148,7 @@ def test_google_key():
 
     except ImportError:
         print("❌ Google AI package not installed")
-        print("📦 Install with: pip install google-generativeai")
+        print("[DISC] Install with: pip install google-generativeai")
         return False
     except Exception as e:
         print(f"❌ Google setup error: {e}")
@@ -192,7 +192,7 @@ def test_lyrixa_integration():
             print("✅ Gemini is responding through Lyrixa!")
             model_used = "Gemini (Google)"
         elif "fallback" in response_str.lower():
-            print("⚠️  Lyrixa using fallback mode - no LLM models available")
+            print("[WARN]  Lyrixa using fallback mode - no LLM models available")
             model_used = "Fallback"
         else:
             print("✅ Got response from Lyrixa (model unclear)")
@@ -243,7 +243,7 @@ def main():
         print("💡 Lyrixa will automatically use the best available model.")
         print("🔄 If one model is unavailable, it will fallback to others.")
     elif configured_count >= 1:
-        print("\n⚠️  API keys configured but Lyrixa integration needs work.")
+        print("\n[WARN]  API keys configured but Lyrixa integration needs work.")
     else:
         print("\n❌ No API keys working. Please check your configuration.")
 

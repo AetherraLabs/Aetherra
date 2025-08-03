@@ -2,7 +2,7 @@
 """
 World-Class Components Integration Patch
 ========================================
-🔧 Patches the hybrid window to use world-class components
+[TOOL] Patches the hybrid window to use world-class components
 🎯 Replaces placeholder tabs with real implementations
 """
 
@@ -29,7 +29,7 @@ def patch_hybrid_window():
             return memory_widget
 
         except Exception as e:
-            print(f"⚠️  World-class memory core not available: {e}")
+            print(f"[WARN]  World-class memory core not available: {e}")
 
             # Fallback to lightweight version
             try:
@@ -38,7 +38,7 @@ def patch_hybrid_window():
                 return memory_widget
 
             except Exception as e2:
-                print(f"⚠️  Lightweight memory core not available: {e2}")
+                print(f"[WARN]  Lightweight memory core not available: {e2}")
 
                 # Final fallback to original implementation
                 widget = QWidget()
@@ -70,7 +70,7 @@ def patch_hybrid_window():
             return goal_widget
 
         except Exception as e:
-            print(f"⚠️  World-class goal tracker not available: {e}")
+            print(f"[WARN]  World-class goal tracker not available: {e}")
 
             # Fallback to lightweight version
             try:
@@ -109,7 +109,7 @@ def patch_hybrid_window():
                 return widget
 
             except Exception as e2:
-                print(f"⚠️  Lightweight goal tracker not available: {e2}")
+                print(f"[WARN]  Lightweight goal tracker not available: {e2}")
 
                 # Final fallback to original implementation
                 widget = QWidget()
@@ -177,7 +177,7 @@ def patch_hybrid_window():
 def apply_integration_patch():
     """Apply integration patch to hybrid window"""
 
-    print("🔧 Applying World-Class Components Integration Patch...")
+    print("[TOOL] Applying World-Class Components Integration Patch...")
 
     # Get the patches
     memory_patch, goal_patch, helper_methods = patch_hybrid_window()
@@ -269,13 +269,13 @@ def verify_integration():
             memory_core = WorldClassMemoryCore()
             print("✅ WorldClassMemoryCore instantiated")
         except:
-            print("⚠️  WorldClassMemoryCore requires GUI")
+            print("[WARN]  WorldClassMemoryCore requires GUI")
 
         try:
             goal_tracker = WorldClassGoalTracker()
             print("✅ WorldClassGoalTracker instantiated")
         except:
-            print("⚠️  WorldClassGoalTracker requires GUI")
+            print("[WARN]  WorldClassGoalTracker requires GUI")
 
         print("✅ Integration verification complete!")
         return True
@@ -287,7 +287,7 @@ def verify_integration():
 def main():
     """Main function"""
 
-    print("🔧 World-Class Components Integration Patch")
+    print("[TOOL] World-Class Components Integration Patch")
     print("=" * 50)
 
     # Apply the patch
@@ -299,7 +299,7 @@ def main():
             print("✅ World-class components are now integrated with hybrid window")
             print("🚀 Ready for use with aetherra_hybrid_launcher.py")
         else:
-            print("\n⚠️  Integration applied but verification failed")
+            print("\n[WARN]  Integration applied but verification failed")
     else:
         print("\n❌ Integration patch failed")
 

@@ -503,7 +503,7 @@
             </div>
 
             <div class="control-section" style="margin-top: 25px;">
-                <button class="btn" onclick="optimizeQuantumState()">🔧 Optimize Quantum State</button>
+                <button class="btn" onclick="optimizeQuantumState()">[TOOL] Optimize Quantum State</button>
                 <button class="btn" onclick="resetQuantumMemory()">🔄 Reset Memory Banks</button>
                 <button class="btn" onclick="runQuantumDiagnostics()">🔍 Run Diagnostics</button>
                 <button class="btn" onclick="exportQuantumData()">📊 Export Data</button>
@@ -557,7 +557,7 @@
         // Control functions
         function optimizeQuantumState() {
             socket.emit('quantum_command', { action: 'optimize' });
-            showNotification('🔧 Optimizing quantum state...', 'info');
+            showNotification('[TOOL] Optimizing quantum state...', 'info');
         }
 
         function resetQuantumMemory() {

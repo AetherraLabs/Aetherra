@@ -272,7 +272,7 @@ class ProjectFileMapper:
         for ext, count in sorted_extensions:
             print(f"   {ext}: {count:,}")
 
-        print(f"\n📦 LARGEST FILES:")
+        print(f"\n[DISC] LARGEST FILES:")
         for file_info in self.statistics["largest_files"][:10]:
             print(f"   {file_info['path']} ({file_info['size_mb']} MB)")
 

@@ -54,7 +54,7 @@ class CoderAgentIntegrationTester:
 
     async def _initialize_system(self):
         """Initialize the agent orchestration system"""
-        print("🔧 Initializing agent orchestration system...")
+        print("[TOOL] Initializing agent orchestration system...")
 
         orchestrator_context = {
             "workspace_path": os.getcwd(),
@@ -202,7 +202,7 @@ class CoderAgentIntegrationTester:
 
     async def test_workflow_optimization_tasks(self):
         """Test workflow optimization through agent tasks"""
-        print("\n🔧 Testing Workflow Optimization Tasks...")
+        print("\n[TOOL] Testing Workflow Optimization Tasks...")
 
         base_workflows = [
             """node input input

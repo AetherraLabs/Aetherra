@@ -30,7 +30,7 @@ class EnhancedPluginDemo:
                 print("✅ Enhanced API Server: CONNECTED")
                 return True
             else:
-                print("⚠️ Enhanced API Server: RESPONDING BUT UNHEALTHY")
+                print("[WARN] Enhanced API Server: RESPONDING BUT UNHEALTHY")
                 return False
         except Exception as e:
             print(f"❌ Enhanced API Server: OFFLINE ({e})")
@@ -49,7 +49,7 @@ class EnhancedPluginDemo:
                 summary = data.get("summary", {})
 
                 print(f"✅ Enhanced Capabilities Response:")
-                print(f"   📦 Total Plugins: {summary.get('total_plugins', 0)}")
+                print(f"   [DISC] Total Plugins: {summary.get('total_plugins', 0)}")
                 print(f"   ⭐ High Confidence: {summary.get('high_confidence', 0)}")
 
                 # Show category distribution
@@ -67,7 +67,7 @@ class EnhancedPluginDemo:
                     capabilities = plugin.get("capabilities", [])
                     is_recommended = plugin.get("lyrixa_recommended", False)
 
-                    icon = "🌟" if is_recommended else "📦"
+                    icon = "🌟" if is_recommended else "[DISC]"
                     print(f"   {i}. {icon} {name}")
                     print(f"      Confidence: {confidence:.2f}")
                     print(f"      Category: {category.title()}")
@@ -163,7 +163,7 @@ class EnhancedPluginDemo:
         # Basic info
         print(f"   📂 Category: {top_plugin.get('category', 'unknown').title()}")
         print(f"   📊 Confidence: {top_plugin.get('confidence_score', 0):.2f}")
-        print(f"   🔧 Complexity: {top_plugin.get('complexity_level', 'unknown').title()}")
+        print(f"   [TOOL] Complexity: {top_plugin.get('complexity_level', 'unknown').title()}")
         print(f"   📝 Description: {top_plugin.get('description', 'No description')[:60]}...")
 
         # Capabilities and tags
@@ -179,7 +179,7 @@ class EnhancedPluginDemo:
         functions = top_plugin.get("functions", [])
         line_count = top_plugin.get("line_count", 0)
 
-        print(f"   🔧 Technical Details:")
+        print(f"   [TOOL] Technical Details:")
         print(f"      Functions: {len(functions)}")
         print(f"      Lines of Code: {line_count}")
 

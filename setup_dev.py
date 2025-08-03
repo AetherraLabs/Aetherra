@@ -46,13 +46,13 @@ class AetherraSetup:
         print("🔍 Checking Python version...")
 
         if sys.version_info < (3, 8):
-            print("❌ Error: Python 3.8 or higher is required!")
+            print("[ERROR] Error: Python 3.8 or higher is required!")
             print(f"   Current version: {sys.version}")
             print("   Please upgrade Python and try again.")
             sys.exit(1)
 
         print(
-            f"✅ Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} detected"
+            f"[OK] Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} detected"
         )
 
     def check_git(self):
@@ -64,19 +64,19 @@ class AetherraSetup:
                 ["git", "--version"], capture_output=True, text=True
             )
             if result.returncode == 0:
-                print(f"✅ {result.stdout.strip()}")
+                print(f"[OK] {result.stdout.strip()}")
             else:
-                print("❌ Git not found!")
+                print("[ERROR] Git not found!")
                 return False
         except FileNotFoundError:
-            print("❌ Git not found! Please install Git and try again.")
+            print("[ERROR] Git not found! Please install Git and try again.")
             return False
 
         return True
 
     def create_virtual_environment(self):
         """Create a virtual environment"""
-        print("🔧 Creating virtual environment...")
+        print("[TOOL] Creating virtual environment...")
 
         if self.venv_path.exists():
             print("📁 Virtual environment already exists")
@@ -86,10 +86,10 @@ class AetherraSetup:
             subprocess.run(
                 [sys.executable, "-m", "venv", str(self.venv_path)], check=True
             )
-            print("✅ Virtual environment created successfully")
+            print("[OK] Virtual environment created successfully")
             return True
         except subprocess.CalledProcessError as e:
-            print(f"❌ Failed to create virtual environment: {e}")
+            print(f"[ERROR] Failed to create virtual environment: {e}")
             return False
 
     def get_pip_command(self):
@@ -101,10 +101,10 @@ class AetherraSetup:
 
     def install_dependencies(self):
         """Install project dependencies"""
-        print("📦 Installing dependencies...")
+        print("[DISC] Installing dependencies...")
 
         if not self.requirements_file.exists():
-            print("❌ requirements.txt not found!")
+            print("[ERROR] requirements.txt not found!")
             return False
 
         pip_cmd = self.get_pip_command()
@@ -120,31 +120,31 @@ class AetherraSetup:
                 [pip_cmd, "install", "-r", str(self.requirements_file)], check=True
             )
 
-            print("✅ Dependencies installed successfully")
+            print("[OK] Dependencies installed successfully")
             return True
         except subprocess.CalledProcessError as e:
-            print(f"❌ Failed to install dependencies: {e}")
+            print(f"[ERROR] Failed to install dependencies: {e}")
             return False
 
     def setup_environment_file(self):
         """Set up the .env file from .env.example"""
-        print("🔧 Setting up environment file...")
+        print("[TOOL] Setting up environment file...")
 
         if self.env_file.exists():
             print("📁 .env file already exists")
             return True
 
         if not self.env_example.exists():
-            print("❌ .env.example not found!")
+            print("[ERROR] .env.example not found!")
             return False
 
         try:
             shutil.copy2(self.env_example, self.env_file)
-            print("✅ .env file created from .env.example")
-            print("⚠️  Please edit .env and add your API keys!")
+            print("[OK] .env file created from .env.example")
+            print("[WARN]  Please edit .env and add your API keys!")
             return True
         except Exception as e:
-            print(f"❌ Failed to create .env file: {e}")
+            print(f"[ERROR] Failed to create .env file: {e}")
             return False
 
     def test_installation(self):
@@ -163,10 +163,10 @@ try:
     import flask
     import flask_socketio
     import openai
-    print("✅ Core dependencies imported successfully")
+    print("[OK] Core dependencies imported successfully")
     sys.exit(0)
 except ImportError as e:
-    print(f"❌ Import error: {e}")
+    print(f"[ERROR] Import error: {e}")
     sys.exit(1)
 """
 
@@ -182,7 +182,7 @@ except ImportError as e:
                 print(result.stderr.strip())
                 return False
         except Exception as e:
-            print(f"❌ Test failed: {e}")
+            print(f"[ERROR] Test failed: {e}")
             return False
 
     def print_next_steps(self):
@@ -258,7 +258,7 @@ Happy coding! 🚀✨
             return False
 
         if not self.test_installation():
-            print("⚠️  Installation test failed, but setup may still work")
+            print("[WARN]  Installation test failed, but setup may still work")
 
         self.print_next_steps()
         return True
@@ -271,16 +271,16 @@ def main():
     try:
         success = setup.run_setup()
         if success:
-            print("\n✅ Setup completed successfully!")
+            print("\n[OK] Setup completed successfully!")
             sys.exit(0)
         else:
-            print("\n❌ Setup failed. Please check the errors above.")
+            print("\n[ERROR] Setup failed. Please check the errors above.")
             sys.exit(1)
     except KeyboardInterrupt:
         print("\n\n⏹️  Setup interrupted by user.")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Unexpected error during setup: {e}")
+        print(f"\n[ERROR] Unexpected error during setup: {e}")
         sys.exit(1)
 
 

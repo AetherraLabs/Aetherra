@@ -74,7 +74,7 @@ try:
     GUI_AVAILABLE = True
     print("✅ GUI dependencies loaded successfully")
 except ImportError as e:
-    print(f"⚠️ GUI dependencies not available: {e}")
+    print(f"[WARN] GUI dependencies not available: {e}")
     print("To use GUI mode, install PySide6: pip install PySide6")
     GUI_AVAILABLE = False
 
@@ -83,7 +83,7 @@ try:
     from lyrixa import LyrixaAI
     from lyrixa.intelligence_integration import LyrixaIntelligenceStack
 except ImportError as e:
-    print(f"❌ Failed to import required modules: {e}")
+    print(f"[ERROR] Failed to import required modules: {e}")
     print("Make sure you're running this from the project root directory.")
     sys.exit(1)
 
@@ -1054,7 +1054,7 @@ if GUI_AVAILABLE:
                 if not self.intelligence_stack:
                     self.add_chat_message(
                         "Lyrixa",
-                        "❌ Intelligence stack not initialized",
+                        "[ERROR] Intelligence stack not initialized",
                         is_system=True,
                     )
                     return
@@ -1085,18 +1085,18 @@ if GUI_AVAILABLE:
 ⚙️ System Modules: {module_health:.1f}% ({active_modules}/6 active)
 
 💡 Intelligence Components:
-• Semantic Memory: {"✅" if status["intelligence_layer"]["status"].get("semantic_memory") else "❌"}
-• System Awareness: {"✅" if status["intelligence_layer"]["status"].get("system_awareness") else "❌"}
-• Self Reflection: {"✅" if status["intelligence_layer"]["status"].get("self_reflection") else "❌"}
-• Event Correlation: {"✅" if status["intelligence_layer"]["status"].get("event_correlation") else "❌"}
-• Conversational Integration: {"✅" if status["intelligence_layer"]["status"].get("conversational_integration") else "❌"}
-• Plugin Monitoring: {"✅" if status["intelligence_layer"]["status"].get("plugin_monitoring") else "❌"}"""
+• Semantic Memory: {"✅" if status["intelligence_layer"]["status"].get("semantic_memory") else "[ERROR]"}
+• System Awareness: {"✅" if status["intelligence_layer"]["status"].get("system_awareness") else "[ERROR]"}
+• Self Reflection: {"✅" if status["intelligence_layer"]["status"].get("self_reflection") else "[ERROR]"}
+• Event Correlation: {"✅" if status["intelligence_layer"]["status"].get("event_correlation") else "[ERROR]"}
+• Conversational Integration: {"✅" if status["intelligence_layer"]["status"].get("conversational_integration") else "[ERROR]"}
+• Plugin Monitoring: {"✅" if status["intelligence_layer"]["status"].get("plugin_monitoring") else "[ERROR]"}"""
 
                 self.add_chat_message("Lyrixa", status_report)
 
             except Exception as e:
                 self.add_chat_message(
-                    "Lyrixa", f"❌ Failed to get intelligence status: {e}"
+                    "Lyrixa", f"[ERROR] Failed to get intelligence status: {e}"
                 )
 
         def handle_run_workflow(self, workflow_name):
@@ -1124,7 +1124,7 @@ if GUI_AVAILABLE:
             try:
                 if not self.intelligence_stack:
                     self.add_chat_message(
-                        "Lyrixa", "❌ Intelligence stack not initialized"
+                        "Lyrixa", "[ERROR] Intelligence stack not initialized"
                     )
                     return
 
@@ -1145,7 +1145,7 @@ if GUI_AVAILABLE:
 
             except Exception as e:
                 self.add_chat_message(
-                    "Lyrixa", f"❌ Failed to get intelligence health: {e}"
+                    "Lyrixa", f"[ERROR] Failed to get intelligence health: {e}"
                 )
 
         async def initialize_lyrixa(self):
@@ -1225,14 +1225,14 @@ if GUI_AVAILABLE:
             except asyncio.TimeoutError as e:
                 error_msg = f"⏱️ Initialization timed out: {str(e)}"
                 print(error_msg)
-                self.status_bar.showMessage("❌ Initialization timed out")
+                self.status_bar.showMessage("[ERROR] Initialization timed out")
                 self.add_chat_message("System", error_msg, is_system=True)
             except Exception as e:
-                error_msg = f"❌ Initialization failed: {str(e)}"
+                error_msg = f"[ERROR] Initialization failed: {str(e)}"
                 print(error_msg)
-                self.status_bar.showMessage(f"❌ Initialization failed: {str(e)}")
+                self.status_bar.showMessage(f"[ERROR] Initialization failed: {str(e)}")
                 self.add_chat_message(
-                    "System", f"⚠️ Initialization error: {str(e)}", is_system=True
+                    "System", f"[WARN] Initialization error: {str(e)}", is_system=True
                 )
 
         async def update_intelligence_dashboard(self):
@@ -1284,7 +1284,7 @@ if GUI_AVAILABLE:
                 )
 
             except Exception as e:
-                print(f"❌ Failed to update intelligence dashboard: {e}")
+                print(f"[ERROR] Failed to update intelligence dashboard: {e}")
 
         async def run_intelligence_workflow(self, workflow_name: str):
             """Run a specific intelligence workflow"""
@@ -1292,7 +1292,7 @@ if GUI_AVAILABLE:
                 if not self.intelligence_stack:
                     self.add_chat_message(
                         "System",
-                        "❌ Intelligence stack not initialized",
+                        "[ERROR] Intelligence stack not initialized",
                         is_system=True,
                     )
                     return
@@ -1314,13 +1314,13 @@ if GUI_AVAILABLE:
                     error_message = result.get("error", "Unknown error")
                     self.add_chat_message(
                         "System",
-                        f"❌ Workflow '{workflow_name}' failed: {error_message}",
+                        f"[ERROR] Workflow '{workflow_name}' failed: {error_message}",
                         is_system=True,
                     )
 
             except Exception as e:
                 self.add_chat_message(
-                    "System", f"❌ Failed to run workflow: {e}", is_system=True
+                    "System", f"[ERROR] Failed to run workflow: {e}", is_system=True
                 )
 
         async def perform_system_reflection(self):
@@ -1329,7 +1329,7 @@ if GUI_AVAILABLE:
                 if not self.intelligence_stack:
                     self.add_chat_message(
                         "System",
-                        "❌ Intelligence stack not initialized",
+                        "[ERROR] Intelligence stack not initialized",
                         is_system=True,
                     )
                     return
@@ -1352,14 +1352,14 @@ if GUI_AVAILABLE:
                     error_message = reflection_result.get("error", "Unknown error")
                     self.add_chat_message(
                         "System",
-                        f"❌ System reflection failed: {error_message}",
+                        f"[ERROR] System reflection failed: {error_message}",
                         is_system=True,
                     )
 
             except Exception as e:
                 self.add_chat_message(
                     "System",
-                    f"❌ Failed to perform system reflection: {e}",
+                    f"[ERROR] Failed to perform system reflection: {e}",
                     is_system=True,
                 )
 
@@ -1367,7 +1367,7 @@ if GUI_AVAILABLE:
 def run_gui():
     """Run the GUI version of Lyrixa"""
     if not GUI_AVAILABLE:
-        print("❌ GUI dependencies not available. Please install PySide6:")
+        print("[ERROR] GUI dependencies not available. Please install PySide6:")
         print("pip install PySide6")
         return False
 
@@ -1401,7 +1401,7 @@ def run_gui():
 def main():
     """Main entry point for Lyrixa AI Assistant"""
     if not GUI_AVAILABLE:
-        print("❌ GUI dependencies not available. Please install PySide6:")
+        print("[ERROR] GUI dependencies not available. Please install PySide6:")
         print("pip install PySide6")
         return
 
@@ -1410,7 +1410,7 @@ def main():
 
 if __name__ == "__main__":
     if not GUI_AVAILABLE:
-        print("❌ GUI dependencies not available. Please install PySide6:")
+        print("[ERROR] GUI dependencies not available. Please install PySide6:")
         print("pip install PySide6")
         print("Run: pip install PySide6")
         sys.exit(1)

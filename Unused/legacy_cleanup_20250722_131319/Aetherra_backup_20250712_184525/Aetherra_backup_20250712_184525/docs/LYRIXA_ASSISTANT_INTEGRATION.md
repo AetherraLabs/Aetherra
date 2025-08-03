@@ -2,7 +2,7 @@
 
 ## ✅ INTEGRATION STATUS: COMPLETE
 
-### 🔧 Changes Made:
+### [TOOL] Changes Made:
 
 #### **1. Enhanced aetherChat for Embedding**
 - Added `get_embeddable_widget()` method to return the tab widget for embedding

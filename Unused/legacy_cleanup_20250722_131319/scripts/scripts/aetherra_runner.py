@@ -29,7 +29,7 @@ try:
     from core.aetherra_memory import AetherraMemory
     # Note: PluginManager is not a class but a collection of functions
 except ImportError as e:
-    print(f"⚠️ Some AetherraCode components not available: {e}")
+    print(f"[WARN] Some AetherraCode components not available: {e}")
 
 
 class AetherraCodeFileRunner:
@@ -57,14 +57,14 @@ class AetherraCodeFileRunner:
             if self.verbose:
                 print("✅ AetherraCode interpreter initialized")
         except Exception as e:
-            print(f"⚠️ Interpreter initialization warning: {e}")
+            print(f"[WARN] Interpreter initialization warning: {e}")
 
         try:
             self.memory = AetherraMemory()
             if self.verbose:
                 print("✅ Memory system initialized")
         except Exception as e:
-            print(f"⚠️ Memory system warning: {e}")
+            print(f"[WARN] Memory system warning: {e}")
 
         try:
             self.plugin_manager = (
@@ -73,7 +73,7 @@ class AetherraCodeFileRunner:
             if self.verbose:
                 print("✅ Plugin functions available")
         except Exception as e:
-            print(f"⚠️ Plugin manager warning: {e}")
+            print(f"[WARN] Plugin manager warning: {e}")
 
     def run_file(self, file_path: str) -> Dict[str, Any]:
         """
@@ -152,10 +152,10 @@ class AetherraCodeFileRunner:
                 self.execution_stats["errors"] += 1
 
                 if self.verbose:
-                    print(f"❌ [L{line_num}] {line}")
+                    print(f"[ERROR] [L{line_num}] {line}")
                     print(f"     Error: {e}")
                 else:
-                    print(f"❌ {error_msg}")
+                    print(f"[ERROR] {error_msg}")
 
         # Update final stats
         results["stats"] = self.execution_stats.copy()
@@ -350,7 +350,7 @@ class AetherraCodeFileRunner:
     def _handle_suggest_fix(self, line: str) -> str:
         """Handle suggest fix commands"""
         issue = line.split("suggest fix for")[1].strip().strip('"')
-        return f"🔧 Suggesting fix for: {issue}"
+        return f"[TOOL] Suggesting fix for: {issue}"
 
     def _handle_detect_patterns(self) -> str:
         """Handle pattern detection"""
@@ -369,7 +369,7 @@ class AetherraCodeFileRunner:
         print("=" * 50)
 
         stats = results["stats"]
-        success_icon = "✅" if results["success"] else "❌"
+        success_icon = "✅" if results["success"] else "[ERROR]"
 
         print(f"{success_icon} Status: {'SUCCESS' if results['success'] else 'FAILED'}")
         print(f"📊 Lines executed: {stats['lines_executed']}")
@@ -377,12 +377,12 @@ class AetherraCodeFileRunner:
         print(f"⚙️ Functions defined: {stats['functions_defined']}")
 
         if stats["errors"] > 0:
-            print(f"❌ Errors: {stats['errors']}")
+            print(f"[ERROR] Errors: {stats['errors']}")
             for error in results["errors"]:
                 print(f"   • {error}")
 
         if stats["warnings"] > 0:
-            print(f"⚠️ Warnings: {stats['warnings']}")
+            print(f"[WARN] Warnings: {stats['warnings']}")
 
         print("\\n🎉 AetherraCode execution complete!")
 
@@ -431,13 +431,13 @@ This enables the vision of: aetherplex run monitor.aether
         sys.exit(0 if results["success"] else 1)
 
     except FileNotFoundError as e:
-        print(f"❌ File not found: {e}")
+        print(f"[ERROR] File not found: {e}")
         sys.exit(1)
     except ValueError as e:
-        print(f"❌ Invalid file: {e}")
+        print(f"[ERROR] Invalid file: {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ Execution failed: {e}")
+        print(f"[ERROR] Execution failed: {e}")
         if args.verbose:
             traceback.print_exc()
         sys.exit(1)

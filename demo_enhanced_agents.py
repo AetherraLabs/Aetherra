@@ -31,7 +31,7 @@ async def demo_data_agent():
     print("\n🔍 === DATA AGENT DEMONSTRATION ===")
 
     agent = DataAgent()
-    print(f"✅ {agent.name} initialized")
+    print(f"[OK] {agent.name} initialized")
     print(f"📋 Capabilities: {', '.join(agent.capabilities)}")
 
     # Test data analysis
@@ -47,7 +47,7 @@ async def demo_data_agent():
     result = await agent.process_request({"type": "analyze", "data": test_data})
 
     if result["success"]:
-        print("✅ Data analysis completed successfully!")
+        print("[OK] Data analysis completed successfully!")
         print(f"   📈 Processing time: {result['processing_time']:.2f}s")
         print(f"   🎯 Data quality: {result['data_summary']['completeness']:.1%}")
         for insight in result["insights"][:2]:
@@ -60,7 +60,7 @@ async def demo_data_agent():
     )
 
     if pattern_result["success"]:
-        print("✅ Pattern detection completed!")
+        print("[OK] Pattern detection completed!")
         print(f"   🎯 Pattern strength: {pattern_result['pattern_strength']:.1%}")
         print(f"   📋 Patterns found: {len(pattern_result['patterns_found'])}")
 
@@ -70,17 +70,17 @@ async def demo_technical_agent():
     print("\n🛠️ === TECHNICAL AGENT DEMONSTRATION ===")
 
     agent = TechnicalAgent()
-    print(f"✅ {agent.name} initialized")
+    print(f"[OK] {agent.name} initialized")
     print(f"📋 Capabilities: {', '.join(agent.capabilities)}")
 
     # Test system diagnostics
-    print("\n🔧 Testing system diagnostics...")
+    print("\n[TOOL] Testing system diagnostics...")
     result = await agent.process_request(
         {"type": "diagnose", "context": {"system": "aetherra_core"}}
     )
 
     if result["success"]:
-        print("✅ System diagnostics completed!")
+        print("[OK] System diagnostics completed!")
         print(f"   🖥️ Platform: {result['system_info']['platform']}")
         print(f"   🐍 Python: {result['system_info']['python_version']}")
         print(f"   📊 Health score: {result['components_status'][0]['health']}/100")
@@ -92,7 +92,7 @@ async def demo_technical_agent():
     )
 
     if perf_result["success"]:
-        print("✅ Performance analysis completed!")
+        print("[OK] Performance analysis completed!")
         print(f"   📈 Performance score: {perf_result['performance_score']}/100")
         print(
             f"   ⚡ Response time: {perf_result['metrics']['response_time']['average']}"
@@ -104,7 +104,7 @@ async def demo_support_agent():
     print("\n👥 === SUPPORT AGENT DEMONSTRATION ===")
 
     agent = SupportAgent()
-    print(f"✅ {agent.name} initialized")
+    print(f"[OK] {agent.name} initialized")
     print(f"📋 Capabilities: {', '.join(agent.capabilities)}")
     print(f"📚 Knowledge base entries: {len(agent.knowledge_base)}")
 
@@ -119,7 +119,7 @@ async def demo_support_agent():
     )
 
     if result["success"]:
-        print("✅ User assistance provided!")
+        print("[OK] User assistance provided!")
         print(f"   🎯 Intent detected: {result['query_analysis']['intent']}")
         print(f"   📋 Category: {result['query_analysis']['category']}")
         print(f"   💬 Response: {result['response']}")
@@ -131,7 +131,7 @@ async def demo_support_agent():
     )
 
     if faq_result["success"]:
-        print("✅ FAQ response generated!")
+        print("[OK] FAQ response generated!")
         print(f"   🎯 Confidence: {faq_result['confidence']:.1%}")
         if faq_result["faq_match"]:
             print(f"   📝 Match found: {faq_result['faq_match']['question']}")
@@ -142,7 +142,7 @@ async def demo_security_agent():
     print("\n🔒 === SECURITY AGENT DEMONSTRATION ===")
 
     agent = SecurityAgent()
-    print(f"✅ {agent.name} initialized")
+    print(f"[OK] {agent.name} initialized")
     print(f"📋 Capabilities: {', '.join(agent.capabilities)}")
     print(f"🚨 Active alerts: {len(agent.security_alerts)}")
 
@@ -153,7 +153,7 @@ async def demo_security_agent():
     )
 
     if result["success"]:
-        print("✅ Security monitoring completed!")
+        print("[OK] Security monitoring completed!")
         print(
             f"   🛡️ Security level: {result['security_status']['overall_security_level']}"
         )
@@ -169,7 +169,7 @@ async def demo_security_agent():
     )
 
     if scan_result["success"]:
-        print("✅ Vulnerability scan completed!")
+        print("[OK] Vulnerability scan completed!")
         print(f"   🔍 Total checks: {scan_result['scan_summary']['total_checks']}")
         print(
             f"   🚨 Vulnerabilities: {scan_result['scan_summary']['vulnerabilities_found']}"
@@ -187,7 +187,7 @@ async def demo_agent_coordination():
     support_agent = SupportAgent()
     security_agent = SecurityAgent()
 
-    print("✅ All enhanced agents initialized")
+    print("[OK] All enhanced agents initialized")
 
     # Simulate a coordinated response scenario
     print("\n📋 Scenario: User reports performance issues with data analysis")
@@ -240,7 +240,7 @@ async def demo_agent_coordination():
     if data_response["success"]:
         print(f"   🔍 Data: {data_response['pattern_strength']:.1%} pattern confidence")
 
-    print("✅ All agents provided coordinated analysis!")
+    print("[OK] All agents provided coordinated analysis!")
 
 
 async def main():
@@ -266,7 +266,7 @@ async def main():
 
         # Summary
         total_time = time.time() - start_time
-        print(f"\n✅ DEMONSTRATION COMPLETE")
+        print(f"\n[OK] DEMONSTRATION COMPLETE")
         print(f"⏱️ Total execution time: {total_time:.2f} seconds")
         print(f"🤖 All 4 enhanced agents tested successfully!")
         print(f"🎯 Agents are ready for integration with Aetherra AI OS")

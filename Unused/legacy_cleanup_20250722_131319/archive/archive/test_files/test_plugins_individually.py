@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧 QUICK FIX FOR FLAGSHIP FEATURES
+[TOOL] QUICK FIX FOR FLAGSHIP FEATURES
 ==================================
 
 Quick fix for the string formatting issues in the flagship plugins demo.
@@ -17,7 +17,7 @@ sys.path.insert(0, str(project_root))
 def test_individual_plugins():
     """Test each plugin individually to identify issues."""
 
-    print("🔧 Testing Workflow Builder Plugin...")
+    print("[TOOL] Testing Workflow Builder Plugin...")
     try:
         from lyrixa.plugins.workflow_builder_plugin import WorkflowBuilderPlugin
 

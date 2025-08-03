@@ -8,7 +8,7 @@ and context-aware dialogue capabilities for Aetherra AI OS.
 
 ROADMAP ITEM #7: Enhanced Conversational AI
 - Multi-Turn Conversation Memory
-- Intent-to-Code Translation  
+- Intent-to-Code Translation
 - Context-Aware Dialogue Management
 - Thread-Aware Session Continuity
 - Personality Persistence & Auto-Selection
@@ -83,7 +83,7 @@ class ConversationTurn:
 class LyrixaEnhancedConversationManager:
     """
     🧠 Enhanced Lyrixa Conversation Manager - Roadmap Item #7
-    
+
     Advanced conversational AI with multi-turn memory, intent translation,
     and sophisticated context management capabilities.
     """
@@ -92,29 +92,29 @@ class LyrixaEnhancedConversationManager:
         # Core systems
         self.memory_engine = memory_engine
         self.analytics_engine = analytics_engine
-        
+
         # Enhanced conversation state
         self.conversation_threads = {}  # thread_id -> List[ConversationTurn]
         self.active_sessions = {}  # session_id -> ConversationContext
         self.user_personalities = {}  # user_id -> preferred personality
         self.conversation_summaries = {}  # session_id -> summary
-        
+
         # Configuration
         self.context_window_size = 100  # Increased for better memory
         self.max_thread_length = 50
         self.intent_confidence_threshold = 0.7
         self.code_generation_enabled = True
         self.memory_integration_enabled = bool(memory_engine)
-        
+
         # Performance tracking
         self.is_available = True
         self.total_conversations = 0
         self.successful_intent_translations = 0
         self.code_generations = 0
-        
+
         # Intent patterns for natural language processing
         self.intent_patterns = self._initialize_intent_patterns()
-        
+
         logger.info("🧠 Enhanced LyrixaConversationManager (#7) initialized with multi-turn memory support")
 
     def _initialize_intent_patterns(self) -> Dict[str, List[str]]:
@@ -175,7 +175,7 @@ class LyrixaEnhancedConversationManager:
         self, message: str, user_id: str = "default", context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Enhanced message processing with multi-turn memory and intent analysis"""
-        
+
         if context is None:
             context = {}
 
@@ -267,12 +267,12 @@ class LyrixaEnhancedConversationManager:
         for intent_name, patterns in self.intent_patterns.items():
             score = 0.0
             matched_patterns = []
-            
+
             for pattern in patterns:
                 if re.search(pattern, message_lower):
                     score += 1.0
                     matched_patterns.append(pattern)
-            
+
             if score > 0:
                 intent_scores[intent_name] = {
                     "score": score / len(patterns),  # Normalize by pattern count
@@ -282,11 +282,11 @@ class LyrixaEnhancedConversationManager:
         # Determine primary intent
         primary_intent = None
         max_score = 0.0
-        
+
         if intent_scores:
             primary_intent_name = max(intent_scores.keys(), key=lambda k: intent_scores[k]["score"])
             max_score = intent_scores[primary_intent_name]["score"]
-            
+
             if max_score >= self.intent_confidence_threshold:
                 try:
                     primary_intent = IntentType(primary_intent_name)
@@ -324,7 +324,7 @@ class LyrixaEnhancedConversationManager:
             return ConversationType.MEMORY_QUERY
         elif intent == IntentType.EXECUTE_TASK:
             return ConversationType.SYSTEM_COMMAND
-        
+
         # Fallback classification
         message_lower = message.lower()
         if any(word in message_lower for word in ["?", "what", "how", "why", "when", "where"]):
@@ -342,7 +342,7 @@ class LyrixaEnhancedConversationManager:
 
         # Context-aware personality selection
         intent = intent_analysis.get("intent")
-        
+
         if intent in [IntentType.CREATE_CODE, IntentType.DEBUG_ISSUE]:
             return "developer"
         elif intent == IntentType.LEARN_TOPIC:
@@ -372,13 +372,13 @@ class LyrixaEnhancedConversationManager:
     def _extract_topic(self, message: str) -> Optional[str]:
         """Extract main topic from message"""
         message_lower = message.lower()
-        
+
         # Programming topics
         programming_topics = ["python", "javascript", "react", "django", "flask", "api", "database", "sql", "html", "css"]
         for topic in programming_topics:
             if topic in message_lower:
                 return topic
-        
+
         # General topics
         if "machine learning" in message_lower or "ml" in message_lower:
             return "machine_learning"
@@ -388,37 +388,37 @@ class LyrixaEnhancedConversationManager:
             return "web_development"
         elif "data science" in message_lower:
             return "data_science"
-        
+
         return None
 
     def _assess_followup_need(self, message: str, intent_scores: Dict[str, Any]) -> bool:
         """Determine if conversation likely needs followup"""
         message_lower = message.lower()
-        
+
         # Questions typically need followup
         if any(word in message_lower for word in ["?", "what", "how", "why", "explain"]):
             return True
-        
+
         # Complex requests need followup
         if any(intent in intent_scores for intent in ["create_code", "debug_issue", "manage_project"]):
             return True
-        
+
         # Learning requests need followup
         if any(word in message_lower for word in ["learn", "tutorial", "guide", "teach"]):
             return True
-        
+
         return False
 
     def _get_conversation_history(self, session_id: str, thread_id: str) -> List[ConversationTurn]:
         """Retrieve conversation history for a specific thread"""
         if session_id not in self.conversation_threads:
             return []
-        
+
         thread_history = []
         for turn in self.conversation_threads[session_id]:
             if turn.context.thread_id == thread_id:
                 thread_history.append(turn)
-        
+
         return thread_history[-self.context_window_size:]
 
     async def _retrieve_memory_context(
@@ -442,7 +442,7 @@ class LyrixaEnhancedConversationManager:
                     },
                     limit=5
                 )
-            
+
             return {
                 "memories": memory_results,
                 "memory_count": len(memory_results),
@@ -450,7 +450,7 @@ class LyrixaEnhancedConversationManager:
                 "memory_confidence": sum(m.get("confidence", 0.0) for m in memory_results) / len(memory_results) if memory_results else 0.0
             }
         except Exception as e:
-            logger.warning(f"⚠️ Memory retrieval failed: {e}")
+            logger.warning(f"[WARN] Memory retrieval failed: {e}")
             return {}
 
     async def _generate_enhanced_response(
@@ -461,10 +461,10 @@ class LyrixaEnhancedConversationManager:
         memory_context: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Generate enhanced response using all available context"""
-        
+
         # Build context for response generation
         context_prompt = self._build_context_prompt(conv_context, conversation_history, memory_context)
-        
+
         # Check for OpenAI API availability
         if os.getenv("OPENAI_API_KEY"):
             try:
@@ -492,7 +492,7 @@ class LyrixaEnhancedConversationManager:
 Provide helpful, contextual responses that:
 1. Reference relevant conversation history when appropriate
 2. Use memory context to provide continuity
-3. Match the personality mode and user's expertise level  
+3. Match the personality mode and user's expertise level
 4. Address the specific intent with appropriate depth
 5. Suggest follow-up actions if the request requires it"""
 
@@ -542,7 +542,7 @@ Provide helpful, contextual responses that:
         context_parts.append(f"- Session: {conv_context.session_id}")
         context_parts.append(f"- User: {conv_context.user_id}")
         context_parts.append(f"- Thread: {conv_context.thread_id}")
-        
+
         # Conversation continuity
         if conversation_history:
             context_parts.append("\n**Conversation Continuity:**")
@@ -572,24 +572,24 @@ Provide helpful, contextual responses that:
         memory_context: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Generate enhanced fallback response with context awareness"""
-        
+
         message_lower = message.lower()
         response_parts = []
 
         # Greeting detection with context
         if any(word in message_lower for word in ["hello", "hi", "hey", "greetings"]):
             response_parts.append("Hello! I'm Lyrixa, your enhanced AI assistant with multi-turn conversation memory.")
-            
+
             if conversation_history:
                 last_topic = conversation_history[-1].context.topic
                 response_parts.append(f"I see we've been discussing {last_topic or 'various topics'} in our previous conversation.")
-            
+
             if memory_context.get("memories"):
                 response_parts.append("I have access to our conversation history and can maintain context across sessions.")
 
         # Intent-specific enhanced responses
         elif conv_context.intent == IntentType.CREATE_CODE:
-            response_parts.append("🔧 I'd be happy to help you create code with intent-to-code translation!")
+            response_parts.append("[TOOL] I'd be happy to help you create code with intent-to-code translation!")
             if conv_context.topic:
                 response_parts.append(f"I can see you're working with {conv_context.topic}.")
             response_parts.append("Please provide more details about what you'd like to build, and I'll generate appropriate code.")
@@ -613,16 +613,16 @@ Provide helpful, contextual responses that:
         # General enhanced fallback
         else:
             response_parts.append(f"I understand you said: '{message[:100]}{'...' if len(message) > 100 else ''}'")
-            
+
             if conv_context.urgency_level > 3:
                 response_parts.append("⚡ I can see this is important - I'll prioritize helping you with this!")
-            
+
             response_parts.append("🚀 I'm running in enhanced mode with:")
             response_parts.append("• Multi-turn conversation memory")
             response_parts.append("• Intent-to-code translation")
             response_parts.append("• Context-aware personality adaptation")
             response_parts.append("• Thread-aware session continuity")
-            
+
             if conv_context.requires_followup:
                 response_parts.append("\n💬 This seems like it might need follow-up discussion. I'm ready to continue our conversation!")
 
@@ -640,7 +640,7 @@ Provide helpful, contextual responses that:
             return None
 
         message_lower = message.lower()
-        
+
         # Enhanced code generation patterns
         if "function" in message_lower and "fibonacci" in message_lower:
             return '''def fibonacci(n):
@@ -649,12 +649,12 @@ Provide helpful, contextual responses that:
         return 0
     elif n == 1:
         return 1
-    
+
     # Dynamic programming approach for efficiency
     dp = [0, 1]
     for i in range(2, n + 1):
         dp.append(dp[i-1] + dp[i-2])
-    
+
     return dp[n]
 
 # Example usage with enhanced error handling
@@ -681,28 +681,28 @@ class Person:
     age: int
     email: Optional[str] = None
     created_at: datetime = None
-    
+
     def __post_init__(self):
         if self.created_at is None:
             self.created_at = datetime.now()
-        
+
         # Validation
         if self.age < 0:
             raise ValueError("Age cannot be negative")
         if len(self.name.strip()) == 0:
             raise ValueError("Name cannot be empty")
-    
+
     def greet(self) -> str:
         """Generate a personalized greeting"""
         greeting = f"Hello, I'm {self.name} and I'm {self.age} years old."
         if self.email:
             greeting += f" You can reach me at {self.email}."
         return greeting
-    
+
     def is_adult(self) -> bool:
         """Check if person is an adult (18+)"""
         return self.age >= 18
-    
+
     def __str__(self) -> str:
         return f"Person(name='{self.name}', age={self.age}, email='{self.email}')"
 
@@ -748,11 +748,11 @@ def create_user():
     """Create a new user"""
     try:
         data = request.get_json()
-        
+
         # Validation
         if not data or 'name' not in data or 'email' not in data:
             return jsonify({"error": "Name and email are required"}), 400
-        
+
         # Create user
         user_id = str(uuid.uuid4())
         user = {
@@ -761,14 +761,14 @@ def create_user():
             "email": data['email'],
             "created_at": datetime.now().isoformat()
         }
-        
+
         users[user_id] = user
-        
+
         return jsonify({
             "message": "User created successfully",
             "user": user
         }), 201
-        
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -777,7 +777,7 @@ def get_user(user_id):
     """Get specific user by ID"""
     if user_id not in users:
         return jsonify({"error": "User not found"}), 404
-    
+
     return jsonify(users[user_id])
 
 @app.errorhandler(404)
@@ -797,9 +797,9 @@ if __name__ == '__main__':
             session_id = turn.context.session_id
             if session_id not in self.conversation_threads:
                 self.conversation_threads[session_id] = []
-            
+
             self.conversation_threads[session_id].append(turn)
-            
+
             # Maintain thread size limits
             if len(self.conversation_threads[session_id]) > self.max_thread_length:
                 self.conversation_threads[session_id] = self.conversation_threads[session_id][-self.max_thread_length:]
@@ -818,7 +818,7 @@ if __name__ == '__main__':
             return True
 
         except Exception as e:
-            logger.error(f"❌ Error storing conversation turn: {e}")
+            logger.error(f"[ERROR] Error storing conversation turn: {e}")
             return False
 
     async def _update_analytics(self, turn: ConversationTurn, response: Dict[str, Any]) -> None:
@@ -845,7 +845,7 @@ if __name__ == '__main__':
             logger.debug(f"📊 Analytics updated for turn: {turn.turn_id}")
 
         except Exception as e:
-            logger.warning(f"⚠️ Analytics update failed: {e}")
+            logger.warning(f"[WARN] Analytics update failed: {e}")
 
     # Enhanced convenience methods
     def set_user_personality(self, user_id: str, personality: str) -> None:
@@ -860,7 +860,7 @@ if __name__ == '__main__':
     def get_thread_summary(self, session_id: str, thread_id: str) -> Dict[str, Any]:
         """Get summary of a specific conversation thread"""
         thread_history = self._get_conversation_history(session_id, thread_id)
-        
+
         if not thread_history:
             return {"error": "No conversation history found"}
 
@@ -869,7 +869,7 @@ if __name__ == '__main__':
         intents = [turn.context.intent.value for turn in thread_history if turn.context.intent]
         topics = [turn.context.topic for turn in thread_history if turn.context.topic]
         code_generations = sum(1 for turn in thread_history if turn.generated_code)
-        
+
         return {
             "thread_id": thread_id,
             "session_id": session_id,
@@ -885,7 +885,7 @@ if __name__ == '__main__':
     def get_enhanced_stats(self) -> Dict[str, Any]:
         """Get comprehensive conversation statistics"""
         total_turns = sum(len(turns) for turns in self.conversation_threads.values())
-        
+
         return {
             "total_conversations": self.total_conversations,
             "total_turns": total_turns,
@@ -913,7 +913,7 @@ if __name__ == '__main__':
                 import concurrent.futures
                 with concurrent.futures.ThreadPoolExecutor() as executor:
                     future = executor.submit(
-                        asyncio.run, 
+                        asyncio.run,
                         self.process_enhanced_message(message, user_id, context)
                     )
                     return future.result()
@@ -937,11 +937,11 @@ def get_conversation_manager(memory_engine=None) -> LyrixaEnhancedConversationMa
 
 
 __all__ = [
-    "LyrixaEnhancedConversationManager", 
-    "get_enhanced_conversation_manager", 
+    "LyrixaEnhancedConversationManager",
+    "get_enhanced_conversation_manager",
     "get_conversation_manager",
     "ConversationType",
-    "IntentType", 
+    "IntentType",
     "ConversationContext",
     "ConversationTurn"
 ]

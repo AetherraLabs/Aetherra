@@ -37,7 +37,7 @@ def test_integration():
         elif hasattr(memory_tab, 'search_memories'):
             print("✅ Memory tab uses lightweight memory core!")
         else:
-            print("⚠️  Memory tab uses fallback implementation")
+            print("[WARN]  Memory tab uses fallback implementation")
 
         print("✅ Testing goal tab creation...")
         goal_tab = window.create_goal_tab()
@@ -48,18 +48,18 @@ def test_integration():
         elif hasattr(goal_tab, 'goal_tracker'):
             print("✅ Goal tab uses lightweight goal tracker!")
         else:
-            print("⚠️  Goal tab uses fallback implementation")
+            print("[WARN]  Goal tab uses fallback implementation")
 
         print("✅ Integration test complete!")
 
         return True
 
     except Exception as e:
-        print(f"❌ Integration test failed: {e}")
+        print(f"[ERROR] Integration test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
 
 if __name__ == "__main__":
     success = test_integration()
-    print(f"\n{'✅ SUCCESS' if success else '❌ FAILED'}")
+    print(f"\n{'✅ SUCCESS' if success else '[ERROR] FAILED'}")

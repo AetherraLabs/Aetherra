@@ -79,7 +79,7 @@ def show_modular_status():
             else:
                 print(f"❌ {name:25} | Not found: {path}")
         except Exception as e:
-            print(f"⚠️ {name:25} | Check failed: {e}")
+            print(f"[WARN] {name:25} | Check failed: {e}")
 
     print("\n🎯 RECOMMENDATION: Keep the modular design as-is!")
     print("   Each component works independently and connects when needed.")

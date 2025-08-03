@@ -19,7 +19,7 @@ sys.path.insert(0, str(project_root))
 try:
     from lyrixa.core.enhanced_memory import LyrixaEnhancedMemorySystem
 except ImportError:
-    print("⚠️ Could not import LyrixaEnhancedMemorySystem")
+    print("[WARN] Could not import LyrixaEnhancedMemorySystem")
     sys.exit(1)
 
 
@@ -45,7 +45,7 @@ class MemorySystemPluginChainCleaner:
             self.memory_system = LyrixaEnhancedMemorySystem(memory_db_path=db_path)
             print(f"✅ Memory system initialized with database: {db_path}")
         except Exception as e:
-            print(f"❌ Failed to initialize memory system: {e}")
+            print(f"[ERROR] Failed to initialize memory system: {e}")
             return False
         return True
 
@@ -90,7 +90,7 @@ class MemorySystemPluginChainCleaner:
 
                     if missing_fields:
                         print(
-                            f"   ❌ Corrupted chain found (ID: {memory_id}): Missing {', '.join(missing_fields)}"
+                            f"   [ERROR] Corrupted chain found (ID: {memory_id}): Missing {', '.join(missing_fields)}"
                         )
                         if memory_id:
                             corrupted_ids.append(memory_id)
@@ -99,7 +99,7 @@ class MemorySystemPluginChainCleaner:
                             f"   ✅ Valid chain found: {chain_data.get('name', 'Unknown')}"
                         )
                 else:
-                    print(f"   ❌ Invalid chain data format (ID: {memory_id})")
+                    print(f"   [ERROR] Invalid chain data format (ID: {memory_id})")
                     if memory_id:
                         corrupted_ids.append(memory_id)
 
@@ -110,7 +110,7 @@ class MemorySystemPluginChainCleaner:
                     self.cleaned_count += 1
                     print(f"   🗑️ Deleted corrupted chain: {memory_id}")
                 except Exception as e:
-                    print(f"   ⚠️ Failed to delete {memory_id}: {e}")
+                    print(f"   [WARN] Failed to delete {memory_id}: {e}")
 
             print("\n📊 Summary:")
             print(f"   🔍 Plugin chains checked: {len(chain_memories)}")
@@ -122,7 +122,7 @@ class MemorySystemPluginChainCleaner:
                 print("📝 No corrupted plugin chains found in memory.")
 
         except Exception as e:
-            print(f"❌ Error during cleanup: {e}")
+            print(f"[ERROR] Error during cleanup: {e}")
 
 
 async def main():

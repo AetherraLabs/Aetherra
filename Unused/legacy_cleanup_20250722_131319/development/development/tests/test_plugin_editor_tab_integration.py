@@ -99,7 +99,7 @@ def test_plugin_editor_tab():
         return True
 
     except Exception as e:
-        print(f"❌ Plugin Editor Tab Integration Test Failed: {e}")
+        print(f"[ERROR] Plugin Editor Tab Integration Test Failed: {e}")
         import traceback
 
         traceback.print_exc()

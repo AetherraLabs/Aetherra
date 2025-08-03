@@ -179,7 +179,7 @@ class StandaloneMemoryDemo:
             await self.store_conversation(message, response)
             await asyncio.sleep(0.1)
 
-        print(f"   ✅ Stored {len(initial_conversations)} initial conversations")
+        print(f"   [OK] Stored {len(initial_conversations)} initial conversations")
 
         # Phase 2: Memory-enhanced conversations
         print("\n💬 Phase 2: Memory-Enhanced Conversations")
@@ -259,7 +259,7 @@ class StandaloneMemoryDemo:
 
         print("\n🎉 MEMORY DEMONSTRATION COMPLETE!")
         print("=" * 60)
-        print("✅ Advanced Memory Systems successfully demonstrated")
+        print("[OK] Advanced Memory Systems successfully demonstrated")
         print("🧠 Memory storage, recall, and enhancement working perfectly")
         print("🚀 Ready for integration with full Aetherra AI OS")
 

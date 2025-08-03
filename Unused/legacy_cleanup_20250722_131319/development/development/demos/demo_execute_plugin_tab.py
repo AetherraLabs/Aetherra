@@ -124,7 +124,7 @@ def demo_execute_plugin_tab():
         print("   - Real-time plugin communication")
 
         # Test the input components
-        print("\n🔧 Component Testing:")
+        print("\n[TOOL] Component Testing:")
         print(f"   📝 Path Input: {window.exec_path.placeholderText()}")
         print(
             f"   🖥️ Console Output: {'Read-only' if window.exec_output.isReadOnly() else 'Editable'}"

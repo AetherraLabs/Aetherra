@@ -211,7 +211,7 @@ class SocialLearningDemo:
 
         except Exception as e:
             processing_time = (datetime.now() - start_time).total_seconds() * 1000
-            print(f"⚠️ Error in scenario: {e}")
+            print(f"[WARN] Error in scenario: {e}")
 
             return {
                 "scenario_name": scenario["name"],
@@ -421,7 +421,7 @@ class SocialLearningDemo:
             )
         else:
             print(
-                "\n⚠️ Phase 3.3 performance needs improvement in social learning areas."
+                "\n[WARN] Phase 3.3 performance needs improvement in social learning areas."
             )
 
         print(f"\n🧠 Social Learning Infrastructure Features Demonstrated:")

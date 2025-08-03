@@ -15,7 +15,7 @@ from utils.logging_utils import log
 try:
     from Aetherra.runtime.aether_runtime import AetherRuntime
 except ImportError:
-    log("⚠️ AetherRuntime not available, using fallback", "warning")
+    log("[WARN] AetherRuntime not available, using fallback", "warning")
 
     class AetherRuntime:
         def __init__(self, *args, **kwargs):
@@ -39,7 +39,7 @@ intelligence_stack = None
 async def initialize_system():
     global lyrixa, runtime, intelligence_stack
 
-    log("🔧 Initializing Lyrixa Intelligence Stack...")
+    log("[TOOL] Initializing Lyrixa Intelligence Stack...")
     memory = MemoryManager()
     plugins = PluginManager()
     prompt_engine = PromptEngine()
@@ -126,7 +126,7 @@ LLM Models: 9 available"""
             log("🎯 GUI initialization complete")
 
         except Exception as e:
-            log(f"❌ Initialization error: {e}", "error")
+            log(f"[ERROR] Initialization error: {e}", "error")
             import traceback
 
             traceback.print_exc()

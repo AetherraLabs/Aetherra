@@ -36,7 +36,7 @@ async def simple_test():
     # Get system status
     status = await bootstrap.get_current_system_status()
     print(f"📊 Overall Health: {status['overall_health']:.1%}")
-    print(f"🔧 Components checked: {len(status['components'])}")
+    print(f"[TOOL] Components checked: {len(status['components'])}")
 
     return True
 

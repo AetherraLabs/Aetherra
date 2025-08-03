@@ -189,9 +189,9 @@ class AetherraHousekeeping:
                     )
                     moved_count += 1
                 except Exception as e:
-                    print(f"⚠️ Could not move {test_file}: {e}")
+                    print(f"[WARN] Could not move {test_file}: {e}")
 
-        print(f"📦 Moved {moved_count} test files to archive")
+        print(f"[DISC] Moved {moved_count} test files to archive")
         return moved_count
 
     def move_demo_files(self, demo_files: List[str]) -> int:
@@ -214,9 +214,9 @@ class AetherraHousekeeping:
                     )
                     moved_count += 1
                 except Exception as e:
-                    print(f"⚠️ Could not move {demo_file}: {e}")
+                    print(f"[WARN] Could not move {demo_file}: {e}")
 
-        print(f"📦 Moved {moved_count} demo files to archive")
+        print(f"[DISC] Moved {moved_count} demo files to archive")
         return moved_count
 
     def remove_temp_files(self, temp_files: List[str]) -> int:
@@ -239,7 +239,7 @@ class AetherraHousekeeping:
                     self.cleanup_report["space_saved_mb"] += file_size / (1024 * 1024)
                     removed_count += 1
                 except Exception as e:
-                    print(f"⚠️ Could not remove {temp_file}: {e}")
+                    print(f"[WARN] Could not remove {temp_file}: {e}")
 
         print(f"🗑️ Removed {removed_count} temporary files")
         return removed_count
@@ -264,7 +264,7 @@ class AetherraHousekeeping:
                     )
                     moved_count += 1
                 except Exception as e:
-                    print(f"⚠️ Could not move {report_file}: {e}")
+                    print(f"[WARN] Could not move {report_file}: {e}")
 
         print(f"📊 Archived {moved_count} report files")
         return moved_count
@@ -304,7 +304,7 @@ class AetherraHousekeeping:
                 )
                 removed_count += 1
             except Exception as e:
-                print(f"⚠️ Could not remove {pycache_dir}: {e}")
+                print(f"[WARN] Could not remove {pycache_dir}: {e}")
 
         print(f"🐍 Removed {removed_count} __pycache__ directories")
         return removed_count
@@ -346,7 +346,7 @@ class AetherraHousekeeping:
                                     }
                                 )
                         except Exception as e:
-                            print(f"⚠️ Could not organize {file_path.name}: {e}")
+                            print(f"[WARN] Could not organize {file_path.name}: {e}")
 
     def perform_comprehensive_cleanup(self) -> Dict:
         """Perform complete project cleanup."""
@@ -439,7 +439,7 @@ class AetherraHousekeeping:
 
         script_content = '''#!/usr/bin/env python3
 """
-🔧 Aetherra Project Maintenance Script
+[TOOL] Aetherra Project Maintenance Script
 ====================================
 
 Regular maintenance tasks for keeping the project clean and organized.
@@ -483,7 +483,7 @@ if __name__ == "__main__":
         try:
             with open(maintenance_script, "w", encoding="utf-8") as f:
                 f.write(script_content)
-            print(f"🔧 Maintenance script created: {maintenance_script}")
+            print(f"[TOOL] Maintenance script created: {maintenance_script}")
         except Exception as e:
             print(f"❌ Failed to create maintenance script: {e}")
 

@@ -25,7 +25,7 @@ async def test_plugin_memory_query():
             print("🔗 Initializing plugin discovery integration...")
             success = await intelligence_stack.initialize_plugin_discovery_integration()
             print(
-                f"Plugin discovery integration: {'✅ Success' if success else '❌ Failed'}"
+                f"Plugin discovery integration: {'✅ Success' if success else '[ERROR] Failed'}"
             )
 
             if success and intelligence_stack.intelligence:
@@ -67,14 +67,14 @@ async def test_plugin_memory_query():
                         )
 
                 except Exception as e:
-                    print(f"❌ Error querying plugin memory: {e}")
+                    print(f"[ERROR] Error querying plugin memory: {e}")
             else:
-                print("❌ Intelligence system not available")
+                print("[ERROR] Intelligence system not available")
         else:
-            print("❌ Plugin bridge not available")
+            print("[ERROR] Plugin bridge not available")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"[ERROR] Error: {e}")
         import traceback
 
         traceback.print_exc()

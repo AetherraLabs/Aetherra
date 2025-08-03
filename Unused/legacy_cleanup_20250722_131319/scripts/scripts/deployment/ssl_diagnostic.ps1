@@ -18,7 +18,7 @@ function Test-SiteAccess {
         return $true
     }
     catch {
-        Write-Host "❌ $Url - Error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[ERROR] $Url - Error: $($_.Exception.Message)" -ForegroundColor Red
         return $false
     }
 }
@@ -45,7 +45,7 @@ function Test-DnsRecords {
         }
     }
     catch {
-        Write-Host "   ⚠️ DNS lookup failed: $($_.Exception.Message)" -ForegroundColor Yellow
+        Write-Host "   [WARN] DNS lookup failed: $($_.Exception.Message)" -ForegroundColor Yellow
     }
 }
 
@@ -72,10 +72,10 @@ function Test-SslCertificate {
         Write-Host "   Valid Until: $($cert2.NotAfter)" -ForegroundColor White
 
         if ($cert2.NotAfter -lt (Get-Date)) {
-            Write-Host "   ❌ Certificate has EXPIRED!" -ForegroundColor Red
+            Write-Host "   [ERROR] Certificate has EXPIRED!" -ForegroundColor Red
         }
         elseif ($cert2.NotAfter -lt (Get-Date).AddDays(30)) {
-            Write-Host "   ⚠️ Certificate expires soon!" -ForegroundColor Yellow
+            Write-Host "   [WARN] Certificate expires soon!" -ForegroundColor Yellow
         }
         else {
             Write-Host "   ✅ Certificate is valid" -ForegroundColor Green
@@ -85,7 +85,7 @@ function Test-SslCertificate {
         $tcpClient.Close()
     }
     catch {
-        Write-Host "   ❌ SSL connection failed: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "   [ERROR] SSL connection failed: $($_.Exception.Message)" -ForegroundColor Red
         Write-Host "   This is likely the cause of 'Your connection is not private'" -ForegroundColor Yellow
     }
 }
@@ -100,7 +100,7 @@ Test-DnsRecords $Domain
 Test-SslCertificate $Domain
 
 # GitHub Pages specific checks
-Write-Host "`n📦 GitHub Pages Checks" -ForegroundColor Yellow
+Write-Host "`n[DISC] GitHub Pages Checks" -ForegroundColor Yellow
 
 $githubPagesUrls = @(
     "https://yourusername.github.io/reponame",  # Replace with actual
@@ -133,7 +133,7 @@ if (-not $httpWorks -and -not $httpsWorks) {
     Write-Host "      → Verify GitHub Pages deployment is working" -ForegroundColor White
 }
 
-Write-Host "`n🔧 Quick Fixes to Try:" -ForegroundColor Yellow
+Write-Host "`n[TOOL] Quick Fixes to Try:" -ForegroundColor Yellow
 Write-Host "   1. Temporarily disable 'Enforce HTTPS' in GitHub Pages settings" -ForegroundColor White
 Write-Host "   2. Wait 24 hours, then re-enable 'Enforce HTTPS'" -ForegroundColor White
 Write-Host "   3. Check that CNAME files are consistent" -ForegroundColor White

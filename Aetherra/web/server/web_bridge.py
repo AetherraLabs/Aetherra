@@ -193,7 +193,7 @@ class LyrixaWebView(QWidget):
         self.web_view.page().runJavaScript(script)
 
     def update_memory_graph(self, graph_data: Dict[str, Any]):
-        """Update memory graph visualization in web interface - ✅ 3. Memory Graph Panel"""
+        """Update memory graph visualization in web interface - [OK] 3. Memory Graph Panel"""
         data_json = json.dumps(graph_data).replace('"', '\\"')
         script = f"""
         if (window.lyrixaInterface) {{

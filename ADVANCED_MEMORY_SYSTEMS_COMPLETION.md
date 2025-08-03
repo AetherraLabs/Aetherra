@@ -87,7 +87,7 @@ The Advanced Memory Systems (#5) have been successfully implemented as the next 
 
 ---
 
-## 🔧 **TECHNICAL SPECIFICATIONS**
+## [TOOL] **TECHNICAL SPECIFICATIONS**
 
 ### **Memory System Configuration**
 ```python

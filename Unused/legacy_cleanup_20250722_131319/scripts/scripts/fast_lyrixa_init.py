@@ -44,7 +44,7 @@ async def fast_initialize_lyrixa():
         return lyrixa
 
     except Exception as e:
-        print(f"❌ Fast initialization failed: {e}")
+        print(f"[ERROR] Fast initialization failed: {e}")
         return None
 
 
@@ -58,7 +58,7 @@ def main():
             "💡 This version skips heavy local models but enables full OpenAI integration"
         )
     else:
-        print("\n❌ Fast initialization failed")
+        print("\n[ERROR] Fast initialization failed")
         print("💡 Will need to modify the launcher for OpenAI-only mode")
 
 

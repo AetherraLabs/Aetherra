@@ -108,7 +108,7 @@ def test_goal_tracker_tab():
         return True
 
     except Exception as e:
-        print(f"❌ Goal Tracker Tab Integration Test Failed: {e}")
+        print(f"[ERROR] Goal Tracker Tab Integration Test Failed: {e}")
         import traceback
 
         traceback.print_exc()

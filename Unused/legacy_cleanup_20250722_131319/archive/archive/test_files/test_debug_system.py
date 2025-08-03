@@ -60,7 +60,7 @@ if __name__ == "__main__":
         )
         fix_suggestion = debug_system.suggest_fix(error_info)
 
-        print(f"🔧 Fix suggested: {fix_suggestion.get('fix', 'No fix available')}")
+        print(f"[TOOL] Fix suggested: {fix_suggestion.get('fix', 'No fix available')}")
         print(f"📊 Confidence: {fix_suggestion.get('confidence', 0)}%")
         print(f"⚠️ Risk Level: {fix_suggestion.get('risk', 'unknown')}")
 

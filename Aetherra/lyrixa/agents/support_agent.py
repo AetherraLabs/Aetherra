@@ -103,7 +103,7 @@ class SupportAgent(AgentBase):
                 "💡 Would you like me to walk you through the process step by step?",
                 "📚 I can provide detailed documentation links",
                 "🎯 Need help with a specific feature?",
-                "🔧 Require technical troubleshooting assistance?",
+                "[TOOL] Require technical troubleshooting assistance?",
             ],
             "follow_up_actions": self._suggest_follow_up_actions(intent),
             "satisfaction_check": "How helpful was this response? (1-5 stars)",
@@ -310,7 +310,7 @@ class SupportAgent(AgentBase):
             "quick_help": [
                 "🚀 Getting started with Aetherra AI OS",
                 "💡 Feature explanations and tutorials",
-                "🔧 Technical troubleshooting",
+                "[TOOL] Technical troubleshooting",
                 "📋 Account and settings management",
             ],
             "popular_resources": [

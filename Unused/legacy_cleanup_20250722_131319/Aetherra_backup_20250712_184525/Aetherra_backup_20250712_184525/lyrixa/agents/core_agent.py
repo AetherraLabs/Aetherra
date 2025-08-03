@@ -49,7 +49,7 @@ class LyrixaAI(AgentBase):
                 await agent.initialize()
                 self.log(f"✅ {agent_name} agent initialized")
             except Exception as e:
-                self.log(f"❌ Failed to initialize {agent_name} agent: {e}")
+                self.log(f"[ERROR] Failed to initialize {agent_name} agent: {e}")
 
         self.log("✅ LyrixaAI initialization complete")
 
@@ -88,7 +88,7 @@ class LyrixaAI(AgentBase):
             return response
 
         except Exception as e:
-            self.log(f"❌ Error processing input with {agent_name}: {e}")
+            self.log(f"[ERROR] Error processing input with {agent_name}: {e}")
             return AgentResponse(
                 content=f"I encountered an error processing your request: {str(e)}",
                 confidence=0.0,
@@ -165,7 +165,7 @@ class LyrixaAI(AgentBase):
 🎯 **Goal Management** - Create, track, and manage your objectives
 🔌 **Plugin Discovery** - Find and recommend tools for your tasks
 � **Performance Analysis** - Analyze and reflect on your progress
-⚠️ **Problem Solving** - Help troubleshoot issues and escalate when needed
+[WARN] **Problem Solving** - Help troubleshoot issues and escalate when needed
 📊 **Self-Improvement** - Learn from feedback and continuously improve
 
 I use multiple AI models (currently GPT-4o) and can switch between them as needed. Just tell me what you'd like to work on!"""
@@ -214,6 +214,6 @@ I use multiple AI models (currently GPT-4o) and can switch between them as neede
                 await agent.shutdown()
                 self.log(f"✅ {agent_name} agent shutdown")
             except Exception as e:
-                self.log(f"❌ Error shutting down {agent_name} agent: {e}")
+                self.log(f"[ERROR] Error shutting down {agent_name} agent: {e}")
 
         self.log("✅ LyrixaAI shutdown complete")

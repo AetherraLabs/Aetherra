@@ -45,7 +45,7 @@ self.addEventListener('install', event => {
 
     event.waitUntil(
         caches.open(STATIC_CACHE).then(cache => {
-            console.log('📦 Caching core files...');
+            console.log('[DISC] Caching core files...');
             return cache.addAll(CORE_FILES);
         }).then(() => {
             console.log('✅ Aetherra Service Worker installed successfully');

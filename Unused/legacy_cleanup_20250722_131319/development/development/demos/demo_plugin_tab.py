@@ -27,7 +27,7 @@ def initialize():
 
 def execute(command):
     """Execute a command with the sample plugin"""
-    print(f"🔧 Sample plugin executing: {command}")
+    print(f"[TOOL] Sample plugin executing: {command}")
     return {"status": "success", "result": f"Processed: {command}"}
 
 def cleanup():

@@ -17,10 +17,10 @@ def test_import(description, import_statement):
     """Test a single import statement."""
     try:
         exec(import_statement)
-        print(f"✅ {description}: SUCCESS")
+        print(f"[OK] {description}: SUCCESS")
         return True
     except Exception as e:
-        print(f"❌ {description}: FAILED - {str(e)}")
+        print(f"[ERROR] {description}: FAILED - {str(e)}")
         return False
 
 
@@ -80,7 +80,7 @@ def main():
     if failed == 0:
         print("🎉 All imports working! You're ready to contribute to Aetherra!")
     else:
-        print("⚠️  Some imports failed. This is normal for optional modules.")
+        print("[WARN]  Some imports failed. This is normal for optional modules.")
         print("   Key imports (aetherra_core, engine, core) should work.")
         print("   If basic imports fail, run: python fix_imports.py")
 

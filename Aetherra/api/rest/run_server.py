@@ -51,7 +51,7 @@ def main():
     except ImportError as e:
         print(f"❌ Missing dependencies: {e}")
         print(
-            "📦 Install dependencies with: pip install -r Aetherra/api/requirements.txt"
+            "[DISC] Install dependencies with: pip install -r Aetherra/api/requirements.txt"
         )
         sys.exit(1)
     except KeyboardInterrupt:

@@ -33,7 +33,7 @@ def test_memory_operations():
             print(f"   Stored: {len(memories)} test memory")
             return True
         else:
-            print("⚠️ Memory recall returned empty")
+            print("[WARN] Memory recall returned empty")
             return False
 
     except Exception as e:
@@ -68,7 +68,7 @@ def test_goal_operations():
             print("✅ Goal completion successful")
             return True
         else:
-            print("⚠️ Goal system returned no data")
+            print("[WARN] Goal system returned no data")
             return False
 
     except Exception as e:
@@ -78,7 +78,7 @@ def test_goal_operations():
 
 def test_interpreter_basic():
     """Test basic interpreter functionality."""
-    print("\n🔧 Testing Interpreter")
+    print("\n[TOOL] Testing Interpreter")
     print("-" * 30)
 
     try:
@@ -94,7 +94,7 @@ def test_interpreter_basic():
             print("✅ Basic interpreter functionality working")
             return True
         else:
-            print("⚠️ Interpreter returned unexpected result")
+            print("[WARN] Interpreter returned unexpected result")
             return False
 
     except Exception as e:
@@ -144,14 +144,14 @@ def test_aetherplex_components():
         if batch_launcher.exists():
             print("✅ Lyrixabatch launcher found")
         else:
-            print("⚠️ Lyrixabatch launcher missing")
+            print("[WARN] Lyrixabatch launcher missing")
 
         # Test script launcher exists
         script_launcher = Path("aetherplex")
         if script_launcher.exists():
             print("✅ Lyrixascript launcher found")
         else:
-            print("⚠️ Lyrixascript launcher missing")
+            print("[WARN] Lyrixascript launcher missing")
 
         return True
 
@@ -199,11 +199,11 @@ def main():
         print("🎉 ALL SYSTEMS FULLY OPERATIONAL!")
         print("✅ aetherra and Lyrixaare ready for use")
     elif passed >= total * 0.8:
-        print("⚠️ MOSTLY OPERATIONAL - Minor issues detected")
+        print("[WARN] MOSTLY OPERATIONAL - Minor issues detected")
         print("✅ Core functionality is working")
     else:
         print("❌ CRITICAL ISSUES DETECTED")
-        print("⚠️ Manual intervention may be required")
+        print("[WARN] Manual intervention may be required")
 
     return passed >= total * 0.8
 

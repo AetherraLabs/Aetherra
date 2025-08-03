@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧⚡ Simple Concurrent Access Performance Test
+[TOOL]⚡ Simple Concurrent Access Performance Test
 ==============================================
 
 Simplified test to demonstrate the concurrent access optimization
@@ -81,7 +81,7 @@ async def simple_concurrent_test():
     logger.info(f"   Optimized Actual: {total_time:.1f}ms")
     logger.info(f"   Improvement Ratio: {improvement_ratio:.1f}x")
     logger.info(
-        f"   Target Achievement: {'✅ YES' if total_time < 500 else '❌ NO'} (target: <500ms)"
+        f"   Target Achievement: {'✅ YES' if total_time < 500 else '[ERROR] NO'} (target: <500ms)"
     )
 
     # Get detailed performance stats
@@ -112,30 +112,30 @@ async def simple_concurrent_test():
     # Claim 1: Sub-500ms performance
     claim1_met = total_time < 500
     logger.info(
-        f"   <500ms target: {'✅ MET' if claim1_met else '❌ MISSED'} ({total_time:.1f}ms)"
+        f"   <500ms target: {'✅ MET' if claim1_met else '[ERROR] MISSED'} ({total_time:.1f}ms)"
     )
 
     # Claim 2: >100x improvement
     claim2_met = improvement_ratio > 100
     logger.info(
-        f"   >100x improvement: {'✅ MET' if claim2_met else '❌ MISSED'} ({improvement_ratio:.1f}x)"
+        f"   >100x improvement: {'✅ MET' if claim2_met else '[ERROR] MISSED'} ({improvement_ratio:.1f}x)"
     )
 
     # Claim 3: High cache performance
     claim3_met = cache["hit_ratio"] > 0.8
     logger.info(
-        f"   >80% cache hit ratio: {'✅ MET' if claim3_met else '❌ MISSED'} ({cache['hit_ratio']:.1%})"
+        f"   >80% cache hit ratio: {'✅ MET' if claim3_met else '[ERROR] MISSED'} ({cache['hit_ratio']:.1%})"
     )
 
     # Claim 4: Fast average response
     claim4_met = perf["avg_response_time_ms"] < 10
     logger.info(
-        f"   <10ms avg response: {'✅ MET' if claim4_met else '❌ MISSED'} ({perf['avg_response_time_ms']:.2f}ms)"
+        f"   <10ms avg response: {'✅ MET' if claim4_met else '[ERROR] MISSED'} ({perf['avg_response_time_ms']:.2f}ms)"
     )
 
     all_claims_met = all([claim1_met, claim2_met, claim3_met, claim4_met])
     logger.info(
-        f"\n🏆 OVERALL VALIDATION: {'✅ ALL CLAIMS VERIFIED' if all_claims_met else '❌ SOME CLAIMS UNMET'}"
+        f"\n🏆 OVERALL VALIDATION: {'✅ ALL CLAIMS VERIFIED' if all_claims_met else '[ERROR] SOME CLAIMS UNMET'}"
     )
 
     # Test 3: Stress test with higher concurrency
@@ -200,7 +200,7 @@ def validate_performance_claims():
         return results
 
     except Exception as e:
-        logger.error(f"❌ Validation failed: {e}")
+        logger.error(f"[ERROR] Validation failed: {e}")
         raise
 
 

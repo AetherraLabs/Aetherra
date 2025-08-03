@@ -68,7 +68,7 @@ def try_import_intelligence_modules():
         import intelligence
         import personality_engine
 
-        print("✅ Successfully imported real intelligence modules!")
+        print("[OK] Successfully imported real intelligence modules!")
         USING_REAL_MODULES = True
 
         return {
@@ -79,7 +79,7 @@ def try_import_intelligence_modules():
         }
 
     except ImportError as e:
-        print(f"⚠️ Could not import real modules ({e}), using test stubs...")
+        print(f"[WARN] Could not import real modules ({e}), using test stubs...")
         return create_stub_modules()
 
 
@@ -616,9 +616,9 @@ def run_real_api_test_suite():
     print("🧠 REAL API TEST RESULTS SUMMARY")
     print("=" * 70)
     print(f"📊 Total Tests: {result.testsRun}")
-    print(f"✅ Passed: {result.testsRun - len(result.failures) - len(result.errors)}")
-    print(f"❌ Failed: {len(result.failures)}")
-    print(f"⚠️ Errors: {len(result.errors)}")
+    print(f"[OK] Passed: {result.testsRun - len(result.failures) - len(result.errors)}")
+    print(f"[ERROR] Failed: {len(result.failures)}")
+    print(f"[WARN] Errors: {len(result.errors)}")
 
     success_rate = (
         (
@@ -634,26 +634,26 @@ def run_real_api_test_suite():
     # API Coverage Assessment
     print("\n🔍 API COVERAGE ASSESSMENT:")
     print(
-        f"  🧠 Intelligence Engine Core API: {'✅ TESTED' if result.testsRun > 0 else '❌ NOT TESTED'}"
+        f"  🧠 Intelligence Engine Core API: {'[OK] TESTED' if result.testsRun > 0 else '[ERROR] NOT TESTED'}"
     )
     print(
-        f"  🎭 Personality System Core API: {'✅ TESTED' if result.testsRun > 0 else '❌ NOT TESTED'}"
+        f"  🎭 Personality System Core API: {'[OK] TESTED' if result.testsRun > 0 else '[ERROR] NOT TESTED'}"
     )
     print(
-        f"  🔗 Integration Layer API: {'✅ TESTED' if result.testsRun > 0 else '❌ NOT TESTED'}"
+        f"  🔗 Integration Layer API: {'[OK] TESTED' if result.testsRun > 0 else '[ERROR] NOT TESTED'}"
     )
     print(
-        f"  🚀 Advanced Features API: {'✅ TESTED' if result.testsRun > 0 else '❌ NOT TESTED'}"
+        f"  🚀 Advanced Features API: {'[OK] TESTED' if result.testsRun > 0 else '[ERROR] NOT TESTED'}"
     )
 
     if result.failures:
-        print("\n❌ API COMPATIBILITY ISSUES:")
+        print("\n[ERROR] API COMPATIBILITY ISSUES:")
         for i, (test, traceback) in enumerate(result.failures, 1):
             print(f"  {i}. {test}")
             print(f"     Issue: {traceback.strip()[:200]}...")
 
     if result.errors:
-        print("\n⚠️ API IMPLEMENTATION ERRORS:")
+        print("\n[WARN] API IMPLEMENTATION ERRORS:")
         for i, (test, traceback) in enumerate(result.errors, 1):
             print(f"  {i}. {test}")
             print(f"     Error: {traceback.strip()[:200]}...")
@@ -667,7 +667,7 @@ def run_real_api_test_suite():
         print("   ✨ Advanced features are accessible and working")
         print("\n🎯 INTELLIGENCE CORE STATUS: FULLY OPERATIONAL")
     else:
-        print(f"\n⚠️ API COMPATIBILITY: {success_rate:.0f}% FUNCTIONAL")
+        print(f"\n[WARN] API COMPATIBILITY: {success_rate:.0f}% FUNCTIONAL")
         if success_rate >= 75:
             print("   🟢 Intelligence core is mostly functional with minor issues")
         elif success_rate >= 50:

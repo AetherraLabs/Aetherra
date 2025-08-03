@@ -84,7 +84,7 @@ def get_aetherra_vector_memory():
             _vector_memory = VectorMemorySystem()
             print("[ReasoningMemory] ✅ Aetherra Vector Memory initialized")
         except Exception as e:
-            print(f"[ReasoningMemory] ❌ Failed to initialize Vector Memory: {e}")
+            print(f"[ReasoningMemory] [ERROR] Failed to initialize Vector Memory: {e}")
     return _vector_memory
 
 
@@ -96,7 +96,7 @@ def get_aetherra_local_ai():
             _local_ai = LocalAIEngine()
             print("[ReasoningMemory] ✅ Aetherra Local AI initialized")
         except Exception as e:
-            print(f"[ReasoningMemory] ❌ Failed to initialize Local AI: {e}")
+            print(f"[ReasoningMemory] [ERROR] Failed to initialize Local AI: {e}")
     return _local_ai
 
 

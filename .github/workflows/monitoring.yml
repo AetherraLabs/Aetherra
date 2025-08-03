@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: 📦 Install monitoring dependencies
+      - name: [DISC] Install monitoring dependencies
         run: |
           pip install requests prometheus-client psutil
 

@@ -79,35 +79,35 @@ class MultiLLMManager:
             self.providers[LLMProvider.OPENAI] = OpenAIProvider()
             logger.info("✅ OpenAI provider initialized")
         else:
-            logger.warning("⚠️ OpenAI not available (pip install openai)")
+            logger.warning("[WARN] OpenAI not available (pip install openai)")
 
         # Ollama Provider (for local Mistral, LLaMA, etc.)
         if importlib.util.find_spec("ollama") is not None:
             self.providers[LLMProvider.OLLAMA] = OllamaProvider()
             logger.info("✅ Ollama provider initialized")
         else:
-            logger.warning("⚠️ Ollama not available (pip install ollama)")
+            logger.warning("[WARN] Ollama not available (pip install ollama)")
 
         # llama-cpp-python Provider (for GGUF models)
         if importlib.util.find_spec("llama_cpp") is not None:
             self.providers[LLMProvider.LLAMACPP] = LlamaCppProvider()
             logger.info("✅ LlamaCpp provider initialized")
         else:
-            logger.warning("⚠️ LlamaCpp not available (pip install llama-cpp-python)")
+            logger.warning("[WARN] LlamaCpp not available (pip install llama-cpp-python)")
 
         # Anthropic Provider
         if importlib.util.find_spec("anthropic") is not None:
             self.providers[LLMProvider.ANTHROPIC] = AnthropicProvider()
             logger.info("✅ Anthropic provider initialized")
         else:
-            logger.warning("⚠️ Anthropic not available (pip install anthropic)")
+            logger.warning("[WARN] Anthropic not available (pip install anthropic)")
 
         # Google Gemini Provider
         if importlib.util.find_spec("google.generativeai") is not None:
             self.providers[LLMProvider.GEMINI] = GeminiProvider()
             logger.info("✅ Gemini provider initialized")
         else:
-            logger.warning("⚠️ Gemini not available (pip install google-generativeai)")
+            logger.warning("[WARN] Gemini not available (pip install google-generativeai)")
 
     def _load_model_configs(self):
         """Load model configurations from file or defaults"""

@@ -113,7 +113,7 @@ Check out the example Aetherra programs:
 - `examples/self_editing.aether` - Code self-modification
 - `examples/pattern_recognition.aether` - Learning patterns
 
-## 🔧 Configuration
+## [TOOL] Configuration
 
 ### Environment Variables (Optional)
 

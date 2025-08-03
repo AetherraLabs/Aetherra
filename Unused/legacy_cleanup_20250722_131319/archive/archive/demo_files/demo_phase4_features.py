@@ -41,7 +41,7 @@ class DemoAnalysisPlugin(LyrixaPlugin):
         self.version = "2.1.0"
 
     async def initialize(self, lyrixa_context):
-        print(f"🔧 {self.name} initialized")
+        print(f"[TOOL] {self.name} initialized")
         return True
 
     async def execute(self, command, params=None):
@@ -76,7 +76,7 @@ class DemoDataPlugin(LyrixaPlugin):
         self.version = "1.5.0"
 
     async def initialize(self, lyrixa_context):
-        print(f"🔧 {self.name} initialized")
+        print(f"[TOOL] {self.name} initialized")
         return True
 
     async def execute(self, command, params=None):

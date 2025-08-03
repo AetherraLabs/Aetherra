@@ -6,7 +6,18 @@ DEPRECATED: LyrixaMemoryEngine is now an adapter for QuantumEnhancedMemoryEngine
 All memory operations are delegated to the canonical engine.
 """
 
+import uuid
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+from enum import Enum
 from .QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
+
+# Add missing enums for compatibility
+class MemoryFragmentType(Enum):
+    SEMANTIC = "semantic"
+    EPISODIC = "episodic"
+    PROCEDURAL = "procedural"
+    EMOTIONAL = "emotional"
 
 
 class LyrixaMemoryEngine:
@@ -20,11 +31,11 @@ class LyrixaMemoryEngine:
         return self.engine.retrieve(query, context)
 
 
-from .memory_core import LyrixaMemorySystem
-from .narrator import MemoryNarrative, MemoryNarrator
 from .pulse import DriftAlert, MemoryHealth, MemoryPulseMonitor
 from .reflector import MemoryReflector, ReflectionInsight
+from ..kernel.narrator import MemoryNarrative, MemoryNarrator
 from dataclasses import dataclass
+from datetime import timedelta
 
 
 @dataclass

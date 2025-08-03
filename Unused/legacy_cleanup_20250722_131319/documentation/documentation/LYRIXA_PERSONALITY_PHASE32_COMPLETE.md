@@ -171,7 +171,7 @@ Lyrixa: "That sounds really frustrating. Let's work on this together - I underst
 
 ---
 
-## 🔧 Technical Architecture
+## [TOOL] Technical Architecture
 
 ### **File Structure**
 ```

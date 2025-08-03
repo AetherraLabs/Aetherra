@@ -18,7 +18,7 @@ sys.path.insert(0, str(project_root))
 
 def log(message, level="info"):
     """Simple logging function"""
-    prefix = "✅" if level == "info" else "⚠️" if level == "warning" else "❌"
+    prefix = "✅" if level == "info" else "[WARN]" if level == "warning" else "[ERROR]"
     print(f"{prefix} {message}")
 
 
@@ -32,7 +32,7 @@ async def test_plugin_integration():
         # Import intelligence stack
         from Aetherra.lyrixa.intelligence_integration import LyrixaIntelligenceStack
 
-        log("📦 Intelligence stack module imported successfully")
+        log("[DISC] Intelligence stack module imported successfully")
 
         # Initialize intelligence stack
         workspace_path = str(project_root)
@@ -79,21 +79,21 @@ async def test_plugin_integration():
                     print(f"   Sample response: {response[:100]}...")
                 else:
                     log(
-                        "⚠️ Lyrixa may not be fully aware of plugins in conversations",
+                        "[WARN] Lyrixa may not be fully aware of plugins in conversations",
                         "warning",
                     )
 
                 return True
 
             except Exception as e:
-                log(f"⚠️ Plugin recommendations test failed: {e}", "warning")
+                log(f"[WARN] Plugin recommendations test failed: {e}", "warning")
                 return True  # Integration still successful
         else:
-            log("❌ Plugin discovery integration failed", "error")
+            log("[ERROR] Plugin discovery integration failed", "error")
             return False
 
     except Exception as e:
-        log(f"❌ Error in plugin integration test: {e}", "error")
+        log(f"[ERROR] Error in plugin integration test: {e}", "error")
         import traceback
 
         traceback.print_exc()
@@ -115,7 +115,7 @@ async def main():
         print("   • Store plugin metadata in memory")
         print("\n🎯 The critical missing functionality has been implemented!")
     else:
-        print("❌ Plugin discovery integration needs more work")
+        print("[ERROR] Plugin discovery integration needs more work")
 
     return success
 

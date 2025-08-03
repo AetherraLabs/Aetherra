@@ -72,7 +72,7 @@ async def test_full_integration():
 
 
 if __name__ == "__main__":
-    print("🔧 Testing Improved Chat Response Generation")
+    print("[TOOL] Testing Improved Chat Response Generation")
     print("=" * 60)
 
     asyncio.run(test_full_integration())

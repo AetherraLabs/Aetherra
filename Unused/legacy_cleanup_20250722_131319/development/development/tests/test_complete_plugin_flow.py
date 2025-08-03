@@ -100,7 +100,7 @@ async def test_complete_workflow():
         print(f"🔀 Enhanced Routing: {plugin_route}")
 
         if plugin_route != test_case["expected_route"]:
-            print(f"❌ Routing failed! Expected: {test_case['expected_route']}")
+            print(f"[ERROR] Routing failed! Expected: {test_case['expected_route']}")
             continue
 
         # Step 2: Test full agent processing
@@ -128,9 +128,9 @@ async def test_complete_workflow():
                 if line.strip():
                     print(f"      {line}")
         else:
-            print(f"   ⚠️  Generation status unclear or failed")
+            print(f"   [WARN]  Generation status unclear or failed")
             if "error" in metadata:
-                print(f"   ❌ Error: {metadata['error']}")
+                print(f"   [ERROR] Error: {metadata['error']}")
 
 
 async def test_plugin_discovery_routing():
@@ -161,7 +161,7 @@ async def test_plugin_discovery_routing():
 
     for test_case in other_test_cases:
         route = await lyrixa._enhanced_plugin_routing(test_case["input"])
-        status = "✅" if route == test_case["expected"] else "❌"
+        status = "✅" if route == test_case["expected"] else "[ERROR]"
         print(
             f"{status} '{test_case['input']}' → {route} (expected: {test_case['expected']})"
         )
@@ -204,7 +204,7 @@ async def test_generated_plugin_content():
         print(f"\n📊 Template used: {generated_plugin.template_id}")
         print(f"⏰ Generated at: {generated_plugin.generated_at}")
     else:
-        print("❌ Failed to generate plugin")
+        print("[ERROR] Failed to generate plugin")
 
 
 async def main():
@@ -228,7 +228,7 @@ async def main():
         print("   • Cross-agent communication")
 
     except Exception as e:
-        print(f"\n❌ Test suite failed: {e}")
+        print(f"\n[ERROR] Test suite failed: {e}")
         import traceback
 
         traceback.print_exc()

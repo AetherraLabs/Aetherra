@@ -37,11 +37,11 @@ def test_imports():
 
             print("   ✅ GUI system")
         except ImportError:
-            print("   ⚠️  GUI system (optional - not available)")
+            print("   [WARN]  GUI system (optional - not available)")
 
         return True
     except Exception as e:
-        print(f"   ❌ Import failed: {e}")
+        print(f"   [ERROR] Import failed: {e}")
         return False
 
 
@@ -56,7 +56,7 @@ def test_basic_functionality():
         print("   ✅ Basic functionality test passed")
         return True
     except Exception as e:
-        print(f"   ❌ Basic functionality test failed: {e}")
+        print(f"   [ERROR] Basic functionality test failed: {e}")
         traceback.print_exc()
         return False
 
@@ -89,7 +89,7 @@ def main():
         print("   • GUI system operational")
         print("\n🚀 READY FOR NEXT PHASE: AI OS KERNEL DEVELOPMENT")
     else:
-        print("❌ SOME SYSTEMS FAILED VERIFICATION")
+        print("[ERROR] SOME SYSTEMS FAILED VERIFICATION")
         print("   Please review the errors above before proceeding")
         sys.exit(1)
 

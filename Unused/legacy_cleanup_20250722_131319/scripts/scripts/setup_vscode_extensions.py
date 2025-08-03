@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔧 VS Code Extensions Auto-Installer for aetherra/Lyrixa
+[TOOL] VS Code Extensions Auto-Installer for aetherra/Lyrixa
 Automatically installs essential VS Code extensions for optimal development
 """
 
@@ -13,7 +13,7 @@ from pathlib import Path
 
 def run_command(command, description):
     """Run a command and handle errors gracefully"""
-    print(f"🔧 {description}...")
+    print(f"[TOOL] {description}...")
     try:
         result = subprocess.run(
             command, shell=True, check=True, capture_output=True, text=True
@@ -21,10 +21,10 @@ def run_command(command, description):
         print(f"✅ {description} - Success!")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ {description} - Failed: {e.stderr}")
+        print(f"[ERROR] {description} - Failed: {e.stderr}")
         return False
     except FileNotFoundError:
-        print(f"❌ {description} - VS Code CLI not found in PATH")
+        print(f"[ERROR] {description} - VS Code CLI not found in PATH")
         return False
 
 
@@ -38,7 +38,7 @@ def check_vscode_installed():
     except FileNotFoundError:
         pass
 
-    print("❌ VS Code CLI not found. Please:")
+    print("[ERROR] VS Code CLI not found. Please:")
     print("1. Install VS Code from https://code.visualstudio.com/")
     print("2. Enable 'Add to PATH' during installation, or")
     print("3. Manually add VS Code to your PATH")
@@ -99,8 +99,8 @@ def install_extensions():
     print(f"✅ Successfully installed: {success_count}/{len(extensions)} extensions")
 
     if failed_extensions:
-        print(f"❌ Failed installations: {len(failed_extensions)}")
-        print("\\n🔧 To manually install failed extensions:")
+        print(f"[ERROR] Failed installations: {len(failed_extensions)}")
+        print("\\n[TOOL] To manually install failed extensions:")
         for ext_id, description in failed_extensions:
             print(f"   code --install-extension {ext_id}")
 
@@ -117,7 +117,7 @@ def setup_workspace_settings():
         print("✅ Workspace settings already configured")
         return True
     else:
-        print("⚠️  Workspace settings file not found")
+        print("[WARN]  Workspace settings file not found")
         return False
 
 
@@ -141,7 +141,7 @@ def recommend_additional_setup():
         "   - Icons: Ctrl+Shift+P → 'Preferences: File Icon Theme' → Select 'VSCode Icons'"
     )
 
-    print("\\n4. 🔧 Terminal Setup:")
+    print("\\n4. [TOOL] Terminal Setup:")
     print(
         "   - Set PowerShell as default: Ctrl+Shift+P → 'Terminal: Select Default Profile'"
     )
@@ -159,7 +159,7 @@ def main():
 
     # Check if we're in the right directory
     if not Path("ui/aetherplex_gui.py").exists():
-        print("❌ Please run this script from the aetherra project root directory")
+        print("[ERROR] Please run this script from the aetherra project root directory")
         sys.exit(1)
 
     # Check VS Code installation
@@ -186,7 +186,7 @@ def main():
         print("   3. Start coding with enhanced AI assistance!")
 
     if failed_extensions:
-        print(f"\\n⚠️  Note: {len(failed_extensions)} extensions failed to install")
+        print(f"\\n[WARN]  Note: {len(failed_extensions)} extensions failed to install")
         print("You can install them manually later from the Extensions marketplace")
 
 

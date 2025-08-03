@@ -281,7 +281,7 @@ def run_security_tests():
     print(f"Errors: {len(result.errors)}")
 
     if result.failures:
-        print("\n❌ Failures:")
+        print("\n[ERROR] Failures:")
         for test, traceback in result.failures:
             print(f"  {test}: {traceback}")
 
@@ -293,7 +293,7 @@ def run_security_tests():
     if result.wasSuccessful():
         print("\n✅ All tests passed! Security system is ready.")
     else:
-        print("\n❌ Some tests failed. Please review the issues above.")
+        print("\n[ERROR] Some tests failed. Please review the issues above.")
 
     return result.wasSuccessful()
 

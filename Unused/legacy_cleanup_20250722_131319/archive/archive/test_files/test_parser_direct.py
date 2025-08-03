@@ -58,7 +58,7 @@ end
 
 
 def test_wrapper_function():
-    print("\n🔧 TESTING WRAPPER FUNCTION")
+    print("\n[TOOL] TESTING WRAPPER FUNCTION")
     print("=" * 40)
 
     # Test the wrapper function from the __init__.py
@@ -165,7 +165,7 @@ recall experiences with "test_log"
         for node_type, count in sorted(node_analysis.items()):
             print(f"   {node_type}: {count}")
 
-        print("🔧 Compiling to executable code...")
+        print("[TOOL] Compiling to executable code...")
         compiler = AetherraCodeCompiler()
         compiled = compiler.compile(ast)
         print(f"   {len(compiled)} characters of compiled code")

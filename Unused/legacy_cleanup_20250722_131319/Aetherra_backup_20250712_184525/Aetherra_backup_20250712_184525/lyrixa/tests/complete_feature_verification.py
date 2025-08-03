@@ -71,8 +71,8 @@ async def main():
         print("   ✅ Tone adaptation: WORKING")
 
     except Exception as e:
-        core_results["conversational_engine"] = f"❌ FAIL: {e}"
-        print(f"   ❌ Conversational Engine: FAILED - {e}")
+        core_results["conversational_engine"] = f"[ERROR] FAIL: {e}"
+        print(f"   [ERROR] Conversational Engine: FAILED - {e}")
 
     # Test 2: Plugin Ecosystem
     print("\n2️⃣ Testing Plugin Ecosystem...")
@@ -113,8 +113,8 @@ async def main():
         print("   ✅ Plugin scaffolding: WORKING")
 
     except Exception as e:
-        core_results["plugin_ecosystem"] = f"❌ FAIL: {e}"
-        print(f"   ❌ Plugin Ecosystem: FAILED - {e}")
+        core_results["plugin_ecosystem"] = f"[ERROR] FAIL: {e}"
+        print(f"   [ERROR] Plugin Ecosystem: FAILED - {e}")
 
     # Test 3: Memory System
     print("\n3️⃣ Testing Memory System...")
@@ -154,8 +154,8 @@ async def main():
         print("   ✅ Visual memory viewer: WORKING")
 
     except Exception as e:
-        core_results["memory_system"] = f"❌ FAIL: {e}"
-        print(f"   ❌ Memory System: FAILED - {e}")
+        core_results["memory_system"] = f"[ERROR] FAIL: {e}"
+        print(f"   [ERROR] Memory System: FAILED - {e}")
 
     print("\n⚙️ TESTING POWER DEVELOPER FEATURES")
     print("-" * 40)
@@ -197,8 +197,8 @@ if sentiment == "positive":
         print("   ✅ Pattern recognition: WORKING")
 
     except Exception as e:
-        power_results["aetherra_intelligence"] = f"❌ FAIL: {e}"
-        print(f"   ❌ Aetherra Intelligence: FAILED - {e}")
+        power_results["aetherra_intelligence"] = f"[ERROR] FAIL: {e}"
+        print(f"   [ERROR] Aetherra Intelligence: FAILED - {e}")
 
     # Test 5: Intent-Aware Command Routing
     print("\n5️⃣ Testing Intent-Aware Command Routing...")
@@ -226,8 +226,8 @@ if sentiment == "positive":
         print("   ✅ Autonomous decision-making: WORKING")
 
     except Exception as e:
-        power_results["intent_routing"] = f"❌ FAIL: {e}"
-        print(f"   ❌ Intent Routing: FAILED - {e}")
+        power_results["intent_routing"] = f"[ERROR] FAIL: {e}"
+        print(f"   [ERROR] Intent Routing: FAILED - {e}")
 
     # Test 6: Code Utility
     print("\n6️⃣ Testing Code Utility...")
@@ -256,8 +256,8 @@ if sentiment == "positive":
         print("   🔶 Test case generation: NEEDS IMPLEMENTATION")
 
     except Exception as e:
-        power_results["code_utility"] = f"❌ FAIL: {e}"
-        print(f"   ❌ Code Utility: FAILED - {e}")
+        power_results["code_utility"] = f"[ERROR] FAIL: {e}"
+        print(f"   [ERROR] Code Utility: FAILED - {e}")
 
     print("\n🚀 TESTING AUTONOMY & SYSTEM AWARENESS")
     print("-" * 40)
@@ -278,8 +278,8 @@ if sentiment == "positive":
         print("   🔶 Behavior adaptation: NEEDS IMPLEMENTATION")
 
     except Exception as e:
-        autonomy_results["self_reflection"] = f"❌ FAIL: {e}"
-        print(f"   ❌ Self-Reflection: FAILED - {e}")
+        autonomy_results["self_reflection"] = f"[ERROR] FAIL: {e}"
+        print(f"   [ERROR] Self-Reflection: FAILED - {e}")
 
     # Test 8: Proactive Guidance
     print("\n8️⃣ Testing Proactive Guidance...")
@@ -298,8 +298,8 @@ if sentiment == "positive":
         print("   🔶 Periodic check-ins: NEEDS IMPLEMENTATION")
 
     except Exception as e:
-        autonomy_results["proactive_guidance"] = f"❌ FAIL: {e}"
-        print(f"   ❌ Proactive Guidance: FAILED - {e}")
+        autonomy_results["proactive_guidance"] = f"[ERROR] FAIL: {e}"
+        print(f"   [ERROR] Proactive Guidance: FAILED - {e}")
 
     # Test 9: System Agent Traits
     print("\n9️⃣ Testing System Agent Traits...")
@@ -317,8 +317,8 @@ if sentiment == "positive":
         print("   🔶 Background analysis: NEEDS IMPLEMENTATION")
 
     except Exception as e:
-        autonomy_results["system_agent"] = f"❌ FAIL: {e}"
-        print(f"   ❌ System Agent Traits: FAILED - {e}")
+        autonomy_results["system_agent"] = f"[ERROR] FAIL: {e}"
+        print(f"   [ERROR] System Agent Traits: FAILED - {e}")
 
     print("\n🧬 TESTING HUMANIZED INTELLIGENCE")
     print("-" * 40)
@@ -344,8 +344,8 @@ if sentiment == "positive":
         print("   🔶 Emotional expression: NEEDS IMPLEMENTATION")
 
     except Exception as e:
-        human_results["human_traits"] = f"❌ FAIL: {e}"
-        print(f"   ❌ Human Traits: FAILED - {e}")
+        human_results["human_traits"] = f"[ERROR] FAIL: {e}"
+        print(f"   [ERROR] Human Traits: FAILED - {e}")
 
     print("\n🌐 TESTING INTEGRATION & INTERFACE")
     print("-" * 40)
@@ -374,8 +374,8 @@ if sentiment == "positive":
         print("   🔶 Voice input: NEEDS IMPLEMENTATION")
 
     except Exception as e:
-        integration_results["interface_support"] = f"❌ FAIL: {e}"
-        print(f"   ❌ Interface Support: FAILED - {e}")
+        integration_results["interface_support"] = f"[ERROR] FAIL: {e}"
+        print(f"   [ERROR] Interface Support: FAILED - {e}")
 
     # Print comprehensive results
     print("\n" + "=" * 60)
@@ -412,7 +412,7 @@ if sentiment == "positive":
     }
     passed = len([r for r in all_results.values() if "✅ PASS" in str(r)])
     partial = len([r for r in all_results.values() if "🔶 PARTIAL" in str(r)])
-    failed = len([r for r in all_results.values() if "❌ FAIL" in str(r)])
+    failed = len([r for r in all_results.values() if "[ERROR] FAIL" in str(r)])
     total = len(all_results)
 
     completion_percentage = ((passed * 1.0 + partial * 0.5) / total) * 100
@@ -420,7 +420,7 @@ if sentiment == "positive":
     print(f"\n📊 OVERALL COMPLETION: {completion_percentage:.1f}%")
     print(f"   ✅ Fully Working: {passed}/{total}")
     print(f"   🔶 Partially Working: {partial}/{total}")
-    print(f"   ❌ Failed/Missing: {failed}/{total}")
+    print(f"   [ERROR] Failed/Missing: {failed}/{total}")
 
     if completion_percentage < 80:
         print("\n🚨 LYRIXA NEEDS SIGNIFICANT DEVELOPMENT")

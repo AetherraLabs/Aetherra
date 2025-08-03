@@ -114,7 +114,7 @@ def main():
         print("🎉 NO ERRORS FOUND!")
         print("✅ All systems operational")
     else:
-        print(f"❌ {len(all_errors)} ERRORS FOUND:")
+        print(f"[ERROR] {len(all_errors)} ERRORS FOUND:")
         for i, error in enumerate(all_errors, 1):
             print(f"   {i}. {error}")
 

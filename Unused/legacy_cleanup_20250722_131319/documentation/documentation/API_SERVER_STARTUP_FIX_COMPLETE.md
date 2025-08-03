@@ -8,7 +8,7 @@
 
 ---
 
-## 🔧 **What Was Fixed**
+## [TOOL] **What Was Fixed**
 
 ### **Before (Broken):**
 ```
@@ -63,11 +63,11 @@ if __name__ == "__main__":
     log("🚀 Launching Lyrixa Desktop Interface...")
 
     # ✅ Start API server and wait for it to be ready
-    log("🔧 Starting Enhanced API server first...")
+    log("[TOOL] Starting Enhanced API server first...")
     api_ready = run_self_improvement_api()
 
     if not api_ready:
-        log("⚠️ API server not ready - some features may not work", "warning")
+        log("[WARN] API server not ready - some features may not work", "warning")
 
     log("🎮 Starting GUI...")
     launch_gui()
@@ -80,7 +80,7 @@ if __name__ == "__main__":
 ```
 1. 🚀 User runs: python Aetherra/lyrixa/launcher.py
 
-2. 🔧 Enhanced API Server Startup:
+2. [TOOL] Enhanced API Server Startup:
    ├─ Check if port 8007 is available
    ├─ Start enhanced_api_server.py in background
    ├─ Wait for server to respond on port 8007
@@ -156,7 +156,7 @@ python Aetherra/lyrixa/launcher.py
 **Expected Output:**
 ```
 🚀 Launching Lyrixa Desktop Interface...
-🔧 Starting Enhanced API server first...
+[TOOL] Starting Enhanced API server first...
 🚀 Starting Enhanced Lyrixa API server...
 ⏳ Waiting for API server on port 8007...
 ✅ API server is ready!

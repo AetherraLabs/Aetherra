@@ -317,7 +317,7 @@ All AI OS state is automatically preserved:
 
 ---
 
-## 🔧 Configuration Options
+## [TOOL] Configuration Options
 
 ### Identity Customization
 Modify personality traits in `data/ai_identity.json`:

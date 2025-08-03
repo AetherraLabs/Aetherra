@@ -71,11 +71,11 @@ class aetherraEngine:
                 print(f"✅ Default model set to {first_model}")
             else:
                 print(
-                    "⚠️ No LLM models available - model/assistant statements will not work"
+                    "[WARN] No LLM models available - model/assistant statements will not work"
                 )
 
         except Exception as e:
-            print(f"⚠️ Error initializing models: {e}")
+            print(f"[WARN] Error initializing models: {e}")
 
     def execute_aetherra_file(self, file_path: str) -> Dict[str, Any]:
         """Execute a .aether file and return results"""

@@ -268,8 +268,8 @@ def test_backward_compatibility():
         result1 = interpreter1.execute('remember("compatibility test")')
         result2 = interpreter2.execute('remember("compatibility test")')
 
-        print(f"   📦 Method 1 Result: {str(result1)[:50]}...")
-        print(f"   📦 Method 2 Result: {str(result2)[:50]}...")
+        print(f"   [DISC] Method 1 Result: {str(result1)[:50]}...")
+        print(f"   [DISC] Method 2 Result: {str(result2)[:50]}...")
 
         print("✅ Backward compatibility testing completed")
         return True

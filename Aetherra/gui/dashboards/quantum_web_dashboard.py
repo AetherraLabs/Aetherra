@@ -27,7 +27,7 @@ try:
     # from aiohttp.web_runner import GracefulExit  # Unused, removed
     WEB_AVAILABLE = True
 except ImportError:
-    print("⚠️ aiohttp not available - web dashboard will not function")
+    print("[WARN] aiohttp not available - web dashboard will not function")
     WEB_AVAILABLE = False
     web = None  # Ensure 'web' is always defined
     web_ws = None  # Ensure 'web_ws' is always defined
@@ -38,7 +38,7 @@ try:
 
     QUANTUM_INTEGRATION_AVAILABLE = True
 except ImportError:
-    print("⚠️ Quantum integration not available")
+    print("[WARN] Quantum integration not available")
     QuantumEnhancedMemoryEngine = Any  # type: ignore
     QUANTUM_INTEGRATION_AVAILABLE = False
 
@@ -879,7 +879,7 @@ async def demo_quantum_web_dashboard():
         )
     else:
         engine = None
-        print("⚠️ Quantum integration not available - dashboard will show mock data")
+        print("[WARN] Quantum integration not available - dashboard will show mock data")
 
     # Start the dashboard
     dashboard = QuantumWebDashboard(engine, port=8080)

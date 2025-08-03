@@ -128,12 +128,12 @@ async def test_lyrixa_plugin_accuracy():
                 print(f"   ✅ '{term}' - GOOD")
                 accurate_score += 1
             else:
-                print(f"   ⚠️ '{term}' - missing")
+                print(f"   [WARN] '{term}' - missing")
 
-        print("\n❌ Inaccurate terms found:")
+        print("\n[ERROR] Inaccurate terms found:")
         for term in inaccurate_terms:
             if term in response_text:
-                print(f"   ❌ '{term}' - BAD (should not mention)")
+                print(f"   [ERROR] '{term}' - BAD (should not mention)")
                 inaccurate_score += 1
             else:
                 print(f"   ✅ '{term}' - correctly avoided")
@@ -151,7 +151,7 @@ async def test_lyrixa_plugin_accuracy():
             print(f"   🏷️  Is .aether file: {last_injection['is_aether']}")
             print(f"   🐍 Is .py file: {last_injection['is_python']}")
             print(
-                f"   🔧 Has plugin structure: {last_injection['has_plugin_structure']}"
+                f"   [TOOL] Has plugin structure: {last_injection['has_plugin_structure']}"
             )
 
             print("\n📋 Code preview:")
@@ -176,7 +176,7 @@ async def test_lyrixa_plugin_accuracy():
                 content_score += 1
                 print("✅ Substantial code content")
         else:
-            print("❌ No plugin code was injected")
+            print("[ERROR] No plugin code was injected")
             content_score = 0
 
         # Calculate final scores
@@ -212,14 +212,14 @@ async def test_lyrixa_plugin_accuracy():
         elif overall_score >= 60:
             print("✅ GOOD: Lyrixa mostly accurate, minor improvements needed")
         elif overall_score >= 40:
-            print("⚠️ FAIR: Some accuracy issues, needs improvement")
+            print("[WARN] FAIR: Some accuracy issues, needs improvement")
         else:
-            print("❌ POOR: Significant accuracy problems, needs major fixes")
+            print("[ERROR] POOR: Significant accuracy problems, needs major fixes")
 
         return overall_score >= 60
 
     except Exception as e:
-        print(f"❌ Test failed with error: {e}")
+        print(f"[ERROR] Test failed with error: {e}")
         import traceback
 
         traceback.print_exc()

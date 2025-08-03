@@ -231,7 +231,7 @@ def integration_examples():
     📚 Examples of how to integrate Meta-Reasoning Engine
     """
 
-    print("🔧 Integration Examples:")
+    print("[TOOL] Integration Examples:")
     print("=" * 30)
 
     print("""

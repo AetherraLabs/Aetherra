@@ -26,9 +26,9 @@ def load_env_file():
                         os.environ[key.strip()] = value.strip()
             print("✅ .env file loaded successfully")
         else:
-            print("❌ .env file not found")
+            print("[ERROR] .env file not found")
     except Exception as e:
-        print(f"❌ Error loading .env file: {e}")
+        print(f"[ERROR] Error loading .env file: {e}")
 
 
 # Load environment variables
@@ -49,7 +49,7 @@ async def test_openai_integration():
     if api_key:
         print(f"✅ OpenAI API Key: Found (starts with {api_key[:8]}...)")
     else:
-        print("❌ OpenAI API Key: Not found in environment")
+        print("[ERROR] OpenAI API Key: Not found in environment")
         print("   Please set OPENAI_API_KEY in your .env file")
         return
 
@@ -79,7 +79,7 @@ async def test_openai_integration():
             print(f"   Error: {response.get('error', 'Unknown error')}")
 
     except Exception as e:
-        print(f"❌ Error during test: {e}")
+        print(f"[ERROR] Error during test: {e}")
 
     print("\n💬 Testing Conversation Manager...")
 
@@ -96,7 +96,7 @@ async def test_openai_integration():
         print(f"   Response: {conv_response.get('response', 'No response')}")
 
     except Exception as e:
-        print(f"❌ Error in conversation manager: {e}")
+        print(f"[ERROR] Error in conversation manager: {e}")
 
     print("\n🎉 OpenAI Integration Test Complete!")
 

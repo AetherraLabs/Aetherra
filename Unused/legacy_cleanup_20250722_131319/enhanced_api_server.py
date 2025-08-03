@@ -274,7 +274,7 @@ async def propose_changes():
             "proposals": [
                 {
                     "category": "Plugin Enhancement",
-                    "action": "🔧 Optimize plugin loading performance",
+                    "action": "[TOOL] Optimize plugin loading performance",
                     "description": "Implement lazy loading for plugins to reduce startup time",
                     "priority": "medium",
                     "estimated_impact": "Faster system startup",

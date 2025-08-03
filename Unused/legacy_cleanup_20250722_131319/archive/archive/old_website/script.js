@@ -736,7 +736,7 @@ when user_asks_question:
         // Plugin questions
         if (input.includes('plugin') || input.includes('extend') || input.includes('customize')) {
             return `
-                <p>🔧 <strong>Aetherra features a revolutionary plugin ecosystem!</strong></p>
+                <p>[TOOL] <strong>Aetherra features a revolutionary plugin ecosystem!</strong></p>
                 <p><strong>AI Plugin Rewriter:</strong></p>
                 <p>• Automatically explains existing plugins in natural language<br>
                 • Intelligently refactors code with safety validation<br>

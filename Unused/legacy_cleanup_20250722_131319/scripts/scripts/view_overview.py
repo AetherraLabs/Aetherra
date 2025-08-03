@@ -51,7 +51,7 @@ def show_quick_overview():
     overview_file = project_root / "PROJECT_OVERVIEW.md"
 
     if not overview_file.exists():
-        print("❌ PROJECT_OVERVIEW.md not found!")
+        print("[ERROR] PROJECT_OVERVIEW.md not found!")
         return
 
     with open(overview_file, encoding="utf-8") as f:
@@ -71,7 +71,7 @@ def show_quick_overview():
     if status_match:
         print(f"🚀 Status: {status_match.group(1)}")
     if version_match:
-        print(f"📦 Version: {version_match.group(1)}")
+        print(f"[DISC] Version: {version_match.group(1)}")
 
     print()
 
@@ -152,7 +152,7 @@ def show_full_overview():
     overview_file = project_root / "PROJECT_OVERVIEW.md"
 
     if not overview_file.exists():
-        print("❌ PROJECT_OVERVIEW.md not found!")
+        print("[ERROR] PROJECT_OVERVIEW.md not found!")
         return
 
     with open(overview_file, encoding="utf-8") as f:
@@ -175,7 +175,7 @@ def show_stats_only():
     overview_file = project_root / "PROJECT_OVERVIEW.md"
 
     if not overview_file.exists():
-        print("❌ PROJECT_OVERVIEW.md not found!")
+        print("[ERROR] PROJECT_OVERVIEW.md not found!")
         return
 
     with open(overview_file, encoding="utf-8") as f:
@@ -188,7 +188,7 @@ def show_stats_only():
         print("📈 " + "=" * 50)
         print(format_for_terminal(stats_section))
     else:
-        print("❌ Statistics section not found in overview!")
+        print("[ERROR] Statistics section not found in overview!")
 
 
 def main():

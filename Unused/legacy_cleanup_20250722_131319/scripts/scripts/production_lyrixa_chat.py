@@ -30,7 +30,7 @@ try:
 
     GUI_AVAILABLE = True
 except ImportError:
-    print("❌ PySide6 not available")
+    print("[ERROR] PySide6 not available")
     GUI_AVAILABLE = False
     sys.exit(1)
 
@@ -135,15 +135,15 @@ class ProductionLyrixaChat(QMainWindow):
                     f"✅ Full AI capabilities enabled with {', '.join(providers)}"
                 )
             else:
-                status = "⚠️ No AI providers configured"
+                status = "[WARN] No AI providers configured"
                 self.add_system_message(
-                    "⚠️ Add OpenAI or Anthropic API key to .env file for full AI capabilities"
+                    "[WARN] Add OpenAI or Anthropic API key to .env file for full AI capabilities"
                 )
 
             self.status_bar.showMessage(status)
 
         except Exception as e:
-            self.status_bar.showMessage("❌ Configuration error")
+            self.status_bar.showMessage("[ERROR] Configuration error")
 
     def setup_ui(self):
         """Setup the user interface"""
@@ -295,7 +295,7 @@ class ProductionLyrixaChat(QMainWindow):
 
 def main():
     if not GUI_AVAILABLE:
-        print("❌ GUI not available")
+        print("[ERROR] GUI not available")
         return
 
     app = QApplication(sys.argv)

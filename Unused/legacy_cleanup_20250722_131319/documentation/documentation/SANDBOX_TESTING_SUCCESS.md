@@ -18,9 +18,9 @@
   Success: False
   Execution Time: 5.200s
   🧠 AI Insights:
-    ⚠️ Slow execution time: 5.20s
+    [WARN] Slow execution time: 5.20s
       💡 Suggestion: Consider optimizing plugin logic or adding caching
-    ❌ Plugin execution failed: API timeout after 5 seconds
+    [ERROR] Plugin execution failed: API timeout after 5 seconds
       💡 Suggestion: Fix the error and add proper error handling
 ```
 
@@ -34,7 +34,7 @@
   Errors: 0
   Warnings: 1
   Info: 4
-  ⚠️ Warnings:
+  [WARN] Warnings:
     • Plugin requests dangerous capabilities: network_access
 ```
 
@@ -67,18 +67,18 @@
 
 ## 🎯 **Problem Resolution - FIXED!**
 
-### ❌ **Original Issue:**
+### [ERROR] **Original Issue:**
 ```
 📋 Individual Test Results:
-  ❌ basic_functionality: 0.084s
+  [ERROR] basic_functionality: 0.084s
     Error: Output doesn't match expected result
-  ❌ memory_access: 0.060s
+  [ERROR] memory_access: 0.060s
     Error: Process exited with code 1
-  ❌ goal_interaction: 0.058s
+  [ERROR] goal_interaction: 0.058s
     Error: Process exited with code 1
-  ❌ error_handling: 0.059s
+  [ERROR] error_handling: 0.059s
     Error: Process exited with code 1
-  ❌ large_input: 0.060s
+  [ERROR] large_input: 0.060s
     Error: Process exited with code 1
 ```
 
@@ -122,10 +122,10 @@
 ## 📈 **Impact & Results**
 
 ### **Before Enhancement:**
-- ❌ Basic plugin editor with limited features
-- ❌ No AI assistance or feedback
-- ❌ No validation or testing capabilities
-- ❌ No sandbox environment
+- [ERROR] Basic plugin editor with limited features
+- [ERROR] No AI assistance or feedback
+- [ERROR] No validation or testing capabilities
+- [ERROR] No sandbox environment
 
 ### **After Enhancement:**
 - ✅ **100% test success rate** in sandbox

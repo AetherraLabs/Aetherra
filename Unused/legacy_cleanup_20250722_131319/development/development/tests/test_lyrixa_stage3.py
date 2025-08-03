@@ -62,11 +62,11 @@ def launch_lyrixa():
         sys.exit(app.exec())
 
     except ImportError as e:
-        print(f"❌ Import Error: {e}")
+        print(f"[ERROR] Import Error: {e}")
         print("Make sure PySide6 is installed: pip install PySide6")
 
     except Exception as e:
-        print(f"❌ Launch Error: {e}")
+        print(f"[ERROR] Launch Error: {e}")
         import traceback
         traceback.print_exc()
 

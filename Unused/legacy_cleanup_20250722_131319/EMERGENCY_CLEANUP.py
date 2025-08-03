@@ -78,7 +78,7 @@ def emergency_cleanup():
                 total_freed += size_mb
                 print(f"✅ Removed {dir_name}")
             except Exception as e:
-                print(f"❌ Failed to remove {dir_name}: {e}")
+                print(f"[ERROR] Failed to remove {dir_name}: {e}")
 
     print(f"\n🎉 CLEANUP COMPLETE!")
     print(f"💾 Total space freed: {total_freed:.1f} MB")
@@ -169,16 +169,16 @@ node_modules/
             f.write(gitignore_additions)
         print("✅ Updated .gitignore with bloat prevention rules")
     except Exception as e:
-        print(f"❌ Failed to update .gitignore: {e}")
+        print(f"[ERROR] Failed to update .gitignore: {e}")
 
 
 if __name__ == "__main__":
-    print("⚠️  WARNING: This will delete 2.5+ GB of files!")
-    print("⚠️  Make sure you have backups of important work!")
+    print("[WARN]  WARNING: This will delete 2.5+ GB of files!")
+    print("[WARN]  Make sure you have backups of important work!")
     response = input("\nProceed with emergency cleanup? (yes/no): ")
 
     if response.lower() == "yes":
         emergency_cleanup()
     else:
-        print("❌ Cleanup cancelled. Repository remains bloated.")
+        print("[ERROR] Cleanup cancelled. Repository remains bloated.")
         print("💡 Consider manually removing .venv/ and Lib/ directories")

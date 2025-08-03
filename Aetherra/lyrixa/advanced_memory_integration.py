@@ -24,7 +24,7 @@ try:
     logger.info("✅ Quantum Enhanced Memory Engine available")
 except ImportError as e:
     QUANTUM_MEMORY_AVAILABLE = False
-    logger.warning(f"⚠️ Quantum Enhanced Memory Engine not available: {e}")
+    logger.warning(f"[WARN] Quantum Enhanced Memory Engine not available: {e}")
     create_quantum_enhanced_memory_engine = None
 
 try:
@@ -34,7 +34,7 @@ try:
     logger.info("✅ Lyrixa Memory Engine available")
 except ImportError as e:
     LYRIXA_MEMORY_AVAILABLE = False
-    logger.warning(f"⚠️ Lyrixa Memory Engine not available: {e}")
+    logger.warning(f"[WARN] Lyrixa Memory Engine not available: {e}")
     LyrixaMemoryEngine = None
 
 
@@ -83,7 +83,7 @@ class AdvancedMemoryManager:
                 self.quantum_memory = create_quantum_enhanced_memory_engine()
                 logger.info("✅ Quantum memory engine initialized")
             else:
-                logger.warning("⚠️ Quantum memory not available, using fallback")
+                logger.warning("[WARN] Quantum memory not available, using fallback")
 
             return True
 

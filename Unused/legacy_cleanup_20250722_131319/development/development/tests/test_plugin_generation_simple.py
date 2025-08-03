@@ -92,10 +92,10 @@ async def test_plugin_generator_only():
                 print(f"   📝 Sample files: {', '.join(file_names)}")
 
             else:
-                print(f"   ❌ Generation failed - no plugin created")
+                print(f"   [ERROR] Generation failed - no plugin created")
 
         except Exception as e:
-            print(f"   ❌ Error: {e}")
+            print(f"   [ERROR] Error: {e}")
 
     # Show generator stats
     info = generator.get_info()
@@ -150,7 +150,7 @@ async def test_plugin_agent_generation():
                 print(f"🆔 Plugin ID: {metadata.get('plugin_id', 'N/A')}")
                 print(f"🏷️  Template: {metadata.get('template_used', 'N/A')}")
             elif "error" in metadata:
-                print(f"❌ Error: {metadata['error']}")
+                print(f"[ERROR] Error: {metadata['error']}")
             else:
                 print("ℹ️  Basic response (no actual generation)")
 
@@ -163,7 +163,7 @@ async def test_plugin_agent_generation():
             print(f"📝 Preview: {preview}")
 
         except Exception as e:
-            print(f"❌ Error processing: {e}")
+            print(f"[ERROR] Error processing: {e}")
 
 
 async def test_name_and_type_detection():
@@ -212,7 +212,7 @@ async def main():
         print("✅ All component tests completed!")
 
     except Exception as e:
-        print(f"\n❌ Test suite failed: {e}")
+        print(f"\n[ERROR] Test suite failed: {e}")
         import traceback
 
         traceback.print_exc()

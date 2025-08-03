@@ -1051,7 +1051,7 @@ async def demo_quantum_bridge():
     interference_result = await bridge.quantum_interference_experiment(quantum_states)
 
     # Quantum error correction test
-    print("\n🔧 QUANTUM ERROR CORRECTION TEST")
+    print("\n[TOOL] QUANTUM ERROR CORRECTION TEST")
     print("-" * 40)
     error_correction_result = await bridge.quantum_error_correction_test(quantum_state)
 
@@ -1066,7 +1066,7 @@ async def demo_quantum_bridge():
     print(f"🧮 Total qubits used: {stats['total_qubits_used']}")
     print(f"📊 Average fidelity: {stats['avg_fidelity']:.3f}")
 
-    print(f"\n🔧 Error correction status:")
+    print(f"\n[TOOL] Error correction status:")
     print(f"   Available: {error_correction_result['error_correction_available']}")
     if error_correction_result["error_correction_available"]:
         print(

@@ -177,7 +177,7 @@ Complete integration layer for production deployment:
 
 ---
 
-## 🔧 Technical Architecture
+## [TOOL] Technical Architecture
 
 ### **File Structure**
 ```

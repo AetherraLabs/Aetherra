@@ -44,7 +44,7 @@ class SimpleSandboxTester:
         # Generate recommendations
         recommendations = []
         if failed > 0:
-            recommendations.append(f"🔧 {failed} tests failed - improve error handling")
+            recommendations.append(f"[TOOL] {failed} tests failed - improve error handling")
         if avg_time > 1.0:
             recommendations.append("⚡ Optimize plugin performance")
         if success_rate < 0.8:
@@ -201,7 +201,7 @@ plugin advanced_calculator {
 
     print("\n📋 Individual Test Results:")
     for result in report['test_results']:
-        status = "✅" if result['success'] else "❌"
+        status = "✅" if result['success'] else "[ERROR]"
         print(f"  {status} {result['scenario']}: {result['execution_time']:.3f}s")
         if result['error']:
             print(f"    Error: {result['error']}")

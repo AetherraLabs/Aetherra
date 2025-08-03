@@ -847,7 +847,7 @@ express_emotion(emotion_type, intensity) -> expression_result
 
 ---
 
-## ⚠️ Error Handling
+## [WARN] Error Handling
 
 ### Error Types
 
@@ -1039,7 +1039,7 @@ project/
 
 ---
 
-## 🔧 Implementation Requirements
+## [TOOL] Implementation Requirements
 
 ### Minimum System Requirements
 

@@ -18,7 +18,7 @@ sys.path.insert(0, src_path)
 
 def test_core_imports():
     """Test core module imports"""
-    print("🔧 Testing Core Module Imports...")
+    print("[TOOL] Testing Core Module Imports...")
 
     try:
         from src.aethercode.core import (

@@ -738,7 +738,7 @@ class AdvancedEmotionalIntelligence:
             }
 
         except Exception as e:
-            print(f"⚠️ Emotional intelligence processing error: {e}")
+            print(f"[WARN] Emotional intelligence processing error: {e}")
 
             # Fallback: Basic empathetic enhancement
             simple_enhancement = self._create_simple_empathetic_response(

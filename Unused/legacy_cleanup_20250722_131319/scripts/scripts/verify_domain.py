@@ -27,13 +27,13 @@ def check_domain_status():
             if "Aetherra" in response.text:
                 print("✅ Site content verified!")
             else:
-                print("⚠️  Site content may need verification")
+                print("[WARN]  Site content may need verification")
 
         else:
-            print(f"❌ Site returned status code: {response.status_code}")
+            print(f"[ERROR] Site returned status code: {response.status_code}")
 
     except requests.exceptions.RequestException as e:
-        print(f"❌ Error accessing site: {e}")
+        print(f"[ERROR] Error accessing site: {e}")
         return False
 
     # Test SSL certificate
@@ -42,7 +42,7 @@ def check_domain_status():
         response = requests.get("https://aetherra.dev", timeout=10)
         print("✅ SSL certificate is valid")
     except requests.exceptions.SSLError as e:
-        print(f"❌ SSL certificate error: {e}")
+        print(f"[ERROR] SSL certificate error: {e}")
         return False
 
     # Test redirect from www
@@ -52,9 +52,9 @@ def check_domain_status():
         if response.status_code == 200:
             print("✅ WWW redirect working")
         else:
-            print(f"⚠️  WWW redirect status: {response.status_code}")
+            print(f"[WARN]  WWW redirect status: {response.status_code}")
     except requests.exceptions.RequestException as e:
-        print(f"⚠️  WWW redirect issue: {e}")
+        print(f"[WARN]  WWW redirect issue: {e}")
 
     print("\n" + "=" * 50)
     print("✅ Domain verification complete!")

@@ -17,7 +17,7 @@ The **Plugin Editor** has been successfully integrated into the Lyrixa GUI, prov
   - Save changes to disk
   - Clear editor content
 
-- **🔧 Plugin Generation**:
+- **[TOOL] Plugin Generation**:
   - Generate new plugins using natural language descriptions
   - Automatic plugin type detection (UI, Data, ML, API Integration)
   - Smart plugin name generation
@@ -54,7 +54,7 @@ The **Plugin Editor** has been successfully integrated into the Lyrixa GUI, prov
 
 ### New Plugin Generation:
 ```
-1. User clicks "🔧 Generate New Plugin"
+1. User clicks "[TOOL] Generate New Plugin"
 2. Enters natural language description
 3. System detects plugin type and generates code
 4. Generated code appears in editor
@@ -107,7 +107,7 @@ The **Plugin Editor** has been successfully integrated into the Lyrixa GUI, prov
 ## 🚀 Usage Examples
 
 ### Generate a Data Visualization Plugin:
-1. Click "🔧 Generate New Plugin"
+1. Click "[TOOL] Generate New Plugin"
 2. Enter: "interactive charts and graphs for data visualization"
 3. System generates a UI Widget plugin with chart components
 4. Edit and customize as needed
