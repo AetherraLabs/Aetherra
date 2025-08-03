@@ -20,13 +20,13 @@ This launcher implements your vision:
 4. ONE interface, no conflicts, no multiple GUIs
 """
 
+import argparse
 import asyncio
 import logging
-import sys
 import os
+import sys
 from pathlib import Path
-from typing import Optional, Dict, Any
-import argparse
+from typing import Any, Dict, Optional
 
 # Add project paths - we're in Aetherra/lyrixa/ so parent.parent is project root
 project_root = Path(__file__).parent.parent.parent
@@ -34,16 +34,68 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(Path(__file__).parent.parent))  # Aetherra directory
 sys.path.insert(0, str(Path(__file__).parent))  # lyrixa directory
 
-# Setup logging
+
+# Load environment variables from .env file
+def load_env_file():
+    """Load environment variables from .env file"""
+    env_file = project_root / ".env"
+    if env_file.exists():
+        print(f"🔍 Loading .env file from: {env_file}")
+        with open(env_file, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    os.environ[key.strip()] = value.strip()
+        print("✅ Environment variables loaded from .env file")
+
+        # Check available AI models
+        ai_models = [
+            ("OpenAI", "OPENAI_API_KEY"),
+            ("Anthropic Claude", "ANTHROPIC_API_KEY"),
+            ("Google Gemini", "GOOGLE_API_KEY"),
+            ("Cohere", "COHERE_API_KEY"),
+            ("Hugging Face", "HUGGINGFACE_API_KEY"),
+        ]
+
+        available_models = []
+        for model_name, env_var in ai_models:
+            api_key = os.getenv(env_var)
+            if api_key:
+                # Show partial key for verification
+                masked_key = (
+                    f"{api_key[:8]}...{api_key[-4:]}"
+                    if len(api_key) > 12
+                    else f"{api_key[:4]}...{api_key[-2:]}"
+                )
+                print(f"✅ {model_name} API Key loaded: {masked_key}")
+                available_models.append(model_name)
+            else:
+                print(f"⚠️ {model_name} API Key not found ({env_var})")
+
+        if available_models:
+            print(f"🤖 Available AI Models: {', '.join(available_models)}")
+            print("🔄 Lyrixa will try models in priority order with smart fallback")
+        else:
+            print("⚠️ No AI API keys found - will use intelligent local responses")
+            print("💡 See MULTI_AI_SETUP_GUIDE.md for configuration help")
+
+    else:
+        print(f"⚠️ .env file not found at: {env_file}")
+        print("💡 Create .env file with API keys for AI chat functionality")
+
+
+# Setup logging first
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('lyrixa_system.log')
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(), logging.FileHandler("lyrixa_system.log")],
 )
 logger = logging.getLogger(__name__)
+
+# Load environment variables after logger is setup
+load_env_file()
+
 
 class LyrixaOperatingSystem:
     """
@@ -74,6 +126,7 @@ class LyrixaOperatingSystem:
             # Phase 1: Service Registry
             logger.info("[SRV] Phase 1: Initializing Service Registry...")
             from aetherra_service_registry import get_service_registry
+
             self.service_registry = await get_service_registry()
             logger.info("[OK] Service Registry online")
 
@@ -84,18 +137,18 @@ class LyrixaOperatingSystem:
                 memory_candidates = [
                     "aetherra_core.memory.memory_system",
                     "aetherra_core.memory.quantum_memory",
-                    "lyrixa.memory.quantum_memory_integration"
+                    "lyrixa.memory.quantum_memory_integration",
                 ]
 
                 self.memory_system = None
                 for candidate in memory_candidates:
                     try:
-                        module = __import__(candidate, fromlist=[''])
-                        if hasattr(module, 'get_memory_system'):
+                        module = __import__(candidate, fromlist=[""])
+                        if hasattr(module, "get_memory_system"):
                             self.memory_system = await module.get_memory_system()
-                        elif hasattr(module, 'memory_system'):
+                        elif hasattr(module, "memory_system"):
                             self.memory_system = module.memory_system
-                        elif hasattr(module, 'QuantumMemorySystem'):
+                        elif hasattr(module, "QuantumMemorySystem"):
                             self.memory_system = module.QuantumMemorySystem()
 
                         if self.memory_system:
@@ -106,22 +159,29 @@ class LyrixaOperatingSystem:
 
                 if not self.memory_system:
                     logger.warning("[WARN] Using mock memory system")
-                    self.memory_system = type('MockMemory', (), {
-                        'initialize': lambda: None,
-                        'store': lambda data: None,
-                        'retrieve': lambda query: None
-                    })()
+                    self.memory_system = type(
+                        "MockMemory",
+                        (),
+                        {
+                            "initialize": lambda: None,
+                            "store": lambda data: None,
+                            "retrieve": lambda query: None,
+                        },
+                    )()
 
             except Exception as e:
                 logger.warning(f"[WARN] Memory system error: {e}, using mock")
-                self.memory_system = type('MockMemory', (), {})()
+                self.memory_system = type("MockMemory", (), {})()
 
-            await self.service_registry.register_service("memory_system", self.memory_system)
+            await self.service_registry.register_service(
+                "memory_system", self.memory_system
+            )
             logger.info("[OK] Memory System online")
 
             # Phase 3: Plugin Manager
             logger.info("[PLG] Phase 3: Initializing Plugin Manager...")
             from aetherra_core.plugins import plugin_manager
+
             await plugin_manager.get_plugin_manager()
             self.plugin_manager = plugin_manager
 
@@ -130,22 +190,29 @@ class LyrixaOperatingSystem:
             loaded_count = sum(1 for success in plugin_results.values() if success)
             logger.info(f"[OK] Plugin Manager online - {loaded_count} plugins loaded")
 
-            await self.service_registry.register_service("plugin_manager", self.plugin_manager)
+            await self.service_registry.register_service(
+                "plugin_manager", self.plugin_manager
+            )
 
             # Phase 4: Lyrixa Engine
             logger.info("[ENG] Phase 4: Initializing Lyrixa Engine...")
             from aetherra_core.engine.lyrixa_engine import lyrixa_engine
+
             self.lyrixa_engine = lyrixa_engine
             logger.info("[OK] Lyrixa Engine online")
 
-            await self.service_registry.register_service("lyrixa_engine", self.lyrixa_engine)
+            await self.service_registry.register_service(
+                "lyrixa_engine", self.lyrixa_engine
+            )
 
             # Phase 5: Agent Orchestrator
             logger.info("[AGT] Phase 5: Initializing Agent Orchestrator...")
             self.agent_orchestrator = self.lyrixa_engine.agent_orchestrator
             logger.info("[OK] Agent Orchestrator online")
 
-            await self.service_registry.register_service("agent_orchestrator", self.agent_orchestrator)
+            await self.service_registry.register_service(
+                "agent_orchestrator", self.agent_orchestrator
+            )
 
             logger.info("[READY] AETHERRA OS BACKEND FULLY OPERATIONAL")
             logger.info("=" * 60)
@@ -155,6 +222,7 @@ class LyrixaOperatingSystem:
         except Exception as e:
             logger.error(f"[ERROR] CRITICAL: Aetherra Backend startup failed: {e}")
             import traceback
+
             traceback.print_exc()
             return False
 
@@ -178,15 +246,20 @@ class LyrixaOperatingSystem:
             # Check if GUI is available
             try:
                 from PySide6.QtWidgets import QApplication
+
                 gui_available = True
             except ImportError:
-                logger.error("[ERROR] GUI dependencies not available. Install with: pip install PySide6")
+                logger.error(
+                    "[ERROR] GUI dependencies not available. Install with: pip install PySide6"
+                )
                 return False
 
             # Create Qt Application
             self.gui_application = QApplication.instance() or QApplication(sys.argv)
             self.gui_application.setApplicationName("Lyrixa AI Operating System")
-            self.gui_application.setApplicationVersion("6.0.0")  # Phase 6 version - Full GUI Personality + State Memory
+            self.gui_application.setApplicationVersion(
+                "6.0.0"
+            )  # Phase 6 version - Full GUI Personality + State Memory
 
             # Try to find the best available GUI
             main_window_class = self._find_best_gui_class()
@@ -208,16 +281,26 @@ class LyrixaOperatingSystem:
             logger.info("🎙️ PHASE 1: Hybrid PySide6 + Web Panel Architecture")
             logger.info("🌉 PHASE 2: Live Context Bridge for real-time data flow")
             logger.info("🔮 PHASE 3: Auto-Generation System for dynamic panel creation")
-            logger.info("🧠 PHASE 4: Cognitive UI Integration with thought visualization")
+            logger.info(
+                "🧠 PHASE 4: Cognitive UI Integration with thought visualization"
+            )
             logger.info("🔁 PHASE 5: Plugin-Driven UI System with dynamic widgets")
             logger.info("🌌 PHASE 6: Full GUI Personality + State Memory + AI Chat")
             logger.info("=" * 60)
             logger.info("[CTRL] Lyrixa has full command and control over Aetherra OS")
-            logger.info("[SCAN] Lyrixa can now scan and manipulate the entire filesystem")
-            logger.info("[COMM] Bidirectional communication between web panels and Python backend")
+            logger.info(
+                "[SCAN] Lyrixa can now scan and manipulate the entire filesystem"
+            )
+            logger.info(
+                "[COMM] Bidirectional communication between web panels and Python backend"
+            )
             logger.info("[AI] Self-discovery and self-improvement capabilities active")
-            logger.info("[AUTO] Dynamic GUI generation based on system state introspection")
-            logger.info("[COGNITIVE] Real-time thought streams and memory visualization")
+            logger.info(
+                "[AUTO] Dynamic GUI generation based on system state introspection"
+            )
+            logger.info(
+                "[COGNITIVE] Real-time thought streams and memory visualization"
+            )
             logger.info("[PLUGINS] Dynamic plugin UI loading and integration")
             logger.info("[PERSONALITY] AI emotional states drive interface adaptation")
             logger.info("[MEMORY] Persistent GUI state and user preference learning")
@@ -231,6 +314,7 @@ class LyrixaOperatingSystem:
         except Exception as e:
             logger.error(f"[ERROR] GUI interface startup failed: {e}")
             import traceback
+
             traceback.print_exc()
             return False
 
@@ -248,9 +332,9 @@ class LyrixaOperatingSystem:
             while True:
                 try:
                     user_input = input("\nLyrixa> ").strip()
-                    if user_input.lower() in ['exit', 'quit']:
+                    if user_input.lower() in ["exit", "quit"]:
                         break
-                    elif user_input.lower() == 'help':
+                    elif user_input.lower() == "help":
                         print("Available commands:")
                         print("  status  - Show system status")
                         print("  plugins - List loaded plugins")
@@ -258,15 +342,17 @@ class LyrixaOperatingSystem:
                         print("  agents  - List active agents")
                         print("  help    - Show this help")
                         print("  exit    - Quit Lyrixa")
-                    elif user_input.lower() == 'status':
+                    elif user_input.lower() == "status":
                         await self._show_system_status()
-                    elif user_input.lower() == 'plugins':
+                    elif user_input.lower() == "plugins":
                         await self._show_plugins()
-                    elif user_input.lower() == 'memory':
+                    elif user_input.lower() == "memory":
                         print("[MEM] Memory system operational")
-                    elif user_input.lower() == 'agents':
+                    elif user_input.lower() == "agents":
                         agent_count = 0
-                        if self.agent_orchestrator and hasattr(self.agent_orchestrator, 'agents'):
+                        if self.agent_orchestrator and hasattr(
+                            self.agent_orchestrator, "agents"
+                        ):
                             agent_count = len(self.agent_orchestrator.agents)
                         print(f"[AGT] Agent Orchestrator: {agent_count} agents")
                     else:
@@ -288,7 +374,10 @@ class LyrixaOperatingSystem:
         # Priority 1: Try the Phase 6 Hybrid GUI with Full Personality + State Memory
         try:
             from lyrixa_core.gui.main_window import LyrixaHybridWindow
-            logger.info("[OK] Using Phase 6 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI + Plugin System + AI Personality)")
+
+            logger.info(
+                "[OK] Using Phase 6 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI + Plugin System + AI Personality)"
+            )
             return LyrixaHybridWindow
         except ImportError as e:
             logger.debug(f"Phase 6 Hybrid GUI not available: {e}")
@@ -296,7 +385,10 @@ class LyrixaOperatingSystem:
         # Priority 2: Try the Phase 5 Hybrid GUI with Plugin-Driven UI System
         try:
             from lyrixa_core.gui.main_window import LyrixaHybridWindow
-            logger.info("[OK] Using Phase 5 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI + Plugin System)")
+
+            logger.info(
+                "[OK] Using Phase 5 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI + Plugin System)"
+            )
             return LyrixaHybridWindow
         except ImportError as e:
             logger.debug(f"Phase 5 Hybrid GUI not available: {e}")
@@ -304,7 +396,10 @@ class LyrixaOperatingSystem:
         # Priority 3: Try the Phase 4 Hybrid GUI with Cognitive UI Integration
         try:
             from lyrixa_core.gui.main_window import LyrixaHybridWindow
-            logger.info("[OK] Using Phase 4 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI)")
+
+            logger.info(
+                "[OK] Using Phase 4 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI)"
+            )
             return LyrixaHybridWindow
         except ImportError as e:
             logger.debug(f"Phase 4 Hybrid GUI not available: {e}")
@@ -312,7 +407,10 @@ class LyrixaOperatingSystem:
         # Priority 4: Try the Phase 3 Hybrid GUI with Auto-Generation
         try:
             from lyrixa_core.gui.main_window import LyrixaHybridWindow
-            logger.info("[OK] Using Phase 3 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation)")
+
+            logger.info(
+                "[OK] Using Phase 3 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation)"
+            )
             return LyrixaHybridWindow
         except ImportError as e:
             logger.debug(f"Phase 3 Hybrid GUI not available: {e}")
@@ -320,7 +418,10 @@ class LyrixaOperatingSystem:
         # Priority 5: Try the Phase 2 Hybrid GUI with Live Context Bridge
         try:
             from lyrixa_core.gui.main_window import LyrixaHybridWindow
-            logger.info("[OK] Using Phase 2 Lyrixa Hybrid GUI (PySide6 + Web Panels + Live Context Bridge)")
+
+            logger.info(
+                "[OK] Using Phase 2 Lyrixa Hybrid GUI (PySide6 + Web Panels + Live Context Bridge)"
+            )
             return LyrixaHybridWindow
         except ImportError as e:
             logger.debug(f"Phase 2 Hybrid GUI not available: {e}")
@@ -334,15 +435,20 @@ class LyrixaOperatingSystem:
         for module_name, class_name in gui_options:
             try:
                 import importlib
+
                 module = importlib.import_module(module_name)
                 gui_class = getattr(module, class_name)
                 logger.info(f"[OK] Using GUI: {module_name}.{class_name}")
                 return gui_class
             except (ImportError, AttributeError, SystemExit) as e:
-                logger.debug(f"GUI option {module_name}.{class_name} not available: {e}")
+                logger.debug(
+                    f"GUI option {module_name}.{class_name} not available: {e}"
+                )
                 continue
             except Exception as e:
-                logger.warning(f"Unexpected error with GUI {module_name}.{class_name}: {e}")
+                logger.warning(
+                    f"Unexpected error with GUI {module_name}.{class_name}: {e}"
+                )
                 continue
 
         # Fallback: Create a minimal GUI
@@ -352,9 +458,16 @@ class LyrixaOperatingSystem:
     def _create_minimal_gui_class(self):
         """Create a minimal GUI as last resort."""
         try:
-            from PySide6.QtWidgets import (QMainWindow, QVBoxLayout, QWidget,
-                                           QTextEdit, QLabel, QPushButton, QHBoxLayout)
             from PySide6.QtCore import QTimer
+            from PySide6.QtWidgets import (
+                QHBoxLayout,
+                QLabel,
+                QMainWindow,
+                QPushButton,
+                QTextEdit,
+                QVBoxLayout,
+                QWidget,
+            )
 
             class MinimalLyrixaGUI(QMainWindow):
                 def __init__(self):
@@ -376,7 +489,9 @@ class LyrixaOperatingSystem:
 
                     # Title
                     title = QLabel("LYRIXA AI OPERATING SYSTEM")
-                    title.setStyleSheet("font-size: 24px; font-weight: bold; margin: 20px; color: #0078d4;")
+                    title.setStyleSheet(
+                        "font-size: 24px; font-weight: bold; margin: 20px; color: #0078d4;"
+                    )
                     layout.addWidget(title)
 
                     # Status display
@@ -438,28 +553,54 @@ class LyrixaOperatingSystem:
 
                 def refresh_status(self):
                     self.status_display.clear()
-                    self.status_display.append("[ACTIVE] LYRIXA MINIMAL INTERFACE ACTIVE")
+                    self.status_display.append(
+                        "[ACTIVE] LYRIXA MINIMAL INTERFACE ACTIVE"
+                    )
                     self.status_display.append("=" * 50)
-                    self.status_display.append(f"[SRV] Service Registry: {'Online' if self.service_registry else 'Offline'}")
-                    self.status_display.append(f"[PLG] Plugin Manager: {'Active' if self.plugin_manager else 'Inactive'}")
-                    self.status_display.append(f"[ENG] Lyrixa Engine: {'Running' if self.lyrixa_engine else 'Stopped'}")
-                    self.status_display.append(f"[MEM] Memory System: {'Active' if self.memory_system else 'Inactive'}")
-                    self.status_display.append(f"[AGT] Agent Orchestrator: {'Ready' if self.agent_orchestrator else 'Not Ready'}")
+                    self.status_display.append(
+                        f"[SRV] Service Registry: {'Online' if self.service_registry else 'Offline'}"
+                    )
+                    self.status_display.append(
+                        f"[PLG] Plugin Manager: {'Active' if self.plugin_manager else 'Inactive'}"
+                    )
+                    self.status_display.append(
+                        f"[ENG] Lyrixa Engine: {'Running' if self.lyrixa_engine else 'Stopped'}"
+                    )
+                    self.status_display.append(
+                        f"[MEM] Memory System: {'Active' if self.memory_system else 'Inactive'}"
+                    )
+                    self.status_display.append(
+                        f"[AGT] Agent Orchestrator: {'Ready' if self.agent_orchestrator else 'Not Ready'}"
+                    )
                     self.status_display.append("")
-                    self.status_display.append("[CTRL] Lyrixa has full control over the operating system")
-                    self.status_display.append("[SCAN] File system scanning and self-manipulation enabled")
-                    self.status_display.append("[AI] Self-discovery and improvement capabilities active")
+                    self.status_display.append(
+                        "[CTRL] Lyrixa has full control over the operating system"
+                    )
+                    self.status_display.append(
+                        "[SCAN] File system scanning and self-manipulation enabled"
+                    )
+                    self.status_display.append(
+                        "[AI] Self-discovery and improvement capabilities active"
+                    )
                     self.status_display.append("")
-                    self.status_display.append("[INFO] This is the minimal GUI interface with real-time updates.")
-                    self.status_display.append("       The full advanced GUI requires additional components.")
+                    self.status_display.append(
+                        "[INFO] This is the minimal GUI interface with real-time updates."
+                    )
+                    self.status_display.append(
+                        "       The full advanced GUI requires additional components."
+                    )
 
                 def show_plugins(self):
                     self.status_display.append("\n[PLUGINS] PLUGIN SYSTEM STATUS:")
                     if self.plugin_manager:
                         try:
                             # Try to get plugin info
-                            self.status_display.append("Plugin manager is active and operational.")
-                            self.status_display.append("Use the CLI mode for detailed plugin information.")
+                            self.status_display.append(
+                                "Plugin manager is active and operational."
+                            )
+                            self.status_display.append(
+                                "Use the CLI mode for detailed plugin information."
+                            )
                         except Exception as e:
                             self.status_display.append(f"Plugin manager error: {e}")
                     else:
@@ -468,8 +609,12 @@ class LyrixaOperatingSystem:
                 def show_memory(self):
                     self.status_display.append("\n[MEMORY] MEMORY SYSTEM STATUS:")
                     if self.memory_system:
-                        self.status_display.append("Memory system is active and operational.")
-                        self.status_display.append("Memory persistence and retrieval systems online.")
+                        self.status_display.append(
+                            "Memory system is active and operational."
+                        )
+                        self.status_display.append(
+                            "Memory persistence and retrieval systems online."
+                        )
                     else:
                         self.status_display.append("Memory system not available.")
 
@@ -489,63 +634,79 @@ class LyrixaOperatingSystem:
 
             # Collect all backend services
             if self.service_registry:
-                backend_services['service_registry'] = self.service_registry
+                backend_services["service_registry"] = self.service_registry
             if self.plugin_manager:
-                backend_services['plugin_manager'] = self.plugin_manager
+                backend_services["plugin_manager"] = self.plugin_manager
             if self.lyrixa_engine:
-                backend_services['lyrixa_engine'] = self.lyrixa_engine
+                backend_services["lyrixa_engine"] = self.lyrixa_engine
             if self.memory_system:
-                backend_services['memory_system'] = self.memory_system
+                backend_services["memory_system"] = self.memory_system
             if self.agent_orchestrator:
-                backend_services['agent_orchestrator'] = self.agent_orchestrator
+                backend_services["agent_orchestrator"] = self.agent_orchestrator
 
             # Phase 6: Connect Personality Manager and State Memory (if available)
-            if hasattr(self.main_window, 'personality_manager'):
+            if hasattr(self.main_window, "personality_manager"):
                 # Connect personality manager to backend services
                 if self.memory_system:
                     # Give personality manager access to memory system for state persistence
-                    if hasattr(self.main_window.personality_manager, 'layout_memory'):
-                        logger.info("[PHASE6] Personality Manager connected to memory system")
+                    if hasattr(self.main_window.personality_manager, "layout_memory"):
+                        logger.info(
+                            "[PHASE6] Personality Manager connected to memory system"
+                        )
 
                 # Initialize personality manager with current GUI state
-                if hasattr(self.main_window.personality_manager, 'load_previous_state'):
+                if hasattr(self.main_window.personality_manager, "load_previous_state"):
                     self.main_window.personality_manager.load_previous_state()
 
-                logger.info(f"[PHASE6] GUI Personality + State Memory system connected to {len(backend_services)} backend services")
+                logger.info(
+                    f"[PHASE6] GUI Personality + State Memory system connected to {len(backend_services)} backend services"
+                )
 
             # Phase 5: Connect Plugin UI Manager (if available)
-            if hasattr(self.main_window, 'plugin_ui_manager'):
-                logger.info(f"[PHASE5] Plugin-Driven UI System connected to {len(backend_services)} backend services")
+            if hasattr(self.main_window, "plugin_ui_manager"):
+                logger.info(
+                    f"[PHASE5] Plugin-Driven UI System connected to {len(backend_services)} backend services"
+                )
 
             # Phase 4: Connect Cognitive Monitor (if available)
-            if hasattr(self.main_window, 'cognitive_monitor'):
-                logger.info(f"[PHASE4] Cognitive UI Integration connected to {len(backend_services)} backend services")
+            if hasattr(self.main_window, "cognitive_monitor"):
+                logger.info(
+                    f"[PHASE4] Cognitive UI Integration connected to {len(backend_services)} backend services"
+                )
 
             # Phase 3: Connect Auto-Generation System (if available)
-            if hasattr(self.main_window, 'auto_generator'):
-                self.main_window.auto_generator.connect_backend_services(backend_services)
+            if hasattr(self.main_window, "auto_generator"):
+                self.main_window.auto_generator.connect_backend_services(
+                    backend_services
+                )
                 self.main_window.auto_generator.start_auto_generation()
-                logger.info(f"[PHASE3] Auto-generation system connected to {len(backend_services)} backend services")
+                logger.info(
+                    f"[PHASE3] Auto-generation system connected to {len(backend_services)} backend services"
+                )
 
             # Phase 2: Connect via Live Context Bridge (if available)
-            if hasattr(self.main_window, 'web_bridge') and hasattr(self.main_window.web_bridge, 'connect_backend_services'):
+            if hasattr(self.main_window, "web_bridge") and hasattr(
+                self.main_window.web_bridge, "connect_backend_services"
+            ):
                 self.main_window.web_bridge.connect_backend_services(backend_services)
-                logger.info(f"[PHASE2] Live Context Bridge connected to {len(backend_services)} backend services")
+                logger.info(
+                    f"[PHASE2] Live Context Bridge connected to {len(backend_services)} backend services"
+                )
 
             # Legacy connection methods (Phase 1 compatibility)
-            if hasattr(self.main_window, 'set_service_registry'):
+            if hasattr(self.main_window, "set_service_registry"):
                 self.main_window.set_service_registry(self.service_registry)
 
-            if hasattr(self.main_window, 'set_plugin_manager'):
+            if hasattr(self.main_window, "set_plugin_manager"):
                 self.main_window.set_plugin_manager(self.plugin_manager)
 
-            if hasattr(self.main_window, 'set_lyrixa_engine'):
+            if hasattr(self.main_window, "set_lyrixa_engine"):
                 self.main_window.set_lyrixa_engine(self.lyrixa_engine)
 
-            if hasattr(self.main_window, 'set_memory_system'):
+            if hasattr(self.main_window, "set_memory_system"):
                 self.main_window.set_memory_system(self.memory_system)
 
-            if hasattr(self.main_window, 'set_agent_orchestrator'):
+            if hasattr(self.main_window, "set_agent_orchestrator"):
                 self.main_window.set_agent_orchestrator(self.agent_orchestrator)
 
             logger.info("[OK] Backend systems connected to frontend interface")
@@ -557,13 +718,27 @@ class LyrixaOperatingSystem:
         """Show system status in CLI."""
         print("\n[STATUS] AETHERRA AI OPERATING SYSTEM STATUS")
         print("=" * 50)
-        print(f"Backend Started: {'[OK] Yes' if self.backend_started else '[ERROR] No'}")
-        print(f"Frontend Started: {'[OK] Yes' if self.frontend_started else '[ERROR] No'}")
-        print(f"Service Registry: {'[OK] Online' if self.service_registry else '[ERROR] Offline'}")
-        print(f"Plugin Manager: {'[OK] Active' if self.plugin_manager else '[ERROR] Inactive'}")
-        print(f"Lyrixa Engine: {'[OK] Running' if self.lyrixa_engine else '[ERROR] Stopped'}")
-        print(f"Memory System: {'[OK] Active' if self.memory_system else '[ERROR] Inactive'}")
-        print(f"Agent Orchestrator: {'[OK] Ready' if self.agent_orchestrator else '[ERROR] Not Ready'}")
+        print(
+            f"Backend Started: {'[OK] Yes' if self.backend_started else '[ERROR] No'}"
+        )
+        print(
+            f"Frontend Started: {'[OK] Yes' if self.frontend_started else '[ERROR] No'}"
+        )
+        print(
+            f"Service Registry: {'[OK] Online' if self.service_registry else '[ERROR] Offline'}"
+        )
+        print(
+            f"Plugin Manager: {'[OK] Active' if self.plugin_manager else '[ERROR] Inactive'}"
+        )
+        print(
+            f"Lyrixa Engine: {'[OK] Running' if self.lyrixa_engine else '[ERROR] Stopped'}"
+        )
+        print(
+            f"Memory System: {'[OK] Active' if self.memory_system else '[ERROR] Inactive'}"
+        )
+        print(
+            f"Agent Orchestrator: {'[OK] Ready' if self.agent_orchestrator else '[ERROR] Not Ready'}"
+        )
 
     async def _show_plugins(self):
         """Show loaded plugins in CLI."""
@@ -576,7 +751,7 @@ class LyrixaOperatingSystem:
             print(f"\n[PLUGINS] LOADED PLUGINS ({len(plugins)} total)")
             print("=" * 40)
             for name, info in plugins.items():
-                status = "[OK] Active" if info.get('active', False) else "[IDLE] Loaded"
+                status = "[OK] Active" if info.get("active", False) else "[IDLE] Loaded"
                 print(f"{status} {name} v{info.get('version', '1.0.0')}")
                 print(f"   [DESC] {info.get('description', 'No description')}")
         except Exception as e:
@@ -591,7 +766,7 @@ class LyrixaOperatingSystem:
             self.gui_application.quit()
 
         # Shutdown backend services (if they have shutdown methods)
-        if self.service_registry and hasattr(self.service_registry, 'stop'):
+        if self.service_registry and hasattr(self.service_registry, "stop"):
             try:
                 await self.service_registry.stop()
             except:
@@ -638,7 +813,9 @@ async def main():
                 if app is None:
                     app = QApplication(sys.argv)
                     app.setApplicationName("Lyrixa AI Operating System")
-                    app.setApplicationVersion("6.0.0")  # Phase 6 version - Full GUI Personality + State Memory
+                    app.setApplicationVersion(
+                        "6.0.0"
+                    )  # Phase 6 version - Full GUI Personality + State Memory
 
                 # Find and create GUI
                 main_window_class = lyrixa_os._find_best_gui_class()
@@ -660,20 +837,40 @@ async def main():
                 logger.info("=" * 60)
                 logger.info("🎙️ PHASE 1: Hybrid PySide6 + Web Panel Architecture")
                 logger.info("🌉 PHASE 2: Live Context Bridge for real-time data flow")
-                logger.info("🔮 PHASE 3: Auto-Generation System for dynamic panel creation")
-                logger.info("🧠 PHASE 4: Cognitive UI Integration with thought visualization")
+                logger.info(
+                    "🔮 PHASE 3: Auto-Generation System for dynamic panel creation"
+                )
+                logger.info(
+                    "🧠 PHASE 4: Cognitive UI Integration with thought visualization"
+                )
                 logger.info("🔁 PHASE 5: Plugin-Driven UI System with dynamic widgets")
                 logger.info("🌌 PHASE 6: Full GUI Personality + State Memory + AI Chat")
                 logger.info("=" * 60)
-                logger.info("[CTRL] Lyrixa has full command and control over Aetherra OS")
-                logger.info("[SCAN] Lyrixa can now scan and manipulate the entire filesystem")
-                logger.info("[COMM] Bidirectional communication between web panels and Python backend")
-                logger.info("[AI] Self-discovery and self-improvement capabilities active")
-                logger.info("[AUTO] Dynamic GUI generation based on system state introspection")
-                logger.info("[COGNITIVE] Real-time thought streams and memory visualization")
+                logger.info(
+                    "[CTRL] Lyrixa has full command and control over Aetherra OS"
+                )
+                logger.info(
+                    "[SCAN] Lyrixa can now scan and manipulate the entire filesystem"
+                )
+                logger.info(
+                    "[COMM] Bidirectional communication between web panels and Python backend"
+                )
+                logger.info(
+                    "[AI] Self-discovery and self-improvement capabilities active"
+                )
+                logger.info(
+                    "[AUTO] Dynamic GUI generation based on system state introspection"
+                )
+                logger.info(
+                    "[COGNITIVE] Real-time thought streams and memory visualization"
+                )
                 logger.info("[PLUGINS] Dynamic plugin UI loading and integration")
-                logger.info("[PERSONALITY] AI emotional states drive interface adaptation")
-                logger.info("[MEMORY] Persistent GUI state and user preference learning")
+                logger.info(
+                    "[PERSONALITY] AI emotional states drive interface adaptation"
+                )
+                logger.info(
+                    "[MEMORY] Persistent GUI state and user preference learning"
+                )
                 logger.info("[CHAT] Full conversational AI integration with Lyrixa")
 
                 lyrixa_os.frontend_started = True
@@ -683,11 +880,14 @@ async def main():
                 return exit_code
 
             except ImportError:
-                logger.error("[ERROR] GUI dependencies not available. Install with: pip install PySide6")
+                logger.error(
+                    "[ERROR] GUI dependencies not available. Install with: pip install PySide6"
+                )
                 return 1
             except Exception as e:
                 logger.error(f"[ERROR] GUI interface startup failed: {e}")
                 import traceback
+
                 traceback.print_exc()
                 return 1
 
@@ -699,6 +899,7 @@ async def main():
     except Exception as e:
         logger.error(f"[ERROR] System failure: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
     finally:
