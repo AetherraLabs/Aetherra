@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -348,8 +349,13 @@
 
         /* Animations */
         @keyframes pulse {
-            from { opacity: 0.7; }
-            to { opacity: 1; }
+            from {
+                opacity: 0.7;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes avatarPulse {
@@ -357,6 +363,7 @@
                 box-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
                 transform: scale(1);
             }
+
             to {
                 box-shadow: 0 0 16px rgba(0, 255, 136, 0.6);
                 transform: scale(1.02);
@@ -368,6 +375,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -375,10 +383,14 @@
         }
 
         @keyframes typingDot {
-            0%, 60%, 100% {
+
+            0%,
+            60%,
+            100% {
                 transform: translateY(0);
                 opacity: 0.4;
             }
+
             30% {
                 transform: translateY(-10px);
                 opacity: 1;
@@ -386,8 +398,15 @@
         }
 
         @keyframes fadeInOut {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
+
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
         }
 
         /* Scrollbar Styling */
@@ -426,6 +445,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="chat-container">
         <!-- Chat Header -->
@@ -478,7 +498,9 @@
                 <div class="message-avatar">🌌</div>
                 <div class="message-content">
                     <div class="message-bubble">
-                        <div>Hello! I'm Lyrixa, your AI operating system. My interface adapts to my emotional state and your preferences. I can see you're exploring the chat feature - that's wonderful! How can I help you today?</div>
+                        <div>Hello! I'm Lyrixa, your AI operating system. My interface adapts to my emotional state and
+                            your preferences. I can see you're exploring the chat feature - that's wonderful! How can I
+                            help you today?</div>
                     </div>
                     <div class="message-metadata">
                         <span class="timestamp">Just now</span>
@@ -508,11 +530,8 @@
         <!-- Chat Input -->
         <div class="chat-input-container">
             <div class="chat-input-wrapper">
-                <textarea
-                    class="chat-input"
-                    id="chat-input"
-                    placeholder="Type your message to Lyrixa... (Press Enter to send)"
-                    rows="1"></textarea>
+                <textarea class="chat-input" id="chat-input"
+                    placeholder="Type your message to Lyrixa... (Press Enter to send)" rows="1"></textarea>
                 <button class="send-button" id="send-button">
                     ➤
                 </button>
@@ -520,6 +539,7 @@
         </div>
     </div>
 
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
     <script>
         // Phase 6 Chat Interface JavaScript
 
@@ -579,7 +599,7 @@
                 // Setup Qt WebChannel communication
                 if (typeof qt !== 'undefined' && qt.webChannelTransport) {
                     new QWebChannel(qt.webChannelTransport, (channel) => {
-                        this.bridge = channel.objects.bridge;
+                        this.bridge = channel.objects.pybridge;  // Fixed: use pybridge instead of bridge
                         this.personalityManager = channel.objects.personality_manager;
 
                         // Listen for personality updates
@@ -824,18 +844,19 @@
         });
 
         // Expose to Qt WebChannel
-        window.updateCurrentPanel = function(panelName) {
+        window.updateCurrentPanel = function (panelName) {
             const panelElement = document.getElementById('current-panel');
             if (panelElement) {
                 panelElement.textContent = panelName;
             }
         };
 
-        window.updatePersonality = function(personalityJson) {
+        window.updatePersonality = function (personalityJson) {
             if (window.lyrixaChat) {
                 window.lyrixaChat.updatePersonalityDisplay(JSON.parse(personalityJson));
             }
         };
     </script>
 </body>
+
 </html>
