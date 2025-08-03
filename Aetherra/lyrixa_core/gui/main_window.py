@@ -14,41 +14,57 @@ Architecture:
 - Styling: Authentic Aetherra colors and effects
 """
 
-import sys
 import json
-from pathlib import Path
-from typing import Dict, Any, Optional, List
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QTabWidget, QSplitter, QPushButton, QLabel, QFrame, QMenuBar,
-    QStatusBar, QSystemTrayIcon, QMenu
-)
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWebChannel import QWebChannel
-from PySide6.QtCore import QObject, QUrl, Slot, Qt, QTimer, Signal
-from PySide6.QtGui import QIcon, QFont, QPalette, QColor
-from PySide6.QtCore import QTimer
-import psutil
-import os
 import logging
+import os
+import sys
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import psutil
+from PySide6.QtCore import QObject, Qt, QTimer, QUrl, Signal, Slot
+from PySide6.QtGui import QColor, QFont, QIcon, QPalette
+from PySide6.QtWebChannel import QWebChannel
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWidgets import (
+    QApplication,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QMenu,
+    QMenuBar,
+    QPushButton,
+    QSplitter,
+    QStatusBar,
+    QSystemTrayIcon,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 # Phase 3: Auto-Generation System
 from .phase3_auto_generator import Phase3AutoGenerator
+
 # Phase 4: Cognitive UI Integration
 from .phase4_cognitive_ui import CognitiveStateMonitor
+
 # Phase 5: Plugin-Driven UI System
 from .phase5_plugin_ui import PluginUIManager
+
 # Phase 6: Full GUI Personality + State Memory
 from .phase6_personality import GUIPersonalityManager
 
 logger = logging.getLogger(__name__)
+
 
 def datetime_serializer(obj):
     """JSON serializer for datetime objects"""
     if isinstance(obj, datetime):
         return obj.isoformat()
     raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
 
 def safe_json_dumps(data):
     """Safely dump data to JSON with datetime handling"""
@@ -57,6 +73,7 @@ def safe_json_dumps(data):
     except Exception as e:
         logger.error(f"[ERROR] JSON serialization failed: {e}")
         return "{}"
+
 
 class LyrixaContextBridge(QObject):
     """
@@ -72,28 +89,32 @@ class LyrixaContextBridge(QObject):
     """
 
     # Signals for sending data to web panels
-    memory_updated = Signal(str)      # Memory system updates
-    plugin_updated = Signal(str)      # Plugin status changes
-    agent_updated = Signal(str)       # Agent thoughts/goals
-    metrics_updated = Signal(str)     # System metrics
-    notification_sent = Signal(str)   # System notifications
-    cognitive_updated = Signal(str)   # Phase 4: Cognitive state updates
-    plugin_ui_loaded = Signal(str)    # Phase 5: Plugin UI loaded
-    plugin_ui_updated = Signal(str)   # Phase 5: Plugin UI updated
+    memory_updated = Signal(str)  # Memory system updates
+    plugin_updated = Signal(str)  # Plugin status changes
+    agent_updated = Signal(str)  # Agent thoughts/goals
+    metrics_updated = Signal(str)  # System metrics
+    notification_sent = Signal(str)  # System notifications
+    cognitive_updated = Signal(str)  # Phase 4: Cognitive state updates
+    plugin_ui_loaded = Signal(str)  # Phase 5: Plugin UI loaded
+    plugin_ui_updated = Signal(str)  # Phase 5: Plugin UI updated
 
     def __init__(self):
         super().__init__()
         self.data_cache = {
-            'memory': {},
-            'plugins': {},
-            'agents': {},
-            'metrics': {},
-            'system': {},
-            'cognitive': {}  # Phase 4: Cognitive state cache
+            "memory": {},
+            "plugins": {},
+            "agents": {},
+            "metrics": {},
+            "system": {},
+            "cognitive": {},  # Phase 4: Cognitive state cache
         }
         self.backend_services = {}
-        self.auto_generator: Optional[Any] = None  # Phase 3: Auto-generation system reference
-        self.cognitive_monitor: Optional[Any] = None  # Phase 4: Cognitive monitor reference
+        self.auto_generator: Optional[Any] = (
+            None  # Phase 3: Auto-generation system reference
+        )
+        self.cognitive_monitor: Optional[Any] = (
+            None  # Phase 4: Cognitive monitor reference
+        )
 
         # Start periodic updates
         self.update_timer = QTimer()
@@ -107,25 +128,25 @@ class LyrixaContextBridge(QObject):
         """Handle commands from web panels."""
         try:
             command = json.loads(command_json)
-            command_type = command.get('type')
-            payload = command.get('payload', {})
+            command_type = command.get("type")
+            payload = command.get("payload", {})
 
             print(f"🎛️ Panel command: {command_type} | {payload}")
 
-            if command_type == 'plugin_action':
+            if command_type == "plugin_action":
                 self.handle_plugin_command(payload)
-            elif command_type == 'memory_query':
+            elif command_type == "memory_query":
                 self.handle_memory_command(payload)
-            elif command_type == 'agent_command':
+            elif command_type == "agent_command":
                 self.handle_agent_command(payload)
-            elif command_type == 'system_command':
+            elif command_type == "system_command":
                 self.handle_system_command(payload)
             else:
                 print(f"[WARN] Unknown command type: {command_type}")
 
         except Exception as e:
             print(f"❌ Error handling panel command: {e}")
-            self.send_notification('error', f"Command failed: {e}")
+            self.send_notification("error", f"Command failed: {e}")
 
     @Slot(str, result=str)
     def getData(self, category):
@@ -158,20 +179,20 @@ class LyrixaContextBridge(QObject):
 
     def refresh_memory_data(self):
         """Refresh memory system data."""
-        memory_system = self.backend_services.get('memory_system')
+        memory_system = self.backend_services.get("memory_system")
         if memory_system:
             try:
                 # Gather memory stats
                 memory_data = {
-                    'total_memories': getattr(memory_system, 'total_memories', 0),
-                    'recent_memories': getattr(memory_system, 'recent_count', 0),
-                    'memory_load': 45,  # Placeholder - replace with actual metric
-                    'last_updated': QTimer().remainingTime(),
-                    'status': 'active'
+                    "total_memories": getattr(memory_system, "total_memories", 0),
+                    "recent_memories": getattr(memory_system, "recent_count", 0),
+                    "memory_load": 45,  # Placeholder - replace with actual metric
+                    "last_updated": QTimer().remainingTime(),
+                    "status": "active",
                 }
 
-                if memory_data != self.data_cache['memory']:
-                    self.data_cache['memory'] = memory_data
+                if memory_data != self.data_cache["memory"]:
+                    self.data_cache["memory"] = memory_data
                     self.memory_updated.emit(json.dumps(memory_data))
 
             except Exception as e:
@@ -179,33 +200,35 @@ class LyrixaContextBridge(QObject):
 
     def refresh_plugin_data(self):
         """Refresh plugin manager data."""
-        plugin_manager = self.backend_services.get('plugin_manager')
+        plugin_manager = self.backend_services.get("plugin_manager")
         if plugin_manager:
             try:
                 # Get plugin status from manager
                 plugins_data = {
-                    'loaded_plugins': [],
-                    'active_count': 0,
-                    'total_count': 0,
-                    'status': 'operational'
+                    "loaded_plugins": [],
+                    "active_count": 0,
+                    "total_count": 0,
+                    "status": "operational",
                 }
 
                 # Try to get actual plugin info
-                if hasattr(plugin_manager, 'get_all_plugins'):
+                if hasattr(plugin_manager, "get_all_plugins"):
                     plugins_info = plugin_manager.get_all_plugins()
-                    plugins_data['loaded_plugins'] = [
+                    plugins_data["loaded_plugins"] = [
                         {
-                            'name': name,
-                            'status': 'active' if info.get('loaded') else 'loaded',
-                            'version': info.get('version', '1.0.0')
+                            "name": name,
+                            "status": "active" if info.get("loaded") else "loaded",
+                            "version": info.get("version", "1.0.0"),
                         }
                         for name, info in plugins_info.items()
                     ]
-                    plugins_data['total_count'] = len(plugins_info)
-                    plugins_data['active_count'] = sum(1 for info in plugins_info.values() if info.get('loaded'))
+                    plugins_data["total_count"] = len(plugins_info)
+                    plugins_data["active_count"] = sum(
+                        1 for info in plugins_info.values() if info.get("loaded")
+                    )
 
-                if plugins_data != self.data_cache['plugins']:
-                    self.data_cache['plugins'] = plugins_data
+                if plugins_data != self.data_cache["plugins"]:
+                    self.data_cache["plugins"] = plugins_data
                     self.plugin_updated.emit(json.dumps(plugins_data))
 
             except Exception as e:
@@ -213,25 +236,27 @@ class LyrixaContextBridge(QObject):
 
     def refresh_agent_data(self):
         """Refresh agent orchestrator data."""
-        agent_orchestrator = self.backend_services.get('agent_orchestrator')
+        agent_orchestrator = self.backend_services.get("agent_orchestrator")
         if agent_orchestrator:
             try:
                 agents_data = {
-                    'active_agents': 0,
-                    'current_goals': [],
-                    'recent_thoughts': [],
-                    'status': 'thinking'
+                    "active_agents": 0,
+                    "current_goals": [],
+                    "recent_thoughts": [],
+                    "status": "thinking",
                 }
 
                 # Try to get actual agent info
-                if hasattr(agent_orchestrator, 'agents'):
-                    agents_data['active_agents'] = len(agent_orchestrator.agents)
+                if hasattr(agent_orchestrator, "agents"):
+                    agents_data["active_agents"] = len(agent_orchestrator.agents)
 
-                if hasattr(agent_orchestrator, 'current_goals'):
-                    agents_data['current_goals'] = agent_orchestrator.current_goals[:5]  # Last 5
+                if hasattr(agent_orchestrator, "current_goals"):
+                    agents_data["current_goals"] = agent_orchestrator.current_goals[
+                        :5
+                    ]  # Last 5
 
-                if agents_data != self.data_cache['agents']:
-                    self.data_cache['agents'] = agents_data
+                if agents_data != self.data_cache["agents"]:
+                    self.data_cache["agents"] = agents_data
                     self.agent_updated.emit(json.dumps(agents_data))
 
             except Exception as e:
@@ -239,21 +264,22 @@ class LyrixaContextBridge(QObject):
 
     def refresh_metrics_data(self):
         """Refresh system metrics."""
-        import psutil
         import os
         import time
 
+        import psutil
+
         try:
             metrics_data = {
-                'cpu_usage': psutil.cpu_percent(interval=0.1),
-                'memory_usage': psutil.virtual_memory().percent,
-                'process_count': len(psutil.pids()),
-                'uptime': time.time() % 86400,  # Seconds since midnight
-                'timestamp': int(time.time())
+                "cpu_usage": psutil.cpu_percent(interval=0.1),
+                "memory_usage": psutil.virtual_memory().percent,
+                "process_count": len(psutil.pids()),
+                "uptime": time.time() % 86400,  # Seconds since midnight
+                "timestamp": int(time.time()),
             }
 
-            if metrics_data != self.data_cache['metrics']:
-                self.data_cache['metrics'] = metrics_data
+            if metrics_data != self.data_cache["metrics"]:
+                self.data_cache["metrics"] = metrics_data
                 self.metrics_updated.emit(json.dumps(metrics_data))
 
         except Exception as e:
@@ -263,108 +289,110 @@ class LyrixaContextBridge(QObject):
 
     def handle_plugin_command(self, payload):
         """Handle plugin-related commands."""
-        action = payload.get('action')
-        plugin_name = payload.get('plugin')
+        action = payload.get("action")
+        plugin_name = payload.get("plugin")
 
         print(f"🔌 Plugin command: {action} on {plugin_name}")
 
-        plugin_manager = self.backend_services.get('plugin_manager')
+        plugin_manager = self.backend_services.get("plugin_manager")
         if not plugin_manager:
-            self.send_notification('error', 'Plugin manager not available')
+            self.send_notification("error", "Plugin manager not available")
             return
 
-        if action == 'activate':
+        if action == "activate":
             # TODO: Activate plugin
-            self.send_notification('success', f'Activated plugin: {plugin_name}')
-        elif action == 'deactivate':
+            self.send_notification("success", f"Activated plugin: {plugin_name}")
+        elif action == "deactivate":
             # TODO: Deactivate plugin
-            self.send_notification('success', f'Deactivated plugin: {plugin_name}')
-        elif action == 'reload':
+            self.send_notification("success", f"Deactivated plugin: {plugin_name}")
+        elif action == "reload":
             # TODO: Reload plugin
-            self.send_notification('success', f'Reloaded plugin: {plugin_name}')
+            self.send_notification("success", f"Reloaded plugin: {plugin_name}")
         else:
-            self.send_notification('warning', f'Unknown plugin action: {action}')
+            self.send_notification("warning", f"Unknown plugin action: {action}")
 
     def handle_memory_command(self, payload):
         """Handle memory-related commands."""
-        action = payload.get('action')
-        query = payload.get('query', '')
+        action = payload.get("action")
+        query = payload.get("query", "")
 
         print(f"🧠 Memory command: {action} | {query}")
 
-        memory_system = self.backend_services.get('memory_system')
+        memory_system = self.backend_services.get("memory_system")
         if not memory_system:
-            self.send_notification('error', 'Memory system not available')
+            self.send_notification("error", "Memory system not available")
             return
 
-        if action == 'search':
+        if action == "search":
             # TODO: Search memory
-            self.send_notification('info', f'Searching memory for: {query}')
-        elif action == 'clear':
+            self.send_notification("info", f"Searching memory for: {query}")
+        elif action == "clear":
             # TODO: Clear memory
-            self.send_notification('warning', 'Memory cleared')
+            self.send_notification("warning", "Memory cleared")
         else:
-            self.send_notification('warning', f'Unknown memory action: {action}')
+            self.send_notification("warning", f"Unknown memory action: {action}")
 
     def handle_agent_command(self, payload):
         """Handle agent-related commands."""
-        action = payload.get('action')
-        goal = payload.get('goal', '')
+        action = payload.get("action")
+        goal = payload.get("goal", "")
 
         print(f"🤖 Agent command: {action} | {goal}")
 
-        agent_orchestrator = self.backend_services.get('agent_orchestrator')
+        agent_orchestrator = self.backend_services.get("agent_orchestrator")
         if not agent_orchestrator:
-            self.send_notification('error', 'Agent orchestrator not available')
+            self.send_notification("error", "Agent orchestrator not available")
             return
 
-        if action == 'add_goal':
+        if action == "add_goal":
             # TODO: Add goal to agent
-            self.send_notification('success', f'Added goal: {goal}')
-        elif action == 'pause':
+            self.send_notification("success", f"Added goal: {goal}")
+        elif action == "pause":
             # TODO: Pause agents
-            self.send_notification('info', 'Agents paused')
-        elif action == 'resume':
+            self.send_notification("info", "Agents paused")
+        elif action == "resume":
             # TODO: Resume agents
-            self.send_notification('info', 'Agents resumed')
+            self.send_notification("info", "Agents resumed")
         else:
-            self.send_notification('warning', f'Unknown agent action: {action}')
+            self.send_notification("warning", f"Unknown agent action: {action}")
 
     def handle_system_command(self, payload):
         """Handle system-level commands."""
-        action = payload.get('action')
+        action = payload.get("action")
 
         print(f"⚙️ System command: {action}")
 
-        if action == 'refresh':
+        if action == "refresh":
             self.refresh_all_data()
-            self.send_notification('info', 'System data refreshed')
-        elif action == 'status':
+            self.send_notification("info", "System data refreshed")
+        elif action == "status":
             self.send_system_status()
         else:
-            self.send_notification('warning', f'Unknown system action: {action}')
+            self.send_notification("warning", f"Unknown system action: {action}")
 
     # === NOTIFICATION SYSTEM ===
 
     def send_notification(self, level: str, message: str):
         """Send notification to web panels."""
         notification = {
-            'level': level,  # info, success, warning, error
-            'message': message,
-            'timestamp': QTimer().remainingTime()
+            "level": level,  # info, success, warning, error
+            "message": message,
+            "timestamp": QTimer().remainingTime(),
         }
         self.notification_sent.emit(json.dumps(notification))
 
     def send_system_status(self):
         """Send comprehensive system status."""
         status = {
-            'backend_connected': len(self.backend_services) > 0,
-            'services': list(self.backend_services.keys()),
-            'data_categories': list(self.data_cache.keys()),
-            'update_frequency': '2 seconds',
-            'bridge_active': True
+            "backend_connected": len(self.backend_services) > 0,
+            "services": list(self.backend_services.keys()),
+            "data_categories": list(self.data_cache.keys()),
+            "update_frequency": "2 seconds",
+            "bridge_active": True,
         }
-        self.send_notification('info', f'System status: {len(self.backend_services)} services connected')
+        self.send_notification(
+            "info", f"System status: {len(self.backend_services)} services connected"
+        )
 
     # === SETTINGS PANEL METHODS ===
 
@@ -373,21 +401,21 @@ class LyrixaContextBridge(QObject):
         """Get current system settings."""
         # Default settings - in production these would come from a config file
         settings = {
-            'ai_personality': 'creative',
-            'response_style': 'detailed',
-            'auto_learn': True,
-            'memory_retention': '30',
-            'knowledge_compression': True,
-            'memory_limit': 500,
-            'auto_plugin_updates': True,
-            'plugin_sandbox': True,
-            'max_concurrent_plugins': 20,
-            'cpu_throttling': 80,
-            'background_processing': True,
-            'gpu_acceleration': False,
-            'data_encryption': True,
-            'telemetry': False,
-            'session_timeout': '60'
+            "ai_personality": "creative",
+            "response_style": "detailed",
+            "auto_learn": True,
+            "memory_retention": "30",
+            "knowledge_compression": True,
+            "memory_limit": 500,
+            "auto_plugin_updates": True,
+            "plugin_sandbox": True,
+            "max_concurrent_plugins": 20,
+            "cpu_throttling": 80,
+            "background_processing": True,
+            "gpu_acceleration": False,
+            "data_encryption": True,
+            "telemetry": False,
+            "session_timeout": "60",
         }
         return json.dumps(settings)
 
@@ -398,31 +426,31 @@ class LyrixaContextBridge(QObject):
             settings = json.loads(settings_json)
             # In production, save to config file or database
             print(f"💾 Saving settings: {len(settings)} options configured")
-            self.send_notification('success', 'Settings saved successfully!')
+            self.send_notification("success", "Settings saved successfully!")
 
             # Apply settings immediately where possible
             self.apply_settings(settings)
 
         except Exception as e:
             print(f"❌ Error saving settings: {e}")
-            self.send_notification('error', f'Failed to save settings: {e}')
+            self.send_notification("error", f"Failed to save settings: {e}")
 
     def apply_settings(self, settings):
         """Apply settings changes to running systems."""
         try:
             # Apply CPU throttling
-            if 'cpu_throttling' in settings:
-                cpu_limit = int(settings['cpu_throttling'])
+            if "cpu_throttling" in settings:
+                cpu_limit = int(settings["cpu_throttling"])
                 print(f"⚡ Setting CPU limit to {cpu_limit}%")
 
             # Apply memory settings
-            if 'memory_limit' in settings:
-                memory_limit = int(settings['memory_limit'])
+            if "memory_limit" in settings:
+                memory_limit = int(settings["memory_limit"])
                 print(f"🧠 Setting memory limit to {memory_limit}MB")
 
             # Apply plugin settings
-            if 'max_concurrent_plugins' in settings:
-                plugin_limit = int(settings['max_concurrent_plugins'])
+            if "max_concurrent_plugins" in settings:
+                plugin_limit = int(settings["max_concurrent_plugins"])
                 print(f"🔌 Setting plugin limit to {plugin_limit}")
 
             print("✅ Settings applied successfully")
@@ -436,14 +464,15 @@ class LyrixaContextBridge(QObject):
     def getSystemMetrics(self):
         """Get comprehensive system metrics."""
         try:
-            import psutil
-            import time
             import random
+            import time
+
+            import psutil
 
             # Get real system metrics
             cpu_percent = psutil.cpu_percent(interval=0.1)
             memory = psutil.virtual_memory()
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
 
             # Get network stats
             network = psutil.net_io_counters()
@@ -452,35 +481,37 @@ class LyrixaContextBridge(QObject):
             # Generate AI-specific metrics (simulated for now)
             metrics = {
                 # Real system metrics
-                'cpu_percent': round(cpu_percent, 1),
-                'memory_percent': round(memory.percent, 1),
-                'memory_used': round(memory.used / (1024**3), 1),  # GB
-                'memory_total': round(memory.total / (1024**3), 1),  # GB
-                'memory_available': round(memory.available / (1024**3), 1),  # GB
-                'cpu_cores': psutil.cpu_count(logical=False),
-                'cpu_threads': psutil.cpu_count(logical=True),
-                'cpu_freq': round(psutil.cpu_freq().current / 1000, 1) if psutil.cpu_freq() else 3.2,
-
+                "cpu_percent": round(cpu_percent, 1),
+                "memory_percent": round(memory.percent, 1),
+                "memory_used": round(memory.used / (1024**3), 1),  # GB
+                "memory_total": round(memory.total / (1024**3), 1),  # GB
+                "memory_available": round(memory.available / (1024**3), 1),  # GB
+                "cpu_cores": psutil.cpu_count(logical=False),
+                "cpu_threads": psutil.cpu_count(logical=True),
+                "cpu_freq": round(psutil.cpu_freq().current / 1000, 1)
+                if psutil.cpu_freq()
+                else 3.2,
                 # Network metrics
-                'net_upload': round(network.bytes_sent / (1024*1024), 1),  # MB/s (lifetime)
-                'net_download': round(network.bytes_recv / (1024*1024), 1),  # MB/s (lifetime)
-                'net_packets': network.packets_sent + network.packets_recv,
-
+                "net_upload": round(
+                    network.bytes_sent / (1024 * 1024), 1
+                ),  # MB/s (lifetime)
+                "net_download": round(
+                    network.bytes_recv / (1024 * 1024), 1
+                ),  # MB/s (lifetime)
+                "net_packets": network.packets_sent + network.packets_recv,
                 # Disk metrics
-                'disk_read': round(disk.used / (1024**2), 1),  # MB
-                'disk_write': round(disk.free / (1024**2), 1),  # MB
-                'disk_read_iops': random.randint(1500, 3000),  # Simulated
-                'disk_write_iops': random.randint(800, 1500),  # Simulated
-                'disk_read_latency': round(random.uniform(1.0, 5.0), 1),
-                'disk_write_latency': round(random.uniform(2.0, 6.0), 1),
-
+                "disk_read": round(disk.used / (1024**2), 1),  # MB
+                "disk_write": round(disk.free / (1024**2), 1),  # MB
+                "disk_read_iops": random.randint(1500, 3000),  # Simulated
+                "disk_write_iops": random.randint(800, 1500),  # Simulated
+                "disk_read_latency": round(random.uniform(1.0, 5.0), 1),
+                "disk_write_latency": round(random.uniform(2.0, 6.0), 1),
                 # AI-specific metrics (simulated)
-                'ai_efficiency': random.randint(85, 98),
-                'response_time': random.randint(150, 350),
-                'memory_efficiency': random.randint(88, 96),
-                'task_throughput': random.randint(120, 200),
-
-                'timestamp': int(current_time)
+                "ai_efficiency": random.randint(85, 98),
+                "response_time": random.randint(150, 350),
+                "memory_efficiency": random.randint(88, 96),
+                "task_throughput": random.randint(120, 200),
+                "timestamp": int(current_time),
             }
 
             return json.dumps(metrics)
@@ -489,10 +520,15 @@ class LyrixaContextBridge(QObject):
             print(f"❌ Error getting system metrics: {e}")
             # Return fallback metrics
             import time
+
             fallback_metrics = {
-                'cpu_percent': 25, 'memory_percent': 45, 'ai_efficiency': 87,
-                'response_time': 245, 'memory_efficiency': 92, 'task_throughput': 156,
-                'timestamp': int(time.time())
+                "cpu_percent": 25,
+                "memory_percent": 45,
+                "ai_efficiency": 87,
+                "response_time": 245,
+                "memory_efficiency": 92,
+                "task_throughput": 156,
+                "timestamp": int(time.time()),
             }
             return json.dumps(fallback_metrics)
 
@@ -505,22 +541,30 @@ class LyrixaContextBridge(QObject):
             if self.cognitive_monitor:
                 state = self.cognitive_monitor.getCognitiveState()
                 if state:
-                    self.data_cache['cognitive'] = state
+                    self.data_cache["cognitive"] = state
                     return safe_json_dumps(state)
 
             # Return empty state if monitor not available
             empty_state = {
-                'thoughts': [],
-                'goals': [],
-                'memory_activations': [],
-                'cognitive_load': 0.0,
-                'query_traces': []
+                "thoughts": [],
+                "goals": [],
+                "memory_activations": [],
+                "cognitive_load": 0.0,
+                "query_traces": [],
             }
             return safe_json_dumps(empty_state)
 
         except Exception as e:
             logger.error(f"Error getting cognitive state: {e}")
-            return safe_json_dumps({'thoughts': [], 'goals': [], 'memory_activations': [], 'cognitive_load': 0.0, 'query_traces': []})
+            return safe_json_dumps(
+                {
+                    "thoughts": [],
+                    "goals": [],
+                    "memory_activations": [],
+                    "cognitive_load": 0.0,
+                    "query_traces": [],
+                }
+            )
 
     @Slot(str)
     def simulateUserQuery(self, query):
@@ -531,7 +575,7 @@ class LyrixaContextBridge(QObject):
                 # Update cognitive state after query processing
                 state = self.cognitive_monitor.getCognitiveState()
                 if state:
-                    self.data_cache['cognitive'] = state
+                    self.data_cache["cognitive"] = state
                     self.cognitive_updated.emit(safe_json_dumps(state))
 
         except Exception as e:
@@ -546,7 +590,7 @@ class LyrixaContextBridge(QObject):
                 # Update cognitive state after adding goal
                 state = self.cognitive_monitor.getCognitiveState()
                 if state:
-                    self.data_cache['cognitive'] = state
+                    self.data_cache["cognitive"] = state
                     self.cognitive_updated.emit(safe_json_dumps(state))
 
         except Exception as e:
@@ -647,7 +691,7 @@ class LyrixaHybridWindow(QMainWindow):
         self.createStatusBar()
 
         # Load default panel
-        self.loadPanel('dashboard')
+        self.loadPanel("dashboard")
 
     def createLeftPanel(self) -> QWidget:
         """Create the left native control panel."""
@@ -680,7 +724,7 @@ class LyrixaHybridWindow(QMainWindow):
             ("🧠 Cognitive UI", "cognitive"),
             ("🔁 Plugin Demo", "plugin_demo"),
             ("💬 Chat with Lyrixa", "chat"),
-            ("⚙️ Settings", "settings")
+            ("⚙️ Settings", "settings"),
         ]
 
         for text, panel_id in nav_buttons:
@@ -754,7 +798,7 @@ class LyrixaHybridWindow(QMainWindow):
             ("Memory Load", "45%", "#00ff88"),
             ("CPU Usage", "23%", "#0078d4"),
             ("Agents Active", "7", "#ff6b00"),
-            ("Plugins Loaded", "12", "#9d4edd")
+            ("Plugins Loaded", "12", "#9d4edd"),
         ]
 
         for name, value, color in metrics:
@@ -786,7 +830,9 @@ class LyrixaHybridWindow(QMainWindow):
         name_label.setStyleSheet(f"color: {color}; font-weight: bold; font-size: 12px;")
 
         value_label = QLabel(value)
-        value_label.setStyleSheet(f"color: {color}; font-size: 18px; font-weight: bold;")
+        value_label.setStyleSheet(
+            f"color: {color}; font-size: 18px; font-weight: bold;"
+        )
 
         layout.addWidget(name_label)
         layout.addWidget(value_label)
@@ -806,9 +852,9 @@ class LyrixaHybridWindow(QMainWindow):
 
         # View menu
         view_menu = menubar.addMenu("&View")
-        view_menu.addAction("&Dashboard", lambda: self.loadPanel('dashboard'))
-        view_menu.addAction("&Plugins", lambda: self.loadPanel('plugins'))
-        view_menu.addAction("&Memory", lambda: self.loadPanel('memory'))
+        view_menu.addAction("&Dashboard", lambda: self.loadPanel("dashboard"))
+        view_menu.addAction("&Plugins", lambda: self.loadPanel("plugins"))
+        view_menu.addAction("&Memory", lambda: self.loadPanel("memory"))
 
         # Tools menu
         tools_menu = menubar.addMenu("&Tools")
@@ -834,16 +880,24 @@ class LyrixaHybridWindow(QMainWindow):
         self.web_channel.registerObject("pybridge", self.web_bridge)
 
         # Phase 4: Register cognitive monitor
-        if hasattr(self, 'cognitive_monitor'):
+        if hasattr(self, "cognitive_monitor"):
             self.web_channel.registerObject("cognitiveMonitor", self.cognitive_monitor)
 
         # Phase 5: Register plugin UI manager
-        if hasattr(self, 'plugin_ui_manager'):
+        if hasattr(self, "plugin_ui_manager"):
             self.web_channel.registerObject("pluginManager", self.plugin_ui_manager)
 
         # Phase 6: Register personality manager
-        if hasattr(self, 'personality_manager'):
-            self.web_channel.registerObject("personality_manager", self.personality_manager)
+        if hasattr(self, "personality_manager"):
+            self.web_channel.registerObject(
+                "personality_manager", self.personality_manager
+            )
+
+            # Also register chat interface if available
+            if hasattr(self.personality_manager, "chat_interface"):
+                self.web_channel.registerObject(
+                    "chat_interface", self.personality_manager.chat_interface
+                )
 
         self.web_view.page().setWebChannel(self.web_channel)
 
@@ -879,12 +933,12 @@ class LyrixaHybridWindow(QMainWindow):
         """Handle auto-generated panels from Phase 3"""
         try:
             panels_data = json.loads(panels_data_json)
-            panels = panels_data.get('panels', [])
-            layout = panels_data.get('layout', {})
+            panels = panels_data.get("panels", [])
+            layout = panels_data.get("layout", {})
 
             # Store auto-generated panels
             for panel_info in panels:
-                panel_id = panel_info['id']
+                panel_id = panel_info["id"]
                 self.auto_generated_panels[panel_id] = panel_info
 
             # Update navigation to include auto-generated panels
@@ -893,10 +947,12 @@ class LyrixaHybridWindow(QMainWindow):
             # If no current panel is loaded, load the first auto-generated one
             if not self.current_panel and panels:
                 first_panel = panels[0]
-                self.load_auto_generated_panel(first_panel['id'])
+                self.load_auto_generated_panel(first_panel["id"])
 
             # Update status
-            self.statusBar().showMessage(f"[AUTO] Auto-generated {len(panels)} panels from system state")
+            self.statusBar().showMessage(
+                f"[AUTO] Auto-generated {len(panels)} panels from system state"
+            )
             logger.info(f"[GENERATE] Loaded {len(panels)} auto-generated panels")
 
         except Exception as e:
@@ -907,7 +963,9 @@ class LyrixaHybridWindow(QMainWindow):
         """Handle layout changes from Phase 3"""
         try:
             layout = json.loads(layout_json)
-            logger.info(f"[LAYOUT] Auto-layout updated: {layout.get('total_panels', 0)} panels in {len(layout.get('sections', []))} sections")
+            logger.info(
+                f"[LAYOUT] Auto-layout updated: {layout.get('total_panels', 0)} panels in {len(layout.get('sections', []))} sections"
+            )
 
             # Could update UI layout here if needed
 
@@ -935,7 +993,9 @@ class LyrixaHybridWindow(QMainWindow):
             # Connect plugin UI manager signals
             if self.plugin_ui_manager:
                 self.plugin_ui_manager.plugin_ui_loaded.connect(self.onPluginUILoaded)
-                self.plugin_ui_manager.plugin_ui_unloaded.connect(self.onPluginUIUnloaded)
+                self.plugin_ui_manager.plugin_ui_unloaded.connect(
+                    self.onPluginUIUnloaded
+                )
                 self.plugin_ui_manager.plugin_ui_updated.connect(self.onPluginUIUpdated)
                 self.plugin_ui_manager.plugin_ui_error.connect(self.onPluginUIError)
 
@@ -956,12 +1016,16 @@ class LyrixaHybridWindow(QMainWindow):
             self.plugin_panels[plugin_id] = panel_html
 
             # Emit signal to web bridge for UI integration
-            if hasattr(self.web_bridge, 'plugin_ui_loaded'):
-                self.web_bridge.plugin_ui_loaded.emit(safe_json_dumps({
-                    'plugin_id': plugin_id,
-                    'panel_html': panel_html,
-                    'timestamp': datetime.now().isoformat()
-                }))
+            if hasattr(self.web_bridge, "plugin_ui_loaded"):
+                self.web_bridge.plugin_ui_loaded.emit(
+                    safe_json_dumps(
+                        {
+                            "plugin_id": plugin_id,
+                            "panel_html": panel_html,
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
+                )
 
         except Exception as e:
             logger.error(f"[PHASE5] Error handling plugin UI loaded: {e}")
@@ -982,12 +1046,16 @@ class LyrixaHybridWindow(QMainWindow):
         """Handle plugin UI updated signal"""
         try:
             # Forward update to web interface
-            if hasattr(self.web_bridge, 'plugin_ui_updated'):
-                self.web_bridge.plugin_ui_updated.emit(safe_json_dumps({
-                    'plugin_id': plugin_id,
-                    'data': updated_data,
-                    'timestamp': datetime.now().isoformat()
-                }))
+            if hasattr(self.web_bridge, "plugin_ui_updated"):
+                self.web_bridge.plugin_ui_updated.emit(
+                    safe_json_dumps(
+                        {
+                            "plugin_id": plugin_id,
+                            "data": updated_data,
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
+                )
 
         except Exception as e:
             logger.error(f"[PHASE5] Error handling plugin UI updated: {e}")
@@ -1011,7 +1079,7 @@ class LyrixaHybridWindow(QMainWindow):
                     # Use safe JSON dumps to handle datetime objects
                     cognitive_json = safe_json_dumps(cognitive_data)
                     self.web_bridge.cognitive_updated.emit(cognitive_json)
-                    self.web_bridge.data_cache['cognitive'] = cognitive_data
+                    self.web_bridge.data_cache["cognitive"] = cognitive_data
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to update cognitive state: {e}")
@@ -1042,11 +1110,15 @@ class LyrixaHybridWindow(QMainWindow):
                 # Ensure we have a QVBoxLayout
                 if isinstance(layout, QVBoxLayout):
                     # Add separator for auto-generated panels
-                    if panels and not hasattr(self, '_auto_panels_separator_added'):
+                    if panels and not hasattr(self, "_auto_panels_separator_added"):
                         separator = QFrame()
                         separator.setFrameShape(QFrame.Shape.HLine)
-                        separator.setStyleSheet("border: 1px solid rgba(0, 255, 136, 0.3); margin: 10px 0;")
-                        layout.insertWidget(layout.count() - 2, separator)  # Before spacer and status
+                        separator.setStyleSheet(
+                            "border: 1px solid rgba(0, 255, 136, 0.3); margin: 10px 0;"
+                        )
+                        layout.insertWidget(
+                            layout.count() - 2, separator
+                        )  # Before spacer and status
 
                         auto_label = QLabel("[AUTO] Auto-Generated")
                         auto_label.setStyleSheet("""
@@ -1061,22 +1133,32 @@ class LyrixaHybridWindow(QMainWindow):
                         self._auto_panels_separator_added = True
 
                     # Add buttons for auto-generated panels
-                    for panel_info in panels[:5]:  # Limit to 5 auto panels in navigation
-                        panel_id = panel_info['id']
-                        panel_title = panel_info.get('title', panel_id)
+                    for panel_info in panels[
+                        :5
+                    ]:  # Limit to 5 auto panels in navigation
+                        panel_id = panel_info["id"]
+                        panel_title = panel_info.get("title", panel_id)
 
                         # Check if button already exists
-                        existing_btn = self.findChild(QPushButton, f"auto_nav_{panel_id}")
+                        existing_btn = self.findChild(
+                            QPushButton, f"auto_nav_{panel_id}"
+                        )
                         if not existing_btn:
                             btn = QPushButton(f"[AUTO] {panel_title}")
                             btn.setObjectName(f"auto_nav_{panel_id}")
-                            btn.clicked.connect(lambda checked, pid=panel_id: self.load_auto_generated_panel(pid))
-                            btn.setStyleSheet(self.getButtonStyle() + """
+                            btn.clicked.connect(
+                                lambda checked,
+                                pid=panel_id: self.load_auto_generated_panel(pid)
+                            )
+                            btn.setStyleSheet(
+                                self.getButtonStyle()
+                                + """
                                 QPushButton {
                                     background: rgba(0, 255, 136, 0.1);
                                     border-left: 3px solid #00ff88;
                                 }
-                            """)
+                            """
+                            )
                             layout.insertWidget(layout.count() - 2, btn)
 
         except Exception as e:
@@ -1089,12 +1171,19 @@ class LyrixaHybridWindow(QMainWindow):
                 panel_info = self.auto_generated_panels[panel_id]
 
                 # Get the HTML file path
-                panel_file = Path(__file__).parent / "web_panels" / "auto_generated" / f"{panel_id}.html"
+                panel_file = (
+                    Path(__file__).parent
+                    / "web_panels"
+                    / "auto_generated"
+                    / f"{panel_id}.html"
+                )
 
                 if panel_file.exists():
                     self.web_view.load(QUrl.fromLocalFile(str(panel_file.absolute())))
                     self.current_panel = panel_id
-                    self.statusBar().showMessage(f"🔮 Loaded auto-generated panel: {panel_info.get('title', panel_id)}")
+                    self.statusBar().showMessage(
+                        f"🔮 Loaded auto-generated panel: {panel_info.get('title', panel_id)}"
+                    )
                 else:
                     logger.warning(f"Auto-generated panel file not found: {panel_file}")
             else:
@@ -1108,17 +1197,23 @@ class LyrixaHybridWindow(QMainWindow):
         try:
             # Connect personality manager signals
             if self.personality_manager:
-                self.personality_manager.personality_changed.connect(self.onPersonalityChanged)
+                self.personality_manager.personality_changed.connect(
+                    self.onPersonalityChanged
+                )
                 self.personality_manager.theme_updated.connect(self.onThemeUpdated)
                 self.personality_manager.layout_adapted.connect(self.onLayoutAdapted)
                 self.personality_manager.chat_message.connect(self.onChatMessage)
                 self.personality_manager.gui_state_saved.connect(self.onGUIStateSaved)
 
                 # Set up current panel tracking
-                if hasattr(self, 'current_panel'):
-                    self.personality_manager.update_current_panel(self.current_panel or 'dashboard')
+                if hasattr(self, "current_panel"):
+                    self.personality_manager.update_current_panel(
+                        self.current_panel or "dashboard"
+                    )
 
-                logger.info("[PHASE6] GUI Personality + State Memory setup successfully")
+                logger.info(
+                    "[PHASE6] GUI Personality + State Memory setup successfully"
+                )
 
         except Exception as e:
             logger.error(f"[ERROR] Phase 6 integration failed: {e}")
@@ -1128,15 +1223,21 @@ class LyrixaHybridWindow(QMainWindow):
         """Handle personality state changes"""
         try:
             personality_data = json.loads(personality_json)
-            logger.info(f"[PHASE6] Personality changed: {personality_data.get('emotional_state', 'unknown')}")
+            logger.info(
+                f"[PHASE6] Personality changed: {personality_data.get('emotional_state', 'unknown')}"
+            )
 
             # Forward to web interface
-            if hasattr(self.web_bridge, 'agent_updated'):
-                self.web_bridge.agent_updated.emit(safe_json_dumps({
-                    'type': 'personality_update',
-                    'personality': personality_data,
-                    'timestamp': datetime.now().isoformat()
-                }))
+            if hasattr(self.web_bridge, "agent_updated"):
+                self.web_bridge.agent_updated.emit(
+                    safe_json_dumps(
+                        {
+                            "type": "personality_update",
+                            "personality": personality_data,
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
+                )
 
         except Exception as e:
             logger.error(f"[PHASE6] Error handling personality change: {e}")
@@ -1148,7 +1249,7 @@ class LyrixaHybridWindow(QMainWindow):
             logger.info("[PHASE6] Theme updated based on personality state")
 
             # Apply theme to the interface (inject CSS)
-            if hasattr(self, 'web_view') and self.web_view:
+            if hasattr(self, "web_view") and self.web_view:
                 # Inject the theme CSS variables
                 self.web_view.page().runJavaScript(f"""
                     if (!document.getElementById('phase6-theme')) {{
@@ -1187,7 +1288,9 @@ class LyrixaHybridWindow(QMainWindow):
         """Handle GUI state saving"""
         try:
             state_data = json.loads(state_json)
-            logger.info(f"[PHASE6] GUI state saved for panel: {state_data.get('current_panel', 'unknown')}")
+            logger.info(
+                f"[PHASE6] GUI state saved for panel: {state_data.get('current_panel', 'unknown')}"
+            )
 
         except Exception as e:
             logger.error(f"[PHASE6] Error handling GUI state save: {e}")
@@ -1196,25 +1299,31 @@ class LyrixaHybridWindow(QMainWindow):
         """Enhanced loadPanel with Phase 6 personality integration"""
         try:
             # Track panel change with personality manager
-            if hasattr(self, 'personality_manager') and self.personality_manager:
+            if hasattr(self, "personality_manager") and self.personality_manager:
                 self.personality_manager.update_current_panel(panel_id)
 
             # Handle Phase 6 chat panel
-            if panel_id == 'chat':
+            if panel_id == "chat":
                 panel_file = Path(__file__).parent / "web_panels" / "phase6_chat.html"
                 if panel_file.exists():
                     self.web_view.load(QUrl.fromLocalFile(str(panel_file.absolute())))
                     self.current_panel = panel_id
-                    self.statusBar().showMessage("💬 Chat with Lyrixa - AI conversation interface")
+                    self.statusBar().showMessage(
+                        "💬 Chat with Lyrixa - AI conversation interface"
+                    )
                     return
                 else:
                     logger.warning(f"Chat panel file not found: {panel_file}")
 
             # Special handling for Phase 5 plugin demo
             if panel_id == "plugin_demo":
-                panel_path = Path(__file__).parent / "web_panels" / "phase5_plugin_demo.html"
+                panel_path = (
+                    Path(__file__).parent / "web_panels" / "phase5_plugin_demo.html"
+                )
             else:
-                panel_path = Path(__file__).parent / "web_panels" / f"{panel_id}_panel.html"
+                panel_path = (
+                    Path(__file__).parent / "web_panels" / f"{panel_id}_panel.html"
+                )
 
             if not panel_path.exists():
                 # Create default panel if it doesn't exist
@@ -1254,7 +1363,7 @@ class LyrixaHybridWindow(QMainWindow):
         '''
 
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(html_content, encoding='utf-8')
+        path.write_text(html_content, encoding="utf-8")
 
     def applyAetherraTheme(self):
         """Apply the Aetherra color scheme and styling."""
@@ -1330,11 +1439,11 @@ class LyrixaHybridWindow(QMainWindow):
             "memory_load": random.randint(30, 70),
             "cpu_usage": random.randint(10, 40),
             "agents_active": random.randint(5, 12),
-            "plugins_loaded": 12
+            "plugins_loaded": 12,
         }
 
         # Update web bridge data
-        self.web_bridge.data_cache['metrics'] = metrics_data
+        self.web_bridge.data_cache["metrics"] = metrics_data
         self.web_bridge.metrics_updated.emit(json.dumps(metrics_data))
 
     # Backend connection methods (called by launcher)
@@ -1367,26 +1476,26 @@ class LyrixaHybridWindow(QMainWindow):
         """Update the context bridge with current backend services."""
         services = {}
 
-        if hasattr(self, 'service_registry') and self.service_registry:
-            services['service_registry'] = self.service_registry
+        if hasattr(self, "service_registry") and self.service_registry:
+            services["service_registry"] = self.service_registry
 
-        if hasattr(self, 'plugin_manager') and self.plugin_manager:
-            services['plugin_manager'] = self.plugin_manager
+        if hasattr(self, "plugin_manager") and self.plugin_manager:
+            services["plugin_manager"] = self.plugin_manager
 
-        if hasattr(self, 'lyrixa_engine') and self.lyrixa_engine:
-            services['lyrixa_engine'] = self.lyrixa_engine
+        if hasattr(self, "lyrixa_engine") and self.lyrixa_engine:
+            services["lyrixa_engine"] = self.lyrixa_engine
 
-        if hasattr(self, 'memory_system') and self.memory_system:
-            services['memory_system'] = self.memory_system
+        if hasattr(self, "memory_system") and self.memory_system:
+            services["memory_system"] = self.memory_system
 
-        if hasattr(self, 'agent_orchestrator') and self.agent_orchestrator:
-            services['agent_orchestrator'] = self.agent_orchestrator
+        if hasattr(self, "agent_orchestrator") and self.agent_orchestrator:
+            services["agent_orchestrator"] = self.agent_orchestrator
 
         # Connect services to the context bridge
         self.web_bridge.connect_backend_services(services)
 
         # Phase 3: Connect auto-generator to backend services and start introspection
-        if services and hasattr(self, 'auto_generator'):
+        if services and hasattr(self, "auto_generator"):
             self.auto_generator.connect_backend_services(services)
             # Start auto-generation after a short delay to allow services to settle
             QTimer.singleShot(1000, self.auto_generator.start_auto_generation)
@@ -1401,6 +1510,7 @@ def main():
     window.show()
 
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()

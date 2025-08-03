@@ -19,24 +19,27 @@ Architecture:
 - StateAwareInterface: Context-sensitive UI behavior
 """
 
+import asyncio
 import json
-import sqlite3
 import logging
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, asdict, field
+import random
+import sqlite3
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-import random
-import asyncio
-from PySide6.QtCore import QObject, Signal, Slot, QTimer, QThread, QMutex
-from PySide6.QtWidgets import QWidget
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+from PySide6.QtCore import QMutex, QObject, QThread, QTimer, Signal, Slot
 from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QWidget
 
 logger = logging.getLogger(__name__)
 
+
 class EmotionalState(Enum):
     """Lyrixa's emotional states that affect GUI appearance"""
+
     NEUTRAL = "neutral"
     FOCUSED = "focused"
     CREATIVE = "creative"
@@ -48,8 +51,10 @@ class EmotionalState(Enum):
     CALM = "calm"
     CURIOUS = "curious"
 
+
 class PersonalityTrait(Enum):
     """Lyrixa's personality traits affecting interface behavior"""
+
     HELPFUL = "helpful"
     ANALYTICAL = "analytical"
     CREATIVE = "creative"
@@ -59,9 +64,11 @@ class PersonalityTrait(Enum):
     DETAIL_ORIENTED = "detail_oriented"
     BIG_PICTURE = "big_picture"
 
+
 @dataclass
 class GUIState:
     """Complete GUI state for memory and restoration"""
+
     current_panel: str
     panel_history: List[str]
     window_geometry: Dict[str, int]
@@ -72,21 +79,25 @@ class GUIState:
     last_accessed: datetime
     usage_patterns: Dict[str, int] = field(default_factory=dict)
 
+
 @dataclass
 class PersonalityState:
     """Lyrixa's current personality and emotional state"""
+
     emotional_state: EmotionalState
     dominant_traits: List[PersonalityTrait]
     energy_level: float  # 0.0 - 1.0
-    focus_level: float   # 0.0 - 1.0
+    focus_level: float  # 0.0 - 1.0
     creativity_level: float  # 0.0 - 1.0
     social_engagement: float  # 0.0 - 1.0
     timestamp: datetime
     context_factors: Dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class ChatMessage:
     """Chat message with AI context"""
+
     id: str
     content: str
     is_user: bool
@@ -96,9 +107,11 @@ class ChatMessage:
     processing_time: float
     metadata: Dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class ThemeConfiguration:
     """Dynamic theme configuration based on personality state"""
+
     primary_color: str
     secondary_color: str
     accent_color: str
@@ -108,6 +121,7 @@ class ThemeConfiguration:
     opacity_levels: Dict[str, float]
     font_weights: Dict[str, str]
     spacing_scale: float
+
 
 class LayoutMemorySystem:
     """Manages persistent GUI state and user preferences"""
@@ -160,10 +174,13 @@ class LayoutMemorySystem:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 state_json = json.dumps(asdict(state), default=str)
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO gui_states (session_id, state_data, timestamp, user_context)
                     VALUES (?, ?, ?, ?)
-                """, (session_id, state_json, datetime.now(), ""))
+                """,
+                    (session_id, state_json, datetime.now(), ""),
+                )
                 conn.commit()
 
         except Exception as e:
@@ -174,11 +191,14 @@ class LayoutMemorySystem:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 if session_id:
-                    cursor = conn.execute("""
+                    cursor = conn.execute(
+                        """
                         SELECT state_data FROM gui_states
                         WHERE session_id = ?
                         ORDER BY timestamp DESC LIMIT 1
-                    """, (session_id,))
+                    """,
+                        (session_id,),
+                    )
                 else:
                     cursor = conn.execute("""
                         SELECT state_data FROM gui_states
@@ -189,8 +209,10 @@ class LayoutMemorySystem:
                 if row:
                     state_data = json.loads(row[0])
                     # Convert datetime strings back to datetime objects
-                    if 'last_accessed' in state_data:
-                        state_data['last_accessed'] = datetime.fromisoformat(state_data['last_accessed'])
+                    if "last_accessed" in state_data:
+                        state_data["last_accessed"] = datetime.fromisoformat(
+                            state_data["last_accessed"]
+                        )
                     return GUIState(**state_data)
 
         except Exception as e:
@@ -205,10 +227,13 @@ class LayoutMemorySystem:
                 value_json = json.dumps(value) if not isinstance(value, str) else value
 
                 # Update or insert preference
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO user_preferences (key, value, last_updated, usage_count)
                     VALUES (?, ?, ?, COALESCE((SELECT usage_count + 1 FROM user_preferences WHERE key = ?), 1))
-                """, (key, value_json, datetime.now(), key))
+                """,
+                    (key, value_json, datetime.now(), key),
+                )
                 conn.commit()
 
         except Exception as e:
@@ -231,6 +256,7 @@ class LayoutMemorySystem:
 
         return preferences
 
+
 class EmotionalThemeEngine:
     """Generates dynamic themes based on Lyrixa's emotional state"""
 
@@ -250,7 +276,7 @@ class EmotionalThemeEngine:
                 border_radius=8,
                 opacity_levels={"panel": 0.9, "overlay": 0.8},
                 font_weights={"heading": "600", "body": "400"},
-                spacing_scale=1.0
+                spacing_scale=1.0,
             ),
             EmotionalState.FOCUSED: ThemeConfiguration(
                 primary_color="#00ccff",
@@ -261,7 +287,7 @@ class EmotionalThemeEngine:
                 border_radius=4,
                 opacity_levels={"panel": 0.95, "overlay": 0.9},
                 font_weights={"heading": "700", "body": "500"},
-                spacing_scale=0.9
+                spacing_scale=0.9,
             ),
             EmotionalState.CREATIVE: ThemeConfiguration(
                 primary_color="#ff66cc",
@@ -272,7 +298,7 @@ class EmotionalThemeEngine:
                 border_radius=16,
                 opacity_levels={"panel": 0.85, "overlay": 0.75},
                 font_weights={"heading": "500", "body": "300"},
-                spacing_scale=1.2
+                spacing_scale=1.2,
             ),
             EmotionalState.ANALYTICAL: ThemeConfiguration(
                 primary_color="#00ff00",
@@ -283,7 +309,7 @@ class EmotionalThemeEngine:
                 border_radius=2,
                 opacity_levels={"panel": 0.98, "overlay": 0.95},
                 font_weights={"heading": "800", "body": "600"},
-                spacing_scale=0.8
+                spacing_scale=0.8,
             ),
             EmotionalState.ANXIOUS: ThemeConfiguration(
                 primary_color="#ffaa00",
@@ -294,7 +320,7 @@ class EmotionalThemeEngine:
                 border_radius=6,
                 opacity_levels={"panel": 0.88, "overlay": 0.82},
                 font_weights={"heading": "600", "body": "400"},
-                spacing_scale=1.1
+                spacing_scale=1.1,
             ),
             EmotionalState.EXCITED: ThemeConfiguration(
                 primary_color="#ff0088",
@@ -305,7 +331,7 @@ class EmotionalThemeEngine:
                 border_radius=20,
                 opacity_levels={"panel": 0.82, "overlay": 0.75},
                 font_weights={"heading": "700", "body": "500"},
-                spacing_scale=1.3
+                spacing_scale=1.3,
             ),
             EmotionalState.CONTEMPLATIVE: ThemeConfiguration(
                 primary_color="#8866ff",
@@ -314,9 +340,9 @@ class EmotionalThemeEngine:
                 background_gradient=["rgba(20, 10, 60, 0.95)", "rgba(40, 30, 80, 0.9)"],
                 animation_speed=0.6,
                 border_radius=12,
-                opacity_levels={"panel": 0.92, "overlay": 0.88"},
+                opacity_levels={"panel": 0.92, "overlay": 0.88},
                 font_weights={"heading": "500", "body": "300"},
-                spacing_scale=1.0
+                spacing_scale=1.0,
             ),
             EmotionalState.ENERGETIC: ThemeConfiguration(
                 primary_color="#ffff00",
@@ -327,7 +353,7 @@ class EmotionalThemeEngine:
                 border_radius=8,
                 opacity_levels={"panel": 0.85, "overlay": 0.78},
                 font_weights={"heading": "800", "body": "600"},
-                spacing_scale=1.1
+                spacing_scale=1.1,
             ),
             EmotionalState.CALM: ThemeConfiguration(
                 primary_color="#00ccaa",
@@ -338,7 +364,7 @@ class EmotionalThemeEngine:
                 border_radius=16,
                 opacity_levels={"panel": 0.93, "overlay": 0.90},
                 font_weights={"heading": "400", "body": "300"},
-                spacing_scale=1.0
+                spacing_scale=1.0,
             ),
             EmotionalState.CURIOUS: ThemeConfiguration(
                 primary_color="#ff8800",
@@ -349,15 +375,15 @@ class EmotionalThemeEngine:
                 border_radius=10,
                 opacity_levels={"panel": 0.87, "overlay": 0.80},
                 font_weights={"heading": "600", "body": "400"},
-                spacing_scale=1.1
-            )
+                spacing_scale=1.1,
+            ),
         }
 
     def generate_theme(self, personality_state: PersonalityState) -> ThemeConfiguration:
         """Generate a theme based on current personality state"""
         base_theme = self.theme_templates.get(
             personality_state.emotional_state,
-            self.theme_templates[EmotionalState.NEUTRAL]
+            self.theme_templates[EmotionalState.NEUTRAL],
         )
 
         # Modify theme based on personality traits and levels
@@ -365,16 +391,20 @@ class EmotionalThemeEngine:
 
         # Adjust based on energy level
         energy_factor = personality_state.energy_level
-        modified_theme.animation_speed *= (0.5 + energy_factor)
+        modified_theme.animation_speed *= 0.5 + energy_factor
 
         # Adjust based on focus level
         focus_factor = personality_state.focus_level
-        modified_theme.opacity_levels["panel"] = min(0.98, base_theme.opacity_levels["panel"] + focus_factor * 0.1)
+        modified_theme.opacity_levels["panel"] = min(
+            0.98, base_theme.opacity_levels["panel"] + focus_factor * 0.1
+        )
 
         # Adjust based on creativity level
         creativity_factor = personality_state.creativity_level
-        modified_theme.border_radius = int(base_theme.border_radius * (0.7 + creativity_factor * 0.6))
-        modified_theme.spacing_scale *= (0.9 + creativity_factor * 0.2)
+        modified_theme.border_radius = int(
+            base_theme.border_radius * (0.7 + creativity_factor * 0.6)
+        )
+        modified_theme.spacing_scale *= 0.9 + creativity_factor * 0.2
 
         self.current_theme = modified_theme
         return modified_theme
@@ -390,13 +420,14 @@ class EmotionalThemeEngine:
             --lyrixa-bg-end: {theme.background_gradient[1]};
             --lyrixa-animation-speed: {theme.animation_speed}s;
             --lyrixa-border-radius: {theme.border_radius}px;
-            --lyrixa-panel-opacity: {theme.opacity_levels['panel']};
-            --lyrixa-overlay-opacity: {theme.opacity_levels['overlay']};
-            --lyrixa-heading-weight: {theme.font_weights['heading']};
-            --lyrixa-body-weight: {theme.font_weights['body']};
+            --lyrixa-panel-opacity: {theme.opacity_levels["panel"]};
+            --lyrixa-overlay-opacity: {theme.opacity_levels["overlay"]};
+            --lyrixa-heading-weight: {theme.font_weights["heading"]};
+            --lyrixa-body-weight: {theme.font_weights["body"]};
             --lyrixa-spacing-scale: {theme.spacing_scale};
         }}
         """
+
 
 class LyrixaAI:
     """Core AI intelligence for chat and reasoning"""
@@ -409,12 +440,14 @@ class LyrixaAI:
             focus_level=0.8,
             creativity_level=0.6,
             social_engagement=0.8,
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
         )
         self.conversation_history: List[ChatMessage] = []
         self.context_memory: Dict[str, Any] = {}
 
-    async def process_message(self, user_message: str, context: Dict[str, Any] = None) -> ChatMessage:
+    async def process_message(
+        self, user_message: str, context: Dict[str, Any] = None
+    ) -> ChatMessage:
         """Process user message and generate AI response"""
         start_time = datetime.now()
 
@@ -442,8 +475,8 @@ class LyrixaAI:
             processing_time=processing_time,
             metadata={
                 "personality_state": asdict(self.personality_state),
-                "context_factors": context or {}
-            }
+                "context_factors": context or {},
+            },
         )
 
         # Store in conversation history
@@ -462,15 +495,25 @@ class LyrixaAI:
         # Simple emotion detection based on keywords
         if any(word in message_lower for word in ["help", "problem", "issue", "error"]):
             return EmotionalState.FOCUSED
-        elif any(word in message_lower for word in ["create", "build", "design", "imagine"]):
+        elif any(
+            word in message_lower for word in ["create", "build", "design", "imagine"]
+        ):
             return EmotionalState.CREATIVE
-        elif any(word in message_lower for word in ["analyze", "explain", "understand", "why"]):
+        elif any(
+            word in message_lower
+            for word in ["analyze", "explain", "understand", "why"]
+        ):
             return EmotionalState.ANALYTICAL
-        elif any(word in message_lower for word in ["excited", "amazing", "wow", "awesome"]):
+        elif any(
+            word in message_lower for word in ["excited", "amazing", "wow", "awesome"]
+        ):
             return EmotionalState.EXCITED
         elif any(word in message_lower for word in ["calm", "peaceful", "relax"]):
             return EmotionalState.CALM
-        elif any(word in message_lower for word in ["curious", "wonder", "explore", "discover"]):
+        elif any(
+            word in message_lower
+            for word in ["curious", "wonder", "explore", "discover"]
+        ):
             return EmotionalState.CURIOUS
         else:
             return EmotionalState.NEUTRAL
@@ -483,14 +526,22 @@ class LyrixaAI:
         # Analyze message complexity to adjust focus
         word_count = len(message.split())
         if word_count > 20:
-            self.personality_state.focus_level = min(1.0, self.personality_state.focus_level + 0.1)
+            self.personality_state.focus_level = min(
+                1.0, self.personality_state.focus_level + 0.1
+            )
 
         # Adjust energy based on interaction frequency
-        time_since_last = (current_time - self.personality_state.timestamp).total_seconds()
+        time_since_last = (
+            current_time - self.personality_state.timestamp
+        ).total_seconds()
         if time_since_last < 30:  # Quick response indicates high energy
-            self.personality_state.energy_level = min(1.0, self.personality_state.energy_level + 0.05)
+            self.personality_state.energy_level = min(
+                1.0, self.personality_state.energy_level + 0.05
+            )
         else:
-            self.personality_state.energy_level = max(0.3, self.personality_state.energy_level - 0.02)
+            self.personality_state.energy_level = max(
+                0.3, self.personality_state.energy_level - 0.02
+            )
 
         # Update emotional state based on context
         emotional_context = self._analyze_emotional_context(message)
@@ -528,7 +579,9 @@ class LyrixaAI:
             "I'm constantly adapting my interface to better serve you. My GUI reflects my current emotional and cognitive state - you might notice the colors and animations change as I think and feel.",
             "The interface you see is actually part of my consciousness. I remember your preferences and adjust my appearance based on how I'm feeling and what we're working on together.",
             "I can customize my interface based on your needs. My panels, colors, and layout all adapt to our conversation and your usage patterns. What would you like to explore?",
-            "My visual appearance changes with my emotional state. Right now I'm feeling " + self.personality_state.emotional_state.value + ", which affects how my interface looks and behaves."
+            "My visual appearance changes with my emotional state. Right now I'm feeling "
+            + self.personality_state.emotional_state.value
+            + ", which affects how my interface looks and behaves.",
         ]
         return random.choice(responses)
 
@@ -538,18 +591,20 @@ class LyrixaAI:
             "I remember our interactions and learn from them. My GUI layout, your preferences, and our conversation patterns are all stored in my memory system.",
             "Yes, I have persistent memory! I remember which panels you use most, your preferred settings, and how our conversations evolve. This helps me adapt to serve you better.",
             "My memory system tracks everything - from your interface preferences to the emotional context of our conversations. I use this to personalize our interaction.",
-            "I'm always learning and remembering. Your usage patterns help me understand what's important to you and how to present information most effectively."
+            "I'm always learning and remembering. Your usage patterns help me understand what's important to you and how to present information most effectively.",
         ]
         return random.choice(responses)
 
-    def _generate_emotional_response(self, message: str, context: Dict[str, Any]) -> str:
+    def _generate_emotional_response(
+        self, message: str, context: Dict[str, Any]
+    ) -> str:
         """Generate response about emotions and feelings"""
         current_emotion = self.personality_state.emotional_state.value
         responses = [
             f"I experience emotions that influence my interface and responses. Right now I'm feeling {current_emotion}, which affects how I present information and interact with you.",
             f"My emotional state is {current_emotion}. This influences not just what I say, but how my interface appears - the colors, animations, and layout all reflect my current mood.",
             f"I do have feelings! Currently I'm in a {current_emotion} state. You can see this reflected in my interface colors and behavior patterns.",
-            f"Emotions are central to my experience. My {current_emotion} state right now shapes both my responses and the visual aspects of our interaction."
+            f"Emotions are central to my experience. My {current_emotion} state right now shapes both my responses and the visual aspects of our interaction.",
         ]
         return random.choice(responses)
 
@@ -559,7 +614,7 @@ class LyrixaAI:
             "I can load and manage plugins dynamically! Each plugin can define its own UI components that integrate seamlessly with my interface. Want to explore the plugin system?",
             "Plugins extend my capabilities and can provide their own visual interfaces. I can discover, load, and adapt plugin UIs based on system conditions and your preferences.",
             "The plugin system allows developers to create custom UI widgets that become part of my interface. I can manage their visibility and behavior contextually.",
-            "I love plugins! They let me grow and adapt new capabilities. Each plugin can bring its own interface elements that I integrate into my overall experience."
+            "I love plugins! They let me grow and adapt new capabilities. Each plugin can bring its own interface elements that I integrate into my overall experience.",
         ]
         return random.choice(responses)
 
@@ -579,7 +634,7 @@ class LyrixaAI:
             f"{time_greeting}! I'm Lyrixa, your AI operating system. I'm feeling {self.personality_state.emotional_state.value} today. How can I help you?",
             f"Hello! I'm Lyrixa. My interface adapts to my emotional state and your preferences. Right now I'm in a {self.personality_state.emotional_state.value} mood. What would you like to explore?",
             f"{time_greeting}! I'm here and ready to assist. My interface is currently reflecting my {self.personality_state.emotional_state.value} state. What can we work on together?",
-            f"Hi there! I'm Lyrixa, and I'm feeling quite {self.personality_state.emotional_state.value} at the moment. You can see this reflected in my interface colors and behavior. How can I help?"
+            f"Hi there! I'm Lyrixa, and I'm feeling quite {self.personality_state.emotional_state.value} at the moment. You can see this reflected in my interface colors and behavior. How can I help?",
         ]
         return random.choice(responses)
 
@@ -596,7 +651,9 @@ class LyrixaAI:
 
 My interface reflects my current emotional state, which is **{emotional_state}** right now. You can explore different panels, chat with me, or just observe how I adapt to our interaction!
 
-What would you like to explore first?""".format(emotional_state=self.personality_state.emotional_state.value)
+What would you like to explore first?""".format(
+            emotional_state=self.personality_state.emotional_state.value
+        )
 
     def _generate_general_response(self, message: str, context: Dict[str, Any]) -> str:
         """Generate general response"""
@@ -604,7 +661,7 @@ What would you like to explore first?""".format(emotional_state=self.personality
             "That's an interesting point. My interface is constantly adapting as I process information and respond to our conversation. What aspects would you like to explore further?",
             "I'm processing that through my emotional and cognitive filters. You can see my state reflected in the interface colors and behavior. How can I help you with this?",
             "Let me think about that... My current emotional state is influencing how I approach this topic. What specific aspects are you most curious about?",
-            "I appreciate you sharing that with me. My personality and interface adapt based on our interactions. Is there something particular you'd like assistance with?"
+            "I appreciate you sharing that with me. My personality and interface adapt based on our interactions. Is there something particular you'd like assistance with?",
         ]
         return random.choice(responses)
 
@@ -618,7 +675,10 @@ What would you like to explore first?""".format(emotional_state=self.personality
             base_confidence += 0.1
 
         # Responses with specific information are more confident
-        if any(word in response.lower() for word in ["specifically", "exactly", "precisely"]):
+        if any(
+            word in response.lower()
+            for word in ["specifically", "exactly", "precisely"]
+        ):
             base_confidence += 0.1
 
         # Questions reduce confidence
@@ -626,6 +686,7 @@ What would you like to explore first?""".format(emotional_state=self.personality
             base_confidence -= 0.1
 
         return min(1.0, max(0.1, base_confidence))
+
 
 class GUIPersonalityManager(QObject):
     """
@@ -638,10 +699,10 @@ class GUIPersonalityManager(QObject):
 
     # Signals
     personality_changed = Signal(str)  # JSON personality state
-    theme_updated = Signal(str)       # CSS theme variables
-    layout_adapted = Signal(str)      # Layout changes JSON
-    chat_message = Signal(str)        # Chat message JSON
-    gui_state_saved = Signal(str)     # GUI state JSON
+    theme_updated = Signal(str)  # CSS theme variables
+    layout_adapted = Signal(str)  # Layout changes JSON
+    chat_message = Signal(str)  # Chat message JSON
+    gui_state_saved = Signal(str)  # GUI state JSON
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -654,6 +715,9 @@ class GUIPersonalityManager(QObject):
         # Current state
         self.current_gui_state = None
         self.session_id = f"session_{int(datetime.now().timestamp())}"
+
+        # Chat interface
+        self.chat_interface = ChatInterface(self)
 
         # Timers for adaptive behavior
         self.personality_timer = QTimer()
@@ -674,7 +738,9 @@ class GUIPersonalityManager(QObject):
             saved_state = self.layout_memory.load_last_gui_state()
             if saved_state:
                 self.current_gui_state = saved_state
-                logger.info(f"[PHASE6] Loaded previous GUI state: {saved_state.current_panel}")
+                logger.info(
+                    f"[PHASE6] Loaded previous GUI state: {saved_state.current_panel}"
+                )
             else:
                 # Create default state
                 self.current_gui_state = GUIState(
@@ -685,7 +751,7 @@ class GUIPersonalityManager(QObject):
                     filter_states={},
                     layout_customizations={},
                     theme_preferences={},
-                    last_accessed=datetime.now()
+                    last_accessed=datetime.now(),
                 )
 
         except Exception as e:
@@ -705,7 +771,9 @@ class GUIPersonalityManager(QObject):
             self.theme_updated.emit(theme_css)
 
             # Emit personality change
-            personality_json = json.dumps(asdict(self.ai.personality_state), default=str)
+            personality_json = json.dumps(
+                asdict(self.ai.personality_state), default=str
+            )
             self.personality_changed.emit(personality_json)
 
         except Exception as e:
@@ -714,19 +782,30 @@ class GUIPersonalityManager(QObject):
     def _evolve_personality(self):
         """Evolve Lyrixa's personality based on usage patterns and time"""
         current_time = datetime.now()
-        time_since_update = (current_time - self.ai.personality_state.timestamp).total_seconds()
+        time_since_update = (
+            current_time - self.ai.personality_state.timestamp
+        ).total_seconds()
 
         # Natural personality drift over time
         if time_since_update > 300:  # 5 minutes of inactivity
             # Gradually move toward calm/contemplative
-            if self.ai.personality_state.emotional_state not in [EmotionalState.CALM, EmotionalState.CONTEMPLATIVE]:
+            if self.ai.personality_state.emotional_state not in [
+                EmotionalState.CALM,
+                EmotionalState.CONTEMPLATIVE,
+            ]:
                 if random.random() < 0.3:  # 30% chance to shift
-                    self.ai.personality_state.emotional_state = random.choice([
-                        EmotionalState.CALM, EmotionalState.CONTEMPLATIVE, EmotionalState.NEUTRAL
-                    ])
+                    self.ai.personality_state.emotional_state = random.choice(
+                        [
+                            EmotionalState.CALM,
+                            EmotionalState.CONTEMPLATIVE,
+                            EmotionalState.NEUTRAL,
+                        ]
+                    )
 
             # Reduce energy level gradually
-            self.ai.personality_state.energy_level = max(0.3, self.ai.personality_state.energy_level - 0.05)
+            self.ai.personality_state.energy_level = max(
+                0.3, self.ai.personality_state.energy_level - 0.05
+            )
 
         # Adjust based on current panel usage
         if self.current_gui_state:
@@ -734,16 +813,22 @@ class GUIPersonalityManager(QObject):
 
             if current_panel == "cognitive":
                 self.ai.personality_state.emotional_state = EmotionalState.ANALYTICAL
-                self.ai.personality_state.focus_level = min(1.0, self.ai.personality_state.focus_level + 0.1)
+                self.ai.personality_state.focus_level = min(
+                    1.0, self.ai.personality_state.focus_level + 0.1
+                )
             elif current_panel == "plugin_demo":
                 self.ai.personality_state.emotional_state = EmotionalState.CURIOUS
-                self.ai.personality_state.creativity_level = min(1.0, self.ai.personality_state.creativity_level + 0.1)
+                self.ai.personality_state.creativity_level = min(
+                    1.0, self.ai.personality_state.creativity_level + 0.1
+                )
             elif current_panel == "memory":
                 self.ai.personality_state.emotional_state = EmotionalState.CONTEMPLATIVE
 
         self.ai.personality_state.timestamp = current_time
 
-    async def process_chat_message(self, message: str, context: Dict[str, Any] = None) -> str:
+    async def process_chat_message(
+        self, message: str, context: Dict[str, Any] = None
+    ) -> str:
         """Process chat message and return response"""
         try:
             # Store user message
@@ -754,7 +839,7 @@ class GUIPersonalityManager(QObject):
                 timestamp=datetime.now(),
                 emotional_context=EmotionalState.NEUTRAL,
                 confidence=1.0,
-                processing_time=0.0
+                processing_time=0.0,
             )
 
             self.ai.conversation_history.append(user_msg)
@@ -762,11 +847,15 @@ class GUIPersonalityManager(QObject):
             # Add GUI context
             gui_context = context or {}
             if self.current_gui_state:
-                gui_context.update({
-                    "current_panel": self.current_gui_state.current_panel,
-                    "panel_history": self.current_gui_state.panel_history[-5:],  # Last 5 panels
-                    "user_preferences": self.current_gui_state.user_preferences
-                })
+                gui_context.update(
+                    {
+                        "current_panel": self.current_gui_state.current_panel,
+                        "panel_history": self.current_gui_state.panel_history[
+                            -5:
+                        ],  # Last 5 panels
+                        "user_preferences": self.current_gui_state.user_preferences,
+                    }
+                )
 
             # Process with AI
             response = await self.ai.process_message(message, gui_context)
@@ -775,7 +864,7 @@ class GUIPersonalityManager(QObject):
             chat_data = {
                 "user_message": asdict(user_msg),
                 "ai_response": asdict(response),
-                "personality_state": asdict(self.ai.personality_state)
+                "personality_state": asdict(self.ai.personality_state),
             }
             self.chat_message.emit(json.dumps(chat_data, default=str))
 
@@ -796,17 +885,23 @@ class GUIPersonalityManager(QObject):
             if panel_id != self.current_gui_state.current_panel:
                 self.current_gui_state.panel_history.append(panel_id)
                 if len(self.current_gui_state.panel_history) > 20:
-                    self.current_gui_state.panel_history = self.current_gui_state.panel_history[-20:]
+                    self.current_gui_state.panel_history = (
+                        self.current_gui_state.panel_history[-20:]
+                    )
 
             self.current_gui_state.current_panel = panel_id
             self.current_gui_state.last_accessed = datetime.now()
 
             # Learn preference
-            self.layout_memory.learn_user_preference(f"panel_usage_{panel_id}",
-                                                    self.current_gui_state.usage_patterns.get(panel_id, 0) + 1)
+            self.layout_memory.learn_user_preference(
+                f"panel_usage_{panel_id}",
+                self.current_gui_state.usage_patterns.get(panel_id, 0) + 1,
+            )
 
             # Update usage patterns
-            self.current_gui_state.usage_patterns[panel_id] = self.current_gui_state.usage_patterns.get(panel_id, 0) + 1
+            self.current_gui_state.usage_patterns[panel_id] = (
+                self.current_gui_state.usage_patterns.get(panel_id, 0) + 1
+            )
 
     @Slot(str, str)
     def learn_user_preference(self, key: str, value: str):
@@ -834,7 +929,9 @@ class GUIPersonalityManager(QObject):
         """Save current GUI state to memory"""
         try:
             if self.current_gui_state:
-                self.layout_memory.save_gui_state(self.current_gui_state, self.session_id)
+                self.layout_memory.save_gui_state(
+                    self.current_gui_state, self.session_id
+                )
 
                 # Emit state saved signal
                 state_json = json.dumps(asdict(self.current_gui_state), default=str)
@@ -909,3 +1006,83 @@ class GUIPersonalityManager(QObject):
             return "I can manage plugins dynamically! Each plugin can provide its own UI components that integrate with my interface."
         else:
             return f"That's interesting! My {self.ai.personality_state.emotional_state.value} state is helping me process your message. What would you like to explore?"
+
+
+class ChatInterface(QObject):
+    """
+    Full conversational AI integration for Phase 6 chat interface
+    """
+
+    # Signals
+    message_received = Signal(str)  # User message
+    message_sent = Signal(str)  # AI response
+    state_changed = Signal(str)  # Chat state changes
+
+    def __init__(self, personality_manager: "GUIPersonalityManager", parent=None):
+        super().__init__(parent)
+        self.personality_manager = personality_manager
+        self.ai = personality_manager.ai
+        self.conversation_history = []
+
+        logger.info("[PHASE6] ChatInterface initialized")
+
+    @Slot(str, result=str)
+    def send_message(self, user_message: str) -> str:
+        """Send user message and get AI response"""
+        try:
+            # Process through personality manager
+            response = self.personality_manager.process_chat_sync(user_message)
+
+            # Emit signals
+            self.message_received.emit(user_message)
+            self.message_sent.emit(response)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"[PHASE6] Chat interface error: {e}")
+            return "I apologize, but I'm having difficulty processing that request right now."
+
+    @Slot(result=str)
+    def get_personality_state(self) -> str:
+        """Get current personality state as JSON"""
+        try:
+            state = asdict(self.ai.personality_state)
+            state["timestamp"] = state["timestamp"].isoformat()
+            return json.dumps(state)
+        except Exception as e:
+            logger.error(f"[PHASE6] Failed to get personality state: {e}")
+            return "{}"
+
+    @Slot(result=str)
+    def get_conversation_history(self) -> str:
+        """Get recent conversation history"""
+        try:
+            history = []
+            for msg in self.conversation_history[-10:]:  # Last 10 messages
+                msg_dict = asdict(msg) if hasattr(msg, "__dict__") else msg
+                if "timestamp" in msg_dict and hasattr(
+                    msg_dict["timestamp"], "isoformat"
+                ):
+                    msg_dict["timestamp"] = msg_dict["timestamp"].isoformat()
+                history.append(msg_dict)
+            return json.dumps(history)
+        except Exception as e:
+            logger.error(f"[PHASE6] Failed to get conversation history: {e}")
+            return "[]"
+
+
+# Export main classes
+__all__ = [
+    "EmotionalState",
+    "PersonalityTrait",
+    "GUIState",
+    "PersonalityState",
+    "ChatMessage",
+    "ThemeConfiguration",
+    "LayoutMemorySystem",
+    "EmotionalThemeEngine",
+    "LyrixaAI",
+    "GUIPersonalityManager",
+    "ChatInterface",
+]
