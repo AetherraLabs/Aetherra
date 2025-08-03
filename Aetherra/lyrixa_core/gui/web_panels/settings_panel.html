@@ -1,23 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
 
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Settings Panel</title>
-            <link rel="stylesheet" href="../assets/style.css">
-        </head>
-        <body>
-            <div class="panel-container" data-panel="settings">
-                <div class="panel-header">
-                    <h1>🎙️ Settings Panel</h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyrixa Settings Panel</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+
+<body>
+    <div class="panel-container" data-panel="settings">
+        <div class="panel-header">
+            <h1>⚙️ Settings Panel</h1>
+            <p>Configure Lyrixa AI Operating System</p>
+        </div>
+
+        <div class="panel-content">
+            <!-- System Configuration -->
+            <div class="settings-section">
+                <h2>🔧 System Configuration</h2>
+
+                <div class="setting-group">
+                    <label for="ai-personality">AI Personality Mode</label>
+                    <select id="ai-personality" class="setting-input">
+                        <option value="professional">Professional Assistant</option>
+                        <option value="creative" selected>Creative Collaborator</option>
+                        <option value="analytical">Analytical Expert</option>
+                        <option value="friendly">Friendly Companion</option>
+                    </select>
                 </div>
-                <div class="panel-content">
-                    <div class="placeholder">
-                        <div class="glow-orb"></div>
-                        <p>Panel coming in Phase 2...</p>
-                    </div>
+
+                <div class="setting-group">
+                    <label for="response-style">Response Style</label>
+                    <select id="response-style" class="setting-input">
+                        <option value="concise">Concise & Direct</option>
+                        <option value="detailed" selected>Detailed & Explanatory</option>
+                        <option value="conversational">Conversational</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="auto-learn">
+                        <input type="checkbox" id="auto-learn" checked>
+                        Enable Continuous Learning
+                    </label>
+                    <p class="setting-description">Allow Lyrixa to learn from interactions and improve over time</p>
                 </div>
             </div>
-            <script src="../assets/effects.js"></script>
-        </body>
-        </html>
-        
+
+            <!-- Memory Settings -->
+            <div class="settings-section">
+                <h2>🧠 Memory & Knowledge</h2>
+
+                <div class="setting-group">
+                    <label for="memory-retention">Memory Retention Period</label>
+                    <select id="memory-retention" class="setting-input">
+                        <option value="7">7 Days</option>
+                        <option value="30" selected>30 Days</option>
+                        <option value="90">90 Days</option>
+                        <option value="365">1 Year</option>
+                        <option value="forever">Forever</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="knowledge-compression">
+                        <input type="checkbox" id="knowledge-compression" checked>
+                        Enable Knowledge Compression
+                    </label>
+                    <p class="setting-description">Compress older memories to save space while preserving insights</p>
+                </div>
+
+                <div class="setting-group">
+                    <label for="memory-limit">Memory Cache Limit (MB)</label>
+                    <input type="range" id="memory-limit" min="100" max="2000" value="500" class="setting-slider">
+                    <span class="setting-value">500 MB</span>
+                </div>
+            </div>
+
+            <!-- Plugin Management -->
+            <div class="settings-section">
+                <h2>🔌 Plugin Management</h2>
+
+                <div class="setting-group">
+                    <label for="auto-plugin-updates">
+                        <input type="checkbox" id="auto-plugin-updates" checked>
+                        Automatic Plugin Updates
+                    </label>
+                    <p class="setting-description">Automatically update plugins when new versions are available</p>
+                </div>
+
+                <div class="setting-group">
+                    <label for="plugin-sandbox">
+                        <input type="checkbox" id="plugin-sandbox" checked>
+                        Enable Plugin Sandboxing
+                    </label>
+                    <p class="setting-description">Run plugins in isolated environments for security</p>
+                </div>
+
+                <div class="setting-group">
+                    <label for="max-concurrent-plugins">Maximum Concurrent Plugins</label>
+                    <input type="range" id="max-concurrent-plugins" min="5" max="50" value="20" class="setting-slider">
+                    <span class="setting-value">20 plugins</span>
+                </div>
+            </div>
+
+            <!-- Performance Settings -->
+            <div class="settings-section">
+                <h2>⚡ Performance Optimization</h2>
+
+                <div class="setting-group">
+                    <label for="cpu-throttling">CPU Usage Limit (%)</label>
+                    <input type="range" id="cpu-throttling" min="10" max="100" value="80" class="setting-slider">
+                    <span class="setting-value">80%</span>
+                </div>
+
+                <div class="setting-group">
+                    <label for="background-processing">
+                        <input type="checkbox" id="background-processing" checked>
+                        Enable Background Processing
+                    </label>
+                    <p class="setting-description">Allow processing tasks to continue when UI is minimized</p>
+                </div>
+
+                <div class="setting-group">
+                    <label for="gpu-acceleration">
+                        <input type="checkbox" id="gpu-acceleration">
+                        Enable GPU Acceleration (Experimental)
+                    </label>
+                    <p class="setting-description">Use GPU for ML computations when available</p>
+                </div>
+            </div>
+
+            <!-- Security & Privacy -->
+            <div class="settings-section">
+                <h2>🔒 Security & Privacy</h2>
+
+                <div class="setting-group">
+                    <label for="data-encryption">
+                        <input type="checkbox" id="data-encryption" checked>
+                        Encrypt Stored Data
+                    </label>
+                    <p class="setting-description">Encrypt memory and knowledge data at rest</p>
+                </div>
+
+                <div class="setting-group">
+                    <label for="telemetry">
+                        <input type="checkbox" id="telemetry">
+                        Share Anonymous Usage Data
+                    </label>
+                    <p class="setting-description">Help improve Lyrixa by sharing anonymous usage statistics</p>
+                </div>
+
+                <div class="setting-group">
+                    <label for="session-timeout">Session Timeout (minutes)</label>
+                    <select id="session-timeout" class="setting-input">
+                        <option value="15">15 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="60" selected>1 hour</option>
+                        <option value="240">4 hours</option>
+                        <option value="0">Never</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="settings-actions">
+                <button class="btn btn-primary" data-action="save_settings">
+                    <span>💾 Save Configuration</span>
+                </button>
+                <button class="btn btn-secondary" data-action="reset_defaults">
+                    <span>🔄 Reset to Defaults</span>
+                </button>
+                <button class="btn btn-secondary" data-action="export_settings">
+                    <span>📤 Export Settings</span>
+                </button>
+                <button class="btn btn-secondary" data-action="import_settings">
+                    <span>📥 Import Settings</span>
+                </button>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="settings-status" class="status-message" style="display: none;">
+                <span id="status-text"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/effects.js"></script>
+    <script>
+        // Settings Panel JavaScript
+        let bridge = null;
+
+        // Initialize Web Channel
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+            bridge = channel.objects.bridge;
+            loadCurrentSettings();
+        });
+
+        // Load current settings from backend
+        function loadCurrentSettings() {
+            if (bridge && bridge.getSettings) {
+                bridge.getSettings(function (settings) {
+                    applySettingsToUI(settings);
+                });
+            }
+        }
+
+        // Apply settings to UI elements
+        function applySettingsToUI(settings) {
+            if (settings.ai_personality) {
+                document.getElementById('ai-personality').value = settings.ai_personality;
+            }
+            if (settings.response_style) {
+                document.getElementById('response-style').value = settings.response_style;
+            }
+            // Apply other settings...
+        }
+
+        // Save settings
+        function saveSettings() {
+            const settings = collectSettingsFromUI();
+            if (bridge && bridge.saveSettings) {
+                bridge.saveSettings(JSON.stringify(settings));
+                showStatus('Settings saved successfully!', 'success');
+            }
+        }
+
+        // Collect settings from UI
+        function collectSettingsFromUI() {
+            return {
+                ai_personality: document.getElementById('ai-personality').value,
+                response_style: document.getElementById('response-style').value,
+                auto_learn: document.getElementById('auto-learn').checked,
+                memory_retention: document.getElementById('memory-retention').value,
+                knowledge_compression: document.getElementById('knowledge-compression').checked,
+                memory_limit: document.getElementById('memory-limit').value,
+                auto_plugin_updates: document.getElementById('auto-plugin-updates').checked,
+                plugin_sandbox: document.getElementById('plugin-sandbox').checked,
+                max_concurrent_plugins: document.getElementById('max-concurrent-plugins').value,
+                cpu_throttling: document.getElementById('cpu-throttling').value,
+                background_processing: document.getElementById('background-processing').checked,
+                gpu_acceleration: document.getElementById('gpu-acceleration').checked,
+                data_encryption: document.getElementById('data-encryption').checked,
+                telemetry: document.getElementById('telemetry').checked,
+                session_timeout: document.getElementById('session-timeout').value
+            };
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('settings-status');
+            const textEl = document.getElementById('status-text');
+            textEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+            statusEl.style.display = 'block';
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // Update slider values
+        document.addEventListener('input', function (e) {
+            if (e.target.type === 'range') {
+                const valueSpan = e.target.nextElementSibling;
+                if (valueSpan && valueSpan.classList.contains('setting-value')) {
+                    let value = e.target.value;
+                    if (e.target.id === 'memory-limit') {
+                        valueSpan.textContent = value + ' MB';
+                    } else if (e.target.id === 'max-concurrent-plugins') {
+                        valueSpan.textContent = value + ' plugins';
+                    } else if (e.target.id === 'cpu-throttling') {
+                        valueSpan.textContent = value + '%';
+                    }
+                }
+            }
+        });
+
+        // Button event listeners
+        document.addEventListener('click', function (e) {
+            const action = e.target.closest('[data-action]')?.dataset.action;
+            if (action) {
+                switch (action) {
+                    case 'save_settings':
+                        saveSettings();
+                        break;
+                    case 'reset_defaults':
+                        if (confirm('Reset all settings to defaults?')) {
+                            resetToDefaults();
+                        }
+                        break;
+                    case 'export_settings':
+                        exportSettings();
+                        break;
+                    case 'import_settings':
+                        importSettings();
+                        break;
+                }
+            }
+        });
+
+        function resetToDefaults() {
+            // Reset to default values
+            document.getElementById('ai-personality').value = 'creative';
+            document.getElementById('response-style').value = 'detailed';
+            document.getElementById('auto-learn').checked = true;
+            // Reset other fields...
+            showStatus('Settings reset to defaults', 'info');
+        }
+
+        function exportSettings() {
+            const settings = collectSettingsFromUI();
+            const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'lyrixa_settings.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showStatus('Settings exported successfully', 'success');
+        }
+
+        function importSettings() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        try {
+                            const settings = JSON.parse(e.target.result);
+                            applySettingsToUI(settings);
+                            showStatus('Settings imported successfully', 'success');
+                        } catch (err) {
+                            showStatus('Invalid settings file', 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+    </script>
+</body>
+
+</html>

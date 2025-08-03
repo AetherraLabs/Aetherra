@@ -1,0 +1,30 @@
+{
+  "id": "memory_monitor",
+  "name": "Advanced Memory Monitor",
+  "version": "1.0.0",
+  "description": "Real-time memory usage visualization with intelligent alerts",
+  "author": "Lyrixa Core Team",
+  "ui_panel": "memory_panel.html",
+  "panel_title": "🧠 Memory Monitor",
+  "panel_type": "widget",
+  "panel_size": "medium",
+  "display_conditions": [
+    "system.memory.usage > 0.5",
+    "memory.active == true"
+  ],
+  "update_frequency": 500,
+  "dependencies": ["memory_service", "system_monitor"],
+  "permissions": ["read_system_stats"],
+  "css_files": ["memory_styles.css"],
+  "js_files": ["memory_charts.js"],
+  "capabilities": [
+    "memory_visualization",
+    "usage_alerts",
+    "optimization_suggestions"
+  ],
+  "settings": {
+    "alert_threshold": 0.85,
+    "update_interval": 500,
+    "show_predictions": true
+  }
+}

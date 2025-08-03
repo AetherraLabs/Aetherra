@@ -1,23 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
 
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Metrics Panel</title>
-            <link rel="stylesheet" href="../assets/style.css">
-        </head>
-        <body>
-            <div class="panel-container" data-panel="metrics">
-                <div class="panel-header">
-                    <h1>🎙️ Metrics Panel</h1>
-                </div>
-                <div class="panel-content">
-                    <div class="placeholder">
-                        <div class="glow-orb"></div>
-                        <p>Panel coming in Phase 2...</p>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyrixa Metrics Panel</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="panel-container" data-panel="metrics">
+        <div class="panel-header">
+            <h1>📈 Metrics Panel</h1>
+            <p>Real-time system performance and AI analytics</p>
+        </div>
+
+        <div class="panel-content">
+            <!-- Key Performance Indicators -->
+            <div class="metrics-overview">
+                <h2>🎯 Key Performance Indicators</h2>
+                <div class="grid grid-4">
+                    <div class="metric-card">
+                        <div class="metric-icon">🧠</div>
+                        <div class="metric-value" id="ai-efficiency">87</div>
+                        <div class="metric-label">AI Efficiency %</div>
+                        <div class="metric-trend up">↗ +3%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">⚡</div>
+                        <div class="metric-value" id="response-time">245</div>
+                        <div class="metric-label">Avg Response (ms)</div>
+                        <div class="metric-trend down">↘ -12ms</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">💭</div>
+                        <div class="metric-value" id="memory-efficiency">92</div>
+                        <div class="metric-label">Memory Efficiency %</div>
+                        <div class="metric-trend up">↗ +5%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">🔄</div>
+                        <div class="metric-value" id="task-throughput">156</div>
+                        <div class="metric-label">Tasks/Hour</div>
+                        <div class="metric-trend up">↗ +8%</div>
                     </div>
                 </div>
             </div>
-            <script src="../assets/effects.js"></script>
-        </body>
-        </html>
-        
+
+            <!-- System Resources -->
+            <div class="metrics-section">
+                <h2>💻 System Resources</h2>
+                <div class="grid grid-2">
+                    <div class="resource-monitor">
+                        <h3>CPU Usage</h3>
+                        <div class="progress-ring">
+                            <svg width="120" height="120">
+                                <circle cx="60" cy="60" r="50" stroke="var(--aetherra-border)" stroke-width="8"
+                                    fill="none" />
+                                <circle cx="60" cy="60" r="50" stroke="var(--aetherra-green)" stroke-width="8"
+                                    fill="none" stroke-dasharray="314" stroke-dashoffset="220" id="cpu-circle" />
+                            </svg>
+                            <div class="progress-text">
+                                <span id="cpu-percentage">30%</span>
+                            </div>
+                        </div>
+                        <div class="resource-details">
+                            <div>Cores: <span id="cpu-cores">8</span></div>
+                            <div>Threads: <span id="cpu-threads">16</span></div>
+                            <div>Frequency: <span id="cpu-freq">3.2 GHz</span></div>
+                        </div>
+                    </div>
+
+                    <div class="resource-monitor">
+                        <h3>Memory Usage</h3>
+                        <div class="progress-ring">
+                            <svg width="120" height="120">
+                                <circle cx="60" cy="60" r="50" stroke="var(--aetherra-border)" stroke-width="8"
+                                    fill="none" />
+                                <circle cx="60" cy="60" r="50" stroke="var(--aetherra-blue)" stroke-width="8"
+                                    fill="none" stroke-dasharray="314" stroke-dashoffset="157" id="memory-circle" />
+                            </svg>
+                            <div class="progress-text">
+                                <span id="memory-percentage">50%</span>
+                            </div>
+                        </div>
+                        <div class="resource-details">
+                            <div>Used: <span id="memory-used">8.2 GB</span></div>
+                            <div>Total: <span id="memory-total">16.0 GB</span></div>
+                            <div>Available: <span id="memory-available">7.8 GB</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Performance Analytics -->
+            <div class="metrics-section">
+                <h2>🤖 AI Performance Analytics</h2>
+                <div class="chart-container">
+                    <canvas id="performance-chart" width="800" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Plugin & Agent Metrics -->
+            <div class="metrics-section">
+                <h2>🔌 Plugin & Agent Metrics</h2>
+                <div class="grid grid-2">
+                    <div class="component-metrics">
+                        <h3>Plugin Performance</h3>
+                        <div class="metric-list">
+                            <div class="metric-item">
+                                <span class="metric-name">Memory Manager</span>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 94%"></div>
+                                </div>
+                                <span class="metric-score">94%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-name">File System</span>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 89%"></div>
+                                </div>
+                                <span class="metric-score">89%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-name">Analytics Engine</span>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 97%"></div>
+                                </div>
+                                <span class="metric-score">97%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-name">Neural Interface</span>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 91%"></div>
+                                </div>
+                                <span class="metric-score">91%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="component-metrics">
+                        <h3>Agent Activity</h3>
+                        <div class="metric-list">
+                            <div class="metric-item">
+                                <span class="metric-name">Learning Agent</span>
+                                <div class="activity-indicator active"></div>
+                                <span class="metric-status">Active</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-name">Analytics Agent</span>
+                                <div class="activity-indicator active"></div>
+                                <span class="metric-status">Processing</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-name">Memory Agent</span>
+                                <div class="activity-indicator idle"></div>
+                                <span class="metric-status">Idle</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-name">System Monitor</span>
+                                <div class="activity-indicator active"></div>
+                                <span class="metric-status">Monitoring</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network & Disk I/O -->
+            <div class="metrics-section">
+                <h2>🌐 Network & Disk I/O</h2>
+                <div class="grid grid-3">
+                    <div class="io-metric">
+                        <h4>Network</h4>
+                        <div class="io-stats">
+                            <div>↗ Upload: <span id="net-upload">1.2 MB/s</span></div>
+                            <div>↙ Download: <span id="net-download">3.8 MB/s</span></div>
+                            <div>📡 Packets: <span id="net-packets">1,247/s</span></div>
+                        </div>
+                    </div>
+                    <div class="io-metric">
+                        <h4>Disk Read</h4>
+                        <div class="io-stats">
+                            <div>📖 Rate: <span id="disk-read">45.3 MB/s</span></div>
+                            <div>⚡ IOPS: <span id="disk-read-iops">2,156</span></div>
+                            <div>⏱️ Latency: <span id="disk-read-latency">2.1ms</span></div>
+                        </div>
+                    </div>
+                    <div class="io-metric">
+                        <h4>Disk Write</h4>
+                        <div class="io-stats">
+                            <div>✍️ Rate: <span id="disk-write">23.7 MB/s</span></div>
+                            <div>⚡ IOPS: <span id="disk-write-iops">1,089</span></div>
+                            <div>⏱️ Latency: <span id="disk-write-latency">3.4ms</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="metrics-controls">
+                <div class="control-group">
+                    <label for="refresh-rate">Refresh Rate:</label>
+                    <select id="refresh-rate">
+                        <option value="1000">1 second</option>
+                        <option value="5000" selected>5 seconds</option>
+                        <option value="10000">10 seconds</option>
+                        <option value="30000">30 seconds</option>
+                    </select>
+                </div>
+                <div class="control-buttons">
+                    <button class="btn btn-secondary" data-action="pause_monitoring">
+                        <span id="pause-btn-text">⏸️ Pause</span>
+                    </button>
+                    <button class="btn btn-secondary" data-action="export_metrics">
+                        <span>📊 Export Data</span>
+                    </button>
+                    <button class="btn btn-secondary" data-action="reset_metrics">
+                        <span>🔄 Reset Counters</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/effects.js"></script>
+    <script>
+        // Metrics Panel JavaScript
+        let bridge = null;
+        let performanceChart = null;
+        let monitoringEnabled = true;
+        let refreshInterval = 5000;
+        let updateTimer = null;
+
+        // Initialize Web Channel
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+            bridge = channel.objects.bridge;
+            initializeMetrics();
+        });
+
+        // Initialize metrics monitoring
+        function initializeMetrics() {
+            setupPerformanceChart();
+            startMonitoring();
+        }
+
+        // Setup performance chart
+        function setupPerformanceChart() {
+            const ctx = document.getElementById('performance-chart').getContext('2d');
+            performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'CPU Usage %',
+                            data: [],
+                            borderColor: 'var(--aetherra-green)',
+                            backgroundColor: 'rgba(102, 255, 153, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Memory Usage %',
+                            data: [],
+                            borderColor: 'var(--aetherra-blue)',
+                            backgroundColor: 'rgba(102, 204, 255, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'AI Efficiency %',
+                            data: [],
+                            borderColor: 'var(--aetherra-purple)',
+                            backgroundColor: 'rgba(204, 153, 255, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'var(--aetherra-text)'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: 'var(--aetherra-gray-light)' },
+                            grid: { color: 'var(--aetherra-border)' }
+                        },
+                        y: {
+                            ticks: { color: 'var(--aetherra-gray-light)' },
+                            grid: { color: 'var(--aetherra-border)' },
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Start monitoring
+        function startMonitoring() {
+            if (updateTimer) clearInterval(updateTimer);
+            updateTimer = setInterval(updateMetrics, refreshInterval);
+            updateMetrics(); // Initial update
+        }
+
+        // Update all metrics
+        function updateMetrics() {
+            if (!monitoringEnabled) return;
+
+            // Get metrics from backend
+            if (bridge && bridge.getSystemMetrics) {
+                bridge.getSystemMetrics(function (metrics) {
+                    updateSystemMetrics(metrics);
+                });
+            } else {
+                // Simulate metrics for demo
+                updateSystemMetrics(generateSimulatedMetrics());
+            }
+        }
+
+        // Update system metrics display
+        function updateSystemMetrics(metrics) {
+            // Update KPIs
+            document.getElementById('ai-efficiency').textContent = metrics.ai_efficiency || 87;
+            document.getElementById('response-time').textContent = metrics.response_time || 245;
+            document.getElementById('memory-efficiency').textContent = metrics.memory_efficiency || 92;
+            document.getElementById('task-throughput').textContent = metrics.task_throughput || 156;
+
+            // Update CPU
+            const cpuPercent = metrics.cpu_percent || 30;
+            document.getElementById('cpu-percentage').textContent = cpuPercent + '%';
+            updateProgressRing('cpu-circle', cpuPercent);
+            document.getElementById('cpu-cores').textContent = metrics.cpu_cores || 8;
+            document.getElementById('cpu-threads').textContent = metrics.cpu_threads || 16;
+            document.getElementById('cpu-freq').textContent = (metrics.cpu_freq || 3.2) + ' GHz';
+
+            // Update Memory
+            const memoryPercent = metrics.memory_percent || 50;
+            document.getElementById('memory-percentage').textContent = memoryPercent + '%';
+            updateProgressRing('memory-circle', memoryPercent);
+            document.getElementById('memory-used').textContent = (metrics.memory_used || 8.2) + ' GB';
+            document.getElementById('memory-total').textContent = (metrics.memory_total || 16.0) + ' GB';
+            document.getElementById('memory-available').textContent = (metrics.memory_available || 7.8) + ' GB';
+
+            // Update Network & Disk
+            document.getElementById('net-upload').textContent = (metrics.net_upload || 1.2) + ' MB/s';
+            document.getElementById('net-download').textContent = (metrics.net_download || 3.8) + ' MB/s';
+            document.getElementById('net-packets').textContent = (metrics.net_packets || 1247) + '/s';
+
+            document.getElementById('disk-read').textContent = (metrics.disk_read || 45.3) + ' MB/s';
+            document.getElementById('disk-read-iops').textContent = metrics.disk_read_iops || 2156;
+            document.getElementById('disk-read-latency').textContent = (metrics.disk_read_latency || 2.1) + 'ms';
+
+            document.getElementById('disk-write').textContent = (metrics.disk_write || 23.7) + ' MB/s';
+            document.getElementById('disk-write-iops').textContent = metrics.disk_write_iops || 1089;
+            document.getElementById('disk-write-latency').textContent = (metrics.disk_write_latency || 3.4) + 'ms';
+
+            // Update chart
+            updatePerformanceChart(metrics);
+        }
+
+        // Update progress ring
+        function updateProgressRing(elementId, percentage) {
+            const circle = document.getElementById(elementId);
+            const circumference = 314; // 2 * π * 50
+            const offset = circumference - (percentage / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        // Update performance chart
+        function updatePerformanceChart(metrics) {
+            const now = new Date().toLocaleTimeString();
+            const chart = performanceChart;
+
+            // Add new data point
+            chart.data.labels.push(now);
+            chart.data.datasets[0].data.push(metrics.cpu_percent || 30);
+            chart.data.datasets[1].data.push(metrics.memory_percent || 50);
+            chart.data.datasets[2].data.push(metrics.ai_efficiency || 87);
+
+            // Keep only last 20 points
+            if (chart.data.labels.length > 20) {
+                chart.data.labels.shift();
+                chart.data.datasets.forEach(dataset => dataset.data.shift());
+            }
+
+            chart.update('none'); // Update without animation for performance
+        }
+
+        // Generate simulated metrics for demo
+        function generateSimulatedMetrics() {
+            return {
+                ai_efficiency: Math.floor(85 + Math.random() * 10),
+                response_time: Math.floor(200 + Math.random() * 100),
+                memory_efficiency: Math.floor(88 + Math.random() * 8),
+                task_throughput: Math.floor(140 + Math.random() * 30),
+                cpu_percent: Math.floor(20 + Math.random() * 30),
+                memory_percent: Math.floor(45 + Math.random() * 15),
+                cpu_cores: 8,
+                cpu_threads: 16,
+                cpu_freq: 3.2,
+                memory_used: (8 + Math.random() * 2).toFixed(1),
+                memory_total: 16.0,
+                memory_available: (6 + Math.random() * 4).toFixed(1),
+                net_upload: (1 + Math.random() * 2).toFixed(1),
+                net_download: (3 + Math.random() * 3).toFixed(1),
+                net_packets: Math.floor(1000 + Math.random() * 500),
+                disk_read: (40 + Math.random() * 20).toFixed(1),
+                disk_read_iops: Math.floor(2000 + Math.random() * 500),
+                disk_read_latency: (2 + Math.random()).toFixed(1),
+                disk_write: (20 + Math.random() * 15).toFixed(1),
+                disk_write_iops: Math.floor(1000 + Math.random() * 300),
+                disk_write_latency: (3 + Math.random() * 2).toFixed(1)
+            };
+        }
+
+        // Event listeners
+        document.addEventListener('change', function (e) {
+            if (e.target.id === 'refresh-rate') {
+                refreshInterval = parseInt(e.target.value);
+                if (monitoringEnabled) {
+                    startMonitoring();
+                }
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            const action = e.target.closest('[data-action]')?.dataset.action;
+            if (action) {
+                switch (action) {
+                    case 'pause_monitoring':
+                        toggleMonitoring();
+                        break;
+                    case 'export_metrics':
+                        exportMetrics();
+                        break;
+                    case 'reset_metrics':
+                        resetMetrics();
+                        break;
+                }
+            }
+        });
+
+        function toggleMonitoring() {
+            monitoringEnabled = !monitoringEnabled;
+            const btn = document.getElementById('pause-btn-text');
+            if (monitoringEnabled) {
+                btn.textContent = '⏸️ Pause';
+                startMonitoring();
+            } else {
+                btn.textContent = '▶️ Resume';
+                if (updateTimer) clearInterval(updateTimer);
+            }
+        }
+
+        function exportMetrics() {
+            // Export chart data as JSON
+            const data = {
+                timestamp: new Date().toISOString(),
+                chart_data: performanceChart.data,
+                current_metrics: generateSimulatedMetrics()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `lyrixa_metrics_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function resetMetrics() {
+            if (confirm('Reset all metric counters and chart data?')) {
+                performanceChart.data.labels = [];
+                performanceChart.data.datasets.forEach(dataset => dataset.data = []);
+                performanceChart.update();
+            }
+        }
+    </script>
+</body>
+
+</html>

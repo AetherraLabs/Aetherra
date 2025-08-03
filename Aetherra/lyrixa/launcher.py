@@ -186,7 +186,7 @@ class LyrixaOperatingSystem:
             # Create Qt Application
             self.gui_application = QApplication.instance() or QApplication(sys.argv)
             self.gui_application.setApplicationName("Lyrixa AI Operating System")
-            self.gui_application.setApplicationVersion("2.0.0")  # Phase 2 version
+            self.gui_application.setApplicationVersion("6.0.0")  # Phase 6 version - Full GUI Personality + State Memory
 
             # Try to find the best available GUI
             main_window_class = self._find_best_gui_class()
@@ -205,11 +205,23 @@ class LyrixaOperatingSystem:
             logger.info("[OK] Lyrixa GUI launched successfully")
             logger.info("[OK] LYRIXA AI OPERATING SYSTEM IS NOW RUNNING")
             logger.info("=" * 60)
-            logger.info("[BRIDGE] Phase 2: Live Context Bridge active for real-time data flow")
+            logger.info("🎙️ PHASE 1: Hybrid PySide6 + Web Panel Architecture")
+            logger.info("🌉 PHASE 2: Live Context Bridge for real-time data flow")
+            logger.info("🔮 PHASE 3: Auto-Generation System for dynamic panel creation")
+            logger.info("🧠 PHASE 4: Cognitive UI Integration with thought visualization")
+            logger.info("🔁 PHASE 5: Plugin-Driven UI System with dynamic widgets")
+            logger.info("🌌 PHASE 6: Full GUI Personality + State Memory + AI Chat")
+            logger.info("=" * 60)
             logger.info("[CTRL] Lyrixa has full command and control over Aetherra OS")
             logger.info("[SCAN] Lyrixa can now scan and manipulate the entire filesystem")
             logger.info("[COMM] Bidirectional communication between web panels and Python backend")
             logger.info("[AI] Self-discovery and self-improvement capabilities active")
+            logger.info("[AUTO] Dynamic GUI generation based on system state introspection")
+            logger.info("[COGNITIVE] Real-time thought streams and memory visualization")
+            logger.info("[PLUGINS] Dynamic plugin UI loading and integration")
+            logger.info("[PERSONALITY] AI emotional states drive interface adaptation")
+            logger.info("[MEMORY] Persistent GUI state and user preference learning")
+            logger.info("[CHAT] Full conversational AI integration with Lyrixa")
 
             self.frontend_started = True
 
@@ -273,7 +285,39 @@ class LyrixaOperatingSystem:
 
     def _find_best_gui_class(self):
         """Find the best available GUI class."""
-        # Priority 1: Try the Phase 2 Hybrid GUI with Live Context Bridge
+        # Priority 1: Try the Phase 6 Hybrid GUI with Full Personality + State Memory
+        try:
+            from lyrixa_core.gui.main_window import LyrixaHybridWindow
+            logger.info("[OK] Using Phase 6 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI + Plugin System + AI Personality)")
+            return LyrixaHybridWindow
+        except ImportError as e:
+            logger.debug(f"Phase 6 Hybrid GUI not available: {e}")
+
+        # Priority 2: Try the Phase 5 Hybrid GUI with Plugin-Driven UI System
+        try:
+            from lyrixa_core.gui.main_window import LyrixaHybridWindow
+            logger.info("[OK] Using Phase 5 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI + Plugin System)")
+            return LyrixaHybridWindow
+        except ImportError as e:
+            logger.debug(f"Phase 5 Hybrid GUI not available: {e}")
+
+        # Priority 3: Try the Phase 4 Hybrid GUI with Cognitive UI Integration
+        try:
+            from lyrixa_core.gui.main_window import LyrixaHybridWindow
+            logger.info("[OK] Using Phase 4 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI)")
+            return LyrixaHybridWindow
+        except ImportError as e:
+            logger.debug(f"Phase 4 Hybrid GUI not available: {e}")
+
+        # Priority 4: Try the Phase 3 Hybrid GUI with Auto-Generation
+        try:
+            from lyrixa_core.gui.main_window import LyrixaHybridWindow
+            logger.info("[OK] Using Phase 3 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation)")
+            return LyrixaHybridWindow
+        except ImportError as e:
+            logger.debug(f"Phase 3 Hybrid GUI not available: {e}")
+
+        # Priority 5: Try the Phase 2 Hybrid GUI with Live Context Bridge
         try:
             from lyrixa_core.gui.main_window import LyrixaHybridWindow
             logger.info("[OK] Using Phase 2 Lyrixa Hybrid GUI (PySide6 + Web Panels + Live Context Bridge)")
@@ -455,10 +499,38 @@ class LyrixaOperatingSystem:
             if self.agent_orchestrator:
                 backend_services['agent_orchestrator'] = self.agent_orchestrator
 
+            # Phase 6: Connect Personality Manager and State Memory (if available)
+            if hasattr(self.main_window, 'personality_manager'):
+                # Connect personality manager to backend services
+                if self.memory_system:
+                    # Give personality manager access to memory system for state persistence
+                    if hasattr(self.main_window.personality_manager, 'layout_memory'):
+                        logger.info("[PHASE6] Personality Manager connected to memory system")
+
+                # Initialize personality manager with current GUI state
+                if hasattr(self.main_window.personality_manager, 'load_previous_state'):
+                    self.main_window.personality_manager.load_previous_state()
+
+                logger.info(f"[PHASE6] GUI Personality + State Memory system connected to {len(backend_services)} backend services")
+
+            # Phase 5: Connect Plugin UI Manager (if available)
+            if hasattr(self.main_window, 'plugin_ui_manager'):
+                logger.info(f"[PHASE5] Plugin-Driven UI System connected to {len(backend_services)} backend services")
+
+            # Phase 4: Connect Cognitive Monitor (if available)
+            if hasattr(self.main_window, 'cognitive_monitor'):
+                logger.info(f"[PHASE4] Cognitive UI Integration connected to {len(backend_services)} backend services")
+
+            # Phase 3: Connect Auto-Generation System (if available)
+            if hasattr(self.main_window, 'auto_generator'):
+                self.main_window.auto_generator.connect_backend_services(backend_services)
+                self.main_window.auto_generator.start_auto_generation()
+                logger.info(f"[PHASE3] Auto-generation system connected to {len(backend_services)} backend services")
+
             # Phase 2: Connect via Live Context Bridge (if available)
             if hasattr(self.main_window, 'web_bridge') and hasattr(self.main_window.web_bridge, 'connect_backend_services'):
                 self.main_window.web_bridge.connect_backend_services(backend_services)
-                logger.info(f"[BRIDGE] Phase 2: Live Context Bridge connected to {len(backend_services)} backend services")
+                logger.info(f"[PHASE2] Live Context Bridge connected to {len(backend_services)} backend services")
 
             # Legacy connection methods (Phase 1 compatibility)
             if hasattr(self.main_window, 'set_service_registry'):
@@ -566,7 +638,7 @@ async def main():
                 if app is None:
                     app = QApplication(sys.argv)
                     app.setApplicationName("Lyrixa AI Operating System")
-                    app.setApplicationVersion("2.0.0")  # Phase 2 version
+                    app.setApplicationVersion("6.0.0")  # Phase 6 version - Full GUI Personality + State Memory
 
                 # Find and create GUI
                 main_window_class = lyrixa_os._find_best_gui_class()
@@ -586,11 +658,23 @@ async def main():
                 logger.info("[OK] Lyrixa GUI launched successfully")
                 logger.info("[OK] LYRIXA AI OPERATING SYSTEM IS NOW RUNNING")
                 logger.info("=" * 60)
-                logger.info("[BRIDGE] Phase 2: Live Context Bridge active for real-time data flow")
+                logger.info("🎙️ PHASE 1: Hybrid PySide6 + Web Panel Architecture")
+                logger.info("🌉 PHASE 2: Live Context Bridge for real-time data flow")
+                logger.info("🔮 PHASE 3: Auto-Generation System for dynamic panel creation")
+                logger.info("🧠 PHASE 4: Cognitive UI Integration with thought visualization")
+                logger.info("🔁 PHASE 5: Plugin-Driven UI System with dynamic widgets")
+                logger.info("🌌 PHASE 6: Full GUI Personality + State Memory + AI Chat")
+                logger.info("=" * 60)
                 logger.info("[CTRL] Lyrixa has full command and control over Aetherra OS")
                 logger.info("[SCAN] Lyrixa can now scan and manipulate the entire filesystem")
                 logger.info("[COMM] Bidirectional communication between web panels and Python backend")
                 logger.info("[AI] Self-discovery and self-improvement capabilities active")
+                logger.info("[AUTO] Dynamic GUI generation based on system state introspection")
+                logger.info("[COGNITIVE] Real-time thought streams and memory visualization")
+                logger.info("[PLUGINS] Dynamic plugin UI loading and integration")
+                logger.info("[PERSONALITY] AI emotional states drive interface adaptation")
+                logger.info("[MEMORY] Persistent GUI state and user preference learning")
+                logger.info("[CHAT] Full conversational AI integration with Lyrixa")
 
                 lyrixa_os.frontend_started = True
 

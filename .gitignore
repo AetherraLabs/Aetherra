@@ -217,6 +217,9 @@ repository_cleanup*.py
 cleanup_*.py
 *_cleanup.py
 
+# Discord Bot directory (contains sensitive tokens and configurations)
+Discord Bot/
+
 # Temporary development files
 scratch/
 playground/

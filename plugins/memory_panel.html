@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Monitor Plugin</title>
+    <link rel="stylesheet" href="../Aetherra/lyrixa_core/gui/assets/style.css">
+</head>
+
+<body>
+    <div class="plugin-panel" data-plugin="memory_monitor">
+        <div class="plugin-header">
+            <h2>🧠 Memory Monitor</h2>
+            <div class="plugin-status" id="plugin-status">Active</div>
+        </div>
+
+        <div class="plugin-content">
+            <!-- Memory Usage Gauge -->
+            <div class="memory-gauge-container">
+                <div class="memory-gauge" id="memory-gauge">
+                    <div class="gauge-background"></div>
+                    <div class="gauge-fill" id="gauge-fill"></div>
+                    <div class="gauge-center">
+                        <span class="gauge-value" id="memory-percentage">0%</span>
+                        <span class="gauge-label">Memory</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memory Breakdown -->
+            <div class="memory-breakdown">
+                <div class="memory-item">
+                    <span class="memory-label">Used</span>
+                    <span class="memory-value" id="memory-used">0 GB</span>
+                </div>
+                <div class="memory-item">
+                    <span class="memory-label">Available</span>
+                    <span class="memory-value" id="memory-available">0 GB</span>
+                </div>
+                <div class="memory-item">
+                    <span class="memory-label">Total</span>
+                    <span class="memory-value" id="memory-total">0 GB</span>
+                </div>
+            </div>
+
+            <!-- Memory Chart -->
+            <div class="memory-chart-container">
+                <h3>Usage Over Time</h3>
+                <canvas id="memory-chart" width="300" height="120"></canvas>
+            </div>
+
+            <!-- Alerts Section -->
+            <div class="memory-alerts" id="memory-alerts">
+                <!-- Dynamic alerts will appear here -->
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="memory-actions">
+                <button class="btn btn-secondary" id="optimize-btn">
+                    <span>🚀 Optimize</span>
+                </button>
+                <button class="btn btn-secondary" id="gc-btn">
+                    <span>🗑️ Garbage Collect</span>
+                </button>
+                <button class="btn btn-secondary" id="analyze-btn">
+                    <span>📊 Analyze</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Memory Monitor Plugin JavaScript
+        let memoryData = [];
+        let maxDataPoints = 50;
+        let chart = null;
+        let alertThreshold = 0.85;
+
+        // Initialize plugin when metadata is available
+        if (window.pluginMetadata) {
+            console.log(`[PLUGIN] ${window.pluginMetadata.title} initialized`);
+            initializeMemoryMonitor();
+        }
+
+        function initializeMemoryMonitor() {
+            // Set up update interval based on plugin metadata
+            if (window.pluginMetadata.updateFrequency) {
+                setInterval(updateMemoryStats, window.pluginMetadata.updateFrequency);
+            }
+
+            // Initialize chart
+            initializeChart();
+
+            // Set up event handlers
+            setupEventHandlers();
+
+            // Initial data load
+            updateMemoryStats();
+        }
+
+        function updateMemoryStats() {
+            // Simulate memory data (in real implementation, would come from backend)
+            const memoryUsage = Math.random() * 0.4 + 0.4; // 40-80% usage
+            const totalMemory = 16; // 16 GB
+            const usedMemory = totalMemory * memoryUsage;
+            const availableMemory = totalMemory - usedMemory;
+
+            // Update UI elements
+            document.getElementById('memory-percentage').textContent = Math.round(memoryUsage * 100) + '%';
+            document.getElementById('memory-used').textContent = usedMemory.toFixed(1) + ' GB';
+            document.getElementById('memory-available').textContent = availableMemory.toFixed(1) + ' GB';
+            document.getElementById('memory-total').textContent = totalMemory + ' GB';
+
+            // Update gauge
+            const gaugeFill = document.getElementById('gauge-fill');
+            gaugeFill.style.transform = `rotate(${memoryUsage * 180}deg)`;
+
+            // Add to chart data
+            memoryData.push({
+                timestamp: Date.now(),
+                usage: memoryUsage
+            });
+
+            if (memoryData.length > maxDataPoints) {
+                memoryData.shift();
+            }
+
+            updateChart();
+            checkAlerts(memoryUsage);
+        }
+
+        function initializeChart() {
+            const canvas = document.getElementById('memory-chart');
+            const ctx = canvas.getContext('2d');
+
+            // Simple chart drawing
+            chart = {
+                canvas: canvas,
+                ctx: ctx,
+                width: canvas.width,
+                height: canvas.height
+            };
+        }
+
+        function updateChart() {
+            if (!chart || memoryData.length === 0) return;
+
+            const ctx = chart.ctx;
+            const width = chart.width;
+            const height = chart.height;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i <= 4; i++) {
+                const y = (height / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            // Draw memory usage line
+            if (memoryData.length > 1) {
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                memoryData.forEach((point, index) => {
+                    const x = (index / (maxDataPoints - 1)) * width;
+                    const y = height - (point.usage * height);
+
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+
+                ctx.stroke();
+            }
+        }
+
+        function checkAlerts(usage) {
+            const alertsContainer = document.getElementById('memory-alerts');
+
+            if (usage > alertThreshold) {
+                if (!document.getElementById('high-usage-alert')) {
+                    const alert = document.createElement('div');
+                    alert.id = 'high-usage-alert';
+                    alert.className = 'alert alert-warning';
+                    alert.innerHTML = `
+                        <span class="alert-icon">⚠️</span>
+                        <span class="alert-text">High memory usage detected (${Math.round(usage * 100)}%)</span>
+                        <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+                    `;
+                    alertsContainer.appendChild(alert);
+                }
+            } else {
+                const existingAlert = document.getElementById('high-usage-alert');
+                if (existingAlert) {
+                    existingAlert.remove();
+                }
+            }
+        }
+
+        function setupEventHandlers() {
+            document.getElementById('optimize-btn').addEventListener('click', () => {
+                // Simulate optimization
+                showNotification('Memory optimization started...', 'info');
+                setTimeout(() => {
+                    showNotification('Memory optimized! Freed 2.3 GB', 'success');
+                }, 2000);
+            });
+
+            document.getElementById('gc-btn').addEventListener('click', () => {
+                showNotification('Garbage collection triggered', 'info');
+            });
+
+            document.getElementById('analyze-btn').addEventListener('click', () => {
+                showNotification('Starting memory analysis...', 'info');
+            });
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Plugin API for external communication
+        window.memoryMonitorPlugin = {
+            getMemoryUsage: () => memoryData[memoryData.length - 1]?.usage || 0,
+            setAlertThreshold: (threshold) => alertThreshold = threshold,
+            optimizeMemory: () => document.getElementById('optimize-btn').click()
+        };
+    </script>
+</body>
+
+</html>

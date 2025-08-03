@@ -1,0 +1,70 @@
+{
+    "system": {
+        "name": "Aetherra AI Operating System",
+        "version": "1.0.0",
+        "mode": "production"
+    },
+    "gui_enabled": false,
+    "web_interface": {
+        "enabled": true,
+        "host": "127.0.0.1",
+        "port": 8686
+    },
+    "memory_systems": {
+        "quantum": {
+            "enabled": true,
+            "max_capacity": "1GB"
+        },
+        "core": {
+            "enabled": true,
+            "persistence": true
+        },
+        "concepts": {
+            "enabled": true,
+            "clustering": true
+        },
+        "episodic": {
+            "enabled": true,
+            "timeline_tracking": true
+        }
+    },
+    "plugins": {
+        "enabled": true,
+        "auto_discovery": true,
+        "plugin_directories": [
+            "plugins/",
+            "Aetherra/plugins/"
+        ]
+    },
+    "aetherra_engine": {
+        "enabled": true,
+        "processing_threads": 4
+    },
+    "scheduler": {
+        "enabled": true,
+        "background_tasks": true
+    },
+    "hub_enabled": true,
+    "aether_scripts": {
+        "enabled": true,
+        "auto_execute": [
+            "system_logger",
+            "daily_reflector"
+        ]
+    },
+    "file_watcher": {
+        "enabled": true,
+        "analysis_interval": 30,
+        "batch_size": 10,
+        "auto_relocate": false,
+        "auto_optimize": false,
+        "monitored_directories": [
+            "."
+        ],
+        "enable_aether_triggers": true
+    },
+    "logging": {
+        "level": "INFO",
+        "file": "aetherra_os.log"
+    }
+}

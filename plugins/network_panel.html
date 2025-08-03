@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Analyzer Plugin</title>
+    <link rel="stylesheet" href="../Aetherra/lyrixa_core/gui/assets/style.css">
+</head>
+
+<body>
+    <div class="plugin-panel network-analyzer" data-plugin="network_analyzer">
+        <div class="plugin-header">
+            <h2>🌐 Network Analyzer</h2>
+            <div class="network-status">
+                <span class="status-indicator" id="connection-status"></span>
+                <span class="status-text" id="status-text">Connected</span>
+            </div>
+        </div>
+
+        <div class="plugin-content">
+            <!-- Network Overview -->
+            <div class="network-overview">
+                <div class="overview-card">
+                    <div class="card-icon">📤</div>
+                    <div class="card-content">
+                        <div class="card-value" id="upload-speed">0 MB/s</div>
+                        <div class="card-label">Upload</div>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">📥</div>
+                    <div class="card-content">
+                        <div class="card-value" id="download-speed">0 MB/s</div>
+                        <div class="card-label">Download</div>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">🔗</div>
+                    <div class="card-content">
+                        <div class="card-value" id="connection-count">0</div>
+                        <div class="card-label">Connections</div>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">🔒</div>
+                    <div class="card-content">
+                        <div class="card-value" id="security-score">100%</div>
+                        <div class="card-label">Security</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Traffic Chart -->
+            <div class="traffic-chart-section">
+                <h3>📊 Traffic Analysis</h3>
+                <div class="chart-controls">
+                    <select id="chart-timeframe">
+                        <option value="1m">Last Minute</option>
+                        <option value="5m" selected>Last 5 Minutes</option>
+                        <option value="1h">Last Hour</option>
+                    </select>
+                    <button class="btn btn-small" id="export-data">📋 Export</button>
+                </div>
+                <canvas id="traffic-chart" width="600" height="200"></canvas>
+            </div>
+
+            <!-- Active Connections -->
+            <div class="connections-section">
+                <h3>🔗 Active Connections</h3>
+                <div class="connections-list" id="connections-list">
+                    <!-- Dynamic connections will appear here -->
+                </div>
+            </div>
+
+            <!-- Security Alerts -->
+            <div class="security-section">
+                <h3>🛡️ Security Status</h3>
+                <div class="security-alerts" id="security-alerts">
+                    <!-- Security alerts will appear here -->
+                </div>
+                <div class="security-controls">
+                    <button class="btn btn-secondary" id="scan-threats">
+                        <span>🔍 Scan Threats</span>
+                    </button>
+                    <button class="btn btn-secondary" id="block-suspicious">
+                        <span>🚫 Block Suspicious</span>
+                    </button>
+                    <button class="btn btn-primary" id="optimize-network">
+                        <span>⚡ Optimize</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Network Analyzer Plugin JavaScript
+        let trafficData = {
+            upload: [],
+            download: []
+        };
+        let connections = [];
+        let securityAlerts = [];
+        let maxDataPoints = 60;
+
+        // Initialize when metadata is available
+        if (window.pluginMetadata) {
+            console.log(`[PLUGIN] ${window.pluginMetadata.title} initialized`);
+            initializeNetworkAnalyzer();
+        }
+
+        function initializeNetworkAnalyzer() {
+            setupUpdateInterval();
+            initializeChart();
+            setupEventHandlers();
+            updateNetworkStats();
+            generateSampleConnections();
+        }
+
+        function setupUpdateInterval() {
+            if (window.pluginMetadata.updateFrequency) {
+                setInterval(updateNetworkStats, window.pluginMetadata.updateFrequency);
+                setInterval(updateConnections, 5000);
+                setInterval(checkSecurity, 10000);
+            }
+        }
+
+        function updateNetworkStats() {
+            // Simulate network traffic data
+            const uploadSpeed = Math.random() * 50 + 10; // 10-60 MB/s
+            const downloadSpeed = Math.random() * 100 + 20; // 20-120 MB/s
+            const timestamp = Date.now();
+
+            // Update UI
+            document.getElementById('upload-speed').textContent = uploadSpeed.toFixed(1) + ' MB/s';
+            document.getElementById('download-speed').textContent = downloadSpeed.toFixed(1) + ' MB/s';
+            document.getElementById('connection-count').textContent = connections.length;
+
+            // Add to chart data
+            trafficData.upload.push({ timestamp, value: uploadSpeed });
+            trafficData.download.push({ timestamp, value: downloadSpeed });
+
+            // Keep data within limits
+            if (trafficData.upload.length > maxDataPoints) {
+                trafficData.upload.shift();
+                trafficData.download.shift();
+            }
+
+            updateChart();
+        }
+
+        function initializeChart() {
+            const canvas = document.getElementById('traffic-chart');
+            const ctx = canvas.getContext('2d');
+
+            window.networkChart = {
+                canvas: canvas,
+                ctx: ctx,
+                width: canvas.width,
+                height: canvas.height
+            };
+        }
+
+        function updateChart() {
+            if (!window.networkChart || trafficData.upload.length === 0) return;
+
+            const chart = window.networkChart;
+            const ctx = chart.ctx;
+            const width = chart.width;
+            const height = chart.height;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i <= 10; i++) {
+                const y = (height / 10) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            // Draw upload line (green)
+            drawLine(trafficData.upload, '#00ff88', ctx, width, height);
+
+            // Draw download line (blue)
+            drawLine(trafficData.download, '#0080ff', ctx, width, height);
+
+            // Draw legend
+            drawLegend(ctx, width);
+        }
+
+        function drawLine(data, color, ctx, width, height) {
+            if (data.length < 2) return;
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            const maxValue = Math.max(...data.map(d => d.value));
+
+            data.forEach((point, index) => {
+                const x = (index / (maxDataPoints - 1)) * width;
+                const y = height - ((point.value / maxValue) * height * 0.8);
+
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+
+            ctx.stroke();
+        }
+
+        function drawLegend(ctx, width) {
+            ctx.fillStyle = '#00ff88';
+            ctx.fillRect(width - 150, 10, 15, 3);
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.fillText('Upload', width - 130, 18);
+
+            ctx.fillStyle = '#0080ff';
+            ctx.fillRect(width - 150, 25, 15, 3);
+            ctx.fillStyle = 'white';
+            ctx.fillText('Download', width - 130, 33);
+        }
+
+        function generateSampleConnections() {
+            const sampleConnections = [
+                { ip: '192.168.1.1', port: 80, protocol: 'HTTP', status: 'active', country: 'Local' },
+                { ip: '8.8.8.8', port: 53, protocol: 'DNS', status: 'active', country: 'US' },
+                { ip: '74.125.224.72', port: 443, protocol: 'HTTPS', status: 'active', country: 'US' },
+                { ip: '151.101.1.140', port: 443, protocol: 'HTTPS', status: 'active', country: 'US' },
+                { ip: '13.107.42.14', port: 443, protocol: 'HTTPS', status: 'active', country: 'US' }
+            ];
+
+            connections = sampleConnections.map((conn, index) => ({
+                ...conn,
+                id: `conn_${index}`,
+                startTime: Date.now() - Math.random() * 300000,
+                dataTransferred: Math.random() * 100 + 10
+            }));
+
+            updateConnectionsList();
+        }
+
+        function updateConnections() {
+            // Simulate connection changes
+            if (Math.random() < 0.3 && connections.length < 20) {
+                // Add new connection
+                const newConnection = {
+                    id: `conn_${Date.now()}`,
+                    ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+                    port: Math.floor(Math.random() * 65535) + 1,
+                    protocol: ['HTTP', 'HTTPS', 'FTP', 'SSH'][Math.floor(Math.random() * 4)],
+                    status: 'active',
+                    country: ['US', 'UK', 'DE', 'JP', 'CA'][Math.floor(Math.random() * 5)],
+                    startTime: Date.now(),
+                    dataTransferred: 0
+                };
+                connections.push(newConnection);
+            }
+
+            if (Math.random() < 0.2 && connections.length > 3) {
+                // Remove a connection
+                connections.splice(Math.floor(Math.random() * connections.length), 1);
+            }
+
+            updateConnectionsList();
+        }
+
+        function updateConnectionsList() {
+            const container = document.getElementById('connections-list');
+
+            container.innerHTML = connections.map(conn => `
+                <div class="connection-item" data-connection="${conn.id}">
+                    <div class="connection-info">
+                        <div class="connection-ip">${conn.ip}:${conn.port}</div>
+                        <div class="connection-details">
+                            <span class="protocol">${conn.protocol}</span>
+                            <span class="country">${conn.country}</span>
+                            <span class="data">${conn.dataTransferred.toFixed(1)} MB</span>
+                        </div>
+                    </div>
+                    <div class="connection-actions">
+                        <button class="btn-small" onclick="inspectConnection('${conn.id}')">🔍</button>
+                        <button class="btn-small danger" onclick="blockConnection('${conn.id}')">🚫</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function checkSecurity() {
+            // Simulate security checks
+            if (Math.random() < 0.1) {
+                const alertTypes = [
+                    { type: 'suspicious', message: 'Unusual traffic pattern detected', severity: 'medium' },
+                    { type: 'malware', message: 'Potential malware communication blocked', severity: 'high' },
+                    { type: 'ddos', message: 'DDoS attempt mitigated', severity: 'high' },
+                    { type: 'intrusion', message: 'Intrusion attempt detected and blocked', severity: 'critical' }
+                ];
+
+                const alert = alertTypes[Math.floor(Math.random() * alertTypes.length)];
+                addSecurityAlert(alert);
+            }
+
+            // Update security score
+            const score = Math.max(50, 100 - securityAlerts.length * 10);
+            document.getElementById('security-score').textContent = score + '%';
+        }
+
+        function addSecurityAlert(alert) {
+            securityAlerts.unshift({
+                ...alert,
+                id: `alert_${Date.now()}`,
+                timestamp: new Date()
+            });
+
+            if (securityAlerts.length > 10) {
+                securityAlerts = securityAlerts.slice(0, 10);
+            }
+
+            updateSecurityAlerts();
+        }
+
+        function updateSecurityAlerts() {
+            const container = document.getElementById('security-alerts');
+
+            if (securityAlerts.length === 0) {
+                container.innerHTML = '<div class="no-alerts">✅ No security threats detected</div>';
+                return;
+            }
+
+            container.innerHTML = securityAlerts.map(alert => `
+                <div class="security-alert ${alert.severity}" data-alert="${alert.id}">
+                    <div class="alert-icon">${getSeverityIcon(alert.severity)}</div>
+                    <div class="alert-content">
+                        <div class="alert-message">${alert.message}</div>
+                        <div class="alert-time">${alert.timestamp.toLocaleTimeString()}</div>
+                    </div>
+                    <button class="alert-dismiss" onclick="dismissAlert('${alert.id}')">×</button>
+                </div>
+            `).join('');
+        }
+
+        function getSeverityIcon(severity) {
+            const icons = {
+                low: '💡',
+                medium: '⚠️',
+                high: '🚨',
+                critical: '🔥'
+            };
+            return icons[severity] || '⚠️';
+        }
+
+        function setupEventHandlers() {
+            document.getElementById('scan-threats').addEventListener('click', () => {
+                showNotification('Security scan initiated...', 'info');
+                setTimeout(() => {
+                    showNotification('Scan complete: No threats found', 'success');
+                }, 3000);
+            });
+
+            document.getElementById('block-suspicious').addEventListener('click', () => {
+                const suspiciousCount = Math.floor(Math.random() * 5) + 1;
+                showNotification(`Blocked ${suspiciousCount} suspicious connections`, 'success');
+            });
+
+            document.getElementById('optimize-network').addEventListener('click', () => {
+                showNotification('Network optimization started...', 'info');
+                setTimeout(() => {
+                    showNotification('Network optimized! +15% speed improvement', 'success');
+                }, 2500);
+            });
+
+            document.getElementById('export-data').addEventListener('click', exportData);
+        }
+
+        function inspectConnection(connId) {
+            showNotification(`Inspecting connection ${connId}...`, 'info');
+        }
+
+        function blockConnection(connId) {
+            connections = connections.filter(conn => conn.id !== connId);
+            updateConnectionsList();
+            showNotification('Connection blocked', 'warning');
+        }
+
+        function dismissAlert(alertId) {
+            securityAlerts = securityAlerts.filter(alert => alert.id !== alertId);
+            updateSecurityAlerts();
+        }
+
+        function exportData() {
+            const data = {
+                traffic: trafficData,
+                connections: connections,
+                alerts: securityAlerts,
+                timestamp: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `network_data_${Date.now()}.json`;
+            a.click();
+
+            URL.revokeObjectURL(url);
+            showNotification('Network data exported', 'success');
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Plugin API
+        window.networkAnalyzerPlugin = {
+            getTrafficData: () => trafficData,
+            getConnections: () => connections,
+            getSecurityAlerts: () => securityAlerts,
+            blockIP: (ip) => {
+                connections = connections.filter(conn => conn.ip !== ip);
+                updateConnectionsList();
+            }
+        };
+    </script>
+</body>
+
+</html>

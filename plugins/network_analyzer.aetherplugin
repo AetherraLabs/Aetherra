@@ -1,0 +1,31 @@
+{
+  "id": "network_analyzer",
+  "name": "Network Traffic Analyzer",
+  "version": "2.1.0",
+  "description": "Real-time network traffic analysis with security monitoring",
+  "author": "AetherNet Security",
+  "ui_panel": "network_panel.html",
+  "panel_title": "🌐 Network Analyzer",
+  "panel_type": "overlay",
+  "panel_size": "large",
+  "display_conditions": [
+    "network.connected == true",
+    "system.security_level > 0"
+  ],
+  "update_frequency": 1000,
+  "dependencies": ["network_service", "security_monitor"],
+  "permissions": ["read_network_stats", "monitor_connections"],
+  "css_files": ["network_styles.css"],
+  "js_files": ["network_monitor.js", "security_alerts.js"],
+  "capabilities": [
+    "traffic_analysis",
+    "security_monitoring",
+    "connection_tracking",
+    "bandwidth_optimization"
+  ],
+  "settings": {
+    "monitor_external": true,
+    "alert_on_suspicious": true,
+    "max_connections": 100
+  }
+}

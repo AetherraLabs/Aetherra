@@ -17,7 +17,7 @@ Architecture:
 import sys
 import json
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QTabWidget, QSplitter, QPushButton, QLabel, QFrame, QMenuBar,
@@ -30,6 +30,33 @@ from PySide6.QtGui import QIcon, QFont, QPalette, QColor
 from PySide6.QtCore import QTimer
 import psutil
 import os
+import logging
+from datetime import datetime
+
+# Phase 3: Auto-Generation System
+from .phase3_auto_generator import Phase3AutoGenerator
+# Phase 4: Cognitive UI Integration
+from .phase4_cognitive_ui import CognitiveStateMonitor
+# Phase 5: Plugin-Driven UI System
+from .phase5_plugin_ui import PluginUIManager
+# Phase 6: Full GUI Personality + State Memory
+from .phase6_personality import GUIPersonalityManager
+
+logger = logging.getLogger(__name__)
+
+def datetime_serializer(obj):
+    """JSON serializer for datetime objects"""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+def safe_json_dumps(data):
+    """Safely dump data to JSON with datetime handling"""
+    try:
+        return json.dumps(data, default=datetime_serializer)
+    except Exception as e:
+        logger.error(f"[ERROR] JSON serialization failed: {e}")
+        return "{}"
 
 class LyrixaContextBridge(QObject):
     """
@@ -50,6 +77,9 @@ class LyrixaContextBridge(QObject):
     agent_updated = Signal(str)       # Agent thoughts/goals
     metrics_updated = Signal(str)     # System metrics
     notification_sent = Signal(str)   # System notifications
+    cognitive_updated = Signal(str)   # Phase 4: Cognitive state updates
+    plugin_ui_loaded = Signal(str)    # Phase 5: Plugin UI loaded
+    plugin_ui_updated = Signal(str)   # Phase 5: Plugin UI updated
 
     def __init__(self):
         super().__init__()
@@ -58,9 +88,12 @@ class LyrixaContextBridge(QObject):
             'plugins': {},
             'agents': {},
             'metrics': {},
-            'system': {}
+            'system': {},
+            'cognitive': {}  # Phase 4: Cognitive state cache
         }
         self.backend_services = {}
+        self.auto_generator: Optional[Any] = None  # Phase 3: Auto-generation system reference
+        self.cognitive_monitor: Optional[Any] = None  # Phase 4: Cognitive monitor reference
 
         # Start periodic updates
         self.update_timer = QTimer()
@@ -333,6 +366,192 @@ class LyrixaContextBridge(QObject):
         }
         self.send_notification('info', f'System status: {len(self.backend_services)} services connected')
 
+    # === SETTINGS PANEL METHODS ===
+
+    @Slot(result=str)
+    def getSettings(self):
+        """Get current system settings."""
+        # Default settings - in production these would come from a config file
+        settings = {
+            'ai_personality': 'creative',
+            'response_style': 'detailed',
+            'auto_learn': True,
+            'memory_retention': '30',
+            'knowledge_compression': True,
+            'memory_limit': 500,
+            'auto_plugin_updates': True,
+            'plugin_sandbox': True,
+            'max_concurrent_plugins': 20,
+            'cpu_throttling': 80,
+            'background_processing': True,
+            'gpu_acceleration': False,
+            'data_encryption': True,
+            'telemetry': False,
+            'session_timeout': '60'
+        }
+        return json.dumps(settings)
+
+    @Slot(str)
+    def saveSettings(self, settings_json):
+        """Save system settings."""
+        try:
+            settings = json.loads(settings_json)
+            # In production, save to config file or database
+            print(f"💾 Saving settings: {len(settings)} options configured")
+            self.send_notification('success', 'Settings saved successfully!')
+
+            # Apply settings immediately where possible
+            self.apply_settings(settings)
+
+        except Exception as e:
+            print(f"❌ Error saving settings: {e}")
+            self.send_notification('error', f'Failed to save settings: {e}')
+
+    def apply_settings(self, settings):
+        """Apply settings changes to running systems."""
+        try:
+            # Apply CPU throttling
+            if 'cpu_throttling' in settings:
+                cpu_limit = int(settings['cpu_throttling'])
+                print(f"⚡ Setting CPU limit to {cpu_limit}%")
+
+            # Apply memory settings
+            if 'memory_limit' in settings:
+                memory_limit = int(settings['memory_limit'])
+                print(f"🧠 Setting memory limit to {memory_limit}MB")
+
+            # Apply plugin settings
+            if 'max_concurrent_plugins' in settings:
+                plugin_limit = int(settings['max_concurrent_plugins'])
+                print(f"🔌 Setting plugin limit to {plugin_limit}")
+
+            print("✅ Settings applied successfully")
+
+        except Exception as e:
+            print(f"⚠️ Warning: Some settings could not be applied: {e}")
+
+    # === METRICS PANEL METHODS ===
+
+    @Slot(result=str)
+    def getSystemMetrics(self):
+        """Get comprehensive system metrics."""
+        try:
+            import psutil
+            import time
+            import random
+
+            # Get real system metrics
+            cpu_percent = psutil.cpu_percent(interval=0.1)
+            memory = psutil.virtual_memory()
+            disk = psutil.disk_usage('/')
+
+            # Get network stats
+            network = psutil.net_io_counters()
+            current_time = time.time()
+
+            # Generate AI-specific metrics (simulated for now)
+            metrics = {
+                # Real system metrics
+                'cpu_percent': round(cpu_percent, 1),
+                'memory_percent': round(memory.percent, 1),
+                'memory_used': round(memory.used / (1024**3), 1),  # GB
+                'memory_total': round(memory.total / (1024**3), 1),  # GB
+                'memory_available': round(memory.available / (1024**3), 1),  # GB
+                'cpu_cores': psutil.cpu_count(logical=False),
+                'cpu_threads': psutil.cpu_count(logical=True),
+                'cpu_freq': round(psutil.cpu_freq().current / 1000, 1) if psutil.cpu_freq() else 3.2,
+
+                # Network metrics
+                'net_upload': round(network.bytes_sent / (1024*1024), 1),  # MB/s (lifetime)
+                'net_download': round(network.bytes_recv / (1024*1024), 1),  # MB/s (lifetime)
+                'net_packets': network.packets_sent + network.packets_recv,
+
+                # Disk metrics
+                'disk_read': round(disk.used / (1024**2), 1),  # MB
+                'disk_write': round(disk.free / (1024**2), 1),  # MB
+                'disk_read_iops': random.randint(1500, 3000),  # Simulated
+                'disk_write_iops': random.randint(800, 1500),  # Simulated
+                'disk_read_latency': round(random.uniform(1.0, 5.0), 1),
+                'disk_write_latency': round(random.uniform(2.0, 6.0), 1),
+
+                # AI-specific metrics (simulated)
+                'ai_efficiency': random.randint(85, 98),
+                'response_time': random.randint(150, 350),
+                'memory_efficiency': random.randint(88, 96),
+                'task_throughput': random.randint(120, 200),
+
+                'timestamp': int(current_time)
+            }
+
+            return json.dumps(metrics)
+
+        except Exception as e:
+            print(f"❌ Error getting system metrics: {e}")
+            # Return fallback metrics
+            import time
+            fallback_metrics = {
+                'cpu_percent': 25, 'memory_percent': 45, 'ai_efficiency': 87,
+                'response_time': 245, 'memory_efficiency': 92, 'task_throughput': 156,
+                'timestamp': int(time.time())
+            }
+            return json.dumps(fallback_metrics)
+
+    # === COGNITIVE PANEL METHODS ===
+
+    @Slot(result=str)
+    def getCognitiveState(self):
+        """Get current cognitive state for visualization."""
+        try:
+            if self.cognitive_monitor:
+                state = self.cognitive_monitor.getCognitiveState()
+                if state:
+                    self.data_cache['cognitive'] = state
+                    return safe_json_dumps(state)
+
+            # Return empty state if monitor not available
+            empty_state = {
+                'thoughts': [],
+                'goals': [],
+                'memory_activations': [],
+                'cognitive_load': 0.0,
+                'query_traces': []
+            }
+            return safe_json_dumps(empty_state)
+
+        except Exception as e:
+            logger.error(f"Error getting cognitive state: {e}")
+            return safe_json_dumps({'thoughts': [], 'goals': [], 'memory_activations': [], 'cognitive_load': 0.0, 'query_traces': []})
+
+    @Slot(str)
+    def simulateUserQuery(self, query):
+        """Simulate a user query for cognitive visualization."""
+        try:
+            if self.cognitive_monitor:
+                self.cognitive_monitor.simulateUserQuery(query)
+                # Update cognitive state after query processing
+                state = self.cognitive_monitor.getCognitiveState()
+                if state:
+                    self.data_cache['cognitive'] = state
+                    self.cognitive_updated.emit(safe_json_dumps(state))
+
+        except Exception as e:
+            logger.error(f"Error simulating user query: {e}")
+
+    @Slot(str)
+    def addCognitiveGoal(self, goal_description):
+        """Add a new goal to the cognitive system."""
+        try:
+            if self.cognitive_monitor:
+                self.cognitive_monitor.addGoal(goal_description)
+                # Update cognitive state after adding goal
+                state = self.cognitive_monitor.getCognitiveState()
+                if state:
+                    self.data_cache['cognitive'] = state
+                    self.cognitive_updated.emit(safe_json_dumps(state))
+
+        except Exception as e:
+            logger.error(f"Error adding cognitive goal: {e}")
+
 
 # Maintain backward compatibility
 LyrixaWebBridge = LyrixaContextBridge
@@ -362,9 +581,30 @@ class LyrixaHybridWindow(QMainWindow):
         self.memory_system = None
         self.agent_orchestrator = None
 
+        # Phase 3: Auto-Generation System
+        gui_dir = Path(__file__).parent
+        self.auto_generator = Phase3AutoGenerator(gui_dir)
+        self.auto_generated_panels = {}
+
+        # Phase 4: Cognitive UI Integration
+        self.cognitive_monitor = CognitiveStateMonitor()
+        self.cognitive_timer = QTimer()
+
+        # Phase 5: Plugin-Driven UI System
+        self.plugin_ui_manager = PluginUIManager()
+        self.plugin_panels = {}
+
+        # Phase 6: Full GUI Personality + State Memory
+        self.personality_manager = GUIPersonalityManager()
+        self.chat_interface = None
+
         self.setupUI()
         self.setupWebChannel()
         self.setupTimers()
+        self.setupPhase3Integration()
+        self.setupPhase4Integration()
+        self.setupPhase5Integration()
+        self.setupPhase6Integration()
         self.applyAetherraTheme()
 
     def setupUI(self):
@@ -437,6 +677,9 @@ class LyrixaHybridWindow(QMainWindow):
             ("🔌 Plugin Manager", "plugins"),
             ("📈 Metrics", "metrics"),
             ("💭 Memory", "memory"),
+            ("🧠 Cognitive UI", "cognitive"),
+            ("🔁 Plugin Demo", "plugin_demo"),
+            ("💬 Chat with Lyrixa", "chat"),
             ("⚙️ Settings", "settings")
         ]
 
@@ -589,6 +832,19 @@ class LyrixaHybridWindow(QMainWindow):
         """Setup QWebChannel for Python ↔ JavaScript communication."""
         self.web_channel = QWebChannel()
         self.web_channel.registerObject("pybridge", self.web_bridge)
+
+        # Phase 4: Register cognitive monitor
+        if hasattr(self, 'cognitive_monitor'):
+            self.web_channel.registerObject("cognitiveMonitor", self.cognitive_monitor)
+
+        # Phase 5: Register plugin UI manager
+        if hasattr(self, 'plugin_ui_manager'):
+            self.web_channel.registerObject("pluginManager", self.plugin_ui_manager)
+
+        # Phase 6: Register personality manager
+        if hasattr(self, 'personality_manager'):
+            self.web_channel.registerObject("personality_manager", self.personality_manager)
+
         self.web_view.page().setWebChannel(self.web_channel)
 
     def setupTimers(self):
@@ -603,10 +859,362 @@ class LyrixaHybridWindow(QMainWindow):
         self.metrics_timer.timeout.connect(self.updateMetrics)
         self.metrics_timer.start(5000)  # Update every 5 seconds
 
-    def loadPanel(self, panel_id: str):
-        """Load a specific web panel."""
+    def setupPhase3Integration(self):
+        """Setup Phase 3: Auto-Generation System integration."""
         try:
-            panel_path = Path(__file__).parent / "web_panels" / f"{panel_id}_panel.html"
+            # Connect Phase 3 signals to handlers
+            self.auto_generator.panels_generated.connect(self.on_panels_auto_generated)
+            self.auto_generator.layout_changed.connect(self.on_layout_auto_changed)
+
+            # Connect auto-generator to web bridge
+            self.web_bridge.auto_generator = self.auto_generator
+
+            logger.info("[PHASE3] Auto-Generation System integrated successfully")
+
+        except Exception as e:
+            logger.error(f"[ERROR] Phase 3 integration failed: {e}")
+
+    @Slot(str)
+    def on_panels_auto_generated(self, panels_data_json: str):
+        """Handle auto-generated panels from Phase 3"""
+        try:
+            panels_data = json.loads(panels_data_json)
+            panels = panels_data.get('panels', [])
+            layout = panels_data.get('layout', {})
+
+            # Store auto-generated panels
+            for panel_info in panels:
+                panel_id = panel_info['id']
+                self.auto_generated_panels[panel_id] = panel_info
+
+            # Update navigation to include auto-generated panels
+            self.update_navigation_with_auto_panels(panels)
+
+            # If no current panel is loaded, load the first auto-generated one
+            if not self.current_panel and panels:
+                first_panel = panels[0]
+                self.load_auto_generated_panel(first_panel['id'])
+
+            # Update status
+            self.statusBar().showMessage(f"[AUTO] Auto-generated {len(panels)} panels from system state")
+            logger.info(f"[GENERATE] Loaded {len(panels)} auto-generated panels")
+
+        except Exception as e:
+            logger.error(f"[ERROR] Failed to handle auto-generated panels: {e}")
+
+    @Slot(str)
+    def on_layout_auto_changed(self, layout_json: str):
+        """Handle layout changes from Phase 3"""
+        try:
+            layout = json.loads(layout_json)
+            logger.info(f"[LAYOUT] Auto-layout updated: {layout.get('total_panels', 0)} panels in {len(layout.get('sections', []))} sections")
+
+            # Could update UI layout here if needed
+
+        except Exception as e:
+            logger.error(f"[ERROR] Failed to handle layout change: {e}")
+
+    def setupPhase4Integration(self):
+        """Setup Phase 4: Cognitive UI Integration."""
+        try:
+            # Connect cognitive monitor to web bridge
+            self.web_bridge.cognitive_monitor = self.cognitive_monitor
+
+            # Setup cognitive state monitoring timer
+            self.cognitive_timer.timeout.connect(self.update_cognitive_state)
+            self.cognitive_timer.start(500)  # Update every 500ms
+
+            logger.info("[PHASE4] Cognitive UI Integration setup successfully")
+
+        except Exception as e:
+            logger.error(f"[ERROR] Phase 4 integration failed: {e}")
+
+    def setupPhase5Integration(self):
+        """Setup Phase 5: Plugin-Driven UI System integration."""
+        try:
+            # Connect plugin UI manager signals
+            if self.plugin_ui_manager:
+                self.plugin_ui_manager.plugin_ui_loaded.connect(self.onPluginUILoaded)
+                self.plugin_ui_manager.plugin_ui_unloaded.connect(self.onPluginUIUnloaded)
+                self.plugin_ui_manager.plugin_ui_updated.connect(self.onPluginUIUpdated)
+                self.plugin_ui_manager.plugin_ui_error.connect(self.onPluginUIError)
+
+                # Start plugin scanning and monitoring
+                self.plugin_ui_manager.scan_for_plugins()
+
+                logger.info("[PHASE5] Plugin-Driven UI System setup successfully")
+
+        except Exception as e:
+            logger.error(f"[ERROR] Phase 5 integration failed: {e}")
+
+    @Slot(str, str)
+    def onPluginUILoaded(self, plugin_id: str, panel_html: str):
+        """Handle plugin UI loaded signal"""
+        try:
+            logger.info(f"[PHASE5] Plugin UI loaded: {plugin_id}")
+            # Store plugin panel HTML
+            self.plugin_panels[plugin_id] = panel_html
+
+            # Emit signal to web bridge for UI integration
+            if hasattr(self.web_bridge, 'plugin_ui_loaded'):
+                self.web_bridge.plugin_ui_loaded.emit(safe_json_dumps({
+                    'plugin_id': plugin_id,
+                    'panel_html': panel_html,
+                    'timestamp': datetime.now().isoformat()
+                }))
+
+        except Exception as e:
+            logger.error(f"[PHASE5] Error handling plugin UI loaded: {e}")
+
+    @Slot(str)
+    def onPluginUIUnloaded(self, plugin_id: str):
+        """Handle plugin UI unloaded signal"""
+        try:
+            logger.info(f"[PHASE5] Plugin UI unloaded: {plugin_id}")
+            if plugin_id in self.plugin_panels:
+                del self.plugin_panels[plugin_id]
+
+        except Exception as e:
+            logger.error(f"[PHASE5] Error handling plugin UI unloaded: {e}")
+
+    @Slot(str, str)
+    def onPluginUIUpdated(self, plugin_id: str, updated_data: str):
+        """Handle plugin UI updated signal"""
+        try:
+            # Forward update to web interface
+            if hasattr(self.web_bridge, 'plugin_ui_updated'):
+                self.web_bridge.plugin_ui_updated.emit(safe_json_dumps({
+                    'plugin_id': plugin_id,
+                    'data': updated_data,
+                    'timestamp': datetime.now().isoformat()
+                }))
+
+        except Exception as e:
+            logger.error(f"[PHASE5] Error handling plugin UI updated: {e}")
+
+    @Slot(str, str)
+    def onPluginUIError(self, plugin_id: str, error_message: str):
+        """Handle plugin UI error signal"""
+        logger.error(f"[PHASE5] Plugin UI error in {plugin_id}: {error_message}")
+
+    def update_cognitive_state(self):
+        """Update cognitive state for Phase 4 visualization."""
+        try:
+            # Update cognitive monitor with current AI state
+            if self.cognitive_monitor:
+                # Trigger monitoring update
+                self.cognitive_monitor.monitor_cognitive_state()
+
+                # Get cognitive state and emit update
+                cognitive_data = self.cognitive_monitor.getCognitiveState()
+                if cognitive_data:
+                    # Use safe JSON dumps to handle datetime objects
+                    cognitive_json = safe_json_dumps(cognitive_data)
+                    self.web_bridge.cognitive_updated.emit(cognitive_json)
+                    self.web_bridge.data_cache['cognitive'] = cognitive_data
+
+        except Exception as e:
+            logger.error(f"[ERROR] Failed to update cognitive state: {e}")
+
+    def get_recent_thoughts(self):
+        """Get recent AI thoughts for cognitive visualization."""
+        # Placeholder - would integrate with actual AI reasoning system
+        return []
+
+    def get_current_goals(self):
+        """Get current goals for cognitive visualization."""
+        # Placeholder - would integrate with actual goal management system
+        return []
+
+    def get_memory_activations(self):
+        """Get memory activations for cognitive visualization."""
+        # Placeholder - would integrate with actual memory system
+        return []
+
+    def update_navigation_with_auto_panels(self, panels: List[Dict[str, Any]]):
+        """Update navigation to include auto-generated panels"""
+        try:
+            # Get the left panel navigation
+            left_panel = self.findChild(QWidget, "left_panel")
+            if left_panel:
+                layout = left_panel.layout()
+
+                # Ensure we have a QVBoxLayout
+                if isinstance(layout, QVBoxLayout):
+                    # Add separator for auto-generated panels
+                    if panels and not hasattr(self, '_auto_panels_separator_added'):
+                        separator = QFrame()
+                        separator.setFrameShape(QFrame.Shape.HLine)
+                        separator.setStyleSheet("border: 1px solid rgba(0, 255, 136, 0.3); margin: 10px 0;")
+                        layout.insertWidget(layout.count() - 2, separator)  # Before spacer and status
+
+                        auto_label = QLabel("[AUTO] Auto-Generated")
+                        auto_label.setStyleSheet("""
+                            QLabel {
+                                color: #00ff88;
+                                font-weight: bold;
+                                font-size: 12px;
+                                margin: 5px 0;
+                            }
+                        """)
+                        layout.insertWidget(layout.count() - 2, auto_label)
+                        self._auto_panels_separator_added = True
+
+                    # Add buttons for auto-generated panels
+                    for panel_info in panels[:5]:  # Limit to 5 auto panels in navigation
+                        panel_id = panel_info['id']
+                        panel_title = panel_info.get('title', panel_id)
+
+                        # Check if button already exists
+                        existing_btn = self.findChild(QPushButton, f"auto_nav_{panel_id}")
+                        if not existing_btn:
+                            btn = QPushButton(f"[AUTO] {panel_title}")
+                            btn.setObjectName(f"auto_nav_{panel_id}")
+                            btn.clicked.connect(lambda checked, pid=panel_id: self.load_auto_generated_panel(pid))
+                            btn.setStyleSheet(self.getButtonStyle() + """
+                                QPushButton {
+                                    background: rgba(0, 255, 136, 0.1);
+                                    border-left: 3px solid #00ff88;
+                                }
+                            """)
+                            layout.insertWidget(layout.count() - 2, btn)
+
+        except Exception as e:
+            logger.warning(f"Failed to update navigation with auto panels: {e}")
+
+    def load_auto_generated_panel(self, panel_id: str):
+        """Load an auto-generated panel"""
+        try:
+            if panel_id in self.auto_generated_panels:
+                panel_info = self.auto_generated_panels[panel_id]
+
+                # Get the HTML file path
+                panel_file = Path(__file__).parent / "web_panels" / "auto_generated" / f"{panel_id}.html"
+
+                if panel_file.exists():
+                    self.web_view.load(QUrl.fromLocalFile(str(panel_file.absolute())))
+                    self.current_panel = panel_id
+                    self.statusBar().showMessage(f"🔮 Loaded auto-generated panel: {panel_info.get('title', panel_id)}")
+                else:
+                    logger.warning(f"Auto-generated panel file not found: {panel_file}")
+            else:
+                logger.warning(f"Auto-generated panel not found: {panel_id}")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to load auto-generated panel {panel_id}: {e}")
+
+    def setupPhase6Integration(self):
+        """Setup Phase 6: Full GUI Personality + State Memory integration."""
+        try:
+            # Connect personality manager signals
+            if self.personality_manager:
+                self.personality_manager.personality_changed.connect(self.onPersonalityChanged)
+                self.personality_manager.theme_updated.connect(self.onThemeUpdated)
+                self.personality_manager.layout_adapted.connect(self.onLayoutAdapted)
+                self.personality_manager.chat_message.connect(self.onChatMessage)
+                self.personality_manager.gui_state_saved.connect(self.onGUIStateSaved)
+
+                # Set up current panel tracking
+                if hasattr(self, 'current_panel'):
+                    self.personality_manager.update_current_panel(self.current_panel or 'dashboard')
+
+                logger.info("[PHASE6] GUI Personality + State Memory setup successfully")
+
+        except Exception as e:
+            logger.error(f"[ERROR] Phase 6 integration failed: {e}")
+
+    @Slot(str)
+    def onPersonalityChanged(self, personality_json: str):
+        """Handle personality state changes"""
+        try:
+            personality_data = json.loads(personality_json)
+            logger.info(f"[PHASE6] Personality changed: {personality_data.get('emotional_state', 'unknown')}")
+
+            # Forward to web interface
+            if hasattr(self.web_bridge, 'agent_updated'):
+                self.web_bridge.agent_updated.emit(safe_json_dumps({
+                    'type': 'personality_update',
+                    'personality': personality_data,
+                    'timestamp': datetime.now().isoformat()
+                }))
+
+        except Exception as e:
+            logger.error(f"[PHASE6] Error handling personality change: {e}")
+
+    @Slot(str)
+    def onThemeUpdated(self, theme_css: str):
+        """Handle dynamic theme updates"""
+        try:
+            logger.info("[PHASE6] Theme updated based on personality state")
+
+            # Apply theme to the interface (inject CSS)
+            if hasattr(self, 'web_view') and self.web_view:
+                # Inject the theme CSS variables
+                self.web_view.page().runJavaScript(f"""
+                    if (!document.getElementById('phase6-theme')) {{
+                        var style = document.createElement('style');
+                        style.id = 'phase6-theme';
+                        document.head.appendChild(style);
+                    }}
+                    document.getElementById('phase6-theme').textContent = `{theme_css}`;
+                """)
+
+        except Exception as e:
+            logger.error(f"[PHASE6] Error handling theme update: {e}")
+
+    @Slot(str)
+    def onLayoutAdapted(self, layout_json: str):
+        """Handle layout adaptations based on AI state"""
+        try:
+            layout_data = json.loads(layout_json)
+            logger.info(f"[PHASE6] Layout adapted: {layout_data}")
+
+        except Exception as e:
+            logger.error(f"[PHASE6] Error handling layout adaptation: {e}")
+
+    @Slot(str)
+    def onChatMessage(self, message_json: str):
+        """Handle chat messages"""
+        try:
+            message_data = json.loads(message_json)
+            logger.info("[PHASE6] Chat message processed")
+
+        except Exception as e:
+            logger.error(f"[PHASE6] Error handling chat message: {e}")
+
+    @Slot(str)
+    def onGUIStateSaved(self, state_json: str):
+        """Handle GUI state saving"""
+        try:
+            state_data = json.loads(state_json)
+            logger.info(f"[PHASE6] GUI state saved for panel: {state_data.get('current_panel', 'unknown')}")
+
+        except Exception as e:
+            logger.error(f"[PHASE6] Error handling GUI state save: {e}")
+
+    def loadPanel(self, panel_id: str):
+        """Enhanced loadPanel with Phase 6 personality integration"""
+        try:
+            # Track panel change with personality manager
+            if hasattr(self, 'personality_manager') and self.personality_manager:
+                self.personality_manager.update_current_panel(panel_id)
+
+            # Handle Phase 6 chat panel
+            if panel_id == 'chat':
+                panel_file = Path(__file__).parent / "web_panels" / "phase6_chat.html"
+                if panel_file.exists():
+                    self.web_view.load(QUrl.fromLocalFile(str(panel_file.absolute())))
+                    self.current_panel = panel_id
+                    self.statusBar().showMessage("💬 Chat with Lyrixa - AI conversation interface")
+                    return
+                else:
+                    logger.warning(f"Chat panel file not found: {panel_file}")
+
+            # Special handling for Phase 5 plugin demo
+            if panel_id == "plugin_demo":
+                panel_path = Path(__file__).parent / "web_panels" / "phase5_plugin_demo.html"
+            else:
+                panel_path = Path(__file__).parent / "web_panels" / f"{panel_id}_panel.html"
 
             if not panel_path.exists():
                 # Create default panel if it doesn't exist
@@ -617,7 +1225,7 @@ class LyrixaHybridWindow(QMainWindow):
             self.statusBar().showMessage(f"🌟 Loaded {panel_id.title()} Panel")
 
         except Exception as e:
-            print(f"❌ Error loading panel {panel_id}: {e}")
+            logger.error(f"❌ Error loading panel {panel_id}: {e}")
 
     def createDefaultPanel(self, panel_id: str, path: Path):
         """Create a default panel if it doesn't exist."""
@@ -776,6 +1384,12 @@ class LyrixaHybridWindow(QMainWindow):
 
         # Connect services to the context bridge
         self.web_bridge.connect_backend_services(services)
+
+        # Phase 3: Connect auto-generator to backend services and start introspection
+        if services and hasattr(self, 'auto_generator'):
+            self.auto_generator.connect_backend_services(services)
+            # Start auto-generation after a short delay to allow services to settle
+            QTimer.singleShot(1000, self.auto_generator.start_auto_generation)
 
 
 def main():

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 5: Plugin-Driven UI System Demo</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+
+<body>
+    <div class="panel-container" data-panel="plugin-demo">
+        <div class="panel-header">
+            <h1>🔁 Plugin-Driven UI System</h1>
+            <p>Phase 5: Dynamic plugin UI loading and management</p>
+        </div>
+
+        <div class="panel-content">
+            <!-- Plugin Manager Status -->
+            <div class="plugin-manager-status">
+                <h2>📋 Plugin Manager Status</h2>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span class="status-label">Total Plugins</span>
+                        <span class="status-value" id="total-plugins">0</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Visible Plugins</span>
+                        <span class="status-value" id="visible-plugins">0</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Loaded Plugins</span>
+                        <span class="status-value" id="loaded-plugins">0</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Plugin Directories</span>
+                        <span class="status-value" id="plugin-dirs">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plugin List -->
+            <div class="plugin-list-section">
+                <h2>🔌 Discovered Plugins</h2>
+                <div class="plugin-controls">
+                    <button class="btn btn-primary" id="refresh-plugins">
+                        <span>🔄 Refresh Plugins</span>
+                    </button>
+                    <button class="btn btn-secondary" id="show-all">
+                        <span>👁️ Show All</span>
+                    </button>
+                    <select id="filter-type">
+                        <option value="all">All Types</option>
+                        <option value="widget">Widgets</option>
+                        <option value="overlay">Overlays</option>
+                        <option value="modal">Modals</option>
+                        <option value="sidebar">Sidebars</option>
+                    </select>
+                </div>
+                <div class="plugin-list" id="plugin-list">
+                    <!-- Plugin cards will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Live Plugin UIs Container -->
+            <div class="live-plugins-section">
+                <h2>⚡ Live Plugin UIs</h2>
+                <div class="live-plugins-container" id="live-plugins">
+                    <!-- Active plugin UIs will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Plugin Development Tools -->
+            <div class="dev-tools-section">
+                <h2>🛠️ Development Tools</h2>
+                <div class="dev-tools">
+                    <div class="tool-group">
+                        <h3>Create Sample Plugin</h3>
+                        <div class="form-group">
+                            <label for="plugin-name">Plugin Name:</label>
+                            <input type="text" id="plugin-name" placeholder="my_awesome_plugin" class="setting-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="plugin-title">Display Title:</label>
+                            <input type="text" id="plugin-title" placeholder="My Awesome Plugin" class="setting-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="plugin-type">Panel Type:</label>
+                            <select id="plugin-type" class="setting-input">
+                                <option value="widget">Widget</option>
+                                <option value="overlay">Overlay</option>
+                                <option value="modal">Modal</option>
+                                <option value="sidebar">Sidebar</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="create-sample">
+                            <span>✨ Create Sample Plugin</span>
+                        </button>
+                    </div>
+
+                    <div class="tool-group">
+                        <h3>Condition Testing</h3>
+                        <div class="form-group">
+                            <label for="test-condition">Test Condition:</label>
+                            <input type="text" id="test-condition" placeholder="system.memory.usage > 0.5"
+                                class="setting-input">
+                        </div>
+                        <button class="btn btn-secondary" id="test-condition-btn">
+                            <span>🧪 Test Condition</span>
+                        </button>
+                        <div class="condition-result" id="condition-result"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plugin Schema Documentation -->
+            <div class="schema-docs-section">
+                <h2>📖 Plugin Schema Documentation</h2>
+                <div class="schema-example">
+                    <h3>Example Plugin Metadata Schema:</h3>
+                    <pre id="schema-example">{
+  "id": "memory_monitor",
+  "name": "Advanced Memory Monitor",
+  "version": "1.0.0",
+  "description": "Real-time memory usage visualization",
+  "ui_panel": "memory_panel.html",
+  "panel_title": "🧠 Memory Monitor",
+  "panel_type": "widget",
+  "panel_size": "medium",
+  "display_conditions": [
+    "system.memory.usage > 0.5",
+    "memory.active == true"
+  ],
+  "update_frequency": 500,
+  "dependencies": ["memory_service"],
+  "permissions": ["read_system_stats"],
+  "css_files": ["memory_styles.css"],
+  "js_files": ["memory_charts.js"]
+}</pre>
+                </div>
+
+                <div class="schema-fields">
+                    <h3>Required Fields:</h3>
+                    <ul class="field-list">
+                        <li><code>id</code> - Unique plugin identifier</li>
+                        <li><code>ui_panel</code> - HTML file path relative to plugin directory</li>
+                        <li><code>panel_title</code> - Display title for the UI panel</li>
+                    </ul>
+
+                    <h3>Optional Fields:</h3>
+                    <ul class="field-list">
+                        <li><code>display_conditions</code> - Array of conditions for when to show the panel</li>
+                        <li><code>panel_type</code> - widget, overlay, modal, sidebar (default: widget)</li>
+                        <li><code>panel_size</code> - small, medium, large, fullscreen (default: medium)</li>
+                        <li><code>update_frequency</code> - Update interval in milliseconds (default: 1000)</li>
+                        <li><code>css_files</code> - Additional CSS files to load</li>
+                        <li><code>js_files</code> - Additional JavaScript files to load</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Phase 5 Plugin System Demo JavaScript
+        let bridge = null;
+        let pluginManager = null;
+        let plugins = {};
+        let livePlugins = {};
+
+        // Initialize Web Channel
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+            bridge = channel.objects.pybridge;
+            pluginManager = channel.objects.pluginManager;
+
+            if (pluginManager) {
+                initializePluginDemo();
+            } else {
+                console.warn('[PHASE5] Plugin manager not available');
+                showFallbackMessage();
+            }
+        });
+
+        function initializePluginDemo() {
+            console.log('[PHASE5] Plugin demo initialized');
+
+            // Connect to plugin manager signals
+            if (pluginManager) {
+                pluginManager.plugin_ui_loaded.connect(onPluginUILoaded);
+                pluginManager.plugin_ui_unloaded.connect(onPluginUIUnloaded);
+                pluginManager.plugin_ui_updated.connect(onPluginUIUpdated);
+                pluginManager.plugin_ui_error.connect(onPluginUIError);
+            }
+
+            // Connect to bridge signals for plugin events
+            if (bridge) {
+                bridge.plugin_ui_loaded.connect(onBridgePluginLoaded);
+                bridge.plugin_ui_updated.connect(onBridgePluginUpdated);
+            }
+
+            setupEventHandlers();
+            loadPluginSummary();
+        }
+
+        function loadPluginSummary() {
+            if (pluginManager && pluginManager.get_plugin_summary) {
+                pluginManager.get_plugin_summary(function (summaryJson) {
+                    const summary = JSON.parse(summaryJson);
+                    updatePluginStatus(summary);
+                    updatePluginList(summary.plugins);
+                });
+            }
+        }
+
+        function updatePluginStatus(summary) {
+            document.getElementById('total-plugins').textContent = summary.total_plugins || 0;
+            document.getElementById('visible-plugins').textContent = summary.visible_plugins || 0;
+            document.getElementById('loaded-plugins').textContent = summary.loaded_plugins || 0;
+            document.getElementById('plugin-dirs').textContent = summary.plugin_directories?.length || 0;
+        }
+
+        function updatePluginList(pluginData) {
+            const container = document.getElementById('plugin-list');
+            const filterType = document.getElementById('filter-type').value;
+
+            plugins = pluginData || {};
+
+            const filteredPlugins = Object.entries(plugins).filter(([id, plugin]) => {
+                return filterType === 'all' || plugin.type === filterType;
+            });
+
+            container.innerHTML = filteredPlugins.map(([pluginId, plugin]) => `
+                <div class="plugin-card ${plugin.visible ? 'visible' : 'hidden'} ${plugin.loaded ? 'loaded' : 'unloaded'}"
+                     data-plugin="${pluginId}">
+                    <div class="plugin-header">
+                        <h3>${plugin.title}</h3>
+                        <div class="plugin-badges">
+                            <span class="badge type-${plugin.type}">${plugin.type}</span>
+                            <span class="badge ${plugin.visible ? 'visible' : 'hidden'}">
+                                ${plugin.visible ? '👁️ Visible' : '🙈 Hidden'}
+                            </span>
+                            <span class="badge ${plugin.loaded ? 'loaded' : 'unloaded'}">
+                                ${plugin.loaded ? '✅ Loaded' : '⏳ Unloaded'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="plugin-info">
+                        <div class="info-item">
+                            <span class="info-label">ID:</span>
+                            <span class="info-value">${pluginId}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Conditions:</span>
+                            <span class="info-value">${plugin.conditions?.join(', ') || 'None'}</span>
+                        </div>
+                    </div>
+                    <div class="plugin-actions">
+                        <button class="btn btn-small" onclick="inspectPlugin('${pluginId}')">🔍 Inspect</button>
+                        <button class="btn btn-small" onclick="reloadPlugin('${pluginId}')">🔄 Reload</button>
+                        ${plugin.visible ?
+                    `<button class="btn btn-small primary" onclick="showPluginUI('${pluginId}')">📱 Show UI</button>` :
+                    `<button class="btn btn-small disabled">📱 UI Hidden</button>`
+                }
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function onPluginUILoaded(pluginJson) {
+            console.log('[PHASE5] Plugin UI loaded:', pluginJson);
+            const plugin = JSON.parse(pluginJson);
+            // Plugin loaded by the manager
+            loadPluginSummary(); // Refresh display
+        }
+
+        function onPluginUIUnloaded(pluginId) {
+            console.log('[PHASE5] Plugin UI unloaded:', pluginId);
+            if (livePlugins[pluginId]) {
+                delete livePlugins[pluginId];
+                updateLivePlugins();
+            }
+        }
+
+        function onPluginUIUpdated(pluginId, dataJson) {
+            console.log('[PHASE5] Plugin UI updated:', pluginId, dataJson);
+        }
+
+        function onPluginUIError(pluginId, error) {
+            console.error('[PHASE5] Plugin UI error:', pluginId, error);
+            showNotification(`Plugin error in ${pluginId}: ${error}`, 'error');
+        }
+
+        function onBridgePluginLoaded(dataJson) {
+            try {
+                const data = JSON.parse(dataJson);
+                console.log('[PHASE5] Bridge plugin loaded:', data);
+
+                // Add to live plugins
+                livePlugins[data.plugin_id] = {
+                    id: data.plugin_id,
+                    html: data.panel_html,
+                    timestamp: data.timestamp
+                };
+
+                updateLivePlugins();
+                showNotification(`Plugin UI loaded: ${data.plugin_id}`, 'success');
+
+            } catch (e) {
+                console.error('[PHASE5] Error processing bridge plugin loaded:', e);
+            }
+        }
+
+        function onBridgePluginUpdated(dataJson) {
+            try {
+                const data = JSON.parse(dataJson);
+                console.log('[PHASE5] Bridge plugin updated:', data);
+
+            } catch (e) {
+                console.error('[PHASE5] Error processing bridge plugin updated:', e);
+            }
+        }
+
+        function updateLivePlugins() {
+            const container = document.getElementById('live-plugins');
+
+            if (Object.keys(livePlugins).length === 0) {
+                container.innerHTML = '<div class="no-live-plugins">No active plugin UIs currently visible</div>';
+                return;
+            }
+
+            container.innerHTML = Object.values(livePlugins).map(plugin => `
+                <div class="live-plugin-container" data-plugin="${plugin.id}">
+                    <div class="live-plugin-header">
+                        <h3>🔌 ${plugin.id}</h3>
+                        <button class="btn btn-small" onclick="closeLivePlugin('${plugin.id}')">✕ Close</button>
+                    </div>
+                    <div class="live-plugin-content">
+                        <iframe srcdoc="${escapeHtml(plugin.html)}"
+                                sandbox="allow-scripts allow-same-origin"
+                                style="width: 100%; height: 400px; border: none; border-radius: 8px;"></iframe>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupEventHandlers() {
+            document.getElementById('refresh-plugins').addEventListener('click', () => {
+                loadPluginSummary();
+                if (pluginManager && pluginManager.reload_all_plugins) {
+                    pluginManager.reload_all_plugins();
+                }
+                showNotification('Plugins refreshed', 'info');
+            });
+
+            document.getElementById('filter-type').addEventListener('change', () => {
+                updatePluginList(plugins);
+            });
+
+            document.getElementById('create-sample').addEventListener('click', createSamplePlugin);
+            document.getElementById('test-condition-btn').addEventListener('click', testCondition);
+        }
+
+        function inspectPlugin(pluginId) {
+            const plugin = plugins[pluginId];
+            if (!plugin) return;
+
+            const details = `
+Plugin ID: ${pluginId}
+Title: ${plugin.title}
+Type: ${plugin.type}
+Visible: ${plugin.visible}
+Loaded: ${plugin.loaded}
+Conditions: ${plugin.conditions?.join(', ') || 'None'}
+            `.trim();
+
+            alert(details);
+        }
+
+        function reloadPlugin(pluginId) {
+            if (pluginManager && pluginManager.reload_plugin_ui) {
+                pluginManager.reload_plugin_ui(pluginId);
+                showNotification(`Reloading plugin: ${pluginId}`, 'info');
+                setTimeout(loadPluginSummary, 1000);
+            }
+        }
+
+        function showPluginUI(pluginId) {
+            if (pluginManager && pluginManager.get_plugin_html) {
+                pluginManager.get_plugin_html(pluginId, function (html) {
+                    if (html) {
+                        livePlugins[pluginId] = {
+                            id: pluginId,
+                            html: html,
+                            timestamp: new Date().toISOString()
+                        };
+                        updateLivePlugins();
+                        showNotification(`Showing UI for: ${pluginId}`, 'success');
+                    } else {
+                        showNotification(`No UI available for: ${pluginId}`, 'warning');
+                    }
+                });
+            }
+        }
+
+        function closeLivePlugin(pluginId) {
+            if (livePlugins[pluginId]) {
+                delete livePlugins[pluginId];
+                updateLivePlugins();
+                showNotification(`Closed UI for: ${pluginId}`, 'info');
+            }
+        }
+
+        function createSamplePlugin() {
+            const name = document.getElementById('plugin-name').value.trim();
+            const title = document.getElementById('plugin-title').value.trim();
+            const type = document.getElementById('plugin-type').value;
+
+            if (!name || !title) {
+                showNotification('Please fill in plugin name and title', 'error');
+                return;
+            }
+
+            // This would create a sample plugin file in a real implementation
+            showNotification(`Sample plugin created: ${name}`, 'success');
+            console.log('[PHASE5] Sample plugin creation requested:', { name, title, type });
+        }
+
+        function testCondition() {
+            const condition = document.getElementById('test-condition').value.trim();
+            const resultDiv = document.getElementById('condition-result');
+
+            if (!condition) {
+                resultDiv.innerHTML = '<span class="error">Please enter a condition to test</span>';
+                return;
+            }
+
+            // Simulate condition testing
+            const mockResult = Math.random() > 0.5;
+            resultDiv.innerHTML = `
+                <span class="condition-test ${mockResult ? 'true' : 'false'}">
+                    Condition "${condition}" evaluates to: <strong>${mockResult}</strong>
+                </span>
+            `;
+        }
+
+        function showFallbackMessage() {
+            document.querySelector('.panel-content').innerHTML = `
+                <div class="fallback-message">
+                    <h2>🔁 Phase 5: Plugin-Driven UI System</h2>
+                    <p>Plugin manager not available in this environment.</p>
+                    <p>This demonstrates the architecture for dynamic plugin UI loading:</p>
+                    <ul>
+                        <li>🔌 Automatic plugin discovery from .aetherplugin files</li>
+                        <li>📋 Extended metadata schema with UI definitions</li>
+                        <li>🎯 Conditional display based on system state</li>
+                        <li>⚡ Live plugin UI injection and management</li>
+                        <li>🛠️ Developer tools for plugin creation</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Initialize with fallback if no web channel
+        setTimeout(() => {
+            if (!bridge && !pluginManager) {
+                showFallbackMessage();
+            }
+        }, 1000);
+    </script>
+</body>
+
+</html>

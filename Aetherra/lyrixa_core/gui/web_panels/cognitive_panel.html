@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyrixa Cognitive Interface - Thought Stream</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+
+<body>
+    <div class="panel-container" data-panel="cognitive">
+        <div class="panel-header">
+            <h1>🧠 Lyrixa Thinks</h1>
+            <p>Real-time visualization of AI cognitive processes</p>
+        </div>
+
+        <div class="panel-content">
+            <!-- Cognitive Load Monitor -->
+            <div class="cognitive-status">
+                <div class="cognitive-orb-container">
+                    <div class="cognitive-orb" id="cognitive-orb">
+                        <div class="thought-ripples"></div>
+                        <div class="cognitive-core"></div>
+                    </div>
+                    <div class="cognitive-metrics">
+                        <div class="metric-item">
+                            <span class="metric-label">Cognitive Load</span>
+                            <div class="metric-bar">
+                                <div class="metric-fill" id="load-fill"></div>
+                            </div>
+                            <span class="metric-value" id="load-value">65%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Thought Frequency</span>
+                            <span class="metric-value" id="frequency-value">2.3/s</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Reasoning Depth</span>
+                            <span class="metric-value" id="depth-value">0.78</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thought Stream -->
+            <div class="thought-stream-container">
+                <h2>💭 Thought Stream</h2>
+                <div class="thought-stream" id="thought-stream">
+                    <!-- Thought bubbles will be dynamically added here -->
+                </div>
+                <div class="stream-controls">
+                    <button class="btn btn-secondary" id="pause-thoughts">
+                        <span>⏸️ Pause Stream</span>
+                    </button>
+                    <button class="btn btn-secondary" id="clear-thoughts">
+                        <span>🗑️ Clear Stream</span>
+                    </button>
+                    <select id="thought-filter" class="setting-input">
+                        <option value="all">All Thoughts</option>
+                        <option value="reasoning">Reasoning</option>
+                        <option value="memory_recall">Memory Recall</option>
+                        <option value="goal_planning">Goal Planning</option>
+                        <option value="response_generation">Response Generation</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Goal Status Heatmap -->
+            <div class="goals-heatmap-container">
+                <h2>🎯 Goal Status Heatmap</h2>
+                <div class="goals-heatmap" id="goals-heatmap">
+                    <!-- Goal tiles will be dynamically added here -->
+                </div>
+                <div class="heatmap-legend">
+                    <span class="legend-item">
+                        <div class="legend-color uncertain"></div>
+                        <span>Uncertain</span>
+                    </span>
+                    <span class="legend-item">
+                        <div class="legend-color moderate"></div>
+                        <span>Moderate</span>
+                    </span>
+                    <span class="legend-item">
+                        <div class="legend-color confident"></div>
+                        <span>Confident</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Memory Activation Visualization -->
+            <div class="memory-activation-container">
+                <h2>🧩 Memory Activation</h2>
+                <div class="memory-network" id="memory-network">
+                    <svg width="100%" height="300" id="memory-svg">
+                        <!-- Memory nodes and connections will be drawn here -->
+                    </svg>
+                </div>
+                <div class="memory-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Active Nodes</span>
+                        <span class="stat-value" id="active-nodes">12</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Avg Activation</span>
+                        <span class="stat-value" id="avg-activation">0.67</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Access Rate</span>
+                        <span class="stat-value" id="access-rate">8.3/s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Query Trace Visualization -->
+            <div class="query-trace-container">
+                <h2>🔍 Query Processing Traces</h2>
+                <div class="trace-input">
+                    <input type="text" id="test-query" placeholder="Enter a test query to trace..."
+                        class="setting-input">
+                    <button class="btn btn-primary" id="trace-query">
+                        <span>🚀 Trace Query</span>
+                    </button>
+                </div>
+                <div class="query-traces" id="query-traces">
+                    <!-- Query traces will be shown here -->
+                </div>
+            </div>
+
+            <!-- Interactive Controls -->
+            <div class="cognitive-controls">
+                <h3>🎛️ Cognitive Controls</h3>
+                <div class="control-grid">
+                    <div class="control-item">
+                        <label for="add-goal-input">Add Goal:</label>
+                        <div class="control-group">
+                            <input type="text" id="add-goal-input" placeholder="Goal description..."
+                                class="setting-input">
+                            <button class="btn btn-primary" id="add-goal-btn">
+                                <span>➕ Add</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <label for="thought-speed">Thought Speed:</label>
+                        <input type="range" id="thought-speed" min="0.5" max="5" value="1" step="0.1"
+                            class="setting-slider">
+                        <span class="setting-value" id="speed-value">1.0x</span>
+                    </div>
+                    <div class="control-item">
+                        <label for="cognitive-intensity">Cognitive Intensity:</label>
+                        <input type="range" id="cognitive-intensity" min="0.1" max="2" value="1" step="0.1"
+                            class="setting-slider">
+                        <span class="setting-value" id="intensity-value">1.0x</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/effects.js"></script>
+    <script>
+        // Cognitive Interface JavaScript
+        let bridge = null;
+        let cognitiveMonitor = null;
+        let thoughtStream = [];
+        let goals = [];
+        let memoryNodes = [];
+        let queryTraces = [];
+        let isPaused = false;
+        let currentFilter = 'all';
+
+        // Initialize Web Channel
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+            bridge = channel.objects.bridge;
+            cognitiveMonitor = channel.objects.cognitiveMonitor;
+
+            if (cognitiveMonitor) {
+                initializeCognitiveInterface();
+            } else {
+                console.warn('[COGNITIVE] Cognitive monitor not available, using simulation mode');
+                startSimulationMode();
+            }
+        });
+
+        function initializeCognitiveInterface() {
+            // Connect to cognitive monitor signals
+            cognitiveMonitor.thought_generated.connect(onThoughtGenerated);
+            cognitiveMonitor.goal_updated.connect(onGoalUpdated);
+            cognitiveMonitor.memory_activated.connect(onMemoryActivated);
+            cognitiveMonitor.query_processed.connect(onQueryProcessed);
+            cognitiveMonitor.cognitive_load_changed.connect(onCognitiveLoadChanged);
+
+            // Load initial cognitive state
+            cognitiveMonitor.getCognitiveState(function (stateJson) {
+                const state = JSON.parse(stateJson);
+                initializeFromState(state);
+            });
+
+            setupEventHandlers();
+        }
+
+        function startSimulationMode() {
+            console.log('[COGNITIVE] Starting simulation mode');
+
+            // Simulate cognitive data
+            setInterval(() => {
+                if (!isPaused) {
+                    simulateThought();
+                    simulateGoalUpdate();
+                    simulateMemoryActivation();
+                    updateCognitiveLoad();
+                }
+            }, 2000);
+
+            setupEventHandlers();
+        }
+
+        function initializeFromState(state) {
+            thoughtStream = state.thoughts || [];
+            goals = state.goals || [];
+            memoryNodes = state.memory_activations || [];
+
+            renderThoughtStream();
+            renderGoalsHeatmap();
+            renderMemoryNetwork();
+            updateCognitiveMetrics(state);
+        }
+
+        function onThoughtGenerated(thoughtJson) {
+            if (isPaused) return;
+
+            const thought = JSON.parse(thoughtJson);
+            thoughtStream.unshift(thought); // Add to beginning
+
+            // Keep only last 20 thoughts
+            if (thoughtStream.length > 20) {
+                thoughtStream = thoughtStream.slice(0, 20);
+            }
+
+            renderThoughtStream();
+            animateCognitiveOrb();
+        }
+
+        function onGoalUpdated(goalJson) {
+            const goal = JSON.parse(goalJson);
+
+            // Update or add goal
+            const existingIndex = goals.findIndex(g => g.id === goal.id);
+            if (existingIndex >= 0) {
+                goals[existingIndex] = goal;
+            } else {
+                goals.push(goal);
+            }
+
+            renderGoalsHeatmap();
+        }
+
+        function onMemoryActivated(activationJson) {
+            const activation = JSON.parse(activationJson);
+            memoryNodes.unshift(activation);
+
+            // Keep only last 10 activations
+            if (memoryNodes.length > 10) {
+                memoryNodes = memoryNodes.slice(0, 10);
+            }
+
+            renderMemoryNetwork();
+        }
+
+        function onQueryProcessed(traceJson) {
+            const trace = JSON.parse(traceJson);
+            queryTraces.unshift(trace);
+
+            // Keep only last 5 traces
+            if (queryTraces.length > 5) {
+                queryTraces = queryTraces.slice(0, 5);
+            }
+
+            renderQueryTraces();
+        }
+
+        function onCognitiveLoadChanged(loadJson) {
+            const loadData = JSON.parse(loadJson);
+            updateCognitiveMetrics(loadData);
+        }
+
+        function renderThoughtStream() {
+            const container = document.getElementById('thought-stream');
+            const filteredThoughts = thoughtStream.filter(thought =>
+                currentFilter === 'all' || thought.thought_type === currentFilter
+            );
+
+            container.innerHTML = filteredThoughts.map(thought => `
+                <div class="thought-bubble ${thought.thought_type}" data-confidence="${thought.confidence}">
+                    <div class="thought-header">
+                        <span class="thought-type">${getThoughtTypeIcon(thought.thought_type)}</span>
+                        <span class="thought-confidence">${Math.round(thought.confidence * 100)}%</span>
+                        <span class="thought-time">${formatTime(thought.timestamp)}</span>
+                    </div>
+                    <div class="thought-content">${thought.content}</div>
+                    <div class="thought-footer">
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${thought.confidence * 100}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderGoalsHeatmap() {
+            const container = document.getElementById('goals-heatmap');
+
+            container.innerHTML = goals.map(goal => `
+                <div class="goal-tile ${getGoalStatusClass(goal)}"
+                     data-confidence="${goal.confidence}"
+                     style="background-color: ${getConfidenceColor(goal.confidence)}">
+                    <div class="goal-header">
+                        <span class="goal-status">${getGoalStatusIcon(goal.status)}</span>
+                        <span class="goal-priority">P${goal.priority}</span>
+                    </div>
+                    <div class="goal-description">${goal.description}</div>
+                    <div class="goal-footer">
+                        <div class="goal-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${goal.progress * 100}%"></div>
+                            </div>
+                            <span class="progress-text">${Math.round(goal.progress * 100)}%</span>
+                        </div>
+                        <div class="goal-confidence">${Math.round(goal.confidence * 100)}% confident</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMemoryNetwork() {
+            const svg = document.getElementById('memory-svg');
+            const width = svg.clientWidth;
+            const height = 300;
+
+            // Clear existing content
+            svg.innerHTML = '';
+
+            // Create nodes for memory activations
+            memoryNodes.forEach((node, index) => {
+                const x = (index * 80) + 40;
+                const y = height / 2 + (Math.sin(index * 0.5) * 50);
+                const radius = 10 + (node.activation_strength * 15);
+
+                // Create node circle
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', x);
+                circle.setAttribute('cy', y);
+                circle.setAttribute('r', radius);
+                circle.setAttribute('fill', getActivationColor(node.access_type));
+                circle.setAttribute('opacity', node.activation_strength);
+                circle.classList.add('memory-node');
+
+                svg.appendChild(circle);
+
+                // Add text label
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', x);
+                text.setAttribute('y', y + 30);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', 'var(--aetherra-gray-light)');
+                text.setAttribute('font-size', '10');
+                text.textContent = node.memory_id.substring(0, 8);
+
+                svg.appendChild(text);
+
+                // Connect to previous node
+                if (index > 0) {
+                    const prevX = ((index - 1) * 80) + 40;
+                    const prevY = height / 2 + (Math.sin((index - 1) * 0.5) * 50);
+
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', prevX);
+                    line.setAttribute('y1', prevY);
+                    line.setAttribute('x2', x);
+                    line.setAttribute('y2', y);
+                    line.setAttribute('stroke', 'var(--aetherra-green)');
+                    line.setAttribute('stroke-width', '2');
+                    line.setAttribute('opacity', '0.3');
+
+                    svg.appendChild(line);
+                }
+            });
+        }
+
+        function renderQueryTraces() {
+            const container = document.getElementById('query-traces');
+
+            container.innerHTML = queryTraces.map(trace => `
+                <div class="query-trace">
+                    <div class="trace-header">
+                        <span class="trace-query">${trace.user_query}</span>
+                        <span class="trace-time">${trace.total_processing_time}ms</span>
+                    </div>
+                    <div class="trace-stages">
+                        ${trace.processing_stages.map((stage, index) => `
+                            <div class="trace-stage" style="animation-delay: ${index * 0.2}s">
+                                <div class="stage-name">${stage.name}</div>
+                                <div class="stage-confidence">${Math.round(stage.confidence * 100)}%</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="trace-confidence-graph">
+                        ${trace.confidence_progression.map((conf, index) => `
+                            <div class="confidence-point"
+                                 style="height: ${conf * 100}%; left: ${(index / trace.confidence_progression.length) * 100}%">
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateCognitiveMetrics(metrics) {
+            document.getElementById('load-value').textContent = Math.round(metrics.load * 100) + '%';
+            document.getElementById('load-fill').style.width = (metrics.load * 100) + '%';
+            document.getElementById('frequency-value').textContent = metrics.frequency.toFixed(1) + '/s';
+            document.getElementById('depth-value').textContent = metrics.depth.toFixed(2);
+
+            // Update memory stats
+            document.getElementById('active-nodes').textContent = memoryNodes.length;
+            document.getElementById('avg-activation').textContent = (
+                memoryNodes.reduce((sum, node) => sum + node.activation_strength, 0) /
+                Math.max(memoryNodes.length, 1)
+            ).toFixed(2);
+            document.getElementById('access-rate').textContent = '8.3/s'; // Simulated
+        }
+
+        function animateCognitiveOrb() {
+            const orb = document.getElementById('cognitive-orb');
+            orb.classList.add('thinking');
+            setTimeout(() => orb.classList.remove('thinking'), 1000);
+        }
+
+        function setupEventHandlers() {
+            // Pause/resume thought stream
+            document.getElementById('pause-thoughts').addEventListener('click', () => {
+                isPaused = !isPaused;
+                const btn = document.getElementById('pause-thoughts');
+                btn.innerHTML = isPaused ? '<span>▶️ Resume Stream</span>' : '<span>⏸️ Pause Stream</span>';
+            });
+
+            // Clear thought stream
+            document.getElementById('clear-thoughts').addEventListener('click', () => {
+                thoughtStream = [];
+                renderThoughtStream();
+            });
+
+            // Filter thoughts
+            document.getElementById('thought-filter').addEventListener('change', (e) => {
+                currentFilter = e.target.value;
+                renderThoughtStream();
+            });
+
+            // Add goal
+            document.getElementById('add-goal-btn').addEventListener('click', () => {
+                const input = document.getElementById('add-goal-input');
+                if (input.value.trim() && cognitiveMonitor) {
+                    cognitiveMonitor.addGoal(input.value.trim());
+                    input.value = '';
+                }
+            });
+
+            // Trace query
+            document.getElementById('trace-query').addEventListener('click', () => {
+                const input = document.getElementById('test-query');
+                if (input.value.trim() && cognitiveMonitor) {
+                    cognitiveMonitor.simulateUserQuery(input.value.trim());
+                    input.value = '';
+                }
+            });
+
+            // Sliders
+            document.getElementById('thought-speed').addEventListener('input', (e) => {
+                document.getElementById('speed-value').textContent = e.target.value + 'x';
+            });
+
+            document.getElementById('cognitive-intensity').addEventListener('input', (e) => {
+                document.getElementById('intensity-value').textContent = e.target.value + 'x';
+            });
+        }
+
+        // Utility functions
+        function getThoughtTypeIcon(type) {
+            const icons = {
+                'reasoning': '🤔',
+                'memory_recall': '📚',
+                'goal_planning': '🎯',
+                'response_generation': '✍️'
+            };
+            return icons[type] || '💭';
+        }
+
+        function getGoalStatusIcon(status) {
+            const icons = {
+                'planning': '📋',
+                'active': '⚡',
+                'completed': '✅',
+                'blocked': '🚫',
+                'uncertain': '❓'
+            };
+            return icons[status] || '⏳';
+        }
+
+        function getGoalStatusClass(goal) {
+            return `status-${goal.status}`;
+        }
+
+        function getConfidenceColor(confidence) {
+            if (confidence < 0.3) return 'rgba(255, 99, 99, 0.8)';    // Red - uncertain
+            if (confidence < 0.7) return 'rgba(255, 193, 7, 0.8)';   // Yellow - moderate
+            return 'rgba(0, 255, 136, 0.8)';                         // Green - confident
+        }
+
+        function getActivationColor(accessType) {
+            const colors = {
+                'read': 'var(--aetherra-blue)',
+                'write': 'var(--aetherra-green)',
+                'update': 'var(--aetherra-purple)',
+                'recall': 'var(--aetherra-orange)'
+            };
+            return colors[accessType] || 'var(--aetherra-gray)';
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString();
+        }
+
+        // Simulation functions for demo mode
+        function simulateThought() {
+            const thoughtTypes = ['reasoning', 'memory_recall', 'goal_planning', 'response_generation'];
+            const thoughtContents = {
+                'reasoning': [
+                    '🤔 Analyzing optimal approach for current task',
+                    '⚡ Processing multiple solution pathways',
+                    '🔄 Evaluating decision tree branches'
+                ],
+                'memory_recall': [
+                    '📚 Accessing relevant knowledge patterns',
+                    '🔍 Searching memory clusters for context',
+                    '💭 Recalling similar past interactions'
+                ],
+                'goal_planning': [
+                    '🎯 Updating goal priority matrix',
+                    '🗺️ Planning next action sequence',
+                    '⏰ Adjusting timeline estimates'
+                ],
+                'response_generation': [
+                    '✍️ Crafting optimal response structure',
+                    '🎨 Selecting appropriate communication style',
+                    '🔤 Choosing precise terminology'
+                ]
+            };
+
+            const type = thoughtTypes[Math.floor(Math.random() * thoughtTypes.length)];
+            const content = thoughtContents[type][Math.floor(Math.random() * thoughtContents[type].length)];
+
+            const thought = {
+                id: `sim_thought_${Date.now()}`,
+                content: content,
+                thought_type: type,
+                confidence: Math.random() * 0.4 + 0.6,
+                timestamp: new Date().toISOString(),
+                duration_ms: Math.random() * 2000 + 1000,
+                importance: Math.random()
+            };
+
+            onThoughtGenerated(JSON.stringify(thought));
+        }
+
+        function simulateGoalUpdate() {
+            if (goals.length === 0) return;
+
+            const goal = goals[Math.floor(Math.random() * goals.length)];
+            goal.confidence = Math.max(0.1, Math.min(1.0, goal.confidence + (Math.random() - 0.5) * 0.1));
+            goal.progress = Math.min(1.0, goal.progress + Math.random() * 0.05);
+
+            onGoalUpdated(JSON.stringify(goal));
+        }
+
+        function simulateMemoryActivation() {
+            const accessTypes = ['read', 'write', 'update', 'recall'];
+            const memoryTypes = ['episodic', 'semantic', 'procedural', 'working'];
+
+            const activation = {
+                memory_id: `${memoryTypes[Math.floor(Math.random() * memoryTypes.length)]}_${Math.floor(Math.random() * 1000)}`,
+                activation_strength: Math.random(),
+                access_type: accessTypes[Math.floor(Math.random() * accessTypes.length)],
+                timestamp: new Date().toISOString()
+            };
+
+            onMemoryActivated(JSON.stringify(activation));
+        }
+
+        function updateCognitiveLoad() {
+            const loadData = {
+                load: Math.random() * 0.4 + 0.4,
+                frequency: Math.random() * 2 + 1,
+                depth: Math.random() * 0.4 + 0.5,
+                timestamp: Date.now()
+            };
+
+            onCognitiveLoadChanged(JSON.stringify(loadData));
+        }
+    </script>
+</body>
+
+</html>
