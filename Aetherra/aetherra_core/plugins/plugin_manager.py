@@ -110,7 +110,7 @@ class PluginManager:
         if not self._initialized:
             await self.initialize()
 
-        logger.info("🔍 Discovering plugins...")
+        logger.info("[DISC] Discovering plugins...")
         discovered = []
 
         for directory in self.plugin_directories:
@@ -286,7 +286,7 @@ class PluginManager:
 
     async def load_all_plugins(self) -> Dict[str, bool]:
         """Load all discovered plugins."""
-        logger.info("🔄 Loading all discovered plugins...")
+        logger.info("[LOAD] Loading all discovered plugins...")
 
         results = {}
 
@@ -309,7 +309,7 @@ class PluginManager:
                 results[plugin_name] = False
 
         loaded_count = sum(1 for success in results.values() if success)
-        logger.info(f"🎯 Loaded {loaded_count}/{len(discovered_plugins)} plugins successfully")
+        logger.info(f"[SUMMARY] Loaded {loaded_count}/{len(discovered_plugins)} plugins successfully")
 
         return results
 

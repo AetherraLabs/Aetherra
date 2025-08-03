@@ -99,7 +99,7 @@ class AgentOrchestrator:
         # Load persistent data
         self._load_state()
 
-        logger.info(f"🎯 Agent Orchestrator initialized with {len(self.agents)} agents")
+        logger.info(f"[AGENT] Agent Orchestrator initialized with {len(self.agents)} agents")
 
     def _load_state(self):
         """Load orchestrator state from persistent storage."""
@@ -163,7 +163,7 @@ class AgentOrchestrator:
             return
 
         self.orchestration_active = True
-        logger.info("🎯 Starting agent orchestration")
+        logger.info("[AGENT] Starting agent orchestration")
 
         # Start background orchestration loop
         asyncio.create_task(self._orchestration_loop())
@@ -347,7 +347,7 @@ class AgentOrchestrator:
             task_future = asyncio.create_task(self._execute_task(task, agent))
             self.running_tasks[task.task_id] = task_future
 
-            logger.info(f"🎯 Assigned task '{task.name}' to agent '{agent.name}'")
+            logger.info(f"[AGENT] Assigned task '{task.name}' to agent '{agent.name}'")
 
         except Exception as e:
             logger.error(f"❌ Failed to assign task {task.task_id} to agent {agent.agent_id}: {e}")
