@@ -1,1 +1,0 @@
-"""Clean architecture component"""
