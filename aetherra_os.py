@@ -32,20 +32,55 @@ if str(PROJECT_ROOT) not in sys.path:
 
 
 def launch_hybrid_interface():
-    """Launch the hybrid PySide6 + Web interface with full OS"""
-    print("🚀 Starting Aetherra AI Operating System with Hybrid Interface...")
+    """Launch the designated Aetherra GUI interface and start OS backend"""
+    print("🚀 Starting Aetherra AI Operating System with Designated GUI...")
     print("🖥️ This will:")
     print("   • Start the Aetherra OS kernel and core systems")
-    print("   • Launch Lyrixa intelligence engine")
-    print("   • Open hybrid desktop + web dashboard")
-    print("   • Provide real-time monitoring and control")
+    print("   • Launch the official Aetherra/gui interface")
+    print("   • Connect to real-time OS data")
+    print("   • Provide neural OS monitoring and control")
     print()
 
+    # First, start the OS backend systems
     try:
-        from Aetherra.interface.launch_aetherra_os import main as launch_main
-        return launch_main()
+        print("🔧 Starting Aetherra OS backend services...")
+        from aetherra_os_launcher import AetherraOSLauncher
+
+        import asyncio
+        import threading
+
+        async def start_os_backend():
+            launcher = AetherraOSLauncher()
+            await launcher.launch_full_os({'gui_enabled': False})  # Backend only
+
+        def run_os():
+            asyncio.run(start_os_backend())
+
+        os_thread = threading.Thread(target=run_os, daemon=True)
+        os_thread.start()
+
+        # Give OS time to start
+        import time
+        time.sleep(3)
+        print("✅ Aetherra OS backend started")
+
+    except Exception as e:
+        print(f"⚠️ OS backend start warning: {e}")
+        print("Continuing with GUI launch...")
+
+    # Now launch the designated GUI
+    try:
+        # Add GUI path to system path
+        gui_path = PROJECT_ROOT / "Aetherra" / "gui"
+        if str(gui_path) not in sys.path:
+            sys.path.insert(0, str(gui_path))
+
+        # Import and run the official Aetherra GUI
+        from aetherra_enhanced_neural_os import main as gui_main
+        return gui_main()
     except ImportError as e:
-        print(f"❌ Failed to import hybrid interface: {e}")
+        print(f"❌ Failed to import official Aetherra GUI: {e}")
+        print("📁 Make sure Aetherra/gui/aetherra_enhanced_neural_os.py exists")
         print("[TOOL] Make sure PySide6 is installed: pip install PySide6")
         return 1
 
@@ -53,8 +88,8 @@ def launch_hybrid_interface():
 def launch_web_interface():
     """Launch web interface only"""
     try:
-        from Aetherra.gui.web_interface_server import main as web_main
-        return web_main()
+        from Aetherra.gui.web_interface_server import start_web_interface
+        return start_web_interface()
     except ImportError as e:
         print(f"❌ Failed to import web interface: {e}")
         return 1
@@ -82,9 +117,10 @@ def show_system_info():
     print("  • Live cognitive metrics")
     print()
     print("📁 Project Structure:")
-    print("  • Aetherra/interface/ - Hybrid interface components")
-    print("  • Aetherra/gui/      - Web interface server")
-    print("  • Aetherra/lyrixa/   - AI consciousness core")
+    print("  • Aetherra/GUI/           - Official Aetherra OS GUI interface")
+    print("  • Aetherra/aetherra_core/ - Core Aetherra memory & processing engines")
+    print("  • Aetherra/gui/          - Web interface server")
+    print("  • Aetherra/plugins/      - Plugin ecosystem & management")
     print()
 
 

@@ -6,7 +6,7 @@
 These provide directory-specific documentation:
 
 1. `README.md` (root) - Main project README
-2. `Aetherra/README.md` - Aetherra core documentation  
+2. `Aetherra/README.md` - Aetherra core documentation
 3. `Aetherra/aetherra_core/kernel/README.md` - Kernel documentation
 4. `Aetherra/aetherra_core/memory/README.md` - Memory system docs
 5. `Aetherra/aetherra_core/system/README.md` - System docs
@@ -31,7 +31,7 @@ These provide directory-specific documentation:
 
 ### Testing Reports → `docs-organized/reports/testing/`
 - AETHERRA_COMPLETE_SYSTEM_TESTING_SUMMARY.md
-- AETHERRA_COMPLETE_TESTING_ACHIEVEMENT.md  
+- AETHERRA_COMPLETE_TESTING_ACHIEVEMENT.md
 - AETHERRA_COMPREHENSIVE_TESTING_REPORT.md
 - AETHERRA_FINAL_TESTING_SUMMARY.md
 - AETHERRA_TESTING_COMPLETE_SUMMARY.md
@@ -71,7 +71,7 @@ These provide directory-specific documentation:
 - AI_OS_MANIFESTO.md (from Aetherra/docs)
 - SELF_ORGANIZING_INTELLIGENCE.md (from Aetherra/docs)
 
-### Roadmaps → `docs-organized/roadmaps/` 
+### Roadmaps → `docs-organized/roadmaps/`
 (Copy existing roadmaps from Aetherra/docs/Roadmaps/)
 - Aetherra Memory System Evolution Roadmap.md
 - Aetherra QFAC Roadmap.md

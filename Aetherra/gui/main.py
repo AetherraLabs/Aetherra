@@ -430,7 +430,20 @@ def main():
     parser.add_argument(
         "--test", action="store_true", help="Run initialization test only"
     )
+    parser.add_argument(
+        "--enhanced", action="store_true", help="Launch Enhanced Neural OS Dashboard"
+    )
     args = parser.parse_args()
+
+    # Launch Enhanced Neural OS if requested
+    if args.enhanced:
+        try:
+            from aetherra_enhanced_neural_os import main as enhanced_main
+            print("🌌 Launching Enhanced Aetherra Neural OS...")
+            return enhanced_main()
+        except ImportError as e:
+            print(f"❌ Enhanced Neural OS not available: {e}")
+            print("Falling back to standard launcher...")
 
     launcher = UnifiedLyrixaLauncher()
 

@@ -109,7 +109,7 @@ def check_advanced_memory_systems():
 
     # Check advanced memory integration
     try:
-        from Aetherra.lyrixa.advanced_memory_integration import AdvancedMemoryIntegration
+        from Aetherra.lyrixa.memory.advanced_memory_integration import AdvancedMemoryIntegration
         print("   ✅ Advanced Memory Integration: Available")
         memory_available = True
     except ImportError as e:

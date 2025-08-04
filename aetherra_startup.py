@@ -18,7 +18,7 @@ from aetherra_core.config import config_loader
 from aetherra_core.engine import lyrixa_engine
 from aetherra_core.memory import memory_system
 from aetherra_core.orchestration import scheduler
-from aetherra_core.plugins import plugin_manager
+from aetherra_core.orchestration import plugin_manager
 
 # Optional GUI Support
 try:

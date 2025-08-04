@@ -8,7 +8,7 @@ This directory contains all test files for the Aetherra project, organized by ca
 tests/
 ├── conftest.py          # Pytest configuration and fixtures
 ├── ai/                  # AI and intelligence system tests
-├── gui/                 # GUI and interface tests  
+├── gui/                 # GUI and interface tests
 ├── integration/         # Integration and system tests
 └── unit/                # Unit tests for core components
 ```

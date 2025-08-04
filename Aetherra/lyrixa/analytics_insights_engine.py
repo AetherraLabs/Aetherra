@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import advanced memory systems
 try:
-    from Aetherra.lyrixa.advanced_memory_integration import AdvancedMemoryManager
+    from Aetherra.lyrixa.memory.advanced_memory_integration import AdvancedMemoryManager
     MEMORY_INTEGRATION_AVAILABLE = True
     logger.info("✅ Advanced Memory Integration available")
 except ImportError as e:
@@ -41,7 +41,7 @@ except ImportError as e:
 
 # Try to import conversation manager
 try:
-    from Aetherra.lyrixa.enhanced_conversation_manager import EnhancedConversationManager
+    from Aetherra.lyrixa.agents.enhanced_conversation_manager import EnhancedConversationManager
     CONVERSATION_MANAGER_AVAILABLE = True
     logger.info("✅ Enhanced Conversation Manager available")
 except ImportError as e:

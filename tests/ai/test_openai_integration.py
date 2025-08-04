@@ -35,7 +35,7 @@ def load_env_file():
 load_env_file()
 
 from Aetherra.lyrixa.agents.lyrixa_ai import LyrixaAI
-from Aetherra.lyrixa.conversation_manager import LyrixaConversationManager
+from Aetherra.lyrixa.agents.conversation_manager import LyrixaConversationManager
 
 
 async def test_openai_integration():

@@ -15,9 +15,9 @@ class PluginManager:
 Interface for safe plugin invocation from Lyrixa
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
-from ..kernel.plugin_manager import PluginManager
+from Aetherra.aetherra_core.plugins.plugin_manager import PluginManager
 
 
 class PluginAPI:

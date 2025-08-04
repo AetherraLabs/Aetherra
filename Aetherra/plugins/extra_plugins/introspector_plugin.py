@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ..core.enhanced_memory import LyrixaEnhancedMemorySystem
+from Aetherra.aetherra_core.memory.enhanced_memory import LyrixaEnhancedMemorySystem
 
 
 class IntrospectorPlugin:

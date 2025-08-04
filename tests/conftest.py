@@ -45,6 +45,6 @@ def mock_env_file():
     """Provide mock environment variables for testing"""
     return {
         "OPENAI_API_KEY": "test-key",
-        "ANTHROPIC_API_KEY": "test-key", 
+        "ANTHROPIC_API_KEY": "test-key",
         "GOOGLE_API_KEY": "test-key"
     }

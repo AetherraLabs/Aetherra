@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-⚡ Aetherra Scheduler
+[SYS] Aetherra Scheduler
 =====================
 Task scheduling and orchestration system for Aetherra AI OS.
 
@@ -81,10 +81,10 @@ class AetherraScheduler:
             logger.warning("Scheduler already running")
             return
 
-        logger.info("🗓️ Starting Aetherra Scheduler...")
+        logger.info("[SCHED] Starting Aetherra Scheduler...")
         self.running = True
         self._scheduler_task = asyncio.create_task(self._scheduler_loop())
-        logger.info("✅ Aetherra Scheduler started")
+        logger.info("[OK] Aetherra Scheduler started")
 
     async def stop(self):
         """Stop the scheduler."""
@@ -101,7 +101,7 @@ class AetherraScheduler:
             except asyncio.CancelledError:
                 pass
 
-        logger.info("✅ Aetherra Scheduler stopped")
+        logger.info("[OK] Aetherra Scheduler stopped")
 
     def schedule_task(
         self,
@@ -156,7 +156,7 @@ class AetherraScheduler:
         """Cancel a scheduled task."""
         if task_id in self.tasks:
             self.tasks[task_id].status = TaskStatus.CANCELLED
-            logger.info(f"❌ Cancelled task {task_id}")
+            logger.info(f"[ERROR] Cancelled task {task_id}")
             return True
         return False
 
@@ -186,7 +186,7 @@ class AetherraScheduler:
 
     async def _scheduler_loop(self):
         """Main scheduler loop."""
-        logger.info("🔄 Scheduler loop started")
+        logger.info("[LOOP] Scheduler loop started")
 
         while self.running:
             try:
@@ -196,7 +196,7 @@ class AetherraScheduler:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"❌ Error in scheduler loop: {e}")
+                logger.error(f"[ERROR] Error in scheduler loop: {e}")
                 await asyncio.sleep(5)  # Wait before retrying
 
     async def _process_pending_tasks(self):
@@ -237,17 +237,17 @@ class AetherraScheduler:
                 result = task.func(*task.args, **kwargs_to_use)
 
             task.status = TaskStatus.COMPLETED
-            logger.debug(f"✅ Task '{task.name}' completed")
+            logger.debug(f"[OK] Task '{task.name}' completed")
 
             # Schedule next run if recurring
             if task.interval and (not task.max_runs or task.run_count < task.max_runs):
                 task.next_run = datetime.now() + timedelta(seconds=task.interval)
                 task.status = TaskStatus.PENDING
-                logger.debug(f"🔄 Rescheduled recurring task '{task.name}' for {task.next_run}")
+                logger.debug(f"[LOOP] Rescheduled recurring task '{task.name}' for {task.next_run}")
 
         except Exception as e:
             task.status = TaskStatus.FAILED
-            logger.error(f"❌ Task '{task.name}' failed: {e}")
+            logger.error(f"[ERROR] Task '{task.name}' failed: {e}")
 
     def get_status(self) -> Dict[str, Any]:
         """Get scheduler status information."""
@@ -293,6 +293,11 @@ async def get_scheduler() -> AetherraScheduler:
         await _default_scheduler.start()
 
     return _default_scheduler
+
+
+async def initialize_schedule():
+    """Initialize the default scheduler - for OS launcher compatibility."""
+    await get_scheduler()
 
 
 # Convenience functions

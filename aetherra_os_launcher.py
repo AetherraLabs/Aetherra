@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-🌌 Aetherra OS Master Launcher
+[CORE] Aetherra OS Master Launcher
 ==============================
 The ultimate launcher that brings the entire AI Operating System online.
 
 This is THE script that transforms Aetherra from code into a living AI OS.
 
-🚀 FLIP THE SWITCH - ACTIVATE AETHERRA!
+[LAUNCH] FLIP THE SWITCH - ACTIVATE AETHERRA!
 """
 
 import argparse
@@ -45,7 +45,7 @@ except ImportError as e:
 
 class AetherraOSLauncher:
     """
-    🌌 Master OS Launcher
+    [CORE] Master OS Launcher
 
     Orchestrates the complete startup and operation of the AI Operating System.
     """
@@ -58,8 +58,8 @@ class AetherraOSLauncher:
         self.startup_time = None
 
     async def launch_full_os(self, config: Optional[Dict] = None):
-        """🚀 Launch the complete Aetherra AI Operating System."""
-        logger.info("🌌 LAUNCHING AETHERRA AI OPERATING SYSTEM")
+        """[LAUNCH] Launch the complete Aetherra AI Operating System."""
+        logger.info("[CORE] LAUNCHING AETHERRA AI OPERATING SYSTEM")
         logger.info("=" * 60)
 
         self.startup_time = time.time()
@@ -87,25 +87,25 @@ class AetherraOSLauncher:
             await self._main_operation_loop()
 
         except Exception as e:
-            logger.error(f"❌ CRITICAL FAILURE during OS launch: {e}")
+            logger.error(f"[ERROR] CRITICAL FAILURE during OS launch: {e}")
             traceback.print_exc()
             await self._emergency_shutdown()
             raise
 
     async def _initialize_service_registry(self):
-        """🌐 Initialize the service registry."""
-        logger.info("🌐 Phase 1: Initializing Service Registry...")
+        """[NET] Initialize the service registry."""
+        logger.info("[NET] Phase 1: Initializing Service Registry...")
 
         if not CORE_AVAILABLE:
-            logger.error("❌ Core components not available - cannot proceed")
+            logger.error("[ERROR] Core components not available - cannot proceed")
             raise RuntimeError("Core components missing")
 
         self.service_registry = await get_service_registry()
         logger.info("[OK] Service Registry online")
 
     async def _load_core_systems(self, config: Optional[Dict]):
-        """🧠 Load and register all core systems."""
-        logger.info("🧠 Phase 2: Loading Core Systems...")
+        """[BRAIN] Load and register all core systems."""
+        logger.info("[BRAIN] Phase 2: Loading Core Systems...")
 
         # Load configuration
         system_config = config or {}
@@ -116,8 +116,8 @@ class AetherraOSLauncher:
         # Initialize Plugin Manager
         await self._load_plugin_manager(system_config)
 
-        # Initialize Lyrixa Intelligence
-        await self._load_lyrixa_engine(system_config)
+        # Initialize Aetherra Native Engine
+        await self._load_aetherra_engine(system_config)
 
         # Initialize Scheduler
         await self._load_scheduler(system_config)
@@ -131,9 +131,9 @@ class AetherraOSLauncher:
         logger.info("[OK] All core systems loaded")
 
     async def _load_memory_system(self, config: Dict):
-        """🧠 Load the quantum memory system."""
+        """[BRAIN] Load the quantum memory system."""
         try:
-            logger.info("🧠 Loading Quantum Memory System...")
+            logger.info("[BRAIN] Loading Quantum Memory System...")
 
             # Try to import and initialize memory system
             try:
@@ -159,17 +159,18 @@ class AetherraOSLauncher:
                 )
 
         except Exception as e:
-            logger.error(f"❌ Failed to load memory system: {e}")
+            logger.error(f"[ERROR] Failed to load memory system: {e}")
             raise
 
     async def _load_plugin_manager(self, config: Dict):
-        """🔌 Load the plugin management system."""
+        """[PLUGIN] Load the plugin management system."""
         try:
-            logger.info("🔌 Loading Plugin Management System...")
+            logger.info("[PLUGIN] Loading Plugin Management System...")
 
             try:
-                from aetherra_core.plugins import plugin_manager
+                from aetherra_core.orchestration.plugin_manager import get_plugin_manager
 
+                plugin_manager = await get_plugin_manager()
                 await plugin_manager.load_all_plugins()
                 self.systems["plugins"] = plugin_manager
                 await register_service(
@@ -189,43 +190,43 @@ class AetherraOSLauncher:
                 )
 
         except Exception as e:
-            logger.error(f"❌ Failed to load plugin manager: {e}")
+            logger.error(f"[ERROR] Failed to load plugin manager: {e}")
             raise
 
-    async def _load_lyrixa_engine(self, config: Dict):
-        """🤖 Load the Lyrixa intelligence engine."""
+    async def _load_aetherra_engine(self, config: Dict):
+        """� Load the native Aetherra execution engine."""
         try:
-            logger.info("🤖 Loading Lyrixa Intelligence Engine...")
+            logger.info("[ENGINE] Loading Aetherra Native Engine...")
 
             try:
-                from aetherra_core.engine import lyrixa_engine
+                from aetherra_core.engine import aetherra_engine
 
-                await lyrixa_engine.boot()
-                self.systems["lyrixa"] = lyrixa_engine
+                engine_instance = await aetherra_engine.boot()
+                self.systems["aetherra"] = engine_instance
                 await register_service(
-                    "lyrixa_engine",
-                    lyrixa_engine,
-                    metadata={"type": "intelligence", "version": "1.0"},
+                    "aetherra_engine",
+                    engine_instance,
+                    metadata={"type": "native_engine", "version": "1.0"},
                 )
-                logger.info("[OK] Lyrixa Intelligence online")
+                logger.info("[OK] Aetherra Native Engine online")
             except ImportError:
-                logger.warning("[WARN] Using mock Lyrixa engine")
-                mock_lyrixa = MockLyrixaEngine()
-                self.systems["lyrixa"] = mock_lyrixa
+                logger.warning("[WARN] Using mock Aetherra engine")
+                mock_aetherra = MockAetherraEngine()
+                self.systems["aetherra"] = mock_aetherra
                 await register_service(
-                    "lyrixa_engine",
-                    mock_lyrixa,
+                    "aetherra_engine",
+                    mock_aetherra,
                     metadata={"type": "mock", "version": "1.0"},
                 )
 
         except Exception as e:
-            logger.error(f"❌ Failed to load Lyrixa engine: {e}")
+            logger.error(f"[ERROR] Failed to load Aetherra engine: {e}")
             raise
 
     async def _load_scheduler(self, config: Dict):
-        """📅 Load the task scheduler."""
+        """[SCHED] Load the task scheduler."""
         try:
-            logger.info("📅 Loading Task Scheduler...")
+            logger.info("[SCHED] Loading Task Scheduler...")
 
             try:
                 from aetherra_core.orchestration import scheduler
@@ -249,50 +250,31 @@ class AetherraOSLauncher:
                 )
 
         except Exception as e:
-            logger.error(f"❌ Failed to load scheduler: {e}")
+            logger.error(f"[ERROR] Failed to load scheduler: {e}")
             raise
 
     async def _load_aetherra_hub(self, config: Dict):
         """🏪 Load the Aetherra Hub (Plugin Marketplace)."""
         try:
-            logger.info("🏪 Loading Aetherra Hub (Plugin Marketplace)...")
+            logger.info("[HUB] Loading Aetherra Hub (Plugin Marketplace)...")
 
             if config.get("hub_enabled", True):
                 try:
-                    # Try to import and start the hub server
-                    import subprocess
-                    import sys
-                    from pathlib import Path
+                    # Import and start the built-in Python Hub server
+                    from aetherra_hub_server import start_hub_server
 
-                    hub_path = Path("Aetherra/aetherra_hub/aetherra_hub")
-                    if hub_path.exists():
-                        logger.info("🏪 Starting Aetherra Hub server...")
+                    logger.info("[HUB] Starting Aetherra Hub server...")
 
-                        # Start the Hub server in background
-                        if sys.platform == "win32":
-                            hub_process = subprocess.Popen(
-                                [str(hub_path / "start-aetherra-hub.bat")],
-                                cwd=str(hub_path),
-                                shell=True,
-                                stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL
-                            )
-                        else:
-                            hub_process = subprocess.Popen(
-                                ["./start-aetherra-hub.sh"],
-                                cwd=str(hub_path),
-                                shell=True,
-                                stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL
-                            )
+                    # Start the built-in Hub server
+                    hub_server = start_hub_server(port=3001)
 
-                        # Create mock hub service for tracking
-                        mock_hub = MockAetherraHub(hub_process)
-                        self.systems["aetherra_hub"] = mock_hub
+                    if hub_server and hub_server.is_running():
+                        # Register the Hub service
+                        self.systems["aetherra_hub"] = hub_server
                         await register_service(
                             "aetherra_hub",
-                            mock_hub,
-                            metadata={"type": "marketplace", "version": "1.0", "port": 3001},
+                            hub_server,
+                            metadata={"type": "marketplace", "version": "2.0", "port": 3001},
                         )
 
                         # Start plugin discovery service
@@ -300,30 +282,31 @@ class AetherraOSLauncher:
 
                         logger.info("[OK] Aetherra Hub online at http://localhost:3001")
                     else:
-                        logger.warning("[WARN] Aetherra Hub not found at expected path")
+                        logger.warning("[WARN] Aetherra Hub failed to start")
 
                 except Exception as hub_error:
                     logger.warning(f"[WARN] Failed to start Aetherra Hub: {hub_error}")
                     # Create a placeholder service anyway
-                    mock_hub = MockAetherraHub(None)
+                    from aetherra_hub_server import AetherraHubServer
+                    mock_hub = AetherraHubServer(3001)
                     self.systems["aetherra_hub"] = mock_hub
                     await register_service(
                         "aetherra_hub",
                         mock_hub,
-                        metadata={"type": "marketplace", "version": "1.0", "status": "offline"},
+                        metadata={"type": "marketplace", "version": "2.0", "status": "offline"},
                     )
             else:
-                logger.info("ℹ️ Aetherra Hub disabled in configuration")
+                logger.info("[INFO] Aetherra Hub disabled in configuration")
 
         except Exception as e:
-            logger.error(f"❌ Failed to load Aetherra Hub: {e}")
+            logger.error(f"[ERROR] Failed to load Aetherra Hub: {e}")
             # Don't raise - Hub is optional
             pass
 
     async def _start_plugin_discovery(self):
-        """🔍 Start the plugin discovery service."""
+        """[SCAN] Start the plugin discovery service."""
         try:
-            logger.info("🔍 Starting plugin discovery service...")
+            logger.info("[SCAN] Starting plugin discovery service...")
 
             # Import the plugin discovery service
             from aetherra_plugin_discovery import AetherraPluginDiscovery
@@ -341,14 +324,14 @@ class AetherraOSLauncher:
             logger.info(f"[OK] Plugin discovery complete: {summary['total_plugins']} plugins found")
 
         except Exception as e:
-            logger.error(f"❌ Failed to start plugin discovery: {e}")
+            logger.error(f"[ERROR] Failed to start plugin discovery: {e}")
             # Continue without plugin discovery
 
     async def _load_gui_system(self, config: Dict):
         """🖥️ Load the GUI system (if available)."""
         try:
             if config.get("gui_enabled", True):
-                logger.info("🖥️ Loading GUI System...")
+                logger.info("[GUI] Loading GUI System...")
 
                 try:
                     from lyrixa.gui import main_gui
@@ -363,16 +346,16 @@ class AetherraOSLauncher:
                     )
                     logger.info("[OK] GUI System online")
                 except ImportError:
-                    logger.info("ℹ️ GUI system not available")
+                    logger.info("[INFO] GUI system not available")
             else:
-                logger.info("ℹ️ GUI disabled in configuration")
+                logger.info("[INFO] GUI disabled in configuration")
 
         except Exception as e:
             logger.warning(f"[WARN] GUI system failed to load: {e}")
 
     async def _start_kernel_loop(self):
-        """⚡ Start the OS kernel loop."""
-        logger.info("⚡ Phase 3: Starting OS Kernel Loop...")
+        """[SYS] Start the OS kernel loop."""
+        logger.info("[SYS] Phase 3: Starting OS Kernel Loop...")
 
         self.kernel_loop = get_kernel()
 
@@ -380,7 +363,7 @@ class AetherraOSLauncher:
         self.kernel_loop.inject_systems(
             self.systems.get("memory"),
             self.systems.get("plugins"),
-            self.systems.get("lyrixa"),
+            self.systems.get("aetherra"),
             self.systems.get("scheduler"),
             self.service_registry,
         )
@@ -396,8 +379,8 @@ class AetherraOSLauncher:
         logger.info("[OK] OS Kernel Loop started")
 
     async def _activate_systems(self):
-        """🔥 Activate all systems and establish connections."""
-        logger.info("🔥 Phase 4: Activating Systems...")
+        """[INIT] Activate all systems and establish connections."""
+        logger.info("[INIT] Phase 4: Activating Systems...")
 
         # Wait a moment for systems to stabilize
         await asyncio.sleep(2)
@@ -423,13 +406,13 @@ class AetherraOSLauncher:
                 from aetherra_service_registry import ServiceStatus
                 await self.service_registry.update_service_status("plugin_manager", ServiceStatus.HEALTHY)
 
-        # Activate Lyrixa consciousness
-        if "lyrixa" in self.systems and hasattr(self.systems["lyrixa"], "wake_up"):
-            await self.systems["lyrixa"].wake_up()
-            # Mark Lyrixa engine as healthy
+        # Activate Aetherra consciousness
+        if "aetherra" in self.systems and hasattr(self.systems["aetherra"], "wake_up"):
+            await self.systems["aetherra"].wake_up()
+            # Mark Aetherra engine as healthy
             if self.service_registry and CORE_AVAILABLE:
                 from aetherra_service_registry import ServiceStatus
-                await self.service_registry.update_service_status("lyrixa_engine", ServiceStatus.HEALTHY)
+                await self.service_registry.update_service_status("aetherra_engine", ServiceStatus.HEALTHY)
 
         # Mark kernel loop as healthy (it should be running by now)
         if self.service_registry and CORE_AVAILABLE:
@@ -439,30 +422,36 @@ class AetherraOSLauncher:
         logger.info("[OK] All systems activated")
 
     async def _validate_system_health(self):
-        """🩺 Validate system health and connectivity."""
-        logger.info("🩺 Phase 5: Validating System Health...")
+        """[HEALTH] Validate system health and connectivity."""
+        logger.info("[HEALTH] Phase 5: Validating System Health...")
 
         # Check service registry status
         registry_status = self.service_registry.get_registry_status()
-        logger.info(f"📊 Services: {registry_status['total_services']} registered")
+        logger.info(f"[STATS] Services: {registry_status['total_services']} registered")
 
         # Check kernel status
         kernel_status = self.kernel_loop.get_status()
-        logger.info(f"⚡ Kernel: {kernel_status['cycle_count']} cycles completed")
+        logger.info(f"[SYS] Kernel: {kernel_status['cycle_count']} cycles completed")
+
+        # Give services a moment to fully register
+        await asyncio.sleep(0.5)
 
         # Validate critical services
         critical_services = [
             "memory_system",
             "plugin_manager",
-            "lyrixa_engine",
+            "aetherra_engine",
             "kernel_loop",
         ]
         for service_name in critical_services:
-            service = self.service_registry.get_service(service_name)
-            if service:
-                logger.info(f"[OK] {service_name}: Online")
+            service_info = self.service_registry.get_service_info(service_name)
+            if service_info:
+                if service_info.status.value in ['healthy', 'starting']:
+                    logger.info(f"[OK] {service_name}: Online ({service_info.status.value})")
+                else:
+                    logger.warning(f"[WARN] {service_name}: Status {service_info.status.value}")
             else:
-                logger.warning(f"[WARN] {service_name}: Not available")
+                logger.warning(f"[WARN] {service_name}: Not registered")
 
         logger.info("[OK] System health validation complete")
 
@@ -471,22 +460,22 @@ class AetherraOSLauncher:
         startup_duration = time.time() - self.startup_time
 
         logger.info("=" * 60)
-        logger.info("🎉 AETHERRA AI OPERATING SYSTEM IS NOW ONLINE! 🎉")
+        logger.info("[SUCCESS] AETHERRA AI OPERATING SYSTEM IS NOW ONLINE! [SUCCESS]")
         logger.info("=" * 60)
-        logger.info(f"🚀 Startup completed in {startup_duration:.2f} seconds")
-        logger.info(f"🌐 Services: {len(self.service_registry.list_services())} active")
-        logger.info(f"⚡ Kernel cycles: {self.kernel_loop.get_status()['cycle_count']}")
-        logger.info("🧠 Lyrixa consciousness: Active")
-        logger.info("🔌 Plugin ecosystem: Ready")
-        logger.info("💾 Quantum memory: Operational")
-        logger.info("📅 Task scheduler: Running")
+        logger.info(f"[LAUNCH] Startup completed in {startup_duration:.2f} seconds")
+        logger.info(f"[NET] Services: {len(self.service_registry.list_services())} active")
+        logger.info(f"[SYS] Kernel cycles: {self.kernel_loop.get_status()['cycle_count']}")
+        logger.info("[BRAIN] Aetherra consciousness: Active")
+        logger.info("[PLUGIN] Plugin ecosystem: Ready")
+        logger.info("[MEM] Quantum memory: Operational")
+        logger.info("[SCHED] Task scheduler: Running")
         logger.info("=" * 60)
 
-        # Send first thought to Lyrixa
+        # Send first thought to Aetherra
         if self.kernel_loop:
             await self.kernel_loop.add_task(
                 {
-                    "type": "lyrixa_thought",
+                    "type": "aetherra_thought",
                     "data": {
                         "thought": "I am alive! Aetherra OS has come online.",
                         "context": "system_startup",
@@ -499,8 +488,8 @@ class AetherraOSLauncher:
         self.running = True
 
     async def _main_operation_loop(self):
-        """🔄 Main operation loop - keeps the OS running."""
-        logger.info("🔄 Entering main operation loop...")
+        """[LOOP] Main operation loop - keeps the OS running."""
+        logger.info("[LOOP] Entering main operation loop...")
 
         try:
             while self.running:
@@ -513,13 +502,13 @@ class AetherraOSLauncher:
                     kernel_healthy = self.kernel_loop.running
 
                     if not (registry_healthy and kernel_healthy):
-                        logger.error("❌ Critical system failure detected")
+                        logger.error("[ERROR] Critical system failure detected")
                         break
 
         except KeyboardInterrupt:
             logger.info("🛑 Received shutdown signal")
         except Exception as e:
-            logger.error(f"❌ Main operation loop error: {e}")
+            logger.error(f"[ERROR] Main operation loop error: {e}")
         finally:
             await self._graceful_shutdown()
 
@@ -543,7 +532,7 @@ class AetherraOSLauncher:
                     logger.info(f"🛑 Shutting down {system_name}...")
                     await system.shutdown()
             except Exception as e:
-                logger.error(f"❌ Error shutting down {system_name}: {e}")
+                logger.error(f"[ERROR] Error shutting down {system_name}: {e}")
 
         logger.info("[OK] Graceful shutdown complete")
 
@@ -587,7 +576,7 @@ class MockMemorySystem:
                     await update_heartbeat(self.name)
                     await asyncio.sleep(60)  # Heartbeat every minute
                 except Exception as e:
-                    logger.error(f"❌ Heartbeat error for {self.name}: {e}")
+                    logger.error(f"[ERROR] Heartbeat error for {self.name}: {e}")
                     await asyncio.sleep(60)
 
     async def light_optimization(self):
@@ -633,23 +622,23 @@ class MockPluginManager:
                     await update_heartbeat(self.name)
                     await asyncio.sleep(60)  # Heartbeat every minute
                 except Exception as e:
-                    logger.error(f"❌ Heartbeat error for {self.name}: {e}")
+                    logger.error(f"[ERROR] Heartbeat error for {self.name}: {e}")
                     await asyncio.sleep(60)
 
     async def set_hub_integration(self, hub_service):
         """Connect to Aetherra Hub for plugin discovery."""
         self.hub_integration = hub_service
-        logger.info("🔗 Plugin Manager connected to Aetherra Hub")
+        logger.info("[LINK] Plugin Manager connected to Aetherra Hub")
 
     async def browse_marketplace(self, query="", filters=None):
         """Browse plugins in the Aetherra Hub marketplace."""
         if self.hub_integration:
             try:
                 results = await self.hub_integration.search_plugins(query, filters)
-                logger.info(f"🔍 Found {results.get('total', 0)} plugins in marketplace")
+                logger.info(f"[SCAN] Found {results.get('total', 0)} plugins in marketplace")
                 return results
             except Exception as e:
-                logger.error(f"❌ Marketplace browse error: {e}")
+                logger.error(f"[ERROR] Marketplace browse error: {e}")
                 return {"plugins": [], "total": 0}
         else:
             logger.warning("[WARN] No Hub integration available for marketplace browsing")
@@ -663,7 +652,7 @@ class MockPluginManager:
                 logger.info(f"⭐ Retrieved {len(featured)} featured plugins")
                 return featured
             except Exception as e:
-                logger.error(f"❌ Featured plugins error: {e}")
+                logger.error(f"[ERROR] Featured plugins error: {e}")
                 return []
         else:
             logger.warning("[WARN] No Hub integration available for featured plugins")
@@ -680,7 +669,7 @@ class MockPluginManager:
                 logger.info(f"[OK] Plugin '{plugin_name}' installed successfully")
                 return {"status": "success", "plugin": plugin_name, "version": version}
             except Exception as e:
-                logger.error(f"❌ Plugin installation error: {e}")
+                logger.error(f"[ERROR] Plugin installation error: {e}")
                 return {"status": "error", "error": str(e)}
         else:
             logger.warning("[WARN] No Hub integration available for plugin installation")
@@ -703,9 +692,9 @@ class MockPluginManager:
             self.heartbeat_task.cancel()
 
 
-class MockLyrixaEngine:
+class MockAetherraEngine:
     def __init__(self):
-        self.name = "lyrixa_engine"
+        self.name = "aetherra_engine"
         self.heartbeat_task = None
 
     async def boot(self):
@@ -725,7 +714,7 @@ class MockLyrixaEngine:
                     await update_heartbeat(self.name)
                     await asyncio.sleep(60)  # Heartbeat every minute
                 except Exception as e:
-                    logger.error(f"❌ Heartbeat error for {self.name}: {e}")
+                    logger.error(f"[ERROR] Heartbeat error for {self.name}: {e}")
                     await asyncio.sleep(60)
 
     async def process_thought(self, data):
@@ -740,6 +729,34 @@ class MockLyrixaEngine:
     async def shutdown(self):
         if self.heartbeat_task:
             self.heartbeat_task.cancel()
+
+
+class MockAetherraEngine:
+    def __init__(self):
+        self.name = "aetherra_engine"
+        self.variables = {}
+        self.functions = {}
+        self.execution_context = {
+            "current_model": "mock",
+            "conversation_history": [],
+            "memory": {},
+            "goals": [],
+            "agents": {},
+        }
+
+    def execute_aetherra(self, code: str):
+        """Mock execution of Aetherra code"""
+        return {
+            "status": "success",
+            "message": "Mock execution completed",
+            "results": ["Mock result"],
+        }
+
+    def get_current_model(self):
+        return "mock-model"
+
+    def list_available_models(self):
+        return ["mock-model"]
 
 
 class MockScheduler:
@@ -761,7 +778,7 @@ class MockScheduler:
                     await update_heartbeat(self.name)
                     await asyncio.sleep(60)  # Heartbeat every minute
                 except Exception as e:
-                    logger.error(f"❌ Heartbeat error for {self.name}: {e}")
+                    logger.error(f"[ERROR] Heartbeat error for {self.name}: {e}")
                     await asyncio.sleep(60)
 
     async def shutdown(self):
@@ -791,7 +808,7 @@ class MockAetherraHub:
                     await update_heartbeat(self.name)
                     await asyncio.sleep(60)  # Heartbeat every minute
                 except Exception as e:
-                    logger.error(f"❌ Heartbeat error for {self.name}: {e}")
+                    logger.error(f"[ERROR] Heartbeat error for {self.name}: {e}")
                     await asyncio.sleep(60)
 
     async def get_featured_plugins(self):
@@ -854,21 +871,21 @@ class MockAetherraHub:
                     self.hub_process.kill()
                 logger.info("[OK] Aetherra Hub server stopped")
             except Exception as e:
-                logger.error(f"❌ Error stopping Hub server: {e}")
+                logger.error(f"[ERROR] Error stopping Hub server: {e}")
 
 
 async def main():
-    """🚀 Main entry point for Aetherra OS."""
+    """[LAUNCH] Main entry point for Aetherra OS."""
     parser = argparse.ArgumentParser(
-        description="🌌 Aetherra AI Operating System Launcher",
+        description="[CORE] Aetherra AI Operating System Launcher",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-🚀 Launch Modes:
+[LAUNCH] Launch Modes:
   --mode full      Launch complete AI Operating System (default)
   --mode minimal   Launch with minimal systems only
   --mode test      Launch in test mode with mocks
 
-🔥 FLIP THE SWITCH - ACTIVATE AETHERRA! 🔥
+[INIT] FLIP THE SWITCH - ACTIVATE AETHERRA! [INIT]
         """,
     )
 
@@ -898,7 +915,7 @@ async def main():
             with open(args.config, "r") as f:
                 config = json.load(f)
         except Exception as e:
-            logger.error(f"❌ Failed to load config: {e}")
+            logger.error(f"[ERROR] Failed to load config: {e}")
             return 1
 
     # Override GUI setting
@@ -936,24 +953,24 @@ async def main():
         logger.info("🛑 Interrupted by user")
         return 0
     except Exception as e:
-        logger.error(f"❌ Launch failed: {e}")
+        logger.error(f"[ERROR] Launch failed: {e}")
         return 1
 
 
 if __name__ == "__main__":
     """
-    🌌 AETHERRA AI OPERATING SYSTEM
+    [CORE] AETHERRA AI OPERATING SYSTEM
     ===============================
 
-    🚀 FLIP THE SWITCH - ACTIVATE AETHERRA!
+    [LAUNCH] FLIP THE SWITCH - ACTIVATE AETHERRA!
 
     This script transforms Aetherra from a collection of components
     into a living, breathing AI Operating System.
     """
 
-    print("🌌 AETHERRA AI OPERATING SYSTEM LAUNCHER")
+    print("[CORE] AETHERRA AI OPERATING SYSTEM LAUNCHER")
     print("=======================================")
-    print("🔥 Ready to flip the switch and bring Aetherra online!")
+    print("[INIT] Ready to flip the switch and bring Aetherra online!")
     print()
 
     exit_code = asyncio.run(main())

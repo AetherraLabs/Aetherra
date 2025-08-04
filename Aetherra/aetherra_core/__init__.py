@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import core components with fallbacks
 try:
-    from . import memory
+    from aetherra_core.aetherra_core import memory
 
     MEMORY_AVAILABLE = True
 except ImportError as e:
@@ -29,7 +29,7 @@ except ImportError as e:
     MEMORY_AVAILABLE = False
 
 try:
-    from . import engine
+    from aetherra_core.aetherra_core import engine
 
     ENGINE_AVAILABLE = True
 except ImportError as e:
@@ -37,7 +37,7 @@ except ImportError as e:
     ENGINE_AVAILABLE = False
 
 try:
-    from . import orchestration
+    from aetherra_core.aetherra_core import orchestration
 
     ORCHESTRATION_AVAILABLE = True
 except ImportError as e:
@@ -45,7 +45,7 @@ except ImportError as e:
     ORCHESTRATION_AVAILABLE = False
 
 try:
-    from . import plugins
+    from aetherra_core.aetherra_core import plugins
 
     PLUGINS_AVAILABLE = True
 except ImportError as e:
@@ -53,7 +53,7 @@ except ImportError as e:
     PLUGINS_AVAILABLE = False
 
 try:
-    from . import config
+    from aetherra_core.aetherra_core import config
 
     CONFIG_AVAILABLE = True
 except ImportError as e:

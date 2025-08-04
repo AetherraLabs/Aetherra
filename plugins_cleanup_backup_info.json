@@ -1,0 +1,50 @@
+[
+  {
+    "action": "removed",
+    "file": "Aetherra\\plugins\\agent_adapters\\agent_orchestrator_1.py",
+    "size": 26172,
+    "backup_location": null
+  },
+  {
+    "action": "removed",
+    "file": "Aetherra\\plugins\\sample_plugin_1.py",
+    "size": 1415,
+    "backup_location": null
+  },
+  {
+    "action": "removed",
+    "file": "Aetherra\\plugins\\sample_plugin_2.py",
+    "size": 1436,
+    "backup_location": null
+  },
+  {
+    "action": "removed",
+    "file": "Aetherra\\plugins\\agent_adapters\\agent_1.py",
+    "size": 9996,
+    "backup_location": null
+  },
+  {
+    "action": "moved",
+    "from": "Aetherra\\plugins\\agent_adapters\\agent_base.py",
+    "to": "Aetherra\\plugins\\core\\agent_base.py",
+    "size": 2547
+  },
+  {
+    "action": "moved",
+    "from": "Aetherra\\plugins\\agent_adapters\\agent_bridge.py",
+    "to": "Aetherra\\plugins\\agent_components\\agent_bridge.py",
+    "size": 4059
+  },
+  {
+    "action": "moved",
+    "from": "Aetherra\\plugins\\agent_adapters\\agent_discovery_and_integration.py",
+    "to": "Aetherra\\plugins\\agent_components\\agent_discovery_and_integration.py",
+    "size": 18462
+  },
+  {
+    "action": "moved",
+    "from": "Aetherra\\plugins\\agent_adapters\\agent_orchestrator.py",
+    "to": "Aetherra\\plugins\\agent_components\\agent_orchestrator.py",
+    "size": 26172
+  }
+]

@@ -1,8 +1,8 @@
 """
-🧠 Lyrixa Engine Core
-======================
+🧠 Aetherra Engine Core
+========================
 
-Main execution engine for Lyrixa AI system. Provides conversational AI,
+Main execution engine for Aetherra AI system. Provides conversational AI,
 reasoning, memory management, and intelligent task orchestration.
 """
 
@@ -14,10 +14,10 @@ from typing import Any, Dict, List, Optional
 
 # Try to import components with graceful fallbacks
 try:
-    from ..memory.memory_core import LyrixaMemorySystem
+    from ..memory.memory_core import AetherraMemorySystem
 except ImportError:
     # Create a mock memory system
-    class LyrixaMemorySystem:
+    class AetherraMemorySystem:
         def __init__(self, *args, **kwargs):
             pass
         async def store(self, *args, **kwargs):
@@ -69,7 +69,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-class LyrixaEngine:
+class AetherraEngine:
     """
     Main Lyrixa execution engine that coordinates all subsystems
     """
@@ -81,7 +81,7 @@ class LyrixaEngine:
         improvement_db_path: str = "lyrixa_improvement.db",
         orchestrator_db_path: str = "lyrixa_orchestrator.db",
     ):
-        self.memory_system = LyrixaMemorySystem(memory_db_path)
+        self.memory_system = AetherraMemorySystem(memory_db_path)
         self.reasoning_engine = ReasoningEngine(reasoning_db_path)
         self.improvement_engine = SelfImprovementEngine(improvement_db_path)
         self.plugin_executor = PluginChainExecutor()
@@ -420,12 +420,20 @@ class LyrixaEngine:
 
 
 # Global Lyrixa engine instance
-lyrixa_engine = LyrixaEngine()
+aetherra_engine = AetherraEngine()
 
 
-async def test_lyrixa_engine():
-    """Test the Lyrixa engine"""
-    engine = LyrixaEngine()
+async def boot():
+    """Boot the global Aetherra engine instance"""
+    global aetherra_engine
+    if not aetherra_engine.initialized:
+        await aetherra_engine.initialize()
+    return aetherra_engine
+
+
+async def test_aetherra_engine():
+    """Test the Aetherra engine"""
+    engine = AetherraEngine()
 
     try:
         # Initialize engine
@@ -464,4 +472,4 @@ async def test_lyrixa_engine():
 
 
 if __name__ == "__main__":
-    asyncio.run(test_lyrixa_engine())
+    asyncio.run(test_aetherra_engine())

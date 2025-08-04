@@ -94,7 +94,7 @@ Archived and historical documentation:
 # Setup guides
 docs-organized/guides/
 
-# Latest completions 
+# Latest completions
 docs-organized/reports/completion/
 
 # Development roadmaps

@@ -16,10 +16,10 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 try:
-    from Aetherra.lyrixa.advanced_memory_integration import (
+    from Aetherra.lyrixa.memory.advanced_memory_integration import (
         create_advanced_memory_manager,
     )
-    from Aetherra.lyrixa.enhanced_conversation_manager import (
+    from Aetherra.lyrixa.agents.enhanced_conversation_manager import (
         create_enhanced_conversation_manager,
     )
 
