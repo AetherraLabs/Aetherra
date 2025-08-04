@@ -72,7 +72,7 @@
 
 ---
 
-**Ready to begin comprehensive analysis?** 
+**Ready to begin comprehensive analysis?**
 
 This will be an iterative process where we'll:
 1. Start with automated scanning

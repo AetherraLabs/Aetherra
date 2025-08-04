@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🌌 Aetherra OS Kernel Loop
+[CORE] Aetherra OS Kernel Loop
 ==========================
 The core heartbeat and orchestration engine for the AI-native Operating System.
 
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 class AetherraKernelLoop:
     """
-    🧠 The Core AI OS Kernel Loop
+    [BRAIN] The Core AI OS Kernel Loop
 
     Orchestrates all system operations:
     - Memory processing and optimization
@@ -45,7 +45,7 @@ class AetherraKernelLoop:
         # Core systems (will be injected by startup)
         self.memory_system = None
         self.plugin_manager = None
-        self.lyrixa_engine = None
+        self.aetherra_engine = None
         self.scheduler = None
         self.service_registry = None
 
@@ -64,19 +64,19 @@ class AetherraKernelLoop:
         self.background_queue = asyncio.Queue()
 
     def inject_systems(
-        self, memory_system, plugin_manager, lyrixa_engine, scheduler, service_registry
+        self, memory_system, plugin_manager, aetherra_engine, scheduler, service_registry
     ):
-        """🔌 Inject core system references for orchestration."""
+        """[PLUGIN] Inject core system references for orchestration."""
         self.memory_system = memory_system
         self.plugin_manager = plugin_manager
-        self.lyrixa_engine = lyrixa_engine
+        self.aetherra_engine = aetherra_engine
         self.scheduler = scheduler
         self.service_registry = service_registry
-        logger.info("🔗 Core systems injected into kernel loop")
+        logger.info("[LINK] Core systems injected into kernel loop")
 
     async def start_kernel_loop(self):
-        """🚀 Start the main OS kernel loop."""
-        logger.info("🌌 Starting Aetherra OS Kernel Loop...")
+        """[LAUNCH] Start the main OS kernel loop."""
+        logger.info("[CORE] Starting Aetherra OS Kernel Loop...")
         self.running = True
         self.start_time = datetime.now()
 
@@ -93,7 +93,7 @@ class AetherraKernelLoop:
         try:
             await asyncio.gather(*tasks)
         except Exception as e:
-            logger.error(f"❌ Kernel loop error: {e}")
+            logger.error(f"[ERROR] Kernel loop error: {e}")
             await self.shutdown()
 
     async def _heartbeat_loop(self):
@@ -104,11 +104,11 @@ class AetherraKernelLoop:
                     await self.service_registry.update_heartbeat("kernel_loop")
                 await asyncio.sleep(60)  # Heartbeat every minute
             except Exception as e:
-                logger.error(f"❌ Kernel heartbeat error: {e}")
+                logger.error(f"[ERROR] Kernel heartbeat error: {e}")
                 await asyncio.sleep(60)
 
     async def _main_processing_loop(self):
-        """🔄 Main processing cycle - handles events and orchestration."""
+        """[LOOP] Main processing cycle - handles events and orchestration."""
         while self.running:
             cycle_start = time.time()
 
@@ -134,7 +134,7 @@ class AetherraKernelLoop:
                 await asyncio.sleep(sleep_time)
 
             except Exception as e:
-                logger.error(f"❌ Main processing loop error: {e}")
+                logger.error(f"[ERROR] Main processing loop error: {e}")
                 self.metrics["errors_count"] += 1
                 await asyncio.sleep(1.0)
 
@@ -157,7 +157,7 @@ class AetherraKernelLoop:
                 await asyncio.sleep(60)  # Run every minute
 
             except Exception as e:
-                logger.error(f"❌ Background maintenance error: {e}")
+                logger.error(f"[ERROR] Background maintenance error: {e}")
                 await asyncio.sleep(60)
 
     async def _health_monitoring_loop(self):
@@ -168,7 +168,7 @@ class AetherraKernelLoop:
                 health_status = await self._gather_health_metrics()
 
                 # Log health status
-                logger.debug(f"🩺 System Health: {health_status}")
+                logger.debug(f"[HEALTH] System Health: {health_status}")
 
                 # Alert on critical issues
                 if health_status.get("critical_issues"):
@@ -179,11 +179,11 @@ class AetherraKernelLoop:
                 await asyncio.sleep(30)  # Check every 30 seconds
 
             except Exception as e:
-                logger.error(f"❌ Health monitoring error: {e}")
+                logger.error(f"[ERROR] Health monitoring error: {e}")
                 await asyncio.sleep(30)
 
     async def _memory_optimization_loop(self):
-        """🧠 Continuous memory system optimization."""
+        """[BRAIN] Continuous memory system optimization."""
         while self.running:
             try:
                 if self.memory_system:
@@ -193,11 +193,11 @@ class AetherraKernelLoop:
                 await asyncio.sleep(600)  # Every 10 minutes
 
             except Exception as e:
-                logger.error(f"❌ Memory optimization error: {e}")
+                logger.error(f"[ERROR] Memory optimization error: {e}")
                 await asyncio.sleep(600)
 
     async def _plugin_orchestration_loop(self):
-        """🔌 Plugin coordination and execution."""
+        """[PLUGIN] Plugin coordination and execution."""
         while self.running:
             try:
                 if self.plugin_manager:
@@ -207,7 +207,7 @@ class AetherraKernelLoop:
                 await asyncio.sleep(120)  # Every 2 minutes
 
             except Exception as e:
-                logger.error(f"❌ Plugin orchestration error: {e}")
+                logger.error(f"[ERROR] Plugin orchestration error: {e}")
                 await asyncio.sleep(120)
 
     async def _check_night_cycle(self):
@@ -235,8 +235,8 @@ class AetherraKernelLoop:
                 await self.plugin_manager.optimize_plugins()
 
             logger.info("🌙 Night Cycle: System Reflection...")
-            if self.lyrixa_engine:
-                await self.lyrixa_engine.reflect_on_day()
+            if self.aetherra_engine:
+                await self.aetherra_engine.reflect_on_day()
 
             logger.info("🌙 Night Cycle: Cleanup and Maintenance...")
             await self._cleanup_temporary_files()
@@ -244,7 +244,7 @@ class AetherraKernelLoop:
             logger.info("[OK] Night Cycle completed successfully")
 
         except Exception as e:
-            logger.error(f"❌ Night cycle error: {e}")
+            logger.error(f"[ERROR] Night cycle error: {e}")
 
     async def _process_task_queue(self, queue: asyncio.Queue, max_tasks: int = 5):
         """📋 Process tasks from a priority queue."""
@@ -257,10 +257,10 @@ class AetherraKernelLoop:
             except asyncio.TimeoutError:
                 break
             except Exception as e:
-                logger.error(f"❌ Task processing error: {e}")
+                logger.error(f"[ERROR] Task processing error: {e}")
 
     async def _execute_task(self, task: Dict[str, Any]):
-        """⚡ Execute a single task."""
+        """[SYS] Execute a single task."""
         try:
             task_type = task.get("type")
             task_data = task.get("data", {})
@@ -271,17 +271,19 @@ class AetherraKernelLoop:
             elif task_type == "plugin_invoke":
                 if self.plugin_manager:
                     await self.plugin_manager.invoke_plugin(task_data)
-            elif task_type == "lyrixa_thought":
-                if self.lyrixa_engine:
-                    await self.lyrixa_engine.process_thought(task_data)
+            elif task_type == "aetherra_thought":
+                if self.aetherra_engine:
+                    # Process thought as a message to the Aetherra engine
+                    thought_content = task_data.get("content", task_data.get("message", str(task_data)))
+                    await self.aetherra_engine.process_message(thought_content)
             else:
                 logger.warning(f"[WARN] Unknown task type: {task_type}")
 
         except Exception as e:
-            logger.error(f"❌ Task execution error: {e}")
+            logger.error(f"[ERROR] Task execution error: {e}")
 
     async def _gather_health_metrics(self) -> Dict[str, Any]:
-        """🩺 Gather comprehensive system health metrics."""
+        """[HEALTH] Gather comprehensive system health metrics."""
         health = {
             "timestamp": datetime.now().isoformat(),
             "kernel_uptime": (datetime.now() - self.start_time).total_seconds()
@@ -306,36 +308,36 @@ class AetherraKernelLoop:
                 health["plugin_status"] = await self.plugin_manager.get_health_status()
 
             # Check Lyrixa health
-            if self.lyrixa_engine and hasattr(self.lyrixa_engine, "get_health_status"):
-                health["lyrixa_status"] = await self.lyrixa_engine.get_health_status()
+            if self.aetherra_engine and hasattr(self.aetherra_engine, "get_health_status"):
+                health["aetherra_status"] = await self.aetherra_engine.get_health_status()
 
         except Exception as e:
-            logger.error(f"❌ Health metrics gathering error: {e}")
+            logger.error(f"[ERROR] Health metrics gathering error: {e}")
             health["critical_issues"].append(f"Health check error: {str(e)}")
 
         return health
 
     async def _perform_health_check(self):
-        """🩺 Perform comprehensive system health check."""
-        logger.info("🩺 Performing system health check...")
+        """[HEALTH] Perform comprehensive system health check."""
+        logger.info("[HEALTH] Performing system health check...")
         health = await self._gather_health_metrics()
 
         # Log health summary
         logger.info(
-            f"📊 Health Summary: Memory={health['memory_status']}, "
+            f"[STATS] Health Summary: Memory={health['memory_status']}, "
             f"Plugins={health['plugin_status']}, Lyrixa={health['lyrixa_status']}"
         )
 
     async def _optimize_memory(self):
-        """🧠 Perform memory optimization."""
+        """[BRAIN] Perform memory optimization."""
         if self.memory_system:
-            logger.info("🧠 Performing memory optimization...")
+            logger.info("[BRAIN] Performing memory optimization...")
             await self.memory_system.optimize()
 
     async def _check_plugin_health(self):
-        """🔌 Check plugin system health."""
+        """[PLUGIN] Check plugin system health."""
         if self.plugin_manager:
-            logger.info("🔌 Checking plugin health...")
+            logger.info("[PLUGIN] Checking plugin health...")
             await self.plugin_manager.health_check()
 
     async def _cleanup_temporary_files(self):
@@ -350,10 +352,10 @@ class AetherraKernelLoop:
                         log_file.unlink()
                         logger.debug(f"🗑️ Cleaned up old log: {log_file}")
         except Exception as e:
-            logger.error(f"❌ Cleanup error: {e}")
+            logger.error(f"[ERROR] Cleanup error: {e}")
 
     def _update_metrics(self, cycle_time: float):
-        """📊 Update kernel performance metrics."""
+        """[STATS] Update kernel performance metrics."""
         self.cycle_count += 1
         self.metrics["total_cycles"] = self.cycle_count
         self.metrics["last_cycle_time"] = cycle_time
@@ -387,7 +389,7 @@ class AetherraKernelLoop:
         logger.info("[OK] Kernel loop shutdown complete")
 
     async def _save_metrics(self):
-        """💾 Save kernel metrics to file."""
+        """[MEM] Save kernel metrics to file."""
         try:
             metrics_file = Path("aetherra_kernel_metrics.json")
             self.metrics["shutdown_time"] = datetime.now().isoformat()
@@ -395,9 +397,9 @@ class AetherraKernelLoop:
             with open(metrics_file, "w") as f:
                 json.dump(self.metrics, f, indent=2)
 
-            logger.info(f"📊 Metrics saved to {metrics_file}")
+            logger.info(f"[STATS] Metrics saved to {metrics_file}")
         except Exception as e:
-            logger.error(f"❌ Failed to save metrics: {e}")
+            logger.error(f"[ERROR] Failed to save metrics: {e}")
 
     def get_status(self) -> Dict[str, Any]:
         """📋 Get current kernel status."""
@@ -421,7 +423,7 @@ kernel_loop = AetherraKernelLoop()
 
 
 async def start_kernel(config: Optional[Dict] = None):
-    """🚀 Start the Aetherra OS kernel loop."""
+    """[LAUNCH] Start the Aetherra OS kernel loop."""
     global kernel_loop
     if config:
         kernel_loop.config.update(config)
@@ -435,7 +437,7 @@ async def shutdown_kernel():
 
 
 def get_kernel() -> AetherraKernelLoop:
-    """🔗 Get the global kernel instance."""
+    """[LINK] Get the global kernel instance."""
     return kernel_loop
 
 

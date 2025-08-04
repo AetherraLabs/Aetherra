@@ -180,7 +180,7 @@ class LyrixaOperatingSystem:
 
             # Phase 3: Plugin Manager
             logger.info("[PLG] Phase 3: Initializing Plugin Manager...")
-            from aetherra_core.plugins import plugin_manager
+            from aetherra_core.orchestration import plugin_manager
 
             await plugin_manager.get_plugin_manager()
             self.plugin_manager = plugin_manager

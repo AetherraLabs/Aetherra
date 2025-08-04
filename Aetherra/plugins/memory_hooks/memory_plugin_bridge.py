@@ -19,9 +19,9 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from Aetherra.aetherra_core.memory.lyrixa_memory_engine import LyrixaMemoryEngine
+from Aetherra.aetherra_core.memory.aetherra_memory_engine import AetherraMemoryEngine
 
-from .plugin_manager_stubs import (
+from Aetherra.plugins.memory_hooks.plugin_manager_stubs import (
     MemoryAwarePluginRouter,
     MemoryEnhancedPluginManager,
     PluginManager,
@@ -44,17 +44,17 @@ class MemoryAwarePluginIntegrator:
     """
 
     def __init__(self):
-        self.memory_engine: Optional[LyrixaMemoryEngine] = None
+        self.memory_engine: Optional[AetherraMemoryEngine] = None
         self.plugin_router: Optional[MemoryAwarePluginRouter] = None
         self.enhanced_plugin_manager: Optional[MemoryEnhancedPluginManager] = None
 
     async def initialize_memory_system(self):
         """Initialize the memory engine and concept manager"""
-        logger.info("🧠 Initializing LyrixaMemoryEngine...")
+        logger.info("🧠 Initializing AetherraMemoryEngine...")
 
         try:
-            self.memory_engine = LyrixaMemoryEngine()
-            # Note: LyrixaMemoryEngine doesn't have an initialize method
+            self.memory_engine = AetherraMemoryEngine()
+            # Note: AetherraMemoryEngine doesn't have an initialize method
             # It initializes automatically on creation
             logger.info("✅ Memory engine initialized successfully")
 

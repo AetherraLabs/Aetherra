@@ -21,12 +21,12 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, List, Optional, Set
 
-from ..memory.fractal_mesh.base import MemoryFragment, MemoryFragmentType
-from ..memory.fractal_mesh.concepts.concept_clusters import (
+from Aetherra.aetherra_core.memory.fractal_mesh.base import MemoryFragment, MemoryFragmentType
+from Aetherra.aetherra_core.memory.fractal_mesh.concepts.concept_clusters import (
     ConceptCluster,
     ConceptClusterManager,
 )
-from ..memory.lyrixa_memory_engine import LyrixaMemoryEngine
+from Aetherra.aetherra_core.memory.lyrixa_memory_engine import LyrixaMemoryEngine
 
 logger = logging.getLogger(__name__)
 

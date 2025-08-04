@@ -89,7 +89,7 @@ except ImportError as e:
     INTELLIGENCE_AVAILABLE = False
 
 try:
-    from Aetherra.lyrixa.conversation_manager import LyrixaEnhancedConversationManager as LyrixaConversationManager
+    from Aetherra.lyrixa.agents.conversation_manager import LyrixaEnhancedConversationManager as LyrixaConversationManager
 
     # Try to import Enhanced Conversational AI (#7)
     try:
@@ -312,7 +312,7 @@ class AetherraWebServer:
         # Initialize Conversation Manager
         if CONVERSATION_MANAGER_AVAILABLE:
             try:
-                from Aetherra.lyrixa.conversation_manager import (
+                from Aetherra.lyrixa.agents.conversation_manager import (
                     LyrixaEnhancedConversationManager,
                 )
 
@@ -931,7 +931,7 @@ class AetherraWebServer:
 
                 # Get specialized agents from the collaboration manager
                 try:
-                    from Aetherra.lyrixa.agent_collaboration_manager import (
+                    from Aetherra.lyrixa.agents.agent_collaboration_manager import (
                         get_agent_status,
                     )
 

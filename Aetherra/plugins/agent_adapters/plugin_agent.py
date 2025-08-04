@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from .agent_base import AgentBase, AgentResponse
+from Aetherra.plugins.agent_adapters.agent_base import AgentBase, AgentResponse
 
 
 class PluginAgent(AgentBase):

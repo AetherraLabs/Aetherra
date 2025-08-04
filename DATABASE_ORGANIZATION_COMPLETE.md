@@ -62,7 +62,7 @@ Aetherra/db/
 - **Aetherra/db/**: Existing database files
 - **Organization**: Database files mixed with other project files
 
-### After  
+### After
 - **Root Directory**: 0 `.db` files ✅
 - **Aetherra/db/**: All database files centralized
 - **Organization**: Clean separation of database storage

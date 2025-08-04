@@ -16,18 +16,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Try to import lyrixa_engine if available
+# Try to import aetherra_engine if available
 try:
-    from .lyrixa_engine import LyrixaEngine
+    from .aetherra_engine import AetherraEngine
 
-    LYRIXA_ENGINE_AVAILABLE = True
+    AETHERRA_ENGINE_AVAILABLE = True
 except ImportError as e:
-    logger.debug(f"LyrixaEngine not available: {e}")
-    LYRIXA_ENGINE_AVAILABLE = False
+    logger.debug(f"AetherraEngine not available: {e}")
+    AETHERRA_ENGINE_AVAILABLE = False
 
     # Create a mock class for development
-    class LyrixaEngine:
-        """Mock LyrixaEngine for development when actual engine isn't available."""
+    class AetherraEngine:
+        """Mock AetherraEngine for development when actual engine isn't available."""
 
         def __init__(self, *args, **kwargs):
             logger.warning("Using mock LyrixaEngine - actual engine not available")
@@ -38,7 +38,7 @@ except ImportError as e:
 
 # Try to import intelligence modules
 try:
-    from . import intelligence
+    from aetherra_core.engine import intelligence
 
     INTELLIGENCE_AVAILABLE = True
 except ImportError as e:
@@ -47,7 +47,7 @@ except ImportError as e:
 
 # Engine status
 ENGINE_SYSTEMS = {
-    "lyrixa": LYRIXA_ENGINE_AVAILABLE,
+    "aetherra": AETHERRA_ENGINE_AVAILABLE,
     "intelligence": INTELLIGENCE_AVAILABLE,
 }
 
@@ -59,9 +59,9 @@ def get_engine_status():
 
 # Export main components
 __all__ = [
-    "LyrixaEngine",
+    "AetherraEngine",
     "get_engine_status",
     "ENGINE_SYSTEMS",
-    "LYRIXA_ENGINE_AVAILABLE",
+    "AETHERRA_ENGINE_AVAILABLE",
     "INTELLIGENCE_AVAILABLE",
 ]

@@ -16,9 +16,9 @@ def test_plugin_registry_import():
 
 # Memory engine
 def test_memory_engine_store_retrieve():
-    from memory.lyrixa_memory_engine import LyrixaMemoryEngine
+    from memory.aetherra_memory_engine import AetherraMemoryEngine
 
-    engine = LyrixaMemoryEngine()
+    engine = AetherraMemoryEngine()
     engine.store("integration test entry", metadata={"test": True})
     results = engine.retrieve("integration")
     assert any("integration test entry" in r["content"] for r in results)

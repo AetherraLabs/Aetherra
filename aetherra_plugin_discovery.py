@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🔌 Aetherra Plugin Discovery Service
+[PLUGIN] Aetherra Plugin Discovery Service
 ====================================
 Automatically discovers and registers local plugins with the Aetherra Hub.
 
@@ -51,7 +51,7 @@ class PluginMetadata:
 
 class AetherraPluginDiscovery:
     """
-    🔍 Plugin Discovery Service
+    [SCAN] Plugin Discovery Service
 
     Discovers and catalogs local plugins, making them available to the Hub.
     """
@@ -64,7 +64,7 @@ class AetherraPluginDiscovery:
 
     async def discover_all_plugins(self) -> Dict[str, PluginMetadata]:
         """Discover all plugins in the plugins directory."""
-        logger.info("🔍 Starting plugin discovery...")
+        logger.info("[SCAN] Starting plugin discovery...")
 
         if not self.plugins_dir.exists():
             logger.warning(f"[WARN] Plugins directory not found: {self.plugins_dir}")
@@ -80,14 +80,14 @@ class AetherraPluginDiscovery:
 
     async def _discover_aetherplug_plugins(self):
         """Discover .aetherplug format plugins."""
-        logger.info("🔍 Scanning for .aetherplug plugins...")
+        logger.info("[SCAN] Scanning for .aetherplug plugins...")
 
         # Look for aetherra-plugin.json files
         for plugin_json in self.plugins_dir.rglob("aetherra-plugin.json"):
             try:
                 await self._process_aetherplug_manifest(plugin_json)
             except Exception as e:
-                logger.error(f"❌ Error processing {plugin_json}: {e}")
+                logger.error(f"[ERROR] Error processing {plugin_json}: {e}")
 
     async def _process_aetherplug_manifest(self, manifest_path: Path):
         """Process an aetherra-plugin.json manifest file."""
@@ -120,11 +120,11 @@ class AetherraPluginDiscovery:
             logger.info(f"[OK] Discovered .aetherplug: {metadata.name} v{metadata.version}")
 
         except Exception as e:
-            logger.error(f"❌ Error processing manifest {manifest_path}: {e}")
+            logger.error(f"[ERROR] Error processing manifest {manifest_path}: {e}")
 
     async def _discover_python_plugins(self):
         """Discover Python-based plugins."""
-        logger.info("🔍 Scanning for Python plugins...")
+        logger.info("[SCAN] Scanning for Python plugins...")
 
         # Look for Python files that appear to be plugins
         for py_file in self.plugins_dir.rglob("*.py"):
@@ -134,7 +134,7 @@ class AetherraPluginDiscovery:
             try:
                 await self._analyze_python_plugin(py_file)
             except Exception as e:
-                logger.error(f"❌ Error analyzing {py_file}: {e}")
+                logger.error(f"[ERROR] Error analyzing {py_file}: {e}")
 
     async def _analyze_python_plugin(self, py_file: Path):
         """Analyze a Python file to determine if it's a plugin."""
@@ -150,7 +150,7 @@ class AetherraPluginDiscovery:
                 await self._extract_plugin_data_metadata(py_file, content)
 
         except Exception as e:
-            logger.error(f"❌ Error reading {py_file}: {e}")
+            logger.error(f"[ERROR] Error reading {py_file}: {e}")
 
     async def _extract_python_plugin_metadata(self, py_file: Path, content: str):
         """Extract metadata from a Python plugin class."""
@@ -181,7 +181,7 @@ class AetherraPluginDiscovery:
                         break
 
         except Exception as e:
-            logger.error(f"❌ Error importing {py_file}: {e}")
+            logger.error(f"[ERROR] Error importing {py_file}: {e}")
 
     async def _extract_plugin_data_metadata(self, py_file: Path, content: str):
         """Extract metadata from plugin_data dictionary."""
@@ -209,18 +209,18 @@ class AetherraPluginDiscovery:
                     logger.info(f"[OK] Discovered plugin_data: {metadata.name}")
 
         except Exception as e:
-            logger.error(f"❌ Error extracting plugin_data from {py_file}: {e}")
+            logger.error(f"[ERROR] Error extracting plugin_data from {py_file}: {e}")
 
     async def _discover_sample_plugins(self):
         """Discover sample plugins specifically."""
-        logger.info("🔍 Scanning for sample plugins...")
+        logger.info("[SCAN] Scanning for sample plugins...")
 
         # Look for files matching sample_plugin_*.py pattern
         for sample_file in self.plugins_dir.glob("sample_plugin_*.py"):
             try:
                 await self._process_sample_plugin(sample_file)
             except Exception as e:
-                logger.error(f"❌ Error processing sample plugin {sample_file}: {e}")
+                logger.error(f"[ERROR] Error processing sample plugin {sample_file}: {e}")
 
     async def _process_sample_plugin(self, sample_file: Path):
         """Process a sample plugin file."""
@@ -246,7 +246,7 @@ class AetherraPluginDiscovery:
             logger.info(f"[OK] Discovered sample plugin: {metadata.name}")
 
         except Exception as e:
-            logger.error(f"❌ Error processing sample plugin {sample_file}: {e}")
+            logger.error(f"[ERROR] Error processing sample plugin {sample_file}: {e}")
 
     async def register_with_hub(self, plugin_metadata: PluginMetadata) -> bool:
         """Register a plugin with the Aetherra Hub."""
@@ -274,7 +274,7 @@ class AetherraPluginDiscovery:
             # Try to register with Hub API
             try:
                 response = requests.post(
-                    f"{self.hub_url}/api/v1/plugins",
+                    f"{self.hub_url}/api/plugins/register",
                     json=hub_plugin,
                     timeout=5
                 )
@@ -289,12 +289,12 @@ class AetherraPluginDiscovery:
             return False
 
         except Exception as e:
-            logger.error(f"❌ Error registering {plugin_metadata.name} with Hub: {e}")
+            logger.error(f"[ERROR] Error registering {plugin_metadata.name} with Hub: {e}")
             return False
 
     async def sync_all_with_hub(self):
         """Sync all discovered plugins with the Hub."""
-        logger.info("🔄 Syncing all plugins with Aetherra Hub...")
+        logger.info("[LOOP] Syncing all plugins with Aetherra Hub...")
 
         await self.discover_all_plugins()
 
@@ -334,7 +334,7 @@ async def main():
     await discovery.discover_all_plugins()
 
     summary = discovery.get_plugin_summary()
-    print(f"\n🔍 Plugin Discovery Summary:")
+    print(f"\n[SCAN] Plugin Discovery Summary:")
     print(f"Total plugins: {summary['total_plugins']}")
     print(f"By type: {summary['by_type']}")
     print(f"By category: {summary['by_category']}")

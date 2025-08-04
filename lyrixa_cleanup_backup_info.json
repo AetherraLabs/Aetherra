@@ -1,0 +1,26 @@
+[
+  {
+    "action": "moved",
+    "from": "Aetherra\\lyrixa\\advanced_memory_integration.py",
+    "to": "Aetherra\\lyrixa\\memory\\advanced_memory_integration.py",
+    "size": 22923
+  },
+  {
+    "action": "moved",
+    "from": "Aetherra\\lyrixa\\agent_collaboration_manager.py",
+    "to": "Aetherra\\lyrixa\\agents\\agent_collaboration_manager.py",
+    "size": 8096
+  },
+  {
+    "action": "moved",
+    "from": "Aetherra\\lyrixa\\conversation_manager.py",
+    "to": "Aetherra\\lyrixa\\agents\\conversation_manager.py",
+    "size": 24030
+  },
+  {
+    "action": "moved",
+    "from": "Aetherra\\lyrixa\\enhanced_conversation_manager.py",
+    "to": "Aetherra\\lyrixa\\agents\\enhanced_conversation_manager.py",
+    "size": 27146
+  }
+]

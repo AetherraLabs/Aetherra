@@ -1,42 +1,52 @@
-#!/usr/bin/env python3
 """
-🧠 LYRIXA MEMORY SYSTEM
-======================
-
-Lyrixa's memory capabilities for learning, context retention, and user preferences.
-Manages conversational memory, project context, and long-term learning.
+DEPRECATED: memory_core.py is now an adapter for QuantumEnhancedMemoryEngine.
+All memory operations are delegated to the canonical engine.
 """
 
 import hashlib
 import json
 import sqlite3
 from contextlib import contextmanager
-from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Optional, List, Dict, Tuple, Any
+from dataclasses import dataclass
 
-# Webhook manager import disabled - not currently available
-# from src.aetherra.core.webhook_manager import WebhookManager
+from ..memory.QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
 
-
+# Simple data classes for backward compatibility
 @dataclass
 class Memory:
-    """Represents a single memory entry"""
-
     id: str
     content: Dict[str, Any]
-    context: Dict[str, Any]
-    tags: List[str]
-    importance: float  # 0.0 to 1.0
-    created_at: datetime
-    last_accessed: datetime
-    access_count: int
-    memory_type: str  # conversation, project, preference, learning
-
+    context: Optional[Dict[str, Any]] = None
+    tags: Optional[List[str]] = None
+    importance: float = 0.5
+    memory_type: str = "conversation"
+    timestamp: Optional[str] = None
+    created_at: Optional[datetime] = None
+    last_accessed: Optional[datetime] = None
+    access_count: int = 0
 
 @dataclass
 class MemoryQuery:
-    """Represents a memory search query"""
+    text: Optional[str] = None
+    tags: Optional[List[str]] = None
+    context: Optional[Dict[str, Any]] = None
+    memory_type: Optional[str] = None
+    importance_threshold: float = 0.0
+    limit: int = 10
+    time_range: Optional[Tuple[datetime, datetime]] = None
+
+
+class MemoryCore:
+    def __init__(self, *args, **kwargs):
+        self.engine = QuantumEnhancedMemoryEngine()
+
+    def store(self, memory_entry: dict) -> dict:
+        return self.engine.store(memory_entry)
+
+    def retrieve(self, query: str, context: Optional[dict] = None) -> dict:
+        return self.engine.retrieve(query, context or {})
 
     text: Optional[str] = None
     tags: Optional[List[str]] = None

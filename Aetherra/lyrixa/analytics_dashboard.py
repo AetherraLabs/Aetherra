@@ -30,7 +30,7 @@ except ImportError as e:
 
 # Try to import advanced memory integration
 try:
-    from Aetherra.lyrixa.advanced_memory_integration import AdvancedMemoryManager
+    from Aetherra.lyrixa.memory.advanced_memory_integration import AdvancedMemoryManager
     MEMORY_INTEGRATION_AVAILABLE = True
     logger.info("✅ Advanced Memory Integration available")
 except ImportError as e:
