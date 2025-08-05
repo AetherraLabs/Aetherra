@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugin Manager</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+
+<body>
+    <div class="panel-container" data-panel="plugins">
+        <div class="panel-header">
+            <h1>🔌 Plugin Manager</h1>
+            <p>Manage AI capabilities and extensions</p>
+        </div>
+
+        <div class="panel-content">
+            <!-- Plugin Grid (Phase 2 will populate this dynamically) -->
+            <div class="grid grid-3" id="plugins-grid">
+                <!-- Memory Manager Plugin -->
+                <div class="card plugin-card" data-plugin="memory_manager">
+                    <div class="card-header">
+                        <div class="card-icon">🧠</div>
+                        <div>
+                            <div class="card-title">Memory Manager</div>
+                            <div style="color: var(--aetherra-gray); font-size: 0.9rem;">v1.0.0</div>
+                        </div>
+                        <div style="margin-left: auto;">
+                            <span class="status-badge active">Active</span>
+                        </div>
+                    </div>
+                    <p style="color: var(--aetherra-gray-light); margin-bottom: 1rem; font-size: 0.9rem;">
+                        Advanced memory management and knowledge graph integration
+                    </p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn" data-action="configure_plugin" data-plugin="memory_manager">
+                            ⚙️ Configure
+                        </button>
+                        <button class="btn" data-action="disable_plugin" data-plugin="memory_manager">
+                            ⏸️ Disable
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Analytics Engine Plugin -->
+                <div class="card plugin-card" data-plugin="analytics_engine">
+                    <div class="card-header">
+                        <div class="card-icon">📊</div>
+                        <div>
+                            <div class="card-title">Analytics Engine</div>
+                            <div style="color: var(--aetherra-gray); font-size: 0.9rem;">v2.1.0</div>
+                        </div>
+                        <div style="margin-left: auto;">
+                            <span class="status-badge active">Active</span>
+                        </div>
+                    </div>
+                    <p style="color: var(--aetherra-gray-light); margin-bottom: 1rem; font-size: 0.9rem;">
+                        Real-time performance analytics and behavioral insights
+                    </p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn" data-action="configure_plugin" data-plugin="analytics_engine">
+                            ⚙️ Configure
+                        </button>
+                        <button class="btn" data-action="disable_plugin" data-plugin="analytics_engine">
+                            ⏸️ Disable
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Handler Plugin -->
+                <div class="card plugin-card" data-plugin="chat_handler">
+                    <div class="card-header">
+                        <div class="card-icon">💬</div>
+                        <div>
+                            <div class="card-title">Chat Handler</div>
+                            <div style="color: var(--aetherra-gray); font-size: 0.9rem;">v1.5.2</div>
+                        </div>
+                        <div style="margin-left: auto;">
+                            <span class="status-badge loaded">Loaded</span>
+                        </div>
+                    </div>
+                    <p style="color: var(--aetherra-gray-light); margin-bottom: 1rem; font-size: 0.9rem;">
+                        Enhanced conversation management and context awareness
+                    </p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-primary" data-action="activate_plugin" data-plugin="chat_handler">
+                            ▶️ Activate
+                        </button>
+                        <button class="btn" data-action="configure_plugin" data-plugin="chat_handler">
+                            ⚙️ Configure
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Add Plugin Card -->
+                <div class="card"
+                    style="border: 2px dashed rgba(0, 255, 136, 0.3); background: rgba(0, 255, 136, 0.05);">
+                    <div style="text-align: center; padding: 2rem 1rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.7;">➕</div>
+                        <h3 style="color: var(--aetherra-green); margin-bottom: 0.5rem;">Add New Plugin</h3>
+                        <p style="color: var(--aetherra-gray-light); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                            Install additional AI capabilities
+                        </p>
+                        <button class="btn btn-primary" data-action="add_plugin">
+                            <span>Browse Plugins</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plugin Actions Bar -->
+            <div class="card" style="margin-top: 2rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                    <div>
+                        <h3 style="color: var(--aetherra-white); margin-bottom: 0.5rem;">Plugin Actions</h3>
+                        <p style="color: var(--aetherra-gray-light); font-size: 0.9rem;">
+                            Manage all plugins at once
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn" data-action="refresh_plugins">
+                            🔄 Refresh
+                        </button>
+                        <button class="btn" data-action="export_config">
+                            📤 Export Config
+                        </button>
+                        <button class="btn" data-action="import_config">
+                            📥 Import Config
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.active {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--aetherra-green);
+            border: 1px solid rgba(0, 255, 136, 0.4);
+        }
+
+        .status-badge.loaded {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffb366;
+            border: 1px solid rgba(255, 165, 0, 0.4);
+        }
+
+        .status-badge.inactive {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--aetherra-gray);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .plugin-card {
+            transition: all 0.3s ease;
+        }
+
+        .plugin-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.15);
+        }
+    </style>
+
+    <script src="../assets/effects.js"></script>
+</body>
+
+</html>

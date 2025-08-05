@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 3 Auto-Generation Demo</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+
+<body>
+    <div class="panel-container" data-panel="auto_demo">
+        <div class="panel-header">
+            <h1>🔮 Phase 3: Auto-Generation Demo</h1>
+            <p>Dynamic panel generation from system state introspection</p>
+        </div>
+
+        <div class="panel-content">
+            <!-- Demo Auto-Generated Plugin Panel -->
+            <div class="auto-panel plugin-panel" data-component="demo_plugin" data-type="plugin">
+                <div class="panel-header">
+                    <div class="panel-icon">🧠</div>
+                    <h3>Memory Manager Plugin</h3>
+                    <span class="status-badge active">Active</span>
+                </div>
+                <div class="panel-content">
+                    <p class="description">Auto-discovered memory management plugin with advanced capabilities</p>
+                    <div class="capabilities">
+                        <span class="capability-tag">Memory</span>
+                        <span class="capability-tag">Analysis</span>
+                        <span class="capability-tag">Optimization</span>
+                    </div>
+                    <div class="metadata">
+                        <div class="meta-item">
+                            <span class="label">Version:</span>
+                            <span class="value">2.1.0</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Category:</span>
+                            <span class="value">AI Core</span>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="handlePluginAction('memory_manager', 'configure')">
+                            ⚙️ Configure
+                        </button>
+                        <button class="btn btn-secondary" onclick="handlePluginAction('memory_manager', 'disable')">
+                            ⏸️ Disable
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demo Auto-Generated Agent Panel -->
+            <div class="auto-panel agent-panel" data-component="demo_agent" data-type="agent">
+                <div class="panel-header">
+                    <div class="panel-icon">🤖</div>
+                    <h3>Agent-Analytics-001</h3>
+                    <span class="status-badge active">Active</span>
+                </div>
+                <div class="panel-content">
+                    <div class="current-goals">
+                        <h4>Current Goals:</h4>
+                        <div class="goal-item">• Analyze system performance patterns</div>
+                        <div class="goal-item">• Optimize memory usage</div>
+                        <div class="goal-item">• Generate insights report</div>
+                    </div>
+                    <div class="performance">
+                        <div class="metric">
+                            <span class="label">Performance:</span>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 87%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="handleAgentAction('Agent-Analytics-001', 'add_goal')">
+                            ➕ Add Goal
+                        </button>
+                        <button class="btn btn-secondary" onclick="handleAgentAction('Agent-Analytics-001', 'pause')">
+                            ⏸️ Pause
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demo Auto-Generated Metrics Panel -->
+            <div class="auto-panel metrics-panel" data-component="system_metrics" data-type="metrics">
+                <div class="panel-header">
+                    <div class="panel-icon">📊</div>
+                    <h3>System Metrics</h3>
+                    <span class="status-badge active">Active</span>
+                </div>
+                <div class="panel-content">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value">34%</div>
+                            <div class="metric-label">CPU Usage</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">67%</div>
+                            <div class="metric-label">Memory Usage</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">157</div>
+                            <div class="metric-label">Processes</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">23%</div>
+                            <div class="metric-label">Disk Usage</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 3 Features Showcase -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>🔮 Phase 3: Auto-Generation Features</h2>
+                </div>
+                <div class="card-content">
+                    <ul style="color: var(--aetherra-gray-light); line-height: 1.8;">
+                        <li>🔍 <strong>State Introspection:</strong> Automatically scans backend systems for metadata
+                        </li>
+                        <li>🎨 <strong>Dynamic Panel Generation:</strong> Creates HTML components from discovered state
+                        </li>
+                        <li>📐 <strong>Intelligent Layout:</strong> Arranges panels based on importance and
+                            relationships</li>
+                        <li>🔄 <strong>Real-time Updates:</strong> Panels adapt as system state changes</li>
+                        <li>🎛️ <strong>Interactive Controls:</strong> Generated panels include working buttons and
+                            actions</li>
+                        <li>🌐 <strong>Responsive Design:</strong> Auto-generated panels match Aetherra styling</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Status Display -->
+            <div class="info-box">
+                <h3>📊 Auto-Generation Status</h3>
+                <div class="stats">
+                    <div class="stat">
+                        <span class="label">Introspection Rate:</span>
+                        <span class="value">Every 5 seconds</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Panel Generation:</span>
+                        <span class="value">On-demand</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Update Strategy:</span>
+                        <span class="value">Differential updates</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Panel interaction handlers
+        function handlePluginAction(pluginName, action) {
+            console.log(`Plugin action: ${action} on ${pluginName}`);
+            if (window.bridge) {
+                window.bridge.handlePanelCommand(JSON.stringify({
+                    type: 'plugin_action',
+                    payload: { plugin: pluginName, action: action }
+                }));
+            }
+        }
+
+        function handleAgentAction(agentName, action) {
+            console.log(`Agent action: ${action} on ${agentName}`);
+            if (window.bridge) {
+                window.bridge.handlePanelCommand(JSON.stringify({
+                    type: 'agent_command',
+                    payload: { agent: agentName, action: action }
+                }));
+            }
+        }
+
+        function handleMemoryAction(action) {
+            console.log(`Memory action: ${action}`);
+            if (window.bridge) {
+                window.bridge.handlePanelCommand(JSON.stringify({
+                    type: 'memory_query',
+                    payload: { action: action }
+                }));
+            }
+        }
+
+        function handleServiceAction(serviceName, action) {
+            console.log(`Service action: ${action} on ${serviceName}`);
+            if (window.bridge) {
+                window.bridge.handlePanelCommand(JSON.stringify({
+                    type: 'system_command',
+                    payload: { service: serviceName, action: action }
+                }));
+            }
+        }
+
+        // Connect to Qt bridge
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+            window.bridge = channel.objects.pybridge;
+            console.log('🔗 Connected to Python backend bridge');
+
+            // Set up real-time updates
+            if (window.bridge) {
+                window.bridge.notification_sent.connect(function (notification) {
+                    console.log('📢 Notification:', notification);
+                });
+            }
+        });
+
+        // Simulate dynamic updates
+        function simulateUpdates() {
+            // Update progress bar
+            const progress = document.querySelector('.progress');
+            if (progress) {
+                const currentWidth = parseFloat(progress.style.width) || 87;
+                const newWidth = Math.min(100, Math.max(10, currentWidth + (Math.random() - 0.5) * 10));
+                progress.style.width = newWidth + '%';
+            }
+
+            // Update metrics
+            const metricValues = document.querySelectorAll('.metric-value');
+            metricValues.forEach(metric => {
+                if (metric.textContent.includes('%')) {
+                    const current = parseInt(metric.textContent);
+                    const change = Math.floor((Math.random() - 0.5) * 10);
+                    const newValue = Math.min(100, Math.max(0, current + change));
+                    metric.textContent = newValue + '%';
+                }
+            });
+        }
+
+        // Start simulation
+        setInterval(simulateUpdates, 3000);
+
+        console.log('🔮 Phase 3 Auto-Generation Demo loaded successfully');
+    </script>
+</body>
+
+</html>
