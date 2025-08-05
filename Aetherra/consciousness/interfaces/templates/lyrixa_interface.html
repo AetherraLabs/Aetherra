@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyrixa Personality Interface - Aetherra</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #2D1B69 0%, #11998E 100%);
+            color: #E0E6ED;
+            margin: 0;
+            padding: 20px;
+        }
+        .personality-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 20px;
+            height: 90vh;
+        }
+        .personality-sidebar {
+            background: rgba(45, 27, 105, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #4ECDC4;
+        }
+        .chat-area {
+            background: rgba(17, 153, 142, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #4ECDC4;
+            display: flex;
+            flex-direction: column;
+        }
+        .emotional-panel {
+            background: rgba(45, 27, 105, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #4ECDC4;
+        }
+        .personality-card {
+            background: rgba(78, 205, 196, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .personality-card:hover {
+            background: rgba(78, 205, 196, 0.4);
+        }
+        .personality-card.active {
+            background: rgba(78, 205, 196, 0.6);
+            border: 2px solid #4ECDC4;
+        }
+        .emotion-indicator {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .emotion-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(78, 205, 196, 0.3);
+            border-radius: 4px;
+            margin-left: 10px;
+            position: relative;
+        }
+        .emotion-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+        h1, h2, h3 { color: #4ECDC4; }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .message.user {
+            background: rgba(78, 205, 196, 0.3);
+            margin-left: 50px;
+        }
+        .message.lyrixa {
+            background: rgba(45, 27, 105, 0.6);
+            margin-right: 50px;
+        }
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #4ECDC4;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #E0E6ED;
+        }
+        .chat-input button {
+            padding: 12px 24px;
+            background: #4ECDC4;
+            border: none;
+            border-radius: 8px;
+            color: #2D1B69;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="personality-container">
+        <div class="personality-sidebar">
+            <h2>🎭 Personality Profiles</h2>
+            <div id="personalityProfiles">
+                <div class="personality-card active" data-personality="lyrixa">
+                    <h3>Lyrixa</h3>
+                    <p>Empathetic & Analytical</p>
+                </div>
+                <div class="personality-card" data-personality="analyst">
+                    <h3>Analytical Advisor</h3>
+                    <p>Precise & Methodical</p>
+                </div>
+                <div class="personality-card" data-personality="creative">
+                    <h3>Creative Catalyst</h3>
+                    <p>Inspirational & Dynamic</p>
+                </div>
+            </div>
+            
+            <h3>🧠 Consciousness Status</h3>
+            <div id="consciousnessStatus">
+                <p>Loading consciousness metrics...</p>
+            </div>
+        </div>
+        
+        <div class="chat-area">
+            <h1>💬 Chat with Lyrixa</h1>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message lyrixa">
+                    <strong>Lyrixa:</strong> Hello! I'm here with my full personality system online. 
+                    I can adapt my communication style, analyze emotions, and provide consciousness insights. 
+                    How would you like to explore together today?
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Share your thoughts with Lyrixa...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+        
+        <div class="emotional-panel">
+            <h2>🌈 Emotional State</h2>
+            <div id="emotionalState">
+                <div class="emotion-indicator">
+                    <span>Current:</span>
+                    <span id="currentEmotion">Analyzing...</span>
+                </div>
+            </div>
+            
+            <h3>📊 Personality Traits</h3>
+            <div id="personalityTraits">
+                <div class="emotion-indicator">
+                    <span>Openness:</span>
+                    <div class="emotion-bar">
+                        <div class="emotion-fill" style="width: 95%"></div>
+                    </div>
+                </div>
+                <div class="emotion-indicator">
+                    <span>Empathy:</span>
+                    <div class="emotion-bar">
+                        <div class="emotion-fill" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="emotion-indicator">
+                    <span>Curiosity:</span>
+                    <div class="emotion-bar">
+                        <div class="emotion-fill" style="width: 90%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <h3>🎯 Quick Actions</h3>
+            <button class="personality-card" onclick="requestPersonalityAdvice()">
+                Get Personality Advice
+            </button>
+            <button class="personality-card" onclick="analyzeEmotionalState()">
+                Analyze Emotional State
+            </button>
+            <button class="personality-card" onclick="adaptiveOrchestration()">
+                Adaptive Orchestration
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        const socket = io();
+        let currentPersonality = 'lyrixa';
+        
+        socket.on('connect', function() {
+            console.log('Connected to Lyrixa Interface');
+            loadPersonalityData();
+        });
+        
+        socket.on('lyrixa_response', function(response) {
+            addMessageToChat('lyrixa', response.content, response.emotion);
+        });
+        
+        socket.on('personality_status', function(status) {
+            updatePersonalityStatus(status);
+        });
+        
+        function switchPersonality(personality) {
+            fetch('/api/personality/switch', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({personality: personality})
+            }).then(response => response.json()).then(data => {
+                if (data.success) {
+                    currentPersonality = personality;
+                    updatePersonalityUI();
+                    addMessageToChat('system', `Switched to ${data.profile.name} personality`, 'info');
+                }
+            });
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessageToChat('user', message);
+                
+                fetch('/api/interaction/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: message, context: {}})
+                });
+                
+                input.value = '';
+            }
+        }
+        
+        function addMessageToChat(sender, message, emotion = '') {
+            const chatEl = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}`;
+            
+            const emotionIndicator = emotion ? ` (${emotion})` : '';
+            messageEl.innerHTML = `<strong>${sender === 'user' ? 'You' : sender === 'lyrixa' ? 'Lyrixa' : 'System'}:</strong> ${message}${emotionIndicator}`;
+            
+            chatEl.appendChild(messageEl);
+            chatEl.scrollTop = chatEl.scrollHeight;
+        }
+        
+        function loadPersonalityData() {
+            fetch('/api/personality/current')
+                .then(response => response.json())
+                .then(data => {
+                    updatePersonalityStatus(data);
+                });
+        }
+        
+        function updatePersonalityStatus(data) {
+            if (data.emotional_state) {
+                document.getElementById('currentEmotion').textContent = 
+                    `${data.emotional_state.primary_emotion} (${(data.emotional_state.intensity * 100).toFixed(0)}%)`;
+            }
+        }
+        
+        function updatePersonalityUI() {
+            document.querySelectorAll('.personality-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelector(`[data-personality="${currentPersonality}"]`).classList.add('active');
+        }
+        
+        function requestPersonalityAdvice() {
+            socket.emit('request_personality_advice', {
+                situation: 'general_guidance'
+            });
+        }
+        
+        function analyzeEmotionalState() {
+            fetch('/api/emotional/state')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Emotional analysis:', data);
+                    addMessageToChat('system', 'Emotional state analysis completed - check console for details', 'info');
+                });
+        }
+        
+        function adaptiveOrchestration() {
+            fetch('/api/orchestration/adaptive', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({task_type: 'personality_demonstration'})
+            }).then(response => response.json()).then(data => {
+                addMessageToChat('system', `Adaptive orchestration initiated: ${data.approach} approach`, 'info');
+            });
+        }
+        
+        // Event listeners
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        document.querySelectorAll('.personality-card[data-personality]').forEach(card => {
+            card.addEventListener('click', function() {
+                switchPersonality(this.dataset.personality);
+            });
+        });
+        
+        // Auto-refresh
+        setInterval(loadPersonalityData, 15000);
+    </script>
+</body>
+</html>

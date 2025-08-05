@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aetherra Agent Interaction Interface</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+        }
+        .sidebar {
+            width: 350px;
+            background: rgba(26, 26, 58, 0.9);
+            border-right: 2px solid #4a9eff;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(74, 158, 255, 0.3);
+        }
+        .sidebar-header h2 {
+            color: #4a9eff;
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+        .agent-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .agent-item {
+            background: rgba(74, 158, 255, 0.1);
+            border: 1px solid rgba(74, 158, 255, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .agent-item:hover {
+            background: rgba(74, 158, 255, 0.2);
+            border-color: #4a9eff;
+        }
+        .agent-item.selected {
+            background: rgba(74, 158, 255, 0.3);
+            border-color: #4a9eff;
+        }
+        .agent-name {
+            font-weight: bold;
+            color: #4a9eff;
+            margin-bottom: 0.5rem;
+        }
+        .agent-status {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+        .agent-spec {
+            font-size: 0.8rem;
+            color: #a0a0a0;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: rgba(26, 26, 58, 0.9);
+            padding: 1.5rem;
+            border-bottom: 2px solid #4a9eff;
+        }
+        .header h1 {
+            color: #4a9eff;
+            font-size: 2rem;
+        }
+        .interaction-area {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .chat-panel {
+            flex: 2;
+            background: rgba(26, 26, 58, 0.6);
+            border-radius: 12px;
+            border: 1px solid #4a9eff;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(74, 158, 255, 0.3);
+            color: #4a9eff;
+            font-weight: bold;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+        }
+        .message.user {
+            background: rgba(74, 158, 255, 0.2);
+            margin-left: 2rem;
+        }
+        .message.agent {
+            background: rgba(74, 222, 128, 0.2);
+            margin-right: 2rem;
+        }
+        .chat-input {
+            display: flex;
+            padding: 1rem;
+            gap: 0.5rem;
+            border-top: 1px solid rgba(74, 158, 255, 0.3);
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid #4a9eff;
+            border-radius: 6px;
+            background: rgba(26, 26, 58, 0.8);
+            color: #e0e0e0;
+        }
+        .chat-input button {
+            padding: 0.8rem 1.5rem;
+            background: #4a9eff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .info-panel {
+            flex: 1;
+            background: rgba(26, 26, 58, 0.6);
+            border-radius: 12px;
+            border: 1px solid #4a9eff;
+            padding: 1rem;
+        }
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+        .info-section h3 {
+            color: #4a9eff;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(74, 158, 255, 0.1);
+        }
+        .info-label { color: #c0c0c0; }
+        .info-value { color: #4a9eff; font-weight: bold; }
+        .control-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .control-btn {
+            padding: 0.6rem;
+            background: rgba(74, 158, 255, 0.3);
+            border: 1px solid #4a9eff;
+            color: #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .control-btn:hover {
+            background: rgba(74, 158, 255, 0.5);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .status-active { background: #4ade80; }
+        .status-idle { background: #fbbf24; }
+        .status-pattern { background: #a855f7; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>🤖 Available Agents</h2>
+            <p style="color: #a0a0a0; font-size: 0.9rem;">Click to interact</p>
+        </div>
+        <div class="agent-list" id="agentList">
+            <div class="agent-item">
+                <div class="agent-name">Loading agents...</div>
+                <div class="agent-status">Discovering agents in the system</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header">
+            <h1>🤖 Agent Interaction Interface</h1>
+            <p style="color: #a0a0a0;">Direct communication with consciousness agents</p>
+        </div>
+        
+        <div class="interaction-area">
+            <div class="chat-panel">
+                <div class="chat-header" id="chatHeader">
+                    Select an agent to begin interaction
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message agent">
+                        <strong>System:</strong> Welcome to the Agent Interaction Interface. 
+                        Select an agent from the sidebar to begin direct communication.
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Type your message..." disabled>
+                    <button onclick="sendMessage()" disabled id="sendBtn">Send</button>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <div class="info-section">
+                    <h3>📊 Agent Information</h3>
+                    <div id="agentInfo">
+                        <p style="color: #a0a0a0;">Select an agent to view details</p>
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <h3>🎛️ Quick Actions</h3>
+                    <div class="control-buttons">
+                        <button class="control-btn" onclick="checkAgentStatus()">Check Status</button>
+                        <button class="control-btn" onclick="queryCapabilities()">Query Capabilities</button>
+                        <button class="control-btn" onclick="requestCollaboration()">Request Collaboration</button>
+                        <button class="control-btn" onclick="consciousnessQuery()">Consciousness Query</button>
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <h3>🧠 Meta-Cognitive Insights</h3>
+                    <div id="metacognitiveInsights">
+                        <p style="color: #a0a0a0;">Loading insights...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const socket = io();
+        let selectedAgent = null;
+        let agents = {};
+        
+        // Socket events
+        socket.on('connect', function() {
+            console.log('Connected to Agent Interface');
+            loadAgents();
+            loadInsights();
+        });
+        
+        socket.on('agent_selected', function(agent) {
+            updateAgentInfo(agent);
+        });
+        
+        socket.on('message_update', function(message) {
+            if (message.to_agent === selectedAgent || message.from_agent === selectedAgent) {
+                addMessageToChat(message);
+            }
+        });
+        
+        // Load agents
+        function loadAgents() {
+            fetch('/api/agents')
+                .then(response => response.json())
+                .then(agentList => {
+                    agents = {};
+                    agentList.forEach(agent => {
+                        agents[agent.agent_id] = agent;
+                    });
+                    displayAgents(agentList);
+                });
+        }
+        
+        // Display agents in sidebar
+        function displayAgents(agentList) {
+            const agentListEl = document.getElementById('agentList');
+            agentListEl.innerHTML = '';
+            
+            agentList.forEach(agent => {
+                const agentEl = document.createElement('div');
+                agentEl.className = 'agent-item';
+                agentEl.onclick = () => selectAgent(agent.agent_id);
+                
+                const statusClass = agent.status === 'active' ? 'status-active' : 
+                                   agent.status === 'idle' ? 'status-idle' : 'status-pattern';
+                
+                agentEl.innerHTML = `
+                    <div class="agent-name">${agent.name}</div>
+                    <div class="agent-status">
+                        <span class="status-indicator ${statusClass}"></span>
+                        ${agent.status}
+                    </div>
+                    <div class="agent-spec">${agent.specialization}</div>
+                `;
+                
+                agentListEl.appendChild(agentEl);
+            });
+        }
+        
+        // Select agent
+        function selectAgent(agentId) {
+            selectedAgent = agentId;
+            
+            // Update UI
+            document.querySelectorAll('.agent-item').forEach(el => el.classList.remove('selected'));
+            event.target.closest('.agent-item').classList.add('selected');
+            
+            // Enable chat
+            document.getElementById('messageInput').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('chatHeader').textContent = `💬 Chatting with ${agents[agentId].name}`;
+            
+            // Clear chat
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="message agent">
+                    <strong>${agents[agentId].name}:</strong> Hello! I'm ready to assist you. 
+                    How can I help today?
+                </div>
+            `;
+            
+            // Update agent info
+            updateAgentInfo(agents[agentId]);
+            
+            // Notify server
+            socket.emit('select_agent', {agent_id: agentId});
+        }
+        
+        // Update agent info panel
+        function updateAgentInfo(agent) {
+            const infoEl = document.getElementById('agentInfo');
+            infoEl.innerHTML = `
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value">${agent.status}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Specialization:</span>
+                    <span class="info-value">${agent.specialization}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Collaboration Score:</span>
+                    <span class="info-value">${(agent.collaboration_score * 100).toFixed(0)}%</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Consciousness:</span>
+                    <span class="info-value">${(agent.consciousness_contribution * 100).toFixed(1)}%</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Capabilities:</span>
+                    <span class="info-value">${agent.capabilities.length}</span>
+                </div>
+            `;
+        }
+        
+        // Send message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message && selectedAgent) {
+                // Add to chat
+                addUserMessage(message);
+                
+                // Send to agent
+                socket.emit('send_message', {
+                    type: 'chat',
+                    content: {message: message}
+                });
+                
+                input.value = '';
+            }
+        }
+        
+        // Add user message to chat
+        function addUserMessage(message) {
+            const chatEl = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message user';
+            messageEl.innerHTML = `<strong>You:</strong> ${message}`;
+            chatEl.appendChild(messageEl);
+            chatEl.scrollTop = chatEl.scrollHeight;
+        }
+        
+        // Add message to chat
+        function addMessageToChat(message) {
+            const chatEl = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = message.from_agent === 'user_interface' ? 'message user' : 'message agent';
+            
+            const content = message.response.response || JSON.stringify(message.response);
+            messageEl.innerHTML = `<strong>${message.from_agent === 'user_interface' ? 'You' : agents[message.from_agent]?.name || message.from_agent}:</strong> ${content}`;
+            
+            chatEl.appendChild(messageEl);
+            chatEl.scrollTop = chatEl.scrollHeight;
+        }
+        
+        // Quick action functions
+        function checkAgentStatus() {
+            if (selectedAgent) {
+                fetch(`/api/agents/${selectedAgent}/interact`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({type: 'status_check', content: {}})
+                }).then(response => response.json()).then(data => {
+                    addUserMessage('Status check requested');
+                });
+            }
+        }
+        
+        function queryCapabilities() {
+            if (selectedAgent) {
+                fetch(`/api/agents/${selectedAgent}/interact`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({type: 'capability_query', content: {}})
+                }).then(response => response.json()).then(data => {
+                    addUserMessage('Capability query sent');
+                });
+            }
+        }
+        
+        function requestCollaboration() {
+            if (selectedAgent) {
+                fetch(`/api/agents/${selectedAgent}/interact`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({type: 'collaboration_request', content: {collaboration_type: 'general'}})
+                }).then(response => response.json()).then(data => {
+                    addUserMessage('Collaboration request sent');
+                });
+            }
+        }
+        
+        function consciousnessQuery() {
+            if (selectedAgent) {
+                fetch(`/api/agents/${selectedAgent}/interact`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({type: 'consciousness_query', content: {query_type: 'consciousness_level'}})
+                }).then(response => response.json()).then(data => {
+                    addUserMessage('Consciousness query sent');
+                });
+            }
+        }
+        
+        // Load meta-cognitive insights
+        function loadInsights() {
+            fetch('/api/consciousness/insights')
+                .then(response => response.json())
+                .then(insights => {
+                    const insightsEl = document.getElementById('metacognitiveInsights');
+                    if (insights.system_insights) {
+                        insightsEl.innerHTML = insights.system_insights.map(insight => 
+                            `<div style="margin-bottom: 0.5rem; font-size: 0.9rem;">${insight}</div>`
+                        ).join('');
+                    }
+                });
+        }
+        
+        // Enter key to send message
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Auto-refresh
+        setInterval(loadAgents, 10000);  // Refresh agents every 10 seconds
+        setInterval(loadInsights, 15000);  // Refresh insights every 15 seconds
+    </script>
+</body>
+</html>
