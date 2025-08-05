@@ -1,7 +1,18 @@
 # plugins/agent_plugin.py - AI Agent Reflection and Analysis Plugin
 from typing import Any, Dict
 
-from core.plugin_manager import register_plugin
+try:
+    from core.plugin_manager import register_plugin
+except ImportError:
+    try:
+        from Aetherra.aetherra_core.plugins.plugin_manager_core import register_plugin
+    except ImportError:
+        # Fallback decorator if plugin manager not available
+        def register_plugin(*args, **kwargs):
+            def decorator(func):
+                return func
+
+            return decorator
 
 
 @register_plugin(

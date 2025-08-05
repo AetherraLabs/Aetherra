@@ -61,6 +61,21 @@ class AetherraHubServer:
                 'requests_served': self.stats['requests_served']
             })
 
+        @self.app.route('/status', methods=['GET'])
+        def status_check():
+            """Status endpoint for Hub connector compatibility"""
+            self.stats['requests_served'] += 1
+            return jsonify({
+                'status': 'online',
+                'running': True,
+                'uptime_seconds': (datetime.now() - self.stats['startup_time']).total_seconds(),
+                'plugins_registered': len(self.plugins),
+                'requests_served': self.stats['requests_served'],
+                'hub_connected': True,
+                'services': ['hub_server', 'plugin_registry'],
+                'capabilities': ['plugin_registration', 'plugin_discovery', 'marketplace']
+            })
+
         @self.app.route('/api/plugins', methods=['GET'])
         def list_plugins():
             """List all registered plugins"""
@@ -113,6 +128,18 @@ class AetherraHubServer:
             """Get Hub statistics"""
             self.stats['requests_served'] += 1
             return jsonify(self.stats)
+
+        @self.app.route('/services', methods=['GET'])
+        def get_services():
+            """Get available services for Aetherra OS compatibility"""
+            self.stats['requests_served'] += 1
+            return jsonify({
+                'services': ['hub_server', 'plugin_registry', 'plugin_discovery'],
+                'status': 'online',
+                'running': True,
+                'total_services': 3,
+                'hub_capabilities': ['plugin_registration', 'plugin_discovery', 'marketplace']
+            })
 
         @self.app.route('/', methods=['GET'])
         def index():

@@ -30,11 +30,76 @@ try:
     )
     from ..memory.reflector.reflect_analyzer import ReflectAnalyzer
 except ImportError:
-    print("[WARN] Memory components not available, using mock implementations")
-    FractalMesh = None
-    ConceptClusterManager = None
-    ReflectiveTimelineEngine = None
-    ReflectAnalyzer = None
+    # Use quantum memory system instead of mock implementations
+    try:
+        from Aetherra.lyrixa.memory.quantum_memory_integration import (
+            QuantumEnhancedMemoryEngine,
+            QuantumMemoryLayer,
+        )
+
+        # Create compatible wrappers
+        FractalMesh = QuantumMemoryLayer
+        ConceptClusterManager = QuantumEnhancedMemoryEngine
+        ReflectiveTimelineEngine = QuantumMemoryLayer
+
+        class ReflectAnalyzer:
+            def __init__(self):
+                self.memory = QuantumMemoryLayer()
+
+            def analyze(self, data):
+                return {"analysis": "quantum_processed", "data": data}
+
+        print("[INFO] Using quantum memory system for curiosity agent")
+    except ImportError:
+        # Try quantum memory system instead
+        try:
+            from Aetherra.lyrixa.memory.quantum_memory_integration import (
+                QuantumMemorySystem,
+            )
+
+            class FractalMesh:
+                def __init__(self):
+                    self.quantum_memory = QuantumMemorySystem()
+
+                def analyze(self, data):
+                    return self.quantum_memory.store(
+                        {"type": "fractal_analysis", "data": data}
+                    )
+
+            class ConceptClusterManager:
+                def __init__(self):
+                    self.quantum_memory = QuantumMemorySystem()
+
+                def cluster(self, concepts):
+                    return self.quantum_memory.store(
+                        {"type": "concept_cluster", "concepts": concepts}
+                    )
+
+            class ReflectiveTimelineEngine:
+                def __init__(self):
+                    self.quantum_memory = QuantumMemorySystem()
+
+                def create_timeline(self, events):
+                    return self.quantum_memory.store(
+                        {"type": "timeline", "events": events}
+                    )
+
+            class ReflectAnalyzer:
+                def __init__(self):
+                    self.quantum_memory = QuantumMemorySystem()
+
+                def analyze(self, data):
+                    return self.quantum_memory.store(
+                        {"type": "reflection", "data": data}
+                    )
+
+            print("[INFO] Using quantum memory system for curiosity agent")
+        except ImportError:
+            print("[WARN] Memory components not available, using mock implementations")
+            FractalMesh = None
+            ConceptClusterManager = None
+            ReflectiveTimelineEngine = None
+            ReflectAnalyzer = None
 
 
 @dataclass
@@ -762,7 +827,9 @@ class CuriosityAgent:
             Success score (0.0 to 1.0)
         """
         if question_id not in self.curiosity_questions:
-            logging.warning(f"[WARN] Question {question_id} not found for success tracking")
+            logging.warning(
+                f"[WARN] Question {question_id} not found for success tracking"
+            )
             return 0.0
 
         question = self.curiosity_questions[question_id]

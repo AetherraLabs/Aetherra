@@ -4,17 +4,50 @@
 Graphical user interface components
 
 ## Contents
-This directory contains **1 files** organized as follows:
+This directory contains **16 files** organized as follows:
 
 ### File Types
 
-- **Python Module**: 1 files
+- **Other**: 7 files
+- **Python Module**: 5 files
+- **Configuration**: 2 files
+- **Documentation**: 2 files
+
+### Subdirectories
+
+- `assets/`
+- `src/`
+- `web_panels/`
 
 ### Key Files
 
+#### Configuration
+
+- `package-lock.json` - Configuration file
+- `package.json` - Configuration file
+
+#### Documentation
+
+- `PHASE3_IMPLEMENTATION_COMPLETE.md` - Documentation file
+- `PHASE3_README.md` - Documentation file
+
 #### Python Module
 
-- `lyrixa_hybrid_window.py` - 🎙️ LYRIXA HYBRID GUI WINDOW - PySide6 + Web Interface
+- `main_window.py` - 🎙️ Lyrixa Hybrid Window - Phase 1
+==================================
+
+PySide6 + Embedded Web Hybrid ...
+- `phase3_auto_generator.py` - 🔮 Phase 3: Auto-Generating Panels from Aetherra State
+==============================================...
+- `phase4_cognitive_ui.py` - 🧠 Phase 4: Cognitive UI Integration
+===================================
+
+Real-time visualization of ...
+- `phase5_plugin_ui.py` - 🔁 Phase 5: Plugin-Driven UI System
+===================================
+
+Empowers each .aetherplugin ...
+- `phase6_personality.py` - [COSMOS] Phase 6: Full GUI Personality + State Memory
 ==============================================...
 
 ## Usage
