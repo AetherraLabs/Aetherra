@@ -7,14 +7,26 @@ import openai
 # Try to load from .env file if it exists
 def load_env_file():
     """Load environment variables from .env file"""
-    env_file = os.path.join(os.path.dirname(__file__), "..", ".env")
-    if os.path.exists(env_file):
-        with open(env_file) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    key, value = line.split("=", 1)
-                    os.environ[key.strip()] = value.strip()
+    # Try multiple possible locations for .env file
+    possible_paths = [
+        os.path.join(os.path.dirname(__file__), "..", "..", ".env"),  # Project root
+        os.path.join(os.path.dirname(__file__), "..", ".env"),  # Parent dir
+        os.path.join(os.getcwd(), ".env"),  # Current working dir
+    ]
+
+    for env_file in possible_paths:
+        if os.path.exists(env_file):
+            print(f"🔍 Loading .env file from: {env_file}")
+            with open(env_file) as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        key, value = line.split("=", 1)
+                        os.environ[key.strip()] = value.strip()
+            print("✅ Environment variables loaded from .env file")
+            return
+
+    print("⚠️ No .env file found in expected locations")
 
 
 # Load .env file if it exists

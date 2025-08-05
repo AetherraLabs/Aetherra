@@ -7,9 +7,9 @@ Demonstrates the real-time bidirectional communication between
 Python backend and web panels with live data updates.
 """
 
-import sys
-import os
 import asyncio
+import os
+import sys
 import time
 from pathlib import Path
 
@@ -18,9 +18,9 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root / "Aetherra"))
 
 try:
-    from lyrixa_core.gui.main_window import LyrixaHybridWindow
-    from PySide6.QtWidgets import QApplication
+    from lyrixa.gui.main_window import LyrixaHybridWindow
     from PySide6.QtCore import QTimer
+    from PySide6.QtWidgets import QApplication
 
     def simulate_backend_data(window):
         """Simulate live backend data updates"""
@@ -28,67 +28,59 @@ try:
 
         # Simulate memory system updates
         memory_data = {
-            'total_memories': 1847,
-            'recent_memories': 23,
-            'memory_load': 67,
-            'status': 'active'
+            "total_memories": 1847,
+            "recent_memories": 23,
+            "memory_load": 67,
+            "status": "active",
         }
-        window.web_bridge.data_cache['memory'] = memory_data
-        window.web_bridge.memory_updated.emit(
-            __import__('json').dumps(memory_data)
-        )
+        window.web_bridge.data_cache["memory"] = memory_data
+        window.web_bridge.memory_updated.emit(__import__("json").dumps(memory_data))
         print("🧠 Memory data updated")
 
         # Simulate plugin updates
         plugin_data = {
-            'loaded_plugins': [
-                {'name': 'Memory Manager', 'status': 'active', 'version': '2.1.0'},
-                {'name': 'Neural Chat', 'status': 'active', 'version': '1.8.3'},
-                {'name': 'Analytics Engine', 'status': 'loaded', 'version': '3.0.1'},
-                {'name': 'File Watcher', 'status': 'active', 'version': '1.2.5'},
+            "loaded_plugins": [
+                {"name": "Memory Manager", "status": "active", "version": "2.1.0"},
+                {"name": "Neural Chat", "status": "active", "version": "1.8.3"},
+                {"name": "Analytics Engine", "status": "loaded", "version": "3.0.1"},
+                {"name": "File Watcher", "status": "active", "version": "1.2.5"},
             ],
-            'active_count': 3,
-            'total_count': 4,
-            'status': 'operational'
+            "active_count": 3,
+            "total_count": 4,
+            "status": "operational",
         }
-        window.web_bridge.data_cache['plugins'] = plugin_data
-        window.web_bridge.plugin_updated.emit(
-            __import__('json').dumps(plugin_data)
-        )
+        window.web_bridge.data_cache["plugins"] = plugin_data
+        window.web_bridge.plugin_updated.emit(__import__("json").dumps(plugin_data))
         print("🔌 Plugin data updated")
 
         # Simulate agent updates
         agent_data = {
-            'active_agents': 5,
-            'current_goals': [
-                'Analyze recent conversations',
-                'Update knowledge base',
-                'Monitor system performance',
-                'Process pending tasks',
-                'Self-improvement analysis'
+            "active_agents": 5,
+            "current_goals": [
+                "Analyze recent conversations",
+                "Update knowledge base",
+                "Monitor system performance",
+                "Process pending tasks",
+                "Self-improvement analysis",
             ],
-            'recent_thoughts': [
-                'User seems interested in Phase 2 features',
-                'GUI performance is excellent',
-                'Need to optimize memory usage'
+            "recent_thoughts": [
+                "User seems interested in Phase 2 features",
+                "GUI performance is excellent",
+                "Need to optimize memory usage",
             ],
-            'status': 'thinking'
+            "status": "thinking",
         }
-        window.web_bridge.data_cache['agents'] = agent_data
-        window.web_bridge.agent_updated.emit(
-            __import__('json').dumps(agent_data)
-        )
+        window.web_bridge.data_cache["agents"] = agent_data
+        window.web_bridge.agent_updated.emit(__import__("json").dumps(agent_data))
         print("🤖 Agent data updated")
 
         # Send a test notification
         notification = {
-            'level': 'success',
-            'message': 'Phase 2 Live Context Bridge is operational!',
-            'timestamp': int(time.time())
+            "level": "success",
+            "message": "Phase 2 Live Context Bridge is operational!",
+            "timestamp": int(time.time()),
         }
-        window.web_bridge.notification_sent.emit(
-            __import__('json').dumps(notification)
-        )
+        window.web_bridge.notification_sent.emit(__import__("json").dumps(notification))
         print("🔔 Test notification sent")
 
     def create_live_updates(window):
@@ -100,18 +92,20 @@ try:
 
             # Generate realistic system metrics
             metrics_data = {
-                'cpu_usage': random.randint(15, 85),
-                'memory_usage': random.randint(40, 75),
-                'process_count': random.randint(180, 220),
-                'uptime': time.time() % 86400,
-                'timestamp': int(time.time())
+                "cpu_usage": random.randint(15, 85),
+                "memory_usage": random.randint(40, 75),
+                "process_count": random.randint(180, 220),
+                "uptime": time.time() % 86400,
+                "timestamp": int(time.time()),
             }
 
-            window.web_bridge.data_cache['metrics'] = metrics_data
+            window.web_bridge.data_cache["metrics"] = metrics_data
             window.web_bridge.metrics_updated.emit(
-                __import__('json').dumps(metrics_data)
+                __import__("json").dumps(metrics_data)
             )
-            print(f"📊 Live metrics: CPU {metrics_data['cpu_usage']}% | RAM {metrics_data['memory_usage']}%")
+            print(
+                f"📊 Live metrics: CPU {metrics_data['cpu_usage']}% | RAM {metrics_data['memory_usage']}%"
+            )
 
         update_timer.timeout.connect(update_metrics)
         update_timer.start(3000)  # Update every 3 seconds
@@ -131,25 +125,32 @@ try:
 
         # Mock backend services
         mock_services = {
-            'memory_system': type('MockMemory', (), {
-                'total_memories': 1847,
-                'recent_count': 23
-            })(),
-            'plugin_manager': type('MockPluginManager', (), {
-                'get_all_plugins': lambda: {
-                    'memory_manager': {'loaded': True, 'version': '2.1.0'},
-                    'neural_chat': {'loaded': True, 'version': '1.8.3'},
-                    'analytics': {'loaded': False, 'version': '3.0.1'}
-                }
-            })(),
-            'agent_orchestrator': type('MockAgents', (), {
-                'agents': ['Agent1', 'Agent2', 'Agent3', 'Agent4', 'Agent5'],
-                'current_goals': [
-                    'Analyze conversations',
-                    'Update knowledge',
-                    'Monitor performance'
-                ]
-            })()
+            "memory_system": type(
+                "MockMemory", (), {"total_memories": 1847, "recent_count": 23}
+            )(),
+            "plugin_manager": type(
+                "MockPluginManager",
+                (),
+                {
+                    "get_all_plugins": lambda: {
+                        "memory_manager": {"loaded": True, "version": "2.1.0"},
+                        "neural_chat": {"loaded": True, "version": "1.8.3"},
+                        "analytics": {"loaded": False, "version": "3.0.1"},
+                    }
+                },
+            )(),
+            "agent_orchestrator": type(
+                "MockAgents",
+                (),
+                {
+                    "agents": ["Agent1", "Agent2", "Agent3", "Agent4", "Agent5"],
+                    "current_goals": [
+                        "Analyze conversations",
+                        "Update knowledge",
+                        "Monitor performance",
+                    ],
+                },
+            )(),
         }
 
         # Connect mock services
@@ -192,5 +193,6 @@ try:
 except Exception as e:
     print(f"[ERROR] Error testing Phase 2 bridge: {e}")
     import traceback
+
     traceback.print_exc()
     sys.exit(1)

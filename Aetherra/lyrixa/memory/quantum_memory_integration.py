@@ -414,7 +414,7 @@ class QuantumEnhancedMemoryEngine:
         return {
             "coherence": self.quantum_layer.get_quantum_statistics(),
             "node_count": len(self.quantum_layer.nodes),
-            "is_available": self.is_available
+            "is_available": self.is_available,
         }
 
 
@@ -437,3 +437,53 @@ def create_quantum_enhanced_memory():
             "coherence_management",
         ],
     }
+
+
+class QuantumMemorySystem:
+    """Quantum Memory System wrapper for integration with Aetherra."""
+
+    def __init__(self):
+        """Initialize quantum memory system."""
+        self.quantum_layer = initialize_quantum_memory()
+        self.engine = QuantumEnhancedMemoryEngine()
+        self.initialized = True
+
+    async def initialize(self):
+        """Initialize the memory system."""
+        return True
+
+    def store(self, data):
+        """Store data in quantum memory."""
+        try:
+            memory_id = self.quantum_layer.create_quantum_memory(data)
+            return {"status": "stored", "memory_id": memory_id}
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+
+    def retrieve(self, query):
+        """Retrieve data from quantum memory."""
+        try:
+            # If query is a direct ID, try to observe that node
+            if isinstance(query, str) and query in self.quantum_layer.nodes:
+                result = self.quantum_layer.quantum_observe(query)
+                return {"status": "found", "data": result}
+
+            # Otherwise, perform quantum search
+            results = self.quantum_layer.quantum_search(str(query))
+            return {"status": "found", "results": results}
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+
+    def get_status(self):
+        """Get quantum memory status."""
+        return {
+            "type": "quantum",
+            "nodes": len(self.quantum_layer.nodes),
+            "coherence": self.quantum_layer.get_quantum_statistics(),
+            "initialized": self.initialized,
+        }
+
+
+def get_memory_system():
+    """Get quantum memory system instance."""
+    return QuantumMemorySystem()

@@ -7,10 +7,11 @@ Test the updated launcher with Phase 2 Live Context Bridge capabilities.
 No GUI instantiation, Windows PowerShell compatible.
 """
 
-import sys
 import os
 import platform
+import sys
 from pathlib import Path
+
 
 def test_phase2_launcher():
     """Test Phase 2 launcher integration without GUI creation."""
@@ -19,8 +20,9 @@ def test_phase2_launcher():
 
     try:
         # Test 1: Import launcher
-        sys.path.append('Aetherra')
+        sys.path.append("Aetherra")
         from lyrixa.launcher import LyrixaOperatingSystem
+
         print("[OK] Launcher imported successfully")
 
         # Test 2: Create launcher instance
@@ -38,7 +40,7 @@ def test_phase2_launcher():
             return False
 
         # Test 4: Test backend connection method
-        if hasattr(lyrixa_os, '_connect_backend_to_frontend'):
+        if hasattr(lyrixa_os, "_connect_backend_to_frontend"):
             print("[OK] Phase 2 backend connection method available")
         else:
             print("[ERROR] Phase 2 backend connection method missing")
@@ -46,18 +48,22 @@ def test_phase2_launcher():
         # Test 5: Test Phase 2 features check (without GUI creation)
         try:
             # Import the hybrid window class to verify it exists
-            from lyrixa_core.gui.main_window import LyrixaHybridWindow
+            from lyrixa.gui.main_window import LyrixaHybridWindow
+
             print("[OK] LyrixaHybridWindow class imported successfully")
 
             # Check class structure for Phase 2 features
-            has_init_method = hasattr(LyrixaHybridWindow, '__init__')
+            has_init_method = hasattr(LyrixaHybridWindow, "__init__")
             print(f"[BRIDGE] Has __init__ method: {has_init_method}")
 
             # Check if LyrixaContextBridge is referenced in the file
             import inspect
+
             source = inspect.getsource(LyrixaHybridWindow)
-            has_context_bridge = 'LyrixaContextBridge' in source
-            has_specialized_signals = 'memory_updated' in source and 'plugin_updated' in source
+            has_context_bridge = "LyrixaContextBridge" in source
+            has_specialized_signals = (
+                "memory_updated" in source and "plugin_updated" in source
+            )
 
             print(f"[BRIDGE] Context bridge implementation: {has_context_bridge}")
             print(f"[BRIDGE] Specialized signals present: {has_specialized_signals}")
@@ -72,7 +78,11 @@ def test_phase2_launcher():
             return False
 
         # Test 6: Test launcher methods
-        required_methods = ['_find_best_gui_class', '_detect_backend_services', '_connect_backend_to_frontend']
+        required_methods = [
+            "_find_best_gui_class",
+            "_detect_backend_services",
+            "_connect_backend_to_frontend",
+        ]
         for method in required_methods:
             if hasattr(lyrixa_os, method):
                 print(f"[OK] Method '{method}' present")
@@ -81,11 +91,13 @@ def test_phase2_launcher():
 
         # Test 7: Configuration validation
         print("[CONFIG] Testing configuration...")
-        print(f"[CONFIG] Python version: {sys.version_info.major}.{sys.version_info.minor}")
+        print(
+            f"[CONFIG] Python version: {sys.version_info.major}.{sys.version_info.minor}"
+        )
         print(f"[CONFIG] Platform: {platform.system()}")
 
         # Test 8: Check for required modules
-        required_modules = ['PySide6', 'psutil']
+        required_modules = ["PySide6", "psutil"]
         for module in required_modules:
             try:
                 __import__(module)
@@ -99,8 +111,10 @@ def test_phase2_launcher():
     except Exception as e:
         print(f"[ERROR] Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 if __name__ == "__main__":
     success = test_phase2_launcher()

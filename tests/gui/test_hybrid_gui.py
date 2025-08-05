@@ -2,6 +2,7 @@
 """
 Test script for the Lyrixa Hybrid GUI
 """
+
 import sys
 from pathlib import Path
 
@@ -14,8 +15,8 @@ try:
     print("🔍 Testing Lyrixa Hybrid GUI...")
 
     # Import required modules
+    from lyrixa.gui.main_window import LyrixaHybridWindow
     from PySide6.QtWidgets import QApplication
-    from lyrixa_core.gui.main_window import LyrixaHybridWindow
 
     print("[OK] Imports successful")
 
@@ -44,4 +45,5 @@ except ImportError as e:
 except Exception as e:
     print(f"[ERROR] Error: {e}")
     import traceback
+
     traceback.print_exc()

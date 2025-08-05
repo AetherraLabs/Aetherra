@@ -116,6 +116,9 @@ class LyrixaOperatingSystem:
         self.agent_orchestrator = None
         self.gui_application = None
         self.main_window = None
+        self.aetherra_os_detected = False
+        self.hub_connector = None
+        self.hub_server = None  # Add Hub server instance
 
     async def start_aetherra_backend(self) -> bool:
         """Start all Aetherra OS backend systems."""
@@ -145,10 +148,22 @@ class LyrixaOperatingSystem:
                     try:
                         module = __import__(candidate, fromlist=[""])
                         if hasattr(module, "get_memory_system"):
-                            self.memory_system = await module.get_memory_system()
+                            # Check if it's async or sync
+                            try:
+                                memory_func = module.get_memory_system
+                                if asyncio.iscoroutinefunction(memory_func):
+                                    self.memory_system = await memory_func()
+                                else:
+                                    self.memory_system = memory_func()
+                            except Exception as e:
+                                logger.warning(
+                                    f"[WARN] Memory system error: {e}, using mock"
+                                )
+                                continue
                         elif hasattr(module, "memory_system"):
                             self.memory_system = module.memory_system
                         elif hasattr(module, "QuantumMemorySystem"):
+                            # QuantumMemorySystem is not async, don't await it
                             self.memory_system = module.QuantumMemorySystem()
 
                         if self.memory_system:
@@ -180,13 +195,12 @@ class LyrixaOperatingSystem:
 
             # Phase 3: Plugin Manager
             logger.info("[PLG] Phase 3: Initializing Plugin Manager...")
-            from aetherra_core.orchestration import plugin_manager
+            from aetherra_core.plugins import plugin_manager_core
 
-            await plugin_manager.get_plugin_manager()
-            self.plugin_manager = plugin_manager
+            self.plugin_manager = await plugin_manager_core.get_plugin_manager()
 
             # Load all plugins
-            plugin_results = await plugin_manager.load_all_plugins()
+            plugin_results = await plugin_manager_core.load_all_plugins()
             loaded_count = sum(1 for success in plugin_results.values() if success)
             logger.info(f"[OK] Plugin Manager online - {loaded_count} plugins loaded")
 
@@ -194,11 +208,45 @@ class LyrixaOperatingSystem:
                 "plugin_manager", self.plugin_manager
             )
 
+            # Register loaded plugins with Hub server (if available)
+            if (
+                hasattr(self, "hub_server")
+                and self.hub_server
+                and self.hub_server.is_running()
+            ):
+                try:
+                    # Get list of loaded plugins from plugin manager
+                    if hasattr(self.plugin_manager, "loaded_plugins"):
+                        for (
+                            plugin_name,
+                            plugin_instance,
+                        ) in self.plugin_manager.loaded_plugins.items():
+                            plugin_data = {
+                                "name": plugin_name,
+                                "type": getattr(
+                                    plugin_instance, "plugin_type", "unknown"
+                                ),
+                                "version": getattr(plugin_instance, "version", "1.0.0"),
+                                "description": getattr(
+                                    plugin_instance,
+                                    "description",
+                                    f"{plugin_name} plugin",
+                                ),
+                                "source": "lyrixa_discovered",
+                                "status": "loaded",
+                            }
+                            self.hub_server.register_plugin(plugin_data)
+                        logger.info(
+                            f"[HUB] Registered {len(self.plugin_manager.loaded_plugins)} plugins with Hub server"
+                        )
+                except Exception as e:
+                    logger.warning(f"[WARN] Failed to register plugins with Hub: {e}")
+
             # Phase 4: Lyrixa Engine
             logger.info("[ENG] Phase 4: Initializing Lyrixa Engine...")
-            from aetherra_core.engine.lyrixa_engine import lyrixa_engine
+            from aetherra_core.engine.lyrixa_engine import AetherraEngine
 
-            self.lyrixa_engine = lyrixa_engine
+            self.lyrixa_engine = AetherraEngine()
             logger.info("[OK] Lyrixa Engine online")
 
             await self.service_registry.register_service(
@@ -213,6 +261,72 @@ class LyrixaOperatingSystem:
             await self.service_registry.register_service(
                 "agent_orchestrator", self.agent_orchestrator
             )
+
+            # Phase 6: Aetherra Hub Server Startup
+            logger.info("[HUB] Phase 6a: Starting Aetherra Hub Server...")
+            try:
+                # Import and start the Hub server
+                sys.path.insert(0, str(project_root))
+                from aetherra_hub_server import start_hub_server
+
+                # Start Hub server on port 8888 to match connector expectations
+                self.hub_server = start_hub_server(port=8888)
+
+                if self.hub_server and self.hub_server.is_running():
+                    logger.info("[OK] Aetherra Hub Server started on port 8888")
+                else:
+                    logger.warning("[WARN] Failed to start Aetherra Hub Server")
+
+            except Exception as e:
+                logger.warning(f"[WARN] Hub server startup failed: {e}")
+                self.hub_server = None
+
+            # Phase 6b: Aetherra Hub Connection
+            logger.info("[HUB] Phase 6b: Connecting to Aetherra Hub...")
+            try:
+                from lyrixa.integrations.aetherra_hub_connector import (
+                    initialize_hub_connection,
+                )
+
+                hub_result = await initialize_hub_connection()
+
+                if hub_result["hub_connected"]:
+                    logger.info("[OK] Connected to Aetherra Hub successfully")
+                    if hub_result["aetherra_os"]["running"]:
+                        logger.info(
+                            f"[OK] Detected running Aetherra OS with {len(hub_result['aetherra_os']['services'])} services"
+                        )
+                        self.aetherra_os_detected = True
+                    else:
+                        logger.info(
+                            "[INFO] Aetherra OS not detected - Lyrixa running standalone"
+                        )
+                        self.aetherra_os_detected = False
+                else:
+                    logger.warning(
+                        "[WARN] Could not connect to Aetherra Hub - running in standalone mode"
+                    )
+                    self.aetherra_os_detected = False
+
+            except Exception as e:
+                logger.warning(
+                    f"[WARN] Hub connection failed: {e} - running standalone"
+                )
+                self.aetherra_os_detected = False
+
+            # Phase 7: Memory System Integration for Plugin UI
+            logger.info("[MEM] Phase 7: Setting up Memory System Integration...")
+            try:
+                from lyrixa.integrations.memory_adapter import get_memory_adapter
+
+                memory_adapter = get_memory_adapter()
+                memory_adapter.update_memory_system(self.memory_system)
+                await self.service_registry.register_service(
+                    "memory_adapter", memory_adapter
+                )
+                logger.info("[OK] Memory system adapter configured for plugin UI")
+            except Exception as e:
+                logger.warning(f"[WARN] Memory adapter setup failed: {e}")
 
             logger.info("[READY] AETHERRA OS BACKEND FULLY OPERATIONAL")
             logger.info("=" * 60)
@@ -373,7 +487,7 @@ class LyrixaOperatingSystem:
         """Find the best available GUI class."""
         # Priority 1: Try the Phase 6 Hybrid GUI with Full Personality + State Memory
         try:
-            from lyrixa_core.gui.main_window import LyrixaHybridWindow
+            from lyrixa.gui.main_window import LyrixaHybridWindow
 
             logger.info(
                 "[OK] Using Phase 6 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI + Plugin System + AI Personality)"
@@ -384,7 +498,7 @@ class LyrixaOperatingSystem:
 
         # Priority 2: Try the Phase 5 Hybrid GUI with Plugin-Driven UI System
         try:
-            from lyrixa_core.gui.main_window import LyrixaHybridWindow
+            from lyrixa.gui.main_window import LyrixaHybridWindow
 
             logger.info(
                 "[OK] Using Phase 5 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI + Plugin System)"
@@ -395,7 +509,7 @@ class LyrixaOperatingSystem:
 
         # Priority 3: Try the Phase 4 Hybrid GUI with Cognitive UI Integration
         try:
-            from lyrixa_core.gui.main_window import LyrixaHybridWindow
+            from lyrixa.gui.main_window import LyrixaHybridWindow
 
             logger.info(
                 "[OK] Using Phase 4 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI)"
@@ -406,7 +520,7 @@ class LyrixaOperatingSystem:
 
         # Priority 4: Try the Phase 3 Hybrid GUI with Auto-Generation
         try:
-            from lyrixa_core.gui.main_window import LyrixaHybridWindow
+            from lyrixa.gui.main_window import LyrixaHybridWindow
 
             logger.info(
                 "[OK] Using Phase 3 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation)"
@@ -417,7 +531,7 @@ class LyrixaOperatingSystem:
 
         # Priority 5: Try the Phase 2 Hybrid GUI with Live Context Bridge
         try:
-            from lyrixa_core.gui.main_window import LyrixaHybridWindow
+            from lyrixa.gui.main_window import LyrixaHybridWindow
 
             logger.info(
                 "[OK] Using Phase 2 Lyrixa Hybrid GUI (PySide6 + Web Panels + Live Context Bridge)"
@@ -747,7 +861,7 @@ class LyrixaOperatingSystem:
             return
 
         try:
-            plugins = await self.plugin_manager.list_plugins()
+            plugins = self.plugin_manager.list_plugins()
             print(f"\n[PLUGINS] LOADED PLUGINS ({len(plugins)} total)")
             print("=" * 40)
             for name, info in plugins.items():
@@ -835,16 +949,16 @@ async def main():
                 logger.info("[OK] Lyrixa GUI launched successfully")
                 logger.info("[OK] LYRIXA AI OPERATING SYSTEM IS NOW RUNNING")
                 logger.info("=" * 60)
-                logger.info("🎙️ PHASE 1: Hybrid PySide6 + Web Panel Architecture")
-                logger.info("🌉 PHASE 2: Live Context Bridge for real-time data flow")
+                logger.info("PHASE 1: Hybrid PySide6 + Web Panel Architecture")
+                logger.info("PHASE 2: Live Context Bridge for real-time data flow")
                 logger.info(
-                    "🔮 PHASE 3: Auto-Generation System for dynamic panel creation"
+                    "PHASE 3: Auto-Generation System for dynamic panel creation"
                 )
                 logger.info(
-                    "🧠 PHASE 4: Cognitive UI Integration with thought visualization"
+                    "PHASE 4: Cognitive UI Integration with thought visualization"
                 )
-                logger.info("🔁 PHASE 5: Plugin-Driven UI System with dynamic widgets")
-                logger.info("🌌 PHASE 6: Full GUI Personality + State Memory + AI Chat")
+                logger.info("PHASE 5: Plugin-Driven UI System with dynamic widgets")
+                logger.info("PHASE 6: Full GUI Personality + State Memory + AI Chat")
                 logger.info("=" * 60)
                 logger.info(
                     "[CTRL] Lyrixa has full command and control over Aetherra OS"

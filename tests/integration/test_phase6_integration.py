@@ -18,14 +18,15 @@ Usage:
     python test_phase6_integration.py
 """
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Add project paths
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "Aetherra"))
+
 
 def test_phase_imports():
     """Test that all Phase components can be imported."""
@@ -34,9 +35,10 @@ def test_phase_imports():
 
     # Phase 1: Basic GUI
     try:
-        from PySide6.QtWidgets import QApplication
-        from PySide6.QtWebEngineWidgets import QWebEngineView
         from PySide6.QtWebChannel import QWebChannel
+        from PySide6.QtWebEngineWidgets import QWebEngineView
+        from PySide6.QtWidgets import QApplication
+
         print("✅ Phase 1: PySide6 + WebEngine components available")
     except ImportError as e:
         print(f"❌ Phase 1: PySide6 components missing: {e}")
@@ -44,42 +46,48 @@ def test_phase_imports():
 
     # Phase 2: Live Context Bridge
     try:
-        from Aetherra.lyrixa_core.gui.main_window import LyrixaContextBridge
+        from Aetherra.lyrixa.gui.main_window import LyrixaContextBridge
+
         print("✅ Phase 2: Live Context Bridge available")
     except ImportError as e:
         print(f"❌ Phase 2: Context Bridge missing: {e}")
 
     # Phase 3: Auto-Generation System
     try:
-        from Aetherra.lyrixa_core.gui.phase3_auto_generator import Phase3AutoGenerator
+        from Aetherra.lyrixa.gui.phase3_auto_generator import Phase3AutoGenerator
+
         print("✅ Phase 3: Auto-Generation System available")
     except ImportError as e:
         print(f"❌ Phase 3: Auto-Generation System missing: {e}")
 
     # Phase 4: Cognitive UI Integration
     try:
-        from Aetherra.lyrixa_core.gui.phase4_cognitive_ui import CognitiveStateMonitor
+        from Aetherra.lyrixa.gui.phase4_cognitive_ui import CognitiveStateMonitor
+
         print("✅ Phase 4: Cognitive UI Integration available")
     except ImportError as e:
         print(f"❌ Phase 4: Cognitive UI Integration missing: {e}")
 
     # Phase 5: Plugin-Driven UI System
     try:
-        from Aetherra.lyrixa_core.gui.phase5_plugin_ui import PluginUIManager
+        from Aetherra.lyrixa.gui.phase5_plugin_ui import PluginUIManager
+
         print("✅ Phase 5: Plugin-Driven UI System available")
     except ImportError as e:
         print(f"❌ Phase 5: Plugin-Driven UI System missing: {e}")
 
     # Phase 6: GUI Personality + State Memory
     try:
-        from Aetherra.lyrixa_core.gui.phase6_personality import GUIPersonalityManager
+        from Aetherra.lyrixa.gui.phase6_personality import GUIPersonalityManager
+
         print("✅ Phase 6: GUI Personality + State Memory available")
     except ImportError as e:
         print(f"❌ Phase 6: GUI Personality + State Memory missing: {e}")
 
     # Main Window Integration
     try:
-        from Aetherra.lyrixa_core.gui.main_window import LyrixaHybridWindow
+        from Aetherra.lyrixa.gui.main_window import LyrixaHybridWindow
+
         print("✅ Main Window: LyrixaHybridWindow available")
     except ImportError as e:
         print(f"❌ Main Window: LyrixaHybridWindow missing: {e}")
@@ -87,17 +95,20 @@ def test_phase_imports():
 
     return True
 
+
 def test_main_window_phases():
     """Test that main window has all phase components."""
     print("\n🔍 TESTING MAIN WINDOW PHASE INTEGRATION")
     print("=" * 50)
 
     try:
-        from Aetherra.lyrixa_core.gui.main_window import LyrixaHybridWindow
-
         # Create instance (without showing)
         import sys
+
         from PySide6.QtWidgets import QApplication
+
+        from Aetherra.lyrixa.gui.main_window import LyrixaHybridWindow
+
         app = QApplication.instance() or QApplication(sys.argv)
 
         window = LyrixaHybridWindow()
@@ -105,19 +116,19 @@ def test_main_window_phases():
         # Test Phase components
         phases_found = []
 
-        if hasattr(window, 'web_bridge'):
+        if hasattr(window, "web_bridge"):
             phases_found.append("Phase 2: Live Context Bridge")
 
-        if hasattr(window, 'auto_generator'):
+        if hasattr(window, "auto_generator"):
             phases_found.append("Phase 3: Auto-Generation System")
 
-        if hasattr(window, 'cognitive_monitor'):
+        if hasattr(window, "cognitive_monitor"):
             phases_found.append("Phase 4: Cognitive UI Integration")
 
-        if hasattr(window, 'plugin_ui_manager'):
+        if hasattr(window, "plugin_ui_manager"):
             phases_found.append("Phase 5: Plugin-Driven UI System")
 
-        if hasattr(window, 'personality_manager'):
+        if hasattr(window, "personality_manager"):
             phases_found.append("Phase 6: GUI Personality + State Memory")
 
         print(f"✅ Main Window Components Found: {len(phases_found)}/5")
@@ -125,13 +136,15 @@ def test_main_window_phases():
             print(f"   ✓ {phase}")
 
         # Test web panel files
-        gui_dir = Path(__file__).parent / "Aetherra" / "lyrixa_core" / "gui" / "web_panels"
+        gui_dir = (
+            Path(__file__).parent / "Aetherra" / "lyrixa_core" / "gui" / "web_panels"
+        )
 
         expected_panels = [
             "dashboard_panel.html",
             "phase4_cognitive.html",
             "phase5_plugin_demo.html",
-            "phase6_chat.html"
+            "phase6_chat.html",
         ]
 
         panels_found = []
@@ -149,19 +162,20 @@ def test_main_window_phases():
         print(f"❌ Main Window Test Failed: {e}")
         return False
 
+
 def test_phase6_components():
     """Test Phase 6 specific components."""
     print("\n🌌 TESTING PHASE 6 SPECIFIC COMPONENTS")
     print("=" * 50)
 
     try:
-        from Aetherra.lyrixa_core.gui.phase6_personality import (
-            GUIPersonalityManager,
+        from Aetherra.lyrixa.gui.phase6_personality import (
             EmotionalState,
-            PersonalityTrait,
-            LyrixaAI,
             EmotionalThemeEngine,
-            LayoutMemorySystem
+            GUIPersonalityManager,
+            LayoutMemorySystem,
+            LyrixaAI,
+            PersonalityTrait,
         )
 
         # Test emotional states
@@ -176,15 +190,23 @@ def test_phase6_components():
 
         # Test theme engine
         theme_engine = EmotionalThemeEngine()
-        theme = theme_engine.generate_theme(type('MockState', (), {
-            'emotional_state': EmotionalState.FOCUSED,
-            'energy_level': 0.8,
-            'focus_level': 0.9,
-            'creativity_level': 0.6,
-            'social_engagement': 0.7,
-            'dominant_traits': [PersonalityTrait.ANALYTICAL]
-        })())
-        print(f"✅ Theme Engine: Generated theme with primary color {theme.primary_color}")
+        theme = theme_engine.generate_theme(
+            type(
+                "MockState",
+                (),
+                {
+                    "emotional_state": EmotionalState.FOCUSED,
+                    "energy_level": 0.8,
+                    "focus_level": 0.9,
+                    "creativity_level": 0.6,
+                    "social_engagement": 0.7,
+                    "dominant_traits": [PersonalityTrait.ANALYTICAL],
+                },
+            )()
+        )
+        print(
+            f"✅ Theme Engine: Generated theme with primary color {theme.primary_color}"
+        )
 
         # Test memory system
         memory_system = LayoutMemorySystem(":memory:")  # Use in-memory SQLite
@@ -192,7 +214,9 @@ def test_phase6_components():
 
         # Test AI component
         ai = LyrixaAI()
-        print(f"✅ AI Component: Initial emotional state is {ai.personality_state.emotional_state.value}")
+        print(
+            f"✅ AI Component: Initial emotional state is {ai.personality_state.emotional_state.value}"
+        )
 
         print("✅ Phase 6: All core components functional")
         return True
@@ -200,18 +224,27 @@ def test_phase6_components():
     except Exception as e:
         print(f"❌ Phase 6 Component Test Failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
+
 
 def test_chat_interface():
     """Test that chat interface exists and is accessible."""
     print("\n💬 TESTING CHAT INTERFACE")
     print("=" * 30)
 
-    chat_file = Path(__file__).parent / "Aetherra" / "lyrixa_core" / "gui" / "web_panels" / "phase6_chat.html"
+    chat_file = (
+        Path(__file__).parent
+        / "Aetherra"
+        / "lyrixa_core"
+        / "gui"
+        / "web_panels"
+        / "phase6_chat.html"
+    )
 
     if chat_file.exists():
-        content = chat_file.read_text(encoding='utf-8')
+        content = chat_file.read_text(encoding="utf-8")
 
         # Check for key chat components
         components = [
@@ -220,7 +253,7 @@ def test_chat_interface():
             "chat-input",
             "personality-indicator",
             "emotion-badge",
-            "LyrixaChatInterface"
+            "LyrixaChatInterface",
         ]
 
         found_components = []
@@ -228,7 +261,9 @@ def test_chat_interface():
             if component in content:
                 found_components.append(component)
 
-        print(f"✅ Chat Interface: {len(found_components)}/{len(components)} components found")
+        print(
+            f"✅ Chat Interface: {len(found_components)}/{len(components)} components found"
+        )
         for component in found_components:
             print(f"   ✓ {component}")
 
@@ -236,6 +271,7 @@ def test_chat_interface():
     else:
         print("❌ Chat Interface: phase6_chat.html not found")
         return False
+
 
 def test_plugin_system():
     """Test that plugin system components exist."""
@@ -252,7 +288,14 @@ def test_plugin_system():
             print(f"   ✓ {plugin_file.name}")
 
         # Check for plugin demo interface
-        demo_file = Path(__file__).parent / "Aetherra" / "lyrixa_core" / "gui" / "web_panels" / "phase5_plugin_demo.html"
+        demo_file = (
+            Path(__file__).parent
+            / "Aetherra"
+            / "lyrixa_core"
+            / "gui"
+            / "web_panels"
+            / "phase5_plugin_demo.html"
+        )
         if demo_file.exists():
             print("✅ Plugin Demo Interface: Available")
             return True
@@ -262,6 +305,7 @@ def test_plugin_system():
     else:
         print("❌ Plugins Directory: Not found")
         return False
+
 
 def main():
     """Run comprehensive Phase 6 integration test."""
@@ -281,7 +325,7 @@ def main():
         ("Main Window Integration", test_main_window_phases),
         ("Phase 6 Components", test_phase6_components),
         ("Chat Interface", test_chat_interface),
-        ("Plugin System", test_plugin_system)
+        ("Plugin System", test_plugin_system),
     ]
 
     results = []
@@ -310,7 +354,9 @@ def main():
 
     if passed == total:
         print("🎉 ALL SYSTEMS OPERATIONAL! Phase 1-6 integration complete!")
-        print("🌌 Lyrixa is ready for launch with full personality and AI capabilities!")
+        print(
+            "🌌 Lyrixa is ready for launch with full personality and AI capabilities!"
+        )
     elif passed >= total * 0.8:
         print("⚠️  Most systems operational. Minor issues detected.")
         print("🚀 Lyrixa can launch but may have reduced functionality.")
@@ -319,6 +365,7 @@ def main():
         print("🔧 Please check component installations and configurations.")
 
     return passed == total
+
 
 if __name__ == "__main__":
     # Set working directory

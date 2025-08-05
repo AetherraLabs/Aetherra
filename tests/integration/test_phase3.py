@@ -13,10 +13,15 @@ sys.path.insert(0, str(aetherra_path))
 
 try:
     # Test Phase 3 imports
-    from lyrixa_core.gui.phase3_auto_generator import StateIntrospector, PanelGenerator, ComponentState
-    from dataclasses import asdict
     import json
+    from dataclasses import asdict
     from datetime import datetime
+
+    from lyrixa.gui.phase3_auto_generator import (
+        ComponentState,
+        PanelGenerator,
+        StateIntrospector,
+    )
 
     print("✅ Phase 3 imports successful")
 
@@ -28,7 +33,7 @@ try:
         metadata={"version": "1.0", "capabilities": ["test"]},
         capabilities=["test_capability"],
         last_updated=datetime.now(),
-        importance=0.8
+        importance=0.8,
     )
 
     # Test JSON serialization
@@ -40,7 +45,9 @@ try:
     print("✅ StateIntrospector creation successful")
 
     # Test panel generator creation
-    panels_dir = Path(__file__).parent / "Aetherra" / "lyrixa_core" / "gui" / "web_panels"
+    panels_dir = (
+        Path(__file__).parent / "Aetherra" / "lyrixa_core" / "gui" / "web_panels"
+    )
     generator = PanelGenerator(str(panels_dir))
     print("✅ PanelGenerator creation successful")
 
@@ -50,4 +57,5 @@ try:
 except Exception as e:
     print(f"❌ Test failed: {e}")
     import traceback
+
     traceback.print_exc()

@@ -29,7 +29,7 @@ def test_real_ai_fallback():
     try:
         from datetime import datetime
 
-        from Aetherra.lyrixa_core.gui.phase6_personality import (
+        from Aetherra.lyrixa.gui.phase6_personality import (
             EmotionalState,
             GUIPersonalityManager,
             LyrixaAI,
