@@ -301,27 +301,29 @@ class LyrixaIntelligenceCore:
                 "timestamp": datetime.now().isoformat(),
             }
 
-    def process_conversation(self, message: str, user_id: str = "user", context: Optional[Dict] = None) -> Dict[str, Any]:
+    def process_conversation(
+        self, message: str, user_id: str = "user", context: Optional[Dict] = None
+    ) -> Dict[str, Any]:
         """
         Synchronous wrapper for process_message to maintain compatibility.
-        
+
         Args:
             message: The input message
             user_id: User identifier (for compatibility)
             context: Optional context information
-            
+
         Returns:
             Dict containing response and metadata
         """
         try:
             # Try to run the async method in an event loop
             import asyncio
-            
+
             # Create context with user_id
             full_context = {"user_id": user_id}
             if context:
                 full_context.update(context)
-                
+
             # Try to get existing event loop
             try:
                 loop = asyncio.get_event_loop()
@@ -334,11 +336,13 @@ class LyrixaIntelligenceCore:
                         "timestamp": datetime.now().isoformat(),
                     }
                 else:
-                    return loop.run_until_complete(self.process_message(message, full_context))
+                    return loop.run_until_complete(
+                        self.process_message(message, full_context)
+                    )
             except RuntimeError:
                 # No event loop exists, create a new one
                 return asyncio.run(self.process_message(message, full_context))
-                
+
         except Exception as e:
             logger.error(f"❌ Synchronous message processing failed: {e}")
             return {
