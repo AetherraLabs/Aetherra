@@ -96,7 +96,7 @@ def create_enhanced_dashboard_panel() -> str:
             .status-card:hover {
                 background: rgba(0, 255, 170, 0.12);
                 transform: translateY(-5px);
-                box-shadow: 0 10px 30px rgba(0, 255, 170, 0.2);
+                /* box-shadow removed for Qt compatibility */
                 border-color: rgba(0, 255, 170, 0.6);
             }
 
@@ -158,9 +158,9 @@ def create_enhanced_dashboard_panel() -> str:
             .status-error { background-color: #ff4444; }
 
             @keyframes pulse {
-                0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
-                70% { box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
-                100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+                0% { /* box-shadow removed for Qt compatibility */ }
+                70% { /* box-shadow removed for Qt compatibility */ }
+                100% { /* box-shadow removed for Qt compatibility */ }
             }
 
             .progress-bar {
@@ -633,13 +633,13 @@ def create_memory_visualization_panel() -> str:
                 border-radius: 50%;
                 cursor: pointer;
                 transition: all 0.3s ease;
-                box-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
+                /* box-shadow removed for Qt compatibility */
             }
 
             .memory-node:hover {
                 transform: scale(2);
                 background: #ffffff;
-                box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+                /* box-shadow removed for Qt compatibility */
             }
 
             .memory-connection {
@@ -903,7 +903,7 @@ def create_agent_ecosystem_panel() -> str:
             .agent-card:hover {
                 background: rgba(0, 255, 170, 0.12);
                 transform: translateY(-5px);
-                box-shadow: 0 10px 30px rgba(0, 255, 170, 0.2);
+                /* box-shadow removed for Qt compatibility */
             }
 
             .agent-status {
@@ -980,8 +980,8 @@ def create_agent_ecosystem_panel() -> str:
             }
 
             @keyframes pulse-glow {
-                0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 170, 0.5); }
-                50% { box-shadow: 0 0 15px rgba(0, 255, 170, 0.8); }
+                0%, 100% { /* box-shadow removed for Qt compatibility */ }
+                50% { /* box-shadow removed for Qt compatibility */ }
             }
         </style>
         <script>

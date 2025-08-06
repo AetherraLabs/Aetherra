@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional
 
 # Import Lyrixa components
 try:
-    from lyrixa.core.advanced_vector_memory import AdvancedMemorySystem
+# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.advanced_vector_memory import AdvancedMemorySystem
 
     MEMORY_AVAILABLE = True
 except ImportError:

@@ -371,7 +371,7 @@ from pathlib import Path
 
 # Add clean architecture to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
+# ARCHITECTURAL FIX: Removed Lyrixa import - 
 from lyrixa.agents.agent_integration_bridge import agent_bridge
 from integration.bridges.aetherra_lyrixa_bridge import bridge
 

@@ -28,7 +28,7 @@ def integrate_memory_optimizations(memory_engine_path: str):
     import sys
 
     sys.path.append(str(Path(memory_engine_path).parent))
-
+# ARCHITECTURAL FIX: Removed Lyrixa import - 
     from lyrixa_memory_engine import LyrixaMemoryEngine
 
     # Create enhanced version with optimizations

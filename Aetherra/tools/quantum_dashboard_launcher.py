@@ -21,15 +21,15 @@ aetherra_path = Path(__file__).parent / "Aetherra"
 sys.path.insert(0, str(aetherra_path))
 
 try:
-    from lyrixa.memory.quantum_web_dashboard import QuantumWebDashboard, WEB_AVAILABLE
-    from lyrixa.memory.quantum_memory_integration import create_quantum_enhanced_memory_engine
+# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.memory.quantum_web_dashboard import QuantumWebDashboard, WEB_AVAILABLE
+# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.memory.quantum_memory_integration import create_quantum_enhanced_memory_engine
     QUANTUM_AVAILABLE = True
 except ImportError as e:
     print(f"⚠️ Quantum components not available: {e}")
     QUANTUM_AVAILABLE = False
 
 try:
-    from lyrixa.memory.qfac_dashboard import QFACDashboard
+# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.memory.qfac_dashboard import QFACDashboard
     QFAC_AVAILABLE = True
 except ImportError:
     QFAC_AVAILABLE = False
@@ -130,7 +130,7 @@ async def launch_quantum_dashboard(port: int = 8080, mode: str = "web"):
         # Use the existing QFAC dashboard with quantum integration
         try:
             # We'll need to create a mock analyzer for the QFAC dashboard
-            from lyrixa.memory.compression_analyzer import MemoryCompressionAnalyzer
+# ARCHITECTURAL FIX: Removed Lyrixa import -             from lyrixa.memory.compression_analyzer import MemoryCompressionAnalyzer
 
             analyzer = MemoryCompressionAnalyzer()
             dashboard = QFACDashboard(analyzer)

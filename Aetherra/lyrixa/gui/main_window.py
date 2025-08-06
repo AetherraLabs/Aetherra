@@ -1879,7 +1879,7 @@ class LyrixaHybridWindow(QMainWindow):
             QPushButton:hover {
                 background: rgba(0, 255, 136, 0.1);
                 border-color: rgba(0, 255, 136, 0.6);
-                box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+                /* box-shadow removed for Qt compatibility */
             }
 
             QPushButton:pressed {

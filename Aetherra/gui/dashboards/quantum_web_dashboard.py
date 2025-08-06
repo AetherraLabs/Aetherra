@@ -125,7 +125,7 @@ class QuantumWebDashboard:
         .header {
             background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%);
             padding: 1rem 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* box-shadow removed for Qt compatibility */
         }
 
         .header h1 {
@@ -191,7 +191,7 @@ class QuantumWebDashboard:
 
         .status-active {
             background: #10b981;
-            box-shadow: 0 0 10px #10b981;
+            /* box-shadow removed for Qt compatibility */
         }
 
         .status-inactive {

@@ -24,9 +24,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 try:
-    from Aetherra.core.ai.multi_llm_manager import MultiLLMManager
+    from Aetherra.core.multi_llm_manager import MultiLLMManager
 
     LLM_AVAILABLE = True
+    logger.info("✅ MultiLLMManager successfully loaded")
 except ImportError as e:
     logger.warning(f"⚠️ MultiLLMManager not available: {e}")
     MultiLLMManager = None
@@ -191,7 +192,35 @@ except ImportError as e:
     COGNITIVE_ADAPTERS_AVAILABLE = False
 
 
-class LyrixaConversationManager:
+
+# Graceful fallbacks for missing components
+try:
+    from Aetherra.lyrixa.gui.plugin_editor_controller import PluginEditorController
+    PLUGIN_EDITOR_AVAILABLE = True
+except ImportError:
+    class PluginEditorController:
+        def __init__(self, *args, **kwargs): pass
+        def __getattr__(self, name): return lambda *args, **kwargs: None
+    PLUGIN_EDITOR_AVAILABLE = False
+
+try:
+    from Aetherra.lyrixa.memory.fractal_mesh import FractalMeshCore
+    FRACTAL_MESH_AVAILABLE = True
+except ImportError:
+    class FractalMeshCore:
+        def __init__(self, *args, **kwargs): pass
+        def __getattr__(self, name): return lambda *args, **kwargs: None
+    FRACTAL_MESH_AVAILABLE = False
+
+try:
+    from Aetherra.lyrixa.LyrixaCore.IdentityAgent.core_beliefs import CoreBeliefs
+    CORE_BELIEFS_AVAILABLE = True
+except ImportError:
+    class CoreBeliefs:
+        def __init__(self, *args, **kwargs): pass
+        def __getattr__(self, name): return lambda *args, **kwargs: None
+    CORE_BELIEFS_AVAILABLE = False
+\n\nclass LyrixaConversationManager:
     """
     🎙️ Advanced Conversation Manager for Lyrixa
 

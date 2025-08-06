@@ -13,17 +13,18 @@ import importlib.util
 import json
 import logging
 import sys
+from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
-from dataclasses import dataclass, field
-from enum import Enum
 
 logger = logging.getLogger(__name__)
 
 
 class PluginStatus(Enum):
     """Plugin status enumeration."""
+
     UNKNOWN = "unknown"
     LOADED = "loaded"
     ACTIVE = "active"
@@ -34,6 +35,7 @@ class PluginStatus(Enum):
 
 class PluginType(Enum):
     """Plugin type enumeration."""
+
     PYTHON = "python"
     AETHERPLUG = "aetherplug"
     NATIVE = "native"
@@ -43,6 +45,7 @@ class PluginType(Enum):
 @dataclass
 class PluginMetadata:
     """Plugin metadata information."""
+
     name: str
     version: str = "1.0.0"
     description: str = ""
@@ -63,6 +66,7 @@ class PluginMetadata:
 @dataclass
 class PluginInstance:
     """A loaded plugin instance."""
+
     metadata: PluginMetadata
     module: Optional[Any] = None
     instance: Optional[Any] = None
@@ -81,10 +85,14 @@ class PluginManager:
     """
 
     def __init__(self, plugin_directories: Optional[List[Union[str, Path]]] = None):
-        self.plugin_directories = [Path(d) for d in (plugin_directories or ["Aetherra/plugins"])]
+        self.plugin_directories = [
+            Path(d) for d in (plugin_directories or ["Aetherra/plugins"])
+        ]
         self.loaded_plugins: Dict[str, PluginInstance] = {}
         self.active_plugins: Set[str] = set()
-        self.plugin_hooks: Dict[str, List[str]] = {}  # Hook name -> list of plugin names
+        self.plugin_hooks: Dict[
+            str, List[str]
+        ] = {}  # Hook name -> list of plugin names
         self._initialized = False
 
     async def initialize(self):
@@ -139,14 +147,20 @@ class PluginManager:
                         metadata = await self._load_aetherplug_manifest(manifest_file)
                         if metadata:
                             discovered.append(metadata)
-                            logger.debug(f"[DISC] Discovered .aetherplug: {metadata.name}")
+                            logger.debug(
+                                f"[DISC] Discovered .aetherplug: {metadata.name}"
+                            )
                     except Exception as e:
-                        logger.error(f"[ERROR] Error loading .aetherplug {manifest_file}: {e}")
+                        logger.error(
+                            f"[ERROR] Error loading .aetherplug {manifest_file}: {e}"
+                        )
 
         logger.info(f"[OK] Discovered {len(discovered)} plugins")
         return discovered
 
-    async def load_plugin(self, plugin_name: str, plugin_path: Optional[Path] = None) -> bool:
+    async def load_plugin(
+        self, plugin_name: str, plugin_path: Optional[Path] = None
+    ) -> bool:
         """Load a specific plugin."""
         if plugin_name in self.loaded_plugins:
             logger.warning(f"[WARN] Plugin '{plugin_name}' already loaded")
@@ -208,7 +222,9 @@ class PluginManager:
             plugin_instance = self.loaded_plugins[plugin_name]
 
             # Call plugin's activate method if available
-            if plugin_instance.instance and hasattr(plugin_instance.instance, 'activate'):
+            if plugin_instance.instance and hasattr(
+                plugin_instance.instance, "activate"
+            ):
                 if asyncio.iscoroutinefunction(plugin_instance.instance.activate):
                     await plugin_instance.instance.activate()
                 else:
@@ -236,7 +252,9 @@ class PluginManager:
             plugin_instance = self.loaded_plugins[plugin_name]
 
             # Call plugin's deactivate method if available
-            if plugin_instance.instance and hasattr(plugin_instance.instance, 'deactivate'):
+            if plugin_instance.instance and hasattr(
+                plugin_instance.instance, "deactivate"
+            ):
                 if asyncio.iscoroutinefunction(plugin_instance.instance.deactivate):
                     await plugin_instance.instance.deactivate()
                 else:
@@ -268,7 +286,9 @@ class PluginManager:
             plugin_instance = self.loaded_plugins[plugin_name]
 
             # Call plugin's cleanup method if available
-            if plugin_instance.instance and hasattr(plugin_instance.instance, 'cleanup'):
+            if plugin_instance.instance and hasattr(
+                plugin_instance.instance, "cleanup"
+            ):
                 if asyncio.iscoroutinefunction(plugin_instance.instance.cleanup):
                     await plugin_instance.instance.cleanup()
                 else:
@@ -309,7 +329,9 @@ class PluginManager:
                 results[plugin_name] = False
 
         loaded_count = sum(1 for success in results.values() if success)
-        logger.info(f"[SUMMARY] Loaded {loaded_count}/{len(discovered_plugins)} plugins successfully")
+        logger.info(
+            f"[SUMMARY] Loaded {loaded_count}/{len(discovered_plugins)} plugins successfully"
+        )
 
         return results
 
@@ -326,9 +348,11 @@ class PluginManager:
                 "status": instance.status.value,
                 "type": instance.metadata.plugin_type.value,
                 "category": instance.metadata.category,
-                "load_time": instance.load_time.isoformat() if instance.load_time else None,
+                "load_time": instance.load_time.isoformat()
+                if instance.load_time
+                else None,
                 "active": name in self.active_plugins,
-                "error": instance.error_message
+                "error": instance.error_message,
             }
 
         return plugin_list
@@ -338,14 +362,18 @@ class PluginManager:
         instance = self.loaded_plugins.get(plugin_name)
         return instance.status if instance else None
 
-    async def execute_plugin_method(self, plugin_name: str, method_name: str, *args, **kwargs) -> Any:
+    async def execute_plugin_method(
+        self, plugin_name: str, method_name: str, *args, **kwargs
+    ) -> Any:
         """Execute a method on a specific plugin."""
         if plugin_name not in self.loaded_plugins:
             raise ValueError(f"Plugin '{plugin_name}' not loaded")
 
         instance = self.loaded_plugins[plugin_name]
         if not hasattr(instance.instance, method_name):
-            raise AttributeError(f"Plugin '{plugin_name}' has no method '{method_name}'")
+            raise AttributeError(
+                f"Plugin '{plugin_name}' has no method '{method_name}'"
+            )
 
         method = getattr(instance.instance, method_name)
 
@@ -354,7 +382,9 @@ class PluginManager:
         else:
             return method(*args, **kwargs)
 
-    async def _extract_plugin_metadata(self, plugin_path: Path) -> Optional[PluginMetadata]:
+    async def _extract_plugin_metadata(
+        self, plugin_path: Path
+    ) -> Optional[PluginMetadata]:
         """Extract metadata from a plugin file."""
         try:
             if plugin_path.suffix == ".py":
@@ -371,7 +401,7 @@ class PluginManager:
         """Extract metadata from a Python plugin file."""
         try:
             # Read the file to look for metadata
-            with open(py_file, 'r', encoding='utf-8') as f:
+            with open(py_file, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Try to import and extract metadata
@@ -381,75 +411,81 @@ class PluginManager:
                 spec.loader.exec_module(module)
 
                 # Look for plugin_data dictionary
-                if hasattr(module, 'plugin_data'):
+                if hasattr(module, "plugin_data"):
                     data = module.plugin_data
                     return PluginMetadata(
-                        name=data.get('name', py_file.stem),
-                        version=data.get('version', '1.0.0'),
-                        description=data.get('description', 'No description'),
-                        author=data.get('author', 'Unknown'),
-                        license=data.get('license', 'MIT'),
+                        name=data.get("name", py_file.stem),
+                        version=data.get("version", "1.0.0"),
+                        description=data.get("description", "No description"),
+                        author=data.get("author", "Unknown"),
+                        license=data.get("license", "MIT"),
                         plugin_type=PluginType.PYTHON,
-                        entry_point=data.get('entry_point'),
-                        dependencies=data.get('dependencies', []),
-                        tags=data.get('tags', []),
-                        category=data.get('category', 'utility')
+                        entry_point=data.get("entry_point"),
+                        dependencies=data.get("dependencies", []),
+                        tags=data.get("tags", []),
+                        category=data.get("category", "utility"),
                     )
 
                 # Look for plugin classes
                 for attr_name in dir(module):
                     attr = getattr(module, attr_name)
-                    if hasattr(attr, '__name__') and 'plugin' in attr.__name__.lower():
+                    if hasattr(attr, "__name__") and "plugin" in attr.__name__.lower():
                         return PluginMetadata(
-                            name=getattr(attr, 'name', py_file.stem),
-                            version=getattr(attr, 'version', '1.0.0'),
-                            description=getattr(attr, 'description', 'No description'),
-                            author=getattr(attr, 'author', 'Unknown'),
-                            plugin_type=PluginType.PYTHON
+                            name=getattr(attr, "name", py_file.stem),
+                            version=getattr(attr, "version", "1.0.0"),
+                            description=getattr(attr, "description", "No description"),
+                            author=getattr(attr, "author", "Unknown"),
+                            plugin_type=PluginType.PYTHON,
                         )
 
                 # Fallback: create basic metadata
                 return PluginMetadata(
                     name=py_file.stem,
                     description=f"Plugin loaded from {py_file.name}",
-                    plugin_type=PluginType.PYTHON
+                    plugin_type=PluginType.PYTHON,
                 )
 
         except Exception as e:
-            logger.error(f"[ERROR] Error extracting Python metadata from {py_file}: {e}")
+            logger.error(
+                f"[ERROR] Error extracting Python metadata from {py_file}: {e}"
+            )
             return None
 
-    async def _load_aetherplug_manifest(self, manifest_file: Path) -> Optional[PluginMetadata]:
+    async def _load_aetherplug_manifest(
+        self, manifest_file: Path
+    ) -> Optional[PluginMetadata]:
         """Load metadata from an .aetherplug manifest file."""
         try:
-            with open(manifest_file, 'r', encoding='utf-8') as f:
+            with open(manifest_file, "r", encoding="utf-8") as f:
                 manifest = json.load(f)
 
             return PluginMetadata(
-                name=manifest.get('name', manifest_file.parent.name),
-                version=manifest.get('version', '1.0.0'),
-                description=manifest.get('description', ''),
-                author=manifest.get('author', 'Unknown'),
-                license=manifest.get('license', 'MIT'),
+                name=manifest.get("name", manifest_file.parent.name),
+                version=manifest.get("version", "1.0.0"),
+                description=manifest.get("description", ""),
+                author=manifest.get("author", "Unknown"),
+                license=manifest.get("license", "MIT"),
                 plugin_type=PluginType.AETHERPLUG,
-                entry_point=manifest.get('entry_point'),
-                dependencies=manifest.get('dependencies', []),
-                tags=manifest.get('keywords', []),
-                category=manifest.get('category', 'utility'),
-                min_aetherra_version=manifest.get('aetherra_version', '1.0.0'),
-                homepage=manifest.get('homepage'),
-                repository=manifest.get('repository'),
-                documentation=manifest.get('documentation')
+                entry_point=manifest.get("entry_point"),
+                dependencies=manifest.get("dependencies", []),
+                tags=manifest.get("keywords", []),
+                category=manifest.get("category", "utility"),
+                min_aetherra_version=manifest.get("aetherra_version", "1.0.0"),
+                homepage=manifest.get("homepage"),
+                repository=manifest.get("repository"),
+                documentation=manifest.get("documentation"),
             )
 
         except Exception as e:
-            logger.error(f"[ERROR] Error loading .aetherplug manifest {manifest_file}: {e}")
+            logger.error(
+                f"[ERROR] Error loading .aetherplug manifest {manifest_file}: {e}"
+            )
             return None
 
     async def _find_plugin_path(self, plugin_name: str) -> Optional[Path]:
-        """Find the path to a plugin by name."""
+        """Find the path to a plugin by name, searching recursively."""
         for directory in self.plugin_directories:
-            # Look for Python file
+            # Look for Python file directly in the directory
             py_file = directory / f"{plugin_name}.py"
             if py_file.exists():
                 return py_file
@@ -460,6 +496,20 @@ class PluginManager:
             if manifest_file.exists():
                 return manifest_file
 
+            # Search recursively in subdirectories
+            for subdirectory in directory.rglob("*"):
+                if subdirectory.is_dir():
+                    # Look for Python file in subdirectory
+                    py_file_sub = subdirectory / f"{plugin_name}.py"
+                    if py_file_sub.exists():
+                        return py_file_sub
+
+                    # Look for manifest in subdirectory
+                    plugin_dir_sub = subdirectory / plugin_name
+                    manifest_file_sub = plugin_dir_sub / "aetherra-plugin.json"
+                    if manifest_file_sub.exists():
+                        return manifest_file_sub
+
         return None
 
     async def _load_python_plugin(self, plugin_instance: PluginInstance) -> bool:
@@ -469,7 +519,9 @@ class PluginManager:
             if plugin_path is None:
                 return False
 
-            spec = importlib.util.spec_from_file_location(plugin_instance.metadata.name, plugin_path)
+            spec = importlib.util.spec_from_file_location(
+                plugin_instance.metadata.name, plugin_path
+            )
 
             if spec and spec.loader:
                 module = importlib.util.module_from_spec(spec)
@@ -482,9 +534,11 @@ class PluginManager:
                 # Try to find a plugin class
                 for attr_name in dir(module):
                     attr = getattr(module, attr_name)
-                    if (hasattr(attr, '__name__') and
-                        'plugin' in attr.__name__.lower() and
-                        callable(attr)):
+                    if (
+                        hasattr(attr, "__name__")
+                        and "plugin" in attr.__name__.lower()
+                        and callable(attr)
+                    ):
                         plugin_class = attr
                         break
 
@@ -505,7 +559,9 @@ class PluginManager:
 
     async def _load_other_plugin(self, plugin_instance: PluginInstance) -> bool:
         """Load non-Python plugins (placeholder for future implementation)."""
-        logger.warning(f"[WARN] Loading {plugin_instance.metadata.plugin_type.value} plugins not yet implemented")
+        logger.warning(
+            f"[WARN] Loading {plugin_instance.metadata.plugin_type.value} plugins not yet implemented"
+        )
         return False
 
     async def execute_scheduled_tasks(self) -> None:
@@ -514,14 +570,16 @@ class PluginManager:
             if plugin_instance.status == PluginStatus.ACTIVE and plugin_instance.module:
                 try:
                     # Check if plugin has a scheduled_task method
-                    if hasattr(plugin_instance.module, 'scheduled_task'):
+                    if hasattr(plugin_instance.module, "scheduled_task"):
                         await plugin_instance.module.scheduled_task()
-                    elif hasattr(plugin_instance.module, 'periodic_task'):
+                    elif hasattr(plugin_instance.module, "periodic_task"):
                         await plugin_instance.module.periodic_task()
-                    elif hasattr(plugin_instance.module, 'background_task'):
+                    elif hasattr(plugin_instance.module, "background_task"):
                         await plugin_instance.module.background_task()
                 except Exception as e:
-                    logger.error(f"Error executing scheduled task for plugin {plugin_name}: {e}")
+                    logger.error(
+                        f"Error executing scheduled task for plugin {plugin_name}: {e}"
+                    )
 
 
 # Default plugin manager instance
@@ -568,4 +626,3 @@ async def load_all_plugins() -> Dict[str, bool]:
     """Load all plugins using the default manager."""
     manager = await get_plugin_manager()
     return await manager.load_all_plugins()
-
