@@ -68,9 +68,9 @@ except ImportError:
 
 # Import Lyrixa components
 try:
-    from lyrixa.core.advanced_vector_memory import AdvancedMemorySystem
-    from lyrixa.core.anticipation_engine import AnticipationEngine
-    from lyrixa.gui import EnhancedLyrixaWindow
+# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.advanced_vector_memory import AdvancedMemorySystem
+# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.anticipation_engine import AnticipationEngine
+# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.gui import EnhancedLyrixaWindow
 
     from .context_bridge import ContextBridge
 

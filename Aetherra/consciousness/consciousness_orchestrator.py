@@ -23,7 +23,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'agents'))
 
 from consciousness_bridge import initialize_consciousness_bridge, get_consciousness_bridge
 from meta_layer_core import initialize_meta_layer_core, get_meta_layer_core
-from lyrixa_consciousness import initialize_lyrixa_consciousness, get_lyrixa_consciousness
+# ARCHITECTURAL FIX: Removed Lyrixa import - from lyrixa_consciousness import initialize_lyrixa_consciousness, get_lyrixa_consciousness
 from agent_registry import initialize_agent_registry, get_agent_registry
 
 class ConsciousnessOrchestrator:
@@ -76,7 +76,7 @@ class ConsciousnessOrchestrator:
                     elif component_name == 'meta_layer_core':
                         self.meta_layer_core = await initialize_meta_layer_core()
                     elif component_name == 'lyrixa_consciousness':
-                        self.lyrixa_consciousness = await initialize_lyrixa_consciousness()
+# ARCHITECTURAL FIX: Removed Lyrixa function call -                         self.lyrixa_consciousness = await initialize_lyrixa_consciousness()
 
                     component_time = (datetime.now() - component_start).total_seconds()
                     self.logger.info(f"✅ {display_name} initialized successfully ({component_time:.2f}s)")
@@ -126,7 +126,7 @@ class ConsciousnessOrchestrator:
 
         # Check Lyrixa consciousness
         if self.lyrixa_consciousness:
-            state = self.lyrixa_consciousness.get_current_state()
+# ARCHITECTURAL FIX: Removed Lyrixa function call -             state = self.lyrixa_consciousness.get_current_state()
             health_status['lyrixa_consciousness'] = (
                 self.lyrixa_consciousness.is_running and
                 state['consciousness_level'] > 0.5
@@ -267,8 +267,8 @@ class ConsciousnessOrchestrator:
 
             # Lyrixa status
             if self.lyrixa_consciousness:
-                lyrixa_state = self.lyrixa_consciousness.get_current_state()
-                self.logger.info(f"👩‍🔬 Lyrixa: {lyrixa_state['emotional_state']} (consciousness: {lyrixa_state['consciousness_level']:.2f})")
+# ARCHITECTURAL FIX: Removed Lyrixa function call -                 lyrixa_state = self.lyrixa_consciousness.get_current_state()
+# ARCHITECTURAL FIX: Removed Lyrixa function call -                 self.logger.info(f"👩‍🔬 Lyrixa: {lyrixa_state['emotional_state']} (consciousness: {lyrixa_state['consciousness_level']:.2f})")
                 self.logger.info(f"  Reflections: {lyrixa_state['total_reflections']}")
                 self.logger.info(f"  Ethical decisions: {lyrixa_state['total_ethical_decisions']}")
 
@@ -425,7 +425,7 @@ class ConsciousnessOrchestrator:
             }
 
         if self.lyrixa_consciousness:
-            lyrixa_state = self.lyrixa_consciousness.get_current_state()
+# ARCHITECTURAL FIX: Removed Lyrixa function call -             lyrixa_state = self.lyrixa_consciousness.get_current_state()
             status['components']['lyrixa_consciousness'] = {
                 'running': self.lyrixa_consciousness.is_running,
                 'consciousness_level': lyrixa_state['consciousness_level'],

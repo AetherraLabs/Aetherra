@@ -28,8 +28,8 @@ except ImportError:
     from pathlib import Path
     project_root = Path(__file__).parent.parent.parent
     sys.path.insert(0, str(project_root))
-    from lyrixa.core.memory import LyrixaMemorySystem
-    from lyrixa.core.enhanced_memory import LyrixaEnhancedMemorySystem
+# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.memory import LyrixaMemorySystem
+# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.enhanced_memory import LyrixaEnhancedMemorySystem
 
 
 @dataclass

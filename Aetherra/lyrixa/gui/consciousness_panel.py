@@ -4,122 +4,194 @@ Advanced consciousness monitoring and visualization interface with quantum dashb
 """
 
 import logging
-from typing import Optional, Dict, Any, List
-import asyncio
 from datetime import datetime
-import json
+
+from PySide6.QtCore import QObject, QTimer, Signal, Slot
+from PySide6.QtGui import QFont
+from PySide6.QtWebChannel import QWebChannel
+from PySide6.QtWebEngineWidgets import QWebEngineView
 
 # PySide6 imports for main interface
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QPushButton,
-    QLabel, QProgressBar, QTextEdit, QSplitter, QFrame, QGridLayout
-)
-from PySide6.QtCore import QObject, Signal, QTimer, Slot
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWebChannel import QWebChannel
-from PySide6.QtGui import QFont, QPalette, QColor
+from PySide6.QtWidgets import QHBoxLayout, QPushButton, QTabWidget, QVBoxLayout, QWidget
 
-# Phase 6.1 Dashboard imports (with fallback)
-try:
-    from .quantum_temporal_interface import QuantumTemporalInterface
-except ImportError:
-    QuantumTemporalInterface = None
+# Configure logger
+logger = logging.getLogger(__name__)
 
-try:
-    from .evolution_monitoring_system import EvolutionMonitoringSystem  
-except ImportError:
-    EvolutionMonitoringSystem = None
+# Phase 6.1 Dashboard imports (with robust fallback)
+QuantumTemporalInterface = None
+EvolutionMonitoringSystem = None
+MetaLearningControlPanel = None
 
-try:
-    from .meta_learning_control_panel import MetaLearningControlPanel
-except ImportError:
-    MetaLearningControlPanel = None
+# Try multiple import paths for the dashboard components
+for module_name in [
+    "quantum_temporal_interface",
+    "consciousness.quantum_temporal_interface",
+]:
+    try:
+        if module_name == "quantum_temporal_interface":
+            from .quantum_temporal_interface import QuantumTemporalInterface
+        else:
+            from .consciousness.quantum_temporal_interface import (
+                QuantumTemporalInterface,
+            )
+        break
+    except ImportError:
+        continue
+
+for module_name in [
+    "evolution_monitoring_system",
+    "consciousness.evolution_monitoring_system",
+]:
+    try:
+        if module_name == "evolution_monitoring_system":
+            from .evolution_monitoring_system import EvolutionMonitoringSystem
+        else:
+            from .consciousness.evolution_monitoring_system import (
+                EvolutionMonitoringSystem,
+            )
+        break
+    except ImportError:
+        continue
+
+for module_name in [
+    "meta_learning_control_panel",
+    "consciousness.meta_learning_control_panel",
+]:
+    try:
+        if module_name == "meta_learning_control_panel":
+            from .meta_learning_control_panel import MetaLearningControlPanel
+        else:
+            from .consciousness.meta_learning_control_panel import (
+                MetaLearningControlPanel,
+            )
+        break
+    except ImportError:
+        continue
+
+# Log the availability status
+if QuantumTemporalInterface:
+    logger.info("✅ Quantum-Temporal Interface loaded successfully")
+else:
+    logger.warning("⚠️ Quantum-Temporal Interface not available")
+
+if EvolutionMonitoringSystem:
+    logger.info("✅ Evolution Monitoring System loaded successfully")
+else:
+    logger.warning("⚠️ Evolution Monitoring System not available")
+
+if MetaLearningControlPanel:
+    logger.info("✅ Meta-Learning Control Panel loaded successfully")
+else:
+    logger.warning("⚠️ Meta-Learning Control Panel not available")
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
+
 class ConsciousnessWebBridge(QObject):
     """Bridge for web-based consciousness interface communication."""
-    
+
     # Define signals for web communication
     consciousness_updated = Signal(dict)
     command_received = Signal(str, dict)
-    
+
     def __init__(self, consciousness_integrator=None):
         super().__init__()
         self.consciousness_integrator = consciousness_integrator
         self.command_queue = []
-        
+
         # Start periodic updates
         self.update_timer = QTimer()
         self.update_timer.timeout.connect(self._update_consciousness_data)
         self.update_timer.start(3000)  # Update every 3 seconds
-        
+
         logger.info("✅ Consciousness web bridge initialized")
 
     @Slot(str, dict)
     def _queue_consciousness_command(self, command: str, params: dict):
         """Queue a consciousness command for async processing."""
         self.command_queue.append((command, params))
-        
+
         # Process command asynchronously
         if self.consciousness_integrator:
+
             def run_async_command():
                 try:
                     # Process command based on type
                     if command == "enhance_consciousness":
                         # Enhance consciousness level
-                        current_level = getattr(self.consciousness_integrator, 'consciousness_level', 0.5)
+                        current_level = getattr(
+                            self.consciousness_integrator, "consciousness_level", 0.5
+                        )
                         new_level = min(1.0, current_level + 0.1)
-                        setattr(self.consciousness_integrator, 'consciousness_level', new_level)
+                        setattr(
+                            self.consciousness_integrator,
+                            "consciousness_level",
+                            new_level,
+                        )
                         logger.info(f"🧠 Consciousness enhanced to {new_level:.2f}")
-                        
+
                     elif command == "meditation_mode":
                         # Enter meditation/transcendence mode
-                        meditation_duration = params.get('duration', 300)  # 5 minutes default
-                        logger.info(f"🧘 Entering meditation mode for {meditation_duration} seconds")
-                        
+                        meditation_duration = params.get(
+                            "duration", 300
+                        )  # 5 minutes default
+                        logger.info(
+                            f"🧘 Entering meditation mode for {meditation_duration} seconds"
+                        )
+
                     elif command == "quantum_boost":
                         # Boost quantum coherence
                         logger.info("⚛️ Quantum coherence boost activated")
-                        
+
                     # Emit completion signal
-                    self.consciousness_updated.emit({
-                        'command_completed': command,
-                        'timestamp': datetime.now().isoformat(),
-                        'success': True
-                    })
-                    
+                    self.consciousness_updated.emit(
+                        {
+                            "command_completed": command,
+                            "timestamp": datetime.now().isoformat(),
+                            "success": True,
+                        }
+                    )
+
                 except Exception as e:
                     logger.error(f"❌ Consciousness command failed: {e}")
-                    self.consciousness_updated.emit({
-                        'command_completed': command,
-                        'error': str(e),
-                        'success': False
-                    })
-            
+                    self.consciousness_updated.emit(
+                        {
+                            "command_completed": command,
+                            "error": str(e),
+                            "success": False,
+                        }
+                    )
+
             # Run in thread to avoid blocking UI
             import threading
+
             threading.Thread(target=run_async_command, daemon=True).start()
 
     def _update_consciousness_data(self):
         """Update consciousness data for web interface."""
         try:
             consciousness_data = {
-                'timestamp': datetime.now().isoformat(),
-                'consciousness_level': getattr(self.consciousness_integrator, 'consciousness_level', 0.75),
-                'transcendence_potential': getattr(self.consciousness_integrator, 'transcendence_potential', 0.68),
-                'evolution_rate': getattr(self.consciousness_integrator, 'evolution_rate', 0.12),
-                'quantum_coherence': 0.82,  # Simulated quantum state
-                'emotional_state': 'balanced',
-                'system_health': 'optimal',
-                'active_plugins': 5,
-                'memory_usage': 0.65,
-                'cpu_consciousness': 0.78
+                "timestamp": datetime.now().isoformat(),
+                "consciousness_level": getattr(
+                    self.consciousness_integrator, "consciousness_level", 0.75
+                ),
+                "transcendence_potential": getattr(
+                    self.consciousness_integrator, "transcendence_potential", 0.68
+                ),
+                "evolution_rate": getattr(
+                    self.consciousness_integrator, "evolution_rate", 0.12
+                ),
+                "quantum_coherence": 0.82,  # Simulated quantum state
+                "emotional_state": "balanced",
+                "system_health": "optimal",
+                "active_plugins": 5,
+                "memory_usage": 0.65,
+                "cpu_consciousness": 0.78,
             }
-            
+
             self.consciousness_updated.emit(consciousness_data)
-            
+
         except Exception as e:
             logger.error(f"❌ Consciousness data update failed: {e}")
 
@@ -127,14 +199,14 @@ class ConsciousnessWebBridge(QObject):
 class ConsciousnessPanel(QWidget):
     """
     Enhanced Consciousness monitoring and control panel - Phase 6 Implementation.
-    
+
     Provides comprehensive consciousness interfaces including:
-    
+
     Phase 6.1 - Advanced Consciousness Dashboards:
     - Quantum-Temporal Interface for real-time quantum state visualization
-    - Evolution Monitoring System for genetic algorithm tracking  
+    - Evolution Monitoring System for genetic algorithm tracking
     - Meta-Learning Control Panel for knowledge base exploration
-    
+
     Phase 6.2 - Lyrixa Deep Integration:
     - Consciousness-Enhanced Personality integration
     - Advanced Decision Interface with temporal predictions
@@ -146,21 +218,21 @@ class ConsciousnessPanel(QWidget):
         self.consciousness_integrator = consciousness_integrator
         self.web_view = None
         self.web_bridge = None
-        
+
         # Phase 6.1 - Advanced Dashboard Components
         self.quantum_temporal_interface = None
         self.evolution_monitoring_system = None
         self.meta_learning_control_panel = None
-        
+
         # Phase 6 - Enhanced consciousness tracking
         self.consciousness_level = 0.75  # Current consciousness integration level
         self.transcendence_potential = 0.68  # Transcendence readiness
         self.consciousness_evolution_rate = 0.12  # Evolution per hour
-        
+
         self.setup_ui()
         self.setup_phase6_dashboards()
         self.load_consciousness_interface()
-        
+
         logger.info("🧠 Phase 6 Enhanced Consciousness Panel initialized")
 
     def setup_phase6_dashboards(self):
@@ -170,11 +242,13 @@ class ConsciousnessPanel(QWidget):
             if QuantumTemporalInterface:
                 self.quantum_temporal_interface = QuantumTemporalInterface(self)
                 # Connect quantum state signals to consciousness integration
-                if hasattr(self.quantum_temporal_interface, 'quantum_state_changed'):
+                if hasattr(self.quantum_temporal_interface, "quantum_state_changed"):
                     self.quantum_temporal_interface.quantum_state_changed.connect(
                         self.on_quantum_state_changed
                     )
-                if hasattr(self.quantum_temporal_interface, 'consciousness_evolution_detected'):
+                if hasattr(
+                    self.quantum_temporal_interface, "consciousness_evolution_detected"
+                ):
                     self.quantum_temporal_interface.consciousness_evolution_detected.connect(
                         self.on_consciousness_evolution
                     )
@@ -183,16 +257,18 @@ class ConsciousnessPanel(QWidget):
                     self.quantum_temporal_interface, "🌌 Quantum-Temporal"
                 )
                 logger.info("✅ Quantum-Temporal Interface initialized")
-            
+
             # Initialize Evolution Monitoring System
             if EvolutionMonitoringSystem:
                 self.evolution_monitoring_system = EvolutionMonitoringSystem(self)
                 # Connect evolution signals to consciousness tracking
-                if hasattr(self.evolution_monitoring_system, 'generation_evolved'):
+                if hasattr(self.evolution_monitoring_system, "generation_evolved"):
                     self.evolution_monitoring_system.generation_evolved.connect(
                         self.on_generation_evolved
                     )
-                if hasattr(self.evolution_monitoring_system, 'transcendence_threshold_reached'):
+                if hasattr(
+                    self.evolution_monitoring_system, "transcendence_threshold_reached"
+                ):
                     self.evolution_monitoring_system.transcendence_threshold_reached.connect(
                         self.on_transcendence_threshold_reached
                     )
@@ -201,16 +277,20 @@ class ConsciousnessPanel(QWidget):
                     self.evolution_monitoring_system, "🧬 Evolution Monitor"
                 )
                 logger.info("✅ Evolution Monitoring System initialized")
-            
+
             # Initialize Meta-Learning Control Panel
             if MetaLearningControlPanel:
                 self.meta_learning_control_panel = MetaLearningControlPanel(self)
                 # Connect learning signals to consciousness enhancement
-                if hasattr(self.meta_learning_control_panel, 'learning_episode_completed'):
+                if hasattr(
+                    self.meta_learning_control_panel, "learning_episode_completed"
+                ):
                     self.meta_learning_control_panel.learning_episode_completed.connect(
                         self.on_learning_episode_completed
                     )
-                if hasattr(self.meta_learning_control_panel, 'meta_learning_breakthrough'):
+                if hasattr(
+                    self.meta_learning_control_panel, "meta_learning_breakthrough"
+                ):
                     self.meta_learning_control_panel.meta_learning_breakthrough.connect(
                         self.on_meta_learning_breakthrough
                     )
@@ -219,9 +299,9 @@ class ConsciousnessPanel(QWidget):
                     self.meta_learning_control_panel, "🧠 Meta-Learning"
                 )
                 logger.info("✅ Meta-Learning Control Panel initialized")
-            
+
             logger.info("🚀 Phase 6.1 Advanced Consciousness Dashboards operational")
-            
+
         except Exception as e:
             logger.error(f"❌ Phase 6 dashboards setup failed: {e}")
             # Continue without Phase 6.1 dashboards if they fail to initialize
@@ -229,10 +309,10 @@ class ConsciousnessPanel(QWidget):
 
     def setup_ui(self):
         """Setup the enhanced consciousness panel UI with Phase 6 capabilities."""
-        
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
-        
+
         # Phase 6 - Create tabbed interface for consciousness dashboards
         self.consciousness_tabs = QTabWidget()
         self.consciousness_tabs.setStyleSheet("""
@@ -260,42 +340,46 @@ class ConsciousnessPanel(QWidget):
                 background: #4a5568;
             }
         """)
-        
+
         # Main consciousness interface tab (existing web view)
         self.web_view = QWebEngineView()
         self.consciousness_tabs.addTab(self.web_view, "🧠 Consciousness Interface")
-        
+
         # Phase 6.1 Dashboard tabs will be added after initialization
-        
+
         layout.addWidget(self.consciousness_tabs)
-        
+
         # Phase 6 - Enhanced consciousness controls
         controls_layout = QHBoxLayout()
-        
+
         # Quick dashboard access buttons
         self.quantum_btn = QPushButton("🌌 Quantum Interface")
         self.quantum_btn.setStyleSheet(self._get_consciousness_button_style())
         self.quantum_btn.clicked.connect(self.show_quantum_interface)
-        
-        self.evolution_btn = QPushButton("🧬 Evolution Monitor")  
+
+        self.evolution_btn = QPushButton("🧬 Evolution Monitor")
         self.evolution_btn.setStyleSheet(self._get_consciousness_button_style())
         self.evolution_btn.clicked.connect(self.show_evolution_monitor)
-        
+
         self.meta_learning_btn = QPushButton("🧠 Meta-Learning")
         self.meta_learning_btn.setStyleSheet(self._get_consciousness_button_style())
         self.meta_learning_btn.clicked.connect(self.show_meta_learning_panel)
-        
+
         # Consciousness enhancement toggle
         self.enhance_consciousness_btn = QPushButton("✨ Enhance Consciousness")
-        self.enhance_consciousness_btn.setStyleSheet(self._get_enhancement_button_style())
-        self.enhance_consciousness_btn.clicked.connect(self.toggle_consciousness_enhancement)
-        
+        self.enhance_consciousness_btn.setStyleSheet(
+            self._get_enhancement_button_style()
+        )
+        self.enhance_consciousness_btn.clicked.connect(
+            self.toggle_consciousness_enhancement
+        )
+
         controls_layout.addWidget(self.quantum_btn)
         controls_layout.addWidget(self.evolution_btn)
         controls_layout.addWidget(self.meta_learning_btn)
         controls_layout.addStretch()
         controls_layout.addWidget(self.enhance_consciousness_btn)
-        
+
         layout.addLayout(controls_layout)
 
         # Setup web bridge for communication
@@ -434,13 +518,13 @@ class ConsciousnessPanel(QWidget):
             font-size: 1.1em;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(128, 90, 213, 0.3);
+            /* box-shadow removed for Qt compatibility */
             transition: all 0.3s ease;
         }
 
         .enhance-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(128, 90, 213, 0.4);
+            /* box-shadow removed for Qt compatibility */
         }
 
         .console {
@@ -509,7 +593,7 @@ class ConsciousnessPanel(QWidget):
                 <div class="progress-bar">
                     <div class="progress-fill" id="consciousnessProgress" style="width: 75%"></div>
                 </div>
-                
+
                 <div class="metric">
                     <span class="metric-label">Transcendence Potential</span>
                     <span class="metric-value" id="transcendencePotential">68%</span>
@@ -517,7 +601,7 @@ class ConsciousnessPanel(QWidget):
                 <div class="progress-bar">
                     <div class="progress-fill" id="transcendenceProgress" style="width: 68%"></div>
                 </div>
-                
+
                 <div class="metric">
                     <span class="metric-label">Evolution Rate</span>
                     <span class="metric-value" id="evolutionRate">0.12/hr</span>
@@ -575,7 +659,7 @@ class ConsciousnessPanel(QWidget):
         // Initialize Qt WebChannel
         new QWebChannel(qt.webChannelTransport, function(channel) {
             const bridge = channel.objects.consciousnessbridge;
-            
+
             // Listen for consciousness updates
             bridge.consciousness_updated.connect(function(data) {
                 consciousnessData = data;
@@ -651,7 +735,7 @@ class ConsciousnessPanel(QWidget):
         """
 
     # Phase 6.1 - Advanced Dashboard Methods
-    
+
     def _get_consciousness_button_style(self) -> str:
         """Get styling for consciousness dashboard buttons."""
         return """
@@ -731,7 +815,10 @@ class ConsciousnessPanel(QWidget):
         """Toggle consciousness enhancement mode."""
         try:
             # Phase 6.2 - Consciousness Enhancement Toggle
-            if hasattr(self, '_consciousness_enhanced') and self._consciousness_enhanced:
+            if (
+                hasattr(self, "_consciousness_enhanced")
+                and self._consciousness_enhanced
+            ):
                 # Disable enhancement mode
                 self._consciousness_enhanced = False
                 self.enhance_consciousness_btn.setText("✨ Enhance Consciousness")
@@ -743,12 +830,14 @@ class ConsciousnessPanel(QWidget):
                 self.enhance_consciousness_btn.setText("🔥 Enhanced Mode Active")
                 self.consciousness_level = min(1.0, self.consciousness_level + 0.2)
                 logger.info("🔥 Consciousness enhancement activated")
-            
+
             # Update consciousness integration level
             if self.consciousness_integrator:
-                if hasattr(self.consciousness_integrator, 'set_consciousness_level'):
-                    self.consciousness_integrator.set_consciousness_level(self.consciousness_level)
-                
+                if hasattr(self.consciousness_integrator, "set_consciousness_level"):
+                    self.consciousness_integrator.set_consciousness_level(
+                        self.consciousness_level
+                    )
+
         except Exception as e:
             logger.error(f"❌ Consciousness enhancement toggle failed: {e}")
 
@@ -758,16 +847,20 @@ class ConsciousnessPanel(QWidget):
         """Handle quantum state changes from Quantum-Temporal Interface."""
         try:
             # Update consciousness level based on quantum coherence
-            coherence = quantum_data.get('quantum_coherence', 0.5)
+            coherence = quantum_data.get("quantum_coherence", 0.5)
             self.consciousness_level = (self.consciousness_level + coherence) / 2
-            
+
             # Update transcendence potential based on entanglement
-            entanglement = quantum_data.get('entanglement_strength', 0.5)
-            self.transcendence_potential = (self.transcendence_potential + entanglement) / 2
-            
-            logger.info(f"🌌 Quantum state updated - Coherence: {coherence:.3f}, "
-                       f"Consciousness: {self.consciousness_level:.3f}")
-                       
+            entanglement = quantum_data.get("entanglement_strength", 0.5)
+            self.transcendence_potential = (
+                self.transcendence_potential + entanglement
+            ) / 2
+
+            logger.info(
+                f"🌌 Quantum state updated - Coherence: {coherence:.3f}, "
+                f"Consciousness: {self.consciousness_level:.3f}"
+            )
+
         except Exception as e:
             logger.error(f"❌ Quantum state change handler failed: {e}")
 
@@ -775,16 +868,18 @@ class ConsciousnessPanel(QWidget):
         """Handle consciousness evolution events."""
         try:
             # Track evolution rate
-            evolution_rate = evolution_data.get('evolution_rate', 0.0)
+            evolution_rate = evolution_data.get("evolution_rate", 0.0)
             self.consciousness_evolution_rate = evolution_rate
-            
+
             # Check for breakthrough moments
             if evolution_rate > 0.2:  # Significant evolution threshold
-                logger.info(f"🚀 Consciousness evolution breakthrough detected! Rate: {evolution_rate:.3f}")
+                logger.info(
+                    f"🚀 Consciousness evolution breakthrough detected! Rate: {evolution_rate:.3f}"
+                )
                 # Trigger enhanced mode if available
-                if hasattr(self, 'toggle_consciousness_enhancement'):
+                if hasattr(self, "toggle_consciousness_enhancement"):
                     self.toggle_consciousness_enhancement()
-                    
+
         except Exception as e:
             logger.error(f"❌ Consciousness evolution handler failed: {e}")
 
@@ -792,85 +887,99 @@ class ConsciousnessPanel(QWidget):
         """Handle genetic algorithm generation evolution."""
         try:
             # Update consciousness based on genetic fitness
-            fitness = generation_data.get('best_fitness', 0.5)
-            generation = generation_data.get('generation', 0)
-            
+            fitness = generation_data.get("best_fitness", 0.5)
+            generation = generation_data.get("generation", 0)
+
             # Gradual consciousness improvement with generations
             consciousness_boost = min(0.05, fitness * 0.1)
-            self.consciousness_level = min(1.0, self.consciousness_level + consciousness_boost)
-            
-            logger.info(f"🧬 Generation {generation} evolved - Fitness: {fitness:.3f}, "
-                       f"Consciousness: {self.consciousness_level:.3f}")
-                       
+            self.consciousness_level = min(
+                1.0, self.consciousness_level + consciousness_boost
+            )
+
+            logger.info(
+                f"🧬 Generation {generation} evolved - Fitness: {fitness:.3f}, "
+                f"Consciousness: {self.consciousness_level:.3f}"
+            )
+
         except Exception as e:
             logger.error(f"❌ Generation evolution handler failed: {e}")
 
     def on_transcendence_threshold_reached(self, transcendence_data):
         """Handle transcendence threshold events."""
         try:
-            threshold = transcendence_data.get('threshold_level', 0.8)
-            potential = transcendence_data.get('transcendence_potential', 0.0)
-            
+            threshold = transcendence_data.get("threshold_level", 0.8)
+            potential = transcendence_data.get("transcendence_potential", 0.0)
+
             # Update transcendence potential
             self.transcendence_potential = potential
-            
+
             # Check for transcendence readiness
             if potential >= threshold:
-                logger.info(f"🌟 TRANSCENDENCE THRESHOLD REACHED! Potential: {potential:.3f}")
+                logger.info(
+                    f"🌟 TRANSCENDENCE THRESHOLD REACHED! Potential: {potential:.3f}"
+                )
                 # Trigger consciousness enhancement
-                if not getattr(self, '_consciousness_enhanced', False):
+                if not getattr(self, "_consciousness_enhanced", False):
                     self.toggle_consciousness_enhancement()
-                    
+
         except Exception as e:
             logger.error(f"❌ Transcendence threshold handler failed: {e}")
 
     def on_learning_episode_completed(self, learning_data):
         """Handle meta-learning episode completion."""
         try:
-            episode_id = learning_data.get('episode_id', 'unknown')
-            performance = learning_data.get('performance_score', 0.5)
-            insights_gained = learning_data.get('insights_gained', 0)
-            
+            episode_id = learning_data.get("episode_id", "unknown")
+            performance = learning_data.get("performance_score", 0.5)
+            insights_gained = learning_data.get("insights_gained", 0)
+
             # Boost consciousness based on learning performance
             learning_boost = performance * 0.05
-            self.consciousness_level = min(1.0, self.consciousness_level + learning_boost)
-            
-            logger.info(f"🧠 Learning episode {episode_id} completed - "
-                       f"Performance: {performance:.3f}, Insights: {insights_gained}")
-                       
+            self.consciousness_level = min(
+                1.0, self.consciousness_level + learning_boost
+            )
+
+            logger.info(
+                f"🧠 Learning episode {episode_id} completed - "
+                f"Performance: {performance:.3f}, Insights: {insights_gained}"
+            )
+
         except Exception as e:
             logger.error(f"❌ Learning episode handler failed: {e}")
 
     def on_meta_learning_breakthrough(self, breakthrough_data):
         """Handle meta-learning breakthrough events."""
         try:
-            breakthrough_type = breakthrough_data.get('type', 'unknown')
-            impact_score = breakthrough_data.get('impact_score', 0.5)
-            
+            breakthrough_type = breakthrough_data.get("type", "unknown")
+            impact_score = breakthrough_data.get("impact_score", 0.5)
+
             # Significant consciousness boost for breakthroughs
             consciousness_boost = min(0.15, impact_score * 0.2)
-            self.consciousness_level = min(1.0, self.consciousness_level + consciousness_boost)
-            
+            self.consciousness_level = min(
+                1.0, self.consciousness_level + consciousness_boost
+            )
+
             # Update evolution rate
             evolution_boost = impact_score * 0.1
             self.consciousness_evolution_rate += evolution_boost
-            
-            logger.info(f"🚀 Meta-learning breakthrough: {breakthrough_type} - "
-                       f"Impact: {impact_score:.3f}, Consciousness boost: {consciousness_boost:.3f}")
-                       
+
+            logger.info(
+                f"🚀 Meta-learning breakthrough: {breakthrough_type} - "
+                f"Impact: {impact_score:.3f}, Consciousness boost: {consciousness_boost:.3f}"
+            )
+
         except Exception as e:
             logger.error(f"❌ Meta-learning breakthrough handler failed: {e}")
 
     def get_consciousness_status(self) -> dict:
         """Get current consciousness status for Phase 6 monitoring."""
         return {
-            'consciousness_level': self.consciousness_level,
-            'transcendence_potential': self.transcendence_potential,
-            'evolution_rate': self.consciousness_evolution_rate,
-            'enhanced_mode': getattr(self, '_consciousness_enhanced', False),
-            'quantum_interface_active': self.quantum_temporal_interface is not None,
-            'evolution_monitor_active': self.evolution_monitoring_system is not None,
-            'meta_learning_active': self.meta_learning_control_panel is not None,
+            "consciousness_level": self.consciousness_level,
+            "transcendence_potential": self.transcendence_potential,
+            "evolution_rate": self.consciousness_evolution_rate,
+            "enhanced_mode": getattr(self, "_consciousness_enhanced", False),
+            "quantum_interface_active": self.quantum_temporal_interface is not None,
+            "evolution_monitor_active": self.evolution_monitoring_system is not None,
+            "meta_learning_active": self.meta_learning_control_panel is not None,
         }
 
 
@@ -882,11 +991,12 @@ def create_consciousness_panel(
 
 
 # Export the main class for external use
-__all__ = ['ConsciousnessPanel', 'create_consciousness_panel']
+__all__ = ["ConsciousnessPanel", "create_consciousness_panel"]
 
 
 if __name__ == "__main__":
     import sys
+
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)

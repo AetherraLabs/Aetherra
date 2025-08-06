@@ -106,7 +106,7 @@ QTabBar::tab:selected {{
     border-bottom: 3px solid {AETHERRA_GREEN};
     border-top: 2px solid {AETHERRA_GLOW_GREEN};
     text-shadow: 0 0 8px {AETHERRA_GREEN};
-    box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+    /* box-shadow removed for Qt compatibility */
 }}
 
 QTabBar::tab:hover:!selected {{
@@ -131,7 +131,7 @@ QTextEdit, QTextBrowser {{
 
 QTextEdit:focus, QTextBrowser:focus {{
     border: 1px solid {AETHERRA_GREEN};
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    /* box-shadow removed for Qt compatibility */
 }}
 
 /* Neural Buttons */
@@ -285,7 +285,7 @@ QSlider::handle:horizontal {{
 
 QSlider::handle:horizontal:hover {{
     background-color: {AETHERRA_BRIGHT_GREEN};
-    box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+    /* box-shadow removed for Qt compatibility */
 }}
 
 /* Scroll Areas */

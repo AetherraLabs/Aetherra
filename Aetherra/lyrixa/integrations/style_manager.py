@@ -152,7 +152,7 @@ PLUGIN_UI_CSS_FIX = """
     border-radius: 8px;
     margin: 10px;
     padding: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    /* box-shadow removed for Qt compatibility */
 }
 
 .plugin-header {
