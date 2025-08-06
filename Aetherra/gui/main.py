@@ -68,9 +68,9 @@ except ImportError:
 
 # Import Lyrixa components
 try:
-# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.advanced_vector_memory import AdvancedMemorySystem
-# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.anticipation_engine import AnticipationEngine
-# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.gui import EnhancedLyrixaWindow
+    # ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.advanced_vector_memory import AdvancedMemorySystem
+    # ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.anticipation_engine import AnticipationEngine
+    # ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.gui import EnhancedLyrixaWindow
 
     from .context_bridge import ContextBridge
 
@@ -433,16 +433,49 @@ def main():
     parser.add_argument(
         "--enhanced", action="store_true", help="Launch Enhanced Neural OS Dashboard"
     )
+    parser.add_argument(
+        "--consciousness",
+        action="store_true",
+        help="Launch Consciousness Evolution Dashboard",
+    )
+    parser.add_argument(
+        "--consciousness-web",
+        action="store_true",
+        help="Launch Consciousness Web Dashboard in browser",
+    )
     args = parser.parse_args()
 
     # Launch Enhanced Neural OS if requested
     if args.enhanced:
         try:
             from aetherra_enhanced_neural_os import main as enhanced_main
+
             print("🌌 Launching Enhanced Aetherra Neural OS...")
             return enhanced_main()
         except ImportError as e:
             print(f"❌ Enhanced Neural OS not available: {e}")
+            print("Falling back to standard launcher...")
+
+    # Launch Consciousness Evolution Dashboard if requested
+    if args.consciousness:
+        try:
+            from consciousness_evolution_dashboard import main as consciousness_main
+
+            print("🧠 Launching Consciousness Evolution Dashboard...")
+            return consciousness_main()
+        except ImportError as e:
+            print(f"❌ Consciousness dashboard not available: {e}")
+            print("Falling back to standard launcher...")
+
+    # Launch Consciousness Web Dashboard if requested
+    if getattr(args, "consciousness_web", False):
+        try:
+            from consciousness_web_viewer import main as web_viewer_main
+
+            print("🌐 Launching Consciousness Web Dashboard...")
+            return web_viewer_main()
+        except ImportError as e:
+            print(f"❌ Consciousness web viewer not available: {e}")
             print("Falling back to standard launcher...")
 
     launcher = UnifiedLyrixaLauncher()

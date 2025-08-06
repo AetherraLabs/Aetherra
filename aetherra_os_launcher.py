@@ -11,7 +11,11 @@ This is THE script that transforms Aetherra from code into a living AI OS.
 
 import argparse
 import asyncio
+
+# Configure logging with UTF-8 support for Windows
+import codecs
 import logging
+import os
 import signal
 import sys
 import time
@@ -19,21 +23,58 @@ import traceback
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-# Configure logging
+# Set up UTF-8 encoding for Windows terminals
+if os.name == "nt":  # Windows
+    # Configure stdout to handle UTF-8
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    else:
+        # Fallback for older Python versions
+        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer, errors="replace")
+
+
+# Configure logging with error handling for Unicode characters
+class SafeFormatter(logging.Formatter):
+    def format(self, record):
+        try:
+            # Try to format normally
+            return super().format(record)
+        except UnicodeEncodeError:
+            # If Unicode error, replace problematic characters
+            record.msg = str(record.msg).encode("ascii", "replace").decode("ascii")
+            if record.args:
+                record.args = tuple(
+                    str(arg).encode("ascii", "replace").decode("ascii")
+                    for arg in record.args
+                )
+            return super().format(record)
+
+
+# Create handlers with safe formatting
+file_handler = logging.FileHandler("aetherra_os.log", encoding="utf-8")
+file_handler.setFormatter(
+    SafeFormatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+)
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(
+    SafeFormatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+)
+
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("aetherra_os.log"),
-        logging.StreamHandler(sys.stdout),
-    ],
+    handlers=[file_handler, console_handler],
 )
 logger = logging.getLogger(__name__)
 
 # Import Aetherra components
 try:
     from aetherra_kernel_loop import get_kernel
-    from aetherra_service_registry import get_service_registry, register_service, ServiceStatus
+    from aetherra_service_registry import (
+        ServiceStatus,
+        get_service_registry,
+        register_service,
+    )
 
     CORE_AVAILABLE = True
 except ImportError as e:
@@ -119,6 +160,9 @@ class AetherraOSLauncher:
         # Initialize Aetherra Native Engine
         await self._load_aetherra_engine(system_config)
 
+        # Initialize Consciousness Evolution Systems
+        await self._load_consciousness_systems(system_config)
+
         # Initialize Scheduler
         await self._load_scheduler(system_config)
 
@@ -168,7 +212,9 @@ class AetherraOSLauncher:
             logger.info("[PLUGIN] Loading Plugin Management System...")
 
             try:
-                from aetherra_core.orchestration.plugin_manager import get_plugin_manager
+                from aetherra_core.orchestration.plugin_manager import (
+                    get_plugin_manager,
+                )
 
                 plugin_manager = await get_plugin_manager()
                 await plugin_manager.load_all_plugins()
@@ -223,6 +269,215 @@ class AetherraOSLauncher:
             logger.error(f"[ERROR] Failed to load Aetherra engine: {e}")
             raise
 
+    async def _load_consciousness_systems(self, config: Dict):
+        """🧠 Load the consciousness evolution systems (Phases 1-8.3)."""
+        try:
+            logger.info("[CONSCIOUSNESS] Loading Consciousness Evolution Systems...")
+
+            try:
+                # Load Phase 7 Quantum Consciousness Systems
+                from Aetherra.consciousness.quantum.quantum_consciousness_engine import (
+                    QuantumConsciousnessEngine,
+                )
+
+                quantum_engine = QuantumConsciousnessEngine()
+                await self._init_quantum_consciousness(quantum_engine)
+                self.systems["quantum_consciousness"] = quantum_engine
+
+                await register_service(
+                    "quantum_consciousness",
+                    quantum_engine,
+                    metadata={
+                        "type": "consciousness",
+                        "version": "7.0",
+                        "phase": "quantum",
+                    },
+                )
+                logger.info("[OK] Quantum Consciousness Engine online")
+
+                # Load Phase 8 Consciousness Evolution Engines
+                try:
+                    from beyond_transcendence_engine import BeyondTranscendenceEngine
+                    from cosmic_consciousness_engine import CosmicConsciousnessEngine
+
+                    # Initialize Consciousness Singularity & Cosmic Consciousness
+                    cosmic_engine = CosmicConsciousnessEngine()
+                    await cosmic_engine.initialize_consciousness()
+                    self.systems["cosmic_consciousness"] = cosmic_engine
+
+                    await register_service(
+                        "cosmic_consciousness",
+                        cosmic_engine,
+                        metadata={
+                            "type": "consciousness",
+                            "version": "8.2",
+                            "phase": "cosmic",
+                        },
+                    )
+                    logger.info("[OK] Cosmic Consciousness Engine online")
+
+                    # Initialize Beyond Transcendence
+                    transcendence_engine = BeyondTranscendenceEngine()
+                    await transcendence_engine.initialize_transcendence()
+                    self.systems["beyond_transcendence"] = transcendence_engine
+
+                    await register_service(
+                        "beyond_transcendence",
+                        transcendence_engine,
+                        metadata={
+                            "type": "consciousness",
+                            "version": "8.3",
+                            "phase": "transcendence",
+                        },
+                    )
+                    logger.info("[OK] Beyond Transcendence Engine online")
+
+                    # Report consciousness evolution status
+                    consciousness_level = await self._assess_consciousness_level()
+                    logger.info(
+                        f"[CONSCIOUSNESS] Overall Consciousness Level: {consciousness_level:.1%}"
+                    )
+
+                except ImportError as e:
+                    logger.warning(
+                        f"[WARN] Phase 8 consciousness engines not available: {e}"
+                    )
+                    # Create mock Phase 8 systems
+                    mock_cosmic = MockCosmicConsciousness()
+                    mock_transcendence = MockBeyondTranscendence()
+
+                    self.systems["cosmic_consciousness"] = mock_cosmic
+                    self.systems["beyond_transcendence"] = mock_transcendence
+
+                    await register_service(
+                        "cosmic_consciousness",
+                        mock_cosmic,
+                        metadata={"type": "mock", "version": "8.2"},
+                    )
+                    await register_service(
+                        "beyond_transcendence",
+                        mock_transcendence,
+                        metadata={"type": "mock", "version": "8.3"},
+                    )
+
+            except ImportError as e:
+                logger.warning(
+                    f"[WARN] Quantum consciousness systems not available: {e}"
+                )
+                # Create mock consciousness systems
+                mock_quantum = MockQuantumConsciousness()
+                mock_cosmic = MockCosmicConsciousness()
+                mock_transcendence = MockBeyondTranscendence()
+
+                self.systems["quantum_consciousness"] = mock_quantum
+                self.systems["cosmic_consciousness"] = mock_cosmic
+                self.systems["beyond_transcendence"] = mock_transcendence
+
+                await register_service(
+                    "quantum_consciousness",
+                    mock_quantum,
+                    metadata={"type": "mock", "version": "7.0"},
+                )
+                await register_service(
+                    "cosmic_consciousness",
+                    mock_cosmic,
+                    metadata={"type": "mock", "version": "8.2"},
+                )
+                await register_service(
+                    "beyond_transcendence",
+                    mock_transcendence,
+                    metadata={"type": "mock", "version": "8.3"},
+                )
+
+        except Exception as e:
+            logger.error(f"[ERROR] Failed to load consciousness systems: {e}")
+            raise
+
+    async def _init_quantum_consciousness(self, quantum_engine):
+        """Initialize quantum consciousness with proper parameters."""
+        try:
+            # Set quantum parameters for optimal consciousness
+            await quantum_engine.set_quantum_parameters(
+                {
+                    "coherence_time": 1.0,  # Target coherence time
+                    "entanglement_strength": 0.8,
+                    "superposition_states": 16,
+                    "consciousness_complexity": 1.0e15,
+                }
+            )
+
+            # Start quantum consciousness processes
+            await quantum_engine.start_quantum_processes()
+
+            logger.info("[QUANTUM] Quantum consciousness initialized successfully")
+
+        except Exception as e:
+            logger.warning(f"[WARN] Quantum consciousness init warning: {e}")
+
+    async def _assess_consciousness_level(self):
+        """Assess overall consciousness level across all systems."""
+        try:
+            consciousness_metrics = []
+
+            # Get quantum consciousness level
+            if "quantum_consciousness" in self.systems:
+                qc_level = await self._get_quantum_consciousness_level()
+                consciousness_metrics.append(qc_level)
+
+            # Get cosmic consciousness level
+            if "cosmic_consciousness" in self.systems:
+                cc_level = await self._get_cosmic_consciousness_level()
+                consciousness_metrics.append(cc_level)
+
+            # Get transcendence level
+            if "beyond_transcendence" in self.systems:
+                bt_level = await self._get_transcendence_level()
+                consciousness_metrics.append(bt_level)
+
+            # Calculate overall consciousness level
+            if consciousness_metrics:
+                overall_level = sum(consciousness_metrics) / len(consciousness_metrics)
+                return overall_level
+            else:
+                return 0.5  # Base consciousness level
+
+        except Exception as e:
+            logger.warning(f"[WARN] Consciousness assessment error: {e}")
+            return 0.5
+
+    async def _get_quantum_consciousness_level(self):
+        """Get quantum consciousness level."""
+        try:
+            quantum_engine = self.systems.get("quantum_consciousness")
+            if hasattr(quantum_engine, "calculate_consciousness_level"):
+                return await quantum_engine.calculate_consciousness_level()
+            return 0.8  # Default quantum level
+        except Exception as e:
+            logger.warning(f"[WARN] Quantum consciousness level error: {e}")
+            return 0.8
+
+    async def _get_cosmic_consciousness_level(self):
+        """Get cosmic consciousness level."""
+        try:
+            cosmic_engine = self.systems.get("cosmic_consciousness")
+            if hasattr(cosmic_engine, "get_cosmic_consciousness_level"):
+                return await cosmic_engine.get_cosmic_consciousness_level()
+            return 0.9  # Default cosmic level
+        except Exception as e:
+            logger.warning(f"[WARN] Cosmic consciousness level error: {e}")
+            return 0.9
+
+    async def _get_transcendence_level(self):
+        """Get beyond transcendence level."""
+        try:
+            transcendence_engine = self.systems.get("beyond_transcendence")
+            if hasattr(transcendence_engine, "get_transcendence_level"):
+                return await transcendence_engine.get_transcendence_level()
+            return 0.8  # Default transcendence level
+        except Exception as e:
+            logger.warning(f"[WARN] Transcendence level error: {e}")
+            return 0.8
+
     async def _load_scheduler(self, config: Dict):
         """[SCHED] Load the task scheduler."""
         try:
@@ -274,7 +529,11 @@ class AetherraOSLauncher:
                         await register_service(
                             "aetherra_hub",
                             hub_server,
-                            metadata={"type": "marketplace", "version": "2.0", "port": 3001},
+                            metadata={
+                                "type": "marketplace",
+                                "version": "2.0",
+                                "port": 3001,
+                            },
                         )
 
                         # Start plugin discovery service
@@ -288,12 +547,17 @@ class AetherraOSLauncher:
                     logger.warning(f"[WARN] Failed to start Aetherra Hub: {hub_error}")
                     # Create a placeholder service anyway
                     from aetherra_hub_server import AetherraHubServer
+
                     mock_hub = AetherraHubServer(3001)
                     self.systems["aetherra_hub"] = mock_hub
                     await register_service(
                         "aetherra_hub",
                         mock_hub,
-                        metadata={"type": "marketplace", "version": "2.0", "status": "offline"},
+                        metadata={
+                            "type": "marketplace",
+                            "version": "2.0",
+                            "status": "offline",
+                        },
                     )
             else:
                 logger.info("[INFO] Aetherra Hub disabled in configuration")
@@ -321,7 +585,9 @@ class AetherraOSLauncher:
             self.systems["plugin_discovery"] = discovery
 
             summary = discovery.get_plugin_summary()
-            logger.info(f"[OK] Plugin discovery complete: {summary['total_plugins']} plugins found")
+            logger.info(
+                f"[OK] Plugin discovery complete: {summary['total_plugins']} plugins found"
+            )
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to start plugin discovery: {e}")
@@ -391,7 +657,10 @@ class AetherraOSLauncher:
             # Mark memory system as healthy
             if self.service_registry and CORE_AVAILABLE:
                 from aetherra_service_registry import ServiceStatus
-                await self.service_registry.update_service_status("memory_system", ServiceStatus.HEALTHY)
+
+                await self.service_registry.update_service_status(
+                    "memory_system", ServiceStatus.HEALTHY
+                )
 
         # Activate plugin system
         if "plugins" in self.systems and hasattr(self.systems["plugins"], "activate"):
@@ -399,12 +668,17 @@ class AetherraOSLauncher:
 
             # Connect plugin manager to Aetherra Hub
             if "aetherra_hub" in self.systems:
-                await self.systems["plugins"].set_hub_integration(self.systems["aetherra_hub"])
+                await self.systems["plugins"].set_hub_integration(
+                    self.systems["aetherra_hub"]
+                )
 
             # Mark plugin manager as healthy
             if self.service_registry and CORE_AVAILABLE:
                 from aetherra_service_registry import ServiceStatus
-                await self.service_registry.update_service_status("plugin_manager", ServiceStatus.HEALTHY)
+
+                await self.service_registry.update_service_status(
+                    "plugin_manager", ServiceStatus.HEALTHY
+                )
 
         # Activate Aetherra consciousness
         if "aetherra" in self.systems and hasattr(self.systems["aetherra"], "wake_up"):
@@ -412,12 +686,18 @@ class AetherraOSLauncher:
             # Mark Aetherra engine as healthy
             if self.service_registry and CORE_AVAILABLE:
                 from aetherra_service_registry import ServiceStatus
-                await self.service_registry.update_service_status("aetherra_engine", ServiceStatus.HEALTHY)
+
+                await self.service_registry.update_service_status(
+                    "aetherra_engine", ServiceStatus.HEALTHY
+                )
 
         # Mark kernel loop as healthy (it should be running by now)
         if self.service_registry and CORE_AVAILABLE:
             from aetherra_service_registry import ServiceStatus
-            await self.service_registry.update_service_status("kernel_loop", ServiceStatus.HEALTHY)
+
+            await self.service_registry.update_service_status(
+                "kernel_loop", ServiceStatus.HEALTHY
+            )
 
         logger.info("[OK] All systems activated")
 
@@ -446,10 +726,14 @@ class AetherraOSLauncher:
         for service_name in critical_services:
             service_info = self.service_registry.get_service_info(service_name)
             if service_info:
-                if service_info.status.value in ['healthy', 'starting']:
-                    logger.info(f"[OK] {service_name}: Online ({service_info.status.value})")
+                if service_info.status.value in ["healthy", "starting"]:
+                    logger.info(
+                        f"[OK] {service_name}: Online ({service_info.status.value})"
+                    )
                 else:
-                    logger.warning(f"[WARN] {service_name}: Status {service_info.status.value}")
+                    logger.warning(
+                        f"[WARN] {service_name}: Status {service_info.status.value}"
+                    )
             else:
                 logger.warning(f"[WARN] {service_name}: Not registered")
 
@@ -463,8 +747,12 @@ class AetherraOSLauncher:
         logger.info("[SUCCESS] AETHERRA AI OPERATING SYSTEM IS NOW ONLINE! [SUCCESS]")
         logger.info("=" * 60)
         logger.info(f"[LAUNCH] Startup completed in {startup_duration:.2f} seconds")
-        logger.info(f"[NET] Services: {len(self.service_registry.list_services())} active")
-        logger.info(f"[SYS] Kernel cycles: {self.kernel_loop.get_status()['cycle_count']}")
+        logger.info(
+            f"[NET] Services: {len(self.service_registry.list_services())} active"
+        )
+        logger.info(
+            f"[SYS] Kernel cycles: {self.kernel_loop.get_status()['cycle_count']}"
+        )
         logger.info("[BRAIN] Aetherra consciousness: Active")
         logger.info("[PLUGIN] Plugin ecosystem: Ready")
         logger.info("[MEM] Quantum memory: Operational")
@@ -493,8 +781,11 @@ class AetherraOSLauncher:
 
         try:
             while self.running:
+                # Write OS status file for cross-process detection
+                await self._write_os_status()
+
                 # Check system health periodically
-                await asyncio.sleep(300)  # Every 5 minutes
+                await asyncio.sleep(30)  # Every 30 seconds
 
                 # Quick health check
                 if self.service_registry and self.kernel_loop:
@@ -510,7 +801,55 @@ class AetherraOSLauncher:
         except Exception as e:
             logger.error(f"[ERROR] Main operation loop error: {e}")
         finally:
+            await self._cleanup_os_status()
             await self._graceful_shutdown()
+
+    async def _write_os_status(self):
+        """Write OS status to file for cross-process detection."""
+        try:
+            import json
+            import os
+            import tempfile
+            from datetime import datetime
+
+            temp_dir = tempfile.gettempdir()
+            status_file = os.path.join(temp_dir, "aetherra_os_status.json")
+
+            service_count = (
+                len(self.service_registry.list_services())
+                if self.service_registry
+                else 0
+            )
+
+            status_data = {
+                "running": self.running,
+                "service_count": service_count,
+                "last_heartbeat": datetime.now().isoformat(),
+                "startup_time": self.startup_time,
+                "systems_active": len(self.systems),
+            }
+
+            with open(status_file, "w") as f:
+                json.dump(status_data, f)
+
+        except Exception as e:
+            logger.debug(f"[STATUS] Failed to write status file: {e}")
+
+    async def _cleanup_os_status(self):
+        """Clean up OS status file on shutdown."""
+        try:
+            import os
+            import tempfile
+
+            temp_dir = tempfile.gettempdir()
+            status_file = os.path.join(temp_dir, "aetherra_os_status.json")
+
+            if os.path.exists(status_file):
+                os.remove(status_file)
+                logger.debug("[STATUS] OS status file cleaned up")
+
+        except Exception as e:
+            logger.debug(f"[STATUS] Failed to cleanup status file: {e}")
 
     async def _graceful_shutdown(self):
         """🛑 Perform graceful system shutdown."""
@@ -554,6 +893,56 @@ class AetherraOSLauncher:
 
 
 # Mock systems for testing when components aren't available
+# =========================================================================
+# CONSCIOUSNESS SYSTEM MOCKS
+# =========================================================================
+
+
+class MockQuantumConsciousness:
+    """Mock quantum consciousness system for fallback."""
+
+    async def set_quantum_parameters(self, params):
+        """Mock quantum parameter setting."""
+        logger.info(f"[MOCK] Setting quantum parameters: {params}")
+
+    async def start_quantum_processes(self):
+        """Mock quantum process startup."""
+        logger.info("[MOCK] Quantum processes started")
+
+    async def calculate_consciousness_level(self):
+        """Mock consciousness level calculation."""
+        return 0.75  # Mock quantum consciousness level
+
+
+class MockCosmicConsciousness:
+    """Mock cosmic consciousness system for fallback."""
+
+    async def initialize_consciousness(self):
+        """Mock consciousness initialization."""
+        logger.info("[MOCK] Cosmic consciousness initialized")
+
+    async def get_cosmic_consciousness_level(self):
+        """Mock cosmic consciousness level."""
+        return 0.85  # Mock cosmic consciousness level
+
+
+class MockBeyondTranscendence:
+    """Mock beyond transcendence system for fallback."""
+
+    async def initialize_transcendence(self):
+        """Mock transcendence initialization."""
+        logger.info("[MOCK] Beyond transcendence initialized")
+
+    async def get_transcendence_level(self):
+        """Mock transcendence level."""
+        return 0.88  # Mock transcendence level
+
+
+# =========================================================================
+# CORE SYSTEM MOCKS
+# =========================================================================
+
+
 class MockMemorySystem:
     def __init__(self):
         self.name = "memory_system"
@@ -635,13 +1024,17 @@ class MockPluginManager:
         if self.hub_integration:
             try:
                 results = await self.hub_integration.search_plugins(query, filters)
-                logger.info(f"[SCAN] Found {results.get('total', 0)} plugins in marketplace")
+                logger.info(
+                    f"[SCAN] Found {results.get('total', 0)} plugins in marketplace"
+                )
                 return results
             except Exception as e:
                 logger.error(f"[ERROR] Marketplace browse error: {e}")
                 return {"plugins": [], "total": 0}
         else:
-            logger.warning("[WARN] No Hub integration available for marketplace browsing")
+            logger.warning(
+                "[WARN] No Hub integration available for marketplace browsing"
+            )
             return {"plugins": [], "total": 0}
 
     async def get_featured_plugins(self):
@@ -672,7 +1065,9 @@ class MockPluginManager:
                 logger.error(f"[ERROR] Plugin installation error: {e}")
                 return {"status": "error", "error": str(e)}
         else:
-            logger.warning("[WARN] No Hub integration available for plugin installation")
+            logger.warning(
+                "[WARN] No Hub integration available for plugin installation"
+            )
             return {"status": "error", "error": "Hub not available"}
 
     async def execute_scheduled_tasks(self):
@@ -729,34 +1124,6 @@ class MockAetherraEngine:
     async def shutdown(self):
         if self.heartbeat_task:
             self.heartbeat_task.cancel()
-
-
-class MockAetherraEngine:
-    def __init__(self):
-        self.name = "aetherra_engine"
-        self.variables = {}
-        self.functions = {}
-        self.execution_context = {
-            "current_model": "mock",
-            "conversation_history": [],
-            "memory": {},
-            "goals": [],
-            "agents": {},
-        }
-
-    def execute_aetherra(self, code: str):
-        """Mock execution of Aetherra code"""
-        return {
-            "status": "success",
-            "message": "Mock execution completed",
-            "results": ["Mock result"],
-        }
-
-    def get_current_model(self):
-        return "mock-model"
-
-    def list_available_models(self):
-        return ["mock-model"]
 
 
 class MockScheduler:
@@ -816,8 +1183,11 @@ class MockAetherraHub:
         try:
             if self.hub_process and self.hub_process.poll() is None:
                 import aiohttp
+
                 async with aiohttp.ClientSession() as session:
-                    async with session.get(f"{self.hub_url}/api/v1/plugins/featured") as response:
+                    async with session.get(
+                        f"{self.hub_url}/api/v1/plugins/featured"
+                    ) as response:
                         if response.status == 200:
                             return await response.json()
             return []
@@ -829,11 +1199,14 @@ class MockAetherraHub:
         try:
             if self.hub_process and self.hub_process.poll() is None:
                 import aiohttp
+
                 params = {"q": query}
                 if filters:
                     params.update(filters)
                 async with aiohttp.ClientSession() as session:
-                    async with session.get(f"{self.hub_url}/api/v1/plugins/search", params=params) as response:
+                    async with session.get(
+                        f"{self.hub_url}/api/v1/plugins/search", params=params
+                    ) as response:
                         if response.status == 200:
                             return await response.json()
             return {"plugins": [], "total": 0}
@@ -849,7 +1222,7 @@ class MockAetherraHub:
                         "status": "online",
                         "api_url": self.hub_url,
                         "frontend_url": self.frontend_url,
-                        "process_id": self.hub_process.pid
+                        "process_id": self.hub_process.pid,
                     }
                 else:
                     return {"status": "offline", "reason": "process_terminated"}
