@@ -1,0 +1,54 @@
+# Aetherra Project Copyright Information
+
+## Primary Copyright
+Copyright (C) 2025 AetherraLabs
+All rights reserved under the GNU General Public License v3.0
+
+## Project Information
+- Project Name: Aetherra AI Operating System
+- Repository: https://github.com/AetherraLabs/Aetherra
+- License: GNU General Public License v3.0
+- License File: LICENSE
+
+## License Summary
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+## Third-Party Components
+All third-party components are used in accordance with their respective licenses.
+See requirements.txt and individual component licenses for details.
+
+## Distribution Rights
+Under GPL-3.0, you have the right to:
+- Use this software for any purpose
+- Study and modify the source code
+- Distribute copies of the software
+- Distribute modified versions
+- Use commercially
+
+## Obligations
+When distributing this software, you must:
+- Include this copyright notice
+- Include the full GPL-3.0 license text
+- Provide source code access
+- Document any modifications made
+
+## Contact
+For licensing questions or commercial inquiries:
+- GitHub: https://github.com/AetherraLabs/Aetherra
+- Issues: https://github.com/AetherraLabs/Aetherra/issues
+
+## Disclaimer
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
