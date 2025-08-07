@@ -1,6 +1,10 @@
 <!--
 SPDX-License-Identifier: GPL-3.0-or-later
-SPDX-FileCopyrightText: 2025 Aetherra & Lyrixa Contributors
+SPDX-FileCopyrightText: 2025 AetherraLabs Contributors
+
+Copyright (C) 2025 AetherraLabs
+Licensed under GNU General Public License v3.0
+See LICENSE file for full license text.
 -->
 
 <p align="center">
@@ -13,6 +17,39 @@ SPDX-FileCopyrightText: 2025 Aetherra & Lyrixa Contributors
   <strong>The Next-Generation AI-Native Development Environment</strong><br>
   Where intelligence meets creativity, and code comes alive.
 </p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge" alt="Status"/>
+  <img src="https://img.shields.io/badge/Version-4.0.0-0891b2?style=for-the-badge" alt="Version"/>
+  <img src="https://img.shields.io/badge/License-GPL--3.0-blue?style=for-the-badge" alt="GPL-3.0 License"/>
+  <img src="https://img.shields.io/badge/Intelligence-Phase%206%20Complete-8b5cf6?style=for-the-badge" alt="AI Enhanced"/>
+  <img src="https://img.shields.io/badge/Discord-Bot%20Integrated-22c55e?style=for-the-badge" alt="Discord Bot"/></p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Legal-Fully%20Compliant-darkgreen?style=for-the-badge" alt="Legal Compliance"/>
+  <img src="https://img.shields.io/badge/Commercial-Distribution%20Ready-gold?style=for-the-badge" alt="Commercial Ready"/>
+</p>
+
+## 📋 Legal Information & Distribution Rights
+
+**License**: GNU General Public License v3.0
+**Copyright**: Copyright (C) 2025 AetherraLabs
+**Legal Status**: ✅ **100% LEGALLY COMPLIANT** for development and distribution
+
+### Your Rights Under GPL-3.0:
+- ✅ **Commercial Use**: Sell, distribute, and monetize the software
+- ✅ **Modification**: Modify and create derivative works
+- ✅ **Distribution**: Share copies freely
+- ✅ **Patent Use**: Use any patents covered by this license
+- ✅ **Private Use**: Use for personal and internal purposes
+
+### Legal Files:
+- **LICENSE**: Full GPL-3.0 license text
+- **COPYRIGHT**: Copyright and ownership information
+- **NOTICE**: Third-party component attributions
+- **LEGAL_COMPLIANCE.md**: Comprehensive legal analysis
+
+**No legal obstacles exist for development or commercial distribution.**</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge" alt="Status"/>

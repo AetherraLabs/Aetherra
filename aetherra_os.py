@@ -3,6 +3,22 @@
 🚀 AETHERRA AI OPERATING SYSTEM - MAIN ENTRY POINT
 ==================================================
 
+Copyright (C) 2025 AetherraLabs
+Licensed under GNU General Public License v3.0
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 Primary entry point for launching the Aetherra AI Operating System.
 This script provides a clean interface to start various OS components.
 
@@ -21,8 +37,8 @@ The Aetherra OS provides:
 - Consciousness state monitoring
 """
 
-import sys
 import argparse
+import sys
 from pathlib import Path
 
 # Add project root to Python path
@@ -44,14 +60,14 @@ def launch_hybrid_interface():
     # First, start the OS backend systems
     try:
         print("🔧 Starting Aetherra OS backend services...")
-        from aetherra_os_launcher import AetherraOSLauncher
-
         import asyncio
         import threading
 
+        from aetherra_os_launcher import AetherraOSLauncher
+
         async def start_os_backend():
             launcher = AetherraOSLauncher()
-            await launcher.launch_full_os({'gui_enabled': False})  # Backend only
+            await launcher.launch_full_os({"gui_enabled": False})  # Backend only
 
         def run_os():
             asyncio.run(start_os_backend())
@@ -61,6 +77,7 @@ def launch_hybrid_interface():
 
         # Give OS time to start
         import time
+
         time.sleep(3)
         print("✅ Aetherra OS backend started")
 
@@ -77,6 +94,7 @@ def launch_hybrid_interface():
 
         # Import and run the official Aetherra GUI
         from aetherra_enhanced_neural_os import main as gui_main
+
         return gui_main()
     except ImportError as e:
         print(f"❌ Failed to import official Aetherra GUI: {e}")
@@ -89,6 +107,7 @@ def launch_web_interface():
     """Launch web interface only"""
     try:
         from Aetherra.gui.web_interface_server import start_web_interface
+
         return start_web_interface()
     except ImportError as e:
         print(f"❌ Failed to import web interface: {e}")
@@ -134,20 +153,19 @@ Examples:
   python aetherra_os.py                    # Launch hybrid interface
   python aetherra_os.py --interface web    # Web interface only
   python aetherra_os.py --info            # Show system information
-        """
+        """,
     )
 
     parser.add_argument(
-        '--interface', '-i',
-        choices=['hybrid', 'web', 'gui'],
-        default='hybrid',
-        help='Interface type to launch (default: hybrid)'
+        "--interface",
+        "-i",
+        choices=["hybrid", "web", "gui"],
+        default="hybrid",
+        help="Interface type to launch (default: hybrid)",
     )
 
     parser.add_argument(
-        '--info',
-        action='store_true',
-        help='Show system information and exit'
+        "--info", action="store_true", help="Show system information and exit"
     )
 
     args = parser.parse_args()
@@ -160,11 +178,11 @@ Examples:
     print(f"🚀 Launching {args.interface} interface...")
     print("=" * 40)
 
-    if args.interface == 'hybrid':
+    if args.interface == "hybrid":
         return launch_hybrid_interface()
-    elif args.interface == 'web':
+    elif args.interface == "web":
         return launch_web_interface()
-    elif args.interface == 'gui':
+    elif args.interface == "gui":
         return launch_gui_interface()
     else:
         print(f"❌ Unknown interface type: {args.interface}")

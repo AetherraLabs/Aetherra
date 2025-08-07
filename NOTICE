@@ -1,0 +1,130 @@
+# NOTICE - Third-Party Software Attributions
+
+This software includes components from third-party sources. Each component
+retains its original copyright and is used in accordance with its license terms.
+
+## Python Dependencies
+
+### Core Dependencies
+
+**PySide6**
+- Copyright: The Qt Company Ltd.
+- License: LGPL-3.0 / GPL-3.0 / Commercial
+- Purpose: GUI framework for Lyrixa interface
+- Source: https://pypi.org/project/PySide6/
+
+**OpenAI Python Library**
+- Copyright: OpenAI, Inc.
+- License: Apache-2.0
+- Purpose: AI model integration
+- Source: https://pypi.org/project/openai/
+
+**Anthropic Python Library**
+- Copyright: Anthropic, PBC
+- License: MIT
+- Purpose: Claude AI integration
+- Source: https://pypi.org/project/anthropic/
+
+**Google Generative AI**
+- Copyright: Google LLC
+- License: Apache-2.0
+- Purpose: Gemini AI integration
+- Source: https://pypi.org/project/google-generativeai/
+
+**Requests**
+- Copyright: Kenneth Reitz and contributors
+- License: Apache-2.0
+- Purpose: HTTP client library
+- Source: https://pypi.org/project/requests/
+
+**Flask**
+- Copyright: The Pallets Team
+- License: BSD-3-Clause
+- Purpose: Web framework for Aetherra Hub
+- Source: https://pypi.org/project/Flask/
+
+**SQLAlchemy**
+- Copyright: Michael Bayer and contributors
+- License: MIT
+- Purpose: Database ORM
+- Source: https://pypi.org/project/SQLAlchemy/
+
+**Transformers**
+- Copyright: Hugging Face, Inc.
+- License: Apache-2.0
+- Purpose: Machine learning model support
+- Source: https://pypi.org/project/transformers/
+
+**PyTorch**
+- Copyright: Facebook, Inc. and its affiliates
+- License: BSD-3-Clause
+- Purpose: Deep learning framework
+- Source: https://pypi.org/project/torch/
+
+**NumPy**
+- Copyright: NumPy developers
+- License: BSD-3-Clause
+- Purpose: Numerical computing
+- Source: https://pypi.org/project/numpy/
+
+**Pandas**
+- Copyright: The Pandas Development Team
+- License: BSD-3-Clause
+- Purpose: Data analysis library
+- Source: https://pypi.org/project/pandas/
+
+**Scikit-learn**
+- Copyright: The scikit-learn developers
+- License: BSD-3-Clause
+- Purpose: Machine learning library
+- Source: https://pypi.org/project/scikit-learn/
+
+### Development and Testing Dependencies
+
+**Pytest**
+- Copyright: Holger Krekel and pytest-dev team
+- License: MIT
+- Purpose: Testing framework
+
+**Black**
+- Copyright: Python Software Foundation and contributors
+- License: MIT
+- Purpose: Code formatting
+
+**Pylint**
+- Copyright: Logilab and contributors
+- License: GPL-2.0+
+- Purpose: Static code analysis
+
+## License Compatibility
+
+All third-party components used in this project have licenses that are
+compatible with the GNU General Public License v3.0 under which this
+project is distributed.
+
+### License Compatibility Matrix:
+- Apache-2.0 → GPL-3.0: ✅ Compatible
+- MIT → GPL-3.0: ✅ Compatible
+- BSD-3-Clause → GPL-3.0: ✅ Compatible
+- LGPL-3.0 → GPL-3.0: ✅ Compatible
+- GPL-2.0+ → GPL-3.0: ✅ Compatible
+
+## Attribution Requirements
+
+This project complies with all attribution requirements of the included
+third-party software. Full license texts for each component can be found
+in their respective package installations or at the source URLs listed above.
+
+## Disclaimer
+
+The inclusion of third-party software does not imply endorsement of this
+project by the copyright holders of those components. Each component is
+used solely for its technical functionality in accordance with its license.
+
+## Updates
+
+This NOTICE file is maintained to reflect the current third-party components
+used in the project. For the most current dependency list, refer to
+requirements.txt in the project root.
+
+Last updated: August 2025
