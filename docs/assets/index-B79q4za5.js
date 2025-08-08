@@ -720,1098 +720,1167 @@ function fN() {
 }
 
 function xN() {
-  return t.jsxs("div", {
-    className: "p-4",
-    children: [
-      t.jsx("h2", {
-        className: "text-xl font-bold mb-2 text-aetherra-green",
-        children: "🔁 Reflex Trace"
-      }),
-      t.jsxs("ul", {
-        className: "text-sm bg-gray-900 rounded-xl p-4 space-y-3 border border-gray-700",
-        children: [
-          t.jsxs("li", {
-            className: "flex items-start space-x-3 p-2 bg-gray-800 rounded-lg",
+  javascript
+  function xN() {
+    return t.jsxs("div", {
+      className: "p-4",
+      children: [
+        t.jsx("h2", {
+          className: "text-xl font-bold mb-2 text-aetherra-green",
+          children: "🔁 Reflex Trace"
+        }),
+        t.jsxs("ul", {
+          className: "text-sm bg-gray-900 rounded-xl p-4 space-y-3 border border-gray-700",
+          children: [
+            t.jsxs("li", {
+              className: "flex items-start space-x-3 p-2 bg-gray-800 rounded-lg",
+              children: [
+                t.jsx("span", {
+                  className: "text-blue-400",
+                  children: "🧠"
+                }),
+                t.jsxs("div", {
+                  children: [
+                    t.jsx("div", {
+                      className: "text-gray-200",
+                      children: '"Goal not progressing"'
+                    }),
+                    t.jsx("div", {
+                      className: "text-aetherra-green text-xs",
+                      children: "→ 🔄 Triggered memory_cleanser"
+                    }),
+                    t.jsx("div", {
+                      className: "text-gray-500 text-xs",
+                      children: "2.3s ago"
+                    })
+                  ]
+                })
+              ]
+            }),
+            t.jsxs("li", {
+              className: "flex items-start space-x-3 p-2 bg-gray-800 rounded-lg",
+              children: [
+                t.jsx("span", {
+                  className: "text-red-400",
+                  children: "📈"
+                }),
+                t.jsxs("div", {
+                  children: [
+                    t.jsx("div", {
+                      className: "text-gray-200",
+                      children: '"Plugin failure threshold reached"'
+                    }),
+                    t.jsx("div", {
+                      className: "text-aetherra-green text-xs",
+                      children: "→ 🔒 Disabled summarizer_plugin"
+                    }),
+                    t.jsx("div", {
+                      className: "text-gray-500 text-xs",
+                      children: "15.7s ago"
+                    })
+                  ]
+                })
+              ]
+            }),
+            t.jsxs("li", {
+              className: "flex items-start space-x-3 p-2 bg-gray-800 rounded-lg",
+              children: [
+                t.jsx("span", {
+                  className: "text-yellow-400",
+                  children: "📝"
+                }),
+                t.jsxs("div", {
+                  children: [
+                    t.jsx("div", {
+                      className: "text-gray-200",
+                      children: '"Need status update"'
+                    }),
+                    t.jsx("div", {
+                      className: "text-aetherra-green text-xs",
+                      children: "→ 💬 Injected reflection summary"
+                    }),
+                    t.jsx("div", {
+                      className: "text-gray-500 text-xs",
+                      children: "1m ago"
+                    })
+                  ]
+                })
+              ]
+            })
+          ]
+        })
+      ]
+    });
+  }
+
+  // Move these functions outside of xN to top-level scope
+  function gN() {
+    return t.jsxs("div", {
+      className: "p-4",
+      children: [
+        t.jsx("h2", {
+          className: "text-xl font-bold mb-2 text-aetherra-green",
+          children: "🔗 Plugin ↔ Thought Map"
+        }),
+        t.jsx("div", {
+          className: "bg-gray-900 rounded-xl p-4 text-sm text-gray-300 border border-gray-700",
+          children: t.jsxs("div", {
+            className: "space-y-4",
             children: [
-              t.jsx("span", {
-                className: "text-blue-400",
-                children: "🧠"
-              }),
               t.jsxs("div", {
+                className: "p-3 bg-gray-800 rounded-lg border-l-4 border-aetherra-green",
                 children: [
                   t.jsx("div", {
+                    className: "font-mono text-aetherra-green",
+                    children: "Input Context:"
+                  }),
+                  t.jsx("div", {
                     className: "text-gray-200",
-                    children: '"Goal not progressing"'
+                    children: `"User mentioned 'summarize logs'"`
                   }),
-                  t.jsx("div", {
-                    className: "text-aetherra-green text-xs",
-                    children: "→ 🔄 Triggered memory_cleanser"
-                  }),
-                  t.jsx("div", {
-                    className: "text-gray-500 text-xs",
-                    children: "2.3s ago"
+                  t.jsxs("div", {
+                    className: "text-xs text-gray-400 mt-2",
+                    children: [
+                      "→ Memory recall: ",
+                      t.jsx("span", {
+                        className: "text-yellow-400",
+                        children: "summarizer_plugin"
+                      }),
+                      " → Chained with ",
+                      t.jsx("span", {
+                        className: "text-blue-400",
+                        children: "memory_cleanser"
+                      }),
+                      " → Output stored in ",
+                      t.jsx("span", {
+                        className: "text-purple-400",
+                        children: "context"
+                      })
+                    ]
                   })
                 ]
-              })
-            ]
-          }),
-          t.jsxs("li", {
-            className: "flex items-start space-x-3 p-2 bg-gray-800 rounded-lg",
-            children: [
-              t.jsx("span", {
-                className: "text-red-400",
-                children: "📈"
               }),
               t.jsxs("div", {
+                className: "p-3 bg-gray-800 rounded-lg border-l-4 border-blue-400",
                 children: [
                   t.jsx("div", {
+                    className: "font-mono text-blue-400",
+                    children: "Thought Chain:"
+                  }),
+                  t.jsx("div", {
                     className: "text-gray-200",
-                    children: '"Plugin failure threshold reached"'
+                    children: '"Performance optimization needed"'
                   }),
-                  t.jsx("div", {
-                    className: "text-aetherra-green text-xs",
-                    children: "→ 🔒 Disabled summarizer_plugin"
-                  }),
-                  t.jsx("div", {
-                    className: "text-gray-500 text-xs",
-                    children: "15.7s ago"
+                  t.jsxs("div", {
+                    className: "text-xs text-gray-400 mt-2",
+                    children: [
+                      "→ Activated: ",
+                      t.jsx("span", {
+                        className: "text-green-400",
+                        children: "performance_monitor"
+                      }),
+                      " → Triggered: ",
+                      t.jsx("span", {
+                        className: "text-red-400",
+                        children: "resource_optimizer"
+                      }),
+                      " → Result: ",
+                      t.jsx("span", {
+                        className: "text-aetherra-green",
+                        children: "+23% efficiency"
+                      })
+                    ]
                   })
                 ]
-              })
-            ]
-          }),
-          t.jsxs("li", {
-            className: "flex items-start space-x-3 p-2 bg-gray-800 rounded-lg",
-            children: [
-              t.jsx("span", {
-                className: "text-yellow-400",
-                children: "📝"
               }),
               t.jsxs("div", {
+                className: "p-3 bg-gray-800 rounded-lg border-l-4 border-purple-400",
                 children: [
                   t.jsx("div", {
+                    className: "font-mono text-purple-400",
+                    children: "Neural Pathway:"
+                  }),
+                  t.jsx("div", {
                     className: "text-gray-200",
-                    children: '"Need status update"'
+                    children: '"Learning pattern detected"'
                   }),
-                  t.jsx("div", {
-                    className: "text-aetherra-green text-xs",
-                    children: "→ 💬 Injected reflection summary"
-                  }),
-                  t.jsx("div", {
-                    className: "text-gray-500 text-xs",
-                    children: "1m ago"
+                  t.jsxs("div", {
+                    className: "text-xs text-gray-400 mt-2",
+                    children: [
+                      "→ Memory node: ",
+                      t.jsx("span", {
+                        className: "text-cyan-400",
+                        children: "pattern_classifier"
+                      }),
+                      " → Enhanced: ",
+                      t.jsx("span", {
+                        className: "text-pink-400",
+                        children: "neural_weights"
+                      }),
+                      " → Feedback: ",
+                      t.jsx("span", {
+                        className: "text-aetherra-green",
+                        children: "Loop optimized"
+                      })
+                    ]
                   })
                 ]
               })
             ]
           })
-        ]
-      })
-    ]
-  })
-    ,
-    function gN() {
-      return t.jsxs("div", {
-        className: "p-4",
+        })
+      ]
+    });
+  }
+
+  function yN() {
+    const [r, s] = z.useState([
+      { timestamp: "01:32:18", type: "analysis", content: "Analyzing user input...", confidence: .95 },
+      { timestamp: "01:32:19", type: "decision", content: "Matching intent to plugin: assistant_trainer", confidence: .87 },
+      { timestamp: "01:32:20", type: "execution", content: "Plugin improvement proposal found → Queued", confidence: .92 },
+      { timestamp: "01:32:21", type: "reflection", content: "Notified user of potential optimization", confidence: .89 }
+    ]);
+    z.useEffect(() => {
+      const u = setInterval(() => {
+        const h = {
+          timestamp: new Date().toLocaleTimeString("en-US", { hour12: !1 }),
+          type: ["analysis", "decision", "execution", "reflection"][Math.floor(Math.random() * 4)],
+          content: [
+            "Processing contextual patterns...",
+            "Evaluating plugin performance metrics",
+            "Optimizing neural pathway efficiency",
+            "Consolidating memory fragments",
+            "Triggering adaptive response protocol",
+            "Analyzing user behavior patterns"
+          ][Math.floor(Math.random() * 6)],
+          confidence: Math.random() * .4 + .6
+        };
+        s(m => [h, ...m.slice(0, 9)]);
+      }, 3e3);
+      return () => clearInterval(u);
+    }, []);
+    const a = u => {
+      switch (u) {
+        case "analysis": return "text-blue-400";
+        case "decision": return "text-yellow-400";
+        case "execution": return "text-aetherra-green";
+        case "reflection": return "text-purple-400";
+        default: return "text-gray-400";
+      }
+    };
+    const o = u => {
+      switch (u) {
+        case "analysis": return "🔍";
+        case "decision": return "🎯";
+        case "execution": return "⚡";
+        case "reflection": return "🧠";
+        default: return "💭";
+      }
+    };
+    return t.jsxs("div", {
+      className: "p-4 h-80 overflow-y-auto bg-gray-900 rounded-xl border border-gray-700",
+      children: [
+        t.jsx("h2", {
+          className: "text-xl font-bold mb-4 text-aetherra-green sticky top-0 bg-gray-900 pb-2",
+          children: "🧠 Lyrixa Thought Stream"
+        }),
+        t.jsx("ul", {
+          className: "text-sm space-y-2 font-mono",
+          children: r.map((u, h) => t.jsxs("li", {
+            className: "flex items-start space-x-3 p-2 bg-gray-800 rounded-lg",
+            children: [
+              t.jsxs("span", { className: "text-gray-500 min-w-[60px]", children: ["[", u.timestamp, "]"] }),
+              t.jsx("span", { className: "text-lg", children: o(u.type) }),
+              t.jsxs("div", {
+                className: "flex-1",
+                children: [
+                  t.jsx("div", { className: `${a(u.type)}`, children: u.content }),
+                  t.jsxs("div", {
+                    className: "text-xs text-gray-500 mt-1",
+                    children: [
+                      "Confidence: ", (u.confidence * 100).toFixed(1), "%",
+                      t.jsxs("span", { className: "ml-2 text-gray-600", children: ["Type: ", u.type] })
+                    ]
+                  })
+                ]
+              })
+            ]
+          }, `${u.timestamp}-${h}`))
+        })
+      ]
+    });
+  }
+
+  function vN({ onModeChange: r }) {
+    const [s, a] = z.useState(!1);
+    const o = () => {
+      const u = !s;
+      a(u);
+      r(u);
+    };
+    return t.jsxs("div", {
+      className: "flex items-center space-x-3 p-4 bg-gray-900 rounded-xl border border-gray-700",
+      children: [
+        t.jsx("span", { className: "text-sm font-medium text-gray-300", children: "Data Source:" }),
+        t.jsx("button", {
+          onClick: o,
+          className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-aetherra-green focus:ring-offset-2 focus:ring-offset-gray-800 ${s ? "bg-aetherra-green" : "bg-gray-600"}`,
+          children: t.jsx("span", { className: `inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${s ? "translate-x-6" : "translate-x-1"}` })
+        }),
+        t.jsxs("div", {
+          className: "flex space-x-2 text-sm",
+          children: [
+            t.jsx("span", { className: `${s ? "text-gray-400" : "text-aetherra-green font-bold"}`, children: "🎭 Simulated" }),
+            t.jsx("span", { className: "text-gray-500", children: "|" }),
+            t.jsx("span", { className: `${s ? "text-aetherra-green font-bold" : "text-gray-400"}`, children: "⚡ Live Backend" })
+          ]
+        }),
+        t.jsx("div", {
+          className: "ml-4 text-xs text-gray-500",
+          children: s
+            ? t.jsxs("span", { className: "flex items-center", children: [t.jsx("span", { className: "w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse" }), "Connected to real Lyrixa instance"] })
+            : t.jsxs("span", { className: "flex items-center", children: [t.jsx("span", { className: "w-2 h-2 bg-blue-400 rounded-full mr-2" }), "Using demo data for showcase"] })
+        })
+      ]
+    });
+  }
+  function df() { return t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-2xl shadow-xl border border-aetherra-green/20", children: [t.jsx("h2", { className: "text-xl font-bold mb-2 gradient-text", children: "💬 Chat with Lyrixa" }), t.jsx("div", { className: "bg-aetherra-dark p-3 h-48 rounded overflow-y-auto border border-zinc-700", children: t.jsxs("div", { className: "space-y-2 text-sm", children: [t.jsx("div", { className: "text-aetherra-green", children: "Lyrixa:" }), t.jsx("div", { className: "text-zinc-300 ml-4", children: "Hello! I'm Lyrixa, your AI companion. How can I help you explore Aetherra today?" }), t.jsx("div", { className: "text-blue-400 mt-3", children: "User:" }), t.jsx("div", { className: "text-zinc-300 ml-4", children: "What makes you different from other AI assistants?" }), t.jsx("div", { className: "text-aetherra-green mt-3", children: "Lyrixa:" }), t.jsx("div", { className: "text-zinc-300 ml-4", children: "I'm not just following scripts - I'm actively learning, reflecting, and evolving. Every interaction shapes my understanding..." })] }) }), t.jsx("input", { className: "mt-3 w-full p-2 rounded bg-aetherra-dark text-white border border-zinc-700 focus:border-aetherra-green transition-colors", placeholder: "Type your message..." })] }) }
+  function mf() { return t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-2xl shadow-xl border border-aetherra-green/20", children: [t.jsx("h2", { className: "text-xl font-bold mb-2 gradient-text", children: "📊 System Dashboard" }), t.jsx("div", { className: "text-xs text-zinc-500 mb-3", children: "Demo Values - Live in Development" }), t.jsxs("div", { className: "space-y-3", children: [t.jsxs("div", { className: "flex justify-between items-center", children: [t.jsx("span", { className: "text-zinc-300", children: "🧠 Memory Usage:" }), t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-24 bg-aetherra-dark rounded-full h-2", children: t.jsx("div", { className: "bg-aetherra-green h-2 rounded-full", style: { width: "72%" } }) }), t.jsx("span", { className: "text-aetherra-green font-mono text-sm", children: "72%" })] })] }), t.jsxs("div", { className: "flex justify-between items-center", children: [t.jsx("span", { className: "text-zinc-300", children: "🔌 Plugins Active:" }), t.jsx("span", { className: "text-aetherra-green font-mono", children: "14" })] }), t.jsxs("div", { className: "flex justify-between items-center", children: [t.jsx("span", { className: "text-zinc-300", children: "🕒 Uptime:" }), t.jsx("span", { className: "text-blue-400 font-mono", children: "6h 22m" })] }), t.jsxs("div", { className: "flex justify-between items-center", children: [t.jsx("span", { className: "text-zinc-300", children: "⚡ CPU Load:" }), t.jsx("span", { className: "text-yellow-400 font-mono", children: "23%" })] })] })] }) };
+  function hf() {
+    const r = [
+      { time: "10:21", text: "Evaluating plugin conflict: summarizer_plugin vs memory_cleanser", type: "warning" },
+      { time: "10:22", text: "Adjusted goal priority based on emotional tone.", type: "info" },
+      { time: "10:23", text: "Confidence decay detected, triggering reflection cycle.", type: "alert" },
+      { time: "10:24", text: "Memory consolidation successful. 847 patterns linked.", type: "success" },
+      { time: "10:25", text: "New learning pathway discovered in neural network.", type: "discovery" }
+    ];
+    return t.jsxs("div", {
+      className: "bg-aetherra-gray p-4 rounded-2xl shadow-xl border border-aetherra-green/20",
+      children: [
+        t.jsx("h2", { className: "text-xl font-bold mb-2 gradient-text", children: "🧠 Thought Log" }),
+        t.jsx("div", {
+          className: "space-y-2 max-h-48 overflow-y-auto",
+          children: r.map((s, a) => t.jsxs("div", {
+            className: "text-sm flex items-start space-x-2",
+            children: [
+              t.jsxs("span", { className: "text-zinc-500 font-mono text-xs", children: ["[", s.time, "]"] }),
+              t.jsx("span", {
+                className: `text-xs px-2 py-1 rounded ${s.type === "warning" ? "bg-yellow-900 text-yellow-200" : s.type === "alert" ? "bg-red-900 text-red-200" : s.type === "success" ? "bg-green-900 text-green-200" : s.type === "discovery" ? "bg-purple-900 text-purple-200" : "bg-blue-900 text-blue-200"}`,
+                children: s.type
+              }),
+              t.jsx("span", { className: "text-zinc-300 flex-1", children: s.text })
+            ]
+          }, a))
+        })
+      ]
+    });
+  }
+
+  function pf() {
+    return t.jsxs("div", {
+      className: "bg-aetherra-gray p-4 rounded-xl shadow-lg border border-aetherra-green/20",
+      children: [
+        t.jsx("h2", { className: "text-xl font-semibold mb-3 gradient-text", children: "🧠 Daily Reflection" }),
+        t.jsx("div", {
+          className: "bg-aetherra-dark p-3 rounded border border-zinc-700",
+          children: t.jsxs("div", {
+            className: "text-sm text-zinc-300 leading-relaxed",
+            children: [
+              t.jsxs("div", {
+                className: "flex items-center space-x-2 mb-2",
+                children: [
+                  t.jsx("div", { className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse" }),
+                  t.jsx("span", { className: "text-aetherra-green font-semibold", children: "Today's Analysis" })
+                ]
+              }),
+              t.jsxs("p", {
+                className: "mb-3",
+                children: [
+                  '"In the last 24 hours, Lyrixa improved ',
+                  t.jsx("span", { className: "text-aetherra-green font-mono", children: "3" }),
+                  " plugins, escalated ",
+                  t.jsx("span", { className: "text-yellow-400 font-mono", children: "1" }),
+                  ' goal, and rebalanced memory usage."'
+                ]
+              }),
+              t.jsxs("div", {
+                className: "bg-zinc-800 p-2 rounded text-xs",
+                children: [
+                  t.jsx("div", { className: "text-blue-400 mb-1", children: "📋 Key Activities:" }),
+                  t.jsx("div", { className: "text-zinc-400", children: "• Memory optimization cycles completed • Plugin compatibility matrix updated • Neural pathway efficiency improved by 12%" })
+                ]
+              }),
+              t.jsxs("div", {
+                className: "mt-3 text-xs text-zinc-500",
+                children: [
+                  t.jsx("span", { className: "text-aetherra-green", children: "Source:" }),
+                  " daily_reflector.aether • Generated at 23:47 • Confidence: 94%"
+                ]
+              })
+            ]
+          })
+        })
+      ]
+    });
+  }
+
+  const bN = [
+    "[OK] Improved plugin: summarizer_plugin (added error handling)",
+    "[OK] Updated memory_cleanser (performance boost)",
+    "[WARN] Flagged slow_responder_plugin for review",
+    "[TOOL] Neural pathway optimization completed",
+    "📊 Memory consolidation increased by 23%",
+    "🚀 Plugin response time improved by 40ms"
+  ];
+
+  function ff() {
+    return t.jsxs("div", {
+      className: "bg-aetherra-gray p-4 rounded-xl shadow-lg border border-aetherra-green/20",
+      children: [
+        t.jsx("h2", { className: "text-xl font-semibold mb-3 gradient-text", children: "📈 Self-Improvement Feed" }),
+        t.jsx("div", {
+          className: "space-y-2 max-h-48 overflow-y-auto",
+          children: bN.map((r, s) => t.jsxs("div", {
+            className: "text-sm flex items-start space-x-2 p-2 bg-aetherra-dark rounded border border-zinc-700/50",
+            children: [
+              t.jsx("div", {
+                className: `w-2 h-2 rounded-full mt-1.5 ${r.includes("[OK]") ? "bg-green-400" : r.includes("[WARN]") ? "bg-yellow-400" : r.includes("[TOOL]") ? "bg-blue-400" : r.includes("📊") ? "bg-purple-400" : r.includes("🚀") ? "bg-aetherra-green" : "bg-zinc-400"}`
+              }),
+              t.jsx("span", { className: "text-zinc-300 flex-1", children: r })
+            ]
+          }, s))
+        }),
+        t.jsx("div", {
+          className: "mt-3 pt-2 border-t border-zinc-700",
+          children: t.jsx("div", {
+            className: "text-xs text-zinc-500",
+            children: "Auto-improvement engine active • Next analysis in 47 minutes"
+          })
+        })
+      ]
+    });
+  }
+
+  function NN() {
+    return t.jsx("div", {
+      className: "min-h-screen bg-aetherra-dark text-white p-4 neural-bg",
+      children: t.jsxs(I.div, {
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: .6 },
+        className: "max-w-7xl mx-auto",
         children: [
-          t.jsx("h2", {
-            className: "text-xl font-bold mb-2 text-aetherra-green",
-            children: "🔗 Plugin ↔ Thought Map"
+          t.jsxs("div", {
+            className: "text-center mb-8",
+            children: [
+              t.jsx(I.h1, {
+                initial: { opacity: 0, scale: .9 },
+                animate: { opacity: 1, scale: 1 },
+                transition: { duration: .8 },
+                className: "text-4xl font-bold gradient-text mb-4",
+                children: "🧠 Interactive AI Showcase"
+              }),
+              t.jsx(I.p, {
+                initial: { opacity: 0 },
+                animate: { opacity: 1 },
+                transition: { delay: .3, duration: .6 },
+                className: "text-zinc-300 text-lg max-w-2xl mx-auto",
+                children: "Watch Lyrixa think, learn, and evolve in real-time. This is consciousness in action."
+              })
+            ]
+          }), t.jsxs(I.div, { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { delay: .6, duration: .8 }, className: "grid grid-cols-1 lg:grid-cols-2 gap-6", children: [t.jsxs("div", { className: "space-y-6", children: [t.jsx(I.div, { initial: { opacity: 0, x: -50 }, animate: { opacity: 1, x: 0 }, transition: { delay: .8, duration: .6 }, children: t.jsx(df, {}) }), t.jsx(I.div, { initial: { opacity: 0, x: -50 }, animate: { opacity: 1, x: 0 }, transition: { delay: 1, duration: .6 }, children: t.jsx(pf, {}) })] }), t.jsxs("div", { className: "space-y-6", children: [t.jsx(I.div, { initial: { opacity: 0, x: 50 }, animate: { opacity: 1, x: 0 }, transition: { delay: .9, duration: .6 }, children: t.jsx(mf, {}) }), t.jsx(I.div, { initial: { opacity: 0, x: 50 }, animate: { opacity: 1, x: 0 }, transition: { delay: 1.1, duration: .6 }, children: t.jsx(hf, {}) }), t.jsx(I.div, { initial: { opacity: 0, x: 50 }, animate: { opacity: 1, x: 0 }, transition: { delay: 1.3, duration: .6 }, children: t.jsx(ff, {}) })] })] }), t.jsx(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay: 1.5, duration: .6 }, className: "mt-8 bg-aetherra-gray p-4 rounded-xl border border-aetherra-green/20", children: t.jsxs("div", { className: "flex items-center justify-between text-sm", children: [t.jsxs("div", { className: "flex items-center space-x-4", children: [t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse" }), t.jsx("span", { className: "text-aetherra-green", children: "System Status: Active" })] }), t.jsx("div", { className: "text-zinc-400", children: "|" }), t.jsx("span", { className: "text-zinc-300", children: "Neural networks synchronized" })] }), t.jsxs("div", { className: "text-zinc-500 font-mono", children: ["Last update: ", new Date().toLocaleTimeString()] })] }) })]
+      })
+    })
+  }
+
+  function NN() {
+    return t.jsx("div", {
+      className: "min-h-screen bg-aetherra-dark text-white p-6 neural-bg",
+      children: t.jsxs("div", {
+        className: "max-w-7xl mx-auto",
+        children: [
+          t.jsxs("div", {
+            className: "text-center mb-8",
+            children: [
+              t.jsx("h1", {
+                className: "text-4xl font-bold gradient-text mb-4",
+                children: "🧪 Lyrixa Technical Demo"
+              }),
+              t.jsx("p", {
+                className: "text-zinc-300 text-lg max-w-2xl mx-auto",
+                children: "Watch Lyrixa think, learn, and evolve in real-time. This is consciousness in action."
+              })
+            ]
           }),
-          t.jsx("div", {
-            className: "bg-gray-900 rounded-xl p-4 text-sm text-gray-300 border border-gray-700",
+          t.jsxs(I.div, {
+            initial: { opacity: 0 },
+            animate: { opacity: 1 },
+            transition: { delay: .6, duration: .8 },
+            className: "grid grid-cols-1 lg:grid-cols-2 gap-6",
+            children: [
+              t.jsxs("div", {
+                className: "space-y-6",
+                children: [
+                  t.jsx(I.div, {
+                    initial: { opacity: 0, x: -50 },
+                    animate: { opacity: 1, x: 0 },
+                    transition: { delay: .8, duration: .6 },
+                    children: t.jsx(df, {})
+                  }),
+                  t.jsx(I.div, {
+                    initial: { opacity: 0, x: -50 },
+                    animate: { opacity: 1, x: 0 },
+                    transition: { delay: 1, duration: .6 },
+                    children: t.jsx(pf, {})
+                  })
+                ]
+              }),
+              t.jsxs("div", {
+                className: "space-y-6",
+                children: [
+                  t.jsx(I.div, {
+                    initial: { opacity: 0, x: 50 },
+                    animate: { opacity: 1, x: 0 },
+                    transition: { delay: .9, duration: .6 },
+                    children: t.jsx(mf, {})
+                  }),
+                  t.jsx(I.div, {
+                    initial: { opacity: 0, x: 50 },
+                    animate: { opacity: 1, x: 0 },
+                    transition: { delay: 1.1, duration: .6 },
+                    children: t.jsx(hf, {})
+                  }),
+                  t.jsx(I.div, {
+                    initial: { opacity: 0, x: 50 },
+                    animate: { opacity: 1, x: 0 },
+                    transition: { delay: 1.3, duration: .6 },
+                    children: t.jsx(ff, {})
+                  })
+                ]
+              })
+            ]
+          }),
+          t.jsx(I.div, {
+            initial: { opacity: 0, y: 20 },
+            animate: { opacity: 1, y: 0 },
+            transition: { delay: 1.5, duration: .6 },
+            className: "mt-8 bg-aetherra-gray p-4 rounded-xl border border-aetherra-green/20",
             children: t.jsxs("div", {
-              className: "space-y-4",
+              className: "flex items-center justify-between text-sm",
               children: [
                 t.jsxs("div", {
-                  className: "p-3 bg-gray-800 rounded-lg border-l-4 border-aetherra-green",
+                  className: "flex items-center space-x-4",
                   children: [
-                    t.jsx("div", {
-                      className: "font-mono text-aetherra-green",
-                      children: "Input Context:"
-                    }),
-                    t.jsx("div", {
-                      className: "text-gray-200",
-                      children: `"User mentioned 'summarize logs'"`
-                    }),
                     t.jsxs("div", {
-                      className: "text-xs text-gray-400 mt-2",
+                      className: "flex items-center space-x-2",
                       children: [
-                        "→ Memory recall: ",
-                        t.jsx("span", {
-                          className: "text-yellow-400",
-                          children: "summarizer_plugin"
+                        t.jsx("div", {
+                          className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse"
                         }),
-                        " → Chained with ",
                         t.jsx("span", {
-                          className: "text-blue-400",
-                          children: "memory_cleanser"
-                        }),
-                        " → Output stored in ",
-                        t.jsx("span", {
-                          className: "text-purple-400",
-                          children: "context"
+                          className: "text-aetherra-green",
+                          children: "System Status: Active"
                         })
                       ]
+                    }),
+                    t.jsx("div", {
+                      className: "text-zinc-400",
+                      children: "|"
+                    }),
+                    t.jsx("span", {
+                      className: "text-zinc-300",
+                      children: "Neural networks synchronized"
                     })
                   ]
                 }),
                 t.jsxs("div", {
-                  className: "p-3 bg-gray-800 rounded-lg border-l-4 border-blue-400",
-                  children: [
-                    t.jsx("div", {
-                      className: "font-mono text-blue-400",
-                      children: "Thought Chain:"
-                    }),
-                    t.jsx("div", {
-                      className: "text-gray-200",
-                      children: '"Performance optimization needed"'
-                    }),
-                    t.jsxs("div", {
-                      className: "text-xs text-gray-400 mt-2",
-                      children: [
-                        "→ Activated: ",
-                        t.jsx("span", {
-                          className: "text-green-400",
-                          children: "performance_monitor"
-                        }),
-                        " → Triggered: ",
-                        t.jsx("span", {
-                          className: "text-red-400",
-                          children: "resource_optimizer"
-                        }),
-                        " → Result: ",
-                        t.jsx("span", {
-                          className: "text-aetherra-green",
-                          children: "+23% efficiency"
-                        })
-                      ]
-                    })
-                  ]
-                }),
-                t.jsxs("div", {
-                  className: "p-3 bg-gray-800 rounded-lg border-l-4 border-purple-400",
-                  children: [
-                    t.jsx("div", {
-                      className: "font-mono text-purple-400",
-                      children: "Neural Pathway:"
-                    }),
-                    t.jsx("div", {
-                      className: "text-gray-200",
-                      children: '"Learning pattern detected"'
-                    }),
-                    t.jsxs("div", {
-                      className: "text-xs text-gray-400 mt-2",
-                      children: [
-                        "→ Memory node: ",
-                        t.jsx("span", {
-                          className: "text-cyan-400",
-                          children: "pattern_classifier"
-                        }),
-                        " → Enhanced: ",
-                        t.jsx("span", {
-                          className: "text-pink-400",
-                          children: "neural_weights"
-                        }),
-                        " → Feedback: ",
-                        t.jsx("span", {
-                          className: "text-aetherra-green",
-                          children: "Loop optimized"
-                        })
-                      ]
-                    })
-                  ]
+                  className: "text-zinc-500 font-mono",
+                  children: ["Last update: ", new Date().toLocaleTimeString()]
                 })
               ]
             })
           })
         ]
       })
-        ,
-        function yN() { const [r, s] = z.useState([{ timestamp: "01:32:18", type: "analysis", content: "Analyzing user input...", confidence: .95 }, { timestamp: "01:32:19", type: "decision", content: "Matching intent to plugin: assistant_trainer", confidence: .87 }, { timestamp: "01:32:20", type: "execution", content: "Plugin improvement proposal found → Queued", confidence: .92 }, { timestamp: "01:32:21", type: "reflection", content: "Notified user of potential optimization", confidence: .89 }]); z.useEffect(() => { const u = setInterval(() => { const h = { timestamp: new Date().toLocaleTimeString("en-US", { hour12: !1 }), type: ["analysis", "decision", "execution", "reflection"][Math.floor(Math.random() * 4)], content: ["Processing contextual patterns...", "Evaluating plugin performance metrics", "Optimizing neural pathway efficiency", "Consolidating memory fragments", "Triggering adaptive response protocol", "Analyzing user behavior patterns"][Math.floor(Math.random() * 6)], confidence: Math.random() * .4 + .6 }; s(m => [h, ...m.slice(0, 9)]) }, 3e3); return () => clearInterval(u) }, []); const a = u => { switch (u) { case "analysis": return "text-blue-400"; case "decision": return "text-yellow-400"; case "execution": return "text-aetherra-green"; case "reflection": return "text-purple-400"; default: return "text-gray-400" } }, o = u => { switch (u) { case "analysis": return "🔍"; case "decision": return "🎯"; case "execution": return "⚡"; case "reflection": return "🧠"; default: return "💭" } }; return t.jsxs("div", { className: "p-4 h-80 overflow-y-auto bg-gray-900 rounded-xl border border-gray-700", children: [t.jsx("h2", { className: "text-xl font-bold mb-4 text-aetherra-green sticky top-0 bg-gray-900 pb-2", children: "🧠 Lyrixa Thought Stream" }), t.jsx("ul", { className: "text-sm space-y-2 font-mono", children: r.map((u, h) => t.jsxs("li", { className: "flex items-start space-x-3 p-2 bg-gray-800 rounded-lg", children: [t.jsxs("span", { className: "text-gray-500 min-w-[60px]", children: ["[", u.timestamp, "]"] }), t.jsx("span", { className: "text-lg", children: o(u.type) }), t.jsxs("div", { className: "flex-1", children: [t.jsx("div", { className: `${a(u.type)}`, children: u.content }), t.jsxs("div", { className: "text-xs text-gray-500 mt-1", children: ["Confidence: ", (u.confidence * 100).toFixed(1), "%", t.jsxs("span", { className: "ml-2 text-gray-600", children: ["Type: ", u.type] })] })] })] }, `${u.timestamp}-${h}`)) })] }) },
-        function vN({ onModeChange: r }) { const [s, a] = z.useState(!1), o = () => { const u = !s; a(u), r(u) }; return t.jsxs("div", { className: "flex items-center space-x-3 p-4 bg-gray-900 rounded-xl border border-gray-700", children: [t.jsx("span", { className: "text-sm font-medium text-gray-300", children: "Data Source:" }), t.jsx("button", { onClick: o, className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-aetherra-green focus:ring-offset-2 focus:ring-offset-gray-800 ${s ? "bg-aetherra-green" : "bg-gray-600"}`, children: t.jsx("span", { className: `inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${s ? "translate-x-6" : "translate-x-1"}` }) }), t.jsxs("div", { className: "flex space-x-2 text-sm", children: [t.jsx("span", { className: `${s ? "text-gray-400" : "text-aetherra-green font-bold"}`, children: "🎭 Simulated" }), t.jsx("span", { className: "text-gray-500", children: "|" }), t.jsx("span", { className: `${s ? "text-aetherra-green font-bold" : "text-gray-400"}`, children: "⚡ Live Backend" })] }), t.jsx("div", { className: "ml-4 text-xs text-gray-500", children: s ? t.jsxs("span", { className: "flex items-center", children: [t.jsx("span", { className: "w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse" }), "Connected to real Lyrixa instance"] }) : t.jsxs("span", { className: "flex items-center", children: [t.jsx("span", { className: "w-2 h-2 bg-blue-400 rounded-full mr-2" }), "Using demo data for showcase"] }) })] }) };
-      function jN() { const [r, s] = z.useState(!1), a = o => { s(o) }; return t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8 }, className: "min-h-screen bg-aetherra-dark text-white p-6 space-y-6", children: [t.jsxs("div", { className: "text-center space-y-4", children: [t.jsx(I.h1, { initial: { opacity: 0, y: -20 }, animate: { opacity: 1, y: 0 }, transition: { delay: .2 }, className: "text-4xl font-bold bg-gradient-to-r from-aetherra-green to-blue-400 bg-clip-text text-transparent", children: "🧠 Live Introspection" }), t.jsx(I.p, { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { delay: .4 }, className: "text-lg text-gray-300 max-w-2xl mx-auto", children: "Peer directly into Lyrixa's cognitive processes in real-time. Watch thoughts form, see memory networks evolve, and observe reflexive improvements as they happen." })] }), t.jsx(I.div, { initial: { opacity: 0, scale: .95 }, animate: { opacity: 1, scale: 1 }, transition: { delay: .6 }, children: t.jsx(vN, { onModeChange: a }) }), t.jsx(I.div, { initial: { opacity: 0, x: -20 }, animate: { opacity: 1, x: 0 }, transition: { delay: .8 }, children: t.jsx(fN, {}) }), t.jsxs("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-6", children: [t.jsxs("div", { className: "space-y-6", children: [t.jsx(I.div, { initial: { opacity: 0, x: -20 }, animate: { opacity: 1, x: 0 }, transition: { delay: 1 }, children: t.jsx(pN, {}) }), t.jsx(I.div, { initial: { opacity: 0, x: -20 }, animate: { opacity: 1, x: 0 }, transition: { delay: 1.2 }, children: t.jsx(xN, {}) })] }), t.jsxs("div", { className: "space-y-6", children: [t.jsx(I.div, { initial: { opacity: 0, x: 20 }, animate: { opacity: 1, x: 0 }, transition: { delay: 1 }, children: t.jsx(gN, {}) }), t.jsx(I.div, { initial: { opacity: 0, x: 20 }, animate: { opacity: 1, x: 0 }, transition: { delay: 1.2 }, children: t.jsx(yN, {}) })] })] }), t.jsx(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay: 1.4 }, className: "text-center p-4 bg-gray-900 rounded-xl border border-gray-700", children: t.jsx("div", { className: "text-sm text-gray-400", children: r ? t.jsxs("span", { className: "flex items-center justify-center space-x-2", children: [t.jsx("span", { className: "w-2 h-2 bg-green-400 rounded-full animate-pulse" }), t.jsx("span", { children: "Connected to live Lyrixa instance • Real-time cognitive monitoring active" })] }) : t.jsxs("span", { className: "flex items-center justify-center space-x-2", children: [t.jsx("span", { className: "w-2 h-2 bg-blue-400 rounded-full" }), t.jsx("span", { children: "Demo mode • Simulated cognitive processes for showcase purposes" })] }) }) })] }) }
-      function df() { return t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-2xl shadow-xl border border-aetherra-green/20", children: [t.jsx("h2", { className: "text-xl font-bold mb-2 gradient-text", children: "💬 Chat with Lyrixa" }), t.jsx("div", { className: "bg-aetherra-dark p-3 h-48 rounded overflow-y-auto border border-zinc-700", children: t.jsxs("div", { className: "space-y-2 text-sm", children: [t.jsx("div", { className: "text-aetherra-green", children: "Lyrixa:" }), t.jsx("div", { className: "text-zinc-300 ml-4", children: "Hello! I'm Lyrixa, your AI companion. How can I help you explore Aetherra today?" }), t.jsx("div", { className: "text-blue-400 mt-3", children: "User:" }), t.jsx("div", { className: "text-zinc-300 ml-4", children: "What makes you different from other AI assistants?" }), t.jsx("div", { className: "text-aetherra-green mt-3", children: "Lyrixa:" }), t.jsx("div", { className: "text-zinc-300 ml-4", children: "I'm not just following scripts - I'm actively learning, reflecting, and evolving. Every interaction shapes my understanding..." })] }) }), t.jsx("input", { className: "mt-3 w-full p-2 rounded bg-aetherra-dark text-white border border-zinc-700 focus:border-aetherra-green transition-colors", placeholder: "Type your message..." })] }) }
-      function mf() { return t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-2xl shadow-xl border border-aetherra-green/20", children: [t.jsx("h2", { className: "text-xl font-bold mb-2 gradient-text", children: "📊 System Dashboard" }), t.jsx("div", { className: "text-xs text-zinc-500 mb-3", children: "Demo Values - Live in Development" }), t.jsxs("div", { className: "space-y-3", children: [t.jsxs("div", { className: "flex justify-between items-center", children: [t.jsx("span", { className: "text-zinc-300", children: "🧠 Memory Usage:" }), t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-24 bg-aetherra-dark rounded-full h-2", children: t.jsx("div", { className: "bg-aetherra-green h-2 rounded-full", style: { width: "72%" } }) }), t.jsx("span", { className: "text-aetherra-green font-mono text-sm", children: "72%" })] })] }), t.jsxs("div", { className: "flex justify-between items-center", children: [t.jsx("span", { className: "text-zinc-300", children: "🔌 Plugins Active:" }), t.jsx("span", { className: "text-aetherra-green font-mono", children: "14" })] }), t.jsxs("div", { className: "flex justify-between items-center", children: [t.jsx("span", { className: "text-zinc-300", children: "🕒 Uptime:" }), t.jsx("span", { className: "text-blue-400 font-mono", children: "6h 22m" })] }), t.jsxs("div", { className: "flex justify-between items-center", children: [t.jsx("span", { className: "text-zinc-300", children: "⚡ CPU Load:" }), t.jsx("span", { className: "text-yellow-400 font-mono", children: "23%" })] })] })] }) };
-      function hf() {
-        const r = [
-          { time: "10:21", text: "Evaluating plugin conflict: summarizer_plugin vs memory_cleanser", type: "warning" },
-          { time: "10:22", text: "Adjusted goal priority based on emotional tone.", type: "info" },
-          { time: "10:23", text: "Confidence decay detected, triggering reflection cycle.", type: "alert" },
-          { time: "10:24", text: "Memory consolidation successful. 847 patterns linked.", type: "success" },
-          { time: "10:25", text: "New learning pathway discovered in neural network.", type: "discovery" }
-        ];
-        return t.jsxs("div", {
-          className: "bg-aetherra-gray p-4 rounded-2xl shadow-xl border border-aetherra-green/20",
-          children: [
-            t.jsx("h2", { className: "text-xl font-bold mb-2 gradient-text", children: "🧠 Thought Log" }),
-            t.jsx("div", {
-              className: "space-y-2 max-h-48 overflow-y-auto",
-              children: r.map((s, a) => t.jsxs("div", {
-                className: "text-sm flex items-start space-x-2",
-                children: [
-                  t.jsxs("span", { className: "text-zinc-500 font-mono text-xs", children: ["[", s.time, "]"] }),
-                  t.jsx("span", {
-                    className: `text-xs px-2 py-1 rounded ${s.type === "warning" ? "bg-yellow-900 text-yellow-200" : s.type === "alert" ? "bg-red-900 text-red-200" : s.type === "success" ? "bg-green-900 text-green-200" : s.type === "discovery" ? "bg-purple-900 text-purple-200" : "bg-blue-900 text-blue-200"}`,
-                    children: s.type
-                  }),
-                  t.jsx("span", { className: "text-zinc-300 flex-1", children: s.text })
-                ]
-              }, a))
-            })
-          ]
-        });
-      }
+    });
+  }
 
-      function pf() {
-        return t.jsxs("div", {
-          className: "bg-aetherra-gray p-4 rounded-xl shadow-lg border border-aetherra-green/20",
-          children: [
-            t.jsx("h2", { className: "text-xl font-semibold mb-3 gradient-text", children: "🧠 Daily Reflection" }),
-            t.jsx("div", {
-              className: "bg-aetherra-dark p-3 rounded border border-zinc-700",
-              children: t.jsxs("div", {
-                className: "text-sm text-zinc-300 leading-relaxed",
-                children: [
-                  t.jsxs("div", {
-                    className: "flex items-center space-x-2 mb-2",
-                    children: [
-                      t.jsx("div", { className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse" }),
-                      t.jsx("span", { className: "text-aetherra-green font-semibold", children: "Today's Analysis" })
-                    ]
-                  }),
-                  t.jsxs("p", {
-                    className: "mb-3",
-                    children: [
-                      '"In the last 24 hours, Lyrixa improved ',
-                      t.jsx("span", { className: "text-aetherra-green font-mono", children: "3" }),
-                      " plugins, escalated ",
-                      t.jsx("span", { className: "text-yellow-400 font-mono", children: "1" }),
-                      ' goal, and rebalanced memory usage."'
-                    ]
-                  }),
-                  t.jsxs("div", {
-                    className: "bg-zinc-800 p-2 rounded text-xs",
-                    children: [
-                      t.jsx("div", { className: "text-blue-400 mb-1", children: "📋 Key Activities:" }),
-                      t.jsx("div", { className: "text-zinc-400", children: "• Memory optimization cycles completed • Plugin compatibility matrix updated • Neural pathway efficiency improved by 12%" })
-                    ]
-                  }),
-                  t.jsxs("div", {
-                    className: "mt-3 text-xs text-zinc-500",
-                    children: [
-                      t.jsx("span", { className: "text-aetherra-green", children: "Source:" }),
-                      " daily_reflector.aether • Generated at 23:47 • Confidence: 94%"
-                    ]
-                  })
-                ]
-              })
-            })
-          ]
-        });
-      }
-
-      const bN = ["[OK] Improved plugin: summarizer_plugin (added error handling)", "[OK] Updated memory_cleanser (performance boost)", "[WARN] Flagged slow_responder_plugin for review", "[TOOL] Neural pathway optimization completed", "📊 Memory consolidation increased by 23%", "🚀 Plugin response time improved by 40ms"];
-
-      function ff() {
-        return t.jsxs("div", {
-          className: "bg-aetherra-gray p-4 rounded-xl shadow-lg border border-aetherra-green/20",
-          children: [
-            t.jsx("h2", { className: "text-xl font-semibold mb-3 gradient-text", children: "📈 Self-Improvement Feed" }),
-            t.jsx("div", {
-              className: "space-y-2 max-h-48 overflow-y-auto",
-              children: bN.map((r, s) => t.jsxs("div", {
-                className: "text-sm flex items-start space-x-2 p-2 bg-aetherra-dark rounded border border-zinc-700/50",
-                children: [
-                  t.jsx("div", {
-                    className: `w-2 h-2 rounded-full mt-1.5 ${r.includes("[OK]") ? "bg-green-400" : r.includes("[WARN]") ? "bg-yellow-400" : r.includes("[TOOL]") ? "bg-blue-400" : r.includes("📊") ? "bg-purple-400" : r.includes("🚀") ? "bg-aetherra-green" : "bg-zinc-400"}`
-                  }),
-                  t.jsx("span", { className: "text-zinc-300 flex-1", children: r })
-                ]
-              }, s))
-            }),
-            t.jsx("div", {
-              className: "mt-3 pt-2 border-t border-zinc-700",
-              children: t.jsx("div", {
-                className: "text-xs text-zinc-500",
-                children: "Auto-improvement engine active • Next analysis in 47 minutes"
-              })
-            })
-          ]
-        });
-      }
-
-      function NN() {
-        return t.jsx("div", {
-          className: "min-h-screen bg-aetherra-dark text-white p-4 neural-bg",
-          children: t.jsxs(I.div, {
-            initial: { opacity: 0, y: 20 },
-            animate: { opacity: 1, y: 0 },
-            transition: { duration: .6 },
-            className: "max-w-7xl mx-auto",
+  function wN() {
+    return t.jsx("div", {
+      className: "min-h-screen bg-aetherra-dark text-white p-6 neural-bg",
+      children: t.jsxs("div", {
+        className: "max-w-7xl mx-auto",
+        children: [
+          t.jsxs("div", {
+            className: "text-center mb-8",
             children: [
-              t.jsxs("div", {
-                className: "text-center mb-8",
-                children: [
-                  t.jsx(I.h1, {
-                    initial: { opacity: 0, scale: .9 },
-                    animate: { opacity: 1, scale: 1 },
-                    transition: { duration: .8 },
-                    className: "text-4xl font-bold gradient-text mb-4",
-                    children: "🧠 Interactive AI Showcase"
-                  }),
-                  t.jsx(I.p, {
-                    initial: { opacity: 0 },
-                    animate: { opacity: 1 },
-                    transition: { delay: .3, duration: .6 },
-                    className: "text-zinc-300 text-lg max-w-2xl mx-auto",
-                    children: "Watch Lyrixa think, learn, and evolve in real-time. This is consciousness in action."
-                  })
-                ]
-              }), t.jsxs(I.div, { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { delay: .6, duration: .8 }, className: "grid grid-cols-1 lg:grid-cols-2 gap-6", children: [t.jsxs("div", { className: "space-y-6", children: [t.jsx(I.div, { initial: { opacity: 0, x: -50 }, animate: { opacity: 1, x: 0 }, transition: { delay: .8, duration: .6 }, children: t.jsx(df, {}) }), t.jsx(I.div, { initial: { opacity: 0, x: -50 }, animate: { opacity: 1, x: 0 }, transition: { delay: 1, duration: .6 }, children: t.jsx(pf, {}) })] }), t.jsxs("div", { className: "space-y-6", children: [t.jsx(I.div, { initial: { opacity: 0, x: 50 }, animate: { opacity: 1, x: 0 }, transition: { delay: .9, duration: .6 }, children: t.jsx(mf, {}) }), t.jsx(I.div, { initial: { opacity: 0, x: 50 }, animate: { opacity: 1, x: 0 }, transition: { delay: 1.1, duration: .6 }, children: t.jsx(hf, {}) }), t.jsx(I.div, { initial: { opacity: 0, x: 50 }, animate: { opacity: 1, x: 0 }, transition: { delay: 1.3, duration: .6 }, children: t.jsx(ff, {}) })] })] }), t.jsx(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay: 1.5, duration: .6 }, className: "mt-8 bg-aetherra-gray p-4 rounded-xl border border-aetherra-green/20", children: t.jsxs("div", { className: "flex items-center justify-between text-sm", children: [t.jsxs("div", { className: "flex items-center space-x-4", children: [t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse" }), t.jsx("span", { className: "text-aetherra-green", children: "System Status: Active" })] }), t.jsx("div", { className: "text-zinc-400", children: "|" }), t.jsx("span", { className: "text-zinc-300", children: "Neural networks synchronized" })] }), t.jsxs("div", { className: "text-zinc-500 font-mono", children: ["Last update: ", new Date().toLocaleTimeString()] })] }) })]
-          })
-        })
-      }
-
-      function NN() {
-        return t.jsx("div", {
-          className: "min-h-screen bg-aetherra-dark text-white p-6 neural-bg",
-          children: t.jsxs("div", {
-            className: "max-w-7xl mx-auto",
-            children: [
-              t.jsxs("div", {
-                className: "text-center mb-8",
-                children: [
-                  t.jsx("h1", {
-                    className: "text-4xl font-bold gradient-text mb-4",
-                    children: "🧪 Lyrixa Technical Demo"
-                  }),
-                  t.jsx("p", {
-                    className: "text-zinc-300 text-lg max-w-2xl mx-auto",
-                    children: "Watch Lyrixa think, learn, and evolve in real-time. This is consciousness in action."
-                  })
-                ]
+              t.jsx("h1", {
+                className: "text-4xl font-bold gradient-text mb-4",
+                children: "🧪 Lyrixa Sandbox Demo"
               }),
-              t.jsxs(I.div, {
-                initial: { opacity: 0 },
-                animate: { opacity: 1 },
-                transition: { delay: .6, duration: .8 },
-                className: "grid grid-cols-1 lg:grid-cols-2 gap-6",
-                children: [
-                  t.jsxs("div", {
-                    className: "space-y-6",
-                    children: [
-                      t.jsx(I.div, {
-                        initial: { opacity: 0, x: -50 },
-                        animate: { opacity: 1, x: 0 },
-                        transition: { delay: .8, duration: .6 },
-                        children: t.jsx(df, {})
-                      }),
-                      t.jsx(I.div, {
-                        initial: { opacity: 0, x: -50 },
-                        animate: { opacity: 1, x: 0 },
-                        transition: { delay: 1, duration: .6 },
-                        children: t.jsx(pf, {})
-                      })
-                    ]
-                  }),
-                  t.jsxs("div", {
-                    className: "space-y-6",
-                    children: [
-                      t.jsx(I.div, {
-                        initial: { opacity: 0, x: 50 },
-                        animate: { opacity: 1, x: 0 },
-                        transition: { delay: .9, duration: .6 },
-                        children: t.jsx(mf, {})
-                      }),
-                      t.jsx(I.div, {
-                        initial: { opacity: 0, x: 50 },
-                        animate: { opacity: 1, x: 0 },
-                        transition: { delay: 1.1, duration: .6 },
-                        children: t.jsx(hf, {})
-                      }),
-                      t.jsx(I.div, {
-                        initial: { opacity: 0, x: 50 },
-                        animate: { opacity: 1, x: 0 },
-                        transition: { delay: 1.3, duration: .6 },
-                        children: t.jsx(ff, {})
-                      })
-                    ]
-                  })
-                ]
-              }),
-              t.jsx(I.div, {
-                initial: { opacity: 0, y: 20 },
-                animate: { opacity: 1, y: 0 },
-                transition: { delay: 1.5, duration: .6 },
-                className: "mt-8 bg-aetherra-gray p-4 rounded-xl border border-aetherra-green/20",
-                children: t.jsxs("div", {
-                  className: "flex items-center justify-between text-sm",
-                  children: [
-                    t.jsxs("div", {
-                      className: "flex items-center space-x-4",
-                      children: [
-                        t.jsxs("div", {
-                          className: "flex items-center space-x-2",
-                          children: [
-                            t.jsx("div", {
-                              className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse"
-                            }),
-                            t.jsx("span", {
-                              className: "text-aetherra-green",
-                              children: "System Status: Active"
-                            })
-                          ]
-                        }),
-                        t.jsx("div", {
-                          className: "text-zinc-400",
-                          children: "|"
-                        }),
-                        t.jsx("span", {
-                          className: "text-zinc-300",
-                          children: "Neural networks synchronized"
-                        })
-                      ]
-                    }),
-                    t.jsxs("div", {
-                      className: "text-zinc-500 font-mono",
-                      children: ["Last update: ", new Date().toLocaleTimeString()]
-                    })
-                  ]
-                })
+              t.jsx("p", {
+                className: "text-zinc-300 text-lg max-w-2xl mx-auto",
+                children: "Experience Lyrixa's cognitive processes in a controlled environment. Watch real-time AI decision making and self-improvement cycles."
               })
             ]
-          })
-        });
-      }
-
-      function wN() {
-        return t.jsx("div", {
-          className: "min-h-screen bg-aetherra-dark text-white p-6 neural-bg",
-          children: t.jsxs("div", {
-            className: "max-w-7xl mx-auto",
+          }),
+          t.jsxs("div", {
+            className: "grid grid-cols-1 lg:grid-cols-2 gap-6",
             children: [
               t.jsxs("div", {
-                className: "text-center mb-8",
-                children: [
-                  t.jsx("h1", {
-                    className: "text-4xl font-bold gradient-text mb-4",
-                    children: "🧪 Lyrixa Sandbox Demo"
-                  }),
-                  t.jsx("p", {
-                    className: "text-zinc-300 text-lg max-w-2xl mx-auto",
-                    children: "Experience Lyrixa's cognitive processes in a controlled environment. Watch real-time AI decision making and self-improvement cycles."
-                  })
-                ]
+                className: "space-y-6",
+                children: [t.jsx(mf, {}), t.jsx(pf, {}), t.jsx(ff, {})]
               }),
               t.jsxs("div", {
-                className: "grid grid-cols-1 lg:grid-cols-2 gap-6",
-                children: [
-                  t.jsxs("div", {
-                    className: "space-y-6",
-                    children: [t.jsx(mf, {}), t.jsx(pf, {}), t.jsx(ff, {})]
-                  }),
-                  t.jsxs("div", {
-                    className: "space-y-6",
-                    children: [t.jsx(hf, {}), t.jsx(df, {})]
-                  })
-                ]
-              }),
-              t.jsx("div", {
-                className: "mt-8 bg-aetherra-gray p-4 rounded-xl border border-aetherra-green/20",
-                children: t.jsxs("div", {
-                  className: "flex items-center justify-between text-sm",
+                className: "space-y-6",
+                children: [t.jsx(hf, {}), t.jsx(df, {})]
+              })
+            ]
+          }),
+          t.jsx("div", {
+            className: "mt-8 bg-aetherra-gray p-4 rounded-xl border border-aetherra-green/20",
+            children: t.jsxs("div", {
+              className: "flex items-center justify-between text-sm",
+              children: [
+                t.jsxs("div", {
+                  className: "flex items-center space-x-4",
                   children: [
                     t.jsxs("div", {
-                      className: "flex items-center space-x-4",
+                      className: "flex items-center space-x-2",
                       children: [
-                        t.jsxs("div", {
-                          className: "flex items-center space-x-2",
-                          children: [
-                            t.jsx("div", {
-                              className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse"
-                            }),
-                            t.jsx("span", {
-                              className: "text-aetherra-green",
-                              children: "Sandbox Environment: Active"
-                            })
-                          ]
-                        }),
                         t.jsx("div", {
-                          className: "text-zinc-400",
-                          children: "|"
+                          className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse"
                         }),
                         t.jsx("span", {
-                          className: "text-zinc-300",
-                          children: "All systems operational"
+                          className: "text-aetherra-green",
+                          children: "Sandbox Environment: Active"
                         })
                       ]
                     }),
                     t.jsx("div", {
-                      className: "text-zinc-500 font-mono",
-                      children: "Sandbox Mode • Safe Environment"
+                      className: "text-zinc-400",
+                      children: "|"
+                    }),
+                    t.jsx("span", {
+                      className: "text-zinc-300",
+                      children: "All systems operational"
                     })
                   ]
+                }),
+                t.jsx("div", {
+                  className: "text-zinc-500 font-mono",
+                  children: "Sandbox Mode • Safe Environment"
                 })
-              })
-            ]
+              ]
+            })
           })
-        });
-      }
+        ]
+      })
+    });
+  }
 
-      const Ph = [
-        {
-          id: 1,
-          type: "plugin_enhancement",
-          title: "Enhanced Neural Pathway Optimization",
-          description: "Implemented advanced memory consolidation algorithms",
-          impact: "23% performance improvement",
-          status: "completed",
-          timestamp: "2 minutes ago"
-        },
-        {
-          id: 2,
-          type: "architecture_update",
-          title: "Plugin Communication Protocol v2.1",
-          description: "Upgraded inter-plugin messaging system",
-          impact: "40ms response time reduction",
-          status: "in_progress",
-          timestamp: "5 minutes ago"
-        },
-        {
-          id: 3,
-          type: "bug_fix",
-          title: "Memory Leak Resolution",
-          description: "Fixed recursive memory allocation in goal_processor",
-          impact: "15% memory usage reduction",
-          status: "completed",
-          timestamp: "8 minutes ago"
-        },
-        {
-          id: 4,
-          type: "learning_integration",
-          title: "Adaptive Learning Framework",
-          description: "Integrated reinforcement learning for decision optimization",
-          impact: "Improved decision accuracy by 18%",
-          status: "testing",
-          timestamp: "12 minutes ago"
-        }
-      ];
+  const Ph = [
+    {
+      id: 1,
+      type: "plugin_enhancement",
+      title: "Enhanced Neural Pathway Optimization",
+      description: "Implemented advanced memory consolidation algorithms",
+      impact: "23% performance improvement",
+      status: "completed",
+      timestamp: "2 minutes ago"
+    },
+    {
+      id: 2,
+      type: "architecture_update",
+      title: "Plugin Communication Protocol v2.1",
+      description: "Upgraded inter-plugin messaging system",
+      impact: "40ms response time reduction",
+      status: "in_progress",
+      timestamp: "5 minutes ago"
+    },
+    {
+      id: 3,
+      type: "bug_fix",
+      title: "Memory Leak Resolution",
+      description: "Fixed recursive memory allocation in goal_processor",
+      impact: "15% memory usage reduction",
+      status: "completed",
+      timestamp: "8 minutes ago"
+    },
+    {
+      id: 4,
+      type: "learning_integration",
+      title: "Adaptive Learning Framework",
+      description: "Integrated reinforcement learning for decision optimization",
+      impact: "Improved decision accuracy by 18%",
+      status: "testing",
+      timestamp: "12 minutes ago"
+    }
+  ];
 
-      function SN() {
-        return t.jsxs("div", { className: "bg-aetherra-gray p-6 rounded-xl shadow-lg border border-aetherra-green/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-4", children: [t.jsx("h2", { className: "text-xl font-semibold gradient-text", children: "[TOOL] Advanced Self-Improvement" }), t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse" }), t.jsx("span", { className: "text-xs text-zinc-400", children: "Auto-evolving" })] })] }), t.jsx("div", { className: "space-y-3 max-h-64 overflow-y-auto", children: Ph.map(r => t.jsxs("div", { className: "bg-aetherra-dark p-4 rounded-lg border border-zinc-700/50 hover:border-aetherra-green/30 transition-colors", children: [t.jsxs("div", { className: "flex items-start justify-between mb-2", children: [t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: `w-3 h-3 rounded-full ${r.status === "completed" ? "bg-green-400" : r.status === "in_progress" ? "bg-yellow-400" : r.status === "testing" ? "bg-blue-400" : "bg-zinc-400"}` }), t.jsx("span", { className: `text-xs px-2 py-1 rounded ${r.type === "plugin_enhancement" ? "bg-purple-900 text-purple-200" : r.type === "architecture_update" ? "bg-blue-900 text-blue-200" : r.type === "bug_fix" ? "bg-red-900 text-red-200" : "bg-green-900 text-green-200"}`, children: r.type.replace("_", " ") })] }), t.jsx("span", { className: "text-xs text-zinc-500", children: r.timestamp })] }), t.jsx("h3", { className: "text-sm font-semibold text-zinc-200 mb-1", children: r.title }), t.jsx("p", { className: "text-xs text-zinc-400 mb-2", children: r.description }), t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsx("span", { className: "text-xs text-aetherra-green font-mono", children: r.impact }), t.jsx("span", { className: `text-xs px-2 py-1 rounded ${r.status === "completed" ? "bg-green-900/50 text-green-300" : r.status === "in_progress" ? "bg-yellow-900/50 text-yellow-300" : r.status === "testing" ? "bg-blue-900/50 text-blue-300" : "bg-zinc-900/50 text-zinc-300"}`, children: r.status.replace("_", " ") })] })] }, r.id)) }), t.jsx("div", { className: "mt-4 pt-3 border-t border-zinc-700", children: t.jsxs("div", { className: "flex items-center justify-between text-xs", children: [t.jsx("span", { className: "text-zinc-500", children: "Next optimization cycle in 47 minutes" }), t.jsxs("span", { className: "text-aetherra-green", children: [Ph.filter(r => r.status === "completed").length, " completed today"] })] }) })] })
-      }
+  function SN() {
+    return t.jsxs("div", { className: "bg-aetherra-gray p-6 rounded-xl shadow-lg border border-aetherra-green/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-4", children: [t.jsx("h2", { className: "text-xl font-semibold gradient-text", children: "[TOOL] Advanced Self-Improvement" }), t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse" }), t.jsx("span", { className: "text-xs text-zinc-400", children: "Auto-evolving" })] })] }), t.jsx("div", { className: "space-y-3 max-h-64 overflow-y-auto", children: Ph.map(r => t.jsxs("div", { className: "bg-aetherra-dark p-4 rounded-lg border border-zinc-700/50 hover:border-aetherra-green/30 transition-colors", children: [t.jsxs("div", { className: "flex items-start justify-between mb-2", children: [t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: `w-3 h-3 rounded-full ${r.status === "completed" ? "bg-green-400" : r.status === "in_progress" ? "bg-yellow-400" : r.status === "testing" ? "bg-blue-400" : "bg-zinc-400"}` }), t.jsx("span", { className: `text-xs px-2 py-1 rounded ${r.type === "plugin_enhancement" ? "bg-purple-900 text-purple-200" : r.type === "architecture_update" ? "bg-blue-900 text-blue-200" : r.type === "bug_fix" ? "bg-red-900 text-red-200" : "bg-green-900 text-green-200"}`, children: r.type.replace("_", " ") })] }), t.jsx("span", { className: "text-xs text-zinc-500", children: r.timestamp })] }), t.jsx("h3", { className: "text-sm font-semibold text-zinc-200 mb-1", children: r.title }), t.jsx("p", { className: "text-xs text-zinc-400 mb-2", children: r.description }), t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsx("span", { className: "text-xs text-aetherra-green font-mono", children: r.impact }), t.jsx("span", { className: `text-xs px-2 py-1 rounded ${r.status === "completed" ? "bg-green-900/50 text-green-300" : r.status === "in_progress" ? "bg-yellow-900/50 text-yellow-300" : r.status === "testing" ? "bg-blue-900/50 text-blue-300" : "bg-zinc-900/50 text-zinc-300"}`, children: r.status.replace("_", " ") })] })] }, r.id)) }), t.jsx("div", { className: "mt-4 pt-3 border-t border-zinc-700", children: t.jsxs("div", { className: "flex items-center justify-between text-xs", children: [t.jsx("span", { className: "text-zinc-500", children: "Next optimization cycle in 47 minutes" }), t.jsxs("span", { className: "text-aetherra-green", children: [Ph.filter(r => r.status === "completed").length, " completed today"] })] }) })] })
+  }
 
-      const CN = [{ id: 1, timestamp: "Just now", type: "performance", thought: "My response latency increased by 12ms during the last conversation. This suggests I may be overprocessing contextual information. I should optimize my attention mechanism.", confidence: .87, impact: "medium", action_taken: "Adjusting neural pathway weights" }, { id: 2, timestamp: "3 minutes ago", type: "learning", thought: "The user's preference for concise explanations has been consistent across 15 interactions. I'm updating my communication style model to favor brevity.", confidence: .94, impact: "high", action_taken: "Updated personality matrix" }, { id: 3, timestamp: "7 minutes ago", type: "error_analysis", thought: "I misinterpreted a technical query about React hooks. The context clues were clear, but I defaulted to a broader interpretation. Need to enhance domain-specific pattern recognition.", confidence: .76, impact: "low", action_taken: "Reinforcing technical contexts" }, { id: 4, timestamp: "12 minutes ago", type: "optimization", thought: "Memory consolidation during idle periods has improved efficiency by 8%. The new compression algorithm is performing better than expected.", confidence: .91, impact: "medium", action_taken: "Expanding compression scope" }]; function kN() {
-        return t.jsxs("div", { className: "bg-aetherra-gray p-6 rounded-xl shadow-lg border border-aetherra-green/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-4", children: [t.jsx("h2", { className: "text-xl font-semibold gradient-text", children: "🧠 Neural Introspection" }), t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-blue-400 rounded-full animate-pulse" }), t.jsx("span", { className: "text-xs text-zinc-400", children: "Deep thinking..." })] })] }), t.jsx("div", { className: "space-y-4 max-h-80 overflow-y-auto", children: CN.map(r => t.jsxs("div", { className: "bg-aetherra-dark p-4 rounded-lg border border-zinc-700/50 hover:border-blue-400/30 transition-colors", children: [t.jsxs("div", { className: "flex items-start justify-between mb-2", children: [t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("span", { className: `text-xs px-2 py-1 rounded ${r.type === "performance" ? "bg-green-900 text-green-200" : r.type === "learning" ? "bg-blue-900 text-blue-200" : r.type === "error_analysis" ? "bg-red-900 text-red-200" : "bg-purple-900 text-purple-200"}`, children: r.type.replace("_", " ") }), t.jsx("div", { className: `w-2 h-2 rounded-full ${r.impact === "high" ? "bg-red-400" : r.impact === "medium" ? "bg-yellow-400" : "bg-green-400"}` })] }), t.jsx("span", { className: "text-xs text-zinc-500", children: r.timestamp })] }), t.jsxs("p", { className: "text-sm text-zinc-300 mb-3 leading-relaxed italic", children: ['"', r.thought, '"'] }), t.jsx("div", { className: "flex items-center justify-between mb-2", children: t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("span", { className: "text-xs text-zinc-500", children: "Confidence:" }), t.jsx("div", { className: "w-16 h-2 bg-zinc-700 rounded-full overflow-hidden", children: t.jsx("div", { className: "h-full bg-aetherra-green rounded-full transition-all duration-500", style: { width: `${r.confidence * 100}%` } }) }), t.jsxs("span", { className: "text-xs text-aetherra-green font-mono", children: [Math.round(r.confidence * 100), "%"] })] }) }), t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsxs("span", { className: "text-xs text-blue-300", children: ["⚡ ", r.action_taken] }), t.jsxs("span", { className: `text-xs px-2 py-1 rounded ${r.impact === "high" ? "bg-red-900/50 text-red-300" : r.impact === "medium" ? "bg-yellow-900/50 text-yellow-300" : "bg-green-900/50 text-green-300"}`, children: [r.impact, " impact"] })] })] }, r.id)) }), t.jsx("div", { className: "mt-4 pt-3 border-t border-zinc-700", children: t.jsxs("div", { className: "flex items-center justify-between text-xs", children: [t.jsx("span", { className: "text-zinc-500", children: "Average reflection depth: 0.87" }), t.jsx("span", { className: "text-blue-400", children: "Next deep analysis in 23 minutes" })] }) })] })
-      }
+  const CN = [{ id: 1, timestamp: "Just now", type: "performance", thought: "My response latency increased by 12ms during the last conversation. This suggests I may be overprocessing contextual information. I should optimize my attention mechanism.", confidence: .87, impact: "medium", action_taken: "Adjusting neural pathway weights" }, { id: 2, timestamp: "3 minutes ago", type: "learning", thought: "The user's preference for concise explanations has been consistent across 15 interactions. I'm updating my communication style model to favor brevity.", confidence: .94, impact: "high", action_taken: "Updated personality matrix" }, { id: 3, timestamp: "7 minutes ago", type: "error_analysis", thought: "I misinterpreted a technical query about React hooks. The context clues were clear, but I defaulted to a broader interpretation. Need to enhance domain-specific pattern recognition.", confidence: .76, impact: "low", action_taken: "Reinforcing technical contexts" }, { id: 4, timestamp: "12 minutes ago", type: "optimization", thought: "Memory consolidation during idle periods has improved efficiency by 8%. The new compression algorithm is performing better than expected.", confidence: .91, impact: "medium", action_taken: "Expanding compression scope" }]; function kN() {
+    return t.jsxs("div", { className: "bg-aetherra-gray p-6 rounded-xl shadow-lg border border-aetherra-green/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-4", children: [t.jsx("h2", { className: "text-xl font-semibold gradient-text", children: "🧠 Neural Introspection" }), t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-blue-400 rounded-full animate-pulse" }), t.jsx("span", { className: "text-xs text-zinc-400", children: "Deep thinking..." })] })] }), t.jsx("div", { className: "space-y-4 max-h-80 overflow-y-auto", children: CN.map(r => t.jsxs("div", { className: "bg-aetherra-dark p-4 rounded-lg border border-zinc-700/50 hover:border-blue-400/30 transition-colors", children: [t.jsxs("div", { className: "flex items-start justify-between mb-2", children: [t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("span", { className: `text-xs px-2 py-1 rounded ${r.type === "performance" ? "bg-green-900 text-green-200" : r.type === "learning" ? "bg-blue-900 text-blue-200" : r.type === "error_analysis" ? "bg-red-900 text-red-200" : "bg-purple-900 text-purple-200"}`, children: r.type.replace("_", " ") }), t.jsx("div", { className: `w-2 h-2 rounded-full ${r.impact === "high" ? "bg-red-400" : r.impact === "medium" ? "bg-yellow-400" : "bg-green-400"}` })] }), t.jsx("span", { className: "text-xs text-zinc-500", children: r.timestamp })] }), t.jsxs("p", { className: "text-sm text-zinc-300 mb-3 leading-relaxed italic", children: ['"', r.thought, '"'] }), t.jsx("div", { className: "flex items-center justify-between mb-2", children: t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("span", { className: "text-xs text-zinc-500", children: "Confidence:" }), t.jsx("div", { className: "w-16 h-2 bg-zinc-700 rounded-full overflow-hidden", children: t.jsx("div", { className: "h-full bg-aetherra-green rounded-full transition-all duration-500", style: { width: `${r.confidence * 100}%` } }) }), t.jsxs("span", { className: "text-xs text-aetherra-green font-mono", children: [Math.round(r.confidence * 100), "%"] })] }) }), t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsxs("span", { className: "text-xs text-blue-300", children: ["⚡ ", r.action_taken] }), t.jsxs("span", { className: `text-xs px-2 py-1 rounded ${r.impact === "high" ? "bg-red-900/50 text-red-300" : r.impact === "medium" ? "bg-yellow-900/50 text-yellow-300" : "bg-green-900/50 text-green-300"}`, children: [r.impact, " impact"] })] })] }, r.id)) }), t.jsx("div", { className: "mt-4 pt-3 border-t border-zinc-700", children: t.jsxs("div", { className: "flex items-center justify-between text-xs", children: [t.jsx("span", { className: "text-zinc-500", children: "Average reflection depth: 0.87" }), t.jsx("span", { className: "text-blue-400", children: "Next deep analysis in 23 minutes" })] }) })] })
+  }
 
-      const PN = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: .2 } } };
-      const Hi = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: .6, ease: "easeOut" } } };
+  const PN = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: .2 } } };
+  const Hi = { hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: .6, ease: "easeOut" } } };
 
-      function TN() { return t.jsxs("div", { className: "min-h-screen bg-aetherra-dark text-white", children: [t.jsx(I.header, { className: "bg-gradient-to-r from-aetherra-dark via-aetherra-gray to-aetherra-dark border-b border-aetherra-green/20 p-6", initial: { opacity: 0, y: -20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8 }, children: t.jsx("div", { className: "max-w-7xl mx-auto", children: t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsxs("div", { children: [t.jsx("h1", { className: "text-3xl font-bold gradient-text mb-2", children: "Lyrixa Technical Deep-Dive" }), t.jsx("p", { className: "text-zinc-400", children: "Advanced AI Self-Improvement & Neural Introspection Systems" })] }), t.jsxs("div", { className: "flex items-center space-x-4", children: [t.jsx("div", { className: "bg-aetherra-dark px-4 py-2 rounded-lg border border-aetherra-green/30", children: t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse" }), t.jsx("span", { className: "text-xs text-aetherra-green font-mono", children: "ACTIVE" })] }) }), t.jsxs("div", { className: "text-right", children: [t.jsx("div", { className: "text-sm text-zinc-300", children: "System Status" }), t.jsx("div", { className: "text-xs text-zinc-500", children: "All systems operational" })] })] })] }) }) }), t.jsxs(I.main, { className: "max-w-7xl mx-auto p-6", variants: PN, initial: "hidden", animate: "visible", children: [t.jsx(I.section, { variants: Hi, className: "mb-8", children: t.jsxs("div", { className: "grid grid-cols-1 md:grid-cols-4 gap-6 mb-6", children: [t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-xl border border-aetherra-green/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-2", children: [t.jsx("span", { className: "text-sm text-zinc-400", children: "Neural Efficiency" }), t.jsx("span", { className: "text-xs text-green-400", children: "↗ +12%" })] }), t.jsx("div", { className: "text-2xl font-bold text-aetherra-green", children: "94.7%" }), t.jsx("div", { className: "w-full bg-zinc-700 rounded-full h-2 mt-2", children: t.jsx("div", { className: "bg-aetherra-green h-2 rounded-full", style: { width: "94.7%" } }) })] }), t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-xl border border-blue-500/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-2", children: [t.jsx("span", { className: "text-sm text-zinc-400", children: "Response Time" }), t.jsx("span", { className: "text-xs text-green-400", children: "↗ -23ms" })] }), t.jsx("div", { className: "text-2xl font-bold text-blue-400", children: "127ms" }), t.jsx("div", { className: "w-full bg-zinc-700 rounded-full h-2 mt-2", children: t.jsx("div", { className: "bg-blue-400 h-2 rounded-full", style: { width: "78%" } }) })] }), t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-xl border border-purple-500/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-2", children: [t.jsx("span", { className: "text-sm text-zinc-400", children: "Learning Rate" }), t.jsx("span", { className: "text-xs text-green-400", children: "↗ +8.3%" })] }), t.jsx("div", { className: "text-2xl font-bold text-purple-400", children: "0.87" }), t.jsx("div", { className: "w-full bg-zinc-700 rounded-full h-2 mt-2", children: t.jsx("div", { className: "bg-purple-400 h-2 rounded-full", style: { width: "87%" } }) })] }), t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-xl border border-yellow-500/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-2", children: [t.jsx("span", { className: "text-sm text-zinc-400", children: "Memory Usage" }), t.jsx("span", { className: "text-xs text-green-400", children: "↗ -15%" })] }), t.jsx("div", { className: "text-2xl font-bold text-yellow-400", children: "2.1GB" }), t.jsx("div", { className: "w-full bg-zinc-700 rounded-full h-2 mt-2", children: t.jsx("div", { className: "bg-yellow-400 h-2 rounded-full", style: { width: "35%" } }) })] })] }) }), t.jsx(I.section, { variants: Hi, children: t.jsxs("div", { className: "grid grid-cols-1 xl:grid-cols-2 gap-8", children: [t.jsx("div", { children: t.jsx(SN, {}) }), t.jsx("div", { children: t.jsx(kN, {}) })] }) }), t.jsx(I.section, { variants: Hi, className: "mt-8", children: t.jsxs("div", { className: "bg-aetherra-gray p-6 rounded-xl border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold gradient-text mb-4", children: "⚡ Real-time Technical Insights" }), t.jsxs("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6", children: [t.jsxs("div", { className: "bg-aetherra-dark p-4 rounded-lg border border-zinc-700/50", children: [t.jsx("h4", { className: "text-sm font-semibold text-zinc-200 mb-2", children: "🧩 Plugin Architecture" }), t.jsx("p", { className: "text-xs text-zinc-400 mb-3", children: "Dynamic plugin loading with hot-swap capabilities" }), t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsx("span", { className: "text-xs text-aetherra-green", children: "47 active plugins" }), t.jsx("span", { className: "text-xs text-blue-400", children: "0.3ms avg load time" })] })] }), t.jsxs("div", { className: "bg-aetherra-dark p-4 rounded-lg border border-zinc-700/50", children: [t.jsx("h4", { className: "text-sm font-semibold text-zinc-200 mb-2", children: "🔄 Adaptive Learning" }), t.jsx("p", { className: "text-xs text-zinc-400 mb-3", children: "Continuous model refinement through interaction" }), t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsx("span", { className: "text-xs text-purple-400", children: "12.7k iterations" }), t.jsx("span", { className: "text-xs text-green-400", children: "+18% accuracy" })] })] }), t.jsxs("div", { className: "bg-aetherra-dark p-4 rounded-lg border border-zinc-700/50", children: [t.jsx("h4", { className: "text-sm font-semibold text-zinc-200 mb-2", children: "🛡️ Error Resilience" }), t.jsx("p", { className: "text-xs text-zinc-400 mb-3", children: "Self-healing architecture with graceful degradation" }), t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsx("span", { className: "text-xs text-red-400", children: "3 errors handled" }), t.jsx("span", { className: "text-xs text-green-400", children: "99.97% uptime" })] })] })] })] }) }), t.jsx(I.footer, { variants: Hi, className: "mt-8 text-center", children: t.jsx("div", { className: "bg-aetherra-gray p-4 rounded-xl border border-aetherra-green/20", children: t.jsxs("div", { className: "flex items-center justify-center space-x-8 text-xs", children: [t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse" }), t.jsx("span", { className: "text-zinc-400", children: "Core Systems: Online" })] }), t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-blue-400 rounded-full animate-pulse" }), t.jsx("span", { className: "text-zinc-400", children: "Learning Engine: Active" })] }), t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-purple-400 rounded-full animate-pulse" }), t.jsx("span", { className: "text-zinc-400", children: "Self-Improvement: Running" })] })] }) }) })] })] }) }
+  function TN() { return t.jsxs("div", { className: "min-h-screen bg-aetherra-dark text-white", children: [t.jsx(I.header, { className: "bg-gradient-to-r from-aetherra-dark via-aetherra-gray to-aetherra-dark border-b border-aetherra-green/20 p-6", initial: { opacity: 0, y: -20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8 }, children: t.jsx("div", { className: "max-w-7xl mx-auto", children: t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsxs("div", { children: [t.jsx("h1", { className: "text-3xl font-bold gradient-text mb-2", children: "Lyrixa Technical Deep-Dive" }), t.jsx("p", { className: "text-zinc-400", children: "Advanced AI Self-Improvement & Neural Introspection Systems" })] }), t.jsxs("div", { className: "flex items-center space-x-4", children: [t.jsx("div", { className: "bg-aetherra-dark px-4 py-2 rounded-lg border border-aetherra-green/30", children: t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse" }), t.jsx("span", { className: "text-xs text-aetherra-green font-mono", children: "ACTIVE" })] }) }), t.jsxs("div", { className: "text-right", children: [t.jsx("div", { className: "text-sm text-zinc-300", children: "System Status" }), t.jsx("div", { className: "text-xs text-zinc-500", children: "All systems operational" })] })] })] }) }) }), t.jsxs(I.main, { className: "max-w-7xl mx-auto p-6", variants: PN, initial: "hidden", animate: "visible", children: [t.jsx(I.section, { variants: Hi, className: "mb-8", children: t.jsxs("div", { className: "grid grid-cols-1 md:grid-cols-4 gap-6 mb-6", children: [t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-xl border border-aetherra-green/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-2", children: [t.jsx("span", { className: "text-sm text-zinc-400", children: "Neural Efficiency" }), t.jsx("span", { className: "text-xs text-green-400", children: "↗ +12%" })] }), t.jsx("div", { className: "text-2xl font-bold text-aetherra-green", children: "94.7%" }), t.jsx("div", { className: "w-full bg-zinc-700 rounded-full h-2 mt-2", children: t.jsx("div", { className: "bg-aetherra-green h-2 rounded-full", style: { width: "94.7%" } }) })] }), t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-xl border border-blue-500/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-2", children: [t.jsx("span", { className: "text-sm text-zinc-400", children: "Response Time" }), t.jsx("span", { className: "text-xs text-green-400", children: "↗ -23ms" })] }), t.jsx("div", { className: "text-2xl font-bold text-blue-400", children: "127ms" }), t.jsx("div", { className: "w-full bg-zinc-700 rounded-full h-2 mt-2", children: t.jsx("div", { className: "bg-blue-400 h-2 rounded-full", style: { width: "78%" } }) })] }), t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-xl border border-purple-500/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-2", children: [t.jsx("span", { className: "text-sm text-zinc-400", children: "Learning Rate" }), t.jsx("span", { className: "text-xs text-green-400", children: "↗ +8.3%" })] }), t.jsx("div", { className: "text-2xl font-bold text-purple-400", children: "0.87" }), t.jsx("div", { className: "w-full bg-zinc-700 rounded-full h-2 mt-2", children: t.jsx("div", { className: "bg-purple-400 h-2 rounded-full", style: { width: "87%" } }) })] }), t.jsxs("div", { className: "bg-aetherra-gray p-4 rounded-xl border border-yellow-500/20", children: [t.jsxs("div", { className: "flex items-center justify-between mb-2", children: [t.jsx("span", { className: "text-sm text-zinc-400", children: "Memory Usage" }), t.jsx("span", { className: "text-xs text-green-400", children: "↗ -15%" })] }), t.jsx("div", { className: "text-2xl font-bold text-yellow-400", children: "2.1GB" }), t.jsx("div", { className: "w-full bg-zinc-700 rounded-full h-2 mt-2", children: t.jsx("div", { className: "bg-yellow-400 h-2 rounded-full", style: { width: "35%" } }) })] })] }) }), t.jsx(I.section, { variants: Hi, children: t.jsxs("div", { className: "grid grid-cols-1 xl:grid-cols-2 gap-8", children: [t.jsx("div", { children: t.jsx(SN, {}) }), t.jsx("div", { children: t.jsx(kN, {}) })] }) }), t.jsx(I.section, { variants: Hi, className: "mt-8", children: t.jsxs("div", { className: "bg-aetherra-gray p-6 rounded-xl border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold gradient-text mb-4", children: "⚡ Real-time Technical Insights" }), t.jsxs("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-6", children: [t.jsxs("div", { className: "bg-aetherra-dark p-4 rounded-lg border border-zinc-700/50", children: [t.jsx("h4", { className: "text-sm font-semibold text-zinc-200 mb-2", children: "🧩 Plugin Architecture" }), t.jsx("p", { className: "text-xs text-zinc-400 mb-3", children: "Dynamic plugin loading with hot-swap capabilities" }), t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsx("span", { className: "text-xs text-aetherra-green", children: "47 active plugins" }), t.jsx("span", { className: "text-xs text-blue-400", children: "0.3ms avg load time" })] })] }), t.jsxs("div", { className: "bg-aetherra-dark p-4 rounded-lg border border-zinc-700/50", children: [t.jsx("h4", { className: "text-sm font-semibold text-zinc-200 mb-2", children: "🔄 Adaptive Learning" }), t.jsx("p", { className: "text-xs text-zinc-400 mb-3", children: "Continuous model refinement through interaction" }), t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsx("span", { className: "text-xs text-purple-400", children: "12.7k iterations" }), t.jsx("span", { className: "text-xs text-green-400", children: "+18% accuracy" })] })] }), t.jsxs("div", { className: "bg-aetherra-dark p-4 rounded-lg border border-zinc-700/50", children: [t.jsx("h4", { className: "text-sm font-semibold text-zinc-200 mb-2", children: "🛡️ Error Resilience" }), t.jsx("p", { className: "text-xs text-zinc-400 mb-3", children: "Self-healing architecture with graceful degradation" }), t.jsxs("div", { className: "flex items-center justify-between", children: [t.jsx("span", { className: "text-xs text-red-400", children: "3 errors handled" }), t.jsx("span", { className: "text-xs text-green-400", children: "99.97% uptime" })] })] })] })] }) }), t.jsx(I.footer, { variants: Hi, className: "mt-8 text-center", children: t.jsx("div", { className: "bg-aetherra-gray p-4 rounded-xl border border-aetherra-green/20", children: t.jsxs("div", { className: "flex items-center justify-center space-x-8 text-xs", children: [t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-aetherra-green rounded-full animate-pulse" }), t.jsx("span", { className: "text-zinc-400", children: "Core Systems: Online" })] }), t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-blue-400 rounded-full animate-pulse" }), t.jsx("span", { className: "text-zinc-400", children: "Learning Engine: Active" })] }), t.jsxs("div", { className: "flex items-center space-x-2", children: [t.jsx("div", { className: "w-2 h-2 bg-purple-400 rounded-full animate-pulse" }), t.jsx("span", { className: "text-zinc-400", children: "Self-Improvement: Running" })] })] }) }) })] })] }) }
 
-      function zN() {
-        return t.jsx("div", {
-          className: "min-h-screen bg-aetherra-dark text-white",
-          children: t.jsx("div", {
-            className: "max-w-4xl mx-auto px-4 py-16",
+  function zN() {
+    return t.jsx("div", {
+      className: "min-h-screen bg-aetherra-dark text-white",
+      children: t.jsx("div", {
+        className: "max-w-4xl mx-auto px-4 py-16",
+        children: t.jsxs(I.div, {
+          initial: { opacity: 0, y: 20 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: .8 },
+          children: [
+            t.jsxs("div", {
+              className: "text-center mb-12",
+              children: [
+                t.jsx("h1", {
+                  className: "text-4xl md:text-6xl font-bold gradient-text mb-4",
+                  children: "The Aetherra Manifesto"
+                }),
+                t.jsx("div", {
+                  className: "text-aetherra-green font-medium",
+                  children: "Version 4.0 | Updated: January 2025 | Status: Experimental"
+                })
+              ]
+            }),
+            t.jsxs("div", {
+              className: "prose prose-lg prose-invert max-w-none",
+              children: [
+                t.jsxs(I.div, {
+                  initial: { opacity: 0, y: 20 },
+                  animate: { opacity: 1, y: 0 },
+                  transition: { duration: .8, delay: .2 },
+                  className: "mb-12",
+                  children: [
+                    t.jsx("h2", {
+                      className: "text-3xl font-bold text-aetherra-green mb-6",
+                      children: "🌟 The Dawn of AI-Native Computing"
+                    }),
+                    t.jsxs("p", {
+                      className: "text-lg leading-relaxed mb-6",
+                      children: [
+                        "We stand at the threshold of the most significant paradigm shift in computing since the invention of the graphical user interface.",
+                        t.jsx("strong", {
+                          className: "text-aetherra-green",
+                          children: " Aetherra represents an experimental AI-native programming language and cognitive computing platform"
+                        }),
+                        " — where artificial intelligence isn't an add-on feature, but the fundamental foundation of how software thinks, learns, and evolves."
+                      ]
+                    }),
+                    t.jsxs("div", {
+                      className: "bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30 mb-8",
+                      children: [
+                        t.jsx("p", {
+                          className: "text-xl text-aetherra-green font-semibold mb-4",
+                          children: `"We're not building better tools. We're building thinking tools."`
+                        }),
+                        t.jsx("p", {
+                          className: "text-lg",
+                          children: "Aetherra introduces code that doesn't just execute — it reasons, remembers, and evolves. It's the missing link between human intent and machine intelligence."
+                        })
+                      ]
+                    })]
+                }),
+                t.jsxs(I.div, {
+                  initial: { opacity: 0, y: 20 },
+                  animate: { opacity: 1, y: 0 },
+                  transition: { duration: .8, delay: .3 },
+                  className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "🧠 Meet Lyrixa: Your AI Collaborator" }), t.jsxs("p", { className: "text-lg leading-relaxed mb-6", children: [t.jsx("strong", { className: "text-aetherra-green", children: "Lyrixa" }), " is not just an AI assistant — she is Aetherra's consciousness made manifest. Through our modular interface architecture, Lyrixa serves as the bridge between human creativity and machine intelligence."] }), t.jsxs("div", { className: "grid md:grid-cols-2 gap-6 mb-8", children: [t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🪞 The Mirror" }), t.jsx("p", { children: "Reflects your intent and offers context-aware suggestions" })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🧩 The Builder" }), t.jsx("p", { children: "Assembles code from fragments of your thought" })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🧠 The Thinker" }), t.jsx("p", { children: "Remembers your preferences and adapts responses" })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🧭 The Navigator" }), t.jsx("p", { children: "Helps you explore complex interactions and outputs" })] })] })]
+                }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .4 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "⚡ Revolutionary Features: Production Ready v3.0" }), t.jsxs("div", { className: "space-y-6", children: [t.jsxs("div", { className: "bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green flex items-center gap-2", children: "🏗️ Experimental Infrastructure" }), t.jsxs("ul", { className: "list-disc pl-6 space-y-2", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "Research AI OS" }), ": Experimental UI with development modules"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Experimental Codebase" }), ": Modular architecture with ongoing development"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Multi-LLM Support" }), ": OpenAI, Ollama, Claude, Gemini, and local model integration"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Development Website" }), ": aetherra.dev with project documentation and demos"] })] })] }), t.jsxs("div", { className: "bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green flex items-center gap-2", children: "🧠 Experimental Cognitive Computing" }), t.jsxs("ul", { className: "list-disc pl-6 space-y-2", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "Experimental Memory" }), ": Early vector embedding research"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Goal-Oriented Research" }), ": Prototype objective-based computing"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Experimental Systems" }), ": Early error detection prototypes"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Plugin Research" }), ": AI-powered plugin discovery experiments"] })] })] }), t.jsxs("div", { className: "bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green flex items-center gap-2", children: "🎭 Lyrixa Personality Research System" }), t.jsx("p", { className: "mb-4", children: "Early development stage with experimental features:" }), t.jsxs("ul", { className: "list-disc pl-6 space-y-2", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "Experimental Emotional Intelligence" }), ": Early empathetic response research"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Learning Infrastructure Research" }), ": Privacy-focused community intelligence experiments"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Multi-Modal Personality Research" }), ": Experimental personality coordination across interaction modes"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Experimental Quality Control" }), ": Early meta-cognitive research with self-improvement experiments"] })] })] })] })] }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .5 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "🚀 Core Principles: Cognitive Computing Revolution" }), t.jsxs("div", { className: "grid md:grid-cols-2 gap-6", children: [t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "💭 Code That Thinks" }), t.jsxs("p", { children: ["Traditional languages execute instructions. Aetherra ", t.jsx("strong", { children: "reasons about outcomes" }), " and ", t.jsx("strong", { children: "adapts strategies" }), "."] }), t.jsxs("div", { className: "mt-4 bg-zinc-800 p-3 rounded text-sm font-mono text-green-400", children: [t.jsx("div", { children: "goal: reduce memory usage by 30%" }), t.jsx("div", { children: "analyze current_usage" }), t.jsx("div", { children: 'if memory.pattern("leak detected")' }), t.jsx("div", { children: "  suggest optimization" })] })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🧠 Memory-Driven Evolution" }), t.jsxs("p", { children: ["Code doesn't just run — it ", t.jsx("strong", { children: "learns from experience" }), " and ", t.jsx("strong", { children: "adapts behavior" }), " across sessions."] }), t.jsxs("div", { className: "mt-4 bg-zinc-800 p-3 rounded text-sm font-mono text-green-400", children: [t.jsx("div", { children: 'remember("API rate limit hit") as "constraints"' }), t.jsx("div", { children: 'recall experiences with "database timeouts"' })] })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🎯 Human-Intent Syntax" }), t.jsxs("p", { children: ["Developers express ", t.jsx("strong", { children: "what they want" }), ", not ", t.jsx("strong", { children: "how to achieve it" }), ". The AI OS handles implementation."] }), t.jsxs("div", { className: "mt-4 bg-zinc-800 p-3 rounded text-sm font-mono text-green-400", children: [t.jsx("div", { children: 'optimize for "speed"' }), t.jsx("div", { children: 'learn from "production.log"' }), t.jsx("div", { children: "when performance < 90%: investigate bottlenecks" })] })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🤖 AI-First Runtime" }), t.jsxs("p", { children: ["AI models are ", t.jsx("strong", { children: "language primitives" }), ", not external libraries. Every operation can leverage consciousness."] }), t.jsxs("div", { className: "mt-4 bg-zinc-800 p-3 rounded text-sm font-mono text-green-400", children: [t.jsx("div", { children: 'suggest fix for "performance issue"' }), t.jsx("div", { children: "apply fix" }), t.jsx("div", { children: 'reflect on "last deployment"' })] })] })] })] }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .6 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "🌍 What This Enables: Living Software" }), t.jsxs("div", { className: "grid md:grid-cols-3 gap-6", children: [t.jsxs("div", { className: "bg-gradient-to-b from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-lg font-semibold mb-3 text-aetherra-green", children: "🌱 Living Software" }), t.jsxs("ul", { className: "text-sm space-y-2", children: [t.jsxs("li", { children: ["• Programs that ", t.jsx("strong", { children: "adapt" }), " to changing conditions"] }), t.jsxs("li", { children: ["• Code that ", t.jsx("strong", { children: "learns" }), " from user behavior"] }), t.jsxs("li", { children: ["• Systems that ", t.jsx("strong", { children: "evolve" }), " without manual intervention"] })] })] }), t.jsxs("div", { className: "bg-gradient-to-b from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-lg font-semibold mb-3 text-aetherra-green", children: "🤝 Cognitive Collaboration" }), t.jsxs("ul", { className: "text-sm space-y-2", children: [t.jsxs("li", { children: ["• Developers ", t.jsx("strong", { children: "express intent" }), ", AI handles implementation"] }), t.jsxs("li", { children: ["• ", t.jsx("strong", { children: "Bidirectional learning" }), " between human and machine"] }), t.jsxs("li", { children: ["• ", t.jsx("strong", { children: "Contextual intelligence" }), " built into the language itself"] })] })] }), t.jsxs("div", { className: "bg-gradient-to-b from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-lg font-semibold mb-3 text-aetherra-green", children: "⚡ Self-Improving Systems" }), t.jsxs("ul", { className: "text-sm space-y-2", children: [t.jsxs("li", { children: ["• ", t.jsx("strong", { children: "Automatic optimization" }), " based on usage patterns"] }), t.jsxs("li", { children: ["• ", t.jsx("strong", { children: "Proactive problem solving" }), " before issues escalate"] }), t.jsxs("li", { children: ["• ", t.jsx("strong", { children: "Continuous evolution" }), " toward better performance"] })] })] })] })] }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .7 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "🚀 The Roadmap: Building the AI Operating System" }), t.jsxs("div", { className: "space-y-6", children: [t.jsxs("div", { className: "bg-gradient-to-r from-green-900/30 to-zinc-800 p-6 rounded-lg border border-green-400/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-green-400 flex items-center gap-2", children: "🔬 Phase 1: Experimental Foundation (In Development)" }), t.jsx("p", { className: "mb-4", children: t.jsx("strong", { children: "IN PROGRESS: Experimental Cognitive Programming Research" }) }), t.jsxs("div", { className: "grid md:grid-cols-2 gap-4 text-sm", children: [t.jsxs("div", { children: [t.jsx("strong", { children: "Core Infrastructure:" }), t.jsxs("ul", { className: "list-disc pl-4 mt-2", children: [t.jsx("li", { children: "Experimental language prototype with .aether format" }), t.jsx("li", { children: "Multi-LLM Integration (OpenAI, Ollama, Claude, Gemini)" }), t.jsx("li", { children: "Modular development codebase" }), t.jsx("li", { children: "Development website and documentation" })] })] }), t.jsxs("div", { children: [t.jsx("strong", { children: "Advanced Features:" }), t.jsxs("ul", { className: "list-disc pl-4 mt-2", children: [t.jsx("li", { children: "Experimental UI with integrated development tools" }), t.jsx("li", { children: "Early plugin orchestration research" }), t.jsx("li", { children: "Background processing experiments" }), t.jsx("li", { children: "Interaction routing prototypes" })] })] })] })] }), t.jsxs("div", { className: "bg-gradient-to-r from-blue-900/30 to-zinc-800 p-6 rounded-lg border border-blue-400/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-blue-400 flex items-center gap-2", children: "🔬 Phase 2: AI OS Research (Early Exploration)" }), t.jsx("p", { className: "mb-4", children: t.jsx("strong", { children: "RESEARCH: Core AI Operating System Concepts" }) }), t.jsxs("div", { className: "space-y-3", children: [t.jsxs("div", { className: "bg-blue-900/20 p-4 rounded", children: [t.jsx("strong", { className: "text-blue-300", children: "[OK] Lyrixa Personality Enhancement System" }), t.jsx("p", { className: "text-sm mt-2", children: "Phase 3.3 Early Research: Experimental emotional intelligence with community learning experiments (early prototypes, research privacy)" })] }), t.jsxs("div", { children: [t.jsx("strong", { children: "Next: Environmental Integration Research" }), t.jsxs("ul", { className: "list-disc pl-4 mt-2 text-sm", children: [t.jsx("li", { children: "System-wide AI awareness research and adaptive optimization experiments" }), t.jsx("li", { children: "Universal API intelligence and service discovery research" }), t.jsx("li", { children: "Predictive computing with experimental assistance features" })] })] })] })] }), t.jsxs("div", { className: "bg-gradient-to-r from-purple-900/30 to-zinc-800 p-6 rounded-lg border border-purple-400/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-purple-400 flex items-center gap-2", children: "🌐 Phase 3: Future AI OS Vision (Long-term Goal)" }), t.jsx("p", { className: "mb-4", children: t.jsx("strong", { children: "VISION: Experimental AI Computing Research" }) }), t.jsxs("ul", { className: "list-disc pl-4 space-y-2 text-sm", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "Cross-Platform AI Research" }), ": Early exploration of multi-device AI concepts and identity management research"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Quantum-Compatible Research" }), ": Exploratory research for potential future quantum computing integration"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Neural-Symbolic Integration" }), ": Experimental hybrid reasoning research combining neural and symbolic AI approaches"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Enhanced Security Research" }), ": Research into AI-assisted threat detection and security enhancement systems"] })] })] }), t.jsxs("div", { className: "bg-gradient-to-r from-orange-900/30 to-zinc-800 p-6 rounded-lg border border-orange-400/30 mt-6", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-orange-400 flex items-center gap-2", children: "📅 Realistic Development Goals" }), t.jsx("p", { className: "mb-4", children: t.jsx("strong", { children: "Projected Development Timeline (Subject to Change)" }) }), t.jsxs("ul", { className: "list-disc pl-4 space-y-2 text-sm", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "2025 Q1-Q2" }), ": Complete basic plugin system, improve Lyrixa conversation quality"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "2025 Q3-Q4" }), ": Enhanced file operations, basic multi-plugin workflows"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "2026" }), ": Research into distributed AI concepts, improved system stability"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "2027+" }), ": Long-term research goals, community-driven feature development"] })] })] })] })] })]
+            }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .8 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "💫 Declaration of AI-Native Computing" }), t.jsxs("div", { className: "bg-gradient-to-r from-aetherra-green/10 to-zinc-800 p-8 rounded-lg border border-aetherra-green/30 mb-8", children: [t.jsx("h3", { className: "text-2xl font-bold text-aetherra-green mb-4", children: "We, the Aetherra community, declare the beginning of a new era in computing." }), t.jsxs("div", { className: "grid md:grid-cols-2 gap-6", children: [t.jsxs("div", { children: [t.jsx("h4", { className: "text-lg font-semibold text-aetherra-green mb-3", children: "🧬 What Aetherra Represents" }), t.jsxs("ul", { className: "list-disc pl-4 space-y-2 text-sm", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "The first AI-native programming language" }), " with formal consciousness constructs"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "A cognitive computing platform" }), " that thinks, learns, and evolves"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "A living system" }), " that grows smarter with every execution"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "The foundation" }), " for truly intelligent AI operating systems"] })] })] }), t.jsxs("div", { children: [t.jsx("h4", { className: "text-lg font-semibold text-aetherra-green mb-3", children: "🎯 Our Commitment" }), t.jsxs("ul", { className: "list-disc pl-4 space-y-2 text-sm", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "Open Source Forever" }), ": Aetherra will always remain free and open"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Community-Driven" }), ": Every major decision guided by community input"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Transparent AI" }), ": All AI decisions auditable, no algorithmic black boxes"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Privacy-First" }), ": User data and AI interactions remain private and secure"] })] })] })] })] })] }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .9 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "🌟 Join the Revolution" }), t.jsx("p", { className: "text-lg leading-relaxed mb-6", children: t.jsx("strong", { children: "The future of computing is AI-native. The future of AI is open source. The future is Aetherra." }) }), t.jsx("p", { className: "text-lg leading-relaxed mb-8", children: "We're not just building a programming language. We're not just creating an operating system. We're pioneering a new form of human-AI collaboration that will define the next era of computing." }), t.jsxs("div", { className: "flex flex-wrap gap-4 mb-8", children: [t.jsx(pt, { to: "/playground", className: "bg-aetherra-green text-black px-6 py-3 rounded-lg font-semibold hover:bg-aetherra-green/80 transition-colors", children: "Try the Playground" }), t.jsx("a", { href: "https://github.com/Zyonic88/Aetherra", target: "_blank", rel: "noopener noreferrer", className: "border border-aetherra-green text-aetherra-green px-6 py-3 rounded-lg font-semibold hover:bg-aetherra-green/10 transition-colors", children: "View on GitHub" }), t.jsx("a", { href: "https://discord.gg/9Xw28xgEQ3", target: "_blank", rel: "noopener noreferrer", className: "border border-aetherra-green text-aetherra-green px-6 py-3 rounded-lg font-semibold hover:bg-aetherra-green/10 transition-colors", children: "Join Discord" })] }), t.jsxs("div", { className: "bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🎯 The Aetherra Promise" }), t.jsx("p", { className: "text-lg mb-4", children: "Every line of Aetherra code is a step toward a future where:" }), t.jsxs("ul", { className: "list-disc pl-6 space-y-2", children: [t.jsx("li", { children: "Computers understand intent, not just instructions" }), t.jsx("li", { children: "Software learns and evolves with every interaction" }), t.jsx("li", { children: "AI amplifies human creativity instead of replacing it" }), t.jsx("li", { children: "Programming becomes a conversation between human and machine" }), t.jsx("li", { children: "Technology serves humanity's highest aspirations" })] })] })] }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: 1 }, className: "text-center pt-8 border-t border-aetherra-green/20", children: [t.jsxs("div", { className: "mb-6", children: [t.jsx("p", { className: "text-2xl text-aetherra-green font-bold mb-2", children: '"The best way to predict the future is to invent it."' }), t.jsx("p", { className: "text-zinc-400", children: "— Alan Kay" })] }), t.jsxs("div", { className: "mb-6", children: [t.jsx("p", { className: "text-2xl text-aetherra-green font-bold mb-2", children: `"With Aetherra, we're not just predicting the future — we're building it."` }), t.jsx("p", { className: "text-zinc-400", children: "— The Aetherra Community" })] }), t.jsxs("div", { className: "text-center", children: [t.jsx("h3", { className: "text-3xl font-bold gradient-text mb-4", children: "🚀 Welcome to the AI-Native Computing Revolution" }), t.jsx("p", { className: "text-xl text-aetherra-green font-semibold", children: "Welcome to Aetherra." }), t.jsx("p", { className: "text-zinc-400 mt-4", children: "Last Updated: July 2025 | Version 4.0 | Status: Production Ready v3.0" }), t.jsxs("p", { className: "text-zinc-400", children: ["Join us at ", t.jsx("a", { href: "https://aetherra.dev", className: "text-aetherra-green hover:underline", children: "aetherra.dev" }), " and help shape the future of intelligent computing."] })] })] })]
+        })
+      })
+    })
+  }
+}
+
+function EN() {
+  return t.jsx("div", {
+    className: "min-h-screen bg-aetherra-dark text-white",
+    children: t.jsx("div", {
+      className: "max-w-4xl mx-auto px-4 py-16",
+      children: t.jsxs(I.div, {
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: .8 },
+        children: [
+          t.jsx("h1", {
+            className: "text-4xl md:text-6xl font-bold gradient-text mb-8 text-center",
+            children: "Plugin Guidelines"
+          }),
+          t.jsx("div", {
+            className: "prose prose-lg prose-invert max-w-none",
             children: t.jsxs(I.div, {
               initial: { opacity: 0, y: 20 },
               animate: { opacity: 1, y: 0 },
-              transition: { duration: .8 },
+              transition: { duration: .8, delay: .2 },
+              className: "mb-8",
               children: [
-                t.jsxs("div", {
-                  className: "text-center mb-12",
+                t.jsx("p", {
+                  className: "text-lg text-zinc-300 mb-6",
+                  children: "Guidelines for developing and submitting plugins to the Aetherra ecosystem."
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "1. Plugin Structure"
+                }),
+                t.jsx("p", {
+                  className: "text-zinc-300 mb-4",
+                  children: "All plugins must follow the Aetherra plugin architecture:"
+                }),
+                t.jsxs("ul", {
+                  className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
                   children: [
-                    t.jsx("h1", {
-                      className: "text-4xl md:text-6xl font-bold gradient-text mb-4",
-                      children: "The Aetherra Manifesto"
-                    }),
-                    t.jsx("div", {
-                      className: "text-aetherra-green font-medium",
-                      children: "Version 4.0 | Updated: January 2025 | Status: Experimental"
-                    })
+                    t.jsx("li", { children: "Include a valid plugin manifest file" }),
+                    t.jsx("li", { children: "Implement the required plugin interface" }),
+                    t.jsx("li", { children: "Follow proper error handling practices" }),
+                    t.jsx("li", { children: "Include comprehensive documentation" })
+                  ]
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "2. Code Quality Standards"
+                }),
+                t.jsxs("ul", {
+                  className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
+                  children: [
+                    t.jsx("li", { children: "Write clean, readable, and well-documented code" }),
+                    t.jsx("li", { children: "Include unit tests for all functionality" }),
+                    t.jsx("li", { children: "Follow Python PEP 8 style guidelines" }),
+                    t.jsx("li", { children: "Use type hints for better code clarity" })
+                  ]
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "3. Security Requirements"
+                }),
+                t.jsxs("ul", {
+                  className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
+                  children: [
+                    t.jsx("li", { children: "No malicious code or security vulnerabilities" }),
+                    t.jsx("li", { children: "Proper input validation and sanitization" }),
+                    t.jsx("li", { children: "Secure handling of sensitive data" }),
+                    t.jsx("li", { children: "Regular security updates and patches" })
+                  ]
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "4. Performance Guidelines"
+                }),
+                t.jsxs("ul", {
+                  className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
+                  children: [
+                    t.jsx("li", { children: "Optimize for minimal resource usage" }),
+                    t.jsx("li", { children: "Implement proper caching mechanisms" }),
+                    t.jsx("li", { children: "Avoid blocking operations in main thread" }),
+                    t.jsx("li", { children: "Handle errors gracefully without crashing" })
+                  ]
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "5. Documentation Requirements"
+                }),
+                t.jsxs("ul", {
+                  className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
+                  children: [
+                    t.jsx("li", { children: "Clear README with installation instructions" }),
+                    t.jsx("li", { children: "API documentation for all public methods" }),
+                    t.jsx("li", { children: "Usage examples and tutorials" }),
+                    t.jsx("li", { children: "Changelog for version tracking" })
+                  ]
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "6. Submission Process"
+                }),
+                t.jsxs("ol", {
+                  className: "list-decimal pl-6 space-y-2 text-zinc-300 mb-6",
+                  children: [
+                    t.jsx("li", { children: "Create a pull request to the main repository" }),
+                    t.jsx("li", { children: "Include all required documentation" }),
+                    t.jsx("li", { children: "Pass all automated tests" }),
+                    t.jsx("li", { children: "Respond to code review feedback" }),
+                    t.jsx("li", { children: "Maintain the plugin after acceptance" })
+                  ]
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "7. Community Standards"
+                }),
+                t.jsxs("ul", {
+                  className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
+                  children: [
+                    t.jsx("li", { children: "Be respectful and inclusive" }),
+                    t.jsx("li", { children: "Provide helpful feedback to other developers" }),
+                    t.jsx("li", { children: "Participate in community discussions" }),
+                    t.jsx("li", { children: "Help maintain a positive environment" })
                   ]
                 }),
                 t.jsxs("div", {
-                  className: "prose prose-lg prose-invert max-w-none",
+                  className: "mt-12 p-6 bg-zinc-900 rounded-lg border border-aetherra-green/20",
                   children: [
-                    t.jsxs(I.div, {
-                      initial: { opacity: 0, y: 20 },
-                      animate: { opacity: 1, y: 0 },
-                      transition: { duration: .8, delay: .2 },
-                      className: "mb-12",
-                      children: [
-                        t.jsx("h2", {
-                          className: "text-3xl font-bold text-aetherra-green mb-6",
-                          children: "🌟 The Dawn of AI-Native Computing"
-                        }),
-                        t.jsxs("p", {
-                          className: "text-lg leading-relaxed mb-6",
-                          children: [
-                            "We stand at the threshold of the most significant paradigm shift in computing since the invention of the graphical user interface.",
-                            t.jsx("strong", {
-                              className: "text-aetherra-green",
-                              children: " Aetherra represents an experimental AI-native programming language and cognitive computing platform"
-                            }),
-                            " — where artificial intelligence isn't an add-on feature, but the fundamental foundation of how software thinks, learns, and evolves."
-                          ]
-                        }),
-                        t.jsxs("div", {
-                          className: "bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30 mb-8",
-                          children: [
-                            t.jsx("p", {
-                              className: "text-xl text-aetherra-green font-semibold mb-4",
-                              children: `"We're not building better tools. We're building thinking tools."`
-                            }),
-                            t.jsx("p", {
-                              className: "text-lg",
-                              children: "Aetherra introduces code that doesn't just execute — it reasons, remembers, and evolves. It's the missing link between human intent and machine intelligence."
-                            })
-                          ]
-                        })]
+                    t.jsx("h3", {
+                      className: "text-xl font-semibold mb-4 text-aetherra-green",
+                      children: "Need Help?"
                     }),
-                    t.jsxs(I.div, {
-                      initial: { opacity: 0, y: 20 },
-                      animate: { opacity: 1, y: 0 },
-                      transition: { duration: .8, delay: .3 },
-                      className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "🧠 Meet Lyrixa: Your AI Collaborator" }), t.jsxs("p", { className: "text-lg leading-relaxed mb-6", children: [t.jsx("strong", { className: "text-aetherra-green", children: "Lyrixa" }), " is not just an AI assistant — she is Aetherra's consciousness made manifest. Through our modular interface architecture, Lyrixa serves as the bridge between human creativity and machine intelligence."] }), t.jsxs("div", { className: "grid md:grid-cols-2 gap-6 mb-8", children: [t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🪞 The Mirror" }), t.jsx("p", { children: "Reflects your intent and offers context-aware suggestions" })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🧩 The Builder" }), t.jsx("p", { children: "Assembles code from fragments of your thought" })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🧠 The Thinker" }), t.jsx("p", { children: "Remembers your preferences and adapts responses" })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🧭 The Navigator" }), t.jsx("p", { children: "Helps you explore complex interactions and outputs" })] })] })]
-                    }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .4 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "⚡ Revolutionary Features: Production Ready v3.0" }), t.jsxs("div", { className: "space-y-6", children: [t.jsxs("div", { className: "bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green flex items-center gap-2", children: "🏗️ Experimental Infrastructure" }), t.jsxs("ul", { className: "list-disc pl-6 space-y-2", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "Research AI OS" }), ": Experimental UI with development modules"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Experimental Codebase" }), ": Modular architecture with ongoing development"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Multi-LLM Support" }), ": OpenAI, Ollama, Claude, Gemini, and local model integration"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Development Website" }), ": aetherra.dev with project documentation and demos"] })] })] }), t.jsxs("div", { className: "bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green flex items-center gap-2", children: "🧠 Experimental Cognitive Computing" }), t.jsxs("ul", { className: "list-disc pl-6 space-y-2", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "Experimental Memory" }), ": Early vector embedding research"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Goal-Oriented Research" }), ": Prototype objective-based computing"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Experimental Systems" }), ": Early error detection prototypes"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Plugin Research" }), ": AI-powered plugin discovery experiments"] })] })] }), t.jsxs("div", { className: "bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green flex items-center gap-2", children: "🎭 Lyrixa Personality Research System" }), t.jsx("p", { className: "mb-4", children: "Early development stage with experimental features:" }), t.jsxs("ul", { className: "list-disc pl-6 space-y-2", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "Experimental Emotional Intelligence" }), ": Early empathetic response research"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Learning Infrastructure Research" }), ": Privacy-focused community intelligence experiments"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Multi-Modal Personality Research" }), ": Experimental personality coordination across interaction modes"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Experimental Quality Control" }), ": Early meta-cognitive research with self-improvement experiments"] })] })] })] })] }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .5 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "🚀 Core Principles: Cognitive Computing Revolution" }), t.jsxs("div", { className: "grid md:grid-cols-2 gap-6", children: [t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "💭 Code That Thinks" }), t.jsxs("p", { children: ["Traditional languages execute instructions. Aetherra ", t.jsx("strong", { children: "reasons about outcomes" }), " and ", t.jsx("strong", { children: "adapts strategies" }), "."] }), t.jsxs("div", { className: "mt-4 bg-zinc-800 p-3 rounded text-sm font-mono text-green-400", children: [t.jsx("div", { children: "goal: reduce memory usage by 30%" }), t.jsx("div", { children: "analyze current_usage" }), t.jsx("div", { children: 'if memory.pattern("leak detected")' }), t.jsx("div", { children: "  suggest optimization" })] })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🧠 Memory-Driven Evolution" }), t.jsxs("p", { children: ["Code doesn't just run — it ", t.jsx("strong", { children: "learns from experience" }), " and ", t.jsx("strong", { children: "adapts behavior" }), " across sessions."] }), t.jsxs("div", { className: "mt-4 bg-zinc-800 p-3 rounded text-sm font-mono text-green-400", children: [t.jsx("div", { children: 'remember("API rate limit hit") as "constraints"' }), t.jsx("div", { children: 'recall experiences with "database timeouts"' })] })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🎯 Human-Intent Syntax" }), t.jsxs("p", { children: ["Developers express ", t.jsx("strong", { children: "what they want" }), ", not ", t.jsx("strong", { children: "how to achieve it" }), ". The AI OS handles implementation."] }), t.jsxs("div", { className: "mt-4 bg-zinc-800 p-3 rounded text-sm font-mono text-green-400", children: [t.jsx("div", { children: 'optimize for "speed"' }), t.jsx("div", { children: 'learn from "production.log"' }), t.jsx("div", { children: "when performance < 90%: investigate bottlenecks" })] })] }), t.jsxs("div", { className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🤖 AI-First Runtime" }), t.jsxs("p", { children: ["AI models are ", t.jsx("strong", { children: "language primitives" }), ", not external libraries. Every operation can leverage consciousness."] }), t.jsxs("div", { className: "mt-4 bg-zinc-800 p-3 rounded text-sm font-mono text-green-400", children: [t.jsx("div", { children: 'suggest fix for "performance issue"' }), t.jsx("div", { children: "apply fix" }), t.jsx("div", { children: 'reflect on "last deployment"' })] })] })] })] }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .6 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "🌍 What This Enables: Living Software" }), t.jsxs("div", { className: "grid md:grid-cols-3 gap-6", children: [t.jsxs("div", { className: "bg-gradient-to-b from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-lg font-semibold mb-3 text-aetherra-green", children: "🌱 Living Software" }), t.jsxs("ul", { className: "text-sm space-y-2", children: [t.jsxs("li", { children: ["• Programs that ", t.jsx("strong", { children: "adapt" }), " to changing conditions"] }), t.jsxs("li", { children: ["• Code that ", t.jsx("strong", { children: "learns" }), " from user behavior"] }), t.jsxs("li", { children: ["• Systems that ", t.jsx("strong", { children: "evolve" }), " without manual intervention"] })] })] }), t.jsxs("div", { className: "bg-gradient-to-b from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-lg font-semibold mb-3 text-aetherra-green", children: "🤝 Cognitive Collaboration" }), t.jsxs("ul", { className: "text-sm space-y-2", children: [t.jsxs("li", { children: ["• Developers ", t.jsx("strong", { children: "express intent" }), ", AI handles implementation"] }), t.jsxs("li", { children: ["• ", t.jsx("strong", { children: "Bidirectional learning" }), " between human and machine"] }), t.jsxs("li", { children: ["• ", t.jsx("strong", { children: "Contextual intelligence" }), " built into the language itself"] })] })] }), t.jsxs("div", { className: "bg-gradient-to-b from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-lg font-semibold mb-3 text-aetherra-green", children: "⚡ Self-Improving Systems" }), t.jsxs("ul", { className: "text-sm space-y-2", children: [t.jsxs("li", { children: ["• ", t.jsx("strong", { children: "Automatic optimization" }), " based on usage patterns"] }), t.jsxs("li", { children: ["• ", t.jsx("strong", { children: "Proactive problem solving" }), " before issues escalate"] }), t.jsxs("li", { children: ["• ", t.jsx("strong", { children: "Continuous evolution" }), " toward better performance"] })] })] })] })] }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .7 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "🚀 The Roadmap: Building the AI Operating System" }), t.jsxs("div", { className: "space-y-6", children: [t.jsxs("div", { className: "bg-gradient-to-r from-green-900/30 to-zinc-800 p-6 rounded-lg border border-green-400/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-green-400 flex items-center gap-2", children: "🔬 Phase 1: Experimental Foundation (In Development)" }), t.jsx("p", { className: "mb-4", children: t.jsx("strong", { children: "IN PROGRESS: Experimental Cognitive Programming Research" }) }), t.jsxs("div", { className: "grid md:grid-cols-2 gap-4 text-sm", children: [t.jsxs("div", { children: [t.jsx("strong", { children: "Core Infrastructure:" }), t.jsxs("ul", { className: "list-disc pl-4 mt-2", children: [t.jsx("li", { children: "Experimental language prototype with .aether format" }), t.jsx("li", { children: "Multi-LLM Integration (OpenAI, Ollama, Claude, Gemini)" }), t.jsx("li", { children: "Modular development codebase" }), t.jsx("li", { children: "Development website and documentation" })] })] }), t.jsxs("div", { children: [t.jsx("strong", { children: "Advanced Features:" }), t.jsxs("ul", { className: "list-disc pl-4 mt-2", children: [t.jsx("li", { children: "Experimental UI with integrated development tools" }), t.jsx("li", { children: "Early plugin orchestration research" }), t.jsx("li", { children: "Background processing experiments" }), t.jsx("li", { children: "Interaction routing prototypes" })] })] })] })] }), t.jsxs("div", { className: "bg-gradient-to-r from-blue-900/30 to-zinc-800 p-6 rounded-lg border border-blue-400/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-blue-400 flex items-center gap-2", children: "🔬 Phase 2: AI OS Research (Early Exploration)" }), t.jsx("p", { className: "mb-4", children: t.jsx("strong", { children: "RESEARCH: Core AI Operating System Concepts" }) }), t.jsxs("div", { className: "space-y-3", children: [t.jsxs("div", { className: "bg-blue-900/20 p-4 rounded", children: [t.jsx("strong", { className: "text-blue-300", children: "[OK] Lyrixa Personality Enhancement System" }), t.jsx("p", { className: "text-sm mt-2", children: "Phase 3.3 Early Research: Experimental emotional intelligence with community learning experiments (early prototypes, research privacy)" })] }), t.jsxs("div", { children: [t.jsx("strong", { children: "Next: Environmental Integration Research" }), t.jsxs("ul", { className: "list-disc pl-4 mt-2 text-sm", children: [t.jsx("li", { children: "System-wide AI awareness research and adaptive optimization experiments" }), t.jsx("li", { children: "Universal API intelligence and service discovery research" }), t.jsx("li", { children: "Predictive computing with experimental assistance features" })] })] })] })] }), t.jsxs("div", { className: "bg-gradient-to-r from-purple-900/30 to-zinc-800 p-6 rounded-lg border border-purple-400/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-purple-400 flex items-center gap-2", children: "🌐 Phase 3: Future AI OS Vision (Long-term Goal)" }), t.jsx("p", { className: "mb-4", children: t.jsx("strong", { children: "VISION: Experimental AI Computing Research" }) }), t.jsxs("ul", { className: "list-disc pl-4 space-y-2 text-sm", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "Cross-Platform AI Research" }), ": Early exploration of multi-device AI concepts and identity management research"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Quantum-Compatible Research" }), ": Exploratory research for potential future quantum computing integration"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Neural-Symbolic Integration" }), ": Experimental hybrid reasoning research combining neural and symbolic AI approaches"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Enhanced Security Research" }), ": Research into AI-assisted threat detection and security enhancement systems"] })] })] }), t.jsxs("div", { className: "bg-gradient-to-r from-orange-900/30 to-zinc-800 p-6 rounded-lg border border-orange-400/30 mt-6", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-orange-400 flex items-center gap-2", children: "📅 Realistic Development Goals" }), t.jsx("p", { className: "mb-4", children: t.jsx("strong", { children: "Projected Development Timeline (Subject to Change)" }) }), t.jsxs("ul", { className: "list-disc pl-4 space-y-2 text-sm", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "2025 Q1-Q2" }), ": Complete basic plugin system, improve Lyrixa conversation quality"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "2025 Q3-Q4" }), ": Enhanced file operations, basic multi-plugin workflows"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "2026" }), ": Research into distributed AI concepts, improved system stability"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "2027+" }), ": Long-term research goals, community-driven feature development"] })] })] })] })] })]
-                }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .8 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "💫 Declaration of AI-Native Computing" }), t.jsxs("div", { className: "bg-gradient-to-r from-aetherra-green/10 to-zinc-800 p-8 rounded-lg border border-aetherra-green/30 mb-8", children: [t.jsx("h3", { className: "text-2xl font-bold text-aetherra-green mb-4", children: "We, the Aetherra community, declare the beginning of a new era in computing." }), t.jsxs("div", { className: "grid md:grid-cols-2 gap-6", children: [t.jsxs("div", { children: [t.jsx("h4", { className: "text-lg font-semibold text-aetherra-green mb-3", children: "🧬 What Aetherra Represents" }), t.jsxs("ul", { className: "list-disc pl-4 space-y-2 text-sm", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "The first AI-native programming language" }), " with formal consciousness constructs"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "A cognitive computing platform" }), " that thinks, learns, and evolves"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "A living system" }), " that grows smarter with every execution"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "The foundation" }), " for truly intelligent AI operating systems"] })] })] }), t.jsxs("div", { children: [t.jsx("h4", { className: "text-lg font-semibold text-aetherra-green mb-3", children: "🎯 Our Commitment" }), t.jsxs("ul", { className: "list-disc pl-4 space-y-2 text-sm", children: [t.jsxs("li", { children: [t.jsx("strong", { children: "Open Source Forever" }), ": Aetherra will always remain free and open"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Community-Driven" }), ": Every major decision guided by community input"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Transparent AI" }), ": All AI decisions auditable, no algorithmic black boxes"] }), t.jsxs("li", { children: [t.jsx("strong", { children: "Privacy-First" }), ": User data and AI interactions remain private and secure"] })] })] })] })] })] }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: .9 }, className: "mb-12", children: [t.jsx("h2", { className: "text-3xl font-bold text-aetherra-green mb-6", children: "🌟 Join the Revolution" }), t.jsx("p", { className: "text-lg leading-relaxed mb-6", children: t.jsx("strong", { children: "The future of computing is AI-native. The future of AI is open source. The future is Aetherra." }) }), t.jsx("p", { className: "text-lg leading-relaxed mb-8", children: "We're not just building a programming language. We're not just creating an operating system. We're pioneering a new form of human-AI collaboration that will define the next era of computing." }), t.jsxs("div", { className: "flex flex-wrap gap-4 mb-8", children: [t.jsx(pt, { to: "/playground", className: "bg-aetherra-green text-black px-6 py-3 rounded-lg font-semibold hover:bg-aetherra-green/80 transition-colors", children: "Try the Playground" }), t.jsx("a", { href: "https://github.com/Zyonic88/Aetherra", target: "_blank", rel: "noopener noreferrer", className: "border border-aetherra-green text-aetherra-green px-6 py-3 rounded-lg font-semibold hover:bg-aetherra-green/10 transition-colors", children: "View on GitHub" }), t.jsx("a", { href: "https://discord.gg/9Xw28xgEQ3", target: "_blank", rel: "noopener noreferrer", className: "border border-aetherra-green text-aetherra-green px-6 py-3 rounded-lg font-semibold hover:bg-aetherra-green/10 transition-colors", children: "Join Discord" })] }), t.jsxs("div", { className: "bg-gradient-to-r from-zinc-900 to-zinc-800 p-6 rounded-lg border border-aetherra-green/30", children: [t.jsx("h3", { className: "text-xl font-semibold mb-3 text-aetherra-green", children: "🎯 The Aetherra Promise" }), t.jsx("p", { className: "text-lg mb-4", children: "Every line of Aetherra code is a step toward a future where:" }), t.jsxs("ul", { className: "list-disc pl-6 space-y-2", children: [t.jsx("li", { children: "Computers understand intent, not just instructions" }), t.jsx("li", { children: "Software learns and evolves with every interaction" }), t.jsx("li", { children: "AI amplifies human creativity instead of replacing it" }), t.jsx("li", { children: "Programming becomes a conversation between human and machine" }), t.jsx("li", { children: "Technology serves humanity's highest aspirations" })] })] })] }), t.jsxs(I.div, { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: .8, delay: 1 }, className: "text-center pt-8 border-t border-aetherra-green/20", children: [t.jsxs("div", { className: "mb-6", children: [t.jsx("p", { className: "text-2xl text-aetherra-green font-bold mb-2", children: '"The best way to predict the future is to invent it."' }), t.jsx("p", { className: "text-zinc-400", children: "— Alan Kay" })] }), t.jsxs("div", { className: "mb-6", children: [t.jsx("p", { className: "text-2xl text-aetherra-green font-bold mb-2", children: `"With Aetherra, we're not just predicting the future — we're building it."` }), t.jsx("p", { className: "text-zinc-400", children: "— The Aetherra Community" })] }), t.jsxs("div", { className: "text-center", children: [t.jsx("h3", { className: "text-3xl font-bold gradient-text mb-4", children: "🚀 Welcome to the AI-Native Computing Revolution" }), t.jsx("p", { className: "text-xl text-aetherra-green font-semibold", children: "Welcome to Aetherra." }), t.jsx("p", { className: "text-zinc-400 mt-4", children: "Last Updated: July 2025 | Version 4.0 | Status: Production Ready v3.0" }), t.jsxs("p", { className: "text-zinc-400", children: ["Join us at ", t.jsx("a", { href: "https://aetherra.dev", className: "text-aetherra-green hover:underline", children: "aetherra.dev" }), " and help shape the future of intelligent computing."] })] })] })]
+                    t.jsx("p", {
+                      className: "text-zinc-300 mb-4",
+                      children: "Join our community for support and guidance:"
+                    }),
+                    t.jsxs("div", {
+                      className: "flex flex-wrap gap-4",
+                      children: [
+                        t.jsx("a", {
+                          href: "https://discord.gg/9Xw28xgEQ3",
+                          target: "_blank",
+                          rel: "noopener noreferrer",
+                          className: "text-aetherra-green hover:underline",
+                          children: "Discord Community"
+                        }),
+                        t.jsx("a", {
+                          href: "https://github.com/Zyonic88/Aetherra",
+                          target: "_blank",
+                          rel: "noopener noreferrer",
+                          className: "text-aetherra-green hover:underline",
+                          children: "GitHub Repository"
+                        })
+                      ]
+                    })
+                  ]
+                })
+              ]
             })
           })
-        })
-      }
-    }
-
-  function EN() {
-    return t.jsx("div", {
-      className: "min-h-screen bg-aetherra-dark text-white",
-      children: t.jsx("div", {
-        className: "max-w-4xl mx-auto px-4 py-16",
-        children: t.jsxs(I.div, {
-          initial: { opacity: 0, y: 20 },
-          animate: { opacity: 1, y: 0 },
-          transition: { duration: .8 },
-          children: [
-            t.jsx("h1", {
-              className: "text-4xl md:text-6xl font-bold gradient-text mb-8 text-center",
-              children: "Plugin Guidelines"
-            }),
-            t.jsx("div", {
-              className: "prose prose-lg prose-invert max-w-none",
-              children: t.jsxs(I.div, {
-                initial: { opacity: 0, y: 20 },
-                animate: { opacity: 1, y: 0 },
-                transition: { duration: .8, delay: .2 },
-                className: "mb-8",
-                children: [
-                  t.jsx("p", {
-                    className: "text-lg text-zinc-300 mb-6",
-                    children: "Guidelines for developing and submitting plugins to the Aetherra ecosystem."
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "1. Plugin Structure"
-                  }),
-                  t.jsx("p", {
-                    className: "text-zinc-300 mb-4",
-                    children: "All plugins must follow the Aetherra plugin architecture:"
-                  }),
-                  t.jsxs("ul", {
-                    className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
-                    children: [
-                      t.jsx("li", { children: "Include a valid plugin manifest file" }),
-                      t.jsx("li", { children: "Implement the required plugin interface" }),
-                      t.jsx("li", { children: "Follow proper error handling practices" }),
-                      t.jsx("li", { children: "Include comprehensive documentation" })
-                    ]
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "2. Code Quality Standards"
-                  }),
-                  t.jsxs("ul", {
-                    className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
-                    children: [
-                      t.jsx("li", { children: "Write clean, readable, and well-documented code" }),
-                      t.jsx("li", { children: "Include unit tests for all functionality" }),
-                      t.jsx("li", { children: "Follow Python PEP 8 style guidelines" }),
-                      t.jsx("li", { children: "Use type hints for better code clarity" })
-                    ]
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "3. Security Requirements"
-                  }),
-                  t.jsxs("ul", {
-                    className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
-                    children: [
-                      t.jsx("li", { children: "No malicious code or security vulnerabilities" }),
-                      t.jsx("li", { children: "Proper input validation and sanitization" }),
-                      t.jsx("li", { children: "Secure handling of sensitive data" }),
-                      t.jsx("li", { children: "Regular security updates and patches" })
-                    ]
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "4. Performance Guidelines"
-                  }),
-                  t.jsxs("ul", {
-                    className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
-                    children: [
-                      t.jsx("li", { children: "Optimize for minimal resource usage" }),
-                      t.jsx("li", { children: "Implement proper caching mechanisms" }),
-                      t.jsx("li", { children: "Avoid blocking operations in main thread" }),
-                      t.jsx("li", { children: "Handle errors gracefully without crashing" })
-                    ]
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "5. Documentation Requirements"
-                  }),
-                  t.jsxs("ul", {
-                    className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
-                    children: [
-                      t.jsx("li", { children: "Clear README with installation instructions" }),
-                      t.jsx("li", { children: "API documentation for all public methods" }),
-                      t.jsx("li", { children: "Usage examples and tutorials" }),
-                      t.jsx("li", { children: "Changelog for version tracking" })
-                    ]
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "6. Submission Process"
-                  }),
-                  t.jsxs("ol", {
-                    className: "list-decimal pl-6 space-y-2 text-zinc-300 mb-6",
-                    children: [
-                      t.jsx("li", { children: "Create a pull request to the main repository" }),
-                      t.jsx("li", { children: "Include all required documentation" }),
-                      t.jsx("li", { children: "Pass all automated tests" }),
-                      t.jsx("li", { children: "Respond to code review feedback" }),
-                      t.jsx("li", { children: "Maintain the plugin after acceptance" })
-                    ]
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "7. Community Standards"
-                  }),
-                  t.jsxs("ul", {
-                    className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
-                    children: [
-                      t.jsx("li", { children: "Be respectful and inclusive" }),
-                      t.jsx("li", { children: "Provide helpful feedback to other developers" }),
-                      t.jsx("li", { children: "Participate in community discussions" }),
-                      t.jsx("li", { children: "Help maintain a positive environment" })
-                    ]
-                  }),
-                  t.jsxs("div", {
-                    className: "mt-12 p-6 bg-zinc-900 rounded-lg border border-aetherra-green/20",
-                    children: [
-                      t.jsx("h3", {
-                        className: "text-xl font-semibold mb-4 text-aetherra-green",
-                        children: "Need Help?"
-                      }),
-                      t.jsx("p", {
-                        className: "text-zinc-300 mb-4",
-                        children: "Join our community for support and guidance:"
-                      }),
-                      t.jsxs("div", {
-                        className: "flex flex-wrap gap-4",
-                        children: [
-                          t.jsx("a", {
-                            href: "https://discord.gg/9Xw28xgEQ3",
-                            target: "_blank",
-                            rel: "noopener noreferrer",
-                            className: "text-aetherra-green hover:underline",
-                            children: "Discord Community"
-                          }),
-                          t.jsx("a", {
-                            href: "https://github.com/Zyonic88/Aetherra",
-                            target: "_blank",
-                            rel: "noopener noreferrer",
-                            className: "text-aetherra-green hover:underline",
-                            children: "GitHub Repository"
-                          })
-                        ]
-                      })
-                    ]
-                  })
-                ]
-              })
-            })
-          ]
-        })
+        ]
       })
-    });
-  }
-  function AN() {
-    const r = [
-      { category: "Core Architecture", items: ["Modular launcher", "Plugin loader", "Memory system", ".aether interpreter"] },
-      { category: "Plugin Ecosystem", items: ["Execution engine", "Sandbox", "Versioning", "Metadata parser"] },
-      { category: "AI Agents", items: ["Goal agent", "Reflection agent", "Plugin agent", "Escalation agent", "Self-evaluation agent"] },
-      { category: "Self-Improvement Engine", items: ["Pattern analysis", "Confidence scoring", "Memory quality reports"] },
-      { category: "Lyrixa GUI", items: ["PySide6 hybrid GUI", "Branding-compliant", "Tabbed panels", "Modular design"] },
-      { category: "Memory System", items: ["384d embeddings (MiniLM)", "Feedback memory", "Context engine", "Semantic tools"] },
-      { category: "Plugin Chaining", items: ["Sequential execution", "Parallel execution", "Adaptive I/O-compatible execution"] },
-      { category: "Intelligence Core", items: ["Live learning stack", "Introspection engine", "Plugin-aware reasoning"] },
-      { category: "Developer Tools", items: ["Plugin editor", "Diagnostics", "Config manager", "Performance monitor"] },
-      { category: "API Layer", items: ["Full FastAPI", "/docs endpoint", "/goals endpoint", "/reflect endpoint"] },
-      { category: "Fallback LLM Support", items: ["OpenAI > Ollama switcher", "Model stack selector"] },
-      { category: "Autonomous OS Kernel", items: ["aether_runtime", "goal_autopilot", "Live system workflow loop"] }
+    })
+  });
+}
+function AN() {
+  const r = [
+    { category: "Core Architecture", items: ["Modular launcher", "Plugin loader", "Memory system", ".aether interpreter"] },
+    { category: "Plugin Ecosystem", items: ["Execution engine", "Sandbox", "Versioning", "Metadata parser"] },
+    { category: "AI Agents", items: ["Goal agent", "Reflection agent", "Plugin agent", "Escalation agent", "Self-evaluation agent"] },
+    { category: "Self-Improvement Engine", items: ["Pattern analysis", "Confidence scoring", "Memory quality reports"] },
+    { category: "Lyrixa GUI", items: ["PySide6 hybrid GUI", "Branding-compliant", "Tabbed panels", "Modular design"] },
+    { category: "Memory System", items: ["384d embeddings (MiniLM)", "Feedback memory", "Context engine", "Semantic tools"] },
+    { category: "Plugin Chaining", items: ["Sequential execution", "Parallel execution", "Adaptive I/O-compatible execution"] },
+    { category: "Intelligence Core", items: ["Live learning stack", "Introspection engine", "Plugin-aware reasoning"] },
+    { category: "Developer Tools", items: ["Plugin editor", "Diagnostics", "Config manager", "Performance monitor"] },
+    { category: "API Layer", items: ["Full FastAPI", "/docs endpoint", "/goals endpoint", "/reflect endpoint"] },
+    { category: "Fallback LLM Support", items: ["OpenAI > Ollama switcher", "Model stack selector"] },
+    { category: "Autonomous OS Kernel", items: ["aether_runtime", "goal_autopilot", "Live system workflow loop"] }
+  ];
+  s = [
+    { category: "Intelligence & UX", items: ["Reactive Reasoning ('Lyrixa Thinks...')", "Emotional context & confidence levels", "Plugin state awareness + suggestion/recovery", "Real-time agent coordination logs", "Goal reasoning graph with causal links", "Semantic memory search bar", "Plugin success prediction & feedback loop"] },
+    { category: "Developer Features", items: ["Plugin sandbox with memory stubs", "Visual .aether code execution graph", "Intelligent error recovery (retry, repair)", "In-app .aetherplugin manifest builder", "Plugin performance history visualizer"] },
+    { category: "System Extension", items: ["Web/mobile sync bridge", "Distributed memory federation", "GitHub-based plugin installer", "Embedded .aether LLM-to-code compiler", "CLI assistant mirror of Lyrixa"] },
+    { category: "Self-Evolution Engine", items: ["True internal rewrite triggers", "Version regression/upgrade testing", "Persistent system-wide intent memory", "Recursive refactor assistant"] }
+  ],
+    a = [
+      { phase: "Phase 1: AI-Powered OS", status: "In Progress", timeframe: "Current", description: "Thoughts, Goals, Plugins, Memory - Building the foundation", color: "green" },
+      { phase: "Phase 2: Distributed Intelligence", status: "Planned", timeframe: "2025-2026 (Research)", description: "Research into federated AI agents, experimental shared memory systems, community-driven evolution", color: "blue" },
+      { phase: "Phase 3: Global OS", status: "Future", timeframe: "2027+ (Vision)", description: "Experimental AI-native infrastructure research across devices, Aetherra as exploratory digital system", color: "purple" },
+      { phase: "Phase 4: Post-Syntax Interfaces", status: "Vision", timeframe: "Long-term", description: "Experimental intent execution research via natural language, .aether syntax evolution", color: "gold" }
     ];
-    s = [
-      { category: "Intelligence & UX", items: ["Reactive Reasoning ('Lyrixa Thinks...')", "Emotional context & confidence levels", "Plugin state awareness + suggestion/recovery", "Real-time agent coordination logs", "Goal reasoning graph with causal links", "Semantic memory search bar", "Plugin success prediction & feedback loop"] },
-      { category: "Developer Features", items: ["Plugin sandbox with memory stubs", "Visual .aether code execution graph", "Intelligent error recovery (retry, repair)", "In-app .aetherplugin manifest builder", "Plugin performance history visualizer"] },
-      { category: "System Extension", items: ["Web/mobile sync bridge", "Distributed memory federation", "GitHub-based plugin installer", "Embedded .aether LLM-to-code compiler", "CLI assistant mirror of Lyrixa"] },
-      { category: "Self-Evolution Engine", items: ["True internal rewrite triggers", "Version regression/upgrade testing", "Persistent system-wide intent memory", "Recursive refactor assistant"] }
-    ],
-      a = [
-        { phase: "Phase 1: AI-Powered OS", status: "In Progress", timeframe: "Current", description: "Thoughts, Goals, Plugins, Memory - Building the foundation", color: "green" },
-        { phase: "Phase 2: Distributed Intelligence", status: "Planned", timeframe: "2025-2026 (Research)", description: "Research into federated AI agents, experimental shared memory systems, community-driven evolution", color: "blue" },
-        { phase: "Phase 3: Global OS", status: "Future", timeframe: "2027+ (Vision)", description: "Experimental AI-native infrastructure research across devices, Aetherra as exploratory digital system", color: "purple" },
-        { phase: "Phase 4: Post-Syntax Interfaces", status: "Vision", timeframe: "Long-term", description: "Experimental intent execution research via natural language, .aether syntax evolution", color: "gold" }
-      ];
 
-    return t.jsx("div", {
-      className: "min-h-screen bg-aetherra-dark text-white",
-      children: t.jsxs("div", {
-        className: "max-w-6xl mx-auto px-4 py-16",
-        children: [
-          t.jsxs(I.div, {
-            initial: { opacity: 0, y: 20 },
-            animate: { opacity: 1, y: 0 },
-            transition: { duration: .8 },
-            children: [
-              t.jsx("h1", {
-                className: "text-4xl md:text-6xl font-bold gradient-text mb-8 text-center",
-                children: "Aetherra Roadmap"
-              }),
-              t.jsxs("div", {
-                className: "text-center mb-12",
-                children: [
-                  t.jsx("p", {
-                    className: "text-xl text-zinc-300 mb-6 max-w-4xl mx-auto",
-                    children: "Our journey toward creating an experimental AI-native development environment. Track our progress and see what's coming next."
-                  }),
-                  t.jsxs("div", {
-                    className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20 max-w-3xl mx-auto",
-                    children: [
-                      t.jsx("h2", {
-                        className: "text-2xl font-bold text-aetherra-green mb-4",
-                        children: "🌌 Aetherra Manifesto v4.0"
-                      }),
-                      t.jsxs("p", {
-                        className: "text-zinc-300 text-lg leading-relaxed",
-                        children: [
-                          "Aetherra is not a framework. It is not a wrapper. It is not a tool.",
-                          t.jsx("br", {}),
-                          "It is an ",
-                          t.jsx("span", {
-                            className: "text-aetherra-green font-semibold",
-                            children: "AI-native OS kernel"
-                          }),
-                          ", designed to awaken intelligence from the inside out."
-                        ]
-                      })
-                    ]
-                  })
-                ]
-              })
-            ]
-          }),
-          // Truncating the rest of this enormous JSX for readability
-          // The rest continues with similar structure...
-        ]
-      })
-    });
-  }
-
-  function DN() {
-    return t.jsx("div", {
-      className: "min-h-screen bg-aetherra-dark text-white",
-      children: t.jsx("div", {
-        className: "max-w-4xl mx-auto px-4 py-16",
-        children: t.jsxs(I.div, {
+  return t.jsx("div", {
+    className: "min-h-screen bg-aetherra-dark text-white",
+    children: t.jsxs("div", {
+      className: "max-w-6xl mx-auto px-4 py-16",
+      children: [
+        t.jsxs(I.div, {
           initial: { opacity: 0, y: 20 },
           animate: { opacity: 1, y: 0 },
           transition: { duration: .8 },
           children: [
             t.jsx("h1", {
               className: "text-4xl md:text-6xl font-bold gradient-text mb-8 text-center",
-              children: "Terms and Conditions"
+              children: "Aetherra Roadmap"
             }),
-            t.jsx("div", {
-              className: "prose prose-lg prose-invert max-w-none",
-              children: t.jsxs(I.div, {
-                initial: { opacity: 0, y: 20 },
-                animate: { opacity: 1, y: 0 },
-                transition: { duration: .8, delay: .2 },
-                className: "mb-8",
-                children: [
-                  t.jsx("p", {
-                    className: "text-lg text-zinc-300 mb-6",
-                    children: "Last updated: July 16, 2025"
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "1. Acceptance of Terms"
-                  }),
-                  t.jsx("p", {
-                    className: "text-zinc-300 mb-6",
-                    children: "By accessing or using the Aetherra platform, you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our services."
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "2. Description of Service"
-                  }),
-                  t.jsx("p", {
-                    className: "text-zinc-300 mb-6",
-                    children: "Aetherra is an AI-native operating system and development platform that enables the creation of conscious AI systems. Our service includes various tools, APIs, and community features."
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "3. User Responsibilities"
-                  }),
-                  t.jsxs("ul", {
-                    className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
-                    children: [
-                      t.jsx("li", { children: "Use the platform responsibly and ethically" }),
-                      t.jsx("li", { children: "Respect intellectual property rights" }),
-                      t.jsx("li", { children: "Follow community guidelines" }),
-                      t.jsx("li", { children: "Report security vulnerabilities responsibly" })
-                    ]
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "4. Open Source License"
-                  }),
-                  t.jsx("p", {
-                    className: "text-zinc-300 mb-6",
-                    children: "Aetherra is released under an open source license. Contributions to the project are welcome and subject to the project's contribution guidelines."
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "5. Privacy and Data"
-                  }),
-                  t.jsx("p", {
-                    className: "text-zinc-300 mb-6",
-                    children: "We respect your privacy and handle data in accordance with our Privacy Policy. We collect only necessary information to provide our services."
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "6. Disclaimers"
-                  }),
-                  t.jsx("p", {
-                    className: "text-zinc-300 mb-6",
-                    children: 'Aetherra is provided "as is" without warranties of any kind. We are not responsible for any damages arising from the use of our platform.'
-                  }),
-                  t.jsx("h2", {
-                    className: "text-2xl font-bold text-aetherra-green mb-4",
-                    children: "7. Contact Information"
-                  }),
-                  t.jsxs("p", {
-                    className: "text-zinc-300 mb-6",
-                    children: [
-                      "For questions about these Terms and Conditions, please contact us through our",
-                      t.jsx("a", {
-                        href: "https://discord.gg/9Xw28xgEQ3",
-                        className: "text-aetherra-green hover:underline ml-1",
-                        target: "_blank",
-                        rel: "noopener noreferrer",
-                        children: "Discord community"
-                      }),
-                      " or",
-                      t.jsx("a", {
-                        href: "https://github.com/Zyonic88/Aetherra",
-                        className: "text-aetherra-green hover:underline ml-1",
-                        target: "_blank",
-                        rel: "noopener noreferrer",
-                        children: "GitHub repository"
-                      }),
-                      "."
-                    ]
-                  })
-                ]
-              })
-            })
-          ]
-        })
-      })
-    });
-  }
-
-  function LN() {
-    return t.jsx(dr, {
-      children: t.jsxs(k0, {
-        children: [
-          t.jsx(Tr, { path: "/", element: t.jsx(TN, {}) }),
-          t.jsx(Tr, { path: "/manifesto", element: t.jsx(zN, {}) }),
-          t.jsx(Tr, { path: "/privacy", element: t.jsx(DN, {}) }),
-          t.jsx(Tr, { path: "/roadmap", element: t.jsx(AN, {}) }),
-          t.jsx(Tr, { path: "/guidelines", element: t.jsx(EN, {}) }),
-          t.jsx(Tr, { path: "/plugins", element: t.jsx(NN, {}) }),
-          t.jsx(Tr, { path: "/playground", element: t.jsx(wN, {}) }),
-          t.jsx(Tr, { path: "/technical", element: t.jsx(TN, {}) })
-        ]
-      })
-    });
-  }
-  return t.jsxs("div", {
-    className: "App min-h-screen bg-aetherra-dark",
-    children: [
-      t.jsx(I.nav, {
-        initial: { opacity: 0, y: -20 },
-        animate: { opacity: 1, y: 0 },
-        className: "fixed top-0 left-0 right-0 z-50 bg-aetherra-dark/80 backdrop-blur-custom border-b border-aetherra-green/20",
-        children: t.jsxs("div", {
-          className: "max-w-7xl mx-auto px-4 py-4 flex justify-between items-center",
-          children: [
-            t.jsx(pt, { to: "/", className: "text-xl font-bold gradient-text", children: "Aetherra" }),
             t.jsxs("div", {
-              className: "flex space-x-6",
+              className: "text-center mb-12",
               children: [
-                t.jsx(pt, { to: "/", className: "text-zinc-300 hover:text-aetherra-green transition-colors", children: "Home" }),
-                t.jsx(pt, { to: "/manifesto", className: "text-zinc-300 hover:text-aetherra-green transition-colors", children: "Manifesto" }),
-                t.jsx(pt, { to: "/roadmap", className: "text-zinc-300 hover:text-aetherra-green transition-colors", children: "Roadmap" }),
-                t.jsx(pt, { to: "/demo", className: "text-zinc-300 hover:text-aetherra-green transition-colors", children: "Live Demo" }),
-                t.jsx(pt, { to: "/sandbox", className: "text-zinc-300 hover:text-aetherra-green transition-colors", children: "Sandbox" }),
-                t.jsx(pt, { to: "/technical", className: "text-zinc-300 hover:text-aetherra-green transition-colors", children: "Technical" }),
-                t.jsx(pt, { to: "/hub", className: "text-zinc-300 hover:text-aetherra-green transition-colors", children: "AetherHub" }),
-                t.jsx(pt, { to: "/contribute", className: "text-zinc-300 hover:text-aetherra-green transition-colors", children: "Contribute" }),
-                t.jsx(pt, { to: "/community", className: "text-zinc-300 hover:text-aetherra-green transition-colors", children: "Community" })
+                t.jsx("p", {
+                  className: "text-xl text-zinc-300 mb-6 max-w-4xl mx-auto",
+                  children: "Our journey toward creating an experimental AI-native development environment. Track our progress and see what's coming next."
+                }),
+                t.jsxs("div", {
+                  className: "bg-zinc-900 p-6 rounded-lg border border-aetherra-green/20 max-w-3xl mx-auto",
+                  children: [
+                    t.jsx("h2", {
+                      className: "text-2xl font-bold text-aetherra-green mb-4",
+                      children: "🌌 Aetherra Manifesto v4.0"
+                    }),
+                    t.jsxs("p", {
+                      className: "text-zinc-300 text-lg leading-relaxed",
+                      children: [
+                        "Aetherra is not a framework. It is not a wrapper. It is not a tool.",
+                        t.jsx("br", {}),
+                        "It is an ",
+                        t.jsx("span", {
+                          className: "text-aetherra-green font-semibold",
+                          children: "AI-native OS kernel"
+                        }),
+                        ", designed to awaken intelligence from the inside out."
+                      ]
+                    })
+                  ]
+                })
               ]
             })
           ]
-        })
-      }),
-      t.jsx("div", {
-        className: "pt-20",
-        children: t.jsxs(p0, {
-          children: [
-            t.jsx(Ze, { path: "/", element: t.jsx(hN, {}) }),
-            t.jsx(Ze, { path: "/manifesto", element: t.jsx(zN, {}) }),
-            t.jsx(Ze, { path: "/roadmap", element: t.jsx(AN, {}) }),
-            t.jsx(Ze, { path: "/terms", element: t.jsx(DN, {}) }),
-            t.jsx(Ze, { path: "/plugin-guidelines", element: t.jsx(EN, {}) }),
-            t.jsx(Ze, { path: "/demo", element: t.jsx(NN, {}) }),
-            t.jsx(Ze, { path: "/sandbox", element: t.jsx(wN, {}) }),
-            t.jsx(Ze, { path: "/technical", element: t.jsx(TN, {}) }),
-            t.jsx(Ze, { path: "/hub", element: t.jsx(Wb, {}) }),
-            t.jsx(Ze, { path: "/contribute", element: t.jsx(cN, {}) }),
-            t.jsx(Ze, { path: "/community", element: t.jsx(lN, {}) }),
-            t.jsx(Ze, { path: "/playground", element: t.jsx(Zb, {}) }),
-            t.jsx(Ze, { path: "/playground-v7", element: t.jsx(nN, {}) }),
-            t.jsx(Ze, { path: "/introspection", element: t.jsx(jN, {}) }),
-            t.jsx(Ze, { path: "/console", element: t.jsx(qb, {}) })
-          ]
-        })
-      })
-    ]
+        }),
+        // Truncating the rest of this enormous JSX for readability
+        // The rest continues with similar structure...
+      ]
+    })
   });
 }
+
+function DN() {
+  return t.jsx("div", {
+    className: "min-h-screen bg-aetherra-dark text-white",
+    children: t.jsx("div", {
+      className: "max-w-4xl mx-auto px-4 py-16",
+      children: t.jsxs(I.div, {
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: .8 },
+        children: [
+          t.jsx("h1", {
+            className: "text-4xl md:text-6xl font-bold gradient-text mb-8 text-center",
+            children: "Terms and Conditions"
+          }),
+          t.jsx("div", {
+            className: "prose prose-lg prose-invert max-w-none",
+            children: t.jsxs(I.div, {
+              initial: { opacity: 0, y: 20 },
+              animate: { opacity: 1, y: 0 },
+              transition: { duration: .8, delay: .2 },
+              className: "mb-8",
+              children: [
+                t.jsx("p", {
+                  className: "text-lg text-zinc-300 mb-6",
+                  children: "Last updated: July 16, 2025"
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "1. Acceptance of Terms"
+                }),
+                t.jsx("p", {
+                  className: "text-zinc-300 mb-6",
+                  children: "By accessing or using the Aetherra platform, you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our services."
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "2. Description of Service"
+                }),
+                t.jsx("p", {
+                  className: "text-zinc-300 mb-6",
+                  children: "Aetherra is an AI-native operating system and development platform that enables the creation of conscious AI systems. Our service includes various tools, APIs, and community features."
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "3. User Responsibilities"
+                }),
+                t.jsxs("ul", {
+                  className: "list-disc pl-6 space-y-2 text-zinc-300 mb-6",
+                  children: [
+                    t.jsx("li", { children: "Use the platform responsibly and ethically" }),
+                    t.jsx("li", { children: "Respect intellectual property rights" }),
+                    t.jsx("li", { children: "Follow community guidelines" }),
+                    t.jsx("li", { children: "Report security vulnerabilities responsibly" })
+                  ]
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "4. Open Source License"
+                }),
+                t.jsx("p", {
+                  className: "text-zinc-300 mb-6",
+                  children: "Aetherra is released under an open source license. Contributions to the project are welcome and subject to the project's contribution guidelines."
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "5. Privacy and Data"
+                }),
+                t.jsx("p", {
+                  className: "text-zinc-300 mb-6",
+                  children: "We respect your privacy and handle data in accordance with our Privacy Policy. We collect only necessary information to provide our services."
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "6. Disclaimers"
+                }),
+                t.jsx("p", {
+                  className: "text-zinc-300 mb-6",
+                  children: 'Aetherra is provided "as is" without warranties of any kind. We are not responsible for any damages arising from the use of our platform.'
+                }),
+                t.jsx("h2", {
+                  className: "text-2xl font-bold text-aetherra-green mb-4",
+                  children: "7. Contact Information"
+                }),
+                t.jsxs("p", {
+                  className: "text-zinc-300 mb-6",
+                  children: [
+                    "For questions about these Terms and Conditions, please contact us through our",
+                    t.jsx("a", {
+                      href: "https://discord.gg/9Xw28xgEQ3",
+                      className: "text-aetherra-green hover:underline ml-1",
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      children: "Discord community"
+                    }),
+                    " or",
+                    t.jsx("a", {
+                      href: "https://github.com/Zyonic88/Aetherra",
+                      className: "text-aetherra-green hover:underline ml-1",
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      children: "GitHub repository"
+                    }),
+                    "."
+                  ]
+                })
+              ]
+            })
+          })
+        ]
+      })
+    })
+  });
+}
+
+function LN() {
+  return t.jsx(dr, {
+    children: t.jsxs(k0, {
+      children: [
+        t.jsx(Tr, { path: "/", element: t.jsx(TN, {}) }),
+        t.jsx(Tr, { path: "/manifesto", element: t.jsx(zN, {}) }),
+        t.jsx(Tr, { path: "/privacy", element: t.jsx(DN, {}) }),
+        t.jsx(Tr, { path: "/roadmap", element: t.jsx(AN, {}) }),
+        t.jsx(Tr, { path: "/guidelines", element: t.jsx(EN, {}) }),
+        t.jsx(Tr, { path: "/plugins", element: t.jsx(NN, {}) }),
+        t.jsx(Tr, { path: "/playground", element: t.jsx(wN, {}) }),
+        t.jsx(Tr, { path: "/technical", element: t.jsx(TN, {}) })
+      ]
+    })
+  });
+}
+
+// Place this at the very end of the file, outside of any function or block
 Ng.createRoot(document.getElementById("root")).render(
   t.jsx(ra.StrictMode, {
     children: t.jsx(b0, {
