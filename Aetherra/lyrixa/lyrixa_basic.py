@@ -274,10 +274,12 @@ class LyrixaBasicAssistant:
 
                         async with aiohttp.ClientSession() as session:
                             async with session.get(
-                                "http://localhost:8888/api/plugins"
+                                "http://localhost:3001/api/plugins"
                             ) as response:
                                 if response.status == 200:
-                                    self.available_plugins = await response.json()
+                                    hub_data = await response.json()
+                                    # Extract plugins array from Hub response
+                                    self.available_plugins = hub_data.get("plugins", [])
                                     self.connected = True
                                     return True
                     except Exception:
@@ -438,7 +440,12 @@ class LyrixaBasicAssistant:
         try:
             from PySide6.QtWidgets import QApplication
 
-            from .lyrixa_basic_gui import LyrixaBasicWindow
+            # Add the current directory to path for imports
+            current_dir = Path(__file__).parent
+            if str(current_dir) not in sys.path:
+                sys.path.insert(0, str(current_dir))
+
+            from lyrixa_basic_gui import LyrixaBasicWindow
 
             # Create Qt Application
             self.gui_app = QApplication.instance() or QApplication(sys.argv)

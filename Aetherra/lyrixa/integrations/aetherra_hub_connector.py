@@ -27,8 +27,8 @@ class AetherraHubConnector:
 
     def __init__(self):
         self.hub_host = "localhost"
-        self.hub_port = 8888  # Default Aetherra Hub port
-        self.hub_ws_port = 8889  # WebSocket port
+        self.hub_port = 3001  # Aetherra Hub port - updated to match main OS
+        self.hub_ws_port = 3002  # WebSocket port
         self.connected = False
         self.session = None
         self.websocket = None

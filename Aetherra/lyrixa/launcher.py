@@ -294,23 +294,17 @@ class LyrixaOperatingSystem:
                 "agent_orchestrator", self.agent_orchestrator
             )
 
-            # Phase 6: Aetherra Hub Server Startup
-            logger.info("[HUB] Phase 6a: Starting Aetherra Hub Server...")
+            # Phase 6: Aetherra Hub Connection (Connect to existing Hub)
+            logger.info("[HUB] Phase 6a: Connecting to existing Aetherra Hub...")
             try:
-                # Import and start the Hub server
-                sys.path.insert(0, str(project_root))
-                from aetherra_hub_server import start_hub_server
-
-                # Start Hub server on port 8888 to match connector expectations
-                self.hub_server = start_hub_server(port=8888)
-
-                if self.hub_server and self.hub_server.is_running():
-                    logger.info("[OK] Aetherra Hub Server started on port 8888")
-                else:
-                    logger.warning("[WARN] Failed to start Aetherra Hub Server")
+                # Don't start our own Hub server - connect to existing Aetherra OS Hub on port 3001
+                logger.info(
+                    "[INFO] Attempting to connect to existing Aetherra OS Hub on port 3001"
+                )
+                self.hub_server = None  # No local hub server needed
 
             except Exception as e:
-                logger.warning(f"[WARN] Hub server startup failed: {e}")
+                logger.warning(f"[WARN] Hub connection preparation failed: {e}")
                 self.hub_server = None
 
             # Phase 6b: Aetherra Hub Connection
