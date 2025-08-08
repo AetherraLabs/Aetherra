@@ -1867,18 +1867,27 @@ const dr = b0;
 const Tr = Ze;
 const k1 = p0;
 
+// Make page components globally available
+window.TN = TN;
+window.zN = zN;
+window.DN = DN;
+window.AN = AN;
+window.EN = EN;
+window.NN = NN;
+window.wN = wN;
+
 function LN() {
   return t.jsx(dr, {
     children: t.jsxs(k1, {
       children: [
-        t.jsx(Tr, { path: "/", element: t.jsx(TN, {}) }),
-        t.jsx(Tr, { path: "/manifesto", element: t.jsx(zN, {}) }),
-        t.jsx(Tr, { path: "/privacy", element: t.jsx(DN, {}) }),
-        t.jsx(Tr, { path: "/roadmap", element: t.jsx(AN, {}) }),
-        t.jsx(Tr, { path: "/guidelines", element: t.jsx(EN, {}) }),
-        t.jsx(Tr, { path: "/plugins", element: t.jsx(NN, {}) }),
-        t.jsx(Tr, { path: "/playground", element: t.jsx(wN, {}) }),
-        t.jsx(Tr, { path: "/technical", element: t.jsx(TN, {}) })
+        t.jsx(Tr, { path: "/", element: t.jsx(window.TN, {}) }),
+        t.jsx(Tr, { path: "/manifesto", element: t.jsx(window.zN, {}) }),
+        t.jsx(Tr, { path: "/privacy", element: t.jsx(window.DN, {}) }),
+        t.jsx(Tr, { path: "/roadmap", element: t.jsx(window.AN, {}) }),
+        t.jsx(Tr, { path: "/guidelines", element: t.jsx(window.EN, {}) }),
+        t.jsx(Tr, { path: "/plugins", element: t.jsx(window.NN, {}) }),
+        t.jsx(Tr, { path: "/playground", element: t.jsx(window.wN, {}) }),
+        t.jsx(Tr, { path: "/technical", element: t.jsx(window.TN, {}) })
       ]
     })
   });
