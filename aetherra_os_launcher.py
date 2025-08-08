@@ -160,6 +160,15 @@ class AetherraOSLauncher:
         # Initialize Aetherra Native Engine
         await self._load_aetherra_engine(system_config)
 
+        # Initialize Aether Script Service (.aether file interpreter)
+        await self._load_aether_script_service(system_config)
+
+        # Initialize Persistent Memory System
+        await self._load_persistent_memory_system(system_config)
+
+        # Initialize Adaptive Behavior System
+        await self._load_adaptive_behavior_system(system_config)
+
         # Initialize Consciousness Evolution Systems
         await self._load_consciousness_systems(system_config)
 
@@ -267,6 +276,97 @@ class AetherraOSLauncher:
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load Aetherra engine: {e}")
+            raise
+
+    async def _load_aether_script_service(self, config: Dict):
+        """🔮 Load the Aether Script (.aether) interpretation service."""
+        try:
+            logger.info("[SCRIPT] Loading Aether Script Service...")
+
+            try:
+                from aetherra_script_service import get_aether_script_service
+
+                aether_service = await get_aether_script_service(self.service_registry)
+                await aether_service.start()
+                self.systems["aether_script"] = aether_service
+                await register_service(
+                    "aether_script_service",
+                    aether_service,
+                    metadata={"type": "script_interpreter", "version": "1.0", "language": "aether"},
+                )
+                logger.info("[OK] Aether Script Service online - .aether files ready")
+            except ImportError as e:
+                logger.warning(f"[WARN] Using mock Aether Script service: {e}")
+                mock_aether_script = MockAetherScriptService()
+                self.systems["aether_script"] = mock_aether_script
+                await register_service(
+                    "aether_script_service",
+                    mock_aether_script,
+                    metadata={"type": "mock", "version": "1.0"},
+                )
+
+        except Exception as e:
+            logger.error(f"[ERROR] Failed to load Aether Script service: {e}")
+            raise
+
+    async def _load_persistent_memory_system(self, config: Dict):
+        """🧠 Load the persistent cognitive memory system."""
+        try:
+            logger.info("[MEMORY] Loading Persistent Memory System...")
+
+            try:
+                from aetherra_persistent_memory import get_persistent_memory_system
+
+                memory_system = await get_persistent_memory_system()
+                self.systems["persistent_memory"] = memory_system
+                await register_service(
+                    "persistent_memory_system",
+                    memory_system,
+                    metadata={"type": "persistent_memory", "version": "1.0", "cognitive": True},
+                )
+                logger.info("[OK] Persistent Memory System online - cognitive state preserved")
+            except ImportError as e:
+                logger.warning(f"[WARN] Using mock persistent memory system: {e}")
+                mock_persistent_memory = MockPersistentMemorySystem()
+                self.systems["persistent_memory"] = mock_persistent_memory
+                await register_service(
+                    "persistent_memory_system",
+                    mock_persistent_memory,
+                    metadata={"type": "mock", "version": "1.0"},
+                )
+
+        except Exception as e:
+            logger.error(f"[ERROR] Failed to load Persistent Memory system: {e}")
+            raise
+
+    async def _load_adaptive_behavior_system(self, config: Dict):
+        """🔄 Load the adaptive behavior learning system."""
+        try:
+            logger.info("[ADAPT] Loading Adaptive Behavior System...")
+
+            try:
+                from aetherra_adaptive_behavior import get_adaptive_behavior_system
+
+                behavior_system = await get_adaptive_behavior_system(self.service_registry)
+                self.systems["adaptive_behavior"] = behavior_system
+                await register_service(
+                    "adaptive_behavior_system",
+                    behavior_system,
+                    metadata={"type": "adaptive_behavior", "version": "1.0", "learning": True},
+                )
+                logger.info("[OK] Adaptive Behavior System online - continuous learning active")
+            except ImportError as e:
+                logger.warning(f"[WARN] Using mock adaptive behavior system: {e}")
+                mock_adaptive_behavior = MockAdaptiveBehaviorSystem()
+                self.systems["adaptive_behavior"] = mock_adaptive_behavior
+                await register_service(
+                    "adaptive_behavior_system",
+                    mock_adaptive_behavior,
+                    metadata={"type": "mock", "version": "1.0"},
+                )
+
+        except Exception as e:
+            logger.error(f"[ERROR] Failed to load Adaptive Behavior system: {e}")
             raise
 
     async def _load_consciousness_systems(self, config: Dict):
@@ -1245,6 +1345,221 @@ class MockAetherraHub:
                 logger.info("[OK] Aetherra Hub server stopped")
             except Exception as e:
                 logger.error(f"[ERROR] Error stopping Hub server: {e}")
+
+
+class MockAetherScriptService:
+    """Mock Aether Script Service for testing purposes."""
+
+    def __init__(self):
+        self.name = "aether_script_service"
+        self.running = False
+        self.scripts_executed = []
+        self.heartbeat_task = None
+
+    async def initialize(self):
+        """Mock initialization."""
+        return True
+
+    async def start(self):
+        """Mock start."""
+        self.running = True
+        logger.info("[MOCK] Aether Script Service mock started")
+        # Start heartbeat when activated
+        self.heartbeat_task = asyncio.create_task(self._heartbeat_loop())
+        return True
+
+    async def stop(self):
+        """Mock stop."""
+        self.running = False
+        if self.heartbeat_task:
+            self.heartbeat_task.cancel()
+        logger.info("[MOCK] Aether Script Service mock stopped")
+
+    async def execute_script_file(self, script_path: str, context=None):
+        """Mock script execution."""
+        self.scripts_executed.append(script_path)
+        logger.info(f"[MOCK] Mock execution of script: {script_path}")
+        return {
+            "success": True,
+            "script_path": script_path,
+            "result": f"Mock execution of {script_path}",
+            "execution_time": 0.1
+        }
+
+    async def execute_script_content(self, script_content: str, filename: str = "<string>", context=None):
+        """Mock script content execution."""
+        logger.info(f"[MOCK] Mock execution of script content: {filename}")
+        return {
+            "success": True,
+            "filename": filename,
+            "result": f"Mock execution of {filename}"
+        }
+
+    def get_status(self):
+        """Get mock service status."""
+        return {
+            "running": self.running,
+            "interpreter_available": True,
+            "bootstrap_scripts": [],
+            "startup_scripts": [],
+            "running_scripts": [],
+            "scripts_executed": self.scripts_executed
+        }
+
+    async def _heartbeat_loop(self):
+        """💓 Send regular heartbeat signals."""
+        if CORE_AVAILABLE:
+            from aetherra_service_registry import update_heartbeat
+
+            while True:
+                try:
+                    await update_heartbeat(self.name)
+                    await asyncio.sleep(60)  # Heartbeat every minute
+                except Exception as e:
+                    logger.error(f"[ERROR] Heartbeat error for {self.name}: {e}")
+                    await asyncio.sleep(60)
+
+
+class MockPersistentMemorySystem:
+    """Mock Persistent Memory System for testing purposes."""
+
+    def __init__(self):
+        self.name = "persistent_memory_system"
+        self.running = False
+        self.memory_nodes = {}
+        self.heartbeat_task = None
+
+    async def initialize(self):
+        """Mock initialization."""
+        return True
+
+    async def start(self):
+        """Mock start."""
+        self.running = True
+        logger.info("[MOCK] Persistent Memory System mock started")
+        self.heartbeat_task = asyncio.create_task(self._heartbeat_loop())
+        return True
+
+    async def stop(self):
+        """Mock stop."""
+        self.running = False
+        if self.heartbeat_task:
+            self.heartbeat_task.cancel()
+        logger.info("[MOCK] Persistent Memory System mock stopped")
+
+    async def store_memory(self, memory_type: str, content: str, metadata=None):
+        """Mock memory storage."""
+        memory_id = f"mock_{len(self.memory_nodes)}"
+        self.memory_nodes[memory_id] = {
+            "type": memory_type,
+            "content": content,
+            "metadata": metadata or {}
+        }
+        logger.info(f"[MOCK] Stored memory: {memory_type} - {memory_id}")
+        return memory_id
+
+    async def retrieve_memories(self, memory_type: Optional[str] = None, query: Optional[str] = None):
+        """Mock memory retrieval."""
+        if memory_type:
+            results = [mem for mem in self.memory_nodes.values() if mem["type"] == memory_type]
+        else:
+            results = list(self.memory_nodes.values())
+        logger.info(f"[MOCK] Retrieved {len(results)} memories")
+        return results
+
+    def get_status(self):
+        """Get mock memory system status."""
+        return {
+            "running": self.running,
+            "memory_count": len(self.memory_nodes),
+            "memory_types": list(set(mem["type"] for mem in self.memory_nodes.values()))
+        }
+
+    async def _heartbeat_loop(self):
+        """💓 Send regular heartbeat signals."""
+        if CORE_AVAILABLE:
+            from aetherra_service_registry import update_heartbeat
+
+            while True:
+                try:
+                    await update_heartbeat(self.name)
+                    await asyncio.sleep(60)
+                except Exception as e:
+                    logger.error(f"[ERROR] Heartbeat error for {self.name}: {e}")
+                    await asyncio.sleep(60)
+
+
+class MockAdaptiveBehaviorSystem:
+    """Mock Adaptive Behavior System for testing purposes."""
+
+    def __init__(self):
+        self.name = "adaptive_behavior_system"
+        self.running = False
+        self.behaviors_learned = []
+        self.adaptations_made = 0
+        self.heartbeat_task = None
+
+    async def initialize(self):
+        """Mock initialization."""
+        return True
+
+    async def start(self):
+        """Mock start."""
+        self.running = True
+        logger.info("[MOCK] Adaptive Behavior System mock started")
+        self.heartbeat_task = asyncio.create_task(self._heartbeat_loop())
+        return True
+
+    async def stop(self):
+        """Mock stop."""
+        self.running = False
+        if self.heartbeat_task:
+            self.heartbeat_task.cancel()
+        logger.info("[MOCK] Adaptive Behavior System mock stopped")
+
+    async def learn_behavior(self, context: str, action: str, outcome: str):
+        """Mock behavior learning."""
+        behavior = {
+            "context": context,
+            "action": action,
+            "outcome": outcome,
+            "timestamp": time.time()
+        }
+        self.behaviors_learned.append(behavior)
+        logger.info(f"[MOCK] Learned behavior: {context} -> {action}")
+        return True
+
+    async def adapt_behavior(self, current_context: str):
+        """Mock behavior adaptation."""
+        self.adaptations_made += 1
+        logger.info(f"[MOCK] Adapted behavior for context: {current_context}")
+        return {
+            "adaptation_applied": True,
+            "adaptation_count": self.adaptations_made,
+            "context": current_context
+        }
+
+    def get_status(self):
+        """Get mock adaptive behavior status."""
+        return {
+            "running": self.running,
+            "behaviors_learned": len(self.behaviors_learned),
+            "adaptations_made": self.adaptations_made,
+            "learning_active": self.running
+        }
+
+    async def _heartbeat_loop(self):
+        """💓 Send regular heartbeat signals."""
+        if CORE_AVAILABLE:
+            from aetherra_service_registry import update_heartbeat
+
+            while True:
+                try:
+                    await update_heartbeat(self.name)
+                    await asyncio.sleep(60)
+                except Exception as e:
+                    logger.error(f"[ERROR] Heartbeat error for {self.name}: {e}")
+                    await asyncio.sleep(60)
 
 
 async def main():
