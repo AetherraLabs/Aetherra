@@ -1864,10 +1864,12 @@ function DN() {
 }
 
 const dr = b0;
+const Tr = Ze;
+const k1 = p0;
 
 function LN() {
   return t.jsx(dr, {
-    children: t.jsxs(k0, {
+    children: t.jsxs(k1, {
       children: [
         t.jsx(Tr, { path: "/", element: t.jsx(TN, {}) }),
         t.jsx(Tr, { path: "/manifesto", element: t.jsx(zN, {}) }),
