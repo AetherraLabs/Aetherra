@@ -186,6 +186,33 @@ class AetherraEngine:
         except Exception as e:
             logger.error(f"❌ Error during shutdown: {e}")
 
+    async def reflect_on_day(self):
+        """🌙 Perform end-of-day reflection and learning consolidation"""
+        try:
+            logger.info("🌙 Beginning daily reflection...")
+            
+            # Store reflection about the day's activities
+            if hasattr(self.memory_system, 'store_memory'):
+                reflection_data = {
+                    "type": "daily_reflection",
+                    "timestamp": asyncio.get_event_loop().time(),
+                    "content": "Daily reflection cycle completed - systems operational",
+                    "metadata": {
+                        "reflection_type": "end_of_day",
+                        "engine_status": "operational" if self.initialized else "shutdown"
+                    }
+                }
+                await self.memory_system.store_memory("daily_reflection", reflection_data)
+            
+            # Trigger introspection if available
+            if hasattr(self.introspection, 'start_introspection'):
+                await self.introspection.start_introspection()
+            
+            logger.info("🌙 Daily reflection completed successfully")
+            
+        except Exception as e:
+            logger.error(f"❌ Error during daily reflection: {e}")
+
     def _register_system_components(self):
         """Register system components for health monitoring"""
 
