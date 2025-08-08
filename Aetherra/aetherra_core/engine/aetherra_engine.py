@@ -190,7 +190,7 @@ class AetherraEngine:
         """🌙 Perform end-of-day reflection and learning consolidation"""
         try:
             logger.info("🌙 Beginning daily reflection...")
-            
+
             # Store reflection about the day's activities
             if hasattr(self.memory_system, 'store_memory'):
                 reflection_data = {
@@ -203,13 +203,13 @@ class AetherraEngine:
                     }
                 }
                 await self.memory_system.store_memory("daily_reflection", reflection_data)
-            
+
             # Trigger introspection if available
             if hasattr(self.introspection, 'start_introspection'):
                 await self.introspection.start_introspection()
-            
+
             logger.info("🌙 Daily reflection completed successfully")
-            
+
         except Exception as e:
             logger.error(f"❌ Error during daily reflection: {e}")
 

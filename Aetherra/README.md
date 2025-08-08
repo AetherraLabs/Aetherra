@@ -1,6 +1,6 @@
 # Aetherra - AI-Native Development Platform
 
-A revolutionary development platform that bridges natural language and code through the Aetherra programming language and Lyrixa AI assistant.
+An experimental development platform that bridges natural language and code through the Aetherra programming language and Lyrixa AI assistant.
 
 ## Features
 
