@@ -157,7 +157,7 @@ class AetherraServiceRegistry:
             if self._shared_enabled and self._shared_registry:
                 try:
                     await self._shared_registry.register_service(
-                        name, instance, 
+                        name, instance,
                         metadata=metadata or {},
                         dependencies=dependencies or []
                     )
@@ -230,7 +230,7 @@ class AetherraServiceRegistry:
         service_info = self._services.get(name)
         if service_info and service_info.status == ServiceStatus.HEALTHY:
             return service_info.instance
-        
+
         # If not found locally and shared registry is enabled, check shared registry
         if self._shared_enabled and self._shared_registry:
             try:
@@ -240,7 +240,7 @@ class AetherraServiceRegistry:
                     return shared_service
             except Exception as e:
                 logger.warning(f"[SHARED] Failed to get service '{name}' from shared registry: {e}")
-        
+
         return None
 
     def get_service_info(self, name: str) -> Optional[ServiceInfo]:
@@ -257,7 +257,7 @@ class AetherraServiceRegistry:
         local_info = self._services.get(name)
         if local_info:
             return local_info
-        
+
         # If not found locally and shared registry is enabled, check shared registry
         if self._shared_enabled and self._shared_registry:
             try:
@@ -275,7 +275,7 @@ class AetherraServiceRegistry:
                     )
             except Exception as e:
                 logger.warning(f"[SHARED] Failed to get service info '{name}' from shared registry: {e}")
-        
+
         return None
 
     def list_services(
@@ -292,7 +292,7 @@ class AetherraServiceRegistry:
         """
         # Start with local services
         local_services = self._services.copy()
-        
+
         # Add shared services if available
         if self._shared_enabled and self._shared_registry:
             try:
@@ -312,7 +312,7 @@ class AetherraServiceRegistry:
                         )
             except Exception as e:
                 logger.warning(f"[SHARED] Failed to list shared services: {e}")
-        
+
         # Apply status filter if specified
         if status_filter:
             return {
@@ -560,18 +560,18 @@ _shared_registry_enabled = False
 async def get_service_registry(enable_shared: bool = True) -> AetherraServiceRegistry:
     """[GLOBAL] Get the global service registry instance."""
     global _service_registry, _shared_registry_enabled
-    
+
     if _service_registry is None:
         _service_registry = AetherraServiceRegistry()
-        
+
         # Enable shared registry support if available and requested
         if enable_shared and SHARED_REGISTRY_AVAILABLE:
             await _service_registry.enable_shared_registry()
             _shared_registry_enabled = True
             logger.info("[REGISTRY] Shared registry support enabled")
-        
+
         await _service_registry.start()
-    
+
     return _service_registry
 
 

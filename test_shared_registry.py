@@ -9,7 +9,7 @@ async def test():
     print(f"Shared enabled: {registry._shared_enabled}")
     services = registry.list_services()
     print(f"Local services: {list(services.keys())}")
-    
+
     if registry._shared_registry:
         shared_services = registry._shared_registry.list_services()
         print(f"Shared services: {list(shared_services.keys())}")
