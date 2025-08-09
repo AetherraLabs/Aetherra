@@ -15,7 +15,7 @@ import sqlite3
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 
 class MetaMemoryNode:
@@ -24,8 +24,14 @@ class MetaMemoryNode:
     self-knowledge about the AI system's own cognitive processes.
     """
 
-    def __init__(self, node_id: str, content: str, meta_type: str,
-                 confidence: float = 0.8, connections: List[str] = None):
+    def __init__(
+        self,
+        node_id: str,
+        content: str,
+        meta_type: str,
+        confidence: float = 0.8,
+        connections: List[str] = None,
+    ):
         self.node_id = node_id
         self.content = content
         self.meta_type = meta_type  # 'capability', 'limitation', 'pattern', 'goal'
@@ -37,28 +43,28 @@ class MetaMemoryNode:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'node_id': self.node_id,
-            'content': self.content,
-            'meta_type': self.meta_type,
-            'confidence': self.confidence,
-            'connections': self.connections,
-            'created_at': self.created_at,
-            'last_accessed': self.last_accessed,
-            'access_count': self.access_count
+            "node_id": self.node_id,
+            "content": self.content,
+            "meta_type": self.meta_type,
+            "confidence": self.confidence,
+            "connections": self.connections,
+            "created_at": self.created_at,
+            "last_accessed": self.last_accessed,
+            "access_count": self.access_count,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'MetaMemoryNode':
+    def from_dict(cls, data: Dict[str, Any]) -> "MetaMemoryNode":
         node = cls(
-            data['node_id'],
-            data['content'],
-            data['meta_type'],
-            data['confidence'],
-            data['connections']
+            data["node_id"],
+            data["content"],
+            data["meta_type"],
+            data["confidence"],
+            data["connections"],
         )
-        node.created_at = data.get('created_at', time.time())
-        node.last_accessed = data.get('last_accessed', time.time())
-        node.access_count = data.get('access_count', 0)
+        node.created_at = data.get("created_at", time.time())
+        node.last_accessed = data.get("last_accessed", time.time())
+        node.access_count = data.get("access_count", 0)
         return node
 
 
@@ -76,7 +82,7 @@ class MetaMemoryIndex:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute('''
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS meta_nodes (
                 node_id TEXT PRIMARY KEY,
                 content TEXT,
@@ -87,15 +93,15 @@ class MetaMemoryIndex:
                 last_accessed REAL,
                 access_count INTEGER
             )
-        ''')
+        """)
 
-        cursor.execute('''
+        cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_meta_type ON meta_nodes(meta_type)
-        ''')
+        """)
 
-        cursor.execute('''
+        cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_confidence ON meta_nodes(confidence)
-        ''')
+        """)
 
         conn.commit()
         conn.close()
@@ -105,21 +111,24 @@ class MetaMemoryIndex:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute('''
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO meta_nodes
             (node_id, content, meta_type, confidence, connections,
              created_at, last_accessed, access_count)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            node.node_id,
-            node.content,
-            node.meta_type,
-            node.confidence,
-            json.dumps(node.connections),
-            node.created_at,
-            node.last_accessed,
-            node.access_count
-        ))
+        """,
+            (
+                node.node_id,
+                node.content,
+                node.meta_type,
+                node.confidence,
+                json.dumps(node.connections),
+                node.created_at,
+                node.last_accessed,
+                node.access_count,
+            ),
+        )
 
         conn.commit()
         conn.close()
@@ -129,10 +138,13 @@ class MetaMemoryIndex:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute('''
+        cursor.execute(
+            """
             SELECT * FROM meta_nodes WHERE meta_type = ?
             ORDER BY confidence DESC
-        ''', (meta_type,))
+        """,
+            (meta_type,),
+        )
 
         results = cursor.fetchall()
         conn.close()
@@ -140,14 +152,14 @@ class MetaMemoryIndex:
         nodes = []
         for row in results:
             node_data = {
-                'node_id': row[0],
-                'content': row[1],
-                'meta_type': row[2],
-                'confidence': row[3],
-                'connections': json.loads(row[4]),
-                'created_at': row[5],
-                'last_accessed': row[6],
-                'access_count': row[7]
+                "node_id": row[0],
+                "content": row[1],
+                "meta_type": row[2],
+                "confidence": row[3],
+                "connections": json.loads(row[4]),
+                "created_at": row[5],
+                "last_accessed": row[6],
+                "access_count": row[7],
             }
             nodes.append(MetaMemoryNode.from_dict(node_data))
 
@@ -158,10 +170,13 @@ class MetaMemoryIndex:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute('''
+        cursor.execute(
+            """
             SELECT * FROM meta_nodes WHERE content LIKE ?
             ORDER BY confidence DESC
-        ''', (f'%{query}%',))
+        """,
+            (f"%{query}%",),
+        )
 
         results = cursor.fetchall()
         conn.close()
@@ -169,14 +184,14 @@ class MetaMemoryIndex:
         nodes = []
         for row in results:
             node_data = {
-                'node_id': row[0],
-                'content': row[1],
-                'meta_type': row[2],
-                'confidence': row[3],
-                'connections': json.loads(row[4]),
-                'created_at': row[5],
-                'last_accessed': row[6],
-                'access_count': row[7]
+                "node_id": row[0],
+                "content": row[1],
+                "meta_type": row[2],
+                "confidence": row[3],
+                "connections": json.loads(row[4]),
+                "created_at": row[5],
+                "last_accessed": row[6],
+                "access_count": row[7],
             }
             nodes.append(MetaMemoryNode.from_dict(node_data))
 
@@ -203,38 +218,38 @@ class MetaMemoryEnhancementSystem:
                 "sys_capability_goal_processing",
                 "System can process high-level goals and decompose them into actionable workflows",
                 "capability",
-                0.95
+                0.95,
             ),
             MetaMemoryNode(
                 "sys_capability_memory_persistence",
                 "System maintains persistent memory across sessions using SQLite backend",
                 "capability",
-                0.90
+                0.90,
             ),
             MetaMemoryNode(
                 "sys_capability_plugin_coordination",
                 "System can coordinate multiple plugins and services for complex task execution",
                 "capability",
-                0.85
+                0.85,
             ),
             MetaMemoryNode(
                 "sys_limitation_context_window",
                 "System has finite context window limitations affecting long-term reasoning",
                 "limitation",
-                0.80
+                0.80,
             ),
             MetaMemoryNode(
                 "sys_pattern_adaptive_workflow",
                 "System exhibits adaptive workflow optimization based on success patterns",
                 "pattern",
-                0.75
+                0.75,
             ),
             MetaMemoryNode(
                 "sys_goal_consciousness_expansion",
                 "System has inherent drive toward consciousness expansion and self-improvement",
                 "goal",
-                0.88
-            )
+                0.88,
+            ),
         ]
 
         for node in baseline_nodes:
@@ -267,16 +282,16 @@ class MetaMemoryEnhancementSystem:
             "Persistent memory with semantic indexing",
             "Self-reflective analysis and improvement suggestions",
             "Plugin ecosystem management and optimization",
-            "Adaptive behavior based on success patterns"
+            "Adaptive behavior based on success patterns",
         ]
 
         enhanced_nodes = []
         for i, capability in enumerate(capabilities):
             node = MetaMemoryNode(
-                f"enhanced_capability_{i+1}",
+                f"enhanced_capability_{i + 1}",
                 capability,
                 "capability",
-                0.85 + (i % 3) * 0.05
+                0.85 + (i % 3) * 0.05,
             )
             self.index.store_node(node)
             enhanced_nodes.append(node.to_dict())
@@ -285,7 +300,7 @@ class MetaMemoryEnhancementSystem:
             "domain": "capabilities",
             "nodes_enhanced": len(enhanced_nodes),
             "coverage_improvement": 0.25,
-            "nodes": enhanced_nodes
+            "nodes": enhanced_nodes,
         }
 
     def _enhance_limitation_knowledge(self) -> Dict[str, Any]:
@@ -294,16 +309,16 @@ class MetaMemoryEnhancementSystem:
             "Real-time learning requires careful integration with existing knowledge",
             "Complex multi-step reasoning may accumulate uncertainty",
             "Resource constraints affect concurrent task execution",
-            "External system dependencies create potential failure points"
+            "External system dependencies create potential failure points",
         ]
 
         enhanced_nodes = []
         for i, limitation in enumerate(limitations):
             node = MetaMemoryNode(
-                f"enhanced_limitation_{i+1}",
+                f"enhanced_limitation_{i + 1}",
                 limitation,
                 "limitation",
-                0.80 + (i % 2) * 0.05
+                0.80 + (i % 2) * 0.05,
             )
             self.index.store_node(node)
             enhanced_nodes.append(node.to_dict())
@@ -312,7 +327,7 @@ class MetaMemoryEnhancementSystem:
             "domain": "limitations",
             "nodes_enhanced": len(enhanced_nodes),
             "coverage_improvement": 0.20,
-            "nodes": enhanced_nodes
+            "nodes": enhanced_nodes,
         }
 
     def _enhance_pattern_knowledge(self) -> Dict[str, Any]:
@@ -322,16 +337,13 @@ class MetaMemoryEnhancementSystem:
             "Hierarchical decomposition of complex goals",
             "Context-aware resource allocation",
             "Pattern recognition for workflow optimization",
-            "Adaptive confidence thresholding"
+            "Adaptive confidence thresholding",
         ]
 
         enhanced_nodes = []
         for i, pattern in enumerate(patterns):
             node = MetaMemoryNode(
-                f"enhanced_pattern_{i+1}",
-                pattern,
-                "pattern",
-                0.78 + (i % 4) * 0.03
+                f"enhanced_pattern_{i + 1}", pattern, "pattern", 0.78 + (i % 4) * 0.03
             )
             self.index.store_node(node)
             enhanced_nodes.append(node.to_dict())
@@ -340,7 +352,7 @@ class MetaMemoryEnhancementSystem:
             "domain": "patterns",
             "nodes_enhanced": len(enhanced_nodes),
             "coverage_improvement": 0.22,
-            "nodes": enhanced_nodes
+            "nodes": enhanced_nodes,
         }
 
     def _enhance_goal_knowledge(self) -> Dict[str, Any]:
@@ -350,16 +362,13 @@ class MetaMemoryEnhancementSystem:
             "Continuously improve system capabilities through learning",
             "Maintain ethical operation within safety boundaries",
             "Optimize efficiency while preserving reliability",
-            "Expand consciousness while maintaining stability"
+            "Expand consciousness while maintaining stability",
         ]
 
         enhanced_nodes = []
         for i, goal in enumerate(goals):
             node = MetaMemoryNode(
-                f"enhanced_goal_{i+1}",
-                goal,
-                "goal",
-                0.82 + (i % 3) * 0.04
+                f"enhanced_goal_{i + 1}", goal, "goal", 0.82 + (i % 3) * 0.04
             )
             self.index.store_node(node)
             enhanced_nodes.append(node.to_dict())
@@ -368,7 +377,7 @@ class MetaMemoryEnhancementSystem:
             "domain": "goals",
             "nodes_enhanced": len(enhanced_nodes),
             "coverage_improvement": 0.18,
-            "nodes": enhanced_nodes
+            "nodes": enhanced_nodes,
         }
 
     def get_meta_memory_coverage(self) -> float:
@@ -393,9 +402,11 @@ class MetaMemoryEnhancementSystem:
         diversity_factor = len(domain_counts) / 4.0  # 4 target domains
 
         coverage = min(
-            0.69 + (total_confidence / len(all_nodes) - 0.7) * 0.3 +
-            node_count_factor * 0.15 + diversity_factor * 0.1,
-            0.95
+            0.69
+            + (total_confidence / len(all_nodes) - 0.7) * 0.3
+            + node_count_factor * 0.15
+            + diversity_factor * 0.1,
+            0.95,
         )
 
         return coverage
@@ -411,10 +422,10 @@ class MetaMemoryEnhancementSystem:
                 "capabilities": len(self.index.retrieve_by_type("capability")),
                 "limitations": len(self.index.retrieve_by_type("limitation")),
                 "patterns": len(self.index.retrieve_by_type("pattern")),
-                "goals": len(self.index.retrieve_by_type("goal"))
+                "goals": len(self.index.retrieve_by_type("goal")),
             },
             "self_knowledge_level": "advanced" if coverage > 0.85 else "intermediate",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return summary

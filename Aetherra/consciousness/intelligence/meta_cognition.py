@@ -4,20 +4,21 @@ Advanced meta-memory and self-awareness system for Aetherra OS
 Addresses critical meta-memory coverage gap identified by AI OS self-reflection
 """
 
-import time
 import json
-import uuid
+import logging
 import sqlite3
 import threading
-from typing import Dict, List, Optional, Any, Tuple, Set
-from dataclasses import dataclass, asdict
-from enum import Enum
+import time
+import uuid
 from collections import defaultdict
-import logging
+from dataclasses import asdict, dataclass
+from enum import Enum
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 
 class SelfKnowledgeDomain(Enum):
     """Domains of self-knowledge for comprehensive meta-memory"""
+
     COGNITIVE_PATTERNS = "cognitive_patterns"
     BEHAVIORAL_TENDENCIES = "behavioral_tendencies"
     KNOWLEDGE_GAPS = "knowledge_gaps"
@@ -33,6 +34,7 @@ class SelfKnowledgeDomain(Enum):
 @dataclass
 class MetaMemoryNode:
     """Enhanced memory node with meta-cognitive annotations"""
+
     node_id: str
     knowledge_domain: SelfKnowledgeDomain
     content: Dict[str, Any]
@@ -48,6 +50,7 @@ class MetaMemoryNode:
 @dataclass
 class SelfReflectionEntry:
     """Entry for self-reflection and introspective analysis"""
+
     reflection_id: str
     timestamp: float
     reflection_type: str
@@ -93,7 +96,9 @@ class MetaCognitionSystem:
         # Start continuous self-monitoring
         self._start_self_monitoring()
 
-        logging.info("Meta-Cognition System initialized - Enhanced self-knowledge active")
+        logging.info(
+            "Meta-Cognition System initialized - Enhanced self-knowledge active"
+        )
 
     def _init_database(self):
         """Initialize SQLite database for persistent meta-memory"""
@@ -146,13 +151,16 @@ class MetaCognitionSystem:
                 "last_updated": time.time(),
                 "knowledge_nodes": [],
                 "gaps_identified": [],
-                "learning_priority": 0.5
+                "learning_priority": 0.5,
             }
 
-    def enhance_self_knowledge(self, domain: SelfKnowledgeDomain,
-                             knowledge_data: Dict[str, Any],
-                             confidence: float,
-                             source: str = "self_reflection") -> str:
+    def enhance_self_knowledge(
+        self,
+        domain: SelfKnowledgeDomain,
+        knowledge_data: Dict[str, Any],
+        confidence: float,
+        source: str = "self_reflection",
+    ) -> str:
         """
         🧠 Enhance self-knowledge in a specific domain
         Core method for improving meta-memory coverage
@@ -165,7 +173,7 @@ class MetaCognitionSystem:
             "validation_method": "self_assessment",
             "cross_references": self._find_cross_references(knowledge_data),
             "uncertainty_factors": self._identify_uncertainty_factors(knowledge_data),
-            "learning_context": self._extract_learning_context()
+            "learning_context": self._extract_learning_context(),
         }
 
         node = MetaMemoryNode(
@@ -178,7 +186,7 @@ class MetaCognitionSystem:
             access_count=0,
             meta_annotations=meta_annotations,
             validation_status="pending_validation",
-            learning_weight=self._calculate_learning_weight(domain, knowledge_data)
+            learning_weight=self._calculate_learning_weight(domain, knowledge_data),
         )
 
         # Store in memory and database
@@ -189,18 +197,22 @@ class MetaCognitionSystem:
         self._update_domain_coverage(domain, node)
 
         # Trigger meta-reflection on new knowledge
-        self._trigger_meta_reflection("knowledge_enhancement", {
-            "domain": domain.value,
-            "node_id": node_id,
-            "confidence": confidence
-        })
+        self._trigger_meta_reflection(
+            "knowledge_enhancement",
+            {"domain": domain.value, "node_id": node_id, "confidence": confidence},
+        )
 
-        logging.info(f"Enhanced self-knowledge in domain {domain.value} - Node {node_id}")
+        logging.info(
+            f"Enhanced self-knowledge in domain {domain.value} - Node {node_id}"
+        )
         return node_id
 
-    def conduct_self_reflection(self, trigger_event: str,
-                              reflection_type: str = "comprehensive",
-                              meta_level: int = 1) -> SelfReflectionEntry:
+    def conduct_self_reflection(
+        self,
+        trigger_event: str,
+        reflection_type: str = "comprehensive",
+        meta_level: int = 1,
+    ) -> SelfReflectionEntry:
         """
         🔍 Conduct comprehensive self-reflection and introspective analysis
         Generate insights about current state and knowledge gaps
@@ -228,7 +240,7 @@ class MetaCognitionSystem:
             insights_gained=insights,
             knowledge_updates=knowledge_updates,
             confidence_changes=confidence_changes,
-            meta_level=meta_level
+            meta_level=meta_level,
         )
 
         # Store reflection
@@ -252,7 +264,7 @@ class MetaCognitionSystem:
             "critical_gaps": [],
             "improvement_priorities": [],
             "confidence_levels": {},
-            "learning_recommendations": []
+            "learning_recommendations": [],
         }
 
         domain_scores = []
@@ -269,7 +281,7 @@ class MetaCognitionSystem:
                 "confidence": confidence_score,
                 "node_count": len(domain_data["knowledge_nodes"]),
                 "gaps": domain_data["gaps_identified"],
-                "priority": domain_data["learning_priority"]
+                "priority": domain_data["learning_priority"],
             }
 
             coverage_report["confidence_levels"][domain.value] = confidence_score
@@ -277,20 +289,28 @@ class MetaCognitionSystem:
 
             # Identify critical gaps
             if coverage_score < 0.7:
-                coverage_report["critical_gaps"].append({
-                    "domain": domain.value,
-                    "coverage": coverage_score,
-                    "improvement_potential": self._estimate_improvement_potential(domain)
-                })
+                coverage_report["critical_gaps"].append(
+                    {
+                        "domain": domain.value,
+                        "coverage": coverage_score,
+                        "improvement_potential": self._estimate_improvement_potential(
+                            domain
+                        ),
+                    }
+                )
 
         # Calculate overall coverage
         coverage_report["overall_coverage"] = sum(domain_scores) / len(domain_scores)
 
         # Generate improvement priorities
-        coverage_report["improvement_priorities"] = self._generate_improvement_priorities()
+        coverage_report["improvement_priorities"] = (
+            self._generate_improvement_priorities()
+        )
 
         # Generate learning recommendations
-        coverage_report["learning_recommendations"] = self._generate_learning_recommendations()
+        coverage_report["learning_recommendations"] = (
+            self._generate_learning_recommendations()
+        )
 
         return coverage_report
 
@@ -330,14 +350,14 @@ class MetaCognitionSystem:
             "learning_preferences": learning_preferences,
             "cognitive_biases": self._identify_cognitive_biases(),
             "processing_speeds": self._measure_processing_characteristics(),
-            "attention_patterns": self._analyze_attention_patterns()
+            "attention_patterns": self._analyze_attention_patterns(),
         }
 
         return self.enhance_self_knowledge(
             SelfKnowledgeDomain.COGNITIVE_PATTERNS,
             knowledge_data,
             confidence=0.85,
-            source="pattern_analysis"
+            source="pattern_analysis",
         )
 
     def enhance_system_capabilities_knowledge(self) -> str:
@@ -353,14 +373,14 @@ class MetaCognitionSystem:
             "integration_abilities": self._assess_integration_abilities(),
             "adaptation_mechanisms": self._assess_adaptation_mechanisms(),
             "limitation_awareness": self._identify_system_limitations(),
-            "optimization_potential": self._identify_optimization_opportunities()
+            "optimization_potential": self._identify_optimization_opportunities(),
         }
 
         return self.enhance_self_knowledge(
             SelfKnowledgeDomain.SYSTEM_CAPABILITIES,
             capabilities_analysis,
             confidence=0.90,
-            source="system_analysis"
+            source="system_analysis",
         )
 
     def get_self_knowledge_summary(self) -> Dict[str, Any]:
@@ -375,14 +395,16 @@ class MetaCognitionSystem:
                 "overall_coverage": coverage_assessment["overall_coverage"],
                 "total_nodes": len(self.meta_memory_nodes),
                 "reflection_count": len(self.reflection_history),
-                "last_reflection": self.reflection_history[-1].timestamp if self.reflection_history else None
+                "last_reflection": self.reflection_history[-1].timestamp
+                if self.reflection_history
+                else None,
             },
             "domain_strengths": self._identify_knowledge_strengths(),
             "domain_weaknesses": self._identify_knowledge_weaknesses(),
             "learning_progress": self._track_learning_progress(),
             "confidence_trends": self._analyze_confidence_trends(),
             "meta_cognitive_insights": self._generate_meta_cognitive_insights(),
-            "improvement_roadmap": self._generate_improvement_roadmap()
+            "improvement_roadmap": self._generate_improvement_roadmap(),
         }
 
     # ===== HELPER METHODS =====
@@ -404,10 +426,12 @@ class MetaCognitionSystem:
         # Integration factor
         integration_factor = self._calculate_integration_factor(domain)
 
-        return (base_coverage * 0.4 +
-                confidence_factor * 0.3 +
-                recency_factor * 0.15 +
-                integration_factor * 0.15)
+        return (
+            base_coverage * 0.4
+            + confidence_factor * 0.3
+            + recency_factor * 0.15
+            + integration_factor * 0.15
+        )
 
     def _perform_self_assessment(self, meta_level: int) -> Dict[str, Any]:
         """Perform multi-level self-assessment"""
@@ -416,7 +440,7 @@ class MetaCognitionSystem:
             "knowledge_state": self._assess_knowledge_state(),
             "confidence_state": self._assess_confidence_state(),
             "learning_state": self._assess_learning_state(),
-            "consciousness_state": self._assess_consciousness_state()
+            "consciousness_state": self._assess_consciousness_state(),
         }
 
         # Add meta-level assessments
@@ -440,7 +464,9 @@ class MetaCognitionSystem:
             insights.append("Significant knowledge gaps identified requiring attention")
 
         if assessment["learning_state"]["progress_rate"] > 0.8:
-            insights.append("High learning progress rate indicates effective adaptation")
+            insights.append(
+                "High learning progress rate indicates effective adaptation"
+            )
 
         # Add domain-specific insights
         for domain in SelfKnowledgeDomain:
@@ -480,43 +506,49 @@ class MetaCognitionSystem:
     def _persist_meta_memory_node(self, node: MetaMemoryNode):
         """Persist meta-memory node to database"""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO meta_memory_nodes
                 (node_id, knowledge_domain, content, confidence, created_timestamp,
                  last_accessed, access_count, meta_annotations, validation_status, learning_weight)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                node.node_id,
-                node.knowledge_domain.value,
-                json.dumps(node.content),
-                node.confidence,
-                node.created_timestamp,
-                node.last_accessed,
-                node.access_count,
-                json.dumps(node.meta_annotations),
-                node.validation_status,
-                node.learning_weight
-            ))
+            """,
+                (
+                    node.node_id,
+                    node.knowledge_domain.value,
+                    json.dumps(node.content),
+                    node.confidence,
+                    node.created_timestamp,
+                    node.last_accessed,
+                    node.access_count,
+                    json.dumps(node.meta_annotations),
+                    node.validation_status,
+                    node.learning_weight,
+                ),
+            )
 
     def _persist_reflection(self, reflection: SelfReflectionEntry):
         """Persist reflection to database"""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO self_reflections
                 (reflection_id, timestamp, reflection_type, trigger_event,
                  self_assessment, insights_gained, knowledge_updates, confidence_changes, meta_level)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                reflection.reflection_id,
-                reflection.timestamp,
-                reflection.reflection_type,
-                reflection.trigger_event,
-                json.dumps(reflection.self_assessment),
-                json.dumps(reflection.insights_gained),
-                json.dumps(reflection.knowledge_updates),
-                json.dumps(reflection.confidence_changes),
-                reflection.meta_level
-            ))
+            """,
+                (
+                    reflection.reflection_id,
+                    reflection.timestamp,
+                    reflection.reflection_type,
+                    reflection.trigger_event,
+                    json.dumps(reflection.self_assessment),
+                    json.dumps(reflection.insights_gained),
+                    json.dumps(reflection.knowledge_updates),
+                    json.dumps(reflection.confidence_changes),
+                    reflection.meta_level,
+                ),
+            )
 
     # Additional helper methods would be implemented here for all the analysis functions
     # This is a comprehensive foundation for the meta-cognition system
@@ -525,7 +557,9 @@ class MetaCognitionSystem:
         """Find cross-references to other knowledge nodes"""
         return []  # Placeholder
 
-    def _identify_uncertainty_factors(self, knowledge_data: Dict[str, Any]) -> List[str]:
+    def _identify_uncertainty_factors(
+        self, knowledge_data: Dict[str, Any]
+    ) -> List[str]:
         """Identify factors that create uncertainty in this knowledge"""
         return []  # Placeholder
 
@@ -533,11 +567,15 @@ class MetaCognitionSystem:
         """Extract current learning context"""
         return {"timestamp": time.time()}  # Placeholder
 
-    def _calculate_learning_weight(self, domain: SelfKnowledgeDomain, knowledge_data: Dict[str, Any]) -> float:
+    def _calculate_learning_weight(
+        self, domain: SelfKnowledgeDomain, knowledge_data: Dict[str, Any]
+    ) -> float:
         """Calculate learning weight for knowledge prioritization"""
         return 0.5  # Placeholder
 
-    def _update_domain_coverage(self, domain: SelfKnowledgeDomain, node: MetaMemoryNode):
+    def _update_domain_coverage(
+        self, domain: SelfKnowledgeDomain, node: MetaMemoryNode
+    ):
         """Update coverage statistics for a domain"""
         domain_data = self.self_knowledge_coverage[domain.value]
         domain_data["knowledge_nodes"].append(node.node_id)

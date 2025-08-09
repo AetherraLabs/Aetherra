@@ -1,12 +1,16 @@
-name: Deploy Aetherra to GitHub Pages
+name: Deploy Aetherra Website
 
 on:
   push:
     branches: [ main ]
     paths: [
-      'web/aetherra-website/**',
-      'docs/**',
-      '.github/workflows/deploy.yml'
+      'index.html',
+      'assets/**',
+      'favicon.svg',
+      'CNAME',
+      '*.html',
+      '*.css',
+      '*.js'
     ]
 
 permissions:
@@ -19,38 +23,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: 'web/aetherra-website/package-lock.json'
-
-      - name: Install Dependencies
-        working-directory: web/aetherra-website
-        run: npm ci
-
-      - name: Build Website
-        working-directory: web/aetherra-website
-        run: npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload Artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'docs'
+          path: '.'
 
       - name: Deploy to GitHub Pages
         id: deployment

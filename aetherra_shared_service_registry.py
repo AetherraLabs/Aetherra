@@ -14,11 +14,14 @@ Licensed under GNU General Public License v3.0
 import asyncio
 import json
 import logging
+import mmap
+import multiprocessing
 import os
 import pickle
 import socket
 import subprocess
 import tempfile
+import threading
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -26,15 +29,13 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
-import threading
-import multiprocessing
-import mmap
 
 logger = logging.getLogger(__name__)
 
 
 class ServiceStatus(Enum):
     """Service health status enumeration."""
+
     STARTING = "starting"
     HEALTHY = "healthy"
     DEGRADED = "degraded"
@@ -45,6 +46,7 @@ class ServiceStatus(Enum):
 @dataclass
 class SharedServiceInfo:
     """Serializable service information for inter-process sharing."""
+
     name: str
     process_id: int
     status: str = "starting"
@@ -65,7 +67,9 @@ class AetherraSharedServiceRegistry:
     """
 
     def __init__(self, registry_dir: Optional[str] = None):
-        self.registry_dir = Path(registry_dir or tempfile.gettempdir()) / "aetherra_registry"
+        self.registry_dir = (
+            Path(registry_dir or tempfile.gettempdir()) / "aetherra_registry"
+        )
         self.registry_file = self.registry_dir / "services.json"
         self.lock_file = self.registry_dir / "registry.lock"
         self.process_id = os.getpid()
@@ -81,7 +85,9 @@ class AetherraSharedServiceRegistry:
     async def start(self):
         """Start the shared service registry."""
         try:
-            logger.info(f"[REGISTRY] Starting shared service registry (PID: {self.process_id})")
+            logger.info(
+                f"[REGISTRY] Starting shared service registry (PID: {self.process_id})"
+            )
 
             # Start communication server
             await self._start_communication_server()
@@ -123,11 +129,13 @@ class AetherraSharedServiceRegistry:
             # Create TCP server for inter-process communication
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.server_socket.bind(('localhost', 0))
+            self.server_socket.bind(("localhost", 0))
             self.server_port = self.server_socket.getsockname()[1]
             self.server_socket.listen(5)
 
-            logger.info(f"[COMM] Communication server started on port {self.server_port}")
+            logger.info(
+                f"[COMM] Communication server started on port {self.server_port}"
+            )
 
             # Start server task
             asyncio.create_task(self._handle_connections())
@@ -152,11 +160,13 @@ class AetherraSharedServiceRegistry:
         """Load services from shared registry file."""
         try:
             if self.registry_file.exists():
-                with open(self.registry_file, 'r') as f:
+                with open(self.registry_file, "r") as f:
                     data = json.load(f)
-                    for name, service_data in data.get('services', {}).items():
+                    for name, service_data in data.get("services", {}).items():
                         self.services[name] = SharedServiceInfo(**service_data)
-                logger.info(f"[LOAD] Loaded {len(self.services)} services from registry")
+                logger.info(
+                    f"[LOAD] Loaded {len(self.services)} services from registry"
+                )
             else:
                 logger.info("[LOAD] No existing registry found, starting fresh")
 
@@ -167,21 +177,21 @@ class AetherraSharedServiceRegistry:
         """Save services to shared registry file."""
         try:
             # Use file locking to prevent concurrent writes
-            with open(self.lock_file, 'w') as lock:
+            with open(self.lock_file, "w") as lock:
                 lock.write(str(self.process_id))
 
                 registry_data = {
-                    'updated_at': time.time(),
-                    'updated_by': self.process_id,
-                    'services': {
+                    "updated_at": time.time(),
+                    "updated_by": self.process_id,
+                    "services": {
                         name: asdict(service_info)
                         for name, service_info in self.services.items()
-                    }
+                    },
                 }
 
                 # Atomic write
-                temp_file = self.registry_file.with_suffix('.tmp')
-                with open(temp_file, 'w') as f:
+                temp_file = self.registry_file.with_suffix(".tmp")
+                with open(temp_file, "w") as f:
                     json.dump(registry_data, f, indent=2)
                 temp_file.replace(self.registry_file)
 
@@ -222,10 +232,12 @@ class AetherraSharedServiceRegistry:
     def _is_process_alive(self, pid: int) -> bool:
         """Check if a process is still alive."""
         try:
-            if os.name == 'nt':  # Windows
+            if os.name == "nt":  # Windows
                 import subprocess
-                result = subprocess.run(['tasklist', '/FI', f'PID eq {pid}'],
-                                      capture_output=True, text=True)
+
+                result = subprocess.run(
+                    ["tasklist", "/FI", f"PID eq {pid}"], capture_output=True, text=True
+                )
                 return str(pid) in result.stdout
             else:  # Unix-like
                 os.kill(pid, 0)
@@ -252,9 +264,9 @@ class AetherraSharedServiceRegistry:
             service_info = SharedServiceInfo(
                 name=name,
                 process_id=self.process_id,
-                metadata=kwargs.get('metadata', {}),
-                dependencies=kwargs.get('dependencies', []),
-                port=self.server_port
+                metadata=kwargs.get("metadata", {}),
+                dependencies=kwargs.get("dependencies", []),
+                port=self.server_port,
             )
 
             self.services[name] = service_info
@@ -262,7 +274,9 @@ class AetherraSharedServiceRegistry:
 
             await self._save_services()
 
-            logger.info(f"[REGISTER] Service '{name}' registered (PID: {self.process_id})")
+            logger.info(
+                f"[REGISTER] Service '{name}' registered (PID: {self.process_id})"
+            )
             return True
 
         except Exception as e:
@@ -283,7 +297,9 @@ class AetherraSharedServiceRegistry:
                     logger.info(f"[UNREGISTER] Service '{name}' unregistered")
                     return True
                 else:
-                    logger.warning(f"[WARN] Cannot unregister service '{name}' from different process")
+                    logger.warning(
+                        f"[WARN] Cannot unregister service '{name}' from different process"
+                    )
                     return False
             return False
 
@@ -332,7 +348,10 @@ class AetherraSharedServiceRegistry:
             status = service_info.status
             status_counts[status] = status_counts.get(status, 0) + 1
 
-            if status == 'healthy' and (current_time - service_info.last_heartbeat) < 60:
+            if (
+                status == "healthy"
+                and (current_time - service_info.last_heartbeat) < 60
+            ):
                 healthy_services += 1
 
         return {
@@ -352,7 +371,7 @@ class AetherraSharedServiceRegistry:
                     "dependencies": info.dependencies,
                 }
                 for name, info in self.services.items()
-            }
+            },
         }
 
 
@@ -403,6 +422,7 @@ async def shutdown_shared_service_registry():
 
 # Example usage and testing
 if __name__ == "__main__":
+
     async def test_shared_registry():
         print("🌐 Testing Aetherra Shared Service Registry")
 
@@ -421,10 +441,12 @@ if __name__ == "__main__":
         service1 = TestService("test_service_1")
         service2 = TestService("test_service_2")
 
-        await registry.register_service("test_service_1", service1,
-                                       metadata={"version": "1.0"})
-        await registry.register_service("test_service_2", service2,
-                                       dependencies=["test_service_1"])
+        await registry.register_service(
+            "test_service_1", service1, metadata={"version": "1.0"}
+        )
+        await registry.register_service(
+            "test_service_2", service2, dependencies=["test_service_1"]
+        )
 
         # Update statuses
         await registry.update_service_status("test_service_1", ServiceStatus.HEALTHY)

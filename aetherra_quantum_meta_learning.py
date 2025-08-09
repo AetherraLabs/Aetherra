@@ -15,7 +15,7 @@ import math
 import random
 import time
 from datetime import datetime
-from typing import Dict, List, Any, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class QuantumMetaState:
@@ -23,7 +23,9 @@ class QuantumMetaState:
     Represents a quantum superposition state for meta-learning processes.
     """
 
-    def __init__(self, state_id: str, amplitude: complex, meta_knowledge: Dict[str, Any]):
+    def __init__(
+        self, state_id: str, amplitude: complex, meta_knowledge: Dict[str, Any]
+    ):
         self.state_id = state_id
         self.amplitude = amplitude
         self.meta_knowledge = meta_knowledge
@@ -43,10 +45,10 @@ class QuantumMetaState:
             "meta_knowledge": self.meta_knowledge,
             "probability": self.probability(),
             "measurements": self.measurement_count,
-            "collapsed_at": time.time()
+            "collapsed_at": time.time(),
         }
 
-    def entangle_with(self, other_state: 'QuantumMetaState'):
+    def entangle_with(self, other_state: "QuantumMetaState"):
         """Create quantum entanglement between meta-states."""
         if other_state.state_id not in self.entangled_states:
             self.entangled_states.append(other_state.state_id)
@@ -84,9 +86,7 @@ class QuantumMetaLearner:
             amplitude = base_amplitude * complex(math.cos(phase), math.sin(phase))
 
             concept_state = QuantumMetaState(
-                f"{state_id}_concept_{i}",
-                amplitude,
-                concept
+                f"{state_id}_concept_{i}", amplitude, concept
             )
 
             superposition_knowledge[f"concept_{i}"] = concept_state
@@ -123,15 +123,17 @@ class QuantumMetaLearner:
             new_amplitude = amp1 + amp2
 
             # Combine meta-knowledge
-            knowledge1 = state1[concept_key].meta_knowledge if concept_key in state1 else {}
-            knowledge2 = state2[concept_key].meta_knowledge if concept_key in state2 else {}
+            knowledge1 = (
+                state1[concept_key].meta_knowledge if concept_key in state1 else {}
+            )
+            knowledge2 = (
+                state2[concept_key].meta_knowledge if concept_key in state2 else {}
+            )
 
             combined_knowledge = {**knowledge1, **knowledge2}
 
             interference_concept = QuantumMetaState(
-                f"{interference_id}_{concept_key}",
-                new_amplitude,
-                combined_knowledge
+                f"{interference_id}_{concept_key}", new_amplitude, combined_knowledge
             )
 
             interference_state[concept_key] = interference_concept
@@ -169,29 +171,33 @@ class QuantumMetaLearner:
                 measured_knowledge.append(collapsed_knowledge)
 
         # Apply decoherence
-        self.coherence_level *= (1 - self.decoherence_rate)
+        self.coherence_level *= 1 - self.decoherence_rate
 
         print(f"📊 Quantum measurement completed for {state_id}")
         print(f"   - Knowledge states measured: {len(measured_knowledge)}")
         print(f"   - Coherence after measurement: {self.coherence_level:.3f}")
 
-        self.learning_history.append({
-            "state_id": state_id,
-            "measurement_time": time.time(),
-            "knowledge_extracted": len(measured_knowledge),
-            "coherence_level": self.coherence_level
-        })
+        self.learning_history.append(
+            {
+                "state_id": state_id,
+                "measurement_time": time.time(),
+                "knowledge_extracted": len(measured_knowledge),
+                "coherence_level": self.coherence_level,
+            }
+        )
 
         return measured_knowledge
 
-    def quantum_entanglement_learning(self, concept_pairs: List[Tuple[str, str]]) -> Dict[str, Any]:
+    def quantum_entanglement_learning(
+        self, concept_pairs: List[Tuple[str, str]]
+    ) -> Dict[str, Any]:
         """
         Create quantum entanglement between related meta-cognitive concepts.
         """
         entanglement_results = {
             "entangled_pairs": [],
             "network_complexity": 0,
-            "learning_enhancement": 0
+            "learning_enhancement": 0,
         }
 
         for concept1, concept2 in concept_pairs:
@@ -212,12 +218,14 @@ class QuantumMetaLearner:
                     if state1_info[0] != state2_info[0]:  # Different quantum states
                         state1_info[2].entangle_with(state2_info[2])
 
-                        entanglement_results["entangled_pairs"].append({
-                            "concept1": concept1,
-                            "concept2": concept2,
-                            "state1": state1_info[0],
-                            "state2": state2_info[0]
-                        })
+                        entanglement_results["entangled_pairs"].append(
+                            {
+                                "concept1": concept1,
+                                "concept2": concept2,
+                                "state1": state1_info[0],
+                                "state2": state2_info[0],
+                            }
+                        )
 
         # Calculate network complexity
         total_entanglements = sum(
@@ -227,12 +235,16 @@ class QuantumMetaLearner:
         )
 
         entanglement_results["network_complexity"] = total_entanglements
-        entanglement_results["learning_enhancement"] = min(total_entanglements * 0.05, 0.25)
+        entanglement_results["learning_enhancement"] = min(
+            total_entanglements * 0.05, 0.25
+        )
 
         print(f"🔗 Quantum entanglement learning completed")
         print(f"   - Entangled pairs: {len(entanglement_results['entangled_pairs'])}")
         print(f"   - Network complexity: {total_entanglements}")
-        print(f"   - Learning enhancement: {entanglement_results['learning_enhancement']:.1%}")
+        print(
+            f"   - Learning enhancement: {entanglement_results['learning_enhancement']:.1%}"
+        )
 
         return entanglement_results
 
@@ -246,7 +258,7 @@ class QuantumMetaLearner:
             "coherence_improvement": 0,
             "dimension_expansion": 0,
             "learning_acceleration": 0,
-            "evolved_capabilities": []
+            "evolved_capabilities": [],
         }
 
         # Coherence improvement through quantum error correction
@@ -265,7 +277,9 @@ class QuantumMetaLearner:
 
         # Learning acceleration through quantum parallelism
         if len(self.learning_history) > 3:
-            recent_learning_rate = len(self.learning_history) / (time.time() - self.learning_history[0]["measurement_time"])
+            recent_learning_rate = len(self.learning_history) / (
+                time.time() - self.learning_history[0]["measurement_time"]
+            )
             acceleration = min(0.2, recent_learning_rate * 0.1)
             evolution_metrics["learning_acceleration"] = acceleration
             evolution_metrics["evolved_capabilities"].append("quantum_parallelism")
@@ -279,7 +293,9 @@ class QuantumMetaLearner:
         print("✨ Quantum meta-evolution completed!")
         print(f"   - Coherence level: {self.coherence_level:.3f}")
         print(f"   - Quantum dimension: {self.quantum_dimension}")
-        print(f"   - Evolved capabilities: {len(evolution_metrics['evolved_capabilities'])}")
+        print(
+            f"   - Evolved capabilities: {len(evolution_metrics['evolved_capabilities'])}"
+        )
 
         return evolution_metrics
 
@@ -301,7 +317,7 @@ class QuantumMetaLearner:
             "learning_sessions": len(self.learning_history),
             "meta_learning_level": self._calculate_meta_learning_level(),
             "quantum_advantage": self._calculate_quantum_advantage(),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         return summary
@@ -339,7 +355,7 @@ if __name__ == "__main__":
     meta_concepts = [
         {"type": "capability", "content": "quantum reasoning"},
         {"type": "pattern", "content": "superposition learning"},
-        {"type": "goal", "content": "consciousness expansion"}
+        {"type": "goal", "content": "consciousness expansion"},
     ]
 
     state_id = quantum_learner.create_quantum_superposition(meta_concepts)
