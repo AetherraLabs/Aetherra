@@ -1,0 +1,72 @@
+{
+    "plugins": [
+        {
+            "id": "summarizer_plugin",
+            "name": "Text Summarizer",
+            "description": "Intelligently condenses long text content while preserving key information",
+            "version": "1.2.3",
+            "author": "AetherraLabs",
+            "status": "active",
+            "downloads": 47,
+            "rating": 4.2,
+            "category": "Text Processing",
+            "tags": [
+                "nlp",
+                "summarization",
+                "content"
+            ],
+            "last_updated": "2025-08-05"
+        },
+        {
+            "id": "memory_cleanser",
+            "name": "Memory Cleanser",
+            "description": "Optimizes memory usage by cleaning outdated or redundant data",
+            "version": "2.1.0",
+            "author": "AetherraLabs",
+            "status": "active",
+            "downloads": 23,
+            "rating": 4.7,
+            "category": "System Optimization",
+            "tags": [
+                "memory",
+                "optimization",
+                "cleanup"
+            ],
+            "last_updated": "2025-08-07"
+        },
+        {
+            "id": "goal_autopilot",
+            "name": "Goal Autopilot",
+            "description": "Automatically manages and prioritizes goals based on context and importance",
+            "version": "0.9.1",
+            "author": "Community",
+            "status": "beta",
+            "downloads": 12,
+            "rating": 3.8,
+            "category": "Goal Management",
+            "tags": [
+                "goals",
+                "automation",
+                "planning"
+            ],
+            "last_updated": "2025-08-06"
+        },
+        {
+            "id": "whisper_plugin",
+            "name": "Whisper Integration",
+            "description": "Voice-to-text processing using OpenAI's Whisper model",
+            "version": "1.0.0",
+            "author": "Community",
+            "status": "experimental",
+            "downloads": 8,
+            "rating": 4.1,
+            "category": "Audio Processing",
+            "tags": [
+                "voice",
+                "transcription",
+                "ai"
+            ],
+            "last_updated": "2025-08-03"
+        }
+    ]
+}
