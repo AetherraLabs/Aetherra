@@ -1863,9 +1863,11 @@ function DN() {
   });
 }
 
+const dr = b0;
+
 function LN() {
   return t.jsx(dr, {
-    children: t.jsxs(k1, {
+    children: t.jsxs(k0, {
       children: [
         t.jsx(Tr, { path: "/", element: t.jsx(TN, {}) }),
         t.jsx(Tr, { path: "/manifesto", element: t.jsx(zN, {}) }),
@@ -1879,10 +1881,6 @@ function LN() {
     })
   });
 }
-
-const dr = b0;
-const Tr = Ze;
-const k1 = p0;
 
 // Place this at the very end of the file, outside of any function or block
 Ng.createRoot(document.getElementById("root")).render(
