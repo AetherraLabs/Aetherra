@@ -3,6 +3,10 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
     plugins: [react()],
+    build: {
+        outDir: '../docs',
+        emptyOutDir: true
+    },
     server: {
         port: 3000,
         host: true

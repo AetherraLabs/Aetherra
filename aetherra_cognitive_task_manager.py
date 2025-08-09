@@ -354,18 +354,20 @@ class CognitiveTaskManager:
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            grid-gap: 20px;
-            padding: 20px;
+            grid-gap: 15px;
+            padding: 15px;
             min-height: 100vh;
         }
 
         .panel {
             background: rgba(0, 255, 136, 0.1);
             border: 2px solid #00ff88;
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 8px;
+            padding: 12px;
             backdrop-filter: blur(10px);
             animation: glow 2s ease-in-out infinite alternate;
+            height: fit-content;
+            max-height: 400px;
         }
 
         @keyframes glow {
@@ -375,9 +377,10 @@ class CognitiveTaskManager:
 
         .panel h2 {
             color: #00ff88;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             text-align: center;
             text-shadow: 0 0 10px #00ff88;
+            font-size: 1.1em;
         }
 
         .service-item {
@@ -404,21 +407,21 @@ class CognitiveTaskManager:
         .status-failed { color: #ff0000; }
 
         .metric-value {
-            font-size: 2em;
+            font-size: 1.5em;
             font-weight: bold;
             text-align: center;
-            margin: 10px 0;
+            margin: 8px 0;
             text-shadow: 0 0 15px currentColor;
         }
 
         .header {
             grid-column: 1 / -1;
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             background: rgba(0, 255, 136, 0.1);
             border: 2px solid #00ff88;
             border-radius: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .consciousness-indicator {
@@ -450,7 +453,7 @@ class CognitiveTaskManager:
         }
 
         .scrollable {
-            max-height: 300px;
+            max-height: 150px;
             overflow-y: auto;
         }
 
