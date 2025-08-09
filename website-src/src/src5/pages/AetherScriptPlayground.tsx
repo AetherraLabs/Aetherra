@@ -1,7 +1,7 @@
 
 import { useState } from "react";
-import { CodeEditor } from "../components/CodeEditor";
-import { ScriptExecutionPanel } from "../components/ScriptExecutionPanel";
+import { CodeEditor } from "@/components/CodeEditor";
+import { ScriptExecutionPanel } from "@/components/ScriptExecutionPanel";
 
 export default function AetherScriptPlayground() {
   const [script, setScript] = useState("// Write your .aether script here");

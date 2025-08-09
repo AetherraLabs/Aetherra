@@ -5,8 +5,7 @@
 Live service registration and inter-component communication system.
 
 Enables all Aetherra components to discover, communicate, and coordinate
-with each other in real-time. Enhanced with shared registry support for
-true OS-level persistence across processes.
+with each other in real-time.
 """
 
 import asyncio
@@ -16,29 +15,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
-
-# Import shared registry for inter-process communication
-try:
-    from aetherra_shared_service_registry import (
-        get_shared_service_registry,
-        register_shared_service,
-        get_shared_service,
-        get_shared_service_info,
-        update_shared_heartbeat,
-        SharedServiceInfo,
-        ServiceStatus as SharedServiceStatus
-    )
-    SHARED_REGISTRY_AVAILABLE = True
-    shared_registry_funcs = {
-        'get_shared_service_registry': get_shared_service_registry,
-        'register_shared_service': register_shared_service,
-        'get_shared_service': get_shared_service,
-        'get_shared_service_info': get_shared_service_info,
-        'update_shared_heartbeat': update_shared_heartbeat
-    }
-except ImportError:
-    SHARED_REGISTRY_AVAILABLE = False
-    shared_registry_funcs = {}
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +47,7 @@ class AetherraServiceRegistry:
     [REGISTRY] Central Service Registry
 
     Manages service discovery, health monitoring, and inter-service communication
-    for all Aetherra components. Enhanced with shared registry support for
-    true OS-level persistence across processes.
+    for all Aetherra components.
     """
 
     def __init__(self):
@@ -80,22 +55,6 @@ class AetherraServiceRegistry:
         self._event_handlers: Dict[str, List[Callable]] = {}
         self._running = False
         self._heartbeat_task = None
-        self._shared_registry = None
-        self._shared_enabled = False
-
-    async def enable_shared_registry(self):
-        """Enable shared registry support for cross-process communication."""
-        if SHARED_REGISTRY_AVAILABLE and 'get_shared_service_registry' in shared_registry_funcs:
-            try:
-                get_shared_func = shared_registry_funcs['get_shared_service_registry']
-                self._shared_registry = await get_shared_func()
-                self._shared_enabled = True
-                logger.info("[SHARED] Shared registry support enabled")
-            except Exception as e:
-                logger.error(f"[ERROR] Failed to enable shared registry: {e}")
-                self._shared_enabled = False
-        else:
-            logger.warning("[SHARED] Shared registry not available, using local only")
 
     async def start(self):
         """[START] Start the service registry."""
@@ -152,18 +111,6 @@ class AetherraServiceRegistry:
             )
 
             self._services[name] = service_info
-
-            # Also register with shared registry if enabled
-            if self._shared_enabled and self._shared_registry:
-                try:
-                    await self._shared_registry.register_service(
-                        name, instance,
-                        metadata=metadata or {},
-                        dependencies=dependencies or []
-                    )
-                    logger.debug(f"[SHARED] Service '{name}' registered with shared registry")
-                except Exception as e:
-                    logger.warning(f"[SHARED] Failed to register '{name}' with shared registry: {e}")
 
             logger.info(f"[OK] Service '{name}' registered successfully")
 
@@ -226,21 +173,9 @@ class AetherraServiceRegistry:
         Returns:
             Service instance or None if not found
         """
-        # First check local registry
         service_info = self._services.get(name)
         if service_info and service_info.status == ServiceStatus.HEALTHY:
             return service_info.instance
-
-        # If not found locally and shared registry is enabled, check shared registry
-        if self._shared_enabled and self._shared_registry:
-            try:
-                shared_service = self._shared_registry.get_service(name)
-                if shared_service:
-                    logger.debug(f"[SHARED] Service '{name}' retrieved from shared registry")
-                    return shared_service
-            except Exception as e:
-                logger.warning(f"[SHARED] Failed to get service '{name}' from shared registry: {e}")
-
         return None
 
     def get_service_info(self, name: str) -> Optional[ServiceInfo]:
@@ -253,30 +188,7 @@ class AetherraServiceRegistry:
         Returns:
             ServiceInfo or None if not found
         """
-        # Check local registry first
-        local_info = self._services.get(name)
-        if local_info:
-            return local_info
-
-        # If not found locally and shared registry is enabled, check shared registry
-        if self._shared_enabled and self._shared_registry:
-            try:
-                shared_info = self._shared_registry.get_service_info(name)
-                if shared_info:
-                    # Convert SharedServiceInfo to ServiceInfo for compatibility
-                    return ServiceInfo(
-                        name=shared_info.name,
-                        instance=None,  # Can't access instance from other process
-                        status=ServiceStatus.HEALTHY if shared_info.status == 'healthy' else ServiceStatus.STARTING,
-                        registered_at=datetime.fromtimestamp(shared_info.registered_at),
-                        last_heartbeat=datetime.fromtimestamp(shared_info.last_heartbeat),
-                        metadata=shared_info.metadata,
-                        dependencies=shared_info.dependencies
-                    )
-            except Exception as e:
-                logger.warning(f"[SHARED] Failed to get service info '{name}' from shared registry: {e}")
-
-        return None
+        return self._services.get(name)
 
     def list_services(
         self, status_filter: Optional[ServiceStatus] = None
@@ -290,37 +202,13 @@ class AetherraServiceRegistry:
         Returns:
             Dictionary of service name to ServiceInfo
         """
-        # Start with local services
-        local_services = self._services.copy()
-
-        # Add shared services if available
-        if self._shared_enabled and self._shared_registry:
-            try:
-                shared_services = self._shared_registry.list_services()
-                for name, shared_info in shared_services.items():
-                    # Only add if not already in local registry (local takes precedence)
-                    if name not in local_services:
-                        # Convert SharedServiceInfo to ServiceInfo for compatibility
-                        local_services[name] = ServiceInfo(
-                            name=shared_info.name,
-                            instance=None,  # Can't access instance from other process
-                            status=ServiceStatus.HEALTHY if shared_info.status == 'healthy' else ServiceStatus.STARTING,
-                            registered_at=datetime.fromtimestamp(shared_info.registered_at),
-                            last_heartbeat=datetime.fromtimestamp(shared_info.last_heartbeat),
-                            metadata=shared_info.metadata,
-                            dependencies=shared_info.dependencies
-                        )
-            except Exception as e:
-                logger.warning(f"[SHARED] Failed to list shared services: {e}")
-
-        # Apply status filter if specified
         if status_filter:
             return {
                 name: info
-                for name, info in local_services.items()
+                for name, info in self._services.items()
                 if info.status == status_filter
             }
-        return local_services
+        return self._services.copy()
 
     async def update_service_status(
         self, name: str, status: ServiceStatus, metadata: Optional[Dict] = None
@@ -554,24 +442,14 @@ class AetherraServiceRegistry:
 
 # Global service registry instance
 _service_registry: Optional[AetherraServiceRegistry] = None
-_shared_registry_enabled = False
 
 
-async def get_service_registry(enable_shared: bool = True) -> AetherraServiceRegistry:
+async def get_service_registry() -> AetherraServiceRegistry:
     """[GLOBAL] Get the global service registry instance."""
-    global _service_registry, _shared_registry_enabled
-
+    global _service_registry
     if _service_registry is None:
         _service_registry = AetherraServiceRegistry()
-
-        # Enable shared registry support if available and requested
-        if enable_shared and SHARED_REGISTRY_AVAILABLE:
-            await _service_registry.enable_shared_registry()
-            _shared_registry_enabled = True
-            logger.info("[REGISTRY] Shared registry support enabled")
-
         await _service_registry.start()
-
     return _service_registry
 
 

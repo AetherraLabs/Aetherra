@@ -11,11 +11,11 @@ import asyncio
 import json
 import logging
 import sys
-import time
 import threading
+import time
+import webbrowser
 from datetime import datetime
 from pathlib import Path
-import webbrowser
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent
@@ -23,8 +23,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 # Web framework
 try:
-    from flask import Flask, render_template, jsonify
+    from flask import Flask, jsonify, render_template
     from flask_socketio import SocketIO, emit
+
     WEB_AVAILABLE = True
 except ImportError:
     print("❌ Flask/SocketIO not available")
@@ -33,6 +34,7 @@ except ImportError:
 # Service registry
 try:
     from aetherra_service_registry import get_service_registry
+
     REGISTRY_AVAILABLE = True
     print("✅ Service registry available")
 except ImportError:
@@ -52,14 +54,14 @@ class SimpleCognitiveTaskManager:
             "services": {},
             "service_count": 0,
             "shared_registry": {"enabled": False},
-            "status": "initializing"
+            "status": "initializing",
         }
         self.running = False
 
     def create_app(self):
         """Create Flask app."""
         app = Flask(__name__)
-        app.config['SECRET_KEY'] = 'aetherra-simple'
+        app.config["SECRET_KEY"] = "aetherra-simple"
         socketio = SocketIO(app, cors_allowed_origins="*")
 
         @app.route("/")
@@ -172,9 +174,9 @@ class SimpleCognitiveTaskManager:
 </html>
             """
 
-        @socketio.on('request_update')
+        @socketio.on("request_update")
         def handle_update_request():
-            emit('metrics', self.metrics)
+            emit("metrics", self.metrics)
 
         return app, socketio
 
@@ -193,20 +195,32 @@ class SimpleCognitiveTaskManager:
                         service_data[name] = {
                             "name": name,
                             "status": str(info.status).replace("ServiceStatus.", ""),
-                            "metadata": getattr(info, 'metadata', {}),
+                            "metadata": getattr(info, "metadata", {}),
                         }
 
                     self.metrics["services"] = service_data
                     self.metrics["service_count"] = len(service_data)
 
                     # Get shared registry status
-                    if hasattr(registry, '_shared_enabled') and registry._shared_enabled:
-                        if hasattr(registry, '_shared_registry') and registry._shared_registry:
-                            shared_status = registry._shared_registry.get_registry_status()
+                    if (
+                        hasattr(registry, "_shared_enabled")
+                        and registry._shared_enabled
+                    ):
+                        if (
+                            hasattr(registry, "_shared_registry")
+                            and registry._shared_registry
+                        ):
+                            shared_status = (
+                                registry._shared_registry.get_registry_status()
+                            )
                             self.metrics["shared_registry"] = {
                                 "enabled": True,
-                                "total_services": shared_status.get("total_services", 0),
-                                "communication_port": shared_status.get("communication_port")
+                                "total_services": shared_status.get(
+                                    "total_services", 0
+                                ),
+                                "communication_port": shared_status.get(
+                                    "communication_port"
+                                ),
                             }
                         else:
                             self.metrics["shared_registry"] = {"enabled": False}
@@ -250,7 +264,9 @@ class SimpleCognitiveTaskManager:
 
         threading.Thread(target=open_browser, daemon=True).start()
 
-        print(f"🧠 Simple Cognitive Task Manager starting on http://localhost:{self.port}")
+        print(
+            f"🧠 Simple Cognitive Task Manager starting on http://localhost:{self.port}"
+        )
         print("🌐 Opening browser...")
 
         try:

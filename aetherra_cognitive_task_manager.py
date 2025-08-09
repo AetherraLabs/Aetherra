@@ -24,12 +24,12 @@ import asyncio
 import json
 import logging
 import sys
-import time
 import threading
+import time
+import webbrowser
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import webbrowser
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -37,21 +37,25 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 # Web framework
 try:
-    from flask import Flask, render_template, jsonify, request
+    from flask import Flask, jsonify, render_template, request
     from flask_socketio import SocketIO, emit
+
     WEB_AVAILABLE = True
 except ImportError:
-    print("❌ Flask/SocketIO not available - install with: pip install flask flask-socketio")
+    print(
+        "❌ Flask/SocketIO not available - install with: pip install flask flask-socketio"
+    )
     WEB_AVAILABLE = False
 
 # Aetherra components
 try:
     from aetherra_service_registry import get_service_registry
     from aetherra_shared_service_registry import get_shared_service_registry
+
     REGISTRY_AVAILABLE = True
     registry_funcs = {
-        'get_service_registry': get_service_registry,
-        'get_shared_service_registry': get_shared_service_registry
+        "get_service_registry": get_service_registry,
+        "get_shared_service_registry": get_shared_service_registry,
     }
 except ImportError:
     print("⚠️ Service registry not available")
@@ -86,7 +90,7 @@ class CognitiveTaskManager:
             "agent_messages": [],
             "consciousness_levels": {},
             "performance": {},
-            "system_health": {}
+            "system_health": {},
         }
 
         # Monitoring tasks
@@ -97,8 +101,10 @@ class CognitiveTaskManager:
         if not WEB_AVAILABLE:
             raise RuntimeError("Flask/SocketIO not available")
 
-        self.app = Flask(__name__, template_folder=str(Path(__file__).parent / "templates"))
-        self.app.config['SECRET_KEY'] = 'aetherra-cognitive-dashboard'
+        self.app = Flask(
+            __name__, template_folder=str(Path(__file__).parent / "templates")
+        )
+        self.app.config["SECRET_KEY"] = "aetherra-cognitive-dashboard"
         self.socketio = SocketIO(self.app, cors_allowed_origins="*")
 
         # Routes
@@ -150,7 +156,7 @@ class CognitiveTaskManager:
             asyncio.create_task(self.monitor_consciousness()),
             asyncio.create_task(self.monitor_performance()),
             asyncio.create_task(self.monitor_memory_events()),
-            asyncio.create_task(self.broadcast_updates())
+            asyncio.create_task(self.broadcast_updates()),
         ]
 
         self.monitor_tasks.extend(monitor_tasks)
@@ -160,13 +166,18 @@ class CognitiveTaskManager:
         """Monitor service registry for active services."""
         while self.running:
             try:
-                if not REGISTRY_AVAILABLE or 'get_service_registry' not in registry_funcs:
-                    logger.warning("⚠️ Registry not available, skipping service monitoring")
+                if (
+                    not REGISTRY_AVAILABLE
+                    or "get_service_registry" not in registry_funcs
+                ):
+                    logger.warning(
+                        "⚠️ Registry not available, skipping service monitoring"
+                    )
                     await asyncio.sleep(5)
                     continue
 
                 # Get both local and shared registry data
-                get_registry_func = registry_funcs['get_service_registry']
+                get_registry_func = registry_funcs["get_service_registry"]
                 registry = await get_registry_func(enable_shared=True)
                 services = registry.list_services()
 
@@ -174,11 +185,17 @@ class CognitiveTaskManager:
                 for name, info in services.items():
                     service_data[name] = {
                         "name": name,
-                        "status": info.status.value if hasattr(info.status, 'value') else str(info.status),
-                        "registered_at": info.registered_at.isoformat() if hasattr(info.registered_at, 'isoformat') else str(info.registered_at),
-                        "last_heartbeat": info.last_heartbeat.isoformat() if hasattr(info.last_heartbeat, 'isoformat') else str(info.last_heartbeat),
+                        "status": info.status.value
+                        if hasattr(info.status, "value")
+                        else str(info.status),
+                        "registered_at": info.registered_at.isoformat()
+                        if hasattr(info.registered_at, "isoformat")
+                        else str(info.registered_at),
+                        "last_heartbeat": info.last_heartbeat.isoformat()
+                        if hasattr(info.last_heartbeat, "isoformat")
+                        else str(info.last_heartbeat),
                         "metadata": info.metadata,
-                        "dependencies": info.dependencies
+                        "dependencies": info.dependencies,
                     }
 
                 self.metrics["services"] = service_data
@@ -192,9 +209,11 @@ class CognitiveTaskManager:
                         "total_services": shared_status.get("total_services", 0),
                         "healthy_services": shared_status.get("healthy_services", 0),
                         "communication_port": shared_status.get("communication_port"),
-                        "registry_file": shared_status.get("registry_file")
+                        "registry_file": shared_status.get("registry_file"),
                     }
-                    logger.info(f"📊 Dashboard: Found {len(service_data)} services, shared registry has {shared_status.get('total_services', 0)}")
+                    logger.info(
+                        f"📊 Dashboard: Found {len(service_data)} services, shared registry has {shared_status.get('total_services', 0)}"
+                    )
                 else:
                     self.metrics["shared_registry"] = {"enabled": False}
                     logger.warning("⚠️ Dashboard: Shared registry not enabled")
@@ -202,6 +221,7 @@ class CognitiveTaskManager:
             except Exception as e:
                 logger.error(f"❌ Service monitoring error: {e}")
                 import traceback
+
                 traceback.print_exc()
 
             await asyncio.sleep(2)  # Update every 2 seconds
@@ -210,11 +230,14 @@ class CognitiveTaskManager:
         """Monitor consciousness levels across all systems."""
         while self.running:
             try:
-                if not REGISTRY_AVAILABLE or 'get_service_registry' not in registry_funcs:
+                if (
+                    not REGISTRY_AVAILABLE
+                    or "get_service_registry" not in registry_funcs
+                ):
                     await asyncio.sleep(5)
                     continue
 
-                get_registry_func = registry_funcs['get_service_registry']
+                get_registry_func = registry_funcs["get_service_registry"]
                 registry = await get_registry_func(enable_shared=True)
 
                 consciousness_data = {}
@@ -224,9 +247,11 @@ class CognitiveTaskManager:
                 if quantum_service:
                     consciousness_data["quantum"] = {
                         "active": True,
-                        "level": getattr(quantum_service, 'consciousness_level', 'unknown'),
+                        "level": getattr(
+                            quantum_service, "consciousness_level", "unknown"
+                        ),
                         "phase": "quantum",
-                        "version": "7.0"
+                        "version": "7.0",
                     }
 
                 # Check cosmic consciousness
@@ -234,9 +259,11 @@ class CognitiveTaskManager:
                 if cosmic_service:
                     consciousness_data["cosmic"] = {
                         "active": True,
-                        "level": getattr(cosmic_service, 'consciousness_level', 'unknown'),
+                        "level": getattr(
+                            cosmic_service, "consciousness_level", "unknown"
+                        ),
                         "phase": "cosmic",
-                        "version": "8.2"
+                        "version": "8.2",
                     }
 
                 # Check beyond transcendence
@@ -244,9 +271,11 @@ class CognitiveTaskManager:
                 if transcendence_service:
                     consciousness_data["transcendence"] = {
                         "active": True,
-                        "level": getattr(transcendence_service, 'consciousness_level', 'unknown'),
+                        "level": getattr(
+                            transcendence_service, "consciousness_level", "unknown"
+                        ),
                         "phase": "transcendence",
-                        "version": "8.3"
+                        "version": "8.3",
                     }
 
                 self.metrics["consciousness_levels"] = consciousness_data
@@ -267,16 +296,23 @@ class CognitiveTaskManager:
                     "timestamp": current_time.isoformat(),
                     "uptime": time.time(),
                     "memory_usage": "unknown",  # TODO: Add actual memory monitoring
-                    "cpu_usage": "unknown",     # TODO: Add actual CPU monitoring
-                    "response_time": "unknown", # TODO: Add response time tracking
+                    "cpu_usage": "unknown",  # TODO: Add actual CPU monitoring
+                    "response_time": "unknown",  # TODO: Add response time tracking
                 }
 
                 # System health indicators
                 self.metrics["system_health"] = {
-                    "overall": "healthy" if len(self.metrics.get("services", {})) > 0 else "degraded",
-                    "services_operational": len([s for s in self.metrics.get("services", {}).values()
-                                               if s.get("status") in ["healthy", "starting"]]),
-                    "last_update": current_time.isoformat()
+                    "overall": "healthy"
+                    if len(self.metrics.get("services", {})) > 0
+                    else "degraded",
+                    "services_operational": len(
+                        [
+                            s
+                            for s in self.metrics.get("services", {}).values()
+                            if s.get("status") in ["healthy", "starting"]
+                        ]
+                    ),
+                    "last_update": current_time.isoformat(),
                 }
 
             except Exception as e:
@@ -288,11 +324,14 @@ class CognitiveTaskManager:
         """Monitor memory system events and changes."""
         while self.running:
             try:
-                if not REGISTRY_AVAILABLE or 'get_service_registry' not in registry_funcs:
+                if (
+                    not REGISTRY_AVAILABLE
+                    or "get_service_registry" not in registry_funcs
+                ):
                     await asyncio.sleep(3)
                     continue
 
-                get_registry_func = registry_funcs['get_service_registry']
+                get_registry_func = registry_funcs["get_service_registry"]
                 registry = await get_registry_func(enable_shared=True)
 
                 # Check persistent memory system
@@ -305,10 +344,12 @@ class CognitiveTaskManager:
                             "timestamp": datetime.now().isoformat(),
                             "type": "memory_access",
                             "details": "Accessing episodic memory",
-                            "status": "active"
+                            "status": "active",
                         }
                     ]
-                    self.metrics["memory_events"] = memory_events[-10:]  # Keep last 10 events
+                    self.metrics["memory_events"] = memory_events[
+                        -10:
+                    ]  # Keep last 10 events
 
             except Exception as e:
                 logger.error(f"Memory monitoring error: {e}")
@@ -684,7 +725,9 @@ class CognitiveTaskManager:
             await self.start_monitoring()
 
             # Start Flask app
-            logger.info(f"🧠 Starting Cognitive Task Manager on http://localhost:{self.port}")
+            logger.info(
+                f"🧠 Starting Cognitive Task Manager on http://localhost:{self.port}"
+            )
             logger.info("🌐 Opening dashboard in browser...")
 
             # Open browser

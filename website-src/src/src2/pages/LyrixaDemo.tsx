@@ -1,8 +1,8 @@
-import { DashboardStats } from "../components/DashboardStats";
-import { LyrixaChat } from "../components/LyrixaChat";
-import { ReflectionPanel } from "../components/ReflectionPanel";
-import { SelfImprovementFeed } from "../components/SelfImprovementFeed";
-import { ThoughtLog } from "../components/ThoughtLog";
+import { LyrixaChat } from "@/components/LyrixaChat";
+import { DashboardStats } from "@/components/DashboardStats";
+import { ThoughtLog } from "@/components/ThoughtLog";
+import { ReflectionPanel } from "@/components/ReflectionPanel";
+import { SelfImprovementFeed } from "@/components/SelfImprovementFeed";
 
 export default function LyrixaDemo() {
   return (
