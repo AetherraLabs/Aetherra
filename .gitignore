@@ -220,6 +220,9 @@ cleanup_*.py
 # Discord Bot directory (contains sensitive tokens and configurations)
 Discord Bot/
 
+# Website development directory (contains node_modules and build artifacts)
+web/aetherra-website/
+
 # Temporary development files
 scratch/
 playground/
