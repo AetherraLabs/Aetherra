@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Simple React Test</title>
+</head>
+
+<body>
+    <div id="root">Loading...</div>
+    <script>
+        console.log('Starting test...');
+
+        // Try to catch any global errors
+        window.addEventListener('error', function (e) {
+            console.error('Global error:', e.error);
+            document.getElementById('root').innerHTML = '<div style="color: red;">JavaScript Error: ' + e.error.message + '</div>';
+        });
+
+        window.addEventListener('unhandledrejection', function (e) {
+            console.error('Unhandled promise rejection:', e.reason);
+            document.getElementById('root').innerHTML = '<div style="color: red;">Promise Error: ' + e.reason + '</div>';
+        });
+
+        console.log('Error handlers set up');
+
+        // Load the main script
+        const script = document.createElement('script');
+        script.src = '/assets/index-B79q4za5.js';
+        script.onload = () => {
+            console.log('Main script loaded successfully');
+            setTimeout(() => {
+                const root = document.getElementById('root');
+                if (root.innerHTML === 'Loading...') {
+                    root.innerHTML = '<div style="color: orange;">Script loaded but React app did not mount</div>';
+                }
+            }, 2000);
+        };
+        script.onerror = (e) => {
+            console.error('Script loading error:', e);
+            document.getElementById('root').innerHTML = '<div style="color: red;">Script failed to load</div>';
+        };
+        document.head.appendChild(script);
+    </script>
+</body>
+
+</html>
