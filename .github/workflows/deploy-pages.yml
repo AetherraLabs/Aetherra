@@ -2,10 +2,9 @@ name: Deploy Aetherra Website to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
     paths:
-      - 'Aetherra/lyrixa/core/Aetherra Website/**'
-      - 'docs/**'
+      - 'aetherra-website/**'
   workflow_dispatch:
 
 permissions:
@@ -32,22 +31,17 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: 'Aetherra/lyrixa/core/Aetherra Website/package-lock.json'
+          cache-dependency-path: 'aetherra-website/package-lock.json'
 
       - name: Install dependencies
-        working-directory: 'Aetherra/lyrixa/core/Aetherra Website'
+        working-directory: 'aetherra-website'
         run: npm ci
 
       - name: Build website
-        working-directory: 'Aetherra/lyrixa/core/Aetherra Website'
+        working-directory: 'aetherra-website'
         run: npm run build
 
-      - name: Copy built files to docs directory
-        run: |
-          # Copy the built website to docs directory
-          cp -r "Aetherra/lyrixa/core/Aetherra Website/dist/"* docs/
-          # Ensure CNAME file is in docs
-          cp CNAME docs/
+      # CNAME is bundled from public/ into dist by Vite
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -55,7 +49,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'docs'
+          path: 'aetherra-website/dist'
 
       - name: Deploy to GitHub Pages
         id: deployment
