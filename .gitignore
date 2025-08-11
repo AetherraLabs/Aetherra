@@ -1,3 +1,5 @@
+# Ignore the website build directory
+aetherra-website/
 # ===================================================================
 # Aetherra AI Operating System - .gitignore
 # ===================================================================
@@ -222,6 +224,8 @@ Discord Bot/
 
 # Website development directory (contains node_modules and build artifacts)
 web/aetherra-website/
+aetherra-website/
+**/aetherra-website/
 
 # Temporary development files
 scratch/
