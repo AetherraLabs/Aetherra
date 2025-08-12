@@ -7,11 +7,16 @@ import hashlib
 import json
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Tuple, Any
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
 
-from ..memory.QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
+# Correct import: the engine lives in QuantumEnhancedMemoryEngine/quantum_memory_engine.py
+# Canonical engine location
+from ..memory.QuantumEnhancedMemoryEngine.quantum_memory_engine import (
+    QuantumEnhancedMemoryEngine,
+)
+
 
 # Simple data classes for backward compatibility
 @dataclass
@@ -26,6 +31,7 @@ class Memory:
     created_at: Optional[datetime] = None
     last_accessed: Optional[datetime] = None
     access_count: int = 0
+
 
 @dataclass
 class MemoryQuery:

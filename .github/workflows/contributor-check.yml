@@ -52,10 +52,10 @@ jobs:
             exit(1)
         "
 
-    - name: ✅ Check web interface syntax
+    - name: ✅ Check OS GUI syntax
       run: |
-        python -m py_compile Aetherra/gui/web_interface_server.py
-        echo "✅ Web interface syntax is valid"
+        python -m py_compile Aetherra/gui/aetherra_os_gui.py
+        echo "✅ OS GUI syntax is valid"
 
     - name: ✅ Check AI OS launcher syntax
       run: |

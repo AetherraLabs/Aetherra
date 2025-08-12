@@ -1,0 +1,19 @@
+# Source distribution manifest
+# Ensure only the Aetherra Python package and key top-level docs are included.
+
+include LICENSE
+include README.md
+include pyproject.toml
+
+# Package source
+recursive-include Aetherra *
+
+# Exclude internal-only and non-package directories
+prune Discord Bot
+prune unused
+prune backup
+prune archive
+prune .github
+prune frontend
+prune deployments
+prune tests

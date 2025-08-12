@@ -18,7 +18,6 @@ SPDX-FileCopyrightText: 2025 Aetherra & Lyrixa Contributors
   <img src="https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge" alt="Status"/>
   <img src="https://img.shields.io/badge/Version-4.0.0-0891b2?style=for-the-badge" alt="Version"/>
   <img src="https://img.shields.io/badge/Intelligence-Phase%206%20Complete-8b5cf6?style=for-the-badge" alt="AI Enhanced"/>
-  <img src="https://img.shields.io/badge/Discord-Bot%20Integrated-22c55e?style=for-the-badge" alt="Discord Bot"/>
 </p>
 
 <p align="center">
@@ -33,11 +32,14 @@ SPDX-FileCopyrightText: 2025 Aetherra & Lyrixa Contributors
 
 **Aetherra** is a revolutionary AI-native development environment that transforms how you create, think, and build software. With **Lyrixa** as your intelligent companion, Aetherra bridges the gap between human creativity and artificial intelligence.
 
+> Note: The Discord bot is an internal Aetherra Labs tool and is excluded from public releases. Community builds do not include or require Discord integration.
+
 ### **🚀 Latest Enhancement: Major System Overhaul (August 2025)**
 
 **MASSIVE DEPLOYMENT COMPLETED**: Aetherra has undergone the largest system integration in its history:
 
-#### **🤖 Discord Bot Integration (NEW!)**
+#### **🤖 Discord Bot Integration (Internal-only)**
+- This subsystem is for Aetherra Labs internal use and is not shipped in public releases.
 - **1,424-line Discord Bot**: Full-featured Lyrixa bot with AI integration
 - **Multi-Server FastAPI**: Dual server architecture (ports 8008, 8686)
 - **GitHub Monitoring**: Automated repository tracking and notifications
@@ -134,7 +136,7 @@ display result with style="elegant"
 
 ## ⚡ **Key Features**
 
-### � **Discord Bot Integration**
+### � **Discord Bot Integration** (Internal-only; excluded from public releases)
 
 - **Complete Discord Integration**: 1,424-line Discord bot with full Lyrixa AI capabilities
 
@@ -387,10 +389,6 @@ python Aetherra/lyrixa/launcher.py
 python aetherra_startup.py                    # Core system startup
 python aetherra_os.py                         # Operating system kernel
 python aetherra_service_registry.py           # Service coordination
-
-# Discord Bot (located in Discord Bot/ folder)
-cd "Discord Bot"
-python lyrixa_bot.py                          # Launch Discord integration
 ```
 
 ### **🧠 Access the Neural Interface**
@@ -497,12 +495,12 @@ Aetherra/
 │   │   ├── config/           # Configuration management
 │   │   └── engine/           # System engine
 │   └── 🌐 api/               # RESTful API endpoints
-├── 🤖 Discord Bot/           # 🔥 NEW: Complete Discord integration
-│   ├── lyrixa_bot.py        # Main Discord bot (1,424 lines)
-│   ├── lyrixa_bot_backup.py # Backup bot implementation
-│   ├── requirements.txt     # Bot dependencies
-│   ├── .env.example         # Environment template
-│   └── README.md            # Discord bot documentation
+├── 🤖 Discord Bot/           # Internal-only (excluded from public releases)
+│   ├── lyrixa_bot.py        # Main Discord bot (internal)
+│   ├── lyrixa_bot_backup.py # Backup bot implementation (internal)
+│   ├── requirements.txt     # Bot dependencies (internal)
+│   ├── .env.example         # Environment template (internal)
+│   └── README.md            # Discord bot documentation (internal)
 ├── 🔌 plugins/              # Plugin ecosystem
 │   ├── memory_monitor.aetherplugin
 │   └── network_analyzer.aetherplugin
@@ -595,11 +593,11 @@ Join the Aetherra community and help shape the future of AI-native development:
 
 ## 🚀 **Roadmap**
 
-### **Current Status: Phase 6 & Discord Bot Integration Complete! [OK]**
+### **Current Status: Phase 6 Complete; Discord Bot (internal-only) [OK]**
 
 **🎉 MASSIVE MILESTONE ACHIEVED (August 2025)**:
 
-#### **Discord Bot Integration [COMPLETE]**
+#### **Discord Bot Integration [COMPLETE — Internal-only]**
 - [OK] **1,424-line Discord Bot** - Full-featured Lyrixa bot with comprehensive AI integration
 - [OK] **Multi-Server Architecture** - Dual FastAPI servers (ports 8008, 8686) for scalability
 - [OK] **GitHub Monitoring** - Automated repository tracking with intelligent notifications
@@ -816,11 +814,11 @@ plugin "daily_log_summarizer":
 
 ---
 
-## 🚀 **Latest Update: Phase 6 & Discord Bot Integration Complete (December 2024)**
+## 🚀 **Latest Update: Phase 6 Complete; Discord Bot Integration (Internal-only) (December 2024)**
 
 **Major system overhaul completed!** Aetherra has achieved a massive milestone with the completion of Phase 6 and production-ready Discord Bot integration:
 
-### **� Discord Bot Integration (1,424 Lines)**
+### **� Discord Bot Integration (Internal-only, 1,424 Lines)**
 - **Advanced AI Integration** - Multi-provider AI system (GPT-4, Claude, Gemini, Ollama) with intelligent fallback
 - **Auto-Moderation** - Smart content filtering with configurable severity levels
 - **GitHub Monitoring** - Real-time repository tracking with commit notifications and issue alerts

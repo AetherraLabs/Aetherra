@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 """
+🧠 Lyrixa Engine Core (Mock)
+DEPRECATED: Legacy mock engine; see ENGINE_CURATION_PROPOSAL.md
+"""
+
+import warnings as _warnings
+
+_warnings.warn(
+    "DEPRECATED: Aetherra.aetherra_core.engine.lyrixa_engine_mock is legacy and will be quarantined.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+"""
 🧠 Lyrixa Engine Core
 ======================
 
@@ -9,11 +21,9 @@ reasoning, memory management, and intelligent task orchestration.
 Note: This is a simplified version with mock implementations for missing components.
 """
 
-import asyncio
-import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +31,7 @@ logger = logging.getLogger(__name__)
 # Mock implementations for missing components
 class MockMemorySystem:
     """Mock memory system for development."""
+
     def __init__(self, *args, **kwargs):
         logger.debug("Using mock memory system")
 
@@ -39,6 +50,7 @@ class MockMemorySystem:
 
 class MockIntrospectionController:
     """Mock introspection controller."""
+
     def __init__(self, *args, **kwargs):
         self.component_monitor = MockComponentMonitor()
 
@@ -51,12 +63,14 @@ class MockIntrospectionController:
 
 class MockComponentMonitor:
     """Mock component monitor."""
+
     def register_component(self, *args, **kwargs):
         pass
 
 
 class MockReasoningEngine:
     """Mock reasoning engine."""
+
     def __init__(self, *args, **kwargs):
         pass
 
@@ -66,6 +80,7 @@ class MockReasoningEngine:
 
 class MockSelfImprovementEngine:
     """Mock self-improvement engine."""
+
     def __init__(self, *args, **kwargs):
         pass
 
@@ -78,12 +93,14 @@ class MockSelfImprovementEngine:
 
 class MockPluginExecutor:
     """Mock plugin executor."""
+
     def __init__(self, *args, **kwargs):
         pass
 
 
 class MockAgentOrchestrator:
     """Mock agent orchestrator."""
+
     def __init__(self, *args, **kwargs):
         pass
 
@@ -167,11 +184,15 @@ class LyrixaEngine:
                 "memory_stats": memory_stats,
                 "components": {
                     "memory_system": "active" if self.memory_system else "inactive",
-                    "reasoning_engine": "active" if self.reasoning_engine else "inactive",
-                    "improvement_engine": "active" if self.improvement_engine else "inactive",
+                    "reasoning_engine": "active"
+                    if self.reasoning_engine
+                    else "inactive",
+                    "improvement_engine": "active"
+                    if self.improvement_engine
+                    else "inactive",
                     "introspection": "active" if self.introspection else "inactive",
                 },
-                "uptime": "mock_uptime"
+                "uptime": "mock_uptime",
             }
         except Exception as e:
             logger.error(f"❌ Error getting status: {e}")
@@ -181,26 +202,26 @@ class LyrixaEngine:
         """Register components with the introspection system"""
         # Register memory system
         self.introspection.component_monitor.register_component(
-            "memory_system",
-            self.memory_system,
-            {"type": "memory", "critical": True}
+            "memory_system", self.memory_system, {"type": "memory", "critical": True}
         )
 
         # Register reasoning engine
         self.introspection.component_monitor.register_component(
             "reasoning_engine",
             self.reasoning_engine,
-            {"type": "cognitive", "critical": True}
+            {"type": "cognitive", "critical": True},
         )
 
         # Register improvement engine
         self.introspection.component_monitor.register_component(
             "improvement_engine",
             self.improvement_engine,
-            {"type": "learning", "critical": False}
+            {"type": "learning", "critical": False},
         )
 
-    async def process_input(self, user_input: str, context: Optional[Dict] = None) -> Dict[str, Any]:
+    async def process_input(
+        self, user_input: str, context: Optional[Dict] = None
+    ) -> Dict[str, Any]:
         """Process user input and generate response"""
         if not self.running:
             return {"error": "Engine not running"}
@@ -211,7 +232,7 @@ class LyrixaEngine:
                 content=user_input,
                 memory_type="user_input",
                 context=context or {},
-                timestamp=datetime.now().isoformat()
+                timestamp=datetime.now().isoformat(),
             )
 
             # For now, return a simple response
@@ -219,7 +240,7 @@ class LyrixaEngine:
                 "response": f"Processed: {user_input}",
                 "status": "success",
                 "timestamp": datetime.now().isoformat(),
-                "engine_status": self.get_status()
+                "engine_status": self.get_status(),
             }
 
             return response
@@ -228,21 +249,19 @@ class LyrixaEngine:
             logger.error(f"❌ Error processing input: {e}")
             return {"error": str(e), "status": "error"}
 
-    async def handle_conversation(self, user_input: str, context: Optional[Dict] = None) -> Dict[str, Any]:
+    async def handle_conversation(
+        self, user_input: str, context: Optional[Dict] = None
+    ) -> Dict[str, Any]:
         """Handle a conversation turn"""
         try:
             # Store user input in memory
             memory_id = await self.memory_system.store_memory(
-                content=user_input,
-                memory_type="conversation",
-                context=context or {}
+                content=user_input, memory_type="conversation", context=context or {}
             )
 
             # Recall relevant memories for context
             relevant_memories = await self.memory_system.recall_memories(
-                query=user_input,
-                limit=5,
-                memory_types=["conversation", "knowledge"]
+                query=user_input, limit=5, memory_types=["conversation", "knowledge"]
             )
 
             # Generate response (simplified)
@@ -255,15 +274,15 @@ class LyrixaEngine:
                 context={
                     "type": "ai_response",
                     "user_input_id": memory_id,
-                    "relevant_memories": len(relevant_memories)
-                }
+                    "relevant_memories": len(relevant_memories),
+                },
             )
 
             return {
                 "response": response_text,
                 "status": "success",
                 "memory_id": memory_id,
-                "context_memories": len(relevant_memories)
+                "context_memories": len(relevant_memories),
             }
 
         except Exception as e:
@@ -277,14 +296,14 @@ class LyrixaEngine:
             await self.memory_system.store_memory(
                 content=f"Task executed: {task_data.get('description', 'Unknown task')}",
                 memory_type="task_execution",
-                context=task_data
+                context=task_data,
             )
 
             # For now, return a simple success response
             return {
                 "status": "completed",
                 "result": "Task executed successfully (mock)",
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         except Exception as e:

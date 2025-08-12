@@ -39,15 +39,17 @@ import os
 import sys
 import urllib.request
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
 # Windows console UTF-8 setup for emoji support
 if sys.platform == "win32":
     try:
-        if hasattr(sys.stdout, "reconfigure"):
-            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-        if hasattr(sys.stderr, "reconfigure"):
-            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        stdout_reconf = getattr(sys.stdout, "reconfigure", None)
+        if callable(stdout_reconf):
+            stdout_reconf(encoding="utf-8", errors="replace")
+        stderr_reconf = getattr(sys.stderr, "reconfigure", None)
+        if callable(stderr_reconf):
+            stderr_reconf(encoding="utf-8", errors="replace")
     except Exception:
         pass
 
@@ -128,59 +130,90 @@ class LyrixaBasicAssistant:
     async def _check_aetherra_os(self) -> bool:
         """Check if Aetherra OS is running (hard dependency)."""
         try:
+            # Configurable wait window for OS readiness (default 45s)
+            try:
+                wait_total = int(os.getenv("LYRIXA_WAIT_FOR_OS_SECONDS", "45"))
+            except Exception:
+                wait_total = 45
+            wait_total = max(5, min(wait_total, 180))  # clamp to sane bounds
+            poll_interval = 2
+
             # Check if Aetherra Hub is running (indicates OS is active)
             # The Hub runs on port 3001 when OS is active
             import urllib.error
             import urllib.request
 
-            try:
-                # Quick HTTP check to Aetherra Hub
-                with urllib.request.urlopen(
-                    "http://localhost:3001/", timeout=3
-                ) as response:
-                    if response.status == 200:
-                        # If Hub responds, OS is definitely running
-                        logger.info("[OS] Connected to Aetherra OS via Hub")
-                        self.aetherra_os_connected = True
+            elapsed = 0
+            attempt = 1
+            while elapsed <= wait_total:
+                try:
+                    # Quick HTTP check to Aetherra Hub
+                    with urllib.request.urlopen(
+                        "http://localhost:3001/", timeout=3
+                    ) as response:
+                        if response.status == 200:
+                            # If Hub responds, OS is definitely running
+                            logger.info("[OS] Connected to Aetherra OS via Hub")
+                            self.aetherra_os_connected = True
 
-                        # Still try to get service registry for internal communication
-                        try:
-                            from aetherra_service_registry import get_service_registry
+                            # Still try to get service registry for internal communication
+                            try:
+                                from aetherra_service_registry import (
+                                    get_service_registry,
+                                )
 
-                            self.service_registry = await get_service_registry()
-                        except Exception:
-                            pass  # Hub connection is sufficient
+                                self.service_registry = await get_service_registry()
+                            except Exception:
+                                pass  # Hub connection is sufficient
 
-                        return True
-            except (
-                urllib.error.URLError,
-                urllib.error.HTTPError,
-                ConnectionRefusedError,
-                OSError,
-            ):
-                pass  # Hub not responding, try other methods
+                            return True
+                except (
+                    urllib.error.URLError,
+                    urllib.error.HTTPError,
+                    ConnectionRefusedError,
+                    OSError,
+                ):
+                    # Hub not responding, try other methods
+                    pass
 
-            # Fallback: Try direct service registry connection
-            from aetherra_service_registry import get_service_registry
+                # Fallback in same loop: Try direct service registry connection
+                try:
+                    from aetherra_service_registry import get_service_registry
 
-            self.service_registry = await get_service_registry()
-            if self.service_registry:
-                services = self.service_registry.list_services()
-                if len(services) >= 3:  # Expect core OS services
-                    logger.info(
-                        f"[OS] Connected to Aetherra OS ({len(services)} services)"
+                    self.service_registry = await get_service_registry()
+                    if self.service_registry:
+                        services = self.service_registry.list_services()
+                        if len(services) >= 3:  # Expect core OS services
+                            logger.info(
+                                f"[OS] Connected to Aetherra OS ({len(services)} services)"
+                            )
+                            self.aetherra_os_connected = True
+                            return True
+                        else:
+                            logger.info(
+                                f"[OS] OS not ready yet (attempt {attempt}): {len(services)} services < 3; waiting..."
+                            )
+                    else:
+                        logger.info(
+                            f"[OS] Service registry unavailable (attempt {attempt}); waiting..."
+                        )
+                except Exception:
+                    # Likely OS not ready or registry not reachable yet
+                    logger.debug(
+                        f"[OS] Registry check failed (attempt {attempt}); will retry"
                     )
-                    self.aetherra_os_connected = True
-                    return True
-                else:
-                    logger.warning(
-                        f"[OS] Insufficient services running ({len(services)} found, need 3+)"
-                    )
-                    logger.warning("      Aetherra OS may still be starting up")
-                    return False
-            else:
-                logger.error("[OS] Could not access service registry")
-                return False
+
+                if elapsed >= wait_total:
+                    break
+
+                await asyncio.sleep(poll_interval)
+                elapsed += poll_interval
+                attempt += 1
+
+            logger.error(
+                f"[OS] Aetherra OS not ready after {wait_total}s. Please start the OS and try again."
+            )
+            return False
 
         except Exception as e:
             logger.debug(f"[OS] Aetherra OS check failed: {e}")

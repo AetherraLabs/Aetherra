@@ -1,5 +1,7 @@
 # Aetherra - AI-Native Development Platform
 
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
 A revolutionary development platform that bridges natural language and code through the Aetherra programming language and Lyrixa AI assistant.
 
 ## Features
@@ -43,4 +45,4 @@ See the `docs/` directory for detailed documentation, guides, and API references
 
 ## License
 
-MIT License - see LICENSE file for details.
+GPL-3.0-only — see the root LICENSE file for full terms.

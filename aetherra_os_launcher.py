@@ -20,17 +20,25 @@ import signal
 import sys
 import time
 import traceback
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
+
+# Import Aetherra components (must be before any runtime code per lint)
+from aetherra_kernel_loop import get_kernel
+from aetherra_service_registry import (
+    ServiceStatus,
+    get_service_registry,
+    register_service,
+)
+
+CORE_AVAILABLE = True
 
 # Set up UTF-8 encoding for Windows terminals
 if os.name == "nt":  # Windows
-    # Configure stdout to handle UTF-8
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    else:
-        # Fallback for older Python versions
-        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer, errors="replace")
+    # Configure stdout to handle UTF-8 (safe fallback)
+    try:
+        sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer)
+    except Exception:
+        pass
 
 
 # Configure logging with error handling for Unicode characters
@@ -67,21 +75,162 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Import Aetherra components
-try:
-    from aetherra_kernel_loop import get_kernel
-    from aetherra_service_registry import (
-        ServiceStatus,
-        get_service_registry,
-        register_service,
-    )
 
-    CORE_AVAILABLE = True
-except ImportError as e:
-    logger.warning(f"[WARN] Core components not available: {e}")
-    CORE_AVAILABLE = False
-    # Define dummy classes for type checking when imports fail
-    ServiceStatus = None
+# Minimal adapters to align real systems with kernel contracts (no mocks)
+class MemoryAdapter:
+    """Adapts LyrixaMemorySystem to the kernel's expected interface."""
+
+    def __init__(self, memory_impl):
+        self.impl = memory_impl
+
+    async def activate(self):
+        return True
+
+    async def light_optimization(self):
+        # Optional optimization hooks if available
+        if hasattr(self.impl, "consolidate_memories"):
+            try:
+                await self.impl.consolidate_memories()
+            except TypeError:
+                # Fallback for sync implementations
+                self.impl.consolidate_memories()
+
+    async def deep_consolidation(self):
+        if hasattr(self.impl, "consolidate_memories"):
+            try:
+                await self.impl.consolidate_memories()
+            except TypeError:
+                self.impl.consolidate_memories()
+
+    async def optimize(self):
+        if hasattr(self.impl, "consolidate_memories"):
+            try:
+                await self.impl.consolidate_memories()
+            except TypeError:
+                self.impl.consolidate_memories()
+
+    async def get_health_status(self):
+        try:
+            # Prefer explicit status API if present
+            if hasattr(self.impl, "get_status"):
+                status = self.impl.get_status()
+                return "healthy" if status else "unknown"
+            # Try Lyrixa stats
+            if hasattr(self.impl, "get_memory_stats"):
+                stats = await self.impl.get_memory_stats()  # type: ignore[attr-defined]
+                return "healthy" if stats.get("total_memories", 0) >= 0 else "degraded"
+            # Try underlying engine
+            engine = getattr(self.impl, "engine", None)
+            if engine and hasattr(engine, "get_status"):
+                status = engine.get_status()
+                return "healthy" if status else "unknown"
+        except Exception:
+            return "error"
+        return "unknown"
+
+    async def process_query(self, data):
+        query = (data or {}).get("query", "")
+        limit = (data or {}).get("limit", 5)
+        mtype = (data or {}).get("memory_type")
+        # Lyrixa-style async API
+        if hasattr(self.impl, "recall_memories"):
+            return await self.impl.recall_memories(
+                query_text=query, limit=limit, memory_type=mtype
+            )  # type: ignore[attr-defined]
+        # AetherraMemoryEngine sync API
+        if hasattr(self.impl, "retrieve"):
+            try:
+                return self.impl.retrieve(query, {"limit": limit, "memory_type": mtype})
+            except TypeError:
+                return self.impl.retrieve(query)
+        return []
+
+
+class PluginManagerAdapter:
+    """Adapts PluginManager to kernel contract."""
+
+    def __init__(self, manager_impl):
+        self.impl = manager_impl
+
+    async def activate(self):
+        return True
+
+    async def execute_scheduled_tasks(self):
+        # No explicit scheduler in current manager – noop
+        return True
+
+    async def invoke_plugin(self, data):
+        if not data:
+            return None
+        # Prefer execute_chain if a message is provided
+        if "message" in data:
+            msg = data.get("message")
+            if hasattr(self.impl, "execute_chain"):
+                return self.impl.execute_chain(msg)
+        # Otherwise execute a named plugin
+        name = data.get("name") or data.get("plugin")
+        args = data.get("args", [])
+        kwargs = data.get("kwargs", {})
+        if name and hasattr(self.impl, "execute_plugin"):
+            return self.impl.execute_plugin(name, *args, **kwargs)
+        return None
+
+    async def optimize_plugins(self):
+        return True
+
+    async def health_check(self):
+        return True
+
+    # Convenience used by launcher
+    def discover_and_load_all(self):
+        if hasattr(self.impl, "discover_plugins") and hasattr(self.impl, "load_plugin"):
+            for pname in self.impl.discover_plugins():
+                try:
+                    self.impl.load_plugin(pname)
+                except Exception as e:
+                    logger.warning(f"[PLUGIN] Failed loading {pname}: {e}")
+
+    async def set_hub_integration(self, hub_service):
+        # Store reference for potential future use
+        setattr(self.impl, "hub_integration", hub_service)
+
+
+class EngineAdapter:
+    """Wraps AetherraEngine to add missing contract methods."""
+
+    def __init__(self, engine_impl):
+        self.impl = engine_impl
+
+    async def initialize(self):
+        if hasattr(self.impl, "initialize"):
+            await self.impl.initialize()
+
+    async def wake_up(self):
+        # Back-compat for launcher activation
+        await self.initialize()
+
+    async def process_message(self, content):
+        if hasattr(self.impl, "process_message"):
+            return await self.impl.process_message(str(content))
+        return None
+
+    async def reflect_on_day(self):
+        # Simple placeholder reflection using system status
+        try:
+            if hasattr(self.impl, "get_system_status"):
+                await self.impl.get_system_status()
+        except Exception:
+            pass
+        return True
+
+    async def get_health_status(self):
+        try:
+            status = await self.impl.get_system_status()
+            return (
+                "conscious" if status.get("engine_status") == "active" else "inactive"
+            )
+        except Exception:
+            return "error"
 
 
 class AetherraOSLauncher:
@@ -106,6 +255,9 @@ class AetherraOSLauncher:
         self.startup_time = time.time()
 
         try:
+            # Apply logging mode (quiet or custom level) ASAP
+            self._apply_logging_mode(config or {})
+
             # Phase 1: Initialize Service Registry
             await self._initialize_service_registry()
 
@@ -132,6 +284,42 @@ class AetherraOSLauncher:
             traceback.print_exc()
             await self._emergency_shutdown()
             raise
+
+    def _apply_logging_mode(self, config: Dict):
+        """Adjust logging levels based on config/env (quiet mode, log level)."""
+        try:
+            # Determine log level
+            quiet = bool(config.get("quiet") or os.getenv("AETHERRA_QUIET"))
+            level_name = (
+                config.get("log_level")
+                or os.getenv("AETHERRA_LOG_LEVEL")
+                or ("WARNING" if quiet else None)
+            )
+            if level_name:
+                level = getattr(logging, str(level_name).upper(), logging.WARNING)
+                logging.getLogger().setLevel(level)
+
+            if quiet:
+                # Silence common noisy modules during smoke boots
+                noisy_modules = [
+                    __name__,
+                    "werkzeug",
+                    "aetherra_hub_server",
+                    "aetherra_plugin_discovery",
+                    "aetherra_script_service",
+                    "Aetherra.aetherra_core.engine.aetherra_engine",
+                    "aetherra_core.engine.aetherra_engine",
+                    "Aetherra.consciousness.quantum.quantum_consciousness_engine",
+                    "cosmic_consciousness_engine",
+                    "beyond_transcendence_engine",
+                    "qiskit",
+                    "Aetherra.aetherra_core.orchestration.scheduler",
+                ]
+                for name in noisy_modules:
+                    logging.getLogger(name).setLevel(logging.WARNING)
+        except Exception:
+            # Never fail launch due to logging tweaks
+            pass
 
     async def _initialize_service_registry(self):
         """[NET] Initialize the service registry."""
@@ -186,30 +374,22 @@ class AetherraOSLauncher:
     async def _load_memory_system(self, config: Dict):
         """[BRAIN] Load the quantum memory system."""
         try:
-            logger.info("[BRAIN] Loading Quantum Memory System...")
+            logger.info("[BRAIN] Loading Core Memory Engine...")
 
-            # Try to import and initialize memory system
-            try:
-                from aetherra_core.memory import memory_system
+            # Use Aetherra OS memory engine
+            from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
+                AetherraMemoryEngine,
+            )
 
-                await memory_system.initialize()
-                self.systems["memory"] = memory_system
-                await register_service(
-                    "memory_system",
-                    memory_system,
-                    metadata={"type": "core", "version": "1.0"},
-                )
-                logger.info("[OK] Quantum Memory System online")
-            except ImportError:
-                # Create a mock memory system for now
-                logger.warning("[WARN] Using mock memory system")
-                mock_memory = MockMemorySystem()
-                self.systems["memory"] = mock_memory
-                await register_service(
-                    "memory_system",
-                    mock_memory,
-                    metadata={"type": "mock", "version": "1.0"},
-                )
+            memory_impl = AetherraMemoryEngine()
+            memory_adapter = MemoryAdapter(memory_impl)
+            self.systems["memory"] = memory_adapter
+            await register_service(
+                "memory_system",
+                memory_impl,
+                metadata={"type": "core", "version": "1.0"},
+            )
+            logger.info("[OK] Aetherra Core Memory Engine online")
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load memory system: {e}")
@@ -220,29 +400,22 @@ class AetherraOSLauncher:
         try:
             logger.info("[PLUGIN] Loading Plugin Management System...")
 
-            try:
-                from aetherra_core.orchestration.plugin_manager import (
-                    get_plugin_manager,
-                )
+            from Aetherra.aetherra_core.plugins.plugin_manager import (
+                get_plugin_manager,
+            )
 
-                plugin_manager = await get_plugin_manager()
-                await plugin_manager.load_all_plugins()
-                self.systems["plugins"] = plugin_manager
-                await register_service(
-                    "plugin_manager",
-                    plugin_manager,
-                    metadata={"type": "core", "version": "1.0"},
-                )
-                logger.info("[OK] Plugin Manager online")
-            except ImportError:
-                logger.warning("[WARN] Using mock plugin manager")
-                mock_plugins = MockPluginManager()
-                self.systems["plugins"] = mock_plugins
-                await register_service(
-                    "plugin_manager",
-                    mock_plugins,
-                    metadata={"type": "mock", "version": "1.0"},
-                )
+            pm_impl = get_plugin_manager()
+            pm_adapter = PluginManagerAdapter(pm_impl)
+            # Eagerly load available plugins
+            pm_adapter.discover_and_load_all()
+
+            self.systems["plugins"] = pm_adapter
+            await register_service(
+                "plugin_manager",
+                pm_impl,
+                metadata={"type": "core", "version": "1.0"},
+            )
+            logger.info("[OK] Plugin Manager online")
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load plugin manager: {e}")
@@ -253,26 +426,17 @@ class AetherraOSLauncher:
         try:
             logger.info("[ENGINE] Loading Aetherra Native Engine...")
 
-            try:
-                from aetherra_core.engine import aetherra_engine
+            from Aetherra.aetherra_core.engine import aetherra_engine as core_engine
 
-                engine_instance = await aetherra_engine.boot()
-                self.systems["aetherra"] = engine_instance
-                await register_service(
-                    "aetherra_engine",
-                    engine_instance,
-                    metadata={"type": "native_engine", "version": "1.0"},
-                )
-                logger.info("[OK] Aetherra Native Engine online")
-            except ImportError:
-                logger.warning("[WARN] Using mock Aetherra engine")
-                mock_aetherra = MockAetherraEngine()
-                self.systems["aetherra"] = mock_aetherra
-                await register_service(
-                    "aetherra_engine",
-                    mock_aetherra,
-                    metadata={"type": "mock", "version": "1.0"},
-                )
+            engine_impl = await core_engine.boot()
+            engine_adapter = EngineAdapter(engine_impl)
+            self.systems["aetherra"] = engine_adapter
+            await register_service(
+                "aetherra_engine",
+                engine_impl,
+                metadata={"type": "native_engine", "version": "1.0"},
+            )
+            logger.info("[OK] Aetherra Native Engine online")
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load Aetherra engine: {e}")
@@ -292,9 +456,25 @@ class AetherraOSLauncher:
                 await register_service(
                     "aether_script_service",
                     aether_service,
-                    metadata={"type": "script_interpreter", "version": "1.0", "language": "aether"},
+                    metadata={
+                        "type": "script_interpreter",
+                        "version": "1.0",
+                        "language": "aether",
+                    },
                 )
-                logger.info("[OK] Aether Script Service online - .aether files ready")
+                # Mark status based on mode
+                if (
+                    getattr(aether_service, "mode", "enhanced") == "basic"
+                    and self.service_registry
+                ):
+                    await self.service_registry.update_service_status(
+                        "aether_script_service", ServiceStatus.DEGRADED
+                    )
+                    logger.info("[OK] Aether Script Service online (basic mode)")
+                else:
+                    logger.info(
+                        "[OK] Aether Script Service online - .aether files ready"
+                    )
             except ImportError as e:
                 logger.warning(f"[WARN] Using mock Aether Script service: {e}")
                 mock_aether_script = MockAetherScriptService()
@@ -322,9 +502,15 @@ class AetherraOSLauncher:
                 await register_service(
                     "persistent_memory_system",
                     memory_system,
-                    metadata={"type": "persistent_memory", "version": "1.0", "cognitive": True},
+                    metadata={
+                        "type": "persistent_memory",
+                        "version": "1.0",
+                        "cognitive": True,
+                    },
                 )
-                logger.info("[OK] Persistent Memory System online - cognitive state preserved")
+                logger.info(
+                    "[OK] Persistent Memory System online - cognitive state preserved"
+                )
             except ImportError as e:
                 logger.warning(f"[WARN] Using mock persistent memory system: {e}")
                 mock_persistent_memory = MockPersistentMemorySystem()
@@ -347,14 +533,22 @@ class AetherraOSLauncher:
             try:
                 from aetherra_adaptive_behavior import get_adaptive_behavior_system
 
-                behavior_system = await get_adaptive_behavior_system(self.service_registry)
+                behavior_system = await get_adaptive_behavior_system(
+                    self.service_registry
+                )
                 self.systems["adaptive_behavior"] = behavior_system
                 await register_service(
                     "adaptive_behavior_system",
                     behavior_system,
-                    metadata={"type": "adaptive_behavior", "version": "1.0", "learning": True},
+                    metadata={
+                        "type": "adaptive_behavior",
+                        "version": "1.0",
+                        "learning": True,
+                    },
                 )
-                logger.info("[OK] Adaptive Behavior System online - continuous learning active")
+                logger.info(
+                    "[OK] Adaptive Behavior System online - continuous learning active"
+                )
             except ImportError as e:
                 logger.warning(f"[WARN] Using mock adaptive behavior system: {e}")
                 mock_adaptive_behavior = MockAdaptiveBehaviorSystem()
@@ -549,7 +743,9 @@ class AetherraOSLauncher:
         """Get quantum consciousness level."""
         try:
             quantum_engine = self.systems.get("quantum_consciousness")
-            if hasattr(quantum_engine, "calculate_consciousness_level"):
+            if quantum_engine and hasattr(
+                quantum_engine, "calculate_consciousness_level"
+            ):
                 return await quantum_engine.calculate_consciousness_level()
             return 0.8  # Default quantum level
         except Exception as e:
@@ -560,7 +756,9 @@ class AetherraOSLauncher:
         """Get cosmic consciousness level."""
         try:
             cosmic_engine = self.systems.get("cosmic_consciousness")
-            if hasattr(cosmic_engine, "get_cosmic_consciousness_level"):
+            if cosmic_engine and hasattr(
+                cosmic_engine, "get_cosmic_consciousness_level"
+            ):
                 return await cosmic_engine.get_cosmic_consciousness_level()
             return 0.9  # Default cosmic level
         except Exception as e:
@@ -571,7 +769,9 @@ class AetherraOSLauncher:
         """Get beyond transcendence level."""
         try:
             transcendence_engine = self.systems.get("beyond_transcendence")
-            if hasattr(transcendence_engine, "get_transcendence_level"):
+            if transcendence_engine and hasattr(
+                transcendence_engine, "get_transcendence_level"
+            ):
                 return await transcendence_engine.get_transcendence_level()
             return 0.8  # Default transcendence level
         except Exception as e:
@@ -583,26 +783,16 @@ class AetherraOSLauncher:
         try:
             logger.info("[SCHED] Loading Task Scheduler...")
 
-            try:
-                from aetherra_core.orchestration import scheduler
+            from Aetherra.aetherra_core.orchestration import scheduler
 
-                await scheduler.initialize_schedule()
-                self.systems["scheduler"] = scheduler
-                await register_service(
-                    "scheduler",
-                    scheduler,
-                    metadata={"type": "orchestration", "version": "1.0"},
-                )
-                logger.info("[OK] Task Scheduler online")
-            except ImportError:
-                logger.warning("[WARN] Using mock scheduler")
-                mock_scheduler = MockScheduler()
-                self.systems["scheduler"] = mock_scheduler
-                await register_service(
-                    "scheduler",
-                    mock_scheduler,
-                    metadata={"type": "mock", "version": "1.0"},
-                )
+            await scheduler.initialize_schedule()
+            self.systems["scheduler"] = scheduler
+            await register_service(
+                "scheduler",
+                scheduler,
+                metadata={"type": "orchestration", "version": "1.0"},
+            )
+            logger.info("[OK] Task Scheduler online")
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load scheduler: {e}")
@@ -700,18 +890,13 @@ class AetherraOSLauncher:
                 logger.info("[GUI] Loading GUI System...")
 
                 try:
-                    from lyrixa.gui import main_gui
+                    # Prefer launching Lyrixa via its own launcher when needed
+                    from Aetherra.lyrixa.gui import main_window  # noqa: F401
 
-                    # Start GUI in background
-                    asyncio.create_task(main_gui.launch_gui())
-                    self.systems["gui"] = main_gui
-                    await register_service(
-                        "gui_system",
-                        main_gui,
-                        metadata={"type": "interface", "version": "1.0"},
+                    logger.info(
+                        "[INFO] GUI modules available. GUI launch is controlled by Lyrixa launcher."
                     )
-                    logger.info("[OK] GUI System online")
-                except ImportError:
+                except Exception:
                     logger.info("[INFO] GUI system not available")
             else:
                 logger.info("[INFO] GUI disabled in configuration")
@@ -756,8 +941,6 @@ class AetherraOSLauncher:
             await self.systems["memory"].activate()
             # Mark memory system as healthy
             if self.service_registry and CORE_AVAILABLE:
-                from aetherra_service_registry import ServiceStatus
-
                 await self.service_registry.update_service_status(
                     "memory_system", ServiceStatus.HEALTHY
                 )
@@ -774,8 +957,6 @@ class AetherraOSLauncher:
 
             # Mark plugin manager as healthy
             if self.service_registry and CORE_AVAILABLE:
-                from aetherra_service_registry import ServiceStatus
-
                 await self.service_registry.update_service_status(
                     "plugin_manager", ServiceStatus.HEALTHY
                 )
@@ -785,16 +966,12 @@ class AetherraOSLauncher:
             await self.systems["aetherra"].wake_up()
             # Mark Aetherra engine as healthy
             if self.service_registry and CORE_AVAILABLE:
-                from aetherra_service_registry import ServiceStatus
-
                 await self.service_registry.update_service_status(
                     "aetherra_engine", ServiceStatus.HEALTHY
                 )
 
         # Mark kernel loop as healthy (it should be running by now)
         if self.service_registry and CORE_AVAILABLE:
-            from aetherra_service_registry import ServiceStatus
-
             await self.service_registry.update_service_status(
                 "kernel_loop", ServiceStatus.HEALTHY
             )
@@ -806,10 +983,18 @@ class AetherraOSLauncher:
         logger.info("[HEALTH] Phase 5: Validating System Health...")
 
         # Check service registry status
+        if not self.service_registry:
+            logger.error(
+                "[ERROR] Service registry unavailable during health validation"
+            )
+            return
         registry_status = self.service_registry.get_registry_status()
         logger.info(f"[STATS] Services: {registry_status['total_services']} registered")
 
         # Check kernel status
+        if not self.kernel_loop:
+            logger.error("[ERROR] Kernel loop unavailable during health validation")
+            return
         kernel_status = self.kernel_loop.get_status()
         logger.info(f"[SYS] Kernel: {kernel_status['cycle_count']} cycles completed")
 
@@ -841,18 +1026,21 @@ class AetherraOSLauncher:
 
     async def _announce_os_online(self):
         """📢 Announce that Aetherra OS is fully online."""
-        startup_duration = time.time() - self.startup_time
+        start_t = self.startup_time if self.startup_time is not None else time.time()
+        startup_duration = time.time() - start_t
 
         logger.info("=" * 60)
         logger.info("[SUCCESS] AETHERRA AI OPERATING SYSTEM IS NOW ONLINE! [SUCCESS]")
         logger.info("=" * 60)
         logger.info(f"[LAUNCH] Startup completed in {startup_duration:.2f} seconds")
-        logger.info(
-            f"[NET] Services: {len(self.service_registry.list_services())} active"
-        )
-        logger.info(
-            f"[SYS] Kernel cycles: {self.kernel_loop.get_status()['cycle_count']}"
-        )
+        if self.service_registry:
+            logger.info(
+                f"[NET] Services: {len(self.service_registry.list_services())} active"
+            )
+        if self.kernel_loop:
+            logger.info(
+                f"[SYS] Kernel cycles: {self.kernel_loop.get_status()['cycle_count']}"
+            )
         logger.info("[BRAIN] Aetherra consciousness: Active")
         logger.info("[PLUGIN] Plugin ecosystem: Ready")
         logger.info("[MEM] Quantum memory: Operational")
@@ -1383,16 +1571,18 @@ class MockAetherScriptService:
             "success": True,
             "script_path": script_path,
             "result": f"Mock execution of {script_path}",
-            "execution_time": 0.1
+            "execution_time": 0.1,
         }
 
-    async def execute_script_content(self, script_content: str, filename: str = "<string>", context=None):
+    async def execute_script_content(
+        self, script_content: str, filename: str = "<string>", context=None
+    ):
         """Mock script content execution."""
         logger.info(f"[MOCK] Mock execution of script content: {filename}")
         return {
             "success": True,
             "filename": filename,
-            "result": f"Mock execution of {filename}"
+            "result": f"Mock execution of {filename}",
         }
 
     def get_status(self):
@@ -1403,7 +1593,7 @@ class MockAetherScriptService:
             "bootstrap_scripts": [],
             "startup_scripts": [],
             "running_scripts": [],
-            "scripts_executed": self.scripts_executed
+            "scripts_executed": self.scripts_executed,
         }
 
     async def _heartbeat_loop(self):
@@ -1453,15 +1643,19 @@ class MockPersistentMemorySystem:
         self.memory_nodes[memory_id] = {
             "type": memory_type,
             "content": content,
-            "metadata": metadata or {}
+            "metadata": metadata or {},
         }
         logger.info(f"[MOCK] Stored memory: {memory_type} - {memory_id}")
         return memory_id
 
-    async def retrieve_memories(self, memory_type: Optional[str] = None, query: Optional[str] = None):
+    async def retrieve_memories(
+        self, memory_type: Optional[str] = None, query: Optional[str] = None
+    ):
         """Mock memory retrieval."""
         if memory_type:
-            results = [mem for mem in self.memory_nodes.values() if mem["type"] == memory_type]
+            results = [
+                mem for mem in self.memory_nodes.values() if mem["type"] == memory_type
+            ]
         else:
             results = list(self.memory_nodes.values())
         logger.info(f"[MOCK] Retrieved {len(results)} memories")
@@ -1472,7 +1666,9 @@ class MockPersistentMemorySystem:
         return {
             "running": self.running,
             "memory_count": len(self.memory_nodes),
-            "memory_types": list(set(mem["type"] for mem in self.memory_nodes.values()))
+            "memory_types": list(
+                set(mem["type"] for mem in self.memory_nodes.values())
+            ),
         }
 
     async def _heartbeat_loop(self):
@@ -1523,7 +1719,7 @@ class MockAdaptiveBehaviorSystem:
             "context": context,
             "action": action,
             "outcome": outcome,
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
         self.behaviors_learned.append(behavior)
         logger.info(f"[MOCK] Learned behavior: {context} -> {action}")
@@ -1536,7 +1732,7 @@ class MockAdaptiveBehaviorSystem:
         return {
             "adaptation_applied": True,
             "adaptation_count": self.adaptations_made,
-            "context": current_context
+            "context": current_context,
         }
 
     def get_status(self):
@@ -1545,7 +1741,7 @@ class MockAdaptiveBehaviorSystem:
             "running": self.running,
             "behaviors_learned": len(self.behaviors_learned),
             "adaptations_made": self.adaptations_made,
-            "learning_active": self.running
+            "learning_active": self.running,
         }
 
     async def _heartbeat_loop(self):

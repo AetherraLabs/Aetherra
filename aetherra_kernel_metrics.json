@@ -1,8 +1,8 @@
 {
-  "total_cycles": 375,
-  "avg_cycle_time": 1.192883800097593e-05,
-  "last_cycle_time": 1.4543533325195312e-05,
+  "total_cycles": 1,
+  "avg_cycle_time": 7.62939453125e-06,
+  "last_cycle_time": 7.62939453125e-06,
   "errors_count": 0,
-  "night_cycles_count": 1,
-  "shutdown_time": "2025-08-08T03:06:15.171323"
+  "night_cycles_count": 0,
+  "shutdown_time": "2025-08-11T23:35:01.575300"
 }

@@ -1,4 +1,9 @@
 """
+DEPRECATED: This integration is superseded by the canonical
+QuantumEnhancedMemoryEngine at
+`Aetherra/aetherra_core/memory/QuantumEnhancedMemoryEngine/quantum_memory_engine.py`.
+Kept for backward compatibility during the quarantine period.
+
 🌌 Quantum Memory Integration for Lyrixa
 ======================================
 
