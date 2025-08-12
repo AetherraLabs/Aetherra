@@ -23,18 +23,13 @@ Primary entry point for launching the Aetherra AI Operating System.
 This script provides a clean interface to start various OS components.
 
 Usage:
-    python aetherra_os.py                    # Launch main OS interface
-    python aetherra_os.py --interface gui    # Launch GUI interface
-    python aetherra_os.py --interface web    # Launch web interface only
-    python aetherra_os.py --interface hybrid # Launch hybrid interface (default)
-    python aetherra_os.py --help            # Show help
+    python aetherra_os.py                      # Backend-only smoke boot (default)
+    python aetherra_os.py --interface backend  # Backend-only smoke boot
+    python aetherra_os.py --help               # Show help
 
-The Aetherra OS provides:
-- Hybrid PySide6 + Web dashboard interface
-- Real-time AI system monitoring
-- Quantum memory visualization
-- Agent ecosystem management
-- Consciousness state monitoring
+Notes:
+- GUI launch is no longer handled by this file.
+- Use Lyrixa or aetherra_os_launcher.py for GUI experiences.
 """
 
 import argparse
@@ -47,76 +42,51 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 
-def launch_hybrid_interface():
-    """Launch the designated Aetherra GUI interface and start OS backend"""
-    print("🚀 Starting Aetherra AI Operating System with Designated GUI...")
-    print("🖥️ This will:")
-    print("   • Start the Aetherra OS kernel and core systems")
-    print("   • Launch the official Aetherra/gui interface")
-    print("   • Connect to real-time OS data")
-    print("   • Provide neural OS monitoring and control")
-    print()
-
-    # First, start the OS backend systems
-    try:
-        print("🔧 Starting Aetherra OS backend services...")
-        import asyncio
-        import threading
-
-        from aetherra_os_launcher import AetherraOSLauncher
-
-        async def start_os_backend():
-            launcher = AetherraOSLauncher()
-            await launcher.launch_full_os({"gui_enabled": False})  # Backend only
-
-        def run_os():
-            asyncio.run(start_os_backend())
-
-        os_thread = threading.Thread(target=run_os, daemon=True)
-        os_thread.start()
-
-        # Give OS time to start
-        import time
-
-        time.sleep(3)
-        print("✅ Aetherra OS backend started")
-
-    except Exception as e:
-        print(f"⚠️ OS backend start warning: {e}")
-        print("Continuing with GUI launch...")
-
-    # Now launch the designated GUI
-    try:
-        # Add GUI path to system path
-        gui_path = PROJECT_ROOT / "Aetherra" / "gui"
-        if str(gui_path) not in sys.path:
-            sys.path.insert(0, str(gui_path))
-
-        # Import and run the official Aetherra GUI
-        from aetherra_enhanced_neural_os import main as gui_main
-
-        return gui_main()
-    except ImportError as e:
-        print(f"❌ Failed to import official Aetherra GUI: {e}")
-        print("📁 Make sure Aetherra/gui/aetherra_enhanced_neural_os.py exists")
-        print("[TOOL] Make sure PySide6 is installed: pip install PySide6")
-        return 1
+def _deprecated_gui_entry(which: str) -> int:
+    print("❌ GUI launching was removed from aetherra_os.py")
+    print(f"Requested interface: {which}")
+    print("➡️ Use one of the following instead:")
+    print("   • Lyrixa launcher: Aetherra/lyrixa/launcher.py")
+    print("   • OS launcher with GUI: aetherra_os_launcher.py (if applicable)")
+    return 2
 
 
 def launch_web_interface():
-    """Launch web interface only"""
-    try:
-        from Aetherra.gui.web_interface_server import start_web_interface
-
-        return start_web_interface()
-    except ImportError as e:
-        print(f"❌ Failed to import web interface: {e}")
-        return 1
+    return _deprecated_gui_entry("web")
 
 
 def launch_gui_interface():
-    """Launch GUI interface (alias for hybrid)"""
-    return launch_hybrid_interface()
+    return _deprecated_gui_entry("gui")
+
+
+def launch_backend_only(duration_seconds: int = 3):
+    """Launch only the OS backend for a short smoke boot and exit.
+
+    Args:
+        duration_seconds: How long to keep the backend running before shutdown.
+    """
+    import asyncio
+
+    from aetherra_os_launcher import AetherraOSLauncher
+
+    async def run_backend():
+        launcher = AetherraOSLauncher()
+        # Start in the background and let it settle
+        asyncio.create_task(
+            launcher.launch_full_os({"gui_enabled": False, "quiet": True})
+        )
+        try:
+            await asyncio.sleep(max(1, duration_seconds))
+        finally:
+            # Request shutdown cleanly
+            launcher.running = False
+            try:
+                await launcher._graceful_shutdown()
+            except Exception:
+                pass
+        return 0
+
+    return asyncio.run(run_backend())
 
 
 def show_system_info():
@@ -124,9 +94,7 @@ def show_system_info():
     print("🤖 AETHERRA AI OPERATING SYSTEM")
     print("=" * 40)
     print("🖥️ Available Interfaces:")
-    print("  • hybrid - PySide6 + Web hybrid interface (recommended)")
-    print("  • web    - Web-only interface")
-    print("  • gui    - GUI interface (alias for hybrid)")
+    print("  • backend - Backend-only smoke boot (no GUI)")
     print()
     print("🧠 Core Features:")
     print("  • Real-time AI system monitoring")
@@ -136,9 +104,8 @@ def show_system_info():
     print("  • Live cognitive metrics")
     print()
     print("📁 Project Structure:")
-    print("  • Aetherra/GUI/           - Official Aetherra OS GUI interface")
-    print("  • Aetherra/aetherra_core/ - Core Aetherra memory & processing engines")
-    print("  • Aetherra/gui/          - Web interface server")
+    print("  • Aetherra/lyrixa/       - Lyrixa GUI launcher and UI")
+    print("  • Aetherra/aetherra_core/- Core Aetherra memory & processing engines")
     print("  • Aetherra/plugins/      - Plugin ecosystem & management")
     print()
 
@@ -150,18 +117,18 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python aetherra_os.py                    # Launch hybrid interface
-  python aetherra_os.py --interface web    # Web interface only
-  python aetherra_os.py --info            # Show system information
-        """,
+  python aetherra_os.py                    # Backend-only smoke boot
+  python aetherra_os.py --interface backend# Backend-only smoke boot
+  python aetherra_os.py --info             # Show system information
+    """,
     )
 
     parser.add_argument(
         "--interface",
         "-i",
-        choices=["hybrid", "web", "gui"],
-        default="hybrid",
-        help="Interface type to launch (default: hybrid)",
+        choices=["backend", "hybrid", "web", "gui"],
+        default="backend",
+        help="Interface type to launch (default: backend)",
     )
 
     parser.add_argument(
@@ -178,12 +145,12 @@ Examples:
     print(f"🚀 Launching {args.interface} interface...")
     print("=" * 40)
 
-    if args.interface == "hybrid":
-        return launch_hybrid_interface()
-    elif args.interface == "web":
-        return launch_web_interface()
-    elif args.interface == "gui":
-        return launch_gui_interface()
+    if args.interface == "backend":
+        # Short backend-only smoke boot
+        return launch_backend_only()
+    elif args.interface in ("hybrid", "web", "gui"):
+        # Deprecated here
+        return _deprecated_gui_entry(args.interface)
     else:
         print(f"❌ Unknown interface type: {args.interface}")
         return 1

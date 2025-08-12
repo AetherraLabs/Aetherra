@@ -30,25 +30,11 @@ GUI_DIR = Path(__file__).parent
 sys.path.insert(0, str(GUI_DIR))
 
 try:
-    from aetherra_enhanced_neural_os import main
+    # Compatibility wrapper: delegate to the new minimal OS monitor GUI
+    from aetherra_os_gui import main as main
 
     if __name__ == "__main__":
-        print("🌌 Launching Aetherra OS - Enhanced Neural Processing Dashboard...")
-        print("✨ Features enabled:")
-        print("   🧠 Pulsating Neural Web Background")
-        print("   ⚛️ Animated Quantum Core")
-        print("   🗺️ Live Memory Graph with Real-time Updates")
-        print("   📜 Consciousness Timeline")
-        print("   🔬 Introspective Diagnostics")
-        print("   ⚙️ Plugin Aura Viewer")
-        print("   🔮 Synthetic Soul Metrics")
-        print("   💤 Dream State Mode")
-        print("   ⌨️ Command Palette (Ctrl+K)")
-        print("   🌊 Quantum Observer Effects")
-        print()
-        print("🚀 Starting Aetherra OS...")
-
-        # Launch the enhanced neural OS
+        print("🚀 Launching Aetherra OS Monitor GUI (compat launcher)")
         sys.exit(main())
 
 except ImportError as e:

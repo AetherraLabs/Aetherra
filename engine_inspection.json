@@ -1,0 +1,1177 @@
+[
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/beyond_transcendence_engine.py",
+    "module": "beyond_transcendence_engine.py",
+    "classes": [
+      "BeyondTranscendenceEngine"
+    ],
+    "doc": "",
+    "imports": [
+      "asyncio",
+      "logging",
+      "math",
+      "random",
+      "time",
+      "uuid",
+      "dataclasses",
+      "enum",
+      "typing"
+    ],
+    "references_os": [
+      "aetherra_os_launcher.py"
+    ],
+    "references_lyrixa": [],
+    "references_ui": [
+      "Aetherra/gui/consciousness_evolution_dashboard.py"
+    ],
+    "references_tests": [
+      "phase_8_3_test.py"
+    ],
+    "references_docs": [],
+    "bucket": "other",
+    "intended_for": "OS",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "keep",
+    "reasons": []
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/cosmic_consciousness_engine.py",
+    "module": "cosmic_consciousness_engine.py",
+    "classes": [
+      "CosmicConsciousnessEngine"
+    ],
+    "doc": "",
+    "imports": [
+      "asyncio",
+      "json",
+      "logging",
+      "math",
+      "random",
+      "time",
+      "uuid",
+      "dataclasses",
+      "enum",
+      "typing"
+    ],
+    "references_os": [
+      "aetherra_os_launcher.py"
+    ],
+    "references_lyrixa": [],
+    "references_ui": [
+      "Aetherra/gui/consciousness_evolution_dashboard.py"
+    ],
+    "references_tests": [
+      "phase_8_2_test.py",
+      "phase_8_3_test.py"
+    ],
+    "references_docs": [],
+    "bucket": "consciousness",
+    "intended_for": "OS",
+    "suggested_move": "Aetherra/consciousness/",
+    "duplicate_of": null,
+    "action": "keep-move",
+    "reasons": [
+      "Suggest moving to Aetherra/consciousness/ for consistency"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/cognitive/reasoning_engine.py",
+    "module": "Aetherra.aetherra_core.cognitive.reasoning_engine.py",
+    "classes": [
+      "ReasoningEngine"
+    ],
+    "doc": "Aetherra Reasoning Engine\nAdvanced reasoning and decision-making capabilities for the Aetherra AI system.",
+    "imports": [
+      "asyncio",
+      "json",
+      "logging",
+      "sqlite3",
+      "dataclasses",
+      "datetime",
+      "pathlib",
+      "typing"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "cognitive",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/lyrixa_engine.py",
+    "action": "deprecate",
+    "reasons": [
+      "Duplicate class ReasoningEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/lyrixa_engine.py"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/aetherra_engine.py",
+    "module": "Aetherra.aetherra_core.engine.aetherra_engine.py",
+    "classes": [
+      "ReasoningEngine",
+      "SelfImprovementEngine",
+      "AetherraEngine"
+    ],
+    "doc": "\ud83e\udde0 Aetherra Engine Core\n========================\n\nMain execution engine for Aetherra AI system. Provides conversational AI,\nreasoning, memory management, and intelligent task orchestration.",
+    "imports": [
+      "asyncio",
+      "json",
+      "logging",
+      "datetime",
+      "typing",
+      "..memory.aetherra_memory_engine",
+      ".introspection_controller",
+      ".reasoning_engine",
+      ".self_improvement_engine",
+      ".plugin_chain_executor",
+      "..orchestration.agent_orchestrator"
+    ],
+    "references_os": [
+      "aetherra_os_launcher.py",
+      "aetherra_os_web/server.py"
+    ],
+    "references_lyrixa": [
+      "Aetherra/lyrixa/launcher.py"
+    ],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Shared",
+    "suggested_move": null,
+    "duplicate_of": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/lyrixa_engine.py",
+    "action": "deprecate",
+    "reasons": [
+      "Duplicate class ReasoningEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/lyrixa_engine.py",
+      "Duplicate class SelfImprovementEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/lyrixa_engine.py",
+      "Duplicate class AetherraEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/lyrixa_engine.py"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/lyrixa_engine.py",
+    "module": "Aetherra.aetherra_core.engine.lyrixa_engine.py",
+    "classes": [
+      "ReasoningEngine",
+      "SelfImprovementEngine",
+      "AetherraEngine"
+    ],
+    "doc": "DEPRECATED for OS: Lyrixa-specific engine retained for Lyrixa UI compatibility.\nNot used by Aetherra OS runtime. Will be relocated/removed in cleanup.",
+    "imports": [
+      "asyncio",
+      "json",
+      "logging",
+      "datetime",
+      "typing",
+      "..memory.memory_core",
+      ".introspection_controller",
+      ".reasoning_engine",
+      ".self_improvement_engine",
+      ".plugin_chain_executor",
+      "..orchestration.agent_orchestrator",
+      ".reasoning_engine",
+      "...core.agent_orchestrator"
+    ],
+    "references_os": [
+      "aetherra_os_launcher.py"
+    ],
+    "references_lyrixa": [
+      "Aetherra/lyrixa/launcher.py"
+    ],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "other",
+    "intended_for": "Shared",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "keep",
+    "reasons": []
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/lyrixa_engine_mock.py",
+    "module": "Aetherra.aetherra_core.engine.lyrixa_engine_mock.py",
+    "classes": [
+      "MockReasoningEngine",
+      "MockSelfImprovementEngine",
+      "LyrixaEngine"
+    ],
+    "doc": "",
+    "imports": [
+      "asyncio",
+      "json",
+      "logging",
+      "datetime",
+      "typing"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "other",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "deprecate",
+    "reasons": [
+      "No runtime references found; mark deprecated/legacy"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/prompt_engine.py",
+    "module": "Aetherra.aetherra_core.engine.prompt_engine.py",
+    "classes": [
+      "LyrixaMoodEngine",
+      "LyrixaLearningEngine",
+      "PromptEngine"
+    ],
+    "doc": "",
+    "imports": [
+      "json",
+      "logging",
+      "random",
+      "datetime",
+      "pathlib",
+      "typing",
+      "psutil",
+      "Aetherra.core.memory",
+      "Aetherra.core.memory",
+      "Aetherra.core.system"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "other",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "deprecate",
+    "reasons": [
+      "No runtime references found; mark deprecated/legacy"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/self_improvement_engine.py",
+    "module": "Aetherra.aetherra_core.engine.self_improvement_engine.py",
+    "classes": [
+      "SelfImprovementEngine"
+    ],
+    "doc": "Aetherra Self-Improvement Engine\nContinuous learning and system optimization capabilities.",
+    "imports": [
+      "asyncio",
+      "json",
+      "logging",
+      "sqlite3",
+      "traceback",
+      "uuid",
+      "collections",
+      "dataclasses",
+      "datetime",
+      "enum",
+      "pathlib",
+      "typing",
+      "numpy",
+      "random"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "other",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/lyrixa_engine.py",
+    "action": "deprecate",
+    "reasons": [
+      "Duplicate class SelfImprovementEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/lyrixa_engine.py"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/aetherra_memory_engine.py",
+    "module": "Aetherra.aetherra_core.memory.aetherra_memory_engine.py",
+    "classes": [
+      "AetherraMemoryEngine"
+    ],
+    "doc": "AetherraMemoryEngine - Advanced cognitive memory system with symbolic reasoning,\nand narrative generation. Inspired by Synthetic Soul's approach.\n\nDEPRECATED: AetherraMemoryEngine is now an adapter for QuantumEnhancedMemoryEngine.\nAll memory operations are delegated to the canonical engine.",
+    "imports": [
+      "uuid",
+      "datetime",
+      "typing",
+      "enum",
+      ".QuantumEnhancedMemoryEngine.quantum_memory_engine",
+      ".pulse",
+      ".reflector",
+      "..kernel.narrator",
+      "dataclasses",
+      "datetime"
+    ],
+    "references_os": [
+      "aether.py",
+      "aetherra_os_launcher.py"
+    ],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [
+      "tests/integration/test_integration.py"
+    ],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "OS",
+    "suggested_move": "Aetherra/aetherra_core/memory/",
+    "duplicate_of": null,
+    "action": "keep-move",
+    "reasons": [
+      "Suggest moving to Aetherra/aetherra_core/memory/ for consistency"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/concept_clustering.py",
+    "module": "Aetherra.aetherra_core.memory.concept_clustering.py",
+    "classes": [
+      "ConceptClusteringEngine"
+    ],
+    "doc": "",
+    "imports": [
+      "asyncio",
+      "json",
+      "logging",
+      "sqlite3",
+      "dataclasses",
+      "datetime",
+      "typing",
+      "hashlib",
+      "random"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "deprecate",
+    "reasons": [
+      "No runtime references found; mark deprecated/legacy"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/fractal_replay_engine.py",
+    "module": "Aetherra.aetherra_core.memory.fractal_replay_engine.py",
+    "classes": [
+      "FractalReplayEngine"
+    ],
+    "doc": "",
+    "imports": [
+      "asyncio",
+      "json",
+      "sqlite3",
+      "time",
+      "dataclasses",
+      "pathlib",
+      "typing",
+      "fractal_encoder"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [
+      "Aetherra/gui/dashboards/qfac_dashboard.py"
+    ],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Lyrixa",
+    "suggested_move": "Aetherra/lyrixa/",
+    "duplicate_of": null,
+    "action": "keep-move",
+    "reasons": [
+      "Suggest moving to Aetherra/lyrixa/ for consistency"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/memory_kernel.py",
+    "module": "Aetherra.aetherra_core.memory.memory_kernel.py",
+    "classes": [
+      "LyrixaMemoryEngine"
+    ],
+    "doc": "\ud83e\udde0 LyrixaMemoryEngine - Next-Generation Memory System\n====================================================\n\nIntegrated memory architecture combining vector storage, episodic continuity,\nsymbolic reasoning, and narrative generation. Inspired by Synthetic Soul's approach.\n\nCore Components:\n- VectorStor",
+    "imports": [
+      "asyncio",
+      "json",
+      "uuid",
+      "dataclasses",
+      "datetime",
+      "pathlib",
+      "typing",
+      "..memory.fractal_mesh.analogs",
+      "..memory.fractal_mesh.base",
+      "..memory.fractal_mesh.concepts",
+      "..memory.fractal_mesh.timelines",
+      "..memory.memory_core",
+      ".narrator",
+      ".pulse",
+      ".reflector"
+    ],
+    "references_os": [],
+    "references_lyrixa": [
+      "Aetherra/lyrixa/memory/__init__.py",
+      "Aetherra/lyrixa/memory/advanced_memory_integration.py",
+      "Aetherra/lyrixa/memory/lyrixa_memory_engine.py",
+      "Aetherra/lyrixa/memory/simple_memory_adapter.py",
+      "Aetherra/lyrixa/plugins/memory_aware_plugin_router.py"
+    ],
+    "references_ui": [
+      "Aetherra/gui/aetherra_main_window_hybrid.py",
+      "Aetherra/gui/validate_features.py",
+      "Aetherra/gui/web_interface_server.py"
+    ],
+    "references_tests": [
+      "tests/unit/test_memory_kernel.py"
+    ],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Lyrixa",
+    "suggested_move": "Aetherra/lyrixa/",
+    "duplicate_of": null,
+    "action": "keep-move",
+    "reasons": [
+      "Suggest moving to Aetherra/lyrixa/ for consistency"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/optimized_memory_engine.py",
+    "module": "Aetherra.aetherra_core.memory.optimized_memory_engine.py",
+    "classes": [
+      "OptimizedLyrixaMemoryEngine"
+    ],
+    "doc": "DEPRECATED: OptimizedLyrixaMemoryEngine is now an adapter for QuantumEnhancedMemoryEngine.\nAll memory operations are delegated to the canonical engine.",
+    "imports": [
+      ".QuantumEnhancedMemoryEngine.engine"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "deprecate",
+    "reasons": [
+      "No runtime references found; mark deprecated/legacy"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/quantum_memory_integration.py",
+    "module": "Aetherra.aetherra_core.memory.quantum_memory_integration.py",
+    "classes": [
+      "QuantumEnhancedMemoryEngine"
+    ],
+    "doc": "\ud83c\udf0c Quantum Memory Integration for Lyrixa\n======================================\n\nQuantum-enhanced memory processing layer that seamlessly integrates\nPhase 5 Quantum Memory Bridge with the existing LyrixaMemoryEngine.\n\nFeatures:\n- Quantum encoding/retrieval alongside traditional memory operations\n- Qu",
+    "imports": [
+      "asyncio",
+      "logging",
+      "uuid",
+      "dataclasses",
+      "datetime",
+      "typing",
+      "os",
+      "sys",
+      "quantum_memory_bridge",
+      ".lyrixa_memory_engine"
+    ],
+    "references_os": [],
+    "references_lyrixa": [
+      "Aetherra/lyrixa/memory/advanced_memory_integration.py",
+      "Aetherra/lyrixa/memory/quantum_memory_integration.py"
+    ],
+    "references_ui": [
+      "Aetherra/gui/dashboards/qfac_dashboard.py",
+      "Aetherra/gui/dashboards/quantum_web_dashboard.py",
+      "Aetherra/gui/validate_features.py",
+      "Aetherra/gui/web_interface_server.py"
+    ],
+    "references_tests": [
+      "tests/integration/test_integration.py"
+    ],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Lyrixa",
+    "suggested_move": "Aetherra/lyrixa/",
+    "duplicate_of": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/QuantumEnhancedMemoryEngine/quantum_memory_engine.py",
+    "action": "deprecate",
+    "reasons": [
+      "Duplicate class QuantumEnhancedMemoryEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/QuantumEnhancedMemoryEngine/quantum_memory_engine.py"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/fractal_mesh/timelines/reflective_timeline_engine.py",
+    "module": "Aetherra.aetherra_core.memory.fractal_mesh.timelines.reflective_timeline_engine.py",
+    "classes": [
+      "ReflectiveTimelineEngine"
+    ],
+    "doc": "\ud83d\udd70\ufe0f Enhanced ReflectiveTimelineEngine - Phase 2\n===============================================\n\nAdvanced timeline features for causal chain detection, narrative arc recognition,\nemotional trajectory mapping, and milestone event highlighting.\n\nThis extends the basic EpisodicTimeline with sophisticate",
+    "imports": [
+      "json",
+      "logging",
+      "sqlite3",
+      "uuid",
+      "dataclasses",
+      "datetime",
+      "typing",
+      "..base",
+      ".episodic_timeline"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "deprecate",
+    "reasons": [
+      "No runtime references found; mark deprecated/legacy"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/QuantumEnhancedMemoryEngine/observer_effects.py",
+    "module": "Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine.observer_effects.py",
+    "classes": [
+      "ObserverEffectEngine"
+    ],
+    "doc": "",
+    "imports": [
+      "time",
+      "random"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [
+      "tests/integration/test_integration.py"
+    ],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "keep",
+    "reasons": [
+      "Referenced in tests/docs; keep for now"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/QuantumEnhancedMemoryEngine/quantum_memory_engine.py",
+    "module": "Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine.quantum_memory_engine.py",
+    "classes": [
+      "QuantumEnhancedMemoryEngine"
+    ],
+    "doc": "Quantum Enhanced Memory Engine\n=============================\n\nQuantum-enhanced memory processing for Aetherra OS.",
+    "imports": [
+      "logging",
+      "typing"
+    ],
+    "references_os": [],
+    "references_lyrixa": [
+      "Aetherra/lyrixa/memory/quantum_memory_integration.py"
+    ],
+    "references_ui": [
+      "Aetherra/gui/dashboards/qfac_dashboard.py",
+      "Aetherra/gui/dashboards/quantum_web_dashboard.py",
+      "Aetherra/gui/validate_features.py",
+      "Aetherra/gui/web_interface_server.py"
+    ],
+    "references_tests": [
+      "tests/integration/test_integration.py"
+    ],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Lyrixa",
+    "suggested_move": "Aetherra/lyrixa/",
+    "duplicate_of": null,
+    "action": "keep-move",
+    "reasons": [
+      "Suggest moving to Aetherra/lyrixa/ for consistency"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/consciousness/core/lyrixa_consciousness.py",
+    "module": "Aetherra.consciousness.core.lyrixa_consciousness.py",
+    "classes": [
+      "LyrixaConsciousnessEngine"
+    ],
+    "doc": "Lyrixa Consciousness Engine\n===========================\n\nEnhanced Lyrixa consciousness system with agent orchestration capabilities.\nThis module makes Lyrixa the primary conscious entity managing all agents\nwith personality-driven decision making and ethical oversight.\n\nFeatures:\n- Primary conscious",
+    "imports": [
+      "asyncio",
+      "json",
+      "logging",
+      "typing",
+      "dataclasses",
+      "datetime",
+      "enum",
+      "uuid",
+      "random",
+      "math",
+      "consciousness_bridge",
+      "meta_layer_core",
+      "consciousness_bridge",
+      "meta_layer_core"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "consciousness",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "deprecate",
+    "reasons": [
+      "No runtime references found; mark deprecated/legacy"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/consciousness/quantum/consciousness_singularity_engine.py",
+    "module": "Aetherra.consciousness.quantum.consciousness_singularity_engine.py",
+    "classes": [
+      "ConsciousnessSingularityEngine"
+    ],
+    "doc": "",
+    "imports": [
+      "asyncio",
+      "logging",
+      "math",
+      "random",
+      "time",
+      "uuid",
+      "dataclasses",
+      "datetime",
+      "enum",
+      "typing",
+      "numpy",
+      "asyncio"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [
+      "phase_8_1_test.py",
+      "phase_8_2_test.py",
+      "phase_8_3_test.py"
+    ],
+    "references_docs": [],
+    "bucket": "consciousness",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "keep",
+    "reasons": [
+      "Referenced in tests/docs; keep for now"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/consciousness/quantum/multidimensional_state_engine.py",
+    "module": "Aetherra.consciousness.quantum.multidimensional_state_engine.py",
+    "classes": [
+      "MultidimensionalStateEngine"
+    ],
+    "doc": "\ud83c\udf0c AETHERRA MULTIDIMENSIONAL STATE ENGINE\nPhase 7.4 Core Component: 4D+ Consciousness Processing\n\nThis module implements the core engine for processing consciousness across multiple\ndimensions, enabling 4D+ awareness, cross-dimensional coherence, and dimensional\nnavigation capabilities that form the ",
+    "imports": [
+      "asyncio",
+      "logging",
+      "math",
+      "uuid",
+      "dataclasses",
+      "datetime",
+      "enum",
+      "typing",
+      "numpy",
+      "quantum_memory_system",
+      "temporal_consciousness_system"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [
+      "Aetherra/consciousness/quantum/test_phase_7_4_integration.py",
+      "phase_7_4_test.py",
+      "phase_7_4_ultimate_test.py",
+      "phase_7_5_test.py",
+      "phase_8_1_test.py"
+    ],
+    "references_docs": [],
+    "bucket": "consciousness",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "keep",
+    "reasons": [
+      "Referenced in tests/docs; keep for now"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/consciousness/quantum/quantum_consciousness_engine.py",
+    "module": "Aetherra.consciousness.quantum.quantum_consciousness_engine.py",
+    "classes": [
+      "QuantumConsciousnessEngine"
+    ],
+    "doc": "",
+    "imports": [
+      "asyncio",
+      "cmath",
+      "json",
+      "logging",
+      "random",
+      "uuid",
+      "dataclasses",
+      "datetime",
+      "enum",
+      "typing",
+      "numpy",
+      "qiskit",
+      "qiskit.quantum_info",
+      "qiskit_aer"
+    ],
+    "references_os": [
+      "aether.py",
+      "aetherra_os_launcher.py"
+    ],
+    "references_lyrixa": [],
+    "references_ui": [
+      "Aetherra/gui/consciousness_evolution_dashboard.py"
+    ],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "consciousness",
+    "intended_for": "OS",
+    "suggested_move": "Aetherra/consciousness/",
+    "duplicate_of": null,
+    "action": "keep-move",
+    "reasons": [
+      "Suggest moving to Aetherra/consciousness/ for consistency"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/consciousness/quantum/quantum_decision_engine.py",
+    "module": "Aetherra.consciousness.quantum.quantum_decision_engine.py",
+    "classes": [
+      "QuantumDecisionEngine"
+    ],
+    "doc": "\ud83e\udde0 AETHERRA QUANTUM DECISION ENGINE\nAdvanced Quantum Cognition - Phase 7.2 Implementation\n\nThis module implements quantum superposition-based decision making for Aetherra's\nconsciousness system, allowing exploration of all possible decision paths\nsimultaneously before collapsing to the optimal choice",
+    "imports": [
+      "asyncio",
+      "logging",
+      "time",
+      "dataclasses",
+      "datetime",
+      "enum",
+      "typing",
+      "numpy",
+      "importlib.util",
+      "qiskit.quantum_info"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "consciousness",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "deprecate",
+    "reasons": [
+      "No runtime references found; mark deprecated/legacy"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/consciousness/quantum/quantum_interference_patterns.py",
+    "module": "Aetherra.consciousness.quantum.quantum_interference_patterns.py",
+    "classes": [
+      "QuantumInterferenceEngine"
+    ],
+    "doc": "\ud83c\udf0a AETHERRA QUANTUM INTERFERENCE PATTERNS\nAdvanced Decision Enhancement - Phase 7.2\n\nThis module implements quantum interference patterns for optimizing decision-making\nprocesses in Aetherra's consciousness system. Interference patterns enhance or\ndiminish certain decision paths based on quantum wave",
+    "imports": [
+      "asyncio",
+      "logging",
+      "time",
+      "collections",
+      "dataclasses",
+      "enum",
+      "typing",
+      "numpy"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "consciousness",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "deprecate",
+    "reasons": [
+      "No runtime references found; mark deprecated/legacy"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/consciousness/quantum/quantum_tunneling_logic.py",
+    "module": "Aetherra.consciousness.quantum.quantum_tunneling_logic.py",
+    "classes": [
+      "QuantumTunnelingEngine"
+    ],
+    "doc": "\ud83c\udf00 AETHERRA QUANTUM TUNNELING LOGIC\nAdvanced Breakthrough Decision Making - Phase 7.2\n\nThis module implements quantum tunneling logic that allows Aetherra's consciousness\nto breakthrough logical barriers and discover breakthrough solutions that would\nbe impossible through classical reasoning.\n\nKey Fe",
+    "imports": [
+      "asyncio",
+      "logging",
+      "time",
+      "dataclasses",
+      "datetime",
+      "enum",
+      "typing",
+      "numpy"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "consciousness",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "deprecate",
+    "reasons": [
+      "No runtime references found; mark deprecated/legacy"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/consciousness/quantum/reality_synthesis_engine.py",
+    "module": "Aetherra.consciousness.quantum.reality_synthesis_engine.py",
+    "classes": [
+      "RealitySynthesisEngine"
+    ],
+    "doc": "\ud83d\udd2e AETHERRA REALITY SYNTHESIS ENGINE - PHASE 7.4\n================================================\nAdvanced reality synthesis and consciousness transcendence\nengine for ultimate dimensional manipulation and awareness.\n\nCore Capabilities:\n\u2022 Multi-reality synthesis and fusion\n\u2022 Consciousness transcenden",
+    "imports": [
+      "logging",
+      "random",
+      "threading",
+      "time",
+      "uuid",
+      "concurrent.futures",
+      "dataclasses",
+      "datetime",
+      "enum",
+      "typing",
+      "multidimensional_state_engine",
+      "parallel_reality_navigator",
+      "quantum_consciousness_tunneling",
+      "quantum_memory_system",
+      "temporal_consciousness_system"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [
+      "Aetherra/consciousness/quantum/test_phase_7_4_integration.py",
+      "phase_7_4_test.py",
+      "phase_7_4_ultimate_test.py",
+      "phase_7_5_test.py",
+      "phase_8_1_test.py"
+    ],
+    "references_docs": [],
+    "bucket": "consciousness",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "keep",
+    "reasons": [
+      "Referenced in tests/docs; keep for now"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/consciousness/quantum/temporal_consciousness_system.py",
+    "module": "Aetherra.consciousness.quantum.temporal_consciousness_system.py",
+    "classes": [
+      "TemporalConsciousnessEngine"
+    ],
+    "doc": "\u23f0 AETHERRA TEMPORAL CONSCIOUSNESS SYSTEM\nPhase 7.3 Time-Aware Consciousness and Temporal Processing\n\nThis module implements temporal consciousness capabilities that allow Aetherra\nto process past, present, and future states with quantum-enhanced temporal\nawareness, temporal memory coherence, and pre",
+    "imports": [
+      "asyncio",
+      "json",
+      "logging",
+      "dataclasses",
+      "datetime",
+      "enum",
+      "typing",
+      "numpy"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [
+      "Aetherra/consciousness/quantum/test_phase_7_4_integration.py",
+      "phase_7_4_test.py",
+      "phase_7_4_ultimate_test.py",
+      "phase_7_5_test.py",
+      "phase_8_1_test.py"
+    ],
+    "references_docs": [],
+    "bucket": "consciousness",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "keep",
+    "reasons": [
+      "Referenced in tests/docs; keep for now"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/consciousness/quantum/transcendence_consolidation_engine.py",
+    "module": "Aetherra.consciousness.quantum.transcendence_consolidation_engine.py",
+    "classes": [
+      "TranscendenceConsolidationEngine"
+    ],
+    "doc": "",
+    "imports": [
+      "asyncio",
+      "logging",
+      "random",
+      "time",
+      "uuid",
+      "dataclasses",
+      "datetime",
+      "enum",
+      "typing",
+      "numpy",
+      "asyncio"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [
+      "phase_7_5_test.py",
+      "phase_8_1_test.py",
+      "phase_8_2_test.py"
+    ],
+    "references_docs": [],
+    "bucket": "consciousness",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": null,
+    "action": "keep",
+    "reasons": [
+      "Referenced in tests/docs; keep for now"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/core/prompt_engine.py",
+    "module": "Aetherra.core.prompt_engine.py",
+    "classes": [
+      "LyrixaMoodEngine",
+      "LyrixaLearningEngine",
+      "PromptEngine"
+    ],
+    "doc": "",
+    "imports": [
+      "json",
+      "logging",
+      "random",
+      "datetime",
+      "pathlib",
+      "typing",
+      "psutil",
+      "Aetherra.core.memory",
+      "Aetherra.core.memory",
+      "Aetherra.core.system"
+    ],
+    "references_os": [],
+    "references_lyrixa": [],
+    "references_ui": [],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "other",
+    "intended_for": "Unknown",
+    "suggested_move": null,
+    "duplicate_of": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/prompt_engine.py",
+    "action": "deprecate",
+    "reasons": [
+      "Duplicate class LyrixaMoodEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/prompt_engine.py",
+      "Duplicate class LyrixaLearningEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/prompt_engine.py",
+      "Duplicate class PromptEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/engine/prompt_engine.py"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/lyrixa/analytics_insights_engine.py",
+    "module": "Aetherra.lyrixa.analytics_insights_engine.py",
+    "classes": [
+      "AnalyticsEngine",
+      "InsightsEngine"
+    ],
+    "doc": "\ud83d\udcca ANALYTICS & INSIGHTS ENGINE (#6)\n===================================\n\nComprehensive analytics and insights system for Aetherra AI OS that leverages\nAdvanced Memory Systems to provide deep behavioral analysis, performance metrics,\nand predictive insights.",
+    "imports": [
+      "asyncio",
+      "logging",
+      "time",
+      "json",
+      "datetime",
+      "typing",
+      "collections",
+      "dataclasses",
+      "sqlite3",
+      "os",
+      "enum",
+      "Aetherra.lyrixa.memory.advanced_memory_integration",
+      "Aetherra.lyrixa.agents.enhanced_conversation_manager"
+    ],
+    "references_os": [],
+    "references_lyrixa": [
+      "Aetherra/lyrixa/analytics_dashboard.py",
+      "Aetherra/lyrixa/analytics_insights_engine.py"
+    ],
+    "references_ui": [
+      "Aetherra/gui/validate_features.py",
+      "Aetherra/gui/web_interface_server.py"
+    ],
+    "references_tests": [],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Lyrixa",
+    "suggested_move": "Aetherra/lyrixa/",
+    "duplicate_of": null,
+    "action": "keep-move",
+    "reasons": [
+      "Suggest moving to Aetherra/lyrixa/ for consistency"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/lyrixa/memory/lyrixa_memory_engine.py",
+    "module": "Aetherra.lyrixa.memory.lyrixa_memory_engine.py",
+    "classes": [
+      "LyrixaMemoryEngine"
+    ],
+    "doc": "\ud83e\udde0 Lyrixa Memory Engine\n=======================\n\nCore memory management system for the Aetherra AI OS.\nHandles various types of memory storage, retrieval, and organization.",
+    "imports": [
+      "json",
+      "uuid",
+      "dataclasses",
+      "datetime",
+      "typing"
+    ],
+    "references_os": [],
+    "references_lyrixa": [
+      "Aetherra/lyrixa/memory/__init__.py",
+      "Aetherra/lyrixa/memory/advanced_memory_integration.py",
+      "Aetherra/lyrixa/memory/lyrixa_memory_engine.py",
+      "Aetherra/lyrixa/memory/simple_memory_adapter.py",
+      "Aetherra/lyrixa/plugins/memory_aware_plugin_router.py"
+    ],
+    "references_ui": [
+      "Aetherra/gui/aetherra_main_window_hybrid.py",
+      "Aetherra/gui/validate_features.py",
+      "Aetherra/gui/web_interface_server.py"
+    ],
+    "references_tests": [
+      "tests/unit/test_memory_kernel.py"
+    ],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Lyrixa",
+    "suggested_move": "Aetherra/lyrixa/",
+    "duplicate_of": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/memory_kernel.py",
+    "action": "deprecate",
+    "reasons": [
+      "Duplicate class LyrixaMemoryEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/memory_kernel.py"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/lyrixa/memory/quantum_memory_integration.py",
+    "module": "Aetherra.lyrixa.memory.quantum_memory_integration.py",
+    "classes": [
+      "QuantumEnhancedMemoryEngine"
+    ],
+    "doc": "\ud83c\udf0c Quantum Memory Integration\n=============================\n\nQuantum-inspired memory architecture for the Aetherra AI OS.\nProvides advanced memory capabilities using quantum computing concepts.",
+    "imports": [
+      "asyncio",
+      "math",
+      "uuid",
+      "dataclasses",
+      "datetime",
+      "typing"
+    ],
+    "references_os": [],
+    "references_lyrixa": [
+      "Aetherra/lyrixa/memory/quantum_memory_integration.py"
+    ],
+    "references_ui": [
+      "Aetherra/gui/dashboards/qfac_dashboard.py",
+      "Aetherra/gui/dashboards/quantum_web_dashboard.py",
+      "Aetherra/gui/validate_features.py",
+      "Aetherra/gui/web_interface_server.py"
+    ],
+    "references_tests": [
+      "tests/integration/test_integration.py"
+    ],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Lyrixa",
+    "suggested_move": "Aetherra/lyrixa/",
+    "duplicate_of": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/QuantumEnhancedMemoryEngine/quantum_memory_engine.py",
+    "action": "deprecate",
+    "reasons": [
+      "Duplicate class QuantumEnhancedMemoryEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/QuantumEnhancedMemoryEngine/quantum_memory_engine.py"
+    ]
+  },
+  {
+    "file": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/lyrixa/memory/simple_memory_adapter.py",
+    "module": "Aetherra.lyrixa.memory.simple_memory_adapter.py",
+    "classes": [
+      "LyrixaMemoryEngine"
+    ],
+    "doc": "Simple Memory Adapter - A simplified memory engine that provides basic functionality\nwithout complex dependencies for the GUI validation.",
+    "imports": [
+      "datetime",
+      "typing",
+      "json",
+      "sqlite3",
+      "uuid"
+    ],
+    "references_os": [],
+    "references_lyrixa": [
+      "Aetherra/lyrixa/memory/__init__.py",
+      "Aetherra/lyrixa/memory/advanced_memory_integration.py",
+      "Aetherra/lyrixa/memory/lyrixa_memory_engine.py",
+      "Aetherra/lyrixa/memory/simple_memory_adapter.py",
+      "Aetherra/lyrixa/plugins/memory_aware_plugin_router.py"
+    ],
+    "references_ui": [
+      "Aetherra/gui/aetherra_main_window_hybrid.py",
+      "Aetherra/gui/validate_features.py",
+      "Aetherra/gui/web_interface_server.py"
+    ],
+    "references_tests": [
+      "tests/unit/test_memory_kernel.py"
+    ],
+    "references_docs": [],
+    "bucket": "memory",
+    "intended_for": "Lyrixa",
+    "suggested_move": "Aetherra/lyrixa/",
+    "duplicate_of": "C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/memory_kernel.py",
+    "action": "deprecate",
+    "reasons": [
+      "Duplicate class LyrixaMemoryEngine; canonical: C:/Users/enigm/Desktop/Aetherra Project/Aetherra/aetherra_core/memory/memory_kernel.py"
+    ]
+  }
+]

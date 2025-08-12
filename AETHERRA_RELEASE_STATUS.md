@@ -1,4 +1,5 @@
 # 🎉 AETHERRA OS RELEASE STATUS
+> Note: The Discord bot is an internal Aetherra Labs tool. It is not included in public releases and is excluded from packaging.
 **Critical System Fixes Complete - Ready for Phase 6.2 Implementation**
 
 ---

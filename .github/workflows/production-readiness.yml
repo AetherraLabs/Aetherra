@@ -1,0 +1,27 @@
+name: "🚀 Production Readiness Checks"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Verify minimal run scripts
+        run: |
+          test -f Aetherra/gui/aetherra_os_gui.py
+          test -f .env.example
+
+      - name: 📦 Upload .env.example
+        uses: actions/upload-artifact@v4
+        with:
+          name: env-example
+          path: .env.example

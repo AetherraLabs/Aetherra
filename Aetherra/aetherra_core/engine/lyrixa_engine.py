@@ -1,9 +1,6 @@
 """
-🧠 Aetherra Engine Core
-========================
-
-Main execution engine for Aetherra AI system. Provides conversational AI,
-reasoning, memory management, and intelligent task orchestration.
+DEPRECATED for OS: Lyrixa-specific engine retained for Lyrixa UI compatibility.
+Not used by Aetherra OS runtime. Will be relocated/removed in cleanup.
 """
 
 import asyncio
@@ -20,51 +17,67 @@ except ImportError:
     class AetherraMemorySystem:
         def __init__(self, *args, **kwargs):
             pass
+
         async def store(self, *args, **kwargs):
             return {"status": "mock"}
+
         async def retrieve(self, *args, **kwargs):
             return []
+
 
 try:
     from .introspection_controller import IntrospectionController
 except ImportError:
+
     class IntrospectionController:
         def __init__(self, *args, **kwargs):
             pass
 
+
 try:
     from .reasoning_engine import ReasoningEngine
 except ImportError:
+
     class ReasoningEngine:
         def __init__(self, *args, **kwargs):
             pass
+
         async def reason(self, *args, **kwargs):
             return {"status": "mock", "reasoning": "Mock reasoning engine"}
+
 
 try:
     from .self_improvement_engine import SelfImprovementEngine
 except ImportError:
+
     class SelfImprovementEngine:
         def __init__(self, *args, **kwargs):
             pass
 
+
 try:
     from .plugin_chain_executor import PluginChainExecutor
 except ImportError:
+
     class PluginChainExecutor:
         def __init__(self, *args, **kwargs):
             pass
+
         async def execute_chain(self, *args, **kwargs):
             return {"status": "mock", "results": []}
+
 
 try:
     from ..orchestration.agent_orchestrator import AgentOrchestrator
 except ImportError:
+
     class AgentOrchestrator:
         def __init__(self, *args, **kwargs):
             pass
+
         async def orchestrate(self, *args, **kwargs):
             return {"status": "mock", "result": "Mock orchestration"}
+
 
 logger = logging.getLogger(__name__)
 

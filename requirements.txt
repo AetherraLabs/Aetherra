@@ -59,7 +59,6 @@ uvloop>=0.17.0; sys_platform != "win32"
 
 # ===== SYSTEM UTILITIES =====
 psutil>=5.9.0
-pathlib2>=2.3.0
 watchdog>=3.0.0
 click>=8.1.0
 rich>=13.4.0
@@ -85,6 +84,9 @@ pyjwt>=2.8.0
 # tkinter  # Usually built-in with Python
 # PyQt5>=5.15.0
 # PySide6>=6.5.0
+
+# Notes:
+# - sqlite3 and pathlib are included with Python 3.8+ and should not be listed as dependencies.
 
 # ===== PLUGIN SYSTEM =====
 importlib-metadata>=6.8.0
