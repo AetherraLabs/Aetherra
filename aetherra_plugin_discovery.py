@@ -8,21 +8,24 @@ This service scans the Aetherra/plugins directory and makes local plugins
 visible in the Hub marketplace interface.
 """
 
-import json
-import os
 import asyncio
-import logging
 import importlib.util
-import requests
+import json
+import logging
+import os
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Union
-from dataclasses import dataclass, asdict, field
+from typing import Any, Dict, List, Optional, Union
+
+import requests
 
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class PluginMetadata:
     """Plugin metadata structure."""
+
     name: str
     version: str
     description: str
@@ -56,9 +59,11 @@ class AetherraPluginDiscovery:
     Discovers and catalogs local plugins, making them available to the Hub.
     """
 
-    def __init__(self, plugins_dir: Optional[str] = None):
-        self.plugins_dir = plugins_dir or "Aetherra/plugins"
-        self.plugins_dir = Path(self.plugins_dir).absolute()
+    def __init__(self, plugins_dir: Optional[Union[str, Path]] = None):
+        # Normalize to an absolute Path for consistent downstream usage
+        self.plugins_dir: Path = (
+            Path(plugins_dir) if plugins_dir is not None else Path("Aetherra/plugins")
+        ).absolute()
         self.discovered_plugins: Dict[str, PluginMetadata] = {}
         self.hub_url = "http://localhost:3001"
 
@@ -92,7 +97,7 @@ class AetherraPluginDiscovery:
     async def _process_aetherplug_manifest(self, manifest_path: Path):
         """Process an aetherra-plugin.json manifest file."""
         try:
-            with open(manifest_path, 'r', encoding='utf-8') as f:
+            with open(manifest_path, "r", encoding="utf-8") as f:
                 manifest = json.load(f)
 
             plugin_dir = manifest_path.parent
@@ -113,11 +118,13 @@ class AetherraPluginDiscovery:
                 documentation=manifest.get("documentation"),
                 homepage=manifest.get("homepage"),
                 local_path=str(plugin_dir),
-                plugin_type="aetherplug"
+                plugin_type="aetherplug",
             )
 
             self.discovered_plugins[metadata.name] = metadata
-            logger.info(f"[OK] Discovered .aetherplug: {metadata.name} v{metadata.version}")
+            logger.info(
+                f"[OK] Discovered .aetherplug: {metadata.name} v{metadata.version}"
+            )
 
         except Exception as e:
             logger.error(f"[ERROR] Error processing manifest {manifest_path}: {e}")
@@ -128,7 +135,10 @@ class AetherraPluginDiscovery:
 
         # Look for Python files that appear to be plugins
         for py_file in self.plugins_dir.rglob("*.py"):
-            if py_file.name.startswith("__") or py_file.name in ["setup.py", "conftest.py"]:
+            if py_file.name.startswith("__") or py_file.name in [
+                "setup.py",
+                "conftest.py",
+            ]:
                 continue
 
             try:
@@ -140,11 +150,13 @@ class AetherraPluginDiscovery:
         """Analyze a Python file to determine if it's a plugin."""
         try:
             # Read the file to look for plugin indicators
-            with open(py_file, 'r', encoding='utf-8') as f:
+            with open(py_file, "r", encoding="utf-8") as f:
                 content = f.read()
 
             # Look for plugin class or plugin_data
-            if "class " in content and ("Plugin" in content or "plugin" in content.lower()):
+            if "class " in content and (
+                "Plugin" in content or "plugin" in content.lower()
+            ):
                 await self._extract_python_plugin_metadata(py_file, content)
             elif "plugin_data" in content:
                 await self._extract_plugin_data_metadata(py_file, content)
@@ -164,16 +176,18 @@ class AetherraPluginDiscovery:
                 # Look for plugin classes
                 for attr_name in dir(module):
                     attr = getattr(module, attr_name)
-                    if hasattr(attr, 'name') and hasattr(attr, 'description'):
+                    if hasattr(attr, "name") and hasattr(attr, "description"):
                         metadata = PluginMetadata(
-                            name=getattr(attr, 'name', py_file.stem),
-                            version=getattr(attr, 'version', '1.0.0'),
-                            description=getattr(attr, 'description', 'No description'),
-                            author=getattr(attr, 'created_by', getattr(attr, 'author', 'Unknown')),
-                            category=getattr(attr, 'category', 'utility'),
+                            name=getattr(attr, "name", py_file.stem),
+                            version=getattr(attr, "version", "1.0.0"),
+                            description=getattr(attr, "description", "No description"),
+                            author=getattr(
+                                attr, "created_by", getattr(attr, "author", "Unknown")
+                            ),
+                            category=getattr(attr, "category", "utility"),
                             local_path=str(py_file),
                             plugin_type="python",
-                            keywords=['python', 'local']
+                            keywords=["python", "local"],
                         )
 
                         self.discovered_plugins[metadata.name] = metadata
@@ -192,17 +206,17 @@ class AetherraPluginDiscovery:
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
 
-                if hasattr(module, 'plugin_data'):
+                if hasattr(module, "plugin_data"):
                     data = module.plugin_data
                     metadata = PluginMetadata(
-                        name=data.get('name', py_file.stem),
-                        version=data.get('version', '1.0.0'),
-                        description=data.get('description', 'No description'),
-                        author=data.get('author', 'Unknown'),
-                        category=data.get('category', 'utility'),
+                        name=data.get("name", py_file.stem),
+                        version=data.get("version", "1.0.0"),
+                        description=data.get("description", "No description"),
+                        author=data.get("author", "Unknown"),
+                        category=data.get("category", "utility"),
                         local_path=str(py_file),
                         plugin_type="python",
-                        keywords=['python', 'local']
+                        keywords=["python", "local"],
                     )
 
                     self.discovered_plugins[metadata.name] = metadata
@@ -220,16 +234,19 @@ class AetherraPluginDiscovery:
             try:
                 await self._process_sample_plugin(sample_file)
             except Exception as e:
-                logger.error(f"[ERROR] Error processing sample plugin {sample_file}: {e}")
+                logger.error(
+                    f"[ERROR] Error processing sample plugin {sample_file}: {e}"
+                )
 
     async def _process_sample_plugin(self, sample_file: Path):
         """Process a sample plugin file."""
         try:
-            with open(sample_file, 'r', encoding='utf-8') as f:
-                content = f.read()
+            # Just read to ensure file is accessible; content not used
+            with open(sample_file, "r", encoding="utf-8"):
+                pass
 
             # Extract basic info from the sample plugin
-            plugin_num = sample_file.stem.split('_')[-1]
+            plugin_num = sample_file.stem.split("_")[-1]
 
             metadata = PluginMetadata(
                 name=f"sample_plugin_{plugin_num}",
@@ -239,7 +256,7 @@ class AetherraPluginDiscovery:
                 category="sample",
                 local_path=str(sample_file),
                 plugin_type="sample",
-                keywords=['sample', 'demo', 'testing']
+                keywords=["sample", "demo", "testing"],
             )
 
             self.discovered_plugins[metadata.name] = metadata
@@ -264,32 +281,49 @@ class AetherraPluginDiscovery:
                 "keywords": plugin_metadata.keywords,
                 "local_path": plugin_metadata.local_path,
                 "plugin_type": plugin_metadata.plugin_type,
-                "featured": plugin_metadata.plugin_type == "aetherplug",  # Feature .aetherplug plugins
+                "featured": plugin_metadata.plugin_type
+                == "aetherplug",  # Feature .aetherplug plugins
                 "downloads": 0,
                 "rating": 5.0 if plugin_metadata.plugin_type == "aetherplug" else 4.5,
                 "created_at": "2025-08-02T14:00:00Z",
-                "updated_at": "2025-08-02T14:00:00Z"
+                "updated_at": "2025-08-02T14:00:00Z",
             }
+
+            # Optional: sign manifest
+            try:
+                if os.environ.get("AETHERRA_SIGN_PLUGINS") == "1":
+                    from Aetherra.security.api_keys import get_key
+                    from Aetherra.security.plugin_signing import sign_manifest
+
+                    secret = get_key("plugin_signing_secret")
+                    if secret:
+                        hub_plugin = sign_manifest(hub_plugin, secret)
+            except Exception:
+                pass
 
             # Try to register with Hub API
             try:
                 response = requests.post(
-                    f"{self.hub_url}/api/plugins/register",
-                    json=hub_plugin,
-                    timeout=5
+                    f"{self.hub_url}/api/plugins/register", json=hub_plugin, timeout=5
                 )
                 if response.status_code in [200, 201]:
                     logger.info(f"[OK] Registered {plugin_metadata.name} with Hub")
                     return True
                 else:
-                    logger.warning(f"[WARN] Hub registration failed for {plugin_metadata.name}: {response.status_code}")
+                    logger.warning(
+                        f"[WARN] Hub registration failed for {plugin_metadata.name}: {response.status_code}"
+                    )
             except requests.exceptions.RequestException:
-                logger.warning(f"[WARN] Hub not available for {plugin_metadata.name} registration")
+                logger.warning(
+                    f"[WARN] Hub not available for {plugin_metadata.name} registration"
+                )
 
             return False
 
         except Exception as e:
-            logger.error(f"[ERROR] Error registering {plugin_metadata.name} with Hub: {e}")
+            logger.error(
+                f"[ERROR] Error registering {plugin_metadata.name} with Hub: {e}"
+            )
             return False
 
     async def sync_all_with_hub(self):
@@ -303,7 +337,9 @@ class AetherraPluginDiscovery:
             if await self.register_with_hub(metadata):
                 success_count += 1
 
-        logger.info(f"[OK] Successfully synced {success_count}/{len(self.discovered_plugins)} plugins with Hub")
+        logger.info(
+            f"[OK] Successfully synced {success_count}/{len(self.discovered_plugins)} plugins with Hub"
+        )
         return success_count
 
     def get_plugin_summary(self) -> Dict[str, Any]:
@@ -322,7 +358,7 @@ class AetherraPluginDiscovery:
             "total_plugins": len(self.discovered_plugins),
             "by_type": by_type,
             "by_category": by_category,
-            "plugin_names": list(self.discovered_plugins.keys())
+            "plugin_names": list(self.discovered_plugins.keys()),
         }
 
 
@@ -334,7 +370,7 @@ async def main():
     await discovery.discover_all_plugins()
 
     summary = discovery.get_plugin_summary()
-    print(f"\n[SCAN] Plugin Discovery Summary:")
+    print("\n[SCAN] Plugin Discovery Summary:")
     print(f"Total plugins: {summary['total_plugins']}")
     print(f"By type: {summary['by_type']}")
     print(f"By category: {summary['by_category']}")

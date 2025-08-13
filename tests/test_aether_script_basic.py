@@ -25,4 +25,7 @@ async def test_basic_goal_and_assignment():
 
     # Ensure both goal and assignment recognized
     assert "goal" in types
-    assert any(r.get("type") == "assignment" and r.get("variable") == "user" for r in payload["results"])  
+    assert any(
+        r.get("type") == "assignment" and r.get("variable") == "user"
+        for r in payload["results"]
+    )

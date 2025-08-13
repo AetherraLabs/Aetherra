@@ -7,20 +7,24 @@ Built-in Python-based plugin marketplace server for Aetherra OS.
 Provides plugin registration, discovery, and basic marketplace functionality.
 """
 
-import asyncio
-import json
 import logging
+import os
 import time
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 try:
     from flask import Flask, jsonify, request
     from flask_cors import CORS
+
     FLASK_AVAILABLE = True
 except ImportError:
     FLASK_AVAILABLE = False
+    # Provide stubs so static analysis doesn't flag unbound names
+    Flask = None  # type: ignore[assignment]
+    jsonify = None  # type: ignore[assignment]
+    request = None  # type: ignore[assignment]
+    CORS = None  # type: ignore[assignment]
     print("⚠️ Flask not available - using mock hub server")
 
 logger = logging.getLogger(__name__)
@@ -33,115 +37,270 @@ class AetherraHubServer:
         self.port = port
         self.plugins = {}
         self.stats = {
-            'total_plugins': 0,
-            'active_registrations': 0,
-            'startup_time': datetime.now(),
-            'requests_served': 0
+            "total_plugins": 0,
+            "active_registrations": 0,
+            "startup_time": datetime.now(),
+            "requests_served": 0,
+            "telemetry_received": 0,
+            "last_telemetry_at": None,
         }
         self.server_running = False
-
         if FLASK_AVAILABLE:
-            self.app = Flask(__name__)
-            CORS(self.app)  # Enable CORS for web interface
+            self.app = Flask(__name__)  # type: ignore[name-defined]
+            CORS(self.app)  # type: ignore[name-defined]  # Enable CORS for web interface
             self._setup_routes()
         else:
             self.app = None
 
     def _setup_routes(self):
         """Setup Flask routes for the Hub API"""
+        # Optional imports for federation and telemetry
+        try:
+            from Aetherra.hub.federation import get_federation_manager
 
-        @self.app.route('/health', methods=['GET'])
+            self.federation = get_federation_manager(
+                self_url=f"http://localhost:{self.port}"
+            )
+            # Seed peers from env
+            peers_env = os.environ.get("AETHERRA_PEERS", "").strip()
+            if peers_env:
+                for p in [s.strip() for s in peers_env.split(",") if s.strip()]:
+                    try:
+                        self.federation.add_peer(p)
+                    except Exception:
+                        pass
+        except Exception:
+            self.federation = None
+        try:
+            from Aetherra.telemetry.optin import get_telemetry
+
+            self.telemetry = get_telemetry()
+        except Exception:
+            self.telemetry = None
+        try:
+            from Aetherra.memory.graph_optics import summarize_memory_graph
+
+            self.memory_summarizer = summarize_memory_graph
+        except Exception:
+            self.memory_summarizer = None
+        # Optional signing verification
+        try:
+            from Aetherra.security.plugin_signing import (
+                STRICT as SIGNING_STRICT,
+            )
+            from Aetherra.security.plugin_signing import (
+                verify_plugin_signature,
+            )
+
+            self.verify_signature = verify_plugin_signature
+            self.signing_strict = bool(SIGNING_STRICT)
+        except Exception:
+            self.verify_signature = None
+            self.signing_strict = False
+        # If Flask isn't available or app is None, skip route setup
+        if not FLASK_AVAILABLE or self.app is None:
+            return
+        app = self.app
+
+        @app.route("/health", methods=["GET"])
         def health_check():
             """Health check endpoint"""
-            self.stats['requests_served'] += 1
-            return jsonify({
-                'status': 'healthy',
-                'uptime_seconds': (datetime.now() - self.stats['startup_time']).total_seconds(),
-                'plugins_registered': len(self.plugins),
-                'requests_served': self.stats['requests_served']
-            })
+            self.stats["requests_served"] += 1
+            return jsonify(
+                {  # type: ignore[name-defined]
+                    "status": "healthy",
+                    "uptime_seconds": (
+                        datetime.now() - self.stats["startup_time"]
+                    ).total_seconds(),
+                    "plugins_registered": len(self.plugins),
+                    "requests_served": self.stats["requests_served"],
+                }
+            )
 
-        @self.app.route('/status', methods=['GET'])
+        @app.route("/status", methods=["GET"])
         def status_check():
             """Status endpoint for Hub connector compatibility"""
-            self.stats['requests_served'] += 1
-            return jsonify({
-                'status': 'online',
-                'running': True,
-                'uptime_seconds': (datetime.now() - self.stats['startup_time']).total_seconds(),
-                'plugins_registered': len(self.plugins),
-                'requests_served': self.stats['requests_served'],
-                'hub_connected': True,
-                'services': ['hub_server', 'plugin_registry'],
-                'capabilities': ['plugin_registration', 'plugin_discovery', 'marketplace']
-            })
+            self.stats["requests_served"] += 1
+            return jsonify(
+                {  # type: ignore[name-defined]
+                    "status": "online",
+                    "running": True,
+                    "uptime_seconds": (
+                        datetime.now() - self.stats["startup_time"]
+                    ).total_seconds(),
+                    "plugins_registered": len(self.plugins),
+                    "requests_served": self.stats["requests_served"],
+                    "hub_connected": True,
+                    "services": ["hub_server", "plugin_registry"],
+                    "capabilities": [
+                        "plugin_registration",
+                        "plugin_discovery",
+                        "marketplace",
+                    ],
+                }
+            )
 
-        @self.app.route('/api/plugins', methods=['GET'])
+        @app.route("/api/plugins", methods=["GET"])
         def list_plugins():
             """List all registered plugins"""
-            self.stats['requests_served'] += 1
-            return jsonify({
-                'plugins': list(self.plugins.values()),
-                'total': len(self.plugins),
-                'timestamp': datetime.now().isoformat()
-            })
+            self.stats["requests_served"] += 1
+            data = {
+                "plugins": list(self.plugins.values()),
+                "total": len(self.plugins),
+                "timestamp": datetime.now().isoformat(),
+            }
+            # Include federated view if available
+            if self.federation is not None:
+                data["federated"] = self.federation.get_federated_plugins()
+                data["peers"] = self.federation.list_peers()
+            return jsonify(data)  # type: ignore[name-defined]
 
-        @self.app.route('/api/plugins/register', methods=['POST'])
+        @app.route("/api/plugins/register", methods=["POST"])
         def register_plugin():
             """Register a new plugin"""
             try:
-                plugin_data = request.get_json()
-                if not plugin_data or 'name' not in plugin_data:
-                    return jsonify({'error': 'Invalid plugin data'}), 400
+                plugin_data = request.get_json()  # type: ignore[name-defined]
+                if not plugin_data or "name" not in plugin_data:
+                    return jsonify({"error": "Invalid plugin data"}), 400  # type: ignore[name-defined]
 
-                plugin_id = plugin_data['name']
-                plugin_data['registered_at'] = datetime.now().isoformat()
-                plugin_data['status'] = 'registered'
+                # Determine strictness at request time (env-driven)
+                strict = (
+                    os.environ.get("AETHERRA_SIGNING_STRICT", "0") == "1"
+                    or bool(getattr(self, "signing_strict", False))
+                )
+                # Verify signature (before mutating payload)
+                has_sig = bool(plugin_data.get("signature")) and bool(
+                    plugin_data.get("pubkey")
+                )
+                verified = False
+                if strict:
+                    # In strict mode, signature must be present and valid
+                    if not has_sig:
+                        return jsonify({"error": "invalid signature"}), 400  # type: ignore[name-defined]
+                    if getattr(self, "verify_signature", None) is None:
+                        return jsonify({"error": "signature verification unavailable"}), 400  # type: ignore[name-defined]
+                    try:
+                        verified = bool(self.verify_signature(plugin_data))  # type: ignore[call-arg]
+                    except Exception:
+                        verified = False
+                    if not verified:
+                        return jsonify({"error": "invalid signature"}), 400  # type: ignore[name-defined]
+                else:
+                    # Non-strict: verify if signature present; otherwise allow
+                    if has_sig and getattr(self, "verify_signature", None) is not None:
+                        try:
+                            verified = bool(self.verify_signature(plugin_data))  # type: ignore[call-arg]
+                        except Exception:
+                            verified = False
+
+                plugin_id = plugin_data["name"]
+                # Mutate only after verification
+                plugin_data["registered_at"] = datetime.now().isoformat()
+                plugin_data["status"] = "registered"
+                plugin_data["signature_verified"] = bool(verified)
 
                 self.plugins[plugin_id] = plugin_data
-                self.stats['requests_served'] += 1
-                self.stats['active_registrations'] += 1
+                self.stats["requests_served"] += 1
+                self.stats["active_registrations"] += 1
 
                 logger.info(f"[OK] Plugin registered: {plugin_id}")
 
-                return jsonify({
-                    'status': 'success',
-                    'message': f'Plugin {plugin_id} registered successfully',
-                    'plugin_id': plugin_id
-                })
+                return jsonify(
+                    {  # type: ignore[name-defined]
+                        "status": "success",
+                        "message": f"Plugin {plugin_id} registered successfully",
+                        "plugin_id": plugin_id,
+                    }
+                )
 
             except Exception as e:
                 logger.error(f"❌ Plugin registration failed: {e}")
-                return jsonify({'error': str(e)}), 500
+                return jsonify({"error": str(e)}), 500  # type: ignore[name-defined]
 
-        @self.app.route('/api/plugins/<plugin_id>', methods=['GET'])
+        @app.route("/api/plugins/<plugin_id>", methods=["GET"])
         def get_plugin(plugin_id):
             """Get specific plugin details"""
-            self.stats['requests_served'] += 1
+            self.stats["requests_served"] += 1
             if plugin_id in self.plugins:
-                return jsonify(self.plugins[plugin_id])
+                return jsonify(self.plugins[plugin_id])  # type: ignore[name-defined]
             else:
-                return jsonify({'error': 'Plugin not found'}), 404
+                return jsonify({"error": "Plugin not found"}), 404  # type: ignore[name-defined]
 
-        @self.app.route('/api/stats', methods=['GET'])
+        @app.route("/api/stats", methods=["GET"])
         def get_stats():
             """Get Hub statistics"""
-            self.stats['requests_served'] += 1
-            return jsonify(self.stats)
+            self.stats["requests_served"] += 1
+            out = dict(self.stats)
+            if self.federation is not None:
+                out["peers"] = self.federation.list_peers()
+                out["federated_count"] = len(self.federation.get_federated_plugins())
+            return jsonify(out)  # type: ignore[name-defined]
 
-        @self.app.route('/services', methods=['GET'])
+        @app.route("/api/peers", methods=["GET", "POST"])
+        def peers_endpoint():
+            """List/add federation peers."""
+            self.stats["requests_served"] += 1
+            if self.federation is None:
+                return jsonify({"peers": [], "enabled": False})  # type: ignore[name-defined]
+            if request.method == "POST":  # type: ignore[name-defined]
+                body = request.get_json(silent=True) or {}  # type: ignore[name-defined]
+                url = body.get("url")
+                if url:
+                    self.federation.add_peer(url)
+                return jsonify({"status": "ok"})  # type: ignore[name-defined]
+            return jsonify({"peers": self.federation.list_peers(), "enabled": True})  # type: ignore[name-defined]
+
+        @app.route("/api/telemetry", methods=["POST"])
+        def telemetry_ingest():
+            """Receive opt-in telemetry events locally (no forwarding by default)."""
+            self.stats["requests_served"] += 1
+            try:
+                evt = request.get_json(silent=True) or {}  # type: ignore[name-defined]
+                # Very basic validation
+                if not isinstance(evt.get("event"), str):
+                    return jsonify({"error": "invalid"}), 400  # type: ignore[name-defined]
+                # Optionally update stats counters
+                self.stats["telemetry_received"] = (
+                    int(self.stats.get("telemetry_received", 0)) + 1
+                )
+                self.stats["last_telemetry_at"] = datetime.now().isoformat()
+                return jsonify({"status": "ok"})  # type: ignore[name-defined]
+            except Exception as e:
+                logger.error(f"telemetry error: {e}")
+                return jsonify({"error": "server"}), 500  # type: ignore[name-defined]
+
+        @app.route("/api/memory/graph", methods=["GET"])
+        def memory_graph():
+            """Return a summarized memory graph (nodes/edges counts and samples)."""
+            self.stats["requests_served"] += 1
+            if not self.memory_summarizer:
+                return jsonify({"enabled": False, "reason": "not available"}), 501  # type: ignore[name-defined]
+            try:
+                data = self.memory_summarizer(max_nodes=100)
+                return jsonify({"enabled": True, **data})  # type: ignore[name-defined]
+            except Exception as e:
+                logger.error(f"memory graph error: {e}")
+                return jsonify({"enabled": False, "error": "server"}), 500  # type: ignore[name-defined]
+
+        @app.route("/services", methods=["GET"])
         def get_services():
             """Get available services for Aetherra OS compatibility"""
-            self.stats['requests_served'] += 1
-            return jsonify({
-                'services': ['hub_server', 'plugin_registry', 'plugin_discovery'],
-                'status': 'online',
-                'running': True,
-                'total_services': 3,
-                'hub_capabilities': ['plugin_registration', 'plugin_discovery', 'marketplace']
-            })
+            self.stats["requests_served"] += 1
+            return jsonify(
+                {  # type: ignore[name-defined]
+                    "services": ["hub_server", "plugin_registry", "plugin_discovery"],
+                    "status": "online",
+                    "running": True,
+                    "total_services": 3,
+                    "hub_capabilities": [
+                        "plugin_registration",
+                        "plugin_discovery",
+                        "marketplace",
+                    ],
+                }
+            )
 
-        @self.app.route('/', methods=['GET'])
+        @app.route("/", methods=["GET"])
         def index():
             """Hub web interface"""
             return """
@@ -184,12 +343,14 @@ class AetherraHubServer:
             import threading
 
             def run_flask():
+                if self.app is None:
+                    return
                 self.app.run(
-                    host='localhost',
+                    host="localhost",
                     port=self.port,
                     debug=False,
                     use_reloader=False,
-                    threaded=True
+                    threaded=True,
                 )
 
             self.server_thread = threading.Thread(target=run_flask, daemon=True)
@@ -199,7 +360,9 @@ class AetherraHubServer:
             time.sleep(1)
 
             self.server_running = True
-            logger.info(f"[OK] Aetherra Hub server online at http://localhost:{self.port}")
+            logger.info(
+                f"[OK] Aetherra Hub server online at http://localhost:{self.port}"
+            )
             return True
 
         except Exception as e:
@@ -210,13 +373,13 @@ class AetherraHubServer:
     def register_plugin(self, plugin_data: Dict) -> bool:
         """Register a plugin directly (for internal use)"""
         try:
-            plugin_id = plugin_data.get('name', f"plugin_{len(self.plugins)}")
-            plugin_data['registered_at'] = datetime.now().isoformat()
-            plugin_data['status'] = 'registered'
-            plugin_data['source'] = 'internal'
+            plugin_id = plugin_data.get("name", f"plugin_{len(self.plugins)}")
+            plugin_data["registered_at"] = datetime.now().isoformat()
+            plugin_data["status"] = "registered"
+            plugin_data["source"] = "internal"
 
             self.plugins[plugin_id] = plugin_data
-            self.stats['active_registrations'] += 1
+            self.stats["active_registrations"] += 1
 
             logger.info(f"[OK] Plugin registered internally: {plugin_id}")
             return True
@@ -237,8 +400,10 @@ class AetherraHubServer:
         """Get Hub statistics"""
         return {
             **self.stats,
-            'total_plugins': len(self.plugins),
-            'uptime_seconds': (datetime.now() - self.stats['startup_time']).total_seconds()
+            "total_plugins": len(self.plugins),
+            "uptime_seconds": (
+                datetime.now() - self.stats["startup_time"]
+            ).total_seconds(),
         }
 
     def stop_server(self):
@@ -275,10 +440,10 @@ if __name__ == "__main__":
 
         # Register a test plugin
         test_plugin = {
-            'name': 'test_plugin',
-            'version': '1.0.0',
-            'description': 'Test plugin for Hub server',
-            'type': 'utility'
+            "name": "test_plugin",
+            "version": "1.0.0",
+            "description": "Test plugin for Hub server",
+            "type": "utility",
         }
 
         server.register_plugin(test_plugin)
