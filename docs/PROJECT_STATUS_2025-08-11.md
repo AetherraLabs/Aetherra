@@ -6,7 +6,7 @@ This document summarizes what the project is, how it’s organized, what’s wor
 
 - Core vision: AI-native OS where Lyrixa is the cognitive interface and .aether encodes intent (see Aetherra_Lyrixa_Description.md and Aether Script Language Specification.md).
 - Status: Phase 6 UI and intelligence are implemented; service registry, kernel loop, plugin hub, and mock fallbacks exist; quantum/consciousness scaffolding is wired.
-- Launchers: aetherra_os_launcher.py (full OS orchestration), aetherra_os.py (entry with GUI routing), Aetherra/lyrixa/launcher.py (unified Lyrixa OS front-end).
+- Launchers: aetherra_os_launcher.py (full OS orchestration), aetherra_os.py (entry with GUI routing), Aetherra/lyrixa/launcher.py (Lyrixa backend orchestrator), Aetherra/lyrixa/lyrixa_basic.py (main Lyrixa GUI entry).
 - UI: PySide6 + embedded web panels; Phase 3–6 features present (auto-generation, cognitive UI, plugin UI, personality/state memory).
 - Memory: Persistent and “quantum” bridges are present; real engine is pluggable with mocks when unavailable.
 - Plugins + Hub: Discovery, hub server, and plugin UI wiring exist; marketplace/hub integration present (with graceful fallback).
@@ -57,7 +57,7 @@ This document summarizes what the project is, how it’s organized, what’s wor
 ## Launch & Operations
 
 - Preferred OS launcher: python aetherra_os_launcher.py (or use aetherra_os.py to launch with GUI routing).
-- Lyrixa-only entry: python Aetherra/lyrixa/launcher.py (GUI or CLI mode; loads backend services and connects to hub).
+- Lyrixa-only entry: python Aetherra/lyrixa/lyrixa_basic.py (GUI by default; use --cli for CLI mode). The legacy launcher at Aetherra/lyrixa/launcher.py remains for backend wiring.
 - GUI: PySide6 app with embedded web panels; if PySide6 is missing, Lyrixa launcher offers CLI mode.
 - Hub: Built-in server on port 3001 when enabled; plugin discovery auto-syncs to hub.
 - Health: Service registry tracks service states; periodic heartbeats; kernel loop status metrics.
@@ -109,7 +109,7 @@ Short (1–2 weeks)
 - Package hygiene: unify licensing (GPL-3.0), fix Aetherra/pyproject deps, ensure PySide6 is optional but discoverable; align requirements/lock files.
 - Import map: add docs/import_map.md (if missing) and a small validator to flag non-canonical imports in CI.
 - .aether MVP completeness: verify aetherra_script_service implementation; add parser/executor tests for the EBNF sections (goal, memory, assignment, call, conditional, loop, workflow).
-- GUI stability: add a minimal “GUI smoke test” that imports LyrixaHybridWindow and loads the dashboard panel offscreen (CI compatible).
+- GUI stability: add a minimal “GUI smoke test” that imports LyrixaBasicWindow from Aetherra/lyrixa/lyrixa_basic_gui.py and instantiates it offscreen (CI compatible). The hybrid window remains supported but is not the primary entry.
 
 Medium (3–6 weeks)
 
@@ -177,7 +177,7 @@ Notes
 ## Directory Pointers (Where Things Live)
 
 - OS + Orchestration: aetherra_os_launcher.py, aetherra_os.py, aetherra_kernel_loop.py, aetherra_service_registry.py
-- Lyrixa Frontend: Aetherra/lyrixa/launcher.py, Aetherra/lyrixa/gui/* (PySide6 + web panels)
+- Lyrixa Frontend: Aetherra/lyrixa/lyrixa_basic.py (main GUI), Aetherra/lyrixa/lyrixa_basic_gui.py (window), Aetherra/lyrixa/launcher.py (backend orchestrator), Aetherra/lyrixa/gui/* (hybrid PySide6 + web panels)
 - Consciousness Bridge: Aetherra/lyrixa/consciousness_integration.py
 - Memory: aetherra_persistent_memory.py, Aetherra/lyrixa/memory/*, quantum_memory_bridge.py
 - Plugins/Hub: aetherra_plugin_discovery.py, aetherra_hub_server.py, Aetherra/lyrixa/plugins/*

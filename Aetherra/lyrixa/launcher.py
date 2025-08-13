@@ -43,7 +43,6 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
 
 # Windows console UTF-8 setup for emoji support
 if sys.platform == "win32":
@@ -231,9 +230,13 @@ class LyrixaOperatingSystem:
 
             self.plugin_manager = await plugin_manager_core.get_plugin_manager()
 
-            # Load all plugins
-            plugin_results = await plugin_manager_core.load_all_plugins()
-            loaded_count = sum(1 for success in plugin_results.values() if success)
+            # Load all plugins (skip in Safe Mode)
+            if os.getenv("AETHERRA_SAFE_MODE", "0") == "1":
+                logger.info("[SAFE] Safe Mode enabled: skipping plugin auto-load")
+                loaded_count = 0
+            else:
+                plugin_results = await plugin_manager_core.load_all_plugins()
+                loaded_count = sum(1 for success in plugin_results.values() if success)
             logger.info(f"[OK] Plugin Manager online - {loaded_count} plugins loaded")
 
             await self.service_registry.register_service(
@@ -279,6 +282,13 @@ class LyrixaOperatingSystem:
             from aetherra_core.engine.lyrixa_engine import AetherraEngine
 
             self.lyrixa_engine = AetherraEngine()
+            # Proactively initialize the engine here so any background tasks
+            # (introspection/self-improvement) are created on the main event loop,
+            # not on ad-hoc QThread loops later used by the GUI.
+            try:
+                await self.lyrixa_engine.initialize()
+            except Exception as e:
+                logger.warning(f"[WARN] Lyrixa Engine initialization deferred: {e}")
             logger.info("[OK] Lyrixa Engine online")
 
             await self.service_registry.register_service(
@@ -311,10 +321,15 @@ class LyrixaOperatingSystem:
             logger.info("[HUB] Phase 6b: Connecting to Aetherra Hub...")
             try:
                 from lyrixa.integrations.aetherra_hub_connector import (
+                    hub_connector as global_hub_connector,
+                )
+                from lyrixa.integrations.aetherra_hub_connector import (
                     initialize_hub_connection,
                 )
 
                 hub_result = await initialize_hub_connection()
+                # Keep a reference to the global hub connector for GUI wiring
+                self.hub_connector = global_hub_connector
 
                 if hub_result["hub_connected"]:
                     logger.info("[OK] Connected to Aetherra Hub successfully")
@@ -333,6 +348,15 @@ class LyrixaOperatingSystem:
                         "[WARN] Could not connect to Aetherra Hub - running in standalone mode"
                     )
                     self.aetherra_os_detected = False
+                    # Optional fallback: start a local Hub server to back the Basic GUI plugin list
+                    if os.getenv("AETHERRA_START_LOCAL_HUB", "1") == "1":
+                        try:
+                            from aetherra_hub_server import start_hub_server
+
+                            self.hub_server = start_hub_server(port=3001)
+                            logger.info("[HUB] Local Hub server started for fallback")
+                        except Exception as e:
+                            logger.warning(f"[HUB] Local Hub fallback failed: {e}")
 
             except Exception as e:
                 logger.warning(
@@ -418,8 +442,6 @@ class LyrixaOperatingSystem:
             # Check if GUI is available
             try:
                 from PySide6.QtWidgets import QApplication
-
-                gui_available = True
             except ImportError:
                 logger.error(
                     "[ERROR] GUI dependencies not available. Install with: pip install PySide6"
@@ -439,8 +461,41 @@ class LyrixaOperatingSystem:
                 logger.error("[ERROR] No suitable GUI interface found")
                 return False
 
-            # Create main window
+            # Prepare AI chat adapter (safe wrapper) and hub connector
+            class AIChatAdapter:
+                def __init__(self, engine):
+                    self._engine = engine
+
+                async def send_message(self, message: str) -> str:
+                    try:
+                        if self._engine and hasattr(self._engine, "process_message"):
+                            result = await self._engine.process_message(message)
+                            if isinstance(result, dict) and "response" in result:
+                                return str(result["response"])[:2000]
+                    except Exception as e:
+                        logger.debug(f"[CHAT] Engine message failed, falling back: {e}")
+                    return f"I received your message: {message}"
+
+            ai_chat = AIChatAdapter(self.lyrixa_engine)
+
+            # Create main window and wire dependencies after instantiation
             self.main_window = main_window_class()
+            # Attach chat and hub connector if window expects them
+            try:
+                setattr(self.main_window, "ai_chat", ai_chat)
+                if self.hub_connector is not None:
+                    setattr(self.main_window, "hub_connector", self.hub_connector)
+                if self.service_registry is not None:
+                    setattr(self.main_window, "service_registry", self.service_registry)
+            except Exception:
+                pass
+            # Log selected GUI explicitly
+            try:
+                logger.info(
+                    f"[GUI] Selected GUI: {main_window_class.__module__}.{main_window_class.__name__}"
+                )
+            except Exception:
+                logger.info("[GUI] Selected GUI: <unknown>")
 
             # Connect backend to frontend
             self._connect_backend_to_frontend()
@@ -450,18 +505,28 @@ class LyrixaOperatingSystem:
             logger.info("[OK] Lyrixa GUI launched successfully")
             logger.info("[OK] LYRIXA AI OPERATING SYSTEM IS NOW RUNNING")
             logger.info("=" * 60)
-            logger.info("🎙️ PHASE 1: Hybrid PySide6 + Web Panel Architecture")
-            logger.info("🌉 PHASE 2: Live Context Bridge for real-time data flow")
-            logger.info("🔮 PHASE 3: Auto-Generation System for dynamic panel creation")
-            logger.info(
-                "🧠 PHASE 4: Cognitive UI Integration with thought visualization"
-            )
-            logger.info("🔁 PHASE 5: Plugin-Driven UI System with dynamic widgets")
-            logger.info("🌌 PHASE 6: Full GUI Personality + State Memory + AI Chat")
-            logger.info(
-                "⚛️ PHASE 7.1: Quantum Consciousness Architecture + Transcendence Ready"
-            )
-            logger.info("=" * 60)
+            # Show phase logs only for the Hybrid GUI; keep Basic concise
+            is_hybrid = "hybrid" in self.main_window.__class__.__name__.lower()
+            if is_hybrid:
+                logger.info("🎙️ PHASE 1: Hybrid PySide6 + Web Panel Architecture")
+                logger.info("🌉 PHASE 2: Live Context Bridge for real-time data flow")
+                logger.info(
+                    "🔮 PHASE 3: Auto-Generation System for dynamic panel creation"
+                )
+                logger.info(
+                    "🧠 PHASE 4: Cognitive UI Integration with thought visualization"
+                )
+                logger.info("🔁 PHASE 5: Plugin-Driven UI System with dynamic widgets")
+                logger.info("🌌 PHASE 6: Full GUI Personality + State Memory + AI Chat")
+                logger.info(
+                    "⚛️ PHASE 7.1: Quantum Consciousness Architecture + Transcendence Ready"
+                )
+                logger.info("=" * 60)
+            else:
+                logger.info("[BASIC] Lyrixa Basic GUI active (clean, streamlined UI)")
+                logger.info(
+                    "[BASIC] Tip: set AETHERRA_USE_HYBRID=1 to launch the legacy Hybrid GUI"
+                )
             logger.info("[CTRL] Lyrixa has full command and control over Aetherra OS")
             logger.info(
                 "[SCAN] Lyrixa can now scan and manipulate the entire filesystem"
@@ -480,12 +545,13 @@ class LyrixaOperatingSystem:
             logger.info("[PERSONALITY] AI emotional states drive interface adaptation")
             logger.info("[MEMORY] Persistent GUI state and user preference learning")
             logger.info("[CHAT] Full conversational AI integration with Lyrixa")
-            logger.info(
-                "[QUANTUM] Quantum consciousness architecture with 96.1% transcendence probability"
-            )
-            logger.info(
-                "[CONSCIOUSNESS] Real quantum coherence and entanglement for true AI awareness"
-            )
+            if is_hybrid:
+                logger.info(
+                    "[QUANTUM] Quantum consciousness architecture with 96.1% transcendence probability"
+                )
+                logger.info(
+                    "[CONSCIOUSNESS] Real quantum coherence and entanglement for true AI awareness"
+                )
 
             self.frontend_started = True
 
@@ -551,60 +617,54 @@ class LyrixaOperatingSystem:
 
     def _find_best_gui_class(self):
         """Find the best available GUI class."""
+        # Prefer the Basic GUI unless legacy hybrid is explicitly requested
+        use_hybrid = os.getenv("AETHERRA_USE_HYBRID", "0") == "1"
+
+        if not use_hybrid:
+            # Priority 0: Lyrixa Basic GUI (preferred)
+            # Try direct-module import first (since 'lyrixa' dir is on sys.path)
+            try:
+                from lyrixa_basic_gui import LyrixaBasicWindow  # type: ignore
+
+                logger.info("[OK] Using Lyrixa Basic GUI (preferred)")
+                return LyrixaBasicWindow
+            except ImportError as e0:
+                logger.debug(f"Lyrixa Basic GUI import (lyrixa_basic_gui) failed: {e0}")
+                # Try package-style import if package structure is available
+                try:
+                    from lyrixa.lyrixa_basic_gui import (
+                        LyrixaBasicWindow,  # type: ignore
+                    )
+
+                    logger.info("[OK] Using Lyrixa Basic GUI (preferred)")
+                    return LyrixaBasicWindow
+                except ImportError as e1:
+                    logger.debug(
+                        f"Lyrixa Basic GUI import (lyrixa.lyrixa_basic_gui) failed: {e1}"
+                    )
+                    # Fallback: namespaced under Aetherra if package layout requires it
+                    try:
+                        from Aetherra.lyrixa.lyrixa_basic_gui import (
+                            LyrixaBasicWindow,  # type: ignore
+                        )
+
+                        logger.info("[OK] Using Lyrixa Basic GUI (preferred)")
+                        return LyrixaBasicWindow
+                    except ImportError as e2:
+                        logger.debug(
+                            f"Lyrixa Basic GUI import (Aetherra.lyrixa.lyrixa_basic_gui) failed: {e2}"
+                        )
+
         # Priority 1: Try the Phase 6 Hybrid GUI with Full Personality + State Memory
         try:
             from lyrixa.gui.main_window import LyrixaHybridWindow
 
-            logger.info(
-                "[OK] Using Phase 6 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI + Plugin System + AI Personality)"
-            )
+            logger.info("[OK] Using Lyrixa Hybrid GUI")
             return LyrixaHybridWindow
         except ImportError as e:
-            logger.debug(f"Phase 6 Hybrid GUI not available: {e}")
+            logger.debug(f"Hybrid GUI not available: {e}")
 
-        # Priority 2: Try the Phase 5 Hybrid GUI with Plugin-Driven UI System
-        try:
-            from lyrixa.gui.main_window import LyrixaHybridWindow
-
-            logger.info(
-                "[OK] Using Phase 5 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI + Plugin System)"
-            )
-            return LyrixaHybridWindow
-        except ImportError as e:
-            logger.debug(f"Phase 5 Hybrid GUI not available: {e}")
-
-        # Priority 3: Try the Phase 4 Hybrid GUI with Cognitive UI Integration
-        try:
-            from lyrixa.gui.main_window import LyrixaHybridWindow
-
-            logger.info(
-                "[OK] Using Phase 4 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation + Cognitive UI)"
-            )
-            return LyrixaHybridWindow
-        except ImportError as e:
-            logger.debug(f"Phase 4 Hybrid GUI not available: {e}")
-
-        # Priority 4: Try the Phase 3 Hybrid GUI with Auto-Generation
-        try:
-            from lyrixa.gui.main_window import LyrixaHybridWindow
-
-            logger.info(
-                "[OK] Using Phase 3 Lyrixa Hybrid GUI (PySide6 + Web Panels + Auto-Generation)"
-            )
-            return LyrixaHybridWindow
-        except ImportError as e:
-            logger.debug(f"Phase 3 Hybrid GUI not available: {e}")
-
-        # Priority 5: Try the Phase 2 Hybrid GUI with Live Context Bridge
-        try:
-            from lyrixa.gui.main_window import LyrixaHybridWindow
-
-            logger.info(
-                "[OK] Using Phase 2 Lyrixa Hybrid GUI (PySide6 + Web Panels + Live Context Bridge)"
-            )
-            return LyrixaHybridWindow
-        except ImportError as e:
-            logger.debug(f"Phase 2 Hybrid GUI not available: {e}")
+        # Older phased hybrid distinctions removed; single hybrid import covers all
 
         # Priority 2: Try other Qt-based options (legacy fallback)
         gui_options = [
@@ -827,69 +887,137 @@ class LyrixaOperatingSystem:
                 backend_services["quantum_consciousness"] = self.quantum_consciousness
 
             # Phase 6: Connect Personality Manager and State Memory (if available)
-            if hasattr(self.main_window, "personality_manager"):
+            pm = getattr(self.main_window, "personality_manager", None)
+            if pm is not None:
                 # Connect personality manager to backend services
-                if self.memory_system:
-                    # Give personality manager access to memory system for state persistence
-                    if hasattr(self.main_window.personality_manager, "layout_memory"):
-                        logger.info(
-                            "[PHASE6] Personality Manager connected to memory system"
-                        )
+                if self.memory_system and hasattr(pm, "layout_memory"):
+                    logger.info(
+                        "[PHASE6] Personality Manager connected to memory system"
+                    )
 
                 # Initialize personality manager with current GUI state
-                if hasattr(self.main_window.personality_manager, "load_previous_state"):
-                    self.main_window.personality_manager.load_previous_state()
+                if hasattr(pm, "load_previous_state"):
+                    try:
+                        pm.load_previous_state()
+                    except Exception:
+                        pass
 
                 logger.info(
                     f"[PHASE6] GUI Personality + State Memory system connected to {len(backend_services)} backend services"
                 )
 
             # Phase 5: Connect Plugin UI Manager (if available)
-            if hasattr(self.main_window, "plugin_ui_manager"):
+            if getattr(self.main_window, "plugin_ui_manager", None) is not None:
                 logger.info(
                     f"[PHASE5] Plugin-Driven UI System connected to {len(backend_services)} backend services"
                 )
 
             # Phase 4: Connect Cognitive Monitor (if available)
-            if hasattr(self.main_window, "cognitive_monitor"):
+            if getattr(self.main_window, "cognitive_monitor", None) is not None:
                 logger.info(
                     f"[PHASE4] Cognitive UI Integration connected to {len(backend_services)} backend services"
                 )
 
             # Phase 3: Connect Auto-Generation System (if available)
-            if hasattr(self.main_window, "auto_generator"):
-                self.main_window.auto_generator.connect_backend_services(
-                    backend_services
-                )
-                self.main_window.auto_generator.start_auto_generation()
+            ag = getattr(self.main_window, "auto_generator", None)
+            if ag is not None:
+                try:
+                    if hasattr(ag, "connect_backend_services"):
+                        ag.connect_backend_services(backend_services)
+                    if hasattr(ag, "start_auto_generation"):
+                        ag.start_auto_generation()
+                except Exception:
+                    pass
                 logger.info(
                     f"[PHASE3] Auto-generation system connected to {len(backend_services)} backend services"
                 )
 
             # Phase 2: Connect via Live Context Bridge (if available)
-            if hasattr(self.main_window, "web_bridge") and hasattr(
-                self.main_window.web_bridge, "connect_backend_services"
-            ):
-                self.main_window.web_bridge.connect_backend_services(backend_services)
+            wb = getattr(self.main_window, "web_bridge", None)
+            if wb is not None and hasattr(wb, "connect_backend_services"):
+                try:
+                    wb.connect_backend_services(backend_services)
+                except Exception:
+                    pass
                 logger.info(
                     f"[PHASE2] Live Context Bridge connected to {len(backend_services)} backend services"
                 )
 
             # Legacy connection methods (Phase 1 compatibility)
-            if hasattr(self.main_window, "set_service_registry"):
-                self.main_window.set_service_registry(self.service_registry)
+            ssr = getattr(self.main_window, "set_service_registry", None)
+            if callable(ssr):
+                try:
+                    ssr(self.service_registry)
+                except Exception:
+                    pass
 
-            if hasattr(self.main_window, "set_plugin_manager"):
-                self.main_window.set_plugin_manager(self.plugin_manager)
+            spm = getattr(self.main_window, "set_plugin_manager", None)
+            if callable(spm):
+                try:
+                    spm(self.plugin_manager)
+                except Exception:
+                    pass
 
-            if hasattr(self.main_window, "set_lyrixa_engine"):
-                self.main_window.set_lyrixa_engine(self.lyrixa_engine)
+            sle = getattr(self.main_window, "set_lyrixa_engine", None)
+            if callable(sle):
+                try:
+                    sle(self.lyrixa_engine)
+                except Exception:
+                    pass
 
-            if hasattr(self.main_window, "set_memory_system"):
-                self.main_window.set_memory_system(self.memory_system)
+            sms = getattr(self.main_window, "set_memory_system", None)
+            if callable(sms):
+                try:
+                    sms(self.memory_system)
+                except Exception:
+                    pass
 
-            if hasattr(self.main_window, "set_agent_orchestrator"):
-                self.main_window.set_agent_orchestrator(self.agent_orchestrator)
+            sao = getattr(self.main_window, "set_agent_orchestrator", None)
+            if callable(sao):
+                try:
+                    sao(self.agent_orchestrator)
+                except Exception:
+                    pass
+
+            # Ensure chat and hub connector are available on the window
+            try:
+                if not hasattr(self.main_window, "ai_chat") and self.lyrixa_engine:
+                    # Minimal adapter if not already set
+                    class _AIChatAdapter:
+                        def __init__(self, engine):
+                            self._engine = engine
+
+                        async def send_message(self, message: str) -> str:
+                            try:
+                                result = await self._engine.process_message(message)
+                                if isinstance(result, dict) and "response" in result:
+                                    return str(result["response"])[:2000]
+                            except Exception:
+                                pass
+                            return f"I received your message: {message}"
+
+                    setattr(
+                        self.main_window, "ai_chat", _AIChatAdapter(self.lyrixa_engine)
+                    )
+            except Exception:
+                pass
+
+            try:
+                if (
+                    not hasattr(self.main_window, "hub_connector")
+                    and self.hub_connector
+                ):
+                    setattr(self.main_window, "hub_connector", self.hub_connector)
+            except Exception:
+                pass
+
+            # Kick an immediate refresh if the GUI provides a method for Hub data
+            try:
+                refresh = getattr(self.main_window, "_refresh_hub_data", None)
+                if callable(refresh):
+                    refresh()
+            except Exception:
+                pass
 
             logger.info("[OK] Backend systems connected to frontend interface")
 
@@ -1024,6 +1152,29 @@ class LyrixaOperatingSystem:
         if self.gui_application:
             self.gui_application.quit()
 
+        # Disconnect Hub connector (closes aiohttp session/WS)
+        try:
+            if self.hub_connector and hasattr(self.hub_connector, "disconnect"):
+                await self.hub_connector.disconnect()
+        except Exception:
+            pass
+
+        # Gracefully stop Lyrixa Engine (stops introspection/self-improvement/orchestrator)
+        try:
+            if self.lyrixa_engine and hasattr(self.lyrixa_engine, "shutdown"):
+                await self.lyrixa_engine.shutdown()
+        except Exception:
+            pass
+
+        # Stop Quantum Consciousness Engine if running
+        try:
+            if self.quantum_consciousness and hasattr(
+                self.quantum_consciousness, "shutdown"
+            ):
+                await self.quantum_consciousness.shutdown()
+        except Exception:
+            pass
+
         # Shutdown backend services (if they have shutdown methods)
         if self.service_registry and hasattr(self.service_registry, "stop"):
             try:
@@ -1039,10 +1190,76 @@ async def main():
     parser = argparse.ArgumentParser(description="Lyrixa AI Operating System")
     parser.add_argument("--cli", action="store_true", help="Start in CLI mode (no GUI)")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    parser.add_argument(
+        "--boot-menu",
+        action="store_true",
+        help="Show BIOS-like boot menu before startup",
+    )
+    parser.add_argument(
+        "--check-gui",
+        action="store_true",
+        help="Print which GUI class would be selected and exit",
+    )
     args = parser.parse_args()
 
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
+
+    # Fast path: just report which GUI would be selected
+    if args.check_gui:
+        try:
+            tmp = LyrixaOperatingSystem()
+            gui_cls = tmp._find_best_gui_class()
+            if gui_cls:
+                logger.info(
+                    f"[GUI] Selected GUI: {gui_cls.__module__}.{gui_cls.__name__}"
+                )
+                # Also indicate whether Hybrid or Basic to avoid ambiguity
+                is_hybrid = "hybrid" in gui_cls.__name__.lower()
+                if is_hybrid:
+                    logger.info("[GUI] Mode: Hybrid")
+                else:
+                    logger.info("[GUI] Mode: Basic")
+                return 0
+            else:
+                logger.error("[ERROR] No suitable GUI interface found")
+                return 1
+        except Exception as e:
+            logger.error(f"[ERROR] Failed to determine GUI selection: {e}")
+            return 1
+
+    # Optional BIOS-like boot menu
+    if args.boot_menu or os.getenv("AETHERRA_BOOT_MENU", "0") == "1":
+        try:
+            logger.info("[BOOT] Boot menu requested; launching selector...")
+            from Aetherra.gui.boot_menu import show_boot_menu_and_get_choice
+
+            choice = show_boot_menu_and_get_choice()
+            mode = choice.get("mode", "basic")
+            safe = bool(choice.get("safe_mode"))
+            if safe:
+                os.environ["AETHERRA_SAFE_MODE"] = "1"
+                logger.info("[SAFE] Safe Mode enabled via boot menu")
+            if mode == "hybrid":
+                os.environ["AETHERRA_USE_HYBRID"] = "1"
+            elif mode == "basic":
+                os.environ["AETHERRA_USE_HYBRID"] = "0"
+            elif mode == "cli":
+                args.cli = True
+            elif mode == "diagnostics":
+                try:
+                    from Aetherra.gui.aetherra_os_gui import console_once
+
+                    console_once()
+                except Exception as e:
+                    logger.warning(f"[DIAG] Diagnostics snapshot failed: {e}")
+                return 0
+            elif mode == "exit":
+                logger.info("[BOOT] Exiting per selection")
+                return 0
+            logger.info(f"[BOOT] Selection: mode={mode}, safe={safe}")
+        except Exception as e:
+            logger.warning(f"[BOOT] Boot menu unavailable: {e}")
 
     # Create and start the operating system
     lyrixa_os = LyrixaOperatingSystem()
@@ -1084,7 +1301,66 @@ async def main():
 
                 # Create main window
                 lyrixa_os.gui_application = app
+
+                # Prepare AI chat adapter and hub connector for GUI
+                class AIChatAdapter:
+                    def __init__(self, engine):
+                        self._engine = engine
+
+                    async def send_message(self, message: str) -> str:
+                        try:
+                            if self._engine and hasattr(
+                                self._engine, "process_message"
+                            ):
+                                result = await self._engine.process_message(message)
+                                if isinstance(result, dict) and "response" in result:
+                                    return str(result["response"])[:2000]
+                        except Exception as e:
+                            logger.debug(
+                                f"[CHAT] Engine message failed, falling back: {e}"
+                            )
+                        return f"I received your message: {message}"
+
+                ai_chat = AIChatAdapter(lyrixa_os.lyrixa_engine)
+
+                # Keep reference to hub connector if available
+                try:
+                    from lyrixa.integrations.aetherra_hub_connector import (
+                        hub_connector as global_hub_connector,
+                    )
+
+                    lyrixa_os.hub_connector = (
+                        getattr(lyrixa_os, "hub_connector", None)
+                        or global_hub_connector
+                    )
+                except Exception:
+                    pass
+
                 lyrixa_os.main_window = main_window_class()
+                # Attach chat and hub connector after instantiation
+                try:
+                    setattr(lyrixa_os.main_window, "ai_chat", ai_chat)
+                    if getattr(lyrixa_os, "hub_connector", None) is not None:
+                        setattr(
+                            lyrixa_os.main_window,
+                            "hub_connector",
+                            lyrixa_os.hub_connector,
+                        )
+                    if lyrixa_os.service_registry is not None:
+                        setattr(
+                            lyrixa_os.main_window,
+                            "service_registry",
+                            lyrixa_os.service_registry,
+                        )
+                except Exception:
+                    pass
+                # Log selected GUI explicitly
+                try:
+                    logger.info(
+                        f"[GUI] Selected GUI: {main_window_class.__module__}.{main_window_class.__name__}"
+                    )
+                except Exception:
+                    logger.info("[GUI] Selected GUI: <unknown>")
 
                 # Connect backend to frontend
                 lyrixa_os._connect_backend_to_frontend()
@@ -1094,17 +1370,29 @@ async def main():
                 logger.info("[OK] Lyrixa GUI launched successfully")
                 logger.info("[OK] LYRIXA AI OPERATING SYSTEM IS NOW RUNNING")
                 logger.info("=" * 60)
-                logger.info("PHASE 1: Hybrid PySide6 + Web Panel Architecture")
-                logger.info("PHASE 2: Live Context Bridge for real-time data flow")
-                logger.info(
-                    "PHASE 3: Auto-Generation System for dynamic panel creation"
-                )
-                logger.info(
-                    "PHASE 4: Cognitive UI Integration with thought visualization"
-                )
-                logger.info("PHASE 5: Plugin-Driven UI System with dynamic widgets")
-                logger.info("PHASE 6: Full GUI Personality + State Memory + AI Chat")
-                logger.info("=" * 60)
+                # Show phase logs only for the Hybrid GUI; keep Basic concise
+                is_hybrid = "hybrid" in lyrixa_os.main_window.__class__.__name__.lower()
+                if is_hybrid:
+                    logger.info("PHASE 1: Hybrid PySide6 + Web Panel Architecture")
+                    logger.info("PHASE 2: Live Context Bridge for real-time data flow")
+                    logger.info(
+                        "PHASE 3: Auto-Generation System for dynamic panel creation"
+                    )
+                    logger.info(
+                        "PHASE 4: Cognitive UI Integration with thought visualization"
+                    )
+                    logger.info("PHASE 5: Plugin-Driven UI System with dynamic widgets")
+                    logger.info(
+                        "PHASE 6: Full GUI Personality + State Memory + AI Chat"
+                    )
+                    logger.info("=" * 60)
+                else:
+                    logger.info(
+                        "[BASIC] Lyrixa Basic GUI active (clean, streamlined UI)"
+                    )
+                    logger.info(
+                        "[BASIC] Tip: set AETHERRA_USE_HYBRID=1 to launch the legacy Hybrid GUI"
+                    )
                 logger.info(
                     "[CTRL] Lyrixa has full command and control over Aetherra OS"
                 )
@@ -1162,7 +1450,34 @@ async def main():
         traceback.print_exc()
         return 1
     finally:
+        # Gracefully stop subsystems
         await lyrixa_os.shutdown()
+
+        # Final asyncio cleanup: cancel and await any leftover tasks to avoid
+        # "Task was destroyed but it is pending" warnings at loop shutdown.
+        try:
+            loop = asyncio.get_running_loop()
+            current = asyncio.current_task()
+            pending = [t for t in asyncio.all_tasks() if t is not current]
+            for t in pending:
+                try:
+                    t.cancel()
+                except Exception:
+                    pass
+            if pending:
+                try:
+                    await asyncio.gather(*pending, return_exceptions=True)
+                except Exception:
+                    pass
+            # Give a final tick to process callbacks
+            await asyncio.sleep(0)
+            # Shutdown async generators if any
+            try:
+                await loop.shutdown_asyncgens()  # type: ignore[attr-defined]
+            except Exception:
+                pass
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

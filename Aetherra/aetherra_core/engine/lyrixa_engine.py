@@ -4,60 +4,123 @@ Not used by Aetherra OS runtime. Will be relocated/removed in cleanup.
 """
 
 import asyncio
+import inspect
 import json
 import logging
+import time
+import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-# Try to import components with graceful fallbacks
+logger = logging.getLogger(__name__)
+
+# ---------- Fallbacks for optional subsystems ----------
 try:
-    from ..memory.memory_core import AetherraMemorySystem
-except ImportError:
-    # Create a mock memory system
+    from ..memory.memory_core import AetherraMemorySystem  # type: ignore
+except Exception:
+
+    class _MemoryRecord:
+        def __init__(self, content: Dict[str, Any]):
+            self.content = content
+
     class AetherraMemorySystem:
         def __init__(self, *args, **kwargs):
-            pass
+            self._memories: List[Dict[str, Any]] = []
 
-        async def store(self, *args, **kwargs):
-            return {"status": "mock"}
+        async def store_memory(self, content=None, context=None, **kwargs):
+            self._memories.append({"content": content, "context": context})
+            return f"mem_{len(self._memories)}"
 
-        async def retrieve(self, *args, **kwargs):
-            return []
+        async def recall_memories(self, query_text: str = "", limit: int = 5, **kwargs):
+            return [
+                _MemoryRecord(m.get("content", {})) for m in self._memories[-limit:]
+            ]
+
+        async def get_memory_stats(self):
+            return {"total_memories": len(self._memories)}
+
+        async def get_conversation_context(self, session_id: str, limit: int = 20):
+            return self._memories[-limit:]
+
+        async def store_learning(self, *args, **kwargs):
+            return True
+
+        def close_connection(self):
+            return None
 
 
 try:
-    from .introspection_controller import IntrospectionController
-except ImportError:
+    from ..reflection.introspection_controller import (
+        IntrospectionController,  # type: ignore
+    )
+except Exception:
+
+    class _ComponentMonitorStub:
+        def register_component(self, *args, **kwargs):
+            return None
 
     class IntrospectionController:
         def __init__(self, *args, **kwargs):
-            pass
+            self.component_monitor = _ComponentMonitorStub()
+
+        async def start_introspection(self, *args, **kwargs):
+            return None
+
+        async def stop_introspection(self, *args, **kwargs):
+            return None
+
+        def get_health_status(self):
+            return {"status": "not_available"}
 
 
 try:
-    from .reasoning_engine import ReasoningEngine
-except ImportError:
+    from .reasoning_engine import ReasoningContext, ReasoningEngine  # type: ignore
+except Exception:
+
+    class ReasoningResult:
+        def __init__(self, conclusion: str, confidence: float = 0.75):
+            self.conclusion = conclusion
+            self.confidence = confidence
+
+    class ReasoningContext:
+        def __init__(self, **kwargs):
+            self.payload = kwargs
 
     class ReasoningEngine:
         def __init__(self, *args, **kwargs):
             pass
 
-        async def reason(self, *args, **kwargs):
-            return {"status": "mock", "reasoning": "Mock reasoning engine"}
+        async def reason(self, ctx: ReasoningContext):
+            q = getattr(ctx, "payload", {}).get("query")
+            return ReasoningResult(
+                conclusion=f"Baseline reasoning about: {q}", confidence=0.75
+            )
 
 
 try:
-    from .self_improvement_engine import SelfImprovementEngine
-except ImportError:
+    from .self_improvement_engine import SelfImprovementEngine  # type: ignore
+except Exception:
 
     class SelfImprovementEngine:
         def __init__(self, *args, **kwargs):
-            pass
+            self._running = False
+
+        async def start_improvement_cycle(self, *args, **kwargs):
+            self._running = True
+
+        async def stop_improvement_cycle(self, *args, **kwargs):
+            self._running = False
+
+        def record_performance_metric(self, *args, **kwargs):
+            return None
+
+        def get_improvement_status(self):
+            return {"running": self._running}
 
 
 try:
-    from .plugin_chain_executor import PluginChainExecutor
-except ImportError:
+    from .plugin_chain_executor import PluginChainExecutor  # type: ignore
+except Exception:
 
     class PluginChainExecutor:
         def __init__(self, *args, **kwargs):
@@ -68,24 +131,35 @@ except ImportError:
 
 
 try:
-    from ..orchestration.agent_orchestrator import AgentOrchestrator
-except ImportError:
+    from ..orchestration.agent_orchestrator import AgentOrchestrator  # type: ignore
+except Exception:
 
     class AgentOrchestrator:
         def __init__(self, *args, **kwargs):
-            pass
+            self._tasks: Dict[str, Dict[str, Any]] = {}
+            self._running = False
 
-        async def orchestrate(self, *args, **kwargs):
-            return {"status": "mock", "result": "Mock orchestration"}
+        async def start_orchestration(self):
+            self._running = True
+
+        async def stop_orchestration(self):
+            self._running = False
+
+        async def submit_task(self, task):
+            tid = getattr(task, "task_id", f"task_{len(self._tasks) + 1}")
+            self._tasks[tid] = {"status": "queued", "task": task}
+            return tid
+
+        def get_task_status(self, task_id: str):
+            return self._tasks.get(task_id, {"status": "unknown"})
+
+        def get_system_status(self):
+            return {"total_agents": 0, "pending_tasks": len(self._tasks)}
 
 
-logger = logging.getLogger(__name__)
-
-
+# ---------- Engine ----------
 class AetherraEngine:
-    """
-    Main Lyrixa execution engine that coordinates all subsystems
-    """
+    """Main Lyrixa execution engine that coordinates all subsystems"""
 
     def __init__(
         self,
@@ -94,6 +168,7 @@ class AetherraEngine:
         improvement_db_path: str = "lyrixa_improvement.db",
         orchestrator_db_path: str = "lyrixa_orchestrator.db",
     ):
+        # Subsystems
         self.memory_system = AetherraMemorySystem(memory_db_path)
         self.reasoning_engine = ReasoningEngine(reasoning_db_path)
         self.improvement_engine = SelfImprovementEngine(improvement_db_path)
@@ -101,12 +176,34 @@ class AetherraEngine:
         self.introspection = IntrospectionController()
         self.agent_orchestrator = AgentOrchestrator(orchestrator_db_path)
 
-        self.conversation_context = {}
-        self.session_id = None
-        self.active_tasks = {}
-        self.initialized = False
+        # State
+        self.conversation_context: Dict[str, Any] = {}
+        self.session_id: Optional[str] = None
+        self.active_tasks: Dict[str, Any] = {}
+        self.initialized: bool = False
+        self._boot_ts: Optional[datetime] = None
+
+        # Lifecycle flags
+        self._started_improvement = False
+        self._started_introspection = False
+        self._started_orchestration = False
+
+        # Background tasks and cancellation
+        self._bg_tasks: List[asyncio.Task] = []
+        self._task_cancels: Dict[str, asyncio.Event] = {}
 
         logger.info("Lyrixa Engine initialized")
+
+        # Minimal goal orchestration and event bus scaffolding
+        self._goals: Dict[str, Dict[str, Any]] = {}
+        self._subscribers: Dict[str, List] = {  # topic -> callbacks
+            "goal.update": [],
+            "agent.event": [],
+            "plugin.event": [],
+            "memory.hit": [],
+            "suggestion.new": [],
+            "ethics.alert": [],
+        }
 
     async def initialize(self):
         """Initialize the Lyrixa engine and all subsystems"""
@@ -114,19 +211,89 @@ class AetherraEngine:
             return
 
         try:
-            # Start subsystems
-            await self.improvement_engine.start_improvement_cycle()
-            await self.introspection.start_introspection()
-            await self.agent_orchestrator.start_orchestration()
+            # Start subsystems (guarded)
+            if hasattr(self.improvement_engine, "start_improvement_cycle"):
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = None
+                await self.improvement_engine.start_improvement_cycle(loop=loop)
+                self._started_improvement = True
+
+            start_intro = getattr(self.introspection, "start_introspection", None)
+            if callable(start_intro):
+                if asyncio.iscoroutinefunction(start_intro):
+                    try:
+                        loop = asyncio.get_running_loop()
+                    except RuntimeError:
+                        loop = None
+                    await start_intro(loop=loop)
+                else:
+                    start_intro()
+                self._started_introspection = True
+
+            start_orch = getattr(self.agent_orchestrator, "start_orchestration", None)
+            if callable(start_orch):
+                if asyncio.iscoroutinefunction(start_orch):
+                    await start_orch()
+                else:
+                    start_orch()
+                self._started_orchestration = True
 
             # Register system components for monitoring
             self._register_system_components()
+
+            # Uptime
+            self._boot_ts = datetime.now()
+
+            # Background anticipation loop
+            try:
+                loop = asyncio.get_running_loop()
+                self._bg_tasks.append(loop.create_task(self._anticipation_loop()))
+            except Exception:
+                pass
 
             self.initialized = True
             logger.info("✅ Lyrixa Engine fully initialized")
 
         except Exception as e:
             logger.error(f"❌ Failed to initialize Lyrixa Engine: {e}")
+            # Best-effort cleanup for partially started subsystems
+            try:
+                if self._started_orchestration and hasattr(
+                    self.agent_orchestrator, "stop_orchestration"
+                ):
+                    stop_orch = self.agent_orchestrator.stop_orchestration
+                    try:
+                        res = stop_orch()
+                        if inspect.isawaitable(res):
+                            await res
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+            try:
+                if self._started_introspection and hasattr(
+                    self.introspection, "stop_introspection"
+                ):
+                    stop_intro = self.introspection.stop_introspection
+                    try:
+                        res = stop_intro()
+                        if inspect.isawaitable(res):
+                            await res
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+            try:
+                if self._started_improvement and hasattr(
+                    self.improvement_engine, "stop_improvement_cycle"
+                ):
+                    res = self.improvement_engine.stop_improvement_cycle()
+                    if inspect.isawaitable(res):
+                        await res
+            except Exception:
+                pass
             raise
 
     async def shutdown(self):
@@ -135,61 +302,101 @@ class AetherraEngine:
             return
 
         try:
-            await self.improvement_engine.stop_improvement_cycle()
-            await self.introspection.stop_introspection()
-            await self.agent_orchestrator.stop_orchestration()
+            # Stop background loops first
+            for t in list(self._bg_tasks):
+                try:
+                    t.cancel()
+                except Exception:
+                    pass
+            if self._bg_tasks:
+                try:
+                    await asyncio.gather(*self._bg_tasks, return_exceptions=True)
+                except Exception:
+                    pass
+            self._bg_tasks.clear()
 
-            # Close memory connections
-            self.memory_system.close_connection()
+            if hasattr(self.improvement_engine, "stop_improvement_cycle"):
+                await self.improvement_engine.stop_improvement_cycle()
+            if hasattr(self.introspection, "stop_introspection"):
+                stop_intro = self.introspection.stop_introspection
+                try:
+                    res = stop_intro()
+                    if inspect.isawaitable(res):
+                        await res
+                except Exception:
+                    pass
+            if hasattr(self.agent_orchestrator, "stop_orchestration"):
+                stop_orch = self.agent_orchestrator.stop_orchestration
+                try:
+                    res = stop_orch()
+                    if inspect.isawaitable(res):
+                        await res
+                except Exception:
+                    pass
+
+            if hasattr(self.memory_system, "close_connection"):
+                try:
+                    self.memory_system.close_connection()
+                except Exception:
+                    pass
 
             self.initialized = False
             logger.info("✅ Lyrixa Engine shutdown complete")
-
         except Exception as e:
             logger.error(f"❌ Error during shutdown: {e}")
 
     def _register_system_components(self):
         """Register system components for health monitoring"""
+        # Only register if a component monitor is available
+        monitor = getattr(self.introspection, "component_monitor", None)
+        if not monitor:
+            return
 
-        def check_memory_health():
+        async def check_memory_health():
             try:
-                stats = asyncio.run(self.memory_system.get_memory_stats())
+                stats = await asyncio.wait_for(
+                    self.memory_system.get_memory_stats(), timeout=1.0
+                )
                 return {
                     "total_memories": stats.get("total_memories", 0),
-                    "response_time": 100.0,  # Would measure actual response time
+                    "response_time": 50.0,
                 }
-            except Exception as e:
-                logger.error(f"Memory health check failed: {e}")
+            except Exception:
                 return {"response_time": 999.0, "error": True}
 
-        def check_reasoning_health():
+        async def check_reasoning_health():
+            # Placeholder that could ping an internal health in the future
             return {"active_reasoning_sessions": 0}
 
         def check_orchestrator_health():
-            status = self.agent_orchestrator.get_system_status()
-            return {
-                "active_agents": status.get("total_agents", 0),
-                "pending_tasks": status.get("pending_tasks", 0),
-            }
+            try:
+                status = self.agent_orchestrator.get_system_status()
+                return {
+                    "active_agents": status.get("total_agents", 0),
+                    "pending_tasks": status.get("pending_tasks", 0),
+                }
+            except Exception:
+                return {"active_agents": 0, "pending_tasks": 0}
 
-        # Register components with introspection
-        self.introspection.component_monitor.register_component(
-            "memory_system",
-            check_memory_health,
-            {"response_time_threshold": 500.0, "response_time_critical": 1000.0},
-        )
-
-        self.introspection.component_monitor.register_component(
-            "reasoning_engine",
-            check_reasoning_health,
-            {"active_sessions_threshold": 10.0},
-        )
-
-        self.introspection.component_monitor.register_component(
-            "agent_orchestrator",
-            check_orchestrator_health,
-            {"pending_tasks_threshold": 50.0},
-        )
+        try:
+            monitor.register_component(
+                "memory_system",
+                check_memory_health,
+                {"response_time_threshold": 500.0, "response_time_critical": 1000.0},
+            )
+            monitor.register_component(
+                "reasoning_engine",
+                check_reasoning_health,
+                {"active_sessions_threshold": 10.0},
+            )
+            monitor.register_component(
+                "agent_orchestrator",
+                check_orchestrator_health,
+                {"pending_tasks_threshold": 50.0},
+            )
+        except Exception:
+            # If the monitor API is different, skip silently (fallback mode)
+            pass
 
     async def start_conversation(self, user_id: str = "default") -> str:
         """Start a new conversation session"""
@@ -198,13 +405,13 @@ class AetherraEngine:
 
         self.session_id = f"session_{datetime.now().isoformat()}_{user_id}"
         self.conversation_context = {
+            "session_id": self.session_id,
             "user_id": user_id,
             "start_time": datetime.now(),
             "message_count": 0,
             "topics": [],
         }
 
-        # Store conversation start in memory
         await self.memory_system.store_memory(
             content={"event": "conversation_start", "user_id": user_id},
             context=self.conversation_context,
@@ -220,12 +427,12 @@ class AetherraEngine:
         self, message: str, context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Process a user message and generate response"""
-
         if not self.session_id:
             await self.start_conversation()
 
         try:
-            # Update conversation context
+            corr_id = str(uuid.uuid4())
+            t0 = time.perf_counter()
             self.conversation_context["message_count"] += 1
             message_context = {
                 **self.conversation_context,
@@ -234,7 +441,6 @@ class AetherraEngine:
                 "timestamp": datetime.now(),
             }
 
-            # Store user message in memory
             memory_id = await self.memory_system.store_memory(
                 content={"role": "user", "content": message},
                 context=message_context,
@@ -243,36 +449,101 @@ class AetherraEngine:
                 memory_type="conversation",
             )
 
-            # Recall relevant memories
-            relevant_memories = await self.memory_system.recall_memories(
-                query_text=message, limit=5, memory_type="conversation"
-            )
+            try:
+                relevant_memories = await asyncio.wait_for(
+                    self.memory_system.recall_memories(
+                        query_text=message, limit=5, memory_type="conversation"
+                    ),
+                    timeout=3,
+                )
+            except Exception:
+                relevant_memories = []
 
-            # Perform reasoning about the message
-            reasoning_context = {
-                "query": f"How should I respond to: {message}",
-                "domain": "conversation",
-                "context_data": {
-                    "user_message": message,
-                    "conversation_history": [m.content for m in relevant_memories],
-                    "session_context": self.conversation_context,
-                },
-                "constraints": ["be_helpful", "be_conversational"],
-                "objectives": ["provide_value", "maintain_engagement"],
-            }
+            # Build reasoning context if available; otherwise pass-through
+            try:
+                rc = ReasoningContext(
+                    **{
+                        "query": f"How should I respond to: {message}",
+                        "domain": "conversation",
+                        "context_data": {
+                            "user_message": message,
+                            "conversation_history": [
+                                self._mem_text(m) for m in relevant_memories
+                            ],
+                            "session_context": self.conversation_context,
+                        },
+                        "constraints": ["be_helpful", "be_conversational"],
+                        "objectives": ["provide_value", "maintain_engagement"],
+                    }
+                )  # type: ignore
+            except Exception:
+                rc = {"query": message}
 
-            from .reasoning_engine import ReasoningContext
+            try:
+                reasoning_result = await asyncio.wait_for(
+                    self.reasoning_engine.reason(rc),  # type: ignore[arg-type]
+                    timeout=12,
+                )
+            except Exception:
 
-            reasoning_result = await self.reasoning_engine.reason(
-                ReasoningContext(**reasoning_context)
-            )
+                class _RR:
+                    conclusion = "Baseline response"
+                    confidence = 0.7
 
-            # Generate response (in a real system, this would use an LLM)
+                reasoning_result = _RR()
+
+            # Derive a plan and optionally execute plugins/agents
+            plan: List[Dict[str, Any]] = []
+            try:
+                if isinstance(reasoning_result, dict):
+                    plan = list(reasoning_result.get("plan", []))
+                else:
+                    plan = list(getattr(reasoning_result, "plan", []) or [])
+            except Exception:
+                plan = []
+
+            plugin_chain_summary = None
+            try:
+                plugin_steps = [
+                    s for s in plan if s.get("action") in {"plugin", "chain"}
+                ]
+                if plugin_steps:
+                    # Guardrails
+                    for s in plugin_steps:
+                        self._enforce_caps(s)
+                    chain_spec = []
+                    for s in plugin_steps:
+                        pid = s.get("plugin_id") or s.get("plugin")
+                        if pid:
+                            chain_spec.append(
+                                {
+                                    "plugin_id": pid,
+                                    "input": s.get("input", {}),
+                                }
+                            )
+                    if chain_spec:
+                        try:
+                            chain_out = await asyncio.wait_for(
+                                self.plugin_executor.execute_chain(chain_spec),
+                                timeout=15,
+                            )
+                            # Keep a compact summary for the reply
+                            if isinstance(chain_out, dict) and chain_out.get("results"):
+                                plugin_chain_summary = f"Executed {len(chain_out['results'])} plugin actions successfully"
+                            else:
+                                plugin_chain_summary = "Plugin actions executed"
+                        except Exception:
+                            plugin_chain_summary = "Plugin actions failed or timed out"
+            except Exception:
+                pass
+
             response = self._generate_response(
                 message, reasoning_result, relevant_memories
             )
 
-            # Store assistant response in memory
+            if plugin_chain_summary:
+                response = f"{response}\n\nNote: {plugin_chain_summary}."
+
             await self.memory_system.store_memory(
                 content={"role": "assistant", "content": response},
                 context=message_context,
@@ -281,25 +552,50 @@ class AetherraEngine:
                 memory_type="conversation",
             )
 
-            # Record performance metrics
-            self.improvement_engine.record_performance_metric(
-                "response_generation_time", 0.5, "seconds"
-            )
+            # Observability: latency metric and structured log
+            lat_ms = (time.perf_counter() - t0) * 1000.0
+            if hasattr(self.improvement_engine, "record_performance_metric"):
+                self.improvement_engine.record_performance_metric(
+                    "latency_ms", lat_ms, "ms"
+                )
+            try:
+                logger.info(
+                    "msg_processed",
+                    extra={
+                        "corr_id": corr_id,
+                        "lat_ms": lat_ms,
+                        "session_id": self.session_id,
+                        "mem_k": len(relevant_memories) if relevant_memories else 0,
+                    },
+                )
+            except Exception:
+                logger.info(
+                    f"msg_processed corr_id={corr_id} lat_ms={lat_ms:.1f} mem_k={len(relevant_memories) if relevant_memories else 0}"
+                )
 
             return {
                 "response": response,
                 "session_id": self.session_id,
-                "reasoning": reasoning_result.conclusion,
-                "confidence": reasoning_result.confidence,
+                "reasoning": (
+                    reasoning_result.get("conclusion")
+                    if isinstance(reasoning_result, dict)
+                    else getattr(reasoning_result, "conclusion", "")
+                ),
+                "confidence": (
+                    reasoning_result.get("confidence", 0.0)
+                    if isinstance(reasoning_result, dict)
+                    else getattr(reasoning_result, "confidence", 0.0)
+                ),
                 "memory_id": memory_id,
                 "relevant_memories_count": len(relevant_memories),
                 "timestamp": datetime.now().isoformat(),
+                "corr_id": corr_id,
             }
 
         except Exception as e:
             logger.error(f"Error processing message: {e}")
             return {
-                "response": "I apologize, but I encountered an error processing your message.",
+                "response": "I encountered an error processing your message.",
                 "error": str(e),
                 "session_id": self.session_id,
                 "timestamp": datetime.now().isoformat(),
@@ -308,32 +604,35 @@ class AetherraEngine:
     def _generate_response(
         self, message: str, reasoning_result, relevant_memories: List
     ) -> str:
-        """Generate response based on message and context (placeholder implementation)"""
-
-        # This is a simple placeholder - in a real system this would use an LLM
-
+        """Generate response based on message and context (placeholder)."""
         if "hello" in message.lower():
-            return f"Hello! I'm Lyrixa, your AI assistant. I understand you said: '{message}'. How can I help you today?"
-
-        elif "?" in message:
-            return f"That's an interesting question about '{message}'. Based on my reasoning (confidence: {reasoning_result.confidence:.2f}), I believe: {reasoning_result.conclusion}"
-
-        elif len(relevant_memories) > 0:
-            return f"I remember we discussed similar topics. Regarding '{message}', I think: {reasoning_result.conclusion}"
-
-        else:
-            return f"I understand you're talking about '{message}'. {reasoning_result.conclusion} Is there anything specific you'd like to know or discuss?"
+            return (
+                f"Hello! I'm Lyrixa, your AI assistant. I understand you said: '{message}'. "
+                "How can I help you today?"
+            )
+        if "?" in message:
+            return (
+                f"That's an interesting question about '{message}'. "
+                f"Based on my reasoning (confidence: {getattr(reasoning_result, 'confidence', 0.0):.2f}), "
+                f"I believe: {getattr(reasoning_result, 'conclusion', '')}"
+            )
+        if len(relevant_memories) > 0:
+            return (
+                f"I remember we discussed similar topics. Regarding '{message}', I think: "
+                f"{getattr(reasoning_result, 'conclusion', '')}"
+            )
+        return (
+            f"I understand you're talking about '{message}'. "
+            f"{getattr(reasoning_result, 'conclusion', '')} "
+            "Is there anything specific you'd like to know or discuss?"
+        )
 
     async def get_conversation_summary(self) -> Dict[str, Any]:
-        """Get summary of current conversation"""
         if not self.session_id:
             return {"status": "no_active_session"}
-
-        # Get conversation memories
         memories = await self.memory_system.get_conversation_context(
             self.session_id, limit=20
         )
-
         return {
             "session_id": self.session_id,
             "context": self.conversation_context,
@@ -347,16 +646,24 @@ class AetherraEngine:
         }
 
     async def get_system_status(self) -> Dict[str, Any]:
-        """Get comprehensive system status"""
         if not self.initialized:
             return {"status": "not_initialized"}
-
-        # Gather status from all subsystems
         memory_stats = await self.memory_system.get_memory_stats()
-        improvement_status = self.improvement_engine.get_improvement_status()
-        orchestrator_status = self.agent_orchestrator.get_system_status()
-        health_status = self.introspection.get_health_status()
-
+        improvement_status = getattr(
+            self.improvement_engine, "get_improvement_status", lambda: {}
+        )()
+        orchestrator_status = getattr(
+            self.agent_orchestrator, "get_system_status", lambda: {}
+        )()
+        health_status = getattr(
+            self.introspection, "get_health_status", lambda: {"status": "unknown"}
+        )()
+        uptime_min = 0.0
+        try:
+            if self._boot_ts:
+                uptime_min = (datetime.now() - self._boot_ts).total_seconds() / 60.0
+        except Exception:
+            uptime_min = 0.0
         return {
             "engine_status": "active" if self.initialized else "inactive",
             "session_active": self.session_id is not None,
@@ -364,49 +671,129 @@ class AetherraEngine:
             "improvement_system": improvement_status,
             "agent_orchestrator": orchestrator_status,
             "health_monitoring": health_status,
-            "uptime_minutes": 0,  # Would track actual uptime
+            "uptime_minutes": uptime_min,
             "timestamp": datetime.now().isoformat(),
         }
+
+    # ---------- Event bus ----------
+    def subscribe(self, topic: str, callback):
+        self._subscribers.setdefault(topic, []).append(callback)
+
+    def _emit(self, topic: str, payload: Dict[str, Any]):
+        for cb in self._subscribers.get(topic, []):
+            try:
+                cb(payload)
+            except Exception:
+                pass
+
+    # ---------- Minimal Goal Orchestration ----------
+    async def create_goal(
+        self,
+        intent: str,
+        context: Optional[Dict[str, Any]] = None,
+        priority: str = "normal",
+        deadline: Optional[str] = None,
+    ) -> str:
+        gid = f"goal_{datetime.now().timestamp()}"
+        self._goals[gid] = {
+            "id": gid,
+            "intent": intent,
+            "context": context or {},
+            "priority": priority,
+            "deadline": deadline,
+            "status": "created",
+            "steps": [],
+        }
+        self._emit("goal.update", {"id": gid, "status": "created"})
+        return gid
+
+    async def plan(self, goal_id: str) -> List[Dict[str, Any]]:
+        goal = self._goals.get(goal_id)
+        if not goal:
+            return []
+        # naive 2-step plan
+        steps = [
+            {"id": f"{goal_id}_step1", "name": "analyze_intent", "status": "pending"},
+            {
+                "id": f"{goal_id}_step2",
+                "name": "execute_best_action",
+                "status": "pending",
+            },
+        ]
+        goal["steps"] = steps
+        goal["status"] = "planned"
+        self._emit("goal.update", {"id": goal_id, "status": "planned", "steps": steps})
+        return steps
+
+    async def execute(self, goal_id: str):
+        goal = self._goals.get(goal_id)
+        if not goal:
+            return {"status": "unknown_goal"}
+        goal["status"] = "running"
+        self._emit("goal.update", {"id": goal_id, "status": "running"})
+        for step in goal.get("steps", []):
+            step["status"] = "running"
+            self._emit("goal.update", {"id": goal_id, "step": step})
+            await asyncio.sleep(0)  # yield
+            step["status"] = "done"
+            self._emit("goal.update", {"id": goal_id, "step": step})
+        goal["status"] = "done"
+        self._emit("goal.update", {"id": goal_id, "status": "done"})
+        return {"status": "done"}
+
+    async def pause(self, goal_id: str):
+        goal = self._goals.get(goal_id)
+        if not goal:
+            return {"status": "unknown_goal"}
+        goal["status"] = "paused"
+        self._emit("goal.update", {"id": goal_id, "status": "paused"})
+        return {"status": "paused"}
+
+    async def cancel(self, goal_id: str):
+        goal = self._goals.get(goal_id)
+        if not goal:
+            return {"status": "unknown_goal"}
+        goal["status"] = "canceled"
+        self._emit("goal.update", {"id": goal_id, "status": "canceled"})
+        return {"status": "canceled"}
+
+    def status(self, goal_id: str) -> Dict[str, Any]:
+        return self._goals.get(goal_id, {"status": "unknown_goal"})
 
     async def execute_task(
         self, task_name: str, task_data: Dict[str, Any], priority: str = "normal"
     ) -> str:
-        """Execute a task using the agent orchestrator"""
+        class _Task:
+            def __init__(self, **kwargs):
+                self.__dict__.update(kwargs)
 
-        from ...core.agent_orchestrator import Task, TaskPriority
-
-        # Map priority string to enum
-        priority_map = {
-            "low": TaskPriority.LOW,
-            "normal": TaskPriority.NORMAL,
-            "high": TaskPriority.HIGH,
-            "critical": TaskPriority.CRITICAL,
-        }
-
-        task = Task(
+        task = _Task(
             task_id=f"task_{datetime.now().isoformat()}",
             name=task_name,
             description=f"User requested task: {task_name}",
             required_capabilities=task_data.get("required_capabilities", []),
             input_data=task_data,
-            priority=priority_map.get(priority, TaskPriority.NORMAL),
+            priority=priority,
             max_execution_time=task_data.get("timeout", 300),
             dependencies=task_data.get("dependencies", []),
         )
-
         task_id = await self.agent_orchestrator.submit_task(task)
         self.active_tasks[task_id] = task
-
+        # Cancellation token
+        self._task_cancels[task_id] = asyncio.Event()
         return task_id
 
     def get_task_status(self, task_id: str) -> Optional[Dict[str, Any]]:
-        """Get status of a specific task"""
         return self.agent_orchestrator.get_task_status(task_id)
 
-    async def learn_from_feedback(self, interaction_id: str, feedback: Dict[str, Any]):
-        """Learn from user feedback"""
+    def cancel_task(self, task_id: str) -> bool:
+        evt = self._task_cancels.get(task_id)
+        if evt and not evt.is_set():
+            evt.set()
+            return True
+        return False
 
-        # Store feedback in memory
+    async def learn_from_feedback(self, interaction_id: str, feedback: Dict[str, Any]):
         await self.memory_system.store_learning(
             learning_content={
                 "interaction_id": interaction_id,
@@ -418,18 +805,71 @@ class AetherraEngine:
                 "timestamp": datetime.now().isoformat(),
             },
         )
+        if hasattr(self.improvement_engine, "record_performance_metric"):
+            metric_val = feedback.get("rating", 0)
+            self.improvement_engine.record_performance_metric(
+                "user_satisfaction", metric_val, "rating"
+            )
 
-        # Update improvement system
-        if feedback.get("rating", 0) >= 4:
-            # Positive feedback - reinforce patterns
-            self.improvement_engine.record_performance_metric(
-                "user_satisfaction", feedback.get("rating", 5), "rating"
-            )
-        else:
-            # Negative feedback - identify areas for improvement
-            self.improvement_engine.record_performance_metric(
-                "user_satisfaction", feedback.get("rating", 1), "rating"
-            )
+    # ----------------- Helpers and background loops -----------------
+    def _mem_text(self, m: Any) -> Any:
+        try:
+            if isinstance(m, dict):
+                return m.get("content") or m.get("text") or json.dumps(m)[:500]
+            return getattr(m, "content", str(m))
+        except Exception:
+            return str(m)
+
+    def _enforce_caps(self, step: Dict[str, Any]):
+        allowed = {"read_memory", "write_memory", "web_fetch", "file_temp"}
+        required = set(step.get("required_capabilities", []))
+        if not required.issubset(allowed):
+            raise PermissionError("Capability not allowed")
+
+    async def _anticipation_loop(self):
+        while True:
+            try:
+                # Pull a few recent memories and ask for suggestions
+                try:
+                    recent = await asyncio.wait_for(
+                        self.memory_system.recall_memories(limit=10),  # type: ignore[arg-type]
+                        timeout=2,
+                    )
+                except Exception:
+                    recent = []
+                try:
+                    rc = ReasoningContext(  # type: ignore
+                        **{
+                            "query": "What proactive suggestions should I surface now?",
+                            "domain": "anticipation",
+                            "context_data": {"recent": recent},
+                        }
+                    )
+                    sugg = await asyncio.wait_for(
+                        self.reasoning_engine.reason(rc),  # type: ignore[arg-type]
+                        timeout=6,
+                    )
+                    # Store suggestion briefly for UI pickup
+                    await self.memory_system.store_memory(
+                        content={
+                            "type": "suggestion",
+                            "content": getattr(sugg, "conclusion", None)
+                            or (
+                                sugg.get("conclusion")
+                                if isinstance(sugg, dict)
+                                else str(sugg)
+                            ),
+                        },
+                        context={"source": "anticipation_loop"},
+                        tags=["suggestion", "anticipation"],
+                        importance=0.3,
+                        memory_type="system",
+                    )
+                except Exception:
+                    pass
+            except Exception:
+                logger.exception("anticipation loop error")
+            await asyncio.sleep(30)
 
 
 # Global Lyrixa engine instance
@@ -445,41 +885,27 @@ async def boot():
 
 
 async def test_aetherra_engine():
-    """Test the Aetherra engine"""
     engine = AetherraEngine()
-
     try:
-        # Initialize engine
         await engine.initialize()
-
-        # Start conversation
         session_id = await engine.start_conversation("test_user")
         print(f"Started session: {session_id}")
-
-        # Process some messages
-        messages = [
+        for message in [
             "Hello, I'm testing the Lyrixa engine",
             "What can you tell me about artificial intelligence?",
             "How does your memory system work?",
-        ]
-
-        for message in messages:
+        ]:
             response = await engine.process_message(message)
             print(f"User: {message}")
             print(f"Lyrixa: {response['response']}")
-            print(f"Confidence: {response['confidence']:.2f}")
+            print(f"Confidence: {response.get('confidence', 0.0):.2f}")
             print("---")
-
-        # Get system status
         status = await engine.get_system_status()
         print("System Status:")
         print(json.dumps(status, indent=2, default=str))
-
-        # Get conversation summary
         summary = await engine.get_conversation_summary()
         print("Conversation Summary:")
         print(json.dumps(summary, indent=2, default=str))
-
     finally:
         await engine.shutdown()
 

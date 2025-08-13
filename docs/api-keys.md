@@ -49,3 +49,14 @@ echo 'export AETHERRA_PEERS=http://host1:3001,http://host2:3001' >> ~/.bashrc
 - Discovery can sign plugin manifests when `AETHERRA_SIGN_PLUGINS=1` and a secret is set via `set_key("plugin_signing_secret", ...)`.
 - Hub enforces signature verification when `AETHERRA_SIGNING_STRICT=1`.
 - Federation peers can be pre-seeded via `AETHERRA_PEERS` at Hub startup.
+
+## Rotation and environments
+
+- Keep separate secrets per environment (dev/staging/prod). Example keys:
+	- `plugin_signing_secret.dev`, `plugin_signing_secret.staging`, `plugin_signing_secret.prod`
+- Rotate production signing keys quarterly or on suspicion of leak:
+	1) Generate new secret and store as `plugin_signing_secret.next`
+	2) Enable dual-signing period (discovery signs with both; hub accepts both)
+	3) Flip `plugin_signing_secret` to new value; keep `.next` for one week
+	4) Remove old key and `.next`
+- Never store production secrets in code or CI logs; use environment or a secrets store.
