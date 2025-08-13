@@ -111,6 +111,26 @@ class FederationManager:
         with self._lock:
             self._federated_plugins = merged
 
+    def announce_once(self):
+        """Announce this hub to all known peers (best-effort)."""
+        if requests is None:
+            return
+        now = time.time()
+        with self._lock:
+            peers = list(self._peers.values())
+        for peer in peers:
+            try:
+                resp = requests.post(
+                    f"{peer.url}/api/peers", json={"url": self.self_url}, timeout=5
+                )
+                if resp.status_code in (200, 201, 202):
+                    peer.healthy = True
+                    peer.last_seen = now
+                else:
+                    peer.healthy = False
+            except Exception:
+                peer.healthy = False
+
 
 # Simple singleton used by hub server
 _default_manager: Optional[FederationManager] = None

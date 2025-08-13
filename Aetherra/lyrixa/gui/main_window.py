@@ -611,6 +611,15 @@ class LyrixaContextBridge(QObject):
 
         except Exception as e:
             print(f"⚠️ Warning: Some settings could not be applied: {e}")
+        # Apply telemetry opt-in after try/except to avoid masking errors
+        try:
+            if "telemetry" in settings:
+                from Aetherra.telemetry.optin import get_telemetry
+
+                tel = get_telemetry()
+                tel.set_opt_in(bool(settings["telemetry"]))
+        except Exception:
+            pass
 
     # === METRICS PANEL METHODS ===
 

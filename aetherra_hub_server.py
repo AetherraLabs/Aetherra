@@ -164,9 +164,8 @@ class AetherraHubServer:
                     return jsonify({"error": "Invalid plugin data"}), 400  # type: ignore[name-defined]
 
                 # Determine strictness at request time (env-driven)
-                strict = (
-                    os.environ.get("AETHERRA_SIGNING_STRICT", "0") == "1"
-                    or bool(getattr(self, "signing_strict", False))
+                strict = os.environ.get("AETHERRA_SIGNING_STRICT", "0") == "1" or bool(
+                    getattr(self, "signing_strict", False)
                 )
                 # Verify signature (before mutating payload)
                 has_sig = bool(plugin_data.get("signature")) and bool(
@@ -178,7 +177,9 @@ class AetherraHubServer:
                     if not has_sig:
                         return jsonify({"error": "invalid signature"}), 400  # type: ignore[name-defined]
                     if getattr(self, "verify_signature", None) is None:
-                        return jsonify({"error": "signature verification unavailable"}), 400  # type: ignore[name-defined]
+                        return jsonify(
+                            {"error": "signature verification unavailable"}
+                        ), 400  # type: ignore[name-defined]
                     try:
                         verified = bool(self.verify_signature(plugin_data))  # type: ignore[call-arg]
                     except Exception:
@@ -249,6 +250,30 @@ class AetherraHubServer:
                     self.federation.add_peer(url)
                 return jsonify({"status": "ok"})  # type: ignore[name-defined]
             return jsonify({"peers": self.federation.list_peers(), "enabled": True})  # type: ignore[name-defined]
+
+        @app.route("/api/peers/sync", methods=["POST"])  # manual trigger
+        def peers_sync():
+            self.stats["requests_served"] += 1
+            if self.federation is None:
+                return jsonify({"synced": False, "reason": "disabled"}), 501  # type: ignore[name-defined]
+            try:
+                self.federation.sync_once()
+                return jsonify({"synced": True, "federated_count": len(self.federation.get_federated_plugins())})  # type: ignore[name-defined]
+            except Exception as e:
+                logger.error(f"peer sync error: {e}")
+                return jsonify({"synced": False, "error": "server"}), 500  # type: ignore[name-defined]
+
+        @app.route("/api/peers/announce", methods=["POST"])  # best-effort gossip
+        def peers_announce():
+            self.stats["requests_served"] += 1
+            if self.federation is None:
+                return jsonify({"announced": False, "reason": "disabled"}), 501  # type: ignore[name-defined]
+            try:
+                self.federation.announce_once()
+                return jsonify({"announced": True})  # type: ignore[name-defined]
+            except Exception as e:
+                logger.error(f"peer announce error: {e}")
+                return jsonify({"announced": False, "error": "server"}), 500  # type: ignore[name-defined]
 
         @app.route("/api/telemetry", methods=["POST"])
         def telemetry_ingest():
