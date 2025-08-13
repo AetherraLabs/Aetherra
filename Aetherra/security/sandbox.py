@@ -9,6 +9,7 @@ This is a best-effort shim:
 from __future__ import annotations
 
 from typing import Any, Dict
+import ast
 
 SAFE_BUILTINS = {
     "abs": abs,
@@ -25,12 +26,43 @@ class SandboxViolation(Exception):
 
 
 def safe_eval(expr: str, variables: Dict[str, Any] | None = None) -> Any:
-    """Evaluate a simple expression with restricted builtins.
-    Not suitable for untrusted arbitrary code; used for small expressions.
+    """Evaluate a small arithmetic/logic expression safely.
+    Blocks attribute access, function defs/calls (except whitelisted builtins),
+    comprehensions, and dunder names.
     """
-    allowed = dict(SAFE_BUILTINS)
-    vars = dict(variables or {})
-    # Remove dunder access
-    if any(seg.startswith("__") for seg in expr.split(".")):
+    # Quick checks
+    if "__" in expr:
         raise SandboxViolation("Dunder access is not allowed")
-    return eval(expr, {"__builtins__": allowed}, vars)
+
+    try:
+        tree = ast.parse(expr, mode="eval")
+    except Exception as e:
+        raise SandboxViolation(f"Parse error: {e}")
+
+    # Disallow dangerous nodes
+    forbidden = (
+        ast.Attribute,
+        ast.Lambda,
+        ast.FunctionDef,
+        ast.ClassDef,
+        ast.Import,
+        ast.ImportFrom,
+        ast.Call,  # block calls (only allow builtins through names mapping)
+        ast.DictComp,
+        ast.ListComp,
+        ast.SetComp,
+        ast.GeneratorExp,
+        ast.Subscript,  # avoid obj[...]
+        ast.Yield,
+        ast.YieldFrom,
+        ast.Await,
+        ast.With,
+    )
+    for node in ast.walk(tree):
+        if isinstance(node, forbidden):
+            raise SandboxViolation(f"Forbidden construct: {type(node).__name__}")
+
+    allowed = dict(SAFE_BUILTINS)
+    # Only allow provided variables as names; no globals
+    names = dict(variables or {})
+    return eval(compile(tree, "<sandbox>", "eval"), {"__builtins__": allowed}, names)
