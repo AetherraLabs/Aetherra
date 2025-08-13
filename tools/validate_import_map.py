@@ -3,6 +3,7 @@
 Validate imports in the codebase against the canonical import map.
 Fails with exit code 1 if non-canonical imports are detected.
 """
+
 from __future__ import annotations
 
 import ast
