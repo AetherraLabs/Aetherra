@@ -126,6 +126,45 @@ Longer (6–12 weeks)
 
 ---
 
+## Federation, Signing, Telemetry — Current Status and Quickstart (2025-08-12)
+
+Status
+
+- Federation: Hub exposes peers endpoint and federated catalog; peers can be pre-seeded via environment. Memory graph optics available at GET /api/memory/graph.
+- Signing: Discovery can sign plugin manifests; Hub can enforce signature verification on registration.
+- Telemetry: Opt-in emitter available; Hub ingests at POST /api/telemetry and tracks counters in /api/stats (telemetry_received, last_telemetry_at).
+
+Quickstart
+
+- Environment flags (also mirrored in docs/api-keys.md):
+  - AETHERRA_SIGN_PLUGINS=1 — sign manifests in discovery when a secret is set via API keys (plugin_signing_secret).
+  - AETHERRA_SIGNING_STRICT=1 — Hub requires valid signatures on /api/plugins/register.
+  - AETHERRA_PEERS=<http://host1:3001>,<http://host2:3001> — seed federation peers at Hub startup.
+
+Examples
+
+- PowerShell (Windows):
+
+```powershell
+[System.Environment]::SetEnvironmentVariable("AETHERRA_SIGN_PLUGINS", "1", "User")
+[System.Environment]::SetEnvironmentVariable("AETHERRA_SIGNING_STRICT", "1", "User")
+[System.Environment]::SetEnvironmentVariable("AETHERRA_PEERS", "http://localhost:3002,http://localhost:3003", "User")
+```
+
+- Bash:
+
+```bash
+export AETHERRA_SIGN_PLUGINS=1
+export AETHERRA_SIGNING_STRICT=1
+export AETHERRA_PEERS=http://localhost:3002,http://localhost:3003
+```
+
+Notes
+
+- To generate and store a signing secret, use `from Aetherra.security.api_keys import set_key; set_key("plugin_signing_secret", "<base64-secret>")`.
+- When strict mode is on, unsigned or invalidly signed manifests are rejected (HTTP 400).
+- Memory graph optics returns sample nodes/edges and counts for UI and observability.
+
 ## Validation Targets (What to Prove Next)
 
 - Boot matrix: full OS boot on Windows/macOS/Linux with and without GUI; mocks acceptable but measured.

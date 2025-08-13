@@ -14,17 +14,17 @@ Architecture:
 - Styling: Authentic Aetherra colors and effects
 """
 
+import asyncio
 import json
 import logging
 import os
 import sys
+import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import psutil
 from PySide6.QtCore import QObject, Qt, QTimer, QUrl, Signal, Slot
-from PySide6.QtGui import QColor, QFont, QIcon, QPalette
 from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (
@@ -33,13 +33,8 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
-    QMenu,
-    QMenuBar,
     QPushButton,
     QSplitter,
-    QStatusBar,
-    QSystemTrayIcon,
-    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -212,15 +207,17 @@ class LyrixaContextBridge(QObject):
 
         # Connect to real conversation manager
         try:
-            from Aetherra.aetherra_core.agents.conversation_manager import (
-                LyrixaConversationManager,
-            )
+            import Aetherra.aetherra_core.agents.conversation_manager as cm
 
             workspace_path = os.path.join(os.path.dirname(__file__), "..", "..", "..")
-            self.conversation_manager = LyrixaConversationManager(
-                workspace_path=workspace_path, gui_interface=self
-            )
-            logger.info("✅ Real LyrixaConversationManager connected successfully")
+            manager_cls = getattr(cm, "LyrixaConversationManager", None)
+            if manager_cls:
+                self.conversation_manager = manager_cls(
+                    workspace_path=workspace_path, gui_interface=self
+                )
+                logger.info("✅ Real LyrixaConversationManager connected successfully")
+            else:
+                raise ImportError("LyrixaConversationManager not found")
         except Exception as e:
             logger.warning(f"❌ Could not connect to real conversation manager: {e}")
             self.conversation_manager = None
@@ -313,6 +310,23 @@ class LyrixaContextBridge(QObject):
                     plugins_data["active_count"] = sum(
                         1 for info in plugins_info.values() if info.get("loaded")
                     )
+                elif hasattr(plugin_manager, "list_plugins"):
+                    # Fallback to core plugin manager API
+                    plugins_info = plugin_manager.list_plugins()
+                    plugins_data["loaded_plugins"] = [
+                        {
+                            "name": name,
+                            "status": "active"
+                            if info.get("active")
+                            else info.get("status", "loaded"),
+                            "version": info.get("version", "1.0.0"),
+                        }
+                        for name, info in plugins_info.items()
+                    ]
+                    plugins_data["total_count"] = len(plugins_info)
+                    plugins_data["active_count"] = sum(
+                        1 for info in plugins_info.values() if info.get("active")
+                    )
 
                 if plugins_data != self.data_cache["plugins"]:
                     self.data_cache["plugins"] = plugins_data
@@ -351,7 +365,6 @@ class LyrixaContextBridge(QObject):
 
     def refresh_metrics_data(self):
         """Refresh system metrics."""
-        import os
         import time
 
         import psutil
@@ -386,17 +399,78 @@ class LyrixaContextBridge(QObject):
             self.send_notification("error", "Plugin manager not available")
             return
 
-        if action == "activate":
-            # TODO: Activate plugin
-            self.send_notification("success", f"Activated plugin: {plugin_name}")
-        elif action == "deactivate":
-            # TODO: Deactivate plugin
-            self.send_notification("success", f"Deactivated plugin: {plugin_name}")
-        elif action == "reload":
-            # TODO: Reload plugin
-            self.send_notification("success", f"Reloaded plugin: {plugin_name}")
-        else:
-            self.send_notification("warning", f"Unknown plugin action: {action}")
+        # Run lifecycle operations off the UI thread
+        threading.Thread(
+            target=self._plugin_action_worker,
+            args=(action, plugin_name),
+            daemon=True,
+        ).start()
+
+    def _plugin_action_worker(self, action: str, plugin_name: str):
+        """Background worker to call async plugin manager APIs safely."""
+        try:
+            plugin_manager = self.backend_services.get("plugin_manager")
+            if not plugin_manager:
+                self.send_notification("error", "Plugin manager not available")
+                return
+
+            async def do_activate(name: str):
+                # Load if not loaded
+                if name not in getattr(plugin_manager, "loaded_plugins", {}):
+                    await plugin_manager.load_plugin(name)
+                return await plugin_manager.activate_plugin(name)
+
+            async def do_deactivate(name: str):
+                return await plugin_manager.deactivate_plugin(name)
+
+            async def do_reload(name: str):
+                # Unload then load + activate
+                if name in getattr(plugin_manager, "loaded_plugins", {}):
+                    await plugin_manager.unload_plugin(name)
+                loaded = await plugin_manager.load_plugin(name)
+                if loaded:
+                    return await plugin_manager.activate_plugin(name)
+                return False
+
+            async def run_action():
+                if action == "activate":
+                    return await do_activate(plugin_name)
+                elif action == "deactivate":
+                    return await do_deactivate(plugin_name)
+                elif action == "reload":
+                    return await do_reload(plugin_name)
+                else:
+                    return None
+
+            result = asyncio.run(run_action())
+
+            if result is True:
+                if action == "activate":
+                    self.send_notification(
+                        "success", f"Activated plugin: {plugin_name}"
+                    )
+                elif action == "deactivate":
+                    self.send_notification(
+                        "success", f"Deactivated plugin: {plugin_name}"
+                    )
+                elif action == "reload":
+                    self.send_notification("success", f"Reloaded plugin: {plugin_name}")
+            elif result is None:
+                self.send_notification("warning", f"Unknown plugin action: {action}")
+            else:
+                self.send_notification(
+                    "error", f"Failed to {action} plugin: {plugin_name}"
+                )
+
+            # Refresh plugin data for UI
+            self.refresh_plugin_data()
+
+        except Exception as e:
+            self.send_notification("error", f"Plugin command failed: {e}")
+            try:
+                self.refresh_plugin_data()
+            except Exception:
+                pass
 
     def handle_memory_command(self, payload):
         """Handle memory-related commands."""
@@ -470,13 +544,6 @@ class LyrixaContextBridge(QObject):
 
     def send_system_status(self):
         """Send comprehensive system status."""
-        status = {
-            "backend_connected": len(self.backend_services) > 0,
-            "services": list(self.backend_services.keys()),
-            "data_categories": list(self.data_cache.keys()),
-            "update_frequency": "2 seconds",
-            "bridge_active": True,
-        }
         self.send_notification(
             "info", f"System status: {len(self.backend_services)} services connected"
         )
@@ -910,14 +977,14 @@ class LyrixaHybridWindow(QMainWindow):
     def createMetricWidget(self, name: str, value: str, color: str) -> QWidget:
         """Create a metric display widget."""
         widget = QFrame()
-        widget.setStyleSheet(f"""
-            QFrame {{
+        widget.setStyleSheet("""
+            QFrame {
                 background: rgba(26, 26, 26, 0.6);
                 border: 1px solid rgba(255, 255, 255, 0.1);
                 border-radius: 6px;
                 padding: 10px;
                 margin: 5px 0;
-            }}
+            }
         """)
 
         layout = QVBoxLayout(widget)
@@ -1070,7 +1137,6 @@ class LyrixaHybridWindow(QMainWindow):
         try:
             panels_data = json.loads(panels_data_json)
             panels = panels_data.get("panels", [])
-            layout = panels_data.get("layout", {})
 
             # Store auto-generated panels
             for panel_info in panels:
@@ -1118,10 +1184,125 @@ class LyrixaHybridWindow(QMainWindow):
             self.cognitive_timer.timeout.connect(self.update_cognitive_state)
             self.cognitive_timer.start(500)  # Update every 500ms
 
+            # Couple cognitive signals to personality manager (bridge Phase 4 -> Phase 6)
+            if hasattr(self, "personality_manager") and self.personality_manager:
+                # Cognitive load drives energy/focus, depth maps to analytical mood
+                self.cognitive_monitor.cognitive_load_changed.connect(
+                    self._on_cognitive_load_changed
+                )
+                # Thoughts and goals nudge traits subtly
+                self.cognitive_monitor.thought_generated.connect(
+                    self._on_thought_generated
+                )
+                self.cognitive_monitor.goal_updated.connect(self._on_goal_updated)
+
             logger.info("[PHASE4] Cognitive UI Integration setup successfully")
 
         except Exception as e:
             logger.error(f"[ERROR] Phase 4 integration failed: {e}")
+
+    @Slot(str)
+    def _on_cognitive_load_changed(self, cognitive_json: str):
+        """Map cognitive metrics to personality state and theme updates."""
+        try:
+            data = json.loads(cognitive_json)
+            load = float(data.get("load", 0.3))
+            depth = float(data.get("depth", 0.5))
+            freq = float(data.get("frequency", 1.0))
+
+            pm = getattr(self, "personality_manager", None)
+            if not pm or not hasattr(pm, "ai"):
+                return
+
+            # Clamp helper
+            def clamp(v: float) -> float:
+                return max(0.0, min(1.0, v))
+
+            # Update levels based on cognitive state
+            ps = pm.ai.personality_state
+            ps.energy_level = clamp(0.35 + 0.6 * load)
+            ps.focus_level = clamp(0.3 + 0.7 * depth)
+            ps.creativity_level = clamp(0.4 + 0.15 * min(freq, 4.0))
+
+            # Adjust emotional state heuristically
+            try:
+                from .phase6_personality import EmotionalState
+
+                if depth > 0.75:
+                    ps.emotional_state = EmotionalState.ANALYTICAL
+                elif load > 0.85:
+                    ps.emotional_state = EmotionalState.EXCITED
+                elif load < 0.25 and freq < 1.2:
+                    ps.emotional_state = EmotionalState.CALM
+                # else: keep current
+            except Exception:
+                pass
+
+            # Emit updates (will also regenerate theme)
+            pm.update_personality_state()
+
+        except Exception as e:
+            logger.debug(f"[PHASE4→6] Cognitive load coupling error: {e}")
+
+    @Slot(str)
+    def _on_thought_generated(self, thought_json: str):
+        """Use thought type to gently influence personality dimensions."""
+        try:
+            data = json.loads(thought_json)
+            thought_type = data.get("thought_type", "")
+            pm = getattr(self, "personality_manager", None)
+            if not pm or not hasattr(pm, "ai"):
+                return
+            ps = pm.ai.personality_state
+
+            # Small nudges based on thought type
+            if "reasoning" in thought_type:
+                ps.focus_level = min(1.0, ps.focus_level + 0.02)
+            elif "goal_planning" in thought_type:
+                ps.focus_level = min(1.0, ps.focus_level + 0.03)
+            elif "memory_recall" in thought_type:
+                # contemplative nudge
+                try:
+                    from .phase6_personality import EmotionalState
+
+                    ps.emotional_state = EmotionalState.CONTEMPLATIVE
+                except Exception:
+                    pass
+            elif "response_generation" in thought_type:
+                ps.creativity_level = min(1.0, ps.creativity_level + 0.03)
+
+            pm.update_personality_state()
+        except Exception as e:
+            logger.debug(f"[PHASE4→6] Thought coupling error: {e}")
+
+    @Slot(str)
+    def _on_goal_updated(self, goal_json: str):
+        """Map goal status to emotion/energy adjustments."""
+        try:
+            data = json.loads(goal_json)
+            status = data.get("status", "")
+            pm = getattr(self, "personality_manager", None)
+            if not pm or not hasattr(pm, "ai"):
+                return
+
+            ps = pm.ai.personality_state
+            try:
+                from .phase6_personality import EmotionalState
+
+                if status == "completed":
+                    ps.energy_level = min(1.0, ps.energy_level + 0.05)
+                    ps.emotional_state = EmotionalState.ENERGETIC
+                elif status == "blocked":
+                    ps.focus_level = max(0.0, ps.focus_level - 0.05)
+                    ps.emotional_state = EmotionalState.ANXIOUS
+                elif status == "planning":
+                    ps.emotional_state = EmotionalState.CONTEMPLATIVE
+            except Exception:
+                pass
+
+            pm.update_personality_state()
+        except Exception as e:
+            logger.debug(f"[PHASE4→6] Goal coupling error: {e}")
 
     def setupPhase5Integration(self):
         """Setup Phase 5: Plugin-Driven UI System integration."""
@@ -1506,8 +1687,13 @@ class LyrixaHybridWindow(QMainWindow):
                     )
 
                     # Send response back to chat interface
-                    if hasattr(self.personality_manager, "handle_ai_response"):
-                        self.personality_manager.handle_ai_response(response)
+                    if (
+                        hasattr(self.personality_manager, "chat_interface")
+                        and self.personality_manager.chat_interface
+                    ):
+                        self.personality_manager.chat_interface.responseReady.emit(
+                            response
+                        )
 
                     logger.info(
                         f"[PHASE6] Real chat response generated: {len(response)} chars"
@@ -1517,8 +1703,13 @@ class LyrixaHybridWindow(QMainWindow):
                     logger.error(f"[PHASE6] Conversation manager error: {conv_error}")
                     # Fallback response
                     fallback_response = f"I understand you said: '{user_message}'. I'm currently experiencing some technical difficulties but I'm working on it!"
-                    if hasattr(self.personality_manager, "handle_ai_response"):
-                        self.personality_manager.handle_ai_response(fallback_response)
+                    if (
+                        hasattr(self.personality_manager, "chat_interface")
+                        and self.personality_manager.chat_interface
+                    ):
+                        self.personality_manager.chat_interface.responseReady.emit(
+                            fallback_response
+                        )
             else:
                 logger.warning("[PHASE6] No conversation manager available for chat")
 
@@ -1971,15 +2162,17 @@ class LyrixaHybridWindow(QMainWindow):
 
         # Connect real conversation manager for the main window too
         try:
-            from Aetherra.aetherra_core.agents.conversation_manager import (
-                LyrixaConversationManager,
-            )
+            import Aetherra.aetherra_core.agents.conversation_manager as cm
 
             workspace_path = os.path.join(os.path.dirname(__file__), "..", "..", "..")
-            self.conversation_manager = LyrixaConversationManager(
-                workspace_path=workspace_path, gui_interface=self
-            )
-            logger.info("✅ LyrixaHybridWindow conversation manager connected")
+            manager_cls = getattr(cm, "LyrixaConversationManager", None)
+            if manager_cls:
+                self.conversation_manager = manager_cls(
+                    workspace_path=workspace_path, gui_interface=self
+                )
+                logger.info("✅ LyrixaHybridWindow conversation manager connected")
+            else:
+                raise ImportError("LyrixaConversationManager not found")
         except Exception as e:
             logger.warning(
                 f"❌ Failed to connect conversation manager to main window: {e}"
@@ -2008,7 +2201,7 @@ def main():
 MainWindow = LyrixaHybridWindow
 
 # Export classes for external use
-__all__ = ['LyrixaHybridWindow', 'MainWindow']
+__all__ = ["LyrixaHybridWindow", "MainWindow"]
 
 
 if __name__ == "__main__":

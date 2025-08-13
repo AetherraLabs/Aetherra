@@ -18,6 +18,9 @@ A revolutionary development platform that bridges natural language and code thro
 # Install dependencies
 pip install -r requirements.txt
 
+# Optional: GUI dependencies
+pip install -e .[gui]
+
 # Run Lyrixa
 python -m Aetherra.ui.enhanced_lyrixa
 
