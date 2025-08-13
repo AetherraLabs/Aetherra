@@ -8,8 +8,8 @@ This is a best-effort shim:
 
 from __future__ import annotations
 
-from typing import Any, Dict
 import ast
+from typing import Any, Dict
 
 SAFE_BUILTINS = {
     "abs": abs,

@@ -258,7 +258,12 @@ class AetherraHubServer:
                 return jsonify({"synced": False, "reason": "disabled"}), 501  # type: ignore[name-defined]
             try:
                 self.federation.sync_once()
-                return jsonify({"synced": True, "federated_count": len(self.federation.get_federated_plugins())})  # type: ignore[name-defined]
+                return jsonify(
+                    {
+                        "synced": True,
+                        "federated_count": len(self.federation.get_federated_plugins()),
+                    }
+                )  # type: ignore[name-defined]
             except Exception as e:
                 logger.error(f"peer sync error: {e}")
                 return jsonify({"synced": False, "error": "server"}), 500  # type: ignore[name-defined]

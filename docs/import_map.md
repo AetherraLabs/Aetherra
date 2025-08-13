@@ -1,5 +1,17 @@
 # Import Map
 
+Canonical import namespaces for Aetherra to reduce drift and ambiguity.
+
+- Aetherra.* — Primary package namespace (preferred for all internal modules)
+- aetherra_core.* — Legacy namespace (avoid in new code; add adapters if needed)
+- lyrixa_core.* — Legacy namespace for Lyrixa (avoid in new code)
+
+Guidelines
+
+- Prefer absolute imports using the Aetherra.* namespace.
+- Avoid mixed-case duplicates or relative-import backtracking.
+- When moving modules, add a thin compatibility shim (re-export) and mark with a TODO to remove once call-sites are migrated.# Import Map
+
 This project standardizes Python import paths to avoid drift and ambiguity.
 
 - Canonical package namespace: `Aetherra.*`

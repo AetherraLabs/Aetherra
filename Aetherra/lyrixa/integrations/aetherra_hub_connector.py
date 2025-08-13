@@ -7,9 +7,10 @@ Connects Lyrixa to the existing Aetherra Hub infrastructure
 import asyncio
 import json
 import logging
+import os
 import sys
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import aiohttp
 import websockets
@@ -26,9 +27,10 @@ class AetherraHubConnector:
     """
 
     def __init__(self):
-        self.hub_host = "localhost"
-        self.hub_port = 3001  # Aetherra Hub port - updated to match main OS
-        self.hub_ws_port = 3002  # WebSocket port
+        # Allow env overrides for host/ports
+        self.hub_host = os.getenv("AETHERRA_HUB_HOST", "localhost")
+        self.hub_port = int(os.getenv("AETHERRA_HUB_PORT", "3001"))  # Flask HTTP
+        self.hub_ws_port = int(os.getenv("AETHERRA_HUB_WS_PORT", "3002"))  # WS
         self.connected = False
         self.session = None
         self.websocket = None
@@ -72,11 +74,21 @@ class AetherraHubConnector:
                         self.connected = True
                         await self._notify_status_change("http_only")
                         return True
+                else:
+                    # HTTP status not OK; close session and report failure
+                    try:
+                        await self.session.close()
+                    finally:
+                        self.session = None
+                    await self._notify_status_change("disconnected")
+                    return False
 
         except Exception as e:
             logger.warning(f"[HUB] Failed to connect to Aetherra Hub: {e}")
             await self._notify_status_change("disconnected")
             return False
+        # Fallback return if no conditions matched
+        return False
 
     async def _register_with_hub(self):
         """Register Lyrixa with the Aetherra Hub"""
@@ -102,7 +114,10 @@ class AetherraHubConnector:
     async def _handle_messages(self):
         """Handle incoming messages from the Hub"""
         try:
-            async for message in self.websocket:
+            ws = self.websocket
+            if ws is None:
+                return
+            async for message in ws:
                 try:
                     data = json.loads(message)
                     message_type = data.get("type", "unknown")
@@ -163,6 +178,74 @@ class AetherraHubConnector:
         except Exception as e:
             logger.error(f"[HUB] Failed to send message: {e}")
             return False
+        # If we got here, nothing was sent
+        return False
+
+    async def get_available_plugins(self) -> List[Dict[str, Any]]:
+        """Fetch available plugins from the Hub via HTTP.
+
+        Returns a list of plugin dicts, each with at least: name, version, description.
+        """
+        try:
+            # Use an ephemeral session to avoid cross-loop reuse in GUI threads
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"http://{self.hub_host}:{self.hub_port}/api/plugins"
+                ) as resp:
+                    if resp.status != 200:
+                        return []
+                    data = await resp.json()
+                    plugins = data.get("plugins", [])
+                    # Normalize expected fields for the UI
+                    for p in plugins:
+                        if "display_name" not in p and "name" in p:
+                            p["display_name"] = p.get("name")
+                        p.setdefault("version", "1.0.0")
+                        p.setdefault("description", "")
+                    return plugins
+        except Exception as e:
+            logger.warning(f"[HUB] Failed to fetch plugins: {e}")
+            return []
+
+    async def install_plugin(self, plugin_name: str) -> bool:
+        """Record a plugin as installed locally using Hub metadata if available.
+
+        Note: This does not download code. It mirrors Hub metadata into
+        lyrixa/plugins/installed_plugins.json so the UI can reflect installation.
+        """
+        try:
+            details: Dict[str, Any] = {"name": plugin_name}
+            # Best-effort fetch of plugin details from Hub (optional endpoint)
+            try:
+                async with aiohttp.ClientSession() as s:
+                    async with s.get(
+                        f"http://{self.hub_host}:{self.hub_port}/api/plugins/{plugin_name}"
+                    ) as resp:
+                        if resp.status == 200:
+                            details = await resp.json()
+            except Exception:
+                pass
+
+            plugins_dir = Path(__file__).parent.parent / "plugins"
+            plugins_dir.mkdir(parents=True, exist_ok=True)
+            registry = plugins_dir / "installed_plugins.json"
+            current: Dict[str, Any] = {}
+            if registry.exists():
+                try:
+                    current = json.loads(registry.read_text(encoding="utf-8"))
+                except Exception:
+                    current = {}
+
+            current[plugin_name] = {
+                "version": details.get("version", "1.0.0"),
+                "description": details.get("description", ""),
+                "source": "hub",
+            }
+            registry.write_text(json.dumps(current, indent=2), encoding="utf-8")
+            return True
+        except Exception as e:
+            logger.error(f"[HUB] Local install failed: {e}")
+            return False
 
     async def request_aetherra_os_status(self) -> Optional[Dict[str, Any]]:
         """Request status information from Aetherra OS"""
@@ -199,7 +282,7 @@ class AetherraHubConnector:
         return None
 
     async def coordinate_with_aetherra_os(
-        self, action: str, params: Dict[str, Any] = None
+        self, action: str, params: Optional[Dict[str, Any]] = None
     ) -> Optional[Dict[str, Any]]:
         """Coordinate an action with Aetherra OS through the Hub"""
         if not self.connected:
@@ -226,7 +309,10 @@ class AetherraHubConnector:
             await self.websocket.close()
 
         if self.session:
-            await self.session.close()
+            try:
+                await self.session.close()
+            finally:
+                self.session = None
 
         logger.info("[HUB] Disconnected from Aetherra Hub")
         await self._notify_status_change("disconnected")
@@ -248,10 +334,14 @@ class AetherraOSDetector:
             "capabilities": [],
         }
 
-        # Check for Aetherra Hub
+        # Check for Aetherra Hub (use same host/port as connector)
         try:
+            hub_host = os.getenv("AETHERRA_HUB_HOST", "localhost")
+            hub_port = int(os.getenv("AETHERRA_HUB_PORT", "3001"))
             async with aiohttp.ClientSession() as session:
-                async with session.get("http://localhost:8888/status") as response:
+                async with session.get(
+                    f"http://{hub_host}:{hub_port}/status"
+                ) as response:
                     if response.status == 200:
                         hub_status = await response.json()
                         detection_result["hub_connected"] = True
@@ -259,7 +349,7 @@ class AetherraOSDetector:
 
                         # Get service list from Hub
                         async with session.get(
-                            "http://localhost:8888/services"
+                            f"http://{hub_host}:{hub_port}/services"
                         ) as services_response:
                             if services_response.status == 200:
                                 services = await services_response.json()
