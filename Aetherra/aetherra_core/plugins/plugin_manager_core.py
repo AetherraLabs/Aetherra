@@ -8,11 +8,15 @@ Handles plugin loading, execution, lifecycle management, and coordination
 with the Aetherra Hub marketplace.
 """
 
+import ast
 import asyncio
 import importlib.util
+import inspect
 import json
 import logging
-import sys
+import os
+
+# import sys  # unused
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -20,6 +24,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
 
 logger = logging.getLogger(__name__)
+
+
+def _plugin_softload_enabled() -> bool:
+    """Whether to soft-load plugins with missing constructor args (default: on)."""
+    return os.getenv("AETHERRA_PLUGIN_SOFTLOAD", "1") == "1"
 
 
 class PluginStatus(Enum):
@@ -94,6 +103,20 @@ class PluginManager:
             str, List[str]
         ] = {}  # Hook name -> list of plugin names
         self._initialized = False
+        # Env-driven controls
+        self._disabled_set: Set[str] = set(
+            s.strip()
+            for s in os.getenv("AETHERRA_PLUGIN_DISABLE", "").split(",")
+            if s.strip()
+        )
+        self._interactive_allowed: bool = (
+            os.getenv("AETHERRA_PLUGIN_INTERACTIVE", "0") == "1"
+        )
+        # Known interactive plugins that should not autoload unless opted-in
+        self._interactive_plugins: Set[str] = {
+            "plugin_creation_wizard",
+            "PluginGenerator",
+        }
 
     async def initialize(self):
         """Initialize the plugin manager."""
@@ -162,6 +185,18 @@ class PluginManager:
         self, plugin_name: str, plugin_path: Optional[Path] = None
     ) -> bool:
         """Load a specific plugin."""
+        # Respect disabled list
+        if plugin_name in self._disabled_set:
+            logger.warning(f"[SKIP] Plugin '{plugin_name}' is disabled via env")
+            return False
+        # Skip interactive by default unless explicitly allowed
+        if (not self._interactive_allowed) and (
+            plugin_name in getattr(self, "_interactive_plugins", set())
+        ):
+            logger.warning(
+                f"[SKIP] Interactive plugin '{plugin_name}' suppressed (set AETHERRA_PLUGIN_INTERACTIVE=1 to enable)"
+            )
+            return False
         if plugin_name in self.loaded_plugins:
             logger.warning(f"[WARN] Plugin '{plugin_name}' already loaded")
             return True
@@ -193,7 +228,9 @@ class PluginManager:
                 success = await self._load_other_plugin(plugin_instance)
 
             if success:
-                plugin_instance.status = PluginStatus.LOADED
+                # Respect status set by loader (e.g., DISABLED during soft-load)
+                if plugin_instance.status == PluginStatus.UNKNOWN:
+                    plugin_instance.status = PluginStatus.LOADED
                 plugin_instance.load_time = datetime.now()
                 self.loaded_plugins[plugin_name] = plugin_instance
                 logger.info(f"[OK] Plugin '{plugin_name}' loaded successfully")
@@ -312,16 +349,43 @@ class PluginManager:
 
         # First discover all available plugins
         discovered_plugins = await self.discover_plugins()
-        logger.info(f"[DISC] Found {len(discovered_plugins)} plugins to load")
+        # De-duplicate by name to avoid duplicate load attempts/noise
+        unique_plugins = []
+        seen: Set[str] = set()
+        for pm in discovered_plugins:
+            if pm.name in seen:
+                logger.debug(
+                    f"[DISC] Skipping duplicate discovery of plugin '{pm.name}'"
+                )
+                continue
+            seen.add(pm.name)
+            unique_plugins.append(pm)
+
+        logger.info(f"[DISC] Found {len(unique_plugins)} unique plugins to load")
 
         # Load each discovered plugin
-        for plugin_metadata in discovered_plugins:
+        for plugin_metadata in unique_plugins:
             plugin_name = plugin_metadata.name
+            # Skip interactive plugins unless opted-in (helps at discovery level too)
+            if (not getattr(self, "_interactive_allowed", False)) and (
+                plugin_name in getattr(self, "_interactive_plugins", set())
+            ):
+                logger.warning(
+                    f"[SKIP] Interactive plugin '{plugin_name}' suppressed at discovery (set AETHERRA_PLUGIN_INTERACTIVE=1 to enable)"
+                )
+                results[plugin_name] = False
+                continue
             try:
                 result = await self.load_plugin(plugin_name)
                 results[plugin_name] = result
                 if result:
-                    logger.info(f"[OK] Loaded plugin: {plugin_name}")
+                    inst = self.loaded_plugins.get(plugin_name)
+                    if inst and inst.status == PluginStatus.DISABLED:
+                        logger.warning(
+                            f"[SKIP] Plugin '{plugin_name}' requires runtime deps; soft-loaded as module"
+                        )
+                    else:
+                        logger.info(f"[OK] Loaded plugin: {plugin_name}")
                 else:
                     logger.error(f"[ERROR] Failed to load plugin: {plugin_name}")
             except Exception as e:
@@ -400,50 +464,46 @@ class PluginManager:
     async def _extract_python_metadata(self, py_file: Path) -> Optional[PluginMetadata]:
         """Extract metadata from a Python plugin file."""
         try:
-            # Read the file to look for metadata
-            with open(py_file, "r", encoding="utf-8") as f:
-                content = f.read()
+            # Safe AST parse to look for top-level plugin_data without executing
+            text = py_file.read_text(encoding="utf-8", errors="ignore")
+            try:
+                tree = ast.parse(text)
+                for node in tree.body:
+                    if isinstance(node, ast.Assign):
+                        for target in node.targets:
+                            if (
+                                isinstance(target, ast.Name)
+                                and target.id == "plugin_data"
+                            ):
+                                if isinstance(node.value, ast.Dict):
+                                    data = ast.literal_eval(node.value)
+                                    if isinstance(data, dict):
+                                        return PluginMetadata(
+                                            name=data.get("name", py_file.stem),
+                                            version=data.get("version", "1.0.0"),
+                                            description=data.get(
+                                                "description", "No description"
+                                            ),
+                                            author=data.get("author", "Unknown"),
+                                            license=data.get("license", "MIT"),
+                                            plugin_type=PluginType.PYTHON,
+                                            entry_point=data.get("entry_point"),
+                                            dependencies=list(
+                                                data.get("dependencies", [])
+                                            ),
+                                            tags=list(data.get("tags", [])),
+                                            category=data.get("category", "utility"),
+                                        )
+            except Exception:
+                # Ignore AST issues and fall back
+                pass
 
-            # Try to import and extract metadata
-            spec = importlib.util.spec_from_file_location("temp_plugin", py_file)
-            if spec and spec.loader:
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-
-                # Look for plugin_data dictionary
-                if hasattr(module, "plugin_data"):
-                    data = module.plugin_data
-                    return PluginMetadata(
-                        name=data.get("name", py_file.stem),
-                        version=data.get("version", "1.0.0"),
-                        description=data.get("description", "No description"),
-                        author=data.get("author", "Unknown"),
-                        license=data.get("license", "MIT"),
-                        plugin_type=PluginType.PYTHON,
-                        entry_point=data.get("entry_point"),
-                        dependencies=data.get("dependencies", []),
-                        tags=data.get("tags", []),
-                        category=data.get("category", "utility"),
-                    )
-
-                # Look for plugin classes
-                for attr_name in dir(module):
-                    attr = getattr(module, attr_name)
-                    if hasattr(attr, "__name__") and "plugin" in attr.__name__.lower():
-                        return PluginMetadata(
-                            name=getattr(attr, "name", py_file.stem),
-                            version=getattr(attr, "version", "1.0.0"),
-                            description=getattr(attr, "description", "No description"),
-                            author=getattr(attr, "author", "Unknown"),
-                            plugin_type=PluginType.PYTHON,
-                        )
-
-                # Fallback: create basic metadata
-                return PluginMetadata(
-                    name=py_file.stem,
-                    description=f"Plugin loaded from {py_file.name}",
-                    plugin_type=PluginType.PYTHON,
-                )
+            # Fallback: basic metadata without importing the module
+            return PluginMetadata(
+                name=py_file.stem,
+                description=f"Plugin loaded from {py_file.name}",
+                plugin_type=PluginType.PYTHON,
+            )
 
         except Exception as e:
             logger.error(
@@ -543,7 +603,61 @@ class PluginManager:
                         break
 
                 if plugin_class:
-                    plugin_instance.instance = plugin_class()
+                    # Preflight constructor signature to avoid noisy TypeErrors
+                    try:
+                        sig = inspect.signature(plugin_class.__init__)
+                        required = [
+                            p
+                            for p in sig.parameters.values()
+                            if p.name != "self"
+                            and p.default is inspect._empty
+                            and p.kind
+                            in (
+                                inspect.Parameter.POSITIONAL_ONLY,
+                                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                            )
+                        ]
+                    except (TypeError, ValueError):
+                        required = []
+
+                    if required:
+                        # Try factory function as an alternative
+                        factory = None
+                        for fname in ("create_plugin", "build_plugin", "make_plugin"):
+                            cand = getattr(module, fname, None)
+                            if callable(cand):
+                                factory = cand
+                                break
+                        if factory is not None:
+                            try:
+                                plugin_instance.instance = factory()
+                            except Exception as fe:
+                                plugin_instance.error_message = (
+                                    f"factory '{factory.__name__}' failed: {fe}"
+                                )
+                                logger.warning(
+                                    f"[WARN] {plugin_instance.metadata.name}: factory init failed; soft-loading module"
+                                )
+                                plugin_instance.instance = module
+                                plugin_instance.status = PluginStatus.DISABLED
+                        elif _plugin_softload_enabled():
+                            needs = ", ".join(p.name for p in required)
+                            plugin_instance.error_message = (
+                                f"__init__ requires args: {needs}; soft-loaded"
+                            )
+                            logger.warning(
+                                f"[WARN] {plugin_instance.metadata.name}: constructor requires [{needs}] — soft-loading module"
+                            )
+                            plugin_instance.instance = module
+                            plugin_instance.status = PluginStatus.DISABLED
+                        else:
+                            # Strict mode: raise to mark load failure
+                            raise TypeError(
+                                f"Constructor requires args: {[p.name for p in required]}"
+                            )
+                    else:
+                        # No required args beyond self; safe to instantiate
+                        plugin_instance.instance = plugin_class()
                 else:
                     # Use the module itself as the plugin instance
                     plugin_instance.instance = module

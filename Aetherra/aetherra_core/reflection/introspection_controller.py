@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List
 
 try:
-    import psutil
+    import psutil  # type: ignore[assignment]
 except ImportError:
     # Fallback system monitoring
     class psutil:
@@ -245,8 +245,9 @@ class IntrospectionController:
         self.memory_analyzer = MemoryAnalyzer()
         self.introspection_active = False
         self.introspection_task = None
-        self.reports: List[IntrospectionReport] = []
-        self.analysis_callbacks: List[Callable] = []
+        self._task_loop = None  # loop where introspection task is created
+        self.reports = []  # type: List[IntrospectionReport]
+        self.analysis_callbacks = []  # type: List[Callable]
         self._init_database()
 
     def _init_database(self):
@@ -293,16 +294,30 @@ class IntrospectionController:
         finally:
             conn.close()
 
-    async def start_introspection(self, interval: int = 60):
+    async def start_introspection(
+        self, interval: int = 60, loop: asyncio.AbstractEventLoop | None = None
+    ):
         """Start continuous introspection monitoring"""
         if self.introspection_active:
             logger.warning("Introspection already active")
             return
 
         self.introspection_active = True
-        self.introspection_task = asyncio.create_task(
-            self._introspection_loop(interval)
-        )
+        # Bind to provided loop or current loop
+        if loop is None:
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+        self._task_loop = loop
+        if loop is not None:
+            self.introspection_task = loop.create_task(
+                self._introspection_loop(interval)
+            )
+        else:
+            self.introspection_task = asyncio.create_task(
+                self._introspection_loop(interval)
+            )
 
         logger.info(f"Introspection monitoring started (interval: {interval}s)")
 
@@ -314,11 +329,89 @@ class IntrospectionController:
         self.introspection_active = False
 
         if self.introspection_task:
-            self.introspection_task.cancel()
+            # Determine the loop that owns the task
+            task_loop = None
             try:
-                await self.introspection_task
-            except asyncio.CancelledError:
+                task_loop = self.introspection_task.get_loop()  # type: ignore[attr-defined]
+            except Exception:
+                task_loop = self._task_loop
+
+            # Cancel on the owning loop
+            if task_loop is not None:
+                try:
+                    logger.debug(
+                        "[INTROSPECT] Cancelling introspection task via owning loop"
+                    )
+                    task_loop.call_soon_threadsafe(self.introspection_task.cancel)
+                except Exception:
+                    logger.debug(
+                        "[INTROSPECT] Owning loop cancel failed; cancelling directly"
+                    )
+                    self.introspection_task.cancel()
+            else:
+                logger.debug("[INTROSPECT] Unknown task loop; cancelling directly")
+                self.introspection_task.cancel()
+
+            # Await completion to avoid pending-task destruction
+            try:
+                current_loop = None
+                try:
+                    current_loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    current_loop = None
+
+                on_current_loop = False
+                try:
+                    on_current_loop = self.introspection_task in asyncio.all_tasks()
+                except Exception:
+                    on_current_loop = False
+
+                if on_current_loop or (
+                    task_loop is not None
+                    and current_loop is not None
+                    and task_loop is current_loop
+                ):
+                    try:
+                        logger.debug(
+                            "[INTROSPECT] Awaiting introspection task on same loop"
+                        )
+                        await self.introspection_task
+                    except asyncio.CancelledError:
+                        pass
+                elif (
+                    task_loop is not None
+                    and getattr(task_loop, "is_running", lambda: False)()
+                ):
+                    import concurrent.futures as _cf
+
+                    waiter: _cf.Future = _cf.Future()
+
+                    def _mark_done(_):
+                        if not waiter.done():
+                            waiter.set_result(True)
+
+                    try:
+                        logger.debug(
+                            "[INTROSPECT] Waiting for introspection task via thread-safe callback"
+                        )
+                        task_loop.call_soon_threadsafe(
+                            self.introspection_task.add_done_callback, _mark_done
+                        )  # type: ignore[arg-type]
+                        task_loop.call_soon_threadsafe(lambda: None)
+                        try:
+                            waiter.result(timeout=3)
+                        except Exception:
+                            pass
+                    except Exception:
+                        pass
+                else:
+                    logger.debug("[INTROSPECT] Task loop not running; skipping await")
+                    pass
+            except Exception:
                 pass
+
+        # Clear reference
+        self.introspection_task = None
 
         logger.info("Introspection monitoring stopped")
 

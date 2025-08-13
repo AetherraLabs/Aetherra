@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
 Validate imports in the codebase against the canonical import map.
-Fails with exit code 1 if non-canonical imports are detected.
+
+- Only flags legacy internal namespaces (aetherra_core.*, lyrixa_core.*).
+- Allows third-party imports freely.
 """
 
 from __future__ import annotations
@@ -10,7 +12,6 @@ import ast
 import sys
 from pathlib import Path
 
-CANONICAL_ROOT = ("Aetherra",)
 DISALLOWED_PREFIXES = (
     "aetherra_core.",
     "lyrixa_core.",
@@ -19,9 +20,9 @@ DISALLOWED_PREFIXES = (
 
 def iter_py_files(root: Path):
     for p in root.rglob("*.py"):
-        # skip virtualenvs and hidden
-        parts = {".venv", "venv", "env", "node_modules", "__pycache__"}
-        if any(part in parts for part in p.parts):
+        # Skip typical non-source folders
+        skip = {".venv", "venv", "env", "node_modules", "__pycache__", "build", "dist"}
+        if any(part in skip for part in p.parts):
             continue
         yield p
 
@@ -48,15 +49,17 @@ def main() -> int:
                     if is_disallowed(name):
                         offenders.append((str(py), node.lineno, name))
             elif isinstance(node, ast.ImportFrom):
-                if node.module:
-                    name = node.module
-                    if is_disallowed(name):
-                        offenders.append((str(py), node.lineno, name))
+                if node.module and is_disallowed(node.module):
+                    offenders.append((str(py), node.lineno, node.module))
 
     if offenders:
-        print("Non-canonical imports detected (use Aetherra.*):")
-        for file, line, name in offenders:
+        print(
+            "Non-canonical imports detected (use Aetherra.* instead of legacy namespaces):"
+        )
+        for file, line, name in offenders[:200]:
             print(f" - {file}:{line} -> {name}")
+        if len(offenders) > 200:
+            print(f" ... and {len(offenders) - 200} more")
         return 1
 
     print("Import map validation passed.")

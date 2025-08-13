@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple
 
 try:
-    import numpy as np
+    import numpy as np  # type: ignore[assignment]
 except ImportError:
     # Fallback numpy-like functions
     class np:
@@ -485,6 +485,8 @@ class SelfImprovementEngine:
         self.learning_outcomes: List[LearningOutcome] = []
         self.improvement_active = False
         self.improvement_task = None
+        # Event loop on which the improvement task was created (for cross-loop shutdown)
+        self._task_loop = None  # type: ignore[assignment]
         self._init_database()
 
     def _init_database(self):
@@ -546,14 +548,27 @@ class SelfImprovementEngine:
         finally:
             conn.close()
 
-    async def start_improvement_cycle(self):
+    async def start_improvement_cycle(
+        self, loop: asyncio.AbstractEventLoop | None = None
+    ):
         """Start the continuous improvement cycle"""
         if self.improvement_active:
             logger.warning("Improvement cycle already active")
             return
 
         self.improvement_active = True
-        self.improvement_task = asyncio.create_task(self._improvement_loop())
+        # Record the loop this task is created on for correct shutdown
+        if loop is None:
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+        self._task_loop = loop
+        if loop is not None:
+            self.improvement_task = loop.create_task(self._improvement_loop())
+        else:
+            # Fallback to current context
+            self.improvement_task = asyncio.create_task(self._improvement_loop())
 
         logger.info("Self-improvement cycle started")
 
@@ -565,11 +580,89 @@ class SelfImprovementEngine:
         self.improvement_active = False
 
         if self.improvement_task:
-            self.improvement_task.cancel()
+            # Determine the loop that owns the task
+            task_loop = None
             try:
-                await self.improvement_task
-            except asyncio.CancelledError:
+                # Python 3.11+ provides get_loop() on Task
+                task_loop = self.improvement_task.get_loop()  # type: ignore[attr-defined]
+            except Exception:
+                task_loop = self._task_loop
+
+            # Cancel the task on its owning loop
+            if task_loop is not None:
+                try:
+                    logger.debug("[SIE] Cancelling improvement task via owning loop")
+                    task_loop.call_soon_threadsafe(self.improvement_task.cancel)
+                except Exception:
+                    logger.debug("[SIE] Owning loop cancel failed; cancelling directly")
+                    # Fall back to direct cancel (may not be thread-safe but best-effort)
+                    self.improvement_task.cancel()
+            else:
+                logger.debug("[SIE] Unknown task loop; cancelling directly")
+                self.improvement_task.cancel()
+
+            # Await completion when possible to avoid "Task was destroyed" warnings
+            try:
+                current_loop = None
+                try:
+                    current_loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    current_loop = None
+
+                on_current_loop = False
+                try:
+                    on_current_loop = self.improvement_task in asyncio.all_tasks()
+                except Exception:
+                    on_current_loop = False
+
+                if on_current_loop or (
+                    task_loop is not None
+                    and current_loop is not None
+                    and task_loop is current_loop
+                ):
+                    # Same loop: await directly
+                    try:
+                        logger.debug("[SIE] Awaiting improvement task on same loop")
+                        await self.improvement_task
+                    except asyncio.CancelledError:
+                        pass
+                elif (
+                    task_loop is not None
+                    and getattr(task_loop, "is_running", lambda: False)()
+                ):
+                    # Different running loop: wait using a thread-safe done callback
+                    import concurrent.futures as _cf
+
+                    waiter: _cf.Future = _cf.Future()
+
+                    def _mark_done(_):
+                        if not waiter.done():
+                            waiter.set_result(True)
+
+                    try:
+                        logger.debug(
+                            "[SIE] Waiting for improvement task via thread-safe callback"
+                        )
+                        task_loop.call_soon_threadsafe(
+                            self.improvement_task.add_done_callback, _mark_done
+                        )  # type: ignore[arg-type]
+                        # Also poke the loop in case it's idle
+                        task_loop.call_soon_threadsafe(lambda: None)
+                        try:
+                            waiter.result(timeout=3)
+                        except Exception:
+                            pass
+                    except Exception:
+                        pass
+                else:
+                    # Loop not available/running; best-effort only
+                    logger.debug("[SIE] Task loop not running; skipping await")
+                    pass
+            except Exception:
                 pass
+
+        # Clear reference
+        self.improvement_task = None
 
         logger.info("Self-improvement cycle stopped")
 

@@ -11,10 +11,12 @@ This module is optional; callers should handle ImportError gracefully.
 
 from __future__ import annotations
 
+import json
 import os
 import threading
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List, Optional
 
 try:
@@ -51,6 +53,14 @@ class FederationManager:
         self._lock = threading.Lock()
         self._stop = threading.Event()
         self.interval = int(os.environ.get("AETHERRA_FEDERATION_INTERVAL_SEC", "60"))
+        # Optional persistence
+        self._persist = os.environ.get("AETHERRA_FEDERATION_STATE", "0") == "1"
+        self._state_dir = Path(
+            os.environ.get("AETHERRA_STATE_DIR", os.path.expanduser("~/.aetherra"))
+        ).resolve()
+        self._state_file = self._state_dir / "hub_state.json"
+        if self._persist:
+            self._load_state()
 
     def add_peer(self, url: str):
         url = url.rstrip("/")
@@ -58,6 +68,8 @@ class FederationManager:
             return
         with self._lock:
             self._peers.setdefault(url, Peer(url=url))
+            if self._persist:
+                self._save_state()
 
     def list_peers(self) -> List[dict]:
         with self._lock:
@@ -110,6 +122,53 @@ class FederationManager:
                 peer.healthy = False
         with self._lock:
             self._federated_plugins = merged
+            if self._persist:
+                self._save_state()
+
+    def announce_once(self):
+        """Announce this hub to all known peers (best-effort)."""
+        if requests is None:
+            return
+        now = time.time()
+        with self._lock:
+            peers = list(self._peers.values())
+        for peer in peers:
+            try:
+                resp = requests.post(
+                    f"{peer.url}/api/peers", json={"url": self.self_url}, timeout=5
+                )
+                if resp.status_code in (200, 201, 202):
+                    peer.healthy = True
+                    peer.last_seen = now
+                else:
+                    peer.healthy = False
+            except Exception:
+                peer.healthy = False
+
+    # Persistence helpers (best-effort, never fatal)
+    def _load_state(self):
+        try:
+            self._state_dir.mkdir(parents=True, exist_ok=True)
+            if self._state_file.exists():
+                data = json.loads(self._state_file.read_text(encoding="utf-8"))
+                peers = data.get("peers", [])
+                for p in peers:
+                    if isinstance(p, str):
+                        self._peers.setdefault(p.rstrip("/"), Peer(url=p.rstrip("/")))
+        except Exception:
+            pass
+
+    def _save_state(self):
+        try:
+            self._state_dir.mkdir(parents=True, exist_ok=True)
+            data = {
+                "peers": list(self._peers.keys()),
+                # Store only counts to avoid bloat
+                "federated_count": len(self._federated_plugins),
+            }
+            self._state_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        except Exception:
+            pass
 
 
 # Simple singleton used by hub server

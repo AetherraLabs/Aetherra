@@ -20,6 +20,7 @@ import logging
 import os
 import sys
 import threading
+import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -611,6 +612,15 @@ class LyrixaContextBridge(QObject):
 
         except Exception as e:
             print(f"⚠️ Warning: Some settings could not be applied: {e}")
+        # Apply telemetry opt-in after try/except to avoid masking errors
+        try:
+            if "telemetry" in settings:
+                from Aetherra.telemetry.optin import get_telemetry
+
+                tel = get_telemetry()
+                tel.set_opt_in(bool(settings["telemetry"]))
+        except Exception:
+            pass
 
     # === METRICS PANEL METHODS ===
 
@@ -2197,11 +2207,33 @@ def main():
     sys.exit(app.exec())
 
 
-# Export MainWindow as alias for LyrixaHybridWindow for external imports
-MainWindow = LyrixaHybridWindow
+# Compatibility aliasing: prefer the new LyrixaBasicWindow when available
+# unless explicitly forced to use the legacy hybrid via AETHERRA_USE_HYBRID=1
+try:
+    if os.getenv("AETHERRA_USE_HYBRID", "0") != "1":
+        from Aetherra.lyrixa.lyrixa_basic_gui import (
+            LyrixaBasicWindow as _LyrixaBasicWindow,
+        )
+
+        # Rebind public names to the basic GUI for external imports
+        LyrixaHybridWindow = _LyrixaBasicWindow  # type: ignore[assignment]
+        MainWindow = _LyrixaBasicWindow  # type: ignore[assignment]
+
+        warnings.warn(
+            "Aetherra.lyrixa.gui.main_window is deprecated; use Aetherra.lyrixa.lyrixa_basic_gui. "
+            "Temporarily aliasing LyrixaHybridWindow/MainWindow to LyrixaBasicWindow.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    else:
+        # Legacy mode explicitly requested
+        MainWindow = LyrixaHybridWindow
+except Exception:
+    # Fallback to legacy hybrid window if basic GUI import fails for any reason
+    MainWindow = LyrixaHybridWindow
 
 # Export classes for external use
-__all__ = ["LyrixaHybridWindow", "MainWindow"]
+__all__ = ["LyrixaContextBridge", "LyrixaHybridWindow", "MainWindow"]
 
 
 if __name__ == "__main__":

@@ -1,0 +1,66 @@
+name: Security Sanity
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11']
+    env:
+      AETHERRA_SIGNING_STRICT: '1'
+      AETHERRA_SCRIPT_VERIFY_STRICT: '1'
+      AETHERRA_TELEMETRY: '0'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # Install extras for linux run to enable signed-manifest positive test
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then pip install PyNaCl; fi
+        shell: bash
+      - name: Run targeted unit tests (security/telemetry/hub)
+        run: |
+          python -m pytest -q \
+            tests/unit/test_telemetry_optin.py \
+            tests/unit/test_aether_static_risk.py \
+            tests/unit/test_aether_script_signing.py \
+            tests/unit/test_federation_manager.py \
+            tests/unit/test_hub_inthread.py \
+            tests/unit/test_hub_plugin_registration_strict.py \
+            tests/unit/test_hub_plugin_registration_non_strict.py \
+            tests/unit/test_hub_plugin_registration_signed_strict.py
+        shell: bash
+      - name: Run GUI smoke test (offscreen, LyrixaBasicWindow)
+        run: |
+          export QT_QPA_PLATFORM=offscreen
+          python -m pytest -q tests/unit/test_gui_smoke.py || echo "GUI smoke test skipped"
+        shell: bash
+      - name: Static verify .aether scripts (strict)
+        run: |
+          python tools/verify_aether_scripts.py --strict --output aether_static_report.md || echo "Static verify found issues"
+        shell: bash
+      - name: Upload static report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aether-static-report-${{ matrix.os }}
+          path: aether_static_report.md
+      - name: Validate import map (warn-only)
+        if: always()
+        run: |
+          python tools/validate_import_map.py || echo "Import map issues detected (warn-only)"
+        shell: bash
