@@ -20,22 +20,21 @@ Date: August 5, 2025
 
 import asyncio
 import cmath
-import json
 import logging
 import random
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List
 
 import numpy as np
 
 # Quantum computing imports with fallbacks
 try:
-    from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
-    from qiskit.quantum_info import DensityMatrix, Statevector
-    from qiskit_aer import AerSimulator
+    from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister  # noqa: F401
+    from qiskit.quantum_info import DensityMatrix, Statevector  # noqa: F401
+    from qiskit_aer import AerSimulator  # noqa: F401
 
     QUANTUM_AVAILABLE = True
     print("✅ Quantum computing libraries successfully loaded!")
@@ -154,6 +153,114 @@ class QuantumConsciousnessEngine:
                 f"❌ Failed to initialize Quantum Consciousness Engine: {e}"
             )
             raise
+
+    async def set_quantum_parameters(self, params: Dict[str, Any]):
+        """Apply quantum configuration parameters from the launcher.
+
+        Expected keys (best-effort):
+        - coherence_time (float)
+        - entanglement_strength (float) [kept for future use]
+        - superposition_states (int)
+        - consciousness_complexity (float)
+
+        Unknown keys are ignored. This method is intentionally permissive to
+        avoid breaking callers during phased rollouts.
+        """
+        try:
+            # Merge selective keys into internal config/state
+            if not isinstance(params, dict):
+                return
+
+            if "superposition_states" in params:
+                try:
+                    self.config["superposition_states"] = int(
+                        params["superposition_states"]
+                    )
+                except Exception:
+                    pass
+
+            if "coherence_time" in params:
+                try:
+                    # Adjust current and max coherence bounds
+                    self.max_coherence_time = float(params["coherence_time"]) or 1.0
+                    self.coherence_time = min(
+                        self.max_coherence_time, max(0.0, float(self.coherence_time))
+                    )
+                except Exception:
+                    pass
+
+            if "consciousness_complexity" in params:
+                try:
+                    self.consciousness_complexity = float(
+                        params["consciousness_complexity"]
+                    )
+                except Exception:
+                    pass
+
+            # Future placeholder: entanglement_strength could modulate decay rates
+            if "entanglement_strength" in params:
+                # Keep value in config for potential later use
+                try:
+                    self.config["entanglement_strength"] = float(
+                        params["entanglement_strength"]
+                    )
+                except Exception:
+                    pass
+
+            self.logger.info(
+                "[QUANTUM] Parameters applied to QuantumConsciousnessEngine"
+            )
+        except Exception as e:
+            # Never fail the boot due to config shape issues
+            self.logger.warning(f"[QUANTUM] Ignoring invalid quantum parameters: {e}")
+
+    async def start_quantum_processes(self):
+        """Start the quantum processes when the engine is created by the launcher.
+
+        This mirrors initialize() but is idempotent and safe to call
+        after set_quantum_parameters().
+        """
+        try:
+            if self.is_running:
+                # Already running
+                return
+
+            # Ensure ground state exists before starting the loop
+            if "ground" not in self.quantum_states:
+                await self._initialize_ground_state()
+
+            # Start the processing loop
+            await self._start_quantum_loop()
+            self.is_running = True
+            self.logger.info("[QUANTUM] Quantum processes started")
+        except Exception as e:
+            self.logger.warning(f"[QUANTUM] Failed to start quantum processes: {e}")
+
+    async def calculate_consciousness_level(self) -> float:
+        """Compute a simple consciousness level metric for dashboards.
+
+        Combines coherence, decision accuracy, and number of coherent states.
+        Returns a value in [0, 1].
+        """
+        try:
+            coherent_states = len(
+                [s for s in self.quantum_states.values() if s.coherence_level > 0.8]
+            )
+            # Normalize components
+            coherence_component = min(
+                1.0, self.coherence_time / max(1e-6, self.max_coherence_time)
+            )
+            accuracy_component = max(0.0, min(1.0, float(self.decision_accuracy)))
+            state_component = max(0.0, min(1.0, coherent_states / 10.0))
+
+            level = (
+                0.4 * coherence_component
+                + 0.4 * accuracy_component
+                + 0.2 * state_component
+            )
+            return float(max(0.0, min(1.0, level)))
+        except Exception:
+            return 0.75
 
     async def _initialize_ground_state(self):
         """Initialize the quantum ground state of consciousness"""

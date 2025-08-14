@@ -17,6 +17,14 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Optional runtime imports kept inside functions to avoid heavy deps on import
+try:  # Prefer absolute package path
+    from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
+        AetherraMemoryEngine,
+    )
+except Exception:  # Fallback for variations in path
+    AetherraMemoryEngine = None  # type: ignore
+
 logger = logging.getLogger(__name__)
 
 SIGNATURE_MARKER = "# @signature:"
@@ -29,9 +37,22 @@ class AetherScriptService:
         self.service_registry = service_registry
         self.interpreter_ready = False
         self.running = False
+        self.memory_engine = None
 
     async def initialize(self):
         """Initialize the Aether Script service (no-op for now)."""
+        # Try to attach to the memory system
+        try:
+            if self.service_registry is not None:
+                mem = self.service_registry.get_service("memory_system")
+                if mem is not None:
+                    self.memory_engine = mem
+            if self.memory_engine is None and AetherraMemoryEngine is not None:
+                # Local memory engine as a fallback
+                self.memory_engine = AetherraMemoryEngine()
+        except Exception:
+            # Keep service usable even if memory system is unavailable
+            self.memory_engine = None
         self.interpreter_ready = True
         return True
 
@@ -95,6 +116,19 @@ class AetherScriptService:
         )
         if m:
             content, tag = m.group(1), m.group(2)
+            # Persist to memory engine if available
+            if self.memory_engine is not None:
+                try:
+                    self.memory_engine.store(
+                        {
+                            "content": content,
+                            "metadata": {"tag": tag, "source": "aether_script"},
+                        }
+                    )
+                except Exception:
+                    # Non-fatal; continue processing
+                    pass
+
             return {
                 "type": "remember",
                 "content": content,
@@ -132,6 +166,10 @@ class AetherScriptService:
 
     def get_status(self) -> Dict[str, Any]:
         return {"running": self.running, "initialized": bool(self.interpreter_ready)}
+
+    def get_memory_engine(self):
+        """Expose the memory engine instance used by the service (for tests/integration)."""
+        return self.memory_engine
 
     def _maybe_verify_signature(self, script_content: str, filename: str) -> None:
         """If strict verification is enabled, require a valid signature marker."""
