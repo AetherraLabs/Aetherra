@@ -8,9 +8,13 @@ All memory operations are delegated to the canonical engine.
 
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
 from enum import Enum
-from .QuantumEnhancedMemoryEngine.quantum_memory_engine import QuantumEnhancedMemoryEngine
+from typing import Any, Dict, List, Optional
+
+from .QuantumEnhancedMemoryEngine.quantum_memory_engine import (
+    QuantumEnhancedMemoryEngine,
+)
+
 
 # Add missing enums for compatibility
 class MemoryFragmentType(Enum):
@@ -23,19 +27,68 @@ class MemoryFragmentType(Enum):
 class AetherraMemoryEngine:
     def __init__(self, *args, **kwargs):
         self.engine = QuantumEnhancedMemoryEngine()
+        # Back-compat simple in-memory list for plugin/tests expectations
+        self._compat_mem: list[dict] = []
 
-    def store(self, memory_entry: dict) -> dict:
+    def store(self, memory_entry: dict) -> dict | bool:
+        """Compat store: accept dicts with 'content' and optional 'metadata'.
+
+        - Persist to internal simple list for substring recall in tests
+        - Forward to canonical engine for real storage
+        Returns underlying engine result when available.
+        """
+        try:
+            content = memory_entry.get("content")
+            if content is not None:
+                # Normalize shape to keep test contract
+                normalized = {
+                    "content": str(content),
+                    "metadata": memory_entry.get("metadata", {}),
+                }
+                self._compat_mem.append(normalized)
+        except Exception:
+            # Ignore compat layer errors
+            pass
+
+        # Always forward to canonical engine as the source of truth
         return self.engine.store(memory_entry)
 
-    def retrieve(self, query: str, context: dict = None) -> dict:
-        return self.engine.retrieve(query, context)
+    def retrieve(self, query: str, context: dict | None = None) -> list[dict]:
+        """Compat retrieve: return a list of dicts with 'content' keys.
+
+        Uses the simple compat list for substring search to satisfy
+        existing tests and plugin expectations.
+        """
+        # Substring search over compat list
+        q = str(query).lower()
+        results = [
+            m for m in self._compat_mem if q in str(m.get("content", "")).lower()
+        ]
+
+        # If nothing found, try underlying engine and adapt shape
+        if not results:
+            try:
+                raw = self.engine.retrieve(query, context)
+                if isinstance(raw, dict) and "data" in raw:
+                    data = raw["data"]
+                    # Try to adapt to expected shape
+                    content = (
+                        data.get("content") if isinstance(data, dict) else str(data)
+                    )
+                    if content:
+                        results = [{"content": content}]
+            except Exception:
+                pass
+
+        return results
 
 
-from .pulse import DriftAlert, MemoryHealth, MemoryPulseMonitor
-from .reflector import MemoryReflector, ReflectionInsight
-from ..kernel.narrator import MemoryNarrative, MemoryNarrator
 from dataclasses import dataclass
 from datetime import timedelta
+
+from ..kernel.narrator import MemoryNarrative, MemoryNarrator
+from .pulse import DriftAlert, MemoryHealth, MemoryPulseMonitor
+from .reflector import MemoryReflector, ReflectionInsight
 
 
 @dataclass

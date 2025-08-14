@@ -10,7 +10,6 @@ with each other in real-time.
 
 import asyncio
 import logging
-import weakref
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -111,6 +110,10 @@ class AetherraServiceRegistry:
             )
 
             self._services[name] = service_info
+
+            # If no dependencies are declared, mark service healthy immediately
+            if not service_info.dependencies:
+                service_info.status = ServiceStatus.HEALTHY
 
             logger.info(f"[OK] Service '{name}' registered successfully")
 
@@ -251,7 +254,9 @@ class AetherraServiceRegistry:
     async def update_heartbeat(self, name: str):
         """[HEARTBEAT] Update service heartbeat timestamp."""
         if name not in self._services:
-            logger.warning(f"[WARN] Cannot update heartbeat for unknown service '{name}'")
+            logger.warning(
+                f"[WARN] Cannot update heartbeat for unknown service '{name}'"
+            )
             return
 
         self._services[name].last_heartbeat = datetime.now()
@@ -287,7 +292,9 @@ class AetherraServiceRegistry:
                 await service.on_message(message_type, data)
                 return True
             else:
-                logger.warning(f"[WARN] Service '{target_service}' has no message handler")
+                logger.warning(
+                    f"[WARN] Service '{target_service}' has no message handler"
+                )
                 return False
 
         except Exception as e:

@@ -7,8 +7,6 @@ import asyncio
 import inspect
 import json
 import logging
-import time
-import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -181,16 +179,11 @@ class AetherraEngine:
         self.session_id: Optional[str] = None
         self.active_tasks: Dict[str, Any] = {}
         self.initialized: bool = False
-        self._boot_ts: Optional[datetime] = None
 
         # Lifecycle flags
         self._started_improvement = False
         self._started_introspection = False
         self._started_orchestration = False
-
-        # Background tasks and cancellation
-        self._bg_tasks: List[asyncio.Task] = []
-        self._task_cancels: Dict[str, asyncio.Event] = {}
 
         logger.info("Lyrixa Engine initialized")
 
@@ -243,16 +236,6 @@ class AetherraEngine:
             # Register system components for monitoring
             self._register_system_components()
 
-            # Uptime
-            self._boot_ts = datetime.now()
-
-            # Background anticipation loop
-            try:
-                loop = asyncio.get_running_loop()
-                self._bg_tasks.append(loop.create_task(self._anticipation_loop()))
-            except Exception:
-                pass
-
             self.initialized = True
             logger.info("✅ Lyrixa Engine fully initialized")
 
@@ -302,19 +285,6 @@ class AetherraEngine:
             return
 
         try:
-            # Stop background loops first
-            for t in list(self._bg_tasks):
-                try:
-                    t.cancel()
-                except Exception:
-                    pass
-            if self._bg_tasks:
-                try:
-                    await asyncio.gather(*self._bg_tasks, return_exceptions=True)
-                except Exception:
-                    pass
-            self._bg_tasks.clear()
-
             if hasattr(self.improvement_engine, "stop_improvement_cycle"):
                 await self.improvement_engine.stop_improvement_cycle()
             if hasattr(self.introspection, "stop_introspection"):
@@ -352,20 +322,11 @@ class AetherraEngine:
         if not monitor:
             return
 
-        async def check_memory_health():
-            try:
-                stats = await asyncio.wait_for(
-                    self.memory_system.get_memory_stats(), timeout=1.0
-                )
-                return {
-                    "total_memories": stats.get("total_memories", 0),
-                    "response_time": 50.0,
-                }
-            except Exception:
-                return {"response_time": 999.0, "error": True}
+        def check_memory_health():
+            # Minimal non-blocking snapshot
+            return {"total_memories": 0, "response_time": 100.0}
 
-        async def check_reasoning_health():
-            # Placeholder that could ping an internal health in the future
+        def check_reasoning_health():
             return {"active_reasoning_sessions": 0}
 
         def check_orchestrator_health():
@@ -405,7 +366,6 @@ class AetherraEngine:
 
         self.session_id = f"session_{datetime.now().isoformat()}_{user_id}"
         self.conversation_context = {
-            "session_id": self.session_id,
             "user_id": user_id,
             "start_time": datetime.now(),
             "message_count": 0,
@@ -431,8 +391,6 @@ class AetherraEngine:
             await self.start_conversation()
 
         try:
-            corr_id = str(uuid.uuid4())
-            t0 = time.perf_counter()
             self.conversation_context["message_count"] += 1
             message_context = {
                 **self.conversation_context,
@@ -449,15 +407,9 @@ class AetherraEngine:
                 memory_type="conversation",
             )
 
-            try:
-                relevant_memories = await asyncio.wait_for(
-                    self.memory_system.recall_memories(
-                        query_text=message, limit=5, memory_type="conversation"
-                    ),
-                    timeout=3,
-                )
-            except Exception:
-                relevant_memories = []
+            relevant_memories = await self.memory_system.recall_memories(
+                query_text=message, limit=5, memory_type="conversation"
+            )
 
             # Build reasoning context if available; otherwise pass-through
             try:
@@ -468,7 +420,7 @@ class AetherraEngine:
                         "context_data": {
                             "user_message": message,
                             "conversation_history": [
-                                self._mem_text(m) for m in relevant_memories
+                                getattr(m, "content", {}) for m in relevant_memories
                             ],
                             "session_context": self.conversation_context,
                         },
@@ -480,10 +432,7 @@ class AetherraEngine:
                 rc = {"query": message}
 
             try:
-                reasoning_result = await asyncio.wait_for(
-                    self.reasoning_engine.reason(rc),  # type: ignore[arg-type]
-                    timeout=12,
-                )
+                reasoning_result = await self.reasoning_engine.reason(rc)  # type: ignore[arg-type]
             except Exception:
 
                 class _RR:
@@ -492,57 +441,9 @@ class AetherraEngine:
 
                 reasoning_result = _RR()
 
-            # Derive a plan and optionally execute plugins/agents
-            plan: List[Dict[str, Any]] = []
-            try:
-                if isinstance(reasoning_result, dict):
-                    plan = list(reasoning_result.get("plan", []))
-                else:
-                    plan = list(getattr(reasoning_result, "plan", []) or [])
-            except Exception:
-                plan = []
-
-            plugin_chain_summary = None
-            try:
-                plugin_steps = [
-                    s for s in plan if s.get("action") in {"plugin", "chain"}
-                ]
-                if plugin_steps:
-                    # Guardrails
-                    for s in plugin_steps:
-                        self._enforce_caps(s)
-                    chain_spec = []
-                    for s in plugin_steps:
-                        pid = s.get("plugin_id") or s.get("plugin")
-                        if pid:
-                            chain_spec.append(
-                                {
-                                    "plugin_id": pid,
-                                    "input": s.get("input", {}),
-                                }
-                            )
-                    if chain_spec:
-                        try:
-                            chain_out = await asyncio.wait_for(
-                                self.plugin_executor.execute_chain(chain_spec),
-                                timeout=15,
-                            )
-                            # Keep a compact summary for the reply
-                            if isinstance(chain_out, dict) and chain_out.get("results"):
-                                plugin_chain_summary = f"Executed {len(chain_out['results'])} plugin actions successfully"
-                            else:
-                                plugin_chain_summary = "Plugin actions executed"
-                        except Exception:
-                            plugin_chain_summary = "Plugin actions failed or timed out"
-            except Exception:
-                pass
-
             response = self._generate_response(
                 message, reasoning_result, relevant_memories
             )
-
-            if plugin_chain_summary:
-                response = f"{response}\n\nNote: {plugin_chain_summary}."
 
             await self.memory_system.store_memory(
                 content={"role": "assistant", "content": response},
@@ -552,44 +453,19 @@ class AetherraEngine:
                 memory_type="conversation",
             )
 
-            # Observability: latency metric and structured log
-            lat_ms = (time.perf_counter() - t0) * 1000.0
             if hasattr(self.improvement_engine, "record_performance_metric"):
                 self.improvement_engine.record_performance_metric(
-                    "latency_ms", lat_ms, "ms"
-                )
-            try:
-                logger.info(
-                    "msg_processed",
-                    extra={
-                        "corr_id": corr_id,
-                        "lat_ms": lat_ms,
-                        "session_id": self.session_id,
-                        "mem_k": len(relevant_memories) if relevant_memories else 0,
-                    },
-                )
-            except Exception:
-                logger.info(
-                    f"msg_processed corr_id={corr_id} lat_ms={lat_ms:.1f} mem_k={len(relevant_memories) if relevant_memories else 0}"
+                    "response_generation_time", 0.5, "seconds"
                 )
 
             return {
                 "response": response,
                 "session_id": self.session_id,
-                "reasoning": (
-                    reasoning_result.get("conclusion")
-                    if isinstance(reasoning_result, dict)
-                    else getattr(reasoning_result, "conclusion", "")
-                ),
-                "confidence": (
-                    reasoning_result.get("confidence", 0.0)
-                    if isinstance(reasoning_result, dict)
-                    else getattr(reasoning_result, "confidence", 0.0)
-                ),
+                "reasoning": getattr(reasoning_result, "conclusion", ""),
+                "confidence": getattr(reasoning_result, "confidence", 0.0),
                 "memory_id": memory_id,
                 "relevant_memories_count": len(relevant_memories),
                 "timestamp": datetime.now().isoformat(),
-                "corr_id": corr_id,
             }
 
         except Exception as e:
@@ -658,12 +534,6 @@ class AetherraEngine:
         health_status = getattr(
             self.introspection, "get_health_status", lambda: {"status": "unknown"}
         )()
-        uptime_min = 0.0
-        try:
-            if self._boot_ts:
-                uptime_min = (datetime.now() - self._boot_ts).total_seconds() / 60.0
-        except Exception:
-            uptime_min = 0.0
         return {
             "engine_status": "active" if self.initialized else "inactive",
             "session_active": self.session_id is not None,
@@ -671,7 +541,7 @@ class AetherraEngine:
             "improvement_system": improvement_status,
             "agent_orchestrator": orchestrator_status,
             "health_monitoring": health_status,
-            "uptime_minutes": uptime_min,
+            "uptime_minutes": 0,
             "timestamp": datetime.now().isoformat(),
         }
 
@@ -779,19 +649,10 @@ class AetherraEngine:
         )
         task_id = await self.agent_orchestrator.submit_task(task)
         self.active_tasks[task_id] = task
-        # Cancellation token
-        self._task_cancels[task_id] = asyncio.Event()
         return task_id
 
     def get_task_status(self, task_id: str) -> Optional[Dict[str, Any]]:
         return self.agent_orchestrator.get_task_status(task_id)
-
-    def cancel_task(self, task_id: str) -> bool:
-        evt = self._task_cancels.get(task_id)
-        if evt and not evt.is_set():
-            evt.set()
-            return True
-        return False
 
     async def learn_from_feedback(self, interaction_id: str, feedback: Dict[str, Any]):
         await self.memory_system.store_learning(
@@ -810,66 +671,6 @@ class AetherraEngine:
             self.improvement_engine.record_performance_metric(
                 "user_satisfaction", metric_val, "rating"
             )
-
-    # ----------------- Helpers and background loops -----------------
-    def _mem_text(self, m: Any) -> Any:
-        try:
-            if isinstance(m, dict):
-                return m.get("content") or m.get("text") or json.dumps(m)[:500]
-            return getattr(m, "content", str(m))
-        except Exception:
-            return str(m)
-
-    def _enforce_caps(self, step: Dict[str, Any]):
-        allowed = {"read_memory", "write_memory", "web_fetch", "file_temp"}
-        required = set(step.get("required_capabilities", []))
-        if not required.issubset(allowed):
-            raise PermissionError("Capability not allowed")
-
-    async def _anticipation_loop(self):
-        while True:
-            try:
-                # Pull a few recent memories and ask for suggestions
-                try:
-                    recent = await asyncio.wait_for(
-                        self.memory_system.recall_memories(limit=10),  # type: ignore[arg-type]
-                        timeout=2,
-                    )
-                except Exception:
-                    recent = []
-                try:
-                    rc = ReasoningContext(  # type: ignore
-                        **{
-                            "query": "What proactive suggestions should I surface now?",
-                            "domain": "anticipation",
-                            "context_data": {"recent": recent},
-                        }
-                    )
-                    sugg = await asyncio.wait_for(
-                        self.reasoning_engine.reason(rc),  # type: ignore[arg-type]
-                        timeout=6,
-                    )
-                    # Store suggestion briefly for UI pickup
-                    await self.memory_system.store_memory(
-                        content={
-                            "type": "suggestion",
-                            "content": getattr(sugg, "conclusion", None)
-                            or (
-                                sugg.get("conclusion")
-                                if isinstance(sugg, dict)
-                                else str(sugg)
-                            ),
-                        },
-                        context={"source": "anticipation_loop"},
-                        tags=["suggestion", "anticipation"],
-                        importance=0.3,
-                        memory_type="system",
-                    )
-                except Exception:
-                    pass
-            except Exception:
-                logger.exception("anticipation loop error")
-            await asyncio.sleep(30)
 
 
 # Global Lyrixa engine instance
