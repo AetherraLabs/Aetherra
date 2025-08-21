@@ -16,13 +16,33 @@ Features:
 
 import asyncio
 import json
+import os
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from .compression_analyzer import MemoryCompressionAnalyzer
-from .compression_metrics import CompressionScore, FidelityLevel
-from .qfac_dashboard import QFACDashboard
+from ..file_system.compression_analyzer import MemoryCompressionAnalyzer
+from .compression_metrics import FidelityLevel
+
+try:
+    from .qfac_dashboard import QFACDashboard  # type: ignore
+except Exception:
+    # Fallback stub to avoid import errors when dashboard class isn't available
+    class QFACDashboard:  # type: ignore
+        def __init__(self, analyzer):
+            self.analyzer = analyzer
+
+        async def start_dashboard(self, mode: str = "text"):
+            return None
+
+        async def stop_dashboard(self):
+            return None
+
+        async def get_dashboard_summary(self):
+            return {"status": "unavailable", "reason": "dashboard stub"}
+
+
+from .quantum_memory_bridge import QuantumMemoryBridge
 
 
 class QFACMemoryNode:
@@ -36,16 +56,23 @@ class QFACMemoryNode:
         original_data: Any,
         compression_analyzer: MemoryCompressionAnalyzer,
         auto_compress: bool = True,
+        quantum_bridge: Optional[QuantumMemoryBridge] = None,
+        qfac_mode: str = "classical",
     ):
         self.node_id = node_id
         self.original_data = original_data
-        self.compressed_data: Optional[bytes] = None
-        self.compression_metadata: Optional[Dict[str, Any]] = None
+        self.compressed_data = None
+        self.compression_metadata = None
         self.is_compressed = False
 
         # QFAC components
         self.analyzer = compression_analyzer
-        self.compression_score: Optional[CompressionScore] = None
+        self.compression_score = None
+
+        # Quantum-hybrid
+        self.quantum_bridge = quantum_bridge
+        self.qfac_mode = qfac_mode
+        self.quantum_state_id = None
 
         # State tracking
         self.access_count = 0
@@ -106,6 +133,39 @@ class QFACMemoryNode:
                 else "unknown",
             }
 
+            # Optional quantum-hybrid path: encode a classical shadow via QuantumMemoryBridge
+            if (
+                self.qfac_mode in ("hybrid", "quantum")
+                and self.quantum_bridge is not None
+            ):
+                try:
+                    quantum_payload = {
+                        "content": self.original_data,
+                        "complexity": float(
+                            getattr(self.compression_score, "entropy", 0.5)
+                        ),
+                        "confidence": float(
+                            getattr(self.compression_score, "pattern_confidence", 0.8)
+                        ),
+                    }
+                    qstate = await self.quantum_bridge.encode_memory_to_quantum(
+                        memory_id=self.node_id,
+                        memory_data=quantum_payload,
+                        operation_type="compression",
+                    )
+                    self.quantum_state_id = qstate.state_id
+                    # Augment metadata with quantum info (works in sim mode too)
+                    self.compression_metadata["quantum_encoding"] = {
+                        "state_id": qstate.state_id,
+                        "qubits": qstate.qubit_count,
+                        "fidelity": qstate.encoding_fidelity,
+                        "backend": self.quantum_bridge.quantum_backend,
+                        "available": self.quantum_bridge.quantum_available,
+                    }
+                except Exception as qe:
+                    # Graceful degradation: keep classical compression only
+                    print(f"⚠️ Quantum-hybrid encode failed for {self.node_id}: {qe}")
+
             self.is_compressed = True
             print(
                 f"✅ Compressed {self.node_id}: {self.compression_metadata['original_size']} → {self.compression_metadata['compressed_size']} bytes"
@@ -124,6 +184,57 @@ class QFACMemoryNode:
         try:
             # Simulate decompression
             decompressed_data = self._simulate_decompression(self.compressed_data)
+
+            # If quantum-hybrid, optionally refine reconstruction using measurement
+            if (
+                self.qfac_mode in ("hybrid", "quantum")
+                and self.quantum_bridge is not None
+                and self.quantum_state_id is not None
+                and self.compression_metadata
+                and "quantum_encoding" in self.compression_metadata
+            ):
+                try:
+                    # Build a lightweight quantum state handle using stored metadata and classical shadow
+                    # We don't persist full state; QuantumMemoryBridge can use classical_shadow path
+                    from .quantum_memory_bridge import QuantumMemoryState
+
+                    q_meta = self.compression_metadata["quantum_encoding"]
+                    q_state = QuantumMemoryState(
+                        state_id=q_meta.get("state_id", self.quantum_state_id),
+                        memory_id=self.node_id,
+                        qubit_count=int(q_meta.get("qubits", 8)),
+                        circuit_depth=0,
+                        quantum_state=None,
+                        classical_shadow={
+                            "content": self.original_data,
+                            "complexity": float(
+                                getattr(self.compression_score, "entropy", 0.5)
+                            ),
+                            "confidence": float(
+                                getattr(
+                                    self.compression_score, "pattern_confidence", 0.8
+                                )
+                            ),
+                        },
+                        encoding_fidelity=float(q_meta.get("fidelity", 0.9)),
+                        measurement_results=None,
+                        creation_timestamp=__import__(
+                            "datetime"
+                        ).datetime.fromtimestamp(
+                            self.compression_metadata["compression_timestamp"]
+                        ),
+                    )
+                    retrieval = await self.quantum_bridge.quantum_memory_retrieval(
+                        quantum_state=q_state, measurement_basis="computational"
+                    )
+                    # Prefer reconstructed data if available
+                    reconstructed = retrieval.get("reconstructed_data")
+                    if reconstructed and "content" in reconstructed:
+                        decompressed_data = reconstructed["content"]
+                except Exception as qe2:
+                    print(
+                        f"⚠️ Quantum-hybrid retrieval fallback for {self.node_id}: {qe2}"
+                    )
 
             # Update access tracking
             self.access_count += 1
@@ -159,7 +270,7 @@ class QFACMemoryNode:
 
         return compressed
 
-    def _simulate_decompression(self, compressed_data: bytes) -> Any:
+    def _simulate_decompression(self, compressed_data: Optional[bytes]) -> Any:
         """Simulate decompression (placeholder for actual implementation)"""
         try:
             # In real implementation, this would properly decompress
@@ -179,6 +290,8 @@ class QFACMemoryNode:
             "compression_score": self.compression_score.__dict__
             if self.compression_score
             else None,
+            "quantum_state_id": self.quantum_state_id,
+            "qfac_mode": self.qfac_mode,
         }
 
 
@@ -195,8 +308,24 @@ class QFACMemorySystem:
         self.analyzer = MemoryCompressionAnalyzer(str(self.data_dir / "analyzer"))
         self.dashboard = QFACDashboard(self.analyzer)
 
+        # Mode selection: classical | hybrid | quantum (quantum uses same as hybrid but expects real backend)
+        self.qfac_mode = os.getenv("AETHERRA_QFAC_MODE", "classical").lower()
+        if self.qfac_mode not in ("classical", "hybrid", "quantum"):
+            self.qfac_mode = "classical"
+
+        # Quantum bridge (lazy init)
+        self.quantum_bridge = None
+        if self.qfac_mode in ("hybrid", "quantum"):
+            try:
+                self.quantum_bridge = QuantumMemoryBridge(
+                    quantum_backend="simulator", max_qubits=16
+                )
+            except Exception as e:
+                print(f"⚠️ Failed to initialize QuantumMemoryBridge: {e}")
+                self.quantum_bridge = None
+
         # Memory node storage
-        self.nodes: Dict[str, QFACMemoryNode] = {}
+        self.nodes = {}
         self.node_index = 0
 
         # System configuration
@@ -207,6 +336,7 @@ class QFACMemorySystem:
         print("🎯 QFAC Memory System initialized")
         print(f"   📁 Data directory: {self.data_dir}")
         print(f"   🔄 Auto-compression: {self.auto_compression}")
+        print(f"   🧪 QFAC mode: {self.qfac_mode}")
 
     async def store_memory(
         self, data: Any, node_id: Optional[str] = None, force_compression: bool = False
@@ -224,6 +354,8 @@ class QFACMemorySystem:
             original_data=data,
             compression_analyzer=self.analyzer,
             auto_compress=self.auto_compression or force_compression,
+            quantum_bridge=self.quantum_bridge,
+            qfac_mode=self.qfac_mode,
         )
 
         # Store node
@@ -278,17 +410,20 @@ class QFACMemorySystem:
                 success = await node.compress()
                 if success:
                     results["compressed"] += 1
-                    results["compression_details"].append(
-                        {
-                            "node_id": node_id,
-                            "original_size": node.compression_metadata["original_size"],
-                            "compressed_size": node.compression_metadata[
-                                "compressed_size"
-                            ],
-                            "ratio": node.compression_score.compression_ratio,
-                            "fidelity": node.compression_score.fidelity_level.value,
-                        }
-                    )
+                    if node.compression_metadata and node.compression_score:
+                        results["compression_details"].append(
+                            {
+                                "node_id": node_id,
+                                "original_size": node.compression_metadata[
+                                    "original_size"
+                                ],
+                                "compressed_size": node.compression_metadata[
+                                    "compressed_size"
+                                ],
+                                "ratio": node.compression_score.compression_ratio,
+                                "fidelity": node.compression_score.fidelity_level.value,
+                            }
+                        )
                 else:
                     results["failed"] += 1
             else:
