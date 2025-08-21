@@ -20,7 +20,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .compression_metrics import CompressionMetrics, CompressionScore, FidelityLevel
+from ..memory.compression_metrics import (
+    CompressionMetrics,
+    CompressionScore,
+    FidelityLevel,
+)
 
 
 class MemoryType:

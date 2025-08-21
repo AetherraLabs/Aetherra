@@ -246,6 +246,8 @@ class AetherraOSLauncher:
         self.kernel_loop = None
         self.systems = {}
         self.startup_time = None
+        # Self-maintenance
+        self._improvement_telemetry_task = None
 
     async def launch_full_os(self, config: Optional[Dict] = None):
         """[LAUNCH] Launch the complete Aetherra AI Operating System."""
@@ -366,10 +368,182 @@ class AetherraOSLauncher:
         # Initialize Aetherra Hub (Plugin Marketplace)
         await self._load_aetherra_hub(system_config)
 
+        # Initialize Self-Maintenance systems (Self-Improvement + Self-Repair)
+        await self._load_self_maintenance_systems(system_config)
+
         # Initialize GUI (if available)
         await self._load_gui_system(system_config)
 
         logger.info("[OK] All core systems loaded")
+
+    async def _load_self_maintenance_systems(self, config: Dict):
+        """🛠️ Load self-improvement and self-repair systems and register them as services."""
+        # Self-Improvement Engine
+        try:
+            from Aetherra.aetherra_core.engine.self_improvement_engine import (
+                SelfImprovementEngine,
+            )
+
+            sie = SelfImprovementEngine(
+                db_path=str(config.get("self_improvement_db", "self_improvement.db"))
+            )
+
+            # Start improvement loop on current loop
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+            await sie.start_improvement_cycle(loop=loop)
+
+            # Provide a tiny adapter so the registry can message it
+            class SelfImprovementAdapter:
+                def __init__(self, impl):
+                    self.impl = impl
+
+                async def handle_message(self, message_type, data):
+                    mt = (message_type or "").lower()
+                    payload = data or {}
+                    if mt.endswith("record_metric"):
+                        # { name, value, unit, context }
+                        try:
+                            self.impl.record_performance_metric(
+                                payload.get("name", "metric"),
+                                float(payload.get("value", 0.0)),
+                                payload.get("unit", "unit"),
+                                payload.get("context"),
+                            )
+                            return {"status": "ok"}
+                        except Exception as e:
+                            return {"status": "error", "error": str(e)}
+                    if mt.endswith("status"):
+                        return self.impl.get_improvement_status()
+                    if mt.endswith("trends"):
+                        return self.impl.get_metric_trends()
+                    return {"error": "unknown_message"}
+
+                async def shutdown(self):
+                    try:
+                        await self.impl.stop_improvement_cycle()
+                    except Exception:
+                        pass
+
+            sie_adapter = SelfImprovementAdapter(sie)
+            self.systems["self_improvement"] = sie_adapter
+            await register_service(
+                "self_improvement_engine",
+                sie_adapter,
+                metadata={
+                    "type": "self_maintenance",
+                    "version": "1.0",
+                    "features": ["metrics", "trend_analysis", "auto_proposals"],
+                },
+            )
+            logger.info("[OK] Self-Improvement Engine online")
+
+            # Start telemetry if Hub is available (best-effort)
+            await self._start_self_improvement_telemetry()
+
+        except Exception as e:
+            logger.warning(f"[WARN] Self-Improvement Engine unavailable: {e}")
+
+        # Self-Repair Service (wrap stdlib plugin)
+        try:
+            from Aetherra.stdlib.selfrepair import SelfRepairPlugin
+
+            class SelfRepairAdapter:
+                def __init__(self):
+                    self.impl = SelfRepairPlugin()
+
+                async def handle_message(self, message_type, data):
+                    mt = (message_type or "").lower()
+                    payload = data or {}
+                    code = payload.get("code_content", "")
+                    target = payload.get("target", "unknown")
+
+                    if mt.endswith("detect_errors"):
+                        return self.impl.detect_syntax_errors(code)
+                    if mt.endswith("suggest_fixes"):
+                        return self.impl.suggest_code_improvements(code)
+                    if mt.endswith("auto_repair"):
+                        return self.impl.auto_fix_common_issues(code)
+                    if mt.endswith("report"):
+                        return self.impl.generate_repair_report(
+                            target, payload.get("issues")
+                        )
+                    if mt.endswith("status"):
+                        return {"plugin": "selfrepair", "status": "active"}
+                    return {"error": "unknown_message"}
+
+                async def shutdown(self):
+                    return True
+
+            selfrepair = SelfRepairAdapter()
+            self.systems["self_repair"] = selfrepair
+            await register_service(
+                "self_repair_service",
+                selfrepair,
+                metadata={
+                    "type": "self_maintenance",
+                    "version": "1.0",
+                    "features": ["detect_errors", "suggest_fixes", "auto_repair"],
+                },
+            )
+            logger.info("[OK] Self-Repair Service online")
+
+        except Exception as e:
+            logger.warning(f"[WARN] Self-Repair Service unavailable: {e}")
+
+    async def _start_self_improvement_telemetry(self):
+        """Start a lightweight loop that posts self-improvement status to the Hub telemetry endpoint."""
+        # Avoid duplicate task
+        if self._improvement_telemetry_task is not None:
+            return
+
+        async def _loop():
+            try:
+                import aiohttp  # type: ignore
+            except Exception:
+                # aiohttp not available; skip telemetry loop
+                return
+
+            while True:
+                try:
+                    # Ensure hub and self-improvement exist
+                    self_impr = self.systems.get("self_improvement")
+                    hub = self.systems.get("aetherra_hub")
+                    if not self_impr or not hub:
+                        await asyncio.sleep(60)
+                        continue
+
+                    # Fetch status/trends from adapter
+                    status = await self_impr.handle_message(
+                        "selfimprovement.status", {}
+                    )
+                    evt = {
+                        "event": "self_improvement.status",
+                        "status": status,
+                        "ts": time.time(),
+                    }
+                    # Post to local hub
+                    try:
+                        async with aiohttp.ClientSession() as session:
+                            async with session.post(
+                                "http://localhost:3001/api/telemetry", json=evt
+                            ) as resp:
+                                _ = await resp.text()
+                    except Exception:
+                        pass
+
+                    await asyncio.sleep(
+                        int(os.getenv("AETHERRA_SIE_TELEMETRY_INTERVAL", "120"))
+                    )
+                except asyncio.CancelledError:
+                    break
+                except Exception:
+                    await asyncio.sleep(120)
+
+        # Fire and forget
+        self._improvement_telemetry_task = asyncio.create_task(_loop())
 
     async def _load_memory_system(self, config: Dict):
         """[BRAIN] Load the quantum memory system."""
@@ -390,6 +564,34 @@ class AetherraOSLauncher:
                 metadata={"type": "core", "version": "1.0"},
             )
             logger.info("[OK] Aetherra Core Memory Engine online")
+
+            # Optionally register QFAC memory system alongside core engine
+            try:
+                enable_qfac = bool(
+                    config.get("qfac_in_os")
+                    or os.getenv("AETHERRA_QFAC_IN_OS")
+                    or os.getenv("AETHERRA_ENABLE_QFAC")
+                )
+                if enable_qfac:
+                    from Aetherra.aetherra_core.memory.qfac_integration import (
+                        QFACMemorySystem,
+                    )
+
+                    qfac_system = QFACMemorySystem(str("qfac_memory_system"))
+                    # Keep a handle for status/cleanup if needed later
+                    self.systems["qfac_memory"] = qfac_system
+                    await register_service(
+                        "qfac_memory_system",
+                        qfac_system,
+                        metadata={
+                            "type": "memory_extension",
+                            "version": "1.0",
+                            "qfac_mode": os.getenv("AETHERRA_QFAC_MODE", "classical"),
+                        },
+                    )
+                    logger.info("[OK] QFAC Memory System registered (optional)")
+            except Exception as qerr:
+                logger.warning(f"[WARN] QFAC Memory System not available: {qerr}")
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load memory system: {e}")
@@ -976,6 +1178,14 @@ class AetherraOSLauncher:
                 "kernel_loop", ServiceStatus.HEALTHY
             )
 
+        # Mark self-maintenance services healthy when present
+        if self.service_registry and CORE_AVAILABLE:
+            for svc in ("self_improvement_engine", "self_repair_service"):
+                if self.service_registry.get_service_info(svc):
+                    await self.service_registry.update_service_status(
+                        svc, ServiceStatus.HEALTHY
+                    )
+
         logger.info("[OK] All systems activated")
 
     async def _validate_system_health(self):
@@ -1151,6 +1361,14 @@ class AetherraOSLauncher:
 
         if self.service_registry:
             await self.service_registry.stop()
+
+        # Stop self-improvement telemetry loop first
+        if self._improvement_telemetry_task:
+            try:
+                self._improvement_telemetry_task.cancel()
+            except Exception:
+                pass
+            self._improvement_telemetry_task = None
 
         # Shutdown individual systems
         for system_name, system in self.systems.items():
