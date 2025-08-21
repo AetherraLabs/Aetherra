@@ -27,12 +27,39 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-from .compression_analyzer import MemoryCompressionAnalyzer
+from ..file_system.compression_analyzer import MemoryCompressionAnalyzer
 from .compression_metrics import CompressionMetrics
-from .qfac_dashboard import QFACDashboard
 from .qfac_integration import QFACMemorySystem
+
+# Dashboard import with safe fallback (module may not provide a class)
+try:
+    from .qfac_dashboard import QFACDashboard  # type: ignore
+except Exception:
+
+    class QFACDashboard:  # type: ignore
+        def __init__(self, analyzer):
+            self.analyzer = analyzer
+
+        async def start_dashboard(self, mode: str = "text"):
+            return None
+
+        async def stop_dashboard(self):
+            return None
+
+        async def export_dashboard_report(
+            self, filename: str = "qfac_dashboard_report.json"
+        ):
+            # Minimal stub: persist performance snapshot from analyzer
+            try:
+                perf = await self.analyzer.monitor_compression_performance()
+            except Exception:
+                perf = {"status": "unavailable", "reason": "dashboard stub"}
+            output = Path(filename)
+            with open(output, "w") as f:
+                json.dump(perf, f, indent=2, default=str)
+            return str(output)
 
 
 class QFACLauncher:
@@ -46,10 +73,10 @@ class QFACLauncher:
         self.data_dir = Path("qfac_data")
         self.data_dir.mkdir(exist_ok=True)
 
-        # Core components
-        self.analyzer: Optional[MemoryCompressionAnalyzer] = None
-        self.dashboard: Optional[QFACDashboard] = None
-        self.memory_system: Optional[QFACMemorySystem] = None
+        # Core components (initialized lazily in _init_components)
+        self.analyzer = None
+        self.dashboard = None
+        self.memory_system = None
 
         print(f"🎯 AETHERRA QFAC Launcher v{self.version}")
         print(f"   📋 {self.phase}")
@@ -77,6 +104,12 @@ class QFACLauncher:
         print("=" * 60)
 
         self._init_components()
+        if (
+            self.memory_system is None
+            or self.analyzer is None
+            or self.dashboard is None
+        ):
+            raise RuntimeError("QFAC components failed to initialize")
 
         # 1. Core metrics demonstration
         print("\n📊 1. Compression Metrics Analysis")
@@ -180,6 +213,8 @@ class QFACLauncher:
         print("=" * 60)
 
         self._init_components()
+        if self.dashboard is None:
+            raise RuntimeError("QFAC dashboard not available")
 
         try:
             await self.dashboard.start_dashboard(mode)
@@ -194,6 +229,8 @@ class QFACLauncher:
         print("=" * 60)
 
         self._init_components()
+        if self.analyzer is None:
+            raise RuntimeError("Compression analyzer not available")
 
         try:
             # Load file data
@@ -251,6 +288,8 @@ class QFACLauncher:
         print("=" * 60)
 
         self._init_components()
+        if self.memory_system is None or self.analyzer is None:
+            raise RuntimeError("QFAC components not available")
 
         # Memory system status
         if self.memory_system:
@@ -309,6 +348,8 @@ class QFACLauncher:
         print("=" * 60)
 
         self._init_components()
+        if self.analyzer is None:
+            raise RuntimeError("Compression analyzer not available")
 
         # Generate test datasets
         test_datasets = self._generate_benchmark_data()
