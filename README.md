@@ -202,6 +202,22 @@ display result with style="elegant"
 
 - **Fractal Architecture**: Scalable memory structure that maintains coherence across scales
 
+#### ⚛️ QFAC Hybrid Memory (Quantum-Enhanced)
+
+
+- Modes: classical (default), hybrid, quantum
+- Configure via env: `AETHERRA_QFAC_MODE=classical|hybrid|quantum`
+- Optional OS registration: set `AETHERRA_QFAC_IN_OS=1` to register QFAC alongside the core memory engine during OS launch
+- CLI/demo: see `Aetherra/aetherra_core/memory/qfac_launcher.py` for demo, status, analyze, and benchmark commands
+- Dashboard: module-level blueprint available; fallback stub ensures headless runs don’t fail
+
+
+Quick test (PowerShell):
+
+- Launch OS with QFAC registered: `$env:AETHERRA_QFAC_IN_OS='1'; python aetherra_os_launcher.py`
+- Run unit tests for QFAC: `pytest -q tests/unit/test_qfac_modes.py`
+
+
 #### 🌉 **Unified Cognitive Integration**
 
 **NEW**: FractalMesh is now fully integrated across all Lyrixa systems:
@@ -559,11 +575,58 @@ Aetherra's visual identity embodies clarity and intelligence:
 - [🎨 Customization Guide](docs/customization.md)
 - [🏗️ Architecture Overview](docs/architecture.md)
 
+- [⚛️ QFAC Mode Guide](docs/QFAC_MODE_GUIDE.md)
+
 ### **Developer Resources**
+
 - [📡 API Documentation](docs/api.md)
 - [🤝 Contributing Guidelines](docs/contributing.md)
 - [[TOOL] Development Setup](docs/development.md)
 - [📋 Changelog](docs/changelog.md)
+
+- [📘 Project Overview](docs/PROJECT_OVERVIEW.md)
+
+### ✅ Developer Tasks & Verification
+
+Run these from VS Code (Terminal > Run Task) or via PowerShell:
+
+- Verify Aetherra OS (Headless Smoke)
+  - VS Code Task: "Verify Aetherra OS (Headless Smoke)"
+  - PowerShell:
+    
+    ```powershell
+    python tools/os_smoke.py
+    ```
+    
+- Verify Claims (Capabilities Tests)
+  - VS Code Task: "Verify Claims (Capabilities Tests)"
+  - PowerShell:
+    
+    ```powershell
+    pytest -q -o addopts= tests/capabilities
+    ```
+    
+- Generate File Index (Docs Appendix)
+  - VS Code Task: "Generate File Index (Docs Appendix)"
+  - PowerShell:
+    
+    ```powershell
+    python tools/generate_file_index.py --root . --output docs/FILE_INDEX.md
+    ```
+    
+- Verify Docs Consistency (env vars + endpoints)
+  - VS Code Task: "Verify Docs Consistency"
+  - PowerShell:
+    
+    ```powershell
+    python tools/verify_docs_consistency.py
+    ```
+
+Helpful docs:
+
+- QFAC modes and OS wiring: [docs/QFAC_MODE_GUIDE.md](docs/QFAC_MODE_GUIDE.md)
+- Complete subsystem map: [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)
+- Auto-generated file index: [docs/FILE_INDEX.md](docs/FILE_INDEX.md)
 
 ---
 
@@ -579,11 +642,13 @@ Join the Aetherra community and help shape the future of AI-native development:
 - 🐦 **[Follow us on X/Twitter](https://x.com/AetherraProject)** - Latest updates and news
 
 ### **Stay Connected**
+
 - 🌐 **Website**: [aetherra.dev](https://aetherra.dev)
 - 🐦 **X/Twitter**: [@AetherraProject](https://x.com/AetherraProject)
 - 📁 **GitHub**: [Zyonic88/Aetherra](https://github.com/Zyonic88/Aetherra)
 
 ### **Community Guidelines**
+
 - 🤖 **AI-Friendly**: We embrace AI assistance in all contributions
 - 🌍 **Inclusive**: Welcome developers of all skill levels
 - 🔒 **Privacy-Conscious**: Respect user data and privacy
@@ -598,6 +663,7 @@ Join the Aetherra community and help shape the future of AI-native development:
 **🎉 MASSIVE MILESTONE ACHIEVED (August 2025)**:
 
 #### **Discord Bot Integration [COMPLETE — Internal-only]**
+
 - [OK] **1,424-line Discord Bot** - Full-featured Lyrixa bot with comprehensive AI integration
 - [OK] **Multi-Server Architecture** - Dual FastAPI servers (ports 8008, 8686) for scalability
 - [OK] **GitHub Monitoring** - Automated repository tracking with intelligent notifications
@@ -606,6 +672,7 @@ Join the Aetherra community and help shape the future of AI-native development:
 - [OK] **Security Protected** - All tokens and sensitive configurations secured
 
 #### **Phase 3-6 GUI Evolution [COMPLETE]**
+
 - [OK] **Phase 3 Auto-Generator** - Automated GUI component generation system
 - [OK] **Phase 4 Cognitive UI** - Intelligent interface adaptation and learning
 - [OK] **Phase 5 Plugin UI** - Advanced plugin visualization and management
@@ -613,6 +680,7 @@ Join the Aetherra community and help shape the future of AI-native development:
 - [OK] **Web Panel Integration** - Modern HTML interfaces for all phases
 
 #### **System Infrastructure [COMPLETE]**
+
 - [OK] **Intelligence System Restored** - Multi-provider AI with full cognitive capabilities
 - [OK] **Hub Integration Active** - Plugin marketplace connectivity established
 - [OK] **Restart Utilities** - 5-stage restart system with comprehensive health checks
@@ -621,6 +689,7 @@ Join the Aetherra community and help shape the future of AI-native development:
 - [OK] **Massive Cleanup** - 1.8M+ lines of legacy code removed and organized
 
 ### **Production Ready Features [ALL COMPLETE]**
+
 - [OK] **Neural Interface System** - Cyberpunk-themed web interface with real-time AI interaction
 - [OK] **Dynamic Model Switching** - Seamless switching between Ollama, GPT-4, and Claude models
 - [OK] **Enterprise Security System** - Military-grade API key protection and memory leak prevention
@@ -629,6 +698,7 @@ Join the Aetherra community and help shape the future of AI-native development:
 - [OK] **System Reliability** - Comprehensive restart utilities and health monitoring
 
 ### **Next Phase: Enhancement & Expansion (Q4 2025)**
+
 - **🎯 Enhanced Discord Features** - Advanced bot commands and AI conversation modes
 - **📱 Mobile Discord Integration** - Mobile-optimized bot commands and interfaces
 - **☁️ Cloud Synchronization** - Backup and sync capabilities across devices

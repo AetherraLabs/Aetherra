@@ -53,3 +53,13 @@ When working with files in this directory:
 
 ---
 *This README was automatically generated. Last updated: {Path().cwd().name} project analysis*
+
+---
+
+## New runnable demos
+
+- Self-Improvement: `self_improvement_demo.py`
+	- Runs the SelfImprovementEngine briefly, records metrics, prints status/trends, and exits.
+
+- Self-Healing: `self_healing_demo.py`
+	- Uses the SelfRepairPlugin to detect issues, suggest fixes, auto-repair, and output a repair report.
