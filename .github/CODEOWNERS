@@ -1,0 +1,16 @@
+# CODEOWNERS file
+# See: https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners
+*       @AetherraLabs/core-maintainers
+
+# Workflows and security
+.github/** @AetherraLabs/devops
+
+# Docs
+docs/**   @AetherraLabs/docs
+docs-organized/** @AetherraLabs/docs
+
+# Frontend
+frontend/** @AetherraLabs/frontend
+Aetherra/lyrixa/gui/** @AetherraLabs/frontend
