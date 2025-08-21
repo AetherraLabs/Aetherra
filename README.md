@@ -593,31 +593,31 @@ Run these from VS Code (Terminal > Run Task) or via PowerShell:
 - Verify Aetherra OS (Headless Smoke)
   - VS Code Task: "Verify Aetherra OS (Headless Smoke)"
   - PowerShell:
-    
+
     ```powershell
     python tools/os_smoke.py
     ```
-    
+
 - Verify Claims (Capabilities Tests)
   - VS Code Task: "Verify Claims (Capabilities Tests)"
   - PowerShell:
-    
+
     ```powershell
     pytest -q -o addopts= tests/capabilities
     ```
-    
+
 - Generate File Index (Docs Appendix)
   - VS Code Task: "Generate File Index (Docs Appendix)"
   - PowerShell:
-    
+
     ```powershell
     python tools/generate_file_index.py --root . --output docs/FILE_INDEX.md
     ```
-    
+
 - Verify Docs Consistency (env vars + endpoints)
   - VS Code Task: "Verify Docs Consistency"
   - PowerShell:
-    
+
     ```powershell
     python tools/verify_docs_consistency.py
     ```
