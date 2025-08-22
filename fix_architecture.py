@@ -12,7 +12,8 @@ import os
 import re
 import shutil
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
+
 
 class ArchitecturalFixer:
     """Auto-fixer for architectural violations"""
@@ -38,7 +39,7 @@ class ArchitecturalFixer:
             "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\agent_adapters\\smart_agent_migrator.py",
             "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\core\\plugin_system.py",
             "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\aetherra_core\\agents\\optimized_integration.py",
-            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\aetherra_core\\agents\\reflexive_loop.py"
+            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\aetherra_core\\agents\\reflexive_loop.py",
         ]
 
         fixed_files = []
@@ -49,7 +50,7 @@ class ArchitecturalFixer:
                 continue
 
             try:
-                with open(path, 'r', encoding='utf-8') as f:
+                with open(path, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 # Remove Lyrixa imports
@@ -57,22 +58,22 @@ class ArchitecturalFixer:
 
                 # Comment out Lyrixa imports
                 content = re.sub(
-                    r'^(\s*from lyrixa\..*)$',
-                    r'# ARCHITECTURAL FIX: Removed Lyrixa import - \\1',
+                    r"^(\s*from lyrixa\..*)$",
+                    r"# ARCHITECTURAL FIX: Removed Lyrixa import - \\1",
                     content,
-                    flags=re.MULTILINE
+                    flags=re.MULTILINE,
                 )
 
                 content = re.sub(
-                    r'^(\s*import lyrixa\..*)$',
-                    r'# ARCHITECTURAL FIX: Removed Lyrixa import - \\1',
+                    r"^(\s*import lyrixa\..*)$",
+                    r"# ARCHITECTURAL FIX: Removed Lyrixa import - \\1",
                     content,
-                    flags=re.MULTILINE
+                    flags=re.MULTILINE,
                 )
 
                 if content != original_content:
                     if not self.dry_run:
-                        with open(path, 'w', encoding='utf-8') as f:
+                        with open(path, "w", encoding="utf-8") as f:
                             f.write(content)
 
                     fixed_files.append(str(path))
@@ -90,7 +91,7 @@ class ArchitecturalFixer:
         # Files that should be moved to Lyrixa
         gui_moves = {
             "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\interface\\main_window.py": "lyrixa/gui/main_window_backup.py",
-            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa_plugins\\mini_lyrixa_avatar.py": "lyrixa/gui/mini_lyrixa_avatar.py"
+            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa_plugins\\mini_lyrixa_avatar.py": "lyrixa/gui/mini_lyrixa_avatar.py",
         }
 
         moved_files = []
@@ -124,7 +125,7 @@ class ArchitecturalFixer:
         engine_files = [
             "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\launcher.py",
             "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\memory\\advanced_memory_integration.py",
-            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\memory\\quantum_memory_integration.py"
+            "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\lyrixa\\memory\\quantum_memory_integration.py",
         ]
 
         analyzed_files = []
@@ -141,7 +142,9 @@ class ArchitecturalFixer:
 
             # Memory integration files might need to stay as bridges
             if "memory" in path.name and "integration" in path.name:
-                print(f"  ℹ️  {path.name} appears to be an integration bridge (keeping in Lyrixa)")
+                print(
+                    f"  ℹ️  {path.name} appears to be an integration bridge (keeping in Lyrixa)"
+                )
                 continue
 
             analyzed_files.append(str(path))
@@ -217,17 +220,20 @@ if __name__ == "__main__":
 
         guard_path = self.project_root / "architecture_guard.py"
         if not self.dry_run:
-            with open(guard_path, 'w', encoding='utf-8') as f:
+            with open(guard_path, "w", encoding="utf-8") as f:
                 f.write(guard_content)
 
         print(f"  ✅ Created architecture guard: {guard_path}")
 
-    def generate_fix_report(self, import_fixes: List[str], gui_moves: List[str],
-                          engine_analysis: List[str]) -> str:
+    def generate_fix_report(
+        self, import_fixes: List[str], gui_moves: List[str], engine_analysis: List[str]
+    ) -> str:
         """Generate comprehensive fix report"""
         report = []
         report.append("# 🔧 AETHERRA ARCHITECTURAL FIX REPORT")
-        report.append(f"**Generated**: {os.popen('date /t').read().strip()} {os.popen('time /t').read().strip()}")
+        report.append(
+            f"**Generated**: {os.popen('date /t').read().strip()} {os.popen('time /t').read().strip()}"
+        )
         report.append(f"**Mode**: {'DRY RUN' if self.dry_run else 'LIVE EXECUTION'}")
         report.append("")
 
@@ -244,7 +250,9 @@ if __name__ == "__main__":
         # Import fixes
         if import_fixes:
             report.append(f"## ✅ IMPORT VIOLATIONS FIXED ({len(import_fixes)} files)")
-            report.append("**Action**: Commented out Lyrixa imports from core Aetherra files")
+            report.append(
+                "**Action**: Commented out Lyrixa imports from core Aetherra files"
+            )
             report.append("")
             for fix in import_fixes:
                 report.append(f"- ✅ {Path(fix).name}")
@@ -262,7 +270,9 @@ if __name__ == "__main__":
         # Engine analysis
         if engine_analysis:
             report.append(f"## ℹ️  ENGINE ANALYSIS ({len(engine_analysis)} files)")
-            report.append("**Action**: Analyzed core engines in Lyrixa (kept as integration bridges)")
+            report.append(
+                "**Action**: Analyzed core engines in Lyrixa (kept as integration bridges)"
+            )
             report.append("")
             for engine in engine_analysis:
                 report.append(f"- ℹ️  {Path(engine).name}")
@@ -273,7 +283,9 @@ if __name__ == "__main__":
         report.append("")
         report.append("1. **Test System**: Verify all imports still work")
         report.append("2. **Run Compliance Check**: `python check_architecture.py`")
-        report.append("3. **Install Guard**: Set up pre-commit hook with `architecture_guard.py`")
+        report.append(
+            "3. **Install Guard**: Set up pre-commit hook with `architecture_guard.py`"
+        )
         report.append("4. **Document Changes**: Update team on architectural fixes")
         report.append("")
 
@@ -281,7 +293,9 @@ if __name__ == "__main__":
         report.append("")
         report.append("- ✅ Core AI files no longer import from Lyrixa")
         report.append("- ✅ GUI components moved to Lyrixa interface")
-        report.append("- ✅ Clear separation between brain (Aetherra) and face (Lyrixa)")
+        report.append(
+            "- ✅ Clear separation between brain (Aetherra) and face (Lyrixa)"
+        )
         report.append("")
 
         return "\\n".join(report)
@@ -305,23 +319,24 @@ if __name__ == "__main__":
         # Save report
         report_path = self.project_root / "ARCHITECTURAL_FIX_REPORT.md"
         if not self.dry_run:
-            with open(report_path, 'w', encoding='utf-8') as f:
+            with open(report_path, "w", encoding="utf-8") as f:
                 f.write(report)
 
         print(f"\\n📄 Fix report saved to: {report_path}")
 
         return {
-            'import_fixes': import_fixes,
-            'gui_moves': gui_moves,
-            'engine_analysis': engine_analysis
+            "import_fixes": import_fixes,
+            "gui_moves": gui_moves,
+            "engine_analysis": engine_analysis,
         }
+
 
 def main():
     """Main execution function"""
     import sys
 
     # Check for dry run mode
-    dry_run = '--dry-run' in sys.argv or '-n' in sys.argv
+    dry_run = "--dry-run" in sys.argv or "-n" in sys.argv
 
     print("🔧 AETHERRA ARCHITECTURAL AUTO-FIXER")
     print("=" * 40)
@@ -331,7 +346,7 @@ def main():
     else:
         print("⚡ LIVE MODE - Files will be modified")
         response = input("Continue? (y/N): ")
-        if response.lower() != 'y':
+        if response.lower() != "y":
             print("❌ Operation cancelled")
             return
 
@@ -345,153 +360,13 @@ def main():
     results = fixer.apply_fixes()
 
     # Summary
-    total_fixes = len(results['import_fixes']) + len(results['gui_moves'])
+    total_fixes = len(results["import_fixes"]) + len(results["gui_moves"])
     if total_fixes > 0:
         print(f"\\n✅ Applied {total_fixes} architectural fixes!")
         print("🔧 Run compliance check to verify: python check_architecture.py")
     else:
         print("\\n✅ No fixes needed - architecture already compliant!")
 
-if __name__ == "__main__":
-    main()
-'''
-
-        guard_path = self.project_root / "architecture_guard.py"
-        if not self.dry_run:
-            with open(guard_path, 'w', encoding='utf-8') as f:
-                f.write(guard_content)
-
-        print(f"  ✅ Created architecture guard: {guard_path}")
-
-    def generate_fix_report(self, import_fixes: List[str], gui_moves: List[str],
-                          engine_analysis: List[str]) -> str:
-        """Generate comprehensive fix report"""
-        report = []
-        report.append("# 🔧 AETHERRA ARCHITECTURAL FIX REPORT")
-        report.append(f"**Generated**: {os.popen('date /t').read().strip()} {os.popen('time /t').read().strip()}")
-        report.append(f"**Mode**: {'DRY RUN' if self.dry_run else 'LIVE EXECUTION'}")
-        report.append("")
-
-        total_fixes = len(import_fixes) + len(gui_moves)
-
-        if total_fixes == 0:
-            report.append("✅ **STATUS**: NO FIXES NEEDED")
-            report.append("🎉 Architecture is already compliant!")
-            return "\\n".join(report)
-
-        report.append(f"🔧 **STATUS**: {total_fixes} FIXES APPLIED")
-        report.append("")
-
-        # Import fixes
-        if import_fixes:
-            report.append(f"## ✅ IMPORT VIOLATIONS FIXED ({len(import_fixes)} files)")
-            report.append("**Action**: Commented out Lyrixa imports from core Aetherra files")
-            report.append("")
-            for fix in import_fixes:
-                report.append(f"- ✅ {Path(fix).name}")
-            report.append("")
-
-        # GUI moves
-        if gui_moves:
-            report.append(f"## ✅ GUI COMPONENTS MOVED ({len(gui_moves)} files)")
-            report.append("**Action**: Moved GUI components to Lyrixa interface")
-            report.append("")
-            for move in gui_moves:
-                report.append(f"- ✅ {move}")
-            report.append("")
-
-        # Engine analysis
-        if engine_analysis:
-            report.append(f"## ℹ️  ENGINE ANALYSIS ({len(engine_analysis)} files)")
-            report.append("**Action**: Analyzed core engines in Lyrixa (kept as integration bridges)")
-            report.append("")
-            for engine in engine_analysis:
-                report.append(f"- ℹ️  {Path(engine).name}")
-            report.append("")
-
-        # Next steps
-        report.append("## 🚀 NEXT STEPS")
-        report.append("")
-        report.append("1. **Test System**: Verify all imports still work")
-        report.append("2. **Run Compliance Check**: `python check_architecture.py`")
-        report.append("3. **Install Guard**: Set up pre-commit hook with `architecture_guard.py`")
-        report.append("4. **Document Changes**: Update team on architectural fixes")
-        report.append("")
-
-        report.append("## 🎯 ARCHITECTURAL RULES ENFORCED")
-        report.append("")
-        report.append("- ✅ Core AI files no longer import from Lyrixa")
-        report.append("- ✅ GUI components moved to Lyrixa interface")
-        report.append("- ✅ Clear separation between brain (Aetherra) and face (Lyrixa)")
-        report.append("")
-
-        return "\\n".join(report)
-
-    def apply_fixes(self) -> Dict[str, List[str]]:
-        """Apply all architectural fixes"""
-        print("🔧 APPLYING ARCHITECTURAL FIXES")
-        print("=" * 40)
-
-        # Apply fixes
-        import_fixes = self.fix_import_violations()
-        gui_moves = self.move_gui_to_lyrixa()
-        engine_analysis = self.fix_engine_locations()
-
-        # Create enforcement guard
-        self.create_architecture_enforcement_guard()
-
-        # Generate report
-        report = self.generate_fix_report(import_fixes, gui_moves, engine_analysis)
-
-        # Save report
-        report_path = self.project_root / "ARCHITECTURAL_FIX_REPORT.md"
-        if not self.dry_run:
-            with open(report_path, 'w', encoding='utf-8') as f:
-                f.write(report)
-
-        print(f"\n📄 Fix report saved to: {report_path}")
-
-        return {
-            'import_fixes': import_fixes,
-            'gui_moves': gui_moves,
-            'engine_analysis': engine_analysis
-        }
-
-def main():
-    """Main execution function"""
-    import sys
-
-    # Check for dry run mode
-    dry_run = '--dry-run' in sys.argv or '-n' in sys.argv
-
-    print("🔧 AETHERRA ARCHITECTURAL AUTO-FIXER")
-    print("=" * 40)
-
-    if dry_run:
-        print("🔍 DRY RUN MODE - No files will be modified")
-    else:
-        print("⚡ LIVE MODE - Files will be modified")
-        response = input("Continue? (y/N): ")
-        if response.lower() != 'y':
-            print("❌ Operation cancelled")
-            return
-
-    # Get project root
-    project_root = os.getcwd()
-
-    # Create fixer
-    fixer = ArchitecturalFixer(project_root, dry_run=dry_run)
-
-    # Apply fixes
-    results = fixer.apply_fixes()
-
-    # Summary
-    total_fixes = len(results['import_fixes']) + len(results['gui_moves'])
-    if total_fixes > 0:
-        print(f"\n✅ Applied {total_fixes} architectural fixes!")
-        print("🔧 Run compliance check to verify: python check_architecture.py")
-    else:
-        print("\n✅ No fixes needed - architecture already compliant!")
 
 if __name__ == "__main__":
     main()

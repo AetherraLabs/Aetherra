@@ -585,6 +585,7 @@ Aetherra's visual identity embodies clarity and intelligence:
 - [📋 Changelog](docs/changelog.md)
 
 - [📘 Project Overview](docs/PROJECT_OVERVIEW.md)
+- [💬 Lyrixa Chat Endpoint](docs/LYRIXA_CHAT_ENDPOINT.md)
 
 ### ✅ Developer Tasks & Verification
 

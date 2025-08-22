@@ -210,6 +210,7 @@ Hub Server HTTP endpoints (when Flask is available):
 - GET /api/plugins — list plugins
 - GET /api/plugins/<plugin_id> — plugin details
 - POST /api/plugins/register — register plugin (supports optional signature verification)
+- POST /api/lyrixa/chat — lightweight bridge to Lyrixa chat service (with deterministic fallback)
 - GET /api/stats — hub stats (+federation counts if enabled)
 - GET/POST /api/peers — list/add peers
 - POST /api/peers/sync — trigger federation sync
@@ -316,3 +317,9 @@ Test tasks available in this workspace:
 
 - QFAC remains an optional extension; primary memory engine is AetherraMemoryEngine, with graceful degradation when quantum libraries are unavailable.
 - The Hub server, federation, telemetry, and signing are designed to be present when optional dependencies are installed; tests include non-strict paths to keep CI green.
+
+Stats enhancements:
+
+- The /api/stats payload includes a lyrixa_chat object with best-effort availability:
+  - { registered: bool, status?: "healthy"|"degraded"|..., registered_at?, last_heartbeat? }
+  - If registry is not available, registered will be false.
