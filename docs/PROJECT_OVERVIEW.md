@@ -323,3 +323,233 @@ Stats enhancements:
 - The /api/stats payload includes a lyrixa_chat object with best-effort availability:
   - { registered: bool, status?: "healthy"|"degraded"|..., registered_at?, last_heartbeat? }
   - If registry is not available, registered will be false.
+
+
+---
+## Auto-Generated Overview (analyze_project.py)
+
+_Generated at: 2025-08-21 21:45:58_
+
+### Auto-Generated Overview (Repository Analysis)
+
+This repository contains the Aetherra AI Operating System and Lyrixa assistant. It comprises ~1128 Python modules, with ~142 in the core OS and ~81 in Lyrixa.
+
+Core (Aetherra/aetherra_core) includes engine, kernel, memory, plugins, config. The primary memory engine (AetherraMemoryEngine) wraps the QuantumEnhancedMemoryEngine, providing compatibility while delegating persistence and recall to the canonical engine.
+
+Lyrixa (assistant) spans intelligence, gui, plugins, memory, launcher and integrates with the OS through the registry and Hub. The chat service is workspace-aware and can suggest/apply safe fixes with deterministic fallbacks when offline.
+
+Hub & Federation includes server, federation, node_assets. When Flask is present, the local Hub exposes health, stats, plugin registry, federation sync, and a Lyrixa chat bridge.
+
+QFAC (Quantum Fractal Adaptive Compression) is present (integration, dashboard, analyzer). It is an optional extension that can be enabled via environment flags and verified via capability tests.
+
+Endpoints summary:
+Flask endpoints exposed by the local Hub server:
+  - /
+  - /api/collect
+  - /api/health
+  - /api/insights
+  - /api/live
+  - /api/lyrixa/chat
+  - /api/memory/graph
+  - /api/metrics
+  - /api/peers
+  - /api/peers/announce
+  - /api/peers/sync
+  - /api/performance
+  - /api/plugins
+  - /api/plugins/<plugin_id>
+  - /api/plugins/register
+  - /api/stats
+  - /api/status
+  - /api/telemetry
+  - /api/users
+  - /api/users/<user_id>
+  - /health
+  - /qfac/metrics
+  - /quantum/status
+  - /quantum_status
+  - /services
+  - /status
+Node/Express endpoints:
+  - GET /
+  - GET /api/health
+  - GET /api/items
+  - GET /api/items/:id
+  - GET /api/v1/analytics/overview
+  - GET /api/v1/plugins/:name
+  - GET /api/v1/plugins/:name/download
+  - GET /api/v1/plugins/:name/stats
+  - GET /api/v1/plugins/featured
+  - GET /api/v1/plugins/popular
+  - GET /api/v1/plugins/search
+  - GET /items/
+  - POST /api/items
+  - POST /api/v1/auth/register
+  - POST /api/v1/auth/verify
+  - POST /api/v1/plugins/:name/update
+  - POST /api/v1/plugins/publish
+  - POST /items/
+
+Environment configuration is active with 76 AETHERRA_* variables referenced across the codebase. Breakdown: QFAC(3), HUB(10), GENERAL(63).
+
+Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 18), including OS boot, registry collaboration, hub endpoints/federation, memory recall, QFAC-in-OS, and self-maintenance wiring.
+
+### Auto Lists
+#### Environment Variables
+- AETHERRA_API_HOST
+- AETHERRA_API_PORT
+- AETHERRA_AVAILABLE
+- AETHERRA_BOOT_MENU
+- AETHERRA_CLAIMS_VALIDATION
+- AETHERRA_COMPLETE_SYSTEM_TESTING_SUMMARY
+- AETHERRA_COMPLETE_TESTING_ACHIEVEMENT
+- AETHERRA_COMPREHENSIVE_TESTING_REPORT
+- AETHERRA_CORE
+- AETHERRA_CORE_ANALYSIS
+- AETHERRA_CORE_CLEANUP_REPORT
+- AETHERRA_CORE_TRANSFORMATION_SUMMARY
+- AETHERRA_DEBUG
+- AETHERRA_ENABLE_QFAC
+- AETHERRA_ENGINES
+- AETHERRA_ENGINES_AVAILABLE
+- AETHERRA_ENGINE_AVAILABLE
+- AETHERRA_FEDERATION_INTERVAL_SEC
+- AETHERRA_FEDERATION_STATE
+- AETHERRA_FINAL_TESTING_SUMMARY
+- AETHERRA_FOO
+- AETHERRA_GUI_ENABLED
+- AETHERRA_HOME
+- AETHERRA_HUB_BASE
+- AETHERRA_HUB_ENABLED
+- AETHERRA_HUB_HOST
+- AETHERRA_HUB_INTEGRATION_SUCCESS
+- AETHERRA_HUB_PLUGIN_INTEGRATION_COMPLETE
+- AETHERRA_HUB_PORT
+- AETHERRA_HUB_URL
+- AETHERRA_HUB_WS_PORT
+- AETHERRA_IMPORT_UPDATE_REPORT
+- AETHERRA_INTELLIGENCE_PROVIDER
+- AETHERRA_INTERFACE_TYPE
+- AETHERRA_LOG_LEVEL
+- AETHERRA_LYRIXA_CLEANUP_REPORT
+- AETHERRA_MANIFESTO
+- AETHERRA_MAX_TOKENS
+- AETHERRA_MEMORY_QUANTUM_ENABLED
+- AETHERRA_MODEL
+- AETHERRA_NLP_AVAILABLE
+- AETHERRA_OFFLINE
+- AETHERRA_OPENAI
+- AETHERRA_ORGANIZATION_COMPLETION_SUMMARY
+- AETHERRA_OS_MODE
+- AETHERRA_OS_RELEASE_PLAN
+- AETHERRA_PEERS
+- AETHERRA_PLUGINS_CLEANUP_REPORT
+- AETHERRA_PLUGINS_ENABLED
+- AETHERRA_PLUGIN_DISABLE
+- AETHERRA_PLUGIN_INTERACTIVE
+- AETHERRA_PLUGIN_ROADMAP
+- AETHERRA_PLUGIN_SOFTLOAD
+- AETHERRA_PROJECT_ANALYSIS_SUMMARY
+- AETHERRA_QFAC_IN_OS
+- AETHERRA_QFAC_MODE
+- AETHERRA_QUIET
+- AETHERRA_RELEASE_STATUS
+- AETHERRA_ROADMAP
+- AETHERRA_SAFE_MODE
+- AETHERRA_SCRIPT_PATH
+- AETHERRA_SCRIPT_VERIFY_STRICT
+- AETHERRA_SERVER_AVAILABLE
+- AETHERRA_SIE_TELEMETRY_INTERVAL
+- AETHERRA_SIGNING_STRICT
+- AETHERRA_SIGN_PLUGINS
+- AETHERRA_START_LOCAL_HUB
+- AETHERRA_STATE_DIR
+- AETHERRA_TELEMETRY
+- AETHERRA_TELEMETRY_ENDPOINT
+- AETHERRA_TEMPERATURE
+- AETHERRA_TESTING_COMPLETE_SUMMARY
+- AETHERRA_USE_HYBRID
+- AETHERRA_WEB_BASE
+- AETHERRA_WEB_HOST
+- AETHERRA_WEB_PORT
+
+#### Endpoints
+Flask:
+- /
+- /api/collect
+- /api/health
+- /api/insights
+- /api/live
+- /api/lyrixa/chat
+- /api/memory/graph
+- /api/metrics
+- /api/peers
+- /api/peers/announce
+- /api/peers/sync
+- /api/performance
+- /api/plugins
+- /api/plugins/<plugin_id>
+- /api/plugins/register
+- /api/stats
+- /api/status
+- /api/telemetry
+- /api/users
+- /api/users/<user_id>
+- /health
+- /qfac/metrics
+- /quantum/status
+- /quantum_status
+- /services
+- /status
+Express:
+- GET /
+- GET /api/health
+- GET /api/items
+- GET /api/items/:id
+- GET /api/v1/analytics/overview
+- GET /api/v1/plugins/:name
+- GET /api/v1/plugins/:name/download
+- GET /api/v1/plugins/:name/stats
+- GET /api/v1/plugins/featured
+- GET /api/v1/plugins/popular
+- GET /api/v1/plugins/search
+- GET /items/
+- POST /api/items
+- POST /api/v1/auth/register
+- POST /api/v1/auth/verify
+- POST /api/v1/plugins/:name/update
+- POST /api/v1/plugins/publish
+- POST /items/
+
+#### Services
+_None_
+
+#### Tests
+Capabilities:
+- tests/capabilities/test_aether_e2e.py
+- tests/capabilities/test_agent_collaboration.py
+- tests/capabilities/test_hub_telemetry_and_federation.py
+- tests/capabilities/test_lyrixa_chat.py
+- tests/capabilities/test_lyrixa_chat_endpoint.py
+- tests/capabilities/test_memory_recall.py
+- tests/capabilities/test_qfac_in_os.py
+- tests/capabilities/test_self_maintenance_services.py
+Unit:
+- tests/unit/test_aether_intent_language.py
+- tests/unit/test_aether_script_signing.py
+- tests/unit/test_aether_static_risk.py
+- tests/unit/test_federation_manager.py
+- tests/unit/test_federation_persistence.py
+- tests/unit/test_gui_smoke.py
+- tests/unit/test_hub_inthread.py
+- tests/unit/test_hub_plugin_registration_non_strict.py
+- tests/unit/test_hub_plugin_registration_signed_strict.py
+- tests/unit/test_hub_plugin_registration_strict.py
+- tests/unit/test_imports.py
+- tests/unit/test_live_ai_fallback.py
+- tests/unit/test_memory_kernel.py
+- tests/unit/test_qfac_modes.py
+- tests/unit/test_quantum_aware_simulations.py
+- tests/unit/test_self_evolving_behavior.py
+- tests/unit/test_telemetry_optin.py
+- tests/unit/test_unicode_fix.py

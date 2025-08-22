@@ -23,8 +23,8 @@ import logging
 import os
 import sys
 import time
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 # Add paths for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -32,14 +32,26 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "aetherra
 
 # Safe imports with fallbacks
 try:
-    from aetherra_core.config import config_loader
+    from Aetherra.aetherra_core.config import config_loader
 except ImportError:
     config_loader = None
 
 try:
-    from aetherra_core.memory import memory_system
+    # Prefer enhanced Lyrixa-compatible memory engines
+    from Aetherra.aetherra_core.memory.lyrixa_memory_engine import (
+        LyrixaMemoryEngine,
+    )
+
+    _memory_instance = LyrixaMemoryEngine()
 except ImportError:
-    memory_system = None
+    try:
+        from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
+            AetherraMemoryEngine,
+        )
+
+        _memory_instance = AetherraMemoryEngine()
+    except ImportError:
+        _memory_instance = None
 
 # Import LyrixaCore for integration
 try:
@@ -370,7 +382,7 @@ class LyrixaIntelligenceCore:
 
     async def _retrieve_memories(self, message: str, context: Dict) -> List[Dict]:
         """Retrieve relevant memories for the current context"""
-        if not self.config.get("memory_integration", True) or memory_system is None:
+        if not self.config.get("memory_integration", True) or _memory_instance is None:
             logger.debug("Memory integration disabled or system not available")
             return []
 
@@ -378,17 +390,17 @@ class LyrixaIntelligenceCore:
             # Query different memory systems
             memories = []
 
-            # Episodic memories (recent conversations)
-            episodic = await memory_system.query_episodic(message, limit=5)
-            memories.extend(episodic or [])
+            if hasattr(_memory_instance, "query_episodic"):
+                episodic = await _memory_instance.query_episodic(message, limit=5)
+                memories.extend(episodic or [])
 
-            # Conceptual memories (related concepts)
-            conceptual = await memory_system.query_concepts(message, limit=3)
-            memories.extend(conceptual or [])
+            if hasattr(_memory_instance, "query_concepts"):
+                conceptual = await _memory_instance.query_concepts(message, limit=3)
+                memories.extend(conceptual or [])
 
-            # Core memories (important information)
-            core = await memory_system.query_core(message, limit=2)
-            memories.extend(core or [])
+            if hasattr(_memory_instance, "query_core"):
+                core = await _memory_instance.query_core(message, limit=2)
+                memories.extend(core or [])
 
             return memories
 
@@ -547,12 +559,12 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
         """Apply personality-based modifications to response"""
         # Adjust based on personality traits
         humor_level = self.personality_traits.get("humor", 0.5)
-        formality = 1.0 - self.personality_traits.get("creativity", 0.5)
+        # formality reserved for future style control
 
         # Simple personality adjustments (could be more sophisticated)
         if humor_level > 0.7 and len(response) > 100:
             if "!" not in response and "?" not in response:
-                response += " 😊"
+                response += " \U0001f60a"
 
         return response
 
@@ -635,8 +647,10 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             }
 
             # Store in episodic memory if available
-            if memory_system is not None:
-                await memory_system.store_episodic(interaction)
+            if _memory_instance is not None and hasattr(
+                _memory_instance, "store_episodic"
+            ):
+                await _memory_instance.store_episodic(interaction)
 
             # Extract and store concepts
             await self._extract_and_store_concepts(message, response)
@@ -657,11 +671,13 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
                     concepts.append(word)
 
             # Store unique concepts if memory system available
-            if memory_system is not None:
+            if _memory_instance is not None and hasattr(
+                _memory_instance, "store_concept"
+            ):
                 unique_concepts = list(set(concepts))[:10]  # Limit to 10 concepts
 
                 for concept in unique_concepts:
-                    await memory_system.store_concept(
+                    await _memory_instance.store_concept(
                         concept,
                         {
                             "context": "conversation",
@@ -753,7 +769,7 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             if hasattr(provider.get("client"), "close"):
                 try:
                     await provider["client"].close()
-                except:
+                except Exception:
                     pass
 
         # Save learning history if configured
