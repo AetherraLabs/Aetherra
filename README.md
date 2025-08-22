@@ -371,6 +371,13 @@ python test_security_system.py
 - [🧠 Memory Security](docs/memory-security.md) - Memory leak prevention
 - [🔍 Security Monitoring](docs/security-monitoring.md) - Monitoring and alerts
 
+### 📜 Policies
+
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Governance](GOVERNANCE.md)
+- [Support](SUPPORT.md)
+- [Privacy](PRIVACY.md)
+
 ---
 
 ## 🎯 **Quick Start**
