@@ -232,6 +232,27 @@ class AetherraHubServer:
             """Get Hub statistics"""
             self.stats["requests_served"] += 1
             out = dict(self.stats)
+            # Best-effort: include Lyrixa chat service availability from the registry
+            try:
+                import asyncio
+
+                from aetherra_service_registry import get_service_registry
+
+                async def _get():
+                    reg = await get_service_registry()
+                    info = reg.get_service_info("lyrixa_chat")
+                    if not info:
+                        return {"registered": False}
+                    return {
+                        "registered": True,
+                        "status": getattr(info.status, "value", str(info.status)),
+                        "registered_at": info.registered_at.isoformat(),
+                        "last_heartbeat": info.last_heartbeat.isoformat(),
+                    }
+
+                out["lyrixa_chat"] = asyncio.run(_get())
+            except Exception:
+                out["lyrixa_chat"] = {"registered": False}
             if self.federation is not None:
                 out["peers"] = self.federation.list_peers()
                 out["federated_count"] = len(self.federation.get_federated_plugins())
@@ -299,6 +320,54 @@ class AetherraHubServer:
                 logger.error(f"telemetry error: {e}")
                 return jsonify({"error": "server"}), 500  # type: ignore[name-defined]
 
+        @app.route("/api/lyrixa/chat", methods=["POST"])  # lightweight chat bridge
+        def lyrixa_chat():
+            """Forward chat requests to the registered Lyrixa chat service (best-effort)."""
+            self.stats["requests_served"] += 1
+            try:
+                payload = request.get_json(silent=True) or {}  # type: ignore[name-defined]
+                msg = payload.get("message") or payload.get("content") or ""
+                allow_edits = bool(payload.get("allow_edits", False))
+                edit_root = payload.get("edit_root")
+                # Lazy import to avoid tight coupling
+                try:
+                    import asyncio
+
+                    from aetherra_service_registry import get_service_registry
+
+                    async def _call():
+                        reg = await get_service_registry()
+                        svc = reg.get_service("lyrixa_chat")
+                        if not svc:
+                            return None
+                        return await svc.handle_message(
+                            "lyrixa.chat",
+                            {
+                                "message": msg,
+                                "allow_edits": allow_edits,
+                                "edit_root": edit_root,
+                            },
+                        )
+
+                    result = asyncio.run(_call())
+                except Exception:
+                    result = None
+
+                if not result:
+                    # Deterministic fallback mirroring LyrixaChatService
+                    text = (
+                        "Lyrixa chat service is not online right now. "
+                        "I can still answer identity and Aetherra questions."
+                    )
+                    return jsonify(
+                        {"text": text, "suggestions": [], "applied_changes": []}
+                    )  # type: ignore[name-defined]
+
+                return jsonify(result)  # type: ignore[name-defined]
+            except Exception as e:
+                logger.error(f"lyrixa chat error: {e}")
+                return jsonify({"error": "server"}), 500  # type: ignore[name-defined]
+
         @app.route("/api/memory/graph", methods=["GET"])
         def memory_graph():
             """Return a summarized memory graph (nodes/edges counts and samples)."""
@@ -341,18 +410,32 @@ class AetherraHubServer:
                 <p>Status: <span style="color: #66ffcc;">ONLINE</span></p>
                 <p>Registered Plugins: <span id="plugin-count">Loading...</span></p>
                 <p>Uptime: <span id="uptime">Loading...</span></p>
+                <p>Lyrixa Chat Service: <span id="lyrixa-status">Checking...</span></p>
                 <hr>
                 <h2>API Endpoints:</h2>
                 <ul>
                     <li><a href="/health" style="color: #00ffaa;">GET /health</a> - Health check</li>
                     <li><a href="/api/plugins" style="color: #00ffaa;">GET /api/plugins</a> - List plugins</li>
                     <li><a href="/api/stats" style="color: #00ffaa;">GET /api/stats</a> - Hub statistics</li>
+                    <li>POST /api/lyrixa/chat - Lyrixa chat bridge</li>
                     <li>POST /api/plugins/register - Register plugin</li>
                 </ul>
                 <script>
                     fetch('/api/stats').then(r=>r.json()).then(d=>{
                         document.getElementById('plugin-count').textContent = Object.keys(d).length || 0;
                         document.getElementById('uptime').textContent = Math.round((Date.now() - new Date(d.startup_time)) / 1000) + 's';
+                        try {
+                            const ly = d.lyrixa_chat || { registered: false };
+                            const el = document.getElementById('lyrixa-status');
+                            if (ly.registered) {
+                                const ok = ly.status === 'healthy' || ly.status === 'HEALTHY';
+                                el.textContent = ok ? 'ONLINE' : (ly.status || 'REGISTERED');
+                                el.style.color = ok ? '#66ffcc' : '#ffd166';
+                            } else {
+                                el.textContent = 'OFFLINE';
+                                el.style.color = '#ff6b6b';
+                            }
+                        } catch (e) { /* no-op */ }
                     });
                 </script>
             </body>

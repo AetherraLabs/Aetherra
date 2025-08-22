@@ -233,6 +233,82 @@ class EngineAdapter:
             return "error"
 
 
+class LyrixaChatAdapter:
+    """Wraps LyrixaChatService to provide registry messaging and heartbeats."""
+
+    def __init__(self, chat_service):
+        self.impl = chat_service
+        self.name = "lyrixa_chat"
+        self._heartbeat_task = None
+
+    async def start(self):
+        # Initialize underlying service and start heartbeat
+        try:
+            await self.impl.initialize()
+        except Exception:
+            pass
+        self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
+
+    async def handle_message(self, message_type, data):
+        mt = (message_type or "").lower()
+        payload = data or {}
+        # Accept various message types
+        if mt in ("chat", "lyrixa.chat", "lyrixa_chat.chat"):
+            msg = payload.get("message") or payload.get("content") or ""
+            allow_edits = bool(payload.get("allow_edits", False))
+            # Optional edit root
+            edit_root = payload.get("edit_root")
+            try:
+                from Aetherra.lyrixa.chat.lyrixa_chat_service import ChatOptions
+            except Exception:
+                ChatOptions = None  # type: ignore
+
+            opts = None
+            if ChatOptions is not None:
+                try:
+                    if edit_root:
+                        from pathlib import Path as _P
+
+                        opts = ChatOptions(
+                            allow_edits=allow_edits, edit_root=_P(edit_root)
+                        )
+                    else:
+                        opts = ChatOptions(allow_edits=allow_edits)
+                except Exception:
+                    opts = None
+
+            try:
+                resp = await self.impl.chat(msg, opts)
+                # Normalize response to plain dict
+                return {
+                    "text": resp.text,
+                    "suggestions": resp.suggestions,
+                    "applied_changes": resp.applied_changes,
+                    "awareness": resp.awareness,
+                }
+            except Exception as e:
+                return {"error": str(e)}
+        return {"error": "unknown_message"}
+
+    async def _heartbeat_loop(self):
+        if CORE_AVAILABLE:
+            from aetherra_service_registry import update_heartbeat
+
+            while True:
+                try:
+                    await update_heartbeat(self.name)
+                    await asyncio.sleep(60)
+                except Exception:
+                    await asyncio.sleep(60)
+
+    async def shutdown(self):
+        if self._heartbeat_task:
+            try:
+                self._heartbeat_task.cancel()
+            except Exception:
+                pass
+
+
 class AetherraOSLauncher:
     """
     [CORE] Master OS Launcher
@@ -337,43 +413,20 @@ class AetherraOSLauncher:
     async def _load_core_systems(self, config: Optional[Dict]):
         """[BRAIN] Load and register all core systems."""
         logger.info("[BRAIN] Phase 2: Loading Core Systems...")
-
-        # Load configuration
         system_config = config or {}
-
-        # Initialize Memory System
+        # Initialize core and optional systems in order
         await self._load_memory_system(system_config)
-
-        # Initialize Plugin Manager
         await self._load_plugin_manager(system_config)
-
-        # Initialize Aetherra Native Engine
         await self._load_aetherra_engine(system_config)
-
-        # Initialize Aether Script Service (.aether file interpreter)
         await self._load_aether_script_service(system_config)
-
-        # Initialize Persistent Memory System
         await self._load_persistent_memory_system(system_config)
-
-        # Initialize Adaptive Behavior System
         await self._load_adaptive_behavior_system(system_config)
-
-        # Initialize Consciousness Evolution Systems
         await self._load_consciousness_systems(system_config)
-
-        # Initialize Scheduler
         await self._load_scheduler(system_config)
-
-        # Initialize Aetherra Hub (Plugin Marketplace)
         await self._load_aetherra_hub(system_config)
-
-        # Initialize Self-Maintenance systems (Self-Improvement + Self-Repair)
         await self._load_self_maintenance_systems(system_config)
-
-        # Initialize GUI (if available)
+        await self._load_lyrixa_chat_service(system_config)
         await self._load_gui_system(system_config)
-
         logger.info("[OK] All core systems loaded")
 
     async def _load_self_maintenance_systems(self, config: Dict):
@@ -888,6 +941,40 @@ class AetherraOSLauncher:
         except Exception as e:
             logger.error(f"[ERROR] Failed to load consciousness systems: {e}")
             raise
+
+    async def _load_lyrixa_chat_service(self, config: Dict):
+        """💬 Load the Lyrixa Chat Service and register it for messaging."""
+        try:
+            # Respect offline/quiet gating: still register chat, but it will use deterministic fallbacks
+            logger.info("[CHAT] Loading Lyrixa Chat Service...")
+            from Aetherra.lyrixa.chat.lyrixa_chat_service import LyrixaChatService
+
+            chat_impl = LyrixaChatService()
+            chat_adapter = LyrixaChatAdapter(chat_impl)
+            await chat_adapter.start()
+
+            self.systems["lyrixa_chat"] = chat_adapter
+            await register_service(
+                "lyrixa_chat",
+                chat_adapter,
+                metadata={
+                    "type": "assistant",
+                    "version": "1.0",
+                    "capabilities": [
+                        "identity",
+                        "workspace_awareness",
+                        "suggest_fixes",
+                        "apply_fix_safe",
+                    ],
+                },
+            )
+            if self.service_registry and CORE_AVAILABLE:
+                await self.service_registry.update_service_status(
+                    "lyrixa_chat", ServiceStatus.HEALTHY
+                )
+            logger.info("[OK] Lyrixa Chat Service online")
+        except Exception as e:
+            logger.warning(f"[WARN] Lyrixa Chat Service unavailable: {e}")
 
     async def _init_quantum_consciousness(self, quantum_engine):
         """Initialize quantum consciousness with proper parameters."""
