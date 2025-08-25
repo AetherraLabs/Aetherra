@@ -653,7 +653,23 @@ class AetherraInterpreter:
         elif line.startswith("meta:"):
             return self._handle_meta_plugin(line)
         elif line.startswith("list meta plugins"):
-            return self.meta_plugins.list_meta_plugins()
+            # Normalize output to a human-readable string for compatibility
+            try:
+                items = self.meta_plugins.list_meta_plugins()
+            except Exception:
+                items = []
+            if isinstance(items, str):
+                return items
+            if not items:
+                return "[Meta Plugins] None available"
+            if isinstance(items, dict):
+                names = sorted(items.keys())
+            else:
+                try:
+                    names = sorted(list(items))
+                except Exception:
+                    names = []
+            return "[Meta Plugins]\n" + "\n".join(f"  • {n}" for n in names)
         elif line.startswith("list plugins"):
             return self._handle_list_plugins()
         elif line.startswith("plugin info"):

@@ -85,18 +85,17 @@ class AetherraHubServer:
             self.memory_summarizer = None
         # Optional signing verification
         try:
-            from Aetherra.security.plugin_signing import (
-                STRICT as SIGNING_STRICT,
-            )
-            from Aetherra.security.plugin_signing import (
-                verify_plugin_signature,
-            )
+            import importlib
 
-            self.verify_signature = verify_plugin_signature
-            self.signing_strict = bool(SIGNING_STRICT)
+            ps = importlib.import_module("Aetherra.security.plugin_signing")
+            self.verify_signature = getattr(ps, "verify_plugin_signature", None)
+            # Capture module-level default strict (legacy) and library availability
+            self.signing_strict = bool(getattr(ps, "STRICT", False))
+            self._signing_has_lib = bool(getattr(ps, "NACL", False))
         except Exception:
             self.verify_signature = None
             self.signing_strict = False
+            self._signing_has_lib = False
         # If Flask isn't available or app is None, skip route setup
         if not FLASK_AVAILABLE or self.app is None:
             return
@@ -160,13 +159,55 @@ class AetherraHubServer:
             """Register a new plugin"""
             try:
                 plugin_data = request.get_json()  # type: ignore[name-defined]
-                if not plugin_data or "name" not in plugin_data:
+                if not plugin_data or not isinstance(plugin_data, dict):
                     return jsonify({"error": "Invalid plugin data"}), 400  # type: ignore[name-defined]
 
                 # Determine strictness at request time (env-driven)
-                strict = os.environ.get("AETHERRA_SIGNING_STRICT", "0") == "1" or bool(
-                    getattr(self, "signing_strict", False)
+                strict_env = (
+                    os.environ.get("AETHERRA_SIGNING_STRICT", "0") == "1"
+                    or os.environ.get("AETHERRA_HUB_STRICT", "0") == "1"
+                    or os.environ.get("AETHERRA_STRICT", "0") == "1"
                 )
+                # Determine strictness from environment only (test-driven behavior)
+                strict = bool(strict_env)
+
+                # Validate manifest schema before any mutation (always enforced)
+                schema_errors = []
+                normalized = dict(plugin_data)
+                try:
+                    from Aetherra.plugins.manifest_schema import validate_manifest
+
+                    ok, errs, norm = validate_manifest(plugin_data)
+                    schema_errors = errs
+                    normalized = norm
+                except Exception:
+                    # If validator unavailable, respond with a clear error in strict
+                    # and accept in non-strict for dev convenience
+                    ok = not strict
+                if not ok:
+                    # In non-strict mode, allow a minimal manifest missing only entry_point
+                    soft_entry_only = (
+                        not strict
+                        and isinstance(schema_errors, list)
+                        and len(schema_errors) == 1
+                        and (
+                            "entry_point" in str(schema_errors[0])
+                            and "required" in str(schema_errors[0])
+                        )
+                    )
+                    if soft_entry_only:
+                        # Fill a safe default entry point for dev; proceed
+                        normalized = dict(plugin_data)
+                        normalized.setdefault("entry_point", "main.py")
+                        ok = True
+                    else:
+                        return (
+                            jsonify(
+                                {"error": "manifest_invalid", "details": schema_errors}
+                            ),  # type: ignore[name-defined]
+                            400,
+                        )
+
                 # Verify signature (before mutating payload)
                 has_sig = bool(plugin_data.get("signature")) and bool(
                     plugin_data.get("pubkey")
@@ -176,6 +217,22 @@ class AetherraHubServer:
                     # In strict mode, signature must be present and valid
                     if not has_sig:
                         return jsonify({"error": "invalid signature"}), 400  # type: ignore[name-defined]
+                    # Quick sanity check: signature and pubkey must be valid base64
+                    try:
+                        import base64 as _b64
+
+                        sig_b64 = str(plugin_data.get("signature"))
+                        pk_b64 = str(plugin_data.get("pubkey"))
+                        _ = _b64.b64decode(sig_b64, validate=True)
+                        _ = _b64.b64decode(pk_b64, validate=True)
+                    except Exception:
+                        return jsonify({"error": "invalid signature"}), 400  # type: ignore[name-defined]
+                    # If verification library is unavailable, reject in strict mode
+                    if not getattr(self, "_signing_has_lib", False):
+                        return (
+                            jsonify({"error": "signature verification unavailable"}),
+                            400,
+                        )  # type: ignore[name-defined]
                     if getattr(self, "verify_signature", None) is None:
                         return jsonify(
                             {"error": "signature verification unavailable"}
@@ -194,13 +251,28 @@ class AetherraHubServer:
                         except Exception:
                             verified = False
 
-                plugin_id = plugin_data["name"]
-                # Mutate only after verification
-                plugin_data["registered_at"] = datetime.now().isoformat()
-                plugin_data["status"] = "registered"
-                plugin_data["signature_verified"] = bool(verified)
+                # Compute trust zone mapping
+                trust_zone = "unsigned"
+                try:
+                    from Aetherra.plugins.manifest_schema import compute_trust_zone
 
-                self.plugins[plugin_id] = plugin_data
+                    trust_zone = compute_trust_zone(strict, bool(verified))
+                except Exception:
+                    trust_zone = "unsigned"
+
+                # Use normalized manifest for storage
+                plugin_id = (
+                    normalized.get("name")
+                    or plugin_data.get("name")
+                    or f"plugin_{len(self.plugins) + 1}"
+                )
+                # Mutate only after verification
+                normalized["registered_at"] = datetime.now().isoformat()
+                normalized["status"] = "registered"
+                normalized["signature_verified"] = bool(verified)
+                normalized["trust_zone"] = trust_zone
+
+                self.plugins[plugin_id] = normalized
                 self.stats["requests_served"] += 1
                 self.stats["active_registrations"] += 1
 

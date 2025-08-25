@@ -11,9 +11,15 @@ from __future__ import annotations
 
 import argparse
 import os
+import random
 import sys
 from pathlib import Path
 from typing import List
+
+try:
+    import numpy as _np  # type: ignore
+except Exception:
+    _np = None
 
 from Aetherra.analysis.static_risk import analyze_paths  # type: ignore
 from Aetherra.security.script_signing import verify_embedded_signature  # type: ignore
@@ -31,12 +37,38 @@ def find_aether_files(root: Path) -> List[Path]:
     return sorted(set(files))
 
 
+def _apply_profile(profile: str | None):
+    if not profile:
+        profile = os.getenv("AETHERRA_PROFILE", "").lower() or None
+    if profile != "test":
+        return
+    os.environ.setdefault("AETHERRA_PROFILE", "test")
+    os.environ.setdefault("AETHERRA_DETERMINISTIC", "1")
+    os.environ.setdefault("PYTHONHASHSEED", "0")
+    try:
+        random.seed(0)
+    except Exception:
+        pass
+    if _np is not None:
+        try:
+            _np.random.seed(0)
+        except Exception:
+            pass
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=str(Path.cwd()))
     ap.add_argument("--output", default="aether_static_report.md")
     ap.add_argument("--strict", action="store_true")
     ap.add_argument("--risk-threshold", type=int, default=5)
+    ap.add_argument("--profile", default=os.getenv("AETHERRA_PROFILE", ""))
+    ap.add_argument(
+        "--exclude",
+        action="append",
+        default=[],
+        help="Glob(s) to exclude from scanning (repeatable)",
+    )
     ap.add_argument(
         "--max-findings-per-file",
         type=int,
@@ -45,8 +77,22 @@ def main() -> int:
     )
     args = ap.parse_args()
 
+    _apply_profile(getattr(args, "profile", None))
+
     root = Path(args.root).resolve()
     files = find_aether_files(root)
+    # Apply excludes
+    excludes = getattr(args, "exclude", []) or []
+    if excludes:
+        import fnmatch
+
+        files = [
+            f
+            for f in files
+            if not any(fnmatch.fnmatch(str(f), pat) for pat in excludes)
+        ]
+    # Known mutable artifacts to ignore for signature checks but include in risk: evolution_history.aether
+    sig_ignored = {str((root / "evolution_history.aether").resolve())}
 
     strict_env = os.getenv("AETHERRA_SCRIPT_VERIFY_STRICT", "0") == "1"
     strict = args.strict or strict_env
@@ -54,6 +100,9 @@ def main() -> int:
     lines = ["# .aether Verification Report", ""]
     lines.append(f"Root: {root}")
     lines.append(f"Files found: {len(files)}")
+    prof = os.getenv("AETHERRA_PROFILE") or getattr(args, "profile", "")
+    if prof:
+        lines.append(f"Profile: {prof}")
     lines.append("")
 
     fail = False
@@ -62,6 +111,10 @@ def main() -> int:
     if strict:
         lines.append("## Signature Verification (strict)")
         for f in files:
+            fstr = str(f.resolve())
+            if fstr in sig_ignored:
+                lines.append(f"- {f}: SKIP (signature not required for evolving log)")
+                continue
             ok, reason = verify_embedded_signature(
                 f.read_text(encoding="utf-8", errors="ignore")
             )

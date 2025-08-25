@@ -1,3 +1,18 @@
+repos:
+  - repo: local
+    hooks:
+      - id: aether-sign
+        name: Aether: Sign .aether files
+        entry: python tools/precommit_sign_aether.py
+        language: system
+        pass_filenames: true
+        files: \.aether$
+      - id: aether-verify-strict
+        name: Aether: Strict verification (.aether)
+        entry: python tools/verify_aether_scripts.py --root . --output aether_static_report.md --strict
+        language: system
+        pass_filenames: false
+        stages: [commit]
 # Aetherra Pre-commit Configuration
 # Ensures code quality before commits
 

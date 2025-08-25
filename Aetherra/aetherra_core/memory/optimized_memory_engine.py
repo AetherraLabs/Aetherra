@@ -3,7 +3,7 @@ DEPRECATED: OptimizedLyrixaMemoryEngine is now an adapter for QuantumEnhancedMem
 All memory operations are delegated to the canonical engine.
 """
 
-from .QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
+from .QuantumEnhancedMemoryEngine import QuantumEnhancedMemoryEngine
 
 
 class OptimizedLyrixaMemoryEngine:
