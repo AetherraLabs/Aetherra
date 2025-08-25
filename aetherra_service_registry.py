@@ -486,6 +486,9 @@ async def shutdown_service_registry():
         _service_registry = None
 
 
+# Backwards compatibility alias
+ServiceRegistry = AetherraServiceRegistry
+
 if __name__ == "__main__":
     # Test the service registry
     async def test_registry():

@@ -193,8 +193,14 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-yarn.lock
+
+# Allow lockfiles to be committed (recommended for reproducible builds)
+# package-lock.json / yarn.lock are intentionally NOT ignored
+
+# Additional ignores for vendored Python artifacts inside JS/other folders
+frontend/**/Lib/
+**/site-packages/
+**/*.dist-info/
 
 # ===== COMPILED EXTENSIONS =====
 *.pyd

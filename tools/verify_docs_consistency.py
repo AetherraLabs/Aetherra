@@ -70,22 +70,51 @@ def find_routes_in_code() -> Set[str]:
     return found
 
 
+def _extract_section(text: str, heading: str) -> str:
+    """Extract content under a markdown level-2 heading until the next level-2 heading.
+
+    If the heading isn't found, return an empty string to allow caller fallbacks.
+    """
+    # Use a case-insensitive match for the heading line starting with '## '
+    pattern = re.compile(
+        rf"^##\s+{re.escape(heading)}\s*$", re.IGNORECASE | re.MULTILINE
+    )
+    m = pattern.search(text)
+    if not m:
+        return ""
+    start = m.end()
+    # Find next level-2 heading
+    m2 = re.compile(r"^##\s+", re.MULTILINE).search(text, pos=start)
+    end = m2.start() if m2 else len(text)
+    return text[start:end]
+
+
 def read_doc_section_envs(doc: Path) -> Set[str]:
     if not doc.exists():
         return set()
     text = doc.read_text(encoding="utf-8", errors="ignore")
-    return set(sorted(set(ENV_PATTERN.findall(text))))
+    # Prefer the explicit Environment Variables Index section
+    section = _extract_section(text, "Environment Variables Index")
+    if not section:
+        # Fallback to a broader Configuration and Environment section if present
+        section = _extract_section(text, "Configuration and Environment") or text
+    return set(sorted(set(ENV_PATTERN.findall(section))))
 
 
 def read_doc_endpoints(doc: Path) -> Set[str]:
     if not doc.exists():
         return set()
     text = doc.read_text(encoding="utf-8", errors="ignore")
+    # Scope to the Service and Endpoint Summary section to avoid picking up unrelated paths
+    section = _extract_section(text, "Service and Endpoint Summary")
+    if not section:
+        # If the summary isn't present, fall back to entire doc (best effort)
+        section = text
     # Extract inline/code paths that may include angle-bracket segments
-    paths = set(re.findall(r"(/[-a-zA-Z0-9_./<>]+)", text))
+    paths = set(re.findall(r"(/[-a-zA-Z0-9_./<>]+)", section))
     normed = {_normalize_route(p) for p in paths if p.startswith("/")}
     # Explicitly capture root route when referenced in prose
-    if "GET /" in text or "`/`" in text:
+    if "GET /" in section or "`/`" in section:
         normed.add("/")
     # Keep only relevant API/dashboard paths
     allowed_prefixes = (
@@ -95,9 +124,14 @@ def read_doc_endpoints(doc: Path) -> Set[str]:
         "/services",
         "/health",
         "/status",
-        "/",
     )
-    filtered = {p for p in normed if p == "/" or p.startswith(allowed_prefixes)}
+    filtered = {p for p in normed if p == "/" or p.lower().startswith(allowed_prefixes)}
+    # Drop obvious non-API artifacts (file paths/extensions)
+    filtered = {
+        p
+        for p in filtered
+        if not re.search(r"\.(py|md|txt|json|yaml|yml)$", p, re.IGNORECASE)
+    }
     return filtered
 
 

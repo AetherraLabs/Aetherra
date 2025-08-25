@@ -32,7 +32,7 @@ import requests
 # Add Aetherra to path
 sys.path.insert(0, "Aetherra")
 
-from aetherra_core.config import config_loader
+from Aetherra.aetherra_core.config import config_loader
 
 logger = logging.getLogger(__name__)
 

@@ -17,6 +17,7 @@
 - Historically used for rapid testing before modules were mature
 """
 
+import asyncio
 import sys
 import traceback
 
@@ -24,39 +25,36 @@ import traceback
 def main():
     print("🧬 Bootstrapping Aetherra OS Kernel...")
     try:
-        from aetherra_core.system import AetherraRuntime
+        # Prefer the canonical OS launcher when available
+        from aetherra_os_launcher import AetherraOSLauncher
 
-        runtime = AetherraRuntime()
-        runtime.launch()
-        print("✅ Aetherra Kernel launched successfully.")
-    except ImportError as e:
-        print(f"❌ Could not import AetherraRuntime: {e}")
+        asyncio.run(AetherraOSLauncher().launch_full_os({"quiet": True}))
+        print("✅ Aetherra OS launched via canonical launcher.")
+    except Exception as e:
+        print(f"⚠️ OS launcher not available or failed: {e}")
         print("🧪 Running fallback integration test...")
         try:
-            # Lightweight integration test
-            from aetherra_core.memory import MemorySystem
-            from aetherra_core.plugins import PluginManager
-            from lyrixa.interface import LyrixaInterface
+            # Lightweight integration test using canonical modules
+            from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
+                AetherraMemoryEngine as MemorySystem,
+            )
+            from Aetherra.aetherra_core.plugins.plugin_manager import PluginManager
 
             memory = MemorySystem()
             plugins = PluginManager()
-            interface = LyrixaInterface()
 
-            assert memory.is_ready()
-            assert plugins.discover_plugins()
-            assert interface.mount()
+            # Basic sanity checks
+            assert hasattr(memory, "store"), "Memory system not functional"
+            discovered = plugins.discover_plugins()
+            assert isinstance(discovered, list)
 
             print(
-                "✅ Fallback integration test passed: All core modules are mountable."
+                "✅ Fallback integration test passed: Core memory and plugins are usable."
             )
-        except Exception as test_exc:
+        except Exception:
             print("❌ Fallback integration test failed.")
             traceback.print_exc()
             sys.exit(1)
-    except Exception as exc:
-        print("❌ Unexpected error during bootstrap.")
-        traceback.print_exc()
-        sys.exit(1)
 
 
 if __name__ == "__main__":

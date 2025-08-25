@@ -226,7 +226,7 @@ class LyrixaOperatingSystem:
 
             # Phase 3: Plugin Manager
             logger.info("[PLG] Phase 3: Initializing Plugin Manager...")
-            from aetherra_core.plugins import plugin_manager_core
+            from Aetherra.aetherra_core.plugins import plugin_manager_core
 
             self.plugin_manager = await plugin_manager_core.get_plugin_manager()
 
@@ -279,7 +279,7 @@ class LyrixaOperatingSystem:
 
             # Phase 4: Lyrixa Engine
             logger.info("[ENG] Phase 4: Initializing Lyrixa Engine...")
-            from aetherra_core.engine.lyrixa_engine import AetherraEngine
+            from Aetherra.aetherra_core.engine.lyrixa_engine import AetherraEngine
 
             self.lyrixa_engine = AetherraEngine()
             # Proactively initialize the engine here so any background tasks

@@ -17,6 +17,11 @@ DISALLOWED_PREFIXES = (
     "lyrixa_core.",
 )
 
+# Also disallow importing the base legacy packages directly, e.g.:
+#   from aetherra_core import X
+#   import lyrixa_core
+DISALLOWED_EXACT = {"aetherra_core", "lyrixa_core"}
+
 
 def iter_py_files(root: Path):
     for p in root.rglob("*.py"):
@@ -28,7 +33,9 @@ def iter_py_files(root: Path):
 
 
 def is_disallowed(name: str) -> bool:
-    return any(name.startswith(pref) for pref in DISALLOWED_PREFIXES)
+    return name in DISALLOWED_EXACT or any(
+        name.startswith(pref) for pref in DISALLOWED_PREFIXES
+    )
 
 
 def main() -> int:

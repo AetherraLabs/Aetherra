@@ -496,6 +496,8 @@ Aetherra/
       self_question_generator_agent.py — Agent that generates self-reflective questions for system introspection"""
       support_agent.py — Process user support requests"""
       technical_agent.py — Process technical support requests"""
+    chat/
+      lyrixa_chat_service.py — Lightweight heuristic: search for common issues and propose edits."""
     ethics_agent/
       __init__.py
       bias_detector.py — Types of bias that can be detected."""
@@ -739,10 +741,14 @@ docs/
   DOCS_CONSISTENCY_REPORT.md — Docs Consistency Report
   FILE_INDEX.md — Aetherra File Index
   import_map.md — Import Map
+  LYRIXA_CHAT_ENDPOINT.md — Lyrixa Chat Endpoint
   manifesto.md — AETHERRA MANIFESTO (v6.0 – July 2025)
+  NEXT_STEPS.md — Next Steps: Lyrixa Chat Production Readiness
   PROJECT_OVERVIEW.md — Aetherra Project Overview
   PROJECT_STATUS_2025-08-11.md — Aetherra — Project Status and Architecture Map (2025-08-11)
   QFAC_MODE_GUIDE.md — AETHERRA QFAC Mode Guide
+  REPO_CLEANUP_GUIDE.md — Repository Cleanup and Size Reduction
+  REPO_SETTINGS.md — Recommended Repository Settings
   SECURITY_FEDERATION_ENHANCEMENTS_2025-08-12.md — Security, Signing, and Federation Enhancements (2025-08-12)
 tests/
   ai/
@@ -759,6 +765,8 @@ tests/
     test_aether_e2e.py
     test_agent_collaboration.py
     test_hub_telemetry_and_federation.py
+    test_lyrixa_chat.py — !/usr/bin/env python3
+    test_lyrixa_chat_endpoint.py
     test_memory_recall.py
     test_qfac_in_os.py
     test_self_maintenance_services.py
@@ -882,6 +890,7 @@ complete_organizer.py — Generate a comprehensive reorganization plan based on 
 COMPREHENSIVE_ORGANIZATION_REPORT.md — 🎯 COMPREHENSIVE AETHERRA CORE ORGANIZATION REPORT
 config.json
 CONSOLIDATION_PLAN.md — 🎯 File Consolidation Plan
+CONTRIBUTING.md — Contributing
 copyright_header.py — !/usr/bin/env python3
 CORE_DIRECTORY_ANALYSIS.md — 🔍 CORE DIRECTORY ANALYSIS
 cosmic_consciousness_engine.py — Cosmic consciousness states"""
@@ -982,6 +991,7 @@ README.md — 🚀 **What is Aetherra?**
 README_DEPLOY.md — Aetherra Deployment Guide
 restart_aetherra.py — Perform pre-restart system checks"""
 safe_cleanup.py — Load the project analysis"""
+SECURITY.md — Security Policy
 self_organizer.aether
 setup.py — !/usr/bin/env python3
 setup_dev.py — Print the Aetherra setup banner"""
@@ -1001,7 +1011,7 @@ ui_standards_report.md — UI Standards Report
 unicode_logger.py — Custom formatter that safely handles Unicode characters."""
 universal_directory_analyzer.py — Calculate SHA256 hash of file content"""
 validate_architecture.py — Result of directory validation"""
-verify_imports.py
+verify_imports.py — Return True if the import target should be considered valid.
 verify_legal_compliance.py — Check all installed packages for GPL-3.0 compatibility."""
 website_truth_audit.md — Aetherra Website Truth Audit
 website_truth_update_summary.md — Aetherra Website Truth Update - August 8, 2025

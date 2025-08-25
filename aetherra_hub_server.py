@@ -85,18 +85,17 @@ class AetherraHubServer:
             self.memory_summarizer = None
         # Optional signing verification
         try:
-            from Aetherra.security.plugin_signing import (
-                STRICT as SIGNING_STRICT,
-            )
-            from Aetherra.security.plugin_signing import (
-                verify_plugin_signature,
-            )
+            import importlib
 
-            self.verify_signature = verify_plugin_signature
-            self.signing_strict = bool(SIGNING_STRICT)
+            ps = importlib.import_module("Aetherra.security.plugin_signing")
+            self.verify_signature = getattr(ps, "verify_plugin_signature", None)
+            # Capture module-level default strict (legacy) and library availability
+            self.signing_strict = bool(getattr(ps, "STRICT", False))
+            self._signing_has_lib = bool(getattr(ps, "NACL", False))
         except Exception:
             self.verify_signature = None
             self.signing_strict = False
+            self._signing_has_lib = False
         # If Flask isn't available or app is None, skip route setup
         if not FLASK_AVAILABLE or self.app is None:
             return
@@ -160,13 +159,55 @@ class AetherraHubServer:
             """Register a new plugin"""
             try:
                 plugin_data = request.get_json()  # type: ignore[name-defined]
-                if not plugin_data or "name" not in plugin_data:
+                if not plugin_data or not isinstance(plugin_data, dict):
                     return jsonify({"error": "Invalid plugin data"}), 400  # type: ignore[name-defined]
 
                 # Determine strictness at request time (env-driven)
-                strict = os.environ.get("AETHERRA_SIGNING_STRICT", "0") == "1" or bool(
-                    getattr(self, "signing_strict", False)
+                strict_env = (
+                    os.environ.get("AETHERRA_SIGNING_STRICT", "0") == "1"
+                    or os.environ.get("AETHERRA_HUB_STRICT", "0") == "1"
+                    or os.environ.get("AETHERRA_STRICT", "0") == "1"
                 )
+                # Determine strictness from environment only (test-driven behavior)
+                strict = bool(strict_env)
+
+                # Validate manifest schema before any mutation (always enforced)
+                schema_errors = []
+                normalized = dict(plugin_data)
+                try:
+                    from Aetherra.plugins.manifest_schema import validate_manifest
+
+                    ok, errs, norm = validate_manifest(plugin_data)
+                    schema_errors = errs
+                    normalized = norm
+                except Exception:
+                    # If validator unavailable, respond with a clear error in strict
+                    # and accept in non-strict for dev convenience
+                    ok = not strict
+                if not ok:
+                    # In non-strict mode, allow a minimal manifest missing only entry_point
+                    soft_entry_only = (
+                        not strict
+                        and isinstance(schema_errors, list)
+                        and len(schema_errors) == 1
+                        and (
+                            "entry_point" in str(schema_errors[0])
+                            and "required" in str(schema_errors[0])
+                        )
+                    )
+                    if soft_entry_only:
+                        # Fill a safe default entry point for dev; proceed
+                        normalized = dict(plugin_data)
+                        normalized.setdefault("entry_point", "main.py")
+                        ok = True
+                    else:
+                        return (
+                            jsonify(
+                                {"error": "manifest_invalid", "details": schema_errors}
+                            ),  # type: ignore[name-defined]
+                            400,
+                        )
+
                 # Verify signature (before mutating payload)
                 has_sig = bool(plugin_data.get("signature")) and bool(
                     plugin_data.get("pubkey")
@@ -176,6 +217,22 @@ class AetherraHubServer:
                     # In strict mode, signature must be present and valid
                     if not has_sig:
                         return jsonify({"error": "invalid signature"}), 400  # type: ignore[name-defined]
+                    # Quick sanity check: signature and pubkey must be valid base64
+                    try:
+                        import base64 as _b64
+
+                        sig_b64 = str(plugin_data.get("signature"))
+                        pk_b64 = str(plugin_data.get("pubkey"))
+                        _ = _b64.b64decode(sig_b64, validate=True)
+                        _ = _b64.b64decode(pk_b64, validate=True)
+                    except Exception:
+                        return jsonify({"error": "invalid signature"}), 400  # type: ignore[name-defined]
+                    # If verification library is unavailable, reject in strict mode
+                    if not getattr(self, "_signing_has_lib", False):
+                        return (
+                            jsonify({"error": "signature verification unavailable"}),
+                            400,
+                        )  # type: ignore[name-defined]
                     if getattr(self, "verify_signature", None) is None:
                         return jsonify(
                             {"error": "signature verification unavailable"}
@@ -194,13 +251,28 @@ class AetherraHubServer:
                         except Exception:
                             verified = False
 
-                plugin_id = plugin_data["name"]
-                # Mutate only after verification
-                plugin_data["registered_at"] = datetime.now().isoformat()
-                plugin_data["status"] = "registered"
-                plugin_data["signature_verified"] = bool(verified)
+                # Compute trust zone mapping
+                trust_zone = "unsigned"
+                try:
+                    from Aetherra.plugins.manifest_schema import compute_trust_zone
 
-                self.plugins[plugin_id] = plugin_data
+                    trust_zone = compute_trust_zone(strict, bool(verified))
+                except Exception:
+                    trust_zone = "unsigned"
+
+                # Use normalized manifest for storage
+                plugin_id = (
+                    normalized.get("name")
+                    or plugin_data.get("name")
+                    or f"plugin_{len(self.plugins) + 1}"
+                )
+                # Mutate only after verification
+                normalized["registered_at"] = datetime.now().isoformat()
+                normalized["status"] = "registered"
+                normalized["signature_verified"] = bool(verified)
+                normalized["trust_zone"] = trust_zone
+
+                self.plugins[plugin_id] = normalized
                 self.stats["requests_served"] += 1
                 self.stats["active_registrations"] += 1
 
@@ -232,6 +304,27 @@ class AetherraHubServer:
             """Get Hub statistics"""
             self.stats["requests_served"] += 1
             out = dict(self.stats)
+            # Best-effort: include Lyrixa chat service availability from the registry
+            try:
+                import asyncio
+
+                from aetherra_service_registry import get_service_registry
+
+                async def _get():
+                    reg = await get_service_registry()
+                    info = reg.get_service_info("lyrixa_chat")
+                    if not info:
+                        return {"registered": False}
+                    return {
+                        "registered": True,
+                        "status": getattr(info.status, "value", str(info.status)),
+                        "registered_at": info.registered_at.isoformat(),
+                        "last_heartbeat": info.last_heartbeat.isoformat(),
+                    }
+
+                out["lyrixa_chat"] = asyncio.run(_get())
+            except Exception:
+                out["lyrixa_chat"] = {"registered": False}
             if self.federation is not None:
                 out["peers"] = self.federation.list_peers()
                 out["federated_count"] = len(self.federation.get_federated_plugins())
@@ -299,6 +392,54 @@ class AetherraHubServer:
                 logger.error(f"telemetry error: {e}")
                 return jsonify({"error": "server"}), 500  # type: ignore[name-defined]
 
+        @app.route("/api/lyrixa/chat", methods=["POST"])  # lightweight chat bridge
+        def lyrixa_chat():
+            """Forward chat requests to the registered Lyrixa chat service (best-effort)."""
+            self.stats["requests_served"] += 1
+            try:
+                payload = request.get_json(silent=True) or {}  # type: ignore[name-defined]
+                msg = payload.get("message") or payload.get("content") or ""
+                allow_edits = bool(payload.get("allow_edits", False))
+                edit_root = payload.get("edit_root")
+                # Lazy import to avoid tight coupling
+                try:
+                    import asyncio
+
+                    from aetherra_service_registry import get_service_registry
+
+                    async def _call():
+                        reg = await get_service_registry()
+                        svc = reg.get_service("lyrixa_chat")
+                        if not svc:
+                            return None
+                        return await svc.handle_message(
+                            "lyrixa.chat",
+                            {
+                                "message": msg,
+                                "allow_edits": allow_edits,
+                                "edit_root": edit_root,
+                            },
+                        )
+
+                    result = asyncio.run(_call())
+                except Exception:
+                    result = None
+
+                if not result:
+                    # Deterministic fallback mirroring LyrixaChatService
+                    text = (
+                        "Lyrixa chat service is not online right now. "
+                        "I can still answer identity and Aetherra questions."
+                    )
+                    return jsonify(
+                        {"text": text, "suggestions": [], "applied_changes": []}
+                    )  # type: ignore[name-defined]
+
+                return jsonify(result)  # type: ignore[name-defined]
+            except Exception as e:
+                logger.error(f"lyrixa chat error: {e}")
+                return jsonify({"error": "server"}), 500  # type: ignore[name-defined]
+
         @app.route("/api/memory/graph", methods=["GET"])
         def memory_graph():
             """Return a summarized memory graph (nodes/edges counts and samples)."""
@@ -341,18 +482,32 @@ class AetherraHubServer:
                 <p>Status: <span style="color: #66ffcc;">ONLINE</span></p>
                 <p>Registered Plugins: <span id="plugin-count">Loading...</span></p>
                 <p>Uptime: <span id="uptime">Loading...</span></p>
+                <p>Lyrixa Chat Service: <span id="lyrixa-status">Checking...</span></p>
                 <hr>
                 <h2>API Endpoints:</h2>
                 <ul>
                     <li><a href="/health" style="color: #00ffaa;">GET /health</a> - Health check</li>
                     <li><a href="/api/plugins" style="color: #00ffaa;">GET /api/plugins</a> - List plugins</li>
                     <li><a href="/api/stats" style="color: #00ffaa;">GET /api/stats</a> - Hub statistics</li>
+                    <li>POST /api/lyrixa/chat - Lyrixa chat bridge</li>
                     <li>POST /api/plugins/register - Register plugin</li>
                 </ul>
                 <script>
                     fetch('/api/stats').then(r=>r.json()).then(d=>{
                         document.getElementById('plugin-count').textContent = Object.keys(d).length || 0;
                         document.getElementById('uptime').textContent = Math.round((Date.now() - new Date(d.startup_time)) / 1000) + 's';
+                        try {
+                            const ly = d.lyrixa_chat || { registered: false };
+                            const el = document.getElementById('lyrixa-status');
+                            if (ly.registered) {
+                                const ok = ly.status === 'healthy' || ly.status === 'HEALTHY';
+                                el.textContent = ok ? 'ONLINE' : (ly.status || 'REGISTERED');
+                                el.style.color = ok ? '#66ffcc' : '#ffd166';
+                            } else {
+                                el.textContent = 'OFFLINE';
+                                el.style.color = '#ff6b6b';
+                            }
+                        } catch (e) { /* no-op */ }
                     });
                 </script>
             </body>

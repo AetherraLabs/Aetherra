@@ -38,7 +38,7 @@ except ImportError as e:
 
 # Try to import intelligence modules
 try:
-    from aetherra_core.engine import intelligence
+    from Aetherra.aetherra_core.engine import intelligence
 
     INTELLIGENCE_AVAILABLE = True
 except ImportError as e:
