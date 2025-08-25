@@ -371,6 +371,13 @@ python test_security_system.py
 - [🧠 Memory Security](docs/memory-security.md) - Memory leak prevention
 - [🔍 Security Monitoring](docs/security-monitoring.md) - Monitoring and alerts
 
+### 📜 Policies
+
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Governance](GOVERNANCE.md)
+- [Support](SUPPORT.md)
+- [Privacy](PRIVACY.md)
+
 ---
 
 ## 🎯 **Quick Start**
@@ -585,6 +592,7 @@ Aetherra's visual identity embodies clarity and intelligence:
 - [📋 Changelog](docs/changelog.md)
 
 - [📘 Project Overview](docs/PROJECT_OVERVIEW.md)
+- [💬 Lyrixa Chat Endpoint](docs/LYRIXA_CHAT_ENDPOINT.md)
 
 ### ✅ Developer Tasks & Verification
 
@@ -593,31 +601,31 @@ Run these from VS Code (Terminal > Run Task) or via PowerShell:
 - Verify Aetherra OS (Headless Smoke)
   - VS Code Task: "Verify Aetherra OS (Headless Smoke)"
   - PowerShell:
-    
+
     ```powershell
     python tools/os_smoke.py
     ```
-    
+
 - Verify Claims (Capabilities Tests)
   - VS Code Task: "Verify Claims (Capabilities Tests)"
   - PowerShell:
-    
+
     ```powershell
     pytest -q -o addopts= tests/capabilities
     ```
-    
+
 - Generate File Index (Docs Appendix)
   - VS Code Task: "Generate File Index (Docs Appendix)"
   - PowerShell:
-    
+
     ```powershell
     python tools/generate_file_index.py --root . --output docs/FILE_INDEX.md
     ```
-    
+
 - Verify Docs Consistency (env vars + endpoints)
   - VS Code Task: "Verify Docs Consistency"
   - PowerShell:
-    
+
     ```powershell
     python tools/verify_docs_consistency.py
     ```

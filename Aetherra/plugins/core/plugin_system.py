@@ -18,7 +18,8 @@ import json
 import os
 import shutil
 import sys
-import traceback
+
+# traceback not used
 import zipfile
 from datetime import datetime
 from pathlib import Path
@@ -26,31 +27,39 @@ from typing import Any, Dict, List, Optional
 
 # Import Lyrixa components
 try:
-# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.advanced_vector_memory import AdvancedMemorySystem
+    # ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.advanced_vector_memory import AdvancedMemorySystem
 
     MEMORY_AVAILABLE = True
 except ImportError:
     MEMORY_AVAILABLE = False
 
-# Import safe file operations
-try:
-    from safe_file_operations import safe_write_file
+# Safe file operations (fallback only; external helper optional)
+SAFE_WRITE_AVAILABLE = False
 
-    SAFE_WRITE_AVAILABLE = True
-except ImportError:
-    SAFE_WRITE_AVAILABLE = False
 
-    def safe_write_file(path, content, encoding="utf-8"):
-        """Fallback to regular file writing"""
-        with open(path, "w", encoding=encoding) as f:
-            f.write(content)
-        return True
+def safe_write_file(path, content, encoding="utf-8"):
+    """Fallback to regular file writing"""
+    with open(path, "w", encoding=encoding) as f:
+        f.write(content)
+    return True
 
 
 class PluginManifest:
     """Plugin manifest for metadata and requirements"""
 
     def __init__(self, data: Dict[str, Any]):
+        # Validate and normalize using central schema
+        try:
+            from Aetherra.plugins.manifest_schema import validate_manifest
+
+            ok, errs, norm = validate_manifest(data)
+            if not ok:
+                raise ValueError(f"manifest invalid: {errs}")
+            data = norm
+        except Exception:
+            # Fallback to legacy behavior if validator unavailable
+            pass
+
         self.name = data.get("name", "Unknown Plugin")
         self.version = data.get("version", "1.0.0")
         self.description = data.get("description", "No description")
@@ -60,6 +69,15 @@ class PluginManifest:
         self.entry_point = data.get("entry_point", "main.py")
         self.ui_components = data.get("ui_components", [])
         self.permissions = data.get("permissions", [])
+        self.data_classification = data.get("data_classification", "public")
+        self.deterministic = data.get("deterministic", False)
+        self.side_effects = data.get("side_effects", "none")
+        self.timeout_ms = data.get("timeout_ms", 60000)
+        self.retries = data.get("retries", 0)
+        self.min_confidence = data.get("min_confidence", 0.0)
+        self.input_schema = data.get("input_schema")
+        self.output_schema = data.get("output_schema")
+        self.trust = data.get("trust", {"min_zone": "unsigned"})
 
 
 class PluginInstance:
@@ -100,16 +118,118 @@ class PluginInstance:
             return False
 
     def execute(self, command: str, **kwargs) -> Dict[str, Any]:
-        """Execute a plugin command"""
+        """Execute a plugin command with basic policy enforcement"""
         if not self.loaded or not self.module:
             return {"error": "Plugin not loaded"}
 
         try:
+            # Trust zone: local Lyrixa plugins default to unsigned
+            current_zone = "unsigned"
+            manifest_zone = (self.manifest.trust or {}).get("min_zone", "unsigned")
+            zone_order = {"unsigned": 0, "lenient_signed": 1, "strict_signed": 2}
+            if zone_order.get(current_zone, 0) < zone_order.get(manifest_zone, 0):
+                return {
+                    "success": False,
+                    "error": "insufficient_trust_zone",
+                    "required": manifest_zone,
+                    "current": current_zone,
+                }
+
+            # Classification guard: block restricted/secret for unsigned unless override
+            allow_untrusted_secret = bool(kwargs.get("_policy_allow_untrusted_secret"))
+            if (
+                getattr(self.manifest, "data_classification", "public")
+                in {"restricted", "secret"}
+                and current_zone == "unsigned"
+                and os.environ.get("AETHERRA_ALLOW_UNTRUSTED_SECRET", "0") != "1"
+                and not allow_untrusted_secret
+            ):
+                return {
+                    "success": False,
+                    "error": "classification_violation",
+                    "classification": self.manifest.data_classification,
+                    "trust_zone": current_zone,
+                }
+
+            # Side-effects must map to permissions
+            se = getattr(self.manifest, "side_effects", "none")
+            perms = set(getattr(self.manifest, "permissions", []) or [])
+            needed = []
+            if se in {"filesystem", "network", "process"}:
+                needed = [se]
+            elif se == "multiple":
+                needed = ["filesystem", "network", "process"]
+            if needed and not (perms.intersection(needed)):
+                return {
+                    "success": False,
+                    "error": "missing_permissions",
+                    "required_any": needed,
+                    "declared": sorted(perms),
+                }
+
             # Look for execute function in plugin
             if hasattr(self.module, "execute"):
                 self.execution_count += 1
-                result = self.module.execute(command, **kwargs)
-                return {"success": True, "result": result}
+                # Enforce timeout and retries
+                timeout_s = (
+                    max(0, int(getattr(self.manifest, "timeout_ms", 60000))) / 1000.0
+                )
+                retries = max(0, int(getattr(self.manifest, "retries", 0)))
+
+                def _call_once():
+                    exec_fn = getattr(self.module, "execute", None)
+                    if callable(exec_fn):
+                        return exec_fn(command, **kwargs)
+                    raise AttributeError("execute function not callable")
+
+                def _with_timeout(func, timeout_sec):
+                    import threading
+
+                    res: Dict[str, Any] = {"value": None, "error": None}
+
+                    def target():
+                        try:
+                            res["value"] = func()
+                        except Exception as e:  # capture to propagate
+                            res["error"] = e
+
+                    t = threading.Thread(target=target, daemon=True)
+                    t.start()
+                    t.join(timeout=timeout_sec if timeout_sec > 0 else None)
+                    if t.is_alive():
+                        return None, TimeoutError("plugin execution timed out")
+                    if res["error"] is not None:
+                        raise res["error"]
+                    return res["value"], None
+
+                attempt = 0
+                last_err = None
+                while attempt <= retries:
+                    attempt += 1
+                    value, err = _with_timeout(_call_once, timeout_s)
+                    if err is None:
+                        # If plugin returns confidence, enforce min_confidence
+                        min_c = float(
+                            getattr(self.manifest, "min_confidence", 0.0) or 0.0
+                        )
+                        if isinstance(value, dict) and "confidence" in value:
+                            try:
+                                conf = float(value.get("confidence", 0.0))
+                                if conf < min_c:
+                                    return {
+                                        "success": False,
+                                        "error": "result_below_min_confidence",
+                                        "confidence": conf,
+                                        "min_confidence": min_c,
+                                    }
+                            except Exception:
+                                pass
+                        return {"success": True, "result": value}
+                    last_err = err
+                return {
+                    "success": False,
+                    "error": str(last_err) if last_err else "execution_failed",
+                }
             else:
                 return {"error": "Plugin has no execute function"}
 
@@ -135,9 +255,12 @@ class LyrixaPluginSystem:
         self.plugins_dir.mkdir(exist_ok=True)
 
         # Plugin registry
-        self.installed_plugins: Dict[str, PluginInstance] = {}
-        self.active_plugins: Dict[str, PluginInstance] = {}
+        self.installed_plugins = {}
+        self.active_plugins = {}
         self.plugin_registry_file = self.plugins_dir / "registry.json"
+        # Policy context and counters
+        self.policy = {}
+        self._policy_state = {"executions": 0}
 
         # Load existing plugins
         self._load_plugin_registry()
@@ -187,7 +310,7 @@ class LyrixaPluginSystem:
             success = safe_write_file(str(self.plugin_registry_file), registry_content)
             if not success:
                 print(
-                    f"[WARN] Failed to safely write plugin registry, falling back to normal write"
+                    "[WARN] Failed to safely write plugin registry, falling back to normal write"
                 )
                 with open(self.plugin_registry_file, "w") as f:
                     f.write(registry_content)
@@ -391,6 +514,19 @@ class LyrixaPluginSystem:
         except Exception as e:
             return {"success": False, "error": f"Uninstallation failed: {str(e)}"}
 
+    def set_policy(self, policy: Dict[str, Any]) -> Dict[str, Any]:
+        """Set/update execution policy (e.g., max_executions, allow_untrusted_secret)."""
+        self.policy.update(policy or {})
+        return {"success": True, "policy": dict(self.policy)}
+
+    def _install_from_url(self, url: str) -> Dict[str, Any]:
+        """Install plugin from URL (not implemented)."""
+        return {"success": False, "error": "URL installation not implemented"}
+
+    def _install_from_repository(self, name: str) -> Dict[str, Any]:
+        """Install plugin from repository (not implemented)."""
+        return {"success": False, "error": "Repository installation not implemented"}
+
     def activate_plugin(self, plugin_name: str) -> Dict[str, Any]:
         """Activate a plugin"""
         try:
@@ -451,8 +587,25 @@ class LyrixaPluginSystem:
         if plugin_name not in self.active_plugins:
             return {"success": False, "error": f"Plugin {plugin_name} not active"}
 
+        # Enforce max executions budget if provided
+        max_exec = self.policy.get("max_executions")
+        if isinstance(max_exec, int) and max_exec >= 0:
+            if int(self._policy_state.get("executions", 0)) >= max_exec:
+                return {
+                    "success": False,
+                    "error": "policy_exhausted",
+                    "policy": {"max_executions": max_exec},
+                }
+            self._policy_state["executions"] = (
+                int(self._policy_state.get("executions", 0)) + 1
+            )
+
         plugin = self.active_plugins[plugin_name]
-        return plugin.execute(command, **kwargs)
+        # Thread internal policy flags (do not leak external fields by default)
+        internal_flags = {}
+        if bool(self.policy.get("allow_untrusted_secret")):
+            internal_flags["_policy_allow_untrusted_secret"] = True
+        return plugin.execute(command, **{**internal_flags, **kwargs})
 
     def list_plugins(self) -> Dict[str, Any]:
         """List all plugins with their status"""
@@ -528,6 +681,12 @@ class LyrixaPluginSystem:
                 "entry_point": "main.py",
                 "ui_components": [],
                 "permissions": ["lyrixa_core"],
+                "data_classification": "public",
+                "deterministic": False,
+                "side_effects": "none",
+                "timeout_ms": 60000,
+                "retries": 0,
+                "min_confidence": 0.0,
             }
 
             manifest_content = json.dumps(manifest_data, indent=2)

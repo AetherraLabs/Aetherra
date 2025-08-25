@@ -179,6 +179,7 @@ class AetherRuntime:
             plugin_name = line.replace("use plugin", "", 1).strip('" ')
             if self.context.plugins:
                 try:
+                    # TODO: Pass policy/trust context when available
                     result = self.context.plugins.execute_plugin(plugin_name)
                     self.context.variables["last_plugin_result"] = result
                     print(f"🧩 Plugin '{plugin_name}' executed successfully")

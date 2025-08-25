@@ -42,9 +42,25 @@ def _compute_signature(payload: bytes) -> str:
 
 
 def _split_header_and_body(script_content: str) -> Tuple[str, str]:
-    lines = script_content.splitlines()
-    if lines and lines[0].startswith(SIGNATURE_MARKER):
-        return lines[0], "\n".join(lines[1:])
+    """
+    Split header and body without normalizing newlines.
+
+    If the first line starts with the signature marker, return that full line
+    (sans trailing CR/LF) as header and the remainder of the text exactly as
+    found on disk as body. This preserves CRLF vs LF so signatures computed
+    over the body remain stable across platforms.
+    """
+    if script_content.startswith(SIGNATURE_MARKER):
+        # Find the first newline position (handles both LF and CRLF by using \n)
+        nl = script_content.find("\n")
+        if nl == -1:
+            # Single-line file with just header
+            line = script_content.rstrip("\r\n")
+            return line, ""
+        # Header line without trailing CR/LF; body is everything after the first \n
+        header_line = script_content[:nl].rstrip("\r\n")
+        body = script_content[nl + 1 :]
+        return header_line, body
     return "", script_content
 
 

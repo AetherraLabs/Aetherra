@@ -1,0 +1,42 @@
+name: Repo Sanity Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  large-file-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for large files (>10MB)
+        run: |
+          git ls-files -z | xargs -0 -I {} bash -lc 'size=$(wc -c < "{}" || echo 0); if [ "$size" -gt 10485760 ]; then echo "Large file: {} ($size bytes)"; exit 1; fi'
+
+  vendor-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure venvs are not committed
+        run: |
+          if ls -d */ | grep -E "^(venv/|env/|\.venv/)$"; then echo "Virtualenv directories present in repo"; exit 1; else echo "No venv directories tracked"; fi
+      - name: Ensure vendored Python artifacts are not tracked
+        run: |
+          offenders=$(git ls-files | grep -E '/(site-packages|\\.dist-info|Lib)/' || true)
+          if [ -n "$offenders" ]; then echo "Vendored artifacts tracked:"; echo "$offenders"; exit 1; else echo "No vendored artifacts tracked"; fi
+
+  lockfile-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce lockfile for frontend
+        run: |
+          if [ -f frontend/package.json ]; then \
+            if [ -f frontend/package-lock.json ] || [ -f frontend/yarn.lock ] || [ -f frontend/pnpm-lock.yaml ]; then \
+              echo "Lockfile present"; \
+            else \
+              echo "Missing lockfile for frontend (expected one of package-lock.json, yarn.lock, pnpm-lock.yaml)"; exit 1; \
+            fi; \
+          else \
+            echo "No frontend/package.json; skipping"; \
+          fi

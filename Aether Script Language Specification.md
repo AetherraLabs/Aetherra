@@ -1,7 +1,7 @@
-# Aether Script Language Specification (`.aether`)
+# Aether Script Language System (`.aether`) — Legacy Spec (v1.0)
 
-> Version: 1.0
-> Status: Draft
+> Version: 1.0 (superseded by v1.1)
+> Status: Legacy
 > Maintainer: Aetherra Labs
 > Purpose: Defines the syntax, structure, and execution rules of `.aether` (Aether Script), the native language of the Aetherra Operating System.
 
@@ -15,7 +15,9 @@ It blends human goals with formal logic in a way that allows autonomous systems 
 
 ---
 
-## 🧱 1. Top-Level Grammar
+> Note: This v1.0 document is retained for historical reference. The current, authoritative spec is in `docs/Aether_Script_Language_System.md` (v1.1). Prefer that document for up‑to‑date grammar and semantics.
+
+## 🧱 1. Top-Level Grammar (Legacy)
 
 ```ebnf
 script          ::= (statement | comment | blank_line)+

@@ -1,17 +1,7 @@
-name: Deploy Aetherra Website
+name: Deploy Aetherra Website (manual)
 
 on:
-  push:
-    branches: [ main ]
-    paths: [
-      'index.html',
-      'assets/**',
-      'favicon.svg',
-      'CNAME',
-      '*.html',
-      '*.css',
-      '*.js'
-    ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -20,7 +10,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:

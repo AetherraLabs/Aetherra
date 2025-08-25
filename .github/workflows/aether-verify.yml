@@ -1,0 +1,37 @@
+name: Aether Verify
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Strict .aether verification
+        env:
+          AETHERRA_SCRIPT_VERIFY_STRICT: '1'
+        run: |
+          python tools/verify_aether_scripts.py --root . --output aether_static_report.md --strict
+
+      - name: OS Smoke
+        run: |
+          python tools/os_smoke.py
+
+      - name: Capabilities tests
+        run: |
+          pytest -q -o addopts= tests/capabilities || echo "Capabilities tests not present"

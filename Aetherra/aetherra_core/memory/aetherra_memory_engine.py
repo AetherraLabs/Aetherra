@@ -6,22 +6,27 @@ DEPRECATED: AetherraMemoryEngine is now an adapter for QuantumEnhancedMemoryEngi
 All memory operations are delegated to the canonical engine.
 """
 
+import asyncio
 import uuid
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
+from ..kernel.narrator import MemoryNarrative, MemoryNarrator
+from .fractal_mesh import (
+    ConceptClusterManager,
+    CrossContextAnalogies,
+    EpisodicTimeline,
+    FractalMeshCore,
+)
+from .fractal_mesh.base import MemoryFragment, MemoryFragmentType
+from .memory_core import LyrixaMemorySystem
+from .models import MemoryRecallResult, PolicyViolation
+from .pulse import DriftAlert, MemoryHealth, MemoryPulseMonitor
 from .QuantumEnhancedMemoryEngine.quantum_memory_engine import (
     QuantumEnhancedMemoryEngine,
 )
-
-
-# Add missing enums for compatibility
-class MemoryFragmentType(Enum):
-    SEMANTIC = "semantic"
-    EPISODIC = "episodic"
-    PROCEDURAL = "procedural"
-    EMOTIONAL = "emotional"
+from .reflector import MemoryReflector, ReflectionInsight
 
 
 class AetherraMemoryEngine:
@@ -83,14 +88,6 @@ class AetherraMemoryEngine:
         return results
 
 
-from dataclasses import dataclass
-from datetime import timedelta
-
-from ..kernel.narrator import MemoryNarrative, MemoryNarrator
-from .pulse import DriftAlert, MemoryHealth, MemoryPulseMonitor
-from .reflector import MemoryReflector, ReflectionInsight
-
-
 @dataclass
 class MemorySystemConfig:
     """Configuration for the integrated memory system"""
@@ -117,6 +114,15 @@ class MemorySystemConfig:
     enable_cross_system_validation: bool = True
     narrative_generation_threshold: int = 5  # Min fragments for narrative
 
+    # Policy hooks (code-level toggles; defaults are off to preserve behavior)
+    persist_sensitive_only_if_signed: bool = False
+    encrypt_project_memories: bool = False
+    # Callable signature: (content, context_dict) -> (content, context_updates)
+    redact_before_persist: Optional[
+        Callable[[Any, Dict[str, Any]], tuple[Any, Optional[Dict[str, Any]]]]
+    ] = None
+    allow_untrusted_temporaries: bool = True
+
 
 @dataclass
 class MemoryOperationResult:
@@ -125,9 +131,9 @@ class MemoryOperationResult:
     success: bool
     operation_type: str
     fragment_id: Optional[str] = None
-    insights: List[ReflectionInsight] = None
+    insights: List[ReflectionInsight] = field(default_factory=list)
     narrative: Optional[MemoryNarrative] = None
-    alerts: List[DriftAlert] = None
+    alerts: List[DriftAlert] = field(default_factory=list)
     message: str = ""
 
 
@@ -189,6 +195,7 @@ class AetherraMemoryEngineAdvanced:
         fragment_type: MemoryFragmentType = MemoryFragmentType.SEMANTIC,
         confidence: float = 1.0,
         narrative_role: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> MemoryOperationResult:
         """
         Store a new memory with integrated processing across all systems
@@ -196,12 +203,31 @@ class AetherraMemoryEngineAdvanced:
         self.operation_stats["total_operations"] += 1
 
         try:
+            # Optional policy guardrails (no-op unless enabled)
+            # Merge lightweight context into metadata so guards can reason
+            derived_meta: Dict[str, Any] = {}
+            if metadata:
+                derived_meta.update(metadata)
+            if tags:
+                # expose tags to policy checks and mark sensitive if present
+                derived_meta.setdefault("tags", list(tags))
+                if "sensitive" in tags:
+                    derived_meta.setdefault("sensitive", True)
+            if category:
+                derived_meta.setdefault("category", category)
+
+            # Apply guard; allow explicit PolicyViolation to bubble out
+            try:
+                self._apply_policy_guard(content, derived_meta)
+            except PolicyViolation:
+                raise
+
             # Create unique fragment ID
             fragment_id = str(uuid.uuid4())
             current_time = datetime.now()
 
             # Store in core memory system (vector embeddings)
-            core_result = await self.core_memory.store_memory(
+            await self.core_memory.store_memory(
                 content={"text": str(content), "category": category},
                 context={"category": category, "narrative_role": narrative_role},
                 tags=tags or [],
@@ -235,7 +261,7 @@ class AetherraMemoryEngineAdvanced:
             affected_clusters = self.concept_manager.process_new_fragment(fragment)
 
             # Process through episodic timeline
-            affected_chains = self.timeline_manager.process_new_fragment(fragment)
+            self.timeline_manager.process_new_fragment(fragment)
 
             # Update fragment with associative links from clustering
             if affected_clusters:
@@ -269,6 +295,9 @@ class AetherraMemoryEngineAdvanced:
                 message=f"Memory stored successfully with {len(affected_clusters)} concept associations",
             )
 
+        except PolicyViolation:
+            # Re-raise policy violations for caller/tests to handle
+            raise
         except Exception as e:
             return MemoryOperationResult(
                 success=False,
@@ -294,7 +323,7 @@ class AetherraMemoryEngineAdvanced:
         - "hybrid": Combined approach (default)
         """
 
-        results = []
+        results: List[Dict[str, Any]] = []
 
         if recall_strategy in ["vector", "hybrid"]:
             # Vector-based recall from core system
@@ -336,7 +365,7 @@ class AetherraMemoryEngineAdvanced:
         if recall_strategy in ["episodic", "hybrid"]:
             # Episodic recall
             if time_filter and "start" in time_filter and "end" in time_filter:
-                episodic_chains = self.timeline_manager.retrieve_episodic_sequence(
+                episodic_chains = self.fractal_mesh.retrieve_episodic_sequence(
                     start_time=time_filter["start"], end_time=time_filter["end"]
                 )
 
@@ -358,15 +387,78 @@ class AetherraMemoryEngineAdvanced:
         # Sort by relevance and remove duplicates
         results.sort(key=lambda x: x["relevance_score"], reverse=True)
 
-        # Return top results
+        # Return top results (legacy list of dicts)
         return results[:limit]
+
+    async def recall_typed(
+        self,
+        query: str,
+        recall_strategy: str = "hybrid",
+        limit: int = 10,
+        time_filter: Optional[Dict[str, Any]] = None,
+        concept_filter: Optional[List[str]] = None,
+    ) -> MemoryRecallResult:
+        """Typed wrapper around recall() that returns MemoryRecallResult.
+
+        Keeps recall() backward-compatible while exposing a unified contract.
+        """
+        top = await self.recall(
+            query,
+            recall_strategy=recall_strategy,
+            limit=limit,
+            time_filter=time_filter,
+            concept_filter=concept_filter,
+        )
+        scores = [r.get("relevance_score", 0.0) for r in top]
+        return MemoryRecallResult(
+            items=top,
+            scores=scores,
+            metadata={"limit": limit, "strategy": recall_strategy},
+        )
+
+    # Internal helpers
+    def _apply_policy_guard(self, content: Any, metadata: Optional[dict]) -> None:
+        """Apply minimal policy hooks; default config disables enforcement.
+
+        If persist_sensitive_only_if_signed is True, block writes that appear to be
+        plugin outputs (metadata.plugin_id present) unless metadata.signed/trusted.
+        If redact_before_persist is provided, transform content/context before write.
+        """
+        metadata = metadata or {}
+        if self.config.redact_before_persist:
+            try:
+                new_content, new_context = self.config.redact_before_persist(
+                    content, metadata
+                )
+                # best-effort replacement; callers may ignore
+                if new_content is not None:
+                    content = new_content
+                if new_context is not None:
+                    metadata.update(new_context)
+            except Exception:
+                # redaction failures should not block unless policy demands
+                pass
+
+        if self.config.persist_sensitive_only_if_signed:
+            # Heuristics: treat project-category writes as plugin-origin unless explicitly marked otherwise
+            is_plugin = bool(
+                metadata.get("plugin_id") or (metadata.get("category") == "project")
+            )
+            is_signed = bool(metadata.get("signed") or metadata.get("trusted"))
+            tags = metadata.get("tags") or []
+            is_sensitive = bool(metadata.get("sensitive") or ("sensitive" in tags))
+            if is_plugin and is_sensitive and not is_signed:
+                raise PolicyViolation(
+                    "Refusing to persist sensitive plugin output without signature",
+                    code="UNSIGNED_SENSITIVE_WRITE",
+                )
 
     async def generate_narrative(
         self,
         narrative_type: str = "daily",
         time_range: Optional[tuple] = None,
         theme: Optional[str] = None,
-    ) -> MemoryNarrative:
+    ) -> Optional[MemoryNarrative]:
         """Generate a narrative from recent memories"""
 
         # Get relevant fragments
@@ -515,21 +607,18 @@ class AetherraMemoryEngineAdvanced:
             # Run health check first to get current pulse data
             health = await self.check_memory_health()
 
-            # Get recent drift alerts from pulse monitor if available
-            drift_alerts = []
-            if hasattr(self.pulse_monitor, "get_recent_alerts"):
-                alerts = self.pulse_monitor.get_recent_alerts()
-                drift_alerts = [
-                    {
-                        "alert_id": alert.alert_id,
-                        "drift_type": alert.drift_type,
-                        "severity": alert.severity,
-                        "description": alert.description,
-                        "detected_at": alert.detected_at.isoformat(),
-                        "resolved": alert.resolved,
-                    }
-                    for alert in alerts
-                ]
+            # Build drift alerts from active alerts
+            drift_alerts = [
+                {
+                    "alert_id": alert.alert_id,
+                    "drift_type": alert.drift_type,
+                    "severity": alert.severity,
+                    "description": alert.description,
+                    "detected_at": alert.detected_at.isoformat(),
+                    "resolved": alert.resolved,
+                }
+                for alert in self.pulse_monitor.get_active_alerts()
+            ]
 
             pulse_data = {
                 "pulse_status": "active",
@@ -562,8 +651,8 @@ class AetherraMemoryEngineAdvanced:
         # Get recent insights
         recent_insights = self.reflector.get_recent_insights(days)
 
-        # Get health status
-        health = await self.check_memory_health()
+        # Get health status (ensure pulse data is current)
+        await self.check_memory_health()
 
         # Get active alerts
         active_alerts = self.pulse_monitor.get_active_alerts()
