@@ -4,12 +4,26 @@ Headless boot smoke test for Aetherra OS.
 - Boots the launcher in quiet, no-GUI mode
 - Waits a short interval to allow services to register
 - Asserts core services are healthy, then exits
+
+Deterministic profile:
+- If AETHERRA_PROFILE=test or --profile test, we set deterministic seeds and env.
 """
 
+import argparse
 import asyncio
 import contextlib
 import os
+import random
 import sys
+
+try:
+    import numpy as _np  # type: ignore
+except Exception:
+    _np = None
+try:
+    import torch as _torch  # type: ignore
+except Exception:
+    _torch = None
 
 # Ensure project root on path
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
@@ -20,7 +34,46 @@ from aetherra_os_launcher import AetherraOSLauncher  # noqa: E402
 from aetherra_service_registry import get_service_registry  # noqa: E402
 
 
+def apply_deterministic_profile(profile: str | None):
+    if not profile:
+        profile = os.getenv("AETHERRA_PROFILE", "").lower() or None
+    if profile != "test":
+        return
+    # Set deterministic-related env and seeds
+    os.environ.setdefault("AETHERRA_PROFILE", "test")
+    os.environ.setdefault("AETHERRA_DETERMINISTIC", "1")
+    os.environ.setdefault("PYTHONHASHSEED", "0")
+    try:
+        random.seed(0)
+    except Exception:
+        pass
+    if _np is not None:
+        try:
+            _np.random.seed(0)
+        except Exception:
+            pass
+    if _torch is not None:
+        try:
+            _torch.manual_seed(0)
+            _torch.use_deterministic_algorithms(True)  # type: ignore[attr-defined]
+        except Exception:
+            pass
+
+
 async def run_smoke():
+    # CLI args for profile (optional)
+    ap = argparse.ArgumentParser(add_help=False)
+    ap.add_argument("--profile", default=os.getenv("AETHERRA_PROFILE", ""))
+    try:
+        args, _ = ap.parse_known_args()
+    except SystemExit:
+
+        class _A:  # fallback if parsing fails under tasks
+            profile = os.getenv("AETHERRA_PROFILE", "")
+
+        args = _A()
+
+    apply_deterministic_profile(getattr(args, "profile", None))
     # Force no GUI and quiet logs
     cfg = {"gui_enabled": False, "quiet": True, "hub_enabled": False}
 
