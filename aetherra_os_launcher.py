@@ -1103,8 +1103,12 @@ class AetherraOSLauncher:
         """🏪 Load the Aetherra Hub (Plugin Marketplace)."""
         try:
             logger.info("[HUB] Loading Aetherra Hub (Plugin Marketplace)...")
+            # Determine enablement from config or env (AETHERRA_HUB_ENABLED!=0)
+            enabled = config.get("hub_enabled")
+            if enabled is None:
+                enabled = os.getenv("AETHERRA_HUB_ENABLED", "1") != "0"
 
-            if config.get("hub_enabled", True):
+            if enabled:
                 try:
                     # Import and start the built-in Python Hub server
                     from aetherra_hub_server import start_hub_server
@@ -1115,6 +1119,24 @@ class AetherraOSLauncher:
                     hub_server = start_hub_server(port=3001)
 
                     if hub_server and hub_server.is_running():
+                        # Optionally wait briefly for /health
+                        try:
+                            import aiohttp  # type: ignore
+
+                            for _ in range(10):  # ~2s total
+                                try:
+                                    async with aiohttp.ClientSession() as session:
+                                        async with session.get(
+                                            "http://localhost:3001/health"
+                                        ) as r:
+                                            if r.status == 200:
+                                                break
+                                except Exception:
+                                    pass
+                                await asyncio.sleep(0.2)
+                        except Exception:
+                            pass
+
                         # Register the Hub service
                         self.systems["aetherra_hub"] = hub_server
                         await register_service(

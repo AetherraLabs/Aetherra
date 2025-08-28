@@ -2077,6 +2077,14 @@ class AetherraHubServer:
         self.server_running = False
         logger.info("🛑 Aetherra Hub server stopped")
 
+    # OS integration hook: allow launcher to call a generic shutdown()
+    def shutdown(self):
+        """Gracefully stop the Hub server (alias for stop_server)."""
+        try:
+            self.stop_server()
+        except Exception:
+            pass
+
 
 # Global Hub instance
 hub_server = None
