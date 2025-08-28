@@ -1,5 +1,8 @@
 import requests
 
+from Aetherra.security.capabilities import has_capability
+from Aetherra.security.net_policy import http_post
+
 
 class WebhookManager:
     """Manages webhook registration, triggering, and error handling."""
@@ -20,11 +23,21 @@ class WebhookManager:
             print(f"No webhooks registered for event: {event}")
             return
 
+        # Capability check (deny-by-default in strict mode)
+        if not has_capability("core:webhook_manager", "network:webhook"):
+            print("Webhook trigger denied by capability policy")
+            return
+
         for url in self.webhooks[event]:
             try:
-                response = requests.post(url, json=payload)
-                response.raise_for_status()
-                print(f"Webhook triggered successfully: {url}")
+                response = http_post(
+                    url, payload, timeout=10.0, requester="core:webhook_manager"
+                )
+                if response is None:
+                    print(f"Webhook blocked or failed: {url}")
+                else:
+                    response.raise_for_status()
+                    print(f"Webhook triggered successfully: {url}")
             except requests.RequestException as e:
                 print(f"Failed to trigger webhook: {url} -> {e}")
 

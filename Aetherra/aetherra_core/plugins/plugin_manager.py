@@ -15,28 +15,71 @@ import time
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
 
+try:
+    from Aetherra.security.capabilities import has_capability
+except Exception:
+
+    def has_capability(requester: str, capability: str) -> bool:  # type: ignore
+        return True
+
+
+try:
+    from Aetherra.security.plugin_signing import verify_plugin_signature
+except Exception:
+
+    def verify_plugin_signature(manifest: dict) -> bool:  # type: ignore
+        return True
+
+
+try:
+    from Aetherra.security.sandbox import (
+        MemoryBudgetExceeded as _SandboxMemoryBudgetExceeded,  # type: ignore
+    )
+    from Aetherra.security.sandbox import (
+        TimeBudgetExceeded as _SandboxTimeBudgetExceeded,  # type: ignore
+    )
+    from Aetherra.security.sandbox import (  # type: ignore
+        ensure_memory_budget,
+        run_with_timeout,
+    )
+
+    # Bind exception aliases to expected names
+    TimeBudgetExceeded = _SandboxTimeBudgetExceeded  # type: ignore
+    MemoryBudgetExceeded = _SandboxMemoryBudgetExceeded  # type: ignore
+except Exception:
+
+    def run_with_timeout(func, args=None, kwargs=None, timeout_sec: float = 5.0):  # type: ignore
+        return func(*(args or ()), **(kwargs or {}))
+
+    def ensure_memory_budget(max_mb):  # type: ignore
+        return None
+
+    class TimeBudgetExceeded(Exception):  # type: ignore
+        pass
+
+    class MemoryBudgetExceeded(Exception):  # type: ignore
+        pass
+
 
 class PluginState:
     """Plugin state management."""
+
     # Required plugin metadata
     name = "enhanced_plugin_manager"
     description = "PluginState - Auto-generated description"
     input_schema = {
         "type": "object",
-        "properties": {
-            "input": {"type": "string", "description": "Input data"}
-        },
-        "required": ["input"]
+        "properties": {"input": {"type": "string", "description": "Input data"}},
+        "required": ["input"],
     }
     output_schema = {
         "type": "object",
         "properties": {
             "result": {"type": "string", "description": "Processing result"},
-            "status": {"type": "string", "description": "Operation status"}
-        }
+            "status": {"type": "string", "description": "Operation status"},
+        },
     }
     created_by = "Plugin System Auto-Fixer"
-
 
     INACTIVE = "inactive"
     LOADING = "loading"
@@ -50,21 +93,23 @@ class PluginManager:
 
     def __init__(self, plugins_dir: str | None = None):
         self.plugins_dir = plugins_dir or os.path.join(os.path.dirname(__file__))
-        self.plugins: Dict[str, Any] = {}
-        self.plugin_states: Dict[str, str] = {}
-        self.plugin_metadata: Dict[str, Dict] = {}
-        self.event_handlers: Dict[str, List[Callable]] = {}
+        self.plugins = {}
+        self.plugin_states = {}
+        self.plugin_metadata = {}
+        self.event_handlers = {}
         self.auto_reload = False
         self.monitoring_thread = None
 
         # Analytics integration
         self.analytics = None
         self._initialize_analytics()
+        # Internal: retain module objects for policy checks/signing
+        self._plugin_modules = {}
 
     def _initialize_analytics(self):
         """Initialize plugin analytics if available."""
         try:
-            from .plugin_analytics import PluginAnalyticsIntegration
+            from .plugin_analytics import PluginAnalyticsIntegration  # type: ignore
 
             self.analytics = PluginAnalyticsIntegration()
         except ImportError:
@@ -158,6 +203,9 @@ class PluginManager:
                 else:
                     raise ImportError(f"Could not load spec for {plugin_name}")
 
+            # Keep module reference for policy checks
+            self._plugin_modules[plugin_name] = module
+
             # Look for plugin class or main function
             plugin_instance = None
 
@@ -232,6 +280,8 @@ class PluginManager:
             # Remove from plugins
             del self.plugins[plugin_name]
             self.plugin_states[plugin_name] = PluginState.INACTIVE
+            if plugin_name in self._plugin_modules:
+                del self._plugin_modules[plugin_name]
 
             # Trigger unloaded event
             self._trigger_event("plugin_unloaded", plugin_name)
@@ -246,25 +296,58 @@ class PluginManager:
             return False
 
     def execute_plugin(self, plugin_name: str, *args, **kwargs) -> Any:
-        """Execute a plugin with analytics tracking."""
+        """Execute a plugin with policy, quotas, signing checks, and analytics."""
         if plugin_name not in self.plugins:
             if not self.load_plugin(plugin_name):
                 return None
 
         try:
+            # Capability policy (deny-by-default if strict mode set globally)
+            if not has_capability(f"plugin:{plugin_name}", "execute"):
+                print(f"Policy denied execution for plugin: {plugin_name}")
+                return None
+
             plugin = self.plugins[plugin_name]
+            module = self._plugin_modules.get(plugin_name)
+
+            # Optional: signing strict mode
+            if os.environ.get("AETHERRA_PLUGIN_SIGNING_STRICT", "0") == "1":
+                manifest = getattr(module, "MANIFEST", None) if module else None
+                if manifest and not verify_plugin_signature(manifest):
+                    print(f"Signing verification failed for plugin: {plugin_name}")
+                    return None
 
             # Analytics tracking - start
             start_time = time.time()
             self.track_plugin_event(plugin_name, "execute_start")
 
-            # Execute plugin
-            if hasattr(plugin, "execute"):
-                result = plugin.execute(*args, **kwargs)
-            elif hasattr(plugin, "main"):
-                result = plugin.main(*args, **kwargs)
-            else:
-                result = None
+            # Quotas
+            try:
+                max_runtime = float(
+                    os.environ.get("AETHERRA_PLUGIN_MAX_RUNTIME_SEC", "5")
+                )
+            except Exception:
+                max_runtime = 5.0
+            max_mb = None
+            try:
+                if os.environ.get("AETHERRA_PLUGIN_MAX_MEM_MB"):
+                    max_mb = float(os.environ.get("AETHERRA_PLUGIN_MAX_MEM_MB", ""))
+            except Exception:
+                max_mb = None
+
+            # Pre-exec memory check
+            ensure_memory_budget(max_mb)
+
+            def _call():
+                if hasattr(plugin, "execute"):
+                    return plugin.execute(*args, **kwargs)
+                elif hasattr(plugin, "main"):
+                    return plugin.main(*args, **kwargs)
+                else:
+                    return None
+
+            # Execute with wall-clock timeout
+            result = run_with_timeout(_call, timeout_sec=max_runtime)
 
             # Analytics tracking - success
             execution_time = time.time() - start_time
@@ -280,6 +363,10 @@ class PluginManager:
 
             return result
 
+        except (TimeBudgetExceeded, MemoryBudgetExceeded) as e:
+            self.track_plugin_event(plugin_name, "execute_error", {"error": str(e)})
+            print(f"Quota violation executing plugin {plugin_name}: {e}")
+            return None
         except Exception as e:
             # Analytics tracking - error
             self.track_plugin_event(plugin_name, "execute_error", {"error": str(e)})

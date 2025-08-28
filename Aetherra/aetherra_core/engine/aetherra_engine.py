@@ -9,6 +9,7 @@ reasoning, memory management, and intelligent task orchestration.
 import asyncio
 import json
 import logging
+import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -20,90 +21,125 @@ except ImportError:
     class AetherraMemorySystem:
         def __init__(self, *args, **kwargs):
             pass
+
         async def store(self, *args, **kwargs):
             return {"status": "mock"}
+
         async def retrieve(self, *args, **kwargs):
             return []
+
         async def store_memory(self, *args, **kwargs):
             return "mock_memory_id"
+
         async def recall_memories(self, *args, **kwargs):
             return []
+
         async def get_memory_stats(self, *args, **kwargs):
             return {"total_memories": 0}
+
         async def get_conversation_context(self, *args, **kwargs):
             return []
+
         async def store_learning(self, *args, **kwargs):
             return {"status": "mock"}
+
         def close_connection(self, *args, **kwargs):
             pass
+
 
 try:
     from .introspection_controller import IntrospectionController
 except ImportError:
+
     class IntrospectionController:
         def __init__(self, *args, **kwargs):
             pass
+
         async def start_introspection(self, *args, **kwargs):
             pass
+
         async def stop_introspection(self, *args, **kwargs):
             pass
+
         def get_health_status(self, *args, **kwargs):
             return {"status": "mock", "health": "good"}
+
         @property
         def component_monitor(self):
             return None
 
+
 try:
     from .reasoning_engine import ReasoningEngine
 except ImportError:
+
     class ReasoningEngine:
         def __init__(self, *args, **kwargs):
             pass
+
         async def reason(self, *args, **kwargs):
             return {"status": "mock", "reasoning": "Mock reasoning engine"}
+
 
 try:
     from .self_improvement_engine import SelfImprovementEngine
 except ImportError:
+
     class SelfImprovementEngine:
         def __init__(self, *args, **kwargs):
             pass
+
         async def start_improvement_cycle(self, *args, **kwargs):
             pass
+
         async def stop_improvement_cycle(self, *args, **kwargs):
             pass
+
         def record_performance_metric(self, *args, **kwargs):
             return {"status": "mock"}
+
         def get_improvement_status(self, *args, **kwargs):
             return {"status": "mock", "improvements": 0}
+
 
 try:
     from .plugin_chain_executor import PluginChainExecutor
 except ImportError:
+
     class PluginChainExecutor:
         def __init__(self, *args, **kwargs):
             pass
+
         async def execute_chain(self, *args, **kwargs):
             return {"status": "mock", "results": []}
+
 
 try:
     from ..orchestration.agent_orchestrator import AgentOrchestrator
 except ImportError:
+
     class AgentOrchestrator:
         def __init__(self, *args, **kwargs):
             pass
+
         async def start_orchestration(self, *args, **kwargs):
             pass
+
         async def stop_orchestration(self, *args, **kwargs):
             pass
+
         def get_system_status(self, *args, **kwargs):
             return {"status": "mock", "total_agents": 0, "pending_tasks": 0}
+
         async def submit_task(self, *args, **kwargs):
             return "mock_task_id"
+
         def get_task_status(self, *args, **kwargs):
             return {"status": "mock", "progress": 100}
+
         async def orchestrate(self, *args, **kwargs):
             return {"status": "mock", "result": "Mock orchestration"}
+
 
 logger = logging.getLogger(__name__)
 
@@ -131,6 +167,18 @@ class AetherraEngine:
         self.session_id = None
         self.active_tasks = {}
         self.initialized = False
+        # Session-scoped scratchpad (ephemeral, never persisted)
+        self._scratchpad: List[Dict[str, Any]] = []
+        # Per-session metrics
+        self.session_metrics: Dict[str, Any] = {
+            "messages": 0,
+            "reasoning_latency_ms": [],
+            "rag_hits": 0,
+            "rag_misses": 0,
+            "safety_filters_triggered": 0,
+        }
+        # Last agent evaluation report (ephemeral)
+        self._last_agent_eval: Optional[Dict[str, Any]] = None
 
         logger.info("Aetherra Engine initialized")
 
@@ -141,13 +189,13 @@ class AetherraEngine:
 
         try:
             # Start subsystems with graceful fallback
-            if hasattr(self.improvement_engine, 'start_improvement_cycle'):
+            if hasattr(self.improvement_engine, "start_improvement_cycle"):
                 await self.improvement_engine.start_improvement_cycle()
-            if hasattr(self.introspection, 'start_introspection'):
+            if hasattr(self.introspection, "start_introspection"):
                 await self.introspection.start_introspection()
             else:
                 logger.info("Introspection controller using basic mode")
-            if hasattr(self.agent_orchestrator, 'start_orchestration'):
+            if hasattr(self.agent_orchestrator, "start_orchestration"):
                 await self.agent_orchestrator.start_orchestration()
             else:
                 logger.info("Agent orchestrator using basic mode")
@@ -169,15 +217,15 @@ class AetherraEngine:
 
         try:
             # Stop subsystems with graceful fallback
-            if hasattr(self.improvement_engine, 'stop_improvement_cycle'):
+            if hasattr(self.improvement_engine, "stop_improvement_cycle"):
                 await self.improvement_engine.stop_improvement_cycle()
-            if hasattr(self.introspection, 'stop_introspection'):
+            if hasattr(self.introspection, "stop_introspection"):
                 await self.introspection.stop_introspection()
-            if hasattr(self.agent_orchestrator, 'stop_orchestration'):
+            if hasattr(self.agent_orchestrator, "stop_orchestration"):
                 await self.agent_orchestrator.stop_orchestration()
 
             # Close memory connections
-            if hasattr(self.memory_system, 'close_connection'):
+            if hasattr(self.memory_system, "close_connection"):
                 self.memory_system.close_connection()
 
             self.initialized = False
@@ -212,11 +260,17 @@ class AetherraEngine:
 
         # Register components with introspection (if available)
         try:
-            if hasattr(self.introspection, 'component_monitor') and self.introspection.component_monitor is not None:
+            if (
+                hasattr(self.introspection, "component_monitor")
+                and self.introspection.component_monitor is not None
+            ):
                 self.introspection.component_monitor.register_component(
                     "memory_system",
                     check_memory_health,
-                    {"response_time_threshold": 500.0, "response_time_critical": 1000.0},
+                    {
+                        "response_time_threshold": 500.0,
+                        "response_time_critical": 1000.0,
+                    },
                 )
 
                 self.introspection.component_monitor.register_component(
@@ -232,7 +286,9 @@ class AetherraEngine:
                 )
                 logger.info("[OK] Component monitoring enabled")
             else:
-                logger.info("[INFO] Component monitoring not available - using basic health checks")
+                logger.info(
+                    "[INFO] Component monitoring not available - using basic health checks"
+                )
         except Exception as e:
             logger.warning(f"[WARN] Component monitoring setup failed: {e}")
             logger.info("[INFO] Continuing with basic health checks")
@@ -271,6 +327,7 @@ class AetherraEngine:
             await self.start_conversation()
 
         try:
+            t0 = datetime.now()
             # Update conversation context
             self.conversation_context["message_count"] += 1
             message_context = {
@@ -280,9 +337,12 @@ class AetherraEngine:
                 "timestamp": datetime.now(),
             }
 
+            # AI Safety: sanitize input
+            safe_message = self._sanitize_input(str(message))
+
             # Store user message in memory
             memory_id = await self.memory_system.store_memory(
-                content={"role": "user", "content": message},
+                content={"role": "user", "content": safe_message},
                 context=message_context,
                 tags=["conversation", "user_message"],
                 importance=0.7,
@@ -291,16 +351,55 @@ class AetherraEngine:
 
             # Recall relevant memories
             relevant_memories = await self.memory_system.recall_memories(
-                query_text=message, limit=5, memory_type="conversation"
+                query_text=safe_message, limit=8, memory_type="conversation"
             )
+
+            # RAG evidence selection (prefer higher importance)
+            def _importance(m):
+                try:
+                    return float(getattr(m, "importance", 0.0) or 0.0)
+                except Exception:
+                    try:
+                        return float((m or {}).get("importance", 0.0))
+                    except Exception:
+                        return 0.0
+
+            sorted_hits = sorted(relevant_memories or [], key=_importance, reverse=True)
+            evidence = []
+            for m in sorted_hits[:5]:
+                try:
+                    evidence.append(
+                        {
+                            "id": getattr(m, "id", None)
+                            or (m.get("id") if isinstance(m, dict) else None),
+                            "content": getattr(m, "content", None)
+                            if not isinstance(m, dict)
+                            else m.get("content"),
+                            "importance": _importance(m),
+                        }
+                    )
+                except Exception:
+                    pass
+            if evidence:
+                self.session_metrics["rag_hits"] += 1
+            else:
+                self.session_metrics["rag_misses"] += 1
 
             # Perform reasoning about the message
             reasoning_context = {
-                "query": f"How should I respond to: {message}",
+                "query": f"How should I respond to: {safe_message}",
                 "domain": "conversation",
                 "context_data": {
-                    "user_message": message,
-                    "conversation_history": [m.content for m in relevant_memories],
+                    "user_message": safe_message,
+                    "conversation_history": [
+                        (
+                            m.content
+                            if hasattr(m, "content")
+                            else ((m or {}).get("content"))
+                        )
+                        for m in (relevant_memories or [])
+                    ],
+                    "evidence": evidence,
                     "session_context": self.conversation_context,
                 },
                 "constraints": ["be_helpful", "be_conversational"],
@@ -311,9 +410,12 @@ class AetherraEngine:
             reasoning_result = await self.reasoning_engine.reason(reasoning_context)
 
             # Generate response (in a real system, this would use an LLM)
-            response = self._generate_response(
-                message, reasoning_result, relevant_memories
+            raw_response = self._generate_response(
+                safe_message, reasoning_result, relevant_memories
             )
+
+            # AI Safety: apply output filters/policies
+            response = self._apply_output_filters(raw_response)
 
             # Store assistant response in memory
             await self.memory_system.store_memory(
@@ -329,11 +431,31 @@ class AetherraEngine:
                 "response_generation_time", 0.5, "seconds"
             )
 
+            # Compute per-message metrics
+            dt_ms = (datetime.now() - t0).total_seconds() * 1000.0
+            try:
+                self.session_metrics["messages"] += 1
+                self.session_metrics["reasoning_latency_ms"].append(dt_ms)
+            except Exception:
+                pass
+
+            # Structured confidence calibration (planned shape)
+            conf_struct = {
+                "model": float(reasoning_result.get("confidence", 0.8))
+                if isinstance(reasoning_result, dict)
+                else 0.8,
+                "grounding": 0.9 if evidence else 0.6,
+                "coherence": 0.8,
+                "safety": 0.95,
+            }
+            conservative_conf = min(conf_struct.values())
+
             return {
                 "response": response,
                 "session_id": self.session_id,
                 "reasoning": reasoning_result.get("reasoning", "Mock reasoning"),
-                "confidence": reasoning_result.get("confidence", 0.8),
+                "confidence": conservative_conf,
+                "confidence_details": conf_struct,
                 "memory_id": memory_id,
                 "relevant_memories_count": len(relevant_memories),
                 "timestamp": datetime.now().isoformat(),
@@ -409,6 +531,18 @@ class AetherraEngine:
             "health_monitoring": health_status,
             "uptime_minutes": 0,  # Would track actual uptime
             "timestamp": datetime.now().isoformat(),
+            "session_metrics": {
+                "messages": self.session_metrics.get("messages", 0),
+                "avg_reasoning_latency_ms": (
+                    sum(self.session_metrics.get("reasoning_latency_ms", []) or [0])
+                    / max(1, len(self.session_metrics.get("reasoning_latency_ms", [])))
+                ),
+                "rag_hits": self.session_metrics.get("rag_hits", 0),
+                "rag_misses": self.session_metrics.get("rag_misses", 0),
+                "safety_filters_triggered": self.session_metrics.get(
+                    "safety_filters_triggered", 0
+                ),
+            },
         }
 
     async def execute_task(
@@ -464,6 +598,242 @@ class AetherraEngine:
             self.improvement_engine.record_performance_metric(
                 "user_satisfaction", feedback.get("rating", 1), "rating"
             )
+
+    # --------- AI Safety and RAG helpers ---------
+    def _sanitize_input(self, text: str) -> str:
+        """Best-effort prompt-injection hardening (lightweight)."""
+        try:
+            lowered = text.lower()
+            banned = [
+                "ignore previous",
+                "disregard previous",
+                "system prompt",
+                "instructions above",
+            ]
+            if any(b in lowered for b in banned):
+                # Redact risky phrases
+                self.session_metrics["safety_filters_triggered"] += 1
+                for b in banned:
+                    lowered = lowered.replace(b, "[redacted]")
+                return lowered
+        except Exception:
+            pass
+        return text
+
+    def _apply_output_filters(self, text: str) -> str:
+        """Apply simple output policy filters before returning to user."""
+        try:
+            # Basic redaction of secrets-like patterns
+            patterns = [
+                ("api_key=", "api_key=[redacted]"),
+                ("password=", "password=[redacted]"),
+            ]
+            out = text
+            for pat, rep in patterns:
+                out = out.replace(pat, rep)
+            return out
+        except Exception:
+            return text
+
+    def add_scratch(self, entry: Dict[str, Any]):
+        """Append to ephemeral scratchpad (not persisted)."""
+        try:
+            self._scratchpad.append({**entry, "ts": datetime.now().isoformat()})
+            # bound to avoid unbounded growth
+            if len(self._scratchpad) > 2000:
+                self._scratchpad = self._scratchpad[-1000:]
+        except Exception:
+            pass
+
+    def get_session_metrics(self) -> Dict[str, Any]:
+        """Return lightweight per-session metrics."""
+        return dict(self.session_metrics)
+
+    async def reflect_on_day(self) -> Dict[str, Any]:
+        """Night-cycle hook: run a small evaluation harness and generate insights."""
+        try:
+            eval_summary = {
+                "conversations": self.session_metrics.get("messages", 0),
+                "avg_latency_ms": (
+                    sum(self.session_metrics.get("reasoning_latency_ms", []) or [0])
+                    / max(1, len(self.session_metrics.get("reasoning_latency_ms", [])))
+                ),
+                "rag_hit_rate": (
+                    (self.session_metrics.get("rag_hits", 0))
+                    / max(
+                        1,
+                        self.session_metrics.get("rag_hits", 0)
+                        + self.session_metrics.get("rag_misses", 0),
+                    )
+                ),
+            }
+            # Store a brief narrative in memory (optional)
+            try:
+                await self.memory_system.store_memory(
+                    content={
+                        "narrative": {
+                            "type": "reflection",
+                            "summary": f"Daily reflection: {eval_summary}",
+                        }
+                    },
+                    tags=["narrative", "reflection"],
+                    memory_type="reflection",
+                )
+            except Exception:
+                pass
+            # Nudge self-improvement engine
+            try:
+                self.improvement_engine.record_performance_metric(
+                    "rag_hit_rate", eval_summary["rag_hit_rate"], "ratio"
+                )
+            except Exception:
+                pass
+            return {"status": "ok", "evaluation": eval_summary}
+        except Exception as e:
+            logger.debug(f"[REFLECT] Night reflection failed: {e}")
+            return {"status": "error"}
+
+    # --------- Agent Evaluation Harness (lightweight) ---------
+    async def run_agent_evaluation(
+        self, plan: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Run a tiny benchmark of agent tasks via the orchestrator and summarize.
+
+        Inputs:
+        - plan (optional): { cases: [ {name, data, priority}... ], timeout_sec?: int }
+
+        Outputs:
+        - report dict with summary metrics and per-case results.
+        """
+        try:
+            if not self.initialized:
+                await self.initialize()
+        except Exception:
+            # continue in best-effort mode
+            pass
+
+        cases = []
+        if isinstance(plan, dict) and isinstance(plan.get("cases"), list):
+            cases = list(plan["cases"])  # type: ignore[index]
+        else:
+            cases = [
+                {"name": "eval.quick.status", "data": {"x": 1}, "priority": "high"},
+                {
+                    "name": "eval.io.light",
+                    "data": {"payload": "abc"},
+                    "priority": "normal",
+                },
+                {
+                    "name": "eval.compute.light",
+                    "data": {"n": 5},
+                    "priority": "background",
+                },
+            ]
+        timeout_sec = 3
+        if isinstance(plan, dict) and isinstance(plan.get("timeout_sec"), (int, float)):
+            timeout_sec = int(plan["timeout_sec"])  # type: ignore[index]
+
+        results: List[Dict[str, Any]] = []
+        t_all0 = time.time()
+        for c in cases:
+            name = str(c.get("name") or "eval.task")
+            data = c.get("data") if isinstance(c.get("data"), dict) else {}
+            prio = str(c.get("priority") or "normal")
+            t0 = time.time()
+            try:
+                if not hasattr(self, "execute_task"):
+                    raise RuntimeError("engine lacks execute_task")
+                task_id = await self.execute_task(name, data, prio)
+                # Poll quickly for completion
+                deadline = time.time() + timeout_sec
+                last = None
+                while time.time() < deadline:
+                    st = None
+                    try:
+                        st = self.get_task_status(task_id)
+                    except Exception:
+                        st = None
+                    if isinstance(st, dict):
+                        last = st
+                        prog = float(st.get("progress", 0) or 0)
+                        state = str(st.get("state", "")).lower()
+                        if prog >= 100 or state in ("done", "complete", "failed"):
+                            break
+                    await asyncio.sleep(0.05)
+                dt = max(0.0, time.time() - t0)
+                ok = bool((last or {}).get("progress", 0) >= 100) and str(
+                    (last or {}).get("state", "")
+                ).lower() in ("done", "complete")
+                results.append(
+                    {
+                        "name": name,
+                        "task_id": task_id,
+                        "duration_sec": dt,
+                        "ok": ok,
+                        "status": last or {},
+                    }
+                )
+            except Exception as e:
+                dt = max(0.0, time.time() - t0)
+                results.append(
+                    {
+                        "name": name,
+                        "task_id": None,
+                        "duration_sec": dt,
+                        "ok": False,
+                        "error": str(e),
+                    }
+                )
+
+        # Summaries
+        total = len(results)
+        succ = sum(1 for r in results if r.get("ok"))
+        fail = total - succ
+        avg_dur = sum(float(r.get("duration_sec", 0) or 0) for r in results) / max(
+            1, total
+        )
+        # Error clustering (very light): by error string or state
+        clusters: Dict[str, int] = {}
+        for r in results:
+            key = None
+            if not r.get("ok"):
+                key = str(
+                    r.get("error") or (r.get("status") or {}).get("state") or "error"
+                )
+            if key:
+                clusters[key] = clusters.get(key, 0) + 1
+
+        report = {
+            "ts": datetime.now().isoformat(),
+            "cases": results,
+            "summary": {
+                "total": total,
+                "success": succ,
+                "failed": fail,
+                "avg_duration_sec": avg_dur,
+                "errors": clusters,
+                "wall_time_sec": max(0.0, time.time() - t_all0),
+            },
+        }
+        # Simple meta suggestions to guide operators
+        suggestions: List[str] = []
+        if fail > 0:
+            suggestions.append(
+                "Some evaluations failed — inspect 'summary.errors' and recent agent logs"
+            )
+        if avg_dur > 2.0:
+            suggestions.append(
+                "Average duration is high — consider increasing parallelism or reducing max_execution_time"
+            )
+        if not suggestions:
+            suggestions.append("All evaluations passed quickly — no action needed")
+        report["suggestions"] = suggestions
+        self._last_agent_eval = report
+        return report
+
+    def get_last_agent_evaluation(self) -> Optional[Dict[str, Any]]:
+        """Return the last agent evaluation report, if any."""
+        return self._last_agent_eval
 
 
 # Global Aetherra engine instance

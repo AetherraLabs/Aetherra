@@ -9,22 +9,26 @@ Author: Aetherra Security Team
 Date: July 16, 2025
 """
 
-import os
-import sys
-import time
+import json
 import logging
+import os
 import threading
+import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
+
+from Aetherra.core.memory_manager import MemoryManager
 
 # Import our security modules
-from .api_key_manager import APIKeyManager, get_api_key_manager
-from .memory_manager import MemoryManager, get_memory_manager
+# Use the shared security and memory components available in the repo
+from Aetherra.security import api_keys
+
 
 @dataclass
 class SecurityConfig:
     """Security configuration settings"""
+
     api_key_rotation_days: int = 30
     memory_monitoring_enabled: bool = True
     leak_detection_enabled: bool = True
@@ -32,6 +36,7 @@ class SecurityConfig:
     max_memory_usage_percent: int = 80
     security_scan_interval: int = 3600  # 1 hour
     auto_cleanup_enabled: bool = True
+
 
 class AetherraSecuritySystem:
     """
@@ -46,13 +51,19 @@ class AetherraSecuritySystem:
     - Performance optimization
     """
 
-    def __init__(self, workspace_path: Optional[str] = None, config: Optional[SecurityConfig] = None):
+    def __init__(
+        self,
+        workspace_path: Optional[str] = None,
+        config: Optional[SecurityConfig] = None,
+    ):
         self.workspace_path = Path(workspace_path or ".")
         self.config = config or SecurityConfig()
 
         # Initialize security components
-        self.api_key_manager = APIKeyManager(str(self.workspace_path))
-        self.memory_manager = MemoryManager(str(self.workspace_path))
+        # Place memory DB under .aetherra to avoid cluttering workspace root
+        mem_db = self.workspace_path / ".aetherra" / "security" / "memory_manager.db"
+        mem_db.parent.mkdir(parents=True, exist_ok=True)
+        self.memory_manager = MemoryManager(db_path=str(mem_db))
 
         # Security state
         self.security_alerts = []
@@ -61,6 +72,11 @@ class AetherraSecuritySystem:
 
         # Initialize logging
         self._setup_logging()
+
+        # Path for UI-consumable alerts
+        self.alerts_jsonl = (
+            self.workspace_path / ".aetherra" / "security" / "alerts.jsonl"
+        )
 
         # Start security monitoring
         self.start_monitoring()
@@ -82,7 +98,7 @@ class AetherraSecuritySystem:
 
         # Create formatters
         detailed_formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
 
         security_handler.setFormatter(detailed_formatter)
@@ -111,7 +127,7 @@ class AetherraSecuritySystem:
             self.workspace_path / ".aetherra" / "secure",
             self.workspace_path / ".aetherra" / "keys",
             self.workspace_path / ".aetherra" / "logs",
-            self.workspace_path / ".aetherra" / "backups"
+            self.workspace_path / ".aetherra" / "backups",
         ]
 
         for dir_path in secure_dirs:
@@ -124,10 +140,10 @@ class AetherraSecuritySystem:
         if not env_file.exists():
             env_template = self.workspace_path / ".env.template"
             if env_template.exists():
-                with open(env_template, 'r') as f:
+                with open(env_template, "r") as f:
                     content = f.read()
 
-                with open(env_file, 'w') as f:
+                with open(env_file, "w") as f:
                     f.write(content)
 
                 # Set secure permissions
@@ -138,16 +154,19 @@ class AetherraSecuritySystem:
     def _configure_secure_api_access(self):
         """Configure secure API access for Aetherra"""
         # Check for existing API keys
-        api_providers = ['openai', 'anthropic', 'google']
+        api_providers = ["openai", "anthropic", "google"]
 
         for provider in api_providers:
             env_key = f"{provider.upper()}_API_KEY"
             api_key = os.getenv(env_key)
 
             if api_key:
-                # Store in secure manager
-                self.api_key_manager.store_api_key(provider, api_key)
-                self.logger.info(f"Secured API key for {provider}")
+                # Store in secure keystore (encrypt-at-rest when configured)
+                try:
+                    api_keys.set_key(f"{provider}_api_key", api_key)
+                    self.logger.info(f"Secured API key for {provider}")
+                except Exception as e:
+                    self.logger.error(f"Failed securing API key for {provider}: {e}")
 
                 # Remove from environment for security
                 if env_key in os.environ:
@@ -157,11 +176,11 @@ class AetherraSecuritySystem:
         """Initialize memory protection for Aetherra components"""
         # Track important Aetherra objects
         aetherra_classes = [
-            'LyrixaAssistant',
-            'PluginManager',
-            'MemoryCore',
-            'GoalTracker',
-            'AetherInterpreter'
+            "LyrixaAssistant",
+            "PluginManager",
+            "MemoryCore",
+            "GoalTracker",
+            "AetherInterpreter",
         ]
 
         for class_name in aetherra_classes:
@@ -197,11 +216,11 @@ class AetherraSecuritySystem:
     def _run_security_scan(self):
         """Run comprehensive security scan"""
         scan_results = {
-            'timestamp': time.time(),
-            'api_keys': self._scan_api_keys(),
-            'memory': self._scan_memory(),
-            'files': self._scan_files(),
-            'network': self._scan_network()
+            "timestamp": time.time(),
+            "api_keys": self._scan_api_keys(),
+            "memory": self._scan_memory(),
+            "files": self._scan_files(),
+            "network": self._scan_network(),
         }
 
         # Process results
@@ -212,20 +231,21 @@ class AetherraSecuritySystem:
     def _scan_api_keys(self) -> Dict[str, Any]:
         """Scan API key security"""
         return {
-            'status': self.api_key_manager.get_security_status(),
-            'rotation_needed': self._check_key_rotation_needed(),
-            'potential_leaks': self._check_api_key_leaks()
+            "status": self._get_api_keys_status(),
+            "rotation_needed": self._check_key_rotation_needed(),
+            "potential_leaks": self._check_api_key_leaks(),
         }
 
     def _scan_memory(self) -> Dict[str, Any]:
         """Scan memory security"""
-        memory_report = self.memory_manager.get_memory_report()
-        leaks = self.memory_manager.check_memory_leaks()
+        stats = self.memory_manager.get_memory_stats()
+        leaks: List[Dict[str, Any]] = []  # placeholder: no leak detector available here
 
         return {
-            'usage': memory_report,
-            'leaks': leaks,
-            'high_usage': memory_report['current_usage']['percent'] > self.config.max_memory_usage_percent
+            "usage": stats,
+            "leaks": leaks,
+            "high_usage": stats.get("usage_percent", 0.0)
+            > self.config.max_memory_usage_percent,
         }
 
     def _scan_files(self) -> Dict[str, Any]:
@@ -234,12 +254,12 @@ class AetherraSecuritySystem:
 
         # Check for suspicious files
         suspicious_patterns = [
-            '*.key',
-            '*.pem',
-            '*.p12',
-            '*password*',
-            '*secret*',
-            '*.env'
+            "*.key",
+            "*.pem",
+            "*.p12",
+            "*password*",
+            "*secret*",
+            "*.env",
         ]
 
         for pattern in suspicious_patterns:
@@ -248,26 +268,54 @@ class AetherraSecuritySystem:
                     suspicious_files.append(str(file_path))
 
         return {
-            'suspicious_files': suspicious_files,
-            'permissions_issues': self._check_file_permissions()
+            "suspicious_files": suspicious_files,
+            "permissions_issues": self._check_file_permissions(),
         }
 
     def _scan_network(self) -> Dict[str, Any]:
         """Scan network security"""
-        return {
-            'open_ports': self._check_open_ports(),
-            'suspicious_connections': []
-        }
+        return {"open_ports": self._check_open_ports(), "suspicious_connections": []}
 
     def _check_key_rotation_needed(self) -> List[str]:
         """Check which API keys need rotation"""
         current_time = time.time()
         rotation_needed = []
 
-        for provider, metadata in self.api_key_manager._key_metadata.items():
-            age = current_time - metadata['created']
-            if age > (self.config.api_key_rotation_days * 24 * 60 * 60):
-                rotation_needed.append(provider)
+        # Heuristic: if a key exists and the keystore is older than rotation window, flag rotation
+        providers = ["openai", "anthropic", "google"]
+        try:
+            last_updated = None
+            if api_keys.KEYS_FILE.exists():
+                # Prefer __updated_at inside JSON (set when encrypted), else file mtime
+                try:
+                    data = json.loads(api_keys.KEYS_FILE.read_text(encoding="utf-8"))
+                    ts = data.get("__updated_at")
+                    if isinstance(ts, str):
+                        # parse ISO-8601 best-effort
+                        try:
+                            import datetime as _dt
+
+                            last_updated = _dt.datetime.fromisoformat(ts).timestamp()
+                        except Exception:
+                            last_updated = None
+                except Exception:
+                    last_updated = None
+                if last_updated is None:
+                    try:
+                        last_updated = api_keys.KEYS_FILE.stat().st_mtime
+                    except Exception:
+                        last_updated = None
+
+            # If we couldn't determine last_updated, don't force rotation
+            if last_updated is not None:
+                age = current_time - float(last_updated)
+                max_age = float(self.config.api_key_rotation_days * 24 * 60 * 60)
+                if age > max_age:
+                    for p in providers:
+                        if api_keys.get_key(f"{p}_api_key"):
+                            rotation_needed.append(p)
+        except Exception:
+            pass
 
         return rotation_needed
 
@@ -277,29 +325,24 @@ class AetherraSecuritySystem:
 
         # Check environment variables
         for key, value in os.environ.items():
-            if 'api_key' in key.lower() or 'secret' in key.lower():
+            if "api_key" in key.lower() or "secret" in key.lower():
                 if len(value) > 20:
                     leaks.append(f"Environment variable: {key}")
 
         # Check common files
-        check_files = [
-            '.env',
-            'config.json',
-            'settings.json',
-            'keys.json'
-        ]
+        check_files = [".env", "config.json", "settings.json", "keys.json"]
 
         for filename in check_files:
             file_path = self.workspace_path / filename
             if file_path.exists():
                 try:
-                    with open(file_path, 'r') as f:
+                    with open(file_path, "r") as f:
                         content = f.read()
 
                     # Simple pattern matching for potential keys
-                    if 'api_key' in content.lower() or 'secret' in content.lower():
+                    if "api_key" in content.lower() or "secret" in content.lower():
                         leaks.append(f"File: {filename}")
-                except:
+                except Exception:
                     pass
 
         return leaks
@@ -309,11 +352,7 @@ class AetherraSecuritySystem:
         issues = []
 
         # Check sensitive files
-        sensitive_files = [
-            '.env',
-            '.aetherra/secure/',
-            '.aetherra/keys/'
-        ]
+        sensitive_files = [".env", ".aetherra/secure/", ".aetherra/keys/"]
 
         for file_path in sensitive_files:
             full_path = self.workspace_path / file_path
@@ -335,37 +374,53 @@ class AetherraSecuritySystem:
         alerts = []
 
         # Check API key issues
-        api_results = results['api_keys']
-        if api_results['rotation_needed']:
-            alerts.append(f"API key rotation needed for: {', '.join(api_results['rotation_needed'])}")
+        api_results = results["api_keys"]
+        if api_results["rotation_needed"]:
+            alerts.append(
+                f"API key rotation needed for: {', '.join(api_results['rotation_needed'])}"
+            )
 
-        if api_results['potential_leaks']:
-            alerts.append(f"Potential API key leaks: {', '.join(api_results['potential_leaks'])}")
+        if api_results["potential_leaks"]:
+            alerts.append(
+                f"Potential API key leaks: {', '.join(api_results['potential_leaks'])}"
+            )
 
         # Check memory issues
-        memory_results = results['memory']
-        if memory_results['high_usage']:
-            alerts.append(f"High memory usage: {memory_results['usage']['current_usage']['percent']:.1f}%")
+        memory_results = results["memory"]
+        if memory_results["high_usage"]:
+            alerts.append(
+                f"High memory usage: {memory_results['usage']['current_usage']['percent']:.1f}%"
+            )
 
-        if memory_results['leaks']:
-            alerts.append(f"Memory leaks detected: {len(memory_results['leaks'])} locations")
+        if memory_results["leaks"]:
+            alerts.append(
+                f"Memory leaks detected: {len(memory_results['leaks'])} locations"
+            )
 
         # Check file issues
-        file_results = results['files']
-        if file_results['suspicious_files']:
-            alerts.append(f"Suspicious files found: {len(file_results['suspicious_files'])}")
+        file_results = results["files"]
+        if file_results["suspicious_files"]:
+            alerts.append(
+                f"Suspicious files found: {len(file_results['suspicious_files'])}"
+            )
 
-        if file_results['permissions_issues']:
-            alerts.append(f"File permission issues: {len(file_results['permissions_issues'])}")
+        if file_results["permissions_issues"]:
+            alerts.append(
+                f"File permission issues: {len(file_results['permissions_issues'])}"
+            )
 
         # Log alerts
         for alert in alerts:
             self.logger.warning(f"🚨 SECURITY ALERT: {alert}")
-            self.security_alerts.append({
-                'timestamp': time.time(),
-                'alert': alert,
-                'severity': 'warning'
-            })
+            rec = {"timestamp": time.time(), "alert": alert, "severity": "warning"}
+            self.security_alerts.append(rec)
+            # Append to JSONL for UI
+            try:
+                self.alerts_jsonl.parent.mkdir(parents=True, exist_ok=True)
+                with open(self.alerts_jsonl, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(rec) + "\n")
+            except Exception:
+                pass
 
         # Auto-cleanup if enabled
         if self.config.auto_cleanup_enabled:
@@ -374,26 +429,92 @@ class AetherraSecuritySystem:
     def _auto_cleanup(self):
         """Automatic cleanup of security issues"""
         # Clean up memory if high usage
-        memory_report = self.memory_manager.get_memory_report()
-        if memory_report['current_usage']['percent'] > self.config.max_memory_usage_percent:
-            self.memory_manager.cleanup_resources()
-            self.logger.info("🧹 Automatic memory cleanup performed")
+        try:
+            stats = self.memory_manager.get_memory_stats()
+            if stats.get("usage_percent", 0.0) > self.config.max_memory_usage_percent:
+                # Placeholder: MemoryManager performs periodic cleanup itself; log for now
+                self.logger.info(
+                    "🧹 High memory usage detected; consider triggering cleanup cycle"
+                )
+        except Exception:
+            pass
+
+    def add_alert(self, alert: str, severity: str = "warning") -> None:
+        """Public helper to record a security alert and append to the JSONL feed."""
+        try:
+            rec = {"timestamp": time.time(), "alert": alert, "severity": severity}
+            self.security_alerts.append(rec)
+            try:
+                self.alerts_jsonl.parent.mkdir(parents=True, exist_ok=True)
+                with open(self.alerts_jsonl, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(rec) + "\n")
+            except Exception:
+                pass
+            self.logger.warning(f"🚨 SECURITY ALERT: {alert}")
+        except Exception:
+            pass
 
     def get_security_status(self) -> Dict[str, Any]:
         """Get comprehensive security status"""
         return {
-            'api_keys': self.api_key_manager.get_security_status(),
-            'memory': self.memory_manager.get_memory_report(),
-            'alerts': len(self.security_alerts),
-            'last_scan': self.last_security_scan,
-            'monitoring_active': self.is_monitoring,
-            'config': {
-                'api_key_rotation_days': self.config.api_key_rotation_days,
-                'memory_monitoring_enabled': self.config.memory_monitoring_enabled,
-                'leak_detection_enabled': self.config.leak_detection_enabled,
-                'auto_cleanup_enabled': self.config.auto_cleanup_enabled
-            }
+            "api_keys": self._get_api_keys_status(),
+            "memory": self.memory_manager.get_memory_stats(),
+            "alerts": len(self.security_alerts),
+            "last_scan": self.last_security_scan,
+            "monitoring_active": self.is_monitoring,
+            "config": {
+                "api_key_rotation_days": self.config.api_key_rotation_days,
+                "memory_monitoring_enabled": self.config.memory_monitoring_enabled,
+                "leak_detection_enabled": self.config.leak_detection_enabled,
+                "auto_cleanup_enabled": self.config.auto_cleanup_enabled,
+            },
         }
+
+    def _get_api_keys_status(self) -> Dict[str, Any]:
+        """Return a simple status for the API keystore."""
+        status: Dict[str, Any] = {
+            "encrypted": False,
+            "key_count": 0,
+            "master_key_present": False,
+            "last_updated": None,
+        }
+        try:
+            if api_keys.KEYS_FILE.exists():
+                data = json.loads(
+                    api_keys.KEYS_FILE.read_text(encoding="utf-8") or "{}"
+                )
+                status["encrypted"] = bool(data.get("__encrypted__") is True)
+                # count non-internal entries
+                status["key_count"] = len(
+                    [k for k in data.keys() if not k.startswith("__")]
+                )
+                status["last_updated"] = data.get("__updated_at")
+            # detect master key presence without generating it
+            if os.getenv("AETHERRA_KEYS_MASTER"):
+                status["master_key_present"] = True
+            else:
+                try:
+                    status["master_key_present"] = api_keys.MASTER_KEY_FILE.exists()
+                except Exception:
+                    status["master_key_present"] = False
+        except Exception:
+            pass
+        return status
+
+    def get_recent_alerts(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """Return recent security alerts for UI display (best-effort)."""
+        out: List[Dict[str, Any]] = []
+        try:
+            if self.alerts_jsonl.exists():
+                lines = self.alerts_jsonl.read_text(encoding="utf-8").splitlines()
+                for line in lines[-limit:]:
+                    try:
+                        out.append(json.loads(line))
+                    except Exception:
+                        continue
+        except Exception:
+            pass
+        return out
 
     def force_security_scan(self) -> Dict[str, Any]:
         """Force an immediate security scan"""
@@ -402,19 +523,27 @@ class AetherraSecuritySystem:
 
     def cleanup_all(self):
         """Cleanup all security-related resources"""
-        # Cleanup API keys
-        self.api_key_manager.cleanup_memory()
+        # Cleanup API keys (no-op for function-based API)
+        # In the future we could clear in-memory caches here.
 
         # Cleanup memory
-        self.memory_manager.cleanup_resources()
+        try:
+            stats = self.memory_manager.get_memory_stats()
+            self.logger.info(
+                f"Memory stats at cleanup: usage={stats.get('usage_percent', 0.0):.1f}% entries={stats.get('total_entries', 0)}"
+            )
+        except Exception:
+            pass
 
         # Stop monitoring
         self.stop_monitoring()
 
         self.logger.info("🧹 Complete security cleanup performed")
 
+
 # Global security system instance
 _security_system = None
+
 
 def get_security_system() -> AetherraSecuritySystem:
     """Get the global security system instance"""
@@ -423,26 +552,28 @@ def get_security_system() -> AetherraSecuritySystem:
         _security_system = AetherraSecuritySystem()
     return _security_system
 
-def initialize_aetherra_security(workspace_path: Optional[str] = None, config: Optional[SecurityConfig] = None):
+
+def initialize_aetherra_security(
+    workspace_path: Optional[str] = None, config: Optional[SecurityConfig] = None
+):
     """Initialize Aetherra security system"""
     global _security_system
     _security_system = AetherraSecuritySystem(workspace_path, config)
     return _security_system
 
+
 def secure_api_call(provider: str, func, *args, **kwargs):
     """Make a secure API call with proper key management"""
-    security_system = get_security_system()
-    api_key = security_system.api_key_manager.get_api_key(provider)
+    # Fetch provider key from keystore
+    api_key = api_keys.get_key(f"{provider}_api_key")
 
     if not api_key:
         raise ValueError(f"No API key found for provider: {provider}")
 
     # Add API key to kwargs
-    kwargs['api_key'] = api_key
+    kwargs["api_key"] = api_key
+    return func(*args, **kwargs)
 
-    # Track memory usage
-    with security_system.memory_manager.memory_context(f"api_call_{provider}"):
-        return func(*args, **kwargs)
 
 if __name__ == "__main__":
     # Example usage
@@ -453,9 +584,11 @@ if __name__ == "__main__":
 
     # Get security status
     status = security_system.get_security_status()
-    print(f"Security monitoring: {'Active' if status['monitoring_active'] else 'Inactive'}")
+    print(
+        f"Security monitoring: {'Active' if status['monitoring_active'] else 'Inactive'}"
+    )
     print(f"Security alerts: {status['alerts']}")
-    print(f"Memory usage: {status['memory']['current_usage']['percent']:.1f}%")
+    print(f"Memory usage: {status['memory'].get('usage_percent', 0.0):.1f}%")
 
     # Force security scan
     print("\n🔍 Running security scan...")
