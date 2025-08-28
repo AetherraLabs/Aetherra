@@ -372,6 +372,48 @@
         STREAM = null;
       }
 
+      async function getLegacyStatus() {
+        let total = null;
+        try {
+          const p = await fetchJSON(HUB_URL + '/api/plugins');
+          total = Number(p && (p.total ?? (Array.isArray(p.plugins) ? p.plugins.length : null)));
+        } catch (_) {
+          try {
+            const s = await fetchJSON(HUB_URL + '/status');
+            total = Number(s && (s.plugins_registered ?? null));
+          } catch { }
+        }
+        let running = false;
+        let uptime = 0;
+        try {
+          const ks = await fetchJSON(HUB_URL + '/api/kernel/status');
+          running = !!(ks && (ks.running === true || String(ks.state || '').toLowerCase() === 'running'));
+          if (typeof ks?.uptime === 'number') uptime = ks.uptime;
+        } catch { }
+        let qh, qn, qb;
+        try {
+          const text = await fetchText(HUB_URL + '/metrics');
+          const parse = (name, labels) => parseMetric(text, name, labels);
+          qh = parse('aetherra_kernel_queue_size', { queue: 'high' });
+          qn = parse('aetherra_kernel_queue_size', { queue: 'normal' });
+          qb = parse('aetherra_kernel_queue_size', { queue: 'background' });
+          const up = parse('aetherra_kernel_uptime_seconds');
+          if (Number.isFinite(up)) uptime = Number(up);
+        } catch { }
+        return {
+          plugins: { total: Number.isFinite(total) ? Number(total) : undefined },
+          kernel: {
+            running,
+            uptime_seconds: Number.isFinite(uptime) ? Number(uptime) : undefined,
+            queue_sizes: {
+              high_priority: Number.isFinite(qh) ? Number(qh) : undefined,
+              normal_priority: Number.isFinite(qn) ? Number(qn) : undefined,
+              background: Number.isFinite(qb) ? Number(qb) : undefined,
+            }
+          }
+        };
+      }
+
       async function update() {
         const host = ensureWidget();
         const dot = host.querySelector('#aetherra-live-dot');
@@ -407,8 +449,14 @@
 
         let next = REFRESH_MS_OK;
         try {
-          // Use aggregated endpoint
-          const s = await fetchJSON(HUB_URL + '/api/site_status');
+          // Use aggregated endpoint; fallback to legacy if unavailable
+          const forceLegacy = (localStorage.getItem('AETHERRA_WIDGET_LEGACY') || '') === '1';
+          let s = null;
+          if (!forceLegacy) {
+            try { s = await fetchJSON(HUB_URL + '/api/site_status'); }
+            catch (_) { s = null; }
+          }
+          if (!s) s = await getLegacyStatus();
           const total = Number(s && s.plugins && s.plugins.total);
           if (Number.isFinite(total)) plugins.textContent = `plugins: ${total}`; else plugins.textContent = 'plugins: –';
           const running = !!(s && s.kernel && s.kernel.running);
