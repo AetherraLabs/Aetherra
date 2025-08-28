@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+  "build": "vite build --outDir ../docs --emptyOutDir",
+  "postbuild": "node -e \"fs=require('fs');fs.copyFileSync('../docs/index.html','../docs/404.html')\"",
+  "preview": "vite preview"
   },
   "dependencies": {
     "framer-motion": "^12.23.12",
