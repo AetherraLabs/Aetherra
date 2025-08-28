@@ -10,6 +10,7 @@ with each other in real-time.
 
 import asyncio
 import logging
+import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -54,6 +55,12 @@ class AetherraServiceRegistry:
         self._event_handlers: Dict[str, List[Callable]] = {}
         self._running = False
         self._heartbeat_task = None
+        # Warning controls: by default, suppress repeated "no handler" warnings.
+        # Set AETHERRA_REGISTRY_WARN_NO_HANDLER=1 to emit a warning once per service.
+        self._warn_no_handler_once = (
+            os.environ.get("AETHERRA_REGISTRY_WARN_NO_HANDLER", "0") == "1"
+        )
+        self._no_handler_warned: set[str] = set()
 
     async def start(self):
         """[START] Start the service registry."""
@@ -292,9 +299,21 @@ class AetherraServiceRegistry:
                 await service.on_message(message_type, data)
                 return True
             else:
-                logger.warning(
-                    f"[WARN] Service '{target_service}' has no message handler"
-                )
+                # Suppress noisy warnings by default; optionally warn once per service
+                if self._warn_no_handler_once:
+                    if target_service not in self._no_handler_warned:
+                        logger.warning(
+                            f"[WARN] Service '{target_service}' has no message handler"
+                        )
+                        self._no_handler_warned.add(target_service)
+                    else:
+                        logger.debug(
+                            f"Service '{target_service}' has no message handler (suppressed)"
+                        )
+                else:
+                    logger.debug(
+                        f"Service '{target_service}' has no message handler (suppressed)"
+                    )
                 return False
 
         except Exception as e:
@@ -319,6 +338,25 @@ class AetherraServiceRegistry:
                 continue
 
             try:
+                # Skip broadcast attempts for services that clearly don't support messaging
+                inst = service_info.instance
+                if not hasattr(inst, "handle_message") and not hasattr(
+                    inst, "on_message"
+                ):
+                    # Optionally warn once when enabled, otherwise silent at debug
+                    if (
+                        self._warn_no_handler_once
+                        and service_name not in self._no_handler_warned
+                    ):
+                        logger.warning(
+                            f"[WARN] Service '{service_name}' has no message handler"
+                        )
+                        self._no_handler_warned.add(service_name)
+                    else:
+                        logger.debug(
+                            f"Service '{service_name}' has no message handler (suppressed)"
+                        )
+                    continue
                 await self.send_message(service_name, message_type, data)
             except Exception as e:
                 logger.error(f"[ERROR] Failed to broadcast to '{service_name}': {e}")
