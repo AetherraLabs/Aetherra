@@ -39,7 +39,7 @@ jobs:
         working-directory: 'aetherra-website'
         run: npm ci
 
-      - name: Build website
+      - name: Build website (to docs)
         working-directory: 'aetherra-website'
         run: npm run build
 
@@ -51,7 +51,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'aetherra-website/dist'
+          path: 'docs'
 
       - name: Deploy to GitHub Pages
         id: deployment
