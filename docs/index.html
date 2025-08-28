@@ -14,13 +14,28 @@
     // Runtime link rewriter: make placeholder Docs buttons actually navigate
     (function () {
       const RULES = [
+        // New Docs section buttons
+        { test: t => /\bdevelopers?\b|getting\s*started/.test(t), href: 'https://aetherra.dev/docs/getting-started' },
+        { test: t => /plugin\s*sdk/.test(t), href: 'https://aetherra.dev/docs/plugins/sdk' },
+        { test: t => /plugin\s*authors?/.test(t), href: 'https://aetherra.dev/docs/plugins' },
+        { test: t => /researchers?\b/.test(t), href: 'https://aetherra.dev/docs/labs' },
+        { test: t => /ops|operations|secops|devsecops|security/.test(t), href: 'https://aetherra.dev/docs/security' },
+        { test: t => ((/\.aether/.test(t) || /\baether\b/.test(t)) && /language/.test(t)), href: 'https://aetherra.dev/docs/aether' },
+        { test: t => /runtime|cli\b/.test(t), href: 'https://aetherra.dev/docs/runtime' },
+        { test: t => /memory|cognition|cognitive/.test(t), href: 'https://aetherra.dev/docs/memory' },
+        { test: t => /safety|saftey|ethic/.test(t), href: 'https://aetherra.dev/docs/safety' },
+        { test: t => (/\bapi\b/.test(t) && /registry/.test(t)) || /api\s*\/\s*registry/.test(t), href: 'https://aetherra.dev/docs/api' },
+        { test: t => /tutorial|recipe/.test(t), href: 'https://aetherra.dev/docs/recipes' },
+        { test: t => /changelog|versioning|release\s*notes?/.test(t), href: 'https://aetherra.dev/docs/changelog' },
+
+        // Existing docs pages
         { test: t => /code\s*of\s*conduct/.test(t), href: '/community/code-of-conduct.html' },
         { test: t => /\brfc\b|proposal/.test(t), href: '/community/rfc.html' },
-        { test: t => /notes|lab/.test(t), href: '/labs/notes.html' },
+        { test: t => /\bnotes?\b/.test(t), href: '/labs/notes.html' },
         { test: t => /replicat/.test(t), href: '/labs/replication-kit.html' },
         { test: t => /\bcite\b|citation/.test(t), href: '/research/cite.html' },
         { test: t => /\bview\b|paper|research/.test(t), href: '/research/view.html' },
-        { test: t => /download|get\s+started|get\s+the\s+code/.test(t), href: '/downloads/' },
+        { test: t => /download|get\s+the\s+code/.test(t), href: '/downloads/' },
       ];
 
       function normalizeLabel(a) {
