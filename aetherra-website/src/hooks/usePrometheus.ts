@@ -7,6 +7,15 @@ export default function usePrometheus(url: string = '/metrics', intervalMs = 500
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
+        const isStaticHost = typeof window !== 'undefined' && /(?:^|\.)aetherra\.dev$/i.test(window.location.hostname);
+        const explicitlyEnabled = (import.meta as any)?.env?.VITE_ENABLE_PROM;
+        if (isStaticHost && !explicitlyEnabled) {
+            setData([]);
+            setError(null);
+            setLoading(false);
+            return;
+        }
+
         let cancelled = false;
         let timer: any;
 
