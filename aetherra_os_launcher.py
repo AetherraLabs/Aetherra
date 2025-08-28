@@ -215,13 +215,16 @@ class EngineAdapter:
         return None
 
     async def reflect_on_day(self):
-        # Simple placeholder reflection using system status
+        # Night cycle evaluation harness hook
         try:
+            if hasattr(self.impl, "reflect_on_day"):
+                return await self.impl.reflect_on_day()
+            # Fallback to a lightweight status touch
             if hasattr(self.impl, "get_system_status"):
-                await self.impl.get_system_status()
+                return await self.impl.get_system_status()
         except Exception:
             pass
-        return True
+        return {"status": "ok"}
 
     async def get_health_status(self):
         try:
@@ -559,6 +562,12 @@ class AetherraOSLauncher:
                 # aiohttp not available; skip telemetry loop
                 return
 
+            # Respect telemetry opt-in and DP settings
+            try:
+                from Aetherra.telemetry.optin import get_telemetry  # type: ignore
+            except Exception:
+                get_telemetry = None  # type: ignore
+
             while True:
                 try:
                     # Ensure hub and self-improvement exist
@@ -572,20 +581,23 @@ class AetherraOSLauncher:
                     status = await self_impr.handle_message(
                         "selfimprovement.status", {}
                     )
-                    evt = {
-                        "event": "self_improvement.status",
-                        "status": status,
-                        "ts": time.time(),
-                    }
-                    # Post to local hub
-                    try:
-                        async with aiohttp.ClientSession() as session:
-                            async with session.post(
-                                "http://localhost:3001/api/telemetry", json=evt
-                            ) as resp:
-                                _ = await resp.text()
-                    except Exception:
-                        pass
+                    # Gate by opt-in; send minimal payload when enabled
+                    if get_telemetry is not None:
+                        t = get_telemetry()
+                        if t.enabled:
+                            evt = {
+                                "event": "self_improvement.status",
+                                "status": {"summary": status},
+                                "ts": time.time(),
+                            }
+                            try:
+                                async with aiohttp.ClientSession() as session:
+                                    async with session.post(
+                                        "http://localhost:3001/api/telemetry", json=evt
+                                    ) as resp:
+                                        _ = await resp.text()
+                            except Exception:
+                                pass
 
                     await asyncio.sleep(
                         int(os.getenv("AETHERRA_SIE_TELEMETRY_INTERVAL", "120"))
