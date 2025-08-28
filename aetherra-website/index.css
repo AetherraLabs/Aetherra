@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.body-grid {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+}
+
+/* Visual animation helpers */
+@keyframes dash {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+.flow {
+  stroke-dasharray: 6 6;
+  animation: dash 6s linear infinite;
+}
+
+@keyframes floatSlow {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.float-slow {
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+@keyframes pulseSoft {
+
+  0%,
+  100% {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 0 rgba(124, 58, 237, 0));
+  }
+
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px rgba(124, 58, 237, 0.35));
+  }
+}
+
+.pulse-soft {
+  animation: pulseSoft 3.6s ease-in-out infinite;
+}
