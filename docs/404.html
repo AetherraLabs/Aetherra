@@ -20,6 +20,7 @@
           const b = u.toString();
           return b.endsWith('/') ? b : b + '/';
         } catch {
+          // sanitize bad values (e.g., '', '/', relative)
           localStorage.removeItem('AETHERRA_DOCS_BASE');
           return 'https://aetherra.dev/docs/';
         }
@@ -30,8 +31,8 @@
         return DOCS_BASE + (p.endsWith('/') ? p : p + '/');
       };
       const RULES = [
-        // New Docs section buttons
-        { test: t => /getting\s*started/.test(t), href: doc('getting-started') },
+        // New Docs section buttons (external)
+        { test: t => /getting\s*started/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
         { test: t => /\bdevelopers?\b/.test(t), href: doc('') },
         { test: t => /plugin\s*sdk/.test(t), href: doc('plugins/sdk') },
         { test: t => /plugin\s*authors?/.test(t), href: doc('plugins') },
@@ -49,14 +50,12 @@
         { test: t => /developers?\s*docs?/.test(t), href: doc('') },
         { test: t => /plugin\s*(guides?|docs?)/.test(t), href: doc('plugins') },
         { test: t => /getting\s*started\s*guide/.test(t), href: doc('getting-started') },
-        { test: t => /changelog|versioning|release\s*notes?/.test(t), href: doc('changelog') },
 
         // Existing docs pages
         { test: t => /code\s*of\s*conduct/.test(t), href: '/community/code-of-conduct.html' },
         { test: t => /\brfc\b|proposal/.test(t), href: '/community/rfc.html' },
         { test: t => /\bnotes?\b/.test(t), href: '/labs/notes.html' },
         { test: t => /replicat/.test(t), href: '/labs/replication-kit.html' },
-        { test: t => /\bcite\b|citation/.test(t), href: '/research/cite.html' },
         { test: t => /\bcite\b|citation/.test(t), href: '/research/cite.html' },
         { test: t => /\bview\b|paper/.test(t), href: '/research/view.html' },
         { test: t => /download|get\s+the\s+code/.test(t), href: '/downloads/' },
@@ -79,6 +78,7 @@
         return s === '#' || s === '#!' || s === 'javascript:void(0)' || s === '';
       }
 
+      function isExternalUrl(u) { return /^https?:\/\//.test(String(u)); }
       function rewriteAnchors(root) {
         try {
           const scope = root || document;
@@ -86,21 +86,35 @@
           elems.forEach(elm => {
             const target = findTarget(elm);
             if (!target) return;
+            // For anchors, always set href to our mapped target and open external in new tab
             if (elm.tagName === 'A') {
-              const href = elm.getAttribute('href');
-              if (isPlaceholderHref(href)) {
-                elm.setAttribute('href', target);
-                elm.setAttribute('data-link-fixed', '1');
+              elm.setAttribute('href', target);
+              if (isExternalUrl(target)) {
+                elm.setAttribute('target', '_blank');
+                elm.setAttribute('rel', 'noopener noreferrer');
+                // Force navigation before SPA handlers by using capture
+                elm.addEventListener('click', (e) => {
+                  try { e.preventDefault(); e.stopPropagation(); window.open(target, '_blank', 'noopener'); } catch(_) {}
+                }, { capture: true });
               } else {
+                // Internal links: ensure our mapping takes precedence
                 elm.addEventListener('click', (e) => {
                   const t2 = findTarget(elm);
                   if (t2) { e.preventDefault(); e.stopPropagation(); location.href = t2; }
-                }, { capture: true, once: true });
-                elm.setAttribute('data-link-fixed', '1');
+                }, { capture: true });
               }
+              elm.setAttribute('data-link-fixed', '1');
             } else {
+              // Buttons or role=button elements: attach navigation
               elm.style.cursor = 'pointer';
-              elm.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); location.href = target; }, { capture: true });
+              elm.addEventListener('click', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                if (isExternalUrl(target)) {
+                  window.open(target, '_blank', 'noopener');
+                } else {
+                  location.href = target;
+                }
+              }, { capture: true });
               elm.setAttribute('data-link-fixed', '1');
             }
           });
@@ -112,36 +126,15 @@
         const obs = new MutationObserver(() => rewriteAnchors(root));
         obs.observe(root, { childList: true, subtree: true, characterData: true });
         // Initial passes to catch first render
-        function isExternalUrl(u) { return /^https?:\/\//.test(String(u)); }
-        function rewriteAnchors(root) {
+        rewriteAnchors(root);
         setTimeout(() => rewriteAnchors(root), 300);
         setTimeout(() => rewriteAnchors(root), 1000);
       }
 
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installObserver);
       else installObserver();
-              // For anchors, always set href to our mapped target and open external in new tab
+    })();
   </script>
-                elm.setAttribute('href', target);
-                if (isExternalUrl(target)) {
-                  elm.setAttribute('target', '_blank');
-                  elm.setAttribute('rel', 'noopener noreferrer');
-                }
-                elm.setAttribute('data-link-fixed', '1');
-          if (k === 'style') Object.assign(n.style, props[k]);
-          else if (k.startsWith('on') && typeof props[k] === 'function') n.addEventListener(k.slice(2).toLowerCase(), props[k]);
-          else n.setAttribute(k, props[k]);
-        }
-        (Array.isArray(children) ? children : [children]).forEach(c => {
-                  if (isExternalUrl(target)) {
-                    window.open(target, '_blank', 'noopener');
-                  } else {
-                    location.href = target;
-                  }
-          n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
-        });
-        return n;
-      }
 
       function ensureWidget() {
         let host = document.getElementById('aetherra-live-status');
