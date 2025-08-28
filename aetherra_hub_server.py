@@ -776,6 +776,7 @@ class AetherraHubServer:
             return jsonify(ks)  # type: ignore[name-defined]
 
         @app.route("/api/site_status", methods=["GET"])
+        @app.route("/site_status", methods=["GET"])  # alias for older/alternate clients
         def api_site_status():
             """Aggregated status for Docs widget to minimize cross-origin requests.
 
@@ -793,8 +794,7 @@ class AetherraHubServer:
                 ks = {}
             # Derive running state and uptime
             running = bool(
-                ks.get("running") is True
-                or str(ks.get("state", "")).lower() == "running"
+                ks.get("running") is True or str(ks.get("state", "")).lower() == "running"
             )
             uptime = 0.0
             try:
@@ -806,20 +806,14 @@ class AetherraHubServer:
             except Exception:
                 uptime = 0.0
             # Queue sizes map
-            qs = (
-                ks.get("queue_sizes", {})
-                if isinstance(ks.get("queue_sizes"), dict)
-                else {}
-            )
+            qs = ks.get("queue_sizes", {}) if isinstance(ks.get("queue_sizes"), dict) else {}
             out = {
                 "ok": True,
                 "hub": {
                     "ts": datetime.now().isoformat(),
                     "requests_served": self.stats.get("requests_served", 0),
                 },
-                "plugins": {
-                    "total": int(len(self.plugins)),
-                },
+                "plugins": {"total": int(len(self.plugins))},
                 "kernel": {
                     "running": running,
                     "uptime_seconds": uptime,
