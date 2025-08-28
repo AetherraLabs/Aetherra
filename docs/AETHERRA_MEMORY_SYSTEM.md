@@ -134,6 +134,8 @@ Note: Some helpers (e.g., `FractalMeshCore`, `EpisodicTimeline`, `MemoryNarrator
 
 - Environment
   - `AETHERRA_QFAC_MODE`: `classical` | `hybrid` | `quantum` (controls QFAC/quantum bridge behavior)
+  - `AETHERRA_TOKENIZER`: `heuristic` | `tiktoken` | `engine` (controls token counting in hub/chat metrics; default `heuristic`)
+  - `AETHERRA_TOKENIZER_MODEL`: encoder/model for `tiktoken` mode (e.g., `cl100k_base`)
 - Advanced config (code-level, in `MemorySystemConfig`)
   - DB paths for core/fractal/concepts/timeline/pulse/reflector
   - Retention windows and thresholds
@@ -388,3 +390,35 @@ Shadow logs allow step‑by‑step replay in classical mode even if a quantum ba
 
 - `docs/AETHERRA_CODING_SYSTEM.md` for coding system, determinism, and audit ledger basics.
 - `docs/PROJECT_OVERVIEW.md` for endpoint/env indices and repo‑wide configuration.
+
+## Quantum-hardening invariants and observability (added)
+
+In the canonical QuantumEnhancedMemoryEngine (QEME):
+
+- Each fragment carries: coherence_id (engine domain), branch_id, observer_ids, lineage.observer_drift events, and entangled_with ids.
+- Engine state/topology: current_branch, branch_parents DAG, entanglement_map adjacency.
+- Status API: get_status() → { state, coherence_id, branch, branches, fragments, entanglement_nodes, coherence }.
+
+Hub exposure:
+
+- JSON: GET /api/memory/status returns QEME get_status() (when wired) or an ephemeral fallback with enabled: false.
+- Prometheus /metrics series:
+  - aetherra_memory_coherence_score
+  - aetherra_memory_branches_total
+  - aetherra_memory_fragments_total
+  - aetherra_memory_entanglement_nodes_total
+  - aetherra_memory_branch_info{branch="&lt;id&gt;"} 1
+  - aetherra_memory_branch_edges_total (if audit available)
+
+Chat (hub-level) operational series:
+
+- aetherra_chat_requests_total
+- aetherra_chat_streams_current
+- aetherra_chat_latency_ms_sum, aetherra_chat_latency_count
+- aetherra_chat_chars_in_total, aetherra_chat_chars_out_total
+- aetherra_chat_latency_ms_bucket{le="..."} cumulative histogram buckets
+- aetherra_chat_tokens_in_total, aetherra_chat_tokens_out_total (estimated unless tokenizer wired)
+
+Additional JSON:
+
+- GET /api/memory/audit → { enabled, ephemeral?, audit } with branch DAG audit (nodes/edges) when available; falls back to an empty audit on ephemeral engine.

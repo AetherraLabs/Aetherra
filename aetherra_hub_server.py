@@ -51,6 +51,51 @@ class AetherraHubServer:
             self._setup_routes()
         else:
             self.app = None
+        # In-process chat metrics (best-effort, hub-level)
+        self.chat_metrics = {
+            "requests_total": 0,
+            "streams_current": 0,
+            "latency_ms_sum": 0.0,
+            "latency_count": 0,
+            "chars_in_total": 0,
+            "chars_out_total": 0,
+            # Estimated token counters (heuristic unless tokenizer wired)
+            "tokens_in_total": 0,
+            "tokens_out_total": 0,
+            # Simple latency histogram (ms) as raw per-bucket counts
+            "latency_hist": {
+                50: 0,
+                100: 0,
+                250: 0,
+                500: 0,
+                1000: 0,
+                2000: 0,
+                5000: 0,
+                "+Inf": 0,
+            },
+        }
+        # Rolling histograms (hub-level fallback) for latency
+        self.kernel_latency_hist = {
+            10: 0,
+            20: 0,
+            50: 0,
+            100: 0,
+            200: 0,
+            500: 0,
+            1000: 0,
+            "+Inf": 0,
+        }
+        self.orchestrator_latency_hist = {
+            10: 0,
+            20: 0,
+            50: 0,
+            100: 0,
+            200: 0,
+            500: 0,
+            1000: 0,
+            2000: 0,
+            "+Inf": 0,
+        }
 
     def _setup_routes(self):
         """Setup Flask routes for the Hub API"""
@@ -102,6 +147,79 @@ class AetherraHubServer:
         app = cast(Any, self.app)
 
         # Internal helpers to access registry/kernel from sync Flask routes
+        def _create_tokenizer():
+            """Create a token counting function based on env + optional libs.
+
+            AETHERRA_TOKENIZER: heuristic | tiktoken | engine (default: heuristic)
+            AETHERRA_TOKENIZER_MODEL: e.g., cl100k_base
+            """
+            mode = os.environ.get("AETHERRA_TOKENIZER", "heuristic").strip().lower()
+            if mode == "tiktoken":
+                try:
+                    import tiktoken  # type: ignore
+
+                    model = os.environ.get("AETHERRA_TOKENIZER_MODEL", "cl100k_base")
+                    enc = None
+                    try:
+                        enc = tiktoken.get_encoding(model)
+                    except Exception:
+                        try:
+                            enc = tiktoken.encoding_for_model(model)
+                        except Exception:
+                            enc = tiktoken.get_encoding("cl100k_base")
+
+                    def _cnt(text: str) -> int:
+                        try:
+                            return int(len(enc.encode(text or "")))
+                        except Exception:
+                            return int(max(1, round((len(text or "")) / 4)))
+
+                    return _cnt
+                except Exception:
+                    pass
+            if mode == "engine":
+
+                def _cnt_engine(text: str) -> int:
+                    def _call(eng):
+                        try:
+                            for name in (
+                                "estimate_tokens",
+                                "count_tokens",
+                                "token_count",
+                            ):
+                                fn = getattr(eng, name, None)
+                                if fn is not None:
+                                    try:
+                                        return True, int(fn(text))
+                                    except Exception:
+                                        continue
+                        except Exception:
+                            pass
+                        return True, int(max(1, round((len(text or "")) / 4)))
+
+                    try:
+                        ok, val = _with_engine_call(_call)
+                        return (
+                            int(val)
+                            if ok
+                            else int(max(1, round((len(text or "")) / 4)))
+                        )
+                    except Exception:
+                        return int(max(1, round((len(text or "")) / 4)))
+
+                return _cnt_engine
+
+            # Default heuristic
+            def _cnt_heur(text: str) -> int:
+                try:
+                    return int(max(1, round((len(text or "")) / 4)))
+                except Exception:
+                    return 1
+
+            return _cnt_heur
+
+        _count_tokens = _create_tokenizer()
+
         def _get_registry_status_sync():
             try:
                 import asyncio as _a
@@ -198,6 +316,125 @@ class AetherraHubServer:
                 return _a.run(_run())
             except Exception as e:  # pragma: no cover - defensive
                 return False, str(e)
+
+        def _get_memory_quantum_status_sync():
+            """Best-effort quantum memory status.
+
+            Tries service registry → engine.memory_system.engine.get_status()
+            Fallback: instantiate QuantumEnhancedMemoryEngine (ephemeral).
+            """
+            # Try via service registry and engine
+            try:
+                import asyncio as _a
+
+                from aetherra_service_registry import (
+                    get_service_registry as _get,
+                )
+
+                async def _run():
+                    reg = await _get()
+                    info = reg.get_service_info("aetherra_engine")
+                    if not info or not info.instance:
+                        return None
+                    eng = info.instance
+                    ms = getattr(eng, "memory_system", None)
+                    if ms is None:
+                        return None
+                    # Common shapes:
+                    # - ms.get_quantum_status()
+                    # - ms.engine.get_status()
+                    if hasattr(ms, "get_quantum_status"):
+                        try:
+                            return {"enabled": True, **(await ms.get_quantum_status())}  # type: ignore[func-returns-value]
+                        except Exception:
+                            pass
+                    inner = getattr(ms, "engine", None)
+                    if inner is not None and hasattr(inner, "get_status"):
+                        try:
+                            st = inner.get_status()
+                            if isinstance(st, dict):
+                                return {"enabled": True, **st}
+                        except Exception:
+                            pass
+                    return None
+
+                res = _a.run(_run())
+                if isinstance(res, dict):
+                    return res
+            except Exception:
+                pass
+
+            # Fallback: ephemeral instance
+            try:
+                from Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine import (
+                    QuantumEnhancedMemoryEngine as _Q,
+                )
+
+                q = _Q()
+                st = q.get_status()
+                if isinstance(st, dict):
+                    st = dict(st)
+                else:
+                    st = {}
+                st.update({"enabled": False, "ephemeral": True})
+                return st
+            except Exception:
+                return {"enabled": False}
+
+        def _get_memory_audit_sync():
+            """Best-effort memory audit (branch DAG/edges) data.
+
+            Tries service registry → engine.memory_system.engine.audit_branch_dag()
+            Fallback: instantiate QuantumEnhancedMemoryEngine and call audit.
+            """
+            # Try via service registry and engine
+            try:
+                import asyncio as _a
+
+                from aetherra_service_registry import (
+                    get_service_registry as _get,
+                )
+
+                async def _run():
+                    reg = await _get()
+                    info = reg.get_service_info("aetherra_engine")
+                    if not info or not info.instance:
+                        return None
+                    eng = info.instance
+                    ms = getattr(eng, "memory_system", None)
+                    if ms is None:
+                        return None
+                    inner = getattr(ms, "engine", None)
+                    target = inner or ms
+                    if hasattr(target, "audit_branch_dag"):
+                        try:
+                            audit = target.audit_branch_dag()  # type: ignore[attr-defined]
+                            if isinstance(audit, dict):
+                                return {"enabled": True, "audit": audit}
+                        except Exception:
+                            pass
+                    return None
+
+                res = _a.run(_run())
+                if isinstance(res, dict):
+                    return res
+            except Exception:
+                pass
+
+            # Fallback: ephemeral instance
+            try:
+                from Aetherra.aetherra_core.memory.QuantumEnhancedMemoryEngine import (
+                    QuantumEnhancedMemoryEngine as _Q,
+                )
+
+                q = _Q()
+                try:
+                    audit = q.audit_branch_dag()
+                except Exception:
+                    audit = {}
+                return {"enabled": False, "ephemeral": True, "audit": audit}
+            except Exception:
+                return {"enabled": False}
 
         @app.route("/health", methods=["GET"])
         def health_check():
@@ -463,6 +700,8 @@ class AetherraHubServer:
             ks = _get_kernel_status_sync() or {}
             rs = _get_registry_status_sync() or {}
             os = _get_orchestrator_status_sync() or {}
+            ms = _get_memory_quantum_status_sync() or {}
+            ma = _get_memory_audit_sync() or {}
 
             lines = []
 
@@ -542,6 +781,56 @@ class AetherraHubServer:
                     ):
                         if k in m:
                             lines.append(f"aetherra_kernel_{k} {_num(m.get(k, 0))}")
+                    # Latency histogram (cycle time), prefer provided histogram if any
+                    hist = m.get("cycle_hist") or {}
+                    if isinstance(hist, dict) and hist:
+                        # assume ms buckets
+                        try:
+                            order = sorted(
+                                [float(x) for x in hist.keys() if x != "+Inf"]
+                            )  # type: ignore[arg-type]
+                            cum = 0.0
+                            for b in order:
+                                v = _num(hist.get(b, 0))
+                                cum += max(0.0, v)
+                                lines.append(
+                                    f'aetherra_kernel_cycle_time_ms_bucket{{le="{int(b)}"}} {cum}'
+                                )
+                            inf_v = _num(hist.get("+Inf", 0))
+                            lines.append(
+                                f'aetherra_kernel_cycle_time_ms_bucket{{le="+Inf"}} {cum + max(0.0, inf_v)}'
+                            )
+                        except Exception:
+                            pass
+                    else:
+                        # Rolling fallback: accumulate last_cycle_time into hub histogram and export cumulative
+                        try:
+                            raw = float(m.get("last_cycle_time", 0.0))
+                            ms_val = raw * 1000.0 if raw < 10 else raw
+                        except Exception:
+                            ms_val = 0.0
+                        if ms_val > 0:
+                            placed = False
+                            for b in (10, 20, 50, 100, 200, 500, 1000):
+                                if ms_val <= b:
+                                    self.kernel_latency_hist[b] = (
+                                        int(self.kernel_latency_hist.get(b, 0)) + 1
+                                    )
+                                    placed = True
+                                    break
+                            if not placed:
+                                self.kernel_latency_hist["+Inf"] = (
+                                    int(self.kernel_latency_hist.get("+Inf", 0)) + 1
+                                )
+                        cum = 0
+                        for b in (10, 20, 50, 100, 200, 500, 1000):
+                            cum += int(self.kernel_latency_hist.get(b, 0))
+                            lines.append(
+                                f'aetherra_kernel_cycle_time_ms_bucket{{le="{b}"}} {_num(cum)}'
+                            )
+                        lines.append(
+                            f'aetherra_kernel_cycle_time_ms_bucket{{le="+Inf"}} {_num(cum + int(self.kernel_latency_hist.get("+Inf", 0)))}'
+                        )
             except Exception:
                 pass
 
@@ -592,6 +881,226 @@ class AetherraHubServer:
                     if isinstance(ctrs, dict):
                         for k, v in ctrs.items():
                             lines.append(f"aetherra_orchestrator_{str(k)} {_num(v)}")
+                    # Orchestrator latency histogram (if provided or approximate)
+                    oh = (
+                        os.get("latency_hist_ms")
+                        or os.get("task_latency_hist_ms")
+                        or {}
+                    )
+                    if isinstance(oh, dict) and oh:
+                        try:
+                            order = sorted([float(x) for x in oh.keys() if x != "+Inf"])  # type: ignore[arg-type]
+                            cum = 0.0
+                            for b in order:
+                                v = _num(oh.get(b, 0))
+                                cum += max(0.0, v)
+                                lines.append(
+                                    f'aetherra_orchestrator_task_latency_ms_bucket{{le="{int(b)}"}} {cum}'
+                                )
+                            inf_v = _num(oh.get("+Inf", 0))
+                            lines.append(
+                                f'aetherra_orchestrator_task_latency_ms_bucket{{le="+Inf"}} {cum + max(0.0, inf_v)}'
+                            )
+                        except Exception:
+                            pass
+                    else:
+                        # Rolling fallback: accumulate avg_task_latency_ms into hub histogram and export cumulative
+                        try:
+                            ms_val = float(os.get("avg_task_latency_ms", 0.0))
+                        except Exception:
+                            ms_val = 0.0
+                        if ms_val > 0:
+                            placed = False
+                            for b in (10, 20, 50, 100, 200, 500, 1000, 2000):
+                                if ms_val <= b:
+                                    self.orchestrator_latency_hist[b] = (
+                                        int(self.orchestrator_latency_hist.get(b, 0))
+                                        + 1
+                                    )
+                                    placed = True
+                                    break
+                            if not placed:
+                                self.orchestrator_latency_hist["+Inf"] = (
+                                    int(self.orchestrator_latency_hist.get("+Inf", 0))
+                                    + 1
+                                )
+                        cum = 0
+                        for b in (10, 20, 50, 100, 200, 500, 1000, 2000):
+                            cum += int(self.orchestrator_latency_hist.get(b, 0))
+                            lines.append(
+                                f'aetherra_orchestrator_task_latency_ms_bucket{{le="{b}"}} {_num(cum)}'
+                            )
+                        lines.append(
+                            f'aetherra_orchestrator_task_latency_ms_bucket{{le="+Inf"}} {_num(cum + int(self.orchestrator_latency_hist.get("+Inf", 0)))}'
+                        )
+            except Exception:
+                pass
+
+            # Memory (quantum) metrics
+            try:
+                if isinstance(ms, dict) and ms:
+                    # Only emit when we have structure
+                    if "coherence" in ms:
+                        lines.append(
+                            f"aetherra_memory_coherence_score {_num(ms.get('coherence', 0.0))}"
+                        )
+                    if "branches" in ms:
+                        lines.append(
+                            f"aetherra_memory_branches_total {_num(ms.get('branches', 0))}"
+                        )
+                    if "fragments" in ms:
+                        lines.append(
+                            f"aetherra_memory_fragments_total {_num(ms.get('fragments', 0))}"
+                        )
+                    if "entanglement_nodes" in ms:
+                        lines.append(
+                            f"aetherra_memory_entanglement_nodes_total {_num(ms.get('entanglement_nodes', 0))}"
+                        )
+                    # Optional branch info as a gauge (low cardinality expected)
+                    if isinstance(ms.get("branch"), str):
+                        br = str(ms.get("branch"))
+                        lines.append(f'aetherra_memory_branch_info{{branch="{br}"}} 1')
+                # Optional branch edges metric from audit
+                if isinstance(ma, dict) and ma:
+                    audit = ma.get("audit") or {}
+                    if isinstance(audit, dict):
+                        # Nodes count
+                        nodes_cnt = None
+                        nodes_val = audit.get("nodes")
+                        if isinstance(nodes_val, (list, tuple)):
+                            try:
+                                nodes_cnt = len(nodes_val)
+                            except Exception:
+                                nodes_cnt = None
+                        if nodes_cnt is None and isinstance(
+                            audit.get("node_count"), (int, float)
+                        ):
+                            nodes_cnt = audit.get("node_count")
+                        if nodes_cnt is not None:
+                            lines.append(
+                                f"aetherra_memory_branch_nodes_total {_num(nodes_cnt)}"
+                            )
+                        # Edges count
+                        edge_cnt = None
+                        edges_val = audit.get("edges")
+                        if isinstance(edges_val, (list, tuple)):
+                            try:
+                                edge_cnt = len(edges_val)
+                            except Exception:
+                                edge_cnt = None
+                            # Edges by type
+                            try:
+                                by_type = {}
+                                for e in edges_val:
+                                    if isinstance(e, dict):
+                                        t = (
+                                            str(e.get("type") or "").strip()
+                                            or "unknown"
+                                        )
+                                        by_type[t] = int(by_type.get(t, 0)) + 1
+                                for t, cnt in by_type.items():
+                                    lines.append(
+                                        f'aetherra_memory_branch_edges_total_by_type{{type="{t}"}} {_num(cnt)}'
+                                    )
+                            except Exception:
+                                pass
+                        if edge_cnt is None and isinstance(
+                            audit.get("edge_count"), (int, float)
+                        ):
+                            edge_cnt = audit.get("edge_count")
+                        if edge_cnt is not None:
+                            lines.append(
+                                f"aetherra_memory_branch_edges_total {_num(edge_cnt)}"
+                            )
+                        # Optional low-cardinality per-branch gauges
+                        try:
+                            nodes_by_branch = {}
+                            if isinstance(nodes_val, (list, tuple)):
+                                for n in nodes_val:
+                                    if isinstance(n, dict):
+                                        br = str(
+                                            n.get("branch") or n.get("branch_id") or ""
+                                        ).strip()
+                                        if br:
+                                            nodes_by_branch[br] = (
+                                                int(nodes_by_branch.get(br, 0)) + 1
+                                            )
+                            edges_by_branch = {}
+                            if isinstance(edges_val, (list, tuple)):
+                                for e in edges_val:
+                                    if isinstance(e, dict):
+                                        br = str(
+                                            e.get("branch")
+                                            or e.get("src_branch")
+                                            or e.get("src_branch_id")
+                                            or ""
+                                        ).strip()
+                                        if br:
+                                            edges_by_branch[br] = (
+                                                int(edges_by_branch.get(br, 0)) + 1
+                                            )
+                            # Emit only when small to avoid cardinality bloat
+                            if 0 < len(nodes_by_branch) <= 8:
+                                for br, cnt in nodes_by_branch.items():
+                                    lines.append(
+                                        f'aetherra_memory_branch_nodes{{branch="{br}"}} {_num(cnt)}'
+                                    )
+                            if 0 < len(edges_by_branch) <= 8:
+                                for br, cnt in edges_by_branch.items():
+                                    lines.append(
+                                        f'aetherra_memory_branch_edges{{branch="{br}"}} {_num(cnt)}'
+                                    )
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+
+            # Chat metrics (hub-level)
+            try:
+                cm = self.chat_metrics
+                lines.append(
+                    f"aetherra_chat_requests_total {_num(cm.get('requests_total', 0))}"
+                )
+                lines.append(
+                    f"aetherra_chat_streams_current {_num(cm.get('streams_current', 0))}"
+                )
+                # Export sum and count to allow histogram-like calc in PromQL
+                lines.append(
+                    f"aetherra_chat_latency_ms_sum {_num(cm.get('latency_ms_sum', 0.0))}"
+                )
+                lines.append(
+                    f"aetherra_chat_latency_count {_num(cm.get('latency_count', 0))}"
+                )
+                # Histogram buckets (cumulative)
+                try:
+                    hist = cm.get("latency_hist", {}) or {}
+                    order = [50, 100, 250, 500, 1000, 2000, 5000]
+                    cum = 0
+                    for b in order:
+                        cnt = int(hist.get(b, 0))
+                        cum += max(0, cnt)
+                        lines.append(
+                            f'aetherra_chat_latency_ms_bucket{{le="{b}"}} {_num(cum)}'
+                        )
+                    inf_cnt = int(hist.get("+Inf", 0)) + cum
+                    lines.append(
+                        f'aetherra_chat_latency_ms_bucket{{le="+Inf"}} {_num(inf_cnt)}'
+                    )
+                except Exception:
+                    pass
+                lines.append(
+                    f"aetherra_chat_chars_in_total {_num(cm.get('chars_in_total', 0))}"
+                )
+                lines.append(
+                    f"aetherra_chat_chars_out_total {_num(cm.get('chars_out_total', 0))}"
+                )
+                # Token totals
+                lines.append(
+                    f"aetherra_chat_tokens_in_total {_num(cm.get('tokens_in_total', 0))}"
+                )
+                lines.append(
+                    f"aetherra_chat_tokens_out_total {_num(cm.get('tokens_out_total', 0))}"
+                )
             except Exception:
                 pass
 
@@ -797,6 +1306,17 @@ class AetherraHubServer:
             body = request.get_json(silent=True) or {}  # type: ignore[name-defined]
             msg = str(body.get("message") or body.get("content") or "").strip()
             ctx = body.get("context") if isinstance(body.get("context"), dict) else {}
+            # Hub-level chat observability (request received)
+            try:
+                self.chat_metrics["requests_total"] += 1
+                self.chat_metrics["chars_in_total"] += len(msg)
+                # Token estimate
+                self.chat_metrics["tokens_in_total"] += _count_tokens(msg)
+            except Exception:
+                pass
+            import time as _t
+
+            _t0 = _t.time()
 
             async def _call(engine):
                 try:
@@ -811,6 +1331,45 @@ class AetherraHubServer:
             else:
                 success, payload = result  # type: ignore[assignment]
             code = 200 if success else 500
+            # Update latency and output size even on failure (best-effort)
+            try:
+                dt_ms = (time.time() - _t0) * 1000.0  # type: ignore[name-defined]
+            except Exception:
+                try:
+                    import time as _t2
+
+                    dt_ms = (_t2.time() - _t0) * 1000.0
+                except Exception:
+                    dt_ms = 0.0
+            try:
+                self.chat_metrics["latency_ms_sum"] += float(dt_ms)
+                self.chat_metrics["latency_count"] += 1
+                # Histogram bucketing
+                try:
+                    ms_val = float(dt_ms)
+                    hist = self.chat_metrics.get("latency_hist", {}) or {}
+                    placed = False
+                    for b in (50, 100, 250, 500, 1000, 2000, 5000):
+                        if ms_val <= b:
+                            hist[b] = int(hist.get(b, 0)) + 1
+                            placed = True
+                            break
+                    if not placed:
+                        hist["+Inf"] = int(hist.get("+Inf", 0)) + 1
+                    self.chat_metrics["latency_hist"] = hist
+                except Exception:
+                    pass
+                if success and isinstance(payload, dict):
+                    out = payload.get("result") or payload
+                    # count characters from result.response if present
+                    if isinstance(out, dict):
+                        txt = str(out.get("response") or "")
+                    else:
+                        txt = str(out)
+                    self.chat_metrics["chars_out_total"] += len(txt)
+                    self.chat_metrics["tokens_out_total"] += _count_tokens(txt)
+            except Exception:
+                pass
             if success:
                 return jsonify({"ok": True, "result": payload})  # type: ignore[name-defined]
             return jsonify({"ok": False, "error": payload}), code  # type: ignore[name-defined]
@@ -839,6 +1398,14 @@ class AetherraHubServer:
                 return f"event: {event}\ndata: {_json.dumps(data)}\n\n"
 
             def _generate():
+                # Mark stream open
+                try:
+                    self.chat_metrics["streams_current"] += 1
+                    self.chat_metrics["requests_total"] += 1
+                    self.chat_metrics["chars_in_total"] += len(msg)
+                    self.chat_metrics["tokens_in_total"] += _count_tokens(msg)
+                except Exception:
+                    pass
                 # Initial status
                 yield _sse("status", {"phase": "start"})
                 # Token confirmation
@@ -853,6 +1420,9 @@ class AetherraHubServer:
                     except Exception as e:
                         return False, str(e)
 
+                import time as _t
+
+                _t0s = _t.time()
                 try:
                     result = _with_engine_call(_call)
                 except Exception as e:  # pragma: no cover - defensive
@@ -867,6 +1437,38 @@ class AetherraHubServer:
                     yield _sse("final", {"ok": True, "result": payload})
                 else:
                     yield _sse("final", {"ok": False, "error": payload})
+                # Stream closed
+                try:
+                    self.chat_metrics["streams_current"] = max(
+                        0, int(self.chat_metrics.get("streams_current", 0)) - 1
+                    )
+                    # Update latency aggregates and histogram
+                    try:
+                        dt_ms = (time.time() - _t0s) * 1000.0  # type: ignore[name-defined]
+                    except Exception:
+                        try:
+                            dt_ms = (_t.time() - _t0s) * 1000.0
+                        except Exception:
+                            dt_ms = 0.0
+                    self.chat_metrics["latency_ms_sum"] += float(dt_ms)
+                    self.chat_metrics["latency_count"] += 1
+                    hist = self.chat_metrics.get("latency_hist", {}) or {}
+                    placed = False
+                    for b in (50, 100, 250, 500, 1000, 2000, 5000):
+                        if float(dt_ms) <= b:
+                            hist[b] = int(hist.get(b, 0)) + 1
+                            placed = True
+                            break
+                    if not placed:
+                        hist["+Inf"] = int(hist.get("+Inf", 0)) + 1
+                    self.chat_metrics["latency_hist"] = hist
+                    if success and isinstance(payload, dict):
+                        out = payload.get("result") or payload
+                        txt = str(out.get("response") if isinstance(out, dict) else out)
+                        self.chat_metrics["chars_out_total"] += len(txt)
+                        self.chat_metrics["tokens_out_total"] += _count_tokens(txt)
+                except Exception:
+                    pass
 
             from flask import Response  # type: ignore
 
@@ -1232,6 +1834,36 @@ class AetherraHubServer:
             except Exception as e:
                 logger.error(f"memory graph error: {e}")
                 return jsonify({"enabled": False, "error": "server"}), 500  # type: ignore[name-defined]
+
+        @app.route("/api/memory/status", methods=["GET"])
+        def memory_status():
+            """Return quantum memory status (coherence/branch/entanglement) if available.
+
+            Best-effort via service registry; falls back to ephemeral engine instance.
+            """
+            self.stats["requests_served"] += 1
+            try:
+                st = _get_memory_quantum_status_sync()
+                if not isinstance(st, dict):
+                    st = {"enabled": False}
+                return jsonify(st)  # type: ignore[name-defined]
+            except Exception:
+                return jsonify({"enabled": False}), 200  # type: ignore[name-defined]
+
+        @app.route("/api/memory/audit", methods=["GET"])
+        def memory_audit():
+            """Return memory branch DAG audit info (nodes/edges) if available.
+
+            Best-effort via service registry; falls back to ephemeral engine instance.
+            """
+            self.stats["requests_served"] += 1
+            try:
+                data = _get_memory_audit_sync()
+                if not isinstance(data, dict):
+                    data = {"enabled": False}
+                return jsonify(data)  # type: ignore[name-defined]
+            except Exception:
+                return jsonify({"enabled": False}), 200  # type: ignore[name-defined]
 
         @app.route("/services", methods=["GET"])
         def get_services():

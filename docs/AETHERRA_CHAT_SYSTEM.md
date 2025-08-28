@@ -74,13 +74,18 @@ Chat is composed of three cooperating parts:
 
 ## Observability
 
-- Prometheus (planned series; integrate into Hub `/metrics`):
-  - `aetherra_chat_requests_total{client, source, route}`
-  - `aetherra_chat_tokens_total{role}` (input/output roles)
-  - `aetherra_chat_latency_seconds{route}` (histogram)
-  - `aetherra_chat_safety_flags_total{rule}`
-  - `aetherra_chat_streams_current` (gauge)
 
+Chat API exposes hub-level Prometheus series:
+
+- aetherra_chat_requests_total
+- aetherra_chat_streams_current
+- aetherra_chat_latency_ms_sum and aetherra_chat_latency_count (derive avg/percentiles in PromQL)
+- aetherra_chat_chars_in_total and aetherra_chat_chars_out_total
+
+Memory (quantum) observability via Hub:
+
+- GET /api/memory/status returns coherence_id, branch, branches, entanglement_nodes, coherence (when available; otherwise ephemeral fallback marked enabled: false)
+- /metrics exports aetherra_memory_* series: coherence_score, branches_total, fragments_total, entanglement_nodes_total, and a branch_info gauge
 Related existing series:
 
 - Kernel/registry/orchestrator metrics are already exposed and tested.
