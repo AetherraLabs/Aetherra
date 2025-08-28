@@ -82,20 +82,20 @@ def find_routes_in_code() -> Set[str]:
 
 
 def _extract_section(text: str, heading: str) -> str:
-    """Extract content under a markdown level-2 heading until the next level-2 heading.
+    """Extract content under a markdown heading (any level >= 2) until the next heading of any level.
 
     If the heading isn't found, return an empty string to allow caller fallbacks.
     """
-    # Use a case-insensitive match for the heading line starting with '## '
+    # Match heading levels '##', '###', '####', etc.
     pattern = re.compile(
-        rf"^##\s+{re.escape(heading)}\s*$", re.IGNORECASE | re.MULTILINE
+        rf"^##+\s+{re.escape(heading)}\s*$", re.IGNORECASE | re.MULTILINE
     )
     m = pattern.search(text)
     if not m:
         return ""
     start = m.end()
-    # Find next level-2 heading
-    m2 = re.compile(r"^##\s+", re.MULTILINE).search(text, pos=start)
+    # Find next heading (any level)
+    m2 = re.compile(r"^#+\s+", re.MULTILINE).search(text, pos=start)
     end = m2.start() if m2 else len(text)
     return text[start:end]
 
@@ -116,35 +116,49 @@ def read_doc_endpoints(doc: Path) -> Set[str]:
     if not doc.exists():
         return set()
     text = doc.read_text(encoding="utf-8", errors="ignore")
-    # Scope to the Service and Endpoint Summary section to avoid picking up unrelated paths
-    section = _extract_section(text, "Service and Endpoint Summary")
-    if not section:
-        # If the summary isn't present, fall back to entire doc (best effort)
-        section = text
-    # Extract inline/code paths that may include angle-bracket segments
-    paths = set(re.findall(r"(/[-a-zA-Z0-9_./<>]+)", section))
-    normed = {_normalize_route(p) for p in paths if p.startswith("/")}
-    # Explicitly capture root route when referenced in prose
-    if "GET /" in section or "`/`" in section:
-        normed.add("/")
-    # Keep only relevant API/dashboard paths
-    allowed_prefixes = (
-        "/api",
-        "/qfac",
-        "/quantum",
-        "/services",
-        "/health",
-        "/status",
-        "/metrics",  # Prometheus exposition endpoint
-    )
-    filtered = {p for p in normed if p == "/" or p.lower().startswith(allowed_prefixes)}
-    # Drop obvious non-API artifacts (file paths/extensions)
-    filtered = {
-        p
-        for p in filtered
-        if not re.search(r"\.(py|md|txt|json|yaml|yml)$", p, re.IGNORECASE)
-    }
-    return filtered
+
+    def _extract_paths(src: str) -> Set[str]:
+        # Extract inline/code paths that may include angle-bracket segments
+        paths = set(re.findall(r"(/[-a-zA-Z0-9_./<>]+)", src))
+        normed = {_normalize_route(p) for p in paths if p.startswith("/")}
+        # Explicitly capture root route when referenced in prose
+        if "GET /" in src or "`/`" in src:
+            normed.add("/")
+        # Keep only relevant API/dashboard paths
+        allowed_prefixes = (
+            "/api",
+            "/qfac",
+            "/quantum",
+            "/services",
+            "/health",
+            "/status",
+            "/metrics",  # Prometheus exposition endpoint
+        )
+        filtered = {
+            p for p in normed if p == "/" or p.lower().startswith(allowed_prefixes)
+        }
+        # Drop obvious non-API artifacts (file paths/extensions)
+        filtered = {
+            p
+            for p in filtered
+            if not re.search(r"\.(py|md|txt|json|yaml|yml)$", p, re.IGNORECASE)
+        }
+        return filtered
+
+    # Collect endpoints from multiple likely sections and the full doc for stability
+    sections_to_try = [
+        "Service and Endpoint Summary",
+        "Endpoints",
+        "API Endpoints",
+    ]
+    collected: Set[str] = set()
+    for h in sections_to_try:
+        sec = _extract_section(text, h)
+        if sec:
+            collected |= _extract_paths(sec)
+    # Always include anything found in the whole document as a safety net
+    collected |= _extract_paths(text)
+    return collected
 
 
 def main() -> int:

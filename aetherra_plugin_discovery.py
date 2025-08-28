@@ -33,7 +33,8 @@ class PluginMetadata:
     category: str = "utility"
     license: str = "GPL-3.0"
     aetherra_version: str = ">=3.0.0"
-    dependencies: Optional[Dict[str, str]] = None
+    # Accept either dict (name->version) or list[str] to interop with hub schema
+    dependencies: Optional[Union[Dict[str, str], List[str]]] = None
     keywords: Optional[List[str]] = None
     entry_point: Optional[str] = None
     exports: Optional[Dict[str, str]] = None
@@ -269,6 +270,32 @@ class AetherraPluginDiscovery:
         """Register a plugin with the Aetherra Hub."""
         try:
             # Convert metadata to Hub format
+            # Ensure schema-compatible fields for Hub validator
+            # - entry_point: required non-empty string
+            # - dependencies: list[str]
+            # Infer a reasonable entry_point when missing
+            entry_point: Optional[str] = plugin_metadata.entry_point
+            if not entry_point:
+                lp = plugin_metadata.local_path or ""
+                if lp and lp.endswith(".py"):
+                    entry_point = lp
+                elif plugin_metadata.plugin_type == "aetherplug":
+                    # Default to conventional entry point for packaged plugin
+                    entry_point = "main.py"
+                else:
+                    # Fallback: non-empty placeholder acceptable to schema
+                    entry_point = lp or f"{plugin_metadata.name}.py"
+
+            # Normalize dependencies to list[str]
+            deps_raw = plugin_metadata.dependencies
+            if isinstance(deps_raw, dict):
+                # Use package names only; schema only requires list[str]
+                dependencies = list(deps_raw.keys())
+            elif isinstance(deps_raw, list):
+                dependencies = [str(x) for x in deps_raw]
+            else:
+                dependencies = []
+
             hub_plugin = {
                 "name": plugin_metadata.name,
                 "version": plugin_metadata.version,
@@ -277,12 +304,13 @@ class AetherraPluginDiscovery:
                 "category": plugin_metadata.category,
                 "license": plugin_metadata.license,
                 "aetherra_version": plugin_metadata.aetherra_version,
-                "dependencies": plugin_metadata.dependencies,
-                "keywords": plugin_metadata.keywords,
+                "entry_point": entry_point,
+                "dependencies": dependencies,
+                "keywords": plugin_metadata.keywords or [],
+                # Additional, non-schema fields are accepted by the Hub
                 "local_path": plugin_metadata.local_path,
                 "plugin_type": plugin_metadata.plugin_type,
-                "featured": plugin_metadata.plugin_type
-                == "aetherplug",  # Feature .aetherplug plugins
+                "featured": plugin_metadata.plugin_type == "aetherplug",
                 "downloads": 0,
                 "rating": 5.0 if plugin_metadata.plugin_type == "aetherplug" else 4.5,
                 "created_at": "2025-08-02T14:00:00Z",
@@ -310,8 +338,14 @@ class AetherraPluginDiscovery:
                     logger.info(f"[OK] Registered {plugin_metadata.name} with Hub")
                     return True
                 else:
+                    # Capture server-provided error details if present
+                    detail = None
+                    try:
+                        detail = response.json()
+                    except Exception:
+                        detail = (response.text or "").strip()
                     logger.warning(
-                        f"[WARN] Hub registration failed for {plugin_metadata.name}: {response.status_code}"
+                        f"[WARN] Hub registration failed for {plugin_metadata.name}: {response.status_code} details={detail}"
                     )
             except requests.exceptions.RequestException:
                 logger.warning(

@@ -51,6 +51,7 @@ Endpoints summary (Hub Flask server):
 - /api/telemetry
 - /api/lyrixa/chat
 - /api/memory/graph
+- /api/memory/status
 - /api/registry/status
 - /api/kernel/metrics
 - /api/kernel/status
@@ -117,6 +118,8 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 - AETHERRA_MAX_TOKENS
 - AETHERRA_MEMORY_QUANTUM_ENABLED
 - AETHERRA_MODEL
+- AETHERRA_TOKENIZER
+- AETHERRA_TOKENIZER_MODEL
 - AETHERRA_NLP_AVAILABLE
 - AETHERRA_OS_MODE
 - AETHERRA_PLUGINS_CLEANUP_REPORT
@@ -198,6 +201,8 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 - /api/telemetry
 - /api/lyrixa/chat
 - /api/memory/graph
+- /api/memory/status
+- /api/memory/audit
 - /api/registry/status
 - /api/kernel/metrics
 - /api/kernel/status
