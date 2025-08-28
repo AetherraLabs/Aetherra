@@ -9,6 +9,15 @@ export default function useSSE(url: string = '/api/ai/stream') {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // Skip SSE on static hosts (e.g., GitHub Pages) unless explicitly enabled.
+        const isStaticHost = typeof window !== 'undefined' && /(?:^|\.)aetherra\.dev$/i.test(window.location.hostname);
+        const explicitlyEnabled = (import.meta as any)?.env?.VITE_ENABLE_SSE;
+        if (isStaticHost && !explicitlyEnabled) {
+            setConnected(false);
+            setError(null);
+            return;
+        }
+
         const es = new EventSource(url);
         esRef.current = es;
         es.onopen = () => setConnected(true);
