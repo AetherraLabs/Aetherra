@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aetherra Hub Help</title>
+  <meta name="description" content="How to wire the docs UI to your Aetherra Hub" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background:#0b0f1a; color: #e5e7eb; margin: 0; padding: 24px; line-height: 1.6; }
+    a { color: #93c5fd; }
+    code, pre { background: #0f172a; color: #e5e7eb; border: 1px solid #1f2937; border-radius: 6px; padding: 2px 6px; }
+    pre { padding: 12px; overflow-x: auto; }
+    .card { background: rgba(10,10,10,0.85); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px; margin: 16px 0; }
+    h1, h2 { color: #93c5fd; }
+    ul { margin: 0 0 0 20px; }
+  </style>
+</head>
+<body>
+  <h1>Using the Live Hub/Task UI</h1>
+  <div class="card">
+    <h2>Quick setup</h2>
+    <ol>
+      <li>Set your Hub URL (if not localhost:3001):<br />
+        <code>localStorage.setItem('AETHERRA_HUB_URL', 'http://your-hub:3001')</code>
+      </li>
+      <li>If your Hub requires auth, set a token:<br />
+        <code>localStorage.setItem('AETHERRA_TOKEN', 'YOUR_TOKEN')</code>
+      </li>
+      <li>Optional: use EventSource instead of fetch for SSE:<br />
+        <code>localStorage.setItem('AETHERRA_SSE_EVENTSOURCE', '1')</code><br />
+        If your server expects token in query, also set:<br />
+        <code>localStorage.setItem('AETHERRA_SSE_TOKEN_IN_QUERY', '1')</code>
+      </li>
+      <li>Reload the page to apply changes.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Watching a task</h2>
+    <ul>
+      <li>Enter the task ID in the widget and click <em>watch</em> or press Enter.</li>
+      <li>The UI does a quick <code>GET /api/tasks/&lt;id&gt;</code> preflight. If it says <em>unauthorized</em>, set the token.</li>
+      <li>Stream endpoint used by default: <code>POST /api/tasks/&lt;id&gt;/stream</code> with header <code>X-Aetherra-Token</code> if present.</li>
+      <li>EventSource fallback uses: <code>GET /api/tasks/&lt;id&gt;/stream</code> (enable via <code>AETHERRA_SSE_EVENTSOURCE=1</code> in localStorage). Token can be passed in query if your server supports it.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>URL parameters</h2>
+    <p>You can deep-link into the watcher by adding parameters to the URL:</p>
+    <ul>
+      <li><code>?task=&lt;ID&gt;</code> – auto-start watching this task.</li>
+      <li><code>&amp;hub=&lt;URL&gt;</code> – set Hub URL (also saved to localStorage).</li>
+      <li><code>&amp;token=&lt;TOKEN&gt;</code> – set token (saved to localStorage).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Troubleshooting</h2>
+    <ul>
+      <li><strong>plugins: –</strong> or red dot: Hub not reachable. Check <code>AETHERRA_HUB_URL</code> and server is running.</li>
+      <li><strong>task not found</strong>: Verify the ID with <code>GET /api/tasks/&lt;id&gt;</code>.</li>
+      <li><strong>unauthorized</strong>: Set <code>AETHERRA_TOKEN</code> or disable auth at the server (dev only).</li>
+      <li><strong>stream not available</strong>: Ensure the stream endpoint is enabled in Hub config and CORS allows your origin.</li>
+    </ul>
+  </div>
+
+  <p><a href="/">Back to site</a></p>
+</body>
+</html>
