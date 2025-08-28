@@ -90,7 +90,7 @@
 
         const dot = el('span', { id: 'aetherra-live-dot' }, '●');
         h(dot, { marginRight: '8px', color: '#f87171' });
-  const title = el('span', { id: 'aetherra-live-title', title: 'Ctrl-click: set Hub URL · Alt-click: set token' }, 'Hub');
+        const title = el('span', { id: 'aetherra-live-title', title: 'Ctrl-click: set Hub URL · Alt-click: set token' }, 'Hub');
         h(title, { color: '#93c5fd' });
         const sep = el('span', {}, ' · ');
         const plugins = el('span', { id: 'aetherra-live-plugins' }, 'plugins: –');
@@ -124,13 +124,13 @@
         h(watchBtn, { marginLeft: '6px', background: '#111827', color: '#93c5fd', border: '1px solid #1f2937', borderRadius: '6px', padding: '2px 8px', cursor: 'pointer' });
         const stopBtn = el('button', { id: 'aetherra-task-stop', title: 'Stop watching', disabled: 'true' }, 'stop');
         h(stopBtn, { marginLeft: '6px', background: '#111827', color: '#f87171', border: '1px solid #1f2937', borderRadius: '6px', padding: '2px 8px', cursor: 'pointer', opacity: '0.6' });
-  const tips = el('div', { id: 'aetherra-task-tip' });
-  const tipLink = el('a', { href: '/help/hub.html', target: '_blank', rel: 'noreferrer noopener' }, 'help');
-  h(tipLink, { color: '#93c5fd', textDecoration: 'none' });
-  tipLink.addEventListener('mouseenter', () => tipLink.style.textDecoration = 'underline');
-  tipLink.addEventListener('mouseleave', () => tipLink.style.textDecoration = 'none');
-  tips.appendChild(document.createTextNode('set AETHERRA_TOKEN via localStorage if required · '));
-  tips.appendChild(tipLink);
+        const tips = el('div', { id: 'aetherra-task-tip' });
+        const tipLink = el('a', { href: '/help/hub.html', target: '_blank', rel: 'noreferrer noopener' }, 'help');
+        h(tipLink, { color: '#93c5fd', textDecoration: 'none' });
+        tipLink.addEventListener('mouseenter', () => tipLink.style.textDecoration = 'underline');
+        tipLink.addEventListener('mouseleave', () => tipLink.style.textDecoration = 'none');
+        tips.appendChild(document.createTextNode('set AETHERRA_TOKEN via localStorage if required · '));
+        tips.appendChild(tipLink);
         h(tips, { fontSize: '10px', color: '#9ca3af', marginTop: '4px' });
         const log = el('div', { id: 'aetherra-task-log' });
         h(log, { marginTop: '6px', maxHeight: '140px', overflowY: 'auto', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px', fontSize: '11px', lineHeight: '1.35' });
@@ -198,8 +198,8 @@
       }
       function labelRegexEscape(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-  // --- Task streaming (SSE over fetch, optional EventSource) ---
-  let STREAM = null; // {controller, reader, taskId} or {es}
+      // --- Task streaming (SSE over fetch, optional EventSource) ---
+      let STREAM = null; // {controller, reader, taskId} or {es}
       function appendLog(host, type, payload) {
         try {
           const log = host.querySelector('#aetherra-task-log');
@@ -262,8 +262,8 @@
             const url = `${HUB_URL}/api/tasks/${encodeURIComponent(taskId)}/stream` + (token && useQueryToken ? `?token=${encodeURIComponent(token)}` : '');
             const es = new EventSource(url);
             STREAM = { es, taskId, controller: null };
-            es.onmessage = (ev) => { let d = ev.data; try { d = JSON.parse(d); } catch {} appendLog(host, 'message', d); };
-            es.addEventListener('final', (ev) => { let d = ev.data; try { d = JSON.parse(d); } catch {} appendLog(host, 'final', d); setTimeout(() => stopTaskStream(), 200); });
+            es.onmessage = (ev) => { let d = ev.data; try { d = JSON.parse(d); } catch { } appendLog(host, 'message', d); };
+            es.addEventListener('final', (ev) => { let d = ev.data; try { d = JSON.parse(d); } catch { } appendLog(host, 'final', d); setTimeout(() => stopTaskStream(), 200); });
             es.onerror = () => { appendLog(host, 'error', 'eventsource error'); };
             return;
           } catch (e) { appendLog(host, 'warn', 'EventSource failed, falling back to fetch'); }
