@@ -187,21 +187,36 @@ class AetherraHubServer:
         # We also set standard CORS headers and allow our custom auth header.
         @app.after_request
         def _add_cors_pna_headers(resp):  # type: ignore[override]
+            """Add strict CORS and Private Network Access headers.
+
+            Defaults: allow https://aetherra.dev and localhost origins only.
+            Configure with:
+              - AETHERRA_CORS_ALLOW_PATTERN: regex to match allowed Origin values
+              - AETHERRA_PNA_ALLOW: '1' to enable Access-Control-Allow-Private-Network (default '1')
+            """
             try:
+                import re
+
                 origin = request.headers.get("Origin")  # type: ignore[name-defined]
-                if origin:
-                    # Mirror Origin for CORS and set Vary
+                allow_pattern = os.environ.get(
+                    "AETHERRA_CORS_ALLOW_PATTERN",
+                    r"^https?://(localhost|127\.0\.0\.1)(:\\d+)?$|^https://(www\.)?aetherra\.dev(:\\d+)?$",
+                )
+                pna_allow = os.environ.get("AETHERRA_PNA_ALLOW", "1").strip() == "1"
+                allowed = bool(origin and re.match(allow_pattern, origin))
+                if allowed:
                     resp.headers["Access-Control-Allow-Origin"] = origin
-                    # Preserve existing Vary if present
                     vary = resp.headers.get("Vary")
                     resp.headers["Vary"] = (vary + ", Origin") if vary else "Origin"
-                    # Allow common methods and headers
                     resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-                    resp.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Aetherra-Token"
-                    # Private Network Access opt-in for preflights
-                    resp.headers["Access-Control-Allow-Private-Network"] = "true"
-                    # Cache preflight for a bit
+                    resp.headers["Access-Control-Allow-Headers"] = (
+                        "Content-Type, X-Aetherra-Token"
+                    )
+                    # Only opt into Private Network Access for allowed origins
+                    if pna_allow:
+                        resp.headers["Access-Control-Allow-Private-Network"] = "true"
                     resp.headers["Access-Control-Max-Age"] = "600"
+                # Do not set wildcard or credentials; we purposely keep it strict.
             except Exception:
                 pass
             return resp
@@ -759,6 +774,63 @@ class AetherraHubServer:
             if not isinstance(ks, dict):
                 ks = {"running": False}
             return jsonify(ks)  # type: ignore[name-defined]
+
+        @app.route("/api/site_status", methods=["GET"])
+        def api_site_status():
+            """Aggregated status for Docs widget to minimize cross-origin requests.
+
+            Returns a JSON bundle with:
+            - plugins.total: count of registered plugins
+            - kernel.running: boolean if kernel is running
+            - kernel.uptime_seconds: numeric uptime if available
+            - kernel.queue_sizes: {high_priority, normal_priority, background}
+            - hub.ts: ISO timestamp when generated
+            - hub.requests_served: hub request counter
+            """
+            self.stats["requests_served"] += 1
+            ks = _get_kernel_status_sync()
+            if not isinstance(ks, dict):
+                ks = {}
+            # Derive running state and uptime
+            running = bool(
+                ks.get("running") is True
+                or str(ks.get("state", "")).lower() == "running"
+            )
+            uptime = 0.0
+            try:
+                # Prefer direct uptime key; fallback to metrics.uptime if present
+                if isinstance(ks.get("uptime"), (int, float)):
+                    uptime = float(ks.get("uptime") or 0.0)
+                else:
+                    uptime = float((ks.get("metrics", {}) or {}).get("uptime", 0.0))
+            except Exception:
+                uptime = 0.0
+            # Queue sizes map
+            qs = (
+                ks.get("queue_sizes", {})
+                if isinstance(ks.get("queue_sizes"), dict)
+                else {}
+            )
+            out = {
+                "ok": True,
+                "hub": {
+                    "ts": datetime.now().isoformat(),
+                    "requests_served": self.stats.get("requests_served", 0),
+                },
+                "plugins": {
+                    "total": int(len(self.plugins)),
+                },
+                "kernel": {
+                    "running": running,
+                    "uptime_seconds": uptime,
+                    "queue_sizes": {
+                        "high_priority": int(qs.get("high_priority", 0) or 0),
+                        "normal_priority": int(qs.get("normal_priority", 0) or 0),
+                        "background": int(qs.get("background", 0) or 0),
+                    },
+                },
+            }
+            return jsonify(out)  # type: ignore[name-defined]
 
         @app.route("/metrics", methods=["GET"])
         def prometheus_metrics():

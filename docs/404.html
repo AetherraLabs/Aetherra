@@ -38,13 +38,20 @@
         { test: t => /tutorial|recipe/.test(t), href: doc('recipes') },
         { test: t => /changelog|versioning|release\s*notes?/.test(t), href: doc('changelog') },
 
+        // Hard fallbacks for common CTA labels
+        { test: t => /developers?\s*docs?/.test(t), href: doc('') },
+        { test: t => /plugin\s*(guides?|docs?)/.test(t), href: doc('plugins') },
+        { test: t => /getting\s*started\s*guide/.test(t), href: doc('getting-started') },
+        { test: t => /changelog|versioning|release\s*notes?/.test(t), href: doc('changelog') },
+
         // Existing docs pages
         { test: t => /code\s*of\s*conduct/.test(t), href: '/community/code-of-conduct.html' },
         { test: t => /\brfc\b|proposal/.test(t), href: '/community/rfc.html' },
         { test: t => /\bnotes?\b/.test(t), href: '/labs/notes.html' },
         { test: t => /replicat/.test(t), href: '/labs/replication-kit.html' },
         { test: t => /\bcite\b|citation/.test(t), href: '/research/cite.html' },
-        { test: t => /\bview\b|paper|research/.test(t), href: '/research/view.html' },
+        { test: t => /\bcite\b|citation/.test(t), href: '/research/cite.html' },
+        { test: t => /\bview\b|paper/.test(t), href: '/research/view.html' },
         { test: t => /download|get\s+the\s+code/.test(t), href: '/downloads/' },
       ];
 
@@ -111,8 +118,9 @@
     // Runtime Hub/OS live status widget: shows plugin count and kernel metrics without touching SPA bundle
     (function () {
       const HUB_URL = (window.AETHERRA_HUB_URL || localStorage.getItem('AETHERRA_HUB_URL') || 'http://localhost:3001').replace(/\/$/, '');
-      const REFRESH_MS_OK = 10000;   // 10s normal
-      const REFRESH_MS_ERR = 20000;  // 20s on error
+      const REFRESH_MS_OK = 12000;   // normal cadence
+      const REFRESH_MS_ERR = 25000;  // slower on error
+      let backoff = 0;
 
       function h(el, styles) { for (const k in styles) el.style[k] = styles[k]; return el; }
       function el(tag, props = {}, children = []) {
@@ -399,68 +407,45 @@
 
         let next = REFRESH_MS_OK;
         try {
-          // Plugins
-          let total = null;
-          try {
-            const p = await fetchJSON(HUB_URL + '/api/plugins');
-            total = Number(p && (p.total ?? (Array.isArray(p.plugins) ? p.plugins.length : null)));
-          } catch (_) {
-            const s = await fetchJSON(HUB_URL + '/status');
-            total = Number(s && (s.plugins_registered ?? null));
-          }
-          if (Number.isFinite(total)) {
-            plugins.textContent = `plugins: ${total}`;
-          } else {
-            plugins.textContent = 'plugins: –';
-          }
-
-          // Kernel basic status
-          let ks = null;
-          try {
-            ks = await fetchJSON(HUB_URL + '/api/kernel/status');
-          } catch (_) { ks = null; }
-          const running = ks && (ks.running === true || String(ks.state || '').toLowerCase() === 'running');
-          kernel.textContent = running ? 'kernel: running' : 'kernel: offline';
-
-          // Prometheus metrics (queues & uptime)
-          let metrics = '';
-          try { metrics = await fetchText(HUB_URL + '/metrics'); } catch (_) { metrics = ''; }
-          if (metrics) {
-            const up = parseMetric(metrics, 'aetherra_kernel_uptime_seconds');
-            const qh = parseMetric(metrics, 'aetherra_kernel_queue_size', { queue: 'high' });
-            const qn = parseMetric(metrics, 'aetherra_kernel_queue_size', { queue: 'normal' });
-            const qb = parseMetric(metrics, 'aetherra_kernel_queue_size', { queue: 'background' });
-            if (Number.isFinite(qh) || Number.isFinite(qn) || Number.isFinite(qb)) {
-              const fmt = v => Number.isFinite(v) ? String(Math.max(0, Math.floor(v))) : '–';
-              queues.textContent = `queues: H:${fmt(qh)} N:${fmt(qn)} B:${fmt(qb)}`;
-            } else {
-              queues.textContent = 'queues: –';
-            }
-            if (Number.isFinite(up)) {
-              const sec = Math.max(0, Math.floor(Number(up)));
-              kernel.textContent = (running ? 'kernel: running' : 'kernel: offline') + ` (uptime ${sec}s)`;
-            }
-          } else {
-            queues.textContent = 'queues: –';
-          }
-
-          // Dot color based on connectivity
+          // Use aggregated endpoint
+          const s = await fetchJSON(HUB_URL + '/api/site_status');
+          const total = Number(s && s.plugins && s.plugins.total);
+          if (Number.isFinite(total)) plugins.textContent = `plugins: ${total}`; else plugins.textContent = 'plugins: –';
+          const running = !!(s && s.kernel && s.kernel.running);
+          const sec = Math.max(0, Math.floor(Number(s && s.kernel && s.kernel.uptime_seconds || 0)));
+          kernel.textContent = running ? `kernel: running${sec ? ` (uptime ${sec}s)` : ''}` : 'kernel: offline';
+          const qs = (s && s.kernel && s.kernel.queue_sizes) || {};
+          const fmt = v => Number.isFinite(v) ? String(Math.max(0, Math.floor(v))) : '–';
+          queues.textContent = `queues: H:${fmt(qs.high_priority)} N:${fmt(qs.normal_priority)} B:${fmt(qs.background)}`;
           h(dot, { color: running ? '#34d399' : '#fbbf24' });
+          backoff = 0;
         } catch (err) {
           // Offline
           h(host.querySelector('#aetherra-live-dot'), { color: '#f87171' });
           plugins.textContent = 'plugins: –';
           kernel.textContent = 'kernel: –';
           queues.textContent = 'queues: –';
-          next = REFRESH_MS_ERR;
+          backoff = Math.min(4, backoff + 1);
+          next = REFRESH_MS_ERR * (1 + backoff);
         } finally {
-          window.clearTimeout(update._t);
-          update._t = window.setTimeout(update, next);
+          const schedule = () => {
+            window.clearTimeout(update._t);
+            update._t = window.setTimeout(update, next);
+          };
+          if (document.visibilityState === 'hidden') {
+            next = Math.max(next, 30000);
+          }
+          schedule();
         }
       }
 
       function start() {
         try { ensureWidget(); update(); } catch (_) { /* no-op */ }
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            try { window.clearTimeout(update._t); update(); } catch { }
+          }
+        });
       }
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
       else start();
