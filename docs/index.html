@@ -11,28 +11,52 @@
   <script type="module" crossorigin src="/assets/index-OrXyYuWD.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
   <script>
-    // Runtime link rewriter: map placeholder buttons to real docs pages
+    // Runtime link rewriter: make placeholder Docs buttons actually navigate
     (function () {
-      const MAP = new Map([
-        ["read full code of conduct", "/community/code-of-conduct.html"],
-        ["propose an rfc", "/community/rfc.html"],
-        ["open notes", "/labs/notes.html"],
-        ["replication kit", "/labs/replication-kit.html"],
-        ["view", "/research/view.html"],
-        ["cite", "/research/cite.html"],
-        ["download", "/downloads/"]
-      ]);
+      const RULES = [
+        { test: t => /code\s*of\s*conduct/.test(t), href: '/community/code-of-conduct.html' },
+        { test: t => /\brfc\b|proposal/.test(t), href: '/community/rfc.html' },
+        { test: t => /notes|lab/.test(t), href: '/labs/notes.html' },
+        { test: t => /replicat/.test(t), href: '/labs/replication-kit.html' },
+        { test: t => /\bcite\b|citation/.test(t), href: '/research/cite.html' },
+        { test: t => /\bview\b|paper|research/.test(t), href: '/research/view.html' },
+        { test: t => /download|get\s+started|get\s+the\s+code/.test(t), href: '/downloads/' },
+      ];
+
+      function normalizeLabel(a) {
+        const raw = (a.getAttribute('aria-label') || a.title || a.textContent || '').toLowerCase();
+        return raw.replace(/[\s\u00A0]+/g, ' ').replace(/[\.!?,;:()\[\]\-_/]+/g, ' ').trim();
+      }
+
+      function findTarget(a) {
+        const t = normalizeLabel(a);
+        for (const r of RULES) { if (r.test(t)) return r.href; }
+        return null;
+      }
+
+      function isPlaceholderHref(h) {
+        if (!h) return true;
+        const s = String(h).trim();
+        return s === '#' || s === '#!' || s === 'javascript:void(0)' || s === '';
+      }
 
       function rewriteAnchors(root) {
         try {
           const scope = root || document;
-          const anchors = scope.querySelectorAll('a[href="#"]:not([data-link-fixed])');
+          const anchors = scope.querySelectorAll('a:not([data-link-fixed])');
           anchors.forEach(a => {
-            const label = (a.textContent || "").trim().toLowerCase();
-            const target = MAP.get(label);
+            const href = a.getAttribute('href');
+            if (!isPlaceholderHref(href)) return;
+            const target = findTarget(a);
             if (target) {
               a.setAttribute('href', target);
               a.setAttribute('data-link-fixed', '1');
+            } else {
+              // As a safety, intercept click to avoid no-op
+              a.addEventListener('click', (e) => {
+                const t2 = findTarget(a);
+                if (t2) { e.preventDefault(); location.href = t2; }
+              }, { once: true });
             }
           });
         } catch (_) { /* no-op */ }
@@ -48,11 +72,8 @@
         setTimeout(() => rewriteAnchors(root), 1000);
       }
 
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', installObserver);
-      } else {
-        installObserver();
-      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installObserver);
+      else installObserver();
     })();
   </script>
   <script>
