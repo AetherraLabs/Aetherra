@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Security Alerts</title>
+    <link rel="stylesheet" href="../assets/style.css" />
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <style>
+        .alert-item {
+            border: 1px solid rgba(0, 255, 136, 0.25);
+            border-left: 4px solid #00ff88;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 6px;
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .alert-item.warn {
+            border-left-color: #ffb020;
+            background: rgba(255, 176, 32, 0.08);
+        }
+
+        .alert-item.error {
+            border-left-color: #ff4d4f;
+            background: rgba(255, 77, 79, 0.08);
+        }
+
+        .ts {
+            color: #9aa;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel-container" data-panel="alerts">
+        <div class="panel-header">
+            <h1>🔐 Security Alerts</h1>
+            <p>Live feed from .aetherra/security/alerts.jsonl</p>
+        </div>
+        <div class="panel-content">
+            <div style="margin-bottom: 12px; display:flex; gap:8px; align-items:center;">
+                <button class="btn btn-primary" id="refreshBtn">Refresh</button>
+                <span id="status" class="ts">Waiting for updates…</span>
+            </div>
+            <div id="alerts"></div>
+        </div>
+    </div>
+
+    <script>
+        function cls(sev) {
+            if (!sev) return "";
+            sev = ("" + sev).toLowerCase();
+            if (sev.includes("error")) return "error";
+            if (sev.includes("warn")) return "warn";
+            return "";
+        }
+        function renderAlerts(list) {
+            const el = document.getElementById('alerts');
+            el.innerHTML = '';
+            (list || []).slice().reverse().forEach(a => {
+                const d = document.createElement('div');
+                d.className = 'alert-item ' + cls(a.severity);
+                const ts = new Date((a.timestamp || 0) * 1000).toLocaleString();
+                d.innerHTML = `<div class="ts">${ts} • ${a.severity || 'info'}</div><div>${(a.alert || '').toString().replace(/</g, '&lt;')}</div>`;
+                el.appendChild(d);
+            });
+            document.getElementById('status').textContent = `Showing ${list.length || 0} alerts`;
+        }
+
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+            const bridge = channel.objects.pybridge;
+            if (bridge && bridge.getRecentAlerts) {
+                try {
+                    const data = JSON.parse(bridge.getRecentAlerts());
+                    renderAlerts(data.alerts || []);
+                } catch (e) { }
+            }
+            if (bridge && bridge.alerts_updated) {
+                bridge.alerts_updated.connect(function (json) {
+                    try { const data = JSON.parse(json); renderAlerts(data.alerts || []); } catch (e) { }
+                });
+            }
+            document.getElementById('refreshBtn').addEventListener('click', function () {
+                if (bridge && bridge.getRecentAlerts) {
+                    try { const data = JSON.parse(bridge.getRecentAlerts()); renderAlerts(data.alerts || []); } catch (e) { }
+                }
+            });
+        });
+    </script>
+    <script src="../assets/effects.js"></script>
+</body>
+
+</html>

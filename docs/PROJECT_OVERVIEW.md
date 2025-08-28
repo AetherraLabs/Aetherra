@@ -51,6 +51,14 @@ Endpoints summary (Hub Flask server):
 - /api/telemetry
 - /api/lyrixa/chat
 - /api/memory/graph
+- /api/registry/status
+- /api/kernel/metrics
+- /api/kernel/status
+- /api/kernel/control/pause
+- /api/kernel/control/resume
+- /api/kernel/control/drain
+- /api/kernel/control/queue_limits
+- /metrics
 
 Environment configuration is active with 76 AETHERRA_* variables referenced across the codebase. Breakdown: QFAC(3), HUB(10), GENERAL(63).
 
@@ -121,11 +129,57 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 - AETHERRA_SIE_TELEMETRY_INTERVAL
 - AETHERRA_START_LOCAL_HUB
 - AETHERRA_TELEMETRY_ENDPOINT
+// Security & Policies
+- AETHERRA_KEYS_ALLOW_UNSCOPED
+- AETHERRA_KEYS_MASTER
+- AETHERRA_NET_STRICT
+- AETHERRA_PLUGIN_SIGNING_STRICT
+- AETHERRA_REQUIRE_CAPABILITIES
+- AETHERRA_HUB_CONTROL_ENABLED
+- AETHERRA_HUB_CONTROL_TOKEN
+// Plugin quotas
+- AETHERRA_PLUGIN_MAX_MEM_MB
+- AETHERRA_PLUGIN_MAX_RUNTIME_SEC
+// Telemetry DP controls
+- AETHERRA_TELEMETRY_DP
+- AETHERRA_TELEMETRY_DP_EPS
+// Kernel settings
+- AETHERRA_KERNEL_QSIZE_HIGH
+- AETHERRA_KERNEL_QSIZE_NORMAL
+- AETHERRA_KERNEL_QSIZE_BACKGROUND
+- AETHERRA_KERNEL_PERSIST_TASKS
+- AETHERRA_KERNEL_TASKS_PATH
+- AETHERRA_KERNEL_TASK_DEFAULT_TTL_SEC
+- AETHERRA_KERNEL_METRICS_FLUSH_SEC
+- AETHERRA_KERNEL_DLQ
+- AETHERRA_KERNEL_DLQ_PATH
+- AETHERRA_KERNEL_DLQ_MAX
+- AETHERRA_NIGHT_START_HOUR
+- AETHERRA_NIGHT_END_HOUR
+- AETHERRA_KERNEL_RATE_LIMIT_PER_MIN
+- AETHERRA_PLUGIN_INVOKE_TIMEOUT_SEC
+- AETHERRA_PLUGIN_CB_THRESHOLD
+- AETHERRA_PLUGIN_CB_COOLDOWN_SEC
+- AETHERRA_PLUGIN_MAX_CONCURRENCY
+- AETHERRA_KERNEL_RETRY_MAX
+- AETHERRA_KERNEL_RETRY_BASE_DELAY_MS
+- AETHERRA_KERNEL_AGING_SEC
 - AETHERRA_TEMPERATURE
 - AETHERRA_USE_HYBRID
 - AETHERRA_WEB_BASE
 - AETHERRA_WEB_HOST
 - AETHERRA_WEB_PORT
+// Optional AI developer API (disabled by default)
+- AETHERRA_AI_API_ENABLED
+- AETHERRA_AI_API_REQUIRE_TOKEN
+- AETHERRA_AI_API_TOKEN
+- AETHERRA_AI_API_STREAM
+// Optional Agents API (disabled by default)
+- AETHERRA_AGENTS_API_ENABLED
+- AETHERRA_AGENTS_API_REQUIRE_TOKEN
+- AETHERRA_AGENTS_API_TOKEN
+- AETHERRA_AGENTS_API_STREAM
+- AETHERRA_AGENTS_STREAM_POLL_MS
 
 #### Endpoints
 
@@ -144,12 +198,31 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 - /api/telemetry
 - /api/lyrixa/chat
 - /api/memory/graph
+- /api/registry/status
+- /api/kernel/metrics
+- /api/kernel/status
+- /api/kernel/control/pause
+- /api/kernel/control/resume
+- /api/kernel/control/drain
+- /api/kernel/control/queue_limits
 // Auxiliary endpoints that may be exposed by optional modules/dashboards
 - /api/users
 - `/api/users/<param>`
 - /qfac/metrics
 - /quantum/status
 - /quantum_status
+- /metrics
+// Optional developer AI API (disabled by default)
+- /api/ai/ask
+- /api/ai/stream
+// Optional Agents API (disabled by default)
+- /api/agents
+- /api/agents/metrics
+- /api/tasks
+- /api/tasks/<task_id>
+- /api/tasks/<task_id>/stream
+- /api/agents/evaluate
+- /api/agents/evaluation
 
 #### Services
 

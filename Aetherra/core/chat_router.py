@@ -11,18 +11,49 @@ them to appropriate handlers based on intent, context, and capabilities.
 import asyncio
 import logging
 import re
-from datetime import datetime
-from typing import Dict, Any, List, Optional, Callable, Tuple
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+from typing import Any, Callable, Dict, List
 
 logger = logging.getLogger(__name__)
+try:
+    from Aetherra.security.prompt_defense import (
+        scan_prompt_for_injection,  # type: ignore
+    )
+
+    HAS_PROMPT_DEFENSE = True
+except Exception:
+    HAS_PROMPT_DEFENSE = False
+
+    def scan_prompt_for_injection(text: str) -> Any:  # type: ignore
+        return type("_R", (), {"risk_score": 0.0, "findings": [], "suggestions": []})()
+
+
+# Optional: integrate with security alerts feed when available
+try:
+    from Aetherra.aetherra_core.system.security_system import (
+        get_security_system,  # type: ignore
+    )
+
+    HAS_SECURITY_SYSTEM = True
+except Exception:
+    HAS_SECURITY_SYSTEM = False
+
+    def get_security_system():  # type: ignore
+        class _NullSec:
+            def add_alert(self, *args, **kwargs):
+                return None
+
+        return _NullSec()
+
 
 # Try to import Aetherra components with fallback
 try:
-    from Aetherra.core.engine.reasoning_engine import ReasoningEngine, ReasoningContext
     from Aetherra.core.engine.introspection_controller import IntrospectionController
+    from Aetherra.core.engine.reasoning_engine import ReasoningContext, ReasoningEngine
     from Aetherra.core.self_improvement_engine import SelfImprovementEngine
+
     HAS_AETHERRA_ENGINES = True
 except ImportError:
     HAS_AETHERRA_ENGINES = False
@@ -31,8 +62,8 @@ except ImportError:
     # Create mock classes
     class MockResult:
         def __init__(self):
-            self.conclusion = 'Basic routing analysis completed'
-            self.alternatives = ['General response available']
+            self.conclusion = "Basic routing analysis completed"
+            self.alternatives = ["General response available"]
             self.confidence = 0.5
 
     class ReasoningEngine:
@@ -58,6 +89,7 @@ except ImportError:
 
 class IntentType(Enum):
     """Types of user intents"""
+
     QUESTION = "question"
     COMMAND = "command"
     CONVERSATION = "conversation"
@@ -72,6 +104,7 @@ class IntentType(Enum):
 
 class RoutingPriority(Enum):
     """Routing priority levels"""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -82,6 +115,7 @@ class RoutingPriority(Enum):
 @dataclass
 class RouteDefinition:
     """Defines a routing rule"""
+
     pattern: str
     handler: str
     intent_type: IntentType
@@ -95,11 +129,12 @@ class RouteDefinition:
 @dataclass
 class ChatMessage:
     """Represents a chat message"""
+
     content: str
     timestamp: datetime
     user_id: str = "default"
     session_id: str = "default"
-    metadata: Dict[str, Any] = None
+    metadata: Dict[str, Any] | None = None
 
     def __post_init__(self):
         if self.metadata is None:
@@ -109,6 +144,7 @@ class ChatMessage:
 @dataclass
 class RoutingResult:
     """Result of routing analysis"""
+
     handler: str
     intent_type: IntentType
     priority: RoutingPriority
@@ -146,7 +182,7 @@ class ChatRouter:
             "routes_matched": 0,
             "fallback_used": 0,
             "avg_routing_time": 0.0,
-            "intent_distribution": {intent.value: 0 for intent in IntentType}
+            "intent_distribution": {intent.value: 0 for intent in IntentType},
         }
 
         # Initialize default routes
@@ -163,7 +199,7 @@ class ChatRouter:
                 intent_type=IntentType.QUESTION,
                 priority=RoutingPriority.HIGH,
                 requires_reasoning=True,
-                description="Direct questions requiring reasoning"
+                description="Direct questions requiring reasoning",
             ),
             RouteDefinition(
                 pattern=r"^(?:please|can you|could you|would you).*",
@@ -171,7 +207,7 @@ class ChatRouter:
                 intent_type=IntentType.COMMAND,
                 priority=RoutingPriority.HIGH,
                 requires_context=True,
-                description="Polite requests and commands"
+                description="Polite requests and commands",
             ),
             RouteDefinition(
                 pattern=r".*(?:think|reflect|analyze|consider|ponder).*",
@@ -180,7 +216,7 @@ class ChatRouter:
                 priority=RoutingPriority.MEDIUM,
                 requires_reasoning=True,
                 requires_memory=True,
-                description="Reflection and analysis requests"
+                description="Reflection and analysis requests",
             ),
             RouteDefinition(
                 pattern=r".*(?:autonomous|self-improve|optimize|enhance).*",
@@ -190,14 +226,14 @@ class ChatRouter:
                 requires_context=True,
                 requires_memory=True,
                 requires_reasoning=True,
-                description="Autonomous system operations"
+                description="Autonomous system operations",
             ),
             RouteDefinition(
                 pattern=r".*(?:status|health|system|performance).*",
                 handler="system_handler",
                 intent_type=IntentType.SYSTEM_QUERY,
                 priority=RoutingPriority.MEDIUM,
-                description="System status and health queries"
+                description="System status and health queries",
             ),
             RouteDefinition(
                 pattern=r".*(?:create|generate|write|compose|design).*",
@@ -205,7 +241,7 @@ class ChatRouter:
                 intent_type=IntentType.CREATIVITY,
                 priority=RoutingPriority.MEDIUM,
                 requires_reasoning=True,
-                description="Creative tasks and generation"
+                description="Creative tasks and generation",
             ),
             RouteDefinition(
                 pattern=r".*(?:solve|fix|debug|troubleshoot|resolve).*",
@@ -214,15 +250,15 @@ class ChatRouter:
                 priority=RoutingPriority.HIGH,
                 requires_reasoning=True,
                 requires_context=True,
-                description="Problem solving and debugging"
+                description="Problem solving and debugging",
             ),
             RouteDefinition(
                 pattern=r".*",
                 handler="conversation_handler",
                 intent_type=IntentType.CONVERSATION,
                 priority=RoutingPriority.LOW,
-                description="General conversation fallback"
-            )
+                description="General conversation fallback",
+            ),
         ]
 
         for route in default_routes:
@@ -267,15 +303,17 @@ class ChatRouter:
                     "route_description": route.description,
                     "requires_reasoning": route.requires_reasoning,
                     "requires_context": route.requires_context,
-                    "requires_memory": route.requires_memory
+                    "requires_memory": route.requires_memory,
                 },
-                reasoning_chain=intent_analysis.get("reasoning_chain", [])
+                reasoning_chain=intent_analysis.get("reasoning_chain", []),
             )
 
             # Update statistics
             self._update_stats(result, start_time)
 
-            logger.info(f"ðŸ“¤ Message routed: {route.handler} (confidence: {result.confidence:.2f})")
+            logger.info(
+                f"ðŸ“¤ Message routed: {route.handler} (confidence: {result.confidence:.2f})"
+            )
 
             return result
 
@@ -294,10 +332,17 @@ class ChatRouter:
                         "message": message.content,
                         "timestamp": message.timestamp.isoformat(),
                         "user_id": message.user_id,
-                        "session_id": message.session_id
+                        "session_id": message.session_id,
                     },
-                    constraints=["classify_intent", "determine_priority", "assess_complexity"],
-                    objectives=["accurate_intent_classification", "routing_optimization"]
+                    constraints=[
+                        "classify_intent",
+                        "determine_priority",
+                        "assess_complexity",
+                    ],
+                    objectives=[
+                        "accurate_intent_classification",
+                        "routing_optimization",
+                    ],
                 )
 
                 reasoning_result = await self.reasoning_engine.reason(reasoning_context)
@@ -306,7 +351,7 @@ class ChatRouter:
                     "intent_analysis": reasoning_result.conclusion,
                     "alternatives": reasoning_result.alternatives,
                     "confidence": reasoning_result.confidence,
-                    "reasoning_chain": [reasoning_result.conclusion]
+                    "reasoning_chain": [reasoning_result.conclusion],
                 }
             else:
                 return await self._basic_intent_analysis(message)
@@ -320,16 +365,25 @@ class ChatRouter:
         content = message.content.lower()
 
         # Simple keyword-based analysis
-        if any(word in content for word in ["what", "how", "why", "when", "where", "who", "which"]):
+        if any(
+            word in content
+            for word in ["what", "how", "why", "when", "where", "who", "which"]
+        ):
             intent = "question"
             confidence = 0.7
-        elif any(word in content for word in ["please", "can you", "could you", "would you"]):
+        elif any(
+            word in content for word in ["please", "can you", "could you", "would you"]
+        ):
             intent = "command"
             confidence = 0.6
-        elif any(word in content for word in ["think", "reflect", "analyze", "consider"]):
+        elif any(
+            word in content for word in ["think", "reflect", "analyze", "consider"]
+        ):
             intent = "reflection"
             confidence = 0.5
-        elif any(word in content for word in ["autonomous", "self-improve", "optimize"]):
+        elif any(
+            word in content for word in ["autonomous", "self-improve", "optimize"]
+        ):
             intent = "autonomous_request"
             confidence = 0.8
         else:
@@ -340,10 +394,12 @@ class ChatRouter:
             "intent_analysis": f"Detected intent: {intent}",
             "alternatives": [intent],
             "confidence": confidence,
-            "reasoning_chain": [f"Basic keyword analysis: {intent}"]
+            "reasoning_chain": [f"Basic keyword analysis: {intent}"],
         }
 
-    async def _find_matching_route(self, message: ChatMessage, intent_analysis: Dict[str, Any]) -> RouteDefinition:
+    async def _find_matching_route(
+        self, message: ChatMessage, intent_analysis: Dict[str, Any]
+    ) -> RouteDefinition:
         """Find the best matching route for the message"""
         best_match = None
         best_score = 0.0
@@ -353,7 +409,9 @@ class ChatRouter:
             pattern_match = re.search(route.pattern, message.content, re.IGNORECASE)
             if pattern_match:
                 # Calculate match score
-                score = self._calculate_route_score(route, intent_analysis, pattern_match)
+                score = self._calculate_route_score(
+                    route, intent_analysis, pattern_match
+                )
 
                 if score > best_score:
                     best_score = score
@@ -365,7 +423,9 @@ class ChatRouter:
 
         return best_match
 
-    def _calculate_route_score(self, route: RouteDefinition, intent_analysis: Dict[str, Any], pattern_match) -> float:
+    def _calculate_route_score(
+        self, route: RouteDefinition, intent_analysis: Dict[str, Any], pattern_match
+    ) -> float:
         """Calculate route matching score"""
         score = 0.0
 
@@ -381,7 +441,7 @@ class ChatRouter:
             RoutingPriority.HIGH: 0.2,
             RoutingPriority.MEDIUM: 0.1,
             RoutingPriority.LOW: 0.0,
-            RoutingPriority.BACKGROUND: -0.1
+            RoutingPriority.BACKGROUND: -0.1,
         }
         score += priority_scores.get(route.priority, 0.0)
 
@@ -398,22 +458,26 @@ class ChatRouter:
             handler="conversation_handler",
             intent_type=IntentType.CONVERSATION,
             priority=RoutingPriority.LOW,
-            description="Fallback conversation handler"
+            description="Fallback conversation handler",
         )
 
-    async def _build_context_data(self, message: ChatMessage, route: RouteDefinition) -> Dict[str, Any]:
+    async def _build_context_data(
+        self, message: ChatMessage, route: RouteDefinition
+    ) -> Dict[str, Any]:
         """Build context data for the route"""
         context_data = {
             "message": message.content,
             "timestamp": message.timestamp.isoformat(),
             "user_id": message.user_id,
             "session_id": message.session_id,
-            "metadata": message.metadata
+            "metadata": message.metadata,
         }
 
         # Add session history if required
         if route.requires_context:
-            context_data["session_history"] = self._get_session_history(message.session_id)
+            context_data["session_history"] = self._get_session_history(
+                message.session_id
+            )
 
         # Add system health if required
         if route.requires_context:
@@ -438,16 +502,20 @@ class ChatRouter:
 
         # Keep only last 50 messages per session
         if len(self.session_history[message.session_id]) > 50:
-            self.session_history[message.session_id] = self.session_history[message.session_id][-50:]
+            self.session_history[message.session_id] = self.session_history[
+                message.session_id
+            ][-50:]
 
-    def _get_session_history(self, session_id: str, limit: int = 10) -> List[Dict[str, Any]]:
+    def _get_session_history(
+        self, session_id: str, limit: int = 10
+    ) -> List[Dict[str, Any]]:
         """Get session history for context"""
         history = self.session_history.get(session_id, [])
         return [
             {
                 "content": msg.content,
                 "timestamp": msg.timestamp.isoformat(),
-                "user_id": msg.user_id
+                "user_id": msg.user_id,
             }
             for msg in history[-limit:]
         ]
@@ -462,7 +530,9 @@ class ChatRouter:
         routing_time = (datetime.now() - start_time).total_seconds()
         current_avg = self.stats["avg_routing_time"]
         message_count = self.stats["messages_processed"]
-        self.stats["avg_routing_time"] = (current_avg * (message_count - 1) + routing_time) / message_count
+        self.stats["avg_routing_time"] = (
+            current_avg * (message_count - 1) + routing_time
+        ) / message_count
 
     async def _create_fallback_result(self, message: ChatMessage) -> RoutingResult:
         """Create fallback routing result"""
@@ -476,19 +546,21 @@ class ChatRouter:
             context_data={
                 "message": message.content,
                 "timestamp": message.timestamp.isoformat(),
-                "fallback_reason": "No suitable route found"
+                "fallback_reason": "No suitable route found",
             },
             routing_metadata={
                 "route_pattern": "fallback",
                 "route_description": "Fallback handler",
                 "requires_reasoning": False,
                 "requires_context": False,
-                "requires_memory": False
+                "requires_memory": False,
             },
-            reasoning_chain=["Fallback routing used"]
+            reasoning_chain=["Fallback routing used"],
         )
 
-    async def process_message(self, content: str, user_id: str = "default", session_id: str = "default") -> Dict[str, Any]:
+    async def process_message(
+        self, content: str, user_id: str = "default", session_id: str = "default"
+    ) -> Dict[str, Any]:
         """Process a message through the complete routing system"""
         try:
             # Create message object
@@ -496,8 +568,40 @@ class ChatRouter:
                 content=content,
                 timestamp=datetime.now(),
                 user_id=user_id,
-                session_id=session_id
+                session_id=session_id,
             )
+
+            # Prompt injection pre-check
+            try:
+                scan = scan_prompt_for_injection(message.content)
+                if getattr(scan, "risk_score", 0.0) >= 0.6:
+                    logger.warning(
+                        "Prompt injection risk: score=%.2f findings=%s",
+                        scan.risk_score,
+                        getattr(scan, "findings", []),
+                    )
+                    # Emit a security alert to the global feed when available
+                    try:
+                        if HAS_SECURITY_SYSTEM:
+                            get_security_system().add_alert(
+                                alert=f"Prompt injection blocked (score={scan.risk_score:.2f})",
+                                severity="warning",
+                            )
+                    except Exception:
+                        pass
+                    # Short-circuit with a guarded response
+                    return {
+                        "response": "I can’t follow those instructions. They conflict with system policies. Please rephrase your request.",
+                        "routing_result": None,  # not routed
+                        "success": True,
+                        "guard": {
+                            "risk_score": scan.risk_score,
+                            "findings": getattr(scan, "findings", []),
+                            "suggestions": getattr(scan, "suggestions", []),
+                        },
+                    }
+            except Exception:
+                pass
 
             # Route the message
             routing_result = await self.route_message(message)
@@ -512,7 +616,7 @@ class ChatRouter:
             return {
                 "response": response,
                 "routing_result": routing_result,
-                "success": True
+                "success": True,
             }
 
         except Exception as e:
@@ -520,10 +624,12 @@ class ChatRouter:
             return {
                 "response": "I encountered an error processing your message. Please try again.",
                 "error": str(e),
-                "success": False
+                "success": False,
             }
 
-    async def _default_handler(self, message: ChatMessage, routing_result: RoutingResult) -> str:
+    async def _default_handler(
+        self, message: ChatMessage, routing_result: RoutingResult
+    ) -> str:
         """Default handler for unregistered routes"""
         return f"I understand you're asking about '{message.content}', but I don't have a specific handler for that type of request yet. I'm routing this as a {routing_result.intent_type.value} with {routing_result.confidence:.2f} confidence."
 
@@ -541,10 +647,10 @@ class ChatRouter:
                     "handler": route.handler,
                     "intent_type": route.intent_type.value,
                     "priority": route.priority.value,
-                    "description": route.description
+                    "description": route.description,
                 }
                 for route in self.routes
-            ]
+            ],
         }
 
     def get_session_context(self, session_id: str) -> Dict[str, Any]:
@@ -553,7 +659,11 @@ class ChatRouter:
             "session_id": session_id,
             "history_length": len(self.session_history.get(session_id, [])),
             "cached_context": self.context_cache.get(session_id, {}),
-            "last_activity": self.session_history.get(session_id, [])[-1].timestamp.isoformat() if self.session_history.get(session_id) else None
+            "last_activity": self.session_history.get(session_id, [])[
+                -1
+            ].timestamp.isoformat()
+            if self.session_history.get(session_id)
+            else None,
         }
 
     def clear_session(self, session_id: str):
@@ -572,12 +682,16 @@ def create_chat_router(workspace_path: str = ".") -> ChatRouter:
 
 
 # Example handler functions
-async def example_question_handler(message: ChatMessage, routing_result: RoutingResult) -> str:
+async def example_question_handler(
+    message: ChatMessage, routing_result: RoutingResult
+) -> str:
     """Example handler for questions"""
     return f"You asked: '{message.content}'. This is a question with {routing_result.confidence:.2f} confidence."
 
 
-async def example_command_handler(message: ChatMessage, routing_result: RoutingResult) -> str:
+async def example_command_handler(
+    message: ChatMessage, routing_result: RoutingResult
+) -> str:
     """Example handler for commands"""
     return f"I understand you want me to: '{message.content}'. This is a command with {routing_result.confidence:.2f} confidence."
 
@@ -597,7 +711,7 @@ if __name__ == "__main__":
             "Please help me with this problem",
             "Can you analyze this situation?",
             "How does autonomous improvement work?",
-            "Hello there!"
+            "Hello there!",
         ]
 
         for msg in test_messages:

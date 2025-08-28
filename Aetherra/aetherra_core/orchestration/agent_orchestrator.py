@@ -43,6 +43,13 @@ class AgentOrchestrator:
         self._tasks: Dict[str, OrchestratedTask] = {}
         self._task_futures: Dict[str, asyncio.Task] = {}
         self._total_agents = 1  # single orchestrator agent for now
+        # Track currently running tasks (lightweight gauge)
+        self._active_tasks = 0
+        # Lightweight counters (placeholders for future richer telemetry)
+        self._counters = {
+            "timeouts_total": 0,
+            "policy_denied_total": 0,
+        }
 
     async def start_orchestration(self):
         if self._running:
@@ -71,11 +78,27 @@ class AgentOrchestrator:
         pending = sum(
             1 for t in self._tasks.values() if t.status in {"pending", "running"}
         )
+        # Status breakdowns
+        task_statuses: Dict[str, int] = {}
+        for t in self._tasks.values():
+            task_statuses[t.status] = task_statuses.get(t.status, 0) + 1
+
+        # Pending by priority (only count tasks not yet completed/failed/cancelled)
+        pending_by_priority: Dict[str, int] = {}
+        for t in self._tasks.values():
+            if t.status in {"pending", "running", "assigned"}:
+                p = str(t.priority or "normal").lower()
+                pending_by_priority[p] = pending_by_priority.get(p, 0) + 1
+
         return {
             "status": "running" if self._running else "stopped",
             "total_agents": self._total_agents,
             "pending_tasks": pending,
             "total_tasks": len(self._tasks),
+            "active_tasks": max(0, int(self._active_tasks)),
+            "task_statuses": task_statuses,
+            "pending_by_priority": pending_by_priority,
+            "counters": dict(self._counters),
         }
 
     async def submit_task(self, task: Dict[str, Any]) -> str:
@@ -91,6 +114,24 @@ class AgentOrchestrator:
             dependencies=task.get("dependencies", []),
         )
         self._tasks[t.task_id] = t
+
+        # Very light policy gate (dev convenience):
+        # If caller explicitly requests denial (input_data.policy_deny == True)
+        # or task name starts with "deny.", mark as policy denied.
+        try:
+            if bool(t.input_data.get("policy_deny", False)) or str(t.name).startswith(
+                "deny."
+            ):
+                t.status = "failed"
+                t.error = "policy_denied"
+                t.completed_at = datetime.now().isoformat()
+                self._counters["policy_denied_total"] = (
+                    int(self._counters.get("policy_denied_total", 0)) + 1
+                )
+                return t.task_id
+        except Exception:
+            # Ignore policy evaluation issues for resilience
+            pass
 
         # Schedule execution
         fut = asyncio.create_task(self._execute_task(t))
@@ -126,13 +167,30 @@ class AgentOrchestrator:
     async def _execute_task(self, t: OrchestratedTask):
         t.status = "running"
         t.started_at = datetime.now().isoformat()
+        self._active_tasks += 1
         try:
             # Simulate work in small chunks to allow cooperative cancellation
-            total_steps = 5
-            step_sleep = min(1.0, max(0.05, t.max_execution_time / (total_steps * 20)))
-            for i in range(total_steps):
-                await asyncio.sleep(step_sleep)
-                t.progress = int(((i + 1) / total_steps) * 100)
+            async def _do_work():
+                total_steps = 5
+                step_sleep = min(
+                    1.0, max(0.05, t.max_execution_time / (total_steps * 20))
+                )
+                for i in range(total_steps):
+                    await asyncio.sleep(step_sleep)
+                    t.progress = int(((i + 1) / total_steps) * 100)
+
+            try:
+                await asyncio.wait_for(
+                    _do_work(), timeout=max(0.05, float(t.max_execution_time or 0))
+                )
+            except asyncio.TimeoutError:
+                t.status = "failed"
+                t.error = "timeout"
+                t.completed_at = datetime.now().isoformat()
+                self._counters["timeouts_total"] = (
+                    int(self._counters.get("timeouts_total", 0)) + 1
+                )
+                return
 
             # Produce result
             t.result = {
@@ -150,3 +208,9 @@ class AgentOrchestrator:
             t.error = str(e)
             t.completed_at = datetime.now().isoformat()
             logger.exception("Task execution failed")
+        finally:
+            # Ensure active gauge is decremented
+            try:
+                self._active_tasks = max(0, self._active_tasks - 1)
+            except Exception:
+                self._active_tasks = 0
