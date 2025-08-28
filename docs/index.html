@@ -32,7 +32,9 @@
       };
       const RULES = [
         // New Docs section buttons (external)
-        { test: t => /getting\s*started/.test(t), href: doc('getting-started') },
+  { test: t => /\bget\s*started\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
+  { test: t => /\bstart\s*here\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
+        { test: t => /getting\s*started/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
         { test: t => /\bdevelopers?\b/.test(t), href: doc('') },
         { test: t => /plugin\s*sdk/.test(t), href: doc('plugins/sdk') },
         { test: t => /plugin\s*authors?/.test(t), href: doc('plugins') },
@@ -47,6 +49,7 @@
         { test: t => /changelog|versioning|release\s*notes?/.test(t), href: doc('changelog') },
 
         // Hard fallbacks for common CTA labels
+  { test: t => /\bdocs?\b/.test(t), href: doc('') },
         { test: t => /developers?\s*docs?/.test(t), href: doc('') },
         { test: t => /plugin\s*(guides?|docs?)/.test(t), href: doc('plugins') },
         { test: t => /getting\s*started\s*guide/.test(t), href: doc('getting-started') },
@@ -92,6 +95,16 @@
               if (isExternalUrl(target)) {
                 elm.setAttribute('target', '_blank');
                 elm.setAttribute('rel', 'noopener noreferrer');
+                // Force navigation before SPA handlers by using capture
+                elm.addEventListener('click', (e) => {
+                  try { e.preventDefault(); e.stopPropagation(); window.open(target, '_blank', 'noopener'); } catch (_) { }
+                }, { capture: true });
+              } else {
+                // Internal links: ensure our mapping takes precedence
+                elm.addEventListener('click', (e) => {
+                  const t2 = findTarget(elm);
+                  if (t2) { e.preventDefault(); e.stopPropagation(); location.href = t2; }
+                }, { capture: true });
               }
               elm.setAttribute('data-link-fixed', '1');
             } else {
@@ -131,6 +144,7 @@
       const HUB_URL = (window.AETHERRA_HUB_URL || localStorage.getItem('AETHERRA_HUB_URL') || 'http://localhost:3001').replace(/\/$/, '');
       const REFRESH_MS_OK = 12000;   // normal cadence
       const REFRESH_MS_ERR = 25000;  // slower on error
+  const AGG_KEY = 'AETHERRA_AGG_UNAVAILABLE::' + HUB_URL;
       let backoff = 0; // 0 -> none, increases on consecutive failures
 
       function h(el, styles) { for (const k in styles) el.style[k] = styles[k]; return el; }
@@ -495,10 +509,11 @@
         try {
           // Use aggregated endpoint when available; fallback to legacy on failure
           const forceLegacy = (localStorage.getItem('AETHERRA_WIDGET_LEGACY') || '') === '1';
+          const aggDisabled = sessionStorage.getItem(AGG_KEY) === '1';
           let s = null;
-          if (!forceLegacy) {
+          if (!forceLegacy && !aggDisabled) {
             try { s = await fetchJSON(HUB_URL + '/api/site_status'); }
-            catch (_) { s = null; }
+            catch (e) { s = null; try { sessionStorage.setItem(AGG_KEY, '1'); } catch { } }
           }
           if (!s) s = await getLegacyStatus();
           const total = Number(s && s.plugins && s.plugins.total);
