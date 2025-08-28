@@ -181,6 +181,40 @@ class AetherraHubServer:
             return
         app = cast(Any, self.app)
 
+        # --- CORS & Private Network Access (PNA) headers ---
+        # Chrome 130+ requires Access-Control-Allow-Private-Network: true on preflight responses
+        # when a public site accesses a private network resource (e.g., localhost).
+        # We also set standard CORS headers and allow our custom auth header.
+        @app.after_request
+        def _add_cors_pna_headers(resp):  # type: ignore[override]
+            try:
+                origin = request.headers.get("Origin")  # type: ignore[name-defined]
+                if origin:
+                    # Mirror Origin for CORS and set Vary
+                    resp.headers["Access-Control-Allow-Origin"] = origin
+                    # Preserve existing Vary if present
+                    vary = resp.headers.get("Vary")
+                    resp.headers["Vary"] = (vary + ", Origin") if vary else "Origin"
+                    # Allow common methods and headers
+                    resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+                    resp.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Aetherra-Token"
+                    # Private Network Access opt-in for preflights
+                    resp.headers["Access-Control-Allow-Private-Network"] = "true"
+                    # Cache preflight for a bit
+                    resp.headers["Access-Control-Max-Age"] = "600"
+            except Exception:
+                pass
+            return resp
+
+        # Respond to any OPTIONS preflight early so clients don’t 404 on dynamic routes
+        @app.route("/", methods=["OPTIONS"])  # type: ignore[misc]
+        @app.route("/<path:_any>", methods=["OPTIONS"])  # type: ignore[misc]
+        def _cors_options(_any: Optional[str] = None):
+            from flask import make_response  # type: ignore
+
+            # Empty 204 response; headers are added by after_request above
+            return make_response(("", 204))
+
         # Internal helpers to access registry/kernel from sync Flask routes
         def _create_tokenizer():
             """Create a token counting function based on env + optional libs.
