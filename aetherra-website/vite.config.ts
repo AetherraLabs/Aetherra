@@ -6,6 +6,7 @@ export default defineConfig({
   base: '/',
   build: {
     outDir: '../docs',
-    emptyOutDir: true
+  // Important: do not wipe docs/ (it contains hand-written system docs)
+  emptyOutDir: false
   }
 })
