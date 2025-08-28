@@ -4,7 +4,10 @@ Document: C:\Users\enigm\Desktop\Aetherra Project\docs\PROJECT_OVERVIEW.md
 
 ## Environment Variables
 
-Missing in docs (0):
+Missing in docs (3):
+- AETHERRA_REGISTRY_WARN_NO_HANDLER
+- AETHERRA_TOKENIZER
+- AETHERRA_TOKENIZER_MODEL
 
 Documented but not found in code (26):
 - AETHERRA_AUDIT_PATH

@@ -432,6 +432,7 @@ Aetherra/
       MEMORY_SYSTEM_ROADMAP.md — 🧠 Aetherra Memory System Redesign - Implementation Roadmap
       README.md — Roadmaps
       Soul Kernel Cognitive Architecture Roadmap.md
+    aetherra_labs_vision.md — Aetherra Labs Vision
     AETHERRA_MANIFESTO.md — AETHERRA MANIFESTO (v6.0 – July 2025)
     AI_OS_MANIFESTO.md — 🧬 The AI Operating System Manifesto
     README.md — docs
@@ -751,8 +752,10 @@ docs/
   AETHERRA_AGENT_SYSTEM.md — Aetherra Agent System
   AETHERRA_AI_TRAINER_SYSTEM.md — Aetherra AI Trainer System
   AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md — Aetherra Artificial Intelligence System
+  AETHERRA_CHAT_SYSTEM.md — Aetherra Chat System
   AETHERRA_CODING_SYSTEM.md — Aetherra Coding System (Lyrixa Code Studio)
   AETHERRA_KERNEL_SYSTEM.md — Aetherra Kernel System
+  AETHERRA_LYRIXA_SYSTEM.md — Aetherra Lyrixa System
   AETHERRA_MEMORY_SYSTEM.md — Aetherra Memory System
   AETHERRA_SECURITY_SYSTEM.md — Aetherra Security System (Aetherra OS + Lyrixa)
   api-keys.md — API Keys and Secrets
@@ -804,6 +807,7 @@ tests/
     README.md — integration
     test_integration.py
     test_launcher_detection.py — !/usr/bin/env python3
+    test_metrics_histograms_end_to_end.py
     test_phase2_bridge.py — Simulate live backend data updates"""
     test_phase2_launcher.py — Test Phase 2 launcher integration
     test_phase2_simple.py — Test Phase 2 launcher integration without GUI creation.
@@ -835,6 +839,7 @@ tests/
     test_hub_plugin_registration_signed_strict.py
     test_hub_plugin_registration_strict.py
     test_hub_plugin_registration_strict_invalid_sig.py
+    test_hub_quantum_and_chat_metrics.py
     test_imports.py — !/usr/bin/env python3
     test_live_ai_fallback.py — Test the actual AI fallback system with real API calls"""
     test_manifest_schema_and_trust.py — .strip()
@@ -845,6 +850,7 @@ tests/
     test_prompt_defense.py
     test_qfac_modes.py
     test_quantum_aware_simulations.py — Test suite for Quantum-Aware Simulations system"""
+    test_quantum_memory_hardening.py
     test_self_evolving_behavior.py — Test core self-evolving behavior functionality."""
     test_telemetry_optin.py
     test_unicode_fix.py — !/usr/bin/env python3
@@ -874,7 +880,7 @@ tools/
   validate_engine_imports.py
   validate_import_map.py — !/usr/bin/env python3
   verify_aether_scripts.py — !/usr/bin/env python3
-  verify_docs_consistency.py — Extract content under a markdown level-2 heading until the next level-2 heading.
+  verify_docs_consistency.py — Extract content under a markdown heading (any level >= 2) until the next heading of any level.
   verify_ui_standards.py — !/usr/bin/env python3
 advanced_analyzer.py — Deep analysis of file content and purpose"""
 advanced_analyzer_fixed.py — Extract decorator name from AST node"""
