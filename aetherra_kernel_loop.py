@@ -769,10 +769,14 @@ class AetherraKernelLoop:
         health = await self._gather_health_metrics()
 
         # Log health summary
-        logger.info(
-            f"[STATS] Health Summary: Memory={health['memory_status']}, "
-            f"Plugins={health['plugin_status']}, Lyrixa={health['lyrixa_status']}"
-        )
+        try:
+            logger.info(
+                f"[STATS] Health Summary: Memory={health.get('memory_status', 'unknown')}, "
+                f"Plugins={health.get('plugin_status', 'unknown')}, Lyrixa={health.get('aetherra_status', 'unknown')}"
+            )
+        except Exception:
+            # Never allow health logging to raise due to missing keys
+            logger.info(f"[STATS] Health Summary: {health}")
 
     async def _optimize_memory(self):
         """[BRAIN] Perform memory optimization."""
