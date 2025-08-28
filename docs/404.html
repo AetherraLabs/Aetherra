@@ -56,7 +56,7 @@
     })();
   </script>
   <script>
-    // Runtime Hub/OS live status widget: shows plugin count and kernel metrics without touching SPA bundle
+  // Runtime Hub/OS live status widget: shows plugin count and kernel metrics without touching SPA bundle
     (function () {
       const HUB_URL = (window.AETHERRA_HUB_URL || localStorage.getItem('AETHERRA_HUB_URL') || 'http://localhost:3001').replace(/\/$/, '');
       const REFRESH_MS_OK = 10000;   // 10s normal
@@ -77,7 +77,7 @@
         return n;
       }
 
-      function ensureWidget() {
+  function ensureWidget() {
         let host = document.getElementById('aetherra-live-status');
         if (host) return host;
         host = el('div', { id: 'aetherra-live-status', role: 'status', 'aria-live': 'polite' });
@@ -113,12 +113,36 @@
         host.appendChild(queues);
         host.appendChild(link);
 
+        // Live task updates (SSE via fetch) UI
+        const taskWrap = el('div', { id: 'aetherra-live-task-wrap' });
+        h(taskWrap, { marginTop: '6px' });
+        const taskLbl = el('span', { }, 'task:');
+        h(taskLbl, { color: '#9ca3af', marginRight: '6px' });
+        const taskInput = el('input', { id: 'aetherra-task-id', placeholder: 'task id' });
+        h(taskInput, { width: '140px', background: '#0f172a', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: '6px', padding: '2px 6px', outline: 'none' });
+        const watchBtn = el('button', { id: 'aetherra-task-watch', title: 'Watch task' }, 'watch');
+        h(watchBtn, { marginLeft: '6px', background: '#111827', color: '#93c5fd', border: '1px solid #1f2937', borderRadius: '6px', padding: '2px 8px', cursor: 'pointer' });
+        const stopBtn = el('button', { id: 'aetherra-task-stop', title: 'Stop watching', disabled: 'true' }, 'stop');
+        h(stopBtn, { marginLeft: '6px', background: '#111827', color: '#f87171', border: '1px solid #1f2937', borderRadius: '6px', padding: '2px 8px', cursor: 'pointer', opacity: '0.6' });
+        const tips = el('div', { id: 'aetherra-task-tip' }, 'set AETHERRA_TOKEN via localStorage if required');
+        h(tips, { fontSize: '10px', color: '#9ca3af', marginTop: '4px' });
+        const log = el('div', { id: 'aetherra-task-log' });
+        h(log, { marginTop: '6px', maxHeight: '140px', overflowY: 'auto', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px', fontSize: '11px', lineHeight: '1.35' });
+        taskWrap.appendChild(taskLbl);
+        taskWrap.appendChild(taskInput);
+        taskWrap.appendChild(watchBtn);
+        taskWrap.appendChild(stopBtn);
+        taskWrap.appendChild(tips);
+        taskWrap.appendChild(log);
+        host.appendChild(taskWrap);
+
         // Collapsible on click (compact/expanded)
         let compact = false;
         host.addEventListener('click', () => {
           compact = !compact;
           br.style.display = compact ? 'none' : '';
           queues.style.display = compact ? 'none' : '';
+          taskWrap.style.display = compact ? 'none' : '';
         });
 
         document.body.appendChild(host);
@@ -154,12 +178,106 @@
       }
       function labelRegexEscape(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
+      // --- Task streaming (SSE over fetch) ---
+      let STREAM = null; // {controller, reader, taskId}
+      function appendLog(host, type, payload) {
+        try {
+          const log = host.querySelector('#aetherra-task-log');
+          const line = document.createElement('div');
+          const ts = new Date().toLocaleTimeString();
+          line.textContent = `[${ts}] ${type}: ${typeof payload === 'string' ? payload : JSON.stringify(payload)}`;
+          log.appendChild(line);
+          log.scrollTop = log.scrollHeight;
+        } catch (_) {}
+      }
+      function setWatchingState(host, watching) {
+        const stopBtn = host.querySelector('#aetherra-task-stop');
+        const watchBtn = host.querySelector('#aetherra-task-watch');
+        if (stopBtn) { stopBtn.disabled = !watching; stopBtn.style.opacity = watching ? '1' : '0.6'; }
+        if (watchBtn) { watchBtn.disabled = watching; watchBtn.style.opacity = watching ? '0.6' : '1'; }
+      }
+      function parseSSEChunk(buf, onEvent){
+        const parts = buf.split(/\n\n|\r\n\r\n/);
+        for (let i=0;i<parts.length;i++){
+          const block = parts[i].trim();
+          if (!block) continue;
+          let ev = 'message';
+          let data = '';
+          block.split(/\n|\r\n/).forEach(line=>{
+            if (line.startsWith('event:')) ev = line.slice(6).trim();
+            else if (line.startsWith('data:')) data += (data ? '\n' : '') + line.slice(5).trim();
+          });
+          try { onEvent(ev, data ? JSON.parse(data) : data); } catch { onEvent(ev, data); }
+        }
+      }
+      async function startTaskStream(host, taskId){
+        if (!taskId) return;
+        try { await stopTaskStream(); } catch {}
+        const token = localStorage.getItem('AETHERRA_TOKEN') || '';
+        const ctrl = new AbortController();
+        setWatchingState(host, true);
+        appendLog(host, 'status', `connecting to ${HUB_URL}/api/tasks/${taskId}/stream`);
+        try {
+          const res = await fetch(`${HUB_URL}/api/tasks/${encodeURIComponent(taskId)}/stream`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? {'X-Aetherra-Token': token} : {})
+            },
+            body: JSON.stringify({}),
+            signal: ctrl.signal,
+          });
+          if (!res.ok || !res.body) {
+            appendLog(host, 'error', `HTTP ${res.status}`);
+            setWatchingState(host, false);
+            return;
+          }
+          const reader = res.body.getReader();
+          STREAM = { controller: ctrl, reader, taskId };
+          const dec = new TextDecoder('utf-8');
+          let buffer = '';
+          while (true){
+            const {value, done} = await reader.read();
+            if (done) break;
+            buffer += dec.decode(value, {stream: true});
+            const lastSep = Math.max(buffer.lastIndexOf('\n\n'), buffer.lastIndexOf('\r\n\r\n'));
+            if (lastSep >= 0){
+              const chunk = buffer.slice(0, lastSep);
+              parseSSEChunk(chunk, (ev, data)=>{
+                appendLog(host, ev, data);
+                if (ev === 'final') { setTimeout(()=>{ stopTaskStream(); }, 200); }
+              });
+              buffer = buffer.slice(lastSep + 2);
+            }
+          }
+        } catch (e){
+          appendLog(host, 'error', String(e && e.message || e));
+        } finally {
+          setWatchingState(host, false);
+        }
+      }
+      async function stopTaskStream(){
+        try { if (STREAM && STREAM.controller) STREAM.controller.abort(); } catch {}
+        STREAM = null;
+      }
+
       async function update() {
         const host = ensureWidget();
         const dot = host.querySelector('#aetherra-live-dot');
         const plugins = host.querySelector('#aetherra-live-plugins');
         const kernel = host.querySelector('#aetherra-live-kernel');
         const queues = host.querySelector('#aetherra-live-queues');
+        if (!host._wired){
+          const watchBtn = host.querySelector('#aetherra-task-watch');
+          const stopBtn = host.querySelector('#aetherra-task-stop');
+          const input = host.querySelector('#aetherra-task-id');
+          if (watchBtn && input){
+            watchBtn.addEventListener('click', ()=> startTaskStream(host, String(input.value || '').trim()));
+            input.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') startTaskStream(host, String(input.value || '').trim()); });
+          }
+          if (stopBtn){ stopBtn.addEventListener('click', ()=> stopTaskStream()); }
+          host._wired = true;
+        }
 
         let next = REFRESH_MS_OK;
         try {
