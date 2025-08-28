@@ -51,6 +51,7 @@ Endpoints summary (Hub Flask server):
 - /api/telemetry
 - /api/lyrixa/chat
 - /api/memory/graph
+- /api/memory/status
 - /api/registry/status
 - /api/kernel/metrics
 - /api/kernel/status
@@ -198,6 +199,8 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 - /api/telemetry
 - /api/lyrixa/chat
 - /api/memory/graph
+- /api/memory/status
+- /api/memory/audit
 - /api/registry/status
 - /api/kernel/metrics
 - /api/kernel/status
