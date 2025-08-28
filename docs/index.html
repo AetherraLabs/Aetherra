@@ -14,8 +14,16 @@
     // Runtime link rewriter: make placeholder Docs buttons actually navigate
     (function () {
       const DOCS_BASE = (() => {
-        const v = (localStorage.getItem('AETHERRA_DOCS_BASE') || 'https://aetherra.dev/docs/').trim();
-        return v.endsWith('/') ? v : v + '/';
+        const raw = (localStorage.getItem('AETHERRA_DOCS_BASE') || 'https://aetherra.dev/docs/').trim();
+        try {
+          const u = new URL(raw);
+          const b = u.toString();
+          return b.endsWith('/') ? b : b + '/';
+        } catch {
+          // sanitize bad values (e.g., '', '/', relative)
+          localStorage.removeItem('AETHERRA_DOCS_BASE');
+          return 'https://aetherra.dev/docs/';
+        }
       })();
       const doc = (path = '') => {
         const p = String(path || '');
@@ -70,6 +78,7 @@
         return s === '#' || s === '#!' || s === 'javascript:void(0)' || s === '';
       }
 
+      function isExternalUrl(u) { return /^https?:\/\//.test(String(u)); }
       function rewriteAnchors(root) {
         try {
           const scope = root || document;
@@ -77,26 +86,24 @@
           elems.forEach(elm => {
             const target = findTarget(elm);
             if (!target) return;
-            // For anchors, set href if placeholder; otherwise ensure click navigates
+            // For anchors, always set href to our mapped target and open external in new tab
             if (elm.tagName === 'A') {
-              const href = elm.getAttribute('href');
-              if (isPlaceholderHref(href)) {
-                elm.setAttribute('href', target);
-                elm.setAttribute('data-link-fixed', '1');
-              } else {
-                // Add a robust click interceptor in case default is blocked
-                elm.addEventListener('click', (e) => {
-                  const t2 = findTarget(elm);
-                  if (t2) { e.preventDefault(); e.stopPropagation(); location.href = t2; }
-                }, { capture: true, once: true });
-                elm.setAttribute('data-link-fixed', '1');
+              elm.setAttribute('href', target);
+              if (isExternalUrl(target)) {
+                elm.setAttribute('target', '_blank');
+                elm.setAttribute('rel', 'noopener noreferrer');
               }
+              elm.setAttribute('data-link-fixed', '1');
             } else {
               // Buttons or role=button elements: attach navigation
               elm.style.cursor = 'pointer';
               elm.addEventListener('click', (e) => {
                 e.preventDefault(); e.stopPropagation();
-                location.href = target;
+                if (isExternalUrl(target)) {
+                  window.open(target, '_blank', 'noopener');
+                } else {
+                  location.href = target;
+                }
               }, { capture: true });
               elm.setAttribute('data-link-fixed', '1');
             }

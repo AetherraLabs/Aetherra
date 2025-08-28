@@ -14,8 +14,15 @@
     // Runtime link rewriter: make placeholder Docs buttons actually navigate
     (function () {
       const DOCS_BASE = (() => {
-        const v = (localStorage.getItem('AETHERRA_DOCS_BASE') || 'https://aetherra.dev/docs/').trim();
-        return v.endsWith('/') ? v : v + '/';
+        const raw = (localStorage.getItem('AETHERRA_DOCS_BASE') || 'https://aetherra.dev/docs/').trim();
+        try {
+          const u = new URL(raw);
+          const b = u.toString();
+          return b.endsWith('/') ? b : b + '/';
+        } catch {
+          localStorage.removeItem('AETHERRA_DOCS_BASE');
+          return 'https://aetherra.dev/docs/';
+        }
       })();
       const doc = (path = '') => {
         const p = String(path || '');
@@ -105,33 +112,32 @@
         const obs = new MutationObserver(() => rewriteAnchors(root));
         obs.observe(root, { childList: true, subtree: true, characterData: true });
         // Initial passes to catch first render
-        rewriteAnchors(root);
+        function isExternalUrl(u) { return /^https?:\/\//.test(String(u)); }
+        function rewriteAnchors(root) {
         setTimeout(() => rewriteAnchors(root), 300);
         setTimeout(() => rewriteAnchors(root), 1000);
       }
 
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installObserver);
       else installObserver();
-    })();
+              // For anchors, always set href to our mapped target and open external in new tab
   </script>
-  <script>
-    // Runtime Hub/OS live status widget: shows plugin count and kernel metrics without touching SPA bundle
-    (function () {
-      const HUB_URL = (window.AETHERRA_HUB_URL || localStorage.getItem('AETHERRA_HUB_URL') || 'http://localhost:3001').replace(/\/$/, '');
-      const REFRESH_MS_OK = 12000;   // normal cadence
-      const REFRESH_MS_ERR = 25000;  // slower on error
-      let backoff = 0;
-
-      function h(el, styles) { for (const k in styles) el.style[k] = styles[k]; return el; }
-      function el(tag, props = {}, children = []) {
-        const n = document.createElement(tag);
-        for (const k in props) {
+                elm.setAttribute('href', target);
+                if (isExternalUrl(target)) {
+                  elm.setAttribute('target', '_blank');
+                  elm.setAttribute('rel', 'noopener noreferrer');
+                }
+                elm.setAttribute('data-link-fixed', '1');
           if (k === 'style') Object.assign(n.style, props[k]);
           else if (k.startsWith('on') && typeof props[k] === 'function') n.addEventListener(k.slice(2).toLowerCase(), props[k]);
           else n.setAttribute(k, props[k]);
         }
         (Array.isArray(children) ? children : [children]).forEach(c => {
-          if (c == null) return;
+                  if (isExternalUrl(target)) {
+                    window.open(target, '_blank', 'noopener');
+                  } else {
+                    location.href = target;
+                  }
           n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
         });
         return n;
