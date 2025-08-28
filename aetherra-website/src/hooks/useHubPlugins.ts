@@ -13,6 +13,17 @@ export default function useHubPlugins(url: string = '/api/plugins', intervalMs =
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
+        // In static deployments (like GitHub Pages at aetherra.dev), there's no backend.
+        // Avoid noisy 404s by short-circuiting unless explicitly enabled.
+        const isStaticHost = typeof window !== 'undefined' && /(?:^|\.)aetherra\.dev$/i.test(window.location.hostname);
+        const explicitlyEnabled = (import.meta as any)?.env?.VITE_ENABLE_HUB_POLLING;
+        if (isStaticHost && !explicitlyEnabled) {
+            setPlugins([]);
+            setError(null);
+            setLoading(false);
+            return;
+        }
+
         let cancelled = false;
         let timer: any;
 
