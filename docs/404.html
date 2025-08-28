@@ -32,6 +32,8 @@
       };
       const RULES = [
         // New Docs section buttons (external)
+  { test: t => /\bget\s*started\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
+  { test: t => /\bstart\s*here\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
         { test: t => /getting\s*started/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
         { test: t => /\bdevelopers?\b/.test(t), href: doc('') },
         { test: t => /plugin\s*sdk/.test(t), href: doc('plugins/sdk') },
@@ -47,6 +49,7 @@
         { test: t => /changelog|versioning|release\s*notes?/.test(t), href: doc('changelog') },
 
         // Hard fallbacks for common CTA labels
+  { test: t => /\bdocs?\b/.test(t), href: doc('') },
         { test: t => /developers?\s*docs?/.test(t), href: doc('') },
         { test: t => /plugin\s*(guides?|docs?)/.test(t), href: doc('plugins') },
         { test: t => /getting\s*started\s*guide/.test(t), href: doc('getting-started') },
@@ -135,428 +138,430 @@
       else installObserver();
     })();
   </script>
-      <script>
-        // Runtime Hub/OS live status widget: shows plugin count and kernel metrics without touching SPA bundle
-        (function () {
-          const HUB_URL = (window.AETHERRA_HUB_URL || localStorage.getItem('AETHERRA_HUB_URL') || 'http://localhost:3001').replace(/\/$/, '');
-          const REFRESH_MS_OK = 12000;   // normal cadence
-          const REFRESH_MS_ERR = 25000;  // slower on error
-          let backoff = 0; // 0 -> none, increases on consecutive failures
+  <script>
+    // Runtime Hub/OS live status widget: shows plugin count and kernel metrics without touching SPA bundle
+    (function () {
+      const HUB_URL = (window.AETHERRA_HUB_URL || localStorage.getItem('AETHERRA_HUB_URL') || 'http://localhost:3001').replace(/\/$/, '');
+  const REFRESH_MS_OK = 12000;   // normal cadence
+  const REFRESH_MS_ERR = 25000;  // slower on error
+  const AGG_KEY = 'AETHERRA_AGG_UNAVAILABLE::' + HUB_URL;
+      let backoff = 0; // 0 -> none, increases on consecutive failures
 
-          function h(el, styles) { for (const k in styles) el.style[k] = styles[k]; return el; }
-          function el(tag, props = {}, children = []) {
-            const n = document.createElement(tag);
-            for (const k in props) {
-              if (k === 'style') Object.assign(n.style, props[k]);
-              else if (k.startsWith('on') && typeof props[k] === 'function') n.addEventListener(k.slice(2).toLowerCase(), props[k]);
-              else n.setAttribute(k, props[k]);
+      function h(el, styles) { for (const k in styles) el.style[k] = styles[k]; return el; }
+      function el(tag, props = {}, children = []) {
+        const n = document.createElement(tag);
+        for (const k in props) {
+          if (k === 'style') Object.assign(n.style, props[k]);
+          else if (k.startsWith('on') && typeof props[k] === 'function') n.addEventListener(k.slice(2).toLowerCase(), props[k]);
+          else n.setAttribute(k, props[k]);
+        }
+        (Array.isArray(children) ? children : [children]).forEach(c => {
+          if (c == null) return;
+          n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+        });
+        return n;
+      }
+
+      function ensureWidget() {
+        let host = document.getElementById('aetherra-live-status');
+        if (host) return host;
+        host = el('div', { id: 'aetherra-live-status', role: 'status', 'aria-live': 'polite' });
+        h(host, {
+          position: 'fixed', bottom: '12px', right: '12px', zIndex: 2147483647,
+          background: 'rgba(10,10,10,0.85)', color: '#e5e7eb', border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '10px', padding: '10px 12px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          fontSize: '12px', boxShadow: '0 6px 24px rgba(0,0,0,0.35)', backdropFilter: 'blur(6px)'
+        });
+
+        const dot = el('span', { id: 'aetherra-live-dot' }, '●');
+        h(dot, { marginRight: '8px', color: '#f87171' });
+        const title = el('span', { id: 'aetherra-live-title', title: 'Ctrl-click: set Hub URL · Alt-click: set token' }, 'Hub');
+        h(title, { color: '#93c5fd' });
+        const sep = el('span', {}, ' · ');
+        const plugins = el('span', { id: 'aetherra-live-plugins' }, 'plugins: –');
+        const sep2 = el('span', {}, ' · ');
+        const kernel = el('span', { id: 'aetherra-live-kernel' }, 'kernel: –');
+        const br = el('br');
+        const queues = el('span', { id: 'aetherra-live-queues' }, 'queues: –');
+        const link = el('a', { id: 'aetherra-live-link', href: HUB_URL, target: '_blank', rel: 'noreferrer noopener' }, 'open hub');
+        h(link, { marginLeft: '8px', color: '#34d399', textDecoration: 'none' });
+        link.addEventListener('mouseenter', () => link.style.textDecoration = 'underline');
+        link.addEventListener('mouseleave', () => link.style.textDecoration = 'none');
+
+        host.appendChild(dot);
+        host.appendChild(title);
+        host.appendChild(sep);
+        host.appendChild(plugins);
+        host.appendChild(sep2);
+        host.appendChild(kernel);
+        host.appendChild(br);
+        host.appendChild(queues);
+        host.appendChild(link);
+
+        // Live task updates (SSE via fetch) UI
+        const taskWrap = el('div', { id: 'aetherra-live-task-wrap' });
+        h(taskWrap, { marginTop: '6px' });
+        const taskLbl = el('span', {}, 'task:');
+        h(taskLbl, { color: '#9ca3af', marginRight: '6px' });
+        const taskInput = el('input', { id: 'aetherra-task-id', placeholder: 'task id' });
+        h(taskInput, { width: '140px', background: '#0f172a', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: '6px', padding: '2px 6px', outline: 'none' });
+        const watchBtn = el('button', { id: 'aetherra-task-watch', title: 'Watch task' }, 'watch');
+        h(watchBtn, { marginLeft: '6px', background: '#111827', color: '#93c5fd', border: '1px solid #1f2937', borderRadius: '6px', padding: '2px 8px', cursor: 'pointer' });
+        const stopBtn = el('button', { id: 'aetherra-task-stop', title: 'Stop watching', disabled: 'true' }, 'stop');
+        h(stopBtn, { marginLeft: '6px', background: '#111827', color: '#f87171', border: '1px solid #1f2937', borderRadius: '6px', padding: '2px 8px', cursor: 'pointer', opacity: '0.6' });
+        const tips = el('div', { id: 'aetherra-task-tip' });
+        const tipLink = el('a', { href: '/help/hub.html', target: '_blank', rel: 'noreferrer noopener' }, 'help');
+        h(tipLink, { color: '#93c5fd', textDecoration: 'none' });
+        tipLink.addEventListener('mouseenter', () => tipLink.style.textDecoration = 'underline');
+        tipLink.addEventListener('mouseleave', () => tipLink.style.textDecoration = 'none');
+        tips.appendChild(document.createTextNode('set AETHERRA_TOKEN via localStorage if required · '));
+        tips.appendChild(tipLink);
+        h(tips, { fontSize: '10px', color: '#9ca3af', marginTop: '4px' });
+        const log = el('div', { id: 'aetherra-task-log' });
+        h(log, { marginTop: '6px', maxHeight: '140px', overflowY: 'auto', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px', fontSize: '11px', lineHeight: '1.35' });
+        taskWrap.appendChild(taskLbl);
+        taskWrap.appendChild(taskInput);
+        taskWrap.appendChild(watchBtn);
+        taskWrap.appendChild(stopBtn);
+        taskWrap.appendChild(tips);
+        taskWrap.appendChild(log);
+        host.appendChild(taskWrap);
+
+        // Collapsible on click (compact/expanded)
+        let compact = false;
+        host.addEventListener('click', () => {
+          compact = !compact;
+          br.style.display = compact ? 'none' : '';
+          queues.style.display = compact ? 'none' : '';
+          taskWrap.style.display = compact ? 'none' : '';
+        });
+
+        // Quick settings: Ctrl-click title to set Hub URL, Alt-click to set token
+        title.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (e.ctrlKey) {
+            const cur = localStorage.getItem('AETHERRA_HUB_URL') || HUB_URL;
+            const v = window.prompt('Set AETHERRA_HUB_URL', cur);
+            if (v && v.trim()) {
+              localStorage.setItem('AETHERRA_HUB_URL', v.trim());
+              // Reload to apply new HUB_URL constant
+              location.reload();
             }
-            (Array.isArray(children) ? children : [children]).forEach(c => {
-              if (c == null) return;
-              n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
-            });
-            return n;
+          } else if (e.altKey) {
+            const curT = localStorage.getItem('AETHERRA_TOKEN') || '';
+            const t = window.prompt('Set AETHERRA_TOKEN', curT);
+            if (t != null) localStorage.setItem('AETHERRA_TOKEN', t);
           }
+        });
 
-          function ensureWidget() {
-            let host = document.getElementById('aetherra-live-status');
-            if (host) return host;
-            host = el('div', { id: 'aetherra-live-status', role: 'status', 'aria-live': 'polite' });
-            h(host, {
-              position: 'fixed', bottom: '12px', right: '12px', zIndex: 2147483647,
-              background: 'rgba(10,10,10,0.85)', color: '#e5e7eb', border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '10px', padding: '10px 12px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-              fontSize: '12px', boxShadow: '0 6px 24px rgba(0,0,0,0.35)', backdropFilter: 'blur(6px)'
-            });
+        document.body.appendChild(host);
+        return host;
+      }
 
-            const dot = el('span', { id: 'aetherra-live-dot' }, '●');
-            h(dot, { marginRight: '8px', color: '#f87171' });
-            const title = el('span', { id: 'aetherra-live-title', title: 'Ctrl-click: set Hub URL · Alt-click: set token' }, 'Hub');
-            h(title, { color: '#93c5fd' });
-            const sep = el('span', {}, ' · ');
-            const plugins = el('span', { id: 'aetherra-live-plugins' }, 'plugins: –');
-            const sep2 = el('span', {}, ' · ');
-            const kernel = el('span', { id: 'aetherra-live-kernel' }, 'kernel: –');
-            const br = el('br');
-            const queues = el('span', { id: 'aetherra-live-queues' }, 'queues: –');
-            const link = el('a', { id: 'aetherra-live-link', href: HUB_URL, target: '_blank', rel: 'noreferrer noopener' }, 'open hub');
-            h(link, { marginLeft: '8px', color: '#34d399', textDecoration: 'none' });
-            link.addEventListener('mouseenter', () => link.style.textDecoration = 'underline');
-            link.addEventListener('mouseleave', () => link.style.textDecoration = 'none');
+      async function fetchJSON(url, timeoutMs = 3500) {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), timeoutMs);
+        try {
+          const r = await fetch(url, { signal: ctrl.signal });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return await r.json();
+        } finally { clearTimeout(t); }
+      }
 
-            host.appendChild(dot);
-            host.appendChild(title);
-            host.appendChild(sep);
-            host.appendChild(plugins);
-            host.appendChild(sep2);
-            host.appendChild(kernel);
-            host.appendChild(br);
-            host.appendChild(queues);
-            host.appendChild(link);
+      async function fetchText(url, timeoutMs = 3500) {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), timeoutMs);
+        try {
+          const r = await fetch(url, { signal: ctrl.signal });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return await r.text();
+        } finally { clearTimeout(t); }
+      }
 
-            // Live task updates (SSE via fetch) UI
-            const taskWrap = el('div', { id: 'aetherra-live-task-wrap' });
-            h(taskWrap, { marginTop: '6px' });
-            const taskLbl = el('span', {}, 'task:');
-            h(taskLbl, { color: '#9ca3af', marginRight: '6px' });
-            const taskInput = el('input', { id: 'aetherra-task-id', placeholder: 'task id' });
-            h(taskInput, { width: '140px', background: '#0f172a', color: '#e5e7eb', border: '1px solid #1f2937', borderRadius: '6px', padding: '2px 6px', outline: 'none' });
-            const watchBtn = el('button', { id: 'aetherra-task-watch', title: 'Watch task' }, 'watch');
-            h(watchBtn, { marginLeft: '6px', background: '#111827', color: '#93c5fd', border: '1px solid #1f2937', borderRadius: '6px', padding: '2px 8px', cursor: 'pointer' });
-            const stopBtn = el('button', { id: 'aetherra-task-stop', title: 'Stop watching', disabled: 'true' }, 'stop');
-            h(stopBtn, { marginLeft: '6px', background: '#111827', color: '#f87171', border: '1px solid #1f2937', borderRadius: '6px', padding: '2px 8px', cursor: 'pointer', opacity: '0.6' });
-            const tips = el('div', { id: 'aetherra-task-tip' });
-            const tipLink = el('a', { href: '/help/hub.html', target: '_blank', rel: 'noreferrer noopener' }, 'help');
-            h(tipLink, { color: '#93c5fd', textDecoration: 'none' });
-            tipLink.addEventListener('mouseenter', () => tipLink.style.textDecoration = 'underline');
-            tipLink.addEventListener('mouseleave', () => tipLink.style.textDecoration = 'none');
-            tips.appendChild(document.createTextNode('set AETHERRA_TOKEN via localStorage if required · '));
-            tips.appendChild(tipLink);
-            h(tips, { fontSize: '10px', color: '#9ca3af', marginTop: '4px' });
-            const log = el('div', { id: 'aetherra-task-log' });
-            h(log, { marginTop: '6px', maxHeight: '140px', overflowY: 'auto', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '6px', fontSize: '11px', lineHeight: '1.35' });
-            taskWrap.appendChild(taskLbl);
-            taskWrap.appendChild(taskInput);
-            taskWrap.appendChild(watchBtn);
-            taskWrap.appendChild(stopBtn);
-            taskWrap.appendChild(tips);
-            taskWrap.appendChild(log);
-            host.appendChild(taskWrap);
+      function parseMetric(lines, name, labels) {
+        // Simple Prometheus metric parser for single sample
+        const lbl = labels ? '{' + Object.entries(labels).map(([k, v]) => `${k}="${v}"`).join(',') + '}' : '';
+        const re = new RegExp('^' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + (labels ? labelRegexEscape(lbl) : '') + '\\s+([0-9.eE+-]+)\\s*$', 'm');
+        const m = lines.match(re);
+        return m ? Number(m[1]) : undefined;
+      }
+      function labelRegexEscape(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-            // Collapsible on click (compact/expanded)
-            let compact = false;
-            host.addEventListener('click', () => {
-              compact = !compact;
-              br.style.display = compact ? 'none' : '';
-              queues.style.display = compact ? 'none' : '';
-              taskWrap.style.display = compact ? 'none' : '';
-            });
-
-            // Quick settings: Ctrl-click title to set Hub URL, Alt-click to set token
-            title.addEventListener('click', (e) => {
-              e.stopPropagation();
-              if (e.ctrlKey) {
-                const cur = localStorage.getItem('AETHERRA_HUB_URL') || HUB_URL;
-                const v = window.prompt('Set AETHERRA_HUB_URL', cur);
-                if (v && v.trim()) {
-                  localStorage.setItem('AETHERRA_HUB_URL', v.trim());
-                  // Reload to apply new HUB_URL constant
-                  location.reload();
-                }
-              } else if (e.altKey) {
-                const curT = localStorage.getItem('AETHERRA_TOKEN') || '';
-                const t = window.prompt('Set AETHERRA_TOKEN', curT);
-                if (t != null) localStorage.setItem('AETHERRA_TOKEN', t);
-              }
-            });
-
-            document.body.appendChild(host);
-            return host;
-          }
-
-          async function fetchJSON(url, timeoutMs = 3500) {
-            const ctrl = new AbortController();
-            const t = setTimeout(() => ctrl.abort(), timeoutMs);
-            try {
-              const r = await fetch(url, { signal: ctrl.signal });
-              if (!r.ok) throw new Error('HTTP ' + r.status);
-              return await r.json();
-            } finally { clearTimeout(t); }
-          }
-
-          async function fetchText(url, timeoutMs = 3500) {
-            const ctrl = new AbortController();
-            const t = setTimeout(() => ctrl.abort(), timeoutMs);
-            try {
-              const r = await fetch(url, { signal: ctrl.signal });
-              if (!r.ok) throw new Error('HTTP ' + r.status);
-              return await r.text();
-            } finally { clearTimeout(t); }
-          }
-
-          function parseMetric(lines, name, labels) {
-            // Simple Prometheus metric parser for single sample
-            const lbl = labels ? '{' + Object.entries(labels).map(([k, v]) => `${k}="${v}"`).join(',') + '}' : '';
-            const re = new RegExp('^' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + (labels ? labelRegexEscape(lbl) : '') + '\\s+([0-9.eE+-]+)\\s*$', 'm');
-            const m = lines.match(re);
-            return m ? Number(m[1]) : undefined;
-          }
-          function labelRegexEscape(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
-          // --- Task streaming (SSE over fetch, optional EventSource) ---
-          let STREAM = null; // {controller, reader, taskId}
-          function appendLog(host, type, payload) {
-            try {
-              const log = host.querySelector('#aetherra-task-log');
-              const line = document.createElement('div');
-              const ts = new Date().toLocaleTimeString();
-              line.textContent = `[${ts}] ${type}: ${typeof payload === 'string' ? payload : JSON.stringify(payload)}`;
-              log.appendChild(line);
-              log.scrollTop = log.scrollHeight;
-            } catch (_) { }
-          }
-          async function preflightTask(taskId) {
-            const token = localStorage.getItem('AETHERRA_TOKEN') || '';
-            try {
-              const r = await fetch(`${HUB_URL}/api/tasks/${encodeURIComponent(taskId)}`, {
-                headers: { ...(token ? { 'X-Aetherra-Token': token } : {}) }
-              });
-              if (r.status === 200) return { ok: true };
-              if (r.status === 401 || r.status === 403) return { ok: false, reason: 'auth' };
-              if (r.status === 404) return { ok: false, reason: 'not_found' };
-              return { ok: false, reason: `HTTP ${r.status}` };
-            } catch (e) {
-              return { ok: false, reason: String(e && e.message || e) };
-            }
-          }
-          function setWatchingState(host, watching) {
-            const stopBtn = host.querySelector('#aetherra-task-stop');
-            const watchBtn = host.querySelector('#aetherra-task-watch');
-            if (stopBtn) { stopBtn.disabled = !watching; stopBtn.style.opacity = watching ? '1' : '0.6'; }
-            if (watchBtn) { watchBtn.disabled = watching; watchBtn.style.opacity = watching ? '0.6' : '1'; }
-          }
-          function parseSSEChunk(buf, onEvent) {
-            // Split by double newlines into events
-            const parts = buf.split(/\n\n|\r\n\r\n/);
-            for (let i = 0; i < parts.length; i++) {
-              const block = parts[i].trim();
-              if (!block) continue;
-              let ev = 'message';
-              let data = '';
-              block.split(/\n|\r\n/).forEach(line => {
-                if (line.startsWith('event:')) ev = line.slice(6).trim();
-                else if (line.startsWith('data:')) data += (data ? '\n' : '') + line.slice(5).trim();
-              });
-              try { onEvent(ev, data ? JSON.parse(data) : data); } catch { onEvent(ev, data); }
-            }
-          }
-          async function startTaskStream(host, taskId) {
-            if (!taskId) return;
-            try { await stopTaskStream(); } catch { }
-            const token = localStorage.getItem('AETHERRA_TOKEN') || '';
-            const ctrl = new AbortController();
-            setWatchingState(host, true);
-            const pre = await preflightTask(taskId);
-            if (!pre.ok) {
-              let msg = pre.reason === 'auth' ? 'unauthorized (set AETHERRA_TOKEN?)' : (pre.reason === 'not_found' ? 'task not found' : pre.reason || 'preflight failed');
-              appendLog(host, 'error', msg);
-              setWatchingState(host, false);
-              return;
-            }
-            appendLog(host, 'status', `connecting to ${HUB_URL}/api/tasks/${taskId}/stream`);
-            // Optional EventSource fallback (requires server GET support; enable via localStorage AETHERRA_SSE_EVENTSOURCE=1)
-            if ((localStorage.getItem('AETHERRA_SSE_EVENTSOURCE') || '') === '1') {
-              try {
-                const useQueryToken = (localStorage.getItem('AETHERRA_SSE_TOKEN_IN_QUERY') || '') === '1';
-                const url = `${HUB_URL}/api/tasks/${encodeURIComponent(taskId)}/stream` + (token && useQueryToken ? `?token=${encodeURIComponent(token)}` : '');
-                const es = new EventSource(url);
-                STREAM = { es, taskId, controller: null };
-                es.onmessage = (ev) => {
-                  let data = ev.data;
-                  try { data = JSON.parse(ev.data); } catch { }
-                  appendLog(host, 'message', data);
-                };
-                es.addEventListener('final', (ev) => {
-                  let data = ev.data;
-                  try { data = JSON.parse(ev.data); } catch { }
-                  appendLog(host, 'final', data);
-                  setTimeout(() => stopTaskStream(), 200);
-                });
-                es.onerror = () => { appendLog(host, 'error', 'eventsource error'); };
-                return; // using EventSource path
-              } catch (e) {
-                appendLog(host, 'warn', 'EventSource failed, falling back to fetch');
-              }
-            }
-            try {
-              const res = await fetch(`${HUB_URL}/api/tasks/${encodeURIComponent(taskId)}/stream`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  ...(token ? { 'X-Aetherra-Token': token } : {})
-                },
-                body: JSON.stringify({}),
-                signal: ctrl.signal,
-              });
-              if (!res.ok || !res.body) {
-                appendLog(host, 'error', res && res.status ? `HTTP ${res.status}` : 'stream not available (is SSE enabled?)');
-                setWatchingState(host, false);
-                return;
-              }
-              const reader = res.body.getReader();
-              STREAM = { controller: ctrl, reader, taskId };
-              const dec = new TextDecoder('utf-8');
-              let buffer = '';
-              while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                buffer += dec.decode(value, { stream: true });
-                // Process complete events while keeping trailing partial in buffer
-                const lastSep = Math.max(buffer.lastIndexOf('\n\n'), buffer.lastIndexOf('\r\n\r\n'));
-                if (lastSep >= 0) {
-                  const chunk = buffer.slice(0, lastSep);
-                  parseSSEChunk(chunk, (ev, data) => {
-                    appendLog(host, ev, data);
-                    if (ev === 'final') {
-                      // auto stop after brief delay
-                      setTimeout(() => { stopTaskStream(); }, 200);
-                    }
-                  });
-                  buffer = buffer.slice(lastSep + 2);
-                }
-              }
-            } catch (e) {
-              appendLog(host, 'error', String(e && e.message || e));
-            } finally {
-              setWatchingState(host, false);
-            }
-          }
-          async function stopTaskStream() {
-            try {
-              if (STREAM) {
-                if (STREAM.es && STREAM.es.close) STREAM.es.close();
-                if (STREAM.controller) STREAM.controller.abort();
-              }
-            } catch { }
-            STREAM = null;
-          }
-
-          async function getLegacyStatus() {
-            // Build a site_status-like object using legacy endpoints
-            let total = null;
-            try {
-              const p = await fetchJSON(HUB_URL + '/api/plugins');
-              total = Number(p && (p.total ?? (Array.isArray(p.plugins) ? p.plugins.length : null)));
-            } catch (_) {
-              try {
-                const s = await fetchJSON(HUB_URL + '/status');
-                total = Number(s && (s.plugins_registered ?? null));
-              } catch { /* ignore */ }
-            }
-            let running = false;
-            let uptime = 0;
-            try {
-              const ks = await fetchJSON(HUB_URL + '/api/kernel/status');
-              running = !!(ks && (ks.running === true || String(ks.state || '').toLowerCase() === 'running'));
-              if (typeof ks?.uptime === 'number') uptime = ks.uptime;
-            } catch { /* ignore */ }
-            let qh, qn, qb;
-            try {
-              const text = await fetchText(HUB_URL + '/metrics');
-              const parse = (name, labels) => parseMetric(text, name, labels);
-              qh = parse('aetherra_kernel_queue_size', { queue: 'high' });
-              qn = parse('aetherra_kernel_queue_size', { queue: 'normal' });
-              qb = parse('aetherra_kernel_queue_size', { queue: 'background' });
-              const up = parse('aetherra_kernel_uptime_seconds');
-              if (Number.isFinite(up)) uptime = Number(up);
-            } catch { /* ignore */ }
-            return {
-              plugins: { total: Number.isFinite(total) ? Number(total) : undefined },
-              kernel: {
-                running,
-                uptime_seconds: Number.isFinite(uptime) ? Number(uptime) : undefined,
-                queue_sizes: {
-                  high_priority: Number.isFinite(qh) ? Number(qh) : undefined,
-                  normal_priority: Number.isFinite(qn) ? Number(qn) : undefined,
-                  background: Number.isFinite(qb) ? Number(qb) : undefined,
-                }
-              }
+      // --- Task streaming (SSE over fetch, optional EventSource) ---
+      let STREAM = null; // {controller, reader, taskId}
+      function appendLog(host, type, payload) {
+        try {
+          const log = host.querySelector('#aetherra-task-log');
+          const line = document.createElement('div');
+          const ts = new Date().toLocaleTimeString();
+          line.textContent = `[${ts}] ${type}: ${typeof payload === 'string' ? payload : JSON.stringify(payload)}`;
+          log.appendChild(line);
+          log.scrollTop = log.scrollHeight;
+        } catch (_) { }
+      }
+      async function preflightTask(taskId) {
+        const token = localStorage.getItem('AETHERRA_TOKEN') || '';
+        try {
+          const r = await fetch(`${HUB_URL}/api/tasks/${encodeURIComponent(taskId)}`, {
+            headers: { ...(token ? { 'X-Aetherra-Token': token } : {}) }
+          });
+          if (r.status === 200) return { ok: true };
+          if (r.status === 401 || r.status === 403) return { ok: false, reason: 'auth' };
+          if (r.status === 404) return { ok: false, reason: 'not_found' };
+          return { ok: false, reason: `HTTP ${r.status}` };
+        } catch (e) {
+          return { ok: false, reason: String(e && e.message || e) };
+        }
+      }
+      function setWatchingState(host, watching) {
+        const stopBtn = host.querySelector('#aetherra-task-stop');
+        const watchBtn = host.querySelector('#aetherra-task-watch');
+        if (stopBtn) { stopBtn.disabled = !watching; stopBtn.style.opacity = watching ? '1' : '0.6'; }
+        if (watchBtn) { watchBtn.disabled = watching; watchBtn.style.opacity = watching ? '0.6' : '1'; }
+      }
+      function parseSSEChunk(buf, onEvent) {
+        // Split by double newlines into events
+        const parts = buf.split(/\n\n|\r\n\r\n/);
+        for (let i = 0; i < parts.length; i++) {
+          const block = parts[i].trim();
+          if (!block) continue;
+          let ev = 'message';
+          let data = '';
+          block.split(/\n|\r\n/).forEach(line => {
+            if (line.startsWith('event:')) ev = line.slice(6).trim();
+            else if (line.startsWith('data:')) data += (data ? '\n' : '') + line.slice(5).trim();
+          });
+          try { onEvent(ev, data ? JSON.parse(data) : data); } catch { onEvent(ev, data); }
+        }
+      }
+      async function startTaskStream(host, taskId) {
+        if (!taskId) return;
+        try { await stopTaskStream(); } catch { }
+        const token = localStorage.getItem('AETHERRA_TOKEN') || '';
+        const ctrl = new AbortController();
+        setWatchingState(host, true);
+        const pre = await preflightTask(taskId);
+        if (!pre.ok) {
+          let msg = pre.reason === 'auth' ? 'unauthorized (set AETHERRA_TOKEN?)' : (pre.reason === 'not_found' ? 'task not found' : pre.reason || 'preflight failed');
+          appendLog(host, 'error', msg);
+          setWatchingState(host, false);
+          return;
+        }
+        appendLog(host, 'status', `connecting to ${HUB_URL}/api/tasks/${taskId}/stream`);
+        // Optional EventSource fallback (requires server GET support; enable via localStorage AETHERRA_SSE_EVENTSOURCE=1)
+        if ((localStorage.getItem('AETHERRA_SSE_EVENTSOURCE') || '') === '1') {
+          try {
+            const useQueryToken = (localStorage.getItem('AETHERRA_SSE_TOKEN_IN_QUERY') || '') === '1';
+            const url = `${HUB_URL}/api/tasks/${encodeURIComponent(taskId)}/stream` + (token && useQueryToken ? `?token=${encodeURIComponent(token)}` : '');
+            const es = new EventSource(url);
+            STREAM = { es, taskId, controller: null };
+            es.onmessage = (ev) => {
+              let data = ev.data;
+              try { data = JSON.parse(ev.data); } catch { }
+              appendLog(host, 'message', data);
             };
-          }
-
-          async function update() {
-            const host = ensureWidget();
-            const dot = host.querySelector('#aetherra-live-dot');
-            const plugins = host.querySelector('#aetherra-live-plugins');
-            const kernel = host.querySelector('#aetherra-live-kernel');
-            const queues = host.querySelector('#aetherra-live-queues');
-            // wire buttons once
-            if (!host._wired) {
-              const watchBtn = host.querySelector('#aetherra-task-watch');
-              const stopBtn = host.querySelector('#aetherra-task-stop');
-              const input = host.querySelector('#aetherra-task-id');
-              if (watchBtn && input) {
-                watchBtn.addEventListener('click', () => startTaskStream(host, String(input.value || '').trim()));
-                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') startTaskStream(host, String(input.value || '').trim()); });
-                const setWatchEnabled = () => { watchBtn.disabled = !input.value.trim(); watchBtn.style.opacity = watchBtn.disabled ? '0.6' : '1'; };
-                input.addEventListener('input', setWatchEnabled);
-                setWatchEnabled();
-              }
-              if (stopBtn) { stopBtn.addEventListener('click', () => stopTaskStream()); }
-              host._wired = true;
-            }
-            // URL param auto-wire (e.g., ?task=<id>&hub=<url>&token=<t>)
-            try {
-              const sp = new URLSearchParams(location.search);
-              const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
-              const taskId = sp.get('task') || hash.get('task');
-              const hub = sp.get('hub') || hash.get('hub');
-              const tok = sp.get('token') || hash.get('token');
-              if (hub) localStorage.setItem('AETHERRA_HUB_URL', hub);
-              if (tok != null) localStorage.setItem('AETHERRA_TOKEN', tok);
-              if (taskId) {
-                input.value = taskId;
-                setTimeout(() => startTaskStream(host, String(taskId).trim()), 300);
-              }
-            } catch { }
-
-
-            let next = REFRESH_MS_OK;
-            try {
-              // Use aggregated endpoint when available; fallback to legacy on failure
-              const forceLegacy = (localStorage.getItem('AETHERRA_WIDGET_LEGACY') || '') === '1';
-              let s = null;
-              if (!forceLegacy) {
-                try { s = await fetchJSON(HUB_URL + '/api/site_status'); }
-                catch (_) { s = null; }
-              }
-              if (!s) s = await getLegacyStatus();
-              const total = Number(s && s.plugins && s.plugins.total);
-              if (Number.isFinite(total)) plugins.textContent = `plugins: ${total}`; else plugins.textContent = 'plugins: –';
-              const running = !!(s && s.kernel && s.kernel.running);
-              const sec = Math.max(0, Math.floor(Number(s && s.kernel && s.kernel.uptime_seconds || 0)));
-              kernel.textContent = running ? `kernel: running${sec ? ` (uptime ${sec}s)` : ''}` : 'kernel: offline';
-              const qs = (s && s.kernel && s.kernel.queue_sizes) || {};
-              const fmt = v => Number.isFinite(v) ? String(Math.max(0, Math.floor(v))) : '–';
-              queues.textContent = `queues: H:${fmt(qs.high_priority)} N:${fmt(qs.normal_priority)} B:${fmt(qs.background)}`;
-              // Dot color based on connectivity
-              h(dot, { color: running ? '#34d399' : '#fbbf24' });
-              backoff = 0; // reset on success
-            } catch (err) {
-              // Offline
-              h(host.querySelector('#aetherra-live-dot'), { color: '#f87171' });
-              plugins.textContent = 'plugins: –';
-              kernel.textContent = 'kernel: –';
-              queues.textContent = 'queues: –';
-              backoff = Math.min(4, backoff + 1);
-              next = REFRESH_MS_ERR * (1 + backoff);
-            } finally {
-              // Visibility-aware polling: pause when hidden
-              const schedule = () => {
-                window.clearTimeout(update._t);
-                update._t = window.setTimeout(update, next);
-              };
-              if (document.visibilityState === 'hidden') {
-                // check again in a longer interval while hidden
-                next = Math.max(next, 30000);
-              }
-              schedule();
-            }
-          }
-
-          function start() {
-            try { ensureWidget(); update(); } catch (_) { /* no-op */ }
-            // when tab visibility changes, trigger immediate refresh
-            document.addEventListener('visibilitychange', () => {
-              if (document.visibilityState === 'visible') {
-                try { window.clearTimeout(update._t); update(); } catch { }
-              }
+            es.addEventListener('final', (ev) => {
+              let data = ev.data;
+              try { data = JSON.parse(ev.data); } catch { }
+              appendLog(host, 'final', data);
+              setTimeout(() => stopTaskStream(), 200);
             });
+            es.onerror = () => { appendLog(host, 'error', 'eventsource error'); };
+            return; // using EventSource path
+          } catch (e) {
+            appendLog(host, 'warn', 'EventSource failed, falling back to fetch');
           }
-          if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
-          else start();
-        })();
-      </script>
+        }
+        try {
+          const res = await fetch(`${HUB_URL}/api/tasks/${encodeURIComponent(taskId)}/stream`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'X-Aetherra-Token': token } : {})
+            },
+            body: JSON.stringify({}),
+            signal: ctrl.signal,
+          });
+          if (!res.ok || !res.body) {
+            appendLog(host, 'error', res && res.status ? `HTTP ${res.status}` : 'stream not available (is SSE enabled?)');
+            setWatchingState(host, false);
+            return;
+          }
+          const reader = res.body.getReader();
+          STREAM = { controller: ctrl, reader, taskId };
+          const dec = new TextDecoder('utf-8');
+          let buffer = '';
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += dec.decode(value, { stream: true });
+            // Process complete events while keeping trailing partial in buffer
+            const lastSep = Math.max(buffer.lastIndexOf('\n\n'), buffer.lastIndexOf('\r\n\r\n'));
+            if (lastSep >= 0) {
+              const chunk = buffer.slice(0, lastSep);
+              parseSSEChunk(chunk, (ev, data) => {
+                appendLog(host, ev, data);
+                if (ev === 'final') {
+                  // auto stop after brief delay
+                  setTimeout(() => { stopTaskStream(); }, 200);
+                }
+              });
+              buffer = buffer.slice(lastSep + 2);
+            }
+          }
+        } catch (e) {
+          appendLog(host, 'error', String(e && e.message || e));
+        } finally {
+          setWatchingState(host, false);
+        }
+      }
+      async function stopTaskStream() {
+        try {
+          if (STREAM) {
+            if (STREAM.es && STREAM.es.close) STREAM.es.close();
+            if (STREAM.controller) STREAM.controller.abort();
+          }
+        } catch { }
+        STREAM = null;
+      }
+
+      async function getLegacyStatus() {
+        // Build a site_status-like object using legacy endpoints
+        let total = null;
+        try {
+          const p = await fetchJSON(HUB_URL + '/api/plugins');
+          total = Number(p && (p.total ?? (Array.isArray(p.plugins) ? p.plugins.length : null)));
+        } catch (_) {
+          try {
+            const s = await fetchJSON(HUB_URL + '/status');
+            total = Number(s && (s.plugins_registered ?? null));
+          } catch { /* ignore */ }
+        }
+        let running = false;
+        let uptime = 0;
+        try {
+          const ks = await fetchJSON(HUB_URL + '/api/kernel/status');
+          running = !!(ks && (ks.running === true || String(ks.state || '').toLowerCase() === 'running'));
+          if (typeof ks?.uptime === 'number') uptime = ks.uptime;
+        } catch { /* ignore */ }
+        let qh, qn, qb;
+        try {
+          const text = await fetchText(HUB_URL + '/metrics');
+          const parse = (name, labels) => parseMetric(text, name, labels);
+          qh = parse('aetherra_kernel_queue_size', { queue: 'high' });
+          qn = parse('aetherra_kernel_queue_size', { queue: 'normal' });
+          qb = parse('aetherra_kernel_queue_size', { queue: 'background' });
+          const up = parse('aetherra_kernel_uptime_seconds');
+          if (Number.isFinite(up)) uptime = Number(up);
+        } catch { /* ignore */ }
+        return {
+          plugins: { total: Number.isFinite(total) ? Number(total) : undefined },
+          kernel: {
+            running,
+            uptime_seconds: Number.isFinite(uptime) ? Number(uptime) : undefined,
+            queue_sizes: {
+              high_priority: Number.isFinite(qh) ? Number(qh) : undefined,
+              normal_priority: Number.isFinite(qn) ? Number(qn) : undefined,
+              background: Number.isFinite(qb) ? Number(qb) : undefined,
+            }
+          }
+        };
+      }
+
+      async function update() {
+        const host = ensureWidget();
+        const dot = host.querySelector('#aetherra-live-dot');
+        const plugins = host.querySelector('#aetherra-live-plugins');
+        const kernel = host.querySelector('#aetherra-live-kernel');
+        const queues = host.querySelector('#aetherra-live-queues');
+        // wire buttons once
+        if (!host._wired) {
+          const watchBtn = host.querySelector('#aetherra-task-watch');
+          const stopBtn = host.querySelector('#aetherra-task-stop');
+          const input = host.querySelector('#aetherra-task-id');
+          if (watchBtn && input) {
+            watchBtn.addEventListener('click', () => startTaskStream(host, String(input.value || '').trim()));
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') startTaskStream(host, String(input.value || '').trim()); });
+            const setWatchEnabled = () => { watchBtn.disabled = !input.value.trim(); watchBtn.style.opacity = watchBtn.disabled ? '0.6' : '1'; };
+            input.addEventListener('input', setWatchEnabled);
+            setWatchEnabled();
+          }
+          if (stopBtn) { stopBtn.addEventListener('click', () => stopTaskStream()); }
+          host._wired = true;
+        }
+        // URL param auto-wire (e.g., ?task=<id>&hub=<url>&token=<t>)
+        try {
+          const sp = new URLSearchParams(location.search);
+          const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
+          const taskId = sp.get('task') || hash.get('task');
+          const hub = sp.get('hub') || hash.get('hub');
+          const tok = sp.get('token') || hash.get('token');
+          if (hub) localStorage.setItem('AETHERRA_HUB_URL', hub);
+          if (tok != null) localStorage.setItem('AETHERRA_TOKEN', tok);
+          if (taskId) {
+            input.value = taskId;
+            setTimeout(() => startTaskStream(host, String(taskId).trim()), 300);
+          }
+        } catch { }
+
+
+        let next = REFRESH_MS_OK;
+        try {
+          // Use aggregated endpoint when available; fallback to legacy on failure
+          const forceLegacy = (localStorage.getItem('AETHERRA_WIDGET_LEGACY') || '') === '1';
+          const aggDisabled = sessionStorage.getItem(AGG_KEY) === '1';
+          let s = null;
+          if (!forceLegacy && !aggDisabled) {
+            try { s = await fetchJSON(HUB_URL + '/api/site_status'); }
+            catch (e) { s = null; try { sessionStorage.setItem(AGG_KEY, '1'); } catch { } }
+          }
+          if (!s) s = await getLegacyStatus();
+          const total = Number(s && s.plugins && s.plugins.total);
+          if (Number.isFinite(total)) plugins.textContent = `plugins: ${total}`; else plugins.textContent = 'plugins: –';
+          const running = !!(s && s.kernel && s.kernel.running);
+          const sec = Math.max(0, Math.floor(Number(s && s.kernel && s.kernel.uptime_seconds || 0)));
+          kernel.textContent = running ? `kernel: running${sec ? ` (uptime ${sec}s)` : ''}` : 'kernel: offline';
+          const qs = (s && s.kernel && s.kernel.queue_sizes) || {};
+          const fmt = v => Number.isFinite(v) ? String(Math.max(0, Math.floor(v))) : '–';
+          queues.textContent = `queues: H:${fmt(qs.high_priority)} N:${fmt(qs.normal_priority)} B:${fmt(qs.background)}`;
+          // Dot color based on connectivity
+          h(dot, { color: running ? '#34d399' : '#fbbf24' });
+          backoff = 0; // reset on success
+        } catch (err) {
+          // Offline
+          h(host.querySelector('#aetherra-live-dot'), { color: '#f87171' });
+          plugins.textContent = 'plugins: –';
+          kernel.textContent = 'kernel: –';
+          queues.textContent = 'queues: –';
+          backoff = Math.min(4, backoff + 1);
+          next = REFRESH_MS_ERR * (1 + backoff);
+        } finally {
+          // Visibility-aware polling: pause when hidden
+          const schedule = () => {
+            window.clearTimeout(update._t);
+            update._t = window.setTimeout(update, next);
+          };
+          if (document.visibilityState === 'hidden') {
+            // check again in a longer interval while hidden
+            next = Math.max(next, 30000);
+          }
+          schedule();
+        }
+      }
+
+      function start() {
+        try { ensureWidget(); update(); } catch (_) { /* no-op */ }
+        // when tab visibility changes, trigger immediate refresh
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            try { window.clearTimeout(update._t); update(); } catch { }
+          }
+        });
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+      else start();
+    })();
+  </script>
 </head>
 
 <body class="bg-bg text-white">
