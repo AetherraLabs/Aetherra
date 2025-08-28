@@ -10,10 +10,231 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <script type="module" crossorigin src="/assets/index-OrXyYuWD.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+  <script>
+    // Runtime link rewriter: map placeholder buttons to real docs pages
+    (function () {
+      const MAP = new Map([
+        ["read full code of conduct", "/community/code-of-conduct.html"],
+        ["propose an rfc", "/community/rfc.html"],
+        ["open notes", "/labs/notes.html"],
+        ["replication kit", "/labs/replication-kit.html"],
+        ["view", "/research/view.html"],
+        ["cite", "/research/cite.html"],
+        ["download", "/downloads/"]
+      ]);
+
+      function rewriteAnchors(root) {
+        try {
+          const scope = root || document;
+          const anchors = scope.querySelectorAll('a[href="#"]:not([data-link-fixed])');
+          anchors.forEach(a => {
+            const label = (a.textContent || "").trim().toLowerCase();
+            const target = MAP.get(label);
+            if (target) {
+              a.setAttribute('href', target);
+              a.setAttribute('data-link-fixed', '1');
+            }
+          });
+        } catch (_) { /* no-op */ }
+      }
+
+      function installObserver() {
+        const root = document.getElementById('root') || document.body || document.documentElement;
+        const obs = new MutationObserver(() => rewriteAnchors(root));
+        obs.observe(root, { childList: true, subtree: true, characterData: true });
+        // Initial passes to catch first render
+        rewriteAnchors(root);
+        setTimeout(() => rewriteAnchors(root), 300);
+        setTimeout(() => rewriteAnchors(root), 1000);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', installObserver);
+      } else {
+        installObserver();
+      }
+    })();
+  </script>
+  <script>
+    // Runtime Hub/OS live status widget: shows plugin count and kernel metrics without touching SPA bundle
+    (function () {
+      const HUB_URL = (window.AETHERRA_HUB_URL || localStorage.getItem('AETHERRA_HUB_URL') || 'http://localhost:3001').replace(/\/$/, '');
+      const REFRESH_MS_OK = 10000;   // 10s normal
+      const REFRESH_MS_ERR = 20000;  // 20s on error
+
+      function h(el, styles) { for (const k in styles) el.style[k] = styles[k]; return el; }
+      function el(tag, props = {}, children = []) {
+        const n = document.createElement(tag);
+        for (const k in props) {
+          if (k === 'style') Object.assign(n.style, props[k]);
+          else if (k.startsWith('on') && typeof props[k] === 'function') n.addEventListener(k.slice(2).toLowerCase(), props[k]);
+          else n.setAttribute(k, props[k]);
+        }
+        (Array.isArray(children) ? children : [children]).forEach(c => {
+          if (c == null) return;
+          n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+        });
+        return n;
+      }
+
+      function ensureWidget() {
+        let host = document.getElementById('aetherra-live-status');
+        if (host) return host;
+        host = el('div', { id: 'aetherra-live-status', role: 'status', 'aria-live': 'polite' });
+        h(host, {
+          position: 'fixed', bottom: '12px', right: '12px', zIndex: 2147483647,
+          background: 'rgba(10,10,10,0.85)', color: '#e5e7eb', border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '10px', padding: '10px 12px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          fontSize: '12px', boxShadow: '0 6px 24px rgba(0,0,0,0.35)', backdropFilter: 'blur(6px)'
+        });
+
+        const dot = el('span', { id: 'aetherra-live-dot' }, '●');
+        h(dot, { marginRight: '8px', color: '#f87171' });
+        const title = el('span', { id: 'aetherra-live-title' }, 'Hub');
+        h(title, { color: '#93c5fd' });
+        const sep = el('span', {}, ' · ');
+        const plugins = el('span', { id: 'aetherra-live-plugins' }, 'plugins: –');
+        const sep2 = el('span', {}, ' · ');
+        const kernel = el('span', { id: 'aetherra-live-kernel' }, 'kernel: –');
+        const br = el('br');
+        const queues = el('span', { id: 'aetherra-live-queues' }, 'queues: –');
+        const link = el('a', { id: 'aetherra-live-link', href: HUB_URL, target: '_blank', rel: 'noreferrer noopener' }, 'open hub');
+        h(link, { marginLeft: '8px', color: '#34d399', textDecoration: 'none' });
+        link.addEventListener('mouseenter', () => link.style.textDecoration = 'underline');
+        link.addEventListener('mouseleave', () => link.style.textDecoration = 'none');
+
+        host.appendChild(dot);
+        host.appendChild(title);
+        host.appendChild(sep);
+        host.appendChild(plugins);
+        host.appendChild(sep2);
+        host.appendChild(kernel);
+        host.appendChild(br);
+        host.appendChild(queues);
+        host.appendChild(link);
+
+        // Collapsible on click (compact/expanded)
+        let compact = false;
+        host.addEventListener('click', () => {
+          compact = !compact;
+          br.style.display = compact ? 'none' : '';
+          queues.style.display = compact ? 'none' : '';
+        });
+
+        document.body.appendChild(host);
+        return host;
+      }
+
+      async function fetchJSON(url, timeoutMs = 3500) {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), timeoutMs);
+        try {
+          const r = await fetch(url, { signal: ctrl.signal });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return await r.json();
+        } finally { clearTimeout(t); }
+      }
+
+      async function fetchText(url, timeoutMs = 3500) {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), timeoutMs);
+        try {
+          const r = await fetch(url, { signal: ctrl.signal });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return await r.text();
+        } finally { clearTimeout(t); }
+      }
+
+      function parseMetric(lines, name, labels) {
+        // Simple Prometheus metric parser for single sample
+        const lbl = labels ? '{' + Object.entries(labels).map(([k, v]) => `${k}="${v}"`).join(',') + '}' : '';
+        const re = new RegExp('^' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + (labels ? labelRegexEscape(lbl) : '') + '\\s+([0-9.eE+-]+)\\s*$', 'm');
+        const m = lines.match(re);
+        return m ? Number(m[1]) : undefined;
+      }
+      function labelRegexEscape(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+      async function update() {
+        const host = ensureWidget();
+        const dot = host.querySelector('#aetherra-live-dot');
+        const plugins = host.querySelector('#aetherra-live-plugins');
+        const kernel = host.querySelector('#aetherra-live-kernel');
+        const queues = host.querySelector('#aetherra-live-queues');
+
+        let next = REFRESH_MS_OK;
+        try {
+          // Plugins
+          let total = null;
+          try {
+            const p = await fetchJSON(HUB_URL + '/api/plugins');
+            total = Number(p && (p.total ?? (Array.isArray(p.plugins) ? p.plugins.length : null)));
+          } catch (_) {
+            const s = await fetchJSON(HUB_URL + '/status');
+            total = Number(s && (s.plugins_registered ?? null));
+          }
+          if (Number.isFinite(total)) {
+            plugins.textContent = `plugins: ${total}`;
+          } else {
+            plugins.textContent = 'plugins: –';
+          }
+
+          // Kernel basic status
+          let ks = null;
+          try {
+            ks = await fetchJSON(HUB_URL + '/api/kernel/status');
+          } catch (_) { ks = null; }
+          const running = ks && (ks.running === true || String(ks.state || '').toLowerCase() === 'running');
+          kernel.textContent = running ? 'kernel: running' : 'kernel: offline';
+
+          // Prometheus metrics (queues & uptime)
+          let metrics = '';
+          try { metrics = await fetchText(HUB_URL + '/metrics'); } catch (_) { metrics = ''; }
+          if (metrics) {
+            const up = parseMetric(metrics, 'aetherra_kernel_uptime_seconds');
+            const qh = parseMetric(metrics, 'aetherra_kernel_queue_size', { queue: 'high' });
+            const qn = parseMetric(metrics, 'aetherra_kernel_queue_size', { queue: 'normal' });
+            const qb = parseMetric(metrics, 'aetherra_kernel_queue_size', { queue: 'background' });
+            if (Number.isFinite(qh) || Number.isFinite(qn) || Number.isFinite(qb)) {
+              const fmt = v => Number.isFinite(v) ? String(Math.max(0, Math.floor(v))) : '–';
+              queues.textContent = `queues: H:${fmt(qh)} N:${fmt(qn)} B:${fmt(qb)}`;
+            } else {
+              queues.textContent = 'queues: –';
+            }
+            if (Number.isFinite(up)) {
+              const sec = Math.max(0, Math.floor(Number(up)));
+              kernel.textContent = (running ? 'kernel: running' : 'kernel: offline') + ` (uptime ${sec}s)`;
+            }
+          } else {
+            queues.textContent = 'queues: –';
+          }
+
+          // Dot color based on connectivity
+          h(dot, { color: running ? '#34d399' : '#fbbf24' });
+        } catch (err) {
+          // Offline
+          h(host.querySelector('#aetherra-live-dot'), { color: '#f87171' });
+          plugins.textContent = 'plugins: –';
+          kernel.textContent = 'kernel: –';
+          queues.textContent = 'queues: –';
+          next = REFRESH_MS_ERR;
+        } finally {
+          window.clearTimeout(update._t);
+          update._t = window.setTimeout(update, next);
+        }
+      }
+
+      function start() {
+        try { ensureWidget(); update(); } catch (_) { /* no-op */ }
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+      else start();
+    })();
+  </script>
 </head>
 
 <body class="bg-bg text-white">
-  <div id="root"></div>
+  <div id="root"></div>
+
 </body>
 
 </html>
