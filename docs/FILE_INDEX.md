@@ -56,6 +56,7 @@ Aetherra/
       README.md — cognitive
       reasoning_engine.py — Context for reasoning operations"""
     config/
+      __init__.py
       config_loader.py — Custom exception for configuration-related errors"""
       README.md — config
       system.json
@@ -84,6 +85,7 @@ Aetherra/
     kernel/
       __init__.py — Get the status of the kernel system.
       gui_generator.py — Minimal gui_generator for Aetherra
+      memory_kernel.py
       narrator.py
       pulse.py
       quantum_bridge.py
@@ -132,6 +134,7 @@ Aetherra/
         __init__.py
         README.md — reflector
         reflect_analyzer.py — An insight discovered through reflection"""
+      __init__.py — Package exports for memory module
       aetherra_memory_engine.py — Compat store: accept dicts with 'content' and optional 'metadata'.
       causal_branch_simulator.py — Represents a potential future memory state with probability weighting"""
       compression_metrics.py — Memory compression fidelity levels"""
@@ -146,6 +149,7 @@ Aetherra/
       memory_core_adapter.py — Adapter for memory modules in Aetherra
       memory_kernel.py — Configuration for the integrated memory system"""
       memory_learning.py — Classify the type of interaction for learning purposes"""
+      models.py — Canonical typed recall contract.
       observer_effect_simulator.py — Different types of observers with varying impact levels"""
       optimized_memory_engine.py — Start the async processing loop"""
       optimized_storage.py — Represents a pending write operation"""
@@ -254,6 +258,7 @@ Aetherra/
     run_server.py — Main entry point for the API server
   cli/
     __init__.py
+    alerts.py
     basic.py — Show basic AetherraCode status"""
     main.py — CLI that demonstrates persona adaptation in real-time"""
     persona.py — Command-line interface for AetherraCode persona management"""
@@ -650,6 +655,7 @@ Aetherra/
       README.md — memory_hooks
     __init__.py — Get the status of this package.
     ai_plugin_generator_v2.py — Plugin template definition."""
+    manifest_schema.py — Map hub signing strictness and signature verification to trust zone label.
     README.md — Plugins Subsystem
     reflector.py — Self-reflection and behavior analysis capabilities for AetherraCode"""
   runtime/
@@ -677,8 +683,11 @@ Aetherra/
     simple_audit.py — Just count Python files quickly"""
     simple_cleanup.py — Move files to unused directory
   security/
-    api_keys.py
-    plugin_signing.py — Return (public_base64, secret_base64).
+    api_keys.py — Return Fernet key bytes if available, else None.
+    capabilities.py — Return True if requester is allowed the named capability.
+    net_policy.py
+    plugin_signing.py — Compute a deterministic SHA256 tree hash for a list of file paths."""
+    prompt_defense.py — Heuristic scan for prompt-injection and jailbreak attempts.
     sandbox.py — Evaluate a small arithmetic/logic expression safely.
     script_signing.py
   stdlib/
@@ -690,7 +699,7 @@ Aetherra/
     sysmon.py — System monitoring capabilities for AetherraCode"""
     whisper.py — Audio transcription capabilities for AetherraCode"""
   telemetry/
-    optin.py
+    optin.py — Enable/disable Differential Privacy and optionally set epsilon.
   tools/
     migration/
       agent_deduplication_report.json
@@ -736,20 +745,33 @@ Aetherra/
   README.md — Aetherra - AI-Native Development Platform
   verify_lyrixa_merge.py — !/usr/bin/env python3
 docs/
+  Aether_Script_Language_System.md — Aether Script Language System (`.aether`)
+  Aether_Script_Operator_Guide.md — Aether Script Operator Guide
   aether_script_protection.md — Aether Script Protection and Signing
+  AETHERRA_AGENT_SYSTEM.md — Aetherra Agent System
+  AETHERRA_AI_TRAINER_SYSTEM.md — Aetherra AI Trainer System
+  AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md — Aetherra Artificial Intelligence System
+  AETHERRA_CODING_SYSTEM.md — Aetherra Coding System (Lyrixa Code Studio)
+  AETHERRA_KERNEL_SYSTEM.md — Aetherra Kernel System
+  AETHERRA_MEMORY_SYSTEM.md — Aetherra Memory System
+  AETHERRA_SECURITY_SYSTEM.md — Aetherra Security System (Aetherra OS + Lyrixa)
   api-keys.md — API Keys and Secrets
   DOCS_CONSISTENCY_REPORT.md — Docs Consistency Report
   FILE_INDEX.md — Aetherra File Index
   import_map.md — Import Map
+  INDEX.md — Aetherra Documentation Index
   LYRIXA_CHAT_ENDPOINT.md — Lyrixa Chat Endpoint
   manifesto.md — AETHERRA MANIFESTO (v6.0 – July 2025)
+  memory_system.md — Memory System
   NEXT_STEPS.md — Next Steps: Lyrixa Chat Production Readiness
+  PROJECT_ANALYSIS.json
   PROJECT_OVERVIEW.md — Aetherra Project Overview
   PROJECT_STATUS_2025-08-11.md — Aetherra — Project Status and Architecture Map (2025-08-11)
   QFAC_MODE_GUIDE.md — AETHERRA QFAC Mode Guide
   REPO_CLEANUP_GUIDE.md — Repository Cleanup and Size Reduction
   REPO_SETTINGS.md — Recommended Repository Settings
   SECURITY_FEDERATION_ENHANCEMENTS_2025-08-12.md — Security, Signing, and Federation Enhancements (2025-08-12)
+  SYSTEM_INDEX.md — Aetherra System Index
 tests/
   ai/
     README.md — ai
@@ -788,21 +810,39 @@ tests/
     test_phase3.py — !/usr/bin/env python3
     test_phase6_integration.py — Test that all Phase components can be imported."""
     test_plugin_ecosystem.py — Test core plugin ecosystem functionality."""
+    test_webhook_manager_security.py
   unit/
     README.md — unit
     test_aether_intent_language.py — Comprehensive test suite for .aether Intent Language"""
+    test_aether_script_audit.py
+    test_aether_script_policy.py
+    test_aether_script_require.py
     test_aether_script_signing.py
+    test_aether_script_transactions_trace.py
     test_aether_static_risk.py
+    test_capabilities_policy.py
+    test_create_aether_from_task.py
     test_federation_manager.py
     test_federation_persistence.py
     test_gui_smoke.py
+    test_hub_agents_api.py
+    test_hub_ai_api.py
+    test_hub_control_plane.py
     test_hub_inthread.py
+    test_hub_metrics_prometheus.py
     test_hub_plugin_registration_non_strict.py
+    test_hub_plugin_registration_schema_negative.py
     test_hub_plugin_registration_signed_strict.py
     test_hub_plugin_registration_strict.py
-    test_imports.py — Test a single import statement."""
+    test_hub_plugin_registration_strict_invalid_sig.py
+    test_imports.py — !/usr/bin/env python3
     test_live_ai_fallback.py — Test the actual AI fallback system with real API calls"""
+    test_manifest_schema_and_trust.py — .strip()
+    test_memory_engine_typed_and_policy.py
     test_memory_kernel.py
+    test_net_policy.py
+    test_plugin_policy_budgets.py
+    test_prompt_defense.py
     test_qfac_modes.py
     test_quantum_aware_simulations.py — Test suite for Quantum-Aware Simulations system"""
     test_self_evolving_behavior.py — Test core self-evolving behavior functionality."""
@@ -814,26 +854,34 @@ tests/
   test_discovery_signing.py
   test_hub_signing.py
 tools/
+  analyze_project.py — Detect key subsystems by presence of canonical files and dirs."""
   check_license_consistency.py — !/usr/bin/env python3
+  create_aether_from_task.py — .lstrip()
   engine_audit.py
   engine_inspector.py
   engine_usage_matrix.py
   engine_usage_probe.py
   generate_file_index.py — Best-effort: return first line of top-level docstring or leading comment.
   os_smoke.py — !/usr/bin/env python3
+  precommit_sign_aether.py — !/usr/bin/env python3
   prune_aetherra_gui.py — !/usr/bin/env python3
+  quality_gates.py — !/usr/bin/env python3
   quarantine_unused_engines.py
+  sign_aether.py — !/usr/bin/env python3
   smoke_test_hub_connector.py — !/usr/bin/env python3
+  spec_tests_gate.py — !/usr/bin/env python3
+  update_system_index.py — Return (emoji, label) reduced status from doc content.
   validate_engine_imports.py
   validate_import_map.py — !/usr/bin/env python3
   verify_aether_scripts.py — !/usr/bin/env python3
-  verify_docs_consistency.py — !/usr/bin/env python3
+  verify_docs_consistency.py — Extract content under a markdown level-2 heading until the next level-2 heading.
   verify_ui_standards.py — !/usr/bin/env python3
 advanced_analyzer.py — Deep analysis of file content and purpose"""
 advanced_analyzer_fixed.py — Extract decorator name from AST node"""
 advanced_project_intelligence.json
-Aether Script Language Specification.md — Aether Script Language Specification (`.aether`)
+Aether Script Language Specification.md — Aether Script Language System (`.aether`) — Legacy Spec (v1.0)
 aether.py — Execute Aether Script content."""
+aether_static_report.md — .aether Verification Report
 aetherra_adaptive_behavior.py — Represents a learned behavior pattern."""
 AETHERRA_CLAIMS_VALIDATION.md — Aetherra OS — Capabilities Validation Snapshot (2025-08-12)
 aetherra_cognitive_task_manager.py — Initialize Flask app and routes."""
@@ -884,6 +932,7 @@ check_architecture.py — Simple checker for critical architectural compliance""
 check_unicode.py — Check for Unicode characters in a file.
 CLEANUP_ANALYSIS.md — 🧹 Aetherra Project Cleanup Analysis
 CLEANUP_COMPLETE.md — 🎉 Aetherra Project Cleanup Complete!
+CODE_OF_CONDUCT.md — Code of Conduct
 COMPLETE_DIRECTORY_INTELLIGENCE.md — 🗂️ COMPLETE DIRECTORY INTELLIGENCE OVERVIEW
 COMPLETE_FILE_INVENTORY.md — 📄 COMPLETE FILE INVENTORY & INTELLIGENCE
 complete_organizer.py — Generate a comprehensive reorganization plan based on file analysis"""
@@ -931,6 +980,7 @@ fix_unicode_issues.py — Fix Unicode issues in all Python files"""
 fix_unicode_service_registry.py
 focused_cleanup.py — Perform targeted cleanup of identified issues
 generate_reports.py — Load analysis results from JSON file"""
+GOVERNANCE.md — Project Governance
 GUI_DIRECTORY_ANALYSIS.md — 🔍 GUI DIRECTORY ANALYSIS
 INTELLIGENCE_COMPLETE.md — 🎯 COMPREHENSIVE PROJECT INTELLIGENCE COMPLETE
 intelligence_report_generator.py — Load analysis data from JSON file"""
@@ -978,6 +1028,7 @@ POST_CLEANUP_IMPORT_UPDATE_REPORT.md — 🔄 POST-CLEANUP IMPORT UPDATE REPORT
 post_cleanup_import_updater.py — Update import statements in a single file"""
 PRE_PHASE3_COMPLETION_REPORT.md — PRE-PHASE 3 FIXES COMPLETION REPORT
 PRE_PHASE3_FIXES_REPORT.md — LYRIXA SYSTEM ERROR AND WARNING FIXES
+PRIVACY.md — Privacy Policy (Project Repository)
 project_analyzer.py — Calculate SHA256 hash of file content"""
 PROJECT_BREAKDOWN.md — 🏗️ Aetherra Project Breakdown
 PROJECT_CLEANUP_COMPLETE.md — 🚀 Aetherra Project Cleanup Complete!
@@ -996,6 +1047,7 @@ self_organizer.aether
 setup.py — !/usr/bin/env python3
 setup_dev.py — Print the Aetherra setup banner"""
 smart_cleanup.py — Only the most obvious misplacements"""
+SUPPORT.md — Support
 test_ai_os.aether
 test_consciousness_dashboards.py — Test importing all consciousness dashboard components.
 test_consciousness_integration.py — Test that all consciousness components can be imported"""

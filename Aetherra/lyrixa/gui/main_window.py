@@ -23,7 +23,7 @@ import threading
 import warnings
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from PySide6.QtCore import QObject, Qt, QTimer, QUrl, Signal, Slot
 from PySide6.QtWebChannel import QWebChannel
@@ -107,6 +107,13 @@ class LyrixaContextBridge(QObject):
     cognitive_updated = Signal(str)  # Phase 4: Cognitive state updates
     plugin_ui_loaded = Signal(str)  # Phase 5: Plugin UI loaded
     plugin_ui_updated = Signal(str)  # Phase 5: Plugin UI updated
+    alerts_updated = Signal(str)  # Security alerts feed updates
+    # Attribute stubs for type analyzers and dynamic assignment from window
+    auto_generator: Any | None = None
+    cognitive_monitor: Any | None = None
+    backend_services: Dict[str, Any] = {}
+    conversation_manager: Any | None = None
+    real_data_manager: Any | None = None
 
     def __init__(self):
         super().__init__()
@@ -119,21 +126,33 @@ class LyrixaContextBridge(QObject):
             "cognitive": {},  # Phase 4: Cognitive state cache
         }
         self.backend_services = {}
-        self.auto_generator: Optional[Any] = (
-            None  # Phase 3: Auto-generation system reference
-        )
-        self.cognitive_monitor: Optional[Any] = (
-            None  # Phase 4: Cognitive monitor reference
-        )
+        self.auto_generator = None  # Phase 3: Auto-generation system reference
+        self.cognitive_monitor = None  # Phase 4: Cognitive monitor reference
 
         # Initialize backend connections
-        self.conversation_manager: Optional[Any] = None  # Real conversation manager
-        self.real_data_manager: Optional[Any] = None  # Real data manager
+        self.conversation_manager = None  # Real conversation manager
+        self.real_data_manager = None  # Real data manager
 
         # Start periodic updates
         self.update_timer = QTimer()
         self.update_timer.timeout.connect(self.refresh_all_data)
         self.update_timer.start(2000)  # Update every 2 seconds
+
+        # Security alerts polling (best-effort)
+        self._alerts_cache = []
+        self.alerts_timer = QTimer()
+        self.alerts_timer.timeout.connect(self.refresh_alerts)
+        self.alerts_timer.start(1500)
+
+        # Lazy import security system
+        try:
+            from Aetherra.aetherra_core.system.security_system import (
+                get_security_system as _get_sec,
+            )
+
+            self._get_security_system = _get_sec  # type: ignore[attr-defined]
+        except Exception:
+            self._get_security_system = None
 
     # === SLOT METHODS (Called from JavaScript) ===
 
@@ -172,6 +191,36 @@ class LyrixaContextBridge(QObject):
     def getAllData(self):
         """Get all cached data for initial panel load."""
         return json.dumps(self.data_cache)
+
+    # === SECURITY ALERTS ===
+
+    @Slot(result=str)
+    def getRecentAlerts(self):
+        """Return recent security alerts (cached or fresh)."""
+        try:
+            getter = getattr(self, "_get_security_system", None)
+            if callable(getter):
+                sec: Any = getter()
+                self._alerts_cache = (
+                    getattr(sec, "get_recent_alerts", lambda _n: [])(100) or []
+                )
+        except Exception:
+            pass
+        return json.dumps({"alerts": self._alerts_cache})
+
+    def refresh_alerts(self):
+        """Poll alerts.jsonl via security system and emit updates when changed."""
+        try:
+            getter = getattr(self, "_get_security_system", None)
+            if not callable(getter):
+                return
+            sec: Any = getter()
+            latest = getattr(sec, "get_recent_alerts", lambda _n: [])(100) or []
+            if latest != self._alerts_cache:
+                self._alerts_cache = latest
+                self.alerts_updated.emit(json.dumps({"alerts": latest}))
+        except Exception:
+            pass
 
     # === BACKEND INTEGRATION ===
 
@@ -570,6 +619,9 @@ class LyrixaContextBridge(QObject):
             "gpu_acceleration": False,
             "data_encryption": True,
             "telemetry": False,
+            # Telemetry DP controls
+            "telemetry_dp": True,
+            "telemetry_dp_epsilon": 1.0,
             "session_timeout": "60",
         }
         return json.dumps(settings)
@@ -619,6 +671,20 @@ class LyrixaContextBridge(QObject):
 
                 tel = get_telemetry()
                 tel.set_opt_in(bool(settings["telemetry"]))
+            # Apply Telemetry DP toggles if present
+            if "telemetry_dp" in settings or "telemetry_dp_epsilon" in settings:
+                from Aetherra.telemetry.optin import get_telemetry
+
+                tel = get_telemetry()
+                dp_enabled = bool(settings.get("telemetry_dp", tel.dp_enabled))
+                eps = settings.get("telemetry_dp_epsilon", tel.dp_epsilon)
+                try:
+                    eps_f = float(eps)
+                except Exception:
+                    eps_f = tel.dp_epsilon
+                # Update DP runtime + persist
+                if hasattr(tel, "set_dp"):
+                    tel.set_dp(dp_enabled, eps_f)
         except Exception:
             pass
 
@@ -894,6 +960,7 @@ class LyrixaHybridWindow(QMainWindow):
             ("🔌 Plugin Manager", "plugins"),
             ("📈 Metrics", "metrics"),
             ("💭 Memory", "memory"),
+            ("🔐 Security Alerts", "alerts"),
             ("🧠 Cognitive UI", "cognitive"),
             ("⚛️ Consciousness", "consciousness"),  # New consciousness panel
             ("🔁 Plugin Demo", "plugin_demo"),

@@ -17,7 +17,16 @@ ROOT = Path(__file__).resolve().parents[1]
 DOC_OVERVIEW = ROOT / "docs" / "PROJECT_OVERVIEW.md"
 REPORT = ROOT / "docs" / "DOCS_CONSISTENCY_REPORT.md"
 
-ENV_PATTERN = re.compile(r"AETHERRA_[A-Z0-9_]+")
+# Treat only standalone env-like tokens and avoid matching doc filenames like AETHERRA_..._SYSTEM.md
+ENV_PATTERN = re.compile(r"\bAETHERRA_[A-Z0-9_]+\b(?!\.md)")
+# Contextual patterns for true env-var usage in code
+ENV_FETCH_PATTERNS = [
+    re.compile(r"os\.environ\[(?:'|\")(?P<var>AETHERRA_[A-Z0-9_]+)(?:'|\")\]"),
+    re.compile(
+        r"os\.environ\.get\((?:'|\")(?P<var>AETHERRA_[A-Z0-9_]+)(?:'|\")[^)]*\)"
+    ),
+    re.compile(r"os\.getenv\((?:'|\")(?P<var>AETHERRA_[A-Z0-9_]+)(?:'|\")[^)]*\)"),
+]
 ROUTE_PATTERN = re.compile(r"@app\.route\((?P<q>['\"])\s*([^'\"]+)\1.*?\)")
 BLUEPRINT_ROUTE_PATTERN = re.compile(r"@\w+\.route\((?P<q>['\"])\s*([^'\"]+)\1.*?\)")
 
@@ -34,8 +43,10 @@ def find_env_vars_in_code() -> Set[str]:
             text = path.read_text(encoding="utf-8", errors="ignore")
         except Exception:
             continue
-        for m in ENV_PATTERN.finditer(text):
-            found.add(m.group(0))
+        # Only count variables actually fetched from environment to avoid false positives
+        for pat in ENV_FETCH_PATTERNS:
+            for m in pat.finditer(text):
+                found.add(m.group("var"))
     return found
 
 
@@ -124,6 +135,7 @@ def read_doc_endpoints(doc: Path) -> Set[str]:
         "/services",
         "/health",
         "/status",
+        "/metrics",  # Prometheus exposition endpoint
     )
     filtered = {p for p in normed if p == "/" or p.lower().startswith(allowed_prefixes)}
     # Drop obvious non-API artifacts (file paths/extensions)
