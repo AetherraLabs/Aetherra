@@ -13,20 +13,30 @@
   <script>
     // Runtime link rewriter: make placeholder Docs buttons actually navigate
     (function () {
+      const DOCS_BASE = (() => {
+        const v = (localStorage.getItem('AETHERRA_DOCS_BASE') || 'https://aetherra.dev/docs/').trim();
+        return v.endsWith('/') ? v : v + '/';
+      })();
+      const doc = (path = '') => {
+        const p = String(path || '');
+        if (!p) return DOCS_BASE;
+        return DOCS_BASE + (p.endsWith('/') ? p : p + '/');
+      };
       const RULES = [
         // New Docs section buttons
-        { test: t => /\bdevelopers?\b|getting\s*started/.test(t), href: 'https://aetherra.dev/docs/getting-started' },
-        { test: t => /plugin\s*sdk/.test(t), href: 'https://aetherra.dev/docs/plugins/sdk' },
-        { test: t => /plugin\s*authors?/.test(t), href: 'https://aetherra.dev/docs/plugins' },
-        { test: t => /researchers?\b/.test(t), href: 'https://aetherra.dev/docs/labs' },
-        { test: t => /ops|operations|secops|devsecops|security/.test(t), href: 'https://aetherra.dev/docs/security' },
-        { test: t => ((/\.aether/.test(t) || /\baether\b/.test(t)) && /language/.test(t)), href: 'https://aetherra.dev/docs/aether' },
-        { test: t => /runtime|cli\b/.test(t), href: 'https://aetherra.dev/docs/runtime' },
-        { test: t => /memory|cognition|cognitive/.test(t), href: 'https://aetherra.dev/docs/memory' },
-        { test: t => /safety|saftey|ethic/.test(t), href: 'https://aetherra.dev/docs/safety' },
-        { test: t => (/\bapi\b/.test(t) && /registry/.test(t)) || /api\s*\/\s*registry/.test(t), href: 'https://aetherra.dev/docs/api' },
-        { test: t => /tutorial|recipe/.test(t), href: 'https://aetherra.dev/docs/recipes' },
-        { test: t => /changelog|versioning|release\s*notes?/.test(t), href: 'https://aetherra.dev/docs/changelog' },
+        { test: t => /getting\s*started/.test(t), href: doc('getting-started') },
+        { test: t => /\bdevelopers?\b/.test(t), href: doc('') },
+        { test: t => /plugin\s*sdk/.test(t), href: doc('plugins/sdk') },
+        { test: t => /plugin\s*authors?/.test(t), href: doc('plugins') },
+        { test: t => /researchers?\b/.test(t), href: doc('labs') },
+        { test: t => /ops|operations|secops|devsecops|security/.test(t), href: doc('security') },
+        { test: t => ((/\.aether/.test(t) || /\baether\b/.test(t)) && /language/.test(t)), href: doc('aether') },
+        { test: t => /runtime|cli\b/.test(t), href: doc('runtime') },
+        { test: t => /memory|cognition|cognitive/.test(t), href: doc('memory') },
+        { test: t => /safety|saftey|ethic/.test(t), href: doc('safety') },
+        { test: t => (/\bapi\b/.test(t) && /registry/.test(t)) || /api\s*\/\s*registry/.test(t), href: doc('api') },
+        { test: t => /tutorial|recipe/.test(t), href: doc('recipes') },
+        { test: t => /changelog|versioning|release\s*notes?/.test(t), href: doc('changelog') },
 
         // Existing docs pages
         { test: t => /code\s*of\s*conduct/.test(t), href: '/community/code-of-conduct.html' },
