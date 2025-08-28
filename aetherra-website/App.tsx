@@ -23,7 +23,7 @@ export default function App() {
           <Route path="/lyrixa" element={<Lyrixa />} />
           <Route path="/labs" element={<Labs />} />
           <Route path="/plugins" element={<Plugins />} />
-          <Route path="/docs" element={<Docs />} />
+          <Route path="/docs/*" element={<Docs />} />
           <Route path="/why" element={<WhyAetherra />} />
           <Route path="/roadmap" element={<Roadmap />} />
           <Route path="/community" element={<Community />} />
