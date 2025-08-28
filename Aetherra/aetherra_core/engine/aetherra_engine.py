@@ -239,10 +239,51 @@ class AetherraEngine:
 
         def check_memory_health():
             try:
-                stats = asyncio.run(self.memory_system.get_memory_stats())
+                # Avoid asyncio.run() if we're already in an event loop
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = None
+
+                if loop and loop.is_running():
+                    # Create a dedicated loop in a fresh policy to run the coroutine safely
+                    import threading
+
+                    result_container = {}
+
+                    def _runner():
+                        try:
+                            import asyncio as _asyncio
+
+                            _new_loop = _asyncio.new_event_loop()
+                            try:
+                                _asyncio.set_event_loop(_new_loop)
+                                result_container["stats"] = (
+                                    _new_loop.run_until_complete(
+                                        self.memory_system.get_memory_stats()
+                                    )
+                                )
+                            finally:
+                                _new_loop.close()
+                        except Exception as _e:
+                            result_container["error"] = str(_e)
+
+                    t = threading.Thread(target=_runner)
+                    t.start()
+                    t.join(timeout=2.0)
+                    if "stats" in result_container:
+                        stats = result_container["stats"] or {}
+                    else:
+                        raise RuntimeError(
+                            result_container.get("error", "health-check-timeout")
+                        )
+                else:
+                    # Safe to use asyncio.run when not in a running loop
+                    stats = asyncio.run(self.memory_system.get_memory_stats())
+
                 return {
-                    "total_memories": stats.get("total_memories", 0),
-                    "response_time": 100.0,  # Would measure actual response time
+                    "total_memories": (stats or {}).get("total_memories", 0),
+                    "response_time": 100.0,  # Placeholder for measured latency
                 }
             except Exception as e:
                 logger.error(f"Memory health check failed: {e}")

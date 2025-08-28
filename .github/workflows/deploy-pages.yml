@@ -2,7 +2,9 @@ name: Deploy Aetherra Website to GitHub Pages
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
+      - "feat/federation-signing-telemetry"
     paths:
       - 'aetherra-website/**'
   workflow_dispatch:

@@ -7,8 +7,10 @@ Built-in Python-based plugin marketplace server for Aetherra OS.
 Provides plugin registration, discovery, and basic marketplace functionality.
 """
 
+import asyncio
 import logging
 import os
+import threading
 import time
 from datetime import datetime
 from typing import Any, Dict, Optional, cast
@@ -99,6 +101,39 @@ class AetherraHubServer:
 
     def _setup_routes(self):
         """Setup Flask routes for the Hub API"""
+
+        # Helper: run a coroutine to completion in a loop-safe way from sync Flask routes
+        def _run_coro_blocking(coro):
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+
+            if loop and loop.is_running():
+                result_container: Dict[str, Any] = {}
+
+                def _runner():
+                    try:
+                        new_loop = asyncio.new_event_loop()
+                        try:
+                            asyncio.set_event_loop(new_loop)
+                            result_container["result"] = new_loop.run_until_complete(
+                                coro
+                            )
+                        finally:
+                            new_loop.close()
+                    except Exception as e:
+                        result_container["error"] = e
+
+                t = threading.Thread(target=_runner)
+                t.start()
+                t.join(timeout=3.0)
+                if "result" in result_container:
+                    return result_container["result"]
+                raise result_container.get("error", RuntimeError("async-run-timeout"))
+            else:
+                return asyncio.run(coro)
+
         # Optional imports for federation and telemetry
         try:
             from Aetherra.hub.federation import get_federation_manager
@@ -641,8 +676,6 @@ class AetherraHubServer:
             out = dict(self.stats)
             # Best-effort: include Lyrixa chat service availability from the registry
             try:
-                import asyncio
-
                 from aetherra_service_registry import get_service_registry
 
                 async def _get():
@@ -657,7 +690,7 @@ class AetherraHubServer:
                         "last_heartbeat": info.last_heartbeat.isoformat(),
                     }
 
-                out["lyrixa_chat"] = asyncio.run(_get())
+                out["lyrixa_chat"] = _run_coro_blocking(_get())
             except Exception:
                 out["lyrixa_chat"] = {"registered": False}
             if self.federation is not None:
@@ -704,6 +737,9 @@ class AetherraHubServer:
             ma = _get_memory_audit_sync() or {}
 
             lines = []
+            # Track whether we emitted histogram series; if not, emit zero fallbacks
+            kernel_hist_emitted = False
+            orch_hist_emitted = False
 
             # helper for safe numeric conversion (defined at function scope)
             def _num(x):
@@ -796,6 +832,7 @@ class AetherraHubServer:
                                 lines.append(
                                     f'aetherra_kernel_cycle_time_ms_bucket{{le="{int(b)}"}} {cum}'
                                 )
+                            kernel_hist_emitted = True
                             inf_v = _num(hist.get("+Inf", 0))
                             lines.append(
                                 f'aetherra_kernel_cycle_time_ms_bucket{{le="+Inf"}} {cum + max(0.0, inf_v)}'
@@ -828,11 +865,28 @@ class AetherraHubServer:
                             lines.append(
                                 f'aetherra_kernel_cycle_time_ms_bucket{{le="{b}"}} {_num(cum)}'
                             )
+                        kernel_hist_emitted = True
                         lines.append(
                             f'aetherra_kernel_cycle_time_ms_bucket{{le="+Inf"}} {_num(cum + int(self.kernel_latency_hist.get("+Inf", 0)))}'
                         )
             except Exception:
                 pass
+
+            # If kernel histogram wasn't emitted (e.g., services not ready), publish zero-valued buckets to ensure series presence
+            if not kernel_hist_emitted:
+                try:
+                    cum = 0.0
+                    for b in (10, 20, 50, 100, 200, 500, 1000):
+                        lines.append(
+                            f'aetherra_kernel_cycle_time_ms_bucket{{le="{b}"}} 0.0'
+                        )
+                    lines.append(
+                        'aetherra_kernel_cycle_time_ms_bucket{le="+Inf"} 0.0'.replace(
+                            "{", "{{"
+                        ).replace("}", "}}")
+                    )
+                except Exception:
+                    pass
 
             # Registry metrics
             try:
@@ -897,6 +951,7 @@ class AetherraHubServer:
                                 lines.append(
                                     f'aetherra_orchestrator_task_latency_ms_bucket{{le="{int(b)}"}} {cum}'
                                 )
+                            orch_hist_emitted = True
                             inf_v = _num(oh.get("+Inf", 0))
                             lines.append(
                                 f'aetherra_orchestrator_task_latency_ms_bucket{{le="+Inf"}} {cum + max(0.0, inf_v)}'
@@ -930,11 +985,27 @@ class AetherraHubServer:
                             lines.append(
                                 f'aetherra_orchestrator_task_latency_ms_bucket{{le="{b}"}} {_num(cum)}'
                             )
+                        orch_hist_emitted = True
                         lines.append(
                             f'aetherra_orchestrator_task_latency_ms_bucket{{le="+Inf"}} {_num(cum + int(self.orchestrator_latency_hist.get("+Inf", 0)))}'
                         )
             except Exception:
                 pass
+
+            # If orchestrator histogram wasn't emitted yet, ensure presence with zero-valued buckets
+            if not orch_hist_emitted:
+                try:
+                    for b in (10, 20, 50, 100, 200, 500, 1000, 2000):
+                        lines.append(
+                            f'aetherra_orchestrator_task_latency_ms_bucket{{le="{b}"}} 0.0'
+                        )
+                    lines.append(
+                        'aetherra_orchestrator_task_latency_ms_bucket{le="+Inf"} 0.0'.replace(
+                            "{", "{{"
+                        ).replace("}", "}}")
+                    )
+                except Exception:
+                    pass
 
             # Memory (quantum) metrics
             try:
@@ -1785,8 +1856,6 @@ class AetherraHubServer:
                 edit_root = payload.get("edit_root")
                 # Lazy import to avoid tight coupling
                 try:
-                    import asyncio
-
                     from aetherra_service_registry import get_service_registry
 
                     async def _call():
@@ -1803,7 +1872,7 @@ class AetherraHubServer:
                             },
                         )
 
-                    result = asyncio.run(_call())
+                    result = _run_coro_blocking(_call())
                 except Exception:
                     result = None
 
