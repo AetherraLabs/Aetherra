@@ -4,18 +4,27 @@ import usePRM from '../hooks/usePrefersReducedMotion'
 
 export default function Hero() {
   const reduced = usePRM()
+  // Only show the background video if explicitly enabled via env.
+  // This avoids 404s on GitHub Pages where the media isn't published yet.
+  const enableVideo = Boolean((import.meta as any)?.env?.VITE_ENABLE_HERO_VIDEO)
   return (
     <section className="relative h-[78vh] min-h-[560px] overflow-hidden">
-      <video
-        className="absolute inset-0 h-full w-full object-cover opacity-40"
-        src="/hero-preview.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        poster="/hero-poster.png"
-        preload="metadata"
-      />
+      {enableVideo ? (
+        <video
+          className="absolute inset-0 h-full w-full object-cover opacity-40"
+          src="/hero-preview.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          // Optional poster if present in the deployment; not required.
+          // poster="/hero-poster.png"
+          preload="metadata"
+        />
+      ) : (
+        // Fallback visual when video is disabled or unavailable.
+        <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_40%,rgba(68,255,209,0.20)_0%,rgba(68,255,209,0.05)_35%,transparent_70%)]" />
+      )}
       <div className="absolute inset-0 bg-gradient-to-b from-bg/10 via-bg/40 to-bg/80" />
       {/* Nebula accent */}
       <div className="pointer-events-none absolute -top-24 -left-16 h-72 w-72 rounded-full bg-aether/20 blur-3xl" />
