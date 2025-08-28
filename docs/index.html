@@ -58,20 +58,32 @@
       function rewriteAnchors(root) {
         try {
           const scope = root || document;
-          const anchors = scope.querySelectorAll('a:not([data-link-fixed])');
-          anchors.forEach(a => {
-            const href = a.getAttribute('href');
-            if (!isPlaceholderHref(href)) return;
-            const target = findTarget(a);
-            if (target) {
-              a.setAttribute('href', target);
-              a.setAttribute('data-link-fixed', '1');
+          const elems = scope.querySelectorAll('a:not([data-link-fixed]), button:not([data-link-fixed]), [role="button"]:not([data-link-fixed])');
+          elems.forEach(elm => {
+            const target = findTarget(elm);
+            if (!target) return;
+            // For anchors, set href if placeholder; otherwise ensure click navigates
+            if (elm.tagName === 'A') {
+              const href = elm.getAttribute('href');
+              if (isPlaceholderHref(href)) {
+                elm.setAttribute('href', target);
+                elm.setAttribute('data-link-fixed', '1');
+              } else {
+                // Add a robust click interceptor in case default is blocked
+                elm.addEventListener('click', (e) => {
+                  const t2 = findTarget(elm);
+                  if (t2) { e.preventDefault(); e.stopPropagation(); location.href = t2; }
+                }, { capture: true, once: true });
+                elm.setAttribute('data-link-fixed', '1');
+              }
             } else {
-              // As a safety, intercept click to avoid no-op
-              a.addEventListener('click', (e) => {
-                const t2 = findTarget(a);
-                if (t2) { e.preventDefault(); location.href = t2; }
-              }, { once: true });
+              // Buttons or role=button elements: attach navigation
+              elm.style.cursor = 'pointer';
+              elm.addEventListener('click', (e) => {
+                e.preventDefault(); e.stopPropagation();
+                location.href = target;
+              }, { capture: true });
+              elm.setAttribute('data-link-fixed', '1');
             }
           });
         } catch (_) { /* no-op */ }
