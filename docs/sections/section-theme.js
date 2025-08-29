@@ -120,6 +120,18 @@
         } catch { }
     }
 
-    function start() { injectSiteHeaderOrFallback(); injectBreadcrumb(); setupCopy(); }
+    function fixLegalEntity() {
+        try {
+            const scopes = [document.querySelector('footer'), document.querySelector('.site-footer-cloned'), document.body];
+            scopes.filter(Boolean).forEach(scope => {
+                const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
+                const nodes = [];
+                while (walker.nextNode()) nodes.push(walker.currentNode);
+                nodes.forEach(n => { if (n.nodeValue && /Aetherra\s+Labs(?!,\s*LLC)/.test(n.nodeValue)) n.nodeValue = n.nodeValue.replace(/Aetherra\s+Labs(?!,\s*LLC)/g, 'Aetherra Labs, LLC'); });
+            });
+        } catch { }
+    }
+
+    function start() { injectSiteHeaderOrFallback(); injectBreadcrumb(); setupCopy(); fixLegalEntity(); }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
