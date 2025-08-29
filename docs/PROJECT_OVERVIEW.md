@@ -144,6 +144,12 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 - AETHERRA_WEB_BASE
 - AETHERRA_WEB_HOST
 - AETHERRA_WEB_PORT
+// Hot Module Reloading (HMR)
+- AETHERRA_HMR_ENABLED
+- AETHERRA_HMR_STRICT
+- AETHERRA_HMR_ALLOWED_SOURCES
+- AETHERRA_HMR_AUDIT_MAX_BYTES
+- AETHERRA_HMR_AUDIT_MAX_BACKUPS
 // CORS / PNA and registry warnings
 - AETHERRA_PNA_ALLOW
 - AETHERRA_REGISTRY_WARN_NO_HANDLER
@@ -184,6 +190,10 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 - /api/registry/status
 - /api/kernel/metrics
 - /api/kernel/status
+- /api/klm/status
+- /api/klm/metrics
+- /api/keb/status
+- /api/keb/metrics
 - /api/kernel/control/pause
 - /api/kernel/control/resume
 - /api/kernel/control/drain
@@ -200,6 +210,7 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 ```
 
 // Auxiliary endpoints that may be exposed by optional modules/dashboards
+
 - /api/users
 - `/api/users/<param>`
 - /qfac/metrics

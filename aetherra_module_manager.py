@@ -1,0 +1,210 @@
+#!/usr/bin/env python3
+"""
+[KLM] Kernel Loadable Module Manager
+====================================
+
+Lightweight in-memory module manager with a small control-plane via the
+service registry. This provides a safe contract for loading/unloading/reloading
+logical modules (not Python packages) and basic metrics/audit counters.
+
+Intended to evolve alongside HMR and the kernel event bus.
+"""
+
+import asyncio
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Dict, Optional
+
+
+@dataclass
+class ModuleRecord:
+    name: str
+    version: str = ""
+    status: str = "inactive"  # inactive | active | disabled | failed
+    loaded_at: Optional[datetime] = None
+    last_updated: Optional[datetime] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+class ModuleManager:
+    """Minimal, safe module manager with a clear contract."""
+
+    def __init__(self, service_registry):
+        self.registry = service_registry
+        self._modules: Dict[str, ModuleRecord] = {}
+        # Metrics counters (monotonic)
+        self._metrics = {
+            "loads_total": 0,
+            "reloads_total": 0,
+            "rollbacks_total": 0,
+        }
+        # Concurrency guard
+        self._lock = asyncio.Lock()
+
+    # ---------------- Control-plane API ----------------
+    async def load_module(
+        self, name: str, spec: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        async with self._lock:
+            n = str(name).strip()
+            if not n:
+                return {"ok": False, "error": "invalid_name"}
+            rec = self._modules.get(n)
+            now = datetime.now()
+            if rec is None:
+                rec = ModuleRecord(name=n)
+                self._modules[n] = rec
+            rec.status = "active"
+            rec.loaded_at = rec.loaded_at or now
+            rec.last_updated = now
+            if isinstance(spec, dict):
+                rec.version = str(spec.get("version", rec.version) or rec.version)
+                rec.metadata.update({k: v for k, v in spec.items() if k != "version"})
+            self._metrics["loads_total"] += 1
+        # Broadcast best-effort
+        try:
+            await self._broadcast("module.loaded", {"name": n, "version": rec.version})
+        except Exception:
+            pass
+        return {"ok": True, "module": self._to_dict(rec)}
+
+    async def unload_module(self, name: str) -> Dict[str, Any]:
+        async with self._lock:
+            n = str(name).strip()
+            rec = self._modules.get(n)
+            if rec is None:
+                return {"ok": False, "error": "not_found"}
+            rec.status = "disabled"
+            rec.last_updated = datetime.now()
+        try:
+            await self._broadcast("module.unloaded", {"name": n})
+        except Exception:
+            pass
+        return {"ok": True}
+
+    async def rollback_module(self, name: str) -> Dict[str, Any]:
+        """Record a logical rollback for a module (metrics-only placeholder).
+
+        This simulates a rollback action in environments where a concrete
+        rollback artifact isn't tracked yet. It increments the rollback
+        counter and marks the module as active (best-effort no-op).
+        """
+        async with self._lock:
+            n = str(name).strip()
+            rec = self._modules.get(n)
+            if rec is None:
+                # Create an entry to reflect control-plane action
+                rec = ModuleRecord(name=n, status="active", loaded_at=datetime.now())
+                self._modules[n] = rec
+            else:
+                rec.status = "active"
+            rec.last_updated = datetime.now()
+            self._metrics["rollbacks_total"] += 1
+        try:
+            await self._broadcast("module.rolled_back", {"name": n})
+        except Exception:
+            pass
+        return {"ok": True, "module": self._to_dict(rec)}
+
+    async def reload_module(
+        self, name: str, spec: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        async with self._lock:
+            n = str(name).strip()
+            rec = self._modules.get(n)
+            if rec is None:
+                # Implicit load when missing
+                return await self.load_module(n, spec)
+            # Minimal canary: mark updating, then active
+            rec.status = "active"
+            if isinstance(spec, dict):
+                rec.version = str(spec.get("version", rec.version) or rec.version)
+                rec.metadata.update({k: v for k, v in spec.items() if k != "version"})
+            rec.last_updated = datetime.now()
+            self._metrics["reloads_total"] += 1
+        try:
+            await self._broadcast(
+                "module.reloaded", {"name": n, "version": rec.version}
+            )
+        except Exception:
+            pass
+        return {"ok": True, "module": self._to_dict(rec)}
+
+    async def list_modules(self) -> Dict[str, Any]:
+        async with self._lock:
+            mods = [self._to_dict(m) for m in self._modules.values()]
+        return {"ok": True, "modules": mods}
+
+    # ---------------- Registry messaging surface ----------------
+    async def handle_message(self, message_type: str, data: Any) -> Any:
+        mt = (message_type or "").lower()
+        payload = data or {}
+        if mt.endswith("module.load"):
+            return await self.load_module(payload.get("name", ""), payload.get("spec"))
+        if mt.endswith("module.unload"):
+            return await self.unload_module(payload.get("name", ""))
+        if mt.endswith("module.reload"):
+            return await self.reload_module(
+                payload.get("name", ""), payload.get("spec")
+            )
+        if mt.endswith("module.rollback"):
+            return await self.rollback_module(payload.get("name", ""))
+        if mt.endswith("module.list") or mt.endswith("module.status"):
+            return await self.list_modules()
+        return {"ok": False, "error": "unknown_message"}
+
+    # ---------------- Observability ----------------
+    def get_metrics(self) -> Dict[str, Any]:
+        # Active modules count and per-module activity
+        actives = 0
+        per_mod = {}
+        for n, rec in self._modules.items():
+            if rec.status == "active":
+                actives += 1
+                per_mod[n] = 1
+        return {
+            **self._metrics.copy(),
+            "active_modules": actives,
+            "per_module_active": per_mod,
+        }
+
+    def get_status(self) -> Dict[str, Any]:
+        return {
+            "modules": [self._to_dict(m) for m in self._modules.values()],
+            "metrics": self.get_metrics(),
+        }
+
+    async def shutdown(self):
+        # Nothing to cleanup yet
+        return True
+
+    # ---------------- Internals ----------------
+    async def _broadcast(self, msg_type: str, data: Dict[str, Any]):
+        if not self.registry:
+            return
+        try:
+            await self.registry.broadcast_message(f"klm.{msg_type}", data)
+        except Exception:
+            pass
+
+    @staticmethod
+    def _to_dict(rec: ModuleRecord) -> Dict[str, Any]:
+        return {
+            "name": rec.name,
+            "version": rec.version,
+            "status": rec.status,
+            "loaded_at": rec.loaded_at.isoformat() if rec.loaded_at else None,
+            "last_updated": rec.last_updated.isoformat() if rec.last_updated else None,
+            "metadata": rec.metadata.copy(),
+        }
+
+
+# Global singleton factory
+_module_manager_instance: Optional[ModuleManager] = None
+
+
+async def get_module_manager(service_registry) -> ModuleManager:
+    global _module_manager_instance
+    if _module_manager_instance is None:
+        _module_manager_instance = ModuleManager(service_registry)
+    return _module_manager_instance

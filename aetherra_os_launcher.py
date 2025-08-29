@@ -430,6 +430,34 @@ class AetherraOSLauncher:
         await self._load_self_maintenance_systems(system_config)
         await self._load_lyrixa_chat_service(system_config)
         await self._load_gui_system(system_config)
+        # New: Kernel Loadable Modules (ModuleManager) and Kernel Event Bus (EventBus)
+        await self._load_module_manager(system_config)
+        await self._load_event_bus(system_config)
+
+        # Initialize HMR Controller (opt-in) near end of Phase 2, before kernel starts accepting tasks
+        try:
+            hmr_enabled = bool(
+                system_config.get("hmr_enabled")
+                or os.getenv("AETHERRA_HMR_ENABLED", "0") == "1"
+            )
+        except Exception:
+            hmr_enabled = False
+        if hmr_enabled:
+            try:
+                from aetherra_hmr_controller import get_hmr_controller
+
+                if self.service_registry and self.kernel_loop is None:
+                    # Ensure kernel instance is created early so controller can reference it later
+                    self.kernel_loop = get_kernel()
+                if self.service_registry and self.kernel_loop:
+                    strict = os.getenv("AETHERRA_HMR_STRICT", "0") == "1"
+                    self.systems["hmr_controller"] = await get_hmr_controller(
+                        self.service_registry, self.kernel_loop, strict=strict
+                    )
+                    # Defer wiring into kernel until kernel is fully started in Phase 3
+                    logger.info(f"[HMR] Controller initialized (strict={strict})")
+            except Exception as e:
+                logger.warning(f"[HMR] Controller not available: {e}")
         logger.info("[OK] All core systems loaded")
 
     async def _load_self_maintenance_systems(self, config: Dict):
@@ -1227,6 +1255,56 @@ class AetherraOSLauncher:
         except Exception as e:
             logger.warning(f"[WARN] GUI system failed to load: {e}")
 
+    async def _load_module_manager(self, config: Dict):
+        """[KLM] Load Module Manager and register service."""
+        try:
+            logger.info("[KLM] Loading Module Manager...")
+            from aetherra_module_manager import get_module_manager
+
+            mm = await get_module_manager(self.service_registry)
+            self.systems["module_manager"] = mm
+            await register_service(
+                "module_manager",
+                mm,
+                metadata={
+                    "type": "klm",
+                    "version": "0.1",
+                    "capabilities": ["load", "unload", "reload", "list"],
+                },
+            )
+            if self.service_registry and CORE_AVAILABLE:
+                await self.service_registry.update_service_status(
+                    "module_manager", ServiceStatus.HEALTHY
+                )
+            logger.info("[OK] Module Manager online")
+        except Exception as e:
+            logger.warning(f"[WARN] Module Manager unavailable: {e}")
+
+    async def _load_event_bus(self, config: Dict):
+        """[KEB] Load Event Bus and register service."""
+        try:
+            logger.info("[KEB] Loading Event Bus...")
+            from aetherra_event_bus import get_event_bus
+
+            eb = await get_event_bus(self.service_registry)
+            self.systems["event_bus"] = eb
+            await register_service(
+                "event_bus",
+                eb,
+                metadata={
+                    "type": "keb",
+                    "version": "0.1",
+                    "capabilities": ["publish", "subscribe", "ack"],
+                },
+            )
+            if self.service_registry and CORE_AVAILABLE:
+                await self.service_registry.update_service_status(
+                    "event_bus", ServiceStatus.HEALTHY
+                )
+            logger.info("[OK] Event Bus online")
+        except Exception as e:
+            logger.warning(f"[WARN] Event Bus unavailable: {e}")
+
     async def _start_kernel_loop(self):
         """[SYS] Start the OS kernel loop."""
         logger.info("[SYS] Phase 3: Starting OS Kernel Loop...")
@@ -1251,6 +1329,15 @@ class AetherraOSLauncher:
         )
 
         logger.info("[OK] OS Kernel Loop started")
+
+        # If HMR controller was created in Phase 2, wire it into the kernel now
+        try:
+            hmr = self.systems.get("hmr_controller")
+            if hmr is not None:
+                self.kernel_loop.hmr_controller = hmr
+                logger.info("[HMR] Controller wired into kernel loop")
+        except Exception:
+            pass
 
     async def _activate_systems(self):
         """[INIT] Activate all systems and establish connections."""
