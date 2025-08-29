@@ -197,6 +197,17 @@ class AetherraKernelLoop:
         # In-flight counters per target to support safer quiesce/drain
         self._inflight_by_target: Dict[str, int] = {}
 
+        # Optional visible heartbeat logging (for idle visibility)
+        try:
+            self.visible_heartbeat_sec = int(
+                os.getenv("AETHERRA_KERNEL_HEARTBEAT_SEC", "0") or 0
+            )
+        except Exception:
+            self.visible_heartbeat_sec = 0
+        self.visible_heartbeat_level = os.getenv(
+            "AETHERRA_KERNEL_HEARTBEAT_LEVEL", "INFO"
+        ).upper()
+
     def inject_systems(
         self,
         memory_system,
@@ -233,6 +244,10 @@ class AetherraKernelLoop:
             asyncio.create_task(self._heartbeat_loop()),
         ]
 
+        # Optional visible heartbeat to keep terminal active during idle
+        if getattr(self, "visible_heartbeat_sec", 0) and self.visible_heartbeat_sec > 0:
+            tasks.append(asyncio.create_task(self._visible_heartbeat_loop()))
+
         try:
             await asyncio.gather(*tasks)
         except Exception as e:
@@ -249,6 +264,52 @@ class AetherraKernelLoop:
             except Exception as e:
                 logger.error(f"[ERROR] Kernel heartbeat error: {e}")
                 await asyncio.sleep(60)
+
+    async def _visible_heartbeat_loop(self):
+        """Emit a lightweight heartbeat log at a configurable interval for operator visibility.
+
+        Controlled via env:
+        - AETHERRA_KERNEL_HEARTBEAT_SEC (int > 0 to enable)
+        - AETHERRA_KERNEL_HEARTBEAT_LEVEL (INFO|DEBUG; default INFO)
+        """
+        interval = max(1, int(getattr(self, "visible_heartbeat_sec", 0) or 0))
+        # Map level string to logging level
+        level_name = (
+            getattr(self, "visible_heartbeat_level", "INFO") or "INFO"
+        ).upper()
+        level = logging.INFO if level_name == "INFO" else logging.DEBUG
+
+        while self.running and interval > 0:
+            try:
+                upt = 0
+                try:
+                    if self.start_time:
+                        upt = int((datetime.now() - self.start_time).total_seconds())
+                except Exception:
+                    pass
+                qh = self.high_priority_queue.qsize()
+                qn = self.normal_priority_queue.qsize()
+                qb = self.background_queue.qsize()
+                avg_ms = int(
+                    float(self.metrics.get("avg_cycle_time", 0.0) or 0.0) * 1000
+                )
+                last_ms = int(
+                    float(self.metrics.get("last_cycle_time", 0.0) or 0.0) * 1000
+                )
+                inflight = {}
+                try:
+                    inflight = self._inflight_by_target.copy()
+                except Exception:
+                    pass
+                logger.log(
+                    level,
+                    f"[BEAT] upt={upt}s cycles={self.cycle_count} q(H/N/B)={qh}/{qn}/{qb} avg={avg_ms}ms last={last_ms}ms paused={self.paused} inflight={inflight}",
+                )
+                await asyncio.sleep(interval)
+            except Exception as e:
+                logger.debug(f"[HB] Visible heartbeat error: {e}")
+                # Backoff minimally to avoid tight loop on repeated errors
+                await asyncio.sleep(max(5, interval))
 
     async def _main_processing_loop(self):
         """[LOOP] Main processing cycle - handles events and orchestration."""
