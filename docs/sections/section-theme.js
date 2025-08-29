@@ -25,6 +25,20 @@
                 if (cur < px) main.style.marginTop = (px) + 'px';
             } catch { }
         };
+        const waitFor = async (root, selector, timeoutMs = 4000) => {
+            const start = Date.now();
+            return await new Promise((resolve) => {
+                const tryFind = () => {
+                    try {
+                        const el = root && root.querySelector(selector);
+                        if (el) return resolve(el);
+                    } catch { }
+                    if (Date.now() - start >= timeoutMs) return resolve(null);
+                    setTimeout(tryFind, 100);
+                };
+                tryFind();
+            });
+        };
         try {
             // Try to clone the real site header from the homepage (same-origin)
             const iframe = document.createElement('iframe');
@@ -38,20 +52,28 @@
             try {
                 const idoc = iframe.contentDocument;
                 if (idoc) {
-                    const cand = idoc.querySelector('header.site-header, header[role="banner"], header, nav[role="navigation"], nav.site-nav');
-                    if (cand) {
-                        cloned = cand.cloneNode(true);
+                    const headerSel = 'header.site-header, header[role="banner"], header, nav[role="navigation"], nav.site-nav';
+                    const footerSel = 'footer.site-footer, footer, .site-footer';
+                    const headerCand = (idoc.querySelector(headerSel)) || (await waitFor(idoc, headerSel, 4000));
+                    if (headerCand) {
+                        cloned = headerCand.cloneNode(true);
                         cloned.classList.add('site-header-cloned');
-                        // Mark links so any external mappers ignore them
+                        // Ensure default link behavior (same-tab on internal, safe external)
                         cloned.querySelectorAll('a').forEach(a => a.setAttribute('data-link-fixed', '1'));
                         document.body.insertBefore(cloned, document.body.firstChild);
                         // Add spacing under header based on computed height
-                        requestAnimationFrame(() => {
-                            try {
-                                const h = cloned.getBoundingClientRect().height || 56;
-                                addMainOffset(Math.ceil(h + 8));
-                            } catch { addMainOffset(56); }
-                        });
+                        await new Promise((r) => requestAnimationFrame(r));
+                        try {
+                            const h = cloned.getBoundingClientRect().height || 56;
+                            addMainOffset(Math.ceil(h + 8));
+                        } catch { addMainOffset(56); }
+                    }
+                    // Try cloning footer for full site parity
+                    const footerCand = (idoc.querySelector(footerSel)) || (await waitFor(idoc, footerSel, 1500));
+                    if (footerCand) {
+                        const f = footerCand.cloneNode(true);
+                        f.classList.add('site-footer-cloned');
+                        document.body.appendChild(f);
                     }
                 }
             } catch { /* cross-origin or other issue */ }
