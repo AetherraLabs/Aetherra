@@ -45,6 +45,9 @@
         { test: t => /tutorial|recipe/.test(t), href: '/sections/tutorials-recipes.html' },
         { test: t => /changelog|versioning|release\s*notes?/.test(t), href: '/sections/changelog-versioning.html' },
 
+  // Community / Discord
+  { test: t => /\bdiscord\b|community\s*chat|join\s*(our\s*)?discord/.test(t), href: 'https://discord.gg/JPsey8Az6F' },
+
   // New Docs section buttons (prefer local docs landing page)
         { test: t => /\bget\s*started\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
         { test: t => /\bstart\s*here\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
