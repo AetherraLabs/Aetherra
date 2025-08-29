@@ -30,7 +30,7 @@
         if (!p) return DOCS_BASE;
         return DOCS_BASE + (p.endsWith('/') ? p : p + '/');
       };
-      const RULES = [
+  const RULES = [
         // Local section pages (preferred)
         { test: t => /\bdevelopers?\b/.test(t), href: '/sections/developers.html' },
         { test: t => /plugin\s*sdk/.test(t), href: '/sections/plugin-sdk.html' },
@@ -45,12 +45,13 @@
         { test: t => /tutorial|recipe/.test(t), href: '/sections/tutorials-recipes.html' },
         { test: t => /changelog|versioning|release\s*notes?/.test(t), href: '/sections/changelog-versioning.html' },
 
-        // New Docs section buttons (external fallbacks)
+  // New Docs section buttons (prefer local docs landing page)
         { test: t => /\bget\s*started\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
         { test: t => /\bstart\s*here\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
         { test: t => /getting\s*started/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
-        { test: t => /\bdocs?\b/.test(t), href: doc('') },
-        { test: t => /developers?\s*docs?/.test(t), href: doc('') },
+  { test: t => /\bdocs?\b/.test(t), href: '/sections/developers.html' },
+  { test: t => /documentation/.test(t), href: '/sections/developers.html' },
+  { test: t => /developers?\s*docs?/.test(t), href: '/sections/developers.html' },
         { test: t => /plugin\s*(guides?|docs?)/.test(t), href: doc('plugins') },
         { test: t => /getting\s*started\s*guide/.test(t), href: doc('getting-started') },
 
@@ -100,7 +101,8 @@
                   try { e.preventDefault(); e.stopPropagation(); window.open(target, '_blank', 'noopener'); } catch (_) { }
                 }, { capture: true });
               } else {
-                // Internal links: ensure our mapping takes precedence
+                // Internal links: ensure our mapping takes precedence and avoid opening in new tab
+                try { elm.removeAttribute('target'); elm.removeAttribute('rel'); } catch (_) { }
                 elm.addEventListener('click', (e) => {
                   const t2 = findTarget(elm);
                   if (t2) { e.preventDefault(); e.stopPropagation(); location.href = t2; }

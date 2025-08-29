@@ -23,6 +23,14 @@
             </div>
         </section>
 
+        <nav class="mini-nav">
+            <a href="#quickstart">Quickstart</a>
+            <a href="#commands">Commands</a>
+            <a href="#concepts">Concepts</a>
+            <a href="#layout">Project layout</a>
+            <a href="#next">Next steps</a>
+        </nav>
+
         <h2 id="quickstart">Quickstart</h2>
         <ol>
             <li>Install Python 3.10+ and Git.</li>
@@ -30,19 +38,19 @@
             <li>Run the hub server and open the web console.</li>
         </ol>
 
-        <h3>Commands</h3>
+    <h3 id="commands">Commands</h3>
         <pre><code>python aetherra_hub_server.py
 python aetherra_os.py
 </code></pre>
 
-        <h2>Key Concepts</h2>
+    <h2 id="concepts">Key Concepts</h2>
         <ul>
             <li>Aether Script (.aether) — declarative tasks and pipelines.</li>
             <li>Kernel & Plugins — execution runtime with queues and metrics.</li>
             <li>Service Registry — discover and register capabilities.</li>
         </ul>
 
-        <h2>Project layout</h2>
+    <h2 id="layout">Project layout</h2>
         <ul>
             <li><code>aetherra_os.py</code> — OS entrypoint.</li>
             <li><code>aetherra_hub_server.py</code> — Hub API (plugins, status, metrics).</li>
@@ -64,7 +72,26 @@ python aetherra_os.py
             <li>Submit a task and watch it via the widget task watcher.</li>
         </ol>
 
-        <h2>Next steps</h2>
+        <div class="card-grid">
+            <a class="card" href="/sections/runtime-cli.html">
+                <div class="k">Tooling</div>
+                <div>Use the Runtime & CLI</div>
+            </a>
+            <a class="card" href="/sections/aether-language.html">
+                <div class="k">Language</div>
+                <div>Write your first .aether file</div>
+            </a>
+            <a class="card" href="/sections/plugin-sdk.html">
+                <div class="k">Extensibility</div>
+                <div>Build a plugin</div>
+            </a>
+            <a class="card" href="/sections/tutorials-recipes.html">
+                <div class="k">Examples</div>
+                <div>Tutorials & recipes</div>
+            </a>
+        </div>
+
+        <h2 id="next">Next steps</h2>
         <ul>
             <li><a href="/sections/plugin-sdk.html">Plugin SDK</a></li>
             <li><a href="/sections/runtime-cli.html">Runtime & CLI</a></li>
