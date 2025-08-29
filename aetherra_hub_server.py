@@ -520,6 +520,151 @@ class AetherraHubServer:
             except Exception:
                 return {"enabled": False}
 
+        def _get_hmr_audit_counters_sync():
+            """Best-effort HMR audit counters from the controller via the service registry."""
+            try:
+                import asyncio as _a
+
+                from aetherra_service_registry import (
+                    get_service_registry as _get,
+                )
+
+                async def _run():
+                    reg = await _get()
+                    info = reg.get_service_info("hmr_controller")
+                    if not info or not info.instance:
+                        return None
+                    inst = info.instance
+                    if hasattr(inst, "get_audit_counters"):
+                        try:
+                            return inst.get_audit_counters()
+                        except Exception:
+                            return None
+                    return None
+
+                res = _a.run(_run())
+                if isinstance(res, dict):
+                    return res
+            except Exception:
+                pass
+            return None
+
+        def _get_klm_metrics_sync():
+            """Best-effort Module Manager (KLM) metrics via the registry."""
+            try:
+                import asyncio as _a
+
+                from aetherra_service_registry import (
+                    get_service_registry as _get,
+                )
+
+                async def _run():
+                    reg = await _get()
+                    info = reg.get_service_info("module_manager")
+                    if not info or not info.instance:
+                        return None
+                    inst = info.instance
+                    if hasattr(inst, "get_metrics"):
+                        try:
+                            return inst.get_metrics()
+                        except Exception:
+                            return None
+                    return None
+
+                res = _a.run(_run())
+                if isinstance(res, dict):
+                    return res
+            except Exception:
+                pass
+            return None
+
+        def _get_klm_status_sync():
+            """Best-effort Module Manager (KLM) status via the registry."""
+            try:
+                import asyncio as _a
+
+                from aetherra_service_registry import (
+                    get_service_registry as _get,
+                )
+
+                async def _run():
+                    reg = await _get()
+                    info = reg.get_service_info("module_manager")
+                    if not info or not info.instance:
+                        return None
+                    inst = info.instance
+                    if hasattr(inst, "get_status"):
+                        try:
+                            return inst.get_status()
+                        except Exception:
+                            return None
+                    return None
+
+                res = _a.run(_run())
+                if isinstance(res, dict):
+                    return res
+            except Exception:
+                pass
+            return None
+
+        def _get_keb_metrics_sync():
+            """Best-effort Event Bus (KEB) metrics via the registry."""
+            try:
+                import asyncio as _a
+
+                from aetherra_service_registry import (
+                    get_service_registry as _get,
+                )
+
+                async def _run():
+                    reg = await _get()
+                    info = reg.get_service_info("event_bus")
+                    if not info or not info.instance:
+                        return None
+                    inst = info.instance
+                    if hasattr(inst, "get_metrics"):
+                        try:
+                            return inst.get_metrics()
+                        except Exception:
+                            return None
+                    return None
+
+                res = _a.run(_run())
+                if isinstance(res, dict):
+                    return res
+            except Exception:
+                pass
+            return None
+
+        def _get_keb_status_sync():
+            """Best-effort Event Bus (KEB) status via the registry."""
+            try:
+                import asyncio as _a
+
+                from aetherra_service_registry import (
+                    get_service_registry as _get,
+                )
+
+                async def _run():
+                    reg = await _get()
+                    info = reg.get_service_info("event_bus")
+                    if not info or not info.instance:
+                        return None
+                    inst = info.instance
+                    if hasattr(inst, "get_status"):
+                        try:
+                            return inst.get_status()
+                        except Exception:
+                            return None
+                    return None
+
+                res = _a.run(_run())
+                if isinstance(res, dict):
+                    return res
+            except Exception:
+                pass
+            return None
+
         @app.route("/health", methods=["GET"])
         def health_check():
             """Health check endpoint"""
@@ -775,6 +920,44 @@ class AetherraHubServer:
                 ks = {"running": False}
             return jsonify(ks)  # type: ignore[name-defined]
 
+        # KLM (Module Manager) JSON endpoints
+        @app.route("/api/klm/status", methods=["GET"])
+        def api_klm_status():
+            """Expose Module Manager get_status() as JSON (read-only)."""
+            self.stats["requests_served"] += 1
+            st = _get_klm_status_sync()
+            if not isinstance(st, dict):
+                st = {"enabled": False}
+            return jsonify(st)  # type: ignore[name-defined]
+
+        @app.route("/api/klm/metrics", methods=["GET"])
+        def api_klm_metrics():
+            """Expose Module Manager get_metrics() as JSON (read-only)."""
+            self.stats["requests_served"] += 1
+            mt = _get_klm_metrics_sync()
+            if not isinstance(mt, dict):
+                mt = {}
+            return jsonify(mt)  # type: ignore[name-defined]
+
+        # KEB (Event Bus) JSON endpoints
+        @app.route("/api/keb/status", methods=["GET"])
+        def api_keb_status():
+            """Expose Event Bus get_status() as JSON (read-only)."""
+            self.stats["requests_served"] += 1
+            st = _get_keb_status_sync()
+            if not isinstance(st, dict):
+                st = {"enabled": False}
+            return jsonify(st)  # type: ignore[name-defined]
+
+        @app.route("/api/keb/metrics", methods=["GET"])
+        def api_keb_metrics():
+            """Expose Event Bus get_metrics() as JSON (read-only)."""
+            self.stats["requests_served"] += 1
+            mt = _get_keb_metrics_sync()
+            if not isinstance(mt, dict):
+                mt = {}
+            return jsonify(mt)  # type: ignore[name-defined]
+
         @app.route("/api/site_status", methods=["GET"])
         @app.route("/site_status", methods=["GET"])  # alias for older/alternate clients
         def api_site_status():
@@ -840,6 +1023,9 @@ class AetherraHubServer:
             os = _get_orchestrator_status_sync() or {}
             ms = _get_memory_quantum_status_sync() or {}
             ma = _get_memory_audit_sync() or {}
+            ac = _get_hmr_audit_counters_sync() or {}
+            km = _get_klm_metrics_sync() or {}
+            em = _get_keb_metrics_sync() or {}
 
             lines = []
             # Track whether we emitted histogram series; if not, emit zero fallbacks
@@ -974,6 +1160,16 @@ class AetherraHubServer:
                         lines.append(
                             f'aetherra_kernel_cycle_time_ms_bucket{{le="+Inf"}} {_num(cum + int(self.kernel_latency_hist.get("+Inf", 0)))}'
                         )
+                    # In-flight per target gauges (best-effort)
+                    try:
+                        infl = ks.get("inflight", {}) or {}
+                        if isinstance(infl, dict):
+                            for t, v in infl.items():
+                                lines.append(
+                                    f'aetherra_kernel_inflight_current{{target="{str(t)}"}} {_num(v)}'
+                                )
+                    except Exception:
+                        pass
             except Exception:
                 pass
 
@@ -1004,6 +1200,67 @@ class AetherraHubServer:
                         lines.append(
                             f'aetherra_registry_services{{status="{st}"}} {_num(cnt)}'
                         )
+            except Exception:
+                pass
+
+            # HMR audit counters (best-effort)
+            try:
+                if isinstance(ac, dict) and ac:
+                    for evt, cnt in ac.items():
+                        lines.append(
+                            f'aetherra_hmr_audit_total{{event="{str(evt)}"}} {_num(cnt)}'
+                        )
+            except Exception:
+                pass
+
+            # KLM (Module Manager) metrics
+            try:
+                if isinstance(km, dict) and km:
+                    lines.append(
+                        f"aetherra_klm_loads_total {_num(km.get('loads_total', 0))}"
+                    )
+                    lines.append(
+                        f"aetherra_klm_reloads_total {_num(km.get('reloads_total', 0))}"
+                    )
+                    lines.append(
+                        f"aetherra_klm_rollbacks_total {_num(km.get('rollbacks_total', 0))}"
+                    )
+                    lines.append(
+                        f"aetherra_klm_active_modules {_num(km.get('active_modules', 0))}"
+                    )
+                    pma = km.get("per_module_active", {}) or {}
+                    if isinstance(pma, dict):
+                        for mod, val in pma.items():
+                            try:
+                                lines.append(
+                                    f'aetherra_klm_active_module{{module="{str(mod)}"}} {_num(val)}'
+                                )
+                            except Exception:
+                                pass
+            except Exception:
+                pass
+
+            # KEB (Event Bus) metrics
+            try:
+                if isinstance(em, dict) and em:
+                    lines.append(
+                        f"aetherra_keb_events_published_total {_num(em.get('events_published_total', 0))}"
+                    )
+                    lines.append(
+                        f"aetherra_keb_events_delivered_total {_num(em.get('events_delivered_total', 0))}"
+                    )
+                    lines.append(
+                        f"aetherra_keb_events_dropped_burst {_num(em.get('events_dropped_burst', 0))}"
+                    )
+                    tb = em.get("topic_backlog", {}) or {}
+                    if isinstance(tb, dict):
+                        for topic, cnt in tb.items():
+                            try:
+                                lines.append(
+                                    f'aetherra_keb_topic_backlog{{topic="{str(topic)}"}} {_num(cnt)}'
+                                )
+                            except Exception:
+                                pass
             except Exception:
                 pass
 

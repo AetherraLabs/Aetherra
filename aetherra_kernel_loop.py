@@ -16,7 +16,7 @@ import time
 import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Coroutine, Dict, List, Optional, cast
 
 # Configure logging
 logging.basicConfig(
@@ -183,6 +183,19 @@ class AetherraKernelLoop:
             )
         except Exception:
             self.priority_aging_sec = 0
+
+        # HMR integration (metrics and control)
+        self._hmr_metrics = {
+            "attempts": 0,
+            "success": 0,
+            "rollback": 0,
+            "last_swap_ms": 0,
+            "per_target": {},
+        }
+        self._quiesced_targets: set[str] = set()
+        self.hmr_controller = None  # set by launcher when HMR is enabled
+        # In-flight counters per target to support safer quiesce/drain
+        self._inflight_by_target: Dict[str, int] = {}
 
     def inject_systems(
         self,
@@ -450,6 +463,7 @@ class AetherraKernelLoop:
                 try:
                     deadline_ts = task.get("deadline_ts")
                     trace_id = task.get("trace_id")
+                    # HMR tasks have no deadline by default
                     if deadline_ts and time.time() > float(deadline_ts):
                         self.metrics["expired_tasks"] = (
                             self.metrics.get("expired_tasks", 0) + 1
@@ -555,16 +569,57 @@ class AetherraKernelLoop:
             task_data = task.get("data", {})
             requester = task.get("requester") or task_data.get("requester")
             trace_id = task.get("trace_id") or "-"
+            target_for_inflight: Optional[str] = None
+
+            # Honor HMR quiesce signals (best-effort Phase 1)
+            if (
+                task_type == "plugin_invoke"
+                and "adapter:plugin" in self._quiesced_targets
+            ):
+                logger.debug("[HMR] Dropping plugin_invoke during quiesce")
+                return
+            if (
+                task_type == "memory_query"
+                and "adapter:memory" in self._quiesced_targets
+            ):
+                logger.debug("[HMR] Dropping memory_query during quiesce")
+                return
+            if task_type == "aetherra_thought" and "engine" in self._quiesced_targets:
+                logger.debug("[HMR] Dropping aetherra_thought during quiesce")
+                return
+
+            # HMR control-plane tasks
+            if task_type in ("hmr_reload", "hmr_status"):
+                if not self.hmr_controller:
+                    logger.warning("[HMR] HMR task received but controller not enabled")
+                    return {"ok": False, "error": "hmr_disabled"}
+                try:
+                    coro_or_result = self.hmr_controller.handle_kernel_task(task)
+                    if asyncio.iscoroutine(coro_or_result):
+                        return await cast(Coroutine[Any, Any, Any], coro_or_result)
+                    return coro_or_result
+                except Exception as e:
+                    logger.error(f"[HMR] HMR task handling error: {e}")
+                    return {"ok": False, "error": "hmr_exception"}
 
             if task_type == "memory_query":
                 if self.memory_system:
                     timeout = float(task.get("timeout_sec") or 0) or 0
+                    target_for_inflight = "adapter:memory"
+                    self._inflight_inc(target_for_inflight)
                     if timeout > 0:
-                        await asyncio.wait_for(
-                            self.memory_system.process_query(task_data), timeout=timeout
-                        )
+                        try:
+                            await asyncio.wait_for(
+                                self.memory_system.process_query(task_data),
+                                timeout=timeout,
+                            )
+                        finally:
+                            self._inflight_dec(target_for_inflight)
                     else:
-                        await self.memory_system.process_query(task_data)
+                        try:
+                            await self.memory_system.process_query(task_data)
+                        finally:
+                            self._inflight_dec(target_for_inflight)
             elif task_type == "plugin_invoke":
                 # Circuit breaker short-circuit
                 if self._plugin_cb_is_open():
@@ -624,6 +679,7 @@ class AetherraKernelLoop:
                         float(task.get("timeout_sec") or 0)
                         or self.plugin_invoke_timeout_sec
                     )
+                    target_for_inflight = "adapter:plugin"
                     # Enforce simple per-plugin concurrency cap if configured
                     plugin_id = str(
                         task_data.get("plugin_id")
@@ -658,6 +714,7 @@ class AetherraKernelLoop:
                             self._plugin_running_counts.get(plugin_id, 0) + 1
                         )
                     try:
+                        self._inflight_inc(target_for_inflight)
                         await asyncio.wait_for(
                             self.plugin_manager.invoke_plugin(task_data),
                             timeout=timeout,
@@ -682,6 +739,8 @@ class AetherraKernelLoop:
                         )
                         await self._maybe_retry(task, reason="error")
                     finally:
+                        if target_for_inflight:
+                            self._inflight_dec(target_for_inflight)
                         if plugin_id and self.plugin_max_concurrency > 0:
                             try:
                                 self._plugin_running_counts[plugin_id] = max(
@@ -695,7 +754,12 @@ class AetherraKernelLoop:
                     thought_content = task_data.get(
                         "content", task_data.get("message", str(task_data))
                     )
-                    await self.aetherra_engine.process_message(thought_content)
+                    target_for_inflight = "engine"
+                    self._inflight_inc(target_for_inflight)
+                    try:
+                        await self.aetherra_engine.process_message(thought_content)
+                    finally:
+                        self._inflight_dec(target_for_inflight)
             else:
                 logger.warning(f"[WARN] Unknown task type: {task_type}")
 
@@ -981,7 +1045,103 @@ class AetherraKernelLoop:
             "queue_limits": getattr(self, "queue_limits", {}).copy(),
             "plugin_cb_open": self._plugin_cb_is_open(),
             "dlq_count": getattr(self, "_dlq_count", 0),
+            "hmr": self._hmr_metrics,
+            "inflight": self._inflight_by_target.copy(),
         }
+
+    # -------------------- HMR helpers --------------------
+    def record_hmr_attempt(self, target: str):
+        try:
+            self._hmr_metrics["attempts"] += 1
+            per = self._hmr_metrics.setdefault("per_target", {})
+            entry = per.setdefault(target, {"attempts": 0, "success": 0, "rollback": 0})
+            entry["attempts"] += 1
+        except Exception:
+            pass
+
+    def record_hmr_success(self, target: str, swap_ms: int):
+        try:
+            self._hmr_metrics["success"] += 1
+            self._hmr_metrics["last_swap_ms"] = int(swap_ms)
+            per = self._hmr_metrics.setdefault("per_target", {})
+            entry = per.setdefault(target, {"attempts": 0, "success": 0, "rollback": 0})
+            entry["success"] += 1
+        except Exception:
+            pass
+
+    def record_hmr_rollback(self, target: str):
+        try:
+            self._hmr_metrics["rollback"] += 1
+            per = self._hmr_metrics.setdefault("per_target", {})
+            entry = per.setdefault(target, {"attempts": 0, "success": 0, "rollback": 0})
+            entry["rollback"] += 1
+        except Exception:
+            pass
+
+    async def quiesce_for_target(self, target: str, timeout_sec: int = 30) -> bool:
+        """Pause a target and drain related work until empty or timeout.
+
+        Targets: "adapter:plugin", "adapter:memory", "engine", "adapter:lyrixa_chat" (future).
+        """
+        try:
+            t = str(target)
+            self._quiesced_targets.add(t)
+            # Wait for in-flight to hit zero, with small sleeps
+            deadline = time.time() + max(0, int(timeout_sec))
+            while self._inflight_by_target.get(t, 0) > 0 and time.time() < deadline:
+                await asyncio.sleep(0.05)
+            return self._inflight_by_target.get(t, 0) == 0
+        except Exception:
+            return False
+
+    def resume_target(self, target: str) -> None:
+        try:
+            self._quiesced_targets.discard(str(target))
+        except Exception:
+            pass
+
+    async def swap_system(self, target: str, new_instance) -> bool:
+        """Replace kernel-held reference for a target."""
+        try:
+            t = str(target)
+            if t in ("engine", "aetherra_engine"):
+                self.aetherra_engine = new_instance
+            elif t in ("adapter:memory", "memory"):
+                self.memory_system = new_instance
+            elif t in ("adapter:plugin", "plugin_manager"):
+                self.plugin_manager = new_instance
+            elif t in ("adapter:lyrixa_chat", "lyrixa_chat"):
+                self.lyrixa_chat = new_instance
+            else:
+                return False
+            return True
+        except Exception:
+            return False
+
+    # -------------------- In-flight helpers --------------------
+    def _inflight_inc(self, target: Optional[str]):
+        try:
+            if not target:
+                return
+            t = str(target)
+            self._inflight_by_target[t] = self._inflight_by_target.get(t, 0) + 1
+        except Exception:
+            pass
+
+    def _inflight_dec(self, target: Optional[str]):
+        try:
+            if not target:
+                return
+            t = str(target)
+            self._inflight_by_target[t] = max(0, self._inflight_by_target.get(t, 0) - 1)
+        except Exception:
+            pass
+
+    async def rollback_swap(self, target: str, old_instance) -> None:
+        try:
+            await self.swap_system(target, old_instance)
+        except Exception:
+            pass
 
     # -------------------- Control-plane helpers --------------------
     def pause(self):

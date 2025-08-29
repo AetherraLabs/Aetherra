@@ -1,6 +1,6 @@
 # Aetherra System Index
 
-Last updated: 2025-08-27
+Last updated: 2025-08-28
 
 This dashboard lists the core system documents, their purpose, and current implementation status across the Aetherra architecture.
 
