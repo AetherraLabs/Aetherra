@@ -234,6 +234,7 @@ Aetherra/
     README.md — aetherra_core
   aetherra_hub/
     aetherra_hub/
+      package-lock.json
       package.json
       README.md — aetherhub - The AI Package Manager
   analysis/
@@ -746,6 +747,10 @@ Aetherra/
   README.md — Aetherra - AI-Native Development Platform
   verify_lyrixa_merge.py — !/usr/bin/env python3
 docs/
+  contributing/
+    docs-consistency.md
+  sections/
+    README.md — Aetherra Documentation Sections
   Aether_Script_Language_System.md — Aether Script Language System (`.aether`)
   Aether_Script_Operator_Guide.md — Aether Script Operator Guide
   aether_script_protection.md — Aether Script Protection and Signing
@@ -764,7 +769,7 @@ docs/
   import_map.md — Import Map
   INDEX.md — Aetherra Documentation Index
   LYRIXA_CHAT_ENDPOINT.md — Lyrixa Chat Endpoint
-  manifesto.md — AETHERRA MANIFESTO (v6.0 – July 2025)
+  manifesto.md — Aetherra Manifesto (v6.0)
   memory_system.md — Memory System
   NEXT_STEPS.md — Next Steps: Lyrixa Chat Production Readiness
   PROJECT_ANALYSIS.json

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>.aether Language • Aetherra Docs</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+</head>
+
+<body class="bg-bg text-white">
+    <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
+        <h1>.aether Language</h1>
+        <p>Syntax reference, types, chains, and error handling.</p>
+
+        <h2>Basics</h2>
+        <p>A .aether document is a YAML-like manifest that declares chains of steps. Minimal header:</p>
+        <pre><code># hello.aether
+name: hello-world
+version: 0.1.0
+description: Simple demo chain
+
+chains:
+    - id: greet
+        steps:
+            - use: echo
+                with:
+                    text: "Hello, Aetherra!"
+</code></pre>
+
+        <h3>Manifest fields</h3>
+        <ul>
+            <li><code>name</code> (string)</li>
+            <li><code>version</code> (semver)</li>
+            <li><code>description</code> (string, optional)</li>
+            <li><code>chains[].id</code> (string, required)</li>
+            <li><code>chains[].steps[].use</code> — capability or plugin to invoke</li>
+            <li><code>chains[].steps[].with</code> — input parameters</li>
+        </ul>
+
+        <h3>Types</h3>
+        <ul>
+            <li>string, number, boolean</li>
+            <li>object (mapping), array (sequence)</li>
+            <li>null</li>
+        </ul>
+
+        <h3>Variables and interpolation</h3>
+        <pre><code>steps:
+    - use: fetch
+        as: data
+        with: { url: "https://example.com/data.json" }
+    - use: transform
+        with:
+            input: ${data.body}
+</code></pre>
+
+        <h2>Error Reference</h2>
+        <ul>
+            <li><strong>Unknown field</strong>: remove or move the key under <code>with:</code>.</li>
+            <li><strong>Invalid type</strong>: ensure types match the capability schema (e.g., <code>string</code> vs
+                <code>object</code>).</li>
+            <li><strong>Unknown capability</strong>: verify the plugin providing <code>use:</code> is installed and
+                enabled.</li>
+            <li><strong>Interpolation failed</strong>: referenced variable not defined; check prior step
+                <code>as:</code> names.</li>
+        </ul>
+
+        <h2>Try it</h2>
+        <ol>
+            <li>Create a file <code>hello.aether</code> with the example above.</li>
+            <li>Start the Hub and OS. In the widget, set your Hub URL (Ctrl‑click the title) and then use the task
+                watcher to stream a run of <code>hello.aether</code>.</li>
+        </ol>
+        <p>See also: <a href="/sections/runtime-cli.html">Runtime & CLI</a> · <a
+                href="/sections/tutorials-recipes.html">Recipes</a></p>
+    </main>
+</body>
+
+</html>

@@ -794,7 +794,8 @@ class AetherraHubServer:
                 ks = {}
             # Derive running state and uptime
             running = bool(
-                ks.get("running") is True or str(ks.get("state", "")).lower() == "running"
+                ks.get("running") is True
+                or str(ks.get("state", "")).lower() == "running"
             )
             uptime = 0.0
             try:
@@ -806,7 +807,11 @@ class AetherraHubServer:
             except Exception:
                 uptime = 0.0
             # Queue sizes map
-            qs = ks.get("queue_sizes", {}) if isinstance(ks.get("queue_sizes"), dict) else {}
+            qs = (
+                ks.get("queue_sizes", {})
+                if isinstance(ks.get("queue_sizes"), dict)
+                else {}
+            )
             out = {
                 "ok": True,
                 "hub": {

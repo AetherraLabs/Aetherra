@@ -31,25 +31,25 @@
         return DOCS_BASE + (p.endsWith('/') ? p : p + '/');
       };
       const RULES = [
-        // New Docs section buttons (external)
-  { test: t => /\bget\s*started\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
-  { test: t => /\bstart\s*here\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
-        { test: t => /getting\s*started/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
-        { test: t => /\bdevelopers?\b/.test(t), href: doc('') },
-        { test: t => /plugin\s*sdk/.test(t), href: doc('plugins/sdk') },
-        { test: t => /plugin\s*authors?/.test(t), href: doc('plugins') },
-        { test: t => /researchers?\b/.test(t), href: doc('labs') },
-        { test: t => /ops|operations|secops|devsecops|security/.test(t), href: doc('security') },
-        { test: t => ((/\.aether/.test(t) || /\baether\b/.test(t)) && /language/.test(t)), href: doc('aether') },
-        { test: t => /runtime|cli\b/.test(t), href: doc('runtime') },
-        { test: t => /memory|cognition|cognitive/.test(t), href: doc('memory') },
-        { test: t => /safety|saftey|ethic/.test(t), href: doc('safety') },
-        { test: t => (/\bapi\b/.test(t) && /registry/.test(t)) || /api\s*\/\s*registry/.test(t), href: doc('api') },
-        { test: t => /tutorial|recipe/.test(t), href: doc('recipes') },
-        { test: t => /changelog|versioning|release\s*notes?/.test(t), href: doc('changelog') },
+        // Local section pages (preferred)
+        { test: t => /\bdevelopers?\b/.test(t), href: '/sections/developers.html' },
+        { test: t => /plugin\s*sdk/.test(t), href: '/sections/plugin-sdk.html' },
+        { test: t => /plugin\s*authors?/.test(t), href: '/sections/plugin-authors.html' },
+        { test: t => /researchers?\b/.test(t), href: '/sections/researchers.html' },
+        { test: t => /ops|operations|secops|devsecops|security/.test(t), href: '/sections/ops-security.html' },
+        { test: t => ((/\.aether/.test(t) || /\baether\b/.test(t)) && /language/.test(t)), href: '/sections/aether-language.html' },
+        { test: t => /runtime|cli\b/.test(t), href: '/sections/runtime-cli.html' },
+        { test: t => /memory|cognition|cognitive/.test(t), href: '/sections/memory-cognition.html' },
+        { test: t => /safety|saftey|ethic/.test(t), href: '/sections/safety-ethics.html' },
+        { test: t => (/\bapi\b/.test(t) && /registry/.test(t)) || /api\s*\/\s*registry/.test(t), href: '/sections/api-registry.html' },
+        { test: t => /tutorial|recipe/.test(t), href: '/sections/tutorials-recipes.html' },
+        { test: t => /changelog|versioning|release\s*notes?/.test(t), href: '/sections/changelog-versioning.html' },
 
-        // Hard fallbacks for common CTA labels
-  { test: t => /\bdocs?\b/.test(t), href: doc('') },
+        // New Docs section buttons (external fallbacks)
+        { test: t => /\bget\s*started\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
+        { test: t => /\bstart\s*here\b/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
+        { test: t => /getting\s*started/.test(t), href: (localStorage.getItem('AETHERRA_DOCS_GETTING_STARTED') || doc('')) },
+        { test: t => /\bdocs?\b/.test(t), href: doc('') },
         { test: t => /developers?\s*docs?/.test(t), href: doc('') },
         { test: t => /plugin\s*(guides?|docs?)/.test(t), href: doc('plugins') },
         { test: t => /getting\s*started\s*guide/.test(t), href: doc('getting-started') },
@@ -142,9 +142,9 @@
     // Runtime Hub/OS live status widget: shows plugin count and kernel metrics without touching SPA bundle
     (function () {
       const HUB_URL = (window.AETHERRA_HUB_URL || localStorage.getItem('AETHERRA_HUB_URL') || 'http://localhost:3001').replace(/\/$/, '');
-  const REFRESH_MS_OK = 12000;   // normal cadence
-  const REFRESH_MS_ERR = 25000;  // slower on error
-  const AGG_KEY = 'AETHERRA_AGG_UNAVAILABLE::' + HUB_URL;
+      const REFRESH_MS_OK = 12000;   // normal cadence
+      const REFRESH_MS_ERR = 25000;  // slower on error
+      const AGG_KEY = 'AETHERRA_AGG_UNAVAILABLE::' + HUB_URL;
       let backoff = 0; // 0 -> none, increases on consecutive failures
 
       function h(el, styles) { for (const k in styles) el.style[k] = styles[k]; return el; }

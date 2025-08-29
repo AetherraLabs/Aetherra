@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ops & Security • Aetherra Docs</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+</head>
+
+<body class="bg-bg text-white">
+    <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
+        <h1>Ops & Security</h1>
+        <p>Deploy, configure, and secure the Aetherra Hub and Kernel.</p>
+
+        <h2>Quick start (prod-ready)</h2>
+        <ol>
+            <li>Run the Hub behind a reverse proxy with TLS (e.g., NGINX, Traefik).</li>
+            <li>Set strict CORS and Private Network Access headers.</li>
+            <li>Enable control-plane APIs only when needed and guard with tokens.</li>
+            <li>Expose <code>/metrics</code> to your monitoring stack; add alerts for queues and uptime.</li>
+        </ol>
+
+        <h2>CORS & Private Network Access (PNA)</h2>
+        <p>The Hub sets CORS and PNA headers via an <code>after_request</code> hook. Configure allow-lists using
+            environment variables:</p>
+        <ul>
+            <li><code>AETHERRA_CORS_ALLOW_PATTERN</code>: Regex for allowed origins (e.g.,
+                <code>^https://(www\\.)?aetherra\\.dev$</code>).</li>
+            <li><code>AETHERRA_PNA_ALLOW</code>: Set to <code>1</code> to send
+                <code>Access-Control-Allow-Private-Network: true</code> on preflights.</li>
+        </ul>
+        <p>Symptoms and fixes:</p>
+        <ul>
+            <li><strong>PNA blocked</strong>: ensure the response to the <em>preflight</em> <code>OPTIONS</code> request
+                includes <code>Access-Control-Allow-Private-Network: true</code> and that your proxy preserves it.</li>
+            <li><strong>Preflight 404/405</strong>: the Hub responds to global <code>OPTIONS /&lt;any&gt;</code>. If you
+                still see 404s, your proxy may be intercepting or stripping headers; add a pass-through rule.</li>
+        </ul>
+
+        <h2>Authentication & control plane</h2>
+        <p>Control endpoints are <em>opt-in</em> and token-guarded:</p>
+        <ul>
+            <li><code>AETHERRA_HUB_CONTROL_ENABLED=1</code> — enable kernel control endpoints.</li>
+            <li><code>AETHERRA_HUB_CONTROL_TOKEN=&lt;secret&gt;</code> — clients send <code>X-Aetherra-Token</code>.
+            </li>
+        </ul>
+        <p>Optional AI/Agents APIs have corresponding toggles and tokens:</p>
+        <ul>
+            <li><code>AETHERRA_AI_API_ENABLED</code>, <code>AETHERRA_AI_API_TOKEN</code>,
+                <code>AETHERRA_AI_API_REQUIRE_TOKEN</code></li>
+            <li><code>AETHERRA_AGENTS_API_ENABLED</code>, <code>AETHERRA_AGENTS_API_TOKEN</code>,
+                <code>AETHERRA_AGENTS_API_REQUIRE_TOKEN</code></li>
+        </ul>
+
+        <h2>Reverse proxy example (NGINX)</h2>
+        <pre><code>server {
+  listen 443 ssl;
+  server_name hub.example.com;
+
+  # TLS config...
+
+  location / {
+    proxy_pass http://127.0.0.1:3001;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+    # Preserve CORS/PNA headers from the Hub
+    proxy_pass_header Access-Control-Allow-Origin;
+    proxy_pass_header Access-Control-Allow-Headers;
+    proxy_pass_header Access-Control-Allow-Methods;
+    proxy_pass_header Access-Control-Allow-Credentials;
+    proxy_pass_header Access-Control-Allow-Private-Network;
+  }
+}
+</code></pre>
+
+        <h2>Endpoints to expose</h2>
+        <ul>
+            <li><code>/api/site_status</code> (or <code>/site_status</code>) — small JSON for dashboards/widgets.</li>
+            <li><code>/metrics</code> — Prometheus text; includes queue sizes and uptime.</li>
+            <li><code>/api/tasks/:id/stream</code> — optional SSE-like stream for task logs (guarded by token if
+                configured).</li>
+        </ul>
+
+        <h2>Hardening checklist</h2>
+        <ul>
+            <li>Run Hub as a non-root user; lock down file permissions.</li>
+            <li>Restrict CORS origins with <code>AETHERRA_CORS_ALLOW_PATTERN</code>; avoid <code>*</code> in production.
+            </li>
+            <li>Rotate control tokens and keep them out of logs; prefer header auth.</li>
+            <li>Rate-limit public endpoints at the proxy layer; set body size limits.</li>
+            <li>Isolate plugins with least privilege; disable unused capabilities.</li>
+        </ul>
+
+        <h2>Troubleshooting</h2>
+        <ul>
+            <li><strong>Docs widget spams <code>/api/site_status</code> 404</strong>: the frontend will try once and
+                cache-disable for the session; upgrade the Hub or expose the alias <code>/site_status</code>.</li>
+            <li><strong>Cross-origin auth fails</strong>: ensure your proxy allows <code>X-Aetherra-Token</code> in
+                <code>Access-Control-Allow-Headers</code>.</li>
+            <li><strong>Metrics missing</strong>: confirm <code>/metrics</code> is reachable and not blocked by auth;
+                scrape interval ≥ 15s recommended.</li>
+        </ul>
+
+    </main>
+</body>
+
+</html>

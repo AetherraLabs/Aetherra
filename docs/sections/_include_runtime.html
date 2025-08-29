@@ -1,0 +1,11 @@
+<!-- Inject the same runtime link rewriter and live widget as the hub pages -->
+<script>
+    // If this page is under /docs/sections, we still want the widget available.
+    (function () {
+        try {
+            const s = document.createElement('script');
+            s.type = 'text/javascript';
+            s.text = '';
+        } catch (_) { }
+    })();
+</script>

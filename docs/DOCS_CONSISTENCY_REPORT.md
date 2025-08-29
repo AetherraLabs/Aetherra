@@ -4,7 +4,8 @@ Document: C:\Users\enigm\Desktop\Aetherra Project\docs\PROJECT_OVERVIEW.md
 
 ## Environment Variables
 
-Missing in docs (3):
+Missing in docs (4):
+- AETHERRA_PNA_ALLOW
 - AETHERRA_REGISTRY_WARN_NO_HANDLER
 - AETHERRA_TOKENIZER
 - AETHERRA_TOKENIZER_MODEL
@@ -38,6 +39,9 @@ Documented but not found in code (25):
 
 ## Endpoints
 
-Missing in docs (0):
+Missing in docs (3):
+- /<param>
+- /api/site_status
+- /site_status
 
 Documented but not found in code (0):
