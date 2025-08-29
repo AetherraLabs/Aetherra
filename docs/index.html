@@ -10,6 +10,71 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <script type="module" crossorigin src="/assets/index-OrXyYuWD.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+  <script>
+    // Lightweight runtime link rewriter: ensure CTA buttons navigate correctly
+    (function () {
+      const RULES = [
+        // Local sections
+        { test: t => /\bdevelopers?\b/.test(t), href: '/sections/developers.html' },
+        { test: t => /plugin\s*sdk/.test(t), href: '/sections/plugin-sdk.html' },
+        { test: t => /plugin\s*authors?/.test(t), href: '/sections/plugin-authors.html' },
+        { test: t => /researchers?\b/.test(t), href: '/sections/researchers.html' },
+        { test: t => /ops|operations|secops|devsecops|security/.test(t), href: '/sections/ops-security.html' },
+        { test: t => ((/\.aether/.test(t) || /\baether\b/.test(t)) && /language/.test(t)), href: '/sections/aether-language.html' },
+        { test: t => /runtime|cli\b/.test(t), href: '/sections/runtime-cli.html' },
+        { test: t => /memory|cognition|cognitive/.test(t), href: '/sections/memory-cognition.html' },
+        { test: t => (/\bapi\b/.test(t) && /registry/.test(t)) || /api\s*\/\s*registry/.test(t), href: '/sections/api-registry.html' },
+        { test: t => /tutorial|recipe/.test(t), href: '/sections/tutorials-recipes.html' },
+        { test: t => /changelog|versioning|release\s*notes?/.test(t), href: '/sections/changelog-versioning.html' },
+        // Docs entry
+        { test: t => /\bdocs?\b|documentation/.test(t), href: '/sections/developers.html' },
+        { test: t => /getting\s*started|start\s*here/.test(t), href: '/sections/developers.html' },
+        // Community
+        { test: t => /\bdiscord\b|community\s*chat|join\s*(our\s*)?discord/.test(t), href: 'https://discord.gg/JPsey8Az6F' },
+      ];
+      function normalizeLabel(a) {
+        const raw = (a.getAttribute('aria-label') || a.title || a.textContent || '').toLowerCase();
+        return raw.replace(/[\s\u00A0]+/g, ' ').replace(/[\.!?,;:()\[\]\-_/]+/g, ' ').trim();
+      }
+      function findTarget(a) { const t = normalizeLabel(a); for (const r of RULES) { if (r.test(t)) return r.href; } return null; }
+      function isExternalUrl(u) { return /^https?:\/\//.test(String(u)); }
+      function rewriteAnchors(root) {
+        try {
+          const scope = root || document;
+          const elems = scope.querySelectorAll('a:not([data-link-fixed]), button:not([data-link-fixed]), [role="button"]:not([data-link-fixed])');
+          elems.forEach(elm => {
+            const target = findTarget(elm);
+            if (!target) return;
+            if (elm.tagName === 'A') {
+              elm.setAttribute('href', target);
+              if (isExternalUrl(target)) {
+                elm.setAttribute('target', '_blank');
+                elm.setAttribute('rel', 'noopener noreferrer');
+                elm.addEventListener('click', (e) => { try { e.preventDefault(); e.stopPropagation(); window.open(target, '_blank', 'noopener'); } catch { } }, { capture: true });
+              } else {
+                try { elm.removeAttribute('target'); elm.removeAttribute('rel'); } catch { }
+                elm.addEventListener('click', (e) => { const t2 = findTarget(elm); if (t2) { e.preventDefault(); e.stopPropagation(); location.href = t2; } }, { capture: true });
+              }
+              elm.setAttribute('data-link-fixed', '1');
+            } else {
+              elm.style.cursor = 'pointer';
+              elm.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); if (isExternalUrl(target)) window.open(target, '_blank', 'noopener'); else location.href = target; }, { capture: true });
+              elm.setAttribute('data-link-fixed', '1');
+            }
+          });
+        } catch { }
+      }
+      function installObserver() {
+        const root = document.getElementById('root') || document.body || document.documentElement;
+        const obs = new MutationObserver(() => rewriteAnchors(root));
+        obs.observe(root, { childList: true, subtree: true, characterData: true });
+        rewriteAnchors(root);
+        setTimeout(() => rewriteAnchors(root), 250);
+        setTimeout(() => rewriteAnchors(root), 800);
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installObserver); else installObserver();
+    })();
+  </script>
 </head>
 
 <body class="bg-bg text-white">
