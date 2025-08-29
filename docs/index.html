@@ -6,10 +6,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aetherra Labs — AI-native OS</title>
   <meta name="description"
-    content="Aetherra Labs: The AI-native operating system. Thoughts, goals, and intelligent evolution—built in." />
+    content="Aetherra Labs, LLC: The AI-native operating system. Thoughts, goals, and intelligent evolution—built in." />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <script type="module" crossorigin src="/assets/index-OrXyYuWD.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+  <script>
+    // Legal entity update: ensure footer shows Aetherra Labs, LLC
+    (function(){
+      function fixLegalIn(root){
+        try{
+          const scope = root || document;
+          const areas = scope.querySelectorAll('footer, [role="contentinfo"], .site-footer-cloned');
+          areas.forEach(node => {
+            const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+            const texts = [];
+            while (walker.nextNode()) texts.push(walker.currentNode);
+            texts.forEach(t => { if (t.nodeValue && /Aetherra\s+Labs(?!,\s*LLC)/.test(t.nodeValue)) t.nodeValue = t.nodeValue.replace(/Aetherra\s+Labs(?!,\s*LLC)/g,'Aetherra Labs, LLC'); });
+          });
+        }catch{}
+      }
+      function run(){ fixLegalIn(document); }
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', run); else run();
+    })();
+  </script>
   <script>
     // Lightweight runtime link rewriter: ensure CTA buttons navigate correctly
     (function () {
@@ -26,9 +45,9 @@
         { test: t => (/\bapi\b/.test(t) && /registry/.test(t)) || /api\s*\/\s*registry/.test(t), href: '/sections/api-registry.html' },
         { test: t => /tutorial|recipe/.test(t), href: '/sections/tutorials-recipes.html' },
         { test: t => /changelog|versioning|release\s*notes?/.test(t), href: '/sections/changelog-versioning.html' },
-  // Docs entry
-  { test: t => /\bdocs?\b|documentation|docs\s*hub|documentation\s*hub/.test(t), href: '/sections/hub.html' },
-  { test: t => /getting\s*started|start\s*here/.test(t), href: '/sections/developers.html' },
+        // Docs entry
+        { test: t => /\bdocs?\b|documentation|docs\s*hub|documentation\s*hub/.test(t), href: '/sections/hub.html' },
+        { test: t => /getting\s*started|start\s*here/.test(t), href: '/sections/developers.html' },
         // Community
         { test: t => /\bdiscord\b|community\s*chat|join\s*(our\s*)?discord/.test(t), href: 'https://discord.gg/JPsey8Az6F' },
       ];

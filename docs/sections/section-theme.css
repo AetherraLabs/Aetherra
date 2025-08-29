@@ -230,5 +230,12 @@ pre {
     font-size: 13px;
     margin: 8px 0 10px;
 }
-.sec-breadcrumb a { color: #93c5fd; text-decoration: none; }
-.sec-breadcrumb a:hover { text-decoration: underline; }
+
+.sec-breadcrumb a {
+    color: #93c5fd;
+    text-decoration: none;
+}
+
+.sec-breadcrumb a:hover {
+    text-decoration: underline;
+}
