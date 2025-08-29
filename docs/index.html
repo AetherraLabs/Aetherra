@@ -12,21 +12,21 @@
   <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
   <script>
     // Legal entity update: ensure footer shows Aetherra Labs, LLC
-    (function(){
-      function fixLegalIn(root){
-        try{
+    (function () {
+      function fixLegalIn(root) {
+        try {
           const scope = root || document;
           const areas = scope.querySelectorAll('footer, [role="contentinfo"], .site-footer-cloned');
           areas.forEach(node => {
             const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
             const texts = [];
             while (walker.nextNode()) texts.push(walker.currentNode);
-            texts.forEach(t => { if (t.nodeValue && /Aetherra\s+Labs(?!,\s*LLC)/.test(t.nodeValue)) t.nodeValue = t.nodeValue.replace(/Aetherra\s+Labs(?!,\s*LLC)/g,'Aetherra Labs, LLC'); });
+            texts.forEach(t => { if (t.nodeValue && /Aetherra\s+Labs(?!,\s*LLC)/.test(t.nodeValue)) t.nodeValue = t.nodeValue.replace(/Aetherra\s+Labs(?!,\s*LLC)/g, 'Aetherra Labs, LLC'); });
           });
-        }catch{}
+        } catch { }
       }
-      function run(){ fixLegalIn(document); }
-      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', run); else run();
+      function run() { fixLegalIn(document); }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
     })();
   </script>
   <script>
