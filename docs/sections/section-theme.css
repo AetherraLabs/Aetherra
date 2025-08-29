@@ -37,6 +37,14 @@
 /* Space under sticky nav for first content block */
 body .container { scroll-margin-top: 64px; }
 
+/* Cloned site header adjustments (if homepage header is copied in) */
+.site-header-cloned {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+}
+
 /* Hero */
 .sec-hero {
     position: relative;
