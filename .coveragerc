@@ -1,0 +1,31 @@
+[run]
+omit =
+    # Generated/entry scripts; not relevant to unit coverage and sometimes unparsable on CI
+    Aetherra/cli/*
+    setup_dev.py
+    launch_aetherra_unicode.py
+    main.py
+    restart_aetherra.py
+    unicode_logger.py
+    Aetherra/gui/*
+    Aetherra/web/*
+    Aetherra/lyrixa/lyrixa_basic_gui.py
+    Aetherra/lyrixa/launcher.py
+    Aetherra/lyrixa/analytics_*
+    Aetherra/lyrixa/plugins/*
+    Aetherra/lyrixa/reflection_engine/*
+    Aetherra/lyrixa/self_metrics_dashboard/*
+    Aetherra/lyrixa/memory/fractal_mesh/**
+    Aetherra/aetherra_core/memory/fractal_mesh/**
+    Aetherra/aetherra_core/memory/world_class_memory_core.py
+    aetherra_os_launcher.py
+    aetherra_hub_server.py
+
+[report]
+show_missing = True
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    except Exception:
+    except BaseException:
+    pass

@@ -378,7 +378,7 @@ class LyrixaOperatingSystem:
                     await initialize_quantum_consciousness_engine()
                 )
                 await self.service_registry.register_service(
-                    "quantum_consciousness", self.quantum_consciousness
+                    "quantum_cognition", self.quantum_consciousness
                 )
 
                 # Get quantum metrics from Aetherra's consciousness for display
@@ -884,7 +884,7 @@ class LyrixaOperatingSystem:
             if self.agent_orchestrator:
                 backend_services["agent_orchestrator"] = self.agent_orchestrator
             if self.quantum_consciousness:
-                backend_services["quantum_consciousness"] = self.quantum_consciousness
+                backend_services["quantum_cognition"] = self.quantum_consciousness
 
             # Phase 6: Connect Personality Manager and State Memory (if available)
             pm = getattr(self.main_window, "personality_manager", None)
