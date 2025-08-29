@@ -1,0 +1,168 @@
+:root {
+    --sec-accent: #7c3aed;
+    /* default purple */
+    --sec-accent-2: #22d3ee;
+    /* cyan */
+    --bg-elev: rgba(17, 24, 39, .6);
+    --bg-card: rgba(31, 41, 55, .7);
+    --border: rgba(255, 255, 255, .08);
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+}
+
+/* Hero */
+.sec-hero {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    margin: 12px 0 24px;
+    overflow: hidden;
+    background:
+        radial-gradient(1200px 500px at 90% -20%, color-mix(in oklab, var(--sec-accent) 22%, transparent) 0%, transparent 60%),
+        radial-gradient(900px 420px at -10% -30%, color-mix(in oklab, var(--sec-accent-2) 14%, transparent) 0%, transparent 60%),
+        rgba(12, 16, 28, .65);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
+}
+
+.sec-hero h1 {
+    font-size: 34px;
+    line-height: 1.2;
+    margin: 0 0 6px;
+}
+
+.sec-hero p {
+    color: var(--muted);
+    margin: 0;
+}
+
+.sec-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #c7d2fe;
+    background: rgba(59, 130, 246, .12);
+    border: 1px solid rgba(96, 165, 250, .25);
+    padding: 4px 8px;
+    border-radius: 999px;
+    margin-bottom: 10px
+}
+
+.sec-actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    background: var(--bg-card);
+    text-decoration: none;
+    font-size: 13px
+}
+
+.btn:hover {
+    border-color: color-mix(in oklab, var(--sec-accent) 40%, var(--border));
+    background: rgba(31, 41, 55, .9)
+}
+
+.btn.primary {
+    background: linear-gradient(135deg, color-mix(in oklab, var(--sec-accent) 65%, #000) 0%, color-mix(in oklab, var(--sec-accent-2) 50%, #000) 100%);
+    border-color: transparent
+}
+
+.btn.primary:hover {
+    filter: brightness(1.08)
+}
+
+/* Cards */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin: 16px 0
+}
+
+.card {
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 12px 14px;
+    text-decoration: none;
+    color: var(--text)
+}
+
+.card:hover {
+    border-color: color-mix(in oklab, var(--sec-accent) 40%, var(--border));
+    background: rgba(31, 41, 55, .9)
+}
+
+.card .k {
+    color: var(--muted);
+    font-size: 12px
+}
+
+/* Callouts */
+.callout {
+    border-left: 3px solid var(--sec-accent);
+    background: rgba(59, 130, 246, .06);
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin: 10px 0
+}
+
+/* Code copy */
+pre {
+    position: relative
+}
+
+.copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+    background: rgba(0, 0, 0, .35);
+    color: var(--text);
+    cursor: pointer
+}
+
+.copy-btn:hover {
+    background: rgba(0, 0, 0, .5)
+}
+
+/* Footer */
+.sec-footer {
+    margin-top: 28px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+    color: var(--muted);
+    font-size: 12px
+}
+
+/* Inline TOC (optional) */
+.mini-nav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 6px 0
+}
+
+.mini-nav a {
+    color: #93c5fd;
+    text-decoration: none
+}
+
+.mini-nav a:hover {
+    text-decoration: underline
+}

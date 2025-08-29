@@ -39,40 +39,14 @@ Endpoints summary (Hub Flask server):
 
 - /
 - /health
-- /status
-- /services
-- /api/plugins
-- /api/plugins/register
-- /api/plugins/<plugin_id>
-- /api/stats
-- /api/peers
-- /api/peers/sync
-- /api/peers/announce
-- /api/telemetry
-- /api/lyrixa/chat
-- /api/memory/graph
-- /api/memory/status
-- /api/registry/status
-- /api/kernel/metrics
-- /api/kernel/status
-- /api/kernel/control/pause
-- /api/kernel/control/resume
-- /api/kernel/control/drain
-- /api/kernel/control/queue_limits
-- /metrics
-
-Environment configuration is active with 76 AETHERRA_* variables referenced across the codebase. Breakdown: QFAC(3), HUB(10), GENERAL(63).
-
 Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 18), including OS boot, registry collaboration, hub endpoints/federation, memory recall, QFAC-in-OS, and self-maintenance wiring.
 
-### Auto Lists — 2025-08-24 16:17:08
-
-#### Environment Variables
 
 - AETHERRA_PROFILE
 - AETHERRA_DETERMINISTIC
 - AETHERRA_TRACE
 - AETHERRA_AUDIT
+
 - AETHERRA_AUDIT_PATH
 - AETHERRA_TEMPLATE_DIR
 - AETHERRA_REQUIRE_STRICT
@@ -170,6 +144,12 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 - AETHERRA_WEB_BASE
 - AETHERRA_WEB_HOST
 - AETHERRA_WEB_PORT
+// CORS / PNA and registry warnings
+- AETHERRA_PNA_ALLOW
+- AETHERRA_REGISTRY_WARN_NO_HANDLER
+// Tokenizer configuration
+- AETHERRA_TOKENIZER
+- AETHERRA_TOKENIZER_MODEL
 // Optional AI developer API (disabled by default)
 - AETHERRA_AI_API_ENABLED
 - AETHERRA_AI_API_REQUIRE_TOKEN
@@ -208,6 +188,17 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 - /api/kernel/control/resume
 - /api/kernel/control/drain
 - /api/kernel/control/queue_limits
+// Aggregated site status endpoint (preferred by UI/widget)
+- /api/site_status
+- /site_status
+// Global OPTIONS preflight handler (CORS/PNA)
+- `/&lt;param&gt;` (Flask-style catch‑all)
+
+
+```text
+/<param>
+```
+
 // Auxiliary endpoints that may be exposed by optional modules/dashboards
 - /api/users
 - `/api/users/<param>`

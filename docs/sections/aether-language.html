@@ -7,14 +7,24 @@
     <title>.aether Language • Aetherra Docs</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+    <link rel="stylesheet" href="/sections/section-theme.css">
 </head>
 
 <body class="bg-bg text-white">
     <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
-        <h1>.aether Language</h1>
-        <p>Syntax reference, types, chains, and error handling.</p>
+        <section class="sec-hero" style="--sec-accent:#a78bfa; --sec-accent-2:#22d3ee">
+            <div class="sec-badge">Grammar • Examples</div>
+            <h1>.aether Language</h1>
+            <p>Syntax reference, types, chains, and error handling.</p>
+            <div class="sec-actions">
+                <a class="btn primary" href="#basics">Basics</a>
+                <a class="btn" href="#vars">Variables</a>
+                <a class="btn" href="#errors">Errors</a>
+                <a class="btn" href="#try">Try it</a>
+            </div>
+        </section>
 
-        <h2>Basics</h2>
+        <h2 id="basics">Basics</h2>
         <p>A .aether document is a YAML-like manifest that declares chains of steps. Minimal header:</p>
         <pre><code># hello.aether
 name: hello-world
@@ -46,7 +56,7 @@ chains:
             <li>null</li>
         </ul>
 
-        <h3>Variables and interpolation</h3>
+        <h3 id="vars">Variables and interpolation</h3>
         <pre><code>steps:
     - use: fetch
         as: data
@@ -56,18 +66,20 @@ chains:
             input: ${data.body}
 </code></pre>
 
-        <h2>Error Reference</h2>
+        <h2 id="errors">Error Reference</h2>
         <ul>
             <li><strong>Unknown field</strong>: remove or move the key under <code>with:</code>.</li>
             <li><strong>Invalid type</strong>: ensure types match the capability schema (e.g., <code>string</code> vs
-                <code>object</code>).</li>
+                <code>object</code>).
+            </li>
             <li><strong>Unknown capability</strong>: verify the plugin providing <code>use:</code> is installed and
                 enabled.</li>
             <li><strong>Interpolation failed</strong>: referenced variable not defined; check prior step
-                <code>as:</code> names.</li>
+                <code>as:</code> names.
+            </li>
         </ul>
 
-        <h2>Try it</h2>
+        <h2 id="try">Try it</h2>
         <ol>
             <li>Create a file <code>hello.aether</code> with the example above.</li>
             <li>Start the Hub and OS. In the widget, set your Hub URL (Ctrl‑click the title) and then use the task
@@ -76,6 +88,7 @@ chains:
         <p>See also: <a href="/sections/runtime-cli.html">Runtime & CLI</a> · <a
                 href="/sections/tutorials-recipes.html">Recipes</a></p>
     </main>
+    <script src="/sections/section-theme.js"></script>
 </body>
 
 </html>

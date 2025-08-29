@@ -7,21 +7,29 @@
     <title>Tutorials & Recipes • Aetherra Docs</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+    <link rel="stylesheet" href="/sections/section-theme.css">
 </head>
 
 <body class="bg-bg text-white">
     <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
-        <h1>Tutorials & Recipes</h1>
-        <p>Common tasks with copy‑paste snippets. Use the live widget (bottom-right) to set your Hub URL and stream task
-            output.</p>
+        <section class="sec-hero" style="--sec-accent:#f59e0b; --sec-accent-2:#7c3aed">
+            <div class="sec-badge">Hands‑on • Copy & run</div>
+            <h1>Tutorials & Recipes</h1>
+            <p>Common tasks with copy‑paste snippets. Use the live widget (bottom‑right) to set your Hub URL and stream
+                task output.</p>
+            <div class="sec-actions">
+                <a class="btn primary" href="#stream">Stream a task</a>
+                <a class="btn" href="#recipes">Recipes</a>
+            </div>
+        </section>
 
-        <h2>How to stream a task</h2>
+        <h2 id="stream">How to stream a task</h2>
         <ol>
             <li>Ctrl‑click the widget title “Hub” to set <code>AETHERRA_HUB_URL</code>.</li>
             <li>Paste the task id into the input and click “watch”.</li>
         </ol>
 
-        <h2>Recipes</h2>
+        <h2 id="recipes">Recipes</h2>
 
         <h3>1) Hello world chain</h3>
         <p>Create <code>hello.aether</code>:</p>
@@ -68,6 +76,7 @@ chains:
         <p>More: <a href="/sections/aether-language.html">.aether Language</a> · <a
                 href="/sections/plugin-sdk.html">Plugin SDK</a></p>
     </main>
+    <script src="/sections/section-theme.js"></script>
 </body>
 
 </html>
