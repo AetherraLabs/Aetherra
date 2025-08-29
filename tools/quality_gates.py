@@ -8,7 +8,10 @@ Quality Gates Runner
 Env/config:
 - MIN_COVERAGE: percentage (default 0; rely on no-drop unless overridden)
 - COVERAGE_BASELINE_FILE: path to store last coverage percent (default .coverage-baseline)
-- TEST_TARGETS: pytest target path(s) (default tests)
+- TEST_TARGETS: pytest target path(s). If unset, picks existing from ["tests/capabilities", "tests"].
+- ARCH_CHECK: 1 to run Architecture Map verifier as part of gates (default 1)
+- ARCH_CHECK_STRICT: 1 to fail gates if verifier reports any FAIL (default 0)
+- ARCH_PROBE_HUB: 1 to enable optional Hub HTTP probe as part of verifier (default 0)
 """
 
 import os
@@ -19,8 +22,18 @@ from pathlib import Path
 
 
 def run(cmd: list[str]) -> tuple[int, str]:
+    """Run a command and return (exit_code, stdout+stderr) decoded as UTF-8.
+
+    Using explicit UTF-8 decoding avoids Windows cp1252 decode errors when
+    the child process emits Unicode (e.g., emojis, checkmarks).
+    """
     p = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     out, _ = p.communicate()
     return p.returncode, out
@@ -45,7 +58,23 @@ def main() -> int:
     # Note: default 0 so we don't fail purely on threshold; we still enforce no-drop vs baseline.
     min_cov = float(os.getenv("MIN_COVERAGE", "0"))
     baseline_file = Path(os.getenv("COVERAGE_BASELINE_FILE", ".coverage-baseline"))
-    targets = os.getenv("TEST_TARGETS", "tests/capabilities").split()
+    raw_targets = os.getenv("TEST_TARGETS", "").strip()
+    if raw_targets:
+        targets = raw_targets.split()
+    else:
+        # Default: capabilities suite plus focused AAR/Outbox tests if present
+        candidates = [
+            "tests/capabilities",
+            "tests/test_outbox_unit.py",
+            "tests/test_aar_outbox.py",
+            "tests/test_agent_pipeline_smoke.py",
+        ]
+        targets = [t for t in candidates if Path(t).exists()]
+        # Fallback to tests/capabilities or tests if nothing found
+        if not targets:
+            targets = [
+                t for t in ["tests/capabilities", "tests"] if Path(t).exists()
+            ] or ["tests"]
 
     # Run pytest with coverage
     cmd = [
@@ -95,6 +124,22 @@ def main() -> int:
         baseline_file.write_text(str(cov))
     except Exception as e:
         print(f"[GATES] Warning: failed to write baseline: {e}")
+
+    # Optional: run Architecture Map verifier
+    if os.getenv("ARCH_CHECK", "1") == "1":
+        strict = os.getenv("ARCH_CHECK_STRICT", "0") == "1"
+        probe = os.getenv("ARCH_PROBE_HUB", "0") == "1"
+        args = [sys.executable, "-X", "utf8", "tools/verify_architecture_map.py"]
+        if strict:
+            args.append("--strict")
+        if probe:
+            args.append("--probe-hub")
+        print("[GATES] Running Architecture Map verifier...")
+        code_arch, out_arch = run(args)
+        print(out_arch)
+        if code_arch != 0 and strict:
+            print("[GATES] Architecture verifier failed in strict mode.")
+            return code_arch
 
     print("[GATES] All quality gates passed.")
     return 0

@@ -11,6 +11,7 @@ with each other in real-time.
 import asyncio
 import logging
 import os
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -55,12 +56,75 @@ class AetherraServiceRegistry:
         self._event_handlers: Dict[str, List[Callable]] = {}
         self._running = False
         self._heartbeat_task = None
+        # Canonical naming with legacy alias support
+        # Legacy names map to professional canonical names
+        self._legacy_alias_map: Dict[str, str] = {
+            "quantum_consciousness": "quantum_cognition",
+            "cosmic_consciousness": "universal_cognition",
+            "beyond_transcendence": "meta_cognition",
+        }
         # Warning controls: by default, suppress repeated "no handler" warnings.
         # Set AETHERRA_REGISTRY_WARN_NO_HANDLER=1 to emit a warning once per service.
         self._warn_no_handler_once = (
             os.environ.get("AETHERRA_REGISTRY_WARN_NO_HANDLER", "0") == "1"
         )
         self._no_handler_warned: set[str] = set()
+        # Additional noise controls:
+        # - AETHERRA_REGISTRY_NO_HANDLER_SILENT=1 -> never log these lines
+        # - AETHERRA_REGISTRY_NO_HANDLER_RATE_SEC=N -> rate-limit logs per service
+        self._no_handler_silent = (
+            os.environ.get("AETHERRA_REGISTRY_NO_HANDLER_SILENT", "0") == "1"
+        )
+        try:
+            self._no_handler_rate_sec = int(
+                os.environ.get("AETHERRA_REGISTRY_NO_HANDLER_RATE_SEC", "0") or 0
+            )
+        except Exception:
+            self._no_handler_rate_sec = 0
+        self._no_handler_last_log: Dict[str, float] = {}
+
+    def _canonical(self, name: str) -> str:
+        try:
+            # Allow disabling aliasing via env if needed
+            if os.environ.get("AETHERRA_DISABLE_LEGACY_ALIASES", "0") == "1":
+                return name
+            return self._legacy_alias_map.get(name, name)
+        except Exception:
+            return name
+
+    def _should_log_no_handler(self, service_name: str) -> bool:
+        if self._no_handler_silent:
+            return False
+        if self._warn_no_handler_once:
+            # If warn-once is enabled, we log warning only once via _log_no_handler
+            return service_name not in self._no_handler_warned
+        # Otherwise, check rate-limit for debug logging
+        if self._no_handler_rate_sec <= 0:
+            return True
+        now = time.time()
+        last = self._no_handler_last_log.get(service_name, 0.0)
+        return (now - last) >= max(1, self._no_handler_rate_sec)
+
+    def _log_no_handler(self, service_name: str) -> None:
+        if self._no_handler_silent:
+            return
+        if self._warn_no_handler_once:
+            if service_name not in self._no_handler_warned:
+                logger.warning(
+                    f"[WARN] Service '{service_name}' has no message handler"
+                )
+                self._no_handler_warned.add(service_name)
+                self._no_handler_last_log[service_name] = time.time()
+            else:
+                # Do not log repeated warnings when warn-once mode is on
+                pass
+            return
+        # Default: debug log (suppressed) with optional rate limiting
+        if self._should_log_no_handler(service_name):
+            logger.debug(
+                f"Service '{service_name}' has no message handler (suppressed)"
+            )
+            self._no_handler_last_log[service_name] = time.time()
 
     async def start(self):
         """[START] Start the service registry."""
@@ -106,27 +170,28 @@ class AetherraServiceRegistry:
             True if registration successful
         """
         try:
-            if name in self._services:
+            cname = self._canonical(name)
+            if cname in self._services:
                 logger.warning(f"[WARN] Service {name} already registered, updating...")
 
             service_info = ServiceInfo(
-                name=name,
+                name=cname,
                 instance=instance,
                 metadata=metadata or {},
                 dependencies=dependencies or [],
             )
 
-            self._services[name] = service_info
+            self._services[cname] = service_info
 
             # If no dependencies are declared, mark service healthy immediately
             if not service_info.dependencies:
                 service_info.status = ServiceStatus.HEALTHY
 
-            logger.info(f"[OK] Service '{name}' registered successfully")
+            logger.info(f"[OK] Service '{cname}' registered successfully")
 
             # Broadcast registration event
             await self._broadcast_event(
-                "service.registered", {"service_name": name, "metadata": metadata}
+                "service.registered", {"service_name": cname, "metadata": metadata}
             )
 
             # Check if this registration satisfies any pending dependencies
@@ -149,23 +214,26 @@ class AetherraServiceRegistry:
             True if unregistration successful
         """
         try:
-            if name not in self._services:
+            cname = self._canonical(name)
+            if cname not in self._services:
                 logger.warning(f"[WARN] Service '{name}' not found for unregistration")
                 return False
 
             # Update status to stopping
-            self._services[name].status = ServiceStatus.STOPPING
+            self._services[cname].status = ServiceStatus.STOPPING
 
             # Broadcast unregistration event
-            await self._broadcast_event("service.unregistering", {"service_name": name})
+            await self._broadcast_event(
+                "service.unregistering", {"service_name": cname}
+            )
 
             # Remove from registry
-            del self._services[name]
+            del self._services[cname]
 
-            logger.info(f"[OK] Service '{name}' unregistered successfully")
+            logger.info(f"[OK] Service '{cname}' unregistered successfully")
 
             # Broadcast completion
-            await self._broadcast_event("service.unregistered", {"service_name": name})
+            await self._broadcast_event("service.unregistered", {"service_name": cname})
 
             return True
 
@@ -183,7 +251,7 @@ class AetherraServiceRegistry:
         Returns:
             Service instance or None if not found
         """
-        service_info = self._services.get(name)
+        service_info = self._services.get(self._canonical(name))
         if service_info and service_info.status == ServiceStatus.HEALTHY:
             return service_info.instance
         return None
@@ -198,7 +266,7 @@ class AetherraServiceRegistry:
         Returns:
             ServiceInfo or None if not found
         """
-        return self._services.get(name)
+        return self._services.get(self._canonical(name))
 
     def list_services(
         self, status_filter: Optional[ServiceStatus] = None
@@ -231,27 +299,28 @@ class AetherraServiceRegistry:
             status: New status
             metadata: Optional metadata updates
         """
-        if name not in self._services:
+        cname = self._canonical(name)
+        if cname not in self._services:
             logger.warning(f"[WARN] Cannot update status for unknown service '{name}'")
             return
 
-        old_status = self._services[name].status
-        self._services[name].status = status
-        self._services[name].last_heartbeat = datetime.now()
+        old_status = self._services[cname].status
+        self._services[cname].status = status
+        self._services[cname].last_heartbeat = datetime.now()
 
         if metadata:
-            self._services[name].metadata.update(metadata)
+            self._services[cname].metadata.update(metadata)
 
         if old_status != status:
             logger.info(
-                f"[STATUS] Service '{name}' status: {old_status.value} -> {status.value}"
+                f"[STATUS] Service '{cname}' status: {old_status.value} -> {status.value}"
             )
 
             # Broadcast status change
             await self._broadcast_event(
                 "service.status_changed",
                 {
-                    "service_name": name,
+                    "service_name": cname,
                     "old_status": old_status.value,
                     "new_status": status.value,
                     "metadata": metadata,
@@ -260,14 +329,15 @@ class AetherraServiceRegistry:
 
     async def update_heartbeat(self, name: str):
         """[HEARTBEAT] Update service heartbeat timestamp."""
-        if name not in self._services:
+        cname = self._canonical(name)
+        if cname not in self._services:
             logger.warning(
                 f"[WARN] Cannot update heartbeat for unknown service '{name}'"
             )
             return
 
-        self._services[name].last_heartbeat = datetime.now()
-        logger.debug(f"[HEARTBEAT] Heartbeat updated for service '{name}'")
+        self._services[cname].last_heartbeat = datetime.now()
+        logger.debug(f"[HEARTBEAT] Heartbeat updated for service '{cname}'")
 
     async def send_message(
         self, target_service: str, message_type: str, data: Any
@@ -299,21 +369,8 @@ class AetherraServiceRegistry:
                 await service.on_message(message_type, data)
                 return True
             else:
-                # Suppress noisy warnings by default; optionally warn once per service
-                if self._warn_no_handler_once:
-                    if target_service not in self._no_handler_warned:
-                        logger.warning(
-                            f"[WARN] Service '{target_service}' has no message handler"
-                        )
-                        self._no_handler_warned.add(target_service)
-                    else:
-                        logger.debug(
-                            f"Service '{target_service}' has no message handler (suppressed)"
-                        )
-                else:
-                    logger.debug(
-                        f"Service '{target_service}' has no message handler (suppressed)"
-                    )
+                # Centralized no-handler logging
+                self._log_no_handler(target_service)
                 return False
 
         except Exception as e:
@@ -343,19 +400,8 @@ class AetherraServiceRegistry:
                 if not hasattr(inst, "handle_message") and not hasattr(
                     inst, "on_message"
                 ):
-                    # Optionally warn once when enabled, otherwise silent at debug
-                    if (
-                        self._warn_no_handler_once
-                        and service_name not in self._no_handler_warned
-                    ):
-                        logger.warning(
-                            f"[WARN] Service '{service_name}' has no message handler"
-                        )
-                        self._no_handler_warned.add(service_name)
-                    else:
-                        logger.debug(
-                            f"Service '{service_name}' has no message handler (suppressed)"
-                        )
+                    # Centralized no-handler logging
+                    self._log_no_handler(service_name)
                     continue
                 await self.send_message(service_name, message_type, data)
             except Exception as e:

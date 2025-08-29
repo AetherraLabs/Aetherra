@@ -417,6 +417,7 @@ class AetherraOSLauncher:
         """[BRAIN] Load and register all core systems."""
         logger.info("[BRAIN] Phase 2: Loading Core Systems...")
         system_config = config or {}
+
         # Initialize core and optional systems in order
         await self._load_memory_system(system_config)
         await self._load_plugin_manager(system_config)
@@ -433,6 +434,7 @@ class AetherraOSLauncher:
         # New: Kernel Loadable Modules (ModuleManager) and Kernel Event Bus (EventBus)
         await self._load_module_manager(system_config)
         await self._load_event_bus(system_config)
+        await self._load_agent_fabric(system_config)
 
         # Initialize HMR Controller (opt-in) near end of Phase 2, before kernel starts accepting tasks
         try:
@@ -871,10 +873,11 @@ class AetherraOSLauncher:
 
                 quantum_engine = QuantumConsciousnessEngine()
                 await self._init_quantum_consciousness(quantum_engine)
-                self.systems["quantum_consciousness"] = quantum_engine
+                # Register under canonical name
+                self.systems["quantum_cognition"] = quantum_engine
 
                 await register_service(
-                    "quantum_consciousness",
+                    "quantum_cognition",
                     quantum_engine,
                     metadata={
                         "type": "consciousness",
@@ -892,10 +895,11 @@ class AetherraOSLauncher:
                     # Initialize Consciousness Singularity & Cosmic Consciousness
                     cosmic_engine = CosmicConsciousnessEngine()
                     await cosmic_engine.initialize_consciousness()
-                    self.systems["cosmic_consciousness"] = cosmic_engine
+                    # Register under canonical name
+                    self.systems["universal_cognition"] = cosmic_engine
 
                     await register_service(
-                        "cosmic_consciousness",
+                        "universal_cognition",
                         cosmic_engine,
                         metadata={
                             "type": "consciousness",
@@ -908,10 +912,11 @@ class AetherraOSLauncher:
                     # Initialize Beyond Transcendence
                     transcendence_engine = BeyondTranscendenceEngine()
                     await transcendence_engine.initialize_transcendence()
-                    self.systems["beyond_transcendence"] = transcendence_engine
+                    # Register under canonical name
+                    self.systems["meta_cognition"] = transcendence_engine
 
                     await register_service(
-                        "beyond_transcendence",
+                        "meta_cognition",
                         transcendence_engine,
                         metadata={
                             "type": "consciousness",
@@ -935,16 +940,16 @@ class AetherraOSLauncher:
                     mock_cosmic = MockCosmicConsciousness()
                     mock_transcendence = MockBeyondTranscendence()
 
-                    self.systems["cosmic_consciousness"] = mock_cosmic
-                    self.systems["beyond_transcendence"] = mock_transcendence
+                    self.systems["universal_cognition"] = mock_cosmic
+                    self.systems["meta_cognition"] = mock_transcendence
 
                     await register_service(
-                        "cosmic_consciousness",
+                        "universal_cognition",
                         mock_cosmic,
                         metadata={"type": "mock", "version": "8.2"},
                     )
                     await register_service(
-                        "beyond_transcendence",
+                        "meta_cognition",
                         mock_transcendence,
                         metadata={"type": "mock", "version": "8.3"},
                     )
@@ -958,22 +963,22 @@ class AetherraOSLauncher:
                 mock_cosmic = MockCosmicConsciousness()
                 mock_transcendence = MockBeyondTranscendence()
 
-                self.systems["quantum_consciousness"] = mock_quantum
-                self.systems["cosmic_consciousness"] = mock_cosmic
-                self.systems["beyond_transcendence"] = mock_transcendence
+                self.systems["quantum_cognition"] = mock_quantum
+                self.systems["universal_cognition"] = mock_cosmic
+                self.systems["meta_cognition"] = mock_transcendence
 
                 await register_service(
-                    "quantum_consciousness",
+                    "quantum_cognition",
                     mock_quantum,
                     metadata={"type": "mock", "version": "7.0"},
                 )
                 await register_service(
-                    "cosmic_consciousness",
+                    "universal_cognition",
                     mock_cosmic,
                     metadata={"type": "mock", "version": "8.2"},
                 )
                 await register_service(
-                    "beyond_transcendence",
+                    "meta_cognition",
                     mock_transcendence,
                     metadata={"type": "mock", "version": "8.3"},
                 )
@@ -1043,17 +1048,17 @@ class AetherraOSLauncher:
             consciousness_metrics = []
 
             # Get quantum consciousness level
-            if "quantum_consciousness" in self.systems:
+            if "quantum_cognition" in self.systems:
                 qc_level = await self._get_quantum_consciousness_level()
                 consciousness_metrics.append(qc_level)
 
             # Get cosmic consciousness level
-            if "cosmic_consciousness" in self.systems:
+            if "universal_cognition" in self.systems:
                 cc_level = await self._get_cosmic_consciousness_level()
                 consciousness_metrics.append(cc_level)
 
             # Get transcendence level
-            if "beyond_transcendence" in self.systems:
+            if "meta_cognition" in self.systems:
                 bt_level = await self._get_transcendence_level()
                 consciousness_metrics.append(bt_level)
 
@@ -1071,7 +1076,7 @@ class AetherraOSLauncher:
     async def _get_quantum_consciousness_level(self):
         """Get quantum consciousness level."""
         try:
-            quantum_engine = self.systems.get("quantum_consciousness")
+            quantum_engine = self.systems.get("quantum_cognition")
             if quantum_engine and hasattr(
                 quantum_engine, "calculate_consciousness_level"
             ):
@@ -1084,7 +1089,7 @@ class AetherraOSLauncher:
     async def _get_cosmic_consciousness_level(self):
         """Get cosmic consciousness level."""
         try:
-            cosmic_engine = self.systems.get("cosmic_consciousness")
+            cosmic_engine = self.systems.get("universal_cognition")
             if cosmic_engine and hasattr(
                 cosmic_engine, "get_cosmic_consciousness_level"
             ):
@@ -1097,7 +1102,7 @@ class AetherraOSLauncher:
     async def _get_transcendence_level(self):
         """Get beyond transcendence level."""
         try:
-            transcendence_engine = self.systems.get("beyond_transcendence")
+            transcendence_engine = self.systems.get("meta_cognition")
             if transcendence_engine and hasattr(
                 transcendence_engine, "get_transcendence_level"
             ):
@@ -1304,6 +1309,46 @@ class AetherraOSLauncher:
             logger.info("[OK] Event Bus online")
         except Exception as e:
             logger.warning(f"[WARN] Event Bus unavailable: {e}")
+
+    async def _load_agent_fabric(self, config: Dict):
+        """[AGENTS] Load Agent Fabric layer and register service."""
+        try:
+            logger.info("[AGENTS] Loading Agent Fabric...")
+            from aetherra_agent_fabric import get_agent_fabric
+
+            if not self.service_registry:
+                logger.warning(
+                    "[AGENTS] Service registry not ready; skipping Agent Fabric"
+                )
+                return
+            fab = await get_agent_fabric(self.service_registry)
+            await fab.start()
+            self.systems["agent_fabric"] = fab
+            await register_service(
+                "agent_fabric",
+                fab,
+                metadata={
+                    "type": "agents",
+                    "version": "0.1",
+                    "capabilities": [
+                        "plan",
+                        "retrieve",
+                        "analyze_memory",
+                        "scan_code",
+                        "generate_tool",
+                        "policy_check",
+                        "summarize",
+                        "ops_status",
+                    ],
+                },
+            )
+            if self.service_registry and CORE_AVAILABLE:
+                await self.service_registry.update_service_status(
+                    "agent_fabric", ServiceStatus.HEALTHY
+                )
+            logger.info("[OK] Agent Fabric online")
+        except Exception as e:
+            logger.warning(f"[WARN] Agent Fabric unavailable: {e}")
 
     async def _start_kernel_loop(self):
         """[SYS] Start the OS kernel loop."""
