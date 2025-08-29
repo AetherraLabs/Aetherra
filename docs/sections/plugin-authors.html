@@ -7,14 +7,22 @@
     <title>Plugin Authors • Aetherra Docs</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+    <link rel="stylesheet" href="/sections/section-theme.css">
 </head>
 
 <body class="bg-bg text-white">
     <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
-        <h1>Plugin Authors</h1>
-        <p>Everything you need to validate and publish high-quality plugins.</p>
+        <section class="sec-hero" style="--sec-accent:#06b6d4; --sec-accent-2:#7c3aed">
+            <div class="sec-badge">Quality • Distribution</div>
+            <h1>Plugin Authors</h1>
+            <p>Everything you need to validate and publish high‑quality plugins.</p>
+            <div class="sec-actions">
+                <a class="btn primary" href="#checklist">Checklist</a>
+                <a class="btn" href="#publishing">Publishing</a>
+            </div>
+        </section>
 
-        <h2>Checklist</h2>
+        <h2 id="checklist">Checklist</h2>
         <ul>
             <li>Manifest is complete and versioned</li>
             <li>Capability hooks implemented and tested</li>
@@ -22,9 +30,10 @@
             <li>Docs and examples included</li>
         </ul>
 
-        <h2>Publishing</h2>
+        <h2 id="publishing">Publishing</h2>
         <p>Use the registry API to publish new versions and manage visibility.</p>
     </main>
+    <script src="/sections/section-theme.js"></script>
 </body>
 
 </html>

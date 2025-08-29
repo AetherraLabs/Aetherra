@@ -7,14 +7,23 @@
     <title>Developers • Aetherra Docs</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+    <link rel="stylesheet" href="/sections/section-theme.css">
 </head>
 
 <body class="bg-bg text-white">
     <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
-        <h1>Developers</h1>
-        <p>Install the toolchain, run your first .aether program, and learn the project layout.</p>
+        <section class="sec-hero">
+            <div class="sec-badge">Start building • Local first</div>
+            <h1>Developers</h1>
+            <p>Install the toolchain, run your first .aether program, and learn the project layout.</p>
+            <div class="sec-actions">
+                <a class="btn primary" href="#quickstart">Quickstart</a>
+                <a class="btn" href="/sections/runtime-cli.html">Runtime & CLI</a>
+                <a class="btn" href="/sections/aether-language.html">.aether Language</a>
+            </div>
+        </section>
 
-        <h2>Quickstart</h2>
+        <h2 id="quickstart">Quickstart</h2>
         <ol>
             <li>Install Python 3.10+ and Git.</li>
             <li>Clone the repo and create a virtual environment.</li>
@@ -62,6 +71,7 @@ python aetherra_os.py
             <li><a href="/sections/aether-language.html">.aether Language</a></li>
         </ul>
     </main>
+    <script src="/sections/section-theme.js"></script>
 </body>
 
 </html>

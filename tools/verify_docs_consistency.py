@@ -133,6 +133,8 @@ def read_doc_endpoints(doc: Path) -> Set[str]:
             "/health",
             "/status",
             "/metrics",  # Prometheus exposition endpoint
+            "/site_status",  # aggregated site status alias
+            "/<",  # parameterized root catch-alls (e.g., /<param>)
         )
         filtered = {
             p for p in normed if p == "/" or p.lower().startswith(allowed_prefixes)

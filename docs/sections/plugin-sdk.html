@@ -7,14 +7,24 @@
     <title>Plugin SDK • Aetherra Docs</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+    <link rel="stylesheet" href="/sections/section-theme.css">
 </head>
 
 <body class="bg-bg text-white">
     <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
-        <h1>Plugin SDK</h1>
-        <p>Build, validate, and publish plugins that integrate with the Aetherra kernel.</p>
+        <section class="sec-hero" style="--sec-accent:#10b981; --sec-accent-2:#22d3ee">
+            <div class="sec-badge">Extensibility • Contracts</div>
+            <h1>Plugin SDK</h1>
+            <p>Build, validate, and publish plugins that integrate with the Aetherra kernel.</p>
+            <div class="sec-actions">
+                <a class="btn primary" href="#lifecycle">Lifecycle</a>
+                <a class="btn" href="#reference">Reference</a>
+                <a class="btn" href="#checklist">Checklist</a>
+                <a class="btn" href="#publishing">Publishing</a>
+            </div>
+        </section>
 
-        <h2>Lifecycle</h2>
+        <h2 id="lifecycle">Lifecycle</h2>
         <ol>
             <li>Scaffold a plugin module.</li>
             <li>Implement capability hooks.</li>
@@ -22,14 +32,14 @@
             <li>Publish to the registry and enable in the hub.</li>
         </ol>
 
-        <h2>Reference</h2>
+        <h2 id="reference">Reference</h2>
         <ul>
             <li>Manifest structure</li>
             <li>Plugin hooks and events</li>
             <li>Versioning and compatibility</li>
         </ul>
 
-        <h3>Checklist</h3>
+        <h3 id="checklist">Checklist</h3>
         <ul>
             <li>Unique plugin name and semantic version.</li>
             <li>Validated capabilities; hooks return stable shapes.</li>
@@ -37,7 +47,7 @@
             <li>Examples and minimal docs included.</li>
         </ul>
 
-        <h3>Publishing</h3>
+        <h3 id="publishing">Publishing</h3>
         <p>Use the registry API to publish and manage visibility. Ensure your Hub token is configured if required.</p>
 
         <h2>See also</h2>
@@ -46,6 +56,7 @@
             <li><a href="/sections/api-registry.html">API / Registry</a></li>
         </ul>
     </main>
+    <script src="/sections/section-theme.js"></script>
 </body>
 
 </html>

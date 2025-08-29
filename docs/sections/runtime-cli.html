@@ -7,14 +7,23 @@
     <title>Runtime & CLI • Aetherra Docs</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+    <link rel="stylesheet" href="/sections/section-theme.css">
 </head>
 
 <body class="bg-bg text-white">
     <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
-        <h1>Runtime & CLI</h1>
-        <p>Commands, configuration, and exit codes for the Aetherra runtime.</p>
+        <section class="sec-hero" style="--sec-accent:#7c3aed; --sec-accent-2:#22d3ee">
+            <div class="sec-badge">Kernel & Hub • Observability</div>
+            <h1>Runtime & CLI</h1>
+            <p>Commands, configuration, and exit codes for the Aetherra runtime.</p>
+            <div class="sec-actions">
+                <a class="btn primary" href="#cli">CLI</a>
+                <a class="btn" href="#config">Configuration</a>
+                <a class="btn" href="#exit-codes">Exit codes</a>
+            </div>
+        </section>
 
-        <h2>CLI</h2>
+        <h2 id="cli">CLI</h2>
         <ul>
             <li><code>aetherra_os.py</code> — start the OS/kernel.</li>
             <li><code>aetherra_hub_server.py</code> — start the Hub API.</li>
@@ -33,14 +42,14 @@ python tools/os_smoke.py
 python tools/verify_ui_standards.py --dir src/lyrixa/ui --output ui_standards_report.md
 </code></pre>
 
-        <h2>Configuration</h2>
+        <h2 id="config">Configuration</h2>
         <ul>
             <li><code>AETHERRA_HUB_URL</code> — base URL the UI/widgets use.</li>
             <li><code>AETHERRA_TOKEN</code> — auth token for protected calls.</li>
             <li><code>AETHERRA_PNA_ALLOW</code> — enable PNA header on preflights.</li>
         </ul>
 
-        <h2>Exit codes</h2>
+        <h2 id="exit-codes">Exit codes</h2>
         <ul>
             <li>0 — success / clean shutdown</li>
             <li>1 — generic error</li>
@@ -51,6 +60,7 @@ python tools/verify_ui_standards.py --dir src/lyrixa/ui --output ui_standards_re
         <p>The kernel schedules tasks across queues (high/normal/background). Monitor via <code>/metrics</code> and the
             live widget.</p>
     </main>
+    <script src="/sections/section-theme.js"></script>
 </body>
 
 </html>

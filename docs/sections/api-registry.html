@@ -7,23 +7,32 @@
     <title>API / Registry • Aetherra Docs</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+    <link rel="stylesheet" href="/sections/section-theme.css">
 </head>
 
 <body class="bg-bg text-white">
     <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
-        <h1>API / Registry</h1>
-        <p>Endpoints, auth, and limits for interacting with the Aetherra hub and registry.</p>
+        <section class="sec-hero" style="--sec-accent:#22d3ee; --sec-accent-2:#7c3aed">
+            <div class="sec-badge">Stable contracts • Tokens</div>
+            <h1>API / Registry</h1>
+            <p>Endpoints, auth, and limits for interacting with the Aetherra hub and registry.</p>
+            <div class="sec-actions">
+                <a class="btn primary" href="#auth">Authentication</a>
+                <a class="btn" href="#endpoints">Endpoints</a>
+            </div>
+        </section>
 
-        <h2>Authentication</h2>
+        <h2 id="auth">Authentication</h2>
         <p>Use the <code>X-Aetherra-Token</code> header for authenticated requests.</p>
 
-        <h2>Endpoints</h2>
+        <h2 id="endpoints">Endpoints</h2>
         <ul>
             <li>/api/plugins</li>
             <li>/api/site_status</li>
             <li>/api/tasks/:id</li>
         </ul>
     </main>
+    <script src="/sections/section-theme.js"></script>
 </body>
 
 </html>
