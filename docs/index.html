@@ -26,9 +26,9 @@
         { test: t => (/\bapi\b/.test(t) && /registry/.test(t)) || /api\s*\/\s*registry/.test(t), href: '/sections/api-registry.html' },
         { test: t => /tutorial|recipe/.test(t), href: '/sections/tutorials-recipes.html' },
         { test: t => /changelog|versioning|release\s*notes?/.test(t), href: '/sections/changelog-versioning.html' },
-        // Docs entry
-        { test: t => /\bdocs?\b|documentation/.test(t), href: '/sections/developers.html' },
-        { test: t => /getting\s*started|start\s*here/.test(t), href: '/sections/developers.html' },
+  // Docs entry
+  { test: t => /\bdocs?\b|documentation|docs\s*hub|documentation\s*hub/.test(t), href: '/sections/hub.html' },
+  { test: t => /getting\s*started|start\s*here/.test(t), href: '/sections/developers.html' },
         // Community
         { test: t => /\bdiscord\b|community\s*chat|join\s*(our\s*)?discord/.test(t), href: 'https://discord.gg/JPsey8Az6F' },
       ];
