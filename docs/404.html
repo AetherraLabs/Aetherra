@@ -10,6 +10,31 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <script type="module" crossorigin src="/assets/index-OrXyYuWD.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+  <script>
+    (function () {
+      const RULES = [
+        { test: t => /\bdevelopers?\b/.test(t), href: '/sections/developers.html' },
+        { test: t => /plugin\s*sdk/.test(t), href: '/sections/plugin-sdk.html' },
+        { test: t => /plugin\s*authors?/.test(t), href: '/sections/plugin-authors.html' },
+        { test: t => /researchers?\b/.test(t), href: '/sections/researchers.html' },
+        { test: t => /ops|operations|secops|devsecops|security/.test(t), href: '/sections/ops-security.html' },
+        { test: t => ((/\.aether/.test(t) || /\baether\b/.test(t)) && /language/.test(t)), href: '/sections/aether-language.html' },
+        { test: t => /runtime|cli\b/.test(t), href: '/sections/runtime-cli.html' },
+        { test: t => /memory|cognition|cognitive/.test(t), href: '/sections/memory-cognition.html' },
+        { test: t => (/\bapi\b/.test(t) && /registry/.test(t)) || /api\s*\/\s*registry/.test(t), href: '/sections/api-registry.html' },
+        { test: t => /tutorial|recipe/.test(t), href: '/sections/tutorials-recipes.html' },
+        { test: t => /changelog|versioning|release\s*notes?/.test(t), href: '/sections/changelog-versioning.html' },
+        { test: t => /\bdocs?\b|documentation/.test(t), href: '/sections/developers.html' },
+        { test: t => /getting\s*started|start\s*here/.test(t), href: '/sections/developers.html' },
+        { test: t => /\bdiscord\b|community\s*chat|join\s*(our\s*)?discord/.test(t), href: 'https://discord.gg/JPsey8Az6F' },
+      ];
+      function normalize(a){const r=(a.getAttribute('aria-label')||a.title||a.textContent||'').toLowerCase();return r.replace(/[\s\u00A0]+/g,' ').replace(/[\.!?,;:()\[\]\-_/]+/g,' ').trim();}
+      function findTarget(a){const t=normalize(a);for(const r of RULES){if(r.test(t))return r.href;}return null;}
+      function isExternal(u){return /^https?:\/\//.test(String(u));}
+      function rewrite(root){try{const scope=root||document;scope.querySelectorAll('a:not([data-link-fixed]), button:not([data-link-fixed]), [role="button"]:not([data-link-fixed])').forEach(el=>{const target=findTarget(el);if(!target)return; if(el.tagName==='A'){el.setAttribute('href',target);if(isExternal(target)){el.setAttribute('target','_blank');el.setAttribute('rel','noopener noreferrer');el.addEventListener('click',(e)=>{try{e.preventDefault();e.stopPropagation();window.open(target,'_blank','noopener');}catch{}},{capture:true});}else{try{el.removeAttribute('target');el.removeAttribute('rel');}catch{} el.addEventListener('click',(e)=>{const t2=findTarget(el);if(t2){e.preventDefault();e.stopPropagation();location.href=t2;}},{capture:true});}el.setAttribute('data-link-fixed','1');}else{el.style.cursor='pointer';el.addEventListener('click',(e)=>{e.preventDefault();e.stopPropagation();if(isExternal(target))window.open(target,'_blank','noopener');else location.href=target;},{capture:true});el.setAttribute('data-link-fixed','1');}});}catch{}}
+      function boot(){const root=document.getElementById('root')||document.body||document.documentElement;const obs=new MutationObserver(()=>rewrite(root));obs.observe(root,{childList:true,subtree:true,characterData:true});rewrite(root);setTimeout(()=>rewrite(root),250);setTimeout(()=>rewrite(root),800);} if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+    })();
+  </script>
 </head>
 
 <body class="bg-bg text-white">
