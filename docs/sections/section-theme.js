@@ -105,6 +105,21 @@
         } catch { }
     }
 
-    function start() { injectSiteHeaderOrFallback(); setupCopy(); }
+    function injectBreadcrumb() {
+        try {
+            if (document.querySelector('.sec-breadcrumb')) return;
+            const main = document.querySelector('main');
+            if (!main) return;
+            const nav = document.createElement('div');
+            nav.className = 'sec-breadcrumb';
+            nav.innerHTML = '<a href="/sections/hub.html">Docs</a> / <span>Section</span>';
+            // Place before the hero if present, else at top of main
+            const hero = main.querySelector('.sec-hero');
+            if (hero && hero.parentNode === main) main.insertBefore(nav, hero);
+            else main.insertBefore(nav, main.firstChild);
+        } catch { }
+    }
+
+    function start() { injectSiteHeaderOrFallback(); injectBreadcrumb(); setupCopy(); }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
