@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Runtime & CLI • Aetherra Docs</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+</head>
+
+<body class="bg-bg text-white">
+    <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
+        <h1>Runtime & CLI</h1>
+        <p>Commands, configuration, and exit codes for the Aetherra runtime.</p>
+
+        <h2>CLI</h2>
+        <ul>
+            <li><code>aetherra_os.py</code> — start the OS/kernel.</li>
+            <li><code>aetherra_hub_server.py</code> — start the Hub API.</li>
+            <li><code>tools/quality_gates.py</code> — run tests/coverage quality gates.</li>
+        </ul>
+
+        <h3>Common commands</h3>
+        <pre><code># Start Hub (default :3001)
+python aetherra_hub_server.py
+
+# Start OS
+python aetherra_os.py
+
+# Smoke & standards
+python tools/os_smoke.py
+python tools/verify_ui_standards.py --dir src/lyrixa/ui --output ui_standards_report.md
+</code></pre>
+
+        <h2>Configuration</h2>
+        <ul>
+            <li><code>AETHERRA_HUB_URL</code> — base URL the UI/widgets use.</li>
+            <li><code>AETHERRA_TOKEN</code> — auth token for protected calls.</li>
+            <li><code>AETHERRA_PNA_ALLOW</code> — enable PNA header on preflights.</li>
+        </ul>
+
+        <h2>Exit codes</h2>
+        <ul>
+            <li>0 — success / clean shutdown</li>
+            <li>1 — generic error</li>
+            <li>2 — configuration or environment error</li>
+        </ul>
+
+        <h2>Kernel</h2>
+        <p>The kernel schedules tasks across queues (high/normal/background). Monitor via <code>/metrics</code> and the
+            live widget.</p>
+    </main>
+</body>
+
+</html>

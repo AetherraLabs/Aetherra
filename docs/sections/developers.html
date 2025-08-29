@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Developers • Aetherra Docs</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+</head>
+
+<body class="bg-bg text-white">
+    <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
+        <h1>Developers</h1>
+        <p>Install the toolchain, run your first .aether program, and learn the project layout.</p>
+
+        <h2>Quickstart</h2>
+        <ol>
+            <li>Install Python 3.10+ and Git.</li>
+            <li>Clone the repo and create a virtual environment.</li>
+            <li>Run the hub server and open the web console.</li>
+        </ol>
+
+        <h3>Commands</h3>
+        <pre><code>python aetherra_hub_server.py
+python aetherra_os.py
+</code></pre>
+
+        <h2>Key Concepts</h2>
+        <ul>
+            <li>Aether Script (.aether) — declarative tasks and pipelines.</li>
+            <li>Kernel & Plugins — execution runtime with queues and metrics.</li>
+            <li>Service Registry — discover and register capabilities.</li>
+        </ul>
+
+        <h2>Project layout</h2>
+        <ul>
+            <li><code>aetherra_os.py</code> — OS entrypoint.</li>
+            <li><code>aetherra_hub_server.py</code> — Hub API (plugins, status, metrics).</li>
+            <li><code>tools/</code> — verification scripts and quality gates.</li>
+            <li><code>docs/</code> — this site; <code>sections/</code> contains landing pages.</li>
+        </ul>
+
+        <h2>Environment basics</h2>
+        <ul>
+            <li><code>AETHERRA_HUB_URL</code> — hub base URL the UI talks to.</li>
+            <li><code>AETHERRA_TOKEN</code> — token sent as <code>X-Aetherra-Token</code> for protected endpoints.</li>
+        </ul>
+
+        <h2>Run your first .aether</h2>
+        <ol>
+            <li>Start the hub: <code>python aetherra_hub_server.py</code></li>
+            <li>Start the OS: <code>python aetherra_os.py</code></li>
+            <li>Open the docs page and set Hub URL via the widget title (Ctrl+click).</li>
+            <li>Submit a task and watch it via the widget task watcher.</li>
+        </ol>
+
+        <h2>Next steps</h2>
+        <ul>
+            <li><a href="/sections/plugin-sdk.html">Plugin SDK</a></li>
+            <li><a href="/sections/runtime-cli.html">Runtime & CLI</a></li>
+            <li><a href="/sections/aether-language.html">.aether Language</a></li>
+        </ul>
+    </main>
+</body>
+
+</html>

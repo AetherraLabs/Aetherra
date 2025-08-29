@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tutorials & Recipes • Aetherra Docs</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" crossorigin href="/assets/index-C-Fa0ZPS.css">
+</head>
+
+<body class="bg-bg text-white">
+    <main class="container prose prose-invert" style="max-width: 900px; margin: 40px auto; padding: 0 16px;">
+        <h1>Tutorials & Recipes</h1>
+        <p>Common tasks with copy‑paste snippets. Use the live widget (bottom-right) to set your Hub URL and stream task
+            output.</p>
+
+        <h2>How to stream a task</h2>
+        <ol>
+            <li>Ctrl‑click the widget title “Hub” to set <code>AETHERRA_HUB_URL</code>.</li>
+            <li>Paste the task id into the input and click “watch”.</li>
+        </ol>
+
+        <h2>Recipes</h2>
+
+        <h3>1) Hello world chain</h3>
+        <p>Create <code>hello.aether</code>:</p>
+        <pre><code>name: hello-world
+version: 0.1.0
+chains:
+    - id: greet
+        steps:
+            - use: echo
+                with: { text: "Hello, Aetherra!" }
+</code></pre>
+        <p>Run it, then watch the task in the widget.</p>
+
+        <h3>2) Fetch + transform JSON</h3>
+        <pre><code>name: fetch-transform
+version: 0.1.0
+chains:
+    - id: pipeline
+        steps:
+            - use: fetch
+                as: data
+                with: { url: "https://httpbin.org/json" }
+            - use: transform
+                with:
+                    input: ${data.body}
+                    select: $.slideshow.title
+</code></pre>
+        <p>Watch the stream to see the selected field emitted.</p>
+
+        <h3>3) Memory recall in chat</h3>
+        <pre><code>name: memory-chat
+version: 0.1.0
+chains:
+    - id: convo
+        steps:
+            - use: memory.store
+                with: { text: "Agent favorite color is violet." }
+            - use: chat
+                with:
+                    prompt: "What is my favorite color?"
+</code></pre>
+        <p>Ensure memory and chat capabilities are available in your Hub; stream the conversation via the widget.</p>
+
+        <p>More: <a href="/sections/aether-language.html">.aether Language</a> · <a
+                href="/sections/plugin-sdk.html">Plugin SDK</a></p>
+    </main>
+</body>
+
+</html>
