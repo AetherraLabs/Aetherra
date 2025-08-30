@@ -1,0 +1,53 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '17 6 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  bandit-and-pip-audit:
+    name: Bandit + pip-audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit pip-audit
+
+      - name: Bandit (Python security lints)
+        run: |
+          bandit -r Aetherra -f sarif -o bandit.sarif || true
+
+      - name: Upload Bandit SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: bandit.sarif
+
+      - name: pip-audit (dependency vulnerabilities)
+        run: |
+          if [ -f requirements.txt ]; then
+            pip-audit -r requirements.txt -f sarif -o pipaudit.sarif || true
+          else
+            pip-audit -f sarif -o pipaudit.sarif || true
+          fi
+
+      - name: Upload pip-audit SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: pipaudit.sarif
