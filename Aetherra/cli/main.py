@@ -366,8 +366,7 @@ Available commands:
 
                 ContextType.CREATING: "Great idea! Let's build this with security and maintainability in mind from the start.",
 
-                ContextType.LEARNING: "I'll teach you this thoroughly,
-                    ensuring you understand both the concept and its safe implementation.",
+                ContextType.LEARNING: "I'll teach you this thoroughly, ensuring you understand both the concept and its safe implementation.",
 
                 ContextType.EMERGENCY: "Emergency protocols activated. I'll guide you through immediate stabilization steps.",
 
@@ -413,8 +412,7 @@ Available commands:
 
                 ContextType.LEARNING: "Ready to accelerate your learning? I'll energize your understanding with dynamic examples.",
 
-                ContextType.EMERGENCY: "Crisis energy activated! Let's channel this urgency into rapid,
-                    decisive action.",
+                ContextType.EMERGENCY: "Crisis energy activated! Let's channel this urgency into rapid, decisive action.",
 
             },
         }
@@ -457,9 +455,10 @@ Available commands:
 
         # Add command-specific guidance
         if "help" in command.lower():
-            base_response += f"\n\n💡 Based on my experience,
-                here's what I recommend:\n{self._get_specific_guidance(command,
-                guidance)}"
+            base_response += (
+                "\n\n💡 Based on my experience, here's what I recommend:\n"
+                + self._get_specific_guidance(command, guidance)
+            )
 
         return base_response
 
@@ -467,8 +466,10 @@ Available commands:
         """Get specific guidance based on command and emotional memory"""
         if guidance.get("confidence", 0) > 0.5:
             patterns = guidance.get("recommended_approach", "Standard approach")
-            return f"• {patterns}\n• Previous similar interactions were successful\n• Confidence level: {guidance.get('confidence',
-                0):.1%}"
+            return (
+                f"• {patterns}\n• Previous similar interactions were successful\n"
+                f"• Confidence level: {guidance.get('confidence', 0):.1%}"
+            )
         else:
             return "• I'll learn from this interaction to provide better guidance in the future\n• Feel free to provide feedback on my responses"
 
