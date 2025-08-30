@@ -24,6 +24,54 @@ from Aetherra.core.memory_manager import MemoryManager
 # Use the shared security and memory components available in the repo
 from Aetherra.security import api_keys
 
+# --- Safe logging & redaction helpers (to prevent sensitive data leaks) ---
+SENSITIVE_KEY_PATTERNS = (
+    "password",
+    "secret",
+    "api_key",
+    "apikey",
+    "token",
+    "private",
+    "credential",
+    "master",
+    "key",
+)
+
+
+def _looks_like_secret(value: str) -> bool:
+    try:
+        if not isinstance(value, str):
+            return False
+        v = value.strip()
+        # Heuristic: long opaque tokens
+        return (len(v) >= 20) and any(ch.isdigit() for ch in v) and any(ch.isalpha() for ch in v)
+    except Exception:
+        return False
+
+
+def redact_secrets(data: Any) -> Any:
+    """Return a deep-copied structure with secret-looking fields redacted.
+
+    - Redacts dict items whose key name contains sensitive patterns
+    - Redacts string values that look like secrets/tokens
+    """
+    try:
+        if isinstance(data, dict):
+            out: Dict[str, Any] = {}
+            for k, v in data.items():
+                if isinstance(k, str) and any(p in k.lower() for p in SENSITIVE_KEY_PATTERNS):
+                    out[k] = "***REDACTED***"
+                else:
+                    out[k] = redact_secrets(v)
+            return out
+        if isinstance(data, list):
+            return [redact_secrets(x) for x in data]
+        if isinstance(data, str) and _looks_like_secret(data):
+            return "***REDACTED***"
+        return data
+    except Exception:
+        return data
+
 
 @dataclass
 class SecurityConfig:
@@ -582,13 +630,18 @@ if __name__ == "__main__":
     print("🛡️ Aetherra Security System")
     print("=" * 40)
 
-    # Get security status
-    status = security_system.get_security_status()
+    # Get security status (sanitized for console output)
+    status = redact_secrets(security_system.get_security_status())
     print(
         f"Security monitoring: {'Active' if status['monitoring_active'] else 'Inactive'}"
     )
     print(f"Security alerts: {status['alerts']}")
-    print(f"Memory usage: {status['memory'].get('usage_percent', 0.0):.1f}%")
+    # Guard against missing keys and avoid printing raw objects
+    mem = status.get('memory') or {}
+    usage = 0.0
+    if isinstance(mem, dict):
+        usage = float(mem.get('usage_percent', 0.0) or 0.0)
+    print(f"Memory usage: {usage:.1f}%")
 
     # Force security scan
     print("\n🔍 Running security scan...")
