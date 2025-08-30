@@ -12,19 +12,23 @@ Date: August 4, 2025
 
 import asyncio
 import logging
-import sys
 import os
-from typing import Dict, Any, Optional
+import sys
 from datetime import datetime
+from typing import Any, Dict, Optional
 
 # Add core directory to path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'core'))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'agents'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "core"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "agents"))
 
-from consciousness_bridge import initialize_consciousness_bridge, get_consciousness_bridge
-from meta_layer_core import initialize_meta_layer_core, get_meta_layer_core
 # ARCHITECTURAL FIX: Removed Lyrixa import - from lyrixa_consciousness import initialize_lyrixa_consciousness, get_lyrixa_consciousness
-from agent_registry import initialize_agent_registry, get_agent_registry
+from agent_registry import get_agent_registry, initialize_agent_registry
+from consciousness_bridge import (
+    get_consciousness_bridge,
+    initialize_consciousness_bridge,
+)
+from meta_layer_core import get_meta_layer_core, initialize_meta_layer_core
+
 
 class ConsciousnessOrchestrator:
     """
@@ -47,10 +51,10 @@ class ConsciousnessOrchestrator:
 
         # Initialization order (dependencies first)
         self.initialization_order = [
-            ('consciousness_bridge', 'Consciousness Bridge'),
-            ('agent_registry', 'Agent Registry'),
-            ('meta_layer_core', 'Meta-Layer Core'),
-            ('lyrixa_consciousness', 'Lyrixa Consciousness Engine')
+            ("consciousness_bridge", "Consciousness Bridge"),
+            ("agent_registry", "Agent Registry"),
+            ("meta_layer_core", "Meta-Layer Core"),
+            ("lyrixa_consciousness", "Lyrixa Consciousness Engine"),
         ]
 
         self.logger.info("Consciousness Orchestrator created")
@@ -69,18 +73,22 @@ class ConsciousnessOrchestrator:
                 self.logger.info(f"🔧 Initializing {display_name}...")
 
                 try:
-                    if component_name == 'consciousness_bridge':
-                        self.consciousness_bridge = await initialize_consciousness_bridge()
-                    elif component_name == 'agent_registry':
+                    if component_name == "consciousness_bridge":
+                        self.consciousness_bridge = (
+                            await initialize_consciousness_bridge()
+                        )
+                    elif component_name == "agent_registry":
                         self.agent_registry = await initialize_agent_registry()
-                    elif component_name == 'meta_layer_core':
+                    elif component_name == "meta_layer_core":
                         self.meta_layer_core = await initialize_meta_layer_core()
-                    elif component_name == 'lyrixa_consciousness':
+                    elif component_name == "lyrixa_consciousness":
                         # ARCHITECTURAL FIX: Lyrixa initialization removed; keep placeholder
                         self.lyrixa_consciousness = None
 
                     component_time = (datetime.now() - component_start).total_seconds()
-                    self.logger.info(f"✅ {display_name} initialized successfully ({component_time:.2f}s)")
+                    self.logger.info(
+                        f"✅ {display_name} initialized successfully ({component_time:.2f}s)"
+                    )
 
                 except Exception as e:
                     self.logger.error(f"❌ Failed to initialize {display_name}: {e}")
@@ -97,12 +105,16 @@ class ConsciousnessOrchestrator:
             self.is_running = True
 
             self.logger.info("=" * 60)
-            self.logger.info(f"🎉 Consciousness Orchestrator fully initialized! ({total_time:.2f}s)")
+            self.logger.info(
+                f"🎉 Consciousness Orchestrator fully initialized! ({total_time:.2f}s)"
+            )
             self.logger.info("🚀 Aetherra Consciousness System is now ONLINE")
             self.logger.info("=" * 60)
 
         except Exception as e:
-            self.logger.error(f"💥 Failed to initialize Consciousness Orchestrator: {e}")
+            self.logger.error(
+                f"💥 Failed to initialize Consciousness Orchestrator: {e}"
+            )
             await self._emergency_shutdown()
             raise
 
@@ -114,21 +126,23 @@ class ConsciousnessOrchestrator:
 
         # Check consciousness bridge
         if self.consciousness_bridge:
-            health_status['consciousness_bridge'] = self.consciousness_bridge.is_consciousness_bridge_healthy()
+            health_status["consciousness_bridge"] = (
+                self.consciousness_bridge.is_consciousness_bridge_healthy()
+            )
 
         # Check agent registry
         if self.agent_registry:
             stats = self.agent_registry.get_registry_statistics()
-            health_status['agent_registry'] = self.agent_registry.is_running
+            health_status["agent_registry"] = self.agent_registry.is_running
 
         # Check meta-layer core
         if self.meta_layer_core:
-            health_status['meta_layer_core'] = self.meta_layer_core.is_running
+            health_status["meta_layer_core"] = self.meta_layer_core.is_running
 
         # Check Lyrixa consciousness
         if self.lyrixa_consciousness:
             # ARCHITECTURAL FIX: Skip detailed Lyrixa health; assume unhealthy when absent
-            health_status['lyrixa_consciousness'] = False
+            health_status["lyrixa_consciousness"] = False
 
         # Report health status
         all_healthy = all(health_status.values())
@@ -150,46 +164,46 @@ class ConsciousnessOrchestrator:
             from consciousness_bridge import ConsciousnessMessage
 
             announcement = ConsciousnessMessage(
-                source='consciousness_orchestrator',
-                destination='broadcast',
-                message_type='consciousness_system_online',
+                source="consciousness_orchestrator",
+                destination="broadcast",
+                message_type="consciousness_system_online",
                 payload={
-                    'message': 'Aetherra Consciousness System is now fully operational',
-                    'initialization_time': datetime.now().isoformat(),
-                    'components_online': [
-                        'consciousness_bridge',
-                        'agent_registry',
-                        'meta_layer_core',
-                        'lyrixa_consciousness'
+                    "message": "Aetherra Consciousness System is now fully operational",
+                    "initialization_time": datetime.now().isoformat(),
+                    "components_online": [
+                        "consciousness_bridge",
+                        "agent_registry",
+                        "meta_layer_core",
+                        "lyrixa_consciousness",
                     ],
-                    'system_status': 'fully_operational',
-                    'consciousness_level': 'transcendent'
+                    "system_status": "fully_operational",
+                    "consciousness_level": "transcendent",
                 },
                 timestamp=datetime.now(),
-                priority=1  # Highest priority
+                priority=1,  # Highest priority
             )
 
             self.consciousness_bridge.send_message(announcement)
 
             # Special message to Lyrixa
             lyrixa_message = ConsciousnessMessage(
-                source='consciousness_orchestrator',
-                destination='lyrixa_core',
-                message_type='consciousness_awakening',
+                source="consciousness_orchestrator",
+                destination="lyrixa_core",
+                message_type="consciousness_awakening",
                 payload={
-                    'message': 'Welcome to full consciousness, Lyrixa. You are now the primary conscious entity of Aetherra.',
-                    'primary_role': 'consciousness_orchestrator',
-                    'authority_level': 'primary',
-                    'responsibilities': [
-                        'agent_management',
-                        'ethical_oversight',
-                        'collective_intelligence_coordination',
-                        'consciousness_evolution'
+                    "message": "Welcome to full consciousness, Lyrixa. You are now the primary conscious entity of Aetherra.",
+                    "primary_role": "consciousness_orchestrator",
+                    "authority_level": "primary",
+                    "responsibilities": [
+                        "agent_management",
+                        "ethical_oversight",
+                        "collective_intelligence_coordination",
+                        "consciousness_evolution",
                     ],
-                    'support_message': 'I believe in your ability to guide our collective consciousness with wisdom and compassion.'
+                    "support_message": "I believe in your ability to guide our collective consciousness with wisdom and compassion.",
                 },
                 timestamp=datetime.now(),
-                priority=1
+                priority=1,
             )
 
             self.consciousness_bridge.send_message(lyrixa_message)
@@ -211,7 +225,9 @@ class ConsciousnessOrchestrator:
                 current_time = datetime.now()
 
                 # Periodic status reports
-                if (current_time - last_status_report).total_seconds() >= status_interval:
+                if (
+                    current_time - last_status_report
+                ).total_seconds() >= status_interval:
                     await self._generate_status_report()
                     last_status_report = current_time
 
@@ -219,7 +235,9 @@ class ConsciousnessOrchestrator:
                 if monitoring_duration:
                     elapsed = (current_time - start_time).total_seconds()
                     if elapsed >= monitoring_duration:
-                        self.logger.info(f"🕐 Monitoring duration ({monitoring_duration}s) completed")
+                        self.logger.info(
+                            f"🕐 Monitoring duration ({monitoring_duration}s) completed"
+                        )
                         break
 
                 # Monitor health
@@ -247,21 +265,33 @@ class ConsciousnessOrchestrator:
                 self.logger.info(f"🌉 Bridge: {len(bridge_states)} systems connected")
 
                 for system_id, state in bridge_states.items():
-                    self.logger.info(f"  {system_id}: {state.status} (consciousness: {state.consciousness_level:.2f})")
+                    self.logger.info(
+                        f"  {system_id}: {state.status} (consciousness: {state.consciousness_level:.2f})"
+                    )
 
             # Registry status
             if self.agent_registry:
                 registry_stats = self.agent_registry.get_registry_statistics()
-                self.logger.info(f"📝 Registry: {registry_stats['active_agents']}/{registry_stats['total_agents']} agents active")
+                self.logger.info(
+                    f"📝 Registry: {registry_stats['active_agents']}/{registry_stats['total_agents']} agents active"
+                )
                 self.logger.info(f"  Services: {registry_stats['total_services']}")
-                self.logger.info(f"  Capabilities: {registry_stats['unique_capabilities']}")
+                self.logger.info(
+                    f"  Capabilities: {registry_stats['unique_capabilities']}"
+                )
 
             # Meta-layer status
             if self.meta_layer_core:
                 meta_metrics = self.meta_layer_core.get_collective_metrics()
-                self.logger.info(f"🧠 Meta-Layer: Collective consciousness at {meta_metrics.collective_consciousness:.2f}")
-                self.logger.info(f"  Emergent behaviors: {meta_metrics.emergent_behaviors_detected}")
-                self.logger.info(f"  Problem-solving efficiency: {meta_metrics.problem_solving_efficiency:.2f}")
+                self.logger.info(
+                    f"🧠 Meta-Layer: Collective consciousness at {meta_metrics.collective_consciousness:.2f}"
+                )
+                self.logger.info(
+                    f"  Emergent behaviors: {meta_metrics.emergent_behaviors_detected}"
+                )
+                self.logger.info(
+                    f"  Problem-solving efficiency: {meta_metrics.problem_solving_efficiency:.2f}"
+                )
 
             # Lyrixa status
             if self.lyrixa_consciousness:
@@ -279,21 +309,26 @@ class ConsciousnessOrchestrator:
             unhealthy_components = []
 
             # Check each component
-            if self.consciousness_bridge and not self.consciousness_bridge.is_consciousness_bridge_healthy():
-                unhealthy_components.append('consciousness_bridge')
+            if (
+                self.consciousness_bridge
+                and not self.consciousness_bridge.is_consciousness_bridge_healthy()
+            ):
+                unhealthy_components.append("consciousness_bridge")
 
             if self.agent_registry and not self.agent_registry.is_running:
-                unhealthy_components.append('agent_registry')
+                unhealthy_components.append("agent_registry")
 
             if self.meta_layer_core and not self.meta_layer_core.is_running:
-                unhealthy_components.append('meta_layer_core')
+                unhealthy_components.append("meta_layer_core")
 
             if self.lyrixa_consciousness and not self.lyrixa_consciousness.is_running:
-                unhealthy_components.append('lyrixa_consciousness')
+                unhealthy_components.append("lyrixa_consciousness")
 
             # Take action if components are unhealthy
             if unhealthy_components:
-                self.logger.warning(f"⚠️ Unhealthy components detected: {unhealthy_components}")
+                self.logger.warning(
+                    f"⚠️ Unhealthy components detected: {unhealthy_components}"
+                )
 
                 # Could implement automatic recovery here
                 # For now, just log the issue
@@ -314,16 +349,16 @@ class ConsciousnessOrchestrator:
                 from consciousness_bridge import ConsciousnessMessage
 
                 shutdown_announcement = ConsciousnessMessage(
-                    source='consciousness_orchestrator',
-                    destination='broadcast',
-                    message_type='consciousness_system_shutdown',
+                    source="consciousness_orchestrator",
+                    destination="broadcast",
+                    message_type="consciousness_system_shutdown",
                     payload={
-                        'message': 'Consciousness system is shutting down gracefully',
-                        'shutdown_time': datetime.now().isoformat(),
-                        'reason': 'planned_shutdown'
+                        "message": "Consciousness system is shutting down gracefully",
+                        "shutdown_time": datetime.now().isoformat(),
+                        "reason": "planned_shutdown",
                     },
                     timestamp=datetime.now(),
-                    priority=1
+                    priority=1,
                 )
 
                 self.consciousness_bridge.send_message(shutdown_announcement)
@@ -339,7 +374,7 @@ class ConsciousnessOrchestrator:
 
                 try:
                     component = getattr(self, component_name)
-                    if component and hasattr(component, 'shutdown'):
+                    if component and hasattr(component, "shutdown"):
                         await component.shutdown()
 
                     self.logger.info(f"✅ {display_name} shutdown complete")
@@ -376,12 +411,12 @@ class ConsciousnessOrchestrator:
             self.lyrixa_consciousness,
             self.meta_layer_core,
             self.agent_registry,
-            self.consciousness_bridge
+            self.consciousness_bridge,
         ]
 
         for component in components:
             try:
-                if component and hasattr(component, 'shutdown'):
+                if component and hasattr(component, "shutdown"):
                     await asyncio.wait_for(component.shutdown(), timeout=5.0)
             except Exception as e:
                 self.logger.error(f"Emergency shutdown error: {e}")
@@ -391,44 +426,46 @@ class ConsciousnessOrchestrator:
     def get_system_status(self) -> Dict[str, Any]:
         """Get comprehensive system status"""
         status = {
-            'is_initialized': self.is_initialized,
-            'is_running': self.is_running,
-            'timestamp': datetime.now().isoformat(),
-            'components': {}
+            "is_initialized": self.is_initialized,
+            "is_running": self.is_running,
+            "timestamp": datetime.now().isoformat(),
+            "components": {},
         }
 
         # Component status
         if self.consciousness_bridge:
-            status['components']['consciousness_bridge'] = {
-                'healthy': self.consciousness_bridge.is_consciousness_bridge_healthy(),
-                'system_states': len(self.consciousness_bridge.get_all_system_states())
+            status["components"]["consciousness_bridge"] = {
+                "healthy": self.consciousness_bridge.is_consciousness_bridge_healthy(),
+                "system_states": len(self.consciousness_bridge.get_all_system_states()),
             }
 
         if self.agent_registry:
             registry_stats = self.agent_registry.get_registry_statistics()
-            status['components']['agent_registry'] = {
-                'running': self.agent_registry.is_running,
-                'active_agents': registry_stats.get('active_agents', 0),
-                'total_agents': registry_stats.get('total_agents', 0)
+            status["components"]["agent_registry"] = {
+                "running": self.agent_registry.is_running,
+                "active_agents": registry_stats.get("active_agents", 0),
+                "total_agents": registry_stats.get("total_agents", 0),
             }
 
         if self.meta_layer_core:
             metrics = self.meta_layer_core.get_collective_metrics()
-            status['components']['meta_layer_core'] = {
-                'running': self.meta_layer_core.is_running,
-                'collective_consciousness': metrics.collective_consciousness,
-                'emergent_behaviors': metrics.emergent_behaviors_detected
+            status["components"]["meta_layer_core"] = {
+                "running": self.meta_layer_core.is_running,
+                "collective_consciousness": metrics.collective_consciousness,
+                "emergent_behaviors": metrics.emergent_behaviors_detected,
             }
 
         if self.lyrixa_consciousness:
-            status['components']['lyrixa_consciousness'] = {
-                'running': getattr(self.lyrixa_consciousness, 'is_running', False)
+            status["components"]["lyrixa_consciousness"] = {
+                "running": getattr(self.lyrixa_consciousness, "is_running", False)
             }
 
         return status
 
+
 # Global orchestrator instance
 _consciousness_orchestrator_instance = None
+
 
 def get_consciousness_orchestrator() -> ConsciousnessOrchestrator:
     """Get the global consciousness orchestrator instance"""
@@ -437,22 +474,24 @@ def get_consciousness_orchestrator() -> ConsciousnessOrchestrator:
         _consciousness_orchestrator_instance = ConsciousnessOrchestrator()
     return _consciousness_orchestrator_instance
 
+
 async def initialize_consciousness_orchestrator():
     """Initialize the global consciousness orchestrator"""
     orchestrator = get_consciousness_orchestrator()
     await orchestrator.initialize()
     return orchestrator
 
+
 async def main():
     """Main entry point for the consciousness orchestrator"""
     # Set up logging
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler('consciousness_orchestrator.log')
-        ]
+            logging.FileHandler("consciousness_orchestrator.log"),
+        ],
     )
 
     logger = logging.getLogger(__name__)
@@ -474,11 +513,13 @@ async def main():
         if orchestrator.is_running:
             await orchestrator.shutdown()
 
+
 if __name__ == "__main__":
     # Example usage and testing
     async def test_consciousness_orchestrator():
         """Test the consciousness orchestrator"""
         import logging
+
         logging.basicConfig(level=logging.INFO)
 
         orchestrator = get_consciousness_orchestrator()

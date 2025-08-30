@@ -6,7 +6,9 @@ Document: C:\Users\enigm\Desktop\Aetherra Project\docs\PROJECT_OVERVIEW.md
 
 Missing in docs (0):
 
-Documented but not found in code (25):
+Documented but not found in code (0):
+
+(Note) Suppressed doc-only envs via docs_consistency.json (25):
 - AETHERRA_AUDIT_PATH
 - AETHERRA_AVAILABLE
 - AETHERRA_CORE

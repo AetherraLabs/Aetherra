@@ -44,7 +44,11 @@ def _looks_like_secret(value: str) -> bool:
             return False
         v = value.strip()
         # Heuristic: long opaque tokens
-        return (len(v) >= 20) and any(ch.isdigit() for ch in v) and any(ch.isalpha() for ch in v)
+        return (
+            (len(v) >= 20)
+            and any(ch.isdigit() for ch in v)
+            and any(ch.isalpha() for ch in v)
+        )
     except Exception:
         return False
 
@@ -59,7 +63,9 @@ def redact_secrets(data: Any) -> Any:
         if isinstance(data, dict):
             out: Dict[str, Any] = {}
             for k, v in data.items():
-                if isinstance(k, str) and any(p in k.lower() for p in SENSITIVE_KEY_PATTERNS):
+                if isinstance(k, str) and any(
+                    p in k.lower() for p in SENSITIVE_KEY_PATTERNS
+                ):
                     out[k] = "***REDACTED***"
                 else:
                     out[k] = redact_secrets(v)
@@ -637,10 +643,10 @@ if __name__ == "__main__":
     )
     print(f"Security alerts: {status['alerts']}")
     # Guard against missing keys and avoid printing raw objects
-    mem = status.get('memory') or {}
+    mem = status.get("memory") or {}
     usage = 0.0
     if isinstance(mem, dict):
-        usage = float(mem.get('usage_percent', 0.0) or 0.0)
+        usage = float(mem.get("usage_percent", 0.0) or 0.0)
     print(f"Memory usage: {usage:.1f}%")
 
     # Force security scan

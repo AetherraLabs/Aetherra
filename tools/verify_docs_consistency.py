@@ -9,6 +9,7 @@ Outputs a short report to stdout and a markdown file docs/DOCS_CONSISTENCY_REPOR
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 from typing import List, Set
@@ -16,6 +17,7 @@ from typing import List, Set
 ROOT = Path(__file__).resolve().parents[1]
 DOC_OVERVIEW = ROOT / "docs" / "PROJECT_OVERVIEW.md"
 REPORT = ROOT / "docs" / "DOCS_CONSISTENCY_REPORT.md"
+DOCS_CFG = ROOT / "docs" / "docs_consistency.json"
 
 # Treat only standalone env-like tokens and avoid matching doc filenames like AETHERRA_..._SYSTEM.md
 ENV_PATTERN = re.compile(r"\bAETHERRA_[A-Z0-9_]+\b(?!\.md)")
@@ -169,8 +171,24 @@ def main() -> int:
     doc_envs = read_doc_section_envs(DOC_OVERVIEW)
     doc_routes = read_doc_endpoints(DOC_OVERVIEW)
 
+    # Optional config to fine-tune reporting, without changing pass/fail semantics
+    cfg_ignore_extra_envs: Set[str] = set()
+    if DOCS_CFG.exists():
+        try:
+            cfg = json.loads(DOCS_CFG.read_text(encoding="utf-8"))
+            ignore_list = cfg.get("ignore_extra_envs", []) or cfg.get(
+                "doc_only_envs", []
+            )
+            if isinstance(ignore_list, list):
+                cfg_ignore_extra_envs = {str(v) for v in ignore_list}
+        except Exception:
+            # Best-effort; ignore config errors to keep tool resilient
+            pass
+
     missing_envs = sorted(code_envs - doc_envs)
-    extra_envs = sorted(doc_envs - code_envs)
+    raw_extra_envs = doc_envs - code_envs
+    # Suppress configured doc-only envs from the extra list for a cleaner report
+    extra_envs = sorted([v for v in raw_extra_envs if v not in cfg_ignore_extra_envs])
     missing_routes = sorted(code_routes - doc_routes)
     extra_routes = sorted([r for r in doc_routes if r not in code_routes])
 
@@ -187,6 +205,15 @@ def main() -> int:
     lines.append(f"Documented but not found in code ({len(extra_envs)}):")
     for v in extra_envs:
         lines.append(f"- {v}")
+    # If we suppressed any extras via config, annotate for transparency
+    suppressed = sorted([v for v in raw_extra_envs if v in cfg_ignore_extra_envs])
+    if suppressed:
+        lines.append("")
+        lines.append(
+            f"(Note) Suppressed doc-only envs via docs_consistency.json ({len(suppressed)}):"
+        )
+        for v in suppressed:
+            lines.append(f"- {v}")
     lines.append("")
     lines.append("## Endpoints")
     lines.append("")
