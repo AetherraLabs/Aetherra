@@ -13,6 +13,12 @@ repos:
         language: system
         pass_filenames: false
         stages: [commit]
+      - id: block-runtime-artifacts
+        name: Block committing runtime artifacts
+        entry: python scripts/precommit_block_artifacts.py
+        language: system
+        pass_filenames: false
+        stages: [commit]
 # Aetherra Pre-commit Configuration
 # Ensures code quality before commits
 
