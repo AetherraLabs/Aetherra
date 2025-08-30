@@ -141,6 +141,11 @@ live_file_index.json
 evolution_history.aether
 self_organizer.aether
 *.aether
+outbox/*.jsonl
+audit/*.jsonl
+ui_standards_report.md
+aetherra_kernel_metrics.json
+data/aetherra_kernel_metrics.json
 
 # Database files (contain user data)
 *.db
@@ -201,6 +206,8 @@ yarn-error.log*
 frontend/**/Lib/
 **/site-packages/
 **/*.dist-info/
+frontend/Lib/
+frontend/Scripts/
 
 # ===== COMPILED EXTENSIONS =====
 *.pyd
@@ -218,6 +225,7 @@ safety-report.txt
 # ===== DEPLOYMENT FILES =====
 docker-compose.override.yml
 .dockerignore
+deployments/local/tmp*/
 
 # ===== PROJECT-SPECIFIC EXCLUSIONS =====
 # Cleanup and maintenance scripts
