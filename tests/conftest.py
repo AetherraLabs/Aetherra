@@ -17,9 +17,17 @@ sys.path.insert(0, str(project_root / "Aetherra"))
 
 # Set up test environment
 os.environ["TESTING"] = "true"
+os.environ.setdefault("AETHERRA_SKIP_DOTENV", "1")
 
 # Configure test database paths to use temporary files
 os.environ["TEST_MODE"] = "true"
+os.environ.setdefault("AETHERRA_TEST_ENFORCE_DISABLED_UNTIL_SET", "1")
+
+# In test runs, default AI developer endpoints to disabled unless explicitly enabled by a test.
+# This avoids global defaults from other modules leaking in via imported .env or launchers.
+os.environ.setdefault("AETHERRA_AI_API_ENABLED", "0")
+os.environ.setdefault("AETHERRA_AI_API_STREAM", "0")
+os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "0")
 
 
 @pytest.fixture(scope="session")

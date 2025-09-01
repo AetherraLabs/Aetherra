@@ -4,6 +4,7 @@
 # Web Framework
 flask>=2.3.0
 flask-socketio>=5.3.0
+flask-sock>=0.7.0
 werkzeug>=2.3.0
 
 # AI and Language Models
