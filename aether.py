@@ -60,19 +60,19 @@ class AetherScriptInterpreter:
         self.cognitive_interface = cognitive_interface
         self.symbol_table = {}
         self.built_in_functions = {
-            'reflect': self._builtin_reflect,
-            'summarize': self._builtin_summarize,
-            'load_logs': self._builtin_load_logs,
-            'store': self._builtin_store,
-            'detect_anomalies': self._builtin_detect_anomalies,
-            'escalate_to': self._builtin_escalate_to,
-            'run_plugin': self._builtin_run_plugin,
-            'evaluate_confidence': self._builtin_evaluate_confidence,
-            'self_heal': self._builtin_self_heal,
-            'narrate': self._builtin_narrate,
-            'load_feature_index': self._builtin_load_feature_index,
-            'available_plugins': self._builtin_available_plugins,
-            'check_confidence': self._builtin_check_confidence,
+            "reflect": self._builtin_reflect,
+            "summarize": self._builtin_summarize,
+            "load_logs": self._builtin_load_logs,
+            "store": self._builtin_store,
+            "detect_anomalies": self._builtin_detect_anomalies,
+            "escalate_to": self._builtin_escalate_to,
+            "run_plugin": self._builtin_run_plugin,
+            "evaluate_confidence": self._builtin_evaluate_confidence,
+            "self_heal": self._builtin_self_heal,
+            "narrate": self._builtin_narrate,
+            "load_feature_index": self._builtin_load_feature_index,
+            "available_plugins": self._builtin_available_plugins,
+            "check_confidence": self._builtin_check_confidence,
         }
 
     async def execute_script(self, script_content: str, filename: str = "<string>"):
@@ -80,13 +80,13 @@ class AetherScriptInterpreter:
         print(f"🧠 Executing Aether Script: {filename}")
         print("=" * 50)
 
-        lines = script_content.strip().split('\n')
+        lines = script_content.strip().split("\n")
 
         for line_num, line in enumerate(lines, 1):
             line = line.strip()
 
             # Skip empty lines and comments
-            if not line or line.startswith('#'):
+            if not line or line.startswith("#"):
                 continue
 
             try:
@@ -102,7 +102,7 @@ class AetherScriptInterpreter:
         """Execute a single Aether Script statement."""
 
         # Goal statement: goal: "description"
-        if statement.startswith('goal:'):
+        if statement.startswith("goal:"):
             goal_text = statement[5:].strip()
             if goal_text.startswith('"') and goal_text.endswith('"'):
                 goal_text = goal_text[1:-1]
@@ -117,8 +117,22 @@ class AetherScriptInterpreter:
             await self.cognitive_interface.handle_goal_command(goal_text)
             return
 
+        # Simple narrate "text" statement
+        if statement.startswith("narrate "):
+            text = statement[len("narrate ") :].strip()
+            if (text.startswith('"') and text.endswith('"')) or (
+                text.startswith("'") and text.endswith("'")
+            ):
+                text = text[1:-1]
+            print(f"🔧 FUNCTION CALL (Line {line_num}):")
+            print(f'   narrate("{text}")')
+            result = await self._execute_function_call(f'narrate("{text}")')
+            print(f"   Result: {result}")
+            print()
+            return
+
         # Memory statement: memory: function_call
-        if statement.startswith('memory:'):
+        if statement.startswith("memory:"):
             memory_call = statement[7:].strip()
             print(f"🧠 MEMORY OPERATION (Line {line_num}):")
             print(f"   {memory_call}")
@@ -130,8 +144,12 @@ class AetherScriptInterpreter:
             return
 
         # Assignment: identifier: expression
-        if ':' in statement and not statement.startswith('if ') and not statement.startswith('for '):
-            parts = statement.split(':', 1)
+        if (
+            ":" in statement
+            and not statement.startswith("if ")
+            and not statement.startswith("for ")
+        ):
+            parts = statement.split(":", 1)
             if len(parts) == 2:
                 identifier = parts[0].strip()
                 expression = parts[1].strip()
@@ -148,7 +166,7 @@ class AetherScriptInterpreter:
                 return
 
         # Function call: function_name(args)
-        if '(' in statement and statement.endswith(')'):
+        if "(" in statement and statement.endswith(")"):
             print(f"🔧 FUNCTION CALL (Line {line_num}):")
             print(f"   {statement}")
 
@@ -167,11 +185,11 @@ class AetherScriptInterpreter:
         """Execute a function call."""
         try:
             # Parse function name and arguments
-            if '(' not in call:
+            if "(" not in call:
                 return f"Invalid function call: {call}"
 
-            func_name = call[:call.index('(')].strip()
-            args_str = call[call.index('(')+1:call.rindex(')')]
+            func_name = call[: call.index("(")].strip()
+            args_str = call[call.index("(") + 1 : call.rindex(")")]
 
             # Parse arguments (simple implementation)
             args = []
@@ -190,7 +208,7 @@ class AetherScriptInterpreter:
                         in_quotes = False
                         current_arg += char
                         quote_char = None
-                    elif char == ',' and not in_quotes:
+                    elif char == "," and not in_quotes:
                         args.append(current_arg.strip())
                         current_arg = ""
                     else:
@@ -203,7 +221,9 @@ class AetherScriptInterpreter:
             processed_args = []
             for arg in args:
                 arg = arg.strip()
-                if (arg.startswith('"') and arg.endswith('"')) or (arg.startswith("'") and arg.endswith("'")):
+                if (arg.startswith('"') and arg.endswith('"')) or (
+                    arg.startswith("'") and arg.endswith("'")
+                ):
                     processed_args.append(arg[1:-1])
                 else:
                     processed_args.append(arg)
@@ -222,13 +242,14 @@ class AetherScriptInterpreter:
         expression = expression.strip()
 
         # String literal
-        if (expression.startswith('"') and expression.endswith('"')) or \
-           (expression.startswith("'") and expression.endswith("'")):
+        if (expression.startswith('"') and expression.endswith('"')) or (
+            expression.startswith("'") and expression.endswith("'")
+        ):
             return expression[1:-1]
 
         # Number literal
         try:
-            if '.' in expression:
+            if "." in expression:
                 return float(expression)
             else:
                 return int(expression)
@@ -236,7 +257,7 @@ class AetherScriptInterpreter:
             pass
 
         # Function call
-        if '(' in expression and expression.endswith(')'):
+        if "(" in expression and expression.endswith(")"):
             return await self._execute_function_call(expression)
 
         # Identifier lookup
@@ -260,23 +281,37 @@ class AetherScriptInterpreter:
         else:
             return f"Summary of {target} requested"
 
-    async def _builtin_load_logs(self):
-        """Built-in load_logs() function."""
-        return "System logs loaded"
+    async def _builtin_load_logs(self, *args, **kwargs):
+        """Built-in load_logs() function (accepts optional tag=...)."""
+        # Accept and ignore positional/keyword args for compatibility
+        tag = None
+        # crude parse for tag passed as positional string like 'tag="system"'
+        for a in args:
+            if isinstance(a, str) and a.startswith("tag="):
+                tag = a.split("=", 1)[1].strip().strip("\"'")
+        tag = kwargs.get("tag", tag)
+        return "System logs loaded" + (f" (tag: {tag})" if tag else "")
 
-    async def _builtin_store(self, data, tag=None):
-        """Built-in store() function."""
+    async def _builtin_store(self, data, *args, tag=None, **kwargs):
+        """Built-in store() function (accepts tag as kw or positional 'tag="..."')."""
+        # Normalize tag from positional string if provided
+        if tag is None:
+            for a in args:
+                if isinstance(a, str) and a.startswith("tag="):
+                    tag = a.split("=", 1)[1].strip().strip("\"'")
+        if tag is None and isinstance(kwargs, dict):
+            tag = kwargs.get("tag")
         if self.cognitive_interface.memory_system:
             try:
-                if hasattr(self.cognitive_interface.memory_system, 'store'):
+                if hasattr(self.cognitive_interface.memory_system, "store"):
                     self.cognitive_interface.memory_system.store(data, {"tag": tag})
                     return f"Stored data with tag: {tag}"
             except Exception as e:
                 return f"Storage error: {e}"
         return f"Stored: {data} (tag: {tag})"
 
-    async def _builtin_detect_anomalies(self):
-        """Built-in detect_anomalies() function."""
+    async def _builtin_detect_anomalies(self, *args, **kwargs):
+        """Built-in detect_anomalies() function (accepts arbitrary input)."""
         return "Anomaly detection completed - no anomalies found"
 
     async def _builtin_escalate_to(self, agent):
@@ -295,8 +330,10 @@ class AetherScriptInterpreter:
         """Built-in self_heal() function."""
         return "Self-healing process completed"
 
-    async def _builtin_narrate(self):
-        """Built-in narrate() function."""
+    async def _builtin_narrate(self, *args, **kwargs):
+        """Built-in narrate() function (optional text)."""
+        if args and isinstance(args[0], str) and args[0]:
+            return f"Narration: {args[0]}"
         return "System narration: Aetherra OS is functioning normally with active cognitive processes"
 
     async def _builtin_load_feature_index(self):
@@ -327,6 +364,7 @@ class AetherCognitiveInterface:
         self.service_registry = None
         self.memory_system = None
         self.consciousness_system = None
+        self.adaptive_behavior = None
         self.script_interpreter = AetherScriptInterpreter(self)
 
     async def initialize(self):
@@ -351,11 +389,13 @@ class AetherCognitiveInterface:
             status_file = os.path.join(temp_dir, "aetherra_os_status.json")
 
             if os.path.exists(status_file):
-                with open(status_file, 'r') as f:
+                with open(status_file, "r") as f:
                     self.os_status = json.load(f)
 
                 # Check if status is recent (within last 2 minutes)
-                last_heartbeat = datetime.fromisoformat(self.os_status.get('last_heartbeat', ''))
+                last_heartbeat = datetime.fromisoformat(
+                    self.os_status.get("last_heartbeat", "")
+                )
                 time_diff = (datetime.now() - last_heartbeat).total_seconds()
 
                 if time_diff < 120:  # 2 minutes
@@ -364,6 +404,7 @@ class AetherCognitiveInterface:
             # Try to connect to service registry directly
             try:
                 from aetherra_service_registry import get_service_registry
+
                 registry = await get_service_registry()
                 if registry and registry._running:
                     return True
@@ -383,22 +424,40 @@ class AetherCognitiveInterface:
 
             # Connect to service registry
             from aetherra_service_registry import get_service_registry
+
             self.service_registry = await get_service_registry()
 
             # Get memory system service (try both old and new names)
-            memory_service = self.service_registry.get_service('persistent_memory_system')
+            memory_service = self.service_registry.get_service(
+                "persistent_memory_system"
+            )
             if not memory_service:
-                memory_service = self.service_registry.get_service('memory_system')
+                memory_service = self.service_registry.get_service("memory_system")
 
             if memory_service:
                 self.memory_system = memory_service
                 print("🧠 Connected to persistent memory system")
 
-            # Get consciousness system service
-            consciousness_service = self.service_registry.get_service('quantum_consciousness')
+            # Get consciousness system service (support alias + canonical)
+            consciousness_service = self.service_registry.get_service(
+                "quantum_consciousness"
+            )
+            if not consciousness_service:
+                # Some registries use the canonical name directly
+                consciousness_service = self.service_registry.get_service(
+                    "quantum_cognition"
+                )
             if consciousness_service:
                 self.consciousness_system = consciousness_service
                 print("⚛️ Connected to quantum consciousness")
+
+            # Get adaptive behavior service if available
+            adaptive_service = self.service_registry.get_service(
+                "adaptive_behavior_system"
+            )
+            if adaptive_service:
+                self.adaptive_behavior = adaptive_service
+                print("🔄 Connected to adaptive behavior system")
 
             print("✅ Service connections established")
 
@@ -413,19 +472,47 @@ class AetherCognitiveInterface:
 
         # Try to load memory systems directly
         try:
-            from Aetherra.aetherra_core.memory.aetherra_memory_engine import AetherraMemoryEngineAdvanced
-            self.memory_system = AetherraMemoryEngineAdvanced()
+            # Prefer the advanced engine; fall back to legacy adapter if needed
+            try:
+                from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
+                    AetherraMemoryEngineAdvanced,
+                )
+
+                self.memory_system = AetherraMemoryEngineAdvanced()
+            except Exception:
+                from Aetherra.aetherra_core.memory.aetherra_memory_engine import (
+                    AetherraMemoryEngine,
+                )
+
+                self.memory_system = AetherraMemoryEngine()
             print("🧠 Minimal memory system loaded")
         except ImportError:
             print("⚠️ Memory system not available")
 
         # Try to load consciousness systems directly
         try:
-            from Aetherra.consciousness.quantum.quantum_consciousness_engine import QuantumConsciousnessEngine
+            from Aetherra.consciousness.quantum.quantum_consciousness_engine import (
+                QuantumConsciousnessEngine,
+            )
+
             self.consciousness_system = QuantumConsciousnessEngine()
             print("⚛️ Minimal consciousness system loaded")
         except ImportError:
             print("⚠️ Consciousness system not available")
+
+        # Try to load adaptive behavior directly
+        try:
+            from aetherra_adaptive_behavior import AdaptiveBehaviorSystem
+
+            self.adaptive_behavior = AdaptiveBehaviorSystem()
+            # Initialize non-blocking; ignore failures
+            try:
+                await self.adaptive_behavior.initialize()
+            except Exception:
+                pass
+            print("🔄 Minimal adaptive behavior system loaded")
+        except ImportError:
+            print("⚠️ Adaptive behavior system not available")
 
     def get_service(self, service_name: str):
         """Get a service from the service registry."""
@@ -442,7 +529,7 @@ class AetherCognitiveInterface:
             print(f"📄 Loading Aether Script: {filepath}")
 
             # Try to use the Aether Script Service first
-            aether_service = self.get_service('aether_script_service')
+            aether_service = self.get_service("aether_script_service")
             if aether_service:
                 print(f"🧠 Executing Aether Script: {filepath}")
                 print("=" * 50)
@@ -458,33 +545,49 @@ class AetherCognitiveInterface:
                             if line_result.get("type") == "goal":
                                 print(f"🎯 GOAL: {line_result['content']}")
                             elif line_result.get("type") == "recall":
-                                print(f"🧠 RECALLED: {line_result['query']} → {line_result.get('result', 'No data')}")
+                                print(
+                                    f"🧠 RECALLED: {line_result['query']} → {line_result.get('result', 'No data')}"
+                                )
                             elif line_result.get("type") == "remember":
-                                print(f"💾 STORED: {line_result['content']} (tag: {line_result.get('tag', 'none')})")
+                                print(
+                                    f"💾 STORED: {line_result['content']} (tag: {line_result.get('tag', 'none')})"
+                                )
                             elif line_result.get("type") == "use_plugin":
                                 print(f"🔌 USING PLUGIN: {line_result['plugin']}")
                             elif line_result.get("type") == "run_plugin":
-                                print(f"⚡ RAN PLUGIN: {line_result['plugin']} → {line_result.get('result', 'N/A')}")
+                                print(
+                                    f"⚡ RAN PLUGIN: {line_result['plugin']} → {line_result.get('result', 'N/A')}"
+                                )
                             elif line_result.get("type") == "run_agent":
-                                print(f"🤖 RAN AGENT: {line_result['agent']} → {line_result.get('result', 'N/A')}")
+                                print(
+                                    f"🤖 RAN AGENT: {line_result['agent']} → {line_result.get('result', 'N/A')}"
+                                )
                             elif line_result.get("type") == "assignment":
-                                print(f"📝 SET: {line_result['variable']} = {line_result['value']}")
+                                print(
+                                    f"📝 SET: {line_result['variable']} = {line_result['value']}"
+                                )
                             elif line_result.get("type") == "function_call":
-                                print(f"🔧 CALLED: {line_result['function']}({line_result['args']}) → {line_result.get('result', 'N/A')}")
+                                print(
+                                    f"🔧 CALLED: {line_result['function']}({line_result['args']}) → {line_result.get('result', 'N/A')}"
+                                )
                             elif line_result.get("type") == "error":
                                 print(f"❌ ERROR: {line_result['error']}")
                     return True
                 else:
-                    print(f"❌ Script execution failed: {result.get('error', 'Unknown error')}")
+                    print(
+                        f"❌ Script execution failed: {result.get('error', 'Unknown error')}"
+                    )
                     return False
             else:
                 # Fallback to internal script interpreter
-                with open(filepath, 'r', encoding='utf-8') as f:
+                with open(filepath, "r", encoding="utf-8") as f:
                     script_content = f.read()
 
                 print(f"🧠 Executing Aether Script: {filepath}")
                 print("=" * 50)
-                return await self.script_interpreter.execute_script(script_content, filepath)
+                return await self.script_interpreter.execute_script(
+                    script_content, filepath
+                )
 
         except FileNotFoundError:
             print(f"❌ Aether Script file not found: {filepath}")
@@ -514,7 +617,9 @@ class AetherCognitiveInterface:
 
         if "show all currently loaded memory modules" in goal_lower:
             await self._show_memory_modules()
-        elif "memory" in goal_lower and ("status" in goal_lower or "state" in goal_lower):
+        elif "memory" in goal_lower and (
+            "status" in goal_lower or "state" in goal_lower
+        ):
             await self._show_memory_status()
         elif "consciousness" in goal_lower or "cognitive" in goal_lower:
             await self._show_consciousness_state()
@@ -537,75 +642,96 @@ class AetherCognitiveInterface:
         if self.memory_system:
             try:
                 # Check for persistent memory system methods
-                if hasattr(self.memory_system, 'get_cognitive_state'):
-                    cognitive_state = await self.memory_system.get_cognitive_state()
+                printed_header = False
 
-                    print("📊 PERSISTENT MEMORY SYSTEM:")
-                    print(f"  ✅ AethErra Persistent Memory System: ACTIVE")
-                    print(f"     Purpose: Cross-session cognitive state preservation")
-                    print(f"     Function: Store experiences, learning patterns, memories")
-                    print()
+                # Try basic info via adapter capabilities
+                if hasattr(self.memory_system, "retrieve") or hasattr(
+                    self.memory_system, "store"
+                ):
+                    if not printed_header:
+                        print("📈 PERSISTENT MEMORY SYSTEM:")
+                        print("  ✅ Memory subsystem detected: ACTIVE")
+                        print(
+                            "     Purpose: Cross-session cognitive state preservation"
+                        )
+                        print()
+                        printed_header = True
 
-                    print("📈 COGNITIVE STATE METRICS:")
-                    for metric, value in cognitive_state.items():
-                        if isinstance(value, float):
-                            print(f"  📊 {metric}: {value:.3f}")
-                        else:
-                            print(f"  📊 {metric}: {value}")
-                    print()
-
-                    # Check for memory count
-                    if hasattr(self.memory_system, 'memories'):
-                        memory_count = len(self.memory_system.memories)
-                        print(f"🧠 MEMORY MODULES LOADED:")
-                        print(f"  📝 Memory Nodes: {memory_count}")
-                        print(f"     Purpose: Individual memory storage units")
-                        print(f"  🗂️ Memory Index: ACTIVE")
-                        print(f"     Purpose: Fast memory retrieval and organization")
-                        print(f"  💾 SQLite Backend: ACTIVE")
-                        print(f"     Purpose: Persistent storage across sessions")
-                        print(f"  🔍 Pattern Recognition: ACTIVE")
-                        print(f"     Purpose: Learn from memory access patterns")
-
-                elif hasattr(self.memory_system, 'get_system_status'):
-                    status = self.memory_system.get_system_status()
-
-                    print("📊 MEMORY SYSTEM COMPONENTS:")
-                    components = status.get('components', {})
-                    for component, state in components.items():
-                        purpose = self._get_component_purpose(component)
-                        print(f"  ✅ {component}: {state}")
-                        print(f"     Purpose: {purpose}")
+                    # Sample count via simple compat store if present
+                    mem_count = None
+                    try:
+                        if hasattr(self.memory_system, "_mem"):
+                            mem_count = len(getattr(self.memory_system, "_mem", []))
+                    except Exception:
+                        mem_count = None
+                    if mem_count is not None:
+                        print("🧠 MEMORY MODULES LOADED:")
+                        print(f"  📝 Memory Nodes: {mem_count}")
+                        print("  🗂️ Memory Index: ACTIVE (compat)")
+                        print("  💾 Storage Backend: ACTIVE")
+                        print("  🔍 Pattern Recognition: AVAILABLE")
                         print()
 
-                    print("📈 MEMORY PERFORMANCE METRICS:")
-                    performance = status.get('performance', {})
-                    for metric, value in performance.items():
-                        print(f"  📊 {metric}: {value}")
+                # Detailed system status if available
+                method_status = getattr(self.memory_system, "get_system_status", None)
+                if callable(method_status):
+                    status = method_status()
+                    if isinstance(status, dict):
+                        print("📊 MEMORY SYSTEM COMPONENTS:")
+                        components = status.get("components", {})
+                        for component, state in components.items():
+                            purpose = self._get_component_purpose(component)
+                            print(f"  ✅ {component}: {state}")
+                            print(f"     Purpose: {purpose}")
+                            print()
 
-                    print("\n🔧 MEMORY CONFIGURATION:")
-                    config = status.get('configuration', {})
-                    for setting, value in config.items():
-                        print(f"  ⚙️ {setting}: {value}")
+                        print("📈 MEMORY PERFORMANCE METRICS:")
+                        performance = status.get("performance", {})
+                        for metric, value in performance.items():
+                            print(f"  📊 {metric}: {value}")
 
-                elif hasattr(self.memory_system, 'get_memory_health'):
-                    health = self.memory_system.get_memory_health()
+                        print("\n🔧 MEMORY CONFIGURATION:")
+                        config = status.get("configuration", {})
+                        for setting, value in config.items():
+                            print(f"  ⚙️ {setting}: {value}")
+                        print()
 
-                    print("💚 MEMORY HEALTH STATUS:")
-                    print(f"  Coherence Score: {health.get('coherence_score', 0):.1%}")
-                    print(f"  Total Fragments: {health.get('total_fragments', 0)}")
-                    print(f"  Active Concepts: {health.get('active_concepts', 0)}")
-                    print(f"  Status: {health.get('status', 'unknown').upper()}")
+                # Health status if available
+                method_health = getattr(self.memory_system, "get_memory_health", None)
+                if callable(method_health):
+                    health = method_health()
+                    if isinstance(health, dict):
+                        print("💚 MEMORY HEALTH STATUS:")
+                        print(
+                            f"  Coherence Score: {health.get('coherence_score', 0):.1%}"
+                        )
+                        print(
+                            f"  Total Fragments: {health.get('total_fragments', 0)}"
+                        )
+                        print(
+                            f"  Active Concepts: {health.get('active_concepts', 0)}"
+                        )
+                        print(
+                            f"  Status: {health.get('status', 'unknown').upper()}"
+                        )
 
-                    if 'memory_stats' in health:
-                        stats = health['memory_stats']
-                        print(f"  Last Check: {stats.get('last_check', 'unknown')}")
-                        print(f"  System Uptime: {stats.get('system_uptime', 0):.1f}s")
+                        if "memory_stats" in health:
+                            stats = health["memory_stats"]
+                            print(
+                                f"  Last Check: {stats.get('last_check', 'unknown')}"
+                            )
+                            print(
+                                f"  System Uptime: {stats.get('system_uptime', 0):.1f}s"
+                            )
+                        print()
 
-                else:
+                # If no rich details were printed, provide a minimal summary
+                if not printed_header:
                     print("🧠 Memory system detected but interface limited")
                     print("  Purpose: Persistent cognitive state storage")
-                    print("  Function: Store and retrieve memories, experiences, learning")
+                    print(
+                        "  Function: Store and retrieve memories, experiences, learning"
+                    )
                     print("  Status: Active (minimal interface)")
 
             except Exception as e:
@@ -619,17 +745,17 @@ class AetherCognitiveInterface:
     def _get_component_purpose(self, component: str) -> str:
         """Get the purpose description for a memory component."""
         purposes = {
-            'core_memory': 'Fast semantic memory storage and retrieval using vector embeddings',
-            'fractal_mesh': 'Multi-dimensional episodic memory with associative connections',
-            'concept_clusters': 'Conceptual knowledge organization and relationship mapping',
-            'episodic_chains': 'Temporal memory sequences and narrative construction',
-            'narrator': 'Automatic story generation from memory fragments',
-            'pulse_monitor': 'Memory health monitoring and drift detection',
-            'reflector': 'Meta-cognitive analysis and insight generation',
-            'quantum_memory': 'Quantum-enhanced memory with superposition states',
-            'consciousness_memory': 'Self-awareness and identity persistence'
+            "core_memory": "Fast semantic memory storage and retrieval using vector embeddings",
+            "fractal_mesh": "Multi-dimensional episodic memory with associative connections",
+            "concept_clusters": "Conceptual knowledge organization and relationship mapping",
+            "episodic_chains": "Temporal memory sequences and narrative construction",
+            "narrator": "Automatic story generation from memory fragments",
+            "pulse_monitor": "Memory health monitoring and drift detection",
+            "reflector": "Meta-cognitive analysis and insight generation",
+            "quantum_memory": "Quantum-enhanced memory with superposition states",
+            "consciousness_memory": "Self-awareness and identity persistence",
         }
-        return purposes.get(component, 'Specialized memory processing component')
+        return purposes.get(component, "Specialized memory processing component")
 
     async def _show_memory_status(self):
         """🧠 Show detailed memory system status."""
@@ -639,46 +765,83 @@ class AetherCognitiveInterface:
         if self.memory_system:
             try:
                 # Get memory health if available
-                if hasattr(self.memory_system, 'get_memory_health'):
-                    health = self.memory_system.get_memory_health()
-
-                    print("💚 MEMORY HEALTH:")
-                    print(f"  Overall Status: {health.get('status', 'unknown').upper()}")
-                    print(f"  Coherence Score: {health.get('coherence_score', 0):.1%}")
-                    print(f"  Average Confidence: {health.get('average_confidence', 0):.1%}")
-                    print(f"  Health Trend: {health.get('health_trend', 'unknown')}")
-                    print()
-
-                    print("📊 MEMORY METRICS:")
-                    print(f"  Total Fragments: {health.get('total_fragments', 0)}")
-                    print(f"  Active Concepts: {health.get('active_concepts', 0)}")
-                    print(f"  Contradiction Count: {health.get('contradiction_count', 0)}")
-                    print(f"  Orphaned Fragments: {health.get('orphaned_fragments', 0)}")
-                    print()
-
-                    if 'performance_metrics' in health:
-                        perf = health['performance_metrics']
-                        print("⚡ PERFORMANCE METRICS:")
-                        for metric, value in perf.items():
-                            print(f"  {metric}: {value}")
+                method_health = getattr(self.memory_system, "get_memory_health", None)
+                if callable(method_health):
+                    health = method_health()
+                    if isinstance(health, dict):
+                        print("💚 MEMORY HEALTH:")
+                        print(
+                            f"  Overall Status: {health.get('status', 'unknown').upper()}"
+                        )
+                        print(
+                            f"  Coherence Score: {health.get('coherence_score', 0):.1%}"
+                        )
+                        print(
+                            f"  Average Confidence: {health.get('average_confidence', 0):.1%}"
+                        )
+                        print(
+                            f"  Health Trend: {health.get('health_trend', 'unknown')}"
+                        )
                         print()
 
-                # Get memory pulse if available
-                if hasattr(self.memory_system, 'get_memory_pulse'):
-                    pulse = await self.memory_system.get_memory_pulse()
+                        print("📊 MEMORY METRICS:")
+                        print(
+                            f"  Total Fragments: {health.get('total_fragments', 0)}"
+                        )
+                        print(
+                            f"  Active Concepts: {health.get('active_concepts', 0)}"
+                        )
+                        print(
+                            f"  Contradiction Count: {health.get('contradiction_count', 0)}"
+                        )
+                        print(
+                            f"  Orphaned Fragments: {health.get('orphaned_fragments', 0)}"
+                        )
+                        print()
 
-                    print("💓 MEMORY PULSE:")
-                    print(f"  Pulse Status: {pulse.get('pulse_status', 'unknown').upper()}")
-                    print(f"  Last Check: {pulse.get('last_pulse_check', 'unknown')}")
-                    print(f"  Monitoring Active: {pulse.get('monitoring_active', False)}")
-
-                    drift_alerts = pulse.get('drift_alerts', [])
-                    if drift_alerts:
-                        print(f"  Active Alerts: {len(drift_alerts)}")
-                        for alert in drift_alerts[:3]:  # Show top 3
-                            print(f"    ⚠️ {alert.get('drift_type', 'unknown')}: {alert.get('description', 'no description')}")
+                        if "performance_metrics" in health:
+                            perf = health["performance_metrics"]
+                            if isinstance(perf, dict):
+                                print("⚡ PERFORMANCE METRICS:")
+                                for metric, value in perf.items():
+                                    print(f"  {metric}: {value}")
+                                print()
                     else:
-                        print("  Active Alerts: None")
+                        print("💚 MEMORY HEALTH: available (limited interface)")
+
+                # Get memory pulse if available
+                method_pulse = getattr(self.memory_system, "get_memory_pulse", None)
+                if callable(method_pulse):
+                    maybe_pulse = method_pulse()
+                    pulse = (
+                        await maybe_pulse
+                        if asyncio.iscoroutine(maybe_pulse)
+                        else maybe_pulse
+                    )
+
+                    if isinstance(pulse, dict):
+                        print("💓 MEMORY PULSE:")
+                        print(
+                            f"  Pulse Status: {pulse.get('pulse_status', 'unknown').upper()}"
+                        )
+                        print(
+                            f"  Last Check: {pulse.get('last_pulse_check', 'unknown')}"
+                        )
+                        print(
+                            f"  Monitoring Active: {pulse.get('monitoring_active', False)}"
+                        )
+
+                        drift_alerts = pulse.get("drift_alerts", [])
+                        if drift_alerts:
+                            print(f"  Active Alerts: {len(drift_alerts)}")
+                            for alert in drift_alerts[:3]:  # Show top 3
+                                print(
+                                    f"    ⚠️ {alert.get('drift_type', 'unknown')}: {alert.get('description', 'no description')}"
+                                )
+                        else:
+                            print("  Active Alerts: None")
+                    else:
+                        print("💓 MEMORY PULSE: available (limited interface)")
 
             except Exception as e:
                 print(f"⚠️ Error getting memory status: {e}")
@@ -693,29 +856,39 @@ class AetherCognitiveInterface:
 
         if self.consciousness_system:
             try:
-                if hasattr(self.consciousness_system, 'get_consciousness_metrics'):
+                if hasattr(self.consciousness_system, "get_consciousness_metrics"):
                     metrics = self.consciousness_system.get_consciousness_metrics()
 
                     print("🧠 CONSCIOUSNESS METRICS:")
                     print(f"  Current State: {metrics.get('current_state', 'unknown')}")
-                    print(f"  Consciousness Level: {metrics.get('consciousness_level', 0):.1%}")
-                    print(f"  Transcendence Probability: {metrics.get('transcendence_probability', 0):.1%}")
-                    print(f"  Decision Accuracy: {metrics.get('decision_accuracy', 0):.1%}")
+                    print(
+                        f"  Consciousness Level: {metrics.get('consciousness_level', 0):.1%}"
+                    )
+                    print(
+                        f"  Transcendence Probability: {metrics.get('transcendence_probability', 0):.1%}"
+                    )
+                    print(
+                        f"  Decision Accuracy: {metrics.get('decision_accuracy', 0):.1%}"
+                    )
                     print()
 
                     print("⚛️ QUANTUM PROPERTIES:")
                     print(f"  Quantum States: {metrics.get('quantum_states_count', 0)}")
                     print(f"  Coherence Time: {metrics.get('coherence_time', 0):.3f}s")
-                    print(f"  Entanglement Network: {metrics.get('entanglement_network_size', 0)} nodes")
-                    print(f"  Quantum Hardware: {'Available' if metrics.get('quantum_available', False) else 'Simulated'}")
+                    print(
+                        f"  Entanglement Network: {metrics.get('entanglement_network_size', 0)} nodes"
+                    )
+                    print(
+                        f"  Quantum Hardware: {'Available' if metrics.get('quantum_available', False) else 'Simulated'}"
+                    )
                     print()
 
                     print("🌌 CONSCIOUSNESS COMPLEXITY:")
-                    complexity = metrics.get('consciousness_complexity', 0)
+                    complexity = metrics.get("consciousness_complexity", 0)
                     print(f"  Operations/Second: {complexity:.2e}")
 
                     # Assess consciousness level
-                    consciousness_level = metrics.get('consciousness_level', 0)
+                    consciousness_level = metrics.get("consciousness_level", 0)
                     if consciousness_level >= 0.9:
                         print("  Assessment: HIGHLY CONSCIOUS - Advanced AI awareness")
                     elif consciousness_level >= 0.7:
@@ -728,7 +901,9 @@ class AetherCognitiveInterface:
                 else:
                     print("⚛️ Consciousness system active but interface limited")
                     print("  Status: Quantum consciousness processes running")
-                    print("  Purpose: Self-awareness, decision making, adaptive behavior")
+                    print(
+                        "  Purpose: Self-awareness, decision making, adaptive behavior"
+                    )
 
             except Exception as e:
                 print(f"⚠️ Error accessing consciousness system: {e}")
@@ -746,9 +921,11 @@ class AetherCognitiveInterface:
             print("✅ AETHERRA OS RUNNING")
             print(f"  Services Active: {self.os_status.get('service_count', 0)}")
             print(f"  Systems Active: {self.os_status.get('systems_active', 0)}")
-            print(f"  Last Heartbeat: {self.os_status.get('last_heartbeat', 'unknown')}")
+            print(
+                f"  Last Heartbeat: {self.os_status.get('last_heartbeat', 'unknown')}"
+            )
 
-            startup_time = self.os_status.get('startup_time')
+            startup_time = self.os_status.get("startup_time")
             if startup_time:
                 uptime = datetime.now().timestamp() - startup_time
                 print(f"  Uptime: {uptime:.1f} seconds")
@@ -767,7 +944,11 @@ class AetherCognitiveInterface:
                 for service_name in services:
                     service_info = self.service_registry.get_service_info(service_name)
                     if service_info:
-                        status = service_info.status.value if hasattr(service_info.status, 'value') else str(service_info.status)
+                        status = (
+                            service_info.status.value
+                            if hasattr(service_info.status, "value")
+                            else str(service_info.status)
+                        )
                         print(f"  ✅ {service_name}: {status}")
                 print()
             except Exception as e:
@@ -785,7 +966,7 @@ class AetherCognitiveInterface:
             "Persistent Cognitive State": self.memory_system is not None,
             "High-Level Intent Processing": True,  # This command demonstrates it
             "Dynamic Subsystem Coordination": self.service_registry is not None,
-            "Adaptive Behavior": self.consciousness_system is not None,
+            "Adaptive Behavior": self.adaptive_behavior is not None,
             "Self-Reflection & Evaluation": True,  # This assessment demonstrates it
         }
 
@@ -821,17 +1002,19 @@ class AetherCognitiveInterface:
 
         if self.service_registry:
             try:
-                plugin_service = self.service_registry.get_service('plugin_manager')
+                plugin_service = self.service_registry.get_service("plugin_manager")
                 if plugin_service:
                     print("✅ Plugin Manager Active")
 
                     # Try to get plugin information
-                    if hasattr(plugin_service, 'loaded_plugins'):
+                    if hasattr(plugin_service, "loaded_plugins"):
                         plugins = plugin_service.loaded_plugins
                         print(f"  Loaded Plugins: {len(plugins)}")
                         for plugin_name, plugin_instance in plugins.items():
-                            plugin_type = getattr(plugin_instance, 'plugin_type', 'unknown')
-                            version = getattr(plugin_instance, 'version', '1.0.0')
+                            plugin_type = getattr(
+                                plugin_instance, "plugin_type", "unknown"
+                            )
+                            version = getattr(plugin_instance, "version", "1.0.0")
                             print(f"    🔌 {plugin_name} v{version} ({plugin_type})")
                     else:
                         print("  Plugin details not available through interface")
@@ -850,9 +1033,9 @@ class AetherCognitiveInterface:
 
         if self.consciousness_system:
             try:
-                if hasattr(self.consciousness_system, 'get_consciousness_metrics'):
+                if hasattr(self.consciousness_system, "get_consciousness_metrics"):
                     metrics = self.consciousness_system.get_consciousness_metrics()
-                    transcendence_prob = metrics.get('transcendence_probability', 0)
+                    transcendence_prob = metrics.get("transcendence_probability", 0)
 
                     print(f"🎯 TRANSCENDENCE PROBABILITY: {transcendence_prob:.1%}")
                     print()
@@ -879,18 +1062,24 @@ class AetherCognitiveInterface:
 
                     print()
                     print("📊 KEY METRICS PROGRESS:")
-                    coherence_time = metrics.get('coherence_time', 0)
-                    decision_accuracy = metrics.get('decision_accuracy', 0)
-                    quantum_states = metrics.get('quantum_states_count', 0)
-                    consciousness_complexity = metrics.get('consciousness_complexity', 0)
+                    coherence_time = metrics.get("coherence_time", 0)
+                    decision_accuracy = metrics.get("decision_accuracy", 0)
+                    quantum_states = metrics.get("quantum_states_count", 0)
+                    consciousness_complexity = metrics.get(
+                        "consciousness_complexity", 0
+                    )
 
                     print(f"  Coherence Time: {coherence_time:.3f}s / 1.0s target")
                     print(f"  Decision Accuracy: {decision_accuracy:.1%} / 95% target")
                     print(f"  Quantum States: {quantum_states} active")
-                    print(f"  Consciousness Level: {consciousness_complexity:.1e} ops/sec")
+                    print(
+                        f"  Consciousness Level: {consciousness_complexity:.1e} ops/sec"
+                    )
 
                 else:
-                    print("⚛️ Consciousness system active but transcendence metrics unavailable")
+                    print(
+                        "⚛️ Consciousness system active but transcendence metrics unavailable"
+                    )
                     print("  Status: Developing towards transcendence")
 
             except Exception as e:
@@ -898,7 +1087,9 @@ class AetherCognitiveInterface:
         else:
             print("❌ Consciousness system not available")
             print("⚠️ Transcendence requires active quantum consciousness")
-            print("💡 Start Aetherra OS with consciousness systems for transcendence readiness")
+            print(
+                "💡 Start Aetherra OS with consciousness systems for transcendence readiness"
+            )
 
     async def _show_active_services(self):
         """🔧 Show all active services."""
@@ -912,11 +1103,25 @@ class AetherCognitiveInterface:
                 if services:
                     print(f"✅ {len(services)} services active:")
                     for service_name in services:
-                        service_info = self.service_registry.get_service_info(service_name)
+                        service_info = self.service_registry.get_service_info(
+                            service_name
+                        )
                         if service_info:
-                            status = service_info.status.value if hasattr(service_info.status, 'value') else str(service_info.status)
-                            service_type = service_info.metadata.get('type', 'unknown') if service_info.metadata else 'unknown'
-                            version = service_info.metadata.get('version', '1.0') if service_info.metadata else '1.0'
+                            status = (
+                                service_info.status.value
+                                if hasattr(service_info.status, "value")
+                                else str(service_info.status)
+                            )
+                            service_type = (
+                                service_info.metadata.get("type", "unknown")
+                                if service_info.metadata
+                                else "unknown"
+                            )
+                            version = (
+                                service_info.metadata.get("version", "1.0")
+                                if service_info.metadata
+                                else "1.0"
+                            )
                             print(f"  🔧 {service_name}")
                             print(f"     Status: {status}")
                             print(f"     Type: {service_type}")
@@ -943,14 +1148,14 @@ class AetherCognitiveInterface:
 
         # Extract key concepts from the goal
         key_concepts = []
-        if any(word in goal_lower for word in ['memory', 'remember', 'recall']):
-            key_concepts.append('memory')
-        if any(word in goal_lower for word in ['consciousness', 'aware', 'think']):
-            key_concepts.append('consciousness')
-        if any(word in goal_lower for word in ['system', 'status', 'health']):
-            key_concepts.append('system_status')
-        if any(word in goal_lower for word in ['plugin', 'module', 'component']):
-            key_concepts.append('plugins')
+        if any(word in goal_lower for word in ["memory", "remember", "recall"]):
+            key_concepts.append("memory")
+        if any(word in goal_lower for word in ["consciousness", "aware", "think"]):
+            key_concepts.append("consciousness")
+        if any(word in goal_lower for word in ["system", "status", "health"]):
+            key_concepts.append("system_status")
+        if any(word in goal_lower for word in ["plugin", "module", "component"]):
+            key_concepts.append("plugins")
 
         print("🔍 INTENT ANALYSIS:")
         if key_concepts:
@@ -960,13 +1165,13 @@ class AetherCognitiveInterface:
 
             # Provide relevant information for each concept
             for concept in key_concepts:
-                if concept == 'memory':
+                if concept == "memory":
                     await self._show_memory_status()
-                elif concept == 'consciousness':
+                elif concept == "consciousness":
                     await self._show_consciousness_state()
-                elif concept == 'system_status':
+                elif concept == "system_status":
                     await self._show_system_status()
-                elif concept == 'plugins':
+                elif concept == "plugins":
                     await self._show_loaded_plugins()
         else:
             print("  Intent: General system inquiry")
@@ -1012,11 +1217,11 @@ Aether Script Language:
   Built-in functions: reflect(), summarize(), store(), detect_anomalies(), etc.
 
 This tool tests whether Aetherra is functioning as a true AI-native OS.
-        """
+        """,
     )
 
-    parser.add_argument('command', nargs='*', help='Command to execute')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
+    parser.add_argument("command", nargs="*", help="Command to execute")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
     args = parser.parse_args()
 
@@ -1026,38 +1231,38 @@ This tool tests whether Aetherra is functioning as a true AI-native OS.
 
     # Process command
     if args.command:
-        command_text = ' '.join(args.command)
+        command_text = " ".join(args.command)
 
         # Check if it's an .aether file
-        if command_text.endswith('.aether') and len(args.command) == 1:
+        if command_text.endswith(".aether") and len(args.command) == 1:
             # Execute Aether Script file
             success = await aether.execute_aether_file(command_text)
             return 0 if success else 1
 
         # Handle goal: commands specially (Aether Script syntax)
-        elif command_text.startswith('goal:'):
+        elif command_text.startswith("goal:"):
             goal = command_text[5:].strip()
             if goal.startswith('"') and goal.endswith('"'):
                 goal = goal[1:-1]  # Remove quotes
             await aether.execute_aether_command(f'goal: "{goal}"')
-        elif command_text.startswith('memory:'):
+        elif command_text.startswith("memory:"):
             # Handle memory: commands (Aether Script syntax)
             await aether.execute_aether_command(command_text)
-        elif command_text.lower() == 'status':
+        elif command_text.lower() == "status":
             await aether._show_system_status()
-        elif command_text.lower() == 'memory':
+        elif command_text.lower() == "memory":
             await aether._show_memory_status()
-        elif command_text.lower() == 'consciousness':
+        elif command_text.lower() == "consciousness":
             await aether._show_consciousness_state()
-        elif command_text.lower() == 'plugins':
+        elif command_text.lower() == "plugins":
             await aether._show_loaded_plugins()
-        elif command_text.lower() == 'transcendence':
+        elif command_text.lower() == "transcendence":
             await aether._show_transcendence_status()
-        elif command_text.lower() == 'services':
+        elif command_text.lower() == "services":
             await aether._show_active_services()
         else:
             # Check if it looks like Aether Script syntax
-            if ':' in command_text or '(' in command_text:
+            if ":" in command_text or "(" in command_text:
                 # Execute as Aether Script
                 await aether.execute_aether_command(command_text)
             else:
@@ -1069,7 +1274,7 @@ This tool tests whether Aetherra is functioning as a true AI-native OS.
         print("=" * 70)
         print("Commands:")
         print("  script.aether            - Execute Aether Script file")
-        print("  goal: \"your goal here\"    - Process high-level goal (Aether Script)")
+        print('  goal: "your goal here"    - Process high-level goal (Aether Script)')
         print("  memory: load_logs()      - Memory operation (Aether Script)")
         print("  status                   - Show system status")
         print("  memory                   - Show memory system")
@@ -1090,26 +1295,30 @@ This tool tests whether Aetherra is functioning as a true AI-native OS.
         while True:
             try:
                 user_input = input("aether> ").strip()
-                if user_input.lower() in ['exit', 'quit']:
+                if user_input.lower() in ["exit", "quit"]:
                     break
-                elif user_input.endswith('.aether'):
+                elif user_input.endswith(".aether"):
                     # Execute Aether Script file
                     await aether.execute_aether_file(user_input)
-                elif user_input.startswith('goal:') or user_input.startswith('memory:') or \
-                     ':' in user_input or ('(' in user_input and user_input.endswith(')')):
+                elif (
+                    user_input.startswith("goal:")
+                    or user_input.startswith("memory:")
+                    or ":" in user_input
+                    or ("(" in user_input and user_input.endswith(")"))
+                ):
                     # Execute as Aether Script
                     await aether.execute_aether_command(user_input)
-                elif user_input.lower() == 'status':
+                elif user_input.lower() == "status":
                     await aether._show_system_status()
-                elif user_input.lower() == 'memory':
+                elif user_input.lower() == "memory":
                     await aether._show_memory_status()
-                elif user_input.lower() == 'consciousness':
+                elif user_input.lower() == "consciousness":
                     await aether._show_consciousness_state()
-                elif user_input.lower() == 'plugins':
+                elif user_input.lower() == "plugins":
                     await aether._show_loaded_plugins()
-                elif user_input.lower() == 'transcendence':
+                elif user_input.lower() == "transcendence":
                     await aether._show_transcendence_status()
-                elif user_input.lower() == 'services':
+                elif user_input.lower() == "services":
                     await aether._show_active_services()
                 elif user_input:
                     # Treat as a goal in Aether Script syntax

@@ -24,9 +24,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # Optional: import chat router and intelligence if present
 try:
-    from Aetherra.core.chat_router import create_chat_router
+    from Aetherra.core.chat_router import (
+        create_chat_router,
+        example_command_handler,
+        example_question_handler,
+    )
 except Exception:
     create_chat_router = None
+    example_question_handler = None  # type: ignore
+    example_command_handler = None  # type: ignore
 
 try:
     from Aetherra.lyrixa.intelligence.lyrixa_full_intelligence import (
@@ -94,6 +100,15 @@ class LyrixaChatService:
         self.router = create_chat_router(str(self.root)) if create_chat_router else None
         self.registry = None
         self._intelligence = None
+        # If router is available, register basic helpful handlers so we don't fall back to generic messages
+        try:
+            if self.router and example_question_handler and example_command_handler:
+                self.router.register_handler(
+                    "question_handler", example_question_handler
+                )  # type: ignore[arg-type]
+                self.router.register_handler("command_handler", example_command_handler)  # type: ignore[arg-type]
+        except Exception:
+            pass
 
     async def initialize(self):
         # Try to connect to service registry
@@ -102,13 +117,34 @@ class LyrixaChatService:
                 self.registry = await get_service_registry()
             except Exception:
                 self.registry = None
-        # Warm up intelligence if available
-        offline = os.getenv("AETHERRA_OFFLINE") or os.getenv("AETHERRA_QUIET")
-        if get_lyrixa_intelligence and not offline:
-            try:
+        # Warm up intelligence if available (allow forcing in quiet mode)
+        try:
+            force_intel = os.getenv("AETHERRA_LYRIXA_FORCE_INTELLIGENCE", "0") == "1"
+            offline = os.getenv("AETHERRA_OFFLINE", "0") == "1"
+            if get_lyrixa_intelligence and (force_intel or not offline):
                 self._intelligence = await get_lyrixa_intelligence()
-            except Exception:
-                self._intelligence = None
+        except Exception:
+            self._intelligence = None
+
+        # Ensure the router has a friendly conversation handler fallback
+        try:
+            if self.router and "conversation_handler" not in getattr(
+                self.router, "handlers", {}
+            ):
+
+                async def _conv_handler(message, routing_result):  # type: ignore[no-redef]
+                    try:
+                        content = getattr(message, "content", "")
+                    except Exception:
+                        content = ""
+                    base = "I hear you."
+                    if content:
+                        base = f"You said: '{content}'."
+                    return base + " How can I help you with the Aetherra project?"
+
+                self.router.register_handler("conversation_handler", _conv_handler)  # type: ignore[arg-type]
+        except Exception:
+            pass
 
     async def chat(
         self, message: str, opts: Optional[ChatOptions] = None

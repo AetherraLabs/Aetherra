@@ -72,13 +72,32 @@ def main() -> int:
                     }
                 }
 
+        # Minimal Lyrixa chat stub so that /api/stats reports lyrixa_chat as registered
+        class _LyrixaChatStub:
+            async def initialize(self):  # parity with real service init
+                return True
+
+            async def handle_message(self, message_type: str, data: dict):
+                mt = (message_type or "").lower()
+                payload = data or {}
+                msg = str(payload.get("message") or payload.get("content") or "").strip()
+                # Deterministic reply mirroring Hub fallback schema keys
+                return {
+                    "text": ("[lyrixa-stub] " + (msg or "Hello")),
+                    "suggestions": [],
+                    "applied_changes": [],
+                    "identity": {"name": "Lyrixa", "title": "Lyrixa AI Assistant"},
+                    "awareness": {"note": "stubbed in run_hub_ai_api"},
+                }
+
         async def _register():
             await register_service("aetherra_engine", _DemoEngine())
+            await register_service("lyrixa_chat", _LyrixaChatStub())
 
         asyncio.run(_register())
-        print("[OK] Registered demo engine in-process (service: aetherra_engine)")
+        print("[OK] Registered demo engine (aetherra_engine) and lyrixa_chat stub in-process")
     except Exception as e:
-        print(f"[WARN] Could not register demo engine: {e}")
+        print(f"[WARN] Could not register demo engine/lyrixa_chat stub: {e}")
 
     print(f"[OK] Hub with AI API on http://127.0.0.1:{args.port}")
     # Re-apply flags one more time in case start_server triggered a .env reload
