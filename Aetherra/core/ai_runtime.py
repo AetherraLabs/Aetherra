@@ -29,8 +29,15 @@ def load_env_file():
     print("⚠️ No .env file found in expected locations")
 
 
-# Load .env file if it exists
-load_env_file()
+# Load .env file if it exists, but avoid mutating environment during tests
+# Honor either TESTING=true/1 or AETHERRA_SKIP_DOTENV=1 to skip loading.
+_testing_flag = str(os.environ.get("TESTING", "")).strip().lower() in ("true", "1")
+_skip_dotenv = os.environ.get("AETHERRA_SKIP_DOTENV", "0") == "1"
+if not _testing_flag and not _skip_dotenv:
+    load_env_file()
+else:
+    # Keep quiet in tests to reduce noise
+    pass
 
 # Global flag to prevent duplicate initialization
 _openai_client_initialized = False

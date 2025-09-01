@@ -58,6 +58,8 @@ def _normalize_route(route: str) -> str:
         return route
     # Normalize parameter segments
     route = re.sub(r"<[^>]+>", "<param>", route)
+    # Drop trailing punctuation commonly used in prose
+    route = route.rstrip(".,;:)")
     # Normalize trailing slashes (keep root as "/")
     if route != "/":
         route = route.rstrip("/")
@@ -106,12 +108,10 @@ def read_doc_section_envs(doc: Path) -> Set[str]:
     if not doc.exists():
         return set()
     text = doc.read_text(encoding="utf-8", errors="ignore")
-    # Prefer the explicit Environment Variables Index section
-    section = _extract_section(text, "Environment Variables Index")
-    if not section:
-        # Fallback to a broader Configuration and Environment section if present
-        section = _extract_section(text, "Configuration and Environment") or text
-    return set(sorted(set(ENV_PATTERN.findall(section))))
+    # Collect from the entire document to avoid omissions when an Index exists
+    # This allows docs to mention envs in multiple sections naturally.
+    envs_all = set(ENV_PATTERN.findall(text))
+    return set(sorted(envs_all))
 
 
 def read_doc_endpoints(doc: Path) -> Set[str]:
@@ -124,11 +124,12 @@ def read_doc_endpoints(doc: Path) -> Set[str]:
         paths = set(re.findall(r"(/[-a-zA-Z0-9_./<>]+)", src))
         normed = {_normalize_route(p) for p in paths if p.startswith("/")}
         # Explicitly capture root route when referenced in prose
-        if "GET /" in src or "`/`" in src:
+        if "GET /" in src or "`/`" in src or re.search(r"(?m)^\s*[-*]\s*/\s*$", src):
             normed.add("/")
         # Keep only relevant API/dashboard paths
         allowed_prefixes = (
             "/api",
+            "/ws",  # WebSocket routes
             "/qfac",
             "/quantum",
             "/services",
@@ -139,13 +140,18 @@ def read_doc_endpoints(doc: Path) -> Set[str]:
             "/<",  # parameterized root catch-alls (e.g., /<param>)
         )
         filtered = {
-            p for p in normed if p == "/" or p.lower().startswith(allowed_prefixes)
+            p for p in normed if (p == "/" or p.lower().startswith(allowed_prefixes))
         }
+        # Drop uppercase artifacts like "/API" captured from prose headings
+        filtered = {p for p in filtered if p == p.lower()}
         # Drop obvious non-API artifacts (file paths/extensions)
+        # Keep certain .json API endpoints (e.g., OpenAPI schema) while filtering file-like paths
+        exceptions = {"/api/openapi.json"}
         filtered = {
             p
             for p in filtered
-            if not re.search(r"\.(py|md|txt|json|yaml|yml)$", p, re.IGNORECASE)
+            if (p in exceptions)
+            or not re.search(r"\.(py|md|txt|json|yaml|yml)$", p, re.IGNORECASE)
         }
         return filtered
 

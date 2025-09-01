@@ -230,6 +230,29 @@ async def main():
 asyncio.run(main())
 ```
 
+### Try it: A/B recall benchmark and Hub metrics gate
+
+Quickly compare classical vs quantum recall paths and optionally expose A/B metrics via the Hub during the run.
+
+PowerShell (Windows):
+
+1. Enable Hub A/B metrics export
+
+  $env:AETHERRA_HUB_AB_METRICS = '1'
+
+1. Run the benchmark on a couple of queries
+
+  python tools/ab_recall_benchmark.py --queries "hello world" "quantum memory" --emit 1
+
+1. (Optional) Disable Hub A/B metrics export
+
+  $env:AETHERRA_HUB_AB_METRICS = '0'
+
+Notes:
+
+- Deterministic A/B bucketing can be set via AETHERRA_AB_RECALL_SEED; force specific buckets with AETHERRA_AB_FORCE_BUCKET.
+- The Hub /metrics will export A/B series when AETHERRA_HUB_AB_METRICS=1.
+
 ### Narrative storage example
 
 ```python

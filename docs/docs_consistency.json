@@ -24,6 +24,18 @@
         "AETHERRA_TELEMETRY_ENDPOINT",
         "AETHERRA_TEMPERATURE",
         "AETHERRA_WEB_HOST",
-        "AETHERRA_WEB_PORT"
+        "AETHERRA_WEB_PORT",
+        "AETHERRA_SENSITIVE_ACTIONS",
+        "AETHERRA_STYLE_ASK_QUESTION",
+        "AETHERRA_STYLE_EMOJI",
+        "AETHERRA_STYLE_ENABLED",
+        "AETHERRA_STYLE_MAX_LEN",
+        "AETHERRA_STYLE_PERSONA",
+        "AETHERRA_STYLE_SEED",
+        "AETHERRA_STYLE_TONE"
+    ],
+    "ignore_extra_endpoints": [
+        "/API",
+        "/metrics"
     ]
 }

@@ -44,3 +44,7 @@ line-profiler>=4.1.0
 # Debugging
 pdb++>=0.10.3
 icecream>=2.1.0
+
+# WebSocket testing deps
+websockets>=11.0.0
+flask-sock>=0.7.0
