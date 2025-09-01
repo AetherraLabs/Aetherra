@@ -9,7 +9,9 @@ reasoning, memory management, and intelligent task orchestration.
 import asyncio
 import json
 import logging
+import os
 import time
+import traceback
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -144,6 +146,19 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+# Ensure a current event loop exists for legacy get_event_loop() callers on Windows/Python 3.13+
+try:
+    # On Python 3.11+, get_event_loop() requires a previously set loop.
+    # Some tests call it directly; ensure a loop is set on import if missing.
+    asyncio.get_event_loop()
+except Exception:
+    try:
+        _loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(_loop)
+    except Exception:
+        pass
+
+
 class AetherraEngine:
     """
     Main Lyrixa execution engine that coordinates all subsystems
@@ -156,6 +171,7 @@ class AetherraEngine:
         improvement_db_path: str = "lyrixa_improvement.db",
         orchestrator_db_path: str = "lyrixa_orchestrator.db",
     ):
+        # Core subsystems
         self.memory_system = AetherraMemorySystem(memory_db_path)
         self.reasoning_engine = ReasoningEngine(reasoning_db_path)
         self.improvement_engine = SelfImprovementEngine(improvement_db_path)
@@ -163,12 +179,15 @@ class AetherraEngine:
         self.introspection = IntrospectionController()
         self.agent_orchestrator = AgentOrchestrator(orchestrator_db_path)
 
+        # Session state
         self.conversation_context = {}
         self.session_id = None
         self.active_tasks = {}
         self.initialized = False
+
         # Session-scoped scratchpad (ephemeral, never persisted)
         self._scratchpad: List[Dict[str, Any]] = []
+
         # Per-session metrics
         self.session_metrics: Dict[str, Any] = {
             "messages": 0,
@@ -176,9 +195,24 @@ class AetherraEngine:
             "rag_hits": 0,
             "rag_misses": 0,
             "safety_filters_triggered": 0,
+            # Style layer metrics (per-session, lightweight)
+            "style_contractions": 0,
+            "style_questions": 0,
+            "style_empathy": 0,
         }
+
         # Last agent evaluation report (ephemeral)
         self._last_agent_eval: Optional[Dict[str, Any]] = None
+
+        # Optional persistent memory (for quantum A/B recall path)
+        self._persistent_memory: Any = None  # lazy init
+        self._msg_counter = 0  # per-session message counter for A/B bucketing
+
+        # LLM manager (lazy until initialize); prefer local providers for privacy by default
+        self._llm_manager = None  # type: ignore[assignment]
+        self._llm_selected = False
+        # Last LLM info/error snapshot for diagnostics (per-session, ephemeral)
+        self._last_llm_info = {}
 
         logger.info("Aetherra Engine initialized")
 
@@ -188,6 +222,17 @@ class AetherraEngine:
             return
 
         try:
+            # Bring up LLM manager (best-effort); selection happens below
+            try:
+                from Aetherra.core.multi_llm_manager import (
+                    MultiLLMManager,  # type: ignore
+                )
+
+                self._llm_manager = MultiLLMManager()
+            except Exception as _e:
+                self._llm_manager = None
+                logger.warning(f"[LLM] MultiLLMManager unavailable: {_e}")
+
             # Start subsystems with graceful fallback
             if hasattr(self.improvement_engine, "start_improvement_cycle"):
                 await self.improvement_engine.start_improvement_cycle()
@@ -202,6 +247,19 @@ class AetherraEngine:
 
             # Register system components for monitoring
             self._register_system_components()
+
+            # If A/B recall requires persistent memory, pre-initialize it (best-effort)
+            try:
+                if self._ab_mode() in ("quantum", "abp"):
+                    await self._ensure_persistent_memory()
+            except Exception:
+                pass
+
+            # Select an LLM model if possible (Ollama-first by default)
+            try:
+                await self._ensure_llm_selection()
+            except Exception as _e:
+                logger.warning(f"[LLM] model selection failed: {_e}")
 
             self.initialized = True
             logger.info("[OK] Aetherra Engine fully initialized")
@@ -355,6 +413,18 @@ class AetherraEngine:
             importance=0.5,
             memory_type="conversation",
         )
+        # Mirror to persistent memory for quantum A/B (best-effort)
+        try:
+            if await self._ensure_persistent_memory():
+                await self._persistent_memory.store(
+                    {"event": "conversation_start", "user_id": user_id},
+                    context={"session_id": self.session_id},
+                    memory_type="conversation",
+                    importance=0.5,
+                    tags=["conversation", "session_start"],
+                )
+        except Exception:
+            pass
 
         logger.info(f"Started conversation session: {self.session_id}")
         return self.session_id
@@ -368,6 +438,30 @@ class AetherraEngine:
             await self.start_conversation()
 
         try:
+            # Mid-stream callback hooks (optional)
+            _cbs = (
+                (context or {}).get("_callbacks") if isinstance(context, dict) else None
+            )
+
+            def _cb(name: str):
+                try:
+                    if isinstance(_cbs, dict) and callable(_cbs.get(name)):
+                        return _cbs.get(name)
+                except Exception:
+                    pass
+                return None
+
+            _on_thought = _cb("on_thought")
+            _on_tool = _cb("on_tool")
+            _on_chunk = _cb("on_chunk")
+
+            def _safe_call(fn, *args, **kwargs):
+                try:
+                    if callable(fn):
+                        fn(*args, **kwargs)
+                except Exception:
+                    pass
+
             t0 = datetime.now()
             # Update conversation context
             self.conversation_context["message_count"] += 1
@@ -381,6 +475,9 @@ class AetherraEngine:
             # AI Safety: sanitize input
             safe_message = self._sanitize_input(str(message))
 
+            # Emit initial thought
+            _safe_call(_on_thought, text="Analyzing message and recalling context")
+
             # Store user message in memory
             memory_id = await self.memory_system.store_memory(
                 content={"role": "user", "content": safe_message},
@@ -389,11 +486,70 @@ class AetherraEngine:
                 importance=0.7,
                 memory_type="conversation",
             )
+            # Mirror to persistent memory (best-effort)
+            try:
+                if await self._ensure_persistent_memory():
+                    await self._persistent_memory.store(
+                        {"role": "user", "content": safe_message},
+                        context={
+                            **{
+                                k: (v.isoformat() if hasattr(v, "isoformat") else v)
+                                for k, v in message_context.items()
+                            },
+                            "session_id": self.session_id,
+                        },
+                        memory_type="conversation",
+                        importance=0.7,
+                        tags=["conversation", "user_message"],
+                    )
+            except Exception:
+                pass
 
-            # Recall relevant memories
-            relevant_memories = await self.memory_system.recall_memories(
-                query_text=safe_message, limit=8, memory_type="conversation"
-            )
+            # Recall relevant memories with A/B selection
+            bucket = self._choose_ab_bucket()
+            t_recall0 = datetime.now()
+            relevant_memories: List[Any] = []
+            try:
+                if bucket == "quantum" and await self._ensure_persistent_memory():
+                    pm = self._persistent_memory
+                    raw = await pm.retrieve(
+                        safe_message, limit=8, memory_type="conversation"
+                    )
+                    # Adapt to expected shape for downstream usage
+                    relevant_memories = [
+                        {
+                            "id": r.get("id"),
+                            "content": r.get("content"),
+                            "importance": float(r.get("importance", 0.5)),
+                        }
+                        for r in (raw or [])
+                        if isinstance(r, dict)
+                    ]
+                else:
+                    relevant_memories = await self.memory_system.recall_memories(
+                        query_text=safe_message, limit=8, memory_type="conversation"
+                    )
+            except Exception:
+                # Fallback to classical
+                relevant_memories = await self.memory_system.recall_memories(
+                    query_text=safe_message, limit=8, memory_type="conversation"
+                )
+                bucket = "classical"
+            dt_recall_ms = (datetime.now() - t_recall0).total_seconds() * 1000.0
+            self._record_ab_metric(bucket, dt_recall_ms)
+
+            # Tool-like callback for memory recall
+            try:
+                _safe_call(
+                    _on_tool,
+                    {
+                        "name": "memory_recall",
+                        "mode": bucket,
+                        "hits": len(relevant_memories),
+                    },
+                )
+            except Exception:
+                pass
 
             # RAG evidence selection (prefer higher importance)
             def _importance(m):
@@ -450,13 +606,123 @@ class AetherraEngine:
             # Use mock reasoning for now - would import real ReasoningContext in production
             reasoning_result = await self.reasoning_engine.reason(reasoning_context)
 
-            # Generate response (in a real system, this would use an LLM)
-            raw_response = self._generate_response(
-                safe_message, reasoning_result, relevant_memories
-            )
+            _safe_call(_on_thought, text="Reasoning complete, composing response")
+
+            # Generate response using a real LLM when available
+            raw_response: str
+            used_llm = False
+            try:
+                await self._ensure_llm_selection()
+                if self._llm_manager and self._llm_selected:
+                    # Build a compact prompt including top evidence (RAG-lite)
+                    evidence_snippets = []
+                    for ev in (evidence or [])[:3]:
+                        try:
+                            c = ev.get("content") if isinstance(ev, dict) else None
+                            if c:
+                                evidence_snippets.append(str(c)[:500])
+                        except Exception:
+                            pass
+                    evtxt = "\n\n".join(f"- {s}" for s in evidence_snippets)
+                    base_prompt = (
+                        f"User: {safe_message}\n\n"
+                        + (f"Context:\n{evtxt}\n\n" if evtxt else "")
+                        + "Be concise and helpful."
+                    )
+                    # Prefer async path; add diagnostic snapshot
+                    try:
+                        raw_response = await self._llm_manager.generate_response(
+                            base_prompt
+                        )
+                        used_llm = True
+                        try:
+                            mi = (
+                                self._llm_manager.get_current_model_info()
+                                if hasattr(self._llm_manager, "get_current_model_info")
+                                else None
+                            )
+                            self._last_llm_info = {
+                                "event": "ok",
+                                "model": mi,
+                            }
+                        except Exception:
+                            pass
+                    except Exception as _llm_err:
+                        # Capture error and fall back
+                        try:
+                            mi = (
+                                self._llm_manager.get_current_model_info()
+                                if hasattr(self._llm_manager, "get_current_model_info")
+                                else None
+                            )
+                        except Exception:
+                            mi = None
+                        self._last_llm_info = {
+                            "event": "error",
+                            "model": mi,
+                            "error": str(_llm_err),
+                        }
+                        logger.warning(
+                            f"[LLM] generation failed; falling back: {type(_llm_err).__name__}: {_llm_err}"
+                        )
+                        logger.debug("[LLM] traceback:\n" + traceback.format_exc())
+                        raise
+                else:
+                    raise RuntimeError("llm_not_ready")
+            except Exception:
+                # Fallback to placeholder generator if LLM not available
+                raw_response = self._generate_response(
+                    safe_message, reasoning_result, relevant_memories
+                )
 
             # AI Safety: apply output filters/policies
             response = self._apply_output_filters(raw_response)
+
+            # Emit a couple of streaming chunks (best-effort preview)
+            try:
+                if callable(_on_chunk):
+                    # Split into 2-3 rough chunks without heavy logic
+                    txt = str(response or "")
+                    n = max(1, min(3, 1 + (len(txt) // 240)))
+                    step = max(1, len(txt) // n)
+                    for i in range(0, len(txt), step):
+                        piece = txt[i : i + step]
+                        if not piece:
+                            continue
+                        _safe_call(_on_chunk, text=piece, index=i // step)
+                        # tiny yield to let outer poller drain
+                        await asyncio.sleep(0)
+            except Exception:
+                pass
+
+            # Human style layer (env-driven; best-effort)
+            try:
+                from ..conversation.human_style import HumanStyle
+
+                styler = getattr(self, "_human_styler", None)
+                if styler is None:
+                    styler = HumanStyle()
+                    self._human_styler = styler
+                styled, markers = styler.enhance(
+                    user_message=safe_message,
+                    base_text=response,
+                    evidence_count=len(evidence),
+                    bucket_index=int(self.session_metrics.get("messages", 0)),
+                )
+                response = styled
+                # Record markers to metrics
+                try:
+                    if getattr(markers, "used_contractions", 0):
+                        self.session_metrics["style_contractions"] += 1
+                    if getattr(markers, "asked_question", False):
+                        self.session_metrics["style_questions"] += 1
+                    if getattr(markers, "used_empathy", False):
+                        self.session_metrics["style_empathy"] += 1
+                except Exception:
+                    pass
+            except Exception:
+                # Styler optional
+                pass
 
             # Store assistant response in memory
             await self.memory_system.store_memory(
@@ -466,6 +732,24 @@ class AetherraEngine:
                 importance=0.8,
                 memory_type="conversation",
             )
+            # Mirror assistant response to persistent memory (best-effort)
+            try:
+                if await self._ensure_persistent_memory():
+                    await self._persistent_memory.store(
+                        {"role": "assistant", "content": response},
+                        context={
+                            **{
+                                k: (v.isoformat() if hasattr(v, "isoformat") else v)
+                                for k, v in message_context.items()
+                            },
+                            "session_id": self.session_id,
+                        },
+                        memory_type="conversation",
+                        importance=0.8,
+                        tags=["conversation", "assistant_response"],
+                    )
+            except Exception:
+                pass
 
             # Record performance metrics
             self.improvement_engine.record_performance_metric(
@@ -500,6 +784,18 @@ class AetherraEngine:
                 "memory_id": memory_id,
                 "relevant_memories_count": len(relevant_memories),
                 "timestamp": datetime.now().isoformat(),
+                "ab_bucket": bucket,
+                "llm": {
+                    "used": bool(used_llm),
+                    "model": (
+                        (self._llm_manager.get_current_model_info())
+                        if (self._llm_manager and self._llm_selected)
+                        else None
+                    ),
+                    **(
+                        {} if not self._last_llm_info else {"diag": self._last_llm_info}
+                    ),
+                },
             }
 
         except Exception as e:
@@ -583,6 +879,34 @@ class AetherraEngine:
                 "safety_filters_triggered": self.session_metrics.get(
                     "safety_filters_triggered", 0
                 ),
+                # Style layer counters
+                "style_contractions": self.session_metrics.get("style_contractions", 0),
+                "style_questions": self.session_metrics.get("style_questions", 0),
+                "style_empathy": self.session_metrics.get("style_empathy", 0),
+                # A/B recall counters
+                "ab_recall_total": self.session_metrics.get("ab_recall_total", 0),
+                "ab_recall_classical_total": self.session_metrics.get(
+                    "ab_recall_classical_total", 0
+                ),
+                "ab_recall_quantum_total": self.session_metrics.get(
+                    "ab_recall_quantum_total", 0
+                ),
+                "ab_recall_latency_ms_sum_classical": self.session_metrics.get(
+                    "ab_recall_latency_ms_sum_classical", 0.0
+                ),
+                "ab_recall_latency_ms_count_classical": self.session_metrics.get(
+                    "ab_recall_latency_ms_count_classical", 0
+                ),
+                "ab_recall_latency_ms_sum_quantum": self.session_metrics.get(
+                    "ab_recall_latency_ms_sum_quantum", 0.0
+                ),
+                "ab_recall_latency_ms_count_quantum": self.session_metrics.get(
+                    "ab_recall_latency_ms_count_quantum", 0
+                ),
+            },
+            "ab": {
+                "mode": self._ab_mode(),
+                "pmem_ready": bool(self._persistent_memory is not None),
             },
         }
 
@@ -592,12 +916,51 @@ class AetherraEngine:
         """Execute a task using the agent orchestrator"""
 
         # Create a simple task dict for mock orchestrator
+        # Observer-aware: infer sensitivity and coherence estimate for policy gating
+        sensitive = bool(task_data.get("sensitive", False))
+        try:
+            nm = str(task_name or "").lower()
+            if any(
+                nm.startswith(p)
+                for p in [
+                    "delete.",
+                    "write.",
+                    "external.",
+                    "network.",
+                    "danger.",
+                    "unsafe.",
+                ]
+            ):
+                sensitive = True
+        except Exception:
+            pass
+        req_caps = task_data.get("required_capabilities", [])
+        try:
+            caps = [str(c).lower() for c in (req_caps or [])]
+            if any(
+                c in {"network", "filesystem_write", "external_call", "danger"}
+                for c in caps
+            ):
+                sensitive = True
+        except Exception:
+            pass
+        # Coherence estimate (0..1) — env override, else simple heuristic from session metrics
+        coherence_est = self._estimate_coherence()
+        require_human = bool(task_data.get("require_human", False))
+
         task = {
             "task_id": f"task_{datetime.now().isoformat()}",
             "name": task_name,
             "description": f"User requested task: {task_name}",
             "required_capabilities": task_data.get("required_capabilities", []),
-            "input_data": task_data,
+            "input_data": {
+                **task_data,
+                # Observer-aware fields
+                "observer_gate": True,
+                "sensitive": sensitive,
+                "coherence_est": coherence_est,
+                "require_human_approval": require_human,
+            },
             "priority": priority,
             "max_execution_time": task_data.get("timeout", 300),
             "dependencies": task_data.get("dependencies", []),
@@ -611,6 +974,34 @@ class AetherraEngine:
     def get_task_status(self, task_id: str) -> Optional[Dict[str, Any]]:
         """Get status of a specific task"""
         return self.agent_orchestrator.get_task_status(task_id)
+
+    def _estimate_coherence(self) -> float:
+        """Best-effort coherence estimate for observer-aware policy.
+
+        Precedence:
+        - AETHERRA_COHERENCE_EST env var if set.
+        - RAG signal heuristic from session metrics.
+        - Default 0.8.
+        """
+        try:
+            envv = os.environ.get("AETHERRA_COHERENCE_EST")
+            if envv is not None and envv != "":
+                v = float(envv)
+                return max(0.0, min(1.0, v))
+        except Exception:
+            pass
+        try:
+            hits = int(self.session_metrics.get("rag_hits", 0) or 0)
+            misses = int(self.session_metrics.get("rag_misses", 0) or 0)
+            total = max(1, hits + misses)
+            base = hits / total
+            # Nudge by safety: fewer safety triggers -> slightly higher coherence
+            safety = int(self.session_metrics.get("safety_filters_triggered", 0) or 0)
+            adj = max(-0.2, 0.1 - 0.02 * min(5, safety))
+            val = max(0.0, min(1.0, base + adj))
+            return float(val)
+        except Exception:
+            return 0.8
 
     async def learn_from_feedback(self, interaction_id: str, feedback: Dict[str, Any]):
         """Learn from user feedback"""
@@ -689,6 +1080,74 @@ class AetherraEngine:
     def get_session_metrics(self) -> Dict[str, Any]:
         """Return lightweight per-session metrics."""
         return dict(self.session_metrics)
+
+    # --------- AB/Quantum recall integration helpers ---------
+    def _ab_mode(self) -> str:
+        mode = os.environ.get("AETHERRA_AB_RECALL_MODE", "classical").strip().lower()
+        return mode if mode in ("classical", "quantum", "abp") else "classical"
+
+    def _choose_ab_bucket(self) -> str:
+        forced = os.environ.get("AETHERRA_AB_FORCE_BUCKET", "").strip().lower()
+        if forced in ("a", "classical"):
+            return "classical"
+        if forced in ("b", "quantum"):
+            return "quantum"
+        mode = self._ab_mode()
+        if mode in ("classical", "quantum"):
+            return mode
+        # abp mode: percentage rollout
+        try:
+            pct = int(os.environ.get("AETHERRA_AB_RECALL_PCT", "50"))
+        except Exception:
+            pct = 50
+        try:
+            seed = int(os.environ.get("AETHERRA_AB_RECALL_SEED", "7"))
+        except Exception:
+            seed = 7
+        key = f"{self.session_id or 'nosess'}:{self._msg_counter}:{seed}"
+        bucket_val = abs(hash(key)) % 100
+        try:
+            self._msg_counter += 1
+        except Exception:
+            pass
+        return "quantum" if bucket_val < max(0, min(100, pct)) else "classical"
+
+    def _record_ab_metric(self, bucket: str, dt_ms: float):
+        try:
+            bucket = "quantum" if bucket == "quantum" else "classical"
+            # totals
+            self.session_metrics["ab_recall_total"] = (
+                int(self.session_metrics.get("ab_recall_total", 0)) + 1
+            )
+            k_total = f"ab_recall_{bucket}_total"
+            self.session_metrics[k_total] = (
+                int(self.session_metrics.get(k_total, 0)) + 1
+            )
+            # latency aggregates
+            ksum = f"ab_recall_latency_ms_sum_{bucket}"
+            kcnt = f"ab_recall_latency_ms_count_{bucket}"
+            self.session_metrics[ksum] = float(
+                self.session_metrics.get(ksum, 0.0)
+            ) + float(dt_ms)
+            self.session_metrics[kcnt] = int(self.session_metrics.get(kcnt, 0)) + 1
+        except Exception:
+            pass
+
+    async def _ensure_persistent_memory(self) -> bool:
+        """Ensure the persistent memory system is available. Returns True if ready."""
+        try:
+            if self._persistent_memory is not None:
+                return True
+            if self._ab_mode() not in ("quantum", "abp"):
+                return False
+            from aetherra_persistent_memory import (
+                get_persistent_memory_system as _get_pmem,
+            )
+
+            self._persistent_memory = await _get_pmem()
+            return self._persistent_memory is not None
+        except Exception:
+            return False
 
     async def reflect_on_day(self) -> Dict[str, Any]:
         """Night-cycle hook: run a small evaluation harness and generate insights."""
@@ -778,7 +1237,8 @@ class AetherraEngine:
         t_all0 = time.time()
         for c in cases:
             name = str(c.get("name") or "eval.task")
-            data = c.get("data") if isinstance(c.get("data"), dict) else {}
+            raw_data = c.get("data")
+            data: Dict[str, Any] = raw_data if isinstance(raw_data, dict) else {}
             prio = str(c.get("priority") or "normal")
             t0 = time.time()
             try:
@@ -875,6 +1335,57 @@ class AetherraEngine:
     def get_last_agent_evaluation(self) -> Optional[Dict[str, Any]]:
         """Return the last agent evaluation report, if any."""
         return self._last_agent_eval
+
+    # --------- LLM selection helpers ---------
+    async def _ensure_llm_selection(self) -> bool:
+        """Ensure an LLM model is selected in the MultiLLMManager.
+
+        Preference order is controlled by env AETHERRA_LLM_PROVIDER_PREF (comma list),
+        default: "ollama,openai,anthropic,gemini,llamacpp". A specific model can be
+        forced via AETHERRA_LLM_MODEL.
+        """
+        if self._llm_selected:
+            return True
+        mgr = self._llm_manager
+        if mgr is None:
+            return False
+        try:
+            preferred = os.environ.get(
+                "AETHERRA_LLM_PROVIDER_PREF",
+                "ollama,openai,anthropic,gemini,llamacpp",
+            )
+            order = [p.strip().lower() for p in preferred.split(",") if p.strip()]
+            force_model = os.environ.get("AETHERRA_LLM_MODEL", "").strip()
+
+            models = mgr.list_available_models()  # name -> info
+            selected = None
+            # If a model is forced and exists, use it
+            if force_model and force_model in models:
+                if mgr.set_model(force_model):
+                    self._llm_selected = True
+                    logger.info(f"[LLM] selected forced model: {force_model}")
+                    return True
+            # Otherwise, pick by provider order, preferring local where possible
+            for prov in order:
+                for name, info in models.items():
+                    try:
+                        if str(info.get("provider", "")).lower() == prov:
+                            if mgr.set_model(name):
+                                selected = name
+                                break
+                    except Exception:
+                        continue
+                if selected:
+                    break
+            if selected:
+                self._llm_selected = True
+                logger.info(f"[LLM] selected model: {selected}")
+                return True
+            logger.warning("[LLM] no suitable model found in configurations")
+            return False
+        except Exception as e:
+            logger.warning(f"[LLM] selection error: {e}")
+            return False
 
 
 # Global Aetherra engine instance

@@ -287,6 +287,7 @@ class LyrixaChatAdapter:
                     "text": resp.text,
                     "suggestions": resp.suggestions,
                     "applied_changes": resp.applied_changes,
+                    "identity": getattr(resp, "identity", None) or {},
                     "awareness": resp.awareness,
                 }
             except Exception as e:
@@ -1147,6 +1148,22 @@ class AetherraOSLauncher:
                     from aetherra_hub_server import start_hub_server
 
                     logger.info("[HUB] Starting Aetherra Hub server...")
+
+                    # Ensure AI Developer API is ON by default when OS launches the Hub.
+                    # Respect explicit env if set; otherwise enable sensible defaults.
+                    # Do NOT force these defaults during tests or when explicitly skipped.
+                    _testing = str(os.environ.get("TESTING", "")).strip().lower() in (
+                        "true",
+                        "1",
+                    )
+                    _skip = (
+                        os.environ.get("AETHERRA_SKIP_LAUNCHER_AI_DEFAULTS", "0") == "1"
+                    )
+                    if not _testing and not _skip:
+                        os.environ.setdefault("AETHERRA_AI_API_ENABLED", "1")
+                        os.environ.setdefault("AETHERRA_AI_API_STREAM", "1")
+                        # Default to no token requirement for local OS usage; users can opt-in via env.
+                        os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "0")
 
                     # Start the built-in Hub server
                     hub_server = start_hub_server(port=3001)

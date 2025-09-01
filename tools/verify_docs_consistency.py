@@ -9,6 +9,7 @@ Outputs a short report to stdout and a markdown file docs/DOCS_CONSISTENCY_REPOR
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 from typing import List, Set
@@ -16,6 +17,7 @@ from typing import List, Set
 ROOT = Path(__file__).resolve().parents[1]
 DOC_OVERVIEW = ROOT / "docs" / "PROJECT_OVERVIEW.md"
 REPORT = ROOT / "docs" / "DOCS_CONSISTENCY_REPORT.md"
+DOCS_CFG = ROOT / "docs" / "docs_consistency.json"
 
 # Treat only standalone env-like tokens and avoid matching doc filenames like AETHERRA_..._SYSTEM.md
 ENV_PATTERN = re.compile(r"\bAETHERRA_[A-Z0-9_]+\b(?!\.md)")
@@ -56,6 +58,8 @@ def _normalize_route(route: str) -> str:
         return route
     # Normalize parameter segments
     route = re.sub(r"<[^>]+>", "<param>", route)
+    # Drop trailing punctuation commonly used in prose
+    route = route.rstrip(".,;:)")
     # Normalize trailing slashes (keep root as "/")
     if route != "/":
         route = route.rstrip("/")
@@ -104,12 +108,10 @@ def read_doc_section_envs(doc: Path) -> Set[str]:
     if not doc.exists():
         return set()
     text = doc.read_text(encoding="utf-8", errors="ignore")
-    # Prefer the explicit Environment Variables Index section
-    section = _extract_section(text, "Environment Variables Index")
-    if not section:
-        # Fallback to a broader Configuration and Environment section if present
-        section = _extract_section(text, "Configuration and Environment") or text
-    return set(sorted(set(ENV_PATTERN.findall(section))))
+    # Collect from the entire document to avoid omissions when an Index exists
+    # This allows docs to mention envs in multiple sections naturally.
+    envs_all = set(ENV_PATTERN.findall(text))
+    return set(sorted(envs_all))
 
 
 def read_doc_endpoints(doc: Path) -> Set[str]:
@@ -122,11 +124,12 @@ def read_doc_endpoints(doc: Path) -> Set[str]:
         paths = set(re.findall(r"(/[-a-zA-Z0-9_./<>]+)", src))
         normed = {_normalize_route(p) for p in paths if p.startswith("/")}
         # Explicitly capture root route when referenced in prose
-        if "GET /" in src or "`/`" in src:
+        if "GET /" in src or "`/`" in src or re.search(r"(?m)^\s*[-*]\s*/\s*$", src):
             normed.add("/")
         # Keep only relevant API/dashboard paths
         allowed_prefixes = (
             "/api",
+            "/ws",  # WebSocket routes
             "/qfac",
             "/quantum",
             "/services",
@@ -137,13 +140,18 @@ def read_doc_endpoints(doc: Path) -> Set[str]:
             "/<",  # parameterized root catch-alls (e.g., /<param>)
         )
         filtered = {
-            p for p in normed if p == "/" or p.lower().startswith(allowed_prefixes)
+            p for p in normed if (p == "/" or p.lower().startswith(allowed_prefixes))
         }
+        # Drop uppercase artifacts like "/API" captured from prose headings
+        filtered = {p for p in filtered if p == p.lower()}
         # Drop obvious non-API artifacts (file paths/extensions)
+        # Keep certain .json API endpoints (e.g., OpenAPI schema) while filtering file-like paths
+        exceptions = {"/api/openapi.json"}
         filtered = {
             p
             for p in filtered
-            if not re.search(r"\.(py|md|txt|json|yaml|yml)$", p, re.IGNORECASE)
+            if (p in exceptions)
+            or not re.search(r"\.(py|md|txt|json|yaml|yml)$", p, re.IGNORECASE)
         }
         return filtered
 
@@ -169,8 +177,24 @@ def main() -> int:
     doc_envs = read_doc_section_envs(DOC_OVERVIEW)
     doc_routes = read_doc_endpoints(DOC_OVERVIEW)
 
+    # Optional config to fine-tune reporting, without changing pass/fail semantics
+    cfg_ignore_extra_envs: Set[str] = set()
+    if DOCS_CFG.exists():
+        try:
+            cfg = json.loads(DOCS_CFG.read_text(encoding="utf-8"))
+            ignore_list = cfg.get("ignore_extra_envs", []) or cfg.get(
+                "doc_only_envs", []
+            )
+            if isinstance(ignore_list, list):
+                cfg_ignore_extra_envs = {str(v) for v in ignore_list}
+        except Exception:
+            # Best-effort; ignore config errors to keep tool resilient
+            pass
+
     missing_envs = sorted(code_envs - doc_envs)
-    extra_envs = sorted(doc_envs - code_envs)
+    raw_extra_envs = doc_envs - code_envs
+    # Suppress configured doc-only envs from the extra list for a cleaner report
+    extra_envs = sorted([v for v in raw_extra_envs if v not in cfg_ignore_extra_envs])
     missing_routes = sorted(code_routes - doc_routes)
     extra_routes = sorted([r for r in doc_routes if r not in code_routes])
 
@@ -187,6 +211,15 @@ def main() -> int:
     lines.append(f"Documented but not found in code ({len(extra_envs)}):")
     for v in extra_envs:
         lines.append(f"- {v}")
+    # If we suppressed any extras via config, annotate for transparency
+    suppressed = sorted([v for v in raw_extra_envs if v in cfg_ignore_extra_envs])
+    if suppressed:
+        lines.append("")
+        lines.append(
+            f"(Note) Suppressed doc-only envs via docs_consistency.json ({len(suppressed)}):"
+        )
+        for v in suppressed:
+            lines.append(f"- {v}")
     lines.append("")
     lines.append("## Endpoints")
     lines.append("")

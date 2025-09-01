@@ -1,0 +1,25 @@
+import pytest
+import requests
+
+from aetherra_hub_server import start_hub_server
+
+HAS_FLASK = True
+try:
+    import flask  # noqa: F401
+except Exception:
+    HAS_FLASK = False
+
+
+@pytest.mark.skipif(not HAS_FLASK, reason="Flask not installed")
+def test_quantum_status_endpoint_basic():
+    # Start hub server on a test port
+    server = start_hub_server(port=3012)
+    assert server.is_running()
+
+    r = requests.get("http://localhost:3012/api/quantum/status", timeout=10)
+    assert r.status_code == 200
+    data = r.json()
+    assert isinstance(data, dict)
+    # Best-effort keys
+    assert "available" in data
+    assert "backend" in data
