@@ -27,13 +27,21 @@ On success (including fallback), status code is 200 with a JSON body:
 - text (string): Lyrixa's reply or a deterministic fallback.
 - suggestions (array): Optional list of suggested fixes with {title, file, action, rationale}.
 - applied_changes (array): Optional list of applied changes if allow_edits=true and changes were made.
+- persona (object, optional): Lyrixa persona/identity snapshot. When available includes { name, title, about }.
+- awareness (object, optional): Workspace awareness summary; when service is offline a minimal note is returned.
+- edit_plan (array, optional): Planned edits synthesized from suggestions; items include { title, file, action }.
+- confidence (number, optional): Conservative confidence float (0.0–1.0). Defaults to 0.5 if unspecified.
 
 Example success:
 
 {
   "text": "I'm Lyrixa, the conversational and awareness layer of the Aetherra AI Operating System…",
   "suggestions": [],
-  "applied_changes": []
+  "applied_changes": [],
+  "persona": { "name": "Lyrixa", "title": "Lyrixa AI Assistant" },
+  "awareness": { "total_py_files": 123, "key_components": ["aetherra_os_launcher.py", "aetherra_hub_server.py"] },
+  "edit_plan": [],
+  "confidence": 0.72
 }
 
 Service-unavailable fallback (still HTTP 200):
@@ -41,8 +49,14 @@ Service-unavailable fallback (still HTTP 200):
 {
   "text": "Lyrixa chat service is not online right now. I can still answer identity and Aetherra questions.",
   "suggestions": [],
-  "applied_changes": []
+  "applied_changes": [],
+  "persona": { "name": "Lyrixa", "title": "Lyrixa AI Assistant" },
+  "awareness": { "note": "service offline; awareness limited" },
+  "edit_plan": [],
+  "confidence": 0.5
 }
+
+Backward compatibility: older clients relying only on text/suggestions/applied_changes remain supported.
 
 ## Behavior Notes
 

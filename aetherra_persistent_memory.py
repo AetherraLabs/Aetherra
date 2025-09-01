@@ -14,17 +14,21 @@ This system provides:
 - Adaptive memory organization
 """
 
-import asyncio
+import hashlib
 import json
 import logging
+import os
 import sqlite3
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-import hashlib
-import pickle
-import numpy as np
+from typing import Any, Dict, List, Optional
+
+from Aetherra.aetherra_core.memory.quantum.qhash import hamming_distance, simhash_text
+from Aetherra.aetherra_core.memory.quantum.random_features import (
+    RandomFeatureMap,
+    cosine_similarity,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +36,13 @@ logger = logging.getLogger(__name__)
 class AetherraMemoryNode:
     """Individual memory node with cognitive metadata."""
 
-    def __init__(self, content: Any, memory_type: str = "general",
-                 context: Optional[Dict] = None, importance: float = 0.5):
+    def __init__(
+        self,
+        content: Any,
+        memory_type: str = "general",
+        context: Optional[Dict] = None,
+        importance: float = 0.5,
+    ):
         self.id = self._generate_id(content)
         self.content = content
         self.memory_type = memory_type
@@ -72,41 +81,41 @@ class AetherraMemoryNode:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage."""
         return {
-            'id': self.id,
-            'content': self.content,
-            'memory_type': self.memory_type,
-            'context': self.context,
-            'importance': self.importance,
-            'created_at': self.created_at.isoformat(),
-            'last_accessed': self.last_accessed.isoformat(),
-            'access_count': self.access_count,
-            'connections': list(self.connections),
-            'tags': list(self.tags),
-            'emotional_weight': self.emotional_weight,
-            'confidence': self.confidence,
-            'source': self.source,
-            'verified': self.verified
+            "id": self.id,
+            "content": self.content,
+            "memory_type": self.memory_type,
+            "context": self.context,
+            "importance": self.importance,
+            "created_at": self.created_at.isoformat(),
+            "last_accessed": self.last_accessed.isoformat(),
+            "access_count": self.access_count,
+            "connections": list(self.connections),
+            "tags": list(self.tags),
+            "emotional_weight": self.emotional_weight,
+            "confidence": self.confidence,
+            "source": self.source,
+            "verified": self.verified,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'AetherraMemoryNode':
+    def from_dict(cls, data: Dict[str, Any]) -> "AetherraMemoryNode":
         """Create from dictionary."""
         node = cls(
-            content=data['content'],
-            memory_type=data['memory_type'],
-            context=data.get('context', {}),
-            importance=data.get('importance', 0.5)
+            content=data["content"],
+            memory_type=data["memory_type"],
+            context=data.get("context", {}),
+            importance=data.get("importance", 0.5),
         )
-        node.id = data['id']
-        node.created_at = datetime.fromisoformat(data['created_at'])
-        node.last_accessed = datetime.fromisoformat(data['last_accessed'])
-        node.access_count = data.get('access_count', 0)
-        node.connections = set(data.get('connections', []))
-        node.tags = set(data.get('tags', []))
-        node.emotional_weight = data.get('emotional_weight', 0.0)
-        node.confidence = data.get('confidence', 1.0)
-        node.source = data.get('source', 'user')
-        node.verified = data.get('verified', False)
+        node.id = data["id"]
+        node.created_at = datetime.fromisoformat(data["created_at"])
+        node.last_accessed = datetime.fromisoformat(data["last_accessed"])
+        node.access_count = data.get("access_count", 0)
+        node.connections = set(data.get("connections", []))
+        node.tags = set(data.get("tags", []))
+        node.emotional_weight = data.get("emotional_weight", 0.0)
+        node.confidence = data.get("confidence", 1.0)
+        node.source = data.get("source", "user")
+        node.verified = data.get("verified", False)
         return node
 
 
@@ -115,10 +124,10 @@ class AetherraMemoryIndex:
 
     def __init__(self):
         self.content_index = {}  # content hash -> memory_id
-        self.tag_index = {}      # tag -> set of memory_ids
-        self.type_index = {}     # memory_type -> set of memory_ids
-        self.time_index = {}     # date -> set of memory_ids
-        self.importance_index = {} # importance_level -> set of memory_ids
+        self.tag_index = {}  # tag -> set of memory_ids
+        self.type_index = {}  # memory_type -> set of memory_ids
+        self.time_index = {}  # date -> set of memory_ids
+        self.importance_index = {}  # importance_level -> set of memory_ids
 
     def index_memory(self, memory: AetherraMemoryNode):
         """Add memory to indices."""
@@ -191,17 +200,17 @@ class AetherraPerśistentMemorySystem:
         # Cognitive state
         self.learning_patterns = {}
         self.cognitive_state = {
-            'session_count': 0,
-            'total_memories': 0,
-            'last_session': None,
-            'cognitive_growth_rate': 0.0,
-            'memory_efficiency': 0.0
+            "session_count": 0,
+            "total_memories": 0,
+            "last_session": None,
+            "cognitive_growth_rate": 0.0,
+            "memory_efficiency": 0.0,
         }
 
         # Initialize database
         self._init_database()
 
-        logger.info(f"[MEMORY] Aetherra Persistent Memory System initialized")
+        logger.info("[MEMORY] Aetherra Persistent Memory System initialized")
         logger.info(f"[MEMORY] Session ID: {self.session_id}")
 
     def _generate_session_id(self) -> str:
@@ -216,7 +225,7 @@ class AetherraPerśistentMemorySystem:
             cursor = conn.cursor()
 
             # Create tables
-            cursor.execute('''
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS memories (
                     id TEXT PRIMARY KEY,
                     content TEXT,
@@ -234,17 +243,17 @@ class AetherraPerśistentMemorySystem:
                     verified BOOLEAN,
                     session_id TEXT
                 )
-            ''')
+            """)
 
-            cursor.execute('''
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS cognitive_state (
                     key TEXT PRIMARY KEY,
                     value TEXT,
                     updated_at TEXT
                 )
-            ''')
+            """)
 
-            cursor.execute('''
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS sessions (
                     session_id TEXT PRIMARY KEY,
                     started_at TEXT,
@@ -252,7 +261,7 @@ class AetherraPerśistentMemorySystem:
                     memory_count INTEGER,
                     cognitive_events TEXT
                 )
-            ''')
+            """)
 
             conn.commit()
             conn.close()
@@ -270,14 +279,18 @@ class AetherraPerśistentMemorySystem:
             await self._load_memories()
 
             # Update cognitive state
-            self.cognitive_state['session_count'] += 1
-            self.cognitive_state['last_session'] = datetime.now().isoformat()
+            self.cognitive_state["session_count"] += 1
+            self.cognitive_state["last_session"] = datetime.now().isoformat()
 
             # Save session start
             await self._save_session_start()
 
-            logger.info(f"[MEMORY] Memory system initialized with {len(self.memories)} memories")
-            logger.info(f"[MEMORY] Session count: {self.cognitive_state['session_count']}")
+            logger.info(
+                f"[MEMORY] Memory system initialized with {len(self.memories)} memories"
+            )
+            logger.info(
+                f"[MEMORY] Session count: {self.cognitive_state['session_count']}"
+            )
 
             return True
 
@@ -285,9 +298,14 @@ class AetherraPerśistentMemorySystem:
             logger.error(f"[MEMORY] Initialization error: {e}")
             return False
 
-    async def store(self, content: Any, context: Optional[Dict] = None,
-                   memory_type: str = "general", importance: float = 0.5,
-                   tags: Optional[List[str]] = None) -> str:
+    async def store(
+        self,
+        content: Any,
+        context: Optional[Dict] = None,
+        memory_type: str = "general",
+        importance: float = 0.5,
+        tags: Optional[List[str]] = None,
+    ) -> Optional[str]:
         """Store new memory with cognitive metadata."""
         try:
             # Create memory node
@@ -295,7 +313,7 @@ class AetherraPerśistentMemorySystem:
                 content=content,
                 memory_type=memory_type,
                 context=context or {},
-                importance=importance
+                importance=importance,
             )
 
             # Add tags
@@ -307,6 +325,21 @@ class AetherraPerśistentMemorySystem:
             auto_tags = self._generate_auto_tags(content, context)
             for tag in auto_tags:
                 memory.add_tag(tag)
+
+            # Quantum fingerprint (QHash) cached into context for faster recall scoring
+            try:
+                qhash_bits = int(os.environ.get("AETHERRA_QHASH_BITS", "64"))
+                qhash_value = simhash_text(str(content), bits=qhash_bits)
+                qctx = dict(memory.context.get("quantum", {}))
+                qctx.update(
+                    {
+                        "qhash": int(qhash_value),
+                        "bits": qhash_bits,
+                    }
+                )
+                memory.context["quantum"] = qctx
+            except Exception as qe:
+                logger.debug(f"[MEMORY] QHash compute skipped: {qe}")
 
             # Store in memory
             self.memories[memory.id] = memory
@@ -321,7 +354,7 @@ class AetherraPerśistentMemorySystem:
             await self._save_memory_to_db(memory)
 
             # Update cognitive state
-            self.cognitive_state['total_memories'] = len(self.memories)
+            self.cognitive_state["total_memories"] = len(self.memories)
             await self._update_cognitive_state()
 
             logger.info(f"[MEMORY] Stored memory: {memory.id} (type: {memory_type})")
@@ -331,8 +364,9 @@ class AetherraPerśistentMemorySystem:
             logger.error(f"[MEMORY] Storage error: {e}")
             return None
 
-    async def retrieve(self, query: str, limit: int = 10,
-                      memory_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def retrieve(
+        self, query: str, limit: int = 10, memory_type: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """Retrieve memories based on query with cognitive ranking."""
         try:
             logger.info(f"[MEMORY] Retrieving memories for query: {query}")
@@ -367,7 +401,7 @@ class AetherraPerśistentMemorySystem:
 
             # Mark memories as accessed
             for memory_data in results:
-                memory_id = memory_data['id']
+                memory_id = memory_data["id"]
                 if memory_id in self.memories:
                     self.memories[memory_id].access()
                     await self._update_memory_in_db(self.memories[memory_id])
@@ -406,19 +440,21 @@ class AetherraPerśistentMemorySystem:
             total_memories = len(self.memories)
 
             if total_memories > 0:
-                self.cognitive_state['memory_efficiency'] = total_accesses / total_memories
+                self.cognitive_state["memory_efficiency"] = (
+                    total_accesses / total_memories
+                )
 
             # Calculate cognitive growth rate
             recent_memories = self._get_recent_memories(hours=24)
-            self.cognitive_state['cognitive_growth_rate'] = len(recent_memories)
+            self.cognitive_state["cognitive_growth_rate"] = len(recent_memories)
 
             state = {
                 **self.cognitive_state,
-                'active_memories': total_memories,
-                'session_id': self.session_id,
-                'memory_types': self._get_memory_type_distribution(),
-                'recent_activity': self._get_recent_activity_summary(),
-                'connection_density': self._calculate_connection_density()
+                "active_memories": total_memories,
+                "session_id": self.session_id,
+                "memory_types": self._get_memory_type_distribution(),
+                "recent_activity": self._get_recent_activity_summary(),
+                "connection_density": self._calculate_connection_density(),
             }
 
             return state
@@ -444,20 +480,35 @@ class AetherraPerśistentMemorySystem:
             # Save optimized state
             await self._save_cognitive_state()
 
-            logger.info(f"[MEMORY] Memory optimization complete. Removed {removed_count} stale memories")
+            logger.info(
+                f"[MEMORY] Memory optimization complete. Removed {removed_count} stale memories"
+            )
 
         except Exception as e:
             logger.error(f"[MEMORY] Memory optimization error: {e}")
 
-    def _generate_auto_tags(self, content: Any, context: Optional[Dict] = None) -> List[str]:
+    def _generate_auto_tags(
+        self, content: Any, context: Optional[Dict] = None
+    ) -> List[str]:
         """Generate automatic tags based on content analysis."""
         tags = []
 
         content_str = str(content).lower()
 
         # Common AI OS concepts
-        ai_concepts = ['memory', 'cognitive', 'consciousness', 'intelligence', 'learning',
-                      'system', 'service', 'plugin', 'agent', 'goal', 'task']
+        ai_concepts = [
+            "memory",
+            "cognitive",
+            "consciousness",
+            "intelligence",
+            "learning",
+            "system",
+            "service",
+            "plugin",
+            "agent",
+            "goal",
+            "task",
+        ]
 
         for concept in ai_concepts:
             if concept in content_str:
@@ -465,9 +516,9 @@ class AetherraPerśistentMemorySystem:
 
         # Context-based tags
         if context:
-            if 'source' in context:
+            if "source" in context:
                 tags.append(f"source_{context['source']}")
-            if 'session_id' in context:
+            if "session_id" in context:
                 tags.append(f"session_{context['session_id']}")
 
         return tags
@@ -476,7 +527,9 @@ class AetherraPerśistentMemorySystem:
         """Create connections to related memories."""
         try:
             # Find similar memories
-            similar_memories = self.index.find_by_content_similarity(str(memory.content))
+            similar_memories = self.index.find_by_content_similarity(
+                str(memory.content)
+            )
 
             # Connect to most similar memories
             for similar_id in list(similar_memories)[:5]:
@@ -495,10 +548,50 @@ class AetherraPerśistentMemorySystem:
         except Exception as e:
             logger.error(f"[MEMORY] Connection creation error: {e}")
 
-    async def _rank_memories(self, candidate_ids: set, query: str) -> List[Dict[str, Any]]:
+    async def _rank_memories(
+        self, candidate_ids: set, query: str
+    ) -> List[Dict[str, Any]]:
         """Rank memories by relevance to query."""
         try:
             scored_memories = []
+
+            # Optional quantum-enhanced scoring
+            use_quantum = os.environ.get("AETHERRA_QUANTUM_RECALL", "0") in (
+                "1",
+                "true",
+                "True",
+            )
+            qhash_bits = int(os.environ.get("AETHERRA_QHASH_BITS", "64"))
+            qhash_weight = float(os.environ.get("AETHERRA_QHASH_WEIGHT", "0.5"))
+            rfm_weight = float(os.environ.get("AETHERRA_RFM_WEIGHT", "0.3"))
+            rfm_in = int(os.environ.get("AETHERRA_RFM_IN", "128"))
+            rfm_out = int(os.environ.get("AETHERRA_RFM_OUT", "32"))
+            rfm_seed = int(os.environ.get("AETHERRA_RFM_SEED", "42"))
+            quantum_audit = os.environ.get("AETHERRA_QUANTUM_AUDIT", "0") in (
+                "1",
+                "true",
+                "True",
+            )
+
+            # Initialize defaults to satisfy type checkers
+            query_qhash: Optional[int] = None
+            rfm: Optional[RandomFeatureMap] = None
+            q_proj: Optional[List[float]] = None
+            if use_quantum:
+                try:
+                    query_qhash = simhash_text(query, bits=qhash_bits)
+                except Exception:
+                    query_qhash = None
+                # Prepare Random Feature Map for query
+                try:
+                    rfm = RandomFeatureMap(
+                        in_dim=rfm_in, out_dim=rfm_out, seed=rfm_seed
+                    )
+                    q_vec = self._hashed_bow_vector(query, rfm_in)
+                    q_proj = rfm.transform(q_vec)
+                except Exception:
+                    rfm = None
+                    q_proj = None
 
             for memory_id in candidate_ids:
                 if memory_id not in self.memories:
@@ -506,6 +599,7 @@ class AetherraPerśistentMemorySystem:
 
                 memory = self.memories[memory_id]
                 score = 0.0
+                q_audit: Dict[str, Any] = {}
 
                 # Content relevance
                 content_str = str(memory.content).lower()
@@ -526,7 +620,62 @@ class AetherraPerśistentMemorySystem:
                 access_bonus = min(memory.access_count * 0.1, 1.0)
                 score += access_bonus
 
-                scored_memories.append((score, memory.to_dict()))
+                # Quantum-enhanced components
+                if use_quantum:
+                    try:
+                        # QHash similarity (1 - normalized Hamming distance)
+                        mh: Optional[int] = None
+                        if isinstance(memory.context, dict):
+                            qctx = memory.context.get("quantum")
+                            if (
+                                isinstance(qctx, dict)
+                                and ("qhash" in qctx)
+                                and qctx["qhash"] is not None
+                            ):
+                                try:
+                                    mh = int(qctx["qhash"])  # ensure int type
+                                except Exception:
+                                    mh = None
+                        if mh is None:
+                            mh = simhash_text(str(memory.content), bits=qhash_bits)
+                        if query_qhash is not None and mh is not None:
+                            dist = hamming_distance(int(mh), int(query_qhash))
+                            qsim = 1.0 - (float(dist) / float(qhash_bits))
+                            score += qhash_weight * qsim
+                            if quantum_audit:
+                                q_audit["qhash"] = {
+                                    "distance": dist,
+                                    "similarity": qsim,
+                                    "bits": qhash_bits,
+                                }
+                    except Exception as qe:
+                        if quantum_audit:
+                            q_audit["qhash_error"] = str(qe)
+
+                    # Random Feature Map similarity
+                    try:
+                        if rfm is not None and q_proj is not None:
+                            m_vec = self._hashed_bow_vector(str(memory.content), rfm_in)
+                            m_proj = rfm.transform(m_vec)
+                            sim = cosine_similarity(q_proj, m_proj)
+                            # Map from [-1,1] to [0,1]
+                            sim01 = (sim + 1.0) / 2.0
+                            score += rfm_weight * sim01
+                            if quantum_audit:
+                                q_audit["rfm"] = {
+                                    "cosine": sim,
+                                    "similarity01": sim01,
+                                    "in": rfm_in,
+                                    "out": rfm_out,
+                                }
+                    except Exception as re:
+                        if quantum_audit:
+                            q_audit["rfm_error"] = str(re)
+
+                mem_dict = memory.to_dict()
+                if quantum_audit and q_audit:
+                    mem_dict.setdefault("audit", {})["quantum"] = q_audit
+                scored_memories.append((score, mem_dict))
 
             # Sort by score descending
             scored_memories.sort(key=lambda x: x[0], reverse=True)
@@ -536,6 +685,31 @@ class AetherraPerśistentMemorySystem:
         except Exception as e:
             logger.error(f"[MEMORY] Ranking error: {e}")
             return []
+
+    @staticmethod
+    def _tokenize(text: str) -> List[str]:
+        if not text:
+            return []
+        return [
+            t
+            for t in "".join(ch.lower() if ch.isalnum() else " " for ch in text).split()
+            if t
+        ]
+
+    def _hashed_bow_vector(self, text: str, dim: int) -> List[float]:
+        vec = [0.0] * dim
+        tokens = self._tokenize(text)
+        if not tokens:
+            return vec
+        for tok in tokens:
+            h = int(hashlib.sha1(tok.encode("utf-8")).hexdigest()[:8], 16)
+            idx = h % dim
+            vec[idx] += 1.0
+        # L2 normalize to avoid length bias
+        norm = sum(v * v for v in vec) ** 0.5
+        if norm > 0:
+            vec = [v / norm for v in vec]
+        return vec
 
     def _get_recent_important_memories(self, limit: int) -> set:
         """Get recent high-importance memories as fallback."""
@@ -594,10 +768,15 @@ class AetherraPerśistentMemorySystem:
             recent = self._get_recent_memories(hours=24)
 
             return {
-                'memories_created_24h': len(recent),
-                'most_common_type': max(self._get_memory_type_distribution().items(),
-                                      key=lambda x: x[1])[0] if self.memories else None,
-                'average_importance': sum(m.importance for m in recent) / len(recent) if recent else 0.0
+                "memories_created_24h": len(recent),
+                "most_common_type": max(
+                    self._get_memory_type_distribution().items(), key=lambda x: x[1]
+                )[0]
+                if self.memories
+                else None,
+                "average_importance": sum(m.importance for m in recent) / len(recent)
+                if recent
+                else 0.0,
             }
         except Exception as e:
             logger.error(f"[MEMORY] Activity summary error: {e}")
@@ -624,25 +803,25 @@ class AetherraPerśistentMemorySystem:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
-            cursor.execute('SELECT * FROM memories')
+            cursor.execute("SELECT * FROM memories")
             rows = cursor.fetchall()
 
             for row in rows:
                 memory_data = {
-                    'id': row[0],
-                    'content': row[1],
-                    'memory_type': row[2],
-                    'context': json.loads(row[3]) if row[3] else {},
-                    'importance': row[4],
-                    'created_at': row[5],
-                    'last_accessed': row[6],
-                    'access_count': row[7],
-                    'connections': json.loads(row[8]) if row[8] else [],
-                    'tags': json.loads(row[9]) if row[9] else [],
-                    'emotional_weight': row[10],
-                    'confidence': row[11],
-                    'source': row[12],
-                    'verified': row[13]
+                    "id": row[0],
+                    "content": row[1],
+                    "memory_type": row[2],
+                    "context": json.loads(row[3]) if row[3] else {},
+                    "importance": row[4],
+                    "created_at": row[5],
+                    "last_accessed": row[6],
+                    "access_count": row[7],
+                    "connections": json.loads(row[8]) if row[8] else [],
+                    "tags": json.loads(row[9]) if row[9] else [],
+                    "emotional_weight": row[10],
+                    "confidence": row[11],
+                    "source": row[12],
+                    "verified": row[13],
                 }
 
                 memory = AetherraMemoryNode.from_dict(memory_data)
@@ -660,29 +839,32 @@ class AetherraPerśistentMemorySystem:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
-            cursor.execute('''
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO memories
                 (id, content, memory_type, context, importance, created_at,
                  last_accessed, access_count, connections, tags, emotional_weight,
                  confidence, source, verified, session_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                memory.id,
-                str(memory.content),
-                memory.memory_type,
-                json.dumps(memory.context),
-                memory.importance,
-                memory.created_at.isoformat(),
-                memory.last_accessed.isoformat(),
-                memory.access_count,
-                json.dumps(list(memory.connections)),
-                json.dumps(list(memory.tags)),
-                memory.emotional_weight,
-                memory.confidence,
-                memory.source,
-                memory.verified,
-                self.session_id
-            ))
+            """,
+                (
+                    memory.id,
+                    str(memory.content),
+                    memory.memory_type,
+                    json.dumps(memory.context),
+                    memory.importance,
+                    memory.created_at.isoformat(),
+                    memory.last_accessed.isoformat(),
+                    memory.access_count,
+                    json.dumps(list(memory.connections)),
+                    json.dumps(list(memory.tags)),
+                    memory.emotional_weight,
+                    memory.confidence,
+                    memory.source,
+                    memory.verified,
+                    self.session_id,
+                ),
+            )
 
             conn.commit()
             conn.close()
@@ -700,13 +882,13 @@ class AetherraPerśistentMemorySystem:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
-            cursor.execute('SELECT key, value FROM cognitive_state')
+            cursor.execute("SELECT key, value FROM cognitive_state")
             rows = cursor.fetchall()
 
             for key, value in rows:
                 try:
                     self.cognitive_state[key] = json.loads(value)
-                except:
+                except Exception:
                     self.cognitive_state[key] = value
 
             conn.close()
@@ -721,10 +903,13 @@ class AetherraPerśistentMemorySystem:
             cursor = conn.cursor()
 
             for key, value in self.cognitive_state.items():
-                cursor.execute('''
+                cursor.execute(
+                    """
                     INSERT OR REPLACE INTO cognitive_state (key, value, updated_at)
                     VALUES (?, ?, ?)
-                ''', (key, json.dumps(value), datetime.now().isoformat()))
+                """,
+                    (key, json.dumps(value), datetime.now().isoformat()),
+                )
 
             conn.commit()
             conn.close()
@@ -742,10 +927,13 @@ class AetherraPerśistentMemorySystem:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
-            cursor.execute('''
+            cursor.execute(
+                """
                 INSERT INTO sessions (session_id, started_at, memory_count)
                 VALUES (?, ?, ?)
-            ''', (self.session_id, datetime.now().isoformat(), len(self.memories)))
+            """,
+                (self.session_id, datetime.now().isoformat(), len(self.memories)),
+            )
 
             conn.commit()
             conn.close()
@@ -762,9 +950,11 @@ class AetherraPerśistentMemorySystem:
             to_remove = []
             for memory_id, memory in self.memories.items():
                 # Remove if old, low importance, and rarely accessed
-                if (memory.created_at < cutoff_date and
-                    memory.importance < 0.3 and
-                    memory.access_count < 2):
+                if (
+                    memory.created_at < cutoff_date
+                    and memory.importance < 0.3
+                    and memory.access_count < 2
+                ):
                     to_remove.append(memory_id)
 
             # Remove from memory and database
@@ -775,7 +965,7 @@ class AetherraPerśistentMemorySystem:
                 # Remove from database
                 conn = sqlite3.connect(self.db_path)
                 cursor = conn.cursor()
-                cursor.execute('DELETE FROM memories WHERE id = ?', (memory_id,))
+                cursor.execute("DELETE FROM memories WHERE id = ?", (memory_id,))
                 conn.commit()
                 conn.close()
 
@@ -792,11 +982,13 @@ class AetherraPerśistentMemorySystem:
         """Strengthen connections between frequently accessed memories."""
         try:
             # Find highly accessed memories
-            high_access_memories = [m for m in self.memories.values() if m.access_count > 5]
+            high_access_memories = [
+                m for m in self.memories.values() if m.access_count > 5
+            ]
 
             # Create additional connections between them
             for i, memory1 in enumerate(high_access_memories):
-                for memory2 in high_access_memories[i+1:]:
+                for memory2 in high_access_memories[i + 1 :]:
                     # Check for content similarity or shared tags
                     shared_tags = memory1.tags.intersection(memory2.tags)
                     if shared_tags or memory1.memory_type == memory2.memory_type:
@@ -832,15 +1024,20 @@ class AetherraPerśistentMemorySystem:
             # Update session end
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
-            cursor.execute('''
+            cursor.execute(
+                """
                 UPDATE sessions
                 SET ended_at = ?, memory_count = ?
                 WHERE session_id = ?
-            ''', (datetime.now().isoformat(), len(self.memories), self.session_id))
+            """,
+                (datetime.now().isoformat(), len(self.memories), self.session_id),
+            )
             conn.commit()
             conn.close()
 
-            logger.info(f"[MEMORY] Session {self.session_id} ended with {len(self.memories)} memories")
+            logger.info(
+                f"[MEMORY] Session {self.session_id} ended with {len(self.memories)} memories"
+            )
 
         except Exception as e:
             logger.error(f"[MEMORY] Shutdown error: {e}")

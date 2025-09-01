@@ -9,6 +9,7 @@ but fully operational without mocks.
 
 import asyncio
 import logging
+import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, Optional
@@ -49,7 +50,39 @@ class AgentOrchestrator:
         self._counters = {
             "timeouts_total": 0,
             "policy_denied_total": 0,
+            # Observer-aware policy metrics (Q4)
+            "observer_gates_triggered_total": 0,
+            "observer_pending_human_total": 0,
+            "observer_denied_total": 0,
+            "drift_alerts_total": 0,
         }
+        # Coherence tracking window (for drift alerts)
+        self._coherence_vals: list[float] = []
+        self._last_drift_alert_ts: Optional[str] = None
+        # Cached thresholds from environment (read on init; can be updated externally if needed)
+        try:
+            self._coh_gate_min = float(
+                os.environ.get("AETHERRA_COHERENCE_GATE_MIN", "0.65")
+            )
+        except Exception:
+            self._coh_gate_min = 0.65
+        try:
+            self._coh_hard_min = float(
+                os.environ.get("AETHERRA_COHERENCE_HARD_MIN", "0.40")
+            )
+        except Exception:
+            self._coh_hard_min = 0.40
+        self._observer_enabled = (
+            os.environ.get("AETHERRA_OBSERVER_AWARE_ENABLED", "1") == "1"
+        )
+        # Sensitive prefixes (comma-separated) used when input_data.sensitive is not explicitly provided
+        raw_pref = os.environ.get(
+            "AETHERRA_SENSITIVE_ACTIONS",
+            "delete.,write.,external.,network.,danger.,unsafe.",
+        )
+        self._sensitive_prefixes = [
+            p.strip().lower() for p in raw_pref.split(",") if p.strip()
+        ]
 
     async def start_orchestration(self):
         if self._running:
@@ -99,6 +132,14 @@ class AgentOrchestrator:
             "task_statuses": task_statuses,
             "pending_by_priority": pending_by_priority,
             "counters": dict(self._counters),
+            # Coherence policy surface (best-effort, low-cardinality)
+            "coherence_policy": {
+                "gate_min": self._coh_gate_min,
+                "hard_min": self._coh_hard_min,
+                "ema": self._coherence_ema(),
+                "window_size": len(self._coherence_vals),
+                "last_drift_alert": self._last_drift_alert_ts,
+            },
         }
 
     async def submit_task(self, task: Dict[str, Any]) -> str:
@@ -131,6 +172,115 @@ class AgentOrchestrator:
                 return t.task_id
         except Exception:
             # Ignore policy evaluation issues for resilience
+            pass
+
+        # Observer-aware policy (Q4): gate sensitive actions when coherence is low
+        try:
+            if self._observer_enabled and bool(t.input_data.get("observer_gate", True)):
+                sensitive = bool(t.input_data.get("sensitive", False))
+                if not sensitive:
+                    nm = str(t.name or "").lower()
+                    sensitive = any(nm.startswith(p) for p in self._sensitive_prefixes)
+                    if not sensitive:
+                        # Also consider certain capabilities as sensitive
+                        caps = [str(c).lower() for c in (t.required_capabilities or [])]
+                        sensitive = any(
+                            c
+                            in {
+                                "network",
+                                "filesystem_write",
+                                "external_call",
+                                "danger",
+                            }
+                            for c in caps
+                        )
+                # Update coherence tracking window if provided
+                coh_val = t.input_data.get("coherence_est")
+                if isinstance(coh_val, (int, float)):
+                    try:
+                        cv = float(coh_val)
+                        if 0.0 <= cv <= 1.0:
+                            self._coherence_vals.append(cv)
+                            # bound window
+                            if len(self._coherence_vals) > 50:
+                                self._coherence_vals = self._coherence_vals[-50:]
+                    except Exception:
+                        pass
+                # Compute drift alert (ema/window-based) when enough samples exist
+                try:
+                    if len(self._coherence_vals) >= 5:
+                        ema = self._coherence_ema()
+                        drift_min = float(
+                            os.environ.get("AETHERRA_DRIFT_ALERT_MIN", "0.50")
+                        )
+                        if ema < drift_min:
+                            self._counters["drift_alerts_total"] = (
+                                int(self._counters.get("drift_alerts_total", 0)) + 1
+                            )
+                            self._last_drift_alert_ts = datetime.now().isoformat()
+                except Exception:
+                    pass
+
+                if sensitive:
+                    self._counters["observer_gates_triggered_total"] = (
+                        int(self._counters.get("observer_gates_triggered_total", 0)) + 1
+                    )
+                    # Respect explicit human-approval requirement first
+                    if bool(t.input_data.get("require_human_approval", False)):
+                        t.status = "pending"
+                        t.error = "approval_required"
+                        t.result = {
+                            "policy": "observer_aware",
+                            "reason": "explicit_human_approval",
+                            "coherence": coh_val,
+                        }
+                        self._counters["observer_pending_human_total"] = (
+                            int(self._counters.get("observer_pending_human_total", 0))
+                            + 1
+                        )
+                        return t.task_id
+                    # Otherwise check coherence thresholds
+                    cv = None
+                    # Only attempt conversion when clearly convertible
+                    if isinstance(coh_val, (int, float, str)):
+                        try:
+                            cv = float(coh_val)
+                        except Exception:
+                            cv = None
+                    if isinstance(cv, float):
+                        if cv < self._coh_hard_min:
+                            # Hard-deny when coherence is extremely low
+                            t.status = "failed"
+                            t.error = "coherence_low"
+                            t.completed_at = datetime.now().isoformat()
+                            self._counters["policy_denied_total"] = (
+                                int(self._counters.get("policy_denied_total", 0)) + 1
+                            )
+                            self._counters["observer_denied_total"] = (
+                                int(self._counters.get("observer_denied_total", 0)) + 1
+                            )
+                            return t.task_id
+                        if cv < self._coh_gate_min:
+                            # Require human approval when below soft gate
+                            t.status = "pending"
+                            t.error = "approval_required"
+                            t.result = {
+                                "policy": "observer_aware",
+                                "reason": "coherence_below_gate",
+                                "coherence": cv,
+                                "threshold": self._coh_gate_min,
+                            }
+                            self._counters["observer_pending_human_total"] = (
+                                int(
+                                    self._counters.get(
+                                        "observer_pending_human_total", 0
+                                    )
+                                )
+                                + 1
+                            )
+                            return t.task_id
+        except Exception:
+            # Do not fail submission due to policy logic
             pass
 
         # Schedule execution
@@ -214,3 +364,23 @@ class AgentOrchestrator:
                 self._active_tasks = max(0, self._active_tasks - 1)
             except Exception:
                 self._active_tasks = 0
+
+    def _coherence_ema(self) -> float:
+        """Compute a small EMA over coherence signals for drift alarms."""
+        try:
+            vals = self._coherence_vals
+            if not vals:
+                return 0.0
+            # 0.3 smoothing factor for responsiveness
+            alpha = 0.3
+            ema = vals[0]
+            for v in vals[1:]:
+                ema = alpha * v + (1 - alpha) * ema
+            # clamp
+            if ema < 0:
+                return 0.0
+            if ema > 1:
+                return 1.0
+            return float(ema)
+        except Exception:
+            return 0.0

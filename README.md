@@ -28,6 +28,12 @@ SPDX-FileCopyrightText: 2025 Aetherra & Lyrixa Contributors
 
 ---
 
+## Roadmap Status
+
+- Active: Quantum Roadmap v1.0 — see `docs/roadmap/aetherra_quantum_roadmap_v_1.md` (Status: ACTIVE)
+
+---
+
 ## 🚀 **What is Aetherra?**
 
 **Aetherra** is a revolutionary AI-native development environment that transforms how you create, think, and build software. With **Lyrixa** as your intelligent companion, Aetherra bridges the gap between human creativity and artificial intelligence.
@@ -629,6 +635,25 @@ Run these from VS Code (Terminal > Run Task) or via PowerShell:
     ```powershell
     python tools/verify_docs_consistency.py
     ```
+
+- A/B Recall Benchmark (Try it)
+  - Compare classical vs quantum-enriched recall and optionally export Hub metrics.
+  - PowerShell:
+
+    ```powershell
+    # Optional: enable Hub export of A/B series (Prometheus) for /metrics
+    $env:AETHERRA_HUB_AB_METRICS='1'
+
+    # Run the benchmark with a few sample queries
+    python tools/ab_recall_benchmark.py --queries "hello world" "quantum memory" --emit 1
+
+    # To disable Hub A/B export later
+    $env:AETHERRA_HUB_AB_METRICS='0'
+    ```
+
+  - Notes:
+    - When enabled, Hub exposes A/B series such as aetherra_engine_ab_recall_total and per-bucket latency sums/counts.
+  - See roadmap PromQL examples in docs/roadmap/aetherra_quantum_roadmap_v_1.md for quick dashboard queries.
 
 Helpful docs:
 

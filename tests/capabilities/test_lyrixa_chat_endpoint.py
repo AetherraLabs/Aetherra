@@ -1,5 +1,6 @@
 import pytest
 import requests
+from schema_validators import validate_lyrixa_chat_response
 
 from aetherra_hub_server import start_hub_server
 
@@ -24,10 +25,5 @@ def test_lyrixa_chat_endpoint_basic():
     )
     assert r.status_code == 200
     data = r.json()
-    assert isinstance(data, dict)
-    assert "text" in data and isinstance(data["text"], str)
-    # Suggestions and applied_changes are present in the happy path; tolerate absence in fallback
-    if "suggestions" in data:
-        assert isinstance(data["suggestions"], list)
-    if "applied_changes" in data:
-        assert isinstance(data["applied_changes"], list)
+    # Enforce strict shape via shared validator (persona/edit_plan/confidence, etc.)
+    validate_lyrixa_chat_response(data)
