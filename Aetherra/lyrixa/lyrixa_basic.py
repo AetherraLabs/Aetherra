@@ -274,15 +274,82 @@ class LyrixaBasicAssistant:
                 async def _try_funded_model(
                     self, model: dict, message: str
                 ) -> Optional[str]:
-                    """Try to use a funded AI model."""
-                    # Placeholder for actual AI model implementation
-                    logger.info(f"[AI] Using {model['name']} for response")
-                    return f"[{model['name']}] I'm Lyrixa, your AI assistant. You said: {message}"
+                    """Try to use a funded AI model (OpenAI supported)."""
+                    name = model.get("name")
+                    if name == "OpenAI GPT" and os.getenv("OPENAI_API_KEY"):
+                        try:
+                            # Lazy import to avoid hard dependency when key isn't set
+                            import openai  # type: ignore
+
+                            api_key = os.getenv("OPENAI_API_KEY")
+                            # Prefer gpt-4o-mini if available; allow override
+                            model_name = os.getenv("LYRIXA_OPENAI_MODEL", "gpt-4o-mini")
+                            logger.info(f"[AI] Using OpenAI model: {model_name}")
+
+                            # Build a lightweight persona-aware prompt
+                            system_prompt = (
+                                "You are Lyrixa, a friendly, concise AI assistant for the Aetherra OS. "
+                                "Give helpful, specific answers. If asked about Aetherra, explain its purpose and components clearly."
+                            )
+
+                            client = openai.OpenAI(api_key=api_key)  # type: ignore
+                            resp = client.chat.completions.create(
+                                model=model_name,
+                                messages=[
+                                    {"role": "system", "content": system_prompt},
+                                    {"role": "user", "content": message},
+                                ],
+                                temperature=float(os.getenv("LYRIXA_OPENAI_TEMPERATURE", "0.7")),
+                                max_tokens=int(os.getenv("LYRIXA_OPENAI_MAX_TOKENS", "512")),
+                            )
+                            content = (
+                                resp.choices[0].message.content  # type: ignore[attr-defined]
+                                if getattr(resp, "choices", None)
+                                else None
+                            )
+                            if content:
+                                return content
+                        except Exception as e:  # fall back silently
+                            logger.debug(f"OpenAI call failed: {e}")
+                            return None
+
+                    # Other funded backends can be wired similarly later
+                    return None
 
                 async def _try_ollama(self, message: str) -> Optional[str]:
-                    """Try to use local Ollama as fallback."""
-                    logger.info("[AI] Using Ollama fallback for response")
-                    return f"[Ollama] I'm Lyrixa, your AI assistant running locally. You said: {message}"
+                    """Try to use local Ollama as fallback by calling its HTTP API."""
+                    try:
+                        import json as _json
+                        import urllib.request as _ureq
+
+                        model = os.getenv("LYRIXA_OLLAMA_MODEL", "llama3")
+                        url = os.getenv("LYRIXA_OLLAMA_URL", "http://localhost:11434/api/generate")
+                        logger.info(f"[AI] Using Ollama model: {model}")
+
+                        # Persona-aware prompt
+                        prompt = (
+                            "You are Lyrixa, a helpful AI assistant for the Aetherra OS. "
+                            "Answer clearly and concisely. If asked about Aetherra, explain it simply with specifics.\n\n"
+                            f"User: {message}\nLyrixa:"
+                        )
+
+                        req = _ureq.Request(
+                            url,
+                            data=_json.dumps({
+                                "model": model,
+                                "prompt": prompt,
+                                "stream": False,
+                            }).encode("utf-8"),
+                            headers={"Content-Type": "application/json"},
+                            method="POST",
+                        )
+                        with _ureq.urlopen(req, timeout=float(os.getenv("LYRIXA_OLLAMA_TIMEOUT", "15"))) as resp:
+                            payload = _json.loads(resp.read().decode("utf-8", errors="replace"))
+                            text = payload.get("response") or payload.get("message") or ""
+                            return text.strip() or None
+                    except Exception as e:
+                        logger.debug(f"Ollama call failed: {e}")
+                        return None
 
             return BasicChatSystem()
 
