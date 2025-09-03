@@ -1,20 +1,14 @@
 """
 Aetherra Demo UI Kit (PySide6)
-Single-file scaffold to give each CLI demo an independent, instantly runnable UI.
+Single-file scaffold to give each CLI demo an independent, runnable UI.
 
-Usage examples:
-  # Kernel Status (polls Hub endpoints)
-  python adk_demo_ui.py --demo kernel_status
+Demos:
+  - kernel_status: polls Hub API for status/metrics
+  - agent_pipeline: runs a CLI demo and streams logs
+  - chat_stream: runs chat stream CLI and shows awareness pane
 
-  # Agent Pipeline (runs existing CLI demo and streams logs)
-  python adk_demo_ui.py --demo agent_pipeline --topic "quantum memory"
-
-  # Chat Stream (runs CLI and streams logs)
-  python adk_demo_ui.py --demo chat_stream --prompt "Explain HMR in two sentences"
-
-Create tiny per-demo launchers (independent UIs):
-  echo "from adk_demo_ui import launch; launch('kernel_status')" > kernel_status_ui.py
-  python kernel_status_ui.py
+Usage:
+  python adk_demo_ui.py --demo chat_stream --prompt "Explain HMR briefly"
 """
 
 from __future__ import annotations
@@ -24,9 +18,10 @@ import os
 import subprocess
 import sys
 import threading
+import webbrowser
 from typing import Callable, Optional
 
-from PySide6.QtCore import QObject, QTimer, Signal
+from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtGui import QTextOption
 from PySide6.QtWidgets import (
     QApplication,
@@ -34,7 +29,10 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QListWidget,
+    QListWidgetItem,
     QMainWindow,
+    QMenu,
     QMessageBox,
     QPlainTextEdit,
     QPushButton,
@@ -44,34 +42,23 @@ from PySide6.QtWidgets import (
 )
 
 try:
-    import requests  # For local Hub/API polling
+    import requests
 except Exception:
     requests = None
 
 
 def get_default_base_url() -> str:
-    """Compute default Hub base URL.
-    Order of precedence:
-      1) Env AETHERRA_BASE_URL (full URL)
-      2) Env AETHERRA_HUB_HOST/AETHERRA_HUB_PORT (defaults 127.0.0.1:3001)
-      3) Fallback http://127.0.0.1:3001
-
-    Note: config.json web_interface.port is for the Web UI, not the Hub API.
-    """
     env_url = os.environ.get("AETHERRA_BASE_URL")
     if env_url:
         return env_url
-    hub_host = os.environ.get("AETHERRA_HUB_HOST", "127.0.0.1").strip()
+    host = os.environ.get("AETHERRA_HUB_HOST", "127.0.0.1").strip()
     try:
-        hub_port = int(os.environ.get("AETHERRA_HUB_PORT", "3001").strip())
+        port = int(os.environ.get("AETHERRA_HUB_PORT", "3001").strip())
     except Exception:
-        hub_port = 3001
-    return f"http://{hub_host}:{hub_port}"
+        port = 3001
+    return f"http://{host}:{port}"
 
 
-# -----------------------
-# Utilities / Base Widgets
-# -----------------------
 class LogPane(QPlainTextEdit):
     def __init__(self, *, read_only: bool = True):
         super().__init__()
@@ -82,10 +69,9 @@ class LogPane(QPlainTextEdit):
             if wrap_mode is not None:
                 self.setWordWrapMode(wrap_mode)
         except Exception:
-            # Fallback: ignore if wrap mode API differs
             pass
         self.setStyleSheet(
-            "QPlainTextEdit { background: #0a0a0a; color: #00ff88; font-family: 'JetBrains Mono', monospace; font-size: 12px; border-radius: 10px; padding: 8px; }"
+            "QPlainTextEdit { background:#0a0a0a; color:#00ff88; font-family:'JetBrains Mono', monospace; font-size:12px; border-radius:10px; padding:8px; }"
         )
 
     def println(self, text: str):
@@ -97,14 +83,14 @@ class MetricCard(QFrame):
         super().__init__()
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setStyleSheet(
-            "QFrame { background: #1a1a1a; border: 1px solid #222; border-radius: 16px; } QLabel { color: #eaeaea; }"
+            "QFrame { background:#1a1a1a; border:1px solid #222; border-radius:16px; } QLabel { color:#eaeaea; }"
         )
         layout = QVBoxLayout(self)
         self.title = QLabel(title)
-        self.title.setStyleSheet("QLabel { color: #9adbb5; font-size: 12px; }")
+        self.title.setStyleSheet("QLabel { color:#9adbb5; font-size:12px; }")
         self.value = QLabel(value)
         self.value.setStyleSheet(
-            "QLabel { color: #ffffff; font-size: 20px; font-weight: 700; }"
+            "QLabel { color:#fff; font-size:20px; font-weight:700; }"
         )
         layout.addWidget(self.title)
         layout.addWidget(self.value)
@@ -117,15 +103,12 @@ class Toolbar(QFrame):
     def __init__(self):
         super().__init__()
         self.setStyleSheet(
-            "QFrame { background: #0f0f0f; border-bottom: 1px solid #222; }"
+            "QFrame { background:#0f0f0f; border-bottom:1px solid #222; }"
         )
         self.hbox = QHBoxLayout(self)
         self.hbox.setContentsMargins(12, 8, 12, 8)
 
 
-# -----------------------
-# Subprocess streaming
-# -----------------------
 class Streamer(QObject):
     line = Signal(str)
     finished = Signal(int)
@@ -169,9 +152,6 @@ class Streamer(QObject):
             self._proc.terminate()
 
 
-# -----------------------
-# Demo 1: Kernel Status Dashboard
-# -----------------------
 class KernelStatusWindow(QMainWindow):
     def __init__(self, base_url: Optional[str] = None):
         super().__init__()
@@ -182,10 +162,8 @@ class KernelStatusWindow(QMainWindow):
         self.setCentralWidget(root)
         v = QVBoxLayout(root)
 
-        # Toolbar
         bar = Toolbar()
         v.addWidget(bar)
-
         if not base_url:
             base_url = get_default_base_url()
         self.base_url_edit = QLineEdit(base_url)
@@ -203,7 +181,6 @@ class KernelStatusWindow(QMainWindow):
         bar.hbox.addWidget(self.auto_spin)
         bar.hbox.addWidget(self.refresh_btn)
 
-        # Metrics row
         row = QHBoxLayout()
         v.addLayout(row)
         self.running_card = MetricCard("Running")
@@ -213,17 +190,13 @@ class KernelStatusWindow(QMainWindow):
         row.addWidget(self.uptime_card)
         row.addWidget(self.queue_card)
 
-        # Log pane
         self.log = LogPane()
         v.addWidget(self.log, 1)
-
         self.t = QTimer(self)
         self.t.timeout.connect(self.refresh)
         self.refresh_btn.clicked.connect(self.refresh)
         self.auto_spin.valueChanged.connect(self._update_timer)
         self._update_timer(self.auto_spin.value())
-
-        # First refresh
         QTimer.singleShot(100, self.refresh)
 
     def _update_timer(self, secs: int):
@@ -246,27 +219,20 @@ class KernelStatusWindow(QMainWindow):
             return None
 
     def _probe_base_url(self) -> bool:
-        """Try a few candidate base URLs and pick the first that responds.
-        Returns True if a working base URL was found and set.
-        """
         if requests is None:
             return False
-        candidates = []
-        # Current field value first
+        candidates: list[str] = []
         cur = (self.base_url_edit.text() or "").strip()
         if cur:
             candidates.append(cur)
-        # Env-provided full URL
         if os.environ.get("AETHERRA_BASE_URL"):
             candidates.append(os.environ["AETHERRA_BASE_URL"])  # type: ignore[index]
-        # Hub env host/port
-        hub_host = os.environ.get("AETHERRA_HUB_HOST", "127.0.0.1").strip()
+        host = os.environ.get("AETHERRA_HUB_HOST", "127.0.0.1").strip()
         try:
-            hub_port = int(os.environ.get("AETHERRA_HUB_PORT", "3001").strip())
+            port = int(os.environ.get("AETHERRA_HUB_PORT", "3001").strip())
         except Exception:
-            hub_port = 3001
-        candidates.append(f"http://{hub_host}:{hub_port}")
-        # Common fallbacks
+            port = 3001
+        candidates.append(f"http://{host}:{port}")
         for p in (3001, 8686, 8000):
             candidates.append(f"http://127.0.0.1:{p}")
         seen = set()
@@ -288,18 +254,14 @@ class KernelStatusWindow(QMainWindow):
     def refresh(self):
         status = self._get("/api/kernel/status")
         metrics = self._get("/api/kernel/metrics")
-
-        # If both failed, try probing other common ports/hosts once per refresh call
         if not status and not metrics:
             if self._probe_base_url():
                 status = self._get("/api/kernel/status")
                 metrics = self._get("/api/kernel/metrics")
-
         if status:
             running = "✅" if status.get("running") else "❌"
             self.running_card.set_value(running)
             self.uptime_card.set_value(str(status.get("uptime", "—")))
-            # Prefer queue_sizes; fallback to queues
             qs = {}
             try:
                 if isinstance(status.get("queue_sizes"), dict):
@@ -311,14 +273,10 @@ class KernelStatusWindow(QMainWindow):
             qstr = ", ".join(f"{k}:{v}" for k, v in qs.items()) if qs else "—"
             self.queue_card.set_value(qstr)
             self.log.println("[STATUS] " + json.dumps(status))
-
         if metrics:
             self.log.println("[METRICS] " + json.dumps(metrics))
 
 
-# -----------------------
-# Demo 2: Agent Pipeline (runs CLI & streams logs)
-# -----------------------
 class AgentPipelineWindow(QMainWindow):
     def __init__(self, topic: str = "quantum memory"):
         super().__init__()
@@ -329,7 +287,6 @@ class AgentPipelineWindow(QMainWindow):
         self.setCentralWidget(root)
         v = QVBoxLayout(root)
 
-        # Controls
         controls = Toolbar()
         v.addWidget(controls)
         self.topic = QLineEdit(topic)
@@ -338,10 +295,9 @@ class AgentPipelineWindow(QMainWindow):
         controls.hbox.addWidget(self.topic, 1)
         controls.hbox.addWidget(self.run_btn)
 
-        # Output
         self.log = LogPane()
         v.addWidget(self.log, 1)
-        self.streamer = None
+        self.streamer: Optional[Streamer] = None
         self.run_btn.clicked.connect(self.on_run)
 
     def on_run(self):
@@ -357,12 +313,7 @@ class AgentPipelineWindow(QMainWindow):
                 "Please install or adjust the path to a valid pipeline demo."
             )
             return
-        argv = [
-            sys.executable,
-            script_path,
-            "--topic",
-            self.topic.text(),
-        ]
+        argv = [sys.executable, script_path, "--topic", self.topic.text()]
         self.log.println("$ " + " ".join(argv))
         self.streamer = Streamer(argv)
         self.streamer.line.connect(self.log.println)
@@ -372,9 +323,6 @@ class AgentPipelineWindow(QMainWindow):
         self.streamer.start()
 
 
-# -----------------------
-# Demo 3: Chat Stream (runs CLI & streams logs)
-# -----------------------
 class ChatStreamWindow(QMainWindow):
     def __init__(self, prompt: str = "Explain HMR in two sentences"):
         super().__init__()
@@ -385,7 +333,6 @@ class ChatStreamWindow(QMainWindow):
         self.setCentralWidget(root)
         v = QVBoxLayout(root)
 
-        # Controls
         controls = Toolbar()
         v.addWidget(controls)
         self.base = QLineEdit(get_default_base_url())
@@ -402,16 +349,171 @@ class ChatStreamWindow(QMainWindow):
         controls.hbox.addWidget(self.prompt, 2)
         controls.hbox.addWidget(self.run_btn)
 
-        # Output
+        content_row = QHBoxLayout()
+        v.addLayout(content_row, 1)
         self.log = LogPane()
-        v.addWidget(self.log, 1)
-        self.streamer = None
+        content_row.addWidget(self.log, 1)
+
+        self.aw_panel = QFrame()
+        self.aw_panel.setFrameShape(QFrame.Shape.StyledPanel)
+        self.aw_panel.setStyleSheet(
+            "QFrame { background:#101010; border:1px solid #222; border-radius:12px; } QLabel { color:#eaeaea; }"
+        )
+        self.aw_panel.setMinimumWidth(240)
+        self.aw_panel.setMaximumWidth(280)
+        aw_v = QVBoxLayout(self.aw_panel)
+        aw_v.setContentsMargins(10, 10, 10, 10)
+
+        aw_title = QLabel("Awareness")
+        aw_title.setStyleSheet(
+            "QLabel { color:#9adbb5; font-weight:700; font-size:14px; }"
+        )
+        aw_v.addWidget(aw_title)
+
+        self.persona_label = QLabel("—")
+        self.persona_label.setStyleSheet(
+            "QLabel { color:#ffffff; font-size:12px; font-weight:700; }"
+        )
+        row = QHBoxLayout()
+        row.addWidget(QLabel("Persona"))
+        row.addStretch(1)
+        row.addWidget(self.persona_label)
+        aw_v.addLayout(row)
+
+        self.model_label = QLabel("—")
+        self.model_label.setStyleSheet(
+            "QLabel { color:#ffffff; font-size:12px; font-weight:700; }"
+        )
+        row = QHBoxLayout()
+        row.addWidget(QLabel("Model"))
+        row.addStretch(1)
+        row.addWidget(self.model_label)
+        aw_v.addLayout(row)
+
+        self.chunk_count = 0
+        self.chunks_label = QLabel("0")
+        self.chunks_label.setStyleSheet(
+            "QLabel { color:#ffffff; font-size:12px; font-weight:700; }"
+        )
+        row = QHBoxLayout()
+        row.addWidget(QLabel("Chunks"))
+        row.addStretch(1)
+        row.addWidget(self.chunks_label)
+        aw_v.addLayout(row)
+
+        self.cb_labels: dict[str, QLabel] = {}
+        for key in ("model", "grounding", "coherence", "safety"):
+            row = QHBoxLayout()
+            k = QLabel(key.title())
+            k.setStyleSheet("QLabel { color:#9adbb5; font-size:11px; }")
+            vlab = QLabel("—")
+            vlab.setStyleSheet(
+                "QLabel { color:#ffffff; font-size:12px; font-weight:700; }"
+            )
+            row.addWidget(k)
+            row.addStretch(1)
+            row.addWidget(vlab)
+            aw_v.addLayout(row)
+            self.cb_labels[key] = vlab
+
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet("QFrame { color:#222; background:#222; max-height:1px; }")
+        aw_v.addWidget(sep)
+
+        ev_title = QLabel("Evidence (top 3)")
+        ev_title.setStyleSheet("QLabel { color:#9adbb5; font-size:12px; }")
+        aw_v.addWidget(ev_title)
+
+        self.ev_list = QListWidget()
+        self.ev_list.setStyleSheet(
+            "QListWidget { background:#0a0a0a; border:1px solid #222; border-radius:8px; color:#eaeaea; font-size:11px; }"
+        )
+        self.ev_list.setMaximumHeight(180)
+        self.ev_list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.ev_list.customContextMenuRequested.connect(self._on_ev_context_menu)
+        aw_v.addWidget(self.ev_list, 0)
+
+        sep2 = QFrame()
+        sep2.setFrameShape(QFrame.Shape.HLine)
+        sep2.setStyleSheet("QFrame { color:#222; background:#222; max-height:1px; }")
+        aw_v.addWidget(sep2)
+
+        sug_title = QLabel("Suggestions")
+        sug_title.setStyleSheet("QLabel { color:#9adbb5; font-size:12px; }")
+        aw_v.addWidget(sug_title)
+
+        self.sug_list = QListWidget()
+        self.sug_list.setStyleSheet(
+            "QListWidget { background:#0a0a0a; border:1px solid #222; border-radius:8px; color:#eaeaea; font-size:11px; }"
+        )
+        self.sug_list.setMaximumHeight(100)
+        self.sug_list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.sug_list.customContextMenuRequested.connect(self._on_sug_context_menu)
+        aw_v.addWidget(self.sug_list, 0)
+
+        sep3 = QFrame()
+        sep3.setFrameShape(QFrame.Shape.HLine)
+        sep3.setStyleSheet("QFrame { color:#222; background:#222; max-height:1px; }")
+        aw_v.addWidget(sep3)
+
+        appl_title = QLabel("Applied Changes")
+        appl_title.setStyleSheet("QLabel { color:#9adbb5; font-size:12px; }")
+        aw_v.addWidget(appl_title)
+
+        self.applied_list = QListWidget()
+        self.applied_list.setStyleSheet(
+            "QListWidget { background:#0a0a0a; border:1px solid #222; border-radius:8px; color:#eaeaea; font-size:11px; }"
+        )
+        self.applied_list.setMaximumHeight(120)
+        self.applied_list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.applied_list.customContextMenuRequested.connect(
+            self._on_applied_context_menu
+        )
+        aw_v.addWidget(self.applied_list, 0)
+
+        sep4 = QFrame()
+        sep4.setFrameShape(QFrame.Shape.HLine)
+        sep4.setStyleSheet("QFrame { color:#222; background:#222; max-height:1px; }")
+        aw_v.addWidget(sep4)
+
+        usage_row = QHBoxLayout()
+        ulabel = QLabel("Usage")
+        ulabel.setStyleSheet("QLabel { color:#9adbb5; font-size:11px; }")
+        self.usage_label = QLabel("—")
+        self.usage_label.setStyleSheet(
+            "QLabel { color:#ffffff; font-size:11px; font-weight:600; }"
+        )
+        usage_row.addWidget(ulabel)
+        usage_row.addStretch(1)
+        usage_row.addWidget(self.usage_label)
+        aw_v.addLayout(usage_row)
+
+        content_row.addWidget(self.aw_panel, 0)
+
+        self.aw_toggle = QPushButton("Awareness")
+        self.aw_toggle.setCheckable(True)
+        self.aw_toggle.setChecked(True)
+        self.aw_toggle.setToolTip("Show/hide awareness panel")
+        controls.hbox.addWidget(self.aw_toggle)
+
+        self.copy_aw_btn = QPushButton("Copy Awareness")
+        self.copy_aw_btn.setToolTip(
+            "Copy persona/model/confidence/evidence/suggestions/applied/usage to clipboard"
+        )
+        self.copy_aw_btn.clicked.connect(self._copy_awareness_summary)
+        controls.hbox.addWidget(self.copy_aw_btn)
+
+        self.streamer: Optional[Streamer] = None
         self.run_btn.clicked.connect(self.on_run)
+        self.aw_toggle.toggled.connect(self.aw_panel.setVisible)
+        self.aw_panel.setVisible(True)
 
     def on_run(self):
         if self.streamer:
             self.streamer.terminate()
             self.streamer = None
+        self._reset_awareness()
         script_path = os.path.join(
             os.path.dirname(__file__), "demos", "chat_stream_demo.py"
         )
@@ -421,30 +523,299 @@ class ChatStreamWindow(QMainWindow):
                 "Please install or adjust the path to a valid chat stream demo."
             )
             return
-        argv = [
-            sys.executable,
-            script_path,
-            "--prompt",
-            self.prompt.text(),
-        ]
-        # Pass base URL and token to the subprocess via env so it targets the intended Hub
-        child_env = os.environ.copy()
+        argv = [sys.executable, script_path, "--prompt", self.prompt.text()]
+        env = os.environ.copy()
         if self.base.text().strip():
-            child_env["AETHERRA_BASE_URL"] = self.base.text().strip()
+            env["AETHERRA_BASE_URL"] = self.base.text().strip()
         if self.token.text().strip():
-            child_env["AETHERRA_AI_API_TOKEN"] = self.token.text().strip()
+            env["AETHERRA_AI_API_TOKEN"] = self.token.text().strip()
         self.log.println("$ " + " ".join(argv))
-        self.streamer = Streamer(argv, env=child_env)
-        self.streamer.line.connect(self.log.println)
+        self.streamer = Streamer(argv, env=env)
+        self.streamer.line.connect(self._on_stream_line)
         self.streamer.finished.connect(
             lambda code: self.log.println(f"[DONE] exit={code}")
         )
         self.streamer.start()
 
+    def _reset_awareness(self):
+        for lab in (getattr(self, "cb_labels", {}) or {}).values():
+            try:
+                lab.setText("—")
+            except Exception:
+                pass
+        try:
+            self.ev_list.clear()
+        except Exception:
+            pass
+        try:
+            self.persona_label.setText("—")
+            self.model_label.setText("—")
+            self.chunks_label.setText("0")
+            self.chunk_count = 0
+        except Exception:
+            pass
+        try:
+            self.sug_list.clear()
+        except Exception:
+            pass
+        try:
+            self.applied_list.clear()
+        except Exception:
+            pass
+        try:
+            self.usage_label.setText("—")
+        except Exception:
+            pass
 
-# -----------------------
-# Registry & Launcher
-# -----------------------
+    def _on_stream_line(self, line: str):
+        try:
+            self.log.println(line)
+        except Exception:
+            pass
+        s = line.strip()
+        try:
+            if s.startswith("[PERSONA] "):
+                self.persona_label.setText(s[len("[PERSONA] ") :].strip() or "—")
+                return
+            if s.startswith("[MODEL] "):
+                self.model_label.setText(s[len("[MODEL] ") :].strip() or "—")
+                return
+            if s.startswith("[CHUNK] "):
+                self.chunk_count = (self.chunk_count or 0) + 1
+                try:
+                    self.chunks_label.setText(str(self.chunk_count))
+                except Exception:
+                    pass
+            if s.startswith("[CONF] "):
+                payload = s[len("[CONF] ") :]
+                for part in payload.split("|"):
+                    part = part.strip()
+                    if (not part) or (":" not in part):
+                        continue
+                    k, v = part.split(":", 1)
+                    k = k.strip().lower()
+                    v = v.strip()
+                    if k in self.cb_labels:
+                        self.cb_labels[k].setText(v)
+            elif s.startswith("[EVID "):
+                display = s[7:].strip()
+                content = display
+                rb = content.find("]")
+                if rb != -1:
+                    content = content[rb + 1 :].strip()
+                score_val = None
+                lpar = content.rfind("(score ")
+                rpar = content.rfind(")")
+                if lpar != -1 and rpar != -1 and rpar > lpar:
+                    score_val = content[lpar + len("(score ") : rpar].strip()
+                    content = (content[:lpar] + content[rpar + 1 :]).strip()
+                title = content
+                source = ""
+                sep = " — "
+                if sep in content:
+                    title, source = content.split(sep, 1)
+                    title = title.strip()
+                    source = source.strip()
+                item = QListWidgetItem(display)
+                tt = [f"Title: {title or '—'}"]
+                if source:
+                    tt.append(f"Source: {source}")
+                if score_val:
+                    tt.append(f"Score: {score_val}")
+                item.setToolTip("\n".join(tt))
+                try:
+                    item.setData(
+                        Qt.ItemDataRole.UserRole,
+                        {"title": title, "source": source, "score": score_val},
+                    )
+                except Exception:
+                    pass
+                self.ev_list.addItem(item)
+                while self.ev_list.count() > 3:
+                    self.ev_list.takeItem(0)
+            elif s.startswith("[SUG "):
+                content = s
+                rb = content.find("]")
+                if rb != -1:
+                    content = content[rb + 1 :].strip()
+                item = QListWidgetItem(content)
+                item.setToolTip(content)
+                self.sug_list.addItem(item)
+                while self.sug_list.count() > 3:
+                    self.sug_list.takeItem(0)
+            elif s.startswith("[APPLIED "):
+                content = s
+                rb = content.find("]")
+                if rb != -1:
+                    content = content[rb + 1 :].strip()
+                item = QListWidgetItem(content)
+                item.setToolTip(content)
+                self.applied_list.addItem(item)
+                while self.applied_list.count() > 3:
+                    self.applied_list.takeItem(0)
+            elif s.startswith("[USAGE] "):
+                self.usage_label.setText(s[len("[USAGE] ") :].strip() or "—")
+        except Exception:
+            pass
+
+    def _copy_to_clipboard(self, text: str):
+        try:
+            QApplication.clipboard().setText(text)
+        except Exception:
+            pass
+
+    def _open_path(self, path: str):
+        try:
+            path = os.path.expanduser(path)
+            if sys.platform.startswith("win"):
+                os.startfile(path)  # type: ignore[attr-defined]
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", path])
+            else:
+                subprocess.Popen(["xdg-open", path])
+        except Exception as e:
+            self.log.println(f"[OPEN] Failed: {e}")
+
+    def _reveal_in_explorer(self, path: str):
+        try:
+            path = os.path.abspath(path)
+            if sys.platform.startswith("win"):
+                if os.path.isdir(path):
+                    subprocess.Popen(["explorer", path])
+                else:
+                    subprocess.Popen(["explorer", "/select,", path])
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", "-R", path])
+            else:
+                folder = path if os.path.isdir(path) else os.path.dirname(path) or "."
+                subprocess.Popen(["xdg-open", folder])
+        except Exception as e:
+            self.log.println(f"[REVEAL] Failed: {e}")
+
+    def _on_ev_context_menu(self, pos):
+        try:
+            item = self.ev_list.itemAt(pos)
+            if not item:
+                return
+            menu = QMenu(self)
+            text = item.text()
+            menu.addAction("Copy", lambda: self._copy_to_clipboard(text))
+            source = None
+            try:
+                data = item.data(Qt.ItemDataRole.UserRole) or {}
+                source = (data or {}).get("source")
+            except Exception:
+                source = None
+            if not source:
+                tt = item.toolTip() or ""
+                for line in tt.splitlines():
+                    if line.startswith("Source: "):
+                        source = line[len("Source: ") :].strip()
+                        break
+            if source and (
+                str(source).startswith("http://") or str(source).startswith("https://")
+            ):
+                menu.addSeparator()
+                menu.addAction("Open URL", lambda s=source: webbrowser.open(s))
+            if source and os.path.exists(str(source)):
+                menu.addSeparator()
+                menu.addAction("Open Source", lambda s=source: self._open_path(str(s)))
+                menu.addAction(
+                    "Reveal in Explorer",
+                    lambda s=source: self._reveal_in_explorer(str(s)),
+                )
+            menu.exec(self.ev_list.mapToGlobal(pos))
+        except Exception:
+            pass
+
+    def _on_sug_context_menu(self, pos):
+        try:
+            item = self.sug_list.itemAt(pos)
+            if not item:
+                return
+            menu = QMenu(self)
+            text = item.text()
+            menu.addAction("Copy", lambda: self._copy_to_clipboard(text))
+            menu.exec(self.sug_list.mapToGlobal(pos))
+        except Exception:
+            pass
+
+    def _on_applied_context_menu(self, pos):
+        try:
+            item = self.applied_list.itemAt(pos)
+            if not item:
+                return
+            menu = QMenu(self)
+            text = item.text()
+            menu.addAction("Copy", lambda: self._copy_to_clipboard(text))
+            path_candidate = text
+            if " — " in text:
+                path_candidate = text.split(" — ", 1)[0].strip()
+            if path_candidate and os.path.exists(path_candidate):
+                menu.addSeparator()
+                menu.addAction("Open File", lambda p=path_candidate: self._open_path(p))
+                menu.addAction(
+                    "Reveal in Explorer",
+                    lambda p=path_candidate: self._reveal_in_explorer(p),
+                )
+            menu.exec(self.applied_list.mapToGlobal(pos))
+        except Exception:
+            pass
+
+    def _copy_awareness_summary(self):
+        try:
+            lines: list[str] = []
+            persona = (self.persona_label.text() or "").strip()
+            model = (self.model_label.text() or "").strip()
+            chunks = (self.chunks_label.text() or "0").strip()
+            if persona and persona != "—":
+                lines.append(f"Persona: {persona}")
+            if model and model != "—":
+                lines.append(f"Model: {model}")
+            lines.append(f"Chunks: {chunks}")
+            parts = []
+            for k in ("model", "grounding", "coherence", "safety"):
+                try:
+                    v = self.cb_labels[k].text().strip()
+                    if v:
+                        parts.append(f"{k}:{v}")
+                except Exception:
+                    continue
+            if parts:
+                lines.append("Confidence: " + " | ".join(parts))
+            if self.ev_list is not None:
+                ev_lines = []
+                for i in range(min(3, self.ev_list.count())):
+                    it = self.ev_list.item(i)
+                    if it:
+                        ev_lines.append(f"- {it.text()}")
+                if ev_lines:
+                    lines.append("Evidence:\n" + "\n".join(ev_lines))
+            if self.sug_list is not None:
+                sg_lines = []
+                for i in range(min(3, self.sug_list.count())):
+                    it = self.sug_list.item(i)
+                    if it:
+                        sg_lines.append(f"- {it.text()}")
+                if sg_lines:
+                    lines.append("Suggestions:\n" + "\n".join(sg_lines))
+            if self.applied_list is not None:
+                ap_lines = []
+                for i in range(min(3, self.applied_list.count())):
+                    it = self.applied_list.item(i)
+                    if it:
+                        ap_lines.append(f"- {it.text()}")
+                if ap_lines:
+                    lines.append("Applied Changes:\n" + "\n".join(ap_lines))
+            usage = (self.usage_label.text() or "").strip()
+            if usage and usage != "—":
+                lines.append(f"Usage: {usage}")
+            self._copy_to_clipboard("\n".join(lines))
+            self.log.println("[CLIPBOARD] Awareness summary copied")
+        except Exception as e:
+            self.log.println(f"[CLIPBOARD] Failed: {e}")
+
+
 _DEMOS: dict[str, Callable[[], QMainWindow]] = {
     "kernel_status": lambda: KernelStatusWindow(),
     "agent_pipeline": lambda: AgentPipelineWindow(),
@@ -468,7 +839,6 @@ def launch(demo: str):
 
 
 if __name__ == "__main__":
-    # CLI: python adk_demo_ui.py --demo kernel_status
     demo = None
     argv = sys.argv[1:]
     for i, tok in enumerate(argv):
@@ -476,7 +846,6 @@ if __name__ == "__main__":
             demo = argv[i + 1]
             break
     if demo is None:
-        # allow env var for easy per-file launchers
         demo = os.environ.get("AETHERRA_DEMO")
     if not demo:
         print(
