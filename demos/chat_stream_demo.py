@@ -60,6 +60,117 @@ def get_headers() -> Dict[str, str]:
     return {"X-Aetherra-Token": token} if token else {}
 
 
+def _print_awareness(aw: Optional[dict]):
+    """Pretty-print awareness to stdout in a compact, UI-friendly format.
+
+    Emits optional lines prefixed so consumers (like the PySide log pane)
+    can show them directly without extra parsing.
+    """
+    if not isinstance(aw, dict):
+        return
+    cb = aw.get("confidence_breakdown")
+    if isinstance(cb, dict) and cb:
+        parts = []
+        for k, v in cb.items():
+            try:
+                parts.append(f"{k}:{float(v):.2f}")
+            except Exception:
+                parts.append(f"{k}:{v}")
+        print("[CONF] " + " | ".join(parts))
+    ev = aw.get("evidence")
+    if isinstance(ev, list) and ev:
+        # Limit to top 3 for brevity
+        for i, item in enumerate(ev[:3], start=1):
+            if not isinstance(item, dict):
+                continue
+            title = item.get("title") or item.get("id") or "evidence"
+            src = item.get("source") or item.get("path") or ""
+            score = item.get("score")
+            if score is not None:
+                try:
+                    score_str = f"{float(score):.2f}"
+                except Exception:
+                    score_str = str(score)
+            else:
+                score_str = ""
+            line = f"[EVID {i}] {title}"
+            if src:
+                line += f" — {src}"
+            if score_str:
+                line += f" (score {score_str})"
+            print(line)
+
+
+def _print_persona(persona: Optional[object]):
+    if persona is None:
+        return
+    # Accept string or dict with name/id
+    if isinstance(persona, str):
+        if persona.strip():
+            print(f"[PERSONA] {persona.strip()}")
+        return
+    if isinstance(persona, dict):
+        name = persona.get("name") or persona.get("id") or persona.get("persona")
+        if name:
+            print(f"[PERSONA] {name}")
+
+
+def _print_model(model: Optional[str]):
+    if isinstance(model, str) and model.strip():
+        print(f"[MODEL] {model.strip()}")
+
+
+def _print_suggestions(suggestions: Optional[object]):
+    if not isinstance(suggestions, list):
+        return
+    for i, s in enumerate(suggestions[:5], start=1):
+        text = None
+        if isinstance(s, str):
+            text = s
+        elif isinstance(s, dict):
+            text = s.get("text") or s.get("label") or s.get("title")
+        if text:
+            print(f"[SUG {i}] {str(text)}")
+
+
+def _print_applied_changes(changes: Optional[object]):
+    if not isinstance(changes, list):
+        return
+    for i, ch in enumerate(changes[:5], start=1):
+        if isinstance(ch, dict):
+            path = ch.get("path") or ch.get("file") or ch.get("target") or "change"
+            desc = ch.get("summary") or ch.get("description") or ch.get("message") or ""
+            if desc:
+                print(f"[APPLIED {i}] {path} — {desc}")
+            else:
+                print(f"[APPLIED {i}] {path}")
+        else:
+            print(f"[APPLIED {i}] {str(ch)}")
+
+
+def _print_usage(usage: Optional[object]):
+    if not isinstance(usage, dict):
+        return
+    try:
+        pt = usage.get("prompt_tokens")
+        ct = usage.get("completion_tokens")
+        tt = usage.get("total_tokens")
+        lm = usage.get("latency_ms") or usage.get("latency")
+        parts = []
+        if pt is not None:
+            parts.append(f"prompt={pt}")
+        if ct is not None:
+            parts.append(f"completion={ct}")
+        if tt is not None:
+            parts.append(f"total={tt}")
+        if lm is not None:
+            parts.append(f"latency_ms={lm}")
+        if parts:
+            print("[USAGE] " + " | ".join(parts))
+    except Exception:
+        pass
+
+
 def try_stream(base: str, prompt: str) -> Optional[int]:
     url = base.rstrip("/") + "/api/ai/stream"
     payload = {"message": prompt}
@@ -93,6 +204,45 @@ def try_stream(base: str, prompt: str) -> Optional[int]:
                 if line.startswith("data:"):
                     data = line.split(":", 1)[1].strip()
                     print(f"[SSE] data={data}")
+                    # Try to parse the envelope and surface awareness when final arrives
+                    try:
+                        env = json.loads(data)
+                        # Envelope shape: { id, trace_id, ts, type, data, ... }
+                        if not isinstance(env, dict):
+                            pass
+                        else:
+                            etype = env.get("type")
+                            edata = env.get("data")
+                            if etype == "delta" and isinstance(edata, dict):
+                                chunk = (
+                                    edata.get("delta")
+                                    or edata.get("chunk")
+                                    or edata.get("text")
+                                    or edata.get("content")
+                                )
+                                if isinstance(chunk, str) and chunk:
+                                    print(f"[CHUNK] {chunk}")
+                            if etype == "final" and isinstance(edata, dict):
+                                result = edata.get("result")
+                                if isinstance(result, dict):
+                                    # Model/persona
+                                    _print_model(result.get("model"))
+                                    _print_persona(result.get("persona"))
+                                    # Awareness
+                                    aw = result.get("awareness")
+                                    _print_awareness(
+                                        aw if isinstance(aw, dict) else None
+                                    )
+                                    # Suggestions and applied changes
+                                    _print_suggestions(result.get("suggestions"))
+                                    _print_applied_changes(
+                                        result.get("applied_changes")
+                                    )
+                                    # Usage metadata
+                                    usage = result.get("usage") or env.get("usage")
+                                    _print_usage(usage)
+                    except Exception:
+                        pass
                     # If final, we can decide to stop; let server close normally
                     continue
                 # Fallback: print raw
@@ -135,6 +285,22 @@ def try_ask(base: str, prompt: str) -> int:
             out = data["result"].get("response") or data["result"].get("text")
             if out:
                 print("[RESPONSE] " + str(out))
+            # Awareness (non-stream path)
+            try:
+                aw = data["result"].get("awareness")
+                if isinstance(aw, dict):
+                    _print_awareness(aw)
+                # Persona / model
+                _print_model(data["result"].get("model"))
+                _print_persona(data["result"].get("persona"))
+                # Suggestions / applied changes
+                _print_suggestions(data["result"].get("suggestions"))
+                _print_applied_changes(data["result"].get("applied_changes"))
+                # Usage metadata
+                usage = data["result"].get("usage") or data.get("usage")
+                _print_usage(usage)
+            except Exception:
+                pass
             else:
                 print("[JSON] " + json.dumps(data))
             return 0

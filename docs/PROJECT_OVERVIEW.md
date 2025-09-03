@@ -52,7 +52,9 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 - AETHERRA_TRACE
 - AETHERRA_AUDIT
 
-- AETHERRA_OFFLINE
+- AETHERRA_AUDIT_MIN_CONF
+- AETHERRA_AUDIT_WINDOW_H
+- AETHERRA_MEMORY_DIR
 // Auxiliary and optional flags detected across the codebase
 - AETHERRA_AVAILABLE
 - AETHERRA_DISABLE_LEGACY_ALIASES

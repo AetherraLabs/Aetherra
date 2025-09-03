@@ -9,6 +9,12 @@ using OpenAI or other AI models.
 import os
 from typing import Any, Dict, List, Optional
 
+# Persistent memory
+try:
+    from aetherra_persistent_memory import get_persistent_memory_system
+except Exception:
+    get_persistent_memory_system = None
+
 from .agent_base import AgentBase
 
 
@@ -76,7 +82,6 @@ class LyrixaAI(AgentBase):
         Returns:
             AI response dictionary
         """
-        request_type = request.get("type", "chat")
         message = request.get("message", "")
         context = request.get("context", {})
 
@@ -85,6 +90,19 @@ class LyrixaAI(AgentBase):
                 "success": False,
                 "error": "No message provided",
                 "agent_id": self.agent_id,
+            }
+
+        # Ownership guard: never speculate; consult persistent memory first
+        if self._is_ownership_query(message):
+            reply = await self._ownership_reply(message)
+            self._add_to_history("assistant", reply)
+            return {
+                "success": True,
+                "response": reply,
+                "agent_id": self.agent_id,
+                "model": self.model,
+                "conversation_id": context.get("conversation_id"),
+                "metadata": {"guard": "ownership", "provider": "memory"},
             }
 
         # Add to conversation history
@@ -135,7 +153,12 @@ class LyrixaAI(AgentBase):
             messages.append(
                 {
                     "role": "system",
-                    "content": "You are Lyrixa, an advanced AI assistant within the Aetherra AI OS. You are helpful, intelligent, and have a slightly futuristic personality. You're part of a cyberpunk-themed AI operating system. Be concise but informative.",
+                    "content": (
+                        "You are Lyrixa, an advanced AI assistant within the Aetherra AI OS."
+                        " Be helpful and concise. If asked who owns Aetherra or Aetherra Labs,"
+                        " do not speculate; if no verified record is available, respond exactly:"
+                        " 'I don't have a record of ownership.'"
+                    ),
                 }
             )
 
@@ -191,6 +214,8 @@ class LyrixaAI(AgentBase):
         # Simple rule-based responses for when AI is unavailable
         message_lower = message.lower()
 
+        if self._is_ownership_query(message):
+            return "I don't have a record of ownership."
         if any(word in message_lower for word in ["hello", "hi", "hey"]):
             return "Hello! I'm Lyrixa AI. How can I assist you today?"
         elif any(word in message_lower for word in ["help", "what can you do"]):
@@ -210,7 +235,8 @@ class LyrixaAI(AgentBase):
             "timestamp": self.last_activity.isoformat(),
         }
         if metadata:
-            entry["metadata"] = metadata
+            # Store as string to avoid strict type complaints
+            entry["metadata"] = str(metadata)
 
         self.conversation_history.append(entry)
 
@@ -233,3 +259,39 @@ class LyrixaAI(AgentBase):
         """Clear conversation history."""
         self.conversation_history = []
         self.update_status("ready", {"history_cleared": True})
+
+    # --- Ownership guard helpers ---
+    def _is_ownership_query(self, message: str) -> bool:
+        m = (message or "").lower()
+        keys = [
+            "who owns aetherra",
+            "who owns aetherra labs",
+            "owner of aetherra",
+            "owner of aetherra labs",
+            "ownership of aetherra",
+            "ownership of aetherra labs",
+            "who founded aetherra",
+            "who founded aetherra labs",
+        ]
+        return any(k in m for k in keys)
+
+    async def _ownership_reply(self, message: str) -> str:
+        try:
+            if not get_persistent_memory_system:
+                return "I don't have a record of ownership."
+            pmem = await get_persistent_memory_system()
+            # Try verified facts by tag
+            facts = await pmem.recall_by_tag("ownership", limit=5)
+            verified = [f for f in facts if f.get("verified")]
+            if not verified:
+                cands = await pmem.retrieve(
+                    "Aetherra Labs ownership", limit=5, memory_type="fact"
+                )
+                verified = [c for c in cands if c.get("verified")]
+            if verified:
+                verified.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+                content = str(verified[0].get("content") or "")
+                return content or "I don't have a record of ownership."
+            return "I don't have a record of ownership."
+        except Exception:
+            return "I don't have a record of ownership."

@@ -28,7 +28,10 @@ On success (including fallback), status code is 200 with a JSON body:
 - suggestions (array): Optional list of suggested fixes with {title, file, action, rationale}.
 - applied_changes (array): Optional list of applied changes if allow_edits=true and changes were made.
 - persona (object, optional): Lyrixa persona/identity snapshot. When available includes { name, title, about }.
-- awareness (object, optional): Workspace awareness summary; when service is offline a minimal note is returned.
+- awareness (object, optional): Workspace awareness summary; when online may include:
+  - confidence_breakdown: { model?, grounding?, coherence?, safety? }
+  - evidence: array of normalized citations derived from persistent memory
+  - consciousness: optional small snapshot when available
 - edit_plan (array, optional): Planned edits synthesized from suggestions; items include { title, file, action }.
 - confidence (number, optional): Conservative confidence float (0.0–1.0). Defaults to 0.5 if unspecified.
 
@@ -65,8 +68,7 @@ Backward compatibility: older clients relying only on text/suggestions/applied_c
 - Safe edits are gated:
   - Edits only occur if allow_edits=true.
   - When edit_root is provided, edits are restricted to that directory.
-- Environment gating:
-  - AETHERRA_OFFLINE or AETHERRA_QUIET may lead Lyrixa to use deterministic identity/awareness replies instead of external intelligence providers.
+- Always-on path: Lyrixa attempts to initialize intelligence, memory, orchestrator, and consciousness on startup, with graceful degradation (no feature flags required).
 
 ## Errors
 

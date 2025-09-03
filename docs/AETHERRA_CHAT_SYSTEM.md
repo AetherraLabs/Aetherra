@@ -26,7 +26,7 @@ This document describes the Aetherra Chat System: a platform-level conversationa
 ## At‑a‑glance status
 
 - Hub developer APIs: `POST /api/ai/ask`, `POST /api/ai/stream` (primary), `GET /api/ai/stream` (alias) — Implemented
-- Hub Lyrixa bridge: `POST /api/lyrixa/chat` — Implemented (best‑effort, fallback)
+- Hub Lyrixa bridge: `POST /api/lyrixa/chat` — Implemented (always-on advanced path with graceful fallback)
 - Safety filters, RAG hooks, scratchpad, confidence calibration — Implemented/Partial
 - Backpressure/queue limits/retries/DLQ — Implemented at Hub/Orchestrator
 - Prometheus chat series — Implemented
@@ -131,7 +131,10 @@ Unified response contract returned under `result`:
 
 - Endpoint: `POST /api/lyrixa/chat`
 - Request: `{ content: string, allow_edits?: bool, edit_root?: string }`
-- Response (Lyrixa online): `{ text, suggestions, applied_changes, identity?, awareness? }`
+- Response (Lyrixa online): `{ text, suggestions, applied_changes, identity?, awareness? }` plus advanced fields when available:
+  - `awareness.confidence_breakdown` — provided by the adaptive orchestrator
+  - `awareness.evidence` — normalized citations from persistent memory via MultidimensionalMemory
+  - `awareness.consciousness` — small coherence snapshot when the bridge is available
 - Response (fallback): `{ text, suggestions: [], applied_changes: [] }`
 
 ## Security and safety

@@ -101,7 +101,7 @@ Examples (subject to change as implementation evolves):
 - `AETHERRA_USE_HYBRID=1` — prefer legacy Hybrid GUI (otherwise Basic is preferred)
 - `AETHERRA_BOOT_MENU=1` — show boot menu to pick GUI/CLI or Safe Mode
 - `AETHERRA_SAFE_MODE=1` — reduce functionality for safer startup
-- `AETHERRA_OFFLINE=1` or `AETHERRA_QUIET=1` — skip heavy intelligence warm‑ups
+- (Removed) Offline gating: Lyrixa now attempts full initialization by default and degrades gracefully.
 
 Related Hub/Agents developer APIs (opt‑in, token‑guarded):
 
