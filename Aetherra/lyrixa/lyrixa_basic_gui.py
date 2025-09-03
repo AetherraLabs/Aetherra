@@ -28,10 +28,11 @@ Clean, simple design that expands when plugins are installed.
 
 import json
 import logging
-from typing import Optional
+from html import escape as _html_escape
 
 from PySide6.QtCore import Qt, QThread, QTimer, Signal, Slot
-from PySide6.QtGui import QColor, QFont, QIcon, QPalette
+
+# Note: GUI font utilities can be imported by plugins as needed
 from PySide6.QtWidgets import (
     QApplication,
     QFrame,
@@ -44,7 +45,6 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
-    QScrollArea,
     QSplitter,
     QTabWidget,
     QTextEdit,
@@ -103,7 +103,7 @@ class LyrixaBasicWindow(QMainWindow):
         main_tab_layout = QHBoxLayout(main_tab)
 
         # Splitter for chat and hub
-        splitter = QSplitter(Qt.Horizontal)
+        splitter = QSplitter(Qt.Orientation.Horizontal)
         main_tab_layout.addWidget(splitter)
 
         # Left Panel: AI Chat
@@ -123,7 +123,7 @@ class LyrixaBasicWindow(QMainWindow):
     def _create_chat_panel(self) -> QWidget:
         """Create the AI Chat panel."""
         panel = QFrame()
-        panel.setFrameStyle(QFrame.StyledPanel)
+        panel.setFrameStyle(QFrame.Shape.StyledPanel)
 
         layout = QVBoxLayout(panel)
 
@@ -163,16 +163,17 @@ class LyrixaBasicWindow(QMainWindow):
         layout.addLayout(input_layout)
 
         # Add welcome message
-        self.chat_display.append(
-            "🤖 <b>Lyrixa:</b> Hello! I'm your AI assistant. How can I help you today?"
-        )
+        if self.chat_display is not None:
+            self.chat_display.append(
+                "🤖 <b>Lyrixa:</b> Hello! I'm your AI assistant. How can I help you today?"
+            )
 
         return panel
 
     def _create_hub_panel(self) -> QWidget:
         """Create the Aetherra Hub panel."""
         panel = QFrame()
-        panel.setFrameStyle(QFrame.StyledPanel)
+        panel.setFrameStyle(QFrame.Shape.StyledPanel)
 
         layout = QVBoxLayout(panel)
 
@@ -456,7 +457,8 @@ class LyrixaBasicWindow(QMainWindow):
             return
 
         # Display user message
-        self.chat_display.append(f"👤 <b>You:</b> {message}")
+        if self.chat_display is not None:
+            self.chat_display.append(f"👤 <b>You:</b> {message}")
         self.chat_input.clear()
 
         # Send to AI system (async call)
@@ -467,7 +469,8 @@ class LyrixaBasicWindow(QMainWindow):
 
         # Create a worker thread for AI response
         class AIResponseWorker(QThread):
-            response_ready = Signal(str)
+            # Allow string or structured response (dict/JSON)
+            response_ready = Signal(object)
 
             def __init__(self, ai_chat, message):
                 super().__init__()
@@ -492,14 +495,97 @@ class LyrixaBasicWindow(QMainWindow):
         self.ai_worker.response_ready.connect(self._display_ai_response)
         self.ai_worker.start()
 
-    @Slot(str)
-    def _display_ai_response(self, response: str):
-        """Display AI response in chat."""
-        self.chat_display.append(f"🤖 <b>Lyrixa:</b> {response}")
+    @Slot(object)
+    def _display_ai_response(self, response):
+        """Display AI response in chat, including optional awareness details."""
+        try:
+            cd = self.chat_display
+            if cd is None:
+                return
+        except Exception:
+            return
+
+        text = None
+        awareness = None
+
+        # Normalize response
+        try:
+            if isinstance(response, dict):
+                text = response.get("text") or response.get("response") or ""
+                aw = response.get("awareness")
+                awareness = aw if isinstance(aw, dict) else None
+            elif isinstance(response, str):
+                # Try JSON parse; else treat as plain text
+                try:
+                    data = json.loads(response)
+                    if isinstance(data, dict):
+                        text = data.get("text") or data.get("response") or response
+                        aw = data.get("awareness")
+                        awareness = aw if isinstance(aw, dict) else None
+                    else:
+                        text = response
+                except Exception:
+                    text = response
+            else:
+                text = str(response)
+        except Exception:
+            text = str(response)
+            awareness = None
+
+        cd.append(f"🤖 <b>Lyrixa:</b> {_html_escape(text or '')}")
+
+        # Awareness extras: confidence_breakdown and evidence
+        if isinstance(awareness, dict):
+            # Confidence breakdown
+            cb = awareness.get("confidence_breakdown")
+            if isinstance(cb, dict) and cb:
+                items = []
+                for k, v in cb.items():
+                    try:
+                        val = float(v)
+                        items.append(f"{_html_escape(str(k))}: {val:.2f}")
+                    except Exception:
+                        items.append(f"{_html_escape(str(k))}: {_html_escape(str(v))}")
+                cd.append(
+                    "<div style='color:#9adbb5; margin:4px 0'>Confidence: "
+                    + " | ".join(items)
+                    + "</div>"
+                )
+
+            # Evidence list (up to 3)
+            ev = awareness.get("evidence")
+            if isinstance(ev, list) and ev:
+                lines = []
+                for item in ev[:3]:
+                    if not isinstance(item, dict):
+                        continue
+                    title = item.get("title") or item.get("id") or "evidence"
+                    source = item.get("source") or item.get("path") or ""
+                    score = item.get("score")
+                    snippet = item.get("snippet") or item.get("preview") or ""
+                    line = f"• <b>{_html_escape(str(title))}</b>"
+                    if source:
+                        line += f" — <span style='color:#aaa'>{_html_escape(str(source))}</span>"
+                    if score is not None:
+                        try:
+                            line += f" (score {float(score):.2f})"
+                        except Exception:
+                            pass
+                    if snippet:
+                        line += f"<br/><span style='color:#aaa'>{_html_escape(str(snippet))}</span>"
+                    lines.append(line)
+                if lines:
+                    cd.append(
+                        "<div style='margin:2px 0'>" + "<br/>".join(lines) + "</div>"
+                    )
 
         # Auto-scroll to bottom
-        scrollbar = self.chat_display.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
+        try:
+            sb = cd.verticalScrollBar()
+            if sb is not None:
+                sb.setValue(sb.maximum())
+        except Exception:
+            pass
 
     @Slot()
     def _refresh_hub_data(self):
@@ -554,6 +640,14 @@ class LyrixaBasicWindow(QMainWindow):
     @Slot()
     def _install_selected_plugin(self):
         """Install the selected plugin."""
+        if not self.plugin_list:
+            warning_msg = self._create_styled_message_box(
+                "No Plugins",
+                "Plugin list is not available yet.",
+                QMessageBox.Icon.Warning,
+            )
+            warning_msg.exec()
+            return
         current_item = self.plugin_list.currentItem()
         if not current_item:
             warning_msg = self._create_styled_message_box(
@@ -1170,6 +1264,11 @@ class LyrixaBasicWindow(QMainWindow):
     @Slot()
     def _manage_selected_plugin(self):
         """Manage the selected installed plugin."""
+        if not self.installed_plugins_list:
+            QMessageBox.information(
+                self, "No Plugins", "No installed plugins to manage."
+            )
+            return
         current_item = self.installed_plugins_list.currentItem()
         if not current_item:
             QMessageBox.information(
@@ -1184,6 +1283,14 @@ class LyrixaBasicWindow(QMainWindow):
 
     def _uninstall_selected_plugin(self):
         """Uninstall the selected plugin."""
+        if not self.installed_plugins_list:
+            warning_msg = self._create_styled_message_box(
+                "No Plugins",
+                "No installed plugins to uninstall.",
+                QMessageBox.Icon.Warning,
+            )
+            warning_msg.exec()
+            return
         current_item = self.installed_plugins_list.currentItem()
         if not current_item:
             warning_msg = self._create_styled_message_box(
