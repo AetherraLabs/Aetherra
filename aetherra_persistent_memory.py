@@ -278,6 +278,12 @@ class AetherraPerśistentMemorySystem:
             # Load existing memories
             await self._load_memories()
 
+            # Ensure core, verified system facts exist (idempotent)
+            try:
+                await self._ensure_core_facts()
+            except Exception as se:
+                logger.warning(f"[MEMORY] Skipping core facts seed: {se}")
+
             # Update cognitive state
             self.cognitive_state["session_count"] += 1
             self.cognitive_state["last_session"] = datetime.now().isoformat()
@@ -875,6 +881,63 @@ class AetherraPerśistentMemorySystem:
     async def _update_memory_in_db(self, memory: AetherraMemoryNode):
         """Update existing memory in database."""
         await self._save_memory_to_db(memory)  # Same operation for SQLite
+
+    async def _ensure_core_facts(self):
+        """Seed core, verified facts that should always be available.
+
+        Idempotent: checks DB for an equivalent fact before inserting.
+        """
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+
+            # Ownership fact for Aetherra Labs
+            ownership_text = "Aetherra Labs is founded and owned by Timothy Holdorff. It is an independent, open-source project."
+
+            cursor.execute(
+                """
+                SELECT id FROM memories
+                WHERE memory_type = ?
+                  AND verified = 1
+                  AND content LIKE ?
+                LIMIT 1
+                """,
+                ("fact", "%Aetherra Labs is founded and owned by%"),
+            )
+            row = cursor.fetchone()
+            conn.close()
+
+            if row:
+                return  # Already present
+
+            # Insert via normal store path to keep indices in sync
+            node = AetherraMemoryNode(
+                content=ownership_text,
+                memory_type="fact",
+                context={
+                    "source": "system",
+                    "category": "ownership",
+                    "domain": "aetherra",
+                },
+                importance=0.95,
+            )
+            node.verified = True
+            node.source = "system"
+            node.confidence = 1.0
+            node.add_tag("ownership")
+            node.add_tag("aetherra")
+            node.add_tag("labs")
+            node.add_tag("core_fact")
+
+            # Save in-memory, index, and persist
+            self.memories[node.id] = node
+            self.index.index_memory(node)
+            await self._save_memory_to_db(node)
+
+            logger.info("[MEMORY] Seeded core fact: ownership (Aetherra Labs)")
+
+        except Exception as e:
+            logger.warning(f"[MEMORY] Core facts seed error: {e}")
 
     def _load_persistent_state(self):
         """Load persistent cognitive state."""

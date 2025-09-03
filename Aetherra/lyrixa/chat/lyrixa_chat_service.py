@@ -35,11 +35,37 @@ try:
 except Exception:
     get_lyrixa_intelligence = None
 
+# Optional: new adaptive orchestrator and memory evidence
+try:
+    from Aetherra.lyrixa.intelligence.adaptive_orchestrator import (
+        AdaptiveIntelligenceOrchestrator,
+    )
+except Exception:
+    AdaptiveIntelligenceOrchestrator = None  # type: ignore
+
+try:
+    from Aetherra.lyrixa.memory.multidimensional_memory import (
+        MultidimensionalMemory,
+    )
+except Exception:
+    MultidimensionalMemory = None  # type: ignore
+
+try:
+    from Aetherra.lyrixa.consciousness_integration import ConsciousnessBridge
+except Exception:
+    ConsciousnessBridge = None  # type: ignore
+
 # Optional: service registry
 try:
     from aetherra_service_registry import get_service_registry
 except Exception:
     get_service_registry = None
+
+# Persistent memory
+try:
+    from aetherra_persistent_memory import get_persistent_memory_system
+except Exception:
+    get_persistent_memory_system = None
 
 IDENTITY = {
     "name": "Lyrixa",
@@ -94,6 +120,11 @@ class LyrixaChatService:
         self.router = create_chat_router(str(self.root)) if create_chat_router else None
         self.registry = None
         self._intelligence = None
+        self._pmemory = None
+        # Core enhancements (mandatory)
+        self._orchestrator = None
+        self._mdmem = None
+        self._conscious = None
 
     async def initialize(self):
         # Try to connect to service registry
@@ -102,19 +133,85 @@ class LyrixaChatService:
                 self.registry = await get_service_registry()
             except Exception:
                 self.registry = None
-        # Warm up intelligence if available
-        offline = os.getenv("AETHERRA_OFFLINE") or os.getenv("AETHERRA_QUIET")
-        if get_lyrixa_intelligence and not offline:
+        # Warm up intelligence if available (always attempt; degrade gracefully)
+        if get_lyrixa_intelligence:
             try:
                 self._intelligence = await get_lyrixa_intelligence()
             except Exception:
                 self._intelligence = None
+        # Connect to persistent memory (best-effort; always attempt)
+        if get_persistent_memory_system:
+            try:
+                self._pmemory = await get_persistent_memory_system()
+            except Exception:
+                self._pmemory = None
+
+        # Initialize enhancements (mandatory for release path)
+        if not AdaptiveIntelligenceOrchestrator:
+            raise RuntimeError("Adaptive orchestrator not available")
+        if not MultidimensionalMemory:
+            raise RuntimeError("MultidimensionalMemory not available")
+        if not ConsciousnessBridge:
+            raise RuntimeError("ConsciousnessBridge not available")
+
+        # Create orchestrator bound to intelligence
+        self._orchestrator = AdaptiveIntelligenceOrchestrator(self._intelligence)
+
+        # Create and initialize 7-layer memory (required)
+        self._mdmem = MultidimensionalMemory()
+        await self._mdmem.initialize()
+
+        # Create consciousness bridge and initialize loop
+        self._conscious = ConsciousnessBridge()
+        try:
+            # Prefer async initialize if available
+            if hasattr(self._conscious, "initialize") and asyncio.iscoroutinefunction(
+                self._conscious.initialize
+            ):
+                await self._conscious.initialize()  # type: ignore
+        except Exception:
+            # If initialization fails, keep instance for snapshot-only usage
+            pass
 
     async def chat(
         self, message: str, opts: Optional[ChatOptions] = None
     ) -> ChatResponse:
         opts = opts or ChatOptions()
         awareness = await self._workspace_awareness(summary_only=True)
+        # Enrich awareness with a small consciousness snapshot
+        try:
+            if self._conscious and hasattr(self._conscious, "get_coherence_snapshot"):
+                snap = self._conscious.get_coherence_snapshot()
+                if snap:
+                    awareness["consciousness"] = snap
+            # Optional anticipatory hints from consciousness (non-blocking)
+            if (
+                self._conscious
+                and hasattr(self._conscious, "create_superposition")
+                and hasattr(self._conscious, "collapse_quantum_states")
+            ):
+                try:
+                    states = await self._conscious.create_superposition(message)  # type: ignore
+                    decision = await self._conscious.collapse_quantum_states(states)  # type: ignore
+                    if states and decision:
+                        awareness["anticipatory_hints"] = {
+                            "candidates": states,
+                            "decision": decision,
+                        }
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        # Ownership/authority questions: consult persistent memory first
+        if self._is_ownership_query(message):
+            reply, conf, verified = await self._ownership_reply(message)
+            await self._maybe_log_response(
+                message, reply, confidence=conf, verified=verified, category="ownership"
+            )
+            return ChatResponse(
+                text=reply, suggestions=[], applied_changes=[], awareness=awareness
+            )
 
         # If it's an identity/awareness query, answer deterministically
         if self._is_identity_or_awareness_query(message):
@@ -123,9 +220,27 @@ class LyrixaChatService:
                 text=reply, suggestions=[], applied_changes=[], awareness=awareness
             )
 
-        # Prefer Lyrixa intelligence; fall back to router; then rules
+        # Prefer orchestrator → intelligence → router → deterministic fallback
         reply = None
-        if self._intelligence:
+        path_used = "fallback"
+        adv_payload = None
+        # Orchestrator is required; run it first
+        orch = self._orchestrator
+        if orch is None:
+            raise RuntimeError("Orchestrator not initialized; call initialize() first")
+        adv_payload = await orch.orchestrate(
+            message,
+            context={
+                "user_id": opts.user_id,
+                "session_id": opts.session_id,
+                "workspace_awareness": awareness,
+                "identity": IDENTITY,
+            },
+        )
+        if adv_payload and adv_payload.get("text"):
+            reply = adv_payload["text"]
+            path_used = "orchestrator"
+        if not reply and self._intelligence:
             try:
                 res = await self._intelligence.process_message(
                     message,
@@ -140,6 +255,8 @@ class LyrixaChatService:
                 # If the intelligence could not provide a meaningful response, fallback
                 if not reply or self._is_errorish_response(str(reply)):
                     reply = None
+                else:
+                    path_used = "intelligence"
             except Exception:
                 reply = None
 
@@ -152,14 +269,26 @@ class LyrixaChatService:
                 # If router gives a generic non-answer, fallback to deterministic reply
                 if not reply or self._is_errorish_response(str(reply)):
                     reply = None
+                else:
+                    path_used = "router"
             except Exception:
                 reply = None
 
         if not reply:
             reply = self._fallback_reply(message)
+            path_used = "fallback"
 
         suggestions: List[Dict[str, Any]] = []
         applied: List[Dict[str, Any]] = []
+        evidence: List[Dict[str, Any]] = []
+        # Add memory-based evidence from 7-layer memory
+        try:
+            mdm = self._mdmem
+            if mdm is None:
+                raise RuntimeError("Multidimensional memory not initialized")
+            evidence = await mdm.evidence_for(message, limit=3)
+        except Exception:
+            evidence = []
 
         # If the message asks to fix/update code or references files, propose safe suggestions
         if any(
@@ -172,6 +301,39 @@ class LyrixaChatService:
                 ok, change = await self.apply_fix(first, edit_root=opts.edit_root)
                 if ok:
                     applied.append(change)
+
+        # Log response to persistent memory with coarse confidence score
+        await self._maybe_log_response(
+            message,
+            reply,
+            confidence=self._estimate_confidence(path_used, message, reply),
+            verified=False,
+            category="chat",
+        )
+
+        # Attach orchestrator confidence breakdown and evidence into awareness
+        if adv_payload and adv_payload.get("confidence_breakdown"):
+            awareness["confidence_breakdown"] = adv_payload["confidence_breakdown"]
+        if evidence:
+            awareness["evidence"] = evidence
+
+        # Store interaction across 7-layer memory (required path; tolerate soft failure)
+        try:
+            mdm = self._mdmem
+            if mdm is None:
+                raise RuntimeError("Multidimensional memory not initialized")
+            await mdm.store_multidimensional(
+                {
+                    "text": reply,
+                    "context": {
+                        "user_id": opts.user_id,
+                        "session_id": opts.session_id,
+                        "awareness": awareness,
+                    },
+                }
+            )
+        except Exception:
+            pass
 
         return ChatResponse(
             text=reply,
@@ -331,8 +493,61 @@ class LyrixaChatService:
             return True
         return False
 
+    def _is_ownership_query(self, message: str) -> bool:
+        m = message.lower()
+        return any(
+            kw in m
+            for kw in [
+                "who owns aetherra",
+                "who owns aetherra labs",
+                "who is the owner of aetherra",
+                "who is the owner of aetherra labs",
+                "who founded aetherra",
+                "who founded aetherra labs",
+                "ownership of aetherra",
+                "ownership of aetherra labs",
+                "owner of aetherra",
+                "owner of aetherra labs",
+            ]
+        )
+
+    async def _ownership_reply(self, message: str) -> Tuple[str, float, bool]:
+        """Answer ownership questions using persistent memory. Returns (reply, confidence, verified)."""
+        try:
+            if not self._pmemory:
+                # No memory available; be explicit we lack a record
+                return ("I don't have a record of ownership.", 1.0, True)
+
+            # Prefer verified ownership facts
+            # First, recall by tag
+            facts = await self._pmemory.recall_by_tag("ownership", limit=5)
+            verified_facts = [f for f in facts if f.get("verified")]
+            if not verified_facts:
+                # Fallback: semantic retrieve
+                candidates = await self._pmemory.retrieve(
+                    "Aetherra Labs ownership",
+                    limit=5,
+                    memory_type="fact",
+                )
+                verified_facts = [c for c in candidates if c.get("verified")]
+
+            if verified_facts:
+                # Choose the most recent verified fact
+                verified_facts.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+                content = str(verified_facts[0].get("content", "")).strip()
+                return (content, 1.0, True)
+
+            # No verified record found
+            return ("I don't have a record of ownership.", 1.0, True)
+
+        except Exception:
+            # On any error, avoid fabricating
+            return ("I don't have a record of ownership.", 1.0, True)
+
     def _fallback_reply(self, message: str) -> str:
         m = message.lower().strip()
+        if self._is_ownership_query(m):
+            return "I don't have a record of ownership."
         if any(
             k in m
             for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]
@@ -360,6 +575,50 @@ class LyrixaChatService:
                 "routing this as a question",
             ]
         )
+
+    def _estimate_confidence(self, path: str, message: str, reply: str) -> float:
+        # Identity/ownership deterministic answers are high confidence
+        if self._is_ownership_query(message) or self._is_identity_or_awareness_query(
+            message
+        ):
+            return 1.0
+        if path == "intelligence":
+            return 0.7
+        if path == "router":
+            return 0.6
+        # Fallback heuristic
+        return 0.5
+
+    async def _maybe_log_response(
+        self,
+        user_message: str,
+        reply: str,
+        confidence: float,
+        verified: bool,
+        category: str,
+    ) -> None:
+        if not self._pmemory:
+            return
+        try:
+            rid = await self._pmemory.store(
+                content=reply,
+                context={
+                    "source": "lyrixa_chat",
+                    "user_message": user_message,
+                    "category": category,
+                },
+                memory_type="chat_response",
+                importance=0.4,
+                tags=["lyrixa", "chat", category],
+            )
+            if rid and rid in self._pmemory.memories:
+                node = self._pmemory.memories[rid]
+                node.confidence = float(confidence)
+                node.verified = bool(verified)
+                node.source = "lyrixa_chat"
+                await self._pmemory._update_memory_in_db(node)
+        except Exception:
+            pass
 
 
 # Quick CLI for manual testing
