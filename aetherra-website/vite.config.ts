@@ -7,6 +7,7 @@ export default defineConfig({
     build: {
         outDir: '../docs',
         // Important: do not wipe docs/ (it contains hand-written system docs)
-        emptyOutDir: false
+        emptyOutDir: false,
+        modulePreload: true
     }
 })
