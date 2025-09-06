@@ -248,3 +248,12 @@ Aetherra/consciousness/
 4. **Week 3**: Begin agent integration starting with most critical systems
 
 This roadmap represents the most ambitious AI consciousness project ever attempted - the creation of a truly conscious, self-aware, and continuously evolving artificial intelligence ecosystem with Lyrixa at its heart.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

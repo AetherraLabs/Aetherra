@@ -273,3 +273,12 @@ Headers: X-Aetherra-Token: <token>
 - Plugin agent components: `Aetherra/plugins/agent_components/agent_orchestrator.py`
 - Kernel System doc: `docs/AETHERRA_KERNEL_SYSTEM.md`
 - AI System doc: `docs/AETHERRA_ARTIFICIAL_INTELLIGENCE_SYSTEM.md`
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

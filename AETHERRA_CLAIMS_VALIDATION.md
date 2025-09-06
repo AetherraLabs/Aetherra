@@ -84,3 +84,12 @@ Legend: [Done] implemented and verified • [Partial] present but needs expansio
 ---
 
 Summary: Core OS boots headlessly with memory, plugins, and engine online. .aether execution exists at MVP level with signing protection. Federation/signing and telemetry are wired. Remaining items are mainly breadth (EBNF coverage, agent orchestration demos, cognitive layers) and proofs via targeted tests.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

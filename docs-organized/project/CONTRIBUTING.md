@@ -405,3 +405,12 @@ By contributing to Aetherra, you agree that your contributions will be licensed 
 Thank you for contributing to Aetherra! Every contribution, no matter how small, helps make Aetherra better for everyone. Together, we're building the future of AI-native development! 🚀
 
 **Happy Coding!** 💻✨
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

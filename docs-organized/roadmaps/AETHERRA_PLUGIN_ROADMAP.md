@@ -365,3 +365,12 @@ Create the **first standardized plugin registry and ecosystem** for AI-conscious
 **Document Status**: `ACTIVE ROADMAP` | **Next Review**: `2025-07-15`
 **Version**: `1.0.0` | **Last Updated**: `2025-06-29`
 **License**: GPL-3.0 | **Contributors**: Aetherra Development Team
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

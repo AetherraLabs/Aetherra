@@ -181,3 +181,12 @@ See also:
 - Aetherra Coding System: `docs/AETHERRA_CODING_SYSTEM.md`
 - Aetherra Memory System: `docs/AETHERRA_MEMORY_SYSTEM.md`
 - Security policy for reporting: `SECURITY.md`
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

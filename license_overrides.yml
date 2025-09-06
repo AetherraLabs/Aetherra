@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Manual license override annotations (alpha stub)
+# Schema:
+# packages:
+#   <package_name>:
+#     license: <SPDX-ID>
+#     reason: <why metadata missing / justification>
+#     approved_by: <governance handle or PR link>
+
+packages:
+  attrs:
+    license: Apache-2.0 OR MIT
+    reason: Classifier anomaly sometimes reports UNKNOWN; verified upstream (LICENSE file contains Apache-2.0 OR MIT dual-license grant).
+    approved_by: governance@aetherra
+  click:
+    license: BSD-3-Clause
+    reason: Upstream LICENSE file confirms BSD-3-Clause; occasionally classifier missing locally.
+    approved_by: governance@aetherra
+  Flask:
+    license: BSD-3-Clause
+    reason: Pallets project standard BSD-3-Clause license.
+    approved_by: governance@aetherra
+  flask-cors:
+    license: MIT
+    reason: Upstream repo LICENSE is MIT; metadata sometimes incomplete.
+    approved_by: governance@aetherra
+  requests:
+    license: Apache-2.0
+    reason: Well-known Apache-2.0 licensed HTTP library; classifier reliable but override for consistency.
+    approved_by: governance@aetherra
+
+# Example (uncomment to use):
+# packages:
+#   examplepkg:
+#     license: MIT
+#     reason: Upstream classifier missing; verified via LICENSE file in repo.
+#     approved_by: governance@example.com

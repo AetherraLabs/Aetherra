@@ -266,3 +266,12 @@ The self-organizing intelligence system is designed to be extensible:
 ---
 
 **The Aetherra Self-Organizing Intelligence System represents a breakthrough in autonomous code management - making Aetherra truly reflexive and self-improving.**
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

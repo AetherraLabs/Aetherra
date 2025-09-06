@@ -1,6 +1,9 @@
 
 # Aetherra Memory System
 
+> Maintained and officially operated by **Aetherra Labs**.
+> **Powered by Aetherra Labs.**
+
 Aetherra’s Memory System combines reliable, local-first storage with advanced conceptual and episodic structures, adaptive compression (QFAC), and optional quantum‑hybrid experimentation. It preserves strict backward compatibility for existing Lyrixa plugins while enabling richer recall, narratives, reflection, and system health monitoring.
 
 ## Architecture overview
@@ -445,3 +448,12 @@ Chat (hub-level) operational series:
 Additional JSON:
 
 - GET /api/memory/audit → { enabled, ephemeral?, audit } with branch DAG audit (nodes/edges) when available; falls back to an empty audit on ephemeral engine.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

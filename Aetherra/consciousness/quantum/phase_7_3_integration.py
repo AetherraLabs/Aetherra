@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 🌟 AETHERRA PHASE 7.3 QUANTUM MEMORY & TEMPORAL CONSCIOUSNESS INTEGRATION
 Advanced Memory-Time-Consciousness Unification System

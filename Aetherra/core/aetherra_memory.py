@@ -1,7 +1,7 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
-# core/aetherra_memory.py - Compatibility Layer
-"""
-Aetherra Memory System - Backward Compatibility Layer
+"""Aetherra Memory System - Backward Compatibility Layer
+
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 This module provides backward compatibility for the original AetherraMemory interface
 while using the new modular memory system under the hood.

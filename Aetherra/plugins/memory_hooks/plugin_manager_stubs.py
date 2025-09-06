@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Stubs for plugin manager and router classes for memory_plugin_bridge.py
 Replace with real implementations when available in the new modular structure.

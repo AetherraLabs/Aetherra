@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Aetherra Lyrixa Directory Cleaner
 Cleans up and reorganizes files in Aetherra/lyrixa based on analysis

@@ -70,21 +70,34 @@
     "lyrixa_chat": {
         "quantum_enhanced": true,
         "consciousness_integration": "lightweight",
+        "consciousness_integration_settings": {
+            "enabled": true,
+            "coherence_threshold": 0.8,
+            "entanglement_depth": 7
+        },
         "awareness": {
             "confidence_breakdown": "enabled",
             "evidence": "enabled"
         },
         "memory_architecture": {
             "layers": 7,
-            "store_interactions": true
+            "store_interactions": true,
+            "quantum_search": true,
+            "consolidation_interval": 3600
         },
         "intelligence_orchestration": {
             "orchestrator": "adaptive",
-            "parallelize": false
+            "parallelize": false,
+            "parallel_models": 2,
+            "fusion_algorithm": "consensus_weighted",
+            "adaptive_selection": true
         },
         "self_improvement": {
             "auto_suggest": true,
-            "apply_safeguards": true
+            "apply_safeguards": true,
+            "enabled": true,
+            "learning_rate": 0.1,
+            "quantum_sandbox": false
         }
     }
 }

@@ -65,3 +65,12 @@ How to use
 - Start here for system overviews and contracts; each doc links to files, APIs, and env flags.
 - For a full repository file index, see ./FILE_INDEX.md.
 - To verify behavior locally, use VS Code tasks under Test/Build (e.g., "Verify Aetherra OS (Headless Smoke)" and "Verify Claims").
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

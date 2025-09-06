@@ -60,3 +60,12 @@ echo 'export AETHERRA_PEERS=http://host1:3001,http://host2:3001' >> ~/.bashrc
 	3) Flip `plugin_signing_secret` to new value; keep `.next` for one week
 	4) Remove old key and `.next`
 - Never store production secrets in code or CI logs; use environment or a secrets store.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

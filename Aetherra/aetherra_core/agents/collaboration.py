@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Multi-AI Collaboration Framework for AetherraCode
 Coordinates multiple AI agents to solve complex problems collaboratively

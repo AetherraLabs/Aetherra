@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 [CORE] Aetherra OS Kernel Loop
 ==========================
@@ -1293,7 +1296,14 @@ class AetherraKernelLoop:
                 f"normal={len(self._pending_tasks['normal_priority'])}, background={len(self._pending_tasks['background'])})"
             )
         except Exception as e:
-            logger.debug(f"[SNAPSHOT] Failed to restore tasks: {e}")
+            # Corruption / parse failure: log at INFO with explicit marker and increment metric
+            logger.info(
+                f"[SNAPSHOT][CORRUPT] Failed to restore tasks from {self.tasks_path}: {e}"
+            )
+            self.metrics["task_snapshot_corruption"] = (
+                self.metrics.get("task_snapshot_corruption", 0) + 1
+            )
+            # Leave queues empty; do not propagate exception
 
 
 # Global kernel instance

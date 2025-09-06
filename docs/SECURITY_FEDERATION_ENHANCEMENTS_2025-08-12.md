@@ -48,3 +48,12 @@ python tools/verify_aether_scripts.py --strict --output aether_static_report.md 
 
 - The positive-path signed test requires PyNaCl; when missing, it skips without failing CI.
 - The static verifier still exits non-zero when any file exceeds the risk threshold (default 5) or when strict signature checks fail.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

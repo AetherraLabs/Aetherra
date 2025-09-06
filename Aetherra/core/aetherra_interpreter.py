@@ -1,8 +1,7 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
-# core/aetherra_interpreter.py
-"""
-Aetherra Interpreter (Modular Interface)
-==========================================
+"""Aetherra Interpreter (Modular Interface)
+
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 This module provides a compatibility interface to the new modular interpreter system.
 For new development, use the modular system directly from core.interpreter.
@@ -98,7 +97,7 @@ if _MODULAR_AVAILABLE:
             """Execute Aetherra with performance optimizations"""
             try:
                 return super().execute(line)
-            except Exception as e:
+            except Exception:
                 # Fallback to a safe execution
                 return super().execute(line)
 

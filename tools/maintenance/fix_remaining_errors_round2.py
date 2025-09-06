@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Comprehensive Error Fixing Script for Phase 7.1 - Round 2
 Addresses the remaining issues after initial fixes.

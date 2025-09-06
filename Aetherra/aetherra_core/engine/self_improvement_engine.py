@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Aetherra Self-Improvement Engine
 Continuous learning and system optimization capabilities.
@@ -788,6 +791,36 @@ class SelfImprovementEngine:
 
         # Store in database
         asyncio.create_task(self._store_metric(name, value, unit, context))
+
+    def analyze_interaction(self, interaction_data: Dict[str, Any]):
+        """
+        Analyzes a single interaction to identify potential immediate improvements
+        or gather data for long-term learning.
+        """
+        # This is a hook for more immediate, per-interaction analysis.
+        # For now, we can log the interaction for future offline analysis
+        # or trigger a micro-analysis task.
+        logger.debug(f"Analyzing interaction: {interaction_data.get('id', 'unknown')}")
+
+        # Example: if response confidence was low, flag for review.
+        if interaction_data.get("confidence", 1.0) < 0.6:
+            proposal = ImprovementProposal(
+                proposal_id=f"review-{interaction_data.get('id', uuid.uuid4())}",
+                improvement_type=ImprovementType.ACCURACY,
+                description=f"Review low-confidence interaction for query: '{interaction_data.get('query', '...')[:50]}...'",
+                expected_benefit=0.1,
+                implementation_cost=0.1,
+                risk_level=0.0,
+                affected_components=[
+                    "lyrixa_chat",
+                    interaction_data.get("path_used", "unknown"),
+                ],
+                success_criteria=["Manual review provides insight for tuning."],
+                created_at=datetime.now(),
+                status="proposed_for_review",
+            )
+            # Store this special proposal
+            asyncio.create_task(self._store_proposal(proposal))
 
     def get_improvement_status(self) -> Dict[str, Any]:
         """Get current improvement system status"""

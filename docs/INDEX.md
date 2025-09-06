@@ -17,3 +17,12 @@ Notes:
 
 - Use the VS Code tasks “Aether Verify (Quick, Test Profile)” and “Aether Verify (Strict Signatures)” to verify `.aether` in this repo.
 - Strictness and determinism can be controlled via env flags or the script `policy:` block (see Operator Guide).
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

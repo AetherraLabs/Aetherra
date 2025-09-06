@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Quantum Web Dashboard
 Displays real-time quantum memory metrics: coherence, branching, entropy.

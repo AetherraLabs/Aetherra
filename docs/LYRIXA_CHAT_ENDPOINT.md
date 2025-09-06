@@ -74,3 +74,12 @@ Backward compatibility: older clients relying only on text/suggestions/applied_c
 
 - 200 with fallback for unavailable service (see above).
 - 500 for unexpected server errors (malformed JSON, internal exceptions).
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

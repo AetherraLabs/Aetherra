@@ -139,3 +139,12 @@ Related Hub/Agents developer APIs (opt‑in, token‑guarded):
 ---
 
 Status: ✅ Implemented (core chat, Hub bridge, plugin system) · 🛠 partial (GUI wiring, intelligence) · 🔭 planned (metrics)
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
