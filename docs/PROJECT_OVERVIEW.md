@@ -238,6 +238,7 @@ The following environment variables control quantum features, recall A/B experim
 - `AETHERRA_QUANTUM_DETERMINISTIC` — 1/0 deterministic simulator behavior
 - `AETHERRA_QUANTUM_RECALL` — enable quantum‑enriched recall path
 - `AETHERRA_QUANTUM_AUDIT` — 1/0 include quantum audit records
+- `AETHERRA_RELEASE_PRIVKEY` — Optional Ed25519 private key (hex) used by signing helpers (e.g., future release manifest signature). If unset, signing is skipped.
 
 ### Environment Variables — Observer-Aware Policy (Q4)
 
@@ -395,6 +396,7 @@ Core toggles and networking:
 - `AETHERRA_SIGN_PLUGINS`
 - `AETHERRA_STATE_DIR`
 - `AETHERRA_STRICT`
+- `AETHERRA_STRICT_SPDX` — Set to `1` to enable strict SPDX header verification (scans tests/frontend and optional dirs). Default lenient mode when unset.
 - `AETHERRA_TELEMETRY`
 - `AETHERRA_TEMPLATE_DIR`
 - `AETHERRA_WEB_PORT`
