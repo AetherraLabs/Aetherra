@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Repository Root Organizer (safe Phase 1)
 - Moves non-core artifacts out of project root into modular folders.

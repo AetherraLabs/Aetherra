@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 # Stub for EnhancedPluginManager for modular plugin integration
 class EnhancedPluginManager:
     def __init__(self, *args, **kwargs):

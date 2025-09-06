@@ -1,5 +1,8 @@
 # Aetherra Kernel System
 
+> Maintained and officially operated by **Aetherra Labs**.
+> **Powered by Aetherra Labs.**
+
 Updated: 2025-08-28
 
 This document describes the Aetherra Kernel: the core runtime loop, service registry, and launcher phases that bring the AI OS online and keep it healthy. It mirrors the structure of other system docs and is grounded in the current codebase and tasks.
@@ -142,6 +145,20 @@ Environment flags (Phase 2 additions):
 
 - `AETHERRA_HMR_ALLOWED_SOURCES`: comma-separated modules or path prefixes allowed to reload
 - `AETHERRA_HMR_AUDIT_PATH`: JSONL audit log path (default `.aetherra/hmr_audit.jsonl`)
+
+Allowed-sources examples (modules or path prefixes):
+
+- `Aetherra.lyrixa`
+- `Aetherra/aetherra_core/engine`
+- `plugins/core/`
+
+Audit rotation (PowerShell):
+
+```powershell
+$env:AETHERRA_HMR_AUDIT_PATH = ".aetherra/hmr_audit.jsonl"
+$env:AETHERRA_HMR_AUDIT_MAX_BYTES = "5242880"      # 5 MiB
+$env:AETHERRA_HMR_AUDIT_MAX_BACKUPS = "3"
+```
 
 Quiesce improvements (Phase 2):
 
@@ -334,3 +351,12 @@ See also:
 - Aetherra Security System: `docs/AETHERRA_SECURITY_SYSTEM.md`
 - Aetherra Memory System: `docs/AETHERRA_MEMORY_SYSTEM.md`
 - Aetherra Coding System: `docs/AETHERRA_CODING_SYSTEM.md`
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

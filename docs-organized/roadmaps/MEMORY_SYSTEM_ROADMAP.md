@@ -284,3 +284,12 @@ This transformation moves Aetherra from reactive RAG responses to proactive, sto
 **Next Milestone**: Core Integration & Testing
 **Estimated Completion**: 6-8 weeks for full roadmap
 **Priority**: High - Core capability enhancement
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

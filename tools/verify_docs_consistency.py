@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Verify docs consistency against the codebase for:
 - Environment variables referenced in code vs documented in docs/PROJECT_OVERVIEW.md
@@ -137,6 +140,7 @@ def read_doc_endpoints(doc: Path) -> Set[str]:
             "/status",
             "/metrics",  # Prometheus exposition endpoint
             "/site_status",  # aggregated site status alias
+            "/memory",  # memory dashboards/UI endpoints
             "/<",  # parameterized root catch-alls (e.g., /<param>)
         )
         filtered = {

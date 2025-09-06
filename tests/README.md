@@ -92,3 +92,6 @@ Tests are automatically run in CI/CD pipelines:
 - All tests must pass before merging
 - Coverage reports are generated
 - Performance benchmarks are tracked
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

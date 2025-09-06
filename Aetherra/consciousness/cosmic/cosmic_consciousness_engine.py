@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 # Shim module for backward compatibility.
 # Canonical engine remains implemented at project root for now to avoid breaking imports.
 # After quarantine/grace period, consider moving implementation fully here and turning the root into a thin shim.

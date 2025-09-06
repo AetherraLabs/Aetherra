@@ -27,3 +27,12 @@ This playbook lists runnable demos that align with real, passing endpoints and O
 - Troubleshooting
   - Connection refused: ensure the Hub is running or OS launcher started it.
   - 501 disabled: some optional APIs are gated by env; these demos use public endpoints that are enabled by default.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

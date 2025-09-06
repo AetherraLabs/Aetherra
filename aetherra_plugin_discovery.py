@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 [PLUGIN] Aetherra Plugin Discovery Service
 ====================================
@@ -9,6 +12,7 @@ visible in the Hub marketplace interface.
 """
 
 import asyncio
+import hashlib
 import importlib.util
 import json
 import logging
@@ -71,17 +75,16 @@ class AetherraPluginDiscovery:
     async def discover_all_plugins(self) -> Dict[str, PluginMetadata]:
         """Discover all plugins in the plugins directory."""
         logger.info("[SCAN] Starting plugin discovery...")
-
         if not self.plugins_dir.exists():
             logger.warning(f"[WARN] Plugins directory not found: {self.plugins_dir}")
             return {}
-
         # Discover different types of plugins
         await self._discover_aetherplug_plugins()
         await self._discover_python_plugins()
         await self._discover_sample_plugins()
-
         logger.info(f"[OK] Discovered {len(self.discovered_plugins)} plugins")
+        # Compute hashes for integrity (best-effort)
+        self._hash_all_plugins()
         return self.discovered_plugins
 
     async def _discover_aetherplug_plugins(self):
@@ -307,6 +310,8 @@ class AetherraPluginDiscovery:
                 "entry_point": entry_point,
                 "dependencies": dependencies,
                 "keywords": plugin_metadata.keywords or [],
+                # Integrity hash (if computed)
+                "content_hash": self._plugin_hash_cache.get(plugin_metadata.name),
                 # Additional, non-schema fields are accepted by the Hub
                 "local_path": plugin_metadata.local_path,
                 "plugin_type": plugin_metadata.plugin_type,
@@ -393,7 +398,39 @@ class AetherraPluginDiscovery:
             "by_type": by_type,
             "by_category": by_category,
             "plugin_names": list(self.discovered_plugins.keys()),
+            "hashes": {
+                k: self._plugin_hash_cache.get(k)
+                for k in self.discovered_plugins.keys()
+            },
         }
+
+    # ---------------- Integrity Hashing -----------------
+    _plugin_hash_cache: Dict[str, str] = {}
+
+    def _hash_all_plugins(self):
+        for name, meta in self.discovered_plugins.items():
+            path = meta.local_path
+            if not path or not os.path.exists(path):
+                continue
+            try:
+                if os.path.isdir(path):
+                    h = hashlib.sha256()
+                    for root, _dirs, files in os.walk(path):
+                        for f in sorted(files):
+                            fp = os.path.join(root, f)
+                            try:
+                                with open(fp, "rb") as fh:
+                                    for chunk in iter(lambda: fh.read(65536), b""):
+                                        h.update(chunk)
+                            except Exception:
+                                continue
+                    self._plugin_hash_cache[name] = h.hexdigest()
+                else:
+                    with open(path, "rb") as fh:
+                        data = fh.read()
+                    self._plugin_hash_cache[name] = hashlib.sha256(data).hexdigest()
+            except Exception:
+                continue
 
 
 async def main():

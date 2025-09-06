@@ -1,1011 +1,238 @@
-<!--
-SPDX-License-Identifier: GPL-3.0-or-later
-SPDX-FileCopyrightText: 2025 Aetherra & Lyrixa Contributors
--->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+# Aetherra
 
-<p align="center">
-  <img src="assets/branding/Aetherra_Banner_Transparent.png" alt="Aetherra Banner" width="800"/>
-</p>
+> AI-native development environment (Alpha). Version: **0.1.0-alpha.1**
 
-<h1 align="center">🌟 Aetherra — Code Awakened</h1>
+![Status](https://img.shields.io/badge/Status-ALPHA-orange)
+![Version](https://img.shields.io/badge/Version-0.1.0--alpha.1-0891b2)
+![License](https://img.shields.io/badge/License-GPLv3-0891b2)
+![Language](https://img.shields.io/badge/Language-Python%20%2B%20Aetherra-8b5cf6)
+![Responsible AI](https://img.shields.io/badge/Responsible%20AI-Policies%20Published-22c55e)
 
-<p align="center">
-  <strong>The Next-Generation AI-Native Development Environment</strong><br>
-  Where intelligence meets creativity, and code comes alive.
-</p>
+Aetherra pairs a lightweight Hub (APIs + metrics) with the Lyrixa AI assistant, pluggable memory systems, intent‑driven workflow language (`.aether`), and observability surfaces designed from day one. This repository is an **early alpha**: interfaces and metrics may change without deprecation. See `docs/ALPHA_READINESS.md` for current scope and limitations.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge" alt="Status"/>
-  <img src="https://img.shields.io/badge/Version-4.0.0-0891b2?style=for-the-badge" alt="Version"/>
-  <img src="https://img.shields.io/badge/Intelligence-Phase%206%20Complete-8b5cf6?style=for-the-badge" alt="AI Enhanced"/>
-</p>
+## Table of Contents
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Responsible%20AI-Compliant-22c55e" alt="Responsible AI"/>
-  <img src="https://img.shields.io/badge/License-GPL%20v3-0891b2" alt="License"/>
-  <img src="https://img.shields.io/badge/Language-Aetherra%20%2B%20Python-8b5cf6" alt="Language"/>
-</p>
-
----
-
-## Roadmap Status
-
-- Active: Quantum Roadmap v1.0 — see `docs/roadmap/aetherra_quantum_roadmap_v_1.md` (Status: ACTIVE)
+1. Overview
+1. Core Capabilities (Alpha)
+1. Architecture Snapshot
+1. Quick Start
+1. Metrics & Observability
+1. Alpha Limitations & Road to Beta
+1. Workflow Language (`.aether`)
+1. Development & Tests
+1. Contributing & Community
+1. License & Notices
 
 ---
+## 1. Overview
 
-## 🚀 **What is Aetherra?**
 
-**Aetherra** is a revolutionary AI-native development environment that transforms how you create, think, and build software. With **Lyrixa** as your intelligent companion, Aetherra bridges the gap between human creativity and artificial intelligence.
+**Goal:** Provide an AI-native development surface where code, memory, evaluation, and intelligent assistance unify behind explicit APIs and transparent metrics.
 
-> Note: The Discord bot is an internal Aetherra Labs tool and is excluded from public releases. Community builds do not include or require Discord integration.
+Core design principles:
 
-### **🚀 Latest Enhancement: Major System Overhaul (August 2025)**
+- Explicit feature gating via environment flags (secure by default)
+- Deterministic fallbacks when upstream models are unavailable
+- Early instrumentation (Prometheus-first) for every new subsystem
+- Human-readable workflow & memory artifacts (auditable evolution)
 
-**MASSIVE DEPLOYMENT COMPLETED**: Aetherra has undergone the largest system integration in its history:
+---
+## 2. Core Capabilities (Alpha)
 
-#### **🤖 Discord Bot Integration (Internal-only)**
-- This subsystem is for Aetherra Labs internal use and is not shipped in public releases.
-- **1,424-line Discord Bot**: Full-featured Lyrixa bot with AI integration
-- **Multi-Server FastAPI**: Dual server architecture (ports 8008, 8686)
-- **GitHub Monitoring**: Automated repository tracking and notifications
-- **Auto-Moderation**: Intelligent content filtering and community management
-- **Comprehensive Commands**: `/asklyrixa`, `/reflect`, `/goals`, `/plugins` and more
-- **AI Conversation**: Direct Discord integration with Aetherra.lyrixa.assistant
-- **Fallback System**: Simple_lyrixa backup for reliability
+Implemented and test-covered today:
 
-#### **🎨 Phase 3-6 GUI Evolution (NEW!)**
-- **Phase 3 Auto-Generator**: Automated GUI component generation
-- **Phase 4 Cognitive UI**: Intelligent interface adaptation
-- **Phase 5 Plugin UI**: Advanced plugin visualization system
-- **Phase 6 Personality**: Complete personality management interface
-- **Web Panel Integration**: Modern HTML interfaces for each phase
+| Area                        | Capability                                      | Notes                                               |
+| --------------------------- | ----------------------------------------------- | --------------------------------------------------- |
+| Chat                        | `/api/lyrixa/chat`, fallback offline generation | Streaming & upstream gated by env flags             |
+| Memory Narratives           | `/api/memory/narratives`                        | Stub narrative list (expands in beta)               |
+| Trainer/Eval (In‑Memory)    | `/api/trainer/*`                                | Simulated jobs + evals; lifecycle + metrics         |
+| Quantum / Coherence Signals | `/metrics`                                      | Gauges & counters for quantum/coherence model stubs |
+| Per-Principal Metrics       | Prometheus labels                               | Per-stream gauge & latency surfaces                 |
+| Workflow Language           | `.aether` signed workflows                      | Signing & static verification tasks                 |
+| Ownership Memory            | Seed + recall tests                             | Ensures identity & attribution continuity           |
+| Safety Surface              | Policy snapshot + redactions                    | Headers + DP/flag disclosure                        |
 
-#### **🧠 Complete Intelligence System (RESTORED)**
-- **Multi-Provider AI**: OpenAI, Anthropic, and local model support
-- **Lyrixa Full Intelligence**: Complete cognitive processing engine
-- **Memory Integration**: Advanced persistent memory systems
-- **Plugin Architecture**: Comprehensive plugin management
-- **Hub Integration**: Plugin marketplace connectivity
+See CHANGELOG for incremental additions.
 
-#### **🔧 System Reliability (NEW!)**
-- **Restart Utilities**: 5-stage restart system with health checks
-- **Configuration Management**: Centralized config loading and validation
-- **Security Enhancement**: Protected Discord tokens and sensitive data
-- **Massive Cleanup**: 1.8M+ lines of legacy code removed
-- **Professional Structure**: Enterprise-grade organization and documentation
+---
+## 3. Architecture Snapshot
 
-### **🚀 Latest Enhancement: Quantum Memory Integration (July 2025)**
+```text
+Hub (Flask) ──► API Routes (chat, trainer, memory, telemetry)
+            └─► Metrics Export (/metrics, Prometheus format)
 
-**BREAKTHROUGH ACHIEVEMENT**: Aetherra now features revolutionary quantum memory capabilities integrated directly into the neural interface:
+Lyrixa Core ─► Intelligence facade (multi-provider fallback)
+            └─► Memory Systems (persistent + quantum/QFAC optional)
 
-- **⚛️ Quantum Memory Bridge**: Advanced quantum-enhanced memory system with simulation and hardware support
-- **🧮 QFAC Phase 5 Complete**: Quantum-Enhanced Fractal Associative Clustering with real-time coherence monitoring
-- **🌐 Integrated Web Dashboard**: Quantum memory monitoring seamlessly integrated into the main neural interface
-- **📊 Real-Time Quantum Metrics**: Live coherence tracking, entanglement monitoring, and operation statistics
-- **🔬 Quantum Operations**: Native quantum encoding, recall, and coherence validation systems
-- **🌉 Unified Architecture**: Quantum capabilities accessible through existing Aetherra launcher system
+Trainer/Eval (alpha stub) ─► In‑memory queues + background simulation
 
-### **🚀 Latest Enhancement: Neural Interface System**
+Workflow Layer ─► Signed `.aether` specs → execution / validation tasks
 
-**NEW in v3.0.0**: Aetherra now features a cutting-edge neural interface with real-time AI interaction:
-
-- **🧠 Neural Chat Interface**: Cyberpunk-themed web interface with real-time AI conversation
-- **🔄 Dynamic Model Switching**: Switch between AI models (Ollama, GPT-4, Claude) without restart
-- **⚡ Ollama Prioritization**: Local AI models prioritized for enhanced privacy and speed
-- **� Auto-Scrolling Chat**: Seamless conversation flow with smooth auto-scrolling
-- **🌐 WebSocket Integration**: Real-time communication for instant AI responses
-- **� Cyberpunk UI Design**: Immersive interface with neural-themed styling and animations
-
-### **Core Philosophy**
-
-> *"Code should think, learn, and evolve alongside you."*
-
-Aetherra isn't just another IDE—it's an **AI-collaborative workspace** where:
-
-- 🧠 Your code understands context and intent
-- 🤖 AI assists in real-time without interruption
-- 📈 Projects grow smarter with every interaction
-- 🎯 Development becomes a conversation, not a struggle
-- [TOOL] The environment adapts to your workflow and improves over time
-
-### **First Look: Aetherra in Action**
-
-**Traditional Programming (Python):**
-
-```python
-# Calculate Fibonacci sequence
-
-def calculate_fibonacci(n):
-    if n <= 1:
-        return n
-    return calculate_fibonacci(n-1) + calculate_fibonacci(n-2)
-
-result = calculate_fibonacci(10)
-print(f"Fibonacci(10) = {result}")
+Observability ─► aetherra_trainer_*, chat/per-principal, quantum/coherence series
 ```
 
-**Aetherra Programming:**
-
-```aetherra
-
-goal: calculate fibonacci sequence
-
-think "I need the 10th fibonacci number"
-calculate fibonacci(10)
-display result with style="elegant"
-```
-
-**That's it!** No boilerplate, no syntax complexity. Pure intent-driven programming that reads like natural language but executes intelligently.
+Import conventions: use `aetherra_*` / `lyrixa_*` modules (see `docs/import_map.md`).
 
 ---
+## 4. Quick Start
 
-## ⚡ **Key Features**
+Prerequisites: Python 3.11+ (recommended), virtual environment activated.
 
-### � **Discord Bot Integration** (Internal-only; excluded from public releases)
+```powershell
+# Clone
+git clone https://github.com/AetherraLabs/Aetherra.git
+cd "Aetherra"
 
-- **Complete Discord Integration**: 1,424-line Discord bot with full Lyrixa AI capabilities
+# (Optional) create virtual env
+python -m venv .venv; .\.venv\Scripts\Activate.ps1
 
-- **Multi-Server Architecture**: Dual FastAPI servers (ports 8008, 8686) for scalability
-
-- **GitHub Monitoring**: Automated repository tracking with intelligent notifications
-
-- **Auto-Moderation**: AI-powered content filtering and community management
-
-- **Comprehensive Commands**: `/asklyrixa`, `/reflect`, `/goals`, `/plugins`, `/status`, `/memory`
-
-- **AI Conversation**: Direct Discord chat with Aetherra.lyrixa.assistant integration
-
-- **Fallback System**: Simple_lyrixa backup ensures 24/7 availability
-
-- **Security Protected**: All tokens and sensitive configs secured via .gitignore
-
-### �🧠 **Lyrixa AI Assistant**
-
-- **Neural Interface**: Cyberpunk-themed web interface with real-time AI interaction
-
-- **Multi-Model Support**: Seamless switching between Ollama, OpenAI, Anthropic, and local models
-
-- **Ollama Prioritization**: Local AI models (Mistral, Llama 3.2, Llama 3) prioritized for privacy
-
-- **FractalMesh Memory**: Advanced multi-dimensional memory system with episodic, semantic, and associative layers
-
-- **Quantum Memory Integration**: ⚛️ Revolutionary quantum-enhanced memory with coherence monitoring and real-time analytics
-
-- **Natural Language Programming**: Write code by describing what you want
-
-- **Context-Aware Suggestions**: AI that understands your project structure
-
-- **Persistent Memory**: Lyrixa remembers your preferences and coding style
-
-### 🌐 **Neural Interface**
-
-- **Real-Time Chat**: WebSocket-powered instant communication with AI models
-
-- **Dynamic Model Switching**: Change AI models without restarting the application
-
-- **Auto-Scrolling Chat**: Smooth conversation flow with automatic message scrolling
-
-- **Cyberpunk Aesthetic**: Immersive neural-themed design with glowing animations
-
-- **System Vitals**: Live monitoring of AI core status and memory systems
-
-- **Command Palette**: Quick access to advanced neural interface commands
-
-- **Quantum Memory Tab**: ⚛️ Integrated quantum memory monitoring with real-time coherence tracking and operation analytics
-
-### 🧠 **FractalMesh Memory System**
-
-- **Multi-Dimensional Memory**: Episodic, semantic, procedural, and associative memory layers
-
-- **Temporal Patterns**: Advanced timeline management with narrative continuity tracking
-
-- **Concept Clustering**: Thematic memory organization with concept evolution tracking
-
-- **Pattern Matching**: Analogical reasoning with cross-context connection discovery
-
-- **Memory Reflection**: Self-analyzing memory system with contradiction detection
-
-- **Fractal Architecture**: Scalable memory structure that maintains coherence across scales
-
-#### ⚛️ QFAC Hybrid Memory (Quantum-Enhanced)
-
-
-- Modes: classical (default), hybrid, quantum
-- Configure via env: `AETHERRA_QFAC_MODE=classical|hybrid|quantum`
-- Optional OS registration: set `AETHERRA_QFAC_IN_OS=1` to register QFAC alongside the core memory engine during OS launch
-- CLI/demo: see `Aetherra/aetherra_core/memory/qfac_launcher.py` for demo, status, analyze, and benchmark commands
-- Dashboard: module-level blueprint available; fallback stub ensures headless runs don’t fail
-
-
-Quick test (PowerShell):
-
-- Launch OS with QFAC registered: `$env:AETHERRA_QFAC_IN_OS='1'; python aetherra_os_launcher.py`
-- Run unit tests for QFAC: `pytest -q tests/unit/test_qfac_modes.py`
-
-
-#### 🌉 **Unified Cognitive Integration**
-
-**NEW**: FractalMesh is now fully integrated across all Lyrixa systems:
-
-- **🗣️ Conversation Manager**: All conversations are automatically stored and retrieved with contextual memory
-- **🌉 LyrixaCore Interface Bridge**: Unified cognitive interface with memory-enhanced decision making
-- **🧠 Ethical Memory Validation**: All memories go through ethical and coherence validation before storage
-- **🔍 Intelligent Retrieval**: Context-aware memory retrieval enhances all AI interactions
-- **📊 Memory Analytics**: Real-time memory health monitoring and coherence assessment
-- **🔄 Cross-System Continuity**: Memories persist and evolve across all Lyrixa subsystems
-
-### 🎨 **Beautiful Interface**
-
-- **Crystal Blue & Jade Green**: Sophisticated color palette for focus and creativity
-
-- **Multi-Panel Workspace**: Code, chat, and project view in harmony
-
-- **Adaptive Themes**: Dark/Light modes that adjust to your environment
-
-- **Responsive Design**: Works seamlessly on desktop, laptop, and tablet
-
-### [TOOL] **Advanced Development Tools**
-
-- **Aetherra Language**: Custom DSL for AI-human collaboration
-
-- **Plugin Ecosystem**: Extensible architecture for unlimited customization
-
-- **Enhanced Version Control**: Git workflows enhanced with AI insights
-
-- **Real-time Collaboration**: Share projects with AI-powered assistance
-
-### �️ **Enterprise-Grade Security System**
-
-- **API Key Protection**: Military-grade encryption with automatic rotation and leak detection
-
-- **Memory Security**: Advanced leak detection with performance monitoring and automated cleanup
-
-- **Continuous Monitoring**: 24/7 security scanning with automated threat response
-
-- **Audit Logging**: Comprehensive security event tracking and analysis
-
-### �🚀 **Performance & Reliability**
-
-- **Zero-Config Setup**: Works out of the box with intelligent defaults
-
-- **Cross-Platform**: Windows, macOS, and Linux native support
-
-- **Privacy-First**: Local AI models for sensitive development work
-
-- **Production Ready**: Battle-tested architecture with comprehensive error handling
-
----
-
-
----
-
-## 🧩 **Modular Import Structure**
-
-**Aetherra** now uses a fully modular Python import structure. All imports should use the canonical modular paths:
-
-```python
-from aetherra_core.memory import FractalEncoder
-from lyrixa_core.plugins import PluginManager
-from Aetherra.plugins.agent_adapters.agent_base import AgentBase
-```
-
-**Valid import prefixes:**
-- `Aetherra.`
-- `Lyrixa.`
-- `aetherra_core.`
-- `lyrixa_core.`
-- Relative imports (e.g., `from .module import X`)
-
-**Invalid/deprecated:**
-- Absolute imports outside these namespaces
-- Legacy paths (e.g., `from core.plugin_api import ...`)
-
-### Example: Canonical Imports
-
-```python
-# Good:
-from aetherra_core.memory.fractal_encoder import FractalEncoder
-from lyrixa_core.plugins.plugin_manager import PluginManager
-
-# Bad (deprecated):
-from core.plugin_api import register_plugin
-```
-
-### Architecture Diagram (Simplified)
-
-```plaintext
-Aetherra/
-├── aetherra_core/   # Core memory, kernel, system
-├── lyrixa_core/     # Lyrixa AI, plugins, interface
-├── plugins/         # Modular plugin ecosystem
-└── ...
-```
-
-For more details, see `docs/import_map.md`.
-
----
-## 🛡️ **Security & Privacy**
-
-### **Enterprise-Grade Security System**
-
-Aetherra includes a comprehensive security system designed to protect your development environment and sensitive data:
-
-### **🔐 API Key Security**
-- **Military-Grade Encryption**: All API keys stored with Fernet encryption
-- **Automatic Rotation**: Configurable key rotation (default: 30 days)
-- **Leak Detection**: Continuous monitoring for potential key exposure
-- **Memory-Safe Handling**: Keys never stored in plain text in memory
-- **Secure Access**: Keys accessed through controlled API calls only
-
-### **🧠 Memory Management**
-- **Advanced Leak Detection**: Real-time memory leak monitoring using tracemalloc
-- **Performance Optimization**: Automatic garbage collection and cleanup
-- **Context Tracking**: Memory usage monitoring per operation
-- **Resource Management**: Automated cleanup of unused objects
-- **Performance Metrics**: Detailed memory usage reports and analytics
-
-### **🔍 Continuous Security Monitoring**
-- **24/7 Security Scanning**: Automated threat detection and response
-- **File Permission Monitoring**: Checks for insecure file permissions
-- **Suspicious Activity Detection**: Monitors for potential security threats
-- **Comprehensive Audit Logging**: Detailed security event tracking
-- **Automated Response**: Self-healing security system with auto-cleanup
-
-### **🛡️ Security Features**
-- **Zero-Configuration**: Enterprise security works out of the box
-- **Cross-Platform**: Security system supports Windows, macOS, and Linux
-- **Privacy-First**: Local processing with optional cloud integration
-- **Production-Ready**: Battle-tested security measures for enterprise use
-
-### **Quick Security Setup**
-
-```bash
-# Initialize security system
-python setup_security.py
-
-# Test security integration
-python demo_security_integration.py
-
-# Run security tests
-python test_security_system.py
-```
-
-### **Security Documentation**
-- [🛡️ Security Guide](SECURITY.md) - Complete security documentation
-- [🔐 API Key Management](docs/api-keys.md) - Key management best practices
-- [🧠 Memory Security](docs/memory-security.md) - Memory leak prevention
-- [🔍 Security Monitoring](docs/security-monitoring.md) - Monitoring and alerts
-
-### 📜 Policies
-
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Governance](GOVERNANCE.md)
-- [Support](SUPPORT.md)
-- [Privacy](PRIVACY.md)
-
----
-
-## 🎯 **Quick Start**
-
-### **Installation**
-
-```bash
-
-# Clone the repository
-git clone https://github.com/your-username/Aetherra.git
-cd Aetherra
-
-# Install dependencies
+# Install (placeholder – adjust when pyproject/req file finalized)
 pip install -r requirements.txt
 
-# Optional: Configure AI providers
-export OPENAI_API_KEY="your-api-key-here"  # Linux/macOS
-# OR for Windows PowerShell:
-$env:OPENAI_API_KEY="your-api-key-here"
+# Run Hub (headless)
+python aetherra_hub_server.py
+
+# Enable chat + streaming (temporary shell scope)
+$env:AETHERRA_AI_API_ENABLED='1'
+$env:AETHERRA_AI_API_STREAM='1'
+
+# Call a chat endpoint
+python - <<'PY'
+import requests;print(requests.post('http://localhost:3017/api/lyrixa/chat',json={'message':'hello alpha'}).json())
+PY
 ```
 
-### **Launch Aetherra**
+Trainer/eval demo (ephemeral):
 
-```bash
-# Start the complete Aetherra OS experience (RECOMMENDED)
-python aetherra_os_launcher.py
-
-# Or start the Lyrixa interface directly
-python Aetherra/lyrixa/launcher.py
-
-# Or launch specific components:
-python aetherra_startup.py                    # Core system startup
-python aetherra_os.py                         # Operating system kernel
-python aetherra_service_registry.py           # Service coordination
+```powershell
+$env:AETHERRA_TRAINER_ENABLED='1'
+python - <<'PY'
+import requests,time;port=3023
+j=requests.post(f'http://localhost:{port}/api/trainer/jobs',json={'task':'sft'}).json();print(j)
+time.sleep(1)
+print(requests.get(f'http://localhost:{port}/api/trainer/jobs').json())
+print('metrics sample:');print('\n'.join(requests.get(f'http://localhost:{port}/metrics').text.splitlines()[:12]))
+PY
 ```
 
-### **🧠 Access the Neural Interface**
-
-After launching, access the neural interface through your web browser:
-
-```
-http://localhost:5000/neural_interface
-```
-
-**Features available in the neural interface:**
-- 🎭 Cyberpunk-themed chat interface with real-time AI interaction
-- 🔄 Dynamic model switching (Ollama, GPT-4, Claude) without restart
-- 📜 Auto-scrolling chat with smooth animations
-- ⚡ Local Ollama models prioritized for enhanced privacy
-- 🌐 WebSocket-powered instant responses
-- 💫 Neural-themed UI with glowing effects and system vitals
-
-### **🧠 Test the Intelligence System**
-
-```python
-# Test the enhanced intelligence capabilities with FractalMesh memory
-from Aetherra.lyrixa.intelligence import LyrixaIntelligence
-from Aetherra.lyrixa.memory.fractal_mesh.base import FractalMeshEngine
-
-# Initialize intelligence and memory systems
-intelligence = LyrixaIntelligence()
-memory_engine = FractalMeshEngine()
-
-# Analyze a coding context with memory integration
-context = {
-    "type": "code_refactoring",
-    "language": "python",
-    "complexity": "medium",
-    "project_history": "web_application"
-}
-
-# Store context in FractalMesh memory
-memory_fragment = memory_engine.store_experience(
-    content=context,
-    fragment_type="procedural",
-    confidence=0.8
-)
-
-# Analyze with pattern recognition
-analysis = intelligence.analyze_context(context)
-prediction = intelligence.predict_outcome("refactor_code", context)
-
-# Retrieve similar past experiences
-similar_experiences = memory_engine.find_analogous_experiences(
-    context, similarity_threshold=0.7
-)
-
-print("Intelligence Analysis:", analysis)
-print("Outcome Prediction:", prediction)
-print("Similar Past Experiences:", similar_experiences)
-print("Memory Fragment ID:", memory_fragment.fragment_id)
-```
-
-### **Your First Aetherra Project**
-
-```aetherra
-
-# Save as: hello_world.aether
-goal: create a smart greeting system
-
-when user_arrives:
-    think "What kind of greeting would be appropriate?"
-    greet user with style="warm"
-    remember user.name for future interactions
-
-if time.is_morning():
-    say "Good morning! Ready to build something amazing?"
-else:
-    say "Hello! What can we create together today?"
-```
-
-Run it with:
-
-```bash
-lyrixa run hello_world.aether
-```
+More environment flags and safe defaults: `docs/ALPHA_READINESS.md`.
 
 ---
 
-## 🏗️ **Project Structure**
+## 5. Metrics & Observability
 
-**🚀 Major System Overhaul (August 2025)**: Complete integration with Discord Bot and Phase 6 deployment!
+Prometheus text endpoint: `/metrics` (Hub).
 
-```plaintext
-Aetherra/
-├── 📁 Aetherra/               # Core Aetherra system
-│   ├── 🧠 lyrixa/            # Lyrixa AI assistant with enhanced intelligence
-│   │   ├── launcher.py       # Main Lyrixa interface launcher
-│   │   └── intelligence/     # 🔥 Complete intelligence system
-│   ├── 🎨 lyrixa_core/       # Core Lyrixa components
-│   │   ├── gui/              # Phase 3-6 GUI implementations
-│   │   │   ├── phase3_auto_generator.py
-│   │   │   ├── phase4_cognitive_ui.py
-│   │   │   ├── phase5_plugin_ui.py
-│   │   │   └── phase6_personality.py
-│   │   └── intelligence/     # Full intelligence core
-│   ├── 🔧 aetherra_core/     # Core system components
-│   │   ├── config/           # Configuration management
-│   │   └── engine/           # System engine
-│   └── 🌐 api/               # RESTful API endpoints
-├── 🤖 Discord Bot/           # Internal-only (excluded from public releases)
-│   ├── lyrixa_bot.py        # Main Discord bot (internal)
-│   ├── lyrixa_bot_backup.py # Backup bot implementation (internal)
-│   ├── requirements.txt     # Bot dependencies (internal)
-│   ├── .env.example         # Environment template (internal)
-│   └── README.md            # Discord bot documentation (internal)
-├── 🔌 plugins/              # Plugin ecosystem
-│   ├── memory_monitor.aetherplugin
-│   └── network_analyzer.aetherplugin
-├── 📁 config/               # ⚙️ Configuration files
-│   └── config.json         # 🔥 Restored central configuration
-├── �️ System Files/         # Core system utilities
-│   ├── aetherra_os_launcher.py    # 🔥 Main OS launcher
-│   ├── aetherra_startup.py        # System startup
-│   ├── restart_aetherra.py        # 🔥 Restart utilities
-│   └── aetherra_service_registry.py # Service coordination
-├── 📁 Unused/               # Legacy and archived components
-└── 📁 test_*.py             # Comprehensive test suite
-```
+Key series (alpha):
 
-### **🎯 Recent Major Achievements**
-- **[OK] Discord Bot Deployed** - Complete 1,424-line Discord integration with AI
-- **[OK] Phase 6 GUI Complete** - All GUI phases implemented and functional
-- **[OK] Intelligence System Restored** - Full multi-provider AI system operational
-- **[OK] Hub Integration Active** - Plugin marketplace connectivity established
-- **[OK] System Reliability Enhanced** - Restart utilities and health monitoring
-- **[OK] Security Hardened** - Protected tokens and sensitive configurations
-- **[OK] Massive Cleanup** - 1.8M+ lines of legacy code removed and organized
-- **[OK] Production Ready** - Enterprise-grade architecture and documentation
+- `aetherra_trainer_enabled`, `aetherra_trainer_jobs_total`, `aetherra_trainer_evals_total`, `aetherra_trainer_eval_runs_total`, `aetherra_trainer_eval_last_score`
+- Chat per-principal gauges & duration histograms
+- Quantum/coherence gauges (simulation values unless hardware attached)
+
+Export is intentionally stable in naming, but labels/value semantics may evolve before beta.
 
 ---
 
-## 🎨 **Design Language**
+## 6. Alpha Limitations & Road to Beta
 
-Aetherra's visual identity embodies clarity and intelligence:
+Summary (full detail: `docs/ALPHA_READINESS.md`):
 
-### **Color Palette**
-- **🔵 Crystal Blue** (`#0891b2`): Trust, clarity, technological precision
-- **🟢 Jade Green** (`#22c55e`): Growth, intelligence, natural harmony
-- **🟣 Intelligence Purple** (`#8b5cf6`): AI capabilities, creativity
-- **⚫ Deep Space** (`#0f172a`): Focus, sophistication
-
-### **Typography & Interface**
-- **Clean, Modern Fonts**: Optimized for code readability
-- **Minimalist Design**: Focus on content and creativity
-- **Adaptive Spacing**: Comfortable for long coding sessions
-- **Accessible Contrast**: WCAG AA compliant color combinations
+| Aspect             | Current Limitation               | Planned (Beta)                              |
+| ------------------ | -------------------------------- | ------------------------------------------- |
+| Trainer/Eval       | In-memory only                   | Persistent store + cancel/retry             |
+| Evaluation Scoring | Deterministic placeholder (0.9)  | Pluggable metrics + dataset registry        |
+| Federation         | Announce/sync return 501 (stubs) | Secure peer handshake + signing enforcement |
+| Narratives         | Static stub list                 | Query + enrichment pipeline                 |
+| Model Providers    | Fallback mock when unreachable   | Explicit provider status endpoint           |
+| Access Control     | No multi-tenant isolation        | Token / principal level quotas & gating     |
 
 ---
 
-## 📚 **Documentation**
+## 7. Workflow Language (`.aether`)
 
-### **Getting Started**
-- [🚀 Installation Guide](docs/installation.md)
-- [📖 First Steps Tutorial](docs/tutorial.md)
-- [🔤 Aetherra Language Reference](docs/language.md)
-- [🤖 Lyrixa Assistant Guide](docs/lyrixa.md)
+Workflows define goals, triggers, memory operations, AI tasks and actions. Files are cryptographically signed and can be statically verified. See sample workflows under `workflows/` and signing utility (`tools/sign_aether.py`).
 
-### **Advanced Topics**
-- [🔌 Plugin Development](docs/plugins.md)
-- [🧠 AI Model Configuration](docs/ai-setup.md)
-- [🎨 Customization Guide](docs/customization.md)
-- [🏗️ Architecture Overview](docs/architecture.md)
-
-- [⚛️ QFAC Mode Guide](docs/QFAC_MODE_GUIDE.md)
-
-### **Developer Resources**
-
-- [📡 API Documentation](docs/api.md)
-- [🤝 Contributing Guidelines](docs/contributing.md)
-- [[TOOL] Development Setup](docs/development.md)
-- [📋 Changelog](docs/changelog.md)
-
-- [📘 Project Overview](docs/PROJECT_OVERVIEW.md)
-- [💬 Lyrixa Chat Endpoint](docs/LYRIXA_CHAT_ENDPOINT.md)
-
-### ✅ Developer Tasks & Verification
-
-Run these from VS Code (Terminal > Run Task) or via PowerShell:
-
-- Verify Aetherra OS (Headless Smoke)
-  - VS Code Task: "Verify Aetherra OS (Headless Smoke)"
-  - PowerShell:
-
-    ```powershell
-    python tools/os_smoke.py
-    ```
-
-- Verify Claims (Capabilities Tests)
-  - VS Code Task: "Verify Claims (Capabilities Tests)"
-  - PowerShell:
-
-    ```powershell
-    pytest -q -o addopts= tests/capabilities
-    ```
-
-- Generate File Index (Docs Appendix)
-  - VS Code Task: "Generate File Index (Docs Appendix)"
-  - PowerShell:
-
-    ```powershell
-    python tools/generate_file_index.py --root . --output docs/FILE_INDEX.md
-    ```
-
-- Verify Docs Consistency (env vars + endpoints)
-  - VS Code Task: "Verify Docs Consistency"
-  - PowerShell:
-
-    ```powershell
-    python tools/verify_docs_consistency.py
-    ```
-
-- A/B Recall Benchmark (Try it)
-  - Compare classical vs quantum-enriched recall and optionally export Hub metrics.
-  - PowerShell:
-
-    ```powershell
-    # Optional: enable Hub export of A/B series (Prometheus) for /metrics
-    $env:AETHERRA_HUB_AB_METRICS='1'
-
-    # Run the benchmark with a few sample queries
-    python tools/ab_recall_benchmark.py --queries "hello world" "quantum memory" --emit 1
-
-    # To disable Hub A/B export later
-    $env:AETHERRA_HUB_AB_METRICS='0'
-    ```
-
-  - Notes:
-    - When enabled, Hub exposes A/B series such as aetherra_engine_ab_recall_total and per-bucket latency sums/counts.
-  - See roadmap PromQL examples in docs/roadmap/aetherra_quantum_roadmap_v_1.md for quick dashboard queries.
-
-Helpful docs:
-
-- QFAC modes and OS wiring: [docs/QFAC_MODE_GUIDE.md](docs/QFAC_MODE_GUIDE.md)
-- Complete subsystem map: [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)
-- Auto-generated file index: [docs/FILE_INDEX.md](docs/FILE_INDEX.md)
-
----
-
-## 🤝 **Community**
-
-Join the Aetherra community and help shape the future of AI-native development:
-
-- 🌟 **[Star us on GitHub](https://github.com/Zyonic88/Aetherra)** - Help others discover Aetherra
-- 💬 **[Join Discussions](https://github.com/Zyonic88/Aetherra/discussions)** - Share ideas and get help
-- 🐛 **[Report Issues](https://github.com/Zyonic88/Aetherra/issues)** - Help us improve
-- [TOOL] **[Contribute Code](docs/contributing.md)** - Build the future with us
-- 📚 **[Write Documentation](docs/docs-guide.md)** - Help others learn
-- 🐦 **[Follow us on X/Twitter](https://x.com/AetherraProject)** - Latest updates and news
-
-### **Stay Connected**
-
-- 🌐 **Website**: [aetherra.dev](https://aetherra.dev)
-- 🐦 **X/Twitter**: [@AetherraProject](https://x.com/AetherraProject)
-- 📁 **GitHub**: [Zyonic88/Aetherra](https://github.com/Zyonic88/Aetherra)
-
-### **Community Guidelines**
-
-- 🤖 **AI-Friendly**: We embrace AI assistance in all contributions
-- 🌍 **Inclusive**: Welcome developers of all skill levels
-- 🔒 **Privacy-Conscious**: Respect user data and privacy
-- 🚀 **Innovation-Focused**: Always pushing boundaries responsibly
-
----
-
-## 🚀 **Roadmap**
-
-### **Current Status: Phase 6 Complete; Discord Bot (internal-only) [OK]**
-
-**🎉 MASSIVE MILESTONE ACHIEVED (August 2025)**:
-
-#### **Discord Bot Integration [COMPLETE — Internal-only]**
-
-- [OK] **1,424-line Discord Bot** - Full-featured Lyrixa bot with comprehensive AI integration
-- [OK] **Multi-Server Architecture** - Dual FastAPI servers (ports 8008, 8686) for scalability
-- [OK] **GitHub Monitoring** - Automated repository tracking with intelligent notifications
-- [OK] **Auto-Moderation** - AI-powered content filtering and community management
-- [OK] **Comprehensive Commands** - `/asklyrixa`, `/reflect`, `/goals`, `/plugins`, `/status`, `/memory`
-- [OK] **Security Protected** - All tokens and sensitive configurations secured
-
-#### **Phase 3-6 GUI Evolution [COMPLETE]**
-
-- [OK] **Phase 3 Auto-Generator** - Automated GUI component generation system
-- [OK] **Phase 4 Cognitive UI** - Intelligent interface adaptation and learning
-- [OK] **Phase 5 Plugin UI** - Advanced plugin visualization and management
-- [OK] **Phase 6 Personality** - Complete personality management interface
-- [OK] **Web Panel Integration** - Modern HTML interfaces for all phases
-
-#### **System Infrastructure [COMPLETE]**
-
-- [OK] **Intelligence System Restored** - Multi-provider AI with full cognitive capabilities
-- [OK] **Hub Integration Active** - Plugin marketplace connectivity established
-- [OK] **Restart Utilities** - 5-stage restart system with comprehensive health checks
-- [OK] **Configuration Management** - Centralized config loading and validation
-- [OK] **Security Hardened** - Enterprise-grade security and token protection
-- [OK] **Massive Cleanup** - 1.8M+ lines of legacy code removed and organized
-
-### **Production Ready Features [ALL COMPLETE]**
-
-- [OK] **Neural Interface System** - Cyberpunk-themed web interface with real-time AI interaction
-- [OK] **Dynamic Model Switching** - Seamless switching between Ollama, GPT-4, and Claude models
-- [OK] **Enterprise Security System** - Military-grade API key protection and memory leak prevention
-- [OK] **FractalMesh Memory System** - Multi-dimensional memory with episodic, semantic, and associative layers
-- [OK] **Plugin Architecture** - Memory monitoring and network analysis plugins
-- [OK] **System Reliability** - Comprehensive restart utilities and health monitoring
-
-### **Next Phase: Enhancement & Expansion (Q4 2025)**
-
-- **🎯 Enhanced Discord Features** - Advanced bot commands and AI conversation modes
-- **📱 Mobile Discord Integration** - Mobile-optimized bot commands and interfaces
-- **☁️ Cloud Synchronization** - Backup and sync capabilities across devices
-- **👥 Team Collaboration** - Multi-developer workspace with shared AI sessions
-- **📊 Advanced Analytics** - Deep insights into AI interaction patterns and productivity
-
-### **Long-term Vision (2026+)**
-- **🧠 Aetherra 5.0** - Next-generation AI Operating System with autonomous capabilities
-- **🏢 Enterprise Suite** - Team management and enterprise-grade deployment tools
-- **🌍 AI Democratization** - Making intelligent development accessible to everyone
-- **🚀 Autonomous Development** - AI that can independently architect and implement features
-
-Aetherra aims to democratize software development by making AI-human collaboration as natural as thinking. We're building a future where anyone can bring their ideas to life through intelligent, adaptive tools.
-
----
-
-## 🏆 **Recognition**
-
-> *"Aetherra represents the next evolution in development environments - where AI doesn't just assist, but truly collaborates."*
-> — Developer Community
-
-- 🎯 **Zero Critical Issues** - Production ready codebase
-- 🧠 **AI-First Architecture** - Built for the AI age
-- 🎨 **Award-Worthy Design** - Beautiful and functional
-- 🚀 **Performance Optimized** - Fast, reliable, scalable
-
----
-
-## 📄 **License**
-
-Aetherra is released under the [GPL-3.0 License](LICENSE). We believe in open source and community-driven development.
-
-**Why GPL-3.0?**
-- [OK] Ensures Aetherra remains free and open
-- [OK] Requires derivative works to stay open source
-- [OK] Protects community contributions
-- [OK] Compatible with most open source projects
-
----
-
-## ⚖️ **Legal Disclaimer**
-
-**IMPORTANT LEGAL NOTICES - PLEASE READ CAREFULLY**
-
-### Software Disclaimer
-Aetherra is provided "AS IS" without warranty of any kind, express or implied. The developers and contributors make no warranties regarding:
-- **Functionality**: Software performance, accuracy, or reliability
-- **Security**: Protection against vulnerabilities or data breaches
-- **Compatibility**: Operation with specific systems or software
-- **Data Safety**: Prevention of data loss or corruption
-
-### AI-Generated Content Notice
-Aetherra utilizes artificial intelligence models that may:
-- Generate content that is inaccurate, biased, or inappropriate
-- Produce code that contains bugs, security vulnerabilities, or inefficiencies
-- Create outputs that may infringe on intellectual property rights
-- Return results that do not reflect the views or opinions of the project maintainers
-
-**Users are solely responsible for reviewing, validating, and testing all AI-generated content before use in production environments.**
-
-### Limitation of Liability
-In no event shall the authors, contributors, or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
-
-### Third-Party Services
-Aetherra integrates with external AI services (OpenAI, Anthropic, Google, etc.). Users are responsible for:
-- Complying with third-party terms of service
-- Understanding data sharing implications
-- Managing API costs and usage limits
-- Ensuring appropriate use of external services
-
-### Data Privacy
-While Aetherra includes local processing capabilities, some features may transmit data to external services. Users should:
-- Review privacy policies of integrated AI providers
-- Understand data retention and processing practices
-- Implement appropriate data protection measures
-- Comply with applicable privacy regulations (GDPR, CCPA, etc.)
-
-### Professional Use
-For commercial, enterprise, or mission-critical applications:
-- Conduct thorough testing and validation
-- Implement appropriate security measures
-- Consider professional support and legal review
-- Ensure compliance with industry regulations
-
----
-
-## 🙏 **Acknowledgments**
-
-Special thanks to:
-- The open source community for inspiration and foundations
-- AI providers (OpenAI, Anthropic, Google) for making intelligent development possible
-- Early adopters and beta testers for invaluable feedback
-- Contributors who believe in the vision of AI-native development
-
----
-
-<p align="center">
-  <strong>🌟 Aetherra — Where Code Awakens 🌟</strong><br>
-  <em>The intelligent development environment for the AI age</em>
-</p>
-
-<p align="center">
-  <a href="https://aetherra.dev">🌐 Live Website</a> •
-  <a href="https://github.com/Zyonic88/Aetherra">💻 GitHub</a> •
-  <a href="https://github.com/Zyonic88/Aetherra/discussions">💬 Discussions</a> •
-  <a href="https://github.com/Zyonic88/Aetherra/issues">🐛 Issues</a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Made%20with-💙%20Crystal%20Blue%20%26%20💚%20Jade%20Green-0891b2" alt="Made with love"/>
-</p>
-
----
-
-## 🌌 **Introducing `.aether` Workflows**
-
-`.aether` is Aetherra's revolutionary domain-specific language (DSL) designed for AI-native programming. It enables you to define workflows, goals, and actions in a human-readable format that Lyrixa can understand and execute.
-
-### **Why `.aether`?**
-
-- **Intent-Driven**: Focus on *what* you want to achieve, not *how* to do it.
-- **AI-Enhanced**: Leverages Lyrixa's intelligence to execute workflows seamlessly.
-- **Readable & Maintainable**: Designed to be as intuitive as natural language.
-
-
-### **Example Workflow: Daily Log Summarizer**
+Minimal example:
 
 ```aether
-plugin "daily_log_summarizer":
-  description: "Summarizes daily system logs and stores the digest in memory"
-
-  trigger:
-    schedule: daily at "22:00"
-    if memory.has("new_logs")
-
-  memory:
-    retrieve:
-      from: "system.logs.daily"
-      limit: 1d
-    store:
-      into: "summaries.logs.daily"
-
-  ai:
-    goal: "Summarize the key events from today’s logs"
-    model: gpt-4o
-    constraints:
-      - no duplicate entries
-      - include timestamps and severity levels
-    output: summary_text
-
-  actions:
-    - memory.save("summaries.logs.daily", summary_text)
-    - notify(user: "summary_ready", content: summary_text)
-
-  feedback:
-    expect: confirmation from user within 2h
-    if no_response:
-      escalate_to("admin_review_queue")
+goal: nightly memory digest
+think "summarize recent memory events"
+run trainer if metric.trainer_backlog < 5
+export report to path="reports/digest.txt"
 ```
 
+---
 
-### **How to Use `.aether` Workflows**
+## 8. Development & Tests
 
-1. **Create a Workflow**:
+Run capability suite (core behaviors + metrics assertions):
 
-   - Write your `.aether` code in a file (e.g., `my_workflow.aether`).
-   - Use the `.aether/examples/` directory for inspiration.
+```powershell
+pytest -q -o addopts= tests/capabilities
+```
 
-2. **Run the Workflow**:
-
-   - Use the Aetherra launcher to execute your workflow:
-
-     ```bash
-     python launchers/main.py
-     ```
-
-   - Input your `.aether` code or load it from a file.
-
-3. **Extend and Customize**:
-
-   - Modify existing workflows or create new ones to suit your needs.
-   - Leverage Lyrixa's memory, AI, and plugin systems for advanced functionality.
+Other helpful tasks (VS Code → Run Task): *Verify Aetherra OS (Headless Smoke)*, *Update System Index*, *Quality Gates*.
 
 ---
 
-## 🚀 **Latest Update: Phase 6 Complete; Discord Bot Integration (Internal-only) (December 2024)**
+## 9. Contributing & Community
 
-**Major system overhaul completed!** Aetherra has achieved a massive milestone with the completion of Phase 6 and production-ready Discord Bot integration:
+We welcome focused, test-backed contributions aligned with alpha scope.
 
-### **� Discord Bot Integration (Internal-only, 1,424 Lines)**
-- **Advanced AI Integration** - Multi-provider AI system (GPT-4, Claude, Gemini, Ollama) with intelligent fallback
-- **Auto-Moderation** - Smart content filtering with configurable severity levels
-- **GitHub Monitoring** - Real-time repository tracking with commit notifications and issue alerts
-- **Multi-Server Architecture** - Enterprise-grade scalability with per-server configuration
-- **Natural Language Commands** - Intuitive chat-based interaction with the full Aetherra ecosystem
-- **Plugin Integration** - Direct access to Aetherra's plugin ecosystem from Discord
+1. Open an issue tagged `proposal` or `alpha-feedback`.
+2. Keep PRs small; include capability / or metrics delta tests.
+3. Follow coding & policy guidelines (see `CODE_OF_CONDUCT.md`, `GOVERNANCE.md`).
 
-### **🎨 Phase 6 GUI System Complete**
-- **Auto-Generated UI** - Dynamic interface generation based on system state and user preferences
-- **Cognitive Interface** - Brain-computer interface simulation with neural pattern visualization
-- **Advanced Plugin UI** - Comprehensive plugin management with visual dependency mapping
-- **Personality Management** - AI personality configuration with behavioral pattern visualization
-- **Real-Time System Monitoring** - Live performance metrics and intelligence core status
+Useful docs:
 
-### **⚡ Technical Achievements**
-- **Complete Intelligence Restoration** - Full Lyrixa AI capabilities with advanced reasoning and memory
-- **Security Hardening** - Enterprise-grade security protocols with encrypted communication
-- **Production Ready** - Battle-tested with comprehensive error handling and monitoring
-- **Modular Architecture** - Plugin-based system with hot-swappable components
-- **Advanced Memory Systems** - Multi-dimensional memory with concept clustering and episodic timelines
+- Architecture: `docs/PROJECT_OVERVIEW.md`
+- Safe defaults / flags: `docs/ALPHA_READINESS.md`
+- QFAC modes (quantum memory): `docs/QFAC_MODE_GUIDE.md`
+- Changelog: `CHANGELOG.md`
+- Threat model & mitigations: `docs/THREAT_MODEL.md`
+- Key rotation appendix: `docs/KEY_ROTATION.md`
+- Packaging / provenance / SBOM: `docs/PACKAGING_AND_RELEASE.md`
+    - Provenance tag helper scripts: `tools/create_provenance_tag.py`, `tools/create_annotated_tag.py`
+- Dependency & license hygiene tooling: see `tools/` (`dependency_lock.py`, `enforce_lock_sync.py`, `vuln_scan.py`, `license_report.py`, `quality_gates.py`)
+- License policy (alpha stance & future tightening): `LICENSE_POLICY.md`
+- Project governance model & decision process: `GOVERNANCE.md`
 
-### **🎯 Current Status: Version 4.0.0 - Production Ready**
-- **1.8M+ Lines of Legacy Code** - Cleaned and optimized for peak performance
-- **Discord Bot Deployed** - Ready for multi-server enterprise deployment
-- **Phase 3-6 GUI Complete** - Full visual interface with cognitive elements
-- **Advanced AI Integration** - Multi-provider system with intelligent load balancing
+Cross-reference highlights:
 
-Access the neural interface at: `http://localhost:5000/neural_interface` after launching Aetherra!
+- Security posture: see `docs/THREAT_MODEL.md` (threat classes, mitigations, residual risks) and `docs/KEY_ROTATION.md` (signing key lifecycle & rotation procedure).
+- Supply chain & packaging: `docs/PACKAGING_AND_RELEASE.md` (SBOM generation, manifest signing, provenance tag helpers).
+- Governance & accountability: `GOVERNANCE.md` (roles, maintainer criteria, decision workflow).
+- License compliance evolution: `LICENSE_POLICY.md` (inventory today, roadmap for deny / override).
 
----
+Planned license enforcement environment flags (documented for forward compatibility, not all active yet):
 
-## 🎉 **Recent Project Modernization (July 2025)**
+- `LICENSE_DENY` – comma-separated list of SPDX IDs to hard-fail if present (future gate).
+- `LICENSE_FAIL_ON_UNKNOWN=1` – convert any UNKNOWN license entry to a failing gate once maturity threshold reached.
+- `LICENSE_UNKNOWN_MAX=N` – future soft ceiling for unknown count before warning escalates.
 
-**Major infrastructure overhaul completed!** The Aetherra project has undergone comprehensive modernization:
+If these variables are set early they are ignored gracefully until the corresponding enforcement script (`tools/enforce_license_policy.py`) lands.
 
-### **� Housekeeping Results**
-- **🗂️ 3,720 files archived** with organized categorization
-- **🧹 1,271 directories cleaned** including cache removal
-- **💾 Complete backup system** with 667 files preserved and verified
-- **⚡ Performance optimization** dramatically improving VS Code responsiveness
-- **🏗️ Professional structure** with logical organization and maintenance tools
-
-### **🧠 Intelligence Enhancement**
-- **Advanced cognitive engine** with pattern recognition and predictive analysis
-- **FractalMesh memory system** with multi-dimensional memory architecture
-- **Episodic timeline management** with narrative continuity and temporal patterns
-- **Concept clustering system** with thematic organization and evolution tracking
-- **Analogical reasoning engine** with cross-context pattern matching capabilities
-- **Adaptive learning system** that improves decision-making over time
-- **Context-aware processing** understanding project complexity and requirements
-- **Persistent memory** maintaining knowledge across development sessions
-
-### **�️ Security Implementation**
-- **Enterprise-grade security system** with military-grade API key encryption
-- **Memory leak detection** with automated cleanup and performance monitoring
-- **Continuous security monitoring** with 24/7 threat detection and response
-- **Comprehensive audit logging** for all security events and operations
-
-### **�🛠️ Developer Experience**
-- **Automated maintenance tools** for ongoing project health
-- **Comprehensive backup system** ensuring data safety and recovery
-- **Clean workspace** optimized for productivity and navigation
-- **Future-ready architecture** supporting continued growth and enhancement
-
-This modernization establishes Aetherra as a mature, professional-grade development environment ready for Phase 2 expansion while maintaining complete historical preservation and optimal performance.
+Star the repo and join discussions to influence beta priorities.
 
 ---
 
-## 🎉 **Recently Updated Structure**
+## 10. License & Notices
 
-**🗓️ July 12, 2025 - Major Housekeeping Complete!**
+Licensed under **GPL-3.0-or-later** (see `LICENSE`). All new contributions must retain SPDX headers where present.
 
-The project has been professionally reorganized with **comprehensive cleanup and modernization**:
+Key notices:
 
-- **📂 `archive/`** - 3,720 files systematically organized by type
-- **📂 `scripts/`** - All maintenance and utility tools consolidated
-- **📂 `config/`** - Centralized configuration management
-- **📂 `backups/`** - Complete project backup with verification
-- **[OK] All functionality preserved** - No breaking changes to core systems
+- AI outputs may be incomplete or imprecise; review before production use.
+- Some features (Discord bot, internal monitoring suites) are intentionally excluded from public builds.
+- Trademarks and branding remain property of their respective owners.
 
-👉 **Quick Start:** Use `python comprehensive_housekeeping_system.py` for project maintenance!
-
-📖 **Intelligence:** The enhanced `Aetherra/lyrixa/intelligence.py` provides advanced cognitive capabilities.
-
-🛡️ **Safety:** Complete backup system with `developer_backup_tools.py` ensures data protection.
+Standard disclaimer: Aetherra is provided "AS IS" without warranty (see GPLv3
+Sections 15–16). This README is informational and not legal advice. Aetherra is
+developed and stewarded by **Aetherra Labs and Contributors**. For attribution
+transparency see `NOTICE`; for dependency/license analysis see
+`LEGAL_COMPLIANCE.md`.
 
 ---
+© 2025 Aetherra Labs and Contributors

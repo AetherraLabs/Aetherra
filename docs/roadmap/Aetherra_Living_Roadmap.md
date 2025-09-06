@@ -197,3 +197,12 @@ This roadmap consolidates current plans across the OS, Lyrixa, memory/cognition,
 
 ## Changelog
 - 2025-08-11 — Initial living roadmap created; merged near‑term and medium/long‑term tracks; added scorecard & risk register.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

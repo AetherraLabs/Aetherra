@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 🧠 Aetherra Self-Directed File Intelligence System
 Core autonomous file organization and system optimization engine.
