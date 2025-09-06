@@ -1,0 +1,71 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to publish as a GitHub Release'
+        required: true
+      notes_file:
+        description: 'Optional path to release notes file (defaults to docs/RELEASE_NOTES_<tag>.md)'
+        required: false
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to create the release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve tag & notes path
+        id: meta
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"  # from push tag event
+          fi
+          # Allow override file; else derive conventional name
+          if [ -n "${{ github.event.inputs.notes_file }}" ]; then
+             CANDIDATE="${{ github.event.inputs.notes_file }}"
+          else
+             CANDIDATE="docs/RELEASE_NOTES_${TAG}.md"
+          fi
+          if [ -f "$CANDIDATE" ]; then
+             echo "notes_path=$CANDIDATE" >> "$GITHUB_OUTPUT"
+          else
+             echo "notes_path=" >> "$GITHUB_OUTPUT"
+             echo "::warning::Release notes file not found ($CANDIDATE). Using auto-generated body." 
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Create / Update Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: Aetherra ${{ steps.meta.outputs.tag }}
+          draft: false
+          prerelease: true
+          body_path: ${{ steps.meta.outputs.notes_path }}
+          body: |-
+            Aetherra ${{ steps.meta.outputs.tag }} (auto-generated summary)
+            If you expected detailed notes, add docs/RELEASE_NOTES_${{ steps.meta.outputs.tag }}.md and re-run via workflow_dispatch.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Attach integrity manifest (optional)
+        if: ${{ steps.meta.outputs.notes_path != '' && hashFiles('integrity_manifest.json') != '' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          files: |
+            integrity_manifest.json
+            sbom.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
