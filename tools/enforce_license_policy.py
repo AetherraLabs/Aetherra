@@ -154,8 +154,27 @@ def main(argv=None) -> int:
         trend_path = Path(os.getenv("LICENSE_TREND_LOG", "license_unknown_trend.log"))
         ts = datetime.now(timezone.utc).isoformat()
         trend_line = f"{ts} unknown={unknown_count} overrides={len(overrides)}\n"
+        # Append new line
         with trend_path.open("a", encoding="utf-8") as fp:
             fp.write(trend_line)
+        # Compute delta vs previous entry (if any)
+        try:
+            lines = trend_path.read_text("utf-8").strip().splitlines()
+            if len(lines) >= 2:
+                last = lines[-1]
+                prev = lines[-2]
+                # Extract unknown counts using simple parse
+                def extract_unknown(s: str) -> int:
+                    m = re.search(r"unknown=(\d+)", s)
+                    return int(m.group(1)) if m else -1
+                cur_u = extract_unknown(last)
+                prev_u = extract_unknown(prev)
+                if cur_u >= 0 and prev_u >= 0:
+                    delta = cur_u - prev_u
+                    direction = "down" if delta < 0 else ("up" if delta > 0 else "flat")
+                    print(f"[LICENSE_ENFORCE] trend_delta={delta} direction={direction} (prev={prev_u} -> cur={cur_u})")
+        except Exception:
+            pass
     except Exception:
         # Non-fatal; silently ignore logging issues
         pass
