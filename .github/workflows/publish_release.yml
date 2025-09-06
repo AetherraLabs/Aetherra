@@ -26,12 +26,29 @@ jobs:
         id: meta
         shell: bash
         run: |
-          if [ -n "${{ github.event.inputs.tag }}" ]; then
-            TAG="${{ github.event.inputs.tag }}"
+          RAW_INPUT="${{ github.event.inputs.tag }}"
+          if [ -n "$RAW_INPUT" ]; then
+            TAG="$RAW_INPUT"
           else
             TAG="${GITHUB_REF_NAME}"  # from push tag event
           fi
-          # Allow override file; else derive conventional name
+          # Strip refs/tags/ prefix if present
+          TAG="${TAG#refs/tags/}"
+          # If the user pasted extra words (e.g. 'tag: v0.1.0-alpha.2 notes_file: X'), extract first token that looks like a tag
+          if [[ "$TAG" == *" "* ]]; then
+            for tok in $TAG; do
+              if [[ $tok =~ ^v[0-9].* ]]; then TAG="$tok"; break; fi
+            done
+          fi
+          # Basic validation (alnum, dots, dashes, v prefix)
+            if [[ ! $TAG =~ ^v[0-9A-Za-z._-]+$ ]]; then
+              echo "::error::Sanitized tag '$TAG' is not a valid release tag format"; exit 1;
+            fi
+          git fetch --tags --quiet
+          if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "::error::Tag '$TAG' does not exist in repository"; exit 1;
+          fi
+          # Determine notes file
           if [ -n "${{ github.event.inputs.notes_file }}" ]; then
              CANDIDATE="${{ github.event.inputs.notes_file }}"
           else
@@ -41,7 +58,7 @@ jobs:
              echo "notes_path=$CANDIDATE" >> "$GITHUB_OUTPUT"
           else
              echo "notes_path=" >> "$GITHUB_OUTPUT"
-             echo "::warning::Release notes file not found ($CANDIDATE). Using auto-generated body." 
+             echo "::warning::Release notes file not found ($CANDIDATE). Using auto-generated body."
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
