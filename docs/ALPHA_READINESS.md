@@ -1,7 +1,7 @@
 # Alpha Readiness & Usage Guide
 
-Version: 0.1.0-alpha.1
-Date: 2025-09-05
+Version: 0.1.0-alpha.2
+Date: 2025-09-06
 
 This document captures the scope, constraints, and safe operational defaults for the Aetherra alpha release.
 

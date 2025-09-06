@@ -1,191 +1,168 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
-"""License Policy Enforcement (Warn Mode / Alpha)
+"""Lightweight license policy enforcement / telemetry.
 
-Reads licenses_report.json (from tools/license_report.py) and applies baseline
-policy checks. Currently non-fatal unless explicit env flags elevate.
+Reads the JSON produced by tools/license_report.py (path via env
+LICENSE_REPORT_JSON or default licenses_report.json) and emits trend
+metrics for UNKNOWN licenses plus optional gating rules.
 
-Env Vars:
-  LICENSE_REPORT_JSON       : path to JSON report (default licenses_report.json)
-  LICENSE_DENY              : comma/space separated substrings that if found in a license id cause failure (future, now warn)
-  LICENSE_FAIL_ON_UNKNOWN   : 1 to fail if any UNKNOWN licenses (default 0)
-  LICENSE_UNKNOWN_MAX       : integer threshold; warn if above (default None)
-  LICENSE_OVERRIDES_FILE    : path to overrides YAML (default license_overrides.yml)
+State is tracked in a small sidecar file (licenses_unknown_history.json)
+containing an array of historical UNKNOWN counts with timestamps.
 
-Overrides file schema (YAML):
-  packages:
-    <name>:
-      license: <SPDX-ID>
-      reason: <text>
-      approved_by: <string>
+Environment variables (all optional, alpha-stage):
+  LICENSE_REPORT_JSON          : path to license report (default licenses_report.json)
+  LICENSE_UNKNOWN_TOLERANCE    : integer allowed increase (delta) in UNKNOWN count before failing gate (default 0 => any increase beyond tolerance fails if gating enabled)
+  LICENSE_UNKNOWN_TREND_FAIL   : '1' to enable failing when UNKNOWN increases beyond tolerance
+  LICENSE_UNKNOWN_ABS_MAX      : absolute maximum UNKNOWN count allowed (fail if current > value)
+  LICENSE_UNKNOWN_FAIL_IF_GT   : synonym for ABS_MAX (checked first if set)
+  LICENSE_ENFORCE_HISTORY_FILE : override history file path (default licenses_unknown_history.json)
 
 Exit codes:
-  0 success (or only warnings)
-  2 policy violation (when fail flags active)
+  0 success / non-fatal metrics
+  1 policy violation (trend up beyond tolerance or absolute max exceeded)
+  2 usage / file issues (missing report etc.)
 
-This script is intentionally minimal; it will evolve for Beta (deny categories,
-prohibited runtime set differentiation, provenance embedding).
+Outputs key telemetry lines prefixed with [LICENSE_ENFORCE] so that
+quality_gates.py or external collectors can parse easily.
 """
 
 from __future__ import annotations
 
 import json
 import os
-import re
-import sys
-from datetime import datetime, timezone
+import time
 from pathlib import Path
-from typing import Any, Dict
-
-try:
-    import yaml  # type: ignore
-except Exception:  # pragma: no cover - optional dependency
-    yaml = None
+from typing import Any
 
 
-def load_json(path: Path) -> Any:
+def load_report(path: Path) -> list[dict[str, Any]]:
     try:
-        return json.loads(path.read_text("utf-8"))
-    except Exception as e:
-        print(f"[LICENSE_ENFORCE][ERROR] Failed to read {path}: {e}", file=sys.stderr)
-        return None
-
-
-def load_overrides(path: Path) -> Dict[str, Dict[str, str]]:
-    if not path.is_file():
-        return {}
-    if yaml is None:
-        print(
-            "[LICENSE_ENFORCE][WARN] PyYAML not installed; cannot parse overrides (ignored)"
-        )
-        return {}
-    try:
-        data = yaml.safe_load(path.read_text("utf-8")) or {}
-        pkgs = data.get("packages") or {}
-        out: Dict[str, Dict[str, str]] = {}
-        for name, meta in pkgs.items():
-            if not isinstance(meta, dict):
-                continue
-            lic = meta.get("license")
-            if lic:
-                out[name.lower()] = {
-                    "license": str(lic),
-                    "reason": str(meta.get("reason", "")),
-                }
-        return out
+        return json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        print(f"[LICENSE_ENFORCE][ERROR] Report missing: {path}")
+        raise
     except Exception as e:  # pragma: no cover - defensive
-        print(f"[LICENSE_ENFORCE][WARN] Failed to parse overrides: {e}")
-        return {}
+        print(f"[LICENSE_ENFORCE][ERROR] Failed to parse {path}: {e}")
+        raise
 
 
-def normalize_license(raw: str | None) -> str:
-    if not raw:
-        return "UNKNOWN"
-    # Collapse excessive whitespace / punctuation phrases
-    s = re.sub(r"\s+", " ", raw.strip())
-    # Shorten common verbose headers (best effort)
-    return s[:200]
+def count_unknown(rows: list[dict[str, Any]]) -> int:
+    return sum(1 for r in rows if (r.get("license") or "").strip().upper() == "UNKNOWN")
 
 
-def main(argv=None) -> int:
+def load_history(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(data, list):
+            return data
+    except Exception:  # pragma: no cover
+        pass
+    return []
+
+
+def append_history(path: Path, count: int) -> list[dict[str, Any]]:
+    hist = load_history(path)
+    hist.append({"ts": int(time.time()), "unknown": count})
+    # Retain only last 50 entries to keep file small
+    hist = hist[-50:]
+    try:
+        path.write_text(json.dumps(hist, indent=2), encoding="utf-8")
+    except Exception as e:  # pragma: no cover
+        print(f"[LICENSE_ENFORCE][WARN] Failed to write history file: {e}")
+    return hist
+
+
+def main() -> int:
     report_path = Path(os.getenv("LICENSE_REPORT_JSON", "licenses_report.json"))
-    if not report_path.is_file():
-        print(
-            f"[LICENSE_ENFORCE][WARN] Missing {report_path}; nothing to enforce (pass)"
-        )
-        return 0
-    data = load_json(report_path)
-    if not isinstance(data, dict):
-        return 0
-    rows = data.get("rows") or []
-    overrides = load_overrides(
-        Path(os.getenv("LICENSE_OVERRIDES_FILE", "license_overrides.yml"))
+    history_path = Path(
+        os.getenv("LICENSE_ENFORCE_HISTORY_FILE", "licenses_unknown_history.json")
     )
 
-    deny_terms_raw = os.getenv("LICENSE_DENY", "").replace(",", " ")
-    deny_terms = [t.lower() for t in deny_terms_raw.split() if t.strip()]
-    fail_on_unknown = os.getenv("LICENSE_FAIL_ON_UNKNOWN", "0") == "1"
-    unknown_max = os.getenv("LICENSE_UNKNOWN_MAX")
-    unknown_threshold = (
-        int(unknown_max) if unknown_max and unknown_max.isdigit() else None
-    )
-
-    unknown_count = 0
-    violations: list[str] = []
-    warnings: list[str] = []
-
-    for r in rows:
-        name = str(r.get("name", "")).strip()
-        lic_raw = r.get("license")
-        lic = normalize_license(lic_raw)
-        if name.lower() in overrides and lic == "UNKNOWN":
-            lic = overrides[name.lower()]["license"]
-        if lic == "UNKNOWN":
-            unknown_count += 1
-        lower_lic = lic.lower()
-        for term in deny_terms:
-            if term and term in lower_lic:
-                msg = f"deny-term '{term}' matched license '{lic}' for {name}"
-                warnings.append(msg)
-                # escalate to violation only in future strict mode
-        # Future: categorize strong copyleft etc.
-
-    if unknown_threshold is not None and unknown_count > unknown_threshold:
-        warnings.append(
-            f"UNKNOWN license count {unknown_count} exceeds threshold {unknown_threshold}"
-        )
-    if fail_on_unknown and unknown_count > 0:
-        violations.append(
-            f"UNKNOWN license count {unknown_count} > 0 (fail_on_unknown)"
-        )
-
-    # Emit summary
-    print(
-        f"[LICENSE_ENFORCE] scanned={len(rows)} unknown={unknown_count} overrides={len(overrides)}"
-    )
-    # Emit a simple metrics-style line for future scraping / integration
     try:
-        print(f"license_unknown_total {unknown_count}")
+        rows = load_report(report_path)
     except Exception:
-        pass
-    # Append to simple trend log (date, unknown count) for tracking reduction over time
-    try:
-        trend_path = Path(os.getenv("LICENSE_TREND_LOG", "license_unknown_trend.log"))
-        ts = datetime.now(timezone.utc).isoformat()
-        trend_line = f"{ts} unknown={unknown_count} overrides={len(overrides)}\n"
-        # Append new line
-        with trend_path.open("a", encoding="utf-8") as fp:
-            fp.write(trend_line)
-        # Compute delta vs previous entry (if any)
-        try:
-            lines = trend_path.read_text("utf-8").strip().splitlines()
-            if len(lines) >= 2:
-                last = lines[-1]
-                prev = lines[-2]
-                # Extract unknown counts using simple parse
-                def extract_unknown(s: str) -> int:
-                    m = re.search(r"unknown=(\d+)", s)
-                    return int(m.group(1)) if m else -1
-                cur_u = extract_unknown(last)
-                prev_u = extract_unknown(prev)
-                if cur_u >= 0 and prev_u >= 0:
-                    delta = cur_u - prev_u
-                    direction = "down" if delta < 0 else ("up" if delta > 0 else "flat")
-                    print(f"[LICENSE_ENFORCE] trend_delta={delta} direction={direction} (prev={prev_u} -> cur={cur_u})")
-        except Exception:
-            pass
-    except Exception:
-        # Non-fatal; silently ignore logging issues
-        pass
-    for w in warnings:
-        print(f"[LICENSE_ENFORCE][WARN] {w}")
-    for v in violations:
-        print(f"[LICENSE_ENFORCE][VIOLATION] {v}")
-
-    if violations:
         return 2
-    return 0
+
+    unknown_now = count_unknown(rows)
+
+    hist_before = load_history(history_path)
+    prev_unknown = hist_before[-1]["unknown"] if hist_before else None
+
+    hist_after = append_history(history_path, unknown_now)
+
+    trend_delta = None
+    if prev_unknown is not None:
+        trend_delta = unknown_now - prev_unknown
+
+    # Emit telemetry lines
+    print(
+        f"[LICENSE_ENFORCE] unknown_current={unknown_now} prev={prev_unknown} trend_delta={trend_delta} history_len={len(hist_after)}"
+    )
+
+    # Optional Prometheus metrics export (best-effort, non-fatal)
+    try:  # pragma: no cover - side-effect only
+        from prometheus_client import Gauge  # type: ignore
+
+        g_unknown = Gauge(
+            "aetherra_license_unknown_current",
+            "Current number of dependencies with UNKNOWN license metadata",
+        )
+        g_trend = Gauge(
+            "aetherra_license_unknown_trend_delta",
+            "Delta vs previous run for UNKNOWN license count (positive means regression)",
+        )
+        g_unknown.set(unknown_now)
+        if trend_delta is not None:
+            g_trend.set(trend_delta)
+    except Exception:
+        pass
+
+    # Optional gating logic
+    fail = False
+    # Absolute max first (either of the vars)
+    abs_max_raw = os.getenv("LICENSE_UNKNOWN_FAIL_IF_GT") or os.getenv(
+        "LICENSE_UNKNOWN_ABS_MAX"
+    )
+    if abs_max_raw is not None:
+        try:
+            abs_max = int(abs_max_raw)
+            if unknown_now > abs_max:
+                print(
+                    f"[LICENSE_ENFORCE][FAIL] UNKNOWN count {unknown_now} exceeds absolute max {abs_max}"
+                )
+                fail = True
+        except ValueError:
+            print(
+                f"[LICENSE_ENFORCE][WARN] Invalid ABS_MAX value: {abs_max_raw} (ignored)"
+            )
+
+    # Trend gating
+    if os.getenv("LICENSE_UNKNOWN_TREND_FAIL", "0") == "1" and trend_delta is not None:
+        tol_raw = os.getenv("LICENSE_UNKNOWN_TOLERANCE", "0").strip()
+        try:
+            tol = int(tol_raw)
+        except ValueError:
+            tol = 0
+        if trend_delta > tol:
+            print(
+                f"[LICENSE_ENFORCE][FAIL] UNKNOWN trend increased by {trend_delta} (tolerance {tol})"
+            )
+            fail = True
+        else:
+            print(
+                f"[LICENSE_ENFORCE] Trend within tolerance (delta {trend_delta} <= {tol})"
+            )
+    else:
+        # Provide guidance if gating disabled
+        if trend_delta is not None:
+            print(
+                "[LICENSE_ENFORCE] Trend gating disabled (set LICENSE_UNKNOWN_TREND_FAIL=1 to enforce)"
+            )
+
+    return 1 if fail else 0
 
 
 if __name__ == "__main__":  # pragma: no cover

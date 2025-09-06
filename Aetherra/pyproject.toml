@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aetherra"
-version = "0.1.0-alpha.1"
+version = "0.1.0-alpha.2"
 description = "AI-Native Development Platform with Aetherra language and Lyrixa assistant"
 authors = [
     {name = "Aetherra Development Team"}

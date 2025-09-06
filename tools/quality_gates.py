@@ -94,6 +94,9 @@ def parse_coverage(text: str) -> float | None:
 
 
 def main() -> int:
+    # Default strict license trend controls (can be overridden by CI env)
+    os.environ.setdefault("LICENSE_UNKNOWN_TREND_FAIL", "1")
+    os.environ.setdefault("LICENSE_UNKNOWN_TOLERANCE", "0")
     # Note: default 0 so we don't fail purely on threshold; we still enforce no-drop vs baseline.
     min_cov = float(os.getenv("MIN_COVERAGE", "0"))
     baseline_file = Path(os.getenv("COVERAGE_BASELINE_FILE", ".coverage-baseline"))
@@ -105,6 +108,7 @@ def main() -> int:
         candidates = [
             "tests/capabilities",
             "tests/failure_injection",
+            "tests/tools",
             "tests/test_outbox_unit.py",
             "tests/test_aar_outbox.py",
             "tests/test_agent_pipeline_smoke.py",
@@ -251,16 +255,59 @@ def main() -> int:
             # Run non-fatal policy enforcement right after report generation to surface UNKNOWN metrics.
             enforce_tool = Path("tools/enforce_license_policy.py")
             if enforce_tool.is_file():
-                # Always pass through same JSON path; non-fatal (warn-only in alpha)
-                args_enforce = [
-                    sys.executable,
-                    str(enforce_tool),
-                    # report path picked up via env or default; set explicitly for clarity
-                ]
-                # Ensure env var for report path so script resolves correctly even if default changes later.
+                # Decide if enforcement should be fatal based on env signals.
+                trend_fail = os.getenv("LICENSE_UNKNOWN_TREND_FAIL", "0") == "1"
+                abs_max_set = bool(
+                    os.getenv("LICENSE_UNKNOWN_FAIL_IF_GT")
+                    or os.getenv("LICENSE_UNKNOWN_ABS_MAX")
+                )
+                # Auto-tighten: if no explicit ABS_MAX provided but we have a fresh report with zero UNKNOWN, set ABS_MAX=0
+                auto_fail_on_unknown = False
+                if not abs_max_set:
+                    try:
+                        report_json = Path(json_out)
+                        if report_json.exists():
+                            import json as _json
+
+                            data = _json.loads(report_json.read_text(encoding="utf-8"))
+                            unknown_present = any(
+                                (r.get("license") or "").strip().upper() == "UNKNOWN"
+                                for r in data
+                            )
+                            if not unknown_present:
+                                # tighten baseline automatically
+                                os.environ.setdefault("LICENSE_UNKNOWN_ABS_MAX", "0")
+                                abs_max_set = True
+                                auto_fail_on_unknown = True
+                                print(
+                                    "[GATES] Auto-set LICENSE_UNKNOWN_ABS_MAX=0 (no UNKNOWN licenses present)"
+                                )
+                    except Exception as e:  # pragma: no cover
+                        print(f"[GATES] Auto-tighten check failed: {e}")
+                # Defense-in-depth: if ABS_MAX=0 (auto or explicit) and we didn't already request fail-on-unknown, run a second pass check.
+                if (
+                    os.getenv("LICENSE_UNKNOWN_ABS_MAX") == "0" or auto_fail_on_unknown
+                ) and "--fail-on-unknown" not in args_lr:
+                    # Re-run lightweight validation using license_report with fail flag (non-fatal here if enforcement will catch issues)
+                    args_lr_fail = [
+                        sys.executable,
+                        str(tool),
+                        "--lock",
+                        str(lock_file),
+                        "--json",
+                        json_out,
+                        "--fail-on-unknown",
+                    ]
+                    run_optional_tool(
+                        "License Report (fail-on-unknown confirm)",
+                        args_lr_fail,
+                        fail_fatal=False,
+                    )
+                fail_fatal = trend_fail or abs_max_set
+                args_enforce = [sys.executable, str(enforce_tool)]
                 os.environ["LICENSE_REPORT_JSON"] = json_out
                 run_optional_tool(
-                    "License Policy Enforcement", args_enforce, fail_fatal=False
+                    "License Policy Enforcement", args_enforce, fail_fatal=fail_fatal
                 )
             else:
                 print(
@@ -268,6 +315,25 @@ def main() -> int:
                 )
         else:
             print("[GATES] License report skipped (tool or lock missing)")
+
+        # SBOM generation (non-fatal; provides artifact for supply-chain transparency)
+        if os.getenv("SBOM_GENERATE", "1") == "1":
+            sbom_tool = Path("tools/generate_sbom.py")
+            if sbom_tool.exists() and lock_exists:
+                run_optional_tool(
+                    "SBOM Generate",
+                    [
+                        sys.executable,
+                        str(sbom_tool),
+                        "--license-json",
+                        os.getenv("LICENSE_REPORT_JSON", "licenses_report.json"),
+                        "--out",
+                        os.getenv("SBOM_OUT", "sbom.json"),
+                    ],
+                    fail_fatal=False,
+                )
+            else:
+                print("[GATES] SBOM generation skipped (tool or lock missing)")
 
     # 4. Threat model presence enforcement
     if os.getenv("REQUIRE_THREAT_MODEL", "1") == "1":
@@ -281,11 +347,44 @@ def main() -> int:
             print("[GATES] Missing LICENSE_POLICY.md (REQUIRE_LICENSE_POLICY=1)")
             return 1
 
+    # 6. Packaging smoke test (build + install + basic probes)
+    if os.getenv("PACKAGE_SMOKE", "1") == "1":
+        smoke = Path("tools/packaging_smoke.py")
+        if smoke.exists():
+            ok = run_optional_tool("Packaging Smoke", [sys.executable, str(smoke)])
+            if not ok:
+                return 1
+        else:
+            print("[GATES] Packaging smoke script missing (non-fatal)")
+
     # Placeholder for future strict enforcement (Beta toggle)
     if os.getenv("LICENSE_POLICY_STRICT", "0") == "1":  # future use
         print(
             "[GATES] LICENSE_POLICY_STRICT=1 set but strict implementation not yet available; proceeding (info)"
         )
+
+    # 7. Artifact publish staging (non-fatal): collects key outputs for CI upload
+    if os.getenv("PUBLISH_ARTIFACTS", "1") == "1":
+        artifacts_dir = Path(os.getenv("ARTIFACTS_DIR", "artifacts"))
+        artifacts_dir.mkdir(exist_ok=True)
+        candidates = [
+            Path("licenses_report.json"),
+            Path(os.getenv("SBOM_OUT", "sbom.json")),
+            Path("integrity-manifest.json"),
+            Path("requirements.lock"),
+        ]
+        copied = 0
+        for c in candidates:
+            if c.exists():
+                try:
+                    target = artifacts_dir / c.name
+                    target.write_bytes(c.read_bytes())
+                    copied += 1
+                except Exception as e:  # pragma: no cover - FS issues
+                    print(f"[GATES] Artifact copy failed for {c}: {e}")
+        print(f"[GATES] Staged {copied} artifact files in {artifacts_dir}")
+    else:
+        print("[GATES] Artifact publishing disabled (PUBLISH_ARTIFACTS=0)")
 
     print("[GATES] All quality gates passed.")
     return 0

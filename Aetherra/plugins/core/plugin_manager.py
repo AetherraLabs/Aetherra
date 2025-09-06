@@ -21,25 +21,23 @@ from typing import Any, Callable, Dict, List, Optional
 
 class PluginState:
     """Plugin state management."""
+
     # Required plugin metadata
     name = "enhanced_plugin_manager"
     description = "PluginState - Auto-generated description"
     input_schema = {
         "type": "object",
-        "properties": {
-            "input": {"type": "string", "description": "Input data"}
-        },
-        "required": ["input"]
+        "properties": {"input": {"type": "string", "description": "Input data"}},
+        "required": ["input"],
     }
     output_schema = {
         "type": "object",
         "properties": {
             "result": {"type": "string", "description": "Processing result"},
-            "status": {"type": "string", "description": "Operation status"}
-        }
+            "status": {"type": "string", "description": "Operation status"},
+        },
     }
     created_by = "Plugin System Auto-Fixer"
-
 
     INACTIVE = "inactive"
     LOADING = "loading"
@@ -261,13 +259,66 @@ class PluginManager:
             start_time = time.time()
             self.track_plugin_event(plugin_name, "execute_start")
 
-            # Execute plugin
-            if hasattr(plugin, "execute"):
-                result = plugin.execute(*args, **kwargs)
-            elif hasattr(plugin, "main"):
-                result = plugin.main(*args, **kwargs)
-            else:
-                result = None
+            # Sandbox metrics integration (best-effort; hub server owns counters).
+            _sandbox_ctx = {
+                "start": start_time,
+                "timed_out": False,
+                "violations": 0,
+            }
+
+            def _record_timeout():
+                _sandbox_ctx["timed_out"] = True
+
+            # Attempt sandbox wrappers if imported (run_with_timeout / ensure_memory_budget)
+            try:
+                timeout_sec = float(kwargs.pop("_timeout_sec", 0) or 0)
+            except Exception:
+                timeout_sec = 0.0
+            try:
+                mem_mb = int(kwargs.pop("_memory_mb", 0) or 0)
+            except Exception:
+                mem_mb = 0
+
+            # Lazy import sandbox helpers (keeps optional dependency surface minimal)
+            run_with_timeout_fn = None
+            ensure_mem_fn = None
+            TimeBudgetExceededCls = None
+            try:  # pragma: no cover - optional path
+                from Aetherra.security import sandbox as _sb  # type: ignore
+
+                run_with_timeout_fn = getattr(_sb, "run_with_timeout", None)
+                ensure_mem_fn = getattr(_sb, "ensure_memory_budget", None)
+                TimeBudgetExceededCls = getattr(_sb, "TimeBudgetExceeded", None)
+            except Exception:
+                pass
+
+            def _invoke():
+                if hasattr(plugin, "execute"):
+                    return plugin.execute(*args, **kwargs)
+                if hasattr(plugin, "main"):
+                    return plugin.main(*args, **kwargs)
+                return None
+
+            result = None
+            try:
+                if timeout_sec > 0 and run_with_timeout_fn:
+                    if mem_mb > 0 and ensure_mem_fn:
+                        try:
+                            ensure_mem_fn(mem_mb)  # type: ignore[call-arg]
+                        except Exception:
+                            pass
+                    try:
+                        result = run_with_timeout_fn(_invoke, timeout_sec=timeout_sec)  # type: ignore[call-arg]
+                    except Exception as _e_timeout:
+                        if TimeBudgetExceededCls and isinstance(
+                            _e_timeout, TimeBudgetExceededCls
+                        ):
+                            _record_timeout()
+                        raise
+                else:
+                    result = _invoke()
+            except Exception:
+                raise
 
             # Analytics tracking - success
             execution_time = time.time() - start_time

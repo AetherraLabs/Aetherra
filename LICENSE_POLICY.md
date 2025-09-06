@@ -1,92 +1,66 @@
-# Aetherra License Policy (Alpha)
+# License Policy & Enforcement Gates
 
-<!-- SPDX-License-Identifier: Apache-2.0 -->
+This repository enforces a continuous-improvement license hygiene policy.
 
-This document defines the initial (alpha) stance on third‑party dependency licenses for the Aetherra project.
-It complements: LICENSE, COPYRIGHT, NOTICE, GOVERNANCE.md, AETHERRA_CLAIMS_VALIDATION.md and the packaging / provenance docs.
+## Objectives
 
-## 1. Objectives
+1. Zero UNKNOWN license metadata in the dependency graph (baseline locked at 0).
+2. Deterministic & reproducible reporting (compressed multiline license fields, overrides only for gaps).
+3. Fast regression detection (trend gating + absolute max == 0).
 
-- Transparency: Every transitive dependency MUST appear in `licenses_report.json` produced by `tools/license_report.py`.
-- Traceability: A release manifest + SBOM + lock file give a cryptographically linked snapshot.
-- Progressive Hardening: Alpha focuses on inventory + unknown surfacing; Beta will introduce deny / escalate classes.
+## Data Sources
 
-## 2. Current Enforcement Model (Alpha)
+- `requirements.lock` provides the enumerated dependency set.
+- `tools/license_report.py` extracts license classifiers / metadata.
+- `license_overrides.yml` supplies temporary SPDX-style expressions only when upstream metadata is absent or malformed.
 
-| Category                                                                   | Policy                                                                              | Gate Behavior            |
-| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------ |
-| SPDX‐recognized permissive (MIT, BSD, Apache-2.0, ISC, Zlib, PSF, MPL-2.0) | Allowed                                                                             | Pass                     |
-| Weak copyleft (LGPL-2.1/3, MPL-2.0 when not modified)                      | Allowed with notice                                                                 | Pass (log)               |
-| Strong copyleft (GPL, AGPL)                                                | Allowed ONLY if toolchain/dev-only and not shipped in combined binary distributions | Warning (future block)   |
-| Proprietary / Other / Custom                                               | Flag for review                                                                     | Warning                  |
-| Unknown / Missing metadata                                                 | MUST be reduced over time                                                           | Warning (count surfaced) |
+## Enforcement Flow (quality_gates.py)
 
-At alpha we do NOT fail the build on warnings; we surface counts to prevent silent drift.
+1. Generate license report (with overrides applied).
+2. If report has zero UNKNOWN entries and no explicit ceiling is provided, auto-set `LICENSE_UNKNOWN_ABS_MAX=0`.
+3. Run `enforce_license_policy.py` which tracks trend history (`licenses_unknown_history.json`).
+4. Fail gate if:
+	- UNKNOWN count exceeds `LICENSE_UNKNOWN_ABS_MAX` (default 0 after baseline attainment), or
+	- UNKNOWN delta upward > `LICENSE_UNKNOWN_TOLERANCE` (default 0) when `LICENSE_UNKNOWN_TREND_FAIL=1` (default enforced).
+5. Optional defense-in-depth: re-run report with `--fail-on-unknown` when ABS_MAX=0.
 
-## 3. Future Roadmap (Beta+)
+## Key Environment Variables
 
-Planned tightening (subject to community feedback):
+| Variable                   | Default   | Description                                                |
+| -------------------------- | --------- | ---------------------------------------------------------- |
+| LICENSE_UNKNOWN_TREND_FAIL | 1         | Enable trend delta enforcement.                            |
+| LICENSE_UNKNOWN_TOLERANCE  | 0         | Allowed increase in UNKNOWN count before failure.          |
+| LICENSE_UNKNOWN_ABS_MAX    | Auto 0    | Absolute maximum UNKNOWN count (auto-set to 0 once clean). |
+| LICENSE_COMPRESS_MULTILINE | 1 (CI)    | Collapse multiline license strings for stable diffs.       |
+| LICENSE_FAIL_ON_UNKNOWN    | (derived) | Adds `--fail-on-unknown` to report when explicitly set.    |
 
-1. Convert Unknown license count > 0 to a soft fail after grace period; require adding manual override annotation file (e.g. `licenses_overrides.yml`).
-2. Disallow adding any new strong‑copyleft runtime dependency without explicit ADR (Architecture Decision Record) documenting isolation / compliance reasoning.
-3. Introduce automated provenance attestation embedding license summary hash into the signed manifest.
-4. Integrate an SPDX document export (tag:value or JSON) for all dependencies with normalized identifiers.
-5. Add a transparency log entry (append-only) for each release capturing license diff vs prior release.
+## Overrides Lifecycle
 
-## 4. Manual Overrides (Planned)
+1. Add only for packages that would otherwise be UNKNOWN and where the SPDX identifier is well established.
+2. Weekly task: run `license_report.py` after temporarily renaming `license_overrides.yml` to surface resolved metadata.
+3. Use `tools/prune_license_overrides.py` to comment out stale overrides no longer needed.
+4. Remove commented stale entries after verification in a follow-up PR for audit clarity.
 
-A future `tools/enforce_license_policy.py` will:
+## Rationale for Overrides
 
-- Read `licenses_report.json`.
-- Load optional `license_overrides.yml` (NOT yet present) for packages lacking classifier metadata.
-- Fail if: (a) unexpected new unknown appears without override, (b) prohibited license enters runtime set.
+Some upstream packages omit `License` metadata but provide classifier(s). Where classifiers are missing or ambiguous, a manual override ensures continuous zero-UNKNOWN baseline without blocking releases.
 
-## 5. Developer Guidance
+## Auditing & Transparency
 
-- Before introducing a new dependency, prefer existing standard libs or already-approved packages.
-- If metadata is UNKNOWN, check upstream `PKG-INFO` or `pyproject.toml` and open an issue upstream if absent.
-- Prefer actively maintained packages with SPDX identifiers in classifiers.
+Trend and current UNKNOWN counts are emitted with `[LICENSE_ENFORCE]` prefix for log scraping and dashboards.
 
-## 6. Metrics to Track
+Example line:
 
-- Unknown license count (goal: trending downward to < 5 by Beta freeze).
-- Strong / copyleft runtime dependency ratio.
-- Delta in license inventory between releases.
+```text
+[LICENSE_ENFORCE] unknown_current=0 prev=0 trend_delta=0 history_len=42
+```
 
-## 7. Integration Points
+## Future Enhancements
 
-- Current: surfaced in Quality Gates (License Report OK + warnings list).
-- Upcoming: quality gate will parse this file to confirm presence (already implied by adding this doc) and later enforce thresholds.
-
-## 8. Non-Goals (Alpha)
-
-- Automated legal adjudication of complex dual-licensed terms.
-- Redistribution packaging audits (handled post-Beta when binary distributions considered).
-
-## 9. Change Control
-
-All modifications to this policy require PR review from at least one governance maintainer and must update CHANGELOG with a License Policy section entry.
+- Automatic SBOM license reconciliation.
+- SPDX validity canonicalization (normalize dual expressions).
+- Alerting / Slack notification on first regression event.
 
 ---
 
-Alpha baseline established. Hardening items tracked in roadmap issues.
-
-### Appendix: Overrides & Enforcement (Alpha Implementation Note)
-
-An initial non-fatal enforcement script (`tools/enforce_license_policy.py`) now runs in the quality gates immediately after generating `licenses_report.json`. It surfaces:
-
-- Total scanned packages
-- Unknown license count (as `[LICENSE_ENFORCE]` log and `license_unknown_total <n>` metric line)
-- Any deny-term substring matches (currently WARN-only)
-
-Manual override annotations can be added in `license_overrides.yml` (kept empty by default). Uncomment the provided example block and supply:
-
-```yaml
-packages:
-	<package_name>:
-		license: <SPDX-ID>
-		reason: <verification justification>
-		approved_by: <handle or PR link>
-```
-
-Overrides only replace `UNKNOWN` entries; they do not mask explicit strong / copyleft identifiers. Future strict mode will require justification for each override addition.
+Maintained as part of governance transparency commitments.

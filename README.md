@@ -2,10 +2,10 @@
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
 # Aetherra
 
-> AI-native development environment (Alpha). Version: **0.1.0-alpha.1**
+> AI-native development environment (Alpha). Version: **0.1.0-alpha.2**
 
 ![Status](https://img.shields.io/badge/Status-ALPHA-orange)
-![Version](https://img.shields.io/badge/Version-0.1.0--alpha.1-0891b2)
+![Version](https://img.shields.io/badge/Version-0.1.0--alpha.2-0891b2)
 ![License](https://img.shields.io/badge/License-GPLv3-0891b2)
 ![Language](https://img.shields.io/badge/Language-Python%20%2B%20Aetherra-8b5cf6)
 ![Responsible AI](https://img.shields.io/badge/Responsible%20AI-Policies%20Published-22c55e)
@@ -26,7 +26,7 @@ Aetherra pairs a lightweight Hub (APIs + metrics) with the Lyrixa AI assistant, 
 1. License & Notices
 
 ---
-## 1. Overview
+\n## 1. Overview
 
 
 **Goal:** Provide an AI-native development surface where code, memory, evaluation, and intelligent assistance unify behind explicit APIs and transparent metrics.
@@ -39,7 +39,7 @@ Core design principles:
 - Human-readable workflow & memory artifacts (auditable evolution)
 
 ---
-## 2. Core Capabilities (Alpha)
+\n## 2. Core Capabilities (Alpha)
 
 Implemented and test-covered today:
 
@@ -57,7 +57,7 @@ Implemented and test-covered today:
 See CHANGELOG for incremental additions.
 
 ---
-## 3. Architecture Snapshot
+\n## 3. Architecture Snapshot
 
 ```text
 Hub (Flask) ──► API Routes (chat, trainer, memory, telemetry)
@@ -76,7 +76,7 @@ Observability ─► aetherra_trainer_*, chat/per-principal, quantum/coherence s
 Import conventions: use `aetherra_*` / `lyrixa_*` modules (see `docs/import_map.md`).
 
 ---
-## 4. Quick Start
+\n## 4. Quick Start
 
 Prerequisites: Python 3.11+ (recommended), virtual environment activated.
 
@@ -189,30 +189,12 @@ Useful docs:
 
 - Architecture: `docs/PROJECT_OVERVIEW.md`
 - Safe defaults / flags: `docs/ALPHA_READINESS.md`
+- Coverage policy: `docs/COVERAGE_POLICY.md`
+- Release process: `docs/RELEASE_PROCESS.md`
+- License policy & enforcement: `LICENSE_POLICY.md`
 - QFAC modes (quantum memory): `docs/QFAC_MODE_GUIDE.md`
 - Changelog: `CHANGELOG.md`
-- Threat model & mitigations: `docs/THREAT_MODEL.md`
-- Key rotation appendix: `docs/KEY_ROTATION.md`
-- Packaging / provenance / SBOM: `docs/PACKAGING_AND_RELEASE.md`
-    - Provenance tag helper scripts: `tools/create_provenance_tag.py`, `tools/create_annotated_tag.py`
-- Dependency & license hygiene tooling: see `tools/` (`dependency_lock.py`, `enforce_lock_sync.py`, `vuln_scan.py`, `license_report.py`, `quality_gates.py`)
-- License policy (alpha stance & future tightening): `LICENSE_POLICY.md`
-- Project governance model & decision process: `GOVERNANCE.md`
-
-Cross-reference highlights:
-
-- Security posture: see `docs/THREAT_MODEL.md` (threat classes, mitigations, residual risks) and `docs/KEY_ROTATION.md` (signing key lifecycle & rotation procedure).
-- Supply chain & packaging: `docs/PACKAGING_AND_RELEASE.md` (SBOM generation, manifest signing, provenance tag helpers).
-- Governance & accountability: `GOVERNANCE.md` (roles, maintainer criteria, decision workflow).
-- License compliance evolution: `LICENSE_POLICY.md` (inventory today, roadmap for deny / override).
-
-Planned license enforcement environment flags (documented for forward compatibility, not all active yet):
-
-- `LICENSE_DENY` – comma-separated list of SPDX IDs to hard-fail if present (future gate).
-- `LICENSE_FAIL_ON_UNKNOWN=1` – convert any UNKNOWN license entry to a failing gate once maturity threshold reached.
-- `LICENSE_UNKNOWN_MAX=N` – future soft ceiling for unknown count before warning escalates.
-
-If these variables are set early they are ignored gracefully until the corresponding enforcement script (`tools/enforce_license_policy.py`) lands.
+- Override pruning (dry-run): `python tools/prune_license_overrides.py --dry-run` (requires fresh `licenses_report.json`)
 
 Star the repo and join discussions to influence beta priorities.
 

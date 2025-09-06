@@ -1,65 +1,23 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
-# Manual license override annotations (alpha stub)
-# Schema:
-# packages:
-#   <package_name>:
-#     license: <SPDX-ID>
-#     reason: <why metadata missing / justification>
-#     approved_by: <governance handle or PR link>
-
-packages:
-  attrs:
-    license: Apache-2.0 OR MIT
-    reason: Classifier anomaly sometimes reports UNKNOWN; verified upstream (LICENSE file contains Apache-2.0 OR MIT dual-license grant).
-    approved_by: governance@aetherra
-  click:
-    license: BSD-3-Clause
-    reason: Upstream LICENSE file confirms BSD-3-Clause; occasionally classifier missing locally.
-    approved_by: governance@aetherra
-  Flask:
-    license: BSD-3-Clause
-    reason: Pallets project standard BSD-3-Clause license.
-    approved_by: governance@aetherra
-  flask-cors:
-    license: MIT
-    reason: Upstream repo LICENSE is MIT; metadata sometimes incomplete.
-    approved_by: governance@aetherra
-  requests:
-    license: Apache-2.0
-    reason: Well-known Apache-2.0 licensed HTTP library; classifier reliable but override for consistency.
-    approved_by: governance@aetherra
-  charset-normalizer:
-    license: MIT
-    reason: Upstream LICENSE is MIT; sometimes appears with UNKNOWN in minimal env scans.
-    approved_by: governance@aetherra
-  idna:
-    license: BSD-3-Clause
-    reason: BSD-like license confirmed upstream; occasional metadata gaps.
-    approved_by: governance@aetherra
-  urllib3:
-    license: MIT
-    reason: MIT license; ensure consistent classification.
-    approved_by: governance@aetherra
-  certifi:
-    license: MPL-2.0
-    reason: Certificate bundle under Mozilla Public License 2.0; treat as acceptable.
-    approved_by: governance@aetherra
-  Jinja2:
-    license: BSD-3-Clause
-    reason: Pallets ecosystem BSD-3-Clause; align with Flask overrides.
-    approved_by: governance@aetherra
-  itsdangerous:
-    license: BSD-3-Clause
-    reason: Pallets ecosystem utility library; standard BSD-3-Clause.
-    approved_by: governance@aetherra
-  Werkzeug:
-    license: BSD-3-Clause
-    reason: Pallets core; BSD-3-Clause, add for normalization.
-    approved_by: governance@aetherra
-
-# Example (uncomment to use):
-# packages:
-#   examplepkg:
-#     license: MIT
-#     reason: Upstream classifier missing; verified via LICENSE file in repo.
-#     approved_by: governance@example.com
+"attrs": MIT
+"click": BSD-3-Clause
+"Flask": BSD-3-Clause
+"flask-cors": MIT
+"jaraco.functools": MIT
+"jsonschema": MIT
+"jsonschema-specifications": MIT
+"Markdown": BSD-3-Clause
+"mypy_extensions": MIT
+"nodejs": MIT
+"ollama": MIT
+"optional-django": MIT
+"pillow": HPND  # Pillow license historically derived from PIL; often reported as Historical Permission Notice and Disclaimer
+"prov": BSD-3-Clause
+"pydot": MIT
+"pypiwin32": PSF-2.0
+"referencing": MIT
+"setuptools": MIT
+"trio": MIT OR Apache-2.0  # Trio dual license expression
+"typing-inspection": MIT
+"typing_extensions": PSF-2.0 OR Apache-2.0  # historically PSF-2.0; allow dual if classifier updates
+"urllib3": MIT
+"zipp": MIT
