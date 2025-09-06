@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Chat Stream Demo
 - Minimal CLI to stream chat output from the Aetherra Hub developer AI API when enabled.

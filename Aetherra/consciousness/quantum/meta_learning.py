@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 🌌 Quantum Meta-Learning System - Advanced Self-Improvement
 Quantum-enhanced meta-learning for rapid meta-memory development

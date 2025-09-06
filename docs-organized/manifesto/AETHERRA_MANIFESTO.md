@@ -2,6 +2,8 @@
 
 *The World's First Validated AI Operating System*
 
+> Aetherra is developed and maintained by **Aetherra Labs**, the official steward of the AI OS.
+
 ## 🌌 What is Aetherra?
 
 Aetherra is the **first comprehensively validated AI-native operating system** - a revolutionary computing platform that doesn't just manage resources, but thinks, learns, and evolves. Where traditional operating systems manage files, processes, and memory, Aetherra manages **goals**, **thoughts**, and **consciousness**. It is an OS built to run minds and validated through rigorous testing.
@@ -88,7 +90,7 @@ The Quantum Fractal Compression System doesn't just save memory — it **underst
 
 Unlike theoretical AI systems, Aetherra has been comprehensively tested with 213 test cases achieving 97.2% success rate across all major subsystems.
 
-## 💡 Aetherra is For...
+## 💡 Aetherra Is For
 
 - **Developers** who want AI to help write, debug, and understand code across goals and contexts.
 - **Researchers** building cognitive agents, explainable systems, and ethical AI.
@@ -168,3 +170,12 @@ The AI Operating System is not just a technical achievement — it's a **transfo
 **Maintained by the Aetherra Project — [https://aetherra.dev](https://aetherra.dev)**
 
 *This manifesto reflects our validated achievements and evolving vision. Join us in shaping the future of intelligent computing.*
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

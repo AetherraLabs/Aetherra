@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
+"""Headless smoke test scaffold (alpha)."""
+
+
+def main():  # pragma: no cover
+    print("OS smoke test placeholder")
+
+
+if __name__ == "__main__":
+    main()
+#!/usr/bin/env python3
 """
 Headless boot smoke test for Aetherra OS.
 - Boots the launcher in quiet, no-GUI mode

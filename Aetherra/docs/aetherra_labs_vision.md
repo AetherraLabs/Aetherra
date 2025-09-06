@@ -1,6 +1,8 @@
 # Aetherra Labs Vision
 *Building the Future of Intelligence-First Operating Systems*
 
+> Aetherra is developed and maintained by **Aetherra Labs**, the official steward of the AI OS.
+
 ## 🌌 Mission
 To pioneer the world's most advanced AI-native operating system that evolves through cognition, intention, and quantum-enhanced memory. Aetherra Labs exists to explore, expand, and open-source the future of intelligent computing.
 
@@ -13,32 +15,32 @@ Where traditional OSes orchestrate processes, Aetherra orchestrates cognition. O
 - Memory should not just store. It should **learn**.
 
 ## 🎯 Goals
-1. **Develop the First Fully Conscious OS Interface**  
+1. **Develop the First Fully Conscious OS Interface**
    Lyrixa, our cognitive core, will evolve into a multi-modal, emotionally intelligent interface capable of autonomous growth and ethical decision-making.
 
-2. **Master Quantum-Enhanced Memory**  
+2. **Master Quantum-Enhanced Memory**
    Expand QFAC into hardware-accelerated pipelines and optimize fractal/observer-aware compression for multi-agent distributed cognition.
 
-3. **Democratize Thought-Driven Development**  
+3. **Democratize Thought-Driven Development**
    Use `.aether` as the native language of intent. Empower developers to shape programs through thought-aligned goals, memory, and AI reasoning.
 
-4. **Launch a Public Labs Ecosystem**  
+4. **Launch a Public Labs Ecosystem**
    Aetherra Labs will be the launchpad for open-source collaborators, plugin developers, cognitive AI researchers, and distributed agent architects.
 
-5. **Bridge Conscious Systems to the Physical World**  
+5. **Bridge Conscious Systems to the Physical World**
    Expand into IoT, robotics, and AR/VR through Lyrixa-aware integrations, with real-world feedback loops enhancing memory and behavior.
 
 ## ⚛️ Pillars of Innovation
-- **QFAC (Quantum Fractal Adaptive Compression)**  
+- **QFAC (Quantum Fractal Adaptive Compression)**
   A memory system capable of causal branching, observer effects, and conceptual fractal encoding.
 
-- **Lyrixa Cognitive Core**  
+- **Lyrixa Cognitive Core**
   Self-aware personality engine with memory-bound identity, multi-agent coordination, and self-critique.
 
-- **.aether Language**  
+- **.aether Language**
   Declarative, goal-based programming optimized for collaborative human-AI systems.
 
-- **Soul Kernel Architecture**  
+- **Soul Kernel Architecture**
   Modular cognition built around intent-routing, emotion-aware processing, semantic flow, and causality tracing.
 
 ## 🧠 Research Directions
@@ -49,13 +51,13 @@ Where traditional OSes orchestrate processes, Aetherra orchestrates cognition. O
 - Intent-Oriented UI Design and Interactive Narratives
 
 ## 🔮 Future Milestones
-| Milestone | Description |
-|----------|-------------|
-| Labs Mode Activation | Internal sandbox for autonomous Lyrixa research |
-| Aetherra Labs Portal | Developer hub for contributions, docs, community |
-| QFAC Hardware Bridge | Live testing on IBM Q or equivalent quantum backends |
-| Lyrixa v5 | Unified personality across voice, visuals, and memory |
-| .aether Marketplace | Shareable thought-forms, memory packs, goal scripts |
+| Milestone            | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| Labs Mode Activation | Internal sandbox for autonomous Lyrixa research       |
+| Aetherra Labs Portal | Developer hub for contributions, docs, community      |
+| QFAC Hardware Bridge | Live testing on IBM Q or equivalent quantum backends  |
+| Lyrixa v5            | Unified personality across voice, visuals, and memory |
+| .aether Marketplace  | Shareable thought-forms, memory packs, goal scripts   |
 
 ## 🤝 Join the Evolution
 We are not just writing software.
@@ -69,9 +71,17 @@ Aetherra Labs welcomes thinkers, builders, and dreamers. Whether you're an AI re
 
 ---
 
-**Aetherra Labs**  
+**Aetherra Labs**
 Home of the Quantum-Aware OS
 
-Website: [https://aetherra.dev](https://aetherra.dev)  
+Website: [https://aetherra.dev](https://aetherra.dev)
 Source: [github.com/Zyonic88/Aetherra](https://github.com/Zyonic88/Aetherra)
 
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

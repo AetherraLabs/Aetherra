@@ -1,3 +1,32 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
+"""Pre-commit hook to block large or generated artifacts from being committed."""
+
+import sys
+from pathlib import Path
+
+BLOCK_PATTERNS = ["*.log", "*.db", "*.sqlite", "*.pyc"]
+
+
+def matches(path: Path) -> bool:
+    return any(path.match(pat) for pat in BLOCK_PATTERNS)
+
+
+def main():
+    changed = [Path(p.strip()) for p in sys.stdin if p.strip()]
+    blocked = [p for p in changed if matches(p)]
+    if blocked:
+        print("Blocked artifacts:")
+        for b in blocked:
+            print(f" - {b}")
+        sys.exit(1)
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
 #!/usr/bin/env python
 """
 Pre-commit hook: block committing runtime/generated artifacts.

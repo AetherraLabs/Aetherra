@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Lyrixa Chat Service
 
@@ -18,6 +21,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -50,6 +54,14 @@ try:
 except Exception:
     MultidimensionalMemory = None  # type: ignore
 
+# Prefer the lightweight chat↔consciousness wrapper when available; fallback to core bridge
+try:
+    from Aetherra.quantum.chat_consciousness_bridge import (
+        ChatConsciousnessBridge as QuantumChatBridge,
+    )
+except Exception:
+    QuantumChatBridge = None  # type: ignore
+
 try:
     from Aetherra.lyrixa.consciousness_integration import ConsciousnessBridge
 except Exception:
@@ -66,6 +78,23 @@ try:
     from aetherra_persistent_memory import get_persistent_memory_system
 except Exception:
     get_persistent_memory_system = None
+
+# Optional: self-improvement engine
+try:
+    from Aetherra.aetherra_core.engine.self_improvement_engine import (
+        SelfImprovementEngine,
+    )
+except Exception:
+    SelfImprovementEngine = None  # type: ignore
+
+# Optional: proactive consciousness
+try:
+    from Aetherra.lyrixa.proactive.proactive_consciousness import (
+        ProactiveConsciousness,
+    )
+except Exception:
+    ProactiveConsciousness = None  # type: ignore
+
 
 IDENTITY = {
     "name": "Lyrixa",
@@ -125,8 +154,33 @@ class LyrixaChatService:
         self._orchestrator = None
         self._mdmem = None
         self._conscious = None
+        self._cfg: Dict[str, Any] = {}
+        self._coherence_threshold: float = 0.7
+        self._self_improver = None
+        self._proactive_monitor = None
 
     async def initialize(self):
+        # Load configuration (best-effort)
+        self._load_config()
+        # Extract optional coherence threshold from multiple possible config shapes
+        try:
+            lyx = (
+                self._cfg.get("lyrixa_chat", {}) if isinstance(self._cfg, dict) else {}
+            )
+            thr = None
+            # New-style settings block (non-breaking addition)
+            if isinstance(lyx.get("consciousness_integration_settings"), dict):
+                thr = lyx["consciousness_integration_settings"].get(
+                    "coherence_threshold"
+                )
+            # If older plan-shaped config exists directly under key
+            if thr is None and isinstance(lyx.get("consciousness_integration"), dict):
+                thr = lyx["consciousness_integration"].get("coherence_threshold")
+            if isinstance(thr, (int, float)):
+                self._coherence_threshold = float(thr)
+        except Exception:
+            pass
+
         # Try to connect to service registry
         if get_service_registry:
             try:
@@ -151,8 +205,8 @@ class LyrixaChatService:
             raise RuntimeError("Adaptive orchestrator not available")
         if not MultidimensionalMemory:
             raise RuntimeError("MultidimensionalMemory not available")
-        if not ConsciousnessBridge:
-            raise RuntimeError("ConsciousnessBridge not available")
+        if not (QuantumChatBridge or ConsciousnessBridge):
+            raise RuntimeError("Consciousness bridge not available")
 
         # Create orchestrator bound to intelligence
         self._orchestrator = AdaptiveIntelligenceOrchestrator(self._intelligence)
@@ -161,45 +215,69 @@ class LyrixaChatService:
         self._mdmem = MultidimensionalMemory()
         await self._mdmem.initialize()
 
-        # Create consciousness bridge and initialize loop
-        self._conscious = ConsciousnessBridge()
+        # Create consciousness bridge and initialize loop (prefer chat wrapper)
+        if QuantumChatBridge:
+            self._conscious = QuantumChatBridge()
+        else:
+            self._conscious = ConsciousnessBridge()
         try:
             # Prefer async initialize if available
-            if hasattr(self._conscious, "initialize") and asyncio.iscoroutinefunction(
-                self._conscious.initialize
-            ):
-                await self._conscious.initialize()  # type: ignore
+            init = getattr(self._conscious, "initialize", None)
+            if init and asyncio.iscoroutinefunction(init):
+                await init()  # type: ignore[misc]
+            # Perform a light initial synchronization if supported
+            sync = getattr(self._conscious, "synchronize_consciousness", None)
+            if sync and asyncio.iscoroutinefunction(sync):
+                try:
+                    await sync()  # type: ignore[misc]
+                except Exception:
+                    pass
         except Exception:
             # If initialization fails, keep instance for snapshot-only usage
             pass
+
+        # Initialize and start proactive monitor (best-effort)
+        if ProactiveConsciousness and self._proactive_monitor is None:
+            try:
+                self._proactive_monitor = ProactiveConsciousness(
+                    bridge=self._conscious,
+                    config=self._cfg.get("proactive_consciousness", {}),
+                    service_registry=self.registry,
+                )
+                await self._proactive_monitor.start_monitoring()
+            except Exception:
+                self._proactive_monitor = None
 
     async def chat(
         self, message: str, opts: Optional[ChatOptions] = None
     ) -> ChatResponse:
         opts = opts or ChatOptions()
+        interaction_id = str(uuid.uuid4())
         awareness = await self._workspace_awareness(summary_only=True)
+        awareness["interaction_id"] = interaction_id
         # Enrich awareness with a small consciousness snapshot
         try:
-            if self._conscious and hasattr(self._conscious, "get_coherence_snapshot"):
-                snap = self._conscious.get_coherence_snapshot()
-                if snap:
-                    awareness["consciousness"] = snap
+            snap = self._conscious_snapshot()
+            if snap:
+                awareness["consciousness"] = snap
+            # Add proactive suggestions if available
+            if self._proactive_monitor:
+                suggestions = await self._proactive_monitor.get_proactive_suggestions()
+                if suggestions:
+                    awareness["proactive_suggestions"] = suggestions
+
             # Optional anticipatory hints from consciousness (non-blocking)
-            if (
-                self._conscious
-                and hasattr(self._conscious, "create_superposition")
-                and hasattr(self._conscious, "collapse_quantum_states")
-            ):
-                try:
-                    states = await self._conscious.create_superposition(message)  # type: ignore
-                    decision = await self._conscious.collapse_quantum_states(states)  # type: ignore
-                    if states and decision:
-                        awareness["anticipatory_hints"] = {
-                            "candidates": states,
-                            "decision": decision,
-                        }
-                except Exception:
-                    pass
+            try:
+                coh = await self._conscious_get_coherence()
+            except Exception:
+                coh = None
+            if coh is None or float(coh) >= float(self._coherence_threshold):
+                enh = await self._conscious_quantum_enhance(message)
+                if enh and (enh.get("states") or enh.get("decision")):
+                    awareness["anticipatory_hints"] = {
+                        "candidates": enh.get("states", []),
+                        "decision": enh.get("decision", {}),
+                    }
         except Exception:
             pass
 
@@ -317,6 +395,12 @@ class LyrixaChatService:
         if evidence:
             awareness["evidence"] = evidence
 
+        # Entangle context lightly for continuity if supported
+        try:
+            await self._conscious_entangle(message, reply)
+        except Exception:
+            pass
+
         # Store interaction across 7-layer memory (required path; tolerate soft failure)
         try:
             mdm = self._mdmem
@@ -335,12 +419,181 @@ class LyrixaChatService:
         except Exception:
             pass
 
+        # Kick off post-interaction learning in the background (non-blocking)
+        try:
+            asyncio.create_task(
+                self._post_interaction_learning(
+                    message, str(reply), awareness, path_used
+                )
+            )
+        except Exception:
+            pass
+
         return ChatResponse(
             text=reply,
             suggestions=suggestions,
             applied_changes=applied,
             awareness=awareness,
         )
+
+    # Unreachable due to return above; kept for clarity on call order
+    # await self._post_interaction_learning(message, reply, awareness)
+
+    def _load_config(self) -> None:
+        """Best-effort load of config.json to tune chat behavior without hard deps."""
+        try:
+            cfg_path = self.root / "config.json"
+            if cfg_path.is_file():
+                import json
+
+                self._cfg = json.loads(
+                    cfg_path.read_text(encoding="utf-8", errors="ignore")
+                )
+        except Exception:
+            self._cfg = {}
+
+    async def _post_interaction_learning(
+        self, message: str, reply: str, awareness: Dict[str, Any], path_used: str
+    ) -> None:
+        """Deeper hook into self-improvement engine when available."""
+        if not SelfImprovementEngine:
+            return
+        try:
+            if self._self_improver is None:
+                self._self_improver = SelfImprovementEngine(
+                    db_path="lyrixa_improvement.db"
+                )
+                # Start cycle in background; ignore if already running
+                await self._self_improver.start_improvement_cycle()
+
+            # 1. Record coarse metrics from the interaction
+            cb = (awareness or {}).get("confidence_breakdown", {}) or {}
+            overall_confidence = float(cb.get("overall", 0.6) or 0.6)
+            coherence = float(
+                ((awareness or {}).get("consciousness", {}) or {}).get("coherence", 0.7)
+            )
+            self._self_improver.record_performance_metric(
+                "chat_confidence_overall",
+                overall_confidence * 100.0,
+                "%",
+                {"source": "lyrixa_chat", "path": path_used},
+            )
+            self._self_improver.record_performance_metric(
+                "consciousness_coherence",
+                coherence * 100.0,
+                "%",
+                {"source": "lyrixa_chat"},
+            )
+
+            # 2. Perform a more detailed analysis of the interaction
+            interaction_payload = {
+                "id": awareness.get("interaction_id", "unknown"),
+                "query": message,
+                "response": reply,
+                "path_used": path_used,
+                "confidence": overall_confidence,
+                "awareness_context": awareness,
+            }
+            self._self_improver.analyze_interaction(interaction_payload)
+
+        except Exception:
+            # Best-effort only; never block chat
+            pass
+
+    def _conscious_snapshot(self) -> Optional[Dict[str, Any]]:
+        try:
+            c = self._conscious
+            if not c:
+                return None
+            # Direct method on core bridge
+            f = getattr(c, "get_coherence_snapshot", None)
+            if callable(f):
+                snap = f()
+                return snap if isinstance(snap, dict) else None
+            # Indirect via chat wrapper bridge attribute
+            inner = getattr(c, "bridge", None)
+            if inner and hasattr(inner, "get_coherence_snapshot"):
+                snap = inner.get_coherence_snapshot()
+                return snap if isinstance(snap, dict) else None
+        except Exception:
+            return None
+        return None
+
+    async def _conscious_get_coherence(self) -> Optional[float]:
+        try:
+            c = self._conscious
+            if not c:
+                return None
+            # Direct async on core bridge
+            f = getattr(c, "get_coherence", None)
+            if f and asyncio.iscoroutinefunction(f):
+                return float(await f())  # type: ignore[misc]
+            # Indirect via chat wrapper
+            inner = getattr(c, "bridge", None)
+            if inner:
+                f2 = getattr(inner, "get_coherence", None)
+                if f2 and asyncio.iscoroutinefunction(f2):
+                    return float(await f2())  # type: ignore[misc]
+        except Exception:
+            return None
+        return None
+
+    async def _conscious_quantum_enhance(self, query: str) -> Dict[str, Any]:
+        try:
+            c = self._conscious
+            if not c:
+                return {}
+            # Preferred: chat wrapper API
+            qer = getattr(c, "quantum_enhanced_response", None)
+            if qer and asyncio.iscoroutinefunction(qer):
+                return await qer(query)  # type: ignore[misc]
+            # Fallback: direct methods on core bridge
+            create = getattr(c, "create_superposition", None)
+            collapse = getattr(c, "collapse_quantum_states", None)
+            if (
+                create
+                and collapse
+                and all(asyncio.iscoroutinefunction(x) for x in (create, collapse))
+            ):
+                states = await create(query)  # type: ignore[misc]
+                decision = await collapse(states)  # type: ignore[misc]
+                return {"states": states, "decision": decision}
+            # Fallback via inner bridge
+            inner = getattr(c, "bridge", None)
+            if inner:
+                create2 = getattr(inner, "create_superposition", None)
+                collapse2 = getattr(inner, "collapse_quantum_states", None)
+                if (
+                    create2
+                    and collapse2
+                    and all(
+                        asyncio.iscoroutinefunction(x) for x in (create2, collapse2)
+                    )
+                ):
+                    states = await create2(query)  # type: ignore[misc]
+                    decision = await collapse2(states)  # type: ignore[misc]
+                    return {"states": states, "decision": decision}
+        except Exception:
+            return {}
+        return {}
+
+    async def _conscious_entangle(self, query: str, response: Any) -> None:
+        try:
+            c = self._conscious
+            if not c:
+                return None
+            f = getattr(c, "entangle_context", None)
+            if f and asyncio.iscoroutinefunction(f):
+                await f(query, response)  # type: ignore[misc]
+                return None
+            inner = getattr(c, "bridge", None)
+            if inner:
+                f2 = getattr(inner, "entangle_context", None)
+                if f2 and asyncio.iscoroutinefunction(f2):
+                    await f2(query, response)  # type: ignore[misc]
+        except Exception:
+            return None
+        return None
 
     async def suggest_fixes(
         self, hint: str = "", limit: int = 3

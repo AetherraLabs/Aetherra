@@ -20,3 +20,12 @@ If you enable providers (e.g., OpenAI, Anthropic, Ollama), your prompts and data
 ## Contact
 
 Questions or requests: [security@aetherralabs.org](mailto:security@aetherralabs.org)
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

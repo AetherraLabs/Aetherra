@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 AetherraMemoryEngine - Advanced cognitive memory system with symbolic reasoning,
 and narrative generation. Inspired by Synthetic Soul's approach.

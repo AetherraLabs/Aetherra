@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Auto-sign staged .aether files and re-add them to the index
+changed=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.aether$' || true)
+if [ -z "$changed" ]; then
+  exit 0
+fi
+
+echo "[pre-commit] Signing .aether files:"
+echo "$changed" | sed 's/^/  - /'
+
+# Sign with project signer
+python tools/sign_aether.py $changed
+
+# Re-add to index so signatures are committed
+# shellcheck disable=SC2086
+echo "$changed" | xargs git add
+
+# Optional: strict verify gate when PRECOMMIT_AETHER_VERIFY=1
+if [ "${PRECOMMIT_AETHER_VERIFY:-0}" = "1" ]; then
+  echo "[pre-commit] Verifying signatures (strict)..."
+  if ! python tools/verify_aether_scripts.py --root . --strict; then
+    echo "[pre-commit] Signature verification failed. Aborting commit."
+    exit 1
+  fi
+fi
+
+exit 0

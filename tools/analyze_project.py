@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Repository analyzer for Aetherra: builds a descriptive, narrative overview
 of the project (not just lists) and appends it to docs/PROJECT_OVERVIEW.md.

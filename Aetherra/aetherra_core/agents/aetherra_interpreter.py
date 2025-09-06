@@ -1,22 +1,10 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
-# core/aetherra_interpreter.py
-"""
-Aetherra Interpreter (Modular Interface)
-==========================================
+"""Agent Interpreter (Modular Interface Wrapper)
 
-This module provides a compatibility interface to the new modular interpreter system.
-For new development, use the modular system directly from core.interpreter.
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
-The modular interpreter system is organized as follows:
-- core/interpreter/base.py - Base classes and interfaces
-- core/interpreter/command_parser.py - Command parsing logic
-- core/interpreter/execution_engine.py - Command execution
-- core/interpreter/line_processor.py - Line and block processing
-- core/interpreter/enhanced_features.py - Enhanced parsing features
-- core/interpreter/fallback_systems.py - Fallback implementations
-- core/interpreter/main.py - Main interpreter class
-
-This file maintains backward compatibility with existing code.
+Compatibility interface to the new modular interpreter system.
+Refer to `Aetherra.core.interpreter` package for canonical implementations.
 """
 
 # Import performance optimizations
@@ -98,7 +86,7 @@ if _MODULAR_AVAILABLE:
             """Execute Aetherra with performance optimizations"""
             try:
                 return super().execute(line)
-            except Exception as e:
+            except Exception:
                 # Fallback to a safe execution
                 return super().execute(line)
 

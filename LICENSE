@@ -1,3 +1,21 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
+# Aetherra License Preface
+
+Project: Aetherra – AI Operating System ("Aetherra")
+Copyright (C) 2025 Aetherra Labs and Contributors
+
+This project is licensed under the GNU General Public License version 3.0 or
+any later version (GPL-3.0-or-later). The full, unmodified text of the GPLv3
+follows. All source files should include an SPDX license identifier and
+copyright attribution consistent with `COPYRIGHT` and `LEGAL_COMPLIANCE.md`.
+
+No additional permissions or restrictions are added by this preface. For the
+official legal terms, refer to the GPL text immediately below (Sections 0–17).
+
+---
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 

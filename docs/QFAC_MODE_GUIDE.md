@@ -70,3 +70,12 @@ Expected:
 - If `pytest` is not found, ensure the Python environment is activated and dependencies are installed
 - If quantum frameworks (Qiskit/Cirq) are missing, hybrid mode still works using simulation; logs will indicate simulation mode
 - Set `AETHERRA_QUIET=1` for reduced logging during CI smoke tests
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

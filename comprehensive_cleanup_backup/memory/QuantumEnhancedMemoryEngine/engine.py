@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 from .causal_brancher import CausalBranchSimulator
 from .compression import CompressionAnalytics
 from .fidelity_metrics import MemoryFidelityScorer

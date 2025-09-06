@@ -36,3 +36,12 @@ Python helpers in `Aetherra/security/script_signing.py`:
 
 - Do not commit production secrets. Use the API keys store (`Aetherra.security.api_keys`) to set `aether_script_signing_secret`.
 - Keep the signature header as the first line.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

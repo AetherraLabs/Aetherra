@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 🏪 Aetherra Hub Server
 ======================
@@ -181,6 +184,237 @@ class AetherraHubServer:
             2000: 0,
             "+Inf": 0,
         }
+
+        # --- Trainer scaffolding: in-memory job state (opt-in via env) ---
+        # Enabled flag is read at init; endpoints also re-check env to allow toggling for tests
+        try:
+            self.trainer_enabled = (
+                os.environ.get("AETHERRA_TRAINER_ENABLED", "0") == "1"
+            )
+        except Exception:
+            self.trainer_enabled = False
+        # Job store and lock
+        self._trainer_lock = threading.Lock()
+        self.trainer_jobs = {}
+        self._trainer_job_order = []  # maintain insertion order for trimming
+        self._trainer_max_jobs = 200
+
+        # Simple counters for metrics
+        self._trainer_eval_runs_total = 0
+        # --- Trainer evaluations (scaffold) ---
+        self.trainer_evals = {}
+        self._trainer_eval_order = []
+        self._trainer_max_evals = 200
+        self._trainer_eval_last_score = None
+
+        # background helpers (created on demand per job)
+
+    # ---- Trainer helpers ----
+    def _trainer_now_iso(self) -> str:
+        try:
+            return datetime.now().isoformat()
+        except Exception:
+            return ""
+
+    def _trainer_trim_if_needed(self) -> None:
+        try:
+            with self._trainer_lock:
+                excess = max(0, len(self._trainer_job_order) - self._trainer_max_jobs)
+                for _ in range(excess):
+                    old_id = self._trainer_job_order.pop(0)
+                    self.trainer_jobs.pop(old_id, None)
+        except Exception:
+            pass
+
+    def _trainer_submit_job(self, payload: Dict[str, Any]) -> str:
+        # Generate a simple job id
+        try:
+            import uuid
+
+            jid = f"train_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+        except Exception:
+            jid = f"train_{int(time.time())}"
+
+        job = {
+            "job_id": jid,
+            "task": str(payload.get("task") or payload.get("kind") or "sft"),
+            "base_model": payload.get("base_model"),
+            "dataset_id": payload.get("dataset_id"),
+            "params": payload.get("params") or {},
+            "resources": payload.get("resources") or {},
+            "tags": payload.get("tags") or [],
+            "state": "queued",
+            "progress": 0,
+            "metrics": {},
+            "artifacts": {},
+            "created_at": self._trainer_now_iso(),
+            "started_at": None,
+            "finished_at": None,
+            "error": None,
+        }
+        with self._trainer_lock:
+            self.trainer_jobs[jid] = job
+            self._trainer_job_order.append(jid)
+        # start background worker
+        t = threading.Thread(target=self._trainer_run_job, args=(jid,), daemon=True)
+        t.start()
+        # trim store casually
+        self._trainer_trim_if_needed()
+        return jid
+
+    def _trainer_run_job(self, job_id: str) -> None:
+        # Simulate a tiny training job with progress updates, abort if disabled mid-run
+        try:
+            enabled = os.environ.get("AETHERRA_TRAINER_ENABLED", "0") == "1"
+        except Exception:
+            enabled = self.trainer_enabled
+
+        with self._trainer_lock:
+            job = self.trainer_jobs.get(job_id)
+            if not job:
+                return
+            # Only transition if currently queued
+            if job.get("state") != "queued":
+                return
+            job["state"] = "running"
+            job["started_at"] = self._trainer_now_iso()
+            job["progress"] = 0
+
+        if not enabled:
+            # Mark as failed if disabled
+            with self._trainer_lock:
+                job = self.trainer_jobs.get(job_id)
+                if job:
+                    job["state"] = "failed"
+                    job["error"] = "disabled"
+                    job["finished_at"] = self._trainer_now_iso()
+            return
+
+        # Simulate work
+        try:
+            steps = 5
+            for i in range(steps):
+                time.sleep(0.15)
+                with self._trainer_lock:
+                    job = self.trainer_jobs.get(job_id)
+                    if not job:
+                        return
+                    if job.get("state") != "running":
+                        return
+                    job["progress"] = int(((i + 1) / steps) * 100)
+            # Complete
+            with self._trainer_lock:
+                job = self.trainer_jobs.get(job_id)
+                if job:
+                    job["state"] = "completed"
+                    job["finished_at"] = self._trainer_now_iso()
+                    job["metrics"] = {"train_loss_final": 0.0}
+        except Exception as e:
+            with self._trainer_lock:
+                job = self.trainer_jobs.get(job_id)
+                if job:
+                    job["state"] = "failed"
+                    job["error"] = str(e)
+                    job["finished_at"] = self._trainer_now_iso()
+
+    # ---- Trainer evaluation helpers ----
+    def _trainer_submit_eval(self, payload: Dict[str, Any]) -> str:
+        # Generate a simple eval id
+        try:
+            import uuid
+
+            eid = f"eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+        except Exception:
+            eid = f"eval_{int(time.time())}"
+
+        ev = {
+            "eval_id": eid,
+            "task": str(payload.get("task") or payload.get("kind") or "eval"),
+            "model": payload.get("model") or payload.get("base_model"),
+            "dataset_id": payload.get("dataset_id"),
+            "params": payload.get("params") or {},
+            "state": "queued",
+            "progress": 0,
+            "metrics": {},
+            "created_at": self._trainer_now_iso(),
+            "started_at": None,
+            "finished_at": None,
+            "error": None,
+        }
+        with self._trainer_lock:
+            self.trainer_evals[eid] = ev
+            self._trainer_eval_order.append(eid)
+        # start background worker
+        t = threading.Thread(target=self._trainer_run_eval, args=(eid,), daemon=True)
+        t.start()
+        # trim eval store
+        try:
+            with self._trainer_lock:
+                excess = max(0, len(self._trainer_eval_order) - self._trainer_max_evals)
+                for _ in range(excess):
+                    old_id = self._trainer_eval_order.pop(0)
+                    self.trainer_evals.pop(old_id, None)
+        except Exception:
+            pass
+        return eid
+
+    def _trainer_run_eval(self, eval_id: str) -> None:
+        # Simulate an evaluation run producing a simple score
+        try:
+            enabled = os.environ.get("AETHERRA_TRAINER_ENABLED", "0") == "1"
+        except Exception:
+            enabled = self.trainer_enabled
+
+        with self._trainer_lock:
+            ev = self.trainer_evals.get(eval_id)
+            if not ev:
+                return
+            if ev.get("state") != "queued":
+                return
+            ev["state"] = "running"
+            ev["started_at"] = self._trainer_now_iso()
+            ev["progress"] = 0
+
+        if not enabled:
+            with self._trainer_lock:
+                ev = self.trainer_evals.get(eval_id)
+                if ev:
+                    ev["state"] = "failed"
+                    ev["error"] = "disabled"
+                    ev["finished_at"] = self._trainer_now_iso()
+            return
+
+        try:
+            steps = 4
+            for i in range(steps):
+                time.sleep(0.12)
+                with self._trainer_lock:
+                    ev = self.trainer_evals.get(eval_id)
+                    if not ev or ev.get("state") != "running":
+                        return
+                    ev["progress"] = int(((i + 1) / steps) * 100)
+            # produce a pseudo score deterministically bounded
+            score = 0.9
+            with self._trainer_lock:
+                ev = self.trainer_evals.get(eval_id)
+                if ev:
+                    ev["state"] = "completed"
+                    ev["finished_at"] = self._trainer_now_iso()
+                    ev["metrics"] = {"eval_score": score}
+                    self._trainer_eval_runs_total = (
+                        int(self._trainer_eval_runs_total) + 1
+                    )
+                    try:
+                        self._trainer_eval_last_score = float(score)
+                    except Exception:
+                        self._trainer_eval_last_score = None
+        except Exception as e:
+            with self._trainer_lock:
+                ev = self.trainer_evals.get(eval_id)
+                if ev:
+                    ev["state"] = "failed"
+                    ev["error"] = str(e)
+                    ev["finished_at"] = self._trainer_now_iso()
 
     def _setup_routes(self):
         """Setup Flask routes for the Hub API"""
@@ -2856,6 +3090,124 @@ class AetherraHubServer:
             except Exception:
                 pass
 
+            # Per-agent telemetry (best-effort, capped cardinality)
+            try:
+                if os.environ.get("AETHERRA_AGENT_PER_METRICS", "1") == "1":
+                    try:
+                        from Aetherra.consciousness.agents.agent_registry import (
+                            get_agent_registry,
+                        )
+                    except Exception:
+                        get_agent_registry = None  # type: ignore
+                    reg = get_agent_registry() if get_agent_registry else None  # type: ignore[call-arg]
+                    if reg and hasattr(reg, "get_all_agents"):
+                        try:
+                            agents = reg.get_all_agents()  # dict[id -> registration]
+                        except Exception:
+                            agents = {}
+                        count = 0
+                        if isinstance(agents, dict):
+                            for aid, regobj in agents.items():
+                                if count >= 20:  # cap to avoid cardinality blowup
+                                    break
+                                try:
+                                    # Extract fields with defensive defaults
+                                    tot = float(
+                                        getattr(regobj, "total_requests_handled", 0)
+                                        or 0
+                                    )
+                                    succ = float(
+                                        getattr(regobj, "successful_requests", 0) or 0
+                                    )
+                                    avg = float(
+                                        getattr(regobj, "average_response_time", 0.0)
+                                        or 0.0
+                                    )
+                                    up = float(
+                                        getattr(regobj, "uptime_percentage", 0.0) or 0.0
+                                    )
+                                    # success rate
+                                    sr = 0.0
+                                    try:
+                                        sr = (succ / tot) if tot > 0 else 0.0
+                                    except Exception:
+                                        sr = 0.0
+                                    # emit
+                                    aid_s = str(aid)
+                                    lines.append(
+                                        f'aetherra_agent_requests_total{{agent="{aid_s}"}} {_num(tot)}'
+                                    )
+                                    lines.append(
+                                        f'aetherra_agent_success_rate{{agent="{aid_s}"}} {_num(sr)}'
+                                    )
+                                    lines.append(
+                                        f'aetherra_agent_avg_latency_ms{{agent="{aid_s}"}} {_num(avg)}'
+                                    )
+                                    # optional uptime gauge
+                                    lines.append(
+                                        f'aetherra_agent_uptime_pct{{agent="{aid_s}"}} {_num(up)}'
+                                    )
+                                    count += 1
+                                except Exception:
+                                    pass
+            except Exception:
+                pass
+
+            # Trainer metrics (read from in-memory trainer store when available)
+            try:
+                trainer_enabled_flag = (
+                    1 if os.environ.get("AETHERRA_TRAINER_ENABLED", "0") == "1" else 0
+                )
+                lines.append(f"aetherra_trainer_enabled {trainer_enabled_flag}")
+                q = r = c = f = 0
+                # Snapshot counts under lock
+                with self._trainer_lock:
+                    for j in self.trainer_jobs.values():
+                        st = str(j.get("state"))
+                        if st == "queued":
+                            q += 1
+                        elif st == "running":
+                            r += 1
+                        elif st == "completed":
+                            c += 1
+                        elif st == "failed":
+                            f += 1
+                lines.append(f'aetherra_trainer_jobs_total{{state="queued"}} {q}')
+                lines.append(f'aetherra_trainer_jobs_total{{state="running"}} {r}')
+                lines.append(f'aetherra_trainer_jobs_total{{state="completed"}} {c}')
+                lines.append(f'aetherra_trainer_jobs_total{{state="failed"}} {f}')
+                lines.append(f"aetherra_trainer_jobs_running {r}")
+                lines.append(
+                    f"aetherra_trainer_eval_runs_total {int(self._trainer_eval_runs_total)}"
+                )
+                # Eval state counts and last score
+                eq = er = ec = ef = 0
+                with self._trainer_lock:
+                    for eobj in self.trainer_evals.values():
+                        st = str(eobj.get("state"))
+                        if st == "queued":
+                            eq += 1
+                        elif st == "running":
+                            er += 1
+                        elif st == "completed":
+                            ec += 1
+                        elif st == "failed":
+                            ef += 1
+                    last_score = self._trainer_eval_last_score
+                lines.append(f'aetherra_trainer_evals_total{{state="queued"}} {eq}')
+                lines.append(f'aetherra_trainer_evals_total{{state="running"}} {er}')
+                lines.append(f'aetherra_trainer_evals_total{{state="completed"}} {ec}')
+                lines.append(f'aetherra_trainer_evals_total{{state="failed"}} {ef}')
+                try:
+                    if last_score is not None:
+                        lines.append(
+                            f"aetherra_trainer_eval_last_score {float(last_score)}"
+                        )
+                except Exception:
+                    pass
+            except Exception:
+                pass
+
             # If orchestrator histogram wasn't emitted yet, ensure presence with zero-valued buckets
             if not orch_hist_emitted:
                 try:
@@ -5494,6 +5846,186 @@ class AetherraHubServer:
                 return jsonify(data)  # type: ignore[name-defined]
             except Exception:
                 return jsonify({"enabled": False}), 200  # type: ignore[name-defined]
+
+        # --- Memory narratives (stub UI/API) ---
+        @app.route("/api/memory/narratives", methods=["GET"])
+        def memory_narratives_api():
+            """Return recent memory narratives (stubbed list).
+
+            This is a Phase-2 read-only scaffold. It currently returns an empty list
+            with an informational note. Future versions will integrate with the memory
+            system's narrative store.
+            """
+            self.stats["requests_served"] += 1
+            try:
+                payload = {
+                    "enabled": True,
+                    "narratives": [],
+                    "note": "Narratives listing is scaffolded; storage integration pending",
+                }
+                return jsonify(payload)  # type: ignore[name-defined]
+            except Exception:
+                return jsonify({"enabled": False}), 200  # type: ignore[name-defined]
+
+        @app.route("/memory/narratives", methods=["GET"])
+        def memory_narratives_page():
+            """Simple HTML page for memory narratives (stub)."""
+            self.stats["requests_served"] += 1
+            try:
+                return (
+                    """
+                    <html>
+                      <head><title>Aetherra Memory Narratives</title></head>
+                      <body style="font-family: monospace; background: #0a0a0a; color: #00ffaa; padding: 20px;">
+                        <h1>🧠 Memory Narratives</h1>
+                        <p>This view is a Phase-2 scaffold. API: <a href="/api/memory/narratives" style="color:#00ffaa;">/api/memory/narratives</a></p>
+                        <p>No narratives to display yet.</p>
+                      </body>
+                    </html>
+                    """,
+                    200,
+                    {"Content-Type": "text/html; charset=utf-8"},
+                )
+            except Exception:
+                return "Unavailable", 200
+
+        # --- Trainer (scaffold + minimal in-memory execution) ---
+        @app.route("/api/trainer/status", methods=["GET"])
+        def api_trainer_status():
+            """Read-only status for the Trainer system (scaffold)."""
+            self.stats["requests_served"] += 1
+            try:
+                enabled = os.environ.get("AETHERRA_TRAINER_ENABLED", "0") == "1"
+                q = r = c = f = 0
+                with self._trainer_lock:
+                    for j in self.trainer_jobs.values():
+                        st = str(j.get("state"))
+                        if st == "queued":
+                            q += 1
+                        elif st == "running":
+                            r += 1
+                        elif st == "completed":
+                            c += 1
+                        elif st == "failed":
+                            f += 1
+                out = {
+                    "ok": True,
+                    "enabled": bool(enabled),
+                    "jobs": {"queued": q, "running": r, "completed": c, "failed": f},
+                    "eval_runs_total": int(self._trainer_eval_runs_total),
+                }
+                return jsonify(out)  # type: ignore[name-defined]
+            except Exception:
+                return jsonify({"ok": False, "error": "server"}), 500  # type: ignore[name-defined]
+
+        @app.route("/api/trainer/jobs", methods=["GET", "POST"])
+        def api_trainer_jobs():
+            """List or submit trainer jobs (scaffold with in-memory execution)."""
+            self.stats["requests_served"] += 1
+            try:
+                enabled = os.environ.get("AETHERRA_TRAINER_ENABLED", "0") == "1"
+                if request.method == "POST":  # type: ignore[name-defined]
+                    if not enabled:
+                        return jsonify({"ok": False, "error": "trainer_disabled"}), 400  # type: ignore[name-defined]
+                    try:
+                        payload = request.get_json(force=True, silent=True) or {}  # type: ignore
+                    except Exception:
+                        payload = {}
+                    job_id = self._trainer_submit_job(cast(Dict[str, Any], payload))
+                    return jsonify({"ok": True, "job_id": job_id})  # type: ignore[name-defined]
+                # GET
+                jobs_out = []
+                with self._trainer_lock:
+                    for jid in reversed(self._trainer_job_order[-100:]):
+                        j = self.trainer_jobs.get(jid)
+                        if not j:
+                            continue
+                        jobs_out.append(
+                            {
+                                "job_id": j.get("job_id"),
+                                "state": j.get("state"),
+                                "progress": j.get("progress"),
+                                "task": j.get("task"),
+                                "created_at": j.get("created_at"),
+                                "started_at": j.get("started_at"),
+                                "finished_at": j.get("finished_at"),
+                            }
+                        )
+                return jsonify({"ok": True, "jobs": jobs_out, "enabled": bool(enabled)})  # type: ignore[name-defined]
+            except Exception:
+                return jsonify({"ok": False, "error": "server"}), 500  # type: ignore[name-defined]
+
+        @app.route("/api/trainer/jobs/<job_id>", methods=["GET"])
+        def api_trainer_job_detail(job_id: str):
+            """Fetch a single trainer job by id."""
+            self.stats["requests_served"] += 1
+            try:
+                enabled = os.environ.get("AETHERRA_TRAINER_ENABLED", "0") == "1"
+                with self._trainer_lock:
+                    job = self.trainer_jobs.get(str(job_id))
+                    if not job:
+                        return jsonify({"ok": False, "error": "not_found"}), 404  # type: ignore[name-defined]
+                    out = dict(job)
+                out["enabled"] = bool(enabled)
+                return jsonify({"ok": True, "job": out})  # type: ignore[name-defined]
+            except Exception:
+                return jsonify({"ok": False, "error": "server"}), 500  # type: ignore[name-defined]
+
+        # --- Trainer evaluations (scaffold) ---
+        @app.route("/api/trainer/evals", methods=["GET", "POST"])
+        def api_trainer_evals():
+            """List or submit trainer evaluation runs (scaffold)."""
+            self.stats["requests_served"] += 1
+            try:
+                enabled = os.environ.get("AETHERRA_TRAINER_ENABLED", "0") == "1"
+                if request.method == "POST":  # type: ignore[name-defined]
+                    if not enabled:
+                        return jsonify({"ok": False, "error": "trainer_disabled"}), 400  # type: ignore[name-defined]
+                    try:
+                        payload = request.get_json(force=True, silent=True) or {}  # type: ignore
+                    except Exception:
+                        payload = {}
+                    eval_id = self._trainer_submit_eval(cast(Dict[str, Any], payload))
+                    return jsonify({"ok": True, "eval_id": eval_id})  # type: ignore[name-defined]
+                # GET
+                evals_out = []
+                with self._trainer_lock:
+                    for eid in reversed(self._trainer_eval_order[-100:]):
+                        ev = self.trainer_evals.get(eid)
+                        if not ev:
+                            continue
+                        evals_out.append(
+                            {
+                                "eval_id": ev.get("eval_id"),
+                                "state": ev.get("state"),
+                                "progress": ev.get("progress"),
+                                "task": ev.get("task"),
+                                "created_at": ev.get("created_at"),
+                                "started_at": ev.get("started_at"),
+                                "finished_at": ev.get("finished_at"),
+                            }
+                        )
+                return jsonify(
+                    {"ok": True, "evals": evals_out, "enabled": bool(enabled)}
+                )  # type: ignore[name-defined]
+            except Exception:
+                return jsonify({"ok": False, "error": "server"}), 500  # type: ignore[name-defined]
+
+        @app.route("/api/trainer/evals/<eval_id>", methods=["GET"])
+        def api_trainer_eval_detail(eval_id: str):
+            """Fetch a single trainer evaluation by id."""
+            self.stats["requests_served"] += 1
+            try:
+                enabled = os.environ.get("AETHERRA_TRAINER_ENABLED", "0") == "1"
+                with self._trainer_lock:
+                    ev = self.trainer_evals.get(str(eval_id))
+                    if not ev:
+                        return jsonify({"ok": False, "error": "not_found"}), 404  # type: ignore[name-defined]
+                    out = dict(ev)
+                out["enabled"] = bool(enabled)
+                return jsonify({"ok": True, "eval": out})  # type: ignore[name-defined]
+            except Exception:
+                return jsonify({"ok": False, "error": "server"}), 500  # type: ignore[name-defined]
 
         @app.route("/services", methods=["GET"])
         def get_services():

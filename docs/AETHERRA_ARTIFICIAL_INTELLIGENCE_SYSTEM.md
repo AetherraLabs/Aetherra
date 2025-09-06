@@ -1,5 +1,8 @@
 # Aetherra Artificial Intelligence System
 
+> Maintained and officially operated by **Aetherra Labs**.
+> **Powered by Aetherra Labs.**
+
 Updated: 2025-08-27
 
 This document describes the Aetherra Artificial Intelligence System: the core AI engine, its subsystems, contracts, observability, and extension points. It mirrors the structure of other system docs and is grounded in the current codebase.
@@ -255,3 +258,12 @@ Security: only enable locally or behind Kernel/HUB auth; apply capability checks
 - Memory System doc: `docs/AETHERRA_MEMORY_SYSTEM.md`
 - Kernel System doc: `docs/AETHERRA_KERNEL_SYSTEM.md`
 - Lyrixa Chat endpoint: `docs/LYRIXA_CHAT_ENDPOINT.md`
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

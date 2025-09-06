@@ -28,3 +28,12 @@ All code in this repository, published Docker images, and hosted demo infrastruc
 - Dependabot security updates enabled
 - CI uses least-privilege tokens and avoids printing secrets
 - Dependencies pinned and lockfiles committed
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

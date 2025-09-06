@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 🤖 Lyrixa Basic AI Assistant
 ============================
@@ -99,6 +102,7 @@ class LyrixaBasicAssistant:
         try:
             logger.info("🤖 INITIALIZING LYRIXA BASIC AI ASSISTANT")
             logger.info("=" * 50)
+            logger.info("Powered by Aetherra Labs — Official Steward & Operator")
 
             # STEP 1: Check Aetherra OS dependency (CRITICAL)
             logger.info("[OS] Checking Aetherra OS dependency...")
@@ -139,6 +143,7 @@ class LyrixaBasicAssistant:
             await self._load_installed_plugins()
 
             logger.info("[READY] Lyrixa Basic AI Assistant initialized successfully")
+            logger.info("[BRANDING] Powered by Aetherra Labs")
             return True
 
         except Exception as e:
@@ -690,7 +695,10 @@ class LyrixaBasicAssistant:
 
             # Create Qt Application
             self.gui_app = QApplication.instance() or QApplication(sys.argv)
-            self.gui_app.setApplicationName("Lyrixa Basic AI Assistant")
+            # Include stewardship branding in application name (concise)
+            self.gui_app.setApplicationName(
+                "Lyrixa Basic AI Assistant · Powered by Aetherra Labs"
+            )
             self.gui_app.setApplicationVersion("1.0.0")
 
             # Create Basic Lyrixa window
@@ -707,6 +715,7 @@ class LyrixaBasicAssistant:
             logger.info("=" * 50)
             logger.info("🤖 AI CHAT: Ask me anything!")
             logger.info("🔌 AETHERRA HUB: Install plugins to expand my capabilities")
+            logger.info("⚡ Powered by Aetherra Labs")
             logger.info("=" * 50)
 
             # Start Qt event loop

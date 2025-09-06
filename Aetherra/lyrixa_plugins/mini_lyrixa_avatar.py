@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 AI Presence Projection - Mini-Lyrixa Avatar
 A dynamic AI glyph that visualizes Lyrixa's cognitive state

@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 """
 Aetherra Core Cleanup Script
 Removes exact duplicates and reorganizes misplaced files
 """
 
+import json
 import os
 import shutil
 from pathlib import Path
-import json
+
 
 class AetherraCoreCleaner:
     def __init__(self, base_path="Aetherra/aetherra_core"):
@@ -21,36 +24,29 @@ class AetherraCoreCleaner:
         duplicates_to_remove = [
             # Keep aetherra_grammar.py, remove aetherra_grammar_1.py
             ("agents/aetherra_grammar_1.py", "agents/aetherra_grammar.py"),
-
             # Keep aetherra_interpreter.py, remove aetherra_interpreter_1.py
             ("agents/aetherra_interpreter_1.py", "agents/aetherra_interpreter.py"),
-
             # Keep agents.py in orchestration/, remove from agents/
             ("agents/agents.py", "orchestration/agents.py"),
-
             # Keep base.py, remove base_1.py
             ("agents/base_1.py", "agents/base.py"),
-
             # Keep critique_agent.py in personality/, remove from agents/
             ("agents/critique_agent.py", "personality/critique_agent.py"),
-
             # Keep goal_forecaster.py in orchestration/, remove from agents/
             ("agents/goal_forecaster.py", "orchestration/goal_forecaster.py"),
-
             # Keep grammar.py, remove grammar_1.py
             ("agents/grammar_1.py", "agents/grammar.py"),
-
             # Keep intelligence.py in engine/, remove from agents/
             ("agents/intelligence.py", "engine/intelligence.py"),
-
             # Keep personality_engine.py in personality/, remove from agents/
             ("agents/personality_engine.py", "personality/personality_engine.py"),
-
             # Keep prompt_engine.py in engine/, remove from agents/
             ("agents/prompt_engine.py", "engine/prompt_engine.py"),
-
             # Keep episodic_timeline.py in fractal_mesh/timelines/, remove from memory/
-            ("memory/episodic_timeline.py", "memory/fractal_mesh/timelines/episodic_timeline.py"),
+            (
+                "memory/episodic_timeline.py",
+                "memory/fractal_mesh/timelines/episodic_timeline.py",
+            ),
         ]
 
         print("🗑️ Removing exact duplicate files...")
@@ -65,15 +61,17 @@ class AetherraCoreCleaner:
 
                 # Backup file info
                 self.backup_info[str(remove_path)] = {
-                    'kept_version': str(keep_path),
-                    'action': 'removed_duplicate'
+                    "kept_version": str(keep_path),
+                    "action": "removed_duplicate",
                 }
 
                 # Remove the duplicate
                 remove_path.unlink()
                 self.cleanup_actions.append(f"Removed duplicate: {file_to_remove}")
             else:
-                print(f"   ⚠️ Warning: Could not find {file_to_remove} or {file_to_keep}")
+                print(
+                    f"   ⚠️ Warning: Could not find {file_to_remove} or {file_to_keep}"
+                )
 
     def reorganize_misplaced_files(self):
         """Move files to more appropriate directories"""
@@ -82,17 +80,14 @@ class AetherraCoreCleaner:
         moves = [
             # Move plugin-related files to plugins/
             ("agents/advanced_plugins.py", "plugins/advanced_plugins.py"),
-
             # Move memory-related files from system/ to memory/
             ("system/lightweight_memory_core.py", "memory/lightweight_memory_core.py"),
             ("system/memory_core.py", "memory/memory_core.py"),
             ("system/memory_core_adapter.py", "memory/memory_core_adapter.py"),
             ("system/world_class_memory_core.py", "memory/world_class_memory_core.py"),
-
             # Move core tools to appropriate locations
             ("system/coretools.py", "kernel/coretools.py"),
             ("system/core_agent.py", "agents/core_agent.py"),
-
             # Move plugin manager to orchestration
             ("plugins/plugin_manager.py", "orchestration/plugin_manager.py"),
         ]
@@ -113,8 +108,8 @@ class AetherraCoreCleaner:
                 shutil.move(str(old_file), str(new_file))
 
                 self.backup_info[str(old_file)] = {
-                    'moved_to': str(new_file),
-                    'action': 'moved'
+                    "moved_to": str(new_file),
+                    "action": "moved",
                 }
 
                 self.cleanup_actions.append(f"Moved: {old_path} → {new_path}")
@@ -140,7 +135,7 @@ class AetherraCoreCleaner:
                 print(f"   ❌ Removing: {file_path}")
 
                 self.backup_info[str(file_to_remove)] = {
-                    'action': 'removed_numbered_duplicate'
+                    "action": "removed_numbered_duplicate"
                 }
 
                 file_to_remove.unlink()
@@ -156,9 +151,13 @@ class AetherraCoreCleaner:
                 dir_path = Path(root) / dir_name
                 try:
                     if not any(dir_path.iterdir()):  # Directory is empty
-                        print(f"   📁 Removing empty directory: {dir_path.relative_to(self.base_path)}")
+                        print(
+                            f"   📁 Removing empty directory: {dir_path.relative_to(self.base_path)}"
+                        )
                         dir_path.rmdir()
-                        self.cleanup_actions.append(f"Removed empty directory: {dir_path.relative_to(self.base_path)}")
+                        self.cleanup_actions.append(
+                            f"Removed empty directory: {dir_path.relative_to(self.base_path)}"
+                        )
                 except OSError:
                     pass  # Directory not empty or other issue
 
@@ -187,9 +186,18 @@ class AetherraCoreCleaner:
 
         # Generate import update suggestions
         for old_path, info in self.backup_info.items():
-            if info['action'] == 'moved':
-                old_module = old_path.replace('/', '.').replace('.py', '').replace(str(self.base_path), 'aetherra_core')
-                new_module = info['moved_to'].replace('/', '.').replace('.py', '').replace(str(self.base_path), 'aetherra_core')
+            if info["action"] == "moved":
+                old_module = (
+                    old_path.replace("/", ".")
+                    .replace(".py", "")
+                    .replace(str(self.base_path), "aetherra_core")
+                )
+                new_module = (
+                    info["moved_to"]
+                    .replace("/", ".")
+                    .replace(".py", "")
+                    .replace(str(self.base_path), "aetherra_core")
+                )
                 report.append(f"- Change `from {old_module}` to `from {new_module}`")
 
         report.append("")
@@ -209,11 +217,11 @@ class AetherraCoreCleaner:
         # Save report
         report_content = "\n".join(report)
 
-        with open("AETHERRA_CORE_CLEANUP_REPORT.md", "w", encoding='utf-8') as f:
+        with open("AETHERRA_CORE_CLEANUP_REPORT.md", "w", encoding="utf-8") as f:
             f.write(report_content)
 
         # Save backup info as JSON
-        with open("aetherra_core_cleanup_backup.json", "w", encoding='utf-8') as f:
+        with open("aetherra_core_cleanup_backup.json", "w", encoding="utf-8") as f:
             json.dump(self.backup_info, f, indent=2)
 
         print("📄 Cleanup report saved to: AETHERRA_CORE_CLEANUP_REPORT.md")
@@ -248,6 +256,7 @@ class AetherraCoreCleaner:
 
         print("🎉 Aetherra Core cleanup completed successfully!")
         print(f"📊 Total cleanup actions: {len(self.cleanup_actions)}")
+
 
 if __name__ == "__main__":
     cleaner = AetherraCoreCleaner()

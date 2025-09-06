@@ -1081,3 +1081,12 @@ website_truth_update_summary.md — Aetherra Website Truth Update - August 8, 20
 what is Aether Script.md — Aether Script (`.aether`) Language Overview
 WORKFLOW_OPTIONS_2-6_COMPLETION_REPORT.md — 🎯 AETHERRA PROJECT CLEANUP WORKFLOW COMPLETION REPORT
 ```
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

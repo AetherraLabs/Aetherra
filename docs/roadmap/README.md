@@ -16,3 +16,12 @@ Operational notes
 
 - Verify internal links work after edits. Use relative links within `docs/`.
 - If the roadmap defined new endpoints or env vars, ensure `PROJECT_OVERVIEW.md` indexes them.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

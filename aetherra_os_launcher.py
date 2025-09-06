@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 [CORE] Aetherra OS Master Launcher
 ==============================
@@ -340,6 +343,14 @@ class AetherraOSLauncher:
             # Apply logging mode (quiet or custom level) ASAP
             self._apply_logging_mode(config or {})
 
+            # Auto-detect test mode to avoid entering infinite main loop during pytest
+            cfg = config or {}
+            test_mode = bool(
+                cfg.get("test_mode")
+                or os.getenv("AETHERRA_TEST_MODE", "0") == "1"
+                or ("PYTEST_CURRENT_TEST" in os.environ)
+            )
+
             # Phase 1: Initialize Service Registry
             await self._initialize_service_registry()
 
@@ -358,7 +369,12 @@ class AetherraOSLauncher:
             # Phase 6: Announce OS online
             await self._announce_os_online()
 
-            # Phase 7: Enter main operation loop
+            # Phase 7: Enter main operation loop (skip in test mode)
+            if test_mode:
+                logger.info(
+                    "[CORE] Test mode active – skipping main operation loop (non-blocking launch)."
+                )
+                return
             await self._main_operation_loop()
 
         except Exception as e:
