@@ -1,0 +1,16 @@
+{
+  "artifacts": [
+    {
+      "path": "requirements.lock",
+      "sha256": "a8e00b0146a9186734a923004add221a7333dc1d578c5eff6246ad00e8c14980"
+    },
+    {
+      "path": "licenses_report.json",
+      "sha256": "85ff9ec601ba6d1b19a2cc9bb6734decd051485514be881d4354751871c03074"
+    },
+    {
+      "path": "sbom.json",
+      "sha256": "3fbaecd85de1efc928f6fa415055a382bd6ba03210a7d955bd5a501f36c1f46a"
+    }
+  ]
+}
