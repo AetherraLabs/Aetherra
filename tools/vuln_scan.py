@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
-"""Lightweight vulnerability scan wrapper.
+"""Lightweight vulnerability scan wrapper (alpha implementation).
 
 Attempts sequentially:
- 1. pip-audit (if installed) JSON output
- 2. osv-scanner (if installed) on requirements.lock or pyproject
+ 1. pip-audit (if installed) JSON output (-r requirements.lock)
+ 2. osv-scanner (if installed) on requirements.lock
 
-Exits non-zero if any HIGH/CRITICAL (or severity >= high) are detected.
+If neither tool is present, exits 0 with an informational message so that CI
+structure remains stable while real scanning is optional in early phases.
 
-Usage:
-  python tools/vuln_scan.py --lock requirements.lock
-
-Environment:
-  VULN_FAIL_LEVEL=high|critical (default high)
+Exit non-zero if any vulnerability meets or exceeds the configured fail level
+(``--fail-level`` or ``VULN_FAIL_LEVEL`` env). Default threshold = high.
 """
 
 from __future__ import annotations
