@@ -185,6 +185,16 @@ class AetherraHubServer:
             "+Inf": 0,
         }
 
+        # --- Sandbox / plugin runtime metrics (alpha -> promoted from placeholders) ---
+        # These counters are currently incremented in best-effort hooks; once a real
+        # sandbox subsystem is integrated they should be updated at enforcement points.
+        self.sandbox_metrics = {
+            "plugin_timeout_total": 0,  # plugin exceeded declared time budget
+            "sandbox_violations_total": 0,  # attempted disallowed action (fs/net/etc.)
+            "sandbox_policy_denied_total": 0,  # denied at policy gate before execution
+            "sandbox_exec_total": 0,  # total plugin executions observed
+        }
+
         # --- Trainer scaffolding: in-memory job state (opt-in via env) ---
         # Enabled flag is read at init; endpoints also re-check env to allow toggling for tests
         try:
@@ -2883,6 +2893,21 @@ class AetherraHubServer:
                                 )
                     except Exception:
                         pass
+            except Exception:
+                pass
+
+            # Sandbox / plugin runtime counters (alpha)
+            try:
+                sm = getattr(self, "sandbox_metrics", {}) or {}
+                if isinstance(sm, dict):
+                    for k in (
+                        "plugin_timeout_total",
+                        "sandbox_violations_total",
+                        "sandbox_policy_denied_total",
+                        "sandbox_exec_total",
+                    ):
+                        if k in sm:
+                            lines.append(f"aetherra_sandbox_{k} {_num(sm.get(k, 0))}")
             except Exception:
                 pass
 

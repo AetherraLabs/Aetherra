@@ -1,135 +1,86 @@
 #!/usr/bin/env python3
-"""Create an annotated git tag embedding release provenance metadata.
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Create a provenance tag (lightweight or annotated) referencing integrity manifest.
 
-Alpha helper: Generates (or prints) a recommended `git tag -a <tag>` message body
-containing:
-- Release version
-- SHA256 of release-manifest.json
-- Line for SBOM file name
-- Optional lock file hash (requirements.lock)
-- Timestamp (UTC ISO8601)
-- Tool version marker
-
-Usage (typical after building + signing):
-  python tools/create_provenance_tag.py --version 0.1.0-alpha.1 \
-      --manifest dist/release-manifest.json --sbom dist/aetherra-sbom.json \
-      --lock requirements.lock --tag v0.1.0-alpha.1 --apply
-
-If --apply provided and git is available, performs:
-  git tag -a <tag> -m <generated body>
-
-Otherwise prints the proposed tag body to stdout.
-
-Exit codes:
-  0 success
-  2 missing required input files
-  3 git operation failed (when --apply specified)
-
-Future (Beta+): include builder identity, reproducible build hash, SLSA attestation link.
+Intended for future provenance / attestation expansion. For now it mirrors the
+annotated tag script but uses a distinct message prefix and supports `--lightweight`.
 """
 
 from __future__ import annotations
 
 import argparse
-import datetime
 import hashlib
 import json
-import pathlib
 import subprocess
 import sys
+from pathlib import Path
 
-TOOL_VERSION = "alpha"
 
-
-def sha256_file(path: pathlib.Path) -> str:
+def sha256_file(p: Path) -> str:
     h = hashlib.sha256()
-    with path.open("rb") as f:
+    with p.open("rb") as f:
         for chunk in iter(lambda: f.read(65536), b""):
             h.update(chunk)
     return h.hexdigest()
 
 
-def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Generate provenance tag body")
-    p.add_argument("--version", required=True, help="Release version string")
-    p.add_argument("--manifest", required=True, help="Path to release-manifest.json")
-    p.add_argument("--sbom", required=True, help="Path to SBOM file")
-    p.add_argument(
-        "--lock",
-        default="requirements.lock",
-        help="Path to lock file (default: requirements.lock)",
-    )
-    p.add_argument("--tag", help="Tag name to create (with --apply)")
-    p.add_argument(
-        "--apply", action="store_true", help="Actually create the annotated git tag"
-    )
-    p.add_argument(
-        "--print-only",
-        action="store_true",
-        help="Force printing even if --apply specified (debug)",
-    )
-    args = p.parse_args(argv)
+def git(*args: str) -> str:
+    out = subprocess.check_output(["git", *args], stderr=subprocess.STDOUT)
+    return out.decode().strip()
 
-    manifest_path = pathlib.Path(args.manifest)
-    sbom_path = pathlib.Path(args.sbom)
-    lock_path = pathlib.Path(args.lock)
 
-    missing = [str(p) for p in [manifest_path, sbom_path] if not p.is_file()]
-    if missing:
-        print(
-            f"[ERROR] Required file(s) missing: {', '.join(missing)}", file=sys.stderr
-        )
-        return 2
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("tag")
+    ap.add_argument("--manifest", default="integrity-manifest.json")
+    ap.add_argument("--lightweight", action="store_true")
+    ap.add_argument("--force", action="store_true")
+    args = ap.parse_args(argv)
 
     try:
-        manifest_json = json.loads(manifest_path.read_text())
-    except Exception as e:
-        print(f"[WARN] Unable to parse manifest JSON: {e}", file=sys.stderr)
-        manifest_json = None
+        existing = git("rev-parse", "-q", "--verify", f"refs/tags/{args.tag}")
+        if existing and not args.force:
+            print(
+                f"[PROV] Tag {args.tag} already exists; use --force to recreate",
+                file=sys.stderr,
+            )
+            return 1
+    except subprocess.CalledProcessError:
+        existing = None
 
-    manifest_hash = sha256_file(manifest_path)
-    sbom_hash = sha256_file(sbom_path)
-    lock_hash = sha256_file(lock_path) if lock_path.is_file() else None
+    manifest_path = Path(args.manifest)
+    manifest_hash = sha256_file(manifest_path) if manifest_path.is_file() else None
+    entries = 0
+    if manifest_hash:
+        try:
+            data = json.loads(manifest_path.read_text(encoding="utf-8"))
+            entries = len(data.get("artifacts", [])) if isinstance(data, dict) else 0
+        except Exception:
+            pass
 
-    ts = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    if args.lightweight:
+        if existing and args.force:
+            git("tag", "-d", args.tag)
+        git("tag", args.tag)
+        print(f"[PROV] Created lightweight tag {args.tag}")
+        if manifest_hash:
+            print(
+                f"[PROV] (lightweight) manifest hash: {manifest_hash} entries={entries}"
+            )
+        return 0
 
-    body_lines = [
-        f"Aetherra Release {args.version}",
-        "",  # blank
-        f"manifest: {manifest_path} (sha256:{manifest_hash})",
-        f"sbom: {sbom_path} (sha256:{sbom_hash})",
-    ]
-    if lock_hash:
-        body_lines.append(f"lock: {lock_path} (sha256:{lock_hash})")
-    if manifest_json and "signing" in manifest_json:
-        sk = manifest_json["signing"].get("key_hint", "<unknown>")
-        body_lines.append(f"signature: present (key_hint={sk})")
-    else:
-        body_lines.append("signature: none")
-    body_lines += [
-        f"generated_at: {ts}",
-        f"tool: create_provenance_tag.py@{TOOL_VERSION}",
-        "",
-        "# Importable verification snippet:",
-        "# python tools/verify_release_manifest.py --manifest dist/release-manifest.json --dist dist --pubkey <hex>",
-    ]
+    msg = [f"Provenance {args.tag}", "", "Type: provenance"]
+    if manifest_hash:
+        msg.append(f"INTEGRITY_MANIFEST_SHA256={manifest_hash}")
+        msg.append(f"INTEGRITY_MANIFEST_ENTRIES={entries}")
+    msg.append("Generated-by: create_provenance_tag.py")
 
-    tag_body = "\n".join(body_lines)
-
-    if args.apply:
-        if not args.tag:
-            print("[ERROR] --tag required when using --apply", file=sys.stderr)
-            return 2
-        if not args.print_only:
-            try:
-                subprocess.run(
-                    ["git", "tag", "-a", args.tag, "-m", tag_body], check=True
-                )
-                print(f"[OK] Created annotated tag {args.tag}")
-            except subprocess.CalledProcessError as e:
-                print(f"[ERROR] git tag failed: {e}", file=sys.stderr)
-                return 3
-    print(tag_body)
+    if existing and args.force:
+        git("tag", "-d", args.tag)
+    git("tag", "-a", args.tag, "-m", "\n".join(msg))
+    print(f"[PROV] Created provenance tag {args.tag}")
+    if manifest_hash:
+        print(f"[PROV] Embedded manifest hash {manifest_hash}")
     return 0
 
 

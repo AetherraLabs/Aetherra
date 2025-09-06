@@ -83,6 +83,21 @@ Out-of-Scope (Alpha):
 | Failure Injection Tests   | Partial     | Medium   | Assertions expansion pending          |
 | HMR Audit & Counters      | Yes         | Medium   | No signature on module sources yet    |
 
+## 6A. Newly Added Supply Chain Controls (0.1.0-alpha.2)
+
+Recent hardening additions integrated into quality gates:
+
+| Control                          | Description                                                                      | Threats Mitigated                                         | Residual Gap                                  |
+| -------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------- |
+| License Trend Gating             | Enforces non-regression: UNKNOWN delta > tolerance or ABS_MAX breach fails gates | Silent license drift, supply chain opacity                | Does not yet deny specific SPDX IDs (planned) |
+| Overrides Lifecycle + Prune Tool | Temporary SPDX overrides w/ stale detection & pruning script                     | Accumulating stale overrides masking upstream fixes       | Manual review still required                  |
+| SBOM Generation (JSON)           | Deterministic dependency inventory artifact each gate run                        | Tampered dependency inclusion, unverifiable builds        | Not yet signed / attested                     |
+| Packaging Smoke Test             | Build/install sanity ensures wheel reproducibility and import viability          | Shipping broken artifact, unnoticed packaging regressions | No multi-platform matrix yet                  |
+| Vulnerability Scan Hook          | Optional pip-audit/osv scan (best-effort) gating high severity                   | Known CVE inclusion at release time                       | Tool availability variance                    |
+| Prometheus License Metrics       | Gauges export current UNKNOWN count & trend delta                                | Lack of observability / delayed detection                 | Alerting pipeline not wired yet               |
+
+These controls close previously identified gaps in Sections 4 & 6 (Dependency Graph, Release Packaging). Supply chain roadmap items (multi-sig, attestations, deny list) remain scheduled for Beta (see Roadmap Controls & Gap Analysis file).
+
 ## 7. Residual Risks (Alpha Accepted)
 
 - No runtime sandbox: Plugins execute with kernel process privileges.

@@ -1,0 +1,38 @@
+name: Create Provenance Tag
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name (e.g. v0.1.0-provenance)"
+        required: true
+      annotated:
+        description: "Create annotated tag (true) else lightweight"
+        required: false
+        default: 'true'
+jobs:
+  provenance-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build minimal artifacts & integrity manifest
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f pyproject.toml ]; then python -m pip install build || true; python -m build || true; fi
+          if [ -f tools/license_report.py ]; then python tools/license_report.py --lock requirements.lock --json licenses_report.json || true; fi
+          if [ -f tools/generate_sbom.py ]; then python tools/generate_sbom.py --out sbom.json || true; fi
+          if [ -f tools/generate_integrity_manifest.py ]; then python tools/generate_integrity_manifest.py --out integrity-manifest.json || true; fi
+      - name: Create tag
+        run: |
+          if [ "${{ github.event.inputs.annotated }}" = "true" ]; then \
+             python tools/create_annotated_tag.py "${{ github.event.inputs.tag }}"; \
+          else \
+             python tools/create_provenance_tag.py --lightweight "${{ github.event.inputs.tag }}"; \
+          fi
+      - name: Push tag
+        env:
+          TAG: ${{ github.event.inputs.tag }}
+        run: git push origin "$TAG"

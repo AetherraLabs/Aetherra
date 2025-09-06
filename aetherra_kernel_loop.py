@@ -1296,14 +1296,7 @@ class AetherraKernelLoop:
                 f"normal={len(self._pending_tasks['normal_priority'])}, background={len(self._pending_tasks['background'])})"
             )
         except Exception as e:
-            # Corruption / parse failure: log at INFO with explicit marker and increment metric
-            logger.info(
-                f"[SNAPSHOT][CORRUPT] Failed to restore tasks from {self.tasks_path}: {e}"
-            )
-            self.metrics["task_snapshot_corruption"] = (
-                self.metrics.get("task_snapshot_corruption", 0) + 1
-            )
-            # Leave queues empty; do not propagate exception
+            logger.debug(f"[SNAPSHOT] Failed to restore tasks: {e}")
 
 
 # Global kernel instance

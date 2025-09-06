@@ -1,0 +1,53 @@
+name: Weekly Override Prune
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch: {}
+jobs:
+  prune-overrides:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install minimal deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+      - name: Run prune (dry-run)
+        run: |
+          python tools/prune_license_overrides.py --dry-run --overrides license_overrides.yml > prune_report.txt || true
+      - name: Detect suggested changes
+        id: diff
+        run: |
+          echo '--- BEFORE' > diff.txt
+          git show HEAD:license_overrides.yml >> diff.txt || true
+          echo '\n--- AFTER (simulated)' >> diff.txt
+          # Simulate actual prune (non-dry) into temp file to show diff
+          cp license_overrides.yml _orig_overrides.yml
+          python tools/prune_license_overrides.py --overrides license_overrides.yml --report licenses_report.json || true
+          git diff --no-index _orig_overrides.yml license_overrides.yml >> diff.txt || true
+          mv _orig_overrides.yml license_overrides.yml  # restore
+          echo "DIFF_FILE=diff.txt" >> $GITHUB_OUTPUT
+      - name: Create PR suggestion
+        if: github.event_name == 'workflow_dispatch'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: prune stale license overrides"
+          title: "chore: prune stale license overrides"
+          body: |
+            Automated prune suggestion.
+
+            Diff (simulated):
+            ```
+            $(sed -e 's/`/\`/g' diff.txt)
+            ```
+          branch: chore/prune-license-overrides
+          delete-branch: true
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-override-prune-report
+          path: prune_report.txt
