@@ -28,6 +28,34 @@ packages:
     license: Apache-2.0
     reason: Well-known Apache-2.0 licensed HTTP library; classifier reliable but override for consistency.
     approved_by: governance@aetherra
+  charset-normalizer:
+    license: MIT
+    reason: Upstream LICENSE is MIT; sometimes appears with UNKNOWN in minimal env scans.
+    approved_by: governance@aetherra
+  idna:
+    license: BSD-3-Clause
+    reason: BSD-like license confirmed upstream; occasional metadata gaps.
+    approved_by: governance@aetherra
+  urllib3:
+    license: MIT
+    reason: MIT license; ensure consistent classification.
+    approved_by: governance@aetherra
+  certifi:
+    license: MPL-2.0
+    reason: Certificate bundle under Mozilla Public License 2.0; treat as acceptable.
+    approved_by: governance@aetherra
+  Jinja2:
+    license: BSD-3-Clause
+    reason: Pallets ecosystem BSD-3-Clause; align with Flask overrides.
+    approved_by: governance@aetherra
+  itsdangerous:
+    license: BSD-3-Clause
+    reason: Pallets ecosystem utility library; standard BSD-3-Clause.
+    approved_by: governance@aetherra
+  Werkzeug:
+    license: BSD-3-Clause
+    reason: Pallets core; BSD-3-Clause, add for normalization.
+    approved_by: governance@aetherra
 
 # Example (uncomment to use):
 # packages:
