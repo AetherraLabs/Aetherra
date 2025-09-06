@@ -585,3 +585,12 @@ Success criteria:
   - LSP: signature help for kwargs; diagnostics for policy/require/meta blocks
   - Static analyzer: truthiness, effectful/pure misuse, policy violations
   - Tests: golden parsing, concurrency execution, step options, error handling
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

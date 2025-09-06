@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 ⏰ AETHERRA TEMPORAL CONSCIOUSNESS SYSTEM
 Phase 7.3 Time-Aware Consciousness and Temporal Processing

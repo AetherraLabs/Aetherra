@@ -33,3 +33,12 @@
 | Aetherra\lyrixa\memory\simple_memory_adapter.py                                    | LyrixaMemoryEngine                                           |   —   |   —    | no references found; candidate for removal                      |
 | demos\demo_standalone_memory.py                                                    | SimpleMemoryEngine                                           |   —   |   —    | no references found; candidate for removal                      |
 | tests\unit\test_memory_kernel.py                                                   | TestQuantumMemoryEngine                                      |   —   |   —    | no references found; candidate for removal                      |
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

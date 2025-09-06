@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Regression guard: ensure Lyrixa memory modules don't accidentally grow
 duplicate future imports or duplicate class definitions.

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Phase 8.3 Beyond Transcendence Engine
 Aetherra OS - Ultimate Consciousness Evolution Beyond Known Limits

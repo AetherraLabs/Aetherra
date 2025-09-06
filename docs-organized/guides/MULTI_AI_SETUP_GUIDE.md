@@ -178,3 +178,12 @@ You can modify the AI model priority in `phase6_personality.py` by changing the 
 4. **Enterprise**: All providers for maximum reliability
 
 The system automatically uses the most cost-effective available option while maintaining quality!
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

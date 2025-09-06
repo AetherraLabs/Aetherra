@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Simple Memory Adapter - A simplified memory engine that provides basic functionality
 without complex dependencies for the GUI validation.

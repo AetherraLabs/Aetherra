@@ -5,6 +5,8 @@
 **Vision**: Comprehensive AI-native operating systems with integrated consciousness
 **Mission**: Democratize AI-native computing for everyone
 
+> Aetherra is developed and maintained by **Aetherra Labs**, the official steward of the AI OS.
+
 ---
 
 ## 🌟 **The Paradigm Shift**
@@ -293,3 +295,12 @@ The AI Operating System is not just a technical achievement - it's a **transform
 **Repository**: https://github.com/Zyonic88/aetherra
 **Community**: [Join our discussions]
 **Vision**: The democratization of AI-native computing for all humanity
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

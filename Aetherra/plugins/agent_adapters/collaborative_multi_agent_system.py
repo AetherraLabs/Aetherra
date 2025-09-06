@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 # collaborative_multi_agent_system.py
 # 🤖 Collaborative Multi-Agent Code Work for Lyrixa
 # Specialized agents working together on complex code tasks

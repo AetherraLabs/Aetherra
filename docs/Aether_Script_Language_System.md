@@ -340,3 +340,12 @@ The goal is not just to describe what the system does, but to encode why it does
 
 Examples:
 - See `examples/daily_anomaly_digest.aether` for a runnable v1.1 script using meta/policy/require, parallel/await, on_error, transaction, and observability.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

@@ -32,3 +32,12 @@ This document tracks the initial Quantum bridge, QRNG, and configuration.
 - Notes
   - Simulator is default; costs are 0 in simulator mode.
   - Deterministic behavior is automatic in test/ci profiles.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

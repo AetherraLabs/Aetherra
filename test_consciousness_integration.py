@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 """
 Aetherra Consciousness Evolution Integration Test
 Tests all phases 1-8.3 integration with Aetherra OS

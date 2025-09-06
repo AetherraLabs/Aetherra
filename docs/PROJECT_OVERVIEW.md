@@ -44,6 +44,12 @@ Endpoints summary (Hub Flask server):
 - /services
 - /api/plugins
 - /api/plugins/register
+- /api/memory/narratives
+- /memory/narratives
+- /api/trainer/jobs
+- /api/trainer/status
+- /api/trainer/evals
+- /api/trainer/evals/<eval_id>
 Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 18), including OS boot, registry collaboration, hub endpoints/federation, memory recall, QFAC-in-OS, and self-maintenance wiring.
 
 
@@ -137,6 +143,10 @@ Tests provide end-to-end validation (capabilities: 8) and unit coverage (unit: 1
 - /api/memory/graph
 - /api/memory/status
 - /api/memory/audit
+- /api/memory/narratives
+- /memory/narratives
+- /api/trainer/jobs
+- /api/trainer/status
 - /api/registry/status
 - /api/kernel/metrics
 - /api/kernel/status
@@ -364,6 +374,7 @@ Core toggles and networking:
 - `AETHERRA_AI_API_STREAM`
 - `AETHERRA_AI_API_TOKEN`
 - `AETHERRA_ALLOW_UNTRUSTED_SECRET`
+- `AETHERRA_AGENT_PER_METRICS`
 - `AETHERRA_ENABLE_QFAC`
 - `AETHERRA_FEDERATION_STATE`
 - `AETHERRA_HMR_ENABLED`
@@ -411,6 +422,7 @@ Plugins runtime:
 - `AETHERRA_PLUGIN_DISABLE`
 - `AETHERRA_PLUGIN_INTERACTIVE`
 - `AETHERRA_PLUGIN_MAX_CONCURRENCY`
+- `AETHERRA_TRAINER_ENABLED`
 
 Chat and client defaults:
 
@@ -435,3 +447,27 @@ Chat and client defaults:
 - `AETHERRA_SECURITY_LEDGER_PATH`
 - `AETHERRA_RETRY_AFTER_SEC`
 
+---
+
+## Endpoints (canonical)
+
+Primary Hub endpoints added/updated in this release (canonical list; see full inventory above for all routes):
+
+- /api/memory/narratives
+- /memory/narratives
+- /api/trainer/jobs
+- /api/trainer/jobs/<job_id>
+- /api/trainer/status
+- /api/trainer/evals
+- /api/trainer/evals/<eval_id>
+
+These are served by the local Hub when Flask is available. Some routes may be gated by feature flags or environment variables noted earlier.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

@@ -191,3 +191,12 @@ visualize: — render memory graphs or output summaries
 .aether is an expressive, semantic-first language for orchestrating thought-driven computation inside the Aetherra OS. It emphasizes clarity of intention, dynamic adaptability, and integration with intelligent memory, agent systems, and evolving plugins.
 
 The goal is not just to describe what the system does, but to encode why it does it — making the code itself a living participant in the cognition of the OS.
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

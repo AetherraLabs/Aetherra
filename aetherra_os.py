@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
 🚀 AETHERRA AI OPERATING SYSTEM - MAIN ENTRY POINT
 ==================================================
 
-Copyright (C) 2025 AetherraLabs
 Licensed under GNU General Public License v3.0
 
 This program is free software: you can redistribute it and/or modify

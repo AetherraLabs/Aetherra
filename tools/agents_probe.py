@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
+
+"""Agent fabric probe utility (simplified placeholder)."""
+
+
+def main():  # pragma: no cover - diagnostic utility
+    print("Agent probe stub (alpha)")
+
+
+if __name__ == "__main__":
+    main()
+#!/usr/bin/env python3
 """
 Agent Fabric Probe
 ==================

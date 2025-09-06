@@ -325,3 +325,11 @@ Lifecycle note:
 
 - When this roadmap reaches COMPLETE status, move this file to `docs/roadmap/` and add a completion header (date, tag). Re-run docs consistency to ensure indexes and links remain valid.
 
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
