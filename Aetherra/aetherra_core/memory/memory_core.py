@@ -28,8 +28,9 @@ class Memory:
     importance: float = 0.5
     memory_type: str = "conversation"
     timestamp: Optional[str] = None
-    created_at: Optional[datetime] = None
-    last_accessed: Optional[datetime] = None
+    # These are always set on construction in this adapter implementation
+    created_at: datetime | None = None
+    last_accessed: datetime | None = None
     access_count: int = 0
 
 
@@ -49,7 +50,11 @@ class MemoryCore:
         self.engine = QuantumEnhancedMemoryEngine()
 
     def store(self, memory_entry: dict) -> dict:
-        return self.engine.store(memory_entry)
+        stored = self.engine.store(memory_entry)
+        # Engine may return bool in legacy paths; normalize to dict
+        if isinstance(stored, bool):  # pragma: no cover - defensive
+            return {"ok": stored}
+        return stored
 
     def retrieve(self, query: str, context: Optional[dict] = None) -> dict:
         return self.engine.retrieve(query, context or {})
@@ -83,6 +88,35 @@ class LyrixaMemorySystem:
 
         # Initialize database synchronously
         self._initialize_database_sync()
+
+    def close(self) -> None:
+        """Close the underlying SQLite connection if open.
+
+        Windows cannot remove an open SQLite file; tests that create a temporary
+        LyrixaMemorySystem instance need deterministic cleanup. This method is
+        idempotent and safe to call multiple times.
+        """
+        if self.conn is not None:
+            try:
+                self.conn.close()
+            except Exception:
+                pass
+            finally:
+                self.conn = None
+
+    def __del__(self):  # pragma: no cover - best effort GC finalizer
+        try:
+            self.close()
+        except Exception:
+            pass
+
+    # Context manager helpers for deterministic cleanup in tests/utilities
+    def __enter__(self):  # pragma: no cover - syntactic sugar
+        return self
+
+    def __exit__(self, exc_type, exc, tb):  # pragma: no cover - syntactic sugar
+        self.close()
+        return False
 
     def ensure_connection(self) -> sqlite3.Connection:
         """Ensures the database connection is open and returns it."""
@@ -200,6 +234,10 @@ class LyrixaMemorySystem:
 
             with self.db_session():
                 cursor = self.ensure_connection().cursor()
+                # Help type checker: created_at/last_accessed set above
+                assert (
+                    memory.created_at is not None and memory.last_accessed is not None
+                )
                 cursor.execute(
                     """
                     INSERT OR REPLACE INTO memories

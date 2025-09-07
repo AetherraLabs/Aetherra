@@ -1,3 +1,4 @@
+# @signature: cb7888ecae05016835c79fe5dfbef3e8f83b3a24b64c2a636a25726fb0d48f08
 plugin memory_cleanser {
   description: "Cleans up outdated, low-confidence, and orphaned memory entries to maintain clarity and performance."
   memory_access: read-write

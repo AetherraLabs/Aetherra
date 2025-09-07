@@ -212,6 +212,74 @@ def main() -> int:
     except Exception as e:
         print(f"[GATES] Warning: failed to write baseline: {e}")
 
+    # Security & memory fragmentation supplemental gates (post-tests so new tools are importable)
+    if os.getenv("STATIC_SECURITY_SCAN", "1") == "1":
+        scan_tool = Path("tools/static_security_scan.py")
+        if scan_tool.exists():
+            print("[GATES] Running static security scan (fail on critical findings)...")
+            code_scan, out_scan = run(
+                [
+                    sys.executable,
+                    str(scan_tool),
+                    "--root",
+                    ".",
+                    "--json",
+                    "security_scan_report.json",
+                    "--md",
+                    "security_scan_report.md",
+                ]
+            )
+            print(out_scan)
+            if code_scan != 0:
+                print("[GATES] Static security scan failed (critical findings).")
+                return 1
+        else:
+            print("[GATES] static_security_scan.py missing; skipping (non-fatal).")
+
+    if os.getenv("FRAGMENTATION_CHECK", "1") == "1":
+        frag_tool = Path("tools/memory_fragmentation_metrics.py")
+        if frag_tool.exists():
+            print("[GATES] Measuring memory fragmentation heuristic...")
+            # Run tool as a module to print dict; capture output
+            code_frag, out_frag = run([sys.executable, str(frag_tool)])
+            print(out_frag)
+            # Attempt to parse dict literal (safe eval using json after replacement)
+            import json as _json
+            import re as _re
+
+            stats_match = _re.search(r"\{.*\}", out_frag, _re.S)
+            if stats_match:
+                try:
+                    # Replace single quotes if present to be JSON compliant
+                    raw = stats_match.group(0).replace("'", '"')
+                    stats = _json.loads(raw)
+                    ratio_before = float(
+                        stats.get("fragmentation_ratio_before", 0.0) or 0.0
+                    )
+                    ratio_after = float(
+                        stats.get("fragmentation_ratio_after", 0.0) or 0.0
+                    )
+                    allowed_delta = float(
+                        os.getenv("FRAGMENTATION_ALLOWED_DELTA", "0.30")
+                    )
+                    delta = max(0.0, ratio_after - ratio_before)
+                    print(
+                        f"[GATES] Fragmentation ratios before={ratio_before:.4f} after={ratio_after:.4f} delta={delta:.4f} (allowed <= {allowed_delta})"
+                    )
+                    if delta > allowed_delta:
+                        print("[GATES] Fragmentation delta exceeds allowed threshold.")
+                        return 1
+                except Exception as e:  # pragma: no cover
+                    print(f"[GATES] Warning: failed to parse fragmentation stats: {e}")
+            else:
+                print(
+                    "[GATES] Warning: could not locate fragmentation stats in output."
+                )
+        else:
+            print(
+                "[GATES] memory_fragmentation_metrics.py missing; skipping (non-fatal)."
+            )
+
     # 2. Optional: run Architecture Map verifier
     if os.getenv("ARCH_CHECK", "1") == "1":
         strict = os.getenv("ARCH_CHECK_STRICT", "0") == "1"

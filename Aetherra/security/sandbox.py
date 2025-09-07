@@ -56,7 +56,7 @@ def safe_eval(expr: str, variables: Dict[str, Any] | None = None) -> Any:
     except Exception as e:
         raise SandboxViolation(f"Parse error: {e}")
 
-    # Disallow dangerous nodes
+    # Disallow dangerous nodes; allow ast.Call conditionally (handled below)
     forbidden = (
         ast.Attribute,
         ast.Lambda,
@@ -64,12 +64,11 @@ def safe_eval(expr: str, variables: Dict[str, Any] | None = None) -> Any:
         ast.ClassDef,
         ast.Import,
         ast.ImportFrom,
-        ast.Call,  # block calls (only allow builtins through names mapping)
         ast.DictComp,
         ast.ListComp,
         ast.SetComp,
         ast.GeneratorExp,
-        ast.Subscript,  # avoid obj[...]
+        ast.Subscript,
         ast.Yield,
         ast.YieldFrom,
         ast.Await,
@@ -78,6 +77,10 @@ def safe_eval(expr: str, variables: Dict[str, Any] | None = None) -> Any:
     for node in ast.walk(tree):
         if isinstance(node, forbidden):
             raise SandboxViolation(f"Forbidden construct: {type(node).__name__}")
+        if isinstance(node, ast.Call):
+            # Only allow direct Name calls where the function id is in SAFE_BUILTINS
+            if not isinstance(node.func, ast.Name) or node.func.id not in SAFE_BUILTINS:
+                raise SandboxViolation("Forbidden function call")
 
     allowed = dict(SAFE_BUILTINS)
     # Only allow provided variables as names; no globals

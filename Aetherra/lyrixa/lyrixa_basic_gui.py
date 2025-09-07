@@ -513,7 +513,14 @@ class LyrixaBasicWindow(QMainWindow):
 
         # Normalize response
         try:
-            if isinstance(response, dict):
+            # Support ChatResponse dataclass (from lyrixa_chat_service)
+            if not isinstance(response, (dict, str)) and hasattr(response, "text"):
+                try:
+                    text = getattr(response, "text", "")
+                    awareness = getattr(response, "awareness", None)
+                except Exception:
+                    text = str(response)
+            elif isinstance(response, dict):
                 text = response.get("text") or response.get("response") or ""
                 aw = response.get("awareness")
                 awareness = aw if isinstance(aw, dict) else None
@@ -1710,39 +1717,80 @@ Select an option to customize how this plugin operates within Lyrixa.
 
 def main():
     """Test the Basic Lyrixa GUI."""
+    import argparse
+    import asyncio
     import sys
+
+    parser = argparse.ArgumentParser(description="Lyrixa Basic GUI Launcher")
+    parser.add_argument(
+        "--force-mock",
+        action="store_true",
+        help="Force mock backends even if full assistant available",
+    )
+    args = parser.parse_args()
 
     app = QApplication(sys.argv)
     app.setApplicationName("Lyrixa Basic AI Assistant")
 
-    # Create mock backend systems for testing
-    class MockAIChat:
-        async def send_message(self, message):
-            return f"I received your message: {message}"
+    ai_chat = None
+    hub_connector = None
+    service_registry = None
 
-    class MockHubConnector:
-        async def get_available_plugins(self):
-            return [
-                {
-                    "name": "code-editor",
-                    "display_name": "Code Editor",
-                    "description": "Advanced code editing capabilities",
-                    "version": "1.0.0",
-                },
-                {
-                    "name": "system-tools",
-                    "display_name": "System Tools",
-                    "description": "System monitoring and management tools",
-                    "version": "1.0.0",
-                },
-            ]
+    if not args.force_mock:
+        try:
+            # Attempt full assistant initialization
+            from Aetherra.lyrixa.lyrixa_basic import (
+                LyrixaBasicAssistant,  # type: ignore
+            )
 
-        async def install_plugin(self, plugin_name):
-            return True
+            async def _init_full():
+                assistant = LyrixaBasicAssistant()
+                ok = await assistant.initialize()
+                if ok:
+                    return (
+                        assistant.ai_chat_system,
+                        assistant.hub_connector,
+                        assistant.service_registry,
+                    )
+                return None, None, None
 
-    # Create and show window
+            ai_chat, hub_connector, service_registry = asyncio.run(_init_full())
+        except Exception as e:  # Fall back to mocks
+            logger.warning(f"[GUI] Full assistant init failed, using mocks: {e}")
+
+    if ai_chat is None:
+        # Create mock backend systems for testing
+        class MockAIChat:
+            async def send_message(self, message):
+                return f"I received your message: {message}"
+
+        class MockHubConnector:
+            async def get_available_plugins(self):
+                return [
+                    {
+                        "name": "code-editor",
+                        "display_name": "Code Editor",
+                        "description": "Advanced code editing capabilities",
+                        "version": "1.0.0",
+                    },
+                    {
+                        "name": "system-tools",
+                        "display_name": "System Tools",
+                        "description": "System monitoring and management tools",
+                        "version": "1.0.0",
+                    },
+                ]
+
+            async def install_plugin(self, plugin_name):
+                return True
+
+        ai_chat = MockAIChat()
+        hub_connector = MockHubConnector()
+        service_registry = None
+
+    # Create and show window with chosen backends
     window = LyrixaBasicWindow(
-        ai_chat=MockAIChat(), hub_connector=MockHubConnector(), service_registry=None
+        ai_chat=ai_chat, hub_connector=hub_connector, service_registry=service_registry
     )
     window.show()
 

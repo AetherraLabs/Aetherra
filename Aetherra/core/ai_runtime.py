@@ -74,7 +74,19 @@ def ask_ai(prompt, temperature=0.2, debug_mode=False, model=None):
 
     try:
         # Use specified model or try defaults
-        models_to_try = [model] if model else ["gpt-4o-mini", "gpt-3.5-turbo", "gpt-4"]
+        # Model fallback: prefer latest mini / cost-efficient, then legacy turbo. Translate deprecated names.
+        def _normalize(m: str) -> str:
+            if not m:
+                return "gpt-4o-mini"
+            lm = m.lower().strip()
+            if lm in {"gpt-4", "gpt4"}:
+                return "gpt-4o-mini"
+            return m
+
+        if model:
+            models_to_try = [_normalize(model)]
+        else:
+            models_to_try = ["gpt-4o-mini", "gpt-3.5-turbo"]
 
         for current_model in models_to_try:
             try:

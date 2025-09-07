@@ -1,3 +1,4 @@
+# @signature: dc606d6f4960e5ee4c012a7b02e15c5b95657026aeb7966ffb1c5c40209011bb
 plugin goals {
     description: "Core goal management system for creating, updating, and tracking goals."
     memory_access: read-write

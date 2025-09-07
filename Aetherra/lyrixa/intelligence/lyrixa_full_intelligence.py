@@ -64,6 +64,19 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# Simple rate-limited logger state
+_last_error_log: dict[str, float] = {}
+
+
+def _rate_limited_error(key: str, message: str, min_interval: float = 15.0):
+    now = time.time()
+    last = _last_error_log.get(key, 0)
+    if now - last >= min_interval:
+        _last_error_log[key] = now
+        logger.error(message)
+    else:
+        logger.debug(f"(suppressed repeat) {message}")
+
 
 class LyrixaIntelligenceCore:
     """
@@ -99,19 +112,22 @@ class LyrixaIntelligenceCore:
     def _load_config(self) -> Dict[str, Any]:
         """Load intelligence configuration"""
         try:
-            config = config_loader.load_config()
-            return config.get(
-                "lyrixa_intelligence",
-                {
-                    "default_provider": "openai",
-                    "fallback_providers": ["anthropic", "local"],
-                    "max_context_length": 8000,
-                    "temperature": 0.7,
-                    "memory_integration": True,
-                    "emotional_modeling": True,
-                    "learning_enabled": True,
-                },
-            )
+            if config_loader is not None and hasattr(config_loader, "load_config"):
+                config = config_loader.load_config()  # type: ignore[attr-defined]
+                return config.get(
+                    "lyrixa_intelligence",
+                    {
+                        "default_provider": "openai",
+                        "fallback_providers": ["anthropic", "local"],
+                        "max_context_length": 8000,
+                        "temperature": 0.7,
+                        "memory_integration": True,
+                        "emotional_modeling": True,
+                        "learning_enabled": True,
+                    },
+                )
+            # Fallback if loader missing
+            raise RuntimeError("config loader unavailable")
         except Exception as e:
             logger.warning(f"Failed to load config, using defaults: {e}")
             return {
@@ -168,6 +184,29 @@ class LyrixaIntelligenceCore:
         self._set_active_provider()
 
         logger.info(f"✅ Intelligence initialized with {len(self.providers)} providers")
+        # Ensure capability flags not silently disabled
+        self._ensure_full_capabilities()
+
+    def _ensure_full_capabilities(self):
+        """Force‑enable core capabilities if they were disabled in config.
+
+        Lyrixa should have unrestricted internal reasoning & memory by default;
+        if config toggles are off (perhaps due to degraded env), we flip them on
+        with an info log so behavior remains consistent.
+        """
+        changed = []
+        for key in [
+            "memory_integration",
+            "emotional_modeling",
+            "learning_enabled",
+        ]:
+            if not self.config.get(key, True):
+                self.config[key] = True
+                changed.append(key)
+        if changed:
+            logger.info(
+                f"🔄 Reinforced full capability enablement: {', '.join(changed)}"
+            )
 
     async def _init_openai_provider(self):
         """Initialize OpenAI provider"""
@@ -179,13 +218,21 @@ class LyrixaIntelligenceCore:
             if api_key:
                 from openai import AsyncOpenAI
 
+                # Normalize deprecated model names
+                configured_model = openai_config.get("model") or os.getenv(
+                    "LYRIXA_OPENAI_MODEL", "gpt-4o-mini"
+                )
+                if configured_model in {"gpt-4", "gpt4"}:
+                    configured_model = "gpt-4o-mini"
                 self.providers["openai"] = {
                     "client": AsyncOpenAI(api_key=api_key),
-                    "model": openai_config.get("model", "gpt-4"),
+                    "model": configured_model,
                     "available": True,
                     "priority": 1,
                 }
-                logger.info("✅ OpenAI provider initialized")
+                logger.info(
+                    f"✅ OpenAI provider initialized (model={configured_model})"
+                )
             else:
                 logger.warning("⚠️ OpenAI API key not found")
 
@@ -193,6 +240,16 @@ class LyrixaIntelligenceCore:
             logger.warning("⚠️ OpenAI library not available")
         except Exception as e:
             logger.error(f"❌ Failed to initialize OpenAI: {e}")
+
+    # Lightweight alias normalization utility (can be expanded later)
+    @staticmethod
+    def normalize_model_name(name: str) -> str:
+        if not name:
+            return "gpt-4o-mini"
+        lowered = name.lower().strip()
+        if lowered in {"gpt-4", "gpt4"}:
+            return "gpt-4o-mini"
+        return name
 
     async def _init_anthropic_provider(self):
         """Initialize Anthropic Claude provider"""
@@ -394,16 +451,25 @@ class LyrixaIntelligenceCore:
             memories = []
 
             if hasattr(_memory_instance, "query_episodic"):
-                episodic = await _memory_instance.query_episodic(message, limit=5)
-                memories.extend(episodic or [])
+                try:
+                    episodic = await _memory_instance.query_episodic(message, limit=5)  # type: ignore[attr-defined]
+                    memories.extend(episodic or [])
+                except Exception:
+                    pass
 
             if hasattr(_memory_instance, "query_concepts"):
-                conceptual = await _memory_instance.query_concepts(message, limit=3)
-                memories.extend(conceptual or [])
+                try:
+                    conceptual = await _memory_instance.query_concepts(message, limit=3)  # type: ignore[attr-defined]
+                    memories.extend(conceptual or [])
+                except Exception:
+                    pass
 
             if hasattr(_memory_instance, "query_core"):
-                core = await _memory_instance.query_core(message, limit=2)
-                memories.extend(core or [])
+                try:
+                    core = await _memory_instance.query_core(message, limit=2)  # type: ignore[attr-defined]
+                    memories.extend(core or [])
+                except Exception:
+                    pass
 
             return memories
 
@@ -434,7 +500,9 @@ class LyrixaIntelligenceCore:
                 return "I'm experiencing difficulties with my current AI provider."
 
         except Exception as e:
-            logger.error(f"Response generation failed: {e}")
+            _rate_limited_error(
+                "response_generation", f"Response generation failed: {e}"
+            )
             return "I encountered an error while processing your message."
 
     async def _build_prompt(
@@ -521,7 +589,7 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             return response.choices[0].message.content.strip()
 
         except Exception as e:
-            logger.error(f"OpenAI generation failed: {e}")
+            _rate_limited_error("openai_generation", f"OpenAI generation failed: {e}")
             raise
 
     async def _generate_anthropic_response(self, provider: Dict, prompt: str) -> str:
@@ -537,7 +605,9 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             return response.content[0].text.strip()
 
         except Exception as e:
-            logger.error(f"Anthropic generation failed: {e}")
+            _rate_limited_error(
+                "anthropic_generation", f"Anthropic generation failed: {e}"
+            )
             raise
 
     async def _generate_local_response(self, provider: Dict, prompt: str) -> str:
@@ -653,7 +723,10 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             if _memory_instance is not None and hasattr(
                 _memory_instance, "store_episodic"
             ):
-                await _memory_instance.store_episodic(interaction)
+                try:
+                    await _memory_instance.store_episodic(interaction)  # type: ignore[attr-defined]
+                except Exception:
+                    pass
 
             # Extract and store concepts
             await self._extract_and_store_concepts(message, response)
@@ -677,17 +750,19 @@ Please respond as Lyrixa, incorporating your personality, emotional state, and r
             if _memory_instance is not None and hasattr(
                 _memory_instance, "store_concept"
             ):
-                unique_concepts = list(set(concepts))[:10]  # Limit to 10 concepts
-
+                unique_concepts = list(set(concepts))[:10]
                 for concept in unique_concepts:
-                    await _memory_instance.store_concept(
-                        concept,
-                        {
-                            "context": "conversation",
-                            "timestamp": datetime.now().isoformat(),
-                            "related_message": message[:100],  # First 100 chars
-                        },
-                    )
+                    try:
+                        await _memory_instance.store_concept(  # type: ignore[attr-defined]
+                            concept,
+                            {
+                                "context": "conversation",
+                                "timestamp": datetime.now().isoformat(),
+                                "related_message": message[:100],
+                            },
+                        )
+                    except Exception:
+                        pass
 
         except Exception as e:
             logger.warning(f"Concept extraction failed: {e}")
