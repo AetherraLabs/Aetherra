@@ -245,6 +245,38 @@ class LyrixaBasicAssistant:
     async def _initialize_ai_chat(self):
         """Initialize the AI Chat system with multi-model support."""
         try:
+            # First attempt: use advanced LyrixaChatService for richer awareness
+            try:
+                from Aetherra.lyrixa.chat.lyrixa_chat_service import (
+                    ChatOptions,
+                    LyrixaChatService,
+                )
+
+                class _AdvancedChatWrapper:
+                    def __init__(self):
+                        self._svc: Optional[LyrixaChatService] = None  # type: ignore[name-defined]
+
+                    async def initialize(self):
+                        self._svc = LyrixaChatService(workspace_root=Path(os.getcwd()))  # type: ignore[name-defined]
+                        await self._svc.initialize()
+                        return True
+
+                    async def send_message(self, message: str):
+                        if not self._svc:
+                            raise RuntimeError("advanced chat not initialized")
+                        resp = await self._svc.chat(message, ChatOptions())  # type: ignore[name-defined]
+                        return resp  # GUI now supports ChatResponse objects
+
+                adv = _AdvancedChatWrapper()
+                ok = await adv.initialize()
+                if ok:
+                    logger.info("[CHAT] Using advanced LyrixaChatService backend")
+                    return adv
+            except Exception as e:
+                logger.debug(
+                    f"[CHAT] Advanced LyrixaChatService unavailable, fallback to basic: {e}"
+                )
+
             # Create a simple chat system with model fallback
             class BasicChatSystem:
                 def __init__(self):
@@ -833,7 +865,35 @@ async def main():
                         continue
 
                 response = await lyrixa.ai_chat_system.send_message(user_input)
-                print(f"Lyrixa> {response}")
+                # Pretty-print ChatResponse objects (advanced backend)
+                if not isinstance(response, (str, dict)) and hasattr(response, "text"):
+                    try:
+                        txt = getattr(response, "text", "")
+                        awareness = getattr(response, "awareness", {}) or {}
+                        # Small awareness addendum: indicate path if available, number of evidence items
+                        extra_parts = []
+                        if isinstance(awareness, dict):
+                            ev = awareness.get("evidence")
+                            if isinstance(ev, list) and ev:
+                                extra_parts.append(f"evidence={len(ev)}")
+                            cb = awareness.get("confidence_breakdown") or awareness.get(
+                                "confidence"
+                            )
+                            if isinstance(cb, dict):
+                                ov = cb.get("overall")
+                                try:
+                                    if ov is not None:
+                                        extra_parts.append(f"conf={float(ov):.2f}")
+                                except Exception:
+                                    pass
+                        extra = (
+                            (" [" + ", ".join(extra_parts) + "]") if extra_parts else ""
+                        )
+                        print(f"Lyrixa> {txt}{extra}")
+                    except Exception:
+                        print(f"Lyrixa> {response}")
+                else:
+                    print(f"Lyrixa> {response}")
 
             except KeyboardInterrupt:
                 break

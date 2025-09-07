@@ -1,3 +1,4 @@
+# @signature: 6e43da09ee984b91f4f525668ffc961f3a9dbdc94483f725461d9c40acc9cf80
 plugin agent_sync {
   description: "Ensures all system agents are correctly defined, up to date, and aware of relevant plugins."
   memory_access: read-write

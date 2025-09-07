@@ -17,10 +17,22 @@ from pathlib import Path
 
 
 def main(argv: list[str]) -> int:
-    aethers = [a for a in argv if a.lower().endswith(".aether") and Path(a).exists()]
-    if not aethers:
+    dry = False
+    filtered: list[str] = []
+    for a in argv:
+        if a == "--dry-run":
+            dry = True
+            continue
+        if a.lower().endswith(".aether") and Path(a).exists():
+            filtered.append(a)
+    if not filtered:
         return 0
-    cmd = [sys.executable, str(Path("tools") / "sign_aether.py"), *aethers]
+    if dry:
+        print("[precommit_sign_aether] Dry run: would sign:")
+        for f in filtered:
+            print(f"  - {f}")
+        return 0
+    cmd = [sys.executable, str(Path("tools") / "sign_aether.py"), *filtered]
     return subprocess.call(cmd)
 
 

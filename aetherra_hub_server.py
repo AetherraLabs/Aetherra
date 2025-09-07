@@ -2604,6 +2604,138 @@ class AetherraHubServer:
                 status = {"running": False}
             return jsonify(status)  # type: ignore[name-defined]
 
+        @app.route("/api/health", methods=["GET"])
+        def api_health():
+            """Aggregate lightweight health snapshot for probes/dashboards.
+
+            Returns JSON with keys:
+              ok: overall boolean (kernel running)
+              ts: hub timestamp
+              kernel: subset of kernel status
+              registry: basic registry stats
+              orchestrator: (present if engine/orchestrator registered)
+              memory: quantum memory coherence/fragment stats (best-effort)
+              chat: minimal chat counters
+            """
+            self.stats["requests_served"] += 1
+            from datetime import (
+                datetime as _dt,  # local import to avoid top-level churn
+            )
+
+            # Defensive wrappers
+            def _subset_kernel(ks: Dict[str, Any]) -> Dict[str, Any]:  # type: ignore[name-defined]
+                if not isinstance(ks, dict):
+                    return {"running": False}
+                out: Dict[str, Any] = {  # type: ignore[name-defined]
+                    "running": bool(
+                        ks.get("running") is True
+                        or str(ks.get("state", "")).lower() == "running"
+                    ),
+                    "paused": bool(ks.get("paused", False)),
+                }
+                # Optional fields if present
+                for k in ("uptime", "uptime_seconds"):
+                    val = ks.get(k)
+                    if isinstance(val, (int, float)):
+                        try:
+                            out["uptime_seconds"] = float(val)
+                        except Exception:
+                            pass
+                        break
+                qsz = ks.get("queue_sizes") or {}
+                if isinstance(qsz, dict) and qsz:
+                    try:
+                        out["queue_sizes"] = {
+                            "high": int(qsz.get("high_priority", 0) or 0),
+                            "normal": int(qsz.get("normal_priority", 0) or 0),
+                            "background": int(qsz.get("background", 0) or 0),
+                        }
+                    except Exception:
+                        pass
+                return out
+
+            def _subset_registry(rs: Dict[str, Any]) -> Dict[str, Any]:  # type: ignore[name-defined]
+                if not isinstance(rs, dict):
+                    return {"ok": False}
+                return {
+                    "ok": True,
+                    "total_services": int(rs.get("total_services", 0) or 0),
+                    "by_status": rs.get("service_count_by_status", {}),
+                }
+
+            def _subset_orchestrator(oc: Dict[str, Any]) -> Optional[Dict[str, Any]]:  # type: ignore[name-defined]
+                if not isinstance(oc, dict) or not oc:
+                    return None
+                try:
+                    return {
+                        "status": oc.get("status"),
+                        "total_agents": oc.get("total_agents"),
+                        "pending_tasks": oc.get("pending_tasks"),
+                    }
+                except Exception:
+                    return None
+
+            def _subset_memory(ms: Dict[str, Any]) -> Dict[str, Any]:  # type: ignore[name-defined]
+                if not isinstance(ms, dict):
+                    return {"enabled": False}
+                out: Dict[str, Any] = {  # type: ignore[name-defined]
+                    "enabled": bool(ms.get("enabled", False)),
+                }
+                for k in ("coherence", "fragments", "branches", "entanglement_nodes"):
+                    if k in ms:
+                        try:
+                            out[k] = ms.get(k)
+                        except Exception:
+                            pass
+                if isinstance(ms.get("branch"), str):
+                    out["branch"] = ms.get("branch")
+                return out
+
+            ks = _get_kernel_status_sync()
+            rs = _get_registry_status_sync()
+            orch = (
+                _get_orchestrator_status_sync()
+                if "_get_orchestrator_status_sync" in globals()
+                else None
+            )
+            ms = _get_memory_quantum_status_sync()
+
+            kernel_sub = _subset_kernel(ks)  # type: ignore[arg-type]
+            registry_sub = _subset_registry(rs)  # type: ignore[arg-type]
+            orch_sub = _subset_orchestrator(orch) if orch else None  # type: ignore[arg-type]
+            memory_sub = _subset_memory(ms)  # type: ignore[arg-type]
+
+            ok = bool(kernel_sub.get("running") is True)
+
+            # Minimal chat counters (already thread-safe dict usage in hub)
+            chat_sub = {}
+            try:
+                cm = self.chat_metrics
+                chat_sub = {
+                    "requests_total": int(cm.get("requests_total", 0) or 0),
+                    "streams_current": int(cm.get("streams_current", 0) or 0),
+                }
+            except Exception:
+                pass
+
+            payload: Dict[str, Any] = {  # type: ignore[name-defined]
+                "ok": ok,
+                "ts": _dt.now().isoformat(),
+                "kernel": kernel_sub,
+                "registry": registry_sub,
+                "memory": memory_sub,
+                "chat": chat_sub,
+            }
+            if orch_sub:
+                payload["orchestrator"] = orch_sub
+            # Optional hub version if attribute available
+            try:
+                if getattr(self, "version", None):
+                    payload["version"] = str(getattr(self, "version"))
+            except Exception:
+                pass
+            return jsonify(payload)  # type: ignore[name-defined]
+
         @app.route("/api/kernel/metrics", methods=["GET"])
         def api_kernel_metrics():
             """Expose kernel status/metrics as JSON via the Hub."""

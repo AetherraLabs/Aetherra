@@ -1,3 +1,4 @@
+# @signature: b89b2d8127ce78bba50425dac40d2036b5823ab0a4a57595d5abc1fff833ef8d
 plugin plugin_watchdog {
   description: "Monitors plugin behavior, flags instability, and takes action on unhealthy plugins."
   memory_access: read-write

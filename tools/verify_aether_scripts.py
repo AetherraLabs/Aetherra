@@ -29,15 +29,30 @@ from Aetherra.security.script_signing import verify_embedded_signature  # type: 
 
 
 def find_aether_files(root: Path) -> List[Path]:
-    dirs = ["scripts", "workflows", "Aetherra/scripts", "Aetherra/workflows"]
-    files: List[Path] = []
-    for d in dirs:
-        p = root / d
-        if p.exists():
-            files.extend([x for x in p.rglob("*.aether") if x.is_file()])
-    # also catch any top-level .aether
-    files.extend([x for x in root.glob("*.aether") if x.is_file()])
-    return sorted(set(files))
+    """Return all .aether files under the repo, excluding transient/ignored dirs.
+
+    Previous implementation only looked in a narrow set (scripts/, workflows/ ...)
+    which missed system and example workflows. We now do a full recursive scan
+    while skipping common virtualenv / VCS / build directories for signal clarity.
+    """
+    ignore_dirs = {
+        ".git",
+        ".hg",
+        ".svn",
+        "__pycache__",
+        ".venv",
+        "venv",
+        "build",
+        "dist",
+    }
+    candidates = []
+    for p in root.rglob("*.aether"):
+        if not p.is_file():
+            continue
+        if any(part in ignore_dirs for part in p.parts):
+            continue
+        candidates.append(p)
+    return sorted(set(candidates))
 
 
 def _apply_profile(profile: str | None):
@@ -65,6 +80,11 @@ def main() -> int:
     ap.add_argument("--output", default="aether_static_report.md")
     ap.add_argument("--strict", action="store_true")
     ap.add_argument("--risk-threshold", type=int, default=5)
+    ap.add_argument(
+        "--fail-on-any-risk",
+        action="store_true",
+        help="Exit non-zero if total risk score > 0 (overrides --risk-threshold logic)",
+    )
     ap.add_argument("--profile", default=os.getenv("AETHERRA_PROFILE", ""))
     ap.add_argument(
         "--exclude",
@@ -107,6 +127,12 @@ def main() -> int:
     if prof:
         lines.append(f"Profile: {prof}")
     lines.append("")
+    # Always list all discovered .aether files for full transparency (helps reviewers)
+    if files:
+        lines.append("## Discovered .aether Files")
+        for f in files:
+            lines.append(f"- {f}")
+        lines.append("")
 
     fail = False
 
@@ -132,6 +158,8 @@ def main() -> int:
         result = analyze_paths(files)
         lines.append("## Static Risk Analysis")
         lines.append(f"Total risk score: {result['total_score']}")
+        if getattr(args, "fail_on_any_risk", False) and result["total_score"] > 0:
+            fail = True
         # Sort files by score descending
         sorted_items = sorted(
             result["files"].items(), key=lambda kv: kv[1].get("score", 0), reverse=True
@@ -164,8 +192,9 @@ def main() -> int:
                     if remaining:
                         lines.append(f"  ...and {remaining} more lines (capped)")
                     break
-            if info.get("score", 0) > args.risk_threshold:
-                fail = True
+            if not getattr(args, "fail_on_any_risk", False):
+                if info.get("score", 0) > args.risk_threshold:
+                    fail = True
         lines.append("")
     else:
         lines.append("No .aether files found.")

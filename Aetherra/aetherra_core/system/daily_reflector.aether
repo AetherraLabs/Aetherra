@@ -1,3 +1,4 @@
+# @signature: 9901c0494557734c7b2073eb373c6a7053b465dc840e5cae53d97d30bfe582e0
 plugin daily_reflector {
   description: "Generates a daily system reflection based on recent activity, logs, and goal outcomes."
   memory_access: read-write

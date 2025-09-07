@@ -35,6 +35,19 @@ from Aetherra.aetherra_core.memory.quantum.random_features import (
 
 logger = logging.getLogger(__name__)
 
+# Simple rate-limited error logger (shared semantic with intelligence layer)
+_mem_last_error: dict[str, float] = {}
+
+
+def _mem_rate_limited(key: str, msg: str, min_interval: float = 10.0):
+    now = time.time()
+    last = _mem_last_error.get(key, 0)
+    if now - last >= min_interval:
+        _mem_last_error[key] = now
+        logger.error(msg)
+    else:
+        logger.debug(f"(suppressed repeat) {msg}")
+
 
 class AetherraMemoryNode:
     """Individual memory node with cognitive metadata."""
@@ -273,7 +286,7 @@ class AetherraPerśistentMemorySystem:
             self._load_persistent_state()
 
         except Exception as e:
-            logger.error(f"[MEMORY] Database initialization error: {e}")
+            _mem_rate_limited("db_init", f"[MEMORY] Database initialization error: {e}")
 
     async def initialize(self):
         """Initialize the memory system."""
@@ -304,7 +317,7 @@ class AetherraPerśistentMemorySystem:
             return True
 
         except Exception as e:
-            logger.error(f"[MEMORY] Initialization error: {e}")
+            _mem_rate_limited("init", f"[MEMORY] Initialization error: {e}")
             return False
 
     async def store(
@@ -370,7 +383,7 @@ class AetherraPerśistentMemorySystem:
             return memory.id
 
         except Exception as e:
-            logger.error(f"[MEMORY] Storage error: {e}")
+            _mem_rate_limited("store", f"[MEMORY] Storage error: {e}")
             return None
 
     async def retrieve(
@@ -419,7 +432,7 @@ class AetherraPerśistentMemorySystem:
             return results
 
         except Exception as e:
-            logger.error(f"[MEMORY] Retrieval error: {e}")
+            _mem_rate_limited("retrieve", f"[MEMORY] Retrieval error: {e}")
             return []
 
     async def recall_by_tag(self, tag: str, limit: int = 10) -> List[Dict[str, Any]]:
