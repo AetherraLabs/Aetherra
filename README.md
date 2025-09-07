@@ -2,15 +2,32 @@
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
 # Aetherra
 
-> AI-native development environment (Alpha). Version: **0.1.0-alpha.2**
+> AI-native development environment (Beta). Version: **0.5.0-beta.0**
 
-![Status](https://img.shields.io/badge/Status-ALPHA-orange)
-![Version](https://img.shields.io/badge/Version-0.1.0--alpha.2-0891b2)
+![Status](https://img.shields.io/badge/Status-BETA-blue)
+![Version](https://img.shields.io/badge/Version-0.5.0--beta.0-0891b2)
 ![License](https://img.shields.io/badge/License-GPLv3-0891b2)
 ![Language](https://img.shields.io/badge/Language-Python%20%2B%20Aetherra-8b5cf6)
 ![Responsible AI](https://img.shields.io/badge/Responsible%20AI-Policies%20Published-22c55e)
+![Aether Script Signatures CI](https://github.com/AetherraLabs/Aetherra/actions/workflows/aether-verify-signatures.yml/badge.svg)
+![Aether Risk](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/AetherraLabs/Aetherra/main/badge/aether_risk.json)
 
-Aetherra pairs a lightweight Hub (APIs + metrics) with the Lyrixa AI assistant, pluggable memory systems, intent‑driven workflow language (`.aether`), and observability surfaces designed from day one. This repository is an **early alpha**: interfaces and metrics may change without deprecation. See `docs/ALPHA_READINESS.md` for current scope and limitations.
+Aetherra pairs a lightweight Hub (APIs + metrics) with the Lyrixa AI assistant, pluggable memory systems, an intent‑driven workflow language (`.aether`), and first-class observability. Now in **public Beta**: core surfaces are stabilizing while certain subsystems (trainer persistence, federation) remain in-progress. See `BETA_READINESS_REPORT.md` for evidence and `ROADMAP.md` for trajectory.
+
+## What Makes Aetherra Unique
+
+| Dimension              | Aetherra Approach                                | Why It Matters                      |
+| ---------------------- | ------------------------------------------------ | ----------------------------------- |
+| Integrity              | Signed `.aether` workflows (plugins next)        | Trust & audit trail for automation  |
+| Memory                 | Persistent + quantum-augmented (QFAC) layers     | Rich recall & experimentation       |
+| Observability          | Prometheus-first metrics for every subsystem     | Debug & capacity planning early     |
+| Resilience             | Deterministic fallbacks (offline/local provider) | Predictable under outage/quota      |
+| Capability Enforcement | Runtime reinforcement of intelligence flags      | Prevents silent regression          |
+| Lifecycle Tests        | 32 capability tests incl. plugin reload          | Evidence-backed stability           |
+| Extensibility          | Plugin chain executor (sequential today)         | Composable augmentation surface     |
+| Governance             | License policy & ownership memory                | Attribution & compliance continuity |
+
+Quick links: [`INSTALL.md`](INSTALL.md) · [`ROADMAP.md`](ROADMAP.md) · [`CHANGELOG.md`](CHANGELOG.md) · [`SECURITY.md`](SECURITY.md) · [`BETA_READINESS_REPORT.md`](BETA_READINESS_REPORT.md) · [`Developer Onboarding`](docs/DEVELOPER_ONBOARDING.md)
 
 ## Table of Contents
 
@@ -80,7 +97,10 @@ Import conventions: use `aetherra_*` / `lyrixa_*` modules (see `docs/import_map.
 
 Prerequisites: Python 3.11+ (recommended), virtual environment activated.
 
-git clone https://github.com/AetherraLabs/Aetherra.git
+Clone the repository:
+
+`git clone https://github.com/AetherraLabs/Aetherra.git`
+
 ```powershell
 # Clone
 git clone https://github.com/AetherraLabs/Aetherra.git
@@ -113,6 +133,7 @@ python tools/dev_quickstart.py --auto-chat
 ```
 
 This helper will:
+
 1. Export chat env flags (if not already set)
 2. Start the Hub on port 3001
 3. Perform a test POST to `/api/lyrixa/chat` and print the JSON response
@@ -158,6 +179,7 @@ Docker quick start (build dev image, run hub, probe chat + metrics):
 
 Minimal docker-compose snippet (future refinement) — save as `docker-compose.yml`:
 
+
 ```yaml
 services:
     aetherra:
@@ -173,30 +195,35 @@ services:
         command: ["python", "aetherra_hub_server.py"]
 ```
 
-    ### Demo Endpoint Shapes (Alpha)
+### Demo Endpoint Shapes (Beta Snapshot)
 
-    Representative minimal responses (fields may expand before beta):
+Representative minimal responses (fields may expand):
 
-    Chat (`POST /api/lyrixa/chat`):
-    ```json
-    {"ok": true, "result": {"response": "hello alpha (offline stub)", "session_id": "...", "timestamp": "2025-09-06T12:34:56Z"}}
-    ```
+Chat (`POST /api/lyrixa/chat`):
 
-    Memory Narratives (`GET /api/memory/narratives`):
-    ```json
-    {"ok": true, "narratives": [{"id":"seed","title":"Seed Narrative","summary":"Early alpha narrative stub"}]}
-    ```
+```json
+{"ok": true, "result": {"response": "hello beta (offline stub)", "session_id": "...", "timestamp": "2025-09-07T00:00:00Z"}}
+```
 
-    Trainer Jobs (`POST /api/trainer/jobs` then `GET /api/trainer/jobs`):
-    ```json
-    {"ok": true, "job_id": "train_20250906_123456_ab12cd34"}
-    ```
+Memory Narratives (`GET /api/memory/narratives`):
 
-    Metrics (excerpt `GET /metrics`):
-    ```text
-    aetherra_trainer_enabled 0
-    aetherra_trainer_jobs_total 0
-    ```
+```json
+{"ok": true, "narratives": [{"id":"seed","title":"Seed Narrative","summary":"Narrative stub"}]}
+```
+
+Trainer Jobs (`POST /api/trainer/jobs` then `GET /api/trainer/jobs`):
+
+```json
+{"ok": true, "job_id": "train_20250907_123456_ab12cd34"}
+```
+
+Metrics (excerpt `GET /metrics`):
+
+```text
+aetherra_trainer_enabled 0
+aetherra_trainer_jobs_total 0
+```
+
 Trainer/eval demo (ephemeral):
 
 ```powershell
@@ -267,6 +294,30 @@ pytest -q -o addopts= tests/capabilities
 ```
 
 Other helpful tasks (VS Code → Run Task): *Verify Aetherra OS (Headless Smoke)*, *Update System Index*, *Quality Gates*.
+
+### Continuous Integration (Lyrixa Health Gate)
+
+For pipelines, use the lightweight health script to ensure critical Lyrixa systems (hub + basic chat) are up while allowing non‑critical degradation (e.g., empty registry) without failing the build:
+
+```powershell
+./tools/ci_lyrixa_check.ps1
+```
+
+Behavior:
+
+- Exit 0: All critical systems pass (or only WARN conditions)
+- Exit 1: Critical failure (Hub unreachable or basic chat unusable)
+
+
+Integrate into GitHub Actions (excerpt):
+
+```yaml
+    - name: Lyrixa health check
+        shell: pwsh
+        run: ./tools/ci_lyrixa_check.ps1
+```
+
+The script internally runs `tools/lyrixa_diagnostics.py --skip-advanced` and normalizes exit codes.
 
 ---
 

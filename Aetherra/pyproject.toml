@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aetherra"
-version = "0.1.0-alpha.2"
+version = "0.5.0-beta.0"
 description = "AI-Native Development Platform with Aetherra language and Lyrixa assistant"
 authors = [
     {name = "Aetherra Development Team"}
@@ -13,7 +13,7 @@ license = {text = "GPL-3.0-or-later"}
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3",
