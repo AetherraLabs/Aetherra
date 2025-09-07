@@ -3,3 +3,6 @@ contact_links:
   - name: Security reports
     url: mailto:security@aetherralabs.org
     about: Please do not file public issues for security vulnerabilities.
+  - name: 0.5.0 Beta Roadmap Discussion
+    url: https://github.com/AetherraLabs/Aetherra/discussions
+    about: Coordinate with the community on roadmap alignment before large changes.

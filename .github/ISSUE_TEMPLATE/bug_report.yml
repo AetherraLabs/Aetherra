@@ -7,6 +7,22 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report!
+  - type: dropdown
+    id: area
+    attributes:
+      label: Beta focus area
+      description: Which roadmap focus area does this bug impact?
+      options:
+        - stability
+        - observability
+        - security
+        - dx
+        - plugins
+        - memory
+        - federation-prep
+        - docs
+    validations:
+      required: false
   - type: textarea
     id: description
     attributes:
@@ -31,6 +47,11 @@ body:
       label: Expected behavior
     validations:
       required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What is the severity (data loss, crash, degraded UX, cosmetic)? Include frequency.
   - type: input
     id: version
     attributes:
@@ -48,3 +69,8 @@ body:
     attributes:
       label: Logs/screenshots
       description: Paste any relevant logs or screenshots.
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Temporary mitigation
+      description: Any workaround you found (if none, leave blank).
