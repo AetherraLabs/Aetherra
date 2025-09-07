@@ -3,6 +3,22 @@ description: Suggest an idea for this project
 labels: [enhancement]
 title: "feat: "
 body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Beta alignment
+      description: Which roadmap focus area does this feature serve?
+      options:
+        - stability
+        - observability
+        - security
+        - dx
+        - plugins
+        - memory
+        - federation-prep
+        - docs
+    validations:
+      required: false
   - type: textarea
     id: description
     attributes:
@@ -22,3 +38,13 @@ body:
     id: context
     attributes:
       label: Additional context
+  - type: textarea
+    id: impact
+    attributes:
+      label: Expected impact
+      description: What measurable improvement (DX, stability, performance, security) does this bring?
+  - type: textarea
+    id: testplan
+    attributes:
+      label: Test plan
+      description: Outline how this will be validated (new tests, metrics, manual steps).

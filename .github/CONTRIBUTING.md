@@ -4,11 +4,41 @@ This is a synchronized copy of the main contributor guide. The authoritative ver
 
 ---
 
-# 🤝 Contributing to Aetherra
-
 Welcome to the Aetherra project! We're excited that you want to contribute to the next-generation AI Operating System. This guide will help you get started with contributing to Aetherra.
 
 ## 🚀 Quick Start for Contributors
+
+### 🙌 How to Help (0.5.0 Beta Focus TL;DR)
+
+Pick one lane, keep scope small, open a draft PR early.
+
+Core focus areas this Beta cycle:
+
+| Area                      | Label(s)               | What Helps Most                                                    | Examples                                               |
+| ------------------------- | ---------------------- | ------------------------------------------------------------------ | ------------------------------------------------------ |
+| Stability & Quality Gates | stability, tests       | Add/shore up fast deterministic tests; extend quality gates inputs | Fragmentation edge-case test, snapshot replay scenario |
+| Observability / Metrics   | observability, metrics | Fill metric gaps, lightweight docs for /metrics                    | Add per-plugin activation gauge                        |
+| Security & Trust          | security, signing      | Hardening checks, signature validation coverage                    | Test failing signature edge                            |
+| Developer Experience (DX) | dx                     | Reduce setup friction / improve error clarity                      | Script to verify API keys                              |
+| Plugins & Ecosystem       | plugins                | Minimal, well‑documented example plugins                           | Example memory inspector plugin                        |
+| Memory & Learning         | memory                 | Metrics sanity tests, small optimizations                          | Validate branch node counts                            |
+| Federation (Prep)         | federation             | Design notes / threat model discussion (NOT impl yet)              | Discussion post draft                                  |
+| Docs & Guides             | docs                   | Short task-focused guides                                          | “Add a metric in 60s” guide                            |
+
+Good First Issues: look for `good-first-issue` or propose one (open an issue starting title with `good-first-issue:` and mark scope ≤ ~50 LOC or docs-only).
+
+Before starting larger work: comment on (or create) a Discussion thread referencing the Beta Roadmap (see: GitHub Discussions → “0.5.0 Beta Roadmap & Community Focus”).
+
+Checklist for a solid first PR:
+
+1. Explains WHY (1–2 sentences)
+2. Linked issue or roadmap item
+3. Adds/updates at least one test (unless docs-only)
+4. Passes quality gates locally (run `python tools/quality_gates.py`)
+5. No unrelated formatting churn
+
+If unsure—open a Draft PR early. Iteration > silence.
+
 
 ### 1. Fork and Clone the Repository
 
@@ -64,7 +94,7 @@ TELEGRAM_BOT_TOKEN=your_telegram_token_here
 
 ### 4. Test Your Setup
 
-**🎨 Testing the Unified GUI (Recommended)**
+### 🎨 Testing the Unified GUI (Recommended)
 
 The Aetherra project now features a unified React + Flask GUI system. This is the easiest way to test your setup:
 
@@ -79,8 +109,9 @@ python Aetherra/gui/launch_aetherra_gui.py
 ```
 
 This will start:
-- **React Frontend**: http://localhost:3000 (Modern cyberpunk interface)
-- **Flask API Server**: http://localhost:8686 (Backend with Socket.IO)
+
+- **React Frontend**: [http://localhost:3000](http://localhost:3000) (Modern cyberpunk interface)
+- **Flask API Server**: [http://localhost:8686](http://localhost:8686) (Backend with Socket.IO)
 - **Real-time Communication**: WebSocket connection between frontend and backend
 
 **[TOOL] Testing Individual Components**
@@ -109,6 +140,7 @@ python fix_imports.py
 ```
 
 This will:
+
 - [OK] Create missing `__init__.py` files
 - [OK] Check Python version compatibility
 - [OK] Install missing dependencies
@@ -236,6 +268,7 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 ## 🎯 Areas Where We Need Help
 
 ### 🔥 High Priority
+
 - **Web Interface**: Enhance the cyberpunk neural interface
 - **AI Agents**: Develop new AI agent capabilities
 - **Memory Systems**: Improve quantum memory management
@@ -243,6 +276,7 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 - **Testing**: Unit tests and integration tests
 
 ### 🚀 Medium Priority
+
 - **Performance**: Optimize system performance
 - **Security**: Security audits and improvements
 - **Mobile Support**: Mobile-responsive web interface
@@ -250,6 +284,7 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 - **Internationalization**: Multi-language support
 
 ### 💡 Ideas Welcome
+
 - **New Features**: Creative AI OS features
 - **Integrations**: Third-party service integrations
 - **Tools**: Developer tools and utilities
@@ -258,11 +293,13 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 ## 🐛 Bug Reports
 
 ### Before Reporting
+
 1. Check existing issues
 2. Test with latest version
 3. Provide minimal reproduction
 
 ### Bug Report Template
+
 ```markdown
 **Bug Description**
 Clear description of the bug
@@ -290,6 +327,7 @@ Screenshots, logs, etc.
 ## ✨ Feature Requests
 
 ### Feature Request Template
+
 ```markdown
 **Feature Description**
 Clear description of the feature
@@ -327,16 +365,19 @@ Aetherra/
 ## [TOOL] Development Tips
 
 ### Local Development
+
 - Use the `--debug` flag for development
 - Check logs in the console for errors
 - Use the web interface for testing: `http://127.0.0.1:8686`
 
 ### Testing
+
 - Test both web interface and command-line functionality
 - Verify AI features work with your API keys
 - Check that new features don't break existing functionality
 
 ### Performance
+
 - Profile your code for performance issues
 - Optimize database queries
 - Consider memory usage for large operations
@@ -346,6 +387,7 @@ Aetherra/
 For the best development experience, we recommend installing these VS Code extensions:
 
 #### Essential Extensions
+
 - **[GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)** (`eamodio.gitlens`)
   - 🔍 See git blame annotations and code authorship at a glance
   - 📊 Rich git visualizations and powerful comparison commands
@@ -353,6 +395,7 @@ For the best development experience, we recommend installing these VS Code exten
   - Perfect for understanding code changes and contributor history
 
 #### Additional Helpful Extensions
+
 - **[Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)** - Python language support
 - **[Pylance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance)** - Fast Python language server
 - **[Black Formatter](https://marketplace.visualstudio.com/items?itemName=ms-python.black-formatter)** - Code formatting
@@ -360,12 +403,15 @@ For the best development experience, we recommend installing these VS Code exten
 - **[Thunder Client](https://marketplace.visualstudio.com/items?itemName=rangav.vscode-thunder-client)** - API testing
 
 #### Quick Install
+
 You can install GitLens directly from VS Code:
+
 1. Open VS Code Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
 2. Type: `Extensions: Install Extensions`
 3. Search for "GitLens" and install `eamodio.gitlens`
 
 Or use the VS Code command line:
+
 ```bash
 code --install-extension eamodio.gitlens
 ```
@@ -373,16 +419,19 @@ code --install-extension eamodio.gitlens
 ## 📚 Resources
 
 ### Documentation
+
 - [Aetherra Documentation](docs/)
 - [API Reference](Aetherra/api/README.md)
 - [Web Interface Guide](Aetherra/gui/README.md)
 
 ### Community
+
 - [GitHub Discussions](https://github.com/AetherraLabs/Aetherra/discussions)
 - [Issues](https://github.com/AetherraLabs/Aetherra/issues)
 - [Project Board](https://github.com/AetherraLabs/Aetherra/projects)
 
 ### External Resources
+
 - [Flask Documentation](https://flask.palletsprojects.com/)
 - [SocketIO Documentation](https://python-socketio.readthedocs.io/)
 - [OpenAI API](https://platform.openai.com/docs)
@@ -390,6 +439,7 @@ code --install-extension eamodio.gitlens
 ## 🎖️ Recognition
 
 Contributors will be recognized in:
+
 - README.md contributors section
 - Release notes for significant contributions
 - Hall of Fame for outstanding contributions
@@ -406,7 +456,7 @@ By contributing to Aetherra, you agree that your contributions will be licensed 
 
 ---
 
-## 🌟 Thank You!
+## 🌟 Thank You
 
 Thank you for contributing to Aetherra! Every contribution, no matter how small, helps make Aetherra better for everyone. Together, we're building the future of AI-native development! 🚀
 
