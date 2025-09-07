@@ -15,6 +15,10 @@ on:
 
 jobs:
   create-release:
+    # Skip provenance / auxiliary tags (e.g. v0.1.0-alpha.2-provenance) to avoid duplicate Releases
+    if: >-
+      (github.event_name == 'push' && !endsWith(github.ref_name, '-provenance')) ||
+      (github.event_name == 'workflow_dispatch' && !endsWith(github.event.inputs.tag, '-provenance'))
     runs-on: ubuntu-latest
     permissions:
       contents: write   # needed to create the release

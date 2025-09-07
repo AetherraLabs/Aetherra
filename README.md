@@ -80,6 +80,7 @@ Import conventions: use `aetherra_*` / `lyrixa_*` modules (see `docs/import_map.
 
 Prerequisites: Python 3.11+ (recommended), virtual environment activated.
 
+git clone https://github.com/AetherraLabs/Aetherra.git
 ```powershell
 # Clone
 git clone https://github.com/AetherraLabs/Aetherra.git
@@ -91,19 +92,111 @@ python -m venv .venv; .\.venv\Scripts\Activate.ps1
 # Install (placeholder – adjust when pyproject/req file finalized)
 pip install -r requirements.txt
 
-# Run Hub (headless)
-python aetherra_hub_server.py
-
-# Enable chat + streaming (temporary shell scope)
+# Enable chat + streaming (temporary shell scope) THEN run hub (default port 3001)
 $env:AETHERRA_AI_API_ENABLED='1'
 $env:AETHERRA_AI_API_STREAM='1'
+python aetherra_hub_server.py
 
-# Call a chat endpoint
+# In a second PowerShell, minimal chat call (Invoke-RestMethod handles JSON nicely)
+Invoke-RestMethod -Method Post -Uri 'http://localhost:3001/api/lyrixa/chat' -ContentType 'application/json' -Body '{"message":"hello alpha"}'
+
+# (Alternative quick inline Python if you prefer):
 python - <<'PY'
-import requests;print(requests.post('http://localhost:3017/api/lyrixa/chat',json={'message':'hello alpha'}).json())
+import requests;print(requests.post('http://localhost:3001/api/lyrixa/chat',json={'message':'hello alpha'}).json())
 PY
 ```
 
+Ultra-Quick (one command, auto-env + run + sample request):
+
+```powershell
+python tools/dev_quickstart.py --auto-chat
+```
+
+This helper will:
+1. Export chat env flags (if not already set)
+2. Start the Hub on port 3001
+3. Perform a test POST to `/api/lyrixa/chat` and print the JSON response
+4. Remind you how to stream or view metrics
+
+Expected minimal JSON response shape (fields may evolve in alpha):
+
+```json
+{
+    "ok": true,
+    "result": {
+        "response": "hello alpha (offline stub)",
+        "session_id": "...",
+        "timestamp": "2025-09-06T12:34:56.789012",
+        "relevant_memories_count": 0,
+        "confidence_breakdown": {
+            "model": 0.5,
+            "grounding": 0.5,
+            "coherence": 0.5,
+            "safety": 1.0
+        }
+    }
+}
+```
+
+Basic streaming (Server-Sent Events) when `AETHERRA_AI_API_STREAM=1`:
+
+```powershell
+$env:AETHERRA_AI_API_ENABLED='1'; $env:AETHERRA_AI_API_STREAM='1'
+python aetherra_hub_server.py
+
+# In another shell use curl to watch events (Windows curl supports --no-buffer)
+curl --no-buffer -X POST -H "Content-Type: application/json" ^
+    http://localhost:3001/api/ai/stream ^
+    -d '{"message":"test streaming"}'
+```
+
+Docker quick start (build dev image, run hub, probe chat + metrics):
+
+```powershell
+./tools/docker_quickstart.ps1
+```
+
+Minimal docker-compose snippet (future refinement) — save as `docker-compose.yml`:
+
+```yaml
+services:
+    aetherra:
+        build:
+            context: .
+            target: development
+        image: aetherra-dev:local
+        environment:
+            AETHERRA_AI_API_ENABLED: "1"
+            AETHERRA_AI_API_STREAM: "1"
+        ports:
+            - "3001:3001"
+        command: ["python", "aetherra_hub_server.py"]
+```
+
+    ### Demo Endpoint Shapes (Alpha)
+
+    Representative minimal responses (fields may expand before beta):
+
+    Chat (`POST /api/lyrixa/chat`):
+    ```json
+    {"ok": true, "result": {"response": "hello alpha (offline stub)", "session_id": "...", "timestamp": "2025-09-06T12:34:56Z"}}
+    ```
+
+    Memory Narratives (`GET /api/memory/narratives`):
+    ```json
+    {"ok": true, "narratives": [{"id":"seed","title":"Seed Narrative","summary":"Early alpha narrative stub"}]}
+    ```
+
+    Trainer Jobs (`POST /api/trainer/jobs` then `GET /api/trainer/jobs`):
+    ```json
+    {"ok": true, "job_id": "train_20250906_123456_ab12cd34"}
+    ```
+
+    Metrics (excerpt `GET /metrics`):
+    ```text
+    aetherra_trainer_enabled 0
+    aetherra_trainer_jobs_total 0
+    ```
 Trainer/eval demo (ephemeral):
 
 ```powershell

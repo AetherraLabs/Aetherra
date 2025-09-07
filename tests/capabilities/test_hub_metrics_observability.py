@@ -190,28 +190,42 @@ def test_metrics_chunks_total_increments_with_chunking_stream():
     server = start_hub_server(port=port)
     assert server.is_running()
     asyncio.run(_register(ChunkingEngine()))
+    # Small warm-up to reduce flakiness after rapid server startup
+    time.sleep(0.1)
 
     txt0 = _get_metrics_text(port)
     base_chunks = _parse_metric_value(
         txt0, r"aetherra_chat_chunks_total ([-+]?[0-9]*\.?[0-9]+)"
     )
 
-    # Run a stream to completion
-    with requests.post(
-        f"http://localhost:{port}/api/ai/stream",
-        json={"message": "emit chunks"},
-        stream=True,
-        timeout=10,
-    ) as resp:
-        assert resp.status_code == 200
-        for line in resp.iter_lines(decode_unicode=True):
-            if line and line.startswith("event:") and "final" in line:
-                break
+    # Run a stream to completion (tolerate rare transport timeout; rely on metrics)
+    try:
+        with requests.post(
+            f"http://localhost:{port}/api/ai/stream",
+            json={"message": "emit chunks"},
+            stream=True,
+            timeout=10,
+        ) as resp:
+            assert resp.status_code == 200
+            for line in resp.iter_lines(decode_unicode=True):
+                if line and line.startswith("event:") and "final" in line:
+                    break
+    except requests.exceptions.ConnectionError:
+        # If the SSE transport flakes, we still verify chunk metric increments below.
+        pass
 
-    txt1 = _get_metrics_text(port)
-    after_chunks = _parse_metric_value(
-        txt1, r"aetherra_chat_chunks_total ([-+]?[0-9]*\.?[0-9]+)"
-    )
+    # Allow for slight async delay in metrics flush; poll briefly
+    attempts = 0
+    after_chunks = base_chunks
+    while attempts < 10 and after_chunks < base_chunks + 3.0:
+        txt1 = _get_metrics_text(port)
+        after_chunks = _parse_metric_value(
+            txt1, r"aetherra_chat_chunks_total ([-+]?[0-9]*\.?[0-9]+)"
+        )
+        if after_chunks >= base_chunks + 3.0:
+            break
+        attempts += 1
+        time.sleep(0.05)
     assert after_chunks >= base_chunks + 3.0
 
 

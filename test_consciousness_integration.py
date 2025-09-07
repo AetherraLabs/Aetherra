@@ -12,9 +12,13 @@ import sys
 import traceback
 from pathlib import Path
 
-# Add project root to path
+# Add project root + experiments (relocated engines) to path
 project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root))
+experiments_dir = project_root / "experiments"
+for p in [experiments_dir, project_root]:
+    p_str = str(p)
+    if p.is_dir() and p_str not in sys.path:
+        sys.path.insert(0, p_str)
 
 
 def test_consciousness_imports():
