@@ -23,26 +23,31 @@ Date: August 4, 2025
 import asyncio
 import json
 import logging
-from typing import Dict, Any, Optional, List, Set, Callable
-from dataclasses import dataclass, field, asdict
+from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-import uuid
-import threading
-from collections import defaultdict
+from typing import Any, Callable, Dict, List, Optional, Set
 
-from consciousness_bridge import ConsciousnessBridge, ConsciousnessMessage, get_consciousness_bridge
+from consciousness_bridge import (
+    ConsciousnessMessage,
+    get_consciousness_bridge,
+)
+
 
 class RegistrationStatus(Enum):
     """Agent registration status"""
+
     PENDING = "pending"
     ACTIVE = "active"
     INACTIVE = "inactive"
     SUSPENDED = "suspended"
     ARCHIVED = "archived"
 
+
 class AgentCategory(Enum):
     """Categories for agent classification"""
+
     CORE_SYSTEM = "core_system"
     INTELLIGENCE = "intelligence"
     INTERFACE = "interface"
@@ -51,9 +56,11 @@ class AgentCategory(Enum):
     SPECIALIZED = "specialized"
     EXPERIMENTAL = "experimental"
 
+
 @dataclass
 class AgentRegistration:
     """Complete agent registration information"""
+
     agent_id: str
     name: str
     description: str
@@ -91,9 +98,11 @@ class AgentRegistration:
     tags: List[str] = field(default_factory=list)
     custom_metadata: Dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class ServiceDefinition:
     """Definition of a service provided by an agent"""
+
     service_id: str
     service_name: str
     description: str
@@ -106,9 +115,11 @@ class ServiceDefinition:
     authentication_required: bool = False
     tags: List[str] = field(default_factory=list)
 
+
 @dataclass
 class AgentQuery:
     """Query for agent discovery"""
+
     capabilities: Optional[List[str]] = None
     categories: Optional[List[AgentCategory]] = None
     system_origins: Optional[List[str]] = None
@@ -119,6 +130,7 @@ class AgentQuery:
     provides_services: Optional[List[str]] = None
     available_for_collaboration: bool = False
     exclude_agents: Optional[List[str]] = None
+
 
 class AgentRegistry:
     """
@@ -135,23 +147,29 @@ class AgentRegistry:
         # Core registry data
         self.agents: Dict[str, AgentRegistration] = {}
         self.services: Dict[str, ServiceDefinition] = {}
-        self.capabilities_index: Dict[str, Set[str]] = defaultdict(set)  # capability -> agent_ids
-        self.category_index: Dict[AgentCategory, Set[str]] = defaultdict(set)  # category -> agent_ids
+        self.capabilities_index: Dict[str, Set[str]] = defaultdict(
+            set
+        )  # capability -> agent_ids
+        self.category_index: Dict[AgentCategory, Set[str]] = defaultdict(
+            set
+        )  # category -> agent_ids
         self.system_index: Dict[str, Set[str]] = defaultdict(set)  # system -> agent_ids
 
         # Performance and analytics
         self.performance_history: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-        self.collaboration_graph: Dict[str, Set[str]] = defaultdict(set)  # collaboration relationships
+        self.collaboration_graph: Dict[str, Set[str]] = defaultdict(
+            set
+        )  # collaboration relationships
         self.service_usage_stats: Dict[str, Dict[str, Any]] = defaultdict(dict)
 
         # Configuration
         self.config = {
-            'heartbeat_timeout': 60,  # seconds
-            'max_performance_history': 1000,
-            'auto_archive_after_days': 30,
-            'service_discovery_cache_ttl': 300,  # 5 minutes
-            'max_concurrent_registrations': 1000,
-            'performance_sampling_interval': 30,  # seconds
+            "heartbeat_timeout": 60,  # seconds
+            "max_performance_history": 1000,
+            "auto_archive_after_days": 30,
+            "service_discovery_cache_ttl": 300,  # 5 minutes
+            "max_concurrent_registrations": 1000,
+            "performance_sampling_interval": 30,  # seconds
         }
 
         # Runtime state
@@ -170,22 +188,22 @@ class AgentRegistry:
 
             # Register with consciousness bridge
             self.consciousness_bridge.register_message_handler(
-                'agent_register_request', self._handle_agent_registration
+                "agent_register_request", self._handle_agent_registration
             )
             self.consciousness_bridge.register_message_handler(
-                'agent_unregister_request', self._handle_agent_unregistration
+                "agent_unregister_request", self._handle_agent_unregistration
             )
             self.consciousness_bridge.register_message_handler(
-                'agent_discovery_request', self._handle_agent_discovery
+                "agent_discovery_request", self._handle_agent_discovery
             )
             self.consciousness_bridge.register_message_handler(
-                'service_discovery_request', self._handle_service_discovery
+                "service_discovery_request", self._handle_service_discovery
             )
             self.consciousness_bridge.register_message_handler(
-                'agent_heartbeat', self._handle_agent_heartbeat
+                "agent_heartbeat", self._handle_agent_heartbeat
             )
             self.consciousness_bridge.register_message_handler(
-                'performance_update', self._handle_performance_update
+                "performance_update", self._handle_performance_update
             )
 
             # Start registry maintenance loop
@@ -225,7 +243,7 @@ class AgentRegistry:
                 # Generate registry statistics
                 await self._generate_registry_statistics()
 
-                await asyncio.sleep(self.config['performance_sampling_interval'])
+                await asyncio.sleep(self.config["performance_sampling_interval"])
 
             except Exception as e:
                 self.logger.error(f"Error in registry loop: {e}")
@@ -235,7 +253,7 @@ class AgentRegistry:
         """Check agent heartbeats and update status"""
         try:
             current_time = datetime.now()
-            timeout_threshold = timedelta(seconds=self.config['heartbeat_timeout'])
+            timeout_threshold = timedelta(seconds=self.config["heartbeat_timeout"])
 
             for agent_id, registration in self.agents.items():
                 if registration.status == RegistrationStatus.ACTIVE:
@@ -244,13 +262,18 @@ class AgentRegistry:
                     if time_since_heartbeat > timeout_threshold:
                         # Mark as inactive
                         registration.status = RegistrationStatus.INACTIVE
-                        self.logger.warning(f"Agent {agent_id} marked as inactive due to heartbeat timeout")
+                        self.logger.warning(
+                            f"Agent {agent_id} marked as inactive due to heartbeat timeout"
+                        )
 
                         # Emit event
-                        await self._emit_registry_event('agent_heartbeat_timeout', {
-                            'agent_id': agent_id,
-                            'time_since_heartbeat': time_since_heartbeat.total_seconds()
-                        })
+                        await self._emit_registry_event(
+                            "agent_heartbeat_timeout",
+                            {
+                                "agent_id": agent_id,
+                                "time_since_heartbeat": time_since_heartbeat.total_seconds(),
+                            },
+                        )
 
                         # Update indices
                         await self._update_indices_for_agent(agent_id, registration)
@@ -268,26 +291,31 @@ class AgentRegistry:
                     # Calculate current performance metrics
                     success_rate = 0.0
                     if registration.total_requests_handled > 0:
-                        success_rate = registration.successful_requests / registration.total_requests_handled
+                        success_rate = (
+                            registration.successful_requests
+                            / registration.total_requests_handled
+                        )
 
                     # Add to performance history
                     performance_record = {
-                        'timestamp': current_time.isoformat(),
-                        'uptime_percentage': registration.uptime_percentage,
-                        'success_rate': success_rate,
-                        'response_time': registration.average_response_time,
-                        'memory_usage': registration.memory_usage_mb,
-                        'cpu_usage': registration.cpu_usage_percent,
-                        'network_usage': registration.network_usage_kb,
-                        'total_requests': registration.total_requests_handled
+                        "timestamp": current_time.isoformat(),
+                        "uptime_percentage": registration.uptime_percentage,
+                        "success_rate": success_rate,
+                        "response_time": registration.average_response_time,
+                        "memory_usage": registration.memory_usage_mb,
+                        "cpu_usage": registration.cpu_usage_percent,
+                        "network_usage": registration.network_usage_kb,
+                        "total_requests": registration.total_requests_handled,
                     }
 
                     self.performance_history[agent_id].append(performance_record)
 
                     # Keep only recent history
-                    max_history = self.config['max_performance_history']
+                    max_history = self.config["max_performance_history"]
                     if len(self.performance_history[agent_id]) > max_history:
-                        self.performance_history[agent_id] = self.performance_history[agent_id][-max_history:]
+                        self.performance_history[agent_id] = self.performance_history[
+                            agent_id
+                        ][-max_history:]
 
         except Exception as e:
             self.logger.error(f"Error updating performance analytics: {e}")
@@ -296,7 +324,7 @@ class AgentRegistry:
         """Clean up old cache entries"""
         try:
             current_time = datetime.now()
-            cache_ttl = timedelta(seconds=self.config['service_discovery_cache_ttl'])
+            cache_ttl = timedelta(seconds=self.config["service_discovery_cache_ttl"])
 
             expired_keys = []
             for cache_key, timestamp in self.cache_timestamps.items():
@@ -314,7 +342,7 @@ class AgentRegistry:
         """Archive agents that have been inactive for too long"""
         try:
             current_time = datetime.now()
-            archive_threshold = timedelta(days=self.config['auto_archive_after_days'])
+            archive_threshold = timedelta(days=self.config["auto_archive_after_days"])
 
             agents_to_archive = []
             for agent_id, registration in self.agents.items():
@@ -339,10 +367,10 @@ class AgentRegistry:
             await self._remove_from_indices(agent_id, registration)
 
             # Emit event
-            await self._emit_registry_event('agent_archived', {
-                'agent_id': agent_id,
-                'archive_reason': 'inactive_timeout'
-            })
+            await self._emit_registry_event(
+                "agent_archived",
+                {"agent_id": agent_id, "archive_reason": "inactive_timeout"},
+            )
 
             self.logger.info(f"Archived inactive agent: {agent_id}")
 
@@ -355,7 +383,9 @@ class AgentRegistry:
             # Rebuild from current agent relationships
             for agent_id, registration in self.agents.items():
                 if registration.status == RegistrationStatus.ACTIVE:
-                    self.collaboration_graph[agent_id] = registration.collaborating_agents.copy()
+                    self.collaboration_graph[
+                        agent_id
+                    ] = registration.collaborating_agents.copy()
 
         except Exception as e:
             self.logger.error(f"Error updating collaboration graph: {e}")
@@ -364,30 +394,51 @@ class AgentRegistry:
         """Generate and emit registry statistics"""
         try:
             stats = {
-                'total_agents': len(self.agents),
-                'active_agents': len([a for a in self.agents.values() if a.status == RegistrationStatus.ACTIVE]),
-                'inactive_agents': len([a for a in self.agents.values() if a.status == RegistrationStatus.INACTIVE]),
-                'archived_agents': len([a for a in self.agents.values() if a.status == RegistrationStatus.ARCHIVED]),
-                'total_services': len(self.services),
-                'unique_capabilities': len(self.capabilities_index),
-                'collaboration_connections': sum(len(connections) for connections in self.collaboration_graph.values()),
-                'timestamp': datetime.now().isoformat()
+                "total_agents": len(self.agents),
+                "active_agents": len(
+                    [
+                        a
+                        for a in self.agents.values()
+                        if a.status == RegistrationStatus.ACTIVE
+                    ]
+                ),
+                "inactive_agents": len(
+                    [
+                        a
+                        for a in self.agents.values()
+                        if a.status == RegistrationStatus.INACTIVE
+                    ]
+                ),
+                "archived_agents": len(
+                    [
+                        a
+                        for a in self.agents.values()
+                        if a.status == RegistrationStatus.ARCHIVED
+                    ]
+                ),
+                "total_services": len(self.services),
+                "unique_capabilities": len(self.capabilities_index),
+                "collaboration_connections": sum(
+                    len(connections)
+                    for connections in self.collaboration_graph.values()
+                ),
+                "timestamp": datetime.now().isoformat(),
             }
 
             # Category breakdown
             category_stats = {}
             for category in AgentCategory:
                 category_stats[category.value] = len(self.category_index[category])
-            stats['category_breakdown'] = category_stats
+            stats["category_breakdown"] = category_stats
 
             # System breakdown
             system_stats = {}
             for system in self.system_index:
                 system_stats[system] = len(self.system_index[system])
-            stats['system_breakdown'] = system_stats
+            stats["system_breakdown"] = system_stats
 
             # Emit statistics
-            await self._emit_registry_event('registry_statistics', stats)
+            await self._emit_registry_event("registry_statistics", stats)
 
         except Exception as e:
             self.logger.error(f"Error generating registry statistics: {e}")
@@ -401,19 +452,19 @@ class AgentRegistry:
 
             # Create agent registration
             registration = AgentRegistration(
-                agent_id=agent_data['agent_id'],
-                name=agent_data.get('name', agent_data['agent_id']),
-                description=agent_data.get('description', ''),
-                agent_type=agent_data.get('agent_type', 'unknown'),
-                category=AgentCategory(agent_data.get('category', 'specialized')),
-                system_origin=agent_data.get('system_origin', message.source),
-                capabilities=agent_data.get('capabilities', []),
-                interfaces=agent_data.get('interfaces', ['consciousness_bridge']),
-                dependencies=agent_data.get('dependencies', []),
-                provides_services=agent_data.get('provides_services', []),
-                version=agent_data.get('version', '1.0.0'),
-                tags=agent_data.get('tags', []),
-                custom_metadata=agent_data.get('metadata', {})
+                agent_id=agent_data["agent_id"],
+                name=agent_data.get("name", agent_data["agent_id"]),
+                description=agent_data.get("description", ""),
+                agent_type=agent_data.get("agent_type", "unknown"),
+                category=AgentCategory(agent_data.get("category", "specialized")),
+                system_origin=agent_data.get("system_origin", message.source),
+                capabilities=agent_data.get("capabilities", []),
+                interfaces=agent_data.get("interfaces", ["consciousness_bridge"]),
+                dependencies=agent_data.get("dependencies", []),
+                provides_services=agent_data.get("provides_services", []),
+                version=agent_data.get("version", "1.0.0"),
+                tags=agent_data.get("tags", []),
+                custom_metadata=agent_data.get("metadata", {}),
             )
 
             # Register the agent
@@ -422,17 +473,19 @@ class AgentRegistry:
             # Send response
             if message.requires_response:
                 response = ConsciousnessMessage(
-                    source='agent_registry',
+                    source="agent_registry",
                     destination=message.source,
-                    message_type='agent_registration_response',
+                    message_type="agent_registration_response",
                     payload={
-                        'agent_id': registration.agent_id,
-                        'success': success,
-                        'status': registration.status.value,
-                        'message': 'Registration successful' if success else 'Registration failed'
+                        "agent_id": registration.agent_id,
+                        "success": success,
+                        "status": registration.status.value,
+                        "message": "Registration successful"
+                        if success
+                        else "Registration failed",
                     },
                     timestamp=datetime.now(),
-                    correlation_id=message.correlation_id
+                    correlation_id=message.correlation_id,
                 )
 
                 self.consciousness_bridge.send_message(response)
@@ -449,7 +502,9 @@ class AgentRegistry:
             if agent_id in self.agents:
                 existing = self.agents[agent_id]
                 if existing.status == RegistrationStatus.ACTIVE:
-                    self.logger.warning(f"Agent {agent_id} already registered and active")
+                    self.logger.warning(
+                        f"Agent {agent_id} already registered and active"
+                    )
                     return False
                 else:
                     # Reactivating existing agent
@@ -471,13 +526,16 @@ class AgentRegistry:
                 await self._register_agent_service(agent_id, service_name)
 
             # Emit event
-            await self._emit_registry_event('agent_registered', {
-                'agent_id': agent_id,
-                'name': registration.name,
-                'category': registration.category.value,
-                'system_origin': registration.system_origin,
-                'capabilities': registration.capabilities
-            })
+            await self._emit_registry_event(
+                "agent_registered",
+                {
+                    "agent_id": agent_id,
+                    "name": registration.name,
+                    "category": registration.category.value,
+                    "system_origin": registration.system_origin,
+                    "capabilities": registration.capabilities,
+                },
+            )
 
             self.logger.info(f"Successfully registered agent: {agent_id}")
             return True
@@ -497,14 +555,16 @@ class AgentRegistry:
             provider_agent_id=agent_id,
             input_schema={},  # Would be provided by agent
             output_schema={},  # Would be provided by agent
-            service_type='synchronous',
-            endpoint=f"agent://{agent_id}/{service_name}"
+            service_type="synchronous",
+            endpoint=f"agent://{agent_id}/{service_name}",
         )
 
         self.services[service_id] = service
         self.logger.debug(f"Registered service {service_id}")
 
-    async def _update_indices_for_agent(self, agent_id: str, registration: AgentRegistration):
+    async def _update_indices_for_agent(
+        self, agent_id: str, registration: AgentRegistration
+    ):
         """Update search indices for an agent"""
         # Remove from old indices first
         await self._remove_from_indices(agent_id, registration)
@@ -521,7 +581,9 @@ class AgentRegistry:
             # System index
             self.system_index[registration.system_origin].add(agent_id)
 
-    async def _remove_from_indices(self, agent_id: str, registration: AgentRegistration):
+    async def _remove_from_indices(
+        self, agent_id: str, registration: AgentRegistration
+    ):
         """Remove agent from all search indices"""
         # Remove from capabilities index
         for capability in registration.capabilities:
@@ -539,8 +601,8 @@ class AgentRegistry:
     async def _handle_agent_unregistration(self, message: ConsciousnessMessage):
         """Handle agent unregistration requests"""
         try:
-            agent_id = message.payload.get('agent_id')
-            reason = message.payload.get('reason', 'manual_unregistration')
+            agent_id = message.payload.get("agent_id")
+            reason = message.payload.get("reason", "manual_unregistration")
 
             if agent_id in self.agents:
                 registration = self.agents[agent_id]
@@ -550,37 +612,41 @@ class AgentRegistry:
                 await self._remove_from_indices(agent_id, registration)
 
                 # Remove associated services
-                services_to_remove = [sid for sid, service in self.services.items()
-                                    if service.provider_agent_id == agent_id]
+                services_to_remove = [
+                    sid
+                    for sid, service in self.services.items()
+                    if service.provider_agent_id == agent_id
+                ]
                 for service_id in services_to_remove:
                     del self.services[service_id]
 
                 # Emit event
-                await self._emit_registry_event('agent_unregistered', {
-                    'agent_id': agent_id,
-                    'reason': reason
-                })
+                await self._emit_registry_event(
+                    "agent_unregistered", {"agent_id": agent_id, "reason": reason}
+                )
 
                 self.logger.info(f"Unregistered agent: {agent_id}")
 
                 # Send response
                 if message.requires_response:
                     response = ConsciousnessMessage(
-                        source='agent_registry',
+                        source="agent_registry",
                         destination=message.source,
-                        message_type='agent_unregistration_response',
+                        message_type="agent_unregistration_response",
                         payload={
-                            'agent_id': agent_id,
-                            'success': True,
-                            'message': 'Unregistration successful'
+                            "agent_id": agent_id,
+                            "success": True,
+                            "message": "Unregistration successful",
                         },
                         timestamp=datetime.now(),
-                        correlation_id=message.correlation_id
+                        correlation_id=message.correlation_id,
                     )
 
                     self.consciousness_bridge.send_message(response)
             else:
-                self.logger.warning(f"Attempted to unregister unknown agent: {agent_id}")
+                self.logger.warning(
+                    f"Attempted to unregister unknown agent: {agent_id}"
+                )
 
         except Exception as e:
             self.logger.error(f"Error handling agent unregistration: {e}")
@@ -588,20 +654,31 @@ class AgentRegistry:
     async def _handle_agent_discovery(self, message: ConsciousnessMessage):
         """Handle agent discovery requests"""
         try:
-            query_data = message.payload.get('query', {})
+            query_data = message.payload.get("query", {})
 
             # Create query object
             query = AgentQuery(
-                capabilities=query_data.get('capabilities'),
-                categories=[AgentCategory(cat) for cat in query_data.get('categories', [])] if query_data.get('categories') else None,
-                system_origins=query_data.get('system_origins'),
-                status_filter=[RegistrationStatus(status) for status in query_data.get('status_filter', [])] if query_data.get('status_filter') else None,
-                tags=query_data.get('tags'),
-                min_uptime=query_data.get('min_uptime'),
-                max_response_time=query_data.get('max_response_time'),
-                provides_services=query_data.get('provides_services'),
-                available_for_collaboration=query_data.get('available_for_collaboration', False),
-                exclude_agents=query_data.get('exclude_agents')
+                capabilities=query_data.get("capabilities"),
+                categories=[
+                    AgentCategory(cat) for cat in query_data.get("categories", [])
+                ]
+                if query_data.get("categories")
+                else None,
+                system_origins=query_data.get("system_origins"),
+                status_filter=[
+                    RegistrationStatus(status)
+                    for status in query_data.get("status_filter", [])
+                ]
+                if query_data.get("status_filter")
+                else None,
+                tags=query_data.get("tags"),
+                min_uptime=query_data.get("min_uptime"),
+                max_response_time=query_data.get("max_response_time"),
+                provides_services=query_data.get("provides_services"),
+                available_for_collaboration=query_data.get(
+                    "available_for_collaboration", False
+                ),
+                exclude_agents=query_data.get("exclude_agents"),
             )
 
             # Check cache first
@@ -620,17 +697,17 @@ class AgentRegistry:
             # Send response
             if message.requires_response:
                 response = ConsciousnessMessage(
-                    source='agent_registry',
+                    source="agent_registry",
                     destination=message.source,
-                    message_type='agent_discovery_response',
+                    message_type="agent_discovery_response",
                     payload={
-                        'matching_agents': results,
-                        'query': query_data,
-                        'total_matches': len(results),
-                        'cached': cached_result is not None
+                        "matching_agents": results,
+                        "query": query_data,
+                        "total_matches": len(results),
+                        "cached": cached_result is not None,
                     },
                     timestamp=datetime.now(),
-                    correlation_id=message.correlation_id
+                    correlation_id=message.correlation_id,
                 )
 
                 self.consciousness_bridge.send_message(response)
@@ -647,7 +724,9 @@ class AgentRegistry:
             if query.capabilities:
                 capability_matches = set()
                 for capability in query.capabilities:
-                    capability_matches.update(self.capabilities_index.get(capability, set()))
+                    capability_matches.update(
+                        self.capabilities_index.get(capability, set())
+                    )
                 candidate_agents &= capability_matches
 
             # Filter by categories
@@ -673,27 +752,44 @@ class AgentRegistry:
                 registration = self.agents[agent_id]
 
                 # Status filter
-                if query.status_filter and registration.status not in query.status_filter:
+                if (
+                    query.status_filter
+                    and registration.status not in query.status_filter
+                ):
                     continue
 
                 # Tags filter
-                if query.tags and not any(tag in registration.tags for tag in query.tags):
+                if query.tags and not any(
+                    tag in registration.tags for tag in query.tags
+                ):
                     continue
 
                 # Uptime filter
-                if query.min_uptime and registration.uptime_percentage < query.min_uptime:
+                if (
+                    query.min_uptime
+                    and registration.uptime_percentage < query.min_uptime
+                ):
                     continue
 
                 # Response time filter
-                if query.max_response_time and registration.average_response_time > query.max_response_time:
+                if (
+                    query.max_response_time
+                    and registration.average_response_time > query.max_response_time
+                ):
                     continue
 
                 # Services filter
-                if query.provides_services and not any(service in registration.provides_services for service in query.provides_services):
+                if query.provides_services and not any(
+                    service in registration.provides_services
+                    for service in query.provides_services
+                ):
                     continue
 
                 # Collaboration availability
-                if query.available_for_collaboration and len(registration.collaborating_agents) >= 5:  # Arbitrary limit
+                if (
+                    query.available_for_collaboration
+                    and len(registration.collaborating_agents) >= 5
+                ):  # Arbitrary limit
                     continue
 
                 # Exclusion filter
@@ -712,41 +808,53 @@ class AgentRegistry:
     def _format_agent_result(self, registration: AgentRegistration) -> Dict[str, Any]:
         """Format agent registration for discovery results"""
         return {
-            'agent_id': registration.agent_id,
-            'name': registration.name,
-            'description': registration.description,
-            'agent_type': registration.agent_type,
-            'category': registration.category.value,
-            'system_origin': registration.system_origin,
-            'capabilities': registration.capabilities,
-            'interfaces': registration.interfaces,
-            'provides_services': registration.provides_services,
-            'status': registration.status.value,
-            'uptime_percentage': registration.uptime_percentage,
-            'average_response_time': registration.average_response_time,
-            'success_rate': registration.successful_requests / max(registration.total_requests_handled, 1),
-            'collaboration_count': len(registration.collaborating_agents),
-            'last_heartbeat': registration.last_heartbeat.isoformat(),
-            'tags': registration.tags
+            "agent_id": registration.agent_id,
+            "name": registration.name,
+            "description": registration.description,
+            "agent_type": registration.agent_type,
+            "category": registration.category.value,
+            "system_origin": registration.system_origin,
+            "capabilities": registration.capabilities,
+            "interfaces": registration.interfaces,
+            "provides_services": registration.provides_services,
+            "status": registration.status.value,
+            "uptime_percentage": registration.uptime_percentage,
+            "average_response_time": registration.average_response_time,
+            "success_rate": registration.successful_requests
+            / max(registration.total_requests_handled, 1),
+            "collaboration_count": len(registration.collaborating_agents),
+            "last_heartbeat": registration.last_heartbeat.isoformat(),
+            "tags": registration.tags,
         }
 
     def _generate_query_cache_key(self, query: AgentQuery) -> str:
         """Generate a cache key for a query"""
         query_dict = {
-            'capabilities': sorted(query.capabilities) if query.capabilities else None,
-            'categories': sorted([cat.value for cat in query.categories]) if query.categories else None,
-            'system_origins': sorted(query.system_origins) if query.system_origins else None,
-            'status_filter': sorted([status.value for status in query.status_filter]) if query.status_filter else None,
-            'tags': sorted(query.tags) if query.tags else None,
-            'min_uptime': query.min_uptime,
-            'max_response_time': query.max_response_time,
-            'provides_services': sorted(query.provides_services) if query.provides_services else None,
-            'available_for_collaboration': query.available_for_collaboration,
-            'exclude_agents': sorted(query.exclude_agents) if query.exclude_agents else None
+            "capabilities": sorted(query.capabilities) if query.capabilities else None,
+            "categories": sorted([cat.value for cat in query.categories])
+            if query.categories
+            else None,
+            "system_origins": sorted(query.system_origins)
+            if query.system_origins
+            else None,
+            "status_filter": sorted([status.value for status in query.status_filter])
+            if query.status_filter
+            else None,
+            "tags": sorted(query.tags) if query.tags else None,
+            "min_uptime": query.min_uptime,
+            "max_response_time": query.max_response_time,
+            "provides_services": sorted(query.provides_services)
+            if query.provides_services
+            else None,
+            "available_for_collaboration": query.available_for_collaboration,
+            "exclude_agents": sorted(query.exclude_agents)
+            if query.exclude_agents
+            else None,
         }
 
         # Convert to string and hash
         import hashlib
+
         query_str = json.dumps(query_dict, sort_keys=True)
         return hashlib.md5(query_str.encode()).hexdigest()
 
@@ -756,7 +864,7 @@ class AgentRegistry:
             cache_time = self.cache_timestamps.get(cache_key)
             if cache_time:
                 cache_age = (datetime.now() - cache_time).total_seconds()
-                if cache_age < self.config['service_discovery_cache_ttl']:
+                if cache_age < self.config["service_discovery_cache_ttl"]:
                     return self.query_cache[cache_key]
         return None
 
@@ -768,7 +876,7 @@ class AgentRegistry:
     async def _handle_service_discovery(self, message: ConsciousnessMessage):
         """Handle service discovery requests"""
         try:
-            service_criteria = message.payload.get('criteria', {})
+            service_criteria = message.payload.get("criteria", {})
 
             # Find matching services
             matching_services = []
@@ -782,40 +890,47 @@ class AgentRegistry:
                     continue
 
                 # Apply criteria filters
-                if service_criteria.get('service_type') and service.service_type != service_criteria['service_type']:
+                if (
+                    service_criteria.get("service_type")
+                    and service.service_type != service_criteria["service_type"]
+                ):
                     continue
 
-                if service_criteria.get('tags') and not any(tag in service.tags for tag in service_criteria['tags']):
+                if service_criteria.get("tags") and not any(
+                    tag in service.tags for tag in service_criteria["tags"]
+                ):
                     continue
 
-                matching_services.append({
-                    'service_id': service.service_id,
-                    'service_name': service.service_name,
-                    'description': service.description,
-                    'provider_agent_id': service.provider_agent_id,
-                    'provider_name': provider.name,
-                    'service_type': service.service_type,
-                    'endpoint': service.endpoint,
-                    'rate_limit': service.rate_limit,
-                    'authentication_required': service.authentication_required,
-                    'tags': service.tags,
-                    'provider_uptime': provider.uptime_percentage,
-                    'provider_response_time': provider.average_response_time
-                })
+                matching_services.append(
+                    {
+                        "service_id": service.service_id,
+                        "service_name": service.service_name,
+                        "description": service.description,
+                        "provider_agent_id": service.provider_agent_id,
+                        "provider_name": provider.name,
+                        "service_type": service.service_type,
+                        "endpoint": service.endpoint,
+                        "rate_limit": service.rate_limit,
+                        "authentication_required": service.authentication_required,
+                        "tags": service.tags,
+                        "provider_uptime": provider.uptime_percentage,
+                        "provider_response_time": provider.average_response_time,
+                    }
+                )
 
             # Send response
             if message.requires_response:
                 response = ConsciousnessMessage(
-                    source='agent_registry',
+                    source="agent_registry",
                     destination=message.source,
-                    message_type='service_discovery_response',
+                    message_type="service_discovery_response",
                     payload={
-                        'matching_services': matching_services,
-                        'criteria': service_criteria,
-                        'total_matches': len(matching_services)
+                        "matching_services": matching_services,
+                        "criteria": service_criteria,
+                        "total_matches": len(matching_services),
                     },
                     timestamp=datetime.now(),
-                    correlation_id=message.correlation_id
+                    correlation_id=message.correlation_id,
                 )
 
                 self.consciousness_bridge.send_message(response)
@@ -826,8 +941,8 @@ class AgentRegistry:
     async def _handle_agent_heartbeat(self, message: ConsciousnessMessage):
         """Handle agent heartbeat messages"""
         try:
-            agent_id = message.payload.get('agent_id')
-            performance_data = message.payload.get('performance', {})
+            agent_id = message.payload.get("agent_id")
+            performance_data = message.payload.get("performance", {})
 
             if agent_id in self.agents:
                 registration = self.agents[agent_id]
@@ -835,23 +950,33 @@ class AgentRegistry:
 
                 # Update performance data if provided
                 if performance_data:
-                    registration.memory_usage_mb = performance_data.get('memory_usage_mb', registration.memory_usage_mb)
-                    registration.cpu_usage_percent = performance_data.get('cpu_usage_percent', registration.cpu_usage_percent)
-                    registration.network_usage_kb = performance_data.get('network_usage_kb', registration.network_usage_kb)
-                    registration.uptime_percentage = performance_data.get('uptime_percentage', registration.uptime_percentage)
+                    registration.memory_usage_mb = performance_data.get(
+                        "memory_usage_mb", registration.memory_usage_mb
+                    )
+                    registration.cpu_usage_percent = performance_data.get(
+                        "cpu_usage_percent", registration.cpu_usage_percent
+                    )
+                    registration.network_usage_kb = performance_data.get(
+                        "network_usage_kb", registration.network_usage_kb
+                    )
+                    registration.uptime_percentage = performance_data.get(
+                        "uptime_percentage", registration.uptime_percentage
+                    )
 
                 # If agent was inactive, reactivate it
                 if registration.status == RegistrationStatus.INACTIVE:
                     registration.status = RegistrationStatus.ACTIVE
                     await self._update_indices_for_agent(agent_id, registration)
 
-                    await self._emit_registry_event('agent_reactivated', {
-                        'agent_id': agent_id
-                    })
+                    await self._emit_registry_event(
+                        "agent_reactivated", {"agent_id": agent_id}
+                    )
 
                 self.logger.debug(f"Received heartbeat from agent: {agent_id}")
             else:
-                self.logger.warning(f"Received heartbeat from unregistered agent: {agent_id}")
+                self.logger.warning(
+                    f"Received heartbeat from unregistered agent: {agent_id}"
+                )
 
         except Exception as e:
             self.logger.error(f"Error handling agent heartbeat: {e}")
@@ -859,21 +984,31 @@ class AgentRegistry:
     async def _handle_performance_update(self, message: ConsciousnessMessage):
         """Handle performance update messages"""
         try:
-            agent_id = message.payload.get('agent_id')
-            performance_data = message.payload.get('performance', {})
+            agent_id = message.payload.get("agent_id")
+            performance_data = message.payload.get("performance", {})
 
             if agent_id in self.agents:
                 registration = self.agents[agent_id]
 
                 # Update performance metrics
-                registration.total_requests_handled = performance_data.get('total_requests', registration.total_requests_handled)
-                registration.successful_requests = performance_data.get('successful_requests', registration.successful_requests)
-                registration.average_response_time = performance_data.get('average_response_time', registration.average_response_time)
-                registration.uptime_percentage = performance_data.get('uptime_percentage', registration.uptime_percentage)
+                registration.total_requests_handled = performance_data.get(
+                    "total_requests", registration.total_requests_handled
+                )
+                registration.successful_requests = performance_data.get(
+                    "successful_requests", registration.successful_requests
+                )
+                registration.average_response_time = performance_data.get(
+                    "average_response_time", registration.average_response_time
+                )
+                registration.uptime_percentage = performance_data.get(
+                    "uptime_percentage", registration.uptime_percentage
+                )
 
                 self.logger.debug(f"Updated performance data for agent: {agent_id}")
             else:
-                self.logger.warning(f"Received performance update from unregistered agent: {agent_id}")
+                self.logger.warning(
+                    f"Received performance update from unregistered agent: {agent_id}"
+                )
 
         except Exception as e:
             self.logger.error(f"Error handling performance update: {e}")
@@ -883,16 +1018,16 @@ class AgentRegistry:
     async def _emit_registry_event(self, event_type: str, event_data: Dict[str, Any]):
         """Emit a registry event"""
         event_message = ConsciousnessMessage(
-            source='agent_registry',
-            destination='consciousness_bridge',
-            message_type='registry_event',
+            source="agent_registry",
+            destination="consciousness_bridge",
+            message_type="registry_event",
             payload={
-                'event_type': event_type,
-                'event_data': event_data,
-                'timestamp': datetime.now().isoformat()
+                "event_type": event_type,
+                "event_data": event_data,
+                "timestamp": datetime.now().isoformat(),
             },
             timestamp=datetime.now(),
-            priority=4
+            priority=4,
         )
 
         self.consciousness_bridge.send_message(event_message)
@@ -903,10 +1038,16 @@ class AgentRegistry:
         """Get agent registration by ID"""
         return self.agents.get(agent_id)
 
-    def get_all_agents(self, status_filter: Optional[RegistrationStatus] = None) -> Dict[str, AgentRegistration]:
+    def get_all_agents(
+        self, status_filter: Optional[RegistrationStatus] = None
+    ) -> Dict[str, AgentRegistration]:
         """Get all agents, optionally filtered by status"""
         if status_filter:
-            return {aid: reg for aid, reg in self.agents.items() if reg.status == status_filter}
+            return {
+                aid: reg
+                for aid, reg in self.agents.items()
+                if reg.status == status_filter
+            }
         return self.agents.copy()
 
     def get_agents_by_capability(self, capability: str) -> List[AgentRegistration]:
@@ -914,16 +1055,24 @@ class AgentRegistry:
         agent_ids = self.capabilities_index.get(capability, set())
         return [self.agents[aid] for aid in agent_ids if aid in self.agents]
 
-    def get_agents_by_category(self, category: AgentCategory) -> List[AgentRegistration]:
+    def get_agents_by_category(
+        self, category: AgentCategory
+    ) -> List[AgentRegistration]:
         """Get all agents in a specific category"""
         agent_ids = self.category_index.get(category, set())
         return [self.agents[aid] for aid in agent_ids if aid in self.agents]
 
     def get_services_by_agent(self, agent_id: str) -> List[ServiceDefinition]:
         """Get all services provided by a specific agent"""
-        return [service for service in self.services.values() if service.provider_agent_id == agent_id]
+        return [
+            service
+            for service in self.services.values()
+            if service.provider_agent_id == agent_id
+        ]
 
-    def get_performance_history(self, agent_id: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_performance_history(
+        self, agent_id: str, limit: Optional[int] = None
+    ) -> List[Dict[str, Any]]:
         """Get performance history for an agent"""
         history = self.performance_history.get(agent_id, [])
         if limit:
@@ -937,15 +1086,37 @@ class AgentRegistry:
     def get_registry_statistics(self) -> Dict[str, Any]:
         """Get current registry statistics"""
         return {
-            'total_agents': len(self.agents),
-            'active_agents': len([a for a in self.agents.values() if a.status == RegistrationStatus.ACTIVE]),
-            'inactive_agents': len([a for a in self.agents.values() if a.status == RegistrationStatus.INACTIVE]),
-            'archived_agents': len([a for a in self.agents.values() if a.status == RegistrationStatus.ARCHIVED]),
-            'total_services': len(self.services),
-            'unique_capabilities': len(self.capabilities_index),
-            'collaboration_connections': sum(len(connections) for connections in self.collaboration_graph.values()),
-            'cache_entries': len(self.query_cache),
-            'performance_records': sum(len(history) for history in self.performance_history.values())
+            "total_agents": len(self.agents),
+            "active_agents": len(
+                [
+                    a
+                    for a in self.agents.values()
+                    if a.status == RegistrationStatus.ACTIVE
+                ]
+            ),
+            "inactive_agents": len(
+                [
+                    a
+                    for a in self.agents.values()
+                    if a.status == RegistrationStatus.INACTIVE
+                ]
+            ),
+            "archived_agents": len(
+                [
+                    a
+                    for a in self.agents.values()
+                    if a.status == RegistrationStatus.ARCHIVED
+                ]
+            ),
+            "total_services": len(self.services),
+            "unique_capabilities": len(self.capabilities_index),
+            "collaboration_connections": sum(
+                len(connections) for connections in self.collaboration_graph.values()
+            ),
+            "cache_entries": len(self.query_cache),
+            "performance_records": sum(
+                len(history) for history in self.performance_history.values()
+            ),
         }
 
     async def shutdown(self):
@@ -974,8 +1145,10 @@ class AgentRegistry:
 
         self.logger.info("Agent Registry shutdown complete")
 
+
 # Global instance for system-wide access
 _agent_registry_instance = None
+
 
 def get_agent_registry() -> AgentRegistry:
     """Get the global agent registry instance"""
@@ -984,11 +1157,13 @@ def get_agent_registry() -> AgentRegistry:
         _agent_registry_instance = AgentRegistry()
     return _agent_registry_instance
 
+
 async def initialize_agent_registry():
     """Initialize the global agent registry"""
     registry = get_agent_registry()
     await registry.initialize()
     return registry
+
 
 if __name__ == "__main__":
     # Example usage and testing
@@ -998,6 +1173,7 @@ if __name__ == "__main__":
 
         # Initialize consciousness bridge first
         from consciousness_bridge import initialize_consciousness_bridge
+
         await initialize_consciousness_bridge()
 
         # Initialize agent registry
@@ -1005,15 +1181,15 @@ if __name__ == "__main__":
 
         # Create test agent registration
         test_agent = AgentRegistration(
-            agent_id='test_agent_001',
-            name='Test Agent Alpha',
-            description='A test agent for registry validation',
-            agent_type='test',
+            agent_id="test_agent_001",
+            name="Test Agent Alpha",
+            description="A test agent for registry validation",
+            agent_type="test",
             category=AgentCategory.EXPERIMENTAL,
-            system_origin='test_system',
-            capabilities=['testing', 'validation', 'monitoring'],
-            interfaces=['consciousness_bridge', 'rest_api'],
-            provides_services=['test_execution', 'validation']
+            system_origin="test_system",
+            capabilities=["testing", "validation", "monitoring"],
+            interfaces=["consciousness_bridge", "rest_api"],
+            provides_services=["test_execution", "validation"],
         )
 
         # Register agent
@@ -1021,7 +1197,7 @@ if __name__ == "__main__":
         print(f"Agent registration: {'Success' if success else 'Failed'}")
 
         # Test discovery
-        query = AgentQuery(capabilities=['testing'])
+        query = AgentQuery(capabilities=["testing"])
         results = await registry._discover_agents(query)
         print(f"Discovery results: {len(results)} agents found")
 

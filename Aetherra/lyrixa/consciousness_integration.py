@@ -297,9 +297,9 @@ class ConsciousnessBridge:
 
                 # Update metadata with collective state
                 for state in [aetherra_state, lyrixa_state]:
-                    state.metadata["collective_consciousness"] = (
-                        collective_consciousness
-                    )
+                    state.metadata[
+                        "collective_consciousness"
+                    ] = collective_consciousness
                     state.metadata["last_sync"] = datetime.now().isoformat()
 
                 # Emit consciousness sync event

@@ -22,7 +22,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from .agent_base import AgentBase, AgentResponse
 
@@ -81,7 +81,9 @@ class ResolutionStrategy:
 
     strategy_id: str
     contradiction_id: str
-    strategy_type: str  # "clarification", "context_separation", "temporal_evolution", "evidence_gathering"
+    strategy_type: (
+        str  # "clarification", "context_separation", "temporal_evolution", "evidence_gathering"
+    )
     description: str
     steps: List[str]
     expected_outcome: str
@@ -687,36 +689,36 @@ class ContradictionDetectionAgent(AgentBase):
             conflict.resolution_notes = (
                 f"Archived outdated evidence: {resolution_analysis['justification']}"
             )
-            resolution_result["action_taken"] = (
-                "Archived conflicting evidence with lower confidence/relevance"
-            )
+            resolution_result[
+                "action_taken"
+            ] = "Archived conflicting evidence with lower confidence/relevance"
 
         elif resolution_analysis["recommendation"] == "context_separation":
             conflict.resolution_status = "resolved"
             conflict.resolution_notes = (
                 f"Context-dependent resolution: {resolution_analysis['justification']}"
             )
-            resolution_result["action_taken"] = (
-                "Separated evidence by context - both valid in different situations"
-            )
+            resolution_result[
+                "action_taken"
+            ] = "Separated evidence by context - both valid in different situations"
 
         elif resolution_analysis["recommendation"] == "temporal_evolution":
             conflict.resolution_status = "resolved"
             conflict.resolution_notes = (
                 f"Temporal evolution accepted: {resolution_analysis['justification']}"
             )
-            resolution_result["action_taken"] = (
-                "Accepted as natural evolution/learning over time"
-            )
+            resolution_result[
+                "action_taken"
+            ] = "Accepted as natural evolution/learning over time"
 
         elif resolution_analysis["recommendation"] == "requires_investigation":
             conflict.resolution_status = "investigating"
             conflict.resolution_notes = (
                 f"Needs further investigation: {resolution_analysis['justification']}"
             )
-            resolution_result["action_taken"] = (
-                "Marked for further investigation - insufficient evidence"
-            )
+            resolution_result[
+                "action_taken"
+            ] = "Marked for further investigation - insufficient evidence"
 
         else:
             conflict.resolution_status = "unresolved"
@@ -777,7 +779,7 @@ class ContradictionDetectionAgent(AgentBase):
         try:
             # Load existing logs
             if resolution_log_file.exists():
-                with open(resolution_log_file, "r") as f:
+                with open(resolution_log_file) as f:
                     existing_logs = json.load(f)
             else:
                 existing_logs = []
@@ -1226,7 +1228,7 @@ class ContradictionDetectionAgent(AgentBase):
             # Load contradictions
             contradictions_file = self.data_dir / "detected_contradictions.json"
             if contradictions_file.exists():
-                with open(contradictions_file, "r") as f:
+                with open(contradictions_file) as f:
                     contradictions_data = json.load(f)
                     for c_id, c_data in contradictions_data.items():
                         # Convert contradiction_type string back to enum
@@ -1240,7 +1242,7 @@ class ContradictionDetectionAgent(AgentBase):
             # Load strategies
             strategies_file = self.data_dir / "resolution_strategies.json"
             if strategies_file.exists():
-                with open(strategies_file, "r") as f:
+                with open(strategies_file) as f:
                     strategies_data = json.load(f)
                     for s_id, s_data in strategies_data.items():
                         self.resolution_strategies[s_id] = ResolutionStrategy(**s_data)

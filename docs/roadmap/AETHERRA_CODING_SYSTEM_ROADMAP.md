@@ -1,6 +1,6 @@
 # Aetherra Coding System Roadmap (Lyrixa Code Studio)
 
-Status: DRAFT (Phase 0 scaffolding landed)
+Status: ACTIVE – Phase 1 (Safe Edit Loop) in progress (Foundations + early Safe Edit Loop features delivered)
 Owner: Lyrixa / Aetherra Engineering
 Source Spec: `docs/AETHERRA_CODING_SYSTEM.md`
 Ledger: `audit/aetherra_runs.jsonl` (coding ops)
@@ -24,7 +24,7 @@ Deliver an AI‑native, autonomous, IDE‑grade environment that can plan → co
 
 ## Detailed Phase Breakdown
 
-### Phase 0 (Foundations) – COMPLETE (initial commit)
+### Phase 0 (Foundations) – COMPLETE
 
 Delivered:
 
@@ -33,17 +33,17 @@ Delivered:
 - Spec→Tests & Quality Gates integration
 - `.aether` risk verifier hook + audit JSONL ledger
 
-Pending (roll into early Phase 1):
+Rolled Forward (absorbed / completed early in Phase 1):
 
-- Colorized diff + rollback execution
-- Initial unit tests for patch engine & orchestrator
-- Plugin scaffold skeleton command
+- Colorized diff + rollback execution (DELIVERED)
+- Plugin scaffold skeleton command (DELIVERED)
+- Initial unit tests for patch engine & orchestrator (BASIC CASES DELIVERED – extend for edge risk scenarios Phase 1)
 
 ### Phase 1 (Safe Edit Loop)
 
 Focus: robust, deterministic editing & verification.
 
-Key Work Items:
+Key Work Items (Original Scope):
 
 1. Patch Composer v2: multi‑file diffs, hunk classification, risk scoring (low/medium/high)
 2. Formatters/Linters: black, isort, ruff (Python); prettier/eslint (JS/TS); mdformat (Markdown) – auto-fix pre‑commit in co‑drive/autopilot
@@ -53,9 +53,26 @@ Key Work Items:
 6. Rollback Tokens: store pre‑patch snapshots (content hash), implement `aetherra_code revert --token <id>`
 7. Enhanced Diagnostics: diff summary (files, +lines, -lines), risk classification
 
-Exit Criteria:
+Progress (as of 2025-09-07):
 
-- All gates pass for generated edits; at least one plugin scaffold created & verified in CI; revert works.
+- ✅ Colorized diff + risk classification + per-file added/removed counts integrated into snapshots
+- ✅ Rollback snapshot store (content + existence + line delta) – revert command operational
+- ✅ Plugin scaffold + registry discovery + manifest validation & warning diagnostics
+- ✅ Format/Lint pipeline: black (strict mode), isort integration, ruff config migrated to new `[tool.ruff.lint]` layout
+- ✅ Gate wiring: format/lint stage incorporated into verify pipeline with `--no-format` flag and strict mode env toggle
+- ✅ Encoding / parsing stability remediation (BOM removal, UTF‑16→UTF‑8 conversion, malformed f-string corrections)
+- ✅ Intentional side‑effect import strategy (inline `# noqa: F401` on curated availability imports)
+- ✅ Risk classification thresholds applied to diff summary output
+- 🚧 Ongoing: bulk unused import removals to reach ruff clean pass
+- 🚧 Planned next: coverage delta capture + gating reason surfacing; test selection stub; Patch Composer v2 enhancements
+
+Exit Criteria (updated):
+
+- All gates (format/lint + tests + coverage no-drop) green under normal run
+- At least one plugin scaffold created, verified, and signed stub present
+- Revert command demonstrated in CI with audit ledger entry
+- Coverage delta + gating reasons emitted (PENDING)
+- Test selection stub producing candidate set (PENDING)
 
 ### Phase 2 (Orchestrated Autonomy)
 
@@ -156,11 +173,30 @@ Exit Criteria:
 
 ## Current TODO Snapshot (Rolling)
 
-- [ ] Unit tests for `ops_engine.apply_unified_diff` edge cases
-- [ ] Color diff & revert command
-- [ ] Plugin scaffold command
-- [ ] Branch/PR autopilot implementation
-- [ ] Context graph prototype
+Completed (recent):
+
+- [x] Color diff & revert command (CLI flags, integrated with risk output)
+- [x] Plugin scaffold command (runtime, test, manifest, auto-registration)
+- [x] Risk classification (low/medium/high + added/removed counts)
+- [x] Plugin registry validation warnings & `plugin list` CLI
+- [x] Rollback snapshot enriched (added/removed counts per file)
+- [x] Ruff configuration migration to new lint sections
+- [x] Format/lint gate (black + isort + ruff) with strict mode toggle
+- [x] Encoding normalization (BOM removal, UTF‑16 file conversion) & parse error fixes
+- [x] Side-effect import hygiene pattern established (targeted `noqa: F401`)
+- [x] Basic unit tests for diff apply & revert paths
+
+Upcoming / In Progress:
+
+- [ ] Residual ruff cleanup (remove remaining unused imports; finalize per-file ignores)
+- [ ] Coverage delta in verify output & gating reasons surfaced
+- [ ] Test selection (impact analyzer stub)
+- [ ] Patch Composer v2 (multi-file hunk classification refinement & semantic risk inputs)
+- [ ] ADR: patch composer diff strategy v2
+- [ ] ADR: autonomy risk model v1
+- [ ] Branch/PR autopilot implementation (moves to early Phase 2)
+- [ ] Context graph prototype (symbols ↔ tests ↔ docs map)
+- [ ] Semantic search index scaffold
 
 ## Governance & Process Additions
 
@@ -265,6 +301,13 @@ Exit Criteria:
 - [ ] Add semantic index incremental builder.
 - [ ] Publish accessibility / keyboard shortcuts doc.
 - [ ] Implement audit ledger backup + redaction.
+- [ ] Extend unit test coverage for rollback edge cases (binary-like diffs, permission errors)
+- [ ] Add coverage delta calculation & persistence layer
+- [ ] Introduce lightweight provenance hash for each patch bundle (prep for signing)
+
+## Latest Delta (2025-09-07)
+
+"Safe Edit Loop" early slice landed: formatting/lint gate operational (black/isort/ruff), diff risk metrics + colorized preview, rollback snapshots enriched (content + line deltas), plugin scaffold & manifest validation shipped, encoding robustness pass completed, and ruff configuration migrated. Remaining near-term focus: finish unused import purge, introduce coverage delta + gating rationale, and stand up test selection stub ahead of Patch Composer v2.
 
 ## Adoption Guide
 

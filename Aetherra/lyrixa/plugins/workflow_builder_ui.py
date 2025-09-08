@@ -10,7 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QRectF, Qt, QTimer
+from PySide6.QtCore import QRectF, Qt, QTimer  # noqa: F401 (optional runtime import)
 from PySide6.QtGui import QBrush, QColor, QPen
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -26,8 +26,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QListWidget,
-    QListWidgetItem,
     QPushButton,
     QScrollArea,
     QSpinBox,
@@ -521,7 +519,8 @@ class WorkflowBuilderUI(QWidget):
 
     def apply_styling(self):
         """Apply dark theme styling to the workflow builder."""
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QWidget {
                 background-color: #1e1e1e;
                 color: white;
@@ -645,13 +644,14 @@ class WorkflowBuilderUI(QWidget):
                 border-radius: 4px;
                 padding: 5px;
             }
-        """)
+        """
+        )
 
     def load_workflows(self):
         """Load existing workflows from file."""
         try:
             if self.workflows_file.exists():
-                with open(self.workflows_file, "r") as f:
+                with open(self.workflows_file) as f:
                     workflows = json.load(f)
                 # Populate workflow library
                 self.populate_workflow_library(workflows)

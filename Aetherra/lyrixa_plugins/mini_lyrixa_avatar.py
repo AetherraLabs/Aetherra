@@ -8,8 +8,17 @@ A dynamic AI glyph that visualizes Lyrixa's cognitive state
 
 import math
 
-from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt, QTimer
-from PySide6.QtGui import QBrush, QColor, QLinearGradient, QPainter, QPen
+from PySide6.QtCore import (  # noqa: F401 (optional runtime import)
+    QEasingCurve,
+    QPropertyAnimation,
+    Qt,
+    QTimer,
+)
+from PySide6.QtGui import (
+    QBrush,  # noqa: F401 (optional runtime import)
+    QColor,
+    QPainter,
+)
 from PySide6.QtWidgets import QWidget
 
 

@@ -20,7 +20,6 @@ from typing import Any, Dict, Optional
 
 import requests
 
-
 HUB_BASE = "http://localhost:3001"
 WEB_BASE = "http://localhost:8686"
 
@@ -37,7 +36,7 @@ def _fetch_json(url: str, timeout: float = 2.0) -> Optional[Dict[str, Any]]:
 
 def _tail_log(path: str, lines: int = 10) -> list[str]:
     try:
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        with open(path, encoding="utf-8", errors="ignore") as f:
             buf = f.readlines()
             return [ln.rstrip() for ln in buf[-lines:] if ln.strip()]
     except FileNotFoundError:
@@ -73,7 +72,9 @@ def render_once():
             plugin_count = len(plugins.get("plugins", []))
         elif health and isinstance(health.get("plugins_registered"), int):
             plugin_count = health.get("plugins_registered", 0)
-        print(f"   ⏱️ Uptime: {uptime or 0}s   •   📈 Requests: {reqs or 0}   •   🔌 Plugins: {plugin_count}")
+        print(
+            f"   ⏱️ Uptime: {uptime or 0}s   •   📈 Requests: {reqs or 0}   •   🔌 Plugins: {plugin_count}"
+        )
     else:
         print("🔴 HUB: Not responding on localhost:3001")
 
@@ -115,7 +116,9 @@ def render_once():
     print("-" * 20)
     current_time = datetime.now().strftime("%H:%M:%S")
     print(f"🕐 Current Time: {current_time}")
-    print("Components: Service Registry • Plugin Discovery • Memory • Hub • Web UI • Core Engine")
+    print(
+        "Components: Service Registry • Plugin Discovery • Memory • Hub • Web UI • Core Engine"
+    )
     print()
     print("=" * 50)
 

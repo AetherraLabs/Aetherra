@@ -10,7 +10,7 @@ within the Aetherra AI OS system.
 """
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from .agent_base import AgentBase

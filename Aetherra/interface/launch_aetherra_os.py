@@ -24,28 +24,30 @@ Requirements:
     - Aetherra OS components
 """
 
-import sys
 import os
-import subprocess
+import sys
 from pathlib import Path
+
 
 def check_dependencies():
     """Check if required dependencies are installed"""
-    missing_deps = []
+    missing_deps: list[str] = []
 
+    # PySide6 core
     try:
-        import PySide6
+        __import__("PySide6")
         print("✅ PySide6 available")
     except ImportError:
-        missing_deps.append("PySide6")
         print("❌ PySide6 not installed")
+        missing_deps.append("PySide6")
 
+    # Qt WebEngine (optional for embedded browser tab)
     try:
-        from PySide6.QtWebEngineWidgets import QWebEngineView
+        __import__("PySide6.QtWebEngineWidgets")
         print("✅ QtWebEngine available")
     except ImportError:
+        print("❌ QtWebEngine not available (web tab will be disabled)")
         missing_deps.append("QtWebEngine")
-        print("❌ QtWebEngine not available")
 
     if missing_deps:
         print(f"\n[TOOL] Missing dependencies: {', '.join(missing_deps)}")
@@ -53,6 +55,7 @@ def check_dependencies():
         return False
 
     return True
+
 
 def setup_environment():
     """Setup environment for Aetherra OS"""
@@ -64,10 +67,11 @@ def setup_environment():
         sys.path.insert(0, str(project_root))
 
     # Set environment variables
-    os.environ['AETHERRA_OS_MODE'] = 'hybrid_interface'
-    os.environ['AETHERRA_INTERFACE_TYPE'] = 'native_web_hybrid'
+    os.environ["AETHERRA_OS_MODE"] = "hybrid_interface"
+    os.environ["AETHERRA_INTERFACE_TYPE"] = "native_web_hybrid"
 
     print("✅ Environment configured")
+
 
 def check_os_status():
     """Check if Aetherra OS is running"""
@@ -75,7 +79,6 @@ def check_os_status():
 
     try:
         # Try to import and check OS components
-        from aetherra_service_registry import get_service_registry
         from aetherra_kernel_loop import get_kernel
 
         # Check if kernel is running
@@ -93,6 +96,7 @@ def check_os_status():
     except Exception as e:
         print(f"❌ Error checking OS status: {e}")
         return False
+
 
 def start_aetherra_os():
     """Start the Aetherra Operating System"""
@@ -119,7 +123,7 @@ def start_aetherra_os():
             # Create and start OS launcher in background
             async def start_os_background():
                 launcher = AetherraOSLauncher()
-                await launcher.launch_full_os({'gui_enabled': False})  # Start without GUI
+                await launcher.launch_full_os({"gui_enabled": False})  # Start without GUI
 
             # Run OS startup in background thread
             import threading
@@ -133,6 +137,7 @@ def start_aetherra_os():
             # Give OS time to start
             print("⏳ Waiting for OS to initialize...")
             import time
+
             time.sleep(3)
 
             print("✅ Aetherra OS startup initiated")
@@ -146,6 +151,7 @@ def start_aetherra_os():
         print(f"❌ Failed to start Aetherra OS: {e}")
         return False
 
+
 def launch_interface():
     """Launch the Aetherra OS hybrid interface"""
     print("🚀 Launching Aetherra OS Hybrid Interface...")
@@ -158,11 +164,11 @@ def launch_interface():
         print("📡 Embedded web server will start automatically")
         print("🌐 Dashboard panels loading...")
         print("🤖 Connected to running Aetherra OS")
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print("🤖 AETHERRA AI OPERATING SYSTEM")
         print("   Live Dashboard Interface")
         print("   Connected to OS Kernel")
-        print("="*50)
+        print("=" * 50)
 
         # Run the application
         exit_code = main()
@@ -177,6 +183,7 @@ def launch_interface():
     except Exception as e:
         print(f"❌ Failed to launch interface: {e}")
         return 1
+
 
 def main():
     """Main launcher function"""
@@ -203,6 +210,7 @@ def main():
 
         # Check again after starting
         import time
+
         time.sleep(2)
         if not check_os_status():
             print("[WARN] OS may still be starting up - continuing with interface launch")
@@ -211,6 +219,7 @@ def main():
     exit_code = launch_interface()
 
     return exit_code
+
 
 if __name__ == "__main__":
     sys.exit(main())

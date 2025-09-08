@@ -10,17 +10,16 @@ Advanced Memory Systems to provide deep behavioral analysis, performance metrics
 and predictive insights.
 """
 
-import asyncio
-import logging
-import time
+
 import json
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
-from collections import defaultdict
-from dataclasses import dataclass
+import logging
 import sqlite3
-import os
+import time
+from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
 
 # Add missing enums for compatibility
 class MemoryFragmentType(Enum):
@@ -29,12 +28,14 @@ class MemoryFragmentType(Enum):
     PROCEDURAL = "procedural"
     EMOTIONAL = "emotional"
 
+
 # Set up logging
 logger = logging.getLogger(__name__)
 
 # Try to import advanced memory systems
 try:
     from Aetherra.lyrixa.memory.advanced_memory_integration import AdvancedMemoryManager
+
     MEMORY_INTEGRATION_AVAILABLE = True
     logger.info("✅ Advanced Memory Integration available")
 except ImportError as e:
@@ -44,7 +45,10 @@ except ImportError as e:
 
 # Try to import conversation manager
 try:
-    from Aetherra.lyrixa.agents.enhanced_conversation_manager import EnhancedConversationManager
+    from Aetherra.lyrixa.agents.enhanced_conversation_manager import (
+        EnhancedConversationManager,
+    )
+
     CONVERSATION_MANAGER_AVAILABLE = True
     logger.info("✅ Enhanced Conversation Manager available")
 except ImportError as e:
@@ -56,6 +60,7 @@ except ImportError as e:
 @dataclass
 class AnalyticsMetric:
     """Data class for analytics metrics"""
+
     name: str
     value: float
     timestamp: datetime
@@ -70,6 +75,7 @@ class AnalyticsMetric:
 @dataclass
 class InsightPattern:
     """Data class for discovered insights"""
+
     pattern_id: str
     description: str
     confidence: float
@@ -110,7 +116,7 @@ class AnalyticsEngine:
             "insights_generated": 0,
             "patterns_discovered": 0,
             "performance_analysis_runs": 0,
-            "last_analysis": None
+            "last_analysis": None,
         }
 
         # Initialize database
@@ -125,7 +131,8 @@ class AnalyticsEngine:
                 cursor = conn.cursor()
 
                 # Metrics table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS metrics (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         name TEXT NOT NULL,
@@ -135,10 +142,12 @@ class AnalyticsEngine:
                         metadata TEXT,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                     )
-                """)
+                """
+                )
 
                 # Insights table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS insights (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         pattern_id TEXT UNIQUE NOT NULL,
@@ -150,20 +159,24 @@ class AnalyticsEngine:
                         discovered_at DATETIME NOT NULL,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                     )
-                """)
+                """
+                )
 
                 # Performance snapshots table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS performance_snapshots (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         snapshot_data TEXT NOT NULL,
                         timestamp DATETIME NOT NULL,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                     )
-                """)
+                """
+                )
 
                 # User behavior patterns table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS user_patterns (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         user_id TEXT NOT NULL,
@@ -173,7 +186,8 @@ class AnalyticsEngine:
                         last_seen DATETIME NOT NULL,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                     )
-                """)
+                """
+                )
 
                 conn.commit()
                 logger.info("✅ Analytics database initialized")
@@ -186,7 +200,7 @@ class AnalyticsEngine:
         name: str,
         value: float,
         category: str = "general",
-        metadata: Dict[str, Any] = None
+        metadata: Dict[str, Any] = None,
     ) -> bool:
         """Collect a metric for analysis"""
 
@@ -196,7 +210,7 @@ class AnalyticsEngine:
                 value=value,
                 timestamp=datetime.now(),
                 category=category,
-                metadata=metadata or {}
+                metadata=metadata or {},
             )
 
             # Add to buffer
@@ -224,16 +238,19 @@ class AnalyticsEngine:
                 cursor = conn.cursor()
 
                 for metric in self.metrics_buffer:
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         INSERT INTO metrics (name, value, category, timestamp, metadata)
                         VALUES (?, ?, ?, ?, ?)
-                    """, (
-                        metric.name,
-                        metric.value,
-                        metric.category,
-                        metric.timestamp.isoformat(),
-                        json.dumps(metric.metadata)
-                    ))
+                    """,
+                        (
+                            metric.name,
+                            metric.value,
+                            metric.category,
+                            metric.timestamp.isoformat(),
+                            json.dumps(metric.metadata),
+                        ),
+                    )
 
                 conn.commit()
                 logger.info(f"📊 Flushed {len(self.metrics_buffer)} metrics to database")
@@ -290,7 +307,8 @@ class AnalyticsEngine:
                 cursor = conn.cursor()
 
                 # Analyze response time trends
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT AVG(value) as avg_response_time,
                            strftime('%H', timestamp) as hour
                     FROM metrics
@@ -298,48 +316,62 @@ class AnalyticsEngine:
                       AND timestamp > datetime('now', '-24 hours')
                     GROUP BY strftime('%H', timestamp)
                     ORDER BY hour
-                """)
+                """
+                )
 
                 hourly_performance = cursor.fetchall()
 
                 if hourly_performance:
                     # Find peak performance hours
                     best_hours = sorted(hourly_performance, key=lambda x: x[0])[:3]
-                    worst_hours = sorted(hourly_performance, key=lambda x: x[0], reverse=True)[:3]
+                    worst_hours = sorted(
+                        hourly_performance, key=lambda x: x[0], reverse=True
+                    )[:3]
 
                     if best_hours and worst_hours:
-                        insights.append(InsightPattern(
-                            pattern_id="performance_hourly_trend",
-                            description=f"Peak performance hours: {', '.join([f'{h[1]}:00' for h in best_hours])}. "
-                                      f"Consider scheduling heavy tasks during these times.",
-                            confidence=0.8,
-                            impact_score=0.7,
-                            category="performance",
-                            discovered_at=datetime.now(),
-                            evidence=[{"hourly_data": hourly_performance}]
-                        ))
+                        insights.append(
+                            InsightPattern(
+                                pattern_id="performance_hourly_trend",
+                                description=f"Peak performance hours: {', '.join([f'{h[1]}:00' for h in best_hours])}. "
+                                f"Consider scheduling heavy tasks during these times.",
+                                confidence=0.8,
+                                impact_score=0.7,
+                                category="performance",
+                                discovered_at=datetime.now(),
+                                evidence=[{"hourly_data": hourly_performance}],
+                            )
+                        )
 
                 # Analyze memory usage patterns
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT AVG(value) as avg_memory, COUNT(*) as samples
                     FROM metrics
                     WHERE name = 'memory_usage'
                       AND timestamp > datetime('now', '-1 hour')
-                """)
+                """
+                )
 
                 memory_data = cursor.fetchone()
 
                 if memory_data and memory_data[0] > 80:
-                    insights.append(InsightPattern(
-                        pattern_id="high_memory_usage",
-                        description=f"High memory usage detected: {memory_data[0]:.1f}%. "
-                                  f"Consider memory optimization or scaling.",
-                        confidence=0.9,
-                        impact_score=0.8,
-                        category="performance",
-                        discovered_at=datetime.now(),
-                        evidence=[{"avg_memory": memory_data[0], "sample_count": memory_data[1]}]
-                    ))
+                    insights.append(
+                        InsightPattern(
+                            pattern_id="high_memory_usage",
+                            description=f"High memory usage detected: {memory_data[0]:.1f}%. "
+                            f"Consider memory optimization or scaling.",
+                            confidence=0.9,
+                            impact_score=0.8,
+                            category="performance",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_memory": memory_data[0],
+                                    "sample_count": memory_data[1],
+                                }
+                            ],
+                        )
+                    )
 
         except Exception as e:
             logger.error(f"Performance pattern analysis failed: {e}")
@@ -356,7 +388,8 @@ class AnalyticsEngine:
                 cursor = conn.cursor()
 
                 # Analyze conversation frequency patterns
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT COUNT(*) as conversations,
                            strftime('%w', timestamp) as day_of_week
                     FROM metrics
@@ -364,59 +397,76 @@ class AnalyticsEngine:
                       AND timestamp > datetime('now', '-7 days')
                     GROUP BY strftime('%w', timestamp)
                     ORDER BY conversations DESC
-                """)
+                """
+                )
 
                 weekly_patterns = cursor.fetchall()
 
                 if weekly_patterns:
                     busiest_day = weekly_patterns[0]
-                    day_names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+                    day_names = [
+                        "Sunday",
+                        "Monday",
+                        "Tuesday",
+                        "Wednesday",
+                        "Thursday",
+                        "Friday",
+                        "Saturday",
+                    ]
 
-                    insights.append(InsightPattern(
-                        pattern_id="weekly_conversation_pattern",
-                        description=f"Most active day: {day_names[int(busiest_day[1])]} "
-                                  f"with {busiest_day[0]} conversations. "
-                                  f"Consider optimizing resources for this day.",
-                        confidence=0.75,
-                        impact_score=0.6,
-                        category="user_behavior",
-                        discovered_at=datetime.now(),
-                        evidence=[{"weekly_data": weekly_patterns}]
-                    ))
+                    insights.append(
+                        InsightPattern(
+                            pattern_id="weekly_conversation_pattern",
+                            description=f"Most active day: {day_names[int(busiest_day[1])]} "
+                            f"with {busiest_day[0]} conversations. "
+                            f"Consider optimizing resources for this day.",
+                            confidence=0.75,
+                            impact_score=0.6,
+                            category="user_behavior",
+                            discovered_at=datetime.now(),
+                            evidence=[{"weekly_data": weekly_patterns}],
+                        )
+                    )
 
                 # Analyze user engagement patterns
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT AVG(value) as avg_engagement
                     FROM metrics
                     WHERE name = 'user_engagement'
                       AND timestamp > datetime('now', '-24 hours')
-                """)
+                """
+                )
 
                 engagement = cursor.fetchone()
 
                 if engagement and engagement[0]:
                     if engagement[0] > 0.8:
-                        insights.append(InsightPattern(
-                            pattern_id="high_user_engagement",
-                            description=f"Excellent user engagement: {engagement[0]:.1%}. "
-                                      f"Current interaction patterns are highly effective.",
-                            confidence=0.85,
-                            impact_score=0.7,
-                            category="user_behavior",
-                            discovered_at=datetime.now(),
-                            evidence=[{"engagement_score": engagement[0]}]
-                        ))
+                        insights.append(
+                            InsightPattern(
+                                pattern_id="high_user_engagement",
+                                description=f"Excellent user engagement: {engagement[0]:.1%}. "
+                                f"Current interaction patterns are highly effective.",
+                                confidence=0.85,
+                                impact_score=0.7,
+                                category="user_behavior",
+                                discovered_at=datetime.now(),
+                                evidence=[{"engagement_score": engagement[0]}],
+                            )
+                        )
                     elif engagement[0] < 0.5:
-                        insights.append(InsightPattern(
-                            pattern_id="low_user_engagement",
-                            description=f"Low user engagement detected: {engagement[0]:.1%}. "
-                                      f"Consider improving interaction quality or features.",
-                            confidence=0.8,
-                            impact_score=0.9,
-                            category="user_behavior",
-                            discovered_at=datetime.now(),
-                            evidence=[{"engagement_score": engagement[0]}]
-                        ))
+                        insights.append(
+                            InsightPattern(
+                                pattern_id="low_user_engagement",
+                                description=f"Low user engagement detected: {engagement[0]:.1%}. "
+                                f"Consider improving interaction quality or features.",
+                                confidence=0.8,
+                                impact_score=0.9,
+                                category="user_behavior",
+                                discovered_at=datetime.now(),
+                                evidence=[{"engagement_score": engagement[0]}],
+                            )
+                        )
 
         except Exception as e:
             logger.error(f"User behavior analysis failed: {e}")
@@ -433,53 +483,63 @@ class AnalyticsEngine:
                 cursor = conn.cursor()
 
                 # Analyze memory operation efficiency
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT AVG(value) as avg_recall_time, COUNT(*) as operations
                     FROM metrics
                     WHERE name = 'memory_recall_time'
                       AND timestamp > datetime('now', '-1 hour')
-                """)
+                """
+                )
 
                 recall_performance = cursor.fetchone()
 
                 if recall_performance and recall_performance[0]:
                     if recall_performance[0] < 0.01:  # < 10ms
-                        insights.append(InsightPattern(
-                            pattern_id="excellent_memory_performance",
-                            description=f"Excellent memory recall performance: {recall_performance[0]*1000:.1f}ms average. "
-                                      f"Memory systems are highly optimized.",
-                            confidence=0.9,
-                            impact_score=0.6,
-                            category="memory",
-                            discovered_at=datetime.now(),
-                            evidence=[{
-                                "avg_recall_time": recall_performance[0],
-                                "operation_count": recall_performance[1]
-                            }]
-                        ))
+                        insights.append(
+                            InsightPattern(
+                                pattern_id="excellent_memory_performance",
+                                description=f"Excellent memory recall performance: {recall_performance[0]*1000:.1f}ms average. "
+                                f"Memory systems are highly optimized.",
+                                confidence=0.9,
+                                impact_score=0.6,
+                                category="memory",
+                                discovered_at=datetime.now(),
+                                evidence=[
+                                    {
+                                        "avg_recall_time": recall_performance[0],
+                                        "operation_count": recall_performance[1],
+                                    }
+                                ],
+                            )
+                        )
 
                 # Analyze memory enhancement effectiveness
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT AVG(value) as enhancement_rate
                     FROM metrics
                     WHERE name = 'memory_enhancement_rate'
                       AND timestamp > datetime('now', '-24 hours')
-                """)
+                """
+                )
 
                 enhancement = cursor.fetchone()
 
                 if enhancement and enhancement[0]:
                     if enhancement[0] > 0.7:
-                        insights.append(InsightPattern(
-                            pattern_id="high_memory_enhancement",
-                            description=f"High memory enhancement rate: {enhancement[0]:.1%}. "
-                                      f"Advanced memory systems are significantly improving responses.",
-                            confidence=0.85,
-                            impact_score=0.8,
-                            category="memory",
-                            discovered_at=datetime.now(),
-                            evidence=[{"enhancement_rate": enhancement[0]}]
-                        ))
+                        insights.append(
+                            InsightPattern(
+                                pattern_id="high_memory_enhancement",
+                                description=f"High memory enhancement rate: {enhancement[0]:.1%}. "
+                                f"Advanced memory systems are significantly improving responses.",
+                                confidence=0.85,
+                                impact_score=0.8,
+                                category="memory",
+                                discovered_at=datetime.now(),
+                                evidence=[{"enhancement_rate": enhancement[0]}],
+                            )
+                        )
 
         except Exception as e:
             logger.error(f"Memory pattern analysis failed: {e}")
@@ -496,39 +556,47 @@ class AnalyticsEngine:
                 cursor = conn.cursor()
 
                 # Analyze conversation success patterns
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT AVG(value) as success_rate, COUNT(*) as conversations
                     FROM metrics
                     WHERE name = 'conversation_success'
                       AND timestamp > datetime('now', '-24 hours')
-                """)
+                """
+                )
 
                 success_data = cursor.fetchone()
 
                 if success_data and success_data[0]:
                     if success_data[0] > 0.9:
-                        insights.append(InsightPattern(
-                            pattern_id="high_conversation_success",
-                            description=f"Exceptional conversation success rate: {success_data[0]:.1%}. "
-                                      f"Current conversation strategies are highly effective.",
-                            confidence=0.9,
-                            impact_score=0.7,
-                            category="conversation",
-                            discovered_at=datetime.now(),
-                            evidence=[{
-                                "success_rate": success_data[0],
-                                "conversation_count": success_data[1]
-                            }]
-                        ))
+                        insights.append(
+                            InsightPattern(
+                                pattern_id="high_conversation_success",
+                                description=f"Exceptional conversation success rate: {success_data[0]:.1%}. "
+                                f"Current conversation strategies are highly effective.",
+                                confidence=0.9,
+                                impact_score=0.7,
+                                category="conversation",
+                                discovered_at=datetime.now(),
+                                evidence=[
+                                    {
+                                        "success_rate": success_data[0],
+                                        "conversation_count": success_data[1],
+                                    }
+                                ],
+                            )
+                        )
 
                 # Analyze response quality trends
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT value, timestamp
                     FROM metrics
                     WHERE name = 'response_quality'
                       AND timestamp > datetime('now', '-24 hours')
                     ORDER BY timestamp
-                """)
+                """
+                )
 
                 quality_data = cursor.fetchall()
 
@@ -539,20 +607,24 @@ class AnalyticsEngine:
                     trend = (recent_quality - earlier_quality) / earlier_quality
 
                     if trend > 0.1:  # 10% improvement
-                        insights.append(InsightPattern(
-                            pattern_id="improving_response_quality",
-                            description=f"Response quality improving: {trend:.1%} increase. "
-                                      f"Learning systems are adapting effectively.",
-                            confidence=0.8,
-                            impact_score=0.7,
-                            category="conversation",
-                            discovered_at=datetime.now(),
-                            evidence=[{
-                                "trend": trend,
-                                "recent_quality": recent_quality,
-                                "earlier_quality": earlier_quality
-                            }]
-                        ))
+                        insights.append(
+                            InsightPattern(
+                                pattern_id="improving_response_quality",
+                                description=f"Response quality improving: {trend:.1%} increase. "
+                                f"Learning systems are adapting effectively.",
+                                confidence=0.8,
+                                impact_score=0.7,
+                                category="conversation",
+                                discovered_at=datetime.now(),
+                                evidence=[
+                                    {
+                                        "trend": trend,
+                                        "recent_quality": recent_quality,
+                                        "earlier_quality": earlier_quality,
+                                    }
+                                ],
+                            )
+                        )
 
         except Exception as e:
             logger.error(f"Conversation pattern analysis failed: {e}")
@@ -567,19 +639,22 @@ class AnalyticsEngine:
                 cursor = conn.cursor()
 
                 for insight in insights:
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         INSERT OR REPLACE INTO insights
                         (pattern_id, description, confidence, impact_score, category, evidence, discovered_at)
                         VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        insight.pattern_id,
-                        insight.description,
-                        insight.confidence,
-                        insight.impact_score,
-                        insight.category,
-                        json.dumps(insight.evidence),
-                        insight.discovered_at.isoformat()
-                    ))
+                    """,
+                        (
+                            insight.pattern_id,
+                            insight.description,
+                            insight.confidence,
+                            insight.impact_score,
+                            insight.category,
+                            json.dumps(insight.evidence),
+                            insight.discovered_at.isoformat(),
+                        ),
+                    )
 
                 conn.commit()
                 self.analytics_stats["patterns_discovered"] += len(insights)
@@ -591,7 +666,7 @@ class AnalyticsEngine:
         self,
         category: Optional[str] = None,
         min_confidence: float = 0.0,
-        limit: int = 50
+        limit: int = 50,
     ) -> List[Dict[str, Any]]:
         """Retrieve insights from database"""
 
@@ -619,15 +694,17 @@ class AnalyticsEngine:
 
                 insights = []
                 for row in rows:
-                    insights.append({
-                        "pattern_id": row[0],
-                        "description": row[1],
-                        "confidence": row[2],
-                        "impact_score": row[3],
-                        "category": row[4],
-                        "evidence": json.loads(row[5]) if row[5] else [],
-                        "discovered_at": row[6]
-                    })
+                    insights.append(
+                        {
+                            "pattern_id": row[0],
+                            "description": row[1],
+                            "confidence": row[2],
+                            "impact_score": row[3],
+                            "category": row[4],
+                            "evidence": json.loads(row[5]) if row[5] else [],
+                            "discovered_at": row[6],
+                        }
+                    )
 
                 return insights
 
@@ -643,12 +720,14 @@ class AnalyticsEngine:
                 cursor = conn.cursor()
 
                 # Get recent metrics summary
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT category, AVG(value) as avg_value, COUNT(*) as count
                     FROM metrics
                     WHERE timestamp > datetime('now', '-1 hour')
                     GROUP BY category
-                """)
+                """
+                )
 
                 category_stats = cursor.fetchall()
 
@@ -669,14 +748,17 @@ class AnalyticsEngine:
                         for row in category_stats
                     },
                     "analytics_stats": self.analytics_stats.copy(),
-                    "system_health": await self._calculate_system_health()
+                    "system_health": await self._calculate_system_health(),
                 }
 
                 # Store snapshot
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO performance_snapshots (snapshot_data, timestamp)
                     VALUES (?, ?)
-                """, (json.dumps(snapshot), datetime.now().isoformat()))
+                """,
+                    (json.dumps(snapshot), datetime.now().isoformat()),
+                )
 
                 conn.commit()
                 return snapshot
@@ -696,11 +778,13 @@ class AnalyticsEngine:
                 cursor = conn.cursor()
 
                 # Check response time health
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT AVG(value) FROM metrics
                     WHERE name = 'response_time'
                       AND timestamp > datetime('now', '-1 hour')
-                """)
+                """
+                )
                 avg_response = cursor.fetchone()[0]
 
                 if avg_response:
@@ -714,11 +798,13 @@ class AnalyticsEngine:
                         health_factors["response_time"] = "excellent"
 
                 # Check memory health
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT AVG(value) FROM metrics
                     WHERE name = 'memory_usage'
                       AND timestamp > datetime('now', '-1 hour')
-                """)
+                """
+                )
                 avg_memory = cursor.fetchone()[0]
 
                 if avg_memory:
@@ -732,11 +818,13 @@ class AnalyticsEngine:
                         health_factors["memory"] = "healthy"
 
                 # Check error rate
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT COUNT(*) as errors FROM metrics
                     WHERE name LIKE '%error%'
                       AND timestamp > datetime('now', '-1 hour')
-                """)
+                """
+                )
                 error_count = cursor.fetchone()[0]
 
                 if error_count > 10:
@@ -750,10 +838,14 @@ class AnalyticsEngine:
 
             return {
                 "score": max(0, health_score),
-                "status": "excellent" if health_score >= 90 else
-                         "good" if health_score >= 70 else
-                         "fair" if health_score >= 50 else "poor",
-                "factors": health_factors
+                "status": "excellent"
+                if health_score >= 90
+                else "good"
+                if health_score >= 70
+                else "fair"
+                if health_score >= 50
+                else "poor",
+                "factors": health_factors,
             }
 
         except Exception as e:
@@ -764,12 +856,14 @@ class AnalyticsEngine:
         """Get analytics engine statistics"""
 
         stats = self.analytics_stats.copy()
-        stats.update({
-            "buffer_size": len(self.metrics_buffer),
-            "insights_cached": len(self.insights_cache),
-            "database_path": self.db_path,
-            "config": self.config
-        })
+        stats.update(
+            {
+                "buffer_size": len(self.metrics_buffer),
+                "insights_cached": len(self.insights_cache),
+                "database_path": self.db_path,
+                "config": self.config,
+            }
+        )
 
         return stats
 
@@ -782,7 +876,11 @@ class InsightsEngine:
     integrating with memory systems for contextual understanding.
     """
 
-    def __init__(self, analytics_engine: AnalyticsEngine, memory_manager: Optional[AdvancedMemoryManager] = None):
+    def __init__(
+        self,
+        analytics_engine: AnalyticsEngine,
+        memory_manager: Optional[AdvancedMemoryManager] = None,
+    ):
         self.analytics_engine = analytics_engine
         self.memory_manager = memory_manager
 
@@ -793,7 +891,7 @@ class InsightsEngine:
             "resource_utilization",
             "conversation_quality",
             "memory_efficiency",
-            "system_health"
+            "system_health",
         ]
 
         # Advanced analysis settings
@@ -825,7 +923,9 @@ class InsightsEngine:
             correlation_insights = await self._generate_correlation_insights()
 
             # Generate recommendations
-            recommendations = await self._generate_recommendations(base_insights, advanced_insights)
+            recommendations = await self._generate_recommendations(
+                base_insights, advanced_insights
+            )
 
             insights_time = time.time() - insights_start
 
@@ -839,7 +939,7 @@ class InsightsEngine:
                 "recommendations": recommendations,
                 "summary": await self._generate_insights_summary(
                     base_insights, advanced_insights, predictive_insights
-                )
+                ),
             }
 
             logger.info(f"🔍 Generated comprehensive insights in {insights_time:.2f}s")
@@ -859,7 +959,9 @@ class InsightsEngine:
                 # Analyze performance bottlenecks
                 performance_data = await self._get_performance_data()
                 if performance_data:
-                    insights.extend(await self._analyze_performance_bottlenecks(performance_data))
+                    insights.extend(
+                        await self._analyze_performance_bottlenecks(performance_data)
+                    )
 
             elif category == "user_experience":
                 # Analyze user satisfaction patterns
@@ -871,7 +973,11 @@ class InsightsEngine:
                 # Analyze conversation effectiveness
                 conversation_data = await self._get_conversation_data()
                 if conversation_data:
-                    insights.extend(await self._analyze_conversation_effectiveness(conversation_data))
+                    insights.extend(
+                        await self._analyze_conversation_effectiveness(
+                            conversation_data
+                        )
+                    )
 
             elif category == "memory_efficiency":
                 # Analyze memory system effectiveness
@@ -919,12 +1025,16 @@ class InsightsEngine:
 
         try:
             # Analyze correlation between response time and user satisfaction
-            response_satisfaction_corr = await self._analyze_response_satisfaction_correlation()
+            response_satisfaction_corr = (
+                await self._analyze_response_satisfaction_correlation()
+            )
             if response_satisfaction_corr:
                 correlations.append(response_satisfaction_corr)
 
             # Analyze correlation between memory usage and performance
-            memory_performance_corr = await self._analyze_memory_performance_correlation()
+            memory_performance_corr = (
+                await self._analyze_memory_performance_correlation()
+            )
             if memory_performance_corr:
                 correlations.append(memory_performance_corr)
 
@@ -934,9 +1044,7 @@ class InsightsEngine:
         return correlations
 
     async def _generate_recommendations(
-        self,
-        base_insights: List[Dict[str, Any]],
-        advanced_insights: Dict[str, Any]
+        self, base_insights: List[Dict[str, Any]], advanced_insights: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         """Generate actionable recommendations based on insights"""
 
@@ -945,7 +1053,8 @@ class InsightsEngine:
         try:
             # Analyze high-impact insights
             high_impact_insights = [
-                insight for insight in base_insights
+                insight
+                for insight in base_insights
                 if insight.get("impact_score", 0) > 0.8
             ]
 
@@ -955,7 +1064,9 @@ class InsightsEngine:
                     recommendations.append(recommendation)
 
             # Generate system-wide recommendations
-            system_recommendations = await self._generate_system_recommendations(advanced_insights)
+            system_recommendations = await self._generate_system_recommendations(
+                advanced_insights
+            )
             recommendations.extend(system_recommendations)
 
         except Exception as e:
@@ -987,7 +1098,7 @@ class InsightsEngine:
         self,
         base_insights: List[Dict[str, Any]],
         advanced_insights: Dict[str, Any],
-        predictive_insights: List[Dict[str, Any]]
+        predictive_insights: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
         """Generate a summary of all insights"""
 
@@ -997,7 +1108,7 @@ class InsightsEngine:
             "predictions_generated": len(predictive_insights),
             "key_findings": await self._extract_key_findings(base_insights),
             "priority_actions": await self._extract_priority_actions(base_insights),
-            "system_status": await self._assess_overall_system_status(base_insights)
+            "system_status": await self._assess_overall_system_status(base_insights),
         }
 
     async def _extract_key_findings(self, insights: List[Dict[str, Any]]) -> List[str]:
@@ -1007,8 +1118,10 @@ class InsightsEngine:
 
         # Group insights by impact and confidence
         high_priority = [
-            insight for insight in insights
-            if insight.get("impact_score", 0) > 0.8 and insight.get("confidence", 0) > 0.8
+            insight
+            for insight in insights
+            if insight.get("impact_score", 0) > 0.8
+            and insight.get("confidence", 0) > 0.8
         ]
 
         for insight in high_priority[:5]:  # Top 5 key findings
@@ -1016,7 +1129,9 @@ class InsightsEngine:
 
         return key_findings
 
-    async def _extract_priority_actions(self, insights: List[Dict[str, Any]]) -> List[str]:
+    async def _extract_priority_actions(
+        self, insights: List[Dict[str, Any]]
+    ) -> List[str]:
         """Extract priority actions from insights"""
 
         actions = []
@@ -1032,7 +1147,9 @@ class InsightsEngine:
 
         return actions[:5]  # Top 5 priority actions
 
-    async def _assess_overall_system_status(self, insights: List[Dict[str, Any]]) -> str:
+    async def _assess_overall_system_status(
+        self, insights: List[Dict[str, Any]]
+    ) -> str:
         """Assess overall system status based on insights"""
 
         # Count positive vs negative insights
@@ -1085,13 +1202,22 @@ class AnalyticsStubMethods:
         return {"type": "prediction", "prediction": "Sample behavior prediction"}
 
     async def _analyze_response_satisfaction_correlation(self):
-        return {"type": "correlation", "correlation": "Sample response-satisfaction correlation"}
+        return {
+            "type": "correlation",
+            "correlation": "Sample response-satisfaction correlation",
+        }
 
     async def _analyze_memory_performance_correlation(self):
-        return {"type": "correlation", "correlation": "Sample memory-performance correlation"}
+        return {
+            "type": "correlation",
+            "correlation": "Sample memory-performance correlation",
+        }
 
     async def _generate_insight_recommendation(self, insight):
-        return {"type": "recommendation", "action": f"Address: {insight.get('pattern_id', 'unknown')}"}
+        return {
+            "type": "recommendation",
+            "action": f"Address: {insight.get('pattern_id', 'unknown')}",
+        }
 
     async def _generate_system_recommendations(self, insights):
         return [{"type": "system", "recommendation": "Sample system recommendation"}]
@@ -1099,7 +1225,7 @@ class AnalyticsStubMethods:
 
 # Mix in stub methods to InsightsEngine
 for method_name in dir(AnalyticsStubMethods):
-    if method_name.startswith('_') and not method_name.startswith('__'):
+    if method_name.startswith("_") and not method_name.startswith("__"):
         setattr(InsightsEngine, method_name, getattr(AnalyticsStubMethods, method_name))
 
 
@@ -1111,19 +1237,19 @@ def create_analytics_engine(config: Optional[Dict[str, Any]] = None) -> Analytic
 
 def create_insights_engine(
     analytics_engine: AnalyticsEngine,
-    memory_manager: Optional[AdvancedMemoryManager] = None
+    memory_manager: Optional[AdvancedMemoryManager] = None,
 ) -> InsightsEngine:
     """Create and initialize an insights engine"""
     return InsightsEngine(analytics_engine, memory_manager)
 
 
 __all__ = [
-    'AnalyticsEngine',
-    'InsightsEngine',
-    'AnalyticsMetric',
-    'InsightPattern',
-    'create_analytics_engine',
-    'create_insights_engine'
+    "AnalyticsEngine",
+    "InsightsEngine",
+    "AnalyticsMetric",
+    "InsightPattern",
+    "create_analytics_engine",
+    "create_insights_engine",
 ]
 
 # Alias for backward compatibility

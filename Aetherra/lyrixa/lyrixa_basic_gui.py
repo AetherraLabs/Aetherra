@@ -132,7 +132,8 @@ class LyrixaBasicWindow(QMainWindow):
 
         # Chat title
         title = QLabel("🤖 AI Chat Assistant")
-        title.setStyleSheet("""
+        title.setStyleSheet(
+            """
             QLabel {
                 font-size: 18px;
                 font-weight: bold;
@@ -142,7 +143,8 @@ class LyrixaBasicWindow(QMainWindow):
                 border-radius: 5px;
                 margin-bottom: 10px;
             }
-        """)
+        """
+        )
         layout.addWidget(title)
 
         # Chat display area
@@ -182,7 +184,8 @@ class LyrixaBasicWindow(QMainWindow):
 
         # Hub title
         title = QLabel("🔌 Aetherra Hub")
-        title.setStyleSheet("""
+        title.setStyleSheet(
+            """
             QLabel {
                 font-size: 18px;
                 font-weight: bold;
@@ -192,7 +195,8 @@ class LyrixaBasicWindow(QMainWindow):
                 border-radius: 5px;
                 margin-bottom: 10px;
             }
-        """)
+        """
+        )
         layout.addWidget(title)
 
         # Create tabs for available and installed plugins
@@ -232,7 +236,8 @@ class LyrixaBasicWindow(QMainWindow):
         button_layout.addWidget(manage_button)
 
         uninstall_button = QPushButton("Uninstall Plugin")
-        uninstall_button.setStyleSheet("""
+        uninstall_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #da3633;
                 color: white;
@@ -244,7 +249,8 @@ class LyrixaBasicWindow(QMainWindow):
             QPushButton:pressed {
                 background-color: #b62324;
             }
-        """)
+        """
+        )
         uninstall_button.clicked.connect(self._uninstall_selected_plugin)
         button_layout.addWidget(uninstall_button)
 
@@ -259,7 +265,8 @@ class LyrixaBasicWindow(QMainWindow):
     def _setup_styling(self):
         """Setup the application styling."""
         # Dark theme styling
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QMainWindow {
                 background-color: #0d1117;
                 color: #f0f6fc;
@@ -357,7 +364,8 @@ class LyrixaBasicWindow(QMainWindow):
                 background-color: #161b22;
                 border-bottom-color: #161b22;
             }
-        """)
+        """
+        )
 
     def _connect_signals(self):
         """Connect UI signals."""
@@ -381,7 +389,8 @@ class LyrixaBasicWindow(QMainWindow):
         msg_box.setIcon(icon)
 
         # Apply custom styling for better readability
-        msg_box.setStyleSheet("""
+        msg_box.setStyleSheet(
+            """
             QMessageBox {
                 background-color: #2b2b2b;
                 color: #FFFFFF;
@@ -434,7 +443,8 @@ class LyrixaBasicWindow(QMainWindow):
                 min-width: 48px;
                 min-height: 48px;
             }
-        """)
+        """
+        )
 
         return msg_box
 
@@ -864,7 +874,7 @@ class LyrixaBasicWindow(QMainWindow):
             registry_file = lyrixa_plugins_dir / "installed_plugins.json"
 
             if registry_file.exists():
-                with open(registry_file, "r", encoding="utf-8") as f:
+                with open(registry_file, encoding="utf-8") as f:
                     registry = json.load(f)
 
                 if registry:
@@ -983,14 +993,16 @@ class LyrixaBasicWindow(QMainWindow):
                         from PySide6.QtWidgets import QTextEdit
 
                         web_placeholder = QTextEdit()
-                        web_placeholder.setHtml(f"""
+                        web_placeholder.setHtml(
+                            f"""
                         <div style='text-align: center; padding: 20px;'>
                             <h3>🌐 Web-based Plugin UI</h3>
                             <p>Plugin: {plugin_name}</p>
                             <p>UI File: {html_file.name}</p>
                             <p><em>QWebEngineView not available. Install Qt WebEngine for full web UI support.</em></p>
                         </div>
-                        """)
+                        """
+                        )
                         web_placeholder.setReadOnly(True)
                         return web_placeholder
 
@@ -1069,7 +1081,8 @@ class LyrixaBasicWindow(QMainWindow):
         episodic_bar = QProgressBar()
         episodic_bar.setValue(67)
         episodic_bar.setFormat("1,247 memories (67% capacity)")
-        episodic_bar.setStyleSheet("""
+        episodic_bar.setStyleSheet(
+            """
             QProgressBar {
                 border: 2px solid #666666;
                 border-radius: 8px;
@@ -1084,7 +1097,8 @@ class LyrixaBasicWindow(QMainWindow):
                 background-color: #FF6D00;
                 border-radius: 6px;
             }
-        """)
+        """
+        )
         analytics_layout.addWidget(episodic_label, 1, 0)
         analytics_layout.addWidget(episodic_bar, 1, 1)
 
@@ -1095,7 +1109,8 @@ class LyrixaBasicWindow(QMainWindow):
         semantic_bar = QProgressBar()
         semantic_bar.setValue(83)
         semantic_bar.setFormat("3,891 concepts (83% capacity)")
-        semantic_bar.setStyleSheet("""
+        semantic_bar.setStyleSheet(
+            """
             QProgressBar {
                 border: 2px solid #666666;
                 border-radius: 8px;
@@ -1110,7 +1125,8 @@ class LyrixaBasicWindow(QMainWindow):
                 background-color: #00D4FF;
                 border-radius: 6px;
             }
-        """)
+        """
+        )
         analytics_layout.addWidget(semantic_label, 2, 0)
         analytics_layout.addWidget(semantic_bar, 2, 1)
 
@@ -1121,7 +1137,8 @@ class LyrixaBasicWindow(QMainWindow):
         vector_bar = QProgressBar()
         vector_bar.setValue(99)
         vector_bar.setFormat("99.2% optimized")
-        vector_bar.setStyleSheet("""
+        vector_bar.setStyleSheet(
+            """
             QProgressBar {
                 border: 2px solid #666666;
                 border-radius: 8px;
@@ -1136,7 +1153,8 @@ class LyrixaBasicWindow(QMainWindow):
                 background-color: #4CAF50;
                 border-radius: 6px;
             }
-        """)
+        """
+        )
         analytics_layout.addWidget(vector_label, 3, 0)
         analytics_layout.addWidget(vector_bar, 3, 1)
 
@@ -1240,7 +1258,7 @@ class LyrixaBasicWindow(QMainWindow):
             registry_file = lyrixa_plugins_dir / "installed_plugins.json"
 
             if registry_file.exists():
-                with open(registry_file, "r", encoding="utf-8") as f:
+                with open(registry_file, encoding="utf-8") as f:
                     registry = json.load(f)
 
                 if registry:
@@ -1383,7 +1401,7 @@ class LyrixaBasicWindow(QMainWindow):
             # Step 2: Update installed plugins registry
             registry_file = lyrixa_plugins_dir / "installed_plugins.json"
             if registry_file.exists():
-                with open(registry_file, "r", encoding="utf-8") as f:
+                with open(registry_file, encoding="utf-8") as f:
                     registry = json.load(f)
 
                 # Remove plugin from registry
@@ -1740,8 +1758,8 @@ def main():
         try:
             # Attempt full assistant initialization
             from Aetherra.lyrixa.lyrixa_basic import (
-                LyrixaBasicAssistant,  # type: ignore
-            )
+                LyrixaBasicAssistant,
+            )  # type: ignore
 
             async def _init_full():
                 assistant = LyrixaBasicAssistant()

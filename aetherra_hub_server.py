@@ -527,13 +527,13 @@ class AetherraHubServer:
                     vary = resp.headers.get("Vary")
                     resp.headers["Vary"] = (vary + ", Origin") if vary else "Origin"
                     resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-                    resp.headers["Access-Control-Allow-Headers"] = (
-                        "Content-Type, X-Aetherra-Token, X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
-                    )
+                    resp.headers[
+                        "Access-Control-Allow-Headers"
+                    ] = "Content-Type, X-Aetherra-Token, X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
                     # Expose custom headers to browser JS
-                    resp.headers["Access-Control-Expose-Headers"] = (
-                        "X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
-                    )
+                    resp.headers[
+                        "Access-Control-Expose-Headers"
+                    ] = "X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
                     # Only opt into Private Network Access for allowed origins
                     if pna_allow:
                         resp.headers["Access-Control-Allow-Private-Network"] = "true"
@@ -1775,9 +1775,7 @@ class AetherraHubServer:
             try:
                 import asyncio as _a
 
-                from aetherra_service_registry import (
-                    get_service_registry as _get,
-                )
+                from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
                     reg = await _get()
@@ -1839,9 +1837,7 @@ class AetherraHubServer:
             try:
                 import asyncio as _a
 
-                from aetherra_service_registry import (
-                    get_service_registry as _get,
-                )
+                from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
                     reg = await _get()
@@ -1889,9 +1885,7 @@ class AetherraHubServer:
             try:
                 import asyncio as _a
 
-                from aetherra_service_registry import (
-                    get_service_registry as _get,
-                )
+                from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
                     reg = await _get()
@@ -2215,9 +2209,7 @@ class AetherraHubServer:
             try:
                 import asyncio as _a
 
-                from aetherra_service_registry import (
-                    get_service_registry as _get,
-                )
+                from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
                     reg = await _get()
@@ -2244,9 +2236,7 @@ class AetherraHubServer:
             try:
                 import asyncio as _a
 
-                from aetherra_service_registry import (
-                    get_service_registry as _get,
-                )
+                from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
                     reg = await _get()
@@ -2273,9 +2263,7 @@ class AetherraHubServer:
             try:
                 import asyncio as _a
 
-                from aetherra_service_registry import (
-                    get_service_registry as _get,
-                )
+                from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
                     reg = await _get()
@@ -2302,9 +2290,7 @@ class AetherraHubServer:
             try:
                 import asyncio as _a
 
-                from aetherra_service_registry import (
-                    get_service_registry as _get,
-                )
+                from aetherra_service_registry import get_service_registry as _get
 
                 async def _run():
                     reg = await _get()
@@ -2501,9 +2487,12 @@ class AetherraHubServer:
                             pass
                     # If verifier is unavailable, reject in strict mode
                     if getattr(self, "verify_signature", None) is None:
-                        return jsonify(  # type: ignore[name-defined,operator]
-                            {"error": "signature verification unavailable"}
-                        ), 400
+                        return (
+                            jsonify(  # type: ignore[name-defined,operator]
+                                {"error": "signature verification unavailable"}
+                            ),
+                            400,
+                        )
                     try:
                         verified = bool(self.verify_signature(plugin_data))  # type: ignore[call-arg]
                     except Exception:
@@ -2619,8 +2608,8 @@ class AetherraHubServer:
             """
             self.stats["requests_served"] += 1
             from datetime import (
-                datetime as _dt,  # local import to avoid top-level churn
-            )
+                datetime as _dt,
+            )  # local import to avoid top-level churn
 
             # Defensive wrappers
             def _subset_kernel(ks: Dict[str, Any]) -> Dict[str, Any]:  # type: ignore[name-defined]
@@ -3356,7 +3345,9 @@ class AetherraHubServer:
                     lines.append(
                         'aetherra_orchestrator_task_latency_ms_bucket{le="+Inf"} 0.0'.replace(
                             "{", "{{"
-                        ).replace("}", "}}")
+                        ).replace(
+                            "}", "}}"
+                        )
                     )
                 except Exception:
                     pass
@@ -5600,12 +5591,15 @@ class AetherraHubServer:
             else:
                 success, payload = result  # type: ignore[assignment]
             code = 200 if success else 500
-            return jsonify(
-                {
-                    "ok": bool(success),
-                    **({} if not isinstance(payload, dict) else payload),
-                }
-            ), code  # type: ignore[name-defined]
+            return (
+                jsonify(
+                    {
+                        "ok": bool(success),
+                        **({} if not isinstance(payload, dict) else payload),
+                    }
+                ),
+                code,
+            )  # type: ignore[name-defined]
 
         @app.route("/api/tasks/<task_id>", methods=["GET"])
         def api_task_status(task_id):

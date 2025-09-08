@@ -10,16 +10,17 @@ Executes chains of plugins in sequence or parallel for complex operations.
 
 import asyncio
 import logging
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 
 class ExecutionMode(Enum):
     """Plugin execution modes."""
+
     SEQUENTIAL = "sequential"
     PARALLEL = "parallel"
     CONDITIONAL = "conditional"
@@ -27,6 +28,7 @@ class ExecutionMode(Enum):
 
 class ChainStatus(Enum):
     """Chain execution status."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -37,6 +39,7 @@ class ChainStatus(Enum):
 @dataclass
 class PluginChainStep:
     """A single step in a plugin chain."""
+
     plugin_name: str
     method_name: str = "execute"
     args: tuple = ()
@@ -52,6 +55,7 @@ class PluginChainStep:
 @dataclass
 class ChainResult:
     """Result of a plugin chain execution."""
+
     chain_id: str
     status: ChainStatus
     results: List[Dict[str, Any]]
@@ -80,7 +84,7 @@ class PluginChainExecutor:
         steps: List[PluginChainStep],
         mode: ExecutionMode = ExecutionMode.SEQUENTIAL,
         chain_id: Optional[str] = None,
-        timeout: Optional[float] = None
+        timeout: Optional[float] = None,
     ) -> ChainResult:
         """Execute a chain of plugin operations."""
 
@@ -95,13 +99,15 @@ class PluginChainExecutor:
             status=ChainStatus.RUNNING,
             results=[],
             execution_time=0.0,
-            total_steps=len(steps)
+            total_steps=len(steps),
         )
 
         self.active_chains[chain_id] = result
 
         try:
-            logger.info(f"🔗 Starting plugin chain '{chain_id}' with {len(steps)} steps ({mode.value} mode)")
+            logger.info(
+                f"🔗 Starting plugin chain '{chain_id}' with {len(steps)} steps ({mode.value} mode)"
+            )
 
             if mode == ExecutionMode.SEQUENTIAL:
                 await self._execute_sequential(steps, result)
@@ -113,7 +119,9 @@ class PluginChainExecutor:
             result.status = ChainStatus.COMPLETED
             result.execution_time = (datetime.now() - start_time).total_seconds()
 
-            logger.info(f"✅ Chain '{chain_id}' completed in {result.execution_time:.2f}s")
+            logger.info(
+                f"✅ Chain '{chain_id}' completed in {result.execution_time:.2f}s"
+            )
 
         except Exception as e:
             result.status = ChainStatus.FAILED
@@ -124,11 +132,15 @@ class PluginChainExecutor:
 
         return result
 
-    async def _execute_sequential(self, steps: List[PluginChainStep], result: ChainResult):
+    async def _execute_sequential(
+        self, steps: List[PluginChainStep], result: ChainResult
+    ):
         """Execute steps sequentially."""
 
         for i, step in enumerate(steps):
-            logger.debug(f"🔗 Executing step {i+1}/{len(steps)}: {step.plugin_name}.{step.method_name}")
+            logger.debug(
+                f"🔗 Executing step {i+1}/{len(steps)}: {step.plugin_name}.{step.method_name}"
+            )
 
             step_result = await self._execute_step(step)
             result.results.append(step_result)
@@ -136,9 +148,13 @@ class PluginChainExecutor:
 
             # Check if step failed and should stop chain
             if not step_result.get("success", True):
-                raise Exception(f"Step {i+1} failed: {step_result.get('error', 'Unknown error')}")
+                raise Exception(
+                    f"Step {i+1} failed: {step_result.get('error', 'Unknown error')}"
+                )
 
-    async def _execute_parallel(self, steps: List[PluginChainStep], result: ChainResult):
+    async def _execute_parallel(
+        self, steps: List[PluginChainStep], result: ChainResult
+    ):
         """Execute steps in parallel."""
 
         logger.debug(f"🔗 Executing {len(steps)} steps in parallel")
@@ -152,11 +168,9 @@ class PluginChainExecutor:
         # Process results
         for i, step_result in enumerate(step_results):
             if isinstance(step_result, Exception):
-                result.results.append({
-                    "success": False,
-                    "error": str(step_result),
-                    "step": i
-                })
+                result.results.append(
+                    {"success": False, "error": str(step_result), "step": i}
+                )
             else:
                 # step_result should be Dict[str, Any] from _execute_step
                 if isinstance(step_result, dict):
@@ -165,13 +179,17 @@ class PluginChainExecutor:
                         result.completed_steps += 1
                 else:
                     # Fallback for unexpected result types
-                    result.results.append({
-                        "success": False,
-                        "error": f"Unexpected result type: {type(step_result)}",
-                        "step": i
-                    })
+                    result.results.append(
+                        {
+                            "success": False,
+                            "error": f"Unexpected result type: {type(step_result)}",
+                            "step": i,
+                        }
+                    )
 
-    async def _execute_conditional(self, steps: List[PluginChainStep], result: ChainResult):
+    async def _execute_conditional(
+        self, steps: List[PluginChainStep], result: ChainResult
+    ):
         """Execute steps with conditional logic."""
 
         context = {}  # Shared context for conditions
@@ -179,15 +197,17 @@ class PluginChainExecutor:
         for i, step in enumerate(steps):
             # Check condition if specified
             if step.condition and not self._evaluate_condition(step.condition, context):
-                logger.debug(f"⏭️ Skipping step {i+1}: condition '{step.condition}' not met")
-                result.results.append({
-                    "success": True,
-                    "skipped": True,
-                    "condition": step.condition
-                })
+                logger.debug(
+                    f"⏭️ Skipping step {i+1}: condition '{step.condition}' not met"
+                )
+                result.results.append(
+                    {"success": True, "skipped": True, "condition": step.condition}
+                )
                 continue
 
-            logger.debug(f"🔗 Executing conditional step {i+1}/{len(steps)}: {step.plugin_name}.{step.method_name}")
+            logger.debug(
+                f"🔗 Executing conditional step {i+1}/{len(steps)}: {step.plugin_name}.{step.method_name}"
+            )
 
             step_result = await self._execute_step(step)
             result.results.append(step_result)
@@ -211,7 +231,7 @@ class PluginChainExecutor:
                 "plugin": step.plugin_name,
                 "method": step.method_name,
                 "result": f"Mock result from {step.plugin_name}.{step.method_name}",
-                "execution_time": 0.1
+                "execution_time": 0.1,
             }
 
         except Exception as e:
@@ -220,7 +240,7 @@ class PluginChainExecutor:
                 "plugin": step.plugin_name,
                 "method": step.method_name,
                 "error": str(e),
-                "execution_time": 0.0
+                "execution_time": 0.0,
             }
 
     def _evaluate_condition(self, condition: str, context: Dict[str, Any]) -> bool:
@@ -248,7 +268,8 @@ class PluginChainExecutor:
     def list_active_chains(self) -> List[str]:
         """List all active chain IDs."""
         return [
-            chain_id for chain_id, result in self.active_chains.items()
+            chain_id
+            for chain_id, result in self.active_chains.items()
             if result.status == ChainStatus.RUNNING
         ]
 
@@ -273,7 +294,11 @@ class PluginChainExecutor:
         to_remove = []
 
         for chain_id, result in self.active_chains.items():
-            if result.status in [ChainStatus.COMPLETED, ChainStatus.FAILED, ChainStatus.CANCELLED]:
+            if result.status in [
+                ChainStatus.COMPLETED,
+                ChainStatus.FAILED,
+                ChainStatus.CANCELLED,
+            ]:
                 # In a real implementation, would check actual completion time
                 to_remove.append(chain_id)
 
@@ -303,12 +328,14 @@ async def execute_plugin_sequence(plugin_calls: List[tuple]) -> ChainResult:
         else:
             raise ValueError(f"Invalid plugin call format: {call}")
 
-        steps.append(PluginChainStep(
-            plugin_name=plugin_name,
-            method_name=method_name,
-            args=args,
-            kwargs=kwargs
-        ))
+        steps.append(
+            PluginChainStep(
+                plugin_name=plugin_name,
+                method_name=method_name,
+                args=args,
+                kwargs=kwargs,
+            )
+        )
 
     return await executor.execute_chain(steps, ExecutionMode.SEQUENTIAL)
 
@@ -325,11 +352,13 @@ async def execute_plugin_parallel(plugin_calls: List[tuple]) -> ChainResult:
             args = call[2] if len(call) > 2 else ()
             kwargs = call[3] if len(call) > 3 else {}
 
-            steps.append(PluginChainStep(
-                plugin_name=plugin_name,
-                method_name=method_name,
-                args=args,
-                kwargs=kwargs
-            ))
+            steps.append(
+                PluginChainStep(
+                    plugin_name=plugin_name,
+                    method_name=method_name,
+                    args=args,
+                    kwargs=kwargs,
+                )
+            )
 
     return await executor.execute_chain(steps, ExecutionMode.PARALLEL)

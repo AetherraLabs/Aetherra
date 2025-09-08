@@ -14,25 +14,40 @@ Hybrid PySide6 + Web Dashboard for Aetherra Operating System
 This is the primary interface to the Aetherra AI Operating System.
 """
 
-import sys
-import os
-import json
-import asyncio
-from pathlib import Path
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
 
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget,
-    QSplitter, QTabWidget, QStatusBar, QMenuBar, QToolBar, QLabel,
-    QProgressBar, QPushButton, QSystemTrayIcon, QMenu
-)
-from PySide6.QtWebEngineWidgets import QWebEngineView
+import json
+import os
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict
+
 from PySide6.QtCore import (
-    QUrl, QTimer, QThread, Signal, Qt, QSize, QSettings
+    QSettings,  # noqa: F401 (optional runtime import)
+    Qt,
+    QThread,
+    QUrl,
+    Signal,
 )
 from PySide6.QtGui import (
-    QIcon, QFont, QPixmap, QAction, QPalette, QColor
+    QAction,  # noqa: F401 (optional runtime import)
+    QFont,
+    QIcon,
+)
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWidgets import (
+    QApplication,
+    QLabel,
+    QMainWindow,
+    QMenu,
+    QPushButton,
+    QSplitter,
+    QStatusBar,
+    QSystemTrayIcon,
+    QTabWidget,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
 )
 
 # Add project root to path
@@ -42,6 +57,7 @@ sys.path.insert(0, str(project_root))
 # Import Aetherra OS components
 try:
     from Aetherra.gui.web_interface_server import AetherraWebServer
+
     AETHERRA_SERVER_AVAILABLE = True
 except ImportError:
     AETHERRA_SERVER_AVAILABLE = False
@@ -49,6 +65,7 @@ except ImportError:
 
 try:
     import psutil
+
     SYSTEM_MONITORING_AVAILABLE = True
 except ImportError:
     SYSTEM_MONITORING_AVAILABLE = False
@@ -97,87 +114,94 @@ class AetherraOSMonitor(QThread):
     def collect_system_metrics(self) -> Dict[str, Any]:
         """Collect system performance metrics"""
         data = {
-            'timestamp': datetime.now().isoformat(),
-            'status': 'online',
-            'uptime': self.get_uptime(),
+            "timestamp": datetime.now().isoformat(),
+            "status": "online",
+            "uptime": self.get_uptime(),
         }
 
         if SYSTEM_MONITORING_AVAILABLE:
-            data.update({
-                'cpu_percent': psutil.cpu_percent(interval=0.1),
-                'memory_percent': psutil.virtual_memory().percent,
-                'disk_usage': psutil.disk_usage('/').percent if os.name != 'nt' else psutil.disk_usage('C:\\').percent,
-                'active_processes': len(psutil.pids()),
-                'network_connections': len(psutil.net_connections()),
-            })
+            data.update(
+                {
+                    "cpu_percent": psutil.cpu_percent(interval=0.1),
+                    "memory_percent": psutil.virtual_memory().percent,
+                    "disk_usage": psutil.disk_usage("/").percent
+                    if os.name != "nt"
+                    else psutil.disk_usage("C:\\").percent,
+                    "active_processes": len(psutil.pids()),
+                    "network_connections": len(psutil.net_connections()),
+                }
+            )
         else:
             # Mock data for demo
             import random
-            data.update({
-                'cpu_percent': random.uniform(15, 45),
-                'memory_percent': random.uniform(35, 65),
-                'disk_usage': random.uniform(25, 75),
-                'active_processes': random.randint(120, 180),
-                'network_connections': random.randint(15, 35),
-            })
+
+            data.update(
+                {
+                    "cpu_percent": random.uniform(15, 45),
+                    "memory_percent": random.uniform(35, 65),
+                    "disk_usage": random.uniform(25, 75),
+                    "active_processes": random.randint(120, 180),
+                    "network_connections": random.randint(15, 35),
+                }
+            )
 
         return data
 
     def collect_memory_metrics(self) -> Dict[str, Any]:
         """Collect Aetherra memory system metrics"""
         return {
-            'timestamp': datetime.now().isoformat(),
-            'total_memories': 1247,
-            'fractal_compression_ratio': 4.6,
-            'recent_events': [
-                'Enhanced conversation processed',
-                'Memory fragment stored',
-                'Agent collaboration initiated',
-                'Ethics check completed'
+            "timestamp": datetime.now().isoformat(),
+            "total_memories": 1247,
+            "fractal_compression_ratio": 4.6,
+            "recent_events": [
+                "Enhanced conversation processed",
+                "Memory fragment stored",
+                "Agent collaboration initiated",
+                "Ethics check completed",
             ],
-            'observer_branches': 3,
-            'quantum_coherence': 0.94,
-            'memory_health': 'excellent'
+            "observer_branches": 3,
+            "quantum_coherence": 0.94,
+            "memory_health": "excellent",
         }
 
     def collect_agent_metrics(self) -> Dict[str, Any]:
         """Collect agent ecosystem metrics"""
         return {
-            'timestamp': datetime.now().isoformat(),
-            'active_agents': 6,
-            'agent_status': {
-                'DataAgent': {'status': 'active', 'load': 0.3, 'health': 0.97},
-                'TechnicalAgent': {'status': 'active', 'load': 0.5, 'health': 0.95},
-                'SupportAgent': {'status': 'idle', 'load': 0.1, 'health': 0.98},
-                'SecurityAgent': {'status': 'monitoring', 'load': 0.2, 'health': 0.99},
-                'EthicsAgent': {'status': 'monitoring', 'load': 0.1, 'health': 0.98},
-                'CuriosityAgent': {'status': 'exploring', 'load': 0.7, 'health': 0.92}
+            "timestamp": datetime.now().isoformat(),
+            "active_agents": 6,
+            "agent_status": {
+                "DataAgent": {"status": "active", "load": 0.3, "health": 0.97},
+                "TechnicalAgent": {"status": "active", "load": 0.5, "health": 0.95},
+                "SupportAgent": {"status": "idle", "load": 0.1, "health": 0.98},
+                "SecurityAgent": {"status": "monitoring", "load": 0.2, "health": 0.99},
+                "EthicsAgent": {"status": "monitoring", "load": 0.1, "health": 0.98},
+                "CuriosityAgent": {"status": "exploring", "load": 0.7, "health": 0.92},
             },
-            'running_workflows': [
-                'conversation_enhancement.aether',
-                'memory_optimization.aether',
-                'ethics_monitoring.aether'
-            ]
+            "running_workflows": [
+                "conversation_enhancement.aether",
+                "memory_optimization.aether",
+                "ethics_monitoring.aether",
+            ],
         }
 
     def collect_cognitive_metrics(self) -> Dict[str, Any]:
         """Collect Lyrixa cognitive state metrics"""
         return {
-            'timestamp': datetime.now().isoformat(),
-            'cognitive_load': 'normal',
-            'emotional_vector': {'curiosity': 0.8, 'confidence': 0.9, 'empathy': 0.7},
-            'personality_drift': {
-                'curiosity': +0.2,
-                'formality': -0.1,
-                'technical_focus': +0.3
+            "timestamp": datetime.now().isoformat(),
+            "cognitive_load": "normal",
+            "emotional_vector": {"curiosity": 0.8, "confidence": 0.9, "empathy": 0.7},
+            "personality_drift": {
+                "curiosity": +0.2,
+                "formality": -0.1,
+                "technical_focus": +0.3,
             },
-            'recent_goals': [
-                'optimize_memory_performance',
-                'enhance_user_interaction',
-                'monitor_system_health'
+            "recent_goals": [
+                "optimize_memory_performance",
+                "enhance_user_interaction",
+                "monitor_system_health",
             ],
-            'learning_state': 'active',
-            'consciousness_level': 0.87
+            "learning_state": "active",
+            "consciousness_level": 0.87,
         }
 
     def get_uptime(self) -> str:
@@ -185,7 +209,7 @@ class AetherraOSMonitor(QThread):
         if SYSTEM_MONITORING_AVAILABLE:
             boot_time = datetime.fromtimestamp(psutil.boot_time())
             uptime = datetime.now() - boot_time
-            return str(uptime).split('.')[0]  # Remove microseconds
+            return str(uptime).split(".")[0]  # Remove microseconds
         else:
             return "2:34:17"  # Mock uptime
 
@@ -207,7 +231,7 @@ class AetherraOSMainWindow(QMainWindow):
         # Initialize components
         self.web_server = None
         self.monitor_thread = None
-        self.settings = QSettings('AetherraLabs', 'AetherraOS')
+        self.settings = QSettings("AetherraLabs", "AetherraOS")
 
         # Setup UI
         self.setup_ui()
@@ -257,39 +281,39 @@ class AetherraOSMainWindow(QMainWindow):
         menubar = self.menuBar()
 
         # System menu
-        system_menu = menubar.addMenu('System')
+        system_menu = menubar.addMenu("System")
 
-        restart_action = QAction('Restart Aetherra', self)
+        restart_action = QAction("Restart Aetherra", self)
         restart_action.triggered.connect(self.restart_system)
         system_menu.addAction(restart_action)
 
-        shutdown_action = QAction('Shutdown', self)
+        shutdown_action = QAction("Shutdown", self)
         shutdown_action.triggered.connect(self.shutdown_system)
         system_menu.addAction(shutdown_action)
 
         system_menu.addSeparator()
 
-        exit_action = QAction('Exit Dashboard', self)
-        exit_action.setShortcut('Ctrl+Q')
+        exit_action = QAction("Exit Dashboard", self)
+        exit_action.setShortcut("Ctrl+Q")
         exit_action.triggered.connect(self.close)
         system_menu.addAction(exit_action)
 
         # View menu
-        view_menu = menubar.addMenu('View')
+        view_menu = menubar.addMenu("View")
 
-        fullscreen_action = QAction('Toggle Fullscreen', self)
-        fullscreen_action.setShortcut('F11')
+        fullscreen_action = QAction("Toggle Fullscreen", self)
+        fullscreen_action.setShortcut("F11")
         fullscreen_action.triggered.connect(self.toggle_fullscreen)
         view_menu.addAction(fullscreen_action)
 
         # Tools menu
-        tools_menu = menubar.addMenu('Tools')
+        tools_menu = menubar.addMenu("Tools")
 
-        validate_action = QAction('Validate Features', self)
+        validate_action = QAction("Validate Features", self)
         validate_action.triggered.connect(self.validate_features)
         tools_menu.addAction(validate_action)
 
-        memory_action = QAction('Memory Diagnostics', self)
+        memory_action = QAction("Memory Diagnostics", self)
         memory_action.triggered.connect(self.run_memory_diagnostics)
         tools_menu.addAction(memory_action)
 
@@ -329,13 +353,15 @@ class AetherraOSMainWindow(QMainWindow):
         self.live_toggle.setCheckable(True)
         self.live_toggle.setChecked(True)
         self.live_toggle.clicked.connect(self.toggle_live_updates)
-        self.live_toggle.setStyleSheet("""
+        self.live_toggle.setStyleSheet(
+            """
             QPushButton:checked {
                 background-color: #ff4444;
                 color: white;
                 font-weight: bold;
             }
-        """)
+        """
+        )
         toolbar.addWidget(self.live_toggle)
 
     def create_system_overview_panel(self, parent):
@@ -347,7 +373,9 @@ class AetherraOSMainWindow(QMainWindow):
         title = QLabel("AETHERRA OS STATUS")
         title.setFont(QFont("Arial", 14, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("color: #00ffaa; padding: 10px; border-bottom: 2px solid #00ffaa;")
+        title.setStyleSheet(
+            "color: #00ffaa; padding: 10px; border-bottom: 2px solid #00ffaa;"
+        )
         overview_layout.addWidget(title)
 
         # System metrics web view
@@ -425,7 +453,9 @@ class AetherraOSMainWindow(QMainWindow):
         """Setup system tray icon"""
         if QSystemTrayIcon.isSystemTrayAvailable():
             self.tray_icon = QSystemTrayIcon()
-            self.tray_icon.setIcon(QIcon("assets/aetherra_icon.png"))  # You'll need to add this
+            self.tray_icon.setIcon(
+                QIcon("assets/aetherra_icon.png")
+            )  # You'll need to add this
 
             # Tray menu
             tray_menu = QMenu()
@@ -448,14 +478,12 @@ class AetherraOSMainWindow(QMainWindow):
                 self.web_server = AetherraWebServer(host="127.0.0.1", port=8686)
                 # Start server in separate thread
                 import threading
+
                 server_thread = threading.Thread(
                     target=lambda: self.web_server.socketio.run(
-                        self.web_server.app,
-                        host="127.0.0.1",
-                        port=8686,
-                        debug=False
+                        self.web_server.app, host="127.0.0.1", port=8686, debug=False
                     ),
-                    daemon=True
+                    daemon=True,
                 )
                 server_thread.start()
 
@@ -833,11 +861,11 @@ class AetherraOSMainWindow(QMainWindow):
             return
 
         # Update status bar
-        if 'cpu_percent' in data:
+        if "cpu_percent" in data:
             self.cpu_label.setText(f"CPU: {data['cpu_percent']:.1f}%")
-        if 'memory_percent' in data:
+        if "memory_percent" in data:
             self.memory_label.setText(f"Memory: {data['memory_percent']:.1f}%")
-        if 'uptime' in data:
+        if "uptime" in data:
             self.uptime_label.setText(f"Uptime: {data['uptime']}")
 
         # Update web view via JavaScript
@@ -855,7 +883,7 @@ class AetherraOSMainWindow(QMainWindow):
         """Update agent metrics display"""
         if not self.live_toggle.isChecked():
             return
-        if 'active_agents' in data:
+        if "active_agents" in data:
             self.agents_label.setText(f"Agents: {data['active_agents']}")
 
     def update_cognitive_metrics(self, data: Dict[str, Any]):
@@ -877,29 +905,36 @@ class AetherraOSMainWindow(QMainWindow):
         """Toggle live updates"""
         if self.live_toggle.isChecked():
             self.live_toggle.setText("🔴 LIVE")
-            self.live_toggle.setStyleSheet("""
+            self.live_toggle.setStyleSheet(
+                """
                 QPushButton:checked {
                     background-color: #ff4444;
                     color: white;
                     font-weight: bold;
                 }
-            """)
+            """
+            )
         else:
             self.live_toggle.setText("⏸️ PAUSED")
-            self.live_toggle.setStyleSheet("""
+            self.live_toggle.setStyleSheet(
+                """
                 QPushButton {
                     background-color: #666666;
                     color: white;
                     font-weight: bold;
                 }
-            """)
+            """
+            )
 
     def show_system_health(self):
         """Show system health dialog"""
         from PySide6.QtWidgets import QMessageBox
+
         msg = QMessageBox()
         msg.setWindowTitle("System Health")
-        msg.setText("🟢 All systems operational\n\n• CPU: Normal\n• Memory: Normal\n• Disk: Normal\n• Network: Normal")
+        msg.setText(
+            "🟢 All systems operational\n\n• CPU: Normal\n• Memory: Normal\n• Disk: Normal\n• Network: Normal"
+        )
         msg.exec()
 
     def show_agent_dashboard(self):
@@ -1040,5 +1075,5 @@ def main():
     return app.exec()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

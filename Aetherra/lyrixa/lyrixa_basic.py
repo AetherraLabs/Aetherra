@@ -614,7 +614,7 @@ class LyrixaBasicAssistant:
                         registry_file = lyrixa_plugins_dir / "installed_plugins.json"
                         registry = {}
                         if registry_file.exists():
-                            with open(registry_file, "r", encoding="utf-8") as f:
+                            with open(registry_file, encoding="utf-8") as f:
                                 registry = json.load(f)
 
                         registry[plugin_name] = install_record
@@ -698,7 +698,7 @@ class LyrixaBasicAssistant:
 
             plugin_count = 0
             if registry_file.exists():
-                with open(registry_file, "r", encoding="utf-8") as f:
+                with open(registry_file, encoding="utf-8") as f:
                     registry = json.load(f)
                     plugin_count = len(registry)
 

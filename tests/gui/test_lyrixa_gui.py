@@ -6,17 +6,17 @@
 Direct test of the Lyrixa Hybrid GUI - Phase 1 Implementation
 """
 
-import sys
 import os
+import sys
 
 # Add the lyrixa_core directory to the path
-lyrixa_core_path = os.path.join(os.path.dirname(__file__), 'Aetherra', 'lyrixa_core')
+lyrixa_core_path = os.path.join(os.path.dirname(__file__), "Aetherra", "lyrixa_core")
 sys.path.insert(0, lyrixa_core_path)
 
 try:
     from gui.main_window import LyrixaHybridWindow
+    from PySide6.QtCore import Qt  # noqa: F401 (optional runtime import)
     from PySide6.QtWidgets import QApplication
-    from PySide6.QtCore import Qt
 
     def test_hybrid_gui():
         """Test the Lyrixa Hybrid GUI directly"""
@@ -52,5 +52,6 @@ try:
 except Exception as e:
     print(f"[ERROR] Error testing Lyrixa Hybrid GUI: {e}")
     import traceback
+
     traceback.print_exc()
     sys.exit(1)

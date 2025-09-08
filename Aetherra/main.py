@@ -17,7 +17,7 @@ The new launcher provides:
 """
 
 import sys
-from pathlib import Path
+
 
 def main():
     print("\n" + "=" * 60)
@@ -34,9 +34,10 @@ def main():
 
     # Auto-redirect to new launcher
     choice = input("\nLaunch new unified system? (y/n): ").strip().lower()
-    if choice in ['y', 'yes', '']:
+    if choice in ["y", "yes", ""]:
         print("🚀 Launching Lyrixa AI Operating System...")
         import subprocess
+
         subprocess.run([sys.executable, "lyrixa/launcher.py"])
 
 

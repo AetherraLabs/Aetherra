@@ -20,17 +20,15 @@ Architecture:
 - UpdateOrchestrator: Coordinates real-time updates
 """
 
-import asyncio
+
 import json
 import logging
-import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
-from PySide6.QtWebEngineWidgets import QWebEngineView
 
 logger = logging.getLogger(__name__)
 
@@ -473,7 +471,9 @@ class PanelGenerator(QObject):
         """Load base HTML templates for different component types"""
 
         # Plugin panel template
-        self.panel_templates["plugin"] = """
+        self.panel_templates[
+            "plugin"
+        ] = """
 <div class="auto-panel plugin-panel" data-component="{name}" data-type="plugin">
     <div class="panel-header">
         <div class="panel-icon">{icon}</div>
@@ -508,7 +508,9 @@ class PanelGenerator(QObject):
 """
 
         # Agent panel template
-        self.panel_templates["agent"] = """
+        self.panel_templates[
+            "agent"
+        ] = """
 <div class="auto-panel agent-panel" data-component="{name}" data-type="agent">
     <div class="panel-header">
         <div class="panel-icon">🤖</div>
@@ -541,7 +543,9 @@ class PanelGenerator(QObject):
 """
 
         # Memory panel template
-        self.panel_templates["memory"] = """
+        self.panel_templates[
+            "memory"
+        ] = """
 <div class="auto-panel memory-panel" data-component="{name}" data-type="memory">
     <div class="panel-header">
         <div class="panel-icon">🧠</div>
@@ -569,7 +573,9 @@ class PanelGenerator(QObject):
 """
 
         # Service panel template
-        self.panel_templates["service"] = """
+        self.panel_templates[
+            "service"
+        ] = """
 <div class="auto-panel service-panel" data-component="{name}" data-type="service">
     <div class="panel-header">
         <div class="panel-icon">⚙️</div>
@@ -604,7 +610,9 @@ class PanelGenerator(QObject):
 """
 
         # Metrics panel template
-        self.panel_templates["metrics"] = """
+        self.panel_templates[
+            "metrics"
+        ] = """
 <div class="auto-panel metrics-panel" data-component="{name}" data-type="metrics">
     <div class="panel-header">
         <div class="panel-icon">📊</div>

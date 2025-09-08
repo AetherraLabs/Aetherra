@@ -17,7 +17,8 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-from typing import Tuple
+
+# typing.Tuple no longer needed after migration to built-in tuple[]
 
 try:
     # Preferred: use the API key store if available
@@ -44,7 +45,7 @@ def _compute_signature(payload: bytes) -> str:
     return mac
 
 
-def _split_header_and_body(script_content: str) -> Tuple[str, str]:
+def _split_header_and_body(script_content: str) -> tuple[str, str]:
     """
     Split header and body without normalizing newlines.
 
@@ -75,7 +76,7 @@ def embed_signature(script_content: str) -> str:
     return f"{signed_header}\n{body}"
 
 
-def verify_embedded_signature(script_content: str) -> Tuple[bool, str]:
+def verify_embedded_signature(script_content: str) -> tuple[bool, str]:
     header, body = _split_header_and_body(script_content)
     if not header:
         return False, "missing signature header"

@@ -228,8 +228,8 @@ class AetherraEngine:
             # Bring up LLM manager (best-effort); selection happens below
             try:
                 from Aetherra.core.multi_llm_manager import (
-                    MultiLLMManager,  # type: ignore
-                )
+                    MultiLLMManager,
+                )  # type: ignore
 
                 self._llm_manager = MultiLLMManager()
             except Exception as _e:
@@ -319,10 +319,10 @@ class AetherraEngine:
                             _new_loop = _asyncio.new_event_loop()
                             try:
                                 _asyncio.set_event_loop(_new_loop)
-                                result_container["stats"] = (
-                                    _new_loop.run_until_complete(
-                                        self.memory_system.get_memory_stats()
-                                    )
+                                result_container[
+                                    "stats"
+                                ] = _new_loop.run_until_complete(
+                                    self.memory_system.get_memory_stats()
                                 )
                             finally:
                                 _new_loop.close()

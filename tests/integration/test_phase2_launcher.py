@@ -9,12 +9,13 @@
 Test the updated launcher with Phase 2 Live Context Bridge capabilities.
 """
 
+
 import sys
-import os
 from pathlib import Path
 
 # Add paths
 sys.path.insert(0, str(Path(__file__).parent / "Aetherra"))
+
 
 def test_phase2_launcher():
     """Test Phase 2 launcher integration"""
@@ -24,6 +25,7 @@ def test_phase2_launcher():
     try:
         # Test 1: Import launcher
         from lyrixa.launcher import LyrixaOperatingSystem
+
         print("✅ Launcher imported successfully")
 
         # Test 2: Create operating system
@@ -36,7 +38,7 @@ def test_phase2_launcher():
             print(f"✅ GUI class detected: {gui_class.__name__}")
 
             # Check if it's our Phase 2 GUI
-            if gui_class.__name__ == 'LyrixaHybridWindow':
+            if gui_class.__name__ == "LyrixaHybridWindow":
                 print("🌉 Phase 2 Hybrid GUI detected correctly!")
 
                 # Test 4: Create GUI instance
@@ -44,17 +46,17 @@ def test_phase2_launcher():
                 print("✅ GUI instance created")
 
                 # Test 5: Check for Phase 2 features
-                if hasattr(gui_instance, 'web_bridge'):
+                if hasattr(gui_instance, "web_bridge"):
                     print("✅ Live Context Bridge available")
 
                     # Check for Phase 2 signals
                     bridge = gui_instance.web_bridge
                     phase2_signals = [
-                        'memory_updated',
-                        'plugin_updated',
-                        'agent_updated',
-                        'metrics_updated',
-                        'notification_sent'
+                        "memory_updated",
+                        "plugin_updated",
+                        "agent_updated",
+                        "metrics_updated",
+                        "notification_sent",
                     ]
 
                     for signal_name in phase2_signals:
@@ -65,9 +67,9 @@ def test_phase2_launcher():
 
                     # Check for Phase 2 methods
                     phase2_methods = [
-                        'handlePanelCommand',
-                        'connect_backend_services',
-                        'getAllData'
+                        "handlePanelCommand",
+                        "connect_backend_services",
+                        "getAllData",
                     ]
 
                     for method_name in phase2_methods:
@@ -85,7 +87,7 @@ def test_phase2_launcher():
             print("[ERROR] No GUI class detected")
 
         # Test 6: Test backend connection method
-        if hasattr(lyrixa_os, '_connect_backend_to_frontend'):
+        if hasattr(lyrixa_os, "_connect_backend_to_frontend"):
             print("✅ Phase 2 backend connection method available")
         else:
             print("[ERROR] Backend connection method missing")
@@ -100,7 +102,9 @@ def test_phase2_launcher():
     except Exception as e:
         print(f"[ERROR] Test failed: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     test_phase2_launcher()

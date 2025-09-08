@@ -632,9 +632,9 @@ class ParallelRealityNavigator:
                 time.sleep(0.001)
 
         # Update synchronization tracking
-        self.reality_synchronization[target_reality.reality_id] = (
-            self.consciousness_coherence
-        )
+        self.reality_synchronization[
+            target_reality.reality_id
+        ] = self.consciousness_coherence
         self.metrics["synchronizations_performed"] += 1
 
         logger.info(

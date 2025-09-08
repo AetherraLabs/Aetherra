@@ -505,35 +505,45 @@ class CoderAgent(LyrixaAgent):
                 name="aether_generation",
                 description="Generate .aether workflows from natural language",
                 input_schema={"description": "string", "context": "object"},
-                output_schema={"aether_code": "string", "suggestions": "array", "metadata": "object"},
-                estimated_duration=30
+                output_schema={
+                    "aether_code": "string",
+                    "suggestions": "array",
+                    "metadata": "object",
+                },
+                estimated_duration=30,
             ),
             AgentCapability(
                 name="code_generation",
                 description="Generate code based on specifications",
                 input_schema={"specification": "string", "language": "string"},
                 output_schema={"code": "string", "explanation": "string"},
-                estimated_duration=45
+                estimated_duration=45,
             ),
             AgentCapability(
                 name="workflow_optimization",
                 description="Optimize existing .aether workflows",
                 input_schema={"aether_code": "string", "optimization_goals": "array"},
                 output_schema={"optimized_code": "string", "improvements": "array"},
-                estimated_duration=60
+                estimated_duration=60,
             ),
             AgentCapability(
                 name="parameter_suggestion",
                 description="Suggest parameter values for .aether workflows",
                 input_schema={"aether_code": "string", "context": "object"},
-                output_schema={"filled_code": "string", "parameter_suggestions": "array"},
-                estimated_duration=20
-            )
+                output_schema={
+                    "filled_code": "string",
+                    "parameter_suggestions": "array",
+                },
+                estimated_duration=20,
+            ),
         ]
 
         # Initialize Natural Language Aether Generator
         if memory_system:
-            from .natural_language_aether_generator import NaturalLanguageAetherGenerator
+            from .natural_language_aether_generator import (
+                NaturalLanguageAetherGenerator,
+            )
+
             self.nl_generator = NaturalLanguageAetherGenerator(memory_system)
         else:
             self.nl_generator = None
@@ -546,7 +556,7 @@ class CoderAgent(LyrixaAgent):
             "code_refactoring",
             "workflow_optimization",
             "parameter_suggestion",
-            "natural_language_to_aether"
+            "natural_language_to_aether",
         ]
 
     async def execute_task(self, task: AgentTask) -> Dict[str, Any]:
@@ -555,7 +565,10 @@ class CoderAgent(LyrixaAgent):
         input_data = task.input_data
 
         try:
-            if task_type == "aether_generation" or task_type == "natural_language_to_aether":
+            if (
+                task_type == "aether_generation"
+                or task_type == "natural_language_to_aether"
+            ):
                 return await self._generate_aether_workflow(input_data)
 
             elif task_type == "workflow_optimization":
@@ -568,19 +581,14 @@ class CoderAgent(LyrixaAgent):
                 return await self._generate_code(input_data)
 
             else:
-                return {
-                    "error": f"Unknown task type: {task_type}",
-                    "success": False
-                }
+                return {"error": f"Unknown task type: {task_type}", "success": False}
 
         except Exception as e:
-            return {
-                "error": str(e),
-                "success": False,
-                "task_type": task_type
-            }
+            return {"error": str(e), "success": False, "task_type": task_type}
 
-    async def _generate_aether_workflow(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _generate_aether_workflow(
+        self, input_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Generate .aether workflow from natural language description"""
 
         if not self.nl_generator:
@@ -589,7 +597,7 @@ class CoderAgent(LyrixaAgent):
                 "aether_code": "# Generated .aether code placeholder",
                 "explanation": f"Generated workflow for: {input_data.get('description', 'No description')}",
                 "confidence": 0.5,
-                "success": True
+                "success": True,
             }
 
         try:
@@ -609,7 +617,7 @@ class CoderAgent(LyrixaAgent):
                 "confidence": result.get("confidence", 0.0),
                 "intent_analysis": result.get("intent_analysis", {}),
                 "success": "error" not in result,
-                "explanation": f"Generated .aether workflow using {result.get('template_used', 'default')} template"
+                "explanation": f"Generated .aether workflow using {result.get('template_used', 'default')} template",
             }
 
         except Exception as e:
@@ -617,13 +625,15 @@ class CoderAgent(LyrixaAgent):
                 "aether_code": f"# Error generating workflow: {e}",
                 "error": str(e),
                 "success": False,
-                "explanation": "Failed to generate .aether workflow"
+                "explanation": "Failed to generate .aether workflow",
             }
 
     async def _optimize_workflow(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Optimize existing .aether workflow"""
         aether_code = input_data.get("aether_code", "")
-        optimization_goals = input_data.get("optimization_goals", ["performance", "readability"])
+        optimization_goals = input_data.get(
+            "optimization_goals", ["performance", "readability"]
+        )
 
         # Simple optimization - add error handling and parallel processing
         optimized_code = aether_code
@@ -633,15 +643,14 @@ class CoderAgent(LyrixaAgent):
         if "retry" not in optimized_code and "api_call" in optimized_code:
             optimized_code = optimized_code.replace(
                 "node api_call api_call",
-                "node api_call api_call\n  retry_attempts: 3\n  timeout: 30"
+                "node api_call api_call\n  retry_attempts: 3\n  timeout: 30",
             )
             improvements.append("Added retry logic for API calls")
 
         # Add parallel processing if applicable
         if "parallel" not in optimized_code and optimized_code.count("transform") > 1:
             optimized_code = optimized_code.replace(
-                "node processor transform",
-                "node processor transform\n  parallel: true"
+                "node processor transform", "node processor transform\n  parallel: true"
             )
             improvements.append("Enabled parallel processing for transforms")
 
@@ -650,7 +659,7 @@ class CoderAgent(LyrixaAgent):
             "improvements": improvements,
             "optimization_applied": len(improvements),
             "success": True,
-            "explanation": f"Applied {len(improvements)} optimizations"
+            "explanation": f"Applied {len(improvements)} optimizations",
         }
 
     async def _suggest_parameters(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -660,7 +669,8 @@ class CoderAgent(LyrixaAgent):
 
         # Find parameter placeholders
         import re
-        placeholder_pattern = r'<([^>]+)>'
+
+        placeholder_pattern = r"<([^>]+)>"
         placeholders = re.findall(placeholder_pattern, aether_code)
 
         parameter_suggestions = []
@@ -673,28 +683,32 @@ class CoderAgent(LyrixaAgent):
             "format": "json",
             "operation": "transform",
             "api_url": "https://api.example.com/v1/data",
-            "method": "GET"
+            "method": "GET",
         }
 
         for placeholder in placeholders:
             suggested_value = parameter_defaults.get(placeholder, f"<{placeholder}>")
 
-            parameter_suggestions.append({
-                "parameter": placeholder,
-                "suggested_value": suggested_value,
-                "confidence": 0.7 if placeholder in parameter_defaults else 0.3,
-                "source": "default" if placeholder in parameter_defaults else "placeholder"
-            })
+            parameter_suggestions.append(
+                {
+                    "parameter": placeholder,
+                    "suggested_value": suggested_value,
+                    "confidence": 0.7 if placeholder in parameter_defaults else 0.3,
+                    "source": "default"
+                    if placeholder in parameter_defaults
+                    else "placeholder",
+                }
+            )
 
             if placeholder in parameter_defaults:
-                filled_code = filled_code.replace(f'<{placeholder}>', suggested_value)
+                filled_code = filled_code.replace(f"<{placeholder}>", suggested_value)
 
         return {
             "filled_code": filled_code,
             "parameter_suggestions": parameter_suggestions,
             "placeholders_found": len(placeholders),
             "success": True,
-            "explanation": f"Suggested values for {len(parameter_suggestions)} parameters"
+            "explanation": f"Suggested values for {len(parameter_suggestions)} parameters",
         }
 
     async def _generate_code(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -733,7 +747,7 @@ print("Generated code placeholder")
             "code": code,
             "language": language,
             "explanation": f"Generated {language} code based on specification",
-            "success": True
+            "success": True,
         }
 
 

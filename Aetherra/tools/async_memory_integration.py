@@ -586,7 +586,9 @@ async def test_hybrid_memory_integration():
     await concurrent_workload()
 
     concurrent_time = time.time() - concurrent_start
-    logger.info(f"[OK] Concurrent load test completed in {concurrent_time * 1000:.1f}ms")
+    logger.info(
+        f"[OK] Concurrent load test completed in {concurrent_time * 1000:.1f}ms"
+    )
 
     # Calculate target achievement
     baseline = 4293  # ms from original issue

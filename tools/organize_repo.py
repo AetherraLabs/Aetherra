@@ -21,7 +21,7 @@ import json
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -69,7 +69,7 @@ CORE_FILES = {
 }
 
 # Patterns mapping (only matches files in ROOT)
-PATTERNS: List[Tuple[List[str], Path]] = [
+PATTERNS: List[tuple[List[str], Path]] = [
     # Logs
     (["*.log"], DEST["logs"]),
     # Data

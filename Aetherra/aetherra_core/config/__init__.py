@@ -1,12 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
-from .config_loader import (  # noqa: F401
-    AetherraConfigLoader,
-    get_config,
-    get_config_loader,
-    load_config,
-)
+from .config_loader import get_config  # noqa: F401
+from .config_loader import AetherraConfigLoader, get_config_loader, load_config
 
 CONFIG_AVAILABLE = True
 

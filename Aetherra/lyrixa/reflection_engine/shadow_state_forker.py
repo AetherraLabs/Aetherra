@@ -60,7 +60,9 @@ class ReflectionAgent(AgentBase):
 
         reflection_text = f"Daily Reflection for {today.strftime('%B %d, %Y')}:\n\n"
         reflection_text += "🎯 Goals: 3 goals active, 1 completed, 0 escalated\n"
-        reflection_text += "[TOOL] System: All systems operational, no errors detected\n"
+        reflection_text += (
+            "[TOOL] System: All systems operational, no errors detected\n"
+        )
         reflection_text += (
             "📊 Performance: Response time: 150ms avg, Memory usage: 65%\n"
         )

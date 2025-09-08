@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import psutil
 
@@ -893,7 +893,7 @@ class LyrixaSystemBootstrap:
         """Load previous session data"""
         try:
             if self.session_file.exists():
-                with open(self.session_file, "r", encoding="utf-8") as f:
+                with open(self.session_file, encoding="utf-8") as f:
                     data = json.load(f)
                     self.last_session_data = data.get("last_session")
                     # Load recent snapshots

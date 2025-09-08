@@ -25,12 +25,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "core"))
 sys.path.append(os.path.join(os.path.dirname(__file__), "agents"))
 
 # ARCHITECTURAL FIX: Removed Lyrixa import - from lyrixa_consciousness import initialize_lyrixa_consciousness, get_lyrixa_consciousness
-from agent_registry import get_agent_registry, initialize_agent_registry
 from consciousness_bridge import (
-    get_consciousness_bridge,
     initialize_consciousness_bridge,
 )
-from meta_layer_core import get_meta_layer_core, initialize_meta_layer_core
 
 
 class ConsciousnessOrchestrator:
@@ -115,9 +112,7 @@ class ConsciousnessOrchestrator:
             self.logger.info("=" * 60)
 
         except Exception as e:
-            self.logger.error(
-                f"💥 Failed to initialize Consciousness Orchestrator: {e}"
-            )
+            self.logger.error(f"💥 Failed to initialize Consciousness Orchestrator: {e}")
             await self._emergency_shutdown()
             raise
 
@@ -129,9 +124,9 @@ class ConsciousnessOrchestrator:
 
         # Check consciousness bridge
         if self.consciousness_bridge:
-            health_status["consciousness_bridge"] = (
-                self.consciousness_bridge.is_consciousness_bridge_healthy()
-            )
+            health_status[
+                "consciousness_bridge"
+            ] = self.consciousness_bridge.is_consciousness_bridge_healthy()
 
         # Check agent registry
         if self.agent_registry:

@@ -470,8 +470,8 @@ class AetherScriptService:
         if not strict:
             return
         from Aetherra.security.script_signing import (
-            verify_embedded_signature,  # type: ignore
-        )
+            verify_embedded_signature,
+        )  # type: ignore
 
         ok, reason = verify_embedded_signature(script_content)
         if not ok:

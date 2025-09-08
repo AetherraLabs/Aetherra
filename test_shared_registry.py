@@ -3,7 +3,9 @@
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 import asyncio
+
 from aetherra_service_registry import get_service_registry
+
 
 async def test():
     print("Testing shared registry access...")
@@ -18,5 +20,6 @@ async def test():
         print(f"Shared services: {list(shared_services.keys())}")
     else:
         print("No shared registry found")
+
 
 asyncio.run(test())

@@ -18,9 +18,8 @@ Integrates with:
 
 import asyncio
 import json
-import logging
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -143,9 +142,7 @@ class CuriosityAgent(AgentBase):
         # Load existing data
         self._load_persistence_data()
 
-        self.log(
-            "🔍 CuriosityAgent initialized with gap detection and question generation"
-        )
+        self.log("🔍 CuriosityAgent initialized with gap detection and question generation")
 
     def _initialize_memory_components(self):
         """Initialize memory system components"""
@@ -259,11 +256,9 @@ class CuriosityAgent(AgentBase):
                 )
         else:
             # Generate questions for all open gaps
-            gaps = [
-                gap
-                for gap in self.knowledge_gaps.values()
-                if gap.resolution_status == "open"
-            ][:3]
+            gaps = [gap for gap in self.knowledge_gaps.values() if gap.resolution_status == "open"][
+                :3
+            ]
 
         if not gaps:
             return AgentResponse(
@@ -316,9 +311,9 @@ class CuriosityAgent(AgentBase):
         self.log("📅 Scheduling curiosity explorations")
 
         # Get pending questions
-        pending_questions = [
-            q for q in self.curiosity_questions.values() if q.status == "pending"
-        ][:3]
+        pending_questions = [q for q in self.curiosity_questions.values() if q.status == "pending"][
+            :3
+        ]
 
         if not pending_questions:
             return AgentResponse(
@@ -351,9 +346,7 @@ class CuriosityAgent(AgentBase):
             agent_name=self.name,
             metadata={
                 "scheduled_explorations": len(scheduled_explorations),
-                "exploration_methods": [
-                    e["exploration_method"] for e in scheduled_explorations
-                ],
+                "exploration_methods": [e["exploration_method"] for e in scheduled_explorations],
             },
         )
 
@@ -461,9 +454,7 @@ class CuriosityAgent(AgentBase):
         )
 
     # Core curiosity methods (simplified versions of our previous implementation)
-    async def detect_knowledge_gaps(
-        self, timeframe_hours: int = 24
-    ) -> List[KnowledgeGap]:
+    async def detect_knowledge_gaps(self, timeframe_hours: int = 24) -> List[KnowledgeGap]:
         """Detect knowledge gaps in the memory system"""
         gaps = []
 
@@ -529,9 +520,7 @@ class CuriosityAgent(AgentBase):
 
         return gaps
 
-    async def generate_curiosity_questions(
-        self, gap: KnowledgeGap
-    ) -> List[CuriosityQuestion]:
+    async def generate_curiosity_questions(self, gap: KnowledgeGap) -> List[CuriosityQuestion]:
         """Generate specific questions for a knowledge gap"""
         questions = []
 
@@ -580,9 +569,7 @@ class CuriosityAgent(AgentBase):
         gap.questions = [q.question_id for q in questions]
 
         self._save_persistence_data()
-        self.log(
-            f"🔍 Generated {len(questions)} curiosity questions for gap {gap.gap_id}"
-        )
+        self.log(f"🔍 Generated {len(questions)} curiosity questions for gap {gap.gap_id}")
 
         return questions
 
@@ -607,22 +594,12 @@ class CuriosityAgent(AgentBase):
 
     def get_curiosity_summary(self) -> Dict[str, Any]:
         """Get summary of curiosity agent status"""
-        open_gaps = len(
-            [g for g in self.knowledge_gaps.values() if g.resolution_status == "open"]
-        )
+        open_gaps = len([g for g in self.knowledge_gaps.values() if g.resolution_status == "open"])
         exploring_gaps = len(
-            [
-                g
-                for g in self.knowledge_gaps.values()
-                if g.resolution_status == "exploring"
-            ]
+            [g for g in self.knowledge_gaps.values() if g.resolution_status == "exploring"]
         )
         resolved_gaps = len(
-            [
-                g
-                for g in self.knowledge_gaps.values()
-                if g.resolution_status == "resolved"
-            ]
+            [g for g in self.knowledge_gaps.values() if g.resolution_status == "resolved"]
         )
 
         pending_questions = len(
@@ -663,7 +640,7 @@ class CuriosityAgent(AgentBase):
             # Load knowledge gaps
             gaps_file = self.data_dir / "knowledge_gaps.json"
             if gaps_file.exists():
-                with open(gaps_file, "r") as f:
+                with open(gaps_file) as f:
                     gaps_data = json.load(f)
                     for gap_id, gap_data in gaps_data.items():
                         self.knowledge_gaps[gap_id] = KnowledgeGap(**gap_data)
@@ -671,7 +648,7 @@ class CuriosityAgent(AgentBase):
             # Load questions
             questions_file = self.data_dir / "curiosity_questions.json"
             if questions_file.exists():
-                with open(questions_file, "r") as f:
+                with open(questions_file) as f:
                     questions_data = json.load(f)
                     for q_id, q_data in questions_data.items():
                         self.curiosity_questions[q_id] = CuriosityQuestion(**q_data)
@@ -689,17 +666,13 @@ class CuriosityAgent(AgentBase):
             # Save knowledge gaps
             gaps_file = self.data_dir / "knowledge_gaps.json"
             with open(gaps_file, "w") as f:
-                gaps_data = {
-                    gap_id: asdict(gap) for gap_id, gap in self.knowledge_gaps.items()
-                }
+                gaps_data = {gap_id: asdict(gap) for gap_id, gap in self.knowledge_gaps.items()}
                 json.dump(gaps_data, f, indent=2)
 
             # Save questions
             questions_file = self.data_dir / "curiosity_questions.json"
             with open(questions_file, "w") as f:
-                questions_data = {
-                    q_id: asdict(q) for q_id, q in self.curiosity_questions.items()
-                }
+                questions_data = {q_id: asdict(q) for q_id, q in self.curiosity_questions.items()}
                 json.dump(questions_data, f, indent=2)
 
             self.log("💾 Saved curiosity data to persistence")

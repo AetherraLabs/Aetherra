@@ -10,7 +10,7 @@ Comprehensive testing for Lyrixa's actual intelligence core components.
 Tests the real intelligence API as it exists in the codebase.
 """
 
-import asyncio
+
 import sys
 import unittest
 from datetime import datetime

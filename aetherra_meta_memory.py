@@ -17,8 +17,7 @@ import json
 import sqlite3
 import time
 from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 class MetaMemoryNode:
@@ -85,7 +84,8 @@ class MetaMemoryIndex:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS meta_nodes (
                 node_id TEXT PRIMARY KEY,
                 content TEXT,
@@ -96,15 +96,20 @@ class MetaMemoryIndex:
                 last_accessed REAL,
                 access_count INTEGER
             )
-        """)
+        """
+        )
 
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_meta_type ON meta_nodes(meta_type)
-        """)
+        """
+        )
 
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_confidence ON meta_nodes(confidence)
-        """)
+        """
+        )
 
         conn.commit()
         conn.close()

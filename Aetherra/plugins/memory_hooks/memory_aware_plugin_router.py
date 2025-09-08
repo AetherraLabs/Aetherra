@@ -22,9 +22,12 @@ import logging
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
-from Aetherra.aetherra_core.memory.fractal_mesh.base import MemoryFragment, MemoryFragmentType
+from Aetherra.aetherra_core.memory.fractal_mesh.base import (
+    MemoryFragment,
+    MemoryFragmentType,
+)
 from Aetherra.aetherra_core.memory.fractal_mesh.concepts.concept_clusters import (
     ConceptCluster,
     ConceptClusterManager,

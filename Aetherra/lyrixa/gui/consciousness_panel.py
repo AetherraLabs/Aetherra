@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont  # noqa: F401 (optional runtime import)
 from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
@@ -318,7 +318,8 @@ class ConsciousnessPanel(QWidget):
 
         # Phase 6 - Create tabbed interface for consciousness dashboards
         self.consciousness_tabs = QTabWidget()
-        self.consciousness_tabs.setStyleSheet("""
+        self.consciousness_tabs.setStyleSheet(
+            """
             QTabWidget::pane {
                 border: 2px solid #4a5568;
                 border-radius: 8px;
@@ -342,7 +343,8 @@ class ConsciousnessPanel(QWidget):
             QTabBar::tab:hover {
                 background: #4a5568;
             }
-        """)
+        """
+        )
 
         # Main consciousness interface tab (existing web view)
         self.web_view = QWebEngineView()

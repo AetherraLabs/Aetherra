@@ -13,12 +13,10 @@ Quantum-enhanced meta-learning capabilities for advanced self-knowledge and
 cognitive evolution in the Aetherra AI Operating System.
 """
 
-import json
 import math
-import random
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 
 class QuantumMetaState:
@@ -192,7 +190,7 @@ class QuantumMetaLearner:
         return measured_knowledge
 
     def quantum_entanglement_learning(
-        self, concept_pairs: List[Tuple[str, str]]
+        self, concept_pairs: List[tuple[str, str]]
     ) -> Dict[str, Any]:
         """
         Create quantum entanglement between related meta-cognitive concepts.
@@ -242,7 +240,7 @@ class QuantumMetaLearner:
             total_entanglements * 0.05, 0.25
         )
 
-        print(f"🔗 Quantum entanglement learning completed")
+        print("🔗 Quantum entanglement learning completed")
         print(f"   - Entangled pairs: {len(entanglement_results['entangled_pairs'])}")
         print(f"   - Network complexity: {total_entanglements}")
         print(

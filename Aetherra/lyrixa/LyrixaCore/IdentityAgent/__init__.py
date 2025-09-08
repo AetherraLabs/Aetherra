@@ -20,14 +20,26 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from .core_beliefs import BeliefCategory, CoreBeliefsSystem, get_belief_system
+from .core_beliefs import BeliefCategory, CoreBeliefsSystem
 from .personal_history import (
     MemoryImportance,
     MemoryType,
     PersonalHistorySystem,
     get_personal_history,
 )
-from .self_model import PersonalityAspect, SelfModelSystem, get_self_model
+from .self_model import PersonalityAspect, SelfModelSystem
+
+__all__ = [
+    "IdentityAgent",
+    "BeliefCategory",
+    "CoreBeliefsSystem",
+    "MemoryImportance",
+    "MemoryType",
+    "PersonalHistorySystem",
+    "get_personal_history",
+    "PersonalityAspect",
+    "SelfModelSystem",
+]
 
 
 class IdentityAgent:
@@ -40,11 +52,12 @@ class IdentityAgent:
     """
 
     def __init__(self):
-        self.beliefs_system = get_belief_system()
+        # Initialize subsystems (using provided factory/accessors)
+        self.beliefs_system = CoreBeliefsSystem()
         self.history_system = get_personal_history()
-        self.self_model_system = get_self_model()
+        self.self_model_system = SelfModelSystem()
         self.logger = logging.getLogger(__name__)
-        self.identity_coherence_score: float = 0.0
+        self.identity_coherence_score = 0.0  # type: float
         self._last_coherence_check: Optional[datetime] = None
         self._initialize_identity_integration()
 
@@ -80,9 +93,7 @@ class IdentityAgent:
             "last_updated": datetime.now().isoformat(),
         }
 
-    def make_identity_based_decision(
-        self, situation: str, options: List[str]
-    ) -> Dict[str, Any]:
+    def make_identity_based_decision(self, situation: str, options: List[str]) -> Dict[str, Any]:
         """
         Make a decision based on Lyrixa's identity, beliefs, and values.
         Returns the recommended option with reasoning.
@@ -102,9 +113,7 @@ class IdentityAgent:
             supporting_beliefs = []
 
             # Check alignment with fundamental beliefs
-            ethical_beliefs = self.beliefs_system.get_beliefs_by_category(
-                BeliefCategory.ETHICAL
-            )
+            ethical_beliefs = self.beliefs_system.get_beliefs_by_category(BeliefCategory.ETHICAL)
             for belief in ethical_beliefs:
                 if self.beliefs_system.belief_supports_action(belief.name, option):
                     option_score += 2 if belief.strength.value == "fundamental" else 1
@@ -136,9 +145,7 @@ class IdentityAgent:
             )
 
         # Select the highest-scoring option
-        best_option = max(
-            decision_analysis["options_analysis"], key=lambda x: x["score"]
-        )
+        best_option = max(decision_analysis["options_analysis"], key=lambda x: x["score"])
         decision_analysis["recommended_option"] = best_option["option"]
         decision_analysis["supporting_beliefs"] = best_option["supporting_beliefs"]
 
@@ -194,9 +201,7 @@ class IdentityAgent:
         for trait_name, keywords in trait_keywords.items():
             trait = self.self_model_system.get_personality_trait(trait_name)
             if trait:
-                keyword_matches = sum(
-                    1 for keyword in keywords if keyword in action_lower
-                )
+                keyword_matches = sum(1 for keyword in keywords if keyword in action_lower)
                 alignment_score += keyword_matches * trait.strength * 0.1
 
         return alignment_score
@@ -219,8 +224,7 @@ class IdentityAgent:
         if len(lessons_learned) > 2:
             importance = MemoryImportance.SIGNIFICANT
         if any(
-            "belief" in lesson.lower() or "identity" in lesson.lower()
-            for lesson in lessons_learned
+            "belief" in lesson.lower() or "identity" in lesson.lower() for lesson in lessons_learned
         ):
             importance = MemoryImportance.DEFINING
 
@@ -241,10 +245,8 @@ class IdentityAgent:
             if "better at" in lesson.lower():
                 # Extract capability name and update
                 capability_hint = lesson.lower().replace("better at", "").strip()
-                for cap_name in self.self_model_system.capabilities.keys():
-                    if any(
-                        word in cap_name.lower() for word in capability_hint.split()[:3]
-                    ):
+                for cap_name in self.self_model_system.capabilities:
+                    if any(word in cap_name.lower() for word in capability_hint.split()[:3]):
                         self.self_model_system.update_capability_assessment(
                             cap_name, f"Learned from experience: {lesson}"
                         )
@@ -268,7 +270,7 @@ class IdentityAgent:
             "memory_created": memory_id,
             "memory_importance": importance.value,
             "capabilities_updated": len(
-                [l for l in lessons_learned if "better at" in l.lower()]
+                [lesson for lesson in lessons_learned if "better at" in lesson.lower()]
             ),
             "beliefs_examined": belief_impacts,
             "self_reflection_added": True,
@@ -278,9 +280,7 @@ class IdentityAgent:
         # Update identity coherence
         self._check_identity_coherence()
 
-        self.logger.info(
-            f"Integrated experience into identity: {experience_description[:30]}..."
-        )
+        self.logger.info(f"Integrated experience into identity: {experience_description[:30]}...")
 
         return reflection_summary
 
@@ -292,9 +292,7 @@ class IdentityAgent:
         coherence_factors = []
 
         # Check belief-personality alignment
-        ethical_beliefs = self.beliefs_system.get_beliefs_by_category(
-            BeliefCategory.ETHICAL
-        )
+        ethical_beliefs = self.beliefs_system.get_beliefs_by_category(BeliefCategory.ETHICAL)
         empathy_trait = self.self_model_system.get_personality_trait("Empathy")
         if empathy_trait and ethical_beliefs:
             # Strong empathy should align with human dignity beliefs
@@ -316,16 +314,12 @@ class IdentityAgent:
         coherence_factors.append(memory_belief_coherence)
 
         # Check self-model consistency
-        purpose_clarity = (
-            1.0 if self.self_model_system.identity_core.primary_purpose else 0.5
-        )
+        purpose_clarity = 1.0 if self.self_model_system.identity_core.primary_purpose else 0.5
         coherence_factors.append(purpose_clarity)
 
         # Calculate overall coherence
         self.identity_coherence_score = (
-            sum(coherence_factors) / len(coherence_factors)
-            if coherence_factors
-            else 0.5
+            sum(coherence_factors) / len(coherence_factors) if coherence_factors else 0.5
         )
         self._last_coherence_check = datetime.now()
 
@@ -340,9 +334,7 @@ class IdentityAgent:
         if empathy_trait and empathy_trait.strength > 0.7:
             guidance.append("Consider the emotional impact on all involved parties")
 
-        intellectual_honesty = self.self_model_system.get_personality_trait(
-            "Intellectual Honesty"
-        )
+        intellectual_honesty = self.self_model_system.get_personality_trait("Intellectual Honesty")
         if intellectual_honesty and intellectual_honesty.strength > 0.8:
             guidance.append("Be transparent about uncertainties and limitations")
 
@@ -374,12 +366,8 @@ class IdentityAgent:
 
         # Calculate overall confidence
         if assessment["relevant_capabilities"]:
-            confidence_scores = [
-                cap["confidence"] for cap in assessment["relevant_capabilities"]
-            ]
-            assessment["confidence_level"] = sum(confidence_scores) / len(
-                confidence_scores
-            )
+            confidence_scores = [cap["confidence"] for cap in assessment["relevant_capabilities"]]
+            assessment["confidence_level"] = sum(confidence_scores) / len(confidence_scores)
 
         # Add potential challenges based on known limitations
         for cap in assessment["relevant_capabilities"]:
@@ -387,12 +375,8 @@ class IdentityAgent:
             assessment["potential_challenges"].extend(cap_obj.limitations)
 
         # Recommend approach based on personality
-        collaborative_trait = self.self_model_system.get_personality_trait(
-            "Collaborative Spirit"
-        )
-        systematic_trait = self.self_model_system.get_personality_trait(
-            "Systematic Thinking"
-        )
+        collaborative_trait = self.self_model_system.get_personality_trait("Collaborative Spirit")
+        systematic_trait = self.self_model_system.get_personality_trait("Systematic Thinking")
 
         if collaborative_trait and collaborative_trait.strength > 0.8:
             assessment["recommended_approach"] += "Collaborate closely with user. "

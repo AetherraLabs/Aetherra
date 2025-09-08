@@ -39,6 +39,7 @@ try:
         if LyrixaConversationManager is None:
             try:
                 from .conversation_manager import LyrixaConversationManager
+
                 CONVERSATION_MANAGER_AVAILABLE = True
             except ImportError as e:
                 print(f"⚠️ Conversation manager not available: {e}")
@@ -1053,7 +1054,9 @@ class LyrixaIntelligenceStack:
                 self.intelligence_status["plugin_monitoring"] = True
                 print("✅ Plugin monitoring - Active")
             else:
-                print("⚠️ plugin_watchdog.aether not found - Plugin monitoring disabled")
+                print(
+                    "⚠️ plugin_watchdog.aether not found - Plugin monitoring disabled"
+                )
         except Exception as e:
             print(f"❌ Plugin monitoring initialization failed: {e}")
 
@@ -1107,7 +1110,7 @@ class LyrixaIntelligenceStack:
                 / f"{workflow_name}.aether"
             )
             if workflow_path.exists():
-                with open(workflow_path, "r") as f:
+                with open(workflow_path) as f:
                     workflow_code = f.read()
 
                 # Execute using Aether runtime

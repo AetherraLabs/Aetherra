@@ -12,7 +12,7 @@ This script only creates missing __init__.py files and tests basic imports.
 For full dependency management, use fix_imports.py
 """
 
-import os
+
 import sys
 from pathlib import Path
 

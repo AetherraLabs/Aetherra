@@ -37,6 +37,8 @@ dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "black>=22.0.0",
+    "isort>=5.12.0",
+    "ruff>=0.4.0",
     "flake8>=5.0.0",
     "mypy>=1.0.0",
 ]
@@ -63,6 +65,29 @@ include = ["Aetherra*"]
 [tool.black]
 line-length = 100
 target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+combine_as_imports = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+exclude = [
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "node_modules",
+]
+
+[tool.ruff.lint]
+select = ["E","F","I","UP","B","SIM","Q"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"Aetherra/aetherra_core/__init__.py" = ["F401"]
 
 [tool.mypy]
 python_version = "3.8"

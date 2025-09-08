@@ -21,7 +21,7 @@ import sqlite3
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 # Configure logging
 logging.basicConfig(
@@ -58,7 +58,7 @@ class SystemAnalysis:
 
     total_files: int
     orphaned_files: List[str]
-    duplicate_logic: List[Tuple[str, str]]
+    duplicate_logic: List[tuple[str, str]]
     broken_imports: List[str]
     optimization_suggestions: List[Dict[str, Any]]
     critical_files: List[str]
@@ -108,7 +108,8 @@ class AetherraFileIntelligence:
     def _init_database(self):
         """Initialize the file manifest database."""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS file_manifest (
                     path TEXT PRIMARY KEY,
                     file_type TEXT,
@@ -128,9 +129,11 @@ class AetherraFileIntelligence:
                     suggested_location TEXT,
                     scan_timestamp REAL
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS evolution_log (
                     timestamp REAL,
                     action TEXT,
@@ -139,7 +142,8 @@ class AetherraFileIntelligence:
                     success BOOLEAN,
                     details TEXT
                 )
-            """)
+            """
+            )
 
     def scan_project_files(self) -> Dict[str, FileMetadata]:
         """
@@ -406,7 +410,7 @@ class AetherraFileIntelligence:
 
         return orphaned
 
-    def detect_duplicate_logic(self) -> List[Tuple[str, str, float]]:
+    def detect_duplicate_logic(self) -> List[tuple[str, str, float]]:
         """Identify modules with similar/duplicate logic."""
         duplicates = []
 

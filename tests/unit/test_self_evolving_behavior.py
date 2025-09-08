@@ -18,17 +18,12 @@ As described in the Aetherra specification:
 "Lyrixa continuously reflects, adapts traits, tunes memory structures, and improves her own reasoning through night_cycle.aether."
 """
 
-import json
-import os
+
 import sys
-import tempfile
-import time
 import unittest
-from datetime import datetime, timedelta
-from enum import Enum
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock
 
 # Add the Aetherra directory to Python path for imports
 project_root = Path(__file__).parent / "Aetherra"

@@ -71,7 +71,7 @@ def load_env_file():
     env_file = project_root / ".env"
     if env_file.exists():
         print(f"🔍 Loading .env file from: {env_file}")
-        with open(env_file, "r") as f:
+        with open(env_file) as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:
@@ -636,8 +636,8 @@ class LyrixaOperatingSystem:
                 # Try package-style import if package structure is available
                 try:
                     from lyrixa.lyrixa_basic_gui import (
-                        LyrixaBasicWindow,  # type: ignore
-                    )
+                        LyrixaBasicWindow,
+                    )  # type: ignore
 
                     logger.info("[OK] Using Lyrixa Basic GUI (preferred)")
                     return LyrixaBasicWindow
@@ -648,8 +648,8 @@ class LyrixaOperatingSystem:
                     # Fallback: namespaced under Aetherra if package layout requires it
                     try:
                         from Aetherra.lyrixa.lyrixa_basic_gui import (
-                            LyrixaBasicWindow,  # type: ignore
-                        )
+                            LyrixaBasicWindow,
+                        )  # type: ignore
 
                         logger.info("[OK] Using Lyrixa Basic GUI (preferred)")
                         return LyrixaBasicWindow
@@ -740,7 +740,8 @@ class LyrixaOperatingSystem:
                     # Status display
                     self.status_display = QTextEdit()
                     self.status_display.setReadOnly(True)
-                    self.status_display.setStyleSheet("""
+                    self.status_display.setStyleSheet(
+                        """
                         QTextEdit {
                             background-color: #1e1e1e;
                             color: #ffffff;
@@ -750,7 +751,8 @@ class LyrixaOperatingSystem:
                             font-family: 'Consolas', 'Monaco', monospace;
                             font-size: 12px;
                         }
-                    """)
+                    """
+                    )
                     layout.addWidget(self.status_display)
 
                     # Buttons

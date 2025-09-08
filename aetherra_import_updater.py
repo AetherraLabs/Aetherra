@@ -11,43 +11,40 @@ import os
 import re
 from pathlib import Path
 
+
 class AetherraImportUpdater:
     def __init__(self, base_path="."):
         self.base_path = Path(base_path)
         self.import_mappings = {
             # Files moved from agents/ to plugins/
-            r'from aetherra_core\.agents\.advanced_plugins': 'from aetherra_core.plugins.advanced_plugins',
-            r'from aetherra_core\.agents import advanced_plugins': 'from aetherra_core.plugins import advanced_plugins',
-            r'import aetherra_core\.agents\.advanced_plugins': 'import aetherra_core.plugins.advanced_plugins',
-
+            r"from aetherra_core\.agents\.advanced_plugins": "from aetherra_core.plugins.advanced_plugins",
+            r"from aetherra_core\.agents import advanced_plugins": "from aetherra_core.plugins import advanced_plugins",
+            r"import aetherra_core\.agents\.advanced_plugins": "import aetherra_core.plugins.advanced_plugins",
             # Files moved from system/ to memory/
-            r'from aetherra_core\.system\.lightweight_memory_core': 'from aetherra_core.memory.lightweight_memory_core',
-            r'from aetherra_core\.system\.memory_core': 'from aetherra_core.memory.memory_core',
-            r'from aetherra_core\.system\.memory_core_adapter': 'from aetherra_core.memory.memory_core_adapter',
-            r'from aetherra_core\.system\.world_class_memory_core': 'from aetherra_core.memory.world_class_memory_core',
-            r'from aetherra_core\.system import lightweight_memory_core': 'from aetherra_core.memory import lightweight_memory_core',
-            r'from aetherra_core\.system import memory_core': 'from aetherra_core.memory import memory_core',
-            r'from aetherra_core\.system import memory_core_adapter': 'from aetherra_core.memory import memory_core_adapter',
-            r'from aetherra_core\.system import world_class_memory_core': 'from aetherra_core.memory import world_class_memory_core',
-            r'import aetherra_core\.system\.lightweight_memory_core': 'import aetherra_core.memory.lightweight_memory_core',
-            r'import aetherra_core\.system\.memory_core': 'import aetherra_core.memory.memory_core',
-            r'import aetherra_core\.system\.memory_core_adapter': 'import aetherra_core.memory.memory_core_adapter',
-            r'import aetherra_core\.system\.world_class_memory_core': 'import aetherra_core.memory.world_class_memory_core',
-
+            r"from aetherra_core\.system\.lightweight_memory_core": "from aetherra_core.memory.lightweight_memory_core",
+            r"from aetherra_core\.system\.memory_core": "from aetherra_core.memory.memory_core",
+            r"from aetherra_core\.system\.memory_core_adapter": "from aetherra_core.memory.memory_core_adapter",
+            r"from aetherra_core\.system\.world_class_memory_core": "from aetherra_core.memory.world_class_memory_core",
+            r"from aetherra_core\.system import lightweight_memory_core": "from aetherra_core.memory import lightweight_memory_core",
+            r"from aetherra_core\.system import memory_core": "from aetherra_core.memory import memory_core",
+            r"from aetherra_core\.system import memory_core_adapter": "from aetherra_core.memory import memory_core_adapter",
+            r"from aetherra_core\.system import world_class_memory_core": "from aetherra_core.memory import world_class_memory_core",
+            r"import aetherra_core\.system\.lightweight_memory_core": "import aetherra_core.memory.lightweight_memory_core",
+            r"import aetherra_core\.system\.memory_core": "import aetherra_core.memory.memory_core",
+            r"import aetherra_core\.system\.memory_core_adapter": "import aetherra_core.memory.memory_core_adapter",
+            r"import aetherra_core\.system\.world_class_memory_core": "import aetherra_core.memory.world_class_memory_core",
             # Files moved from system/ to kernel/
-            r'from aetherra_core\.system\.coretools': 'from aetherra_core.kernel.coretools',
-            r'from aetherra_core\.system import coretools': 'from aetherra_core.kernel import coretools',
-            r'import aetherra_core\.system\.coretools': 'import aetherra_core.kernel.coretools',
-
+            r"from aetherra_core\.system\.coretools": "from aetherra_core.kernel.coretools",
+            r"from aetherra_core\.system import coretools": "from aetherra_core.kernel import coretools",
+            r"import aetherra_core\.system\.coretools": "import aetherra_core.kernel.coretools",
             # Files moved from system/ to agents/
-            r'from aetherra_core\.system\.core_agent': 'from aetherra_core.agents.core_agent',
-            r'from aetherra_core\.system import core_agent': 'from aetherra_core.agents import core_agent',
-            r'import aetherra_core\.system\.core_agent': 'import aetherra_core.agents.core_agent',
-
+            r"from aetherra_core\.system\.core_agent": "from aetherra_core.agents.core_agent",
+            r"from aetherra_core\.system import core_agent": "from aetherra_core.agents import core_agent",
+            r"import aetherra_core\.system\.core_agent": "import aetherra_core.agents.core_agent",
             # Files moved from plugins/ to orchestration/
-            r'from aetherra_core\.plugins\.plugin_manager': 'from aetherra_core.orchestration.plugin_manager',
-            r'from aetherra_core\.plugins import plugin_manager': 'from aetherra_core.orchestration import plugin_manager',
-            r'import aetherra_core\.plugins\.plugin_manager': 'import aetherra_core.orchestration.plugin_manager',
+            r"from aetherra_core\.plugins\.plugin_manager": "from aetherra_core.orchestration.plugin_manager",
+            r"from aetherra_core\.plugins import plugin_manager": "from aetherra_core.orchestration import plugin_manager",
+            r"import aetherra_core\.plugins\.plugin_manager": "import aetherra_core.orchestration.plugin_manager",
         }
         self.updated_files = []
         self.updates_made = 0
@@ -55,7 +52,7 @@ class AetherraImportUpdater:
     def update_file_imports(self, file_path):
         """Update import statements in a single file"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             original_content = content
@@ -74,13 +71,12 @@ class AetherraImportUpdater:
 
             # Write back if changes were made
             if file_updated:
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
 
-                self.updated_files.append({
-                    'file': file_path,
-                    'updates': updates_in_file
-                })
+                self.updated_files.append(
+                    {"file": file_path, "updates": updates_in_file}
+                )
                 self.updates_made += updates_in_file
                 return True
 
@@ -99,10 +95,10 @@ class AetherraImportUpdater:
         python_files = []
         for root, dirs, files in os.walk(self.base_path):
             # Skip __pycache__ and .git directories
-            dirs[:] = [d for d in dirs if d not in ['__pycache__', '.git', '.vscode']]
+            dirs[:] = [d for d in dirs if d not in ["__pycache__", ".git", ".vscode"]]
 
             for filename in files:
-                if filename.endswith('.py'):
+                if filename.endswith(".py"):
                     python_files.append(Path(root) / filename)
 
         print(f"📁 Found {len(python_files)} Python files to check")
@@ -113,10 +109,13 @@ class AetherraImportUpdater:
         for file_path in python_files:
             # Check if file contains any of our target import patterns
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read()
 
-                has_target_imports = any(re.search(pattern, content) for pattern in self.import_mappings.keys())
+                has_target_imports = any(
+                    re.search(pattern, content)
+                    for pattern in self.import_mappings.keys()
+                )
 
                 if has_target_imports:
                     print(f"🔍 Updating: {file_path.relative_to(self.base_path)}")
@@ -141,7 +140,7 @@ class AetherraImportUpdater:
         if self.updated_files:
             print("📝 Updated Files:")
             for item in self.updated_files:
-                rel_path = item['file'].relative_to(self.base_path)
+                rel_path = item["file"].relative_to(self.base_path)
                 print(f"  ✅ {rel_path} ({item['updates']} updates)")
         else:
             print("✅ No import updates needed - all imports are already correct!")
@@ -157,44 +156,45 @@ class AetherraImportUpdater:
             f"**Total Updates:** {self.updates_made}",
             "",
             "## 📋 UPDATED FILES",
-            ""
+            "",
         ]
 
         if self.updated_files:
             for item in self.updated_files:
-                rel_path = item['file'].relative_to(self.base_path)
+                rel_path = item["file"].relative_to(self.base_path)
                 report_lines.append(f"- `{rel_path}` ({item['updates']} updates)")
         else:
             report_lines.append("- No files needed updates")
 
-        report_lines.extend([
-            "",
-            "## 🎯 IMPORT MAPPINGS APPLIED",
-            ""
-        ])
+        report_lines.extend(["", "## 🎯 IMPORT MAPPINGS APPLIED", ""])
 
         for old_pattern, new_import in self.import_mappings.items():
-            clean_pattern = old_pattern.replace(r'\.', '.').replace(r'\b', '').replace(r'\s*', ' ')
+            clean_pattern = (
+                old_pattern.replace(r"\.", ".").replace(r"\b", "").replace(r"\s*", " ")
+            )
             report_lines.append(f"- `{clean_pattern}` → `{new_import}`")
 
-        report_lines.extend([
-            "",
-            "## ✅ COMPLETION STATUS",
-            "",
-            "Import statement updates have been completed successfully!",
-            "All moved files now have correct import paths.",
-            "",
-            "**Next Steps:**",
-            "1. Test the system to ensure all imports work correctly",
-            "2. Run any existing tests to verify functionality",
-            "3. Commit the cleaned and updated code structure"
-        ])
+        report_lines.extend(
+            [
+                "",
+                "## ✅ COMPLETION STATUS",
+                "",
+                "Import statement updates have been completed successfully!",
+                "All moved files now have correct import paths.",
+                "",
+                "**Next Steps:**",
+                "1. Test the system to ensure all imports work correctly",
+                "2. Run any existing tests to verify functionality",
+                "3. Commit the cleaned and updated code structure",
+            ]
+        )
 
-        with open("AETHERRA_IMPORT_UPDATE_REPORT.md", "w", encoding='utf-8') as f:
+        with open("AETHERRA_IMPORT_UPDATE_REPORT.md", "w", encoding="utf-8") as f:
             f.write("\n".join(report_lines))
 
         print()
         print("📄 Detailed report saved to: AETHERRA_IMPORT_UPDATE_REPORT.md")
+
 
 if __name__ == "__main__":
     updater = AetherraImportUpdater()

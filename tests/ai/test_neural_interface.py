@@ -32,14 +32,11 @@ Author: GitHub Copilot
 Date: January 31, 2025
 """
 
-import asyncio
-import json
-import os
+
 import sys
 import time
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
 
 # Add project root to path
 project_root = Path(__file__).parent / "Aetherra"
@@ -49,9 +46,13 @@ if str(project_root) not in sys.path:
 # Test Qt availability for GUI testing
 QT_AVAILABLE = False
 try:
-    from PySide6.QtCore import QPoint, Qt, QTimer
-    from PySide6.QtGui import QKeySequence
-    from PySide6.QtTest import QTest
+    from PySide6.QtCore import (
+        QPoint,  # noqa: F401 (optional runtime import)
+        Qt,
+        QTimer,
+    )
+    from PySide6.QtGui import QKeySequence  # noqa: F401 (optional runtime import)
+    from PySide6.QtTest import QTest  # noqa: F401 (optional runtime import)
     from PySide6.QtWidgets import QApplication, QMainWindow
 
     QT_AVAILABLE = True
@@ -1071,7 +1072,7 @@ The interface represents a successful implementation of the "Neural Interface (G
     with open("NEURAL_INTERFACE_TEST_REPORT.md", "w", encoding="utf-8") as f:
         f.write(report_content)
 
-    print(f"\n📋 Detailed test report saved to: NEURAL_INTERFACE_TEST_REPORT.md")
+    print("\n📋 Detailed test report saved to: NEURAL_INTERFACE_TEST_REPORT.md")
 
 
 if __name__ == "__main__":

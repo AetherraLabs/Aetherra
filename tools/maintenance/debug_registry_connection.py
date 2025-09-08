@@ -16,6 +16,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from aetherra_service_registry import get_service_registry
 
+
 async def debug_registry_connection():
     print("🔍 Debug: Testing shared registry connection...")
 
@@ -30,7 +31,7 @@ async def debug_registry_connection():
 
             # Get shared registry status
             shared_status = registry._shared_registry.get_registry_status()
-            print(f"📋 Shared registry status:")
+            print("📋 Shared registry status:")
             for key, value in shared_status.items():
                 print(f"   {key}: {value}")
         else:
@@ -46,7 +47,9 @@ async def debug_registry_connection():
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     asyncio.run(debug_registry_connection())

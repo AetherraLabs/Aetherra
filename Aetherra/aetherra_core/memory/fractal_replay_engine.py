@@ -53,9 +53,9 @@ class ReconstructionContext:
     target_fidelity: float = 0.8  # Desired reconstruction fidelity
     max_depth: int = 5  # Maximum fractal depth to explore
     include_patterns: Optional[List[str]] = None  # Specific patterns to include
-    exclude_patterns: Optional[List[str]] = (
-        None  # Patterns to exclude from reconstruction
-    )
+    exclude_patterns: Optional[
+        List[str]
+    ] = None  # Patterns to exclude from reconstruction
     temporal_order: bool = True  # Whether to maintain temporal ordering
     compression_aware: bool = True  # Whether to use compression-aware reconstruction
 
@@ -100,7 +100,8 @@ class FractalReplayEngine:
         cursor = conn.cursor()
 
         # Replay episodes table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS replay_episodes (
                 episode_id TEXT PRIMARY KEY,
                 original_node_ids TEXT,
@@ -113,10 +114,12 @@ class FractalReplayEngine:
                 metadata TEXT,
                 created_at REAL
             )
-        """)
+        """
+        )
 
         # Reconstruction cache table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS reconstruction_cache (
                 cache_key TEXT PRIMARY KEY,
                 reconstructed_content TEXT,
@@ -124,7 +127,8 @@ class FractalReplayEngine:
                 created_at REAL,
                 access_count INTEGER
             )
-        """)
+        """
+        )
 
         conn.commit()
         conn.close()
@@ -796,9 +800,7 @@ async def demo_fractal_replay_engine():
         context_fast,
     )
 
-    print(
-        f"   ✅ Fast reconstruction: {episode_2.reconstruction_fidelity:.1%} fidelity"
-    )
+    print(f"   ✅ Fast reconstruction: {episode_2.reconstruction_fidelity:.1%} fidelity")
 
     # Pattern-selective reconstruction
     context_selective = ReconstructionContext(

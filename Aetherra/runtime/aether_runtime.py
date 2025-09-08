@@ -50,7 +50,7 @@ class AetherRuntime:
     def load_script(self, script: str, from_file: bool = True):
         """Load .aether script from file or string."""
         if from_file:
-            with open(script, "r", encoding="utf-8") as f:
+            with open(script, encoding="utf-8") as f:
                 self.script_lines = [line.strip() for line in f if line.strip()]
         else:
             self.script_lines = [

@@ -734,7 +734,7 @@ class SelfQuestionGeneratorAgent(AgentBase):
             # Load questions
             questions_file = self.data_dir / "generated_questions.json"
             if questions_file.exists():
-                with open(questions_file, "r") as f:
+                with open(questions_file) as f:
                     questions_data = json.load(f)
                     for q_id, q_data in questions_data.items():
                         self.generated_questions[q_id] = GeneratedQuestion(**q_data)
@@ -742,7 +742,7 @@ class SelfQuestionGeneratorAgent(AgentBase):
             # Load clusters
             clusters_file = self.data_dir / "question_clusters.json"
             if clusters_file.exists():
-                with open(clusters_file, "r") as f:
+                with open(clusters_file) as f:
                     clusters_data = json.load(f)
                     for c_id, c_data in clusters_data.items():
                         self.question_clusters[c_id] = QuestionCluster(**c_data)

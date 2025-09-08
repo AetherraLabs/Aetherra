@@ -24,8 +24,8 @@ This creates a single, unified Aetherra OS window that represents
 the complete neural processing dashboard experience.
 """
 
+
 import sys
-import os
 from pathlib import Path
 
 # Add the GUI directory to the Python path

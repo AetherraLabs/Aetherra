@@ -10,19 +10,18 @@ without complex dependencies, showcasing core functionality.
 """
 
 import asyncio
-import logging
-import time
 import json
+import logging
 import random
 import sqlite3
-from datetime import datetime
-from typing import Dict, Any, List, Optional
+import time
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, List
 
 # Set up logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -30,6 +29,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SimpleAnalyticsMetric:
     """Simple data class for analytics metrics"""
+
     name: str
     value: float
     timestamp: datetime
@@ -44,6 +44,7 @@ class SimpleAnalyticsMetric:
 @dataclass
 class SimpleInsightPattern:
     """Simple data class for discovered insights"""
+
     pattern_id: str
     description: str
     confidence: float
@@ -74,7 +75,7 @@ class SimpleAnalyticsEngine:
             "metrics_collected": 0,
             "insights_generated": 0,
             "patterns_discovered": 0,
-            "analysis_runs": 0
+            "analysis_runs": 0,
         }
 
         self._init_database()
@@ -86,7 +87,8 @@ class SimpleAnalyticsEngine:
             cursor = conn.cursor()
 
             # Metrics table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS metrics (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
@@ -96,10 +98,12 @@ class SimpleAnalyticsEngine:
                     metadata TEXT,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
             # Insights table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS insights (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     pattern_id TEXT UNIQUE NOT NULL,
@@ -111,7 +115,8 @@ class SimpleAnalyticsEngine:
                     discovered_at DATETIME NOT NULL,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
             conn.commit()
 
@@ -120,7 +125,7 @@ class SimpleAnalyticsEngine:
         name: str,
         value: float,
         category: str = "general",
-        metadata: Dict[str, Any] = None
+        metadata: Dict[str, Any] = None,
     ) -> bool:
         """Collect a metric for analysis"""
 
@@ -129,7 +134,7 @@ class SimpleAnalyticsEngine:
             value=value,
             timestamp=datetime.now(),
             category=category,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         self.metrics_buffer.append(metric)
@@ -150,16 +155,19 @@ class SimpleAnalyticsEngine:
             cursor = conn.cursor()
 
             for metric in self.metrics_buffer:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO metrics (name, value, category, timestamp, metadata)
                     VALUES (?, ?, ?, ?, ?)
-                """, (
-                    metric.name,
-                    metric.value,
-                    metric.category,
-                    metric.timestamp.isoformat(),
-                    json.dumps(metric.metadata)
-                ))
+                """,
+                    (
+                        metric.name,
+                        metric.value,
+                        metric.category,
+                        metric.timestamp.isoformat(),
+                        json.dumps(metric.metadata),
+                    ),
+                )
 
             conn.commit()
             logger.info(f"📊 Flushed {len(self.metrics_buffer)} metrics to database")
@@ -174,47 +182,65 @@ class SimpleAnalyticsEngine:
             cursor = conn.cursor()
 
             # Analyze response time patterns
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT AVG(value) as avg_response_time, COUNT(*) as count
                 FROM metrics
                 WHERE name = 'response_time'
                   AND timestamp > datetime('now', '-1 hour')
-            """)
+            """
+            )
 
             response_data = cursor.fetchone()
 
             if response_data and response_data[0]:
                 avg_time = response_data[0]
                 if avg_time > 2.0:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="high_response_time",
-                        description=f"High average response time detected: {avg_time:.2f}s. "
-                                  f"Consider performance optimization.",
-                        confidence=0.85,
-                        impact_score=0.9,
-                        category="performance",
-                        discovered_at=datetime.now(),
-                        evidence=[{"avg_response_time": avg_time, "sample_count": response_data[1]}]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="high_response_time",
+                            description=f"High average response time detected: {avg_time:.2f}s. "
+                            f"Consider performance optimization.",
+                            confidence=0.85,
+                            impact_score=0.9,
+                            category="performance",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_response_time": avg_time,
+                                    "sample_count": response_data[1],
+                                }
+                            ],
+                        )
+                    )
                 elif avg_time < 0.5:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="excellent_response_time",
-                        description=f"Excellent response time: {avg_time:.2f}s. "
-                                  f"System is performing optimally.",
-                        confidence=0.9,
-                        impact_score=0.7,
-                        category="performance",
-                        discovered_at=datetime.now(),
-                        evidence=[{"avg_response_time": avg_time, "sample_count": response_data[1]}]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="excellent_response_time",
+                            description=f"Excellent response time: {avg_time:.2f}s. "
+                            f"System is performing optimally.",
+                            confidence=0.9,
+                            impact_score=0.7,
+                            category="performance",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_response_time": avg_time,
+                                    "sample_count": response_data[1],
+                                }
+                            ],
+                        )
+                    )
 
             # Analyze memory usage patterns
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT AVG(value) as avg_memory, MAX(value) as max_memory
                 FROM metrics
                 WHERE name = 'memory_usage'
                   AND timestamp > datetime('now', '-1 hour')
-            """)
+            """
+            )
 
             memory_data = cursor.fetchone()
 
@@ -223,24 +249,30 @@ class SimpleAnalyticsEngine:
                 max_memory = memory_data[1]
 
                 if avg_memory > 80:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="high_memory_usage",
-                        description=f"High memory usage: {avg_memory:.1f}% average, {max_memory:.1f}% peak. "
-                                  f"Consider memory optimization.",
-                        confidence=0.8,
-                        impact_score=0.8,
-                        category="performance",
-                        discovered_at=datetime.now(),
-                        evidence=[{"avg_memory": avg_memory, "max_memory": max_memory}]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="high_memory_usage",
+                            description=f"High memory usage: {avg_memory:.1f}% average, {max_memory:.1f}% peak. "
+                            f"Consider memory optimization.",
+                            confidence=0.8,
+                            impact_score=0.8,
+                            category="performance",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {"avg_memory": avg_memory, "max_memory": max_memory}
+                            ],
+                        )
+                    )
 
             # Analyze user engagement patterns
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT AVG(value) as avg_engagement, COUNT(*) as samples
                 FROM metrics
                 WHERE name = 'user_engagement'
                   AND timestamp > datetime('now', '-1 hour')
-            """)
+            """
+            )
 
             engagement_data = cursor.fetchone()
 
@@ -248,27 +280,41 @@ class SimpleAnalyticsEngine:
                 avg_engagement = engagement_data[0]
 
                 if avg_engagement > 0.8:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="high_user_engagement",
-                        description=f"Excellent user engagement: {avg_engagement:.1%}. "
-                                  f"Current strategies are highly effective.",
-                        confidence=0.85,
-                        impact_score=0.7,
-                        category="user_behavior",
-                        discovered_at=datetime.now(),
-                        evidence=[{"avg_engagement": avg_engagement, "sample_count": engagement_data[1]}]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="high_user_engagement",
+                            description=f"Excellent user engagement: {avg_engagement:.1%}. "
+                            f"Current strategies are highly effective.",
+                            confidence=0.85,
+                            impact_score=0.7,
+                            category="user_behavior",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_engagement": avg_engagement,
+                                    "sample_count": engagement_data[1],
+                                }
+                            ],
+                        )
+                    )
                 elif avg_engagement < 0.5:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="low_user_engagement",
-                        description=f"Low user engagement: {avg_engagement:.1%}. "
-                                  f"Consider improving interaction quality.",
-                        confidence=0.8,
-                        impact_score=0.9,
-                        category="user_behavior",
-                        discovered_at=datetime.now(),
-                        evidence=[{"avg_engagement": avg_engagement, "sample_count": engagement_data[1]}]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="low_user_engagement",
+                            description=f"Low user engagement: {avg_engagement:.1%}. "
+                            f"Consider improving interaction quality.",
+                            confidence=0.8,
+                            impact_score=0.9,
+                            category="user_behavior",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_engagement": avg_engagement,
+                                    "sample_count": engagement_data[1],
+                                }
+                            ],
+                        )
+                    )
 
         # Store insights
         await self._store_insights(insights)
@@ -286,19 +332,22 @@ class SimpleAnalyticsEngine:
             cursor = conn.cursor()
 
             for insight in insights:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT OR REPLACE INTO insights
                     (pattern_id, description, confidence, impact_score, category, evidence, discovered_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    insight.pattern_id,
-                    insight.description,
-                    insight.confidence,
-                    insight.impact_score,
-                    insight.category,
-                    json.dumps(insight.evidence),
-                    insight.discovered_at.isoformat()
-                ))
+                """,
+                    (
+                        insight.pattern_id,
+                        insight.description,
+                        insight.confidence,
+                        insight.impact_score,
+                        insight.category,
+                        json.dumps(insight.evidence),
+                        insight.discovered_at.isoformat(),
+                    ),
+                )
 
             conn.commit()
 
@@ -308,27 +357,32 @@ class SimpleAnalyticsEngine:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT pattern_id, description, confidence, impact_score,
                        category, evidence, discovered_at
                 FROM insights
                 ORDER BY impact_score DESC, confidence DESC
                 LIMIT ?
-            """, (limit,))
+            """,
+                (limit,),
+            )
 
             rows = cursor.fetchall()
 
             insights = []
             for row in rows:
-                insights.append({
-                    "pattern_id": row[0],
-                    "description": row[1],
-                    "confidence": row[2],
-                    "impact_score": row[3],
-                    "category": row[4],
-                    "evidence": json.loads(row[5]) if row[5] else [],
-                    "discovered_at": row[6]
-                })
+                insights.append(
+                    {
+                        "pattern_id": row[0],
+                        "description": row[1],
+                        "confidence": row[2],
+                        "impact_score": row[3],
+                        "category": row[4],
+                        "evidence": json.loads(row[5]) if row[5] else [],
+                        "discovered_at": row[6],
+                    }
+                )
 
             return insights
 
@@ -339,12 +393,14 @@ class SimpleAnalyticsEngine:
             cursor = conn.cursor()
 
             # Get recent metrics summary
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT category, AVG(value) as avg_value, COUNT(*) as count
                 FROM metrics
                 WHERE timestamp > datetime('now', '-1 hour')
                 GROUP BY category
-            """)
+            """
+            )
 
             category_stats = cursor.fetchall()
 
@@ -368,7 +424,7 @@ class SimpleAnalyticsEngine:
                     for row in category_stats
                 },
                 "analytics_stats": self.stats.copy(),
-                "system_health": health_score
+                "system_health": health_score,
             }
 
             return snapshot
@@ -383,11 +439,13 @@ class SimpleAnalyticsEngine:
             cursor = conn.cursor()
 
             # Check response time health
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT AVG(value) FROM metrics
                 WHERE name = 'response_time'
                   AND timestamp > datetime('now', '-1 hour')
-            """)
+            """
+            )
             avg_response = cursor.fetchone()[0]
 
             if avg_response:
@@ -401,11 +459,13 @@ class SimpleAnalyticsEngine:
                     health_factors["response_time"] = "excellent"
 
             # Check memory health
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT AVG(value) FROM metrics
                 WHERE name = 'memory_usage'
                   AND timestamp > datetime('now', '-1 hour')
-            """)
+            """
+            )
             avg_memory = cursor.fetchone()[0]
 
             if avg_memory:
@@ -420,20 +480,23 @@ class SimpleAnalyticsEngine:
 
         return {
             "score": max(0, health_score),
-            "status": "excellent" if health_score >= 90 else
-                     "good" if health_score >= 70 else
-                     "fair" if health_score >= 50 else "poor",
-            "factors": health_factors
+            "status": "excellent"
+            if health_score >= 90
+            else "good"
+            if health_score >= 70
+            else "fair"
+            if health_score >= 50
+            else "poor",
+            "factors": health_factors,
         }
 
     def get_analytics_statistics(self) -> Dict[str, Any]:
         """Get analytics engine statistics"""
 
         stats = self.stats.copy()
-        stats.update({
-            "buffer_size": len(self.metrics_buffer),
-            "database_path": self.db_path
-        })
+        stats.update(
+            {"buffer_size": len(self.metrics_buffer), "database_path": self.db_path}
+        )
 
         return stats
 
@@ -452,12 +515,28 @@ class AnalyticsInsightsDemo:
         self.demo_metrics = [
             {"name": "response_time", "category": "performance", "range": (0.1, 3.0)},
             {"name": "memory_usage", "category": "performance", "range": (30.0, 95.0)},
-            {"name": "user_engagement", "category": "user_behavior", "range": (0.2, 1.0)},
-            {"name": "conversation_success", "category": "conversation", "range": (0.6, 1.0)},
-            {"name": "response_quality", "category": "conversation", "range": (0.5, 1.0)},
+            {
+                "name": "user_engagement",
+                "category": "user_behavior",
+                "range": (0.2, 1.0),
+            },
+            {
+                "name": "conversation_success",
+                "category": "conversation",
+                "range": (0.6, 1.0),
+            },
+            {
+                "name": "response_quality",
+                "category": "conversation",
+                "range": (0.5, 1.0),
+            },
             {"name": "system_load", "category": "performance", "range": (10.0, 90.0)},
             {"name": "error_rate", "category": "system", "range": (0.0, 0.1)},
-            {"name": "user_satisfaction", "category": "user_behavior", "range": (0.4, 1.0)}
+            {
+                "name": "user_satisfaction",
+                "category": "user_behavior",
+                "range": (0.4, 1.0),
+            },
         ]
 
         logger.info("📊 Analytics & Insights Demo initialized")
@@ -465,9 +544,9 @@ class AnalyticsInsightsDemo:
     async def run_demo(self):
         """Run the complete analytics demo"""
 
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("🌌 AETHERRA ANALYTICS & INSIGHTS ENGINE DEMO (#6)")
-        print("="*70)
+        print("=" * 70)
         print(f"⏰ Demo started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print()
 
@@ -510,7 +589,9 @@ class AnalyticsInsightsDemo:
             print("-" * 50)
             await self._display_demo_summary(demo_time)
 
-            print(f"\n[OK] Analytics & Insights Engine Demo completed in {demo_time:.2f}s")
+            print(
+                f"\n[OK] Analytics & Insights Engine Demo completed in {demo_time:.2f}s"
+            )
             print("🌟 Analytics & Insights Engine (#6) is fully operational!")
 
             return True
@@ -563,8 +644,8 @@ class AnalyticsInsightsDemo:
                     metadata={
                         "demo_iteration": i,
                         "pattern_simulation": True,
-                        "timestamp": datetime.now().isoformat()
-                    }
+                        "timestamp": datetime.now().isoformat(),
+                    },
                 )
 
                 metrics_collected += 1
@@ -572,7 +653,9 @@ class AnalyticsInsightsDemo:
         # Flush any remaining metrics
         await self.analytics_engine._flush_metrics_buffer()
 
-        print(f"[OK] Collected {metrics_collected} sample metrics with realistic patterns")
+        print(
+            f"[OK] Collected {metrics_collected} sample metrics with realistic patterns"
+        )
 
         # Display analytics statistics
         stats = self.analytics_engine.get_analytics_statistics()
@@ -592,7 +675,9 @@ class AnalyticsInsightsDemo:
             print("\n🔍 Top Insights Discovered:")
             for insight in insights:
                 print(f"  • [{insight.category.upper()}] {insight.description}")
-                print(f"    📊 Confidence: {insight.confidence:.1%} | Impact: {insight.impact_score:.1%}")
+                print(
+                    f"    📊 Confidence: {insight.confidence:.1%} | Impact: {insight.impact_score:.1%}"
+                )
                 print(f"    🔍 Pattern ID: {insight.pattern_id}")
                 print()
 
@@ -614,42 +699,43 @@ class AnalyticsInsightsDemo:
         print(f"🔍 Total insights: {snapshot.get('total_insights', 0)}")
 
         # Display system health
-        health = snapshot.get('system_health', {})
-        health_status = health.get('status', 'unknown')
-        health_score = health.get('score', 0)
+        health = snapshot.get("system_health", {})
+        health_status = health.get("status", "unknown")
+        health_score = health.get("score", 0)
 
-        health_emoji = {
-            'excellent': '🟢',
-            'good': '🟡',
-            'fair': '🟠',
-            'poor': '🔴'
-        }.get(health_status, '⚪')
+        health_emoji = {"excellent": "🟢", "good": "🟡", "fair": "🟠", "poor": "🔴"}.get(
+            health_status, "⚪"
+        )
 
-        print(f"🏥 System health: {health_emoji} {health_status.upper()} ({health_score:.0f}%)")
+        print(
+            f"🏥 System health: {health_emoji} {health_status.upper()} ({health_score:.0f}%)"
+        )
 
         # Display health factors
-        factors = health.get('factors', {})
+        factors = health.get("factors", {})
         if factors:
             print("   Health factors:")
             for factor, status in factors.items():
                 factor_emoji = {
-                    'excellent': '[OK]',
-                    'healthy': '[OK]',
-                    'good': '[OK]',
-                    'fair': '[WARN]',
-                    'warning': '[WARN]',
-                    'poor': '❌',
-                    'critical': '🚨'
-                }.get(status, '❓')
-                print(f"     {factor_emoji} {factor.replace('_', ' ').title()}: {status}")
+                    "excellent": "[OK]",
+                    "healthy": "[OK]",
+                    "good": "[OK]",
+                    "fair": "[WARN]",
+                    "warning": "[WARN]",
+                    "poor": "❌",
+                    "critical": "🚨",
+                }.get(status, "❓")
+                print(
+                    f"     {factor_emoji} {factor.replace('_', ' ').title()}: {status}"
+                )
 
         # Display category statistics
-        category_stats = snapshot.get('category_statistics', {})
+        category_stats = snapshot.get("category_statistics", {})
         if category_stats:
             print("\n📈 Category Statistics:")
             for category, stats in category_stats.items():
-                avg_val = stats.get('average', 0)
-                count = stats.get('count', 0)
+                avg_val = stats.get("average", 0)
+                count = stats.get("count", 0)
                 print(f"  • {category.title()}: {avg_val:.2f} avg ({count:,} metrics)")
 
     async def _simulate_realtime_analytics(self):
@@ -679,7 +765,7 @@ class AnalyticsInsightsDemo:
                     f"realtime_{metric_def['name']}",
                     value,
                     "realtime",
-                    {"simulation": True, "update": updates, "real_time": True}
+                    {"simulation": True, "update": updates, "real_time": True},
                 )
 
             updates += 1
@@ -689,7 +775,9 @@ class AnalyticsInsightsDemo:
             indicator = progress_indicators[updates % len(progress_indicators)]
 
             if updates % 3 == 0:
-                print(f"  {indicator} Real-time update #{updates} - {updates * 4} metrics processed")
+                print(
+                    f"  {indicator} Real-time update #{updates} - {updates * 4} metrics processed"
+                )
 
             await asyncio.sleep(update_interval)
 
@@ -717,9 +805,11 @@ class AnalyticsInsightsDemo:
 
         # Get final performance snapshot
         final_snapshot = await self.analytics_engine.get_performance_snapshot()
-        health = final_snapshot.get('system_health', {})
+        health = final_snapshot.get("system_health", {})
 
-        print(f"🏥 Final system health: {health.get('status', 'unknown')} ({health.get('score', 0):.0f}%)")
+        print(
+            f"🏥 Final system health: {health.get('status', 'unknown')} ({health.get('score', 0):.0f}%)"
+        )
 
         # Display demonstrated capabilities
         print("\n🌟 Demonstrated Capabilities:")
@@ -762,12 +852,12 @@ async def main():
     success = await demo.run_demo()
 
     if success:
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("🎉 ANALYTICS & INSIGHTS ENGINE (#6) DEMO COMPLETED SUCCESSFULLY!")
-        print("="*70)
+        print("=" * 70)
         print("📊 Analytics & Insights Engine is ready for full integration!")
         print("🌟 Roadmap item #6 is now COMPLETE!")
-        print("="*70)
+        print("=" * 70)
     else:
         print("\n❌ Demo encountered issues")
         print("[TOOL] Check configuration and try again")

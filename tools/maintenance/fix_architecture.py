@@ -53,7 +53,7 @@ class ArchitecturalFixer:
                 continue
 
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     content = f.read()
 
                 # Remove Lyrixa imports
@@ -296,9 +296,7 @@ if __name__ == "__main__":
         report.append("")
         report.append("- ✅ Core AI files no longer import from Lyrixa")
         report.append("- ✅ GUI components moved to Lyrixa interface")
-        report.append(
-            "- ✅ Clear separation between brain (Aetherra) and face (Lyrixa)"
-        )
+        report.append("- ✅ Clear separation between brain (Aetherra) and face (Lyrixa)")
         report.append("")
 
         return "\\n".join(report)

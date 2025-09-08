@@ -37,11 +37,9 @@ class LyrixaEnhancedMemorySystem:
         results = []
         for key, value in self.memories.items():
             if query.lower() in str(value).lower() or query.lower() in key.lower():
-                results.append({
-                    'key': key,
-                    'value': value,
-                    'metadata': self.metadata.get(key, {})
-                })
+                results.append(
+                    {"key": key, "value": value, "metadata": self.metadata.get(key, {})}
+                )
         return results
 
     def get_all_keys(self) -> List[str]:

@@ -1,0 +1,7 @@
+{
+  "name": "demo_scaffold_plugin",
+  "version": "0.0.0",
+  "description": "Scaffolded plugin",
+  "entry": "plugins.demo_scaffold_plugin.demo_scaffold_plugin:DemoScaffoldPluginPlugin",
+  "phase": 1
+}

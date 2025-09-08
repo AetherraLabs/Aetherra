@@ -16,7 +16,9 @@ except ImportError:
         # If that fails too, provide a placeholder
         class PluginManager:
             """Placeholder PluginManager when imports fail."""
+
             def __init__(self, *args, **kwargs):
                 pass
+
 
 __all__ = ["PluginManager"]

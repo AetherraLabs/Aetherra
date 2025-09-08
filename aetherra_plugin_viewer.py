@@ -76,9 +76,7 @@ class PluginViewerGUI:
         self.plugin_listbox.bind("<<ListboxSelect>>", self.on_plugin_select)
 
         # Right panel - Plugin details
-        details_frame = ttk.LabelFrame(
-            main_frame, text="📋 Plugin Details", padding="5"
-        )
+        details_frame = ttk.LabelFrame(main_frame, text="📋 Plugin Details", padding="5")
         details_frame.grid(row=1, column=1, sticky="nsew")
         details_frame.columnconfigure(0, weight=1)
         details_frame.rowconfigure(0, weight=1)

@@ -277,7 +277,7 @@ class LyrixaPluginSystem:
         """Load plugin registry from disk"""
         if self.plugin_registry_file.exists():
             try:
-                with open(self.plugin_registry_file, "r") as f:
+                with open(self.plugin_registry_file) as f:
                     data = json.load(f)
                     print(
                         f"📋 Loaded plugin registry with {len(data.get('plugins', []))} entries"
@@ -328,7 +328,7 @@ class LyrixaPluginSystem:
                 manifest_file = plugin_dir / "manifest.json"
                 if manifest_file.exists():
                     try:
-                        with open(manifest_file, "r") as f:
+                        with open(manifest_file) as f:
                             manifest_data = json.load(f)
 
                         manifest = PluginManifest(manifest_data)
@@ -391,7 +391,7 @@ class LyrixaPluginSystem:
                     }
 
                 # Load manifest and validate
-                with open(manifest_file, "r") as f:
+                with open(manifest_file) as f:
                     manifest_data = json.load(f)
 
                 manifest = PluginManifest(manifest_data)
@@ -445,7 +445,7 @@ class LyrixaPluginSystem:
             if not manifest_file.exists():
                 return {"success": False, "error": "No manifest.json found"}
 
-            with open(manifest_file, "r") as f:
+            with open(manifest_file) as f:
                 manifest_data = json.load(f)
 
             manifest = PluginManifest(manifest_data)

@@ -51,10 +51,17 @@ def _snapshot() -> Dict[str, Any]:
     return {
         "hub": {
             "ok": bool(health or status),
-            "uptime": int(health.get("uptime_seconds") or status.get("uptime_seconds") or 0),
-            "requests": health.get("requests_served") or stats.get("requests_served") or 0,
-            "plugins": (len(plugins.get("plugins", [])) if isinstance(plugins.get("plugins"), list)
-                        else (health.get("plugins_registered") or 0)),
+            "uptime": int(
+                health.get("uptime_seconds") or status.get("uptime_seconds") or 0
+            ),
+            "requests": health.get("requests_served")
+            or stats.get("requests_served")
+            or 0,
+            "plugins": (
+                len(plugins.get("plugins", []))
+                if isinstance(plugins.get("plugins"), list)
+                else (health.get("plugins_registered") or 0)
+            ),
         },
         "web": {
             "ok": bool(web_status or web_metrics),
@@ -72,8 +79,10 @@ def console_once() -> None:
     now = datetime.now().strftime("%H:%M:%S")
     print(f"🕐 {now}")
     if snap["hub"]["ok"]:
-        print("🟢 HUB ONLINE "
-              f"| ⏱️ {snap['hub']['uptime']}s | 📈 {snap['hub']['requests']} req | 🔌 {snap['hub']['plugins']} plugins")
+        print(
+            "🟢 HUB ONLINE "
+            f"| ⏱️ {snap['hub']['uptime']}s | 📈 {snap['hub']['requests']} req | 🔌 {snap['hub']['plugins']} plugins"
+        )
     else:
         print("🔴 HUB OFFLINE (http://localhost:3001)")
     if snap["web"]["ok"]:
@@ -92,7 +101,7 @@ def console_once() -> None:
 
 def _tail_log(path: str, lines: int = 12) -> list[str]:
     try:
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        with open(path, encoding="utf-8", errors="ignore") as f:
             buf = f.readlines()
         return [ln.rstrip() for ln in buf[-lines:] if ln.strip()]
     except FileNotFoundError:
@@ -109,16 +118,16 @@ def _ensure_utf8_console() -> None:
 
 def launch_gui(interval_ms: int = 2000) -> int:
     try:
-        from PySide6.QtCore import Qt, QTimer
+        from PySide6.QtCore import Qt, QTimer  # noqa: F401 (optional runtime import)
         from PySide6.QtGui import QTextCursor
         from PySide6.QtWidgets import (
             QApplication,
+            QFrame,
             QGridLayout,
             QLabel,
             QMainWindow,
-            QWidget,
             QTextEdit,
-            QFrame,
+            QWidget,
         )
     except Exception as e:
         print("❌ PySide6 not available. Install with: pip install PySide6")
@@ -161,7 +170,9 @@ def launch_gui(interval_ms: int = 2000) -> int:
             self.log_title.setStyleSheet("font-weight: 700; font-size: 16px;")
             self.log_view = QTextEdit()
             self.log_view.setReadOnly(True)
-            self.log_view.setStyleSheet("font-family: Consolas, monospace; font-size: 12px;")
+            self.log_view.setStyleSheet(
+                "font-family: Consolas, monospace; font-size: 12px;"
+            )
 
             # Layout
             grid.addWidget(self.hub_title, 0, 0)
@@ -232,8 +243,12 @@ def launch_gui(interval_ms: int = 2000) -> int:
 
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Aetherra OS Monitor GUI")
-    parser.add_argument("--once", action="store_true", help="Print a one-time snapshot and exit")
-    parser.add_argument("--interval", type=int, default=2000, help="Refresh interval in ms (GUI mode)")
+    parser.add_argument(
+        "--once", action="store_true", help="Print a one-time snapshot and exit"
+    )
+    parser.add_argument(
+        "--interval", type=int, default=2000, help="Refresh interval in ms (GUI mode)"
+    )
     args = parser.parse_args(argv)
 
     if args.once:

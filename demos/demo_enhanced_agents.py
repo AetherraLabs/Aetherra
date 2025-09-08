@@ -269,10 +269,10 @@ async def main():
 
         # Summary
         total_time = time.time() - start_time
-        print(f"\n[OK] DEMONSTRATION COMPLETE")
+        print("\n[OK] DEMONSTRATION COMPLETE")
         print(f"⏱️ Total execution time: {total_time:.2f} seconds")
-        print(f"🤖 All 4 enhanced agents tested successfully!")
-        print(f"🎯 Agents are ready for integration with Aetherra AI OS")
+        print("🤖 All 4 enhanced agents tested successfully!")
+        print("🎯 Agents are ready for integration with Aetherra AI OS")
 
     except Exception as e:
         print(f"❌ Demo error: {e}")

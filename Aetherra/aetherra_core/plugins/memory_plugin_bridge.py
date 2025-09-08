@@ -14,9 +14,7 @@ from typing import Any, Dict, List
 
 try:
     # Prefer absolute import within Aetherra package layout
-    from Aetherra.aetherra_core.memory.lyrixa_memory_engine import (
-        LyrixaMemoryEngine,
-    )
+    from Aetherra.aetherra_core.memory.lyrixa_memory_engine import LyrixaMemoryEngine
 except ImportError:
     # Fallback to relative style when package context differs
     from ..memory.lyrixa_memory_engine import LyrixaMemoryEngine  # type: ignore

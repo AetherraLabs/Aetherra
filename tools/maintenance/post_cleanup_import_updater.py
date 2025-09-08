@@ -11,39 +11,38 @@ import os
 import re
 from pathlib import Path
 
+
 class PostCleanupImportUpdater:
     def __init__(self, base_path="."):
         self.base_path = Path(base_path)
         self.specific_mappings = {
             # Plugins reorganization mappings
-            r'from\s+Aetherra\.plugins\.agent_adapters\.agent_orchestrator': 'from Aetherra.plugins.agent_components.agent_orchestrator',
-            r'from\s+Aetherra\.plugins\.agent_adapters\.agent_bridge': 'from Aetherra.plugins.agent_components.agent_bridge',
-            r'from\s+Aetherra\.plugins\.agent_adapters\.agent_discovery_and_integration': 'from Aetherra.plugins.agent_components.agent_discovery_and_integration',
-            r'from\s+Aetherra\.plugins\.agent_adapters\.agent_base': 'from Aetherra.plugins.core.agent_base',
-            r'import\s+Aetherra\.plugins\.agent_adapters\.agent_orchestrator': 'import Aetherra.plugins.agent_components.agent_orchestrator',
-            r'import\s+Aetherra\.plugins\.agent_adapters\.agent_bridge': 'import Aetherra.plugins.agent_components.agent_bridge',
-            r'import\s+Aetherra\.plugins\.agent_adapters\.agent_discovery_and_integration': 'import Aetherra.plugins.agent_components.agent_discovery_and_integration',
-            r'import\s+Aetherra\.plugins\.agent_adapters\.agent_base': 'import Aetherra.plugins.core.agent_base',
-
+            r"from\s+Aetherra\.plugins\.agent_adapters\.agent_orchestrator": "from Aetherra.plugins.agent_components.agent_orchestrator",
+            r"from\s+Aetherra\.plugins\.agent_adapters\.agent_bridge": "from Aetherra.plugins.agent_components.agent_bridge",
+            r"from\s+Aetherra\.plugins\.agent_adapters\.agent_discovery_and_integration": "from Aetherra.plugins.agent_components.agent_discovery_and_integration",
+            r"from\s+Aetherra\.plugins\.agent_adapters\.agent_base": "from Aetherra.plugins.core.agent_base",
+            r"import\s+Aetherra\.plugins\.agent_adapters\.agent_orchestrator": "import Aetherra.plugins.agent_components.agent_orchestrator",
+            r"import\s+Aetherra\.plugins\.agent_adapters\.agent_bridge": "import Aetherra.plugins.agent_components.agent_bridge",
+            r"import\s+Aetherra\.plugins\.agent_adapters\.agent_discovery_and_integration": "import Aetherra.plugins.agent_components.agent_discovery_and_integration",
+            r"import\s+Aetherra\.plugins\.agent_adapters\.agent_base": "import Aetherra.plugins.core.agent_base",
             # Lyrixa reorganization mappings
-            r'from\s+Aetherra\.lyrixa\.advanced_memory_integration': 'from Aetherra.lyrixa.memory.advanced_memory_integration',
-            r'from\s+Aetherra\.lyrixa\.agent_collaboration_manager': 'from Aetherra.lyrixa.agents.agent_collaboration_manager',
-            r'from\s+Aetherra\.lyrixa\.conversation_manager': 'from Aetherra.lyrixa.agents.conversation_manager',
-            r'from\s+Aetherra\.lyrixa\.enhanced_conversation_manager': 'from Aetherra.lyrixa.agents.enhanced_conversation_manager',
-            r'import\s+Aetherra\.lyrixa\.advanced_memory_integration': 'import Aetherra.lyrixa.memory.advanced_memory_integration',
-            r'import\s+Aetherra\.lyrixa\.agent_collaboration_manager': 'import Aetherra.lyrixa.agents.agent_collaboration_manager',
-            r'import\s+Aetherra\.lyrixa\.conversation_manager': 'import Aetherra.lyrixa.agents.conversation_manager',
-            r'import\s+Aetherra\.lyrixa\.enhanced_conversation_manager': 'import Aetherra.lyrixa.agents.enhanced_conversation_manager',
-
+            r"from\s+Aetherra\.lyrixa\.advanced_memory_integration": "from Aetherra.lyrixa.memory.advanced_memory_integration",
+            r"from\s+Aetherra\.lyrixa\.agent_collaboration_manager": "from Aetherra.lyrixa.agents.agent_collaboration_manager",
+            r"from\s+Aetherra\.lyrixa\.conversation_manager": "from Aetherra.lyrixa.agents.conversation_manager",
+            r"from\s+Aetherra\.lyrixa\.enhanced_conversation_manager": "from Aetherra.lyrixa.agents.enhanced_conversation_manager",
+            r"import\s+Aetherra\.lyrixa\.advanced_memory_integration": "import Aetherra.lyrixa.memory.advanced_memory_integration",
+            r"import\s+Aetherra\.lyrixa\.agent_collaboration_manager": "import Aetherra.lyrixa.agents.agent_collaboration_manager",
+            r"import\s+Aetherra\.lyrixa\.conversation_manager": "import Aetherra.lyrixa.agents.conversation_manager",
+            r"import\s+Aetherra\.lyrixa\.enhanced_conversation_manager": "import Aetherra.lyrixa.agents.enhanced_conversation_manager",
             # Alternative import patterns (without Aetherra prefix)
-            r'from\s+plugins\.agent_adapters\.agent_orchestrator': 'from plugins.agent_components.agent_orchestrator',
-            r'from\s+plugins\.agent_adapters\.agent_bridge': 'from plugins.agent_components.agent_bridge',
-            r'from\s+plugins\.agent_adapters\.agent_discovery_and_integration': 'from plugins.agent_components.agent_discovery_and_integration',
-            r'from\s+plugins\.agent_adapters\.agent_base': 'from plugins.core.agent_base',
-            r'from\s+lyrixa\.advanced_memory_integration': 'from lyrixa.memory.advanced_memory_integration',
-            r'from\s+lyrixa\.agent_collaboration_manager': 'from lyrixa.agents.agent_collaboration_manager',
-            r'from\s+lyrixa\.conversation_manager': 'from lyrixa.agents.conversation_manager',
-            r'from\s+lyrixa\.enhanced_conversation_manager': 'from lyrixa.agents.enhanced_conversation_manager',
+            r"from\s+plugins\.agent_adapters\.agent_orchestrator": "from plugins.agent_components.agent_orchestrator",
+            r"from\s+plugins\.agent_adapters\.agent_bridge": "from plugins.agent_components.agent_bridge",
+            r"from\s+plugins\.agent_adapters\.agent_discovery_and_integration": "from plugins.agent_components.agent_discovery_and_integration",
+            r"from\s+plugins\.agent_adapters\.agent_base": "from plugins.core.agent_base",
+            r"from\s+lyrixa\.advanced_memory_integration": "from lyrixa.memory.advanced_memory_integration",
+            r"from\s+lyrixa\.agent_collaboration_manager": "from lyrixa.agents.agent_collaboration_manager",
+            r"from\s+lyrixa\.conversation_manager": "from lyrixa.agents.conversation_manager",
+            r"from\s+lyrixa\.enhanced_conversation_manager": "from lyrixa.agents.enhanced_conversation_manager",
         }
         self.updated_files = []
         self.updates_made = 0
@@ -51,7 +50,7 @@ class PostCleanupImportUpdater:
     def update_file_imports(self, file_path):
         """Update import statements in a single file"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 content = f.read()
 
             file_updated = False
@@ -69,13 +68,12 @@ class PostCleanupImportUpdater:
 
             # Write back if changes were made
             if file_updated:
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
 
-                self.updated_files.append({
-                    'file': file_path,
-                    'updates': updates_in_file
-                })
+                self.updated_files.append(
+                    {"file": file_path, "updates": updates_in_file}
+                )
                 self.updates_made += updates_in_file
                 return True
 
@@ -94,10 +92,10 @@ class PostCleanupImportUpdater:
         python_files = []
         for root, dirs, files in os.walk(self.base_path):
             # Skip __pycache__ and .git directories
-            dirs[:] = [d for d in dirs if d not in ['__pycache__', '.git', '.vscode']]
+            dirs[:] = [d for d in dirs if d not in ["__pycache__", ".git", ".vscode"]]
 
             for filename in files:
-                if filename.endswith('.py'):
+                if filename.endswith(".py"):
                     python_files.append(Path(root) / filename)
 
         print(f"📁 Found {len(python_files)} Python files to check")
@@ -108,10 +106,13 @@ class PostCleanupImportUpdater:
         for file_path in python_files:
             # Check if file contains any of our target import patterns
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read()
 
-                has_target_imports = any(re.search(pattern, content) for pattern in self.specific_mappings.keys())
+                has_target_imports = any(
+                    re.search(pattern, content)
+                    for pattern in self.specific_mappings.keys()
+                )
 
                 if has_target_imports:
                     print(f"🔍 Updating: {file_path.relative_to(self.base_path)}")
@@ -136,7 +137,7 @@ class PostCleanupImportUpdater:
         if self.updated_files:
             print("📝 Updated Files:")
             for item in self.updated_files:
-                rel_path = item['file'].relative_to(self.base_path)
+                rel_path = item["file"].relative_to(self.base_path)
                 print(f"  ✅ {rel_path} ({item['updates']} updates)")
         else:
             print("✅ No import updates needed for our reorganized files!")
@@ -166,47 +167,46 @@ class PostCleanupImportUpdater:
             "- Root lyrixa files → memory/* or agents/*",
             "",
             "## 📋 SEARCH PATTERNS USED",
-            ""
+            "",
         ]
 
         for old_pattern, new_import in self.specific_mappings.items():
-            clean_pattern = old_pattern.replace(r'\s+', ' ').replace(r'\.', '.')
+            clean_pattern = old_pattern.replace(r"\s+", " ").replace(r"\.", ".")
             report_lines.append(f"- `{clean_pattern}` → `{new_import}`")
 
         if self.updated_files:
-            report_lines.extend([
-                "",
-                "## ✅ UPDATED FILES",
-                ""
-            ])
+            report_lines.extend(["", "## ✅ UPDATED FILES", ""])
             for item in self.updated_files:
-                rel_path = item['file'].relative_to(self.base_path)
+                rel_path = item["file"].relative_to(self.base_path)
                 report_lines.append(f"- `{rel_path}` ({item['updates']} updates)")
         else:
-            report_lines.extend([
-                "",
-                "## ✅ NO UPDATES NEEDED",
-                "",
-                "No files currently import the reorganized modules using the patterns we searched for.",
-                "This is actually good - it means:",
-                "",
-                "1. **Clean slate:** The reorganized files can be used with new import paths",
-                "2. **No breaking changes:** Existing code continues to work",
-                "3. **Future imports:** New code should use the updated directory structure",
-                "",
-                "## 🎯 RECOMMENDATIONS",
-                "",
-                "1. **Use new paths** when creating new imports to reorganized files",
-                "2. **Test the system** to ensure all functionality works",
-                "3. **Update documentation** to reflect new file locations",
-                "4. **Consider this a successful reorganization** with minimal impact"
-            ])
+            report_lines.extend(
+                [
+                    "",
+                    "## ✅ NO UPDATES NEEDED",
+                    "",
+                    "No files currently import the reorganized modules using the patterns we searched for.",
+                    "This is actually good - it means:",
+                    "",
+                    "1. **Clean slate:** The reorganized files can be used with new import paths",
+                    "2. **No breaking changes:** Existing code continues to work",
+                    "3. **Future imports:** New code should use the updated directory structure",
+                    "",
+                    "## 🎯 RECOMMENDATIONS",
+                    "",
+                    "1. **Use new paths** when creating new imports to reorganized files",
+                    "2. **Test the system** to ensure all functionality works",
+                    "3. **Update documentation** to reflect new file locations",
+                    "4. **Consider this a successful reorganization** with minimal impact",
+                ]
+            )
 
-        with open("POST_CLEANUP_IMPORT_UPDATE_REPORT.md", "w", encoding='utf-8') as f:
+        with open("POST_CLEANUP_IMPORT_UPDATE_REPORT.md", "w", encoding="utf-8") as f:
             f.write("\n".join(report_lines))
 
         print()
         print("📄 Detailed report saved to: POST_CLEANUP_IMPORT_UPDATE_REPORT.md")
+
 
 if __name__ == "__main__":
     updater = PostCleanupImportUpdater()

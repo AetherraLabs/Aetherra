@@ -146,7 +146,8 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
         conn = sqlite3.connect(self.db_path)
         try:
             # Causal chains table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS causal_chains (
                     chain_id TEXT PRIMARY KEY,
                     root_cause TEXT NOT NULL,
@@ -157,10 +158,12 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
                     resolution_fragment TEXT,
                     created_at TEXT
                 )
-            """)
+            """
+            )
 
             # Emotional trajectories table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS emotional_trajectories (
                     trajectory_id TEXT PRIMARY KEY,
                     fragment_sequence TEXT,
@@ -172,10 +175,12 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
                     growth_indicators TEXT,
                     created_at TEXT
                 )
-            """)
+            """
+            )
 
             # Milestone events table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS milestone_events (
                     milestone_id TEXT PRIMARY KEY,
                     fragment_id TEXT NOT NULL,
@@ -187,7 +192,8 @@ class ReflectiveTimelineEngine(EpisodicTimeline):
                     competency_impact TEXT,
                     detected_at TEXT
                 )
-            """)
+            """
+            )
 
             conn.commit()
         finally:

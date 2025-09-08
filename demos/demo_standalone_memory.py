@@ -10,11 +10,9 @@ complex external dependencies. This showcases the core memory functionality.
 """
 
 import asyncio
-import os
-import sys
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import List
 
 
 # Simple memory implementation for demo
@@ -205,7 +203,7 @@ class StandaloneMemoryDemo:
             print(f"   🎯 Confidence: {response_data['confidence']:.2f}")
 
             if response_data["memory_details"]:
-                print(f"   🔍 Top Memory Match:")
+                print("   🔍 Top Memory Match:")
                 top_match = response_data["memory_details"][0]
                 print(f"      Content: {top_match['content'][:80]}...")
                 print(f"      Relevance: {top_match['relevance_score']:.2f}")
@@ -229,7 +227,7 @@ class StandaloneMemoryDemo:
             for tag in memory["tags"]:
                 tag_counts[tag] = tag_counts.get(tag, 0) + 1
 
-        print(f"   🏷️  Memory tags:")
+        print("   🏷️  Memory tags:")
         for tag, count in tag_counts.items():
             print(f"      • {tag}: {count} memories")
 

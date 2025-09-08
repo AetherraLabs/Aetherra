@@ -14,8 +14,8 @@ Usage:
     python quantum_dashboard_launcher.py [--port 8080] [--mode web]
 """
 
-import asyncio
 import argparse
+import asyncio
 import sys
 from pathlib import Path
 
@@ -24,15 +24,15 @@ aetherra_path = Path(__file__).parent / "Aetherra"
 sys.path.insert(0, str(aetherra_path))
 
 try:
-# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.memory.quantum_web_dashboard import QuantumWebDashboard, WEB_AVAILABLE
-# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.memory.quantum_memory_integration import create_quantum_enhanced_memory_engine
+    # ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.memory.quantum_web_dashboard import QuantumWebDashboard, WEB_AVAILABLE
+    # ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.memory.quantum_memory_integration import create_quantum_enhanced_memory_engine
     QUANTUM_AVAILABLE = True
 except ImportError as e:
     print(f"⚠️ Quantum components not available: {e}")
     QUANTUM_AVAILABLE = False
 
 try:
-# ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.memory.qfac_dashboard import QFACDashboard
+    # ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.memory.qfac_dashboard import QFACDashboard
     QFAC_AVAILABLE = True
 except ImportError:
     QFAC_AVAILABLE = False
@@ -63,24 +63,24 @@ async def launch_quantum_dashboard(port: int = 8080, mode: str = "web"):
                 await quantum_engine.remember(
                     "Quantum superposition enables parallel memory processing",
                     tags=["quantum", "superposition", "memory"],
-                    category="quantum_concepts"
+                    category="quantum_concepts",
                 )
                 await quantum_engine.remember(
                     "Quantum coherence is essential for stable memory operations",
                     tags=["quantum", "coherence", "stability"],
-                    category="quantum_concepts"
+                    category="quantum_concepts",
                 )
                 await quantum_engine.remember(
                     "Aetherra integrates classical and quantum memory systems",
                     tags=["aetherra", "integration", "hybrid"],
-                    category="system_architecture"
+                    category="system_architecture",
                 )
 
                 print("[OK] Quantum memory engine initialized with test data")
 
                 # Check quantum system status
                 status = quantum_engine.get_quantum_system_status()
-                print(f"🔍 Quantum System Status:")
+                print("🔍 Quantum System Status:")
                 print(f"   • Quantum Available: {status['quantum_available']}")
                 print(f"   • Backend: {status['configuration']['quantum_backend']}")
                 print(f"   • Max Qubits: {status['configuration']['max_qubits']}")
@@ -97,29 +97,29 @@ async def launch_quantum_dashboard(port: int = 8080, mode: str = "web"):
             dashboard = QuantumWebDashboard(quantum_engine, port)
             dashboard_url = await dashboard.start()
 
-            print(f"\n🎉 SUCCESS!")
+            print("\n🎉 SUCCESS!")
             print(f"🌐 Quantum Dashboard URL: {dashboard_url}")
-            print(f"📱 Features Available:")
-            print(f"   • ⚛️  Real-time quantum coherence monitoring")
-            print(f"   • 📊 Quantum vs classical performance comparison")
-            print(f"   • 🔗 Interactive quantum circuit visualization")
-            print(f"   • 🚨 System health alerts and recommendations")
-            print(f"   • 📈 Live performance metrics and statistics")
+            print("📱 Features Available:")
+            print("   • ⚛️  Real-time quantum coherence monitoring")
+            print("   • 📊 Quantum vs classical performance comparison")
+            print("   • 🔗 Interactive quantum circuit visualization")
+            print("   • 🚨 System health alerts and recommendations")
+            print("   • 📈 Live performance metrics and statistics")
 
             if quantum_engine:
-                print(f"\n🧪 Try these actions:")
-                print(f"   • Store new memories to see quantum encoding in action")
-                print(f"   • Query memories to test quantum-enhanced recall")
-                print(f"   • Monitor coherence levels and error correction")
+                print("\n🧪 Try these actions:")
+                print("   • Store new memories to see quantum encoding in action")
+                print("   • Query memories to test quantum-enhanced recall")
+                print("   • Monitor coherence levels and error correction")
 
-            print(f"\n⌨️  Press Ctrl+C to stop the dashboard")
+            print("\n⌨️  Press Ctrl+C to stop the dashboard")
 
             # Keep dashboard running
             try:
                 while True:
                     await asyncio.sleep(1)
             except KeyboardInterrupt:
-                print(f"\n🛑 Shutting down dashboard...")
+                print("\n🛑 Shutting down dashboard...")
                 await dashboard.stop()
                 print("[OK] Dashboard stopped successfully")
 
@@ -133,7 +133,7 @@ async def launch_quantum_dashboard(port: int = 8080, mode: str = "web"):
         # Use the existing QFAC dashboard with quantum integration
         try:
             # We'll need to create a mock analyzer for the QFAC dashboard
-# ARCHITECTURAL FIX: Removed Lyrixa import -             from lyrixa.memory.compression_analyzer import MemoryCompressionAnalyzer
+            # ARCHITECTURAL FIX: Removed Lyrixa import -             from lyrixa.memory.compression_analyzer import MemoryCompressionAnalyzer
 
             analyzer = MemoryCompressionAnalyzer()
             dashboard = QFACDashboard(analyzer)
@@ -158,21 +158,18 @@ def main():
         description="Launch Aetherra Quantum Memory Dashboard"
     )
     parser.add_argument(
-        "--port",
-        type=int,
-        default=8080,
-        help="Port for web dashboard (default: 8080)"
+        "--port", type=int, default=8080, help="Port for web dashboard (default: 8080)"
     )
     parser.add_argument(
         "--mode",
         choices=["web", "integrated", "text"],
         default="web",
-        help="Dashboard mode (default: web)"
+        help="Dashboard mode (default: web)",
     )
     parser.add_argument(
         "--test-data",
         action="store_true",
-        help="Add additional test data for demonstration"
+        help="Add additional test data for demonstration",
     )
 
     args = parser.parse_args()

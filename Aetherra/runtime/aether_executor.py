@@ -30,11 +30,10 @@ try:
     from Aetherra.lyrixa.agents.contradiction_detection_agent import (
         ContradictionDetectionAgent,
     )
-    from Aetherra.lyrixa.agents.curiosity_agent import CuriosityAgent
     from Aetherra.lyrixa.agents.learning_loop_integration_agent import (
         LearningLoopIntegrationAgent,
     )
-    from Aetherra.lyrixa.agents.self_question_generator import SelfQuestionGenerator
+
 except ImportError:
     print("[WARN] Using local import paths for demo")
     import sys
@@ -159,7 +158,7 @@ class AetherScriptExecutor:
         questions_generated = []
         learning_goals_created = []
 
-        print(f"📊 Gap Analysis Results:")
+        print("📊 Gap Analysis Results:")
         print(f"   • Total gaps detected: {gap_analysis['total_gaps']}")
         print(f"   • Critical threshold: {gap_analysis['critical_threshold']}")
 
@@ -213,7 +212,7 @@ class AetherScriptExecutor:
             }
         )
 
-        print(f"\n✅ Phase 1 Complete:")
+        print("\n✅ Phase 1 Complete:")
         print(f"   • {len(questions_generated)} questions generated")
         print(f"   • {len(learning_goals_created)} learning goals created")
 
@@ -233,7 +232,7 @@ class AetherScriptExecutor:
         conflicts = conflict_analysis if isinstance(conflict_analysis, list) else []
 
         print("📊 Conflict Analysis Results:")
-        print(f"   • Analysis types: semantic, temporal, logical, confidence, value")
+        print("   • Analysis types: semantic, temporal, logical, confidence, value")
         print(f"   • Total conflicts detected: {len(conflicts)}")
 
         resolutions_successful = 0
@@ -296,7 +295,7 @@ class AetherScriptExecutor:
             }
         )
 
-        print(f"\n✅ Phase 2 Complete:")
+        print("\n✅ Phase 2 Complete:")
         print(f"   • Resolution rate: {resolution_rate:.2%}")
         print(f"   • Successful resolutions: {resolutions_successful}")
         print(f"   • Failed resolutions: {resolutions_failed}")
@@ -315,7 +314,7 @@ class AetherScriptExecutor:
             timeframe_hours=24.0
         )
 
-        print(f"📊 Learning Effectiveness Analysis:")
+        print("📊 Learning Effectiveness Analysis:")
         print(
             f"   • Overall Effectiveness: {effectiveness_analysis['overall_effectiveness']:.2f}"
         )
@@ -343,7 +342,7 @@ class AetherScriptExecutor:
             effectiveness_analysis
         )
 
-        print(f"🎯 Strategy Recommendations Generated:")
+        print("🎯 Strategy Recommendations Generated:")
         print(
             f"   • Overall Assessment: {strategy_recommendations['overall_assessment']}"
         )
@@ -362,7 +361,7 @@ class AetherScriptExecutor:
         if escalation_triggers:
             print(f"   🚨 Escalation Triggers: {len(escalation_triggers)} identified")
         else:
-            print(f"   ✅ No escalation required - performance within parameters")
+            print("   ✅ No escalation required - performance within parameters")
 
         print("\n🎛️ Adjusting adaptive thresholds based on performance...")
 
@@ -371,7 +370,7 @@ class AetherScriptExecutor:
             effectiveness_analysis
         )
 
-        print(f"🎛️ Threshold Adjustments Applied:")
+        print("🎛️ Threshold Adjustments Applied:")
         for threshold, adjustment in threshold_adjustments.items():
             print(
                 f"   • {threshold}: {adjustment['old_value']:.3f} → {adjustment['new_value']:.3f}"
@@ -390,10 +389,10 @@ class AetherScriptExecutor:
             }
         )
 
-        print(f"\n✅ Phase 3 Complete:")
-        print(f"   • Meta-learning analysis performed")
-        print(f"   • Strategy optimization recommendations generated")
-        print(f"   • Adaptive thresholds updated")
+        print("\n✅ Phase 3 Complete:")
+        print("   • Meta-learning analysis performed")
+        print("   • Strategy optimization recommendations generated")
+        print("   • Adaptive thresholds updated")
 
     async def phase_4_comprehensive_logging(self):
         """Phase 4: Comprehensive Logging & Self-Awareness"""
@@ -454,7 +453,7 @@ class AetherScriptExecutor:
         )
 
         print(f"✅ Learning Session Logged: {session_id}")
-        print(f"📊 Session Summary:")
+        print("📊 Session Summary:")
         print(f"   • Execution Time: {execution_time:.1f} seconds")
         print(f"   • Gaps Detected: {session_outcome['gaps_detected']}")
         print(f"   • Questions Generated: {session_outcome['questions_generated']}")
@@ -476,7 +475,7 @@ class AetherScriptExecutor:
         )
 
         print(
-            f"\n✅ Phase 4 Complete: Comprehensive logging and self-awareness operational"
+            "\n✅ Phase 4 Complete: Comprehensive logging and self-awareness operational"
         )
 
     async def post_execution_analysis(self):
@@ -529,14 +528,14 @@ class AetherScriptExecutor:
 
         success_rate = sum(success_criteria.values()) / len(success_criteria)
 
-        print(f"📊 Script Performance Evaluation:")
+        print("📊 Script Performance Evaluation:")
         print(f"   • Success Rate: {success_rate:.2%}")
         print(
             f"   • All Phases Completed: {performance_metrics['total_phases_completed']}/4"
         )
-        print(f"   • Autonomous Intelligence: ✅ Operational")
+        print("   • Autonomous Intelligence: ✅ Operational")
 
-        print(f"\n✅ Success Criteria Validation:")
+        print("\n✅ Success Criteria Validation:")
         for criterion, passed in success_criteria.items():
             status = "✅ PASS" if passed else "❌ FAIL"
             print(f"   • {criterion}: {status}")
@@ -584,23 +583,23 @@ class AetherScriptExecutor:
         with open(report_file, "w") as f:
             json.dump(report_data, f, indent=2)
 
-        print(f"🎯 **AETHER SCRIPT EXECUTION SUMMARY**")
+        print("🎯 **AETHER SCRIPT EXECUTION SUMMARY**")
         print(f"• Script: {self.script_results['script_name']}")
         print(f"• Execution ID: {self.script_results['execution_id']}")
         print(f"• Total Time: {execution_time:.1f} seconds")
         print(f"• Success Rate: {self.script_results.get('success_rate', 0.0):.2%}")
         print(f"• Phases Completed: {len(self.script_results['phases_completed'])}/4")
 
-        print(f"\n🧠 **ENHANCED AUTONOMOUS INTELLIGENCE VALIDATION**")
-        print(f"• ✅ Curiosity-driven gap detection and exploration")
-        print(f"• ✅ Multi-type conflict detection and resolution")
-        print(f"• ✅ Self-directed learning goal creation and tracking")
-        print(f"• ✅ Meta-learning effectiveness analysis and optimization")
-        print(f"• ✅ Adaptive threshold management and strategy recommendations")
-        print(f"• ✅ Comprehensive session logging with self-awareness")
+        print("\n🧠 **ENHANCED AUTONOMOUS INTELLIGENCE VALIDATION**")
+        print("• ✅ Curiosity-driven gap detection and exploration")
+        print("• ✅ Multi-type conflict detection and resolution")
+        print("• ✅ Self-directed learning goal creation and tracking")
+        print("• ✅ Meta-learning effectiveness analysis and optimization")
+        print("• ✅ Adaptive threshold management and strategy recommendations")
+        print("• ✅ Comprehensive session logging with self-awareness")
 
         print(f"\n💾 Detailed report saved to: {report_file}")
-        print(f"\n🎉 **AETHER SCRIPT: FULLY OPERATIONAL WITH ENHANCED INTELLIGENCE!**")
+        print("\n🎉 **AETHER SCRIPT: FULLY OPERATIONAL WITH ENHANCED INTELLIGENCE!**")
 
 
 async def main():

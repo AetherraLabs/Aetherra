@@ -24,13 +24,11 @@ import json
 import logging
 import os
 import sys
-import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import aiohttp
-import requests
 
 # Add Aetherra to path
 sys.path.insert(0, "Aetherra")
@@ -334,7 +332,7 @@ class AetherraHubIntegration:
         try:
             manifest_file = plugin_dir / "manifest.json"
 
-            with open(manifest_file, "r") as f:
+            with open(manifest_file) as f:
                 manifest = json.load(f)
 
             plugin_id = manifest.get("id", plugin_dir.name)

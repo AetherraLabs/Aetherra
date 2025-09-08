@@ -519,7 +519,7 @@ class PluginManager:
     ) -> Optional[PluginMetadata]:
         """Load metadata from an .aetherplug manifest file."""
         try:
-            with open(manifest_file, "r", encoding="utf-8") as f:
+            with open(manifest_file, encoding="utf-8") as f:
                 manifest = json.load(f)
 
             return PluginMetadata(

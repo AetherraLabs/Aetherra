@@ -98,7 +98,8 @@ class ConceptClusteringEngine:
                 cursor = conn.cursor()
 
                 # Concepts table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS concepts (
                         id TEXT PRIMARY KEY,
                         name TEXT NOT NULL,
@@ -110,10 +111,12 @@ class ConceptClusteringEngine:
                         created_at TEXT,
                         updated_at TEXT
                     )
-                """)
+                """
+                )
 
                 # Clusters table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS clusters (
                         id TEXT PRIMARY KEY,
                         name TEXT NOT NULL,
@@ -123,10 +126,12 @@ class ConceptClusteringEngine:
                         created_at TEXT,
                         last_updated TEXT
                     )
-                """)
+                """
+                )
 
                 # Concept relationships table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS concept_relationships (
                         from_concept TEXT,
                         to_concept TEXT,
@@ -135,7 +140,8 @@ class ConceptClusteringEngine:
                         created_at TEXT,
                         PRIMARY KEY (from_concept, to_concept, relationship_type)
                     )
-                """)
+                """
+                )
 
                 conn.commit()
 
@@ -531,7 +537,7 @@ async def main():
 
     # Show summary
     summary = await engine.get_cluster_summary()
-    print(f"\n📊 Clustering Summary:")
+    print("\n📊 Clustering Summary:")
     print(f"  Total concepts: {summary['total_concepts']}")
     print(f"  Total clusters: {summary['total_clusters']}")
     print(f"  Average cluster size: {summary['average_cluster_size']:.2f}")

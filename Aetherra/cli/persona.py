@@ -177,9 +177,7 @@ class PersonaCLI:
                     "analyst",
                     "catalyst",
                 ]
-            print(
-                f"❌ Invalid persona '{archetype}'. Available: {', '.join(available)}"
-            )
+            print(f"❌ Invalid persona '{archetype}'. Available: {', '.join(available)}")
             return False
         except Exception as e:
             print(f"❌ Error setting persona: {e}")

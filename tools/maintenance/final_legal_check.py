@@ -12,7 +12,7 @@ This script performs a final verification that all legal compliance
 measures are properly implemented.
 """
 
-import os
+
 from pathlib import Path
 
 
@@ -60,7 +60,7 @@ def main():
         full_path = project_root / filepath
         if full_path.exists():
             try:
-                with open(full_path, "r", encoding="utf-8") as f:
+                with open(full_path, encoding="utf-8") as f:
                     content = f.read(1000)  # Read first 1000 chars
                     if "Copyright (C) 2025 AetherraLabs" in content:
                         print(f"  ✅ {filepath:35} - Copyright header present")
@@ -79,7 +79,7 @@ def main():
     readme_path = project_root / "README.md"
     if readme_path.exists():
         try:
-            with open(readme_path, "r", encoding="utf-8") as f:
+            with open(readme_path, encoding="utf-8") as f:
                 content = f.read()
                 if "Legal Information & Distribution Rights" in content:
                     print("  ✅ README.md - Legal information section present")

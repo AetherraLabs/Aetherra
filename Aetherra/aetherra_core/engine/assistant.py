@@ -20,10 +20,9 @@ from .core.advanced_plugins import LyrixaAdvancedPluginManager
 # Import all enhanced systems
 from .core.aether_interpreter import AetherInterpreter
 from .core.agents import AgentOrchestrator
-from .core.conversation import LyrixaConversationalEngine, PersonalityType, ToneMode
+from .core.conversation import LyrixaConversationalEngine, PersonalityType
 from .core.enhanced_memory import LyrixaEnhancedMemorySystem
 from .core.enhanced_self_evaluation_agent import EnhancedSelfEvaluationAgent
-from .core.goals import GoalPriority, LyrixaGoalSystem
 
 # Import autonomous self-improvement systems
 from .core.self_improvement_scheduler import SelfImprovementScheduler
@@ -111,6 +110,7 @@ class LyrixaAI:
         # Test memory system with proper async handling
         try:
             import asyncio
+
             # Check if we're in an async context already
             try:
                 loop = asyncio.get_running_loop()
@@ -203,7 +203,10 @@ class LyrixaAI:
         # 8. Aetherra Integration for true autonomous capabilities
         self.aetherra_integration = None
         try:
-            from simplified_lyrixa_aetherra_integration import SimplifiedLyrixaAetherraIntegration
+            from simplified_lyrixa_aetherra_integration import (
+                SimplifiedLyrixaAetherraIntegration,
+            )
+
             self.aetherra_integration = SimplifiedLyrixaAetherraIntegration()
             print("✅ Simplified Aetherra integration initialized successfully")
         except Exception as e:
@@ -220,7 +223,8 @@ class LyrixaAI:
 
     def _display_enhanced_welcome(self):
         """Display Lyrixa's enhanced welcome message with personality"""
-        print(f"""
+        print(
+            f"""
 🎙️ LYRIXA AI ASSISTANT FOR AETHERRA - FULLY RESTORED
 ====================================================
 Version: {self.version}
@@ -252,7 +256,8 @@ I remember our journey together and I'm ready to make our collaboration
 even more productive and enjoyable than before!
 
 What would you like to explore together today? 🚀
-""")
+"""
+        )
 
     async def initialize(self):
         """Initialize all enhanced systems asynchronously"""
@@ -916,7 +921,9 @@ What would you like to explore together today? 🚀
         Enable continuous self-monitoring and improvement using Aetherra engines
         """
         try:
-            print("🤖 Starting Lyrixa autonomous self-improvement mode with Aetherra engines...")
+            print(
+                "🤖 Starting Lyrixa autonomous self-improvement mode with Aetherra engines..."
+            )
 
             # If Aetherra integration is available, use it
             if self.aetherra_integration:
@@ -933,13 +940,20 @@ What would you like to explore together today? 🚀
                             "type": "autonomous_activation",
                             "session_id": self.session_id,
                         },
-                        tags=["autonomous", "self_improvement", "aetherra", "activation"],
+                        tags=[
+                            "autonomous",
+                            "self_improvement",
+                            "aetherra",
+                            "activation",
+                        ],
                         importance=0.9,
                     )
                     return result
                 else:
                     # Fall back to original implementation
-                    print("⚠️ Aetherra integration failed, falling back to original implementation")
+                    print(
+                        "⚠️ Aetherra integration failed, falling back to original implementation"
+                    )
 
             # Original implementation as fallback
             # Start the self-improvement scheduler
@@ -1036,13 +1050,18 @@ What would you like to explore together today? 🚀
                     # Store the introspection results
                     await self.memory.store_enhanced_memory(
                         content=result,
-                        context={"type": "manual_introspection_aetherra", "session_id": self.session_id},
+                        context={
+                            "type": "manual_introspection_aetherra",
+                            "session_id": self.session_id,
+                        },
                         tags=["introspection", "self_analysis", "aetherra", "manual"],
                         importance=0.8,
                     )
                     return result
                 else:
-                    print("⚠️ Aetherra introspection failed, falling back to original implementation")
+                    print(
+                        "⚠️ Aetherra introspection failed, falling back to original implementation"
+                    )
 
             # Original implementation as fallback
             # Run manual introspection cycle
@@ -1098,7 +1117,9 @@ What would you like to explore together today? 🚀
                 if not result.get("error"):
                     return result
                 else:
-                    print("⚠️ Aetherra status check failed, falling back to original implementation")
+                    print(
+                        "⚠️ Aetherra status check failed, falling back to original implementation"
+                    )
 
             # Original implementation as fallback
             # Get improvement metrics

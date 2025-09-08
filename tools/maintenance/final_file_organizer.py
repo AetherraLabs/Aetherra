@@ -8,13 +8,14 @@
 Moves the remaining misplaced files to their correct directories.
 """
 
+import logging
 import os
 import shutil
 from pathlib import Path
-import logging
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class FinalFileOrganizer:
     def __init__(self, base_path="Aetherra/aetherra_core", dry_run=False):
@@ -36,7 +37,6 @@ class FinalFileOrganizer:
             "agents/security_system.py": "system/security_system.py",
             "agents/system_bootstrap.py": "system/system_bootstrap.py",
             "agents/web_bridge.py": "kernel/web_bridge.py",
-
             # Engine files that are misplaced
             "engine/agent_executor.py": "agents/agent_executor.py",  # Move back to agents
             "engine/introspection_controller.py": "reflection/introspection_controller.py",
@@ -44,35 +44,27 @@ class FinalFileOrganizer:
             "engine/plugin_chain_executor.py": "plugins/plugin_chain_executor.py",
             "engine/quantum_memory_engine.py": "memory/quantum_memory_engine.py",
             "engine/reasoning_engine.py": "cognitive/reasoning_engine.py",
-
             # Intelligence engine files
             "engine/intelligence/meta_reasoning.py": "cognitive/meta_reasoning.py",
-
             # Kernel files that belong elsewhere
             "kernel/memory_kernel.py": "memory/memory_kernel.py",
             "kernel/plugin_registry.py": "plugins/plugin_registry.py",
             "kernel/coretools.py": "system/coretools.py",
-
             # Memory files
             "memory/compression_analyzer.py": "file_system/compression_analyzer.py",
             "memory/enhanced_memory_manager.py": "memory/enhanced_memory_manager.py",  # Keep in memory
             "memory/fractal_mesh/components.py": "memory/fractal_mesh/components.py",  # Keep as is
-
             # Orchestration files
             "orchestration/knowledge_graph.py": "intelligence/knowledge_graph.py",
             "orchestration/memory_orchestrator.py": "memory/memory_orchestrator.py",
             "orchestration/personality_manager.py": "personality/personality_manager.py",
-
             # Personality files
             "personality/adaptive_personality.py": "personality/adaptive_personality.py",  # Keep
             "personality/introspective_personality.py": "reflection/introspective_personality.py",
-
             # Plugin files
             "plugins/memory_plugin_manager.py": "memory/memory_plugin_manager.py",
-
             # Reflection files
             "reflection/reflection_agent.py": "reflection/reflection_agent.py",  # Keep
-
             # System files
             "system/base_system.py": "system/base_system.py",  # Keep
             "system/reflection_system.py": "system/reflection_system.py",  # Keep
@@ -206,28 +198,37 @@ class FinalFileOrganizer:
 
         report_content = "\n".join(report)
 
-        with open("FINAL_ORGANIZATION_REPORT.md", "w", encoding='utf-8') as f:
+        with open("FINAL_ORGANIZATION_REPORT.md", "w", encoding="utf-8") as f:
             f.write(report_content)
 
         logger.info("📄 Final report saved to: FINAL_ORGANIZATION_REPORT.md")
+
 
 def main():
     """Main entry point"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Final Aetherra Core file organization")
-    parser.add_argument("--execute", action="store_true", help="Actually perform the moves (default is dry run)")
-    parser.add_argument("--base-path", default="Aetherra/aetherra_core", help="Base path to aetherra_core directory")
+    parser = argparse.ArgumentParser(
+        description="Final Aetherra Core file organization"
+    )
+    parser.add_argument(
+        "--execute",
+        action="store_true",
+        help="Actually perform the moves (default is dry run)",
+    )
+    parser.add_argument(
+        "--base-path",
+        default="Aetherra/aetherra_core",
+        help="Base path to aetherra_core directory",
+    )
 
     args = parser.parse_args()
 
     # Run final organization
-    organizer = FinalFileOrganizer(
-        base_path=args.base_path,
-        dry_run=not args.execute
-    )
+    organizer = FinalFileOrganizer(base_path=args.base_path, dry_run=not args.execute)
 
     organizer.run_final_organization()
+
 
 if __name__ == "__main__":
     main()

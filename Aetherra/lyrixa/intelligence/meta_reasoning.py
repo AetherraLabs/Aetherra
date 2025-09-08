@@ -7,16 +7,17 @@ Advanced decision tracking and explanation system for Lyrixa
 Intercepts and analyzes every major decision for transparency and learning
 """
 
+
 import time
-import json
 import uuid
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class DecisionType(Enum):
     """Types of decisions that can be tracked"""
+
     PLUGIN_SELECTION = "plugin_selection"
     GOAL_PLANNING = "goal_planning"
     ANSWER_GENERATION = "answer_generation"
@@ -27,6 +28,7 @@ class DecisionType(Enum):
 
 class ConfidenceLevel(Enum):
     """Confidence levels for decisions"""
+
     VERY_LOW = (0.0, 0.2, "very_low")
     LOW = (0.2, 0.4, "low")
     MEDIUM = (0.4, 0.6, "medium")
@@ -50,6 +52,7 @@ class ConfidenceLevel(Enum):
 @dataclass
 class DecisionTrace:
     """Structured decision trace with metadata"""
+
     trace_id: str
     decision_type: DecisionType
     timestamp: float
@@ -91,7 +94,7 @@ class MetaReasoningEngine:
         confidence: float,
         explanation: str,
         decision_type: DecisionType = DecisionType.PLUGIN_SELECTION,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> DecisionTrace:
         """
         🔍 Core decision tracing method
@@ -107,14 +110,11 @@ class MetaReasoningEngine:
             confidence=confidence,
             confidence_level=ConfidenceLevel.from_score(confidence),
             explanation=explanation,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         # Store in memory system
-        trace_data = {
-            "type": "meta_trace",
-            **asdict(trace)
-        }
+        trace_data = {"type": "meta_trace", **asdict(trace)}
         self.memory.store(trace_data)
 
         # Keep local history for quick access
@@ -133,26 +133,28 @@ class MetaReasoningEngine:
         reason: str,
         confidence: float,
         memory_links: Optional[List[str]] = None,
-        intent: Optional[str] = None
+        intent: Optional[str] = None,
     ) -> DecisionTrace:
         """
         🧩 Explain why a specific plugin was chosen
         Enhanced version with memory links and intent tracking
         """
-        available_plugins = self.plugin_manager.list_plugin_names() if self.plugin_manager else []
+        available_plugins = (
+            self.plugin_manager.list_plugin_names() if self.plugin_manager else []
+        )
 
         context = {
             "goal": goal,
             "context": context_summary,
             "intent": intent,
             "memory_links": memory_links or [],
-            "available_plugins_count": len(available_plugins)
+            "available_plugins_count": len(available_plugins),
         }
 
         metadata = {
             "plugin_success_rate": self._get_plugin_success_rate(plugin_chosen),
             "previous_usage_count": self._get_plugin_usage_count(plugin_chosen),
-            "context_similarity": self._calculate_context_similarity(context_summary)
+            "context_similarity": self._calculate_context_similarity(context_summary),
         }
 
         return self.trace_decision(
@@ -162,7 +164,7 @@ class MetaReasoningEngine:
             confidence=confidence,
             explanation=reason,
             decision_type=DecisionType.PLUGIN_SELECTION,
-            metadata=metadata
+            metadata=metadata,
         )
 
     def explain_goal_planning(
@@ -170,7 +172,7 @@ class MetaReasoningEngine:
         user_request: str,
         planned_steps: List[str],
         confidence: float,
-        reasoning: str
+        reasoning: str,
     ) -> DecisionTrace:
         """
         🎯 Explain goal planning and step breakdown decisions
@@ -178,7 +180,7 @@ class MetaReasoningEngine:
         context = {
             "user_request": user_request,
             "steps_count": len(planned_steps),
-            "complexity_estimate": self._estimate_complexity(planned_steps)
+            "complexity_estimate": self._estimate_complexity(planned_steps),
         }
 
         alternatives = ["single_step", "alternative_breakdown", "direct_response"]
@@ -190,7 +192,7 @@ class MetaReasoningEngine:
             confidence=confidence,
             explanation=reasoning,
             decision_type=DecisionType.GOAL_PLANNING,
-            metadata={"planned_steps": planned_steps}
+            metadata={"planned_steps": planned_steps},
         )
 
     def explain_answer_generation(
@@ -199,7 +201,7 @@ class MetaReasoningEngine:
         answer_approach: str,
         confidence: float,
         sources_used: List[str],
-        reasoning: str
+        reasoning: str,
     ) -> DecisionTrace:
         """
         💬 Explain how an answer was generated
@@ -208,10 +210,15 @@ class MetaReasoningEngine:
             "question": question,
             "question_type": self._classify_question_type(question),
             "sources_count": len(sources_used),
-            "sources": sources_used
+            "sources": sources_used,
         }
 
-        alternatives = ["direct_answer", "researched_answer", "plugin_assisted", "memory_based"]
+        alternatives = [
+            "direct_answer",
+            "researched_answer",
+            "plugin_assisted",
+            "memory_based",
+        ]
 
         return self.trace_decision(
             context=context,
@@ -220,7 +227,7 @@ class MetaReasoningEngine:
             confidence=confidence,
             explanation=reasoning,
             decision_type=DecisionType.ANSWER_GENERATION,
-            metadata={"sources_used": sources_used}
+            metadata={"sources_used": sources_used},
         )
 
     def reflect_on_decision(self, trace_id: str, outcome: str, learned: str) -> bool:
@@ -257,9 +264,13 @@ class MetaReasoningEngine:
         """
         trends = {}
         for decision_type in DecisionType:
-            relevant_traces = [t for t in self.decision_history if t.decision_type == decision_type]
+            relevant_traces = [
+                t for t in self.decision_history if t.decision_type == decision_type
+            ]
             if relevant_traces:
-                avg_confidence = sum(t.confidence for t in relevant_traces) / len(relevant_traces)
+                avg_confidence = sum(t.confidence for t in relevant_traces) / len(
+                    relevant_traces
+                )
                 trends[decision_type.value] = avg_confidence
         return trends
 
@@ -268,12 +279,13 @@ class MetaReasoningEngine:
         🔗 Show the complete reasoning chain for a goal
         """
         relevant_traces = [
-            t for t in self.decision_history
-            if goal.lower() in str(t.context).lower()
+            t for t in self.decision_history if goal.lower() in str(t.context).lower()
         ]
         return sorted(relevant_traces, key=lambda x: x.timestamp)
 
-    def add_feedback(self, trace_id: str, feedback_score: float, feedback_text: str = "") -> bool:
+    def add_feedback(
+        self, trace_id: str, feedback_score: float, feedback_text: str = ""
+    ) -> bool:
         """
         👍 Add user feedback to a decision for learning
         """
@@ -298,7 +310,7 @@ class MetaReasoningEngine:
         confidence: float,
         explanation: str,
         success: bool = True,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> DecisionTrace:
         """
         🎯 Trace UI actions and their execution
@@ -312,7 +324,7 @@ class MetaReasoningEngine:
                 **context,
                 "action_type": action_type,
                 "ui_target": target,
-                "execution_success": success
+                "execution_success": success,
             },
             decision=f"{action_type}_{target}",
             alternatives=["describe_only", "execute_action", "defer_action"],
@@ -323,15 +335,12 @@ class MetaReasoningEngine:
                 **(metadata or {}),
                 "ui_action": True,
                 "success": success,
-                "timestamp": time.time()
-            }
+                "timestamp": time.time(),
+            },
         )
 
         # Store in memory system
-        trace_data = {
-            "type": "ui_action_trace",
-            **asdict(trace)
-        }
+        trace_data = {"type": "ui_action_trace", **asdict(trace)}
         self.memory.store(trace_data)
 
         # Keep local history
@@ -346,7 +355,7 @@ class MetaReasoningEngine:
         confidence: float,
         routing_decision: str,
         available_routes: List[str],
-        reasoning: str
+        reasoning: str,
     ) -> DecisionTrace:
         """
         🧠 Explain intent classification and routing decisions
@@ -356,7 +365,7 @@ class MetaReasoningEngine:
             "user_input": user_input,
             "input_length": len(user_input),
             "intent_keywords": self._extract_intent_keywords(user_input),
-            "routing_target": routing_decision
+            "routing_target": routing_decision,
         }
 
         metadata = {
@@ -366,8 +375,8 @@ class MetaReasoningEngine:
                 "has_plugin_keyword": "plugin" in user_input.lower(),
                 "has_load_keyword": "load" in user_input.lower(),
                 "has_editor_keyword": "editor" in user_input.lower(),
-                "has_code_keyword": "code" in user_input.lower()
-            }
+                "has_code_keyword": "code" in user_input.lower(),
+            },
         }
 
         return self.trace_decision(
@@ -377,12 +386,23 @@ class MetaReasoningEngine:
             confidence=confidence,
             explanation=reasoning,
             decision_type=DecisionType.CONTEXT_ANALYSIS,
-            metadata=metadata
+            metadata=metadata,
         )
 
     def _extract_intent_keywords(self, text: str) -> List[str]:
         """Extract key intent words from user input"""
-        intent_words = ["plugin", "load", "editor", "create", "generate", "code", "file", "open", "inject", "populate"]
+        intent_words = [
+            "plugin",
+            "load",
+            "editor",
+            "create",
+            "generate",
+            "code",
+            "file",
+            "open",
+            "inject",
+            "populate",
+        ]
         return [word for word in intent_words if word in text.lower()]
 
     # [TOOL] Helper methods
@@ -393,7 +413,9 @@ class MetaReasoningEngine:
         if not plugin_traces:
             return 0.5  # Default neutral
 
-        successful = [t for t in plugin_traces if t.feedback_score and t.feedback_score > 0.6]
+        successful = [
+            t for t in plugin_traces if t.feedback_score and t.feedback_score > 0.6
+        ]
         return len(successful) / len(plugin_traces)
 
     def _get_plugin_usage_count(self, plugin_name: str) -> int:
@@ -404,8 +426,11 @@ class MetaReasoningEngine:
         """Calculate similarity to previous contexts (simplified)"""
         # Simplified implementation - could use embeddings in future
         similar_contexts = [
-            t for t in self.decision_history[-10:]  # Last 10 decisions
-            if any(word in str(t.context).lower() for word in context.lower().split()[:3])
+            t
+            for t in self.decision_history[-10:]  # Last 10 decisions
+            if any(
+                word in str(t.context).lower() for word in context.lower().split()[:3]
+            )
         ]
         return min(len(similar_contexts) / 10.0, 1.0)
 
@@ -451,7 +476,7 @@ class MetaReasoningEngine:
             "decision_type": trace.decision_type.value,
             "outcome": trace.outcome,
             "learned": trace.learned_from,
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
         self.memory.store(learning_data)
 
@@ -461,7 +486,7 @@ class MetaReasoningEngine:
         updated_data = {
             "type": "meta_trace_update",
             "trace_id": trace.trace_id,
-            **asdict(trace)
+            **asdict(trace),
         }
         self.memory.store(updated_data)
 
@@ -474,7 +499,7 @@ class MetaReasoningEngine:
                 "type": "feedback_learning",
                 "pattern": pattern,
                 "feedback_score": trace.feedback_score,
-                "timestamp": time.time()
+                "timestamp": time.time(),
             }
             self.memory.store(feedback_data)
 
@@ -488,7 +513,7 @@ class MetaReasoningEngine:
             "decision_type_distribution": self._get_decision_type_distribution(),
             "learning_patterns_count": len(self.learning_patterns),
             "average_confidence": self._get_average_confidence(),
-            "recent_decisions": [asdict(t) for t in self.get_reasoning_history(5)]
+            "recent_decisions": [asdict(t) for t in self.get_reasoning_history(5)],
         }
 
     def _get_decision_type_distribution(self) -> Dict[str, int]:
@@ -503,4 +528,6 @@ class MetaReasoningEngine:
         """Calculate average confidence across all decisions"""
         if not self.decision_history:
             return 0.0
-        return sum(t.confidence for t in self.decision_history) / len(self.decision_history)
+        return sum(t.confidence for t in self.decision_history) / len(
+            self.decision_history
+        )

@@ -6,14 +6,13 @@ Advanced Memory System UI
 Comprehensive interface for memory management and analysis
 """
 
-import json
+
 import sqlite3
 import sys
-from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtGui import QColor, QFont
+from PySide6.QtCore import Qt, QTimer, Signal  # noqa: F401 (optional runtime import)
+from PySide6.QtGui import QColor, QFont  # noqa: F401 (optional runtime import)
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -27,7 +26,6 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QProgressBar,
     QPushButton,
-    QScrollArea,
     QSlider,
     QSpinBox,
     QSplitter,
@@ -61,7 +59,8 @@ class AdvancedMemorySystemUI(QWidget):
                 cursor = conn.cursor()
 
                 # Create memories table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS memories (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         content TEXT NOT NULL,
@@ -72,16 +71,19 @@ class AdvancedMemorySystemUI(QWidget):
                         access_count INTEGER DEFAULT 0,
                         last_accessed DATETIME
                     )
-                """)
+                """
+                )
 
                 # Create memory_embeddings table for vector search
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS memory_embeddings (
                         memory_id INTEGER,
                         embedding_vector TEXT,
                         FOREIGN KEY (memory_id) REFERENCES memories (id)
                     )
-                """)
+                """
+                )
 
                 conn.commit()
 
@@ -408,7 +410,8 @@ class AdvancedMemorySystemUI(QWidget):
 
     def apply_styling(self):
         """Apply dark theme styling to the memory system."""
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QWidget {
                 background-color: #1e1e1e;
                 color: white;
@@ -540,19 +543,22 @@ class AdvancedMemorySystemUI(QWidget):
                 background-color: #00ff88;
                 image: none;
             }
-        """)
+        """
+        )
 
     def load_memory_data(self):
         """Load memory data from the database."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT id, content, context, importance, timestamp, tags, access_count
                     FROM memories
                     ORDER BY timestamp DESC
                     LIMIT 100
-                """)
+                """
+                )
 
                 memories = cursor.fetchall()
                 self.populate_memory_list(memories)
@@ -566,9 +572,15 @@ class AdvancedMemorySystemUI(QWidget):
         self.memory_list.clear()
 
         for memory in memories:
-            memory_id, content, context, importance, timestamp, tags, access_count = (
-                memory
-            )
+            (
+                memory_id,
+                content,
+                context,
+                importance,
+                timestamp,
+                tags,
+                access_count,
+            ) = memory
 
             # Create list item
             preview = content[:100] + "..." if len(content) > 100 else content

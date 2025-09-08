@@ -432,9 +432,9 @@ class RealitySynthesisEngine:
             )
 
             # Store synthesized reality
-            self.synthesized_realities[synthesized_reality.reality_id] = (
-                synthesized_reality
-            )
+            self.synthesized_realities[
+                synthesized_reality.reality_id
+            ] = synthesized_reality
 
             # Update system state
             self._integrate_synthesized_reality(synthesized_reality)

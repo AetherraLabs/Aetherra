@@ -14,7 +14,7 @@ import asyncio
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Deque, Dict, Optional, Set, Tuple
+from typing import Any, Deque, Dict, Optional, Set
 
 
 @dataclass
@@ -29,7 +29,7 @@ class EventBus:
         self.registry = service_registry
         self._topics: Dict[str, Topic] = {}
         # Simple per-topic token bucket: tokens per interval (sec)
-        self._tokens: Dict[str, Tuple[float, float]] = defaultdict(lambda: (0.0, 0.0))
+        self._tokens: Dict[str, tuple[float, float]] = defaultdict(lambda: (0.0, 0.0))
         # Metrics counters
         self._metrics = {
             "events_published_total": 0,

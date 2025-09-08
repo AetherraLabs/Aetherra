@@ -13,7 +13,7 @@ import asyncio
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Optional
 
 from ..kernel.narrator import MemoryNarrative, MemoryNarrator
 from .fractal_mesh import (
@@ -69,9 +69,7 @@ class AetherraMemoryEngine:
         """
         # Substring search over compat list
         q = str(query).lower()
-        results = [
-            m for m in self._compat_mem if q in str(m.get("content", "")).lower()
-        ]
+        results = [m for m in self._compat_mem if q in str(m.get("content", "")).lower()]
 
         # If nothing found, try underlying engine and adapt shape
         if not results:
@@ -80,9 +78,7 @@ class AetherraMemoryEngine:
                 if isinstance(raw, dict) and "data" in raw:
                     data = raw["data"]
                     # Try to adapt to expected shape
-                    content = (
-                        data.get("content") if isinstance(data, dict) else str(data)
-                    )
+                    content = data.get("content") if isinstance(data, dict) else str(data)
                     if content:
                         results = [{"content": content}]
             except Exception:
@@ -121,9 +117,9 @@ class MemorySystemConfig:
     persist_sensitive_only_if_signed: bool = False
     encrypt_project_memories: bool = False
     # Callable signature: (content, context_dict) -> (content, context_updates)
-    redact_before_persist: Optional[
-        Callable[[Any, Dict[str, Any]], tuple[Any, Optional[Dict[str, Any]]]]
-    ] = None
+    redact_before_persist: (
+        Callable[[Any, dict[str, Any]], tuple[Any, dict[str, Any] | None]] | None
+    ) = None
     allow_untrusted_temporaries: bool = True
 
 
@@ -133,10 +129,10 @@ class MemoryOperationResult:
 
     success: bool
     operation_type: str
-    fragment_id: Optional[str] = None
-    insights: List[ReflectionInsight] = field(default_factory=list)
-    narrative: Optional[MemoryNarrative] = None
-    alerts: List[DriftAlert] = field(default_factory=list)
+    fragment_id: str | None = None
+    insights: list[ReflectionInsight] = field(default_factory=list)
+    narrative: MemoryNarrative | None = None
+    alerts: list[DriftAlert] = field(default_factory=list)
     message: str = ""
 
 
@@ -193,12 +189,12 @@ class AetherraMemoryEngineAdvanced:
     async def remember(
         self,
         content: Any,
-        tags: Optional[List[str]] = None,
+        tags: list[str] | None = None,
         category: str = "general",
         fragment_type: MemoryFragmentType = MemoryFragmentType.SEMANTIC,
         confidence: float = 1.0,
-        narrative_role: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        narrative_role: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> MemoryOperationResult:
         """
         Store a new memory with integrated processing across all systems
@@ -208,7 +204,7 @@ class AetherraMemoryEngineAdvanced:
         try:
             # Optional policy guardrails (no-op unless enabled)
             # Merge lightweight context into metadata so guards can reason
-            derived_meta: Dict[str, Any] = {}
+            derived_meta: dict[str, Any] = {}
             if metadata:
                 derived_meta.update(metadata)
             if tags:
@@ -268,9 +264,7 @@ class AetherraMemoryEngineAdvanced:
 
             # Update fragment with associative links from clustering
             if affected_clusters:
-                fragment.associative_links.extend(
-                    affected_clusters[:5]
-                )  # Limit associations
+                fragment.associative_links.extend(affected_clusters[:5])  # Limit associations
                 self.fractal_mesh.store_fragment(fragment)  # Update with associations
 
             self.operation_stats["successful_operations"] += 1
@@ -313,9 +307,9 @@ class AetherraMemoryEngineAdvanced:
         query: str,
         recall_strategy: str = "hybrid",
         limit: int = 10,
-        time_filter: Optional[Dict[str, Any]] = None,
-        concept_filter: Optional[List[str]] = None,
-    ) -> List[Dict[str, Any]]:
+        time_filter: dict[str, Any] | None = None,
+        concept_filter: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Intelligent multi-strategy memory recall
 
@@ -325,15 +319,10 @@ class AetherraMemoryEngineAdvanced:
         - "conceptual": Concept cluster based recall
         - "hybrid": Combined approach (default)
         """
-
-        results: List[Dict[str, Any]] = []
+        results: list[dict[str, Any]] = []
 
         if recall_strategy in ["vector", "hybrid"]:
-            # Vector-based recall from core system
-            vector_results = await self.core_memory.recall_memories(
-                query_text=query, limit=limit
-            )
-
+            vector_results = await self.core_memory.recall_memories(query_text=query, limit=limit)
             for i, memory in enumerate(vector_results):
                 results.append(
                     {
@@ -346,51 +335,46 @@ class AetherraMemoryEngineAdvanced:
                     }
                 )
 
-        if recall_strategy in ["conceptual", "hybrid"]:
-            # Concept-based recall
-            if concept_filter:
-                for concept in concept_filter:
-                    concept_fragments = self.fractal_mesh.retrieve_by_concept(
-                        concept, limit
-                    )
-                    for fragment in concept_fragments:
-                        results.append(
-                            {
-                                "content": fragment.content,
-                                "source": "conceptual",
-                                "relevance_score": fragment.confidence_score,
-                                "type": "concept_match",
-                                "fragment_id": fragment.fragment_id,
-                                "concepts": list(fragment.symbolic_tags),
-                            }
-                        )
-
-        if recall_strategy in ["episodic", "hybrid"]:
-            # Episodic recall
-            if time_filter and "start" in time_filter and "end" in time_filter:
-                episodic_chains = self.fractal_mesh.retrieve_episodic_sequence(
-                    start_time=time_filter["start"], end_time=time_filter["end"]
-                )
-
-                for chain in episodic_chains:
+        if recall_strategy in ["conceptual", "hybrid"] and concept_filter:
+            for concept in concept_filter:
+                concept_fragments = self.fractal_mesh.retrieve_by_concept(concept, limit)
+                for fragment in concept_fragments:
                     results.append(
                         {
-                            "content": {
-                                "narrative_arc": chain.narrative_arc,
-                                "fragment_count": len(chain.fragments),
-                                "time_span": chain.temporal_span,
-                            },
-                            "source": "episodic",
-                            "relevance_score": chain.significance_score,
-                            "type": "episodic_sequence",
-                            "chain_id": chain.chain_id,
+                            "content": fragment.content,
+                            "source": "conceptual",
+                            "relevance_score": fragment.confidence_score,
+                            "type": "concept_match",
+                            "fragment_id": fragment.fragment_id,
+                            "concepts": list(fragment.symbolic_tags),
                         }
                     )
 
-        # Sort by relevance and remove duplicates
-        results.sort(key=lambda x: x["relevance_score"], reverse=True)
+        if (
+            recall_strategy in ["episodic", "hybrid"]
+            and time_filter
+            and "start" in time_filter
+            and "end" in time_filter
+        ):
+            episodic_chains = self.fractal_mesh.retrieve_episodic_sequence(
+                start_time=time_filter["start"], end_time=time_filter["end"]
+            )
+            for chain in episodic_chains:
+                results.append(
+                    {
+                        "content": {
+                            "narrative_arc": chain.narrative_arc,
+                            "fragment_count": len(chain.fragments),
+                            "time_span": chain.temporal_span,
+                        },
+                        "source": "episodic",
+                        "relevance_score": chain.significance_score,
+                        "type": "episodic_sequence",
+                        "chain_id": chain.chain_id,
+                    }
+                )
 
-        # Return top results (legacy list of dicts)
+        results.sort(key=lambda x: x["relevance_score"], reverse=True)
         return results[:limit]
 
     async def recall_typed(
@@ -398,8 +382,8 @@ class AetherraMemoryEngineAdvanced:
         query: str,
         recall_strategy: str = "hybrid",
         limit: int = 10,
-        time_filter: Optional[Dict[str, Any]] = None,
-        concept_filter: Optional[List[str]] = None,
+        time_filter: dict[str, Any] | None = None,
+        concept_filter: list[str] | None = None,
     ) -> MemoryRecallResult:
         """Typed wrapper around recall() that returns MemoryRecallResult.
 
@@ -430,9 +414,7 @@ class AetherraMemoryEngineAdvanced:
         metadata = metadata or {}
         if self.config.redact_before_persist:
             try:
-                new_content, new_context = self.config.redact_before_persist(
-                    content, metadata
-                )
+                new_content, new_context = self.config.redact_before_persist(content, metadata)
                 # best-effort replacement; callers may ignore
                 if new_content is not None:
                     content = new_content
@@ -444,9 +426,7 @@ class AetherraMemoryEngineAdvanced:
 
         if self.config.persist_sensitive_only_if_signed:
             # Heuristics: treat project-category writes as plugin-origin unless explicitly marked otherwise
-            is_plugin = bool(
-                metadata.get("plugin_id") or (metadata.get("category") == "project")
-            )
+            is_plugin = bool(metadata.get("plugin_id") or (metadata.get("category") == "project"))
             is_signed = bool(metadata.get("signed") or metadata.get("trusted"))
             tags = metadata.get("tags") or []
             is_sensitive = bool(metadata.get("sensitive") or ("sensitive" in tags))
@@ -475,11 +455,7 @@ class AetherraMemoryEngineAdvanced:
         else:
             # Default to last 24 hours
             cutoff = datetime.now() - timedelta(days=1)
-            fragments = [
-                f
-                for f in self.fractal_mesh.fragments.values()
-                if f.created_at >= cutoff
-            ]
+            fragments = [f for f in self.fractal_mesh.fragments.values() if f.created_at >= cutoff]
 
         # Generate narrative based on type
         if narrative_type == "daily":
@@ -498,7 +474,7 @@ class AetherraMemoryEngineAdvanced:
 
     async def run_reflection(
         self, reflection_type: str = "past_week", target_concept: Optional[str] = None
-    ) -> List[ReflectionInsight]:
+    ) -> list[ReflectionInsight]:
         """Run reflective analysis on memories"""
 
         fragments = list(self.fractal_mesh.fragments.values())
@@ -510,9 +486,7 @@ class AetherraMemoryEngineAdvanced:
             insights = self.reflector.reflect_on_past_range(fragments, time_range)
 
         elif reflection_type == "contradictions":
-            insights = self.reflector.analyze_contradictions(
-                fragments, concept_clusters
-            )
+            insights = self.reflector.analyze_contradictions(fragments, concept_clusters)
 
         elif reflection_type == "concept_exploration" and target_concept:
             insights = self.reflector.explore_concept_connections(
@@ -544,7 +518,7 @@ class AetherraMemoryEngineAdvanced:
 
         return health
 
-    def get_memory_health(self) -> Dict[str, Any]:
+    def get_memory_health(self) -> dict[str, Any]:
         """Get current memory system health status synchronously
 
         Returns:
@@ -571,9 +545,7 @@ class AetherraMemoryEngineAdvanced:
                 else None,
                 "memory_stats": {
                     "last_check": self.last_pulse_check.isoformat(),
-                    "system_uptime": (
-                        datetime.now() - self.last_pulse_check
-                    ).total_seconds(),
+                    "system_uptime": (datetime.now() - self.last_pulse_check).total_seconds(),
                 },
                 "performance_metrics": self.operation_stats,
                 "status": "healthy" if health.coherence_score > 0.7 else "degraded",
@@ -600,7 +572,7 @@ class AetherraMemoryEngineAdvanced:
                 "error": str(e),
             }
 
-    async def get_memory_pulse(self) -> Dict[str, Any]:
+    async def get_memory_pulse(self) -> dict[str, Any]:
         """Get memory pulse monitoring information
 
         Returns:
@@ -630,9 +602,7 @@ class AetherraMemoryEngineAdvanced:
                 "health_trend": health.health_trend,
                 "drift_alerts": drift_alerts,
                 "monitoring_active": self.config.auto_pulse_monitoring,
-                "next_scheduled_check": (
-                    self.last_pulse_check + timedelta(hours=2)
-                ).isoformat(),
+                "next_scheduled_check": (self.last_pulse_check + timedelta(hours=2)).isoformat(),
             }
 
             return pulse_data
@@ -648,7 +618,7 @@ class AetherraMemoryEngineAdvanced:
                 "error": str(e),
             }
 
-    async def get_memory_insights(self, days: int = 7) -> Dict[str, Any]:
+    async def get_memory_insights(self, days: int = 7) -> dict[str, Any]:
         """Get comprehensive memory insights and recommendations"""
 
         # Get recent insights
@@ -687,7 +657,7 @@ class AetherraMemoryEngineAdvanced:
             "system_stats": self.operation_stats,
         }
 
-    async def maintenance_cycle(self) -> Dict[str, Any]:
+    async def maintenance_cycle(self) -> dict[str, Any]:
         """Run a complete maintenance cycle"""
 
         maintenance_results = {
@@ -704,15 +674,11 @@ class AetherraMemoryEngineAdvanced:
         ]
 
         for alert in low_severity_alerts[:3]:  # Resolve up to 3 low-severity alerts
-            if self.pulse_monitor.resolve_alert(
-                alert.alert_id, "Auto-resolved during maintenance"
-            ):
+            if self.pulse_monitor.resolve_alert(alert.alert_id, "Auto-resolved during maintenance"):
                 maintenance_results["alerts_resolved"] += 1
 
         # Clean up very old low-confidence fragments
-        cutoff_date = datetime.now() - timedelta(
-            days=self.config.fragment_retention_days
-        )
+        cutoff_date = datetime.now() - timedelta(days=self.config.fragment_retention_days)
         old_fragments = [
             f
             for f in self.fractal_mesh.fragments.values()
@@ -742,7 +708,7 @@ class AetherraMemoryEngineAdvanced:
         if time_since_last > timedelta(hours=2):  # Check health every 2 hours
             await self.check_memory_health()
 
-    def get_system_status(self) -> Dict[str, Any]:
+    def get_system_status(self) -> dict[str, Any]:
         """Get overall system status and metrics"""
 
         return {

@@ -6,10 +6,10 @@ Launch utilities for Lyrixa
 """
 
 import os
+import socket
 import subprocess
 import sys
 import time
-import socket
 from pathlib import Path
 
 
@@ -18,9 +18,9 @@ def check_port_available(port):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.settimeout(1)
-            result = sock.connect_ex(('127.0.0.1', port))
+            result = sock.connect_ex(("127.0.0.1", port))
             return result == 0  # 0 means connection successful (port in use)
-    except:
+    except Exception:
         return False
 
 
@@ -43,9 +43,7 @@ def run_self_improvement_api():
     """Start the enhanced API server in the background"""
     try:
         # Get the project root directory
-        project_root = Path(
-            __file__
-        ).parent.parent.parent  # Go up from utils to Aetherra Project
+        project_root = Path(__file__).parent.parent.parent  # Go up from utils to Aetherra Project
         api_script = project_root / "run_self_improvement_api.py"
 
         if api_script.exists():
@@ -66,10 +64,8 @@ def run_self_improvement_api():
                     [sys.executable, str(api_script)],
                     stdout=log,
                     stderr=subprocess.STDOUT,
-                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
-                    if os.name == "nt"
-                    else 0,
-                    cwd=str(project_root)  # Set working directory
+                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+                    cwd=str(project_root),  # Set working directory
                 )
 
                 print(f"   Server process started (PID: {process.pid})")
@@ -84,7 +80,7 @@ def run_self_improvement_api():
                 # Show recent log entries for debugging
                 if log_file.exists():
                     print("Recent log entries:")
-                    with open(log_file, "r") as f:
+                    with open(log_file) as f:
                         lines = f.readlines()
                         for line in lines[-10:]:  # Show last 10 lines
                             print(f"   {line.strip()}")
@@ -96,6 +92,7 @@ def run_self_improvement_api():
     except Exception as e:
         print(f">> Failed to start API server: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -116,17 +113,17 @@ def check_dependencies():
     missing_deps = []
 
     try:
-        import PySide6
+        import PySide6  # type: ignore  # noqa: F401
     except ImportError:
         missing_deps.append("PySide6")
 
     try:
-        import uvicorn
+        import uvicorn  # type: ignore  # noqa: F401
     except ImportError:
         missing_deps.append("uvicorn")
 
     try:
-        import fastapi
+        import fastapi  # type: ignore  # noqa: F401
     except ImportError:
         missing_deps.append("fastapi")
 

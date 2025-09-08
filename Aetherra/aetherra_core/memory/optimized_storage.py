@@ -94,7 +94,8 @@ class OptimizedMemoryStorage:
         conn = sqlite3.connect(self.db_path)
         try:
             # Optimized schema with better indexing
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS memory_fragments_optimized (
                     fragment_id TEXT PRIMARY KEY,
                     content_binary BLOB,  -- Binary format for faster I/O
@@ -106,10 +107,12 @@ class OptimizedMemoryStorage:
                     INDEX(fragment_type),
                     INDEX(confidence_score)
                 )
-            """)
+            """
+            )
 
             # Separate table for tags to normalize storage
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS fragment_tags (
                     fragment_id TEXT,
                     tag_type TEXT,  -- 'temporal', 'symbolic', 'associative'
@@ -118,7 +121,8 @@ class OptimizedMemoryStorage:
                     PRIMARY KEY (fragment_id, tag_type, tag_key),
                     FOREIGN KEY (fragment_id) REFERENCES memory_fragments_optimized(fragment_id)
                 )
-            """)
+            """
+            )
 
             # Enable WAL mode for better concurrency
             conn.execute("PRAGMA journal_mode=WAL")

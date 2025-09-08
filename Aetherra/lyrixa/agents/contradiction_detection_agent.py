@@ -11,8 +11,7 @@ and conflicts in reasoning, memory, and system state.
 """
 
 import logging
-from typing import Dict, List, Any, Optional
-from datetime import datetime
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +45,7 @@ class ContradictionDetectionAgent:
             "name": self.name,
             "status": self.status,
             "contradictions_detected": self.contradictions_detected,
-            "is_available": self.is_available
+            "is_available": self.is_available,
         }
 
 

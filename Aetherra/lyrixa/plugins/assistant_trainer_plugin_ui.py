@@ -6,7 +6,7 @@ Assistant Trainer Plugin UI
 Training and customization interface for AI assistants
 """
 
-import json
+
 import sys
 
 from PySide6.QtCore import Qt, QTimer
@@ -18,7 +18,6 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QListWidget,
     QProgressBar,
     QPushButton,
@@ -552,7 +551,8 @@ class AssistantTrainerUI(QWidget):
 
     def apply_styling(self):
         """Apply dark theme styling to the assistant trainer interface."""
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QWidget {
                 background-color: #1e1e1e;
                 color: white;
@@ -681,7 +681,8 @@ class AssistantTrainerUI(QWidget):
             QCheckBox::indicator:checked {
                 background-color: #FF6D00;
             }
-        """)
+        """
+        )
 
     def add_training_data(self):
         """Add new training data source."""

@@ -23,7 +23,6 @@ from pathlib import Path
 from typing import Optional
 
 from Aetherra.aetherra_core.memory.aetherra_memory_engine import AetherraMemoryEngine
-
 from Aetherra.plugins.memory_hooks.plugin_manager_stubs import (
     MemoryAwarePluginRouter,
     MemoryEnhancedPluginManager,
@@ -267,7 +266,7 @@ def update_roadmap_completion():
 
     try:
         if roadmap_path.exists():
-            with open(roadmap_path, "r", encoding="utf-8") as f:
+            with open(roadmap_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Update plugin system integration status

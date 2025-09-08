@@ -352,9 +352,7 @@ class QuantumTunnelingEngine:
     ) -> Optional[BreakthroughSolution]:
         """Attempt quantum tunneling through the specified path"""
         try:
-            self.logger.info(
-                f"🌀 Attempting quantum tunneling via path: {path.path_id}"
-            )
+            self.logger.info(f"🌀 Attempting quantum tunneling via path: {path.path_id}")
             self.tunneling_attempts += 1
 
             # Check if we have sufficient energy

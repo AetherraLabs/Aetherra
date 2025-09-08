@@ -6,10 +6,9 @@ Introspector Plugin UI
 System analysis and self-reflection capabilities
 """
 
-import json
+
 import sys
 from datetime import datetime
-from pathlib import Path
 
 import psutil
 from PySide6.QtCore import Qt, QTimer
@@ -17,17 +16,14 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QListWidget,
-    QListWidgetItem,
     QProgressBar,
     QPushButton,
-    QScrollArea,
     QTabWidget,
     QTextEdit,
     QTreeWidget,
@@ -437,7 +433,8 @@ class IntrospectorUI(QWidget):
 
     def apply_styling(self):
         """Apply dark theme styling to the introspector interface."""
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QWidget {
                 background-color: #1e1e1e;
                 color: white;
@@ -547,7 +544,8 @@ class IntrospectorUI(QWidget):
             QCheckBox::indicator:checked {
                 background-color: #9C27B0;
             }
-        """)
+        """
+        )
 
     def start_monitoring(self):
         """Start system monitoring."""

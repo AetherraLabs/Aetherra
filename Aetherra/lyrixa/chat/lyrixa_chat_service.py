@@ -24,7 +24,7 @@ import os
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 # Optional: import chat router and intelligence if present
 try:
@@ -48,9 +48,7 @@ except Exception:
     AdaptiveIntelligenceOrchestrator = None  # type: ignore
 
 try:
-    from Aetherra.lyrixa.memory.multidimensional_memory import (
-        MultidimensionalMemory,
-    )
+    from Aetherra.lyrixa.memory.multidimensional_memory import MultidimensionalMemory
 except Exception:
     MultidimensionalMemory = None  # type: ignore
 
@@ -89,9 +87,7 @@ except Exception:
 
 # Optional: proactive consciousness
 try:
-    from Aetherra.lyrixa.proactive.proactive_consciousness import (
-        ProactiveConsciousness,
-    )
+    from Aetherra.lyrixa.proactive.proactive_consciousness import ProactiveConsciousness
 except Exception:
     ProactiveConsciousness = None  # type: ignore
 
@@ -164,15 +160,11 @@ class LyrixaChatService:
         self._load_config()
         # Extract optional coherence threshold from multiple possible config shapes
         try:
-            lyx = (
-                self._cfg.get("lyrixa_chat", {}) if isinstance(self._cfg, dict) else {}
-            )
+            lyx = self._cfg.get("lyrixa_chat", {}) if isinstance(self._cfg, dict) else {}
             thr = None
             # New-style settings block (non-breaking addition)
             if isinstance(lyx.get("consciousness_integration_settings"), dict):
-                thr = lyx["consciousness_integration_settings"].get(
-                    "coherence_threshold"
-                )
+                thr = lyx["consciousness_integration_settings"].get("coherence_threshold")
             # If older plan-shaped config exists directly under key
             if thr is None and isinstance(lyx.get("consciousness_integration"), dict):
                 thr = lyx["consciousness_integration"].get("coherence_threshold")
@@ -248,9 +240,7 @@ class LyrixaChatService:
             except Exception:
                 self._proactive_monitor = None
 
-    async def chat(
-        self, message: str, opts: Optional[ChatOptions] = None
-    ) -> ChatResponse:
+    async def chat(self, message: str, opts: Optional[ChatOptions] = None) -> ChatResponse:
         opts = opts or ChatOptions()
         interaction_id = str(uuid.uuid4())
         awareness = await self._workspace_awareness(summary_only=True)
@@ -287,16 +277,12 @@ class LyrixaChatService:
             await self._maybe_log_response(
                 message, reply, confidence=conf, verified=verified, category="ownership"
             )
-            return ChatResponse(
-                text=reply, suggestions=[], applied_changes=[], awareness=awareness
-            )
+            return ChatResponse(text=reply, suggestions=[], applied_changes=[], awareness=awareness)
 
         # If it's an identity/awareness query, answer deterministically
         if self._is_identity_or_awareness_query(message):
             reply = self._fallback_reply(message)
-            return ChatResponse(
-                text=reply, suggestions=[], applied_changes=[], awareness=awareness
-            )
+            return ChatResponse(text=reply, suggestions=[], applied_changes=[], awareness=awareness)
 
         # Prefer orchestrator → intelligence → router → deterministic fallback
         reply = None
@@ -373,9 +359,7 @@ class LyrixaChatService:
             k in message.lower()
             for k in ["fix", "update", "change", "refactor", "rename", "bug", "error"]
         ):
-            suggestions = await self.suggest_fixes(
-                message, read_only=not bool(opts.allow_edits)
-            )
+            suggestions = await self.suggest_fixes(message, read_only=not bool(opts.allow_edits))
             if opts.allow_edits and suggestions:
                 first = suggestions[0]
                 ok, change = await self.apply_fix(first, edit_root=opts.edit_root)
@@ -424,9 +408,7 @@ class LyrixaChatService:
         # Kick off post-interaction learning in the background (non-blocking)
         try:
             asyncio.create_task(
-                self._post_interaction_learning(
-                    message, str(reply), awareness, path_used
-                )
+                self._post_interaction_learning(message, str(reply), awareness, path_used)
             )
         except Exception:
             pass
@@ -448,9 +430,7 @@ class LyrixaChatService:
             if cfg_path.is_file():
                 import json
 
-                self._cfg = json.loads(
-                    cfg_path.read_text(encoding="utf-8", errors="ignore")
-                )
+                self._cfg = json.loads(cfg_path.read_text(encoding="utf-8", errors="ignore"))
         except Exception:
             self._cfg = {}
 
@@ -462,9 +442,7 @@ class LyrixaChatService:
             return
         try:
             if self._self_improver is None:
-                self._self_improver = SelfImprovementEngine(
-                    db_path="lyrixa_improvement.db"
-                )
+                self._self_improver = SelfImprovementEngine(db_path="lyrixa_improvement.db")
                 # Start cycle in background; ignore if already running
                 await self._self_improver.start_improvement_cycle()
 
@@ -568,9 +546,7 @@ class LyrixaChatService:
                 if (
                     create2
                     and collapse2
-                    and all(
-                        asyncio.iscoroutinefunction(x) for x in (create2, collapse2)
-                    )
+                    and all(asyncio.iscoroutinefunction(x) for x in (create2, collapse2))
                 ):
                     states = await create2(query)  # type: ignore[misc]
                     decision = await collapse2(states)  # type: ignore[misc]
@@ -645,7 +621,7 @@ class LyrixaChatService:
 
     async def apply_fix(
         self, suggestion: Dict[str, Any], edit_root: Optional[Path] = None
-    ) -> Tuple[bool, Dict[str, Any]]:
+    ) -> tuple[bool, Dict[str, Any]]:
         """Apply a simple, safe fix suggestion."""
         try:
             path = Path(suggestion.get("file", ""))
@@ -730,10 +706,7 @@ class LyrixaChatService:
 
     def _is_identity_or_awareness_query(self, message: str) -> bool:
         m = message.lower().strip()
-        if any(
-            k in m
-            for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]
-        ):
+        if any(k in m for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]):
             return True
         if "aetherra" in m:
             if any(
@@ -770,7 +743,7 @@ class LyrixaChatService:
             ]
         )
 
-    async def _ownership_reply(self, message: str) -> Tuple[str, float, bool]:
+    async def _ownership_reply(self, message: str) -> tuple[str, float, bool]:
         """Answer ownership questions using persistent memory. Returns (reply, confidence, verified)."""
         try:
             if not self._pmemory:
@@ -807,10 +780,7 @@ class LyrixaChatService:
         m = message.lower().strip()
         if self._is_ownership_query(m):
             return "I don't have a record of ownership."
-        if any(
-            k in m
-            for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]
-        ):
+        if any(k in m for k in ["who are you", "what are you", "who is lyrixa", "what is lyrixa"]):
             return f"I'm {IDENTITY['name']} — {IDENTITY['title']}. {IDENTITY['about']}"
         if any(k in m for k in ["what is aetherra", "aetherra os", "aetherra"]):
             return IDENTITY["aetherra"]
@@ -837,9 +807,7 @@ class LyrixaChatService:
 
     def _estimate_confidence(self, path: str, message: str, reply: str) -> float:
         # Identity/ownership deterministic answers are high confidence
-        if self._is_ownership_query(message) or self._is_identity_or_awareness_query(
-            message
-        ):
+        if self._is_ownership_query(message) or self._is_identity_or_awareness_query(message):
             return 1.0
         if path == "intelligence":
             return 0.7

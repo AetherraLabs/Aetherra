@@ -176,7 +176,8 @@ class PluginChainExecutor:
         """Initialize plugin chain database"""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS chain_executions (
                     id TEXT PRIMARY KEY,
                     strategy TEXT NOT NULL,
@@ -188,9 +189,11 @@ class PluginChainExecutor:
                     context TEXT,
                     created_at TEXT NOT NULL
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS plugin_performance (
                     plugin_id TEXT NOT NULL,
                     execution_time REAL NOT NULL,
@@ -198,9 +201,11 @@ class PluginChainExecutor:
                     timestamp TEXT NOT NULL,
                     chain_id TEXT
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS chain_templates (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -210,7 +215,8 @@ class PluginChainExecutor:
                     conditions TEXT,
                     created_at TEXT NOT NULL
                 )
-            """)
+            """
+            )
 
             conn.commit()
         finally:

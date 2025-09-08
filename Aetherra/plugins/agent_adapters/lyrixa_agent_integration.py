@@ -35,7 +35,6 @@ try:
     from Aetherra.aetherra_core.agents.agent_executor import (
         AgentExecutor as CoreAgentExecutor,
     )
-    from Aetherra.lyrixa.agents.agent_base import AgentBase
 
     AGENTS_AVAILABLE = True
 

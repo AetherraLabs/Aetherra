@@ -21,7 +21,7 @@ def _load_memory() -> List[Dict]:
     """Load memory from JSON file"""
     try:
         if MEMORY_FILE.exists():
-            with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+            with open(MEMORY_FILE, encoding="utf-8") as f:
                 return json.load(f)
     except Exception as e:
         logger.warning(f"Could not load memory file: {e}")
@@ -194,7 +194,9 @@ try:
     search_memory_one = aetherra_search_memory_one
     get_system_status = aetherra_get_system_status
 except ImportError:
-    logger.info("[TOOL] Aetherra core modules not available, using local implementations")
+    logger.info(
+        "[TOOL] Aetherra core modules not available, using local implementations"
+    )
     AETHERRA_AVAILABLE = False
     # Local implementations are already defined above
 

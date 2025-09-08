@@ -10,11 +10,12 @@ Fixes relative import issues in Aetherra plugins by converting them to absolute 
 This resolves the "attempted relative import with no known parent package" errors.
 """
 
-import os
+
 import re
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
+
 
 def get_plugins_with_import_errors() -> List[Path]:
     """Get list of plugin files that have relative import errors."""
@@ -32,45 +33,46 @@ def get_plugins_with_import_errors() -> List[Path]:
     # Return only files that exist
     return [f for f in error_files if f.exists()]
 
+
 def fix_relative_imports(file_path: Path) -> bool:
     """Fix relative imports in a Python file by converting to absolute imports."""
     print(f"🔧 Fixing imports in {file_path.relative_to(Path.cwd())}")
 
     try:
-        content = file_path.read_text(encoding='utf-8')
+        content = file_path.read_text(encoding="utf-8")
         original_content = content
 
         # Pattern to match relative imports
         # Matches: from ..module import something, from .module import something
-        relative_import_pattern = r'from\s+(\.{1,2}[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)\s+import'
+        relative_import_pattern = r"from\s+(\.{1,2}[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)\s+import"
 
         def replace_import(match):
             relative_path = match.group(1)
 
             # Convert relative to absolute based on known patterns
-            if relative_path.startswith('..'):
+            if relative_path.startswith(".."):
                 # Parent directory imports
-                if 'core.enhanced_memory' in relative_path:
-                    return 'from Aetherra.aetherra_core.memory.enhanced_memory import'
-                elif 'kernel.plugin_manager' in relative_path:
-                    return 'from Aetherra.aetherra_core.plugins.plugin_manager import'
-                elif 'core.' in relative_path:
-                    module_name = relative_path.replace('..core.', '')
-                    return f'from Aetherra.aetherra_core.{module_name} import'
+                if "core.enhanced_memory" in relative_path:
+                    return "from Aetherra.aetherra_core.memory.enhanced_memory import"
+                elif "kernel.plugin_manager" in relative_path:
+                    return "from Aetherra.aetherra_core.plugins.plugin_manager import"
+                elif "core." in relative_path:
+                    module_name = relative_path.replace("..core.", "")
+                    return f"from Aetherra.aetherra_core.{module_name} import"
                 else:
                     # Generic parent import - try to map to Aetherra structure
-                    clean_path = relative_path.lstrip('.')
-                    return f'from Aetherra.aetherra_core.{clean_path} import'
+                    clean_path = relative_path.lstrip(".")
+                    return f"from Aetherra.aetherra_core.{clean_path} import"
 
-            elif relative_path.startswith('.'):
+            elif relative_path.startswith("."):
                 # Same directory imports
-                if 'agent_base' in relative_path:
-                    return 'from Aetherra.plugins.agent_adapters.agent_base import'
+                if "agent_base" in relative_path:
+                    return "from Aetherra.plugins.agent_adapters.agent_base import"
                 else:
                     # Generic same directory import
-                    clean_path = relative_path.lstrip('.')
+                    clean_path = relative_path.lstrip(".")
                     parent_dir = file_path.parent.name
-                    return f'from Aetherra.plugins.{parent_dir}.{clean_path} import'
+                    return f"from Aetherra.plugins.{parent_dir}.{clean_path} import"
 
             # If we can't determine the mapping, leave it unchanged
             return match.group(0)
@@ -79,9 +81,9 @@ def fix_relative_imports(file_path: Path) -> bool:
         new_content = re.sub(relative_import_pattern, replace_import, content)
 
         # Add fallback imports for missing modules
-        if 'from Aetherra.aetherra_core.memory.enhanced_memory import' in new_content:
+        if "from Aetherra.aetherra_core.memory.enhanced_memory import" in new_content:
             # Check if we need to add a fallback
-            fallback_import = '''
+            fallback_import = """
 try:
     from Aetherra.aetherra_core.memory.enhanced_memory import LyrixaEnhancedMemorySystem
 except ImportError:
@@ -93,13 +95,16 @@ except ImportError:
             pass
         def retrieve(self, *args, **kwargs):
             return []
-'''
-            if 'LyrixaEnhancedMemorySystem' in new_content and 'try:' not in new_content:
+"""
+            if (
+                "LyrixaEnhancedMemorySystem" in new_content
+                and "try:" not in new_content
+            ):
                 new_content = fallback_import + new_content
 
         # Write the updated content if changes were made
         if new_content != original_content:
-            file_path.write_text(new_content, encoding='utf-8')
+            file_path.write_text(new_content, encoding="utf-8")
             print(f"✅ Fixed imports in {file_path.name}")
             return True
         else:
@@ -109,6 +114,7 @@ except ImportError:
     except Exception as e:
         print(f"❌ Error fixing {file_path.name}: {e}")
         return False
+
 
 def create_missing_init_files():
     """Create missing __init__.py files in plugin directories."""
@@ -129,8 +135,9 @@ def create_missing_init_files():
             init_file = dir_path / "__init__.py"
             if not init_file.exists():
                 init_content = f'"""Plugin package: {dir_path.name}"""\n'
-                init_file.write_text(init_content, encoding='utf-8')
+                init_file.write_text(init_content, encoding="utf-8")
                 print(f"📝 Created {init_file.relative_to(Path.cwd())}")
+
 
 def main():
     """Main function to fix plugin import issues."""
@@ -159,6 +166,7 @@ def main():
     print("Try running Aetherra OS again to see if the plugin errors are resolved.")
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

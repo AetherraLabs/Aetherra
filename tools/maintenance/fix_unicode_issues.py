@@ -17,9 +17,8 @@ Issues Fixed:
 """
 
 import os
-import sys
-import re
 from pathlib import Path
+
 
 def fix_unicode_in_files():
     """Fix Unicode issues in all Python files"""
@@ -30,7 +29,7 @@ def fix_unicode_in_files():
         "aetherra_os_launcher.py",
         "aetherra_kernel_loop.py",
         "aetherra_service_registry.py",
-        "Aetherra/aetherra_core/orchestration/scheduler.py"
+        "Aetherra/aetherra_core/orchestration/scheduler.py",
     ]
 
     project_root = Path("c:/Users/enigm/Desktop/Aetherra Project")
@@ -41,7 +40,6 @@ def fix_unicode_in_files():
         "❌": "[ERROR]",
         "🔍": "[SCAN]",
         "💡": "[INFO]",
-
         # Status emojis
         "✅": "[OK]",
         "⚠️": "[WARN]",
@@ -59,7 +57,7 @@ def fix_unicode_in_files():
         "🧠": "[BRAIN]",
         "🔌": "[PLUGIN]",
         "💾": "[MEM]",
-        "📅": "[SCHED]"
+        "📅": "[SCHED]",
     }
 
     for file_path in files_to_fix:
@@ -69,7 +67,7 @@ def fix_unicode_in_files():
 
             try:
                 # Read file with UTF-8 encoding
-                with open(full_path, 'r', encoding='utf-8') as f:
+                with open(full_path, encoding="utf-8") as f:
                     content = f.read()
 
                 # Apply Unicode fixes
@@ -79,7 +77,7 @@ def fix_unicode_in_files():
 
                 # Only write if changes were made
                 if content != original_content:
-                    with open(full_path, 'w', encoding='utf-8') as f:
+                    with open(full_path, "w", encoding="utf-8") as f:
                         f.write(content)
                     print(f"  ✓ Fixed Unicode characters in {file_path}")
                 else:
@@ -90,26 +88,29 @@ def fix_unicode_in_files():
         else:
             print(f"  ⚠️ File not found: {file_path}")
 
+
 def fix_import_issues():
     """Fix import issues in plugin files"""
 
     project_root = Path("c:/Users/enigm/Desktop/Aetherra Project")
 
     # Fix introspector_plugin.py relative import
-    introspector_path = project_root / "Aetherra/plugins/extra_plugins/introspector_plugin.py"
+    introspector_path = (
+        project_root / "Aetherra/plugins/extra_plugins/introspector_plugin.py"
+    )
     if introspector_path.exists():
         print("🔧 Fixing introspector_plugin.py imports...")
         try:
-            with open(introspector_path, 'r', encoding='utf-8') as f:
+            with open(introspector_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Fix relative imports
             content = content.replace(
                 "from ..memory.fractal_mesh.base import",
-                "from Aetherra.aetherra_core.memory.fractal_mesh.base import"
+                "from Aetherra.aetherra_core.memory.fractal_mesh.base import",
             )
 
-            with open(introspector_path, 'w', encoding='utf-8') as f:
+            with open(introspector_path, "w", encoding="utf-8") as f:
                 f.write(content)
             print("  ✓ Fixed introspector_plugin.py imports")
 
@@ -117,31 +118,36 @@ def fix_import_issues():
             print(f"  ❌ Error fixing introspector_plugin.py: {e}")
 
     # Fix memory_aware_plugin_router.py
-    router_path = project_root / "Aetherra/plugins/memory_hooks/memory_aware_plugin_router.py"
+    router_path = (
+        project_root / "Aetherra/plugins/memory_hooks/memory_aware_plugin_router.py"
+    )
     if router_path.exists():
         print("🔧 Fixing memory_aware_plugin_router.py imports...")
         try:
-            with open(router_path, 'r', encoding='utf-8') as f:
+            with open(router_path, encoding="utf-8") as f:
                 content = f.read()
 
             # Fix relative imports
             content = content.replace(
                 "from ..memory.fractal_mesh.base import",
-                "from Aetherra.aetherra_core.memory.fractal_mesh.base import"
+                "from Aetherra.aetherra_core.memory.fractal_mesh.base import",
             )
 
-            with open(router_path, 'w', encoding='utf-8') as f:
+            with open(router_path, "w", encoding="utf-8") as f:
                 f.write(content)
             print("  ✓ Fixed memory_aware_plugin_router.py imports")
 
         except Exception as e:
             print(f"  ❌ Error fixing memory_aware_plugin_router.py: {e}")
 
+
 def create_missing_quantum_memory_module():
     """Create the missing QuantumEnhancedMemoryEngine module"""
 
     project_root = Path("c:/Users/enigm/Desktop/Aetherra Project")
-    quantum_engine_dir = project_root / "Aetherra/aetherra_core/memory/QuantumEnhancedMemoryEngine"
+    quantum_engine_dir = (
+        project_root / "Aetherra/aetherra_core/memory/QuantumEnhancedMemoryEngine"
+    )
 
     # Create directory if it doesn't exist
     quantum_engine_dir.mkdir(parents=True, exist_ok=True)
@@ -200,7 +206,7 @@ class QuantumEnhancedMemoryEngine:
 '''
 
         try:
-            with open(quantum_engine_file, 'w', encoding='utf-8') as f:
+            with open(quantum_engine_file, "w", encoding="utf-8") as f:
                 f.write(quantum_engine_content)
             print("  ✓ Created quantum_memory_engine.py")
         except Exception as e:
@@ -208,28 +214,30 @@ class QuantumEnhancedMemoryEngine:
 
     # Update __init__.py
     init_file = quantum_engine_dir / "__init__.py"
-    init_content = '''from .quantum_memory_engine import QuantumEnhancedMemoryEngine
+    init_content = """from .quantum_memory_engine import QuantumEnhancedMemoryEngine
 
 __all__ = ['QuantumEnhancedMemoryEngine']
-'''
+"""
 
     try:
-        with open(init_file, 'w', encoding='utf-8') as f:
+        with open(init_file, "w", encoding="utf-8") as f:
             f.write(init_content)
         print("  ✓ Updated __init__.py")
     except Exception as e:
         print(f"  ❌ Error updating __init__.py: {e}")
+
 
 def set_utf8_environment():
     """Set UTF-8 environment variables"""
     print("🔧 Setting UTF-8 environment variables...")
 
     # Set environment variables for current session
-    os.environ['PYTHONIOENCODING'] = 'utf-8'
-    os.environ['PYTHONUTF8'] = '1'
+    os.environ["PYTHONIOENCODING"] = "utf-8"
+    os.environ["PYTHONUTF8"] = "1"
 
     print("  ✓ Set PYTHONIOENCODING=utf-8")
     print("  ✓ Set PYTHONUTF8=1")
+
 
 def main():
     """Main fix function"""
@@ -255,6 +263,7 @@ def main():
     print("   set PYTHONIOENCODING=utf-8")
     print("   set PYTHONUTF8=1")
     print("3. Re-run aetherra_os.py")
+
 
 if __name__ == "__main__":
     main()

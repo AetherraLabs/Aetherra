@@ -11,8 +11,8 @@ This creates the complete unified interface with all requested features.
 """
 
 import sys
-import os
 from pathlib import Path
+
 
 def main():
     """Launch the Enhanced Aetherra Neural OS Dashboard"""
@@ -36,9 +36,10 @@ def main():
 
     # Check for required dependencies
     try:
-        from PySide6.QtWidgets import QApplication
-        from PySide6.QtCore import Qt
-        import numpy as np
+        from PySide6.QtCore import Qt  # noqa: F401 (optional runtime import)
+
+        # QApplication imported to confirm availability
+        from PySide6.QtWidgets import QApplication  # noqa: F401
     except ImportError as e:
         print(f"❌ Missing required dependency: {e}")
         print()
@@ -63,8 +64,10 @@ def main():
     except Exception as e:
         print(f"❌ Error launching Aetherra OS: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

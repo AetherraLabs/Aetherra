@@ -22,7 +22,9 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 # Import core systems
-from .IdentityAgent import IdentityAgent, get_identity_agent
+from .IdentityAgent import IdentityAgent, get_identity_agent  # Re-export for public API
+
+__all__ = ["IdentityAgent", "LyrixaCoreInterface", "get_identity_agent"]
 
 
 class LyrixaCoreInterface:
@@ -64,18 +66,13 @@ class LyrixaCoreInterface:
             "core_interface": {
                 "status": "operational",
                 "initialization_time": self.initialization_time.isoformat(),
-                "uptime_minutes": (
-                    datetime.now() - self.initialization_time
-                ).total_seconds()
-                / 60,
+                "uptime_minutes": (datetime.now() - self.initialization_time).total_seconds() / 60,
             },
             "identity_system": {
                 "coherence_score": self.identity_agent.identity_coherence_score,
                 "beliefs_count": len(self.identity_agent.beliefs_system.beliefs),
                 "memories_count": len(self.identity_agent.history_system.memories),
-                "capabilities_count": len(
-                    self.identity_agent.self_model_system.capabilities
-                ),
+                "capabilities_count": len(self.identity_agent.self_model_system.capabilities),
             },
             "session_context": self.session_context,
             "identity_summary": identity_summary,
@@ -93,9 +90,7 @@ class LyrixaCoreInterface:
         # Record interaction in personal history
         self.identity_agent.history_system.record_interaction(
             user_id=user_id,
-            interaction_summary=message[:100] + "..."
-            if len(message) > 100
-            else message,
+            interaction_summary=message[:100] + "..." if len(message) > 100 else message,
             context=str(context) if context else None,
             tags={"user_interaction", "conversation"},
         )
@@ -106,8 +101,7 @@ class LyrixaCoreInterface:
         # Get ethical guidance if needed
         ethical_guidance = []
         if any(
-            word in message.lower()
-            for word in ["should", "moral", "ethical", "right", "wrong"]
+            word in message.lower() for word in ["should", "moral", "ethical", "right", "wrong"]
         ):
             ethical_guidance = self.identity_agent.get_ethical_guidance(message)
 
@@ -116,8 +110,7 @@ class LyrixaCoreInterface:
             {
                 "last_interaction": interaction_start.isoformat(),
                 "current_user": user_id,
-                "interaction_count": self.session_context.get("interaction_count", 0)
-                + 1,
+                "interaction_count": self.session_context.get("interaction_count", 0) + 1,
             }
         )
 
@@ -134,13 +127,10 @@ class LyrixaCoreInterface:
             },
             "relevant_beliefs": [
                 belief.name
-                for belief in list(self.identity_agent.beliefs_system.beliefs.values())[
-                    :3
-                ]
+                for belief in list(self.identity_agent.beliefs_system.beliefs.values())[:3]
                 if belief.strength.value in ["fundamental", "strong"]
             ],
-            "processing_time_ms": (datetime.now() - interaction_start).total_seconds()
-            * 1000,
+            "processing_time_ms": (datetime.now() - interaction_start).total_seconds() * 1000,
             "session_context": self.session_context,
         }
 
@@ -216,9 +206,7 @@ class LyrixaCoreInterface:
 
     def get_relationship_history(self, user_id: str) -> Optional[Dict[str, Any]]:
         """Get relationship history with a specific user"""
-        relationship = self.identity_agent.history_system.get_relationship_history(
-            user_id
-        )
+        relationship = self.identity_agent.history_system.get_relationship_history(user_id)
         if relationship:
             return {
                 "user_id": relationship.user_id,
@@ -260,9 +248,7 @@ def get_lyrixa_core() -> LyrixaCoreInterface:
 
 
 # Convenience functions for common operations
-def process_interaction(
-    user_id: str, message: str, context: Optional[Dict[str, Any]] = None
-):
+def process_interaction(user_id: str, message: str, context: Optional[Dict[str, Any]] = None):
     """Convenience function to process user interaction"""
     return lyrixa_core.process_user_interaction(user_id, message, context)
 

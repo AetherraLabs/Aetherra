@@ -849,7 +849,7 @@ async def {func_name}(input_data: Any, **kwargs) -> Dict[str, Any]:
                         print(
                             f"⚠️ Found corrupted plugin chain: Missing fields: {', '.join(missing_fields)}"
                         )
-                        print(f"🧹 Attempting to clean corrupted chain data...")
+                        print("🧹 Attempting to clean corrupted chain data...")
                         # Try to delete the corrupted memory entry
                         try:
                             if hasattr(memory, "id"):

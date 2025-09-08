@@ -6,8 +6,6 @@ test_integration.py
 Automated integration test for Aetherra Core Systems
 """
 
-import pytest
-
 
 # Plugin system
 def test_plugin_registry_import():

@@ -16,8 +16,8 @@ __author__ = "Aetherra Development Team"
 try:
     # Re-enable all core components after fixing syntax issues
     from .core.aetherra_interpreter import (
-        AetherraInterpreter,  # Re-enabled after fixing syntax errors
-    )
+        AetherraInterpreter,
+    )  # Re-enabled after fixing syntax errors
     from .core.aetherra_parser import AetherraParser  # Re-enabled after fixing naming
     from .core.agent import AetherraAgent
     from .core.ai_runtime import ask_ai

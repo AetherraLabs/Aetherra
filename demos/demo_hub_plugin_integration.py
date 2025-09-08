@@ -18,6 +18,7 @@ This script shows:
 import asyncio
 import json
 from pathlib import Path
+
 from aetherra_plugin_discovery import AetherraPluginDiscovery
 
 
@@ -142,7 +143,7 @@ async def demo_export_catalog():
             "version": "1.0.0",
             "generated": "2025-08-02T14:30:00Z",
             "total_plugins": len(plugins),
-            "plugins": []
+            "plugins": [],
         }
     }
 
@@ -161,13 +162,13 @@ async def demo_export_catalog():
             "downloads": 0,
             "keywords": metadata.keywords or [],
             "local_path": metadata.local_path,
-            "aetherra_version": metadata.aetherra_version
+            "aetherra_version": metadata.aetherra_version,
         }
         catalog["aetherra_local_plugins"]["plugins"].append(hub_format)
 
     # Save catalog
     catalog_path = "aetherra_plugin_catalog.json"
-    with open(catalog_path, 'w', encoding='utf-8') as f:
+    with open(catalog_path, "w", encoding="utf-8") as f:
         json.dump(catalog, f, indent=2, ensure_ascii=False)
 
     print(f"[OK] Plugin catalog exported to: {catalog_path}")

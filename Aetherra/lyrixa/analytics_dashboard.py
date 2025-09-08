@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
@@ -9,47 +10,72 @@ Interactive dashboard for visualizing analytics and insights from the
 Analytics & Insights Engine. Integrates with existing Aetherra UI components.
 """
 
-import asyncio
+from __future__ import annotations
+
+import json
 import logging
 import time
-import json
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-from dataclasses import asdict
+from typing import Any, Callable
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
+# Predefine optional symbols for type checkers
+AnalyticsEngine: Any = None
+InsightsEngine: Any = None
+create_analytics_engine: Callable[..., Any] | None = None
+create_insights_engine: Callable[..., Any] | None = None
+AdvancedMemoryManager: Any = None
+Flask: Any = None
+request: Any = None
+
 # Try to import analytics engine
 try:
-    from Aetherra.lyrixa.analytics_insights_engine import AnalyticsEngine, InsightsEngine, create_analytics_engine, create_insights_engine
+    from Aetherra.lyrixa.analytics_insights_engine import (  # type: ignore  # isort: skip
+        AnalyticsEngine as _AnalyticsEngine,
+        InsightsEngine as _InsightsEngine,
+        create_analytics_engine as _create_analytics_engine,
+        create_insights_engine as _create_insights_engine,
+    )
+
+    AnalyticsEngine = _AnalyticsEngine
+    InsightsEngine = _InsightsEngine
+    create_analytics_engine = _create_analytics_engine
+    create_insights_engine = _create_insights_engine
     ANALYTICS_ENGINE_AVAILABLE = True
     logger.info("✅ Analytics Engine available")
 except ImportError as e:
     ANALYTICS_ENGINE_AVAILABLE = False
     logger.warning(f"[WARN] Analytics Engine not available: {e}")
-    AnalyticsEngine = None
-    InsightsEngine = None
 
 # Try to import advanced memory integration
 try:
-    from Aetherra.lyrixa.memory.advanced_memory_integration import AdvancedMemoryManager
+    from Aetherra.lyrixa.memory.advanced_memory_integration import (  # type: ignore
+        AdvancedMemoryManager as _AdvancedMemoryManager,
+    )
+
+    AdvancedMemoryManager = _AdvancedMemoryManager
     MEMORY_INTEGRATION_AVAILABLE = True
     logger.info("✅ Advanced Memory Integration available")
 except ImportError as e:
     MEMORY_INTEGRATION_AVAILABLE = False
     logger.warning(f"[WARN] Advanced Memory Integration not available: {e}")
-    AdvancedMemoryManager = None
 
 # Try to import Flask for web interface
 try:
-    from flask import Flask, jsonify, render_template_string, request
+    from flask import (  # type: ignore  # isort: skip
+        Flask as _Flask,
+        request as _request,
+    )
+
+    Flask = _Flask
+    request = _request
     FLASK_AVAILABLE = True
     logger.info("✅ Flask available for web interface")
 except ImportError as e:
     FLASK_AVAILABLE = False
     logger.warning(f"[WARN] Flask not available: {e}")
-    Flask = None
 
 
 class AnalyticsDashboard:
@@ -60,7 +86,7 @@ class AnalyticsDashboard:
     Integrates with existing Aetherra components and the Analytics & Insights Engine.
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
 
         # Dashboard configuration
@@ -79,7 +105,7 @@ class AnalyticsDashboard:
             "requests_served": 0,
             "last_refresh": None,
             "active_sessions": 0,
-            "uptime_start": datetime.now()
+            "uptime_start": datetime.now(),
         }
 
         # Cache for dashboard data
@@ -93,22 +119,26 @@ class AnalyticsDashboard:
 
         try:
             # Initialize analytics engine
-            if ANALYTICS_ENGINE_AVAILABLE:
-                self.analytics_engine = create_analytics_engine(self.config.get("analytics", {}))
+            if ANALYTICS_ENGINE_AVAILABLE and create_analytics_engine:
+                self.analytics_engine = create_analytics_engine(self.config.get("analytics", {}))  # type: ignore[misc]
                 logger.info("✅ Analytics Engine initialized")
 
                 # Initialize memory manager if available
-                if MEMORY_INTEGRATION_AVAILABLE:
-                    self.memory_manager = AdvancedMemoryManager()
-                    await self.memory_manager.initialize()
+                if MEMORY_INTEGRATION_AVAILABLE and AdvancedMemoryManager:
+                    self.memory_manager = AdvancedMemoryManager()  # type: ignore[call-arg]
+                    # Some implementations might not be async; guard with hasattr
+                    if hasattr(self.memory_manager, "initialize"):
+                        maybe_coro = self.memory_manager.initialize()
+                        if getattr(maybe_coro, "__await__", None):  # async
+                            await maybe_coro  # type: ignore[func-returns-value]
                     logger.info("✅ Memory Manager initialized")
 
                 # Initialize insights engine
-                self.insights_engine = create_insights_engine(
-                    self.analytics_engine,
-                    self.memory_manager
-                )
-                logger.info("✅ Insights Engine initialized")
+                if create_insights_engine and self.analytics_engine:
+                    self.insights_engine = create_insights_engine(
+                        self.analytics_engine, self.memory_manager
+                    )  # type: ignore[misc]
+                    logger.info("✅ Insights Engine initialized")
 
             # Initialize Flask app
             if FLASK_AVAILABLE:
@@ -122,40 +152,60 @@ class AnalyticsDashboard:
             logger.error(f"❌ Dashboard initialization failed: {e}")
             return False
 
+    # ---------------- CACHE UTILITIES -----------------
+    def invalidate_cache(self, cache_key: str | None = None):
+        """Invalidate cached dashboard data.
+
+        If cache_key is None all cached entries are cleared.
+        """
+        if cache_key is None:
+            self.data_cache.clear()
+        else:
+            self.data_cache.pop(cache_key, None)
+
+    @property
+    def uptime_seconds(self) -> float:
+        """Return dashboard uptime in seconds."""
+        start = self.dashboard_stats.get("uptime_start")
+        if not start:
+            return 0.0
+        return (datetime.now() - start).total_seconds()
+
     def _initialize_flask_app(self):
         """Initialize Flask web application"""
-
-        self.flask_app = Flask(__name__)
+        if not (FLASK_AVAILABLE and Flask):  # Flask not available, skip web setup
+            return
+        self.flask_app = Flask(__name__)  # type: ignore[operator]
 
         # Main dashboard route
-        @self.flask_app.route('/')
+        @self.flask_app.route("/")
         async def dashboard():
             return await self._render_dashboard()
 
         # API routes
-        @self.flask_app.route('/api/metrics')
+        @self.flask_app.route("/api/metrics")
         async def api_metrics():
             return await self._get_metrics_api()
 
-        @self.flask_app.route('/api/insights')
+        @self.flask_app.route("/api/insights")
         async def api_insights():
             return await self._get_insights_api()
 
-        @self.flask_app.route('/api/performance')
+        @self.flask_app.route("/api/performance")
         async def api_performance():
             return await self._get_performance_api()
 
-        @self.flask_app.route('/api/health')
+        @self.flask_app.route("/api/health")
         async def api_health():
             return await self._get_health_api()
 
         # Data collection endpoint
-        @self.flask_app.route('/api/collect', methods=['POST'])
+        @self.flask_app.route("/api/collect", methods=["POST"])
         async def api_collect():
             return await self._collect_metric_api()
 
         # Real-time updates endpoint
-        @self.flask_app.route('/api/live')
+        @self.flask_app.route("/api/live")
         async def api_live():
             return await self._get_live_data_api()
 
@@ -177,7 +227,7 @@ class AnalyticsDashboard:
             logger.error(f"Dashboard rendering failed: {e}")
             return self._get_error_html_template(str(e))
 
-    async def _get_dashboard_data(self) -> Dict[str, Any]:
+    async def _get_dashboard_data(self) -> dict[str, Any]:
         """Get comprehensive dashboard data"""
 
         try:
@@ -192,8 +242,8 @@ class AnalyticsDashboard:
                 "system_available": {
                     "analytics_engine": ANALYTICS_ENGINE_AVAILABLE,
                     "memory_integration": MEMORY_INTEGRATION_AVAILABLE,
-                    "flask": FLASK_AVAILABLE
-                }
+                    "flask": FLASK_AVAILABLE,
+                },
             }
 
             # Get analytics data if available
@@ -212,13 +262,15 @@ class AnalyticsDashboard:
 
             # Get comprehensive insights if available
             if self.insights_engine:
-                comprehensive_insights = await self.insights_engine.generate_comprehensive_insights()
+                comprehensive_insights = (
+                    await self.insights_engine.generate_comprehensive_insights()
+                )
                 dashboard_data["comprehensive_insights"] = comprehensive_insights
 
             # Cache the data
             self.data_cache[cache_key] = {
                 "data": dashboard_data,
-                "timestamp": time.time()
+                "timestamp": time.time(),
             }
 
             return dashboard_data
@@ -238,7 +290,7 @@ class AnalyticsDashboard:
 
         return age < self.cache_timeout
 
-    async def _get_metrics_api(self) -> Dict[str, Any]:
+    async def _get_metrics_api(self) -> dict[str, Any]:
         """API endpoint for metrics data"""
 
         try:
@@ -252,7 +304,7 @@ class AnalyticsDashboard:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    async def _get_insights_api(self) -> Dict[str, Any]:
+    async def _get_insights_api(self) -> dict[str, Any]:
         """API endpoint for insights data"""
 
         try:
@@ -260,14 +312,14 @@ class AnalyticsDashboard:
                 return {"error": "Analytics engine not available"}
 
             # Get insights with filtering
-            category = request.args.get("category")
-            min_confidence = float(request.args.get("min_confidence", 0.0))
-            limit = int(request.args.get("limit", 20))
+            if not (FLASK_AVAILABLE and request):  # pragma: no cover - safety
+                return {"error": "Flask request context not available"}
+            category = request.args.get("category")  # type: ignore[union-attr]
+            min_confidence = float(request.args.get("min_confidence", 0.0))  # type: ignore[union-attr]
+            limit = int(request.args.get("limit", 20))  # type: ignore[union-attr]
 
             insights = await self.analytics_engine.get_insights(
-                category=category,
-                min_confidence=min_confidence,
-                limit=limit
+                category=category, min_confidence=min_confidence, limit=limit
             )
 
             return {"status": "success", "data": insights}
@@ -275,7 +327,7 @@ class AnalyticsDashboard:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    async def _get_performance_api(self) -> Dict[str, Any]:
+    async def _get_performance_api(self) -> dict[str, Any]:
         """API endpoint for performance data"""
 
         try:
@@ -288,7 +340,7 @@ class AnalyticsDashboard:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    async def _get_health_api(self) -> Dict[str, Any]:
+    async def _get_health_api(self) -> dict[str, Any]:
         """API endpoint for system health"""
 
         try:
@@ -299,9 +351,9 @@ class AnalyticsDashboard:
                     "analytics_engine": "available" if self.analytics_engine else "unavailable",
                     "insights_engine": "available" if self.insights_engine else "unavailable",
                     "memory_manager": "available" if self.memory_manager else "unavailable",
-                    "dashboard": "running"
+                    "dashboard": "running",
                 },
-                "dashboard_stats": self.dashboard_stats.copy()
+                "dashboard_stats": self.dashboard_stats.copy(),
             }
 
             if self.analytics_engine:
@@ -313,14 +365,16 @@ class AnalyticsDashboard:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    async def _collect_metric_api(self) -> Dict[str, Any]:
+    async def _collect_metric_api(self) -> dict[str, Any]:
         """API endpoint for collecting metrics"""
 
         try:
             if not self.analytics_engine:
                 return {"error": "Analytics engine not available"}
 
-            data = request.get_json()
+            if not (FLASK_AVAILABLE and request):  # pragma: no cover - safety
+                return {"status": "error", "message": "Flask request not available"}
+            data = request.get_json()  # type: ignore[union-attr]
             if not data:
                 return {"status": "error", "message": "No data provided"}
 
@@ -335,13 +389,12 @@ class AnalyticsDashboard:
 
             # Collect the metric
             success = await self.analytics_engine.collect_metric(
-                name=name,
-                value=float(value),
-                category=category,
-                metadata=metadata
+                name=name, value=float(value), category=category, metadata=metadata
             )
 
             if success:
+                # Invalidate cached dashboard data so new metric surfaces quickly
+                self.invalidate_cache("dashboard_data")
                 return {"status": "success", "message": "Metric collected"}
             else:
                 return {"status": "error", "message": "Failed to collect metric"}
@@ -349,13 +402,13 @@ class AnalyticsDashboard:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    async def _get_live_data_api(self) -> Dict[str, Any]:
+    async def _get_live_data_api(self) -> dict[str, Any]:
         """API endpoint for live data updates"""
 
         try:
             live_data = {
                 "timestamp": datetime.now().isoformat(),
-                "dashboard_stats": self.dashboard_stats.copy()
+                "dashboard_stats": self.dashboard_stats.copy(),
             }
 
             if self.analytics_engine:
@@ -373,7 +426,7 @@ class AnalyticsDashboard:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-    def _get_dashboard_html_template(self, data: Dict[str, Any]) -> str:
+    def _get_dashboard_html_template(self, data: dict[str, Any]) -> str:
         """Get the HTML template for the dashboard"""
 
         return f"""
@@ -491,7 +544,7 @@ class AnalyticsDashboard:
         <h1>🌌 Aetherra Analytics Dashboard</h1>
         <p>Advanced Analytics & Insights Engine (#6)</p>
         <button class="refresh-button" onclick="location.reload()">🔄 Refresh Dashboard</button>
-        <p><small>Last updated: {data.get('timestamp', 'Unknown')}</small></p>
+        <p><small>Last updated: {data.get("timestamp", "Unknown")}</small></p>
     </div>
 
     <div class="dashboard-grid">
@@ -501,7 +554,7 @@ class AnalyticsDashboard:
             <div class="metric-label">Overall System Health</div>
 
             <h4>Components:</h4>
-            {self._get_component_status_html(data.get('system_available', {}))}
+            {self._get_component_status_html(data.get("system_available", {}))}
         </div>
 
         <div class="dashboard-card">
@@ -511,23 +564,23 @@ class AnalyticsDashboard:
 
         <div class="dashboard-card">
             <div class="card-title">🎯 Recent Insights</div>
-            {self._get_insights_html(data.get('recent_insights', []))}
+            {self._get_insights_html(data.get("recent_insights", []))}
         </div>
 
         <div class="dashboard-card">
             <div class="card-title">⚡ Performance Snapshot</div>
-            {self._get_performance_html(data.get('performance_snapshot', {}))}
+            {self._get_performance_html(data.get("performance_snapshot", {}))}
         </div>
     </div>
 
     <div class="dashboard-card">
         <div class="card-title">🔍 Comprehensive Insights</div>
-        {self._get_comprehensive_insights_html(data.get('comprehensive_insights', {}))}
+        {self._get_comprehensive_insights_html(data.get("comprehensive_insights", {}))}
     </div>
 
     <div class="dashboard-card">
         <div class="card-title">🛠️ Debug Information</div>
-        <div class="json-data">{json.dumps(data.get('dashboard_stats', {}), indent=2)}</div>
+        <div class="json-data">{json.dumps(data.get("dashboard_stats", {}), indent=2)}</div>
     </div>
 
     <script>
@@ -551,26 +604,26 @@ class AnalyticsDashboard:
 </html>
         """
 
-    def _get_system_status_display(self, data: Dict[str, Any]) -> str:
+    def _get_system_status_display(self, data: dict[str, Any]) -> str:
         """Get system status display"""
 
-        performance = data.get('performance_snapshot', {})
-        health = performance.get('system_health', {})
-        status = health.get('status', 'unknown')
-        score = health.get('score', 0)
+        performance = data.get("performance_snapshot", {})
+        health = performance.get("system_health", {})
+        status = health.get("status", "unknown")
+        score = health.get("score", 0)
 
         status_colors = {
-            'excellent': 'status-good',
-            'good': 'status-good',
-            'fair': 'status-warning',
-            'poor': 'status-error',
-            'unknown': 'status-warning'
+            "excellent": "status-good",
+            "good": "status-good",
+            "fair": "status-warning",
+            "poor": "status-error",
+            "unknown": "status-warning",
         }
 
-        color_class = status_colors.get(status, 'status-warning')
+        color_class = status_colors.get(status, "status-warning")
         return f'<span class="{color_class}">{status.title()} ({score}%)</span>'
 
-    def _get_component_status_html(self, components: Dict[str, bool]) -> str:
+    def _get_component_status_html(self, components: dict[str, bool]) -> str:
         """Get component status HTML"""
 
         html = ""
@@ -581,25 +634,25 @@ class AnalyticsDashboard:
 
         return html
 
-    def _get_analytics_stats_html(self, data: Dict[str, Any]) -> str:
+    def _get_analytics_stats_html(self, data: dict[str, Any]) -> str:
         """Get analytics statistics HTML"""
 
-        stats = data.get('analytics_statistics', {})
+        stats = data.get("analytics_statistics", {})
 
         html = f"""
-        <div class="metric-value">{stats.get('metrics_collected', 0)}</div>
+        <div class="metric-value">{stats.get("metrics_collected", 0)}</div>
         <div class="metric-label">Metrics Collected</div>
 
-        <div class="metric-value">{stats.get('insights_generated', 0)}</div>
+        <div class="metric-value">{stats.get("insights_generated", 0)}</div>
         <div class="metric-label">Insights Generated</div>
 
-        <div class="metric-value">{stats.get('patterns_discovered', 0)}</div>
+        <div class="metric-value">{stats.get("patterns_discovered", 0)}</div>
         <div class="metric-label">Patterns Discovered</div>
         """
 
         return html
 
-    def _get_insights_html(self, insights: List[Dict[str, Any]]) -> str:
+    def _get_insights_html(self, insights: list[dict[str, Any]]) -> str:
         """Get insights HTML"""
 
         if not insights:
@@ -607,26 +660,26 @@ class AnalyticsDashboard:
 
         html = ""
         for insight in insights[:5]:  # Show top 5
-            confidence = insight.get('confidence', 0)
-            impact = insight.get('impact_score', 0)
+            confidence = insight.get("confidence", 0)
+            impact = insight.get("impact_score", 0)
             html += f"""
             <div class="insight-item">
-                <strong>{insight.get('category', 'General').title()}</strong><br>
-                {insight.get('description', 'No description')}
+                <strong>{insight.get("category", "General").title()}</strong><br>
+                {insight.get("description", "No description")}
                 <br><small>Confidence: {confidence:.1%} | Impact: {impact:.1%}</small>
             </div>
             """
 
         return html
 
-    def _get_performance_html(self, performance: Dict[str, Any]) -> str:
+    def _get_performance_html(self, performance: dict[str, Any]) -> str:
         """Get performance HTML"""
 
         if not performance:
             return "<p>No performance data available.</p>"
 
-        total_metrics = performance.get('total_metrics', 0)
-        total_insights = performance.get('total_insights', 0)
+        total_metrics = performance.get("total_metrics", 0)
+        total_insights = performance.get("total_insights", 0)
 
         html = f"""
         <div class="metric-value">{total_metrics:,}</div>
@@ -636,35 +689,37 @@ class AnalyticsDashboard:
         <div class="metric-label">Total Insights</div>
         """
 
-        category_stats = performance.get('category_statistics', {})
+        category_stats = performance.get("category_statistics", {})
         if category_stats:
             html += "<h4>Category Statistics:</h4>"
             for category, stats in category_stats.items():
-                html += f"<p><strong>{category.title()}:</strong> {stats.get('count', 0)} metrics</p>"
+                html += (
+                    f"<p><strong>{category.title()}:</strong> {stats.get('count', 0)} metrics</p>"
+                )
 
         return html
 
-    def _get_comprehensive_insights_html(self, insights: Dict[str, Any]) -> str:
+    def _get_comprehensive_insights_html(self, insights: dict[str, Any]) -> str:
         """Get comprehensive insights HTML"""
 
-        if not insights or 'error' in insights:
+        if not insights or "error" in insights:
             return "<p>Comprehensive insights not available.</p>"
 
-        summary = insights.get('summary', {})
+        summary = insights.get("summary", {})
 
         html = f"""
-        <div class="metric-value">{summary.get('total_insights', 0)}</div>
+        <div class="metric-value">{summary.get("total_insights", 0)}</div>
         <div class="metric-label">Total Insights Generated</div>
 
         <h4>Key Findings:</h4>
         """
 
-        key_findings = summary.get('key_findings', [])
+        key_findings = summary.get("key_findings", [])
         for finding in key_findings[:3]:  # Show top 3
             html += f'<div class="insight-item">{finding}</div>'
 
         html += "<h4>Priority Actions:</h4>"
-        priority_actions = summary.get('priority_actions', [])
+        priority_actions = summary.get("priority_actions", [])
         for action in priority_actions[:3]:  # Show top 3
             html += f'<div class="insight-item">{action}</div>'
 
@@ -718,12 +773,7 @@ class AnalyticsDashboard:
 
         try:
             logger.info(f"🚀 Starting Analytics Dashboard on http://{self.host}:{self.port}")
-            self.flask_app.run(
-                host=self.host,
-                port=self.port,
-                debug=self.debug,
-                threaded=True
-            )
+            self.flask_app.run(host=self.host, port=self.port, debug=self.debug, threaded=True)
             return True
 
         except Exception as e:
@@ -740,26 +790,31 @@ class AnalyticsDashboard:
             # Collect dashboard metrics
             uptime = (datetime.now() - self.dashboard_stats["uptime_start"]).total_seconds()
 
+            await self.analytics_engine.collect_metric("dashboard_uptime", uptime, "dashboard")
+
             await self.analytics_engine.collect_metric(
-                "dashboard_uptime", uptime, "dashboard"
+                "dashboard_requests",
+                self.dashboard_stats["requests_served"],
+                "dashboard",
             )
 
             await self.analytics_engine.collect_metric(
-                "dashboard_requests", self.dashboard_stats["requests_served"], "dashboard"
+                "dashboard_active_sessions",
+                self.dashboard_stats["active_sessions"],
+                "dashboard",
             )
 
-            await self.analytics_engine.collect_metric(
-                "dashboard_active_sessions", self.dashboard_stats["active_sessions"], "dashboard"
-            )
+            # Uptime metric cached update invalidation for freshness
+            self.invalidate_cache("dashboard_data")
 
         except Exception as e:
             logger.error(f"Failed to collect dashboard metrics: {e}")
 
 
 # Convenience function
-def create_analytics_dashboard(config: Optional[Dict[str, Any]] = None) -> AnalyticsDashboard:
+def create_analytics_dashboard(config: dict[str, Any] | None = None) -> AnalyticsDashboard:
     """Create and return an analytics dashboard instance"""
     return AnalyticsDashboard(config)
 
 
-__all__ = ['AnalyticsDashboard', 'create_analytics_dashboard']
+__all__ = ["AnalyticsDashboard", "create_analytics_dashboard"]

@@ -11,16 +11,16 @@ with AI-powered diagnosis, automatic corrections, and learning capabilities.
 """
 
 import asyncio
-import sys
 import os
+import sys
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from intelligent_error_handler_8 import (
     LyrixaIntelligentErrorHandler,
+    error_monitor,
     get_global_error_handler,
-    error_monitor
 )
 
 
@@ -43,7 +43,7 @@ def create_test_errors():
 
     # Plugin import error
     try:
-        import nonexistent_plugin  # This will fail
+        import nonexistent_plugin_module  # noqa: F401
     except ImportError as e:
         test_errors.append(("Plugin Import Error", e))
 
@@ -110,9 +110,7 @@ async def demo_intelligent_error_handling():
     # Initialize intelligent error handler
     analytics_engine = MockAnalyticsEngine()
 
-    error_handler = LyrixaIntelligentErrorHandler(
-        analytics_engine=analytics_engine
-    )
+    error_handler = LyrixaIntelligentErrorHandler(analytics_engine=analytics_engine)
 
     print("🎯 INTELLIGENT ERROR HANDLING DEMONSTRATION")
     print("-" * 40)
@@ -131,9 +129,9 @@ async def demo_intelligent_error_handling():
             context={
                 "test_case": error_name,
                 "demo_mode": True,
-                "user_id": "demo_user"
+                "user_id": "demo_user",
             },
-            user_id="demo_user"
+            user_id="demo_user",
         )
 
         # Display results
@@ -180,16 +178,16 @@ async def demo_intelligent_error_handling():
 
     # Simulate the same error multiple times to show learning
     for i in range(3):
-        print(f"\nSimulating repeat error #{i+1}...")
+        print(f"\nSimulating repeat error #{i + 1}...")
         try:
             raise ImportError("No module named 'repeated_test_plugin'")
         except ImportError as e:
             result = await error_handler.handle_error(
-                error=e,
-                context={"repeat_test": True},
-                user_id="pattern_demo_user"
+                error=e, context={"repeat_test": True}, user_id="pattern_demo_user"
             )
-            print(f"Pattern recognition: {'Yes' if 'pattern' in str(result.get('strategy_applied', '')) else 'Learning...'}")
+            print(
+                f"Pattern recognition: {'Yes' if 'pattern' in str(result.get('strategy_applied', '')) else 'Learning...'}"
+            )
 
     print("\n🔄 SELF-CORRECTION DEMONSTRATION")
     print("-" * 28)
@@ -199,15 +197,14 @@ async def demo_intelligent_error_handling():
 
     class CorrectableError(Exception):
         """A custom error that can be auto-corrected"""
+
         pass
 
     try:
         raise CorrectableError("This is a correctable test error")
     except CorrectableError as e:
         result = await error_handler.handle_error(
-            error=e,
-            context={"auto_correctable": True},
-            user_id="correction_demo_user"
+            error=e, context={"auto_correctable": True}, user_id="correction_demo_user"
         )
         print(f"Auto-correction result: {result.get('corrected', False)}")
 
@@ -224,13 +221,17 @@ async def demo_intelligent_error_handling():
     print(f"  Learned Patterns: {final_stats['learned_patterns']}")
 
     print("\nSystem Health:")
-    print(f"  Auto-Correction: {'Enabled' if final_stats['auto_correction_enabled'] else 'Disabled'}")
+    print(
+        f"  Auto-Correction: {'Enabled' if final_stats['auto_correction_enabled'] else 'Disabled'}"
+    )
     print(f"  Learning: {'Enabled' if final_stats['learning_enabled'] else 'Disabled'}")
     print(f"  Average Success Rate: {final_stats['average_success_rate']:.2f}")
 
     print("\nMost Common Errors:")
-    for error_info in final_stats['most_common_errors']:
-        print(f"  • {error_info['signature'][:50]}... ({error_info['occurrences']} times)")
+    for error_info in final_stats["most_common_errors"]:
+        print(
+            f"  • {error_info['signature'][:50]}... ({error_info['occurrences']} times)"
+        )
 
     print("\n[OK] Intelligent Error Handling Demo Complete!")
     print("🚀 Ready for production integration with:")
@@ -261,60 +262,66 @@ async def interactive_error_handler_demo():
         try:
             user_input = input("\n[TOOL] Command: ").strip().lower()
 
-            if user_input in ['exit', 'quit']:
+            if user_input in ["exit", "quit"]:
                 print("👋 Intelligent Error Handler demo session ended.")
                 break
 
-            if user_input == 'stats':
+            if user_input == "stats":
                 stats = error_handler.get_error_statistics()
                 print("\n📊 Current Error Handler Statistics:")
                 for key, value in stats.items():
                     print(f"  {key}: {value}")
                 continue
 
-            if user_input == 'patterns':
+            if user_input == "patterns":
                 stats = error_handler.get_error_statistics()
-                patterns = stats.get('most_common_errors', [])
+                patterns = stats.get("most_common_errors", [])
                 print(f"\n🧠 Learned Error Patterns ({len(patterns)}):")
                 for pattern in patterns:
                     print(f"  • {pattern['signature'][:60]}...")
-                    print(f"    Occurrences: {pattern['occurrences']}, Success Rate: {pattern['success_rate']:.2f}")
+                    print(
+                        f"    Occurrences: {pattern['occurrences']}, Success Rate: {pattern['success_rate']:.2f}"
+                    )
                 continue
 
-            if user_input == 'cleanup':
+            if user_input == "cleanup":
                 await error_handler.cleanup_old_errors(max_age_hours=1)
                 print("🧹 Cleaned up old error records")
                 continue
 
-            if user_input.startswith('trigger '):
-                error_type = user_input.split(' ', 1)[1]
+            if user_input.startswith("trigger "):
+                error_type = user_input.split(" ", 1)[1]
 
                 # Trigger different types of errors
                 try:
-                    if error_type == 'import':
-                        import nonexistent_module_for_demo
-                    elif error_type == 'permission':
+                    if error_type == "import":
+                        import nonexistent_plugin_module  # noqa: F401
+                    elif error_type == "permission":
                         raise PermissionError("Simulated permission error")
-                    elif error_type == 'syntax':
+                    elif error_type == "syntax":
                         exec("invalid syntax here")
-                    elif error_type == 'memory':
+                    elif error_type == "memory":
                         raise MemoryError("Simulated memory error")
-                    elif error_type == 'network':
+                    elif error_type == "network":
                         raise TimeoutError("Simulated network timeout")
-                    elif error_type == 'runtime':
+                    elif error_type == "runtime":
                         result = 1 / 0
                     else:
                         raise ValueError(f"Unknown error type: {error_type}")
 
                 except Exception as e:
-                    result = await error_handler.handle_error(e, {"interactive": True}, "interactive_user")
+                    result = await error_handler.handle_error(
+                        e, {"interactive": True}, "interactive_user"
+                    )
                     print(f"\n[TOOL] Error handled: {result['handled']}")
                     print(f"   Strategy: {result.get('strategy_applied', 'None')}")
                     print(f"   Corrected: {result.get('corrected', False)}")
 
                 continue
 
-            print("❓ Unknown command. Type 'exit' to quit or see available commands above.")
+            print(
+                "❓ Unknown command. Type 'exit' to quit or see available commands above."
+            )
 
         except KeyboardInterrupt:
             print("\n\n👋 Interactive session interrupted.")
@@ -333,8 +340,12 @@ if __name__ == "__main__":
 
     # Offer interactive mode
     try:
-        choice = input("\n🎮 Would you like to try interactive mode? (y/n): ").strip().lower()
-        if choice in ['y', 'yes']:
+        choice = (
+            input("\n🎮 Would you like to try interactive mode? (y/n): ")
+            .strip()
+            .lower()
+        )
+        if choice in ["y", "yes"]:
             asyncio.run(interactive_error_handler_demo())
     except KeyboardInterrupt:
         print("\n👋 Demo session ended.")

@@ -112,7 +112,8 @@ class MemoryCompressionAnalyzer:
         cursor = conn.cursor()
 
         # Compression scores table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS compression_scores (
                 fragment_id TEXT PRIMARY KEY,
                 memory_type TEXT,
@@ -130,10 +131,12 @@ class MemoryCompressionAnalyzer:
                 timestamp REAL,
                 schema_used TEXT
             )
-        """)
+        """
+        )
 
         # Performance metrics table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS performance_metrics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 memory_type TEXT,
@@ -147,10 +150,12 @@ class MemoryCompressionAnalyzer:
                 timestamp REAL,
                 schema_used TEXT
             )
-        """)
+        """
+        )
 
         # Schema effectiveness table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS schema_effectiveness (
                 memory_type TEXT,
                 schema_name TEXT,
@@ -162,7 +167,8 @@ class MemoryCompressionAnalyzer:
                 last_updated REAL,
                 PRIMARY KEY (memory_type, schema_name)
             )
-        """)
+        """
+        )
 
         conn.commit()
         conn.close()
@@ -341,9 +347,9 @@ class MemoryCompressionAnalyzer:
 
             # Update summaries
             recommendations["summary"]["total_original_size"] += score.original_size
-            recommendations["summary"]["estimated_compressed_size"] += (
-                score.compressed_size
-            )
+            recommendations["summary"][
+                "estimated_compressed_size"
+            ] += score.compressed_size
 
             # Track distributions
             fidelity_counts[score.fidelity_level.value] = (

@@ -56,6 +56,6 @@ async def test_plugin_invoke_timeout(monkeypatch):
     metrics = status.get("metrics", {})
     timeout_count = metrics.get("plugin_invoke_timeouts", 0)
     error_count = metrics.get("plugin_invoke_errors", 0)
-    assert timeout_count > 0 or error_count > 0, (
-        f"Expected timeout/error metric increment. Metrics: {metrics}"
-    )
+    assert (
+        timeout_count > 0 or error_count > 0
+    ), f"Expected timeout/error metric increment. Metrics: {metrics}"

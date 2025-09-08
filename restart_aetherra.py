@@ -23,13 +23,11 @@ Author: Aetherra Labs
 import asyncio
 import json
 import logging
-import os
-import signal
 import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import psutil
 
@@ -143,7 +141,7 @@ class AetherraRestartManager:
 
         # Validate configuration
         try:
-            with open(self.config_path, "r") as f:
+            with open(self.config_path) as f:
                 config = json.load(f)
             logger.info("✅ Configuration file is valid")
         except Exception as e:
@@ -417,7 +415,7 @@ class AetherraRestartManager:
                 return True
             else:
                 stdout, stderr = process.communicate()
-                logger.error(f"❌ System startup failed")
+                logger.error("❌ System startup failed")
                 logger.error(f"STDOUT: {stdout.decode()}")
                 logger.error(f"STDERR: {stderr.decode()}")
                 return False
@@ -436,7 +434,7 @@ class AetherraRestartManager:
             # Check if PID file exists and process is running
             if self.pid_file.exists():
                 try:
-                    with open(self.pid_file, "r") as f:
+                    with open(self.pid_file) as f:
                         pid = int(f.read().strip())
 
                     if psutil.pid_exists(pid):

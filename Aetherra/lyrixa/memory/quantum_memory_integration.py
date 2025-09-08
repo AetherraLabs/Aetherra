@@ -9,12 +9,11 @@ Quantum-inspired memory architecture for the Aetherra AI OS.
 Provides advanced memory capabilities using quantum computing concepts.
 """
 
-import asyncio
 import math
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -34,9 +33,7 @@ class QuantumMemoryNode:
     def __post_init__(self):
         """Normalize quantum state probabilities."""
         if self.quantum_state:
-            total = sum(
-                abs(amplitude) ** 2 for amplitude in self.quantum_state.values()
-            )
+            total = sum(abs(amplitude) ** 2 for amplitude in self.quantum_state.values())
             if total > 0:
                 normalization = math.sqrt(total)
                 self.quantum_state = {
@@ -129,9 +126,7 @@ class QuantumMemoryLayer:
             # Synchronize quantum states based on entanglement
             self._synchronize_entangled_states(node_id1, node_id2, strength)
 
-    def quantum_observe(
-        self, node_id: str, observer_state: str = "active"
-    ) -> Optional[Any]:
+    def quantum_observe(self, node_id: str, observer_state: str = "active") -> Optional[Any]:
         """
         Perform quantum observation on a memory node.
 
@@ -166,7 +161,7 @@ class QuantumMemoryLayer:
 
     def quantum_search(
         self, query: str, search_algorithm: str = "grover"
-    ) -> List[Tuple[str, float]]:
+    ) -> List[tuple[str, float]]:
         """
         Perform quantum-inspired search across memory nodes.
 
@@ -210,15 +205,12 @@ class QuantumMemoryLayer:
         """Get quantum memory layer statistics."""
         total_nodes = len(self.nodes)
         total_entanglements = (
-            sum(len(connections) for connections in self.entanglement_graph.values())
-            // 2
+            sum(len(connections) for connections in self.entanglement_graph.values()) // 2
         )
 
         avg_coherence = 0
         if self.nodes:
-            avg_coherence = (
-                sum(node.coherence_level for node in self.nodes.values()) / total_nodes
-            )
+            avg_coherence = sum(node.coherence_level for node in self.nodes.values()) / total_nodes
 
         return {
             "total_quantum_nodes": total_nodes,
@@ -231,9 +223,7 @@ class QuantumMemoryLayer:
             ),
         }
 
-    def _synchronize_entangled_states(
-        self, node_id1: str, node_id2: str, strength: float
-    ):
+    def _synchronize_entangled_states(self, node_id1: str, node_id2: str, strength: float):
         """Synchronize quantum states of entangled nodes."""
         node1 = self.nodes[node_id1]
         node2 = self.nodes[node_id2]
@@ -277,7 +267,7 @@ class QuantumMemoryLayer:
         # Renormalize
         node.__post_init__()
 
-    def _grover_search(self, query: str) -> List[Tuple[str, float]]:
+    def _grover_search(self, query: str) -> List[tuple[str, float]]:
         """Quantum Grover's algorithm inspired search."""
         query_lower = query.lower()
         results = []
@@ -288,9 +278,7 @@ class QuantumMemoryLayer:
 
             if query_lower in content_str:
                 # Grover amplitude amplification simulation
-                match_strength = content_str.count(query_lower) / len(
-                    content_str.split()
-                )
+                match_strength = content_str.count(query_lower) / len(content_str.split())
                 quantum_boost = math.sqrt(match_strength) * node.coherence_level
 
                 # Quantum interference with entangled nodes
@@ -303,7 +291,7 @@ class QuantumMemoryLayer:
         results.sort(key=lambda x: x[1], reverse=True)
         return results
 
-    def _amplitude_search(self, query: str) -> List[Tuple[str, float]]:
+    def _amplitude_search(self, query: str) -> List[tuple[str, float]]:
         """Amplitude-based quantum search."""
         query_lower = query.lower()
         results = []
@@ -321,7 +309,7 @@ class QuantumMemoryLayer:
         results.sort(key=lambda x: x[1], reverse=True)
         return results
 
-    def _interference_search(self, query: str) -> List[Tuple[str, float]]:
+    def _interference_search(self, query: str) -> List[tuple[str, float]]:
         """Quantum interference based search."""
         query_lower = query.lower()
         results = []
@@ -335,9 +323,7 @@ class QuantumMemoryLayer:
 
                 for entangled_id in node.entangled_nodes:
                     if entangled_id in self.nodes:
-                        entangled_content = str(
-                            self.nodes[entangled_id].content
-                        ).lower()
+                        entangled_content = str(self.nodes[entangled_id].content).lower()
                         if query_lower in entangled_content:
                             interference_strength += 0.2
 
@@ -347,7 +333,7 @@ class QuantumMemoryLayer:
         results.sort(key=lambda x: x[1], reverse=True)
         return results
 
-    def _classical_search(self, query: str) -> List[Tuple[str, float]]:
+    def _classical_search(self, query: str) -> List[tuple[str, float]]:
         """Fallback classical search."""
         query_lower = query.lower()
         results = []
@@ -382,7 +368,7 @@ class QuantumMemoryLayer:
 # Convenience functions for easy integration
 async def quantum_memory_search(
     memory_layer: QuantumMemoryLayer, query: str, algorithm: str = "grover"
-) -> List[Tuple[str, float]]:
+) -> List[tuple[str, float]]:
     """Async wrapper for quantum memory search."""
     return memory_layer.quantum_search(query, algorithm)
 
@@ -408,7 +394,7 @@ class QuantumEnhancedMemoryEngine:
         """Retrieve memory with quantum lookup"""
         return self.quantum_layer.quantum_observe(memory_id)
 
-    async def search_memories(self, query: str) -> List[Tuple[str, float]]:
+    async def search_memories(self, query: str) -> List[tuple[str, float]]:
         """Search memories using quantum algorithms"""
         return self.quantum_layer.quantum_search(query)
 

@@ -6,11 +6,11 @@ AI Plugin Generator UI
 Intelligent plugin creation and code generation interface
 """
 
-import json
+
 import sys
 
 from PySide6.QtCore import Qt, QTimer, pyqtSignal
-from PySide6.QtGui import QColor, QFont
+from PySide6.QtGui import QColor, QFont  # noqa: F401 (optional runtime import)
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -23,7 +23,6 @@ from PySide6.QtWidgets import (
     QProgressBar,
     QPushButton,
     QSlider,
-    QSpinBox,
     QSplitter,
     QTabWidget,
     QTextBrowser,
@@ -543,7 +542,8 @@ class AIPluginGeneratorUI(QWidget):
 
     def apply_styling(self):
         """Apply dark theme styling to the interface."""
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QWidget {
                 background-color: #1e1e1e;
                 color: white;
@@ -676,7 +676,8 @@ class AIPluginGeneratorUI(QWidget):
             QSplitter::handle {
                 background-color: #404040;
             }
-        """)
+        """
+        )
 
     def add_function(self):
         """Add a function to the specification."""
@@ -771,7 +772,8 @@ class AIPluginGeneratorUI(QWidget):
         else:
             self.generation_timer.stop()
             self.current_phase.setText("Generation complete!")
-            self.ai_insights.setHtml("""
+            self.ai_insights.setHtml(
+                """
                 <div style='color: green;'>
                     <h3>✅ Plugin Generated Successfully!</h3>
                     <p>• Code structure: Complete</p>
@@ -779,7 +781,8 @@ class AIPluginGeneratorUI(QWidget):
                     <p>• Documentation: Generated</p>
                     <p>• Tests: Included</p>
                 </div>
-            """)
+            """
+            )
 
             # Add sample generated code
             sample_code = '''"""
@@ -866,7 +869,8 @@ class {}:
 
     def test_plugin(self):
         """Test the generated plugin."""
-        self.output_panel.setHtml("""
+        self.output_panel.setHtml(
+            """
             <div style='color: green;'>
                 <h3>🧪 Plugin Test Results</h3>
                 <p>✅ Initialization: Passed</p>
@@ -874,13 +878,15 @@ class {}:
                 <p>✅ Error handling: Passed</p>
                 <p>⚠️ Performance: Needs optimization</p>
             </div>
-        """)
+        """
+        )
 
     def preview_template_category(self, current, previous):
         """Preview template category."""
         if current:
             category = current.text()
-            self.template_preview.setHtml(f"""
+            self.template_preview.setHtml(
+                f"""
                 <h3>{category}</h3>
                 <p>Available templates for this category:</p>
                 <ul>
@@ -889,7 +895,8 @@ class {}:
                     <li>Custom Template</li>
                 </ul>
                 <p>Select a template to preview its code structure.</p>
-            """)
+            """
+            )
 
     def use_template(self):
         """Use selected template."""
@@ -911,12 +918,14 @@ class {}:
         current_item = self.generated_plugins_tree.currentItem()
         if current_item:
             plugin_name = current_item.text(0)
-            self.output_panel.setHtml(f"""
+            self.output_panel.setHtml(
+                f"""
                 <div style='color: green;'>
                     <h3>🧪 Testing {plugin_name}</h3>
                     <p>✅ All tests passed!</p>
                 </div>
-            """)
+            """
+            )
 
 
 if __name__ == "__main__":

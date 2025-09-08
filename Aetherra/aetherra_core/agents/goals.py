@@ -104,7 +104,7 @@ class LyrixaGoalSystem:
         """Load goals from the JSON file"""
         if os.path.exists(self.goals_file):
             try:
-                with open(self.goals_file, "r", encoding="utf-8") as f:
+                with open(self.goals_file, encoding="utf-8") as f:
                     data = json.load(f)
 
                 # Load goals

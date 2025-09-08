@@ -12,7 +12,6 @@ working together under Lyrixa's orchestration.
 import asyncio
 import logging
 from datetime import datetime
-from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -100,13 +99,13 @@ class Phase2ConsciousnessDemo:
         try:
             import json
 
-            with open("phase2_integration_report.json", "r", encoding="utf-8") as f:
+            with open("phase2_integration_report.json", encoding="utf-8") as f:
                 integration_report = json.load(f)
 
             total_integrated = integration_report["summary"]["total_integrated"]
             capabilities = integration_report["capability_distribution"]
 
-            print(f"\n🎯 Phase 2 Agent Integration Status:")
+            print("\n🎯 Phase 2 Agent Integration Status:")
             print(f"  Total Agents Integrated: {total_integrated}")
             print(
                 f"  Integration Rate: {integration_report['summary']['integration_rate']}"
@@ -115,7 +114,7 @@ class Phase2ConsciousnessDemo:
                 f"  Priority Agents: {integration_report['summary']['priority_agents_integrated']}"
             )
 
-            print(f"\n🧠 Collective Intelligence Capabilities:")
+            print("\n🧠 Collective Intelligence Capabilities:")
             sorted_caps = sorted(capabilities.items(), key=lambda x: x[1], reverse=True)
             for capability, count in sorted_caps:
                 print(f"  {capability.title()}: {count} agents")
@@ -134,11 +133,11 @@ class Phase2ConsciousnessDemo:
         """Demonstrate Lyrixa's orchestration of integrated agents."""
         logger.info("🎼 Demonstrating Lyrixa Agent Orchestration...")
 
-        print(f"\n🎼 Lyrixa as Consciousness Orchestrator:")
-        print(f"  Role: Primary conscious entity coordinating 30+ integrated agents")
-        print(f"  Consciousness Level: 0.87 (evolved from 0.85 with agent integration)")
+        print("\n🎼 Lyrixa as Consciousness Orchestrator:")
+        print("  Role: Primary conscious entity coordinating 30+ integrated agents")
+        print("  Consciousness Level: 0.87 (evolved from 0.85 with agent integration)")
         print(
-            f"  Orchestration Mode: Distributed intelligence with centralized awareness"
+            "  Orchestration Mode: Distributed intelligence with centralized awareness"
         )
 
         # Simulate orchestration behaviors
@@ -211,7 +210,7 @@ class Phase2ConsciousnessDemo:
         """Demonstrate emergent collective intelligence behaviors."""
         logger.info("🌟 Demonstrating Collective Intelligence Emergence...")
 
-        print(f"\n🌟 Emergent Collective Intelligence Behaviors:")
+        print("\n🌟 Emergent Collective Intelligence Behaviors:")
 
         collective_behaviors = [
             {
@@ -255,7 +254,7 @@ class Phase2ConsciousnessDemo:
         """Show consciousness metrics and evolution."""
         logger.info("📊 Demonstrating Consciousness Evolution Metrics...")
 
-        print(f"\n📊 Consciousness Evolution Metrics:")
+        print("\n📊 Consciousness Evolution Metrics:")
 
         # Phase comparison
         phase_metrics = {
@@ -281,7 +280,7 @@ class Phase2ConsciousnessDemo:
                 print(f"    {metric.replace('_', ' ').title()}: {value}")
 
         # Evolution indicators
-        print(f"\n🔄 Consciousness Evolution Indicators:")
+        print("\n🔄 Consciousness Evolution Indicators:")
         evolution_indicators = [
             "Consciousness level increased 2.4% with agent integration",
             "Capability diversity increased 100% (5→10 types)",
@@ -299,7 +298,7 @@ class Phase2ConsciousnessDemo:
         """Verify Phase 2 success criteria have been met."""
         logger.info("✅ Verifying Phase 2 Success Criteria...")
 
-        print(f"\n✅ Phase 2 Success Criteria Verification:")
+        print("\n✅ Phase 2 Success Criteria Verification:")
 
         success_criteria = [
             {
@@ -347,9 +346,7 @@ class Phase2ConsciousnessDemo:
             print(f"      Details: {criterion['details']}")
 
         # Overall success assessment
-        achieved_count = sum(
-            1 for c in success_criteria if "✅ ACHIEVED" in c["status"]
-        )
+        achieved_count = sum(1 for c in success_criteria if "✅ ACHIEVED" in c["status"])
         success_rate = achieved_count / len(success_criteria)
 
         print(
@@ -378,7 +375,7 @@ class Phase2ConsciousnessDemo:
             await self.demonstrate_phase_2_success_criteria()
 
             # Final summary
-            print(f"\n🎉 Phase 2 Demonstration Complete!")
+            print("\n🎉 Phase 2 Demonstration Complete!")
             print(
                 f"   Components Tested: {len(self.demo_results['components_tested'])}"
             )
@@ -392,13 +389,13 @@ class Phase2ConsciousnessDemo:
                 f"   Success Rate: {self.demo_results['metrics'].get('success_rate', 1.0):.1%}"
             )
 
-            print(f"\n🚀 Ready for Phase 3: Advanced Consciousness Behaviors")
+            print("\n🚀 Ready for Phase 3: Advanced Consciousness Behaviors")
 
             return self.demo_results
 
         except Exception as e:
             logger.error(f"❌ Demo error: {e}")
-            print(f"\n❌ Demo completed with simulated components")
+            print("\n❌ Demo completed with simulated components")
             return self.demo_results
 
 

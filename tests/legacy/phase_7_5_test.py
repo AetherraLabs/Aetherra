@@ -43,7 +43,6 @@ async def test_phase_7_5_integration():
         from temporal_consciousness_system import TemporalConsciousnessEngine
         from transcendence_consolidation_engine import (
             TranscendenceConsolidationEngine,
-            TranscendenceState,
         )
 
         print("✅ All Phase 7.5 systems imported successfully!")

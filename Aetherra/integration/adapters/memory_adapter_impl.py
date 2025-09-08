@@ -103,14 +103,16 @@ class MemoryAdapterImpl:
                 cursor = conn.cursor()
 
                 # Create context table if it doesn't exist
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS context_storage (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         context_type TEXT,
                         timestamp TEXT,
                         data TEXT
                     )
-                """)
+                """
+                )
 
                 # Insert context data
                 cursor.execute(
@@ -182,11 +184,13 @@ class MemoryAdapterImpl:
                 cursor = conn.cursor()
 
                 # Get recent memories
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT * FROM memory_entries
                     ORDER BY timestamp DESC
                     LIMIT 100
-                """)
+                """
+                )
 
                 memories = cursor.fetchall()
                 sync_results["source_memories"] = len(memories)
@@ -235,7 +239,8 @@ class MemoryAdapterImpl:
                 conn = self.connections["fractal_memory"]
                 cursor = conn.cursor()
 
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS synced_memories (
                         id INTEGER PRIMARY KEY,
                         original_id INTEGER,
@@ -243,7 +248,8 @@ class MemoryAdapterImpl:
                         timestamp TEXT,
                         source_db TEXT
                     )
-                """)
+                """
+                )
 
                 cursor.execute(
                     """
@@ -378,7 +384,7 @@ def main():
     # Get memory summary
     if test_results["connection_test"]:
         summary = adapter.get_memory_summary()
-        print(f"\n📈 Memory Summary:")
+        print("\n📈 Memory Summary:")
         print(f"  🗄️ Total databases: {summary['total_databases']}")
         print(f"  📊 Total entries: {summary['total_entries']}")
 

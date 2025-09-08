@@ -24,7 +24,7 @@ import time
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
@@ -58,9 +58,7 @@ class ThoughtBubble:
 
     id: str
     content: str
-    thought_type: (
-        str  # 'reasoning', 'memory_recall', 'goal_planning', 'response_generation'
-    )
+    thought_type: str  # 'reasoning', 'memory_recall', 'goal_planning', 'response_generation'
     confidence: float  # 0.0-1.0
     timestamp: datetime
     related_query: Optional[str] = None
@@ -152,9 +150,7 @@ class CognitiveStateMonitor(QObject):
     def connect_backend_services(self, services: Dict[str, Any]):
         """Connect to backend services for cognitive monitoring"""
         self.backend_services = services
-        logger.info(
-            f"[COGNITIVE] Monitor connected to {len(services)} backend services"
-        )
+        logger.info(f"[COGNITIVE] Monitor connected to {len(services)} backend services")
 
         # Initialize with current system state
         self.initialize_cognitive_state()
@@ -227,9 +223,7 @@ class CognitiveStateMonitor(QObject):
             agent_orchestrator = self.backend_services.get("agent_orchestrator")
             if agent_orchestrator and hasattr(agent_orchestrator, "agents"):
                 # Create goals based on active agents
-                for i, agent in enumerate(
-                    agent_orchestrator.agents[:5]
-                ):  # Limit to 5 for display
+                for i, agent in enumerate(agent_orchestrator.agents[:5]):  # Limit to 5 for display
                     goal = GoalState(
                         id=f"agent_goal_{i}",
                         description=f"Execute agent: {getattr(agent, 'name', f'Agent {i}')}",
@@ -287,9 +281,7 @@ class CognitiveStateMonitor(QObject):
                 "frequency": self.thought_frequency,
                 "depth": self.reasoning_depth,
                 "active_thoughts": len(self.active_thoughts),
-                "active_goals": len(
-                    [g for g in self.current_goals if g.status == "active"]
-                ),
+                "active_goals": len([g for g in self.current_goals if g.status == "active"]),
                 "timestamp": int(time.time()),
             }
             self.cognitive_load_changed.emit(json.dumps(cognitive_data))
@@ -306,9 +298,7 @@ class CognitiveStateMonitor(QObject):
         # Add some randomness for realistic fluctuation
         random_factor = random.uniform(-0.1, 0.1)
 
-        self.cognitive_load = max(
-            0.1, min(1.0, 0.3 + thought_load + goal_load + random_factor)
-        )
+        self.cognitive_load = max(0.1, min(1.0, 0.3 + thought_load + goal_load + random_factor))
 
         # Update thought frequency based on load
         self.thought_frequency = 1.0 + (self.cognitive_load * 3.0)
@@ -377,9 +367,7 @@ class CognitiveStateMonitor(QObject):
             goal.status = random.choice(statuses)
 
         # Update confidence (small fluctuations)
-        goal.confidence = max(
-            0.1, min(1.0, goal.confidence + random.uniform(-0.1, 0.1))
-        )
+        goal.confidence = max(0.1, min(1.0, goal.confidence + random.uniform(-0.1, 0.1)))
 
         # Update progress
         if goal.status == "active":
@@ -438,7 +426,7 @@ class CognitiveStateMonitor(QObject):
         self._pending_traces[query_id] = trace
 
         # Define processing stages
-        stages: List[Tuple[str, float]] = [
+        stages: List[tuple[str, float]] = [
             ("Query parsing", 0.9),
             ("Context analysis", 0.85),
             ("Memory search", 0.8),
@@ -446,7 +434,7 @@ class CognitiveStateMonitor(QObject):
             ("Quality check", 0.92),
         ]
 
-        def process_stage(index: int = 0):
+        def process_stage(index: int = 0) -> None:
             # If query was cleared or completed, stop
             if query_id not in self._pending_traces:
                 return
@@ -454,9 +442,7 @@ class CognitiveStateMonitor(QObject):
             if index >= len(stages):
                 # Complete the trace
                 tr.response_generated = f"Response generated for: {query}"
-                tr.total_processing_time = sum(
-                    s["duration_ms"] for s in tr.processing_stages
-                )
+                tr.total_processing_time = sum(s["duration_ms"] for s in tr.processing_stages)
                 self.query_traces.append(tr)
                 # Emit completion
                 self.query_processed.emit(json.dumps(safe_asdict_with_datetime(tr)))
@@ -625,10 +611,7 @@ class Phase4CognitiveUI(QObject):
     def generate_thoughts_panel(self) -> str:
         """Generate the thought stream visualization panel"""
         panel_path = (
-            self.gui_dir
-            / "web_panels"
-            / "auto_generated"
-            / "cognitive_thoughts_panel.html"
+            self.gui_dir / "web_panels" / "auto_generated" / "cognitive_thoughts_panel.html"
         )
 
         # This will be created in the next step
@@ -636,36 +619,21 @@ class Phase4CognitiveUI(QObject):
 
     def generate_goals_panel(self) -> str:
         """Generate the goal status heatmap panel"""
-        panel_path = (
-            self.gui_dir
-            / "web_panels"
-            / "auto_generated"
-            / "cognitive_goals_panel.html"
-        )
+        panel_path = self.gui_dir / "web_panels" / "auto_generated" / "cognitive_goals_panel.html"
 
         # This will be created in the next step
         return str(panel_path)
 
     def generate_memory_panel(self) -> str:
         """Generate the memory activation visualization panel"""
-        panel_path = (
-            self.gui_dir
-            / "web_panels"
-            / "auto_generated"
-            / "cognitive_memory_panel.html"
-        )
+        panel_path = self.gui_dir / "web_panels" / "auto_generated" / "cognitive_memory_panel.html"
 
         # This will be created in the next step
         return str(panel_path)
 
     def generate_traces_panel(self) -> str:
         """Generate the query trace visualization panel"""
-        panel_path = (
-            self.gui_dir
-            / "web_panels"
-            / "auto_generated"
-            / "cognitive_traces_panel.html"
-        )
+        panel_path = self.gui_dir / "web_panels" / "auto_generated" / "cognitive_traces_panel.html"
 
         # This will be created in the next step
         return str(panel_path)
@@ -673,10 +641,7 @@ class Phase4CognitiveUI(QObject):
     def generate_overview_panel(self) -> str:
         """Generate the cognitive overview panel"""
         panel_path = (
-            self.gui_dir
-            / "web_panels"
-            / "auto_generated"
-            / "cognitive_overview_panel.html"
+            self.gui_dir / "web_panels" / "auto_generated" / "cognitive_overview_panel.html"
         )
 
         # This will be created in the next step

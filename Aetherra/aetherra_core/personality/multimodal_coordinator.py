@@ -284,9 +284,9 @@ class MultiModalCoordinator:
                     modality, current_personality, context
                 )
                 modality_results[modality] = modality_result
-                coordination_result["modality_personalities"][modality.value] = (
-                    modality_result
-                )
+                coordination_result["modality_personalities"][
+                    modality.value
+                ] = modality_result
 
             # Calculate consistency score across modalities
             consistency_score = self._calculate_consistency_score(modality_results)

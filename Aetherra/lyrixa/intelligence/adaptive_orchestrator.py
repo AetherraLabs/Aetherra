@@ -21,7 +21,7 @@ from __future__ import annotations
 import asyncio
 import difflib
 import statistics
-from typing import Any, Dict, List, Optional, Tuple, cast
+from typing import Any, Dict, List, Optional, cast
 
 
 class AdaptiveIntelligenceOrchestrator:
@@ -50,7 +50,7 @@ class AdaptiveIntelligenceOrchestrator:
             return None
 
         # Fire providers in parallel and gather results
-        results: List[Tuple[str, Dict[str, Any]]] = []
+    results: List[tuple[str, Dict[str, Any]]] = []
         tasks = [self._run_provider(name, message, ctx) for name in provider_names]
         done = await asyncio.gather(*tasks, return_exceptions=True)
         for name, res in zip(provider_names, done):
@@ -129,10 +129,10 @@ class AdaptiveIntelligenceOrchestrator:
 
     def _synthesize(
         self,
-        results: List[Tuple[str, Dict[str, Any]]],
+    results: List[tuple[str, Dict[str, Any]]],
         message: str,
         ctx: Dict[str, Any],
-    ) -> Tuple[str, Dict[str, float], List[Dict[str, Any]]]:
+    ) -> tuple[str, Dict[str, float], List[Dict[str, Any]]]:
         # Rank by length as a baseline
         ranked = sorted(
             results, key=lambda kv: len(str(kv[1].get("response", ""))), reverse=True

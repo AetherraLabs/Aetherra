@@ -10,9 +10,7 @@ Tests the plugin installation workflow for Lyrixa Basic
 import asyncio
 import json
 import logging
-import os
 import shutil
-import sys
 import urllib.request
 from pathlib import Path
 
@@ -37,7 +35,7 @@ class PluginInstaller:
             logger.info(f"📦 Installing plugin: {plugin_name}")
 
             # 1. Get plugin info from Hub
-            response = urllib.request.urlopen(f"http://localhost:3001/api/plugins")
+            response = urllib.request.urlopen("http://localhost:3001/api/plugins")
             plugins_data = json.loads(response.read())
 
             # Find the plugin
@@ -98,7 +96,7 @@ class PluginInstaller:
             registry_file = self.lyrixa_plugins_dir / "installed_plugins.json"
             registry = {}
             if registry_file.exists():
-                with open(registry_file, "r", encoding="utf-8") as f:
+                with open(registry_file, encoding="utf-8") as f:
                     registry = json.load(f)
 
             registry[plugin_name] = install_record
@@ -121,7 +119,7 @@ class PluginInstaller:
             logger.info("📋 No plugins installed yet")
             return []
 
-        with open(registry_file, "r", encoding="utf-8") as f:
+        with open(registry_file, encoding="utf-8") as f:
             registry = json.load(f)
 
         logger.info(f"📋 Installed Plugins ({len(registry)}):")

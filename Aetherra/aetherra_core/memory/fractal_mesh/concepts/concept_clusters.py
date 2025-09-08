@@ -15,7 +15,7 @@ import sqlite3
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 from ..base import ConceptCluster, MemoryFragment, MemoryFragmentType
 
@@ -36,7 +36,7 @@ class ConceptContradiction:
     """Represents detected contradictions within a concept cluster"""
 
     concept: str
-    contradicting_fragments: List[Tuple[str, str]]  # Pairs of conflicting fragment IDs
+    contradicting_fragments: List[tuple[str, str]]  # Pairs of conflicting fragment IDs
     contradiction_type: str  # "temporal", "semantic", "causal"
     confidence: float
     detected_at: datetime
@@ -69,7 +69,8 @@ class ConceptClusterManager:
         """Initialize concept clustering database"""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS concept_clusters (
                     cluster_id TEXT PRIMARY KEY,
                     central_concept TEXT NOT NULL,
@@ -81,9 +82,11 @@ class ConceptClusterManager:
                     created_at TEXT,
                     last_updated TEXT
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS concept_evolution (
                     concept TEXT PRIMARY KEY,
                     timestamps TEXT,
@@ -91,9 +94,11 @@ class ConceptClusterManager:
                     associated_fragments TEXT,
                     narrative_contexts TEXT
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS concept_contradictions (
                     contradiction_id TEXT PRIMARY KEY,
                     concept TEXT NOT NULL,
@@ -102,7 +107,8 @@ class ConceptClusterManager:
                     confidence REAL,
                     detected_at TEXT
                 )
-            """)
+            """
+            )
 
             conn.commit()
         finally:
@@ -228,22 +234,15 @@ class ConceptClusterManager:
             "them",
         }
 
-        meaningful_words = {
-            word for word in words if len(word) > 2 and word not in stop_words
-        }
+        meaningful_words = {word for word in words if len(word) > 2 and word not in stop_words}
 
         return meaningful_words
 
-    def _find_or_create_cluster(
-        self, concept: str, fragment: MemoryFragment
-    ) -> Optional[str]:
+    def _find_or_create_cluster(self, concept: str, fragment: MemoryFragment) -> Optional[str]:
         """Find existing cluster for concept or create new one"""
         # Look for existing cluster with this concept
         for cluster_id, cluster in self.clusters.items():
-            if (
-                concept == cluster.central_concept
-                or concept in cluster.related_concepts
-            ):
+            if concept == cluster.central_concept or concept in cluster.related_concepts:
                 # Add fragment to existing cluster
                 cluster.member_fragments.add(fragment.fragment_id)
                 cluster.related_concepts.update(fragment.symbolic_tags)
@@ -256,9 +255,7 @@ class ConceptClusterManager:
         if similar_cluster:
             similar_cluster.related_concepts.add(concept)
             similar_cluster.member_fragments.add(fragment.fragment_id)
-            similar_cluster.cluster_strength = self._calculate_cluster_strength(
-                similar_cluster
-            )
+            similar_cluster.cluster_strength = self._calculate_cluster_strength(similar_cluster)
             self._persist_cluster(similar_cluster)
             return similar_cluster.cluster_id
 
@@ -295,10 +292,7 @@ class ConceptClusterManager:
 
             if union > 0:
                 similarity = intersection / union
-                if (
-                    similarity > best_similarity
-                    and similarity >= self.concept_similarity_threshold
-                ):
+                if similarity > best_similarity and similarity >= self.concept_similarity_threshold:
                     best_similarity = similarity
                     best_cluster = cluster
 
@@ -315,9 +309,7 @@ class ConceptClusterManager:
         strength = math.log(fragment_count + 1) / math.log(10)
 
         # Adjust for concept diversity (some diversity good, too much bad)
-        diversity_factor = min(
-            concept_diversity / 10, 1.0
-        )  # Optimal around 10 concepts
+        diversity_factor = min(concept_diversity / 10, 1.0)  # Optimal around 10 concepts
         strength *= 0.5 + 0.5 * diversity_factor
 
         return min(strength, 1.0)
@@ -355,9 +347,7 @@ class ConceptClusterManager:
 
             for other_fragment_id in related_fragments:
                 if other_fragment_id != fragment.fragment_id:
-                    contradiction = self._detect_contradiction(
-                        fragment, other_fragment_id
-                    )
+                    contradiction = self._detect_contradiction(fragment, other_fragment_id)
                     if contradiction:
                         self.detected_contradictions.append(contradiction)
                         self._persist_contradiction(contradiction)
@@ -398,10 +388,7 @@ class ConceptClusterManager:
         fragment_ids = []
 
         for cluster in self.clusters.values():
-            if (
-                concept == cluster.central_concept
-                or concept in cluster.related_concepts
-            ):
+            if concept == cluster.central_concept or concept in cluster.related_concepts:
                 fragment_ids.extend(cluster.member_fragments)
 
         return list(set(fragment_ids))  # Remove duplicates
@@ -450,9 +437,7 @@ class ConceptClusterManager:
             return {"error": "Concept not found"}
 
         cutoff = datetime.now() - time_window
-        recent_indices = [
-            i for i, ts in enumerate(evolution.timestamps) if ts >= cutoff
-        ]
+        recent_indices = [i for i, ts in enumerate(evolution.timestamps) if ts >= cutoff]
 
         if not recent_indices:
             return {"error": "No recent data for concept"}
@@ -463,9 +448,7 @@ class ConceptClusterManager:
         # Calculate confidence trend
         confidence_trend = "stable"
         if len(recent_confidence) > 1:
-            trend_slope = (recent_confidence[-1] - recent_confidence[0]) / len(
-                recent_confidence
-            )
+            trend_slope = (recent_confidence[-1] - recent_confidence[0]) / len(recent_confidence)
             if trend_slope > 0.1:
                 confidence_trend = "increasing"
             elif trend_slope < -0.1:
@@ -473,9 +456,7 @@ class ConceptClusterManager:
 
         # Analyze context diversity
         unique_contexts = set(recent_contexts)
-        context_diversity = (
-            len(unique_contexts) / len(recent_contexts) if recent_contexts else 0
-        )
+        context_diversity = len(unique_contexts) / len(recent_contexts) if recent_contexts else 0
 
         return {
             "concept": concept,
@@ -505,10 +486,7 @@ class ConceptClusterManager:
                     json.dumps(list(cluster.member_fragments)),
                     cluster.cluster_strength,
                     json.dumps(
-                        [
-                            (ts.isoformat(), score)
-                            for ts, score in cluster.temporal_evolution
-                        ]
+                        [(ts.isoformat(), score) for ts, score in cluster.temporal_evolution]
                     ),
                     json.dumps(cluster.narrative_themes),
                     datetime.now().isoformat(),
@@ -556,9 +534,7 @@ class ConceptClusterManager:
                 (
                     contradiction_id,
                     contradiction.concept,
-                    json.dumps(
-                        [list(pair) for pair in contradiction.contradicting_fragments]
-                    ),
+                    json.dumps([list(pair) for pair in contradiction.contradicting_fragments]),
                     contradiction.contradiction_type,
                     contradiction.confidence,
                     contradiction.detected_at.isoformat(),

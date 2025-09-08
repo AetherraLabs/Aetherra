@@ -52,8 +52,8 @@ except Exception:
 
 try:
     from ..reflection.introspection_controller import (
-        IntrospectionController,  # type: ignore
-    )
+        IntrospectionController,
+    )  # type: ignore
 except Exception:
 
     class _ComponentMonitorStub:

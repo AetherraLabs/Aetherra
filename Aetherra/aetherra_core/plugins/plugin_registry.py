@@ -7,7 +7,6 @@ Handles plugin discovery, metadata loading, and dynamic registration into the Ae
 """
 
 import json
-import os
 from pathlib import Path
 from typing import Dict, List
 

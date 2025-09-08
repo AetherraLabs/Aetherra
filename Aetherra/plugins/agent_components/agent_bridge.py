@@ -27,7 +27,7 @@ class AgentIntegrationBridge:
     def _load_agent_registry(self):
         """Load the agent registry"""
         if self.registry_file.exists():
-            with open(self.registry_file, "r", encoding="utf-8") as f:
+            with open(self.registry_file, encoding="utf-8") as f:
                 self.agents = json.load(f)
         else:
             print("Warning: Agent registry not found")

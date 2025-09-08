@@ -142,7 +142,8 @@ class ObserverEffectSimulator:
         """Initialize observer effects database"""
         conn = sqlite3.connect(self.db_path)
 
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS memory_accesses (
                 access_id TEXT PRIMARY KEY,
                 memory_node_id TEXT NOT NULL,
@@ -155,9 +156,11 @@ class ObserverEffectSimulator:
                 fidelity_after REAL NOT NULL,
                 meta_context TEXT
             )
-        """)
+        """
+        )
 
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS layered_memory_views (
                 node_id TEXT PRIMARY KEY,
                 surface_layer TEXT NOT NULL,
@@ -167,9 +170,11 @@ class ObserverEffectSimulator:
                 access_count INTEGER NOT NULL,
                 last_accessed REAL NOT NULL
             )
-        """)
+        """
+        )
 
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS observer_profiles (
                 observer_id TEXT PRIMARY KEY,
                 observer_type TEXT NOT NULL,
@@ -179,7 +184,8 @@ class ObserverEffectSimulator:
                 access_permissions TEXT NOT NULL,
                 collapse_threshold REAL NOT NULL
             )
-        """)
+        """
+        )
 
         conn.commit()
         conn.close()
@@ -188,7 +194,8 @@ class ObserverEffectSimulator:
         """Initialize meta-memory database"""
         conn = sqlite3.connect(self.meta_db_path)
 
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS meta_memories (
                 meta_id TEXT PRIMARY KEY,
                 original_memory_id TEXT NOT NULL,
@@ -199,7 +206,8 @@ class ObserverEffectSimulator:
                 emergence_patterns TEXT NOT NULL,
                 created_at REAL NOT NULL
             )
-        """)
+        """
+        )
 
         conn.commit()
         conn.close()
@@ -650,9 +658,9 @@ class ObserverEffectSimulator:
         if observer_id not in meta_memory.observer_influence_map:
             meta_memory.observer_influence_map[observer_id] = 0.0
 
-        meta_memory.observer_influence_map[observer_id] += (
-            access_record.collapse_strength
-        )
+        meta_memory.observer_influence_map[
+            observer_id
+        ] += access_record.collapse_strength
 
         # Calculate cognitive drift
         if len(meta_memory.access_pattern) > 1:

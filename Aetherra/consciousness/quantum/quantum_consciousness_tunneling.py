@@ -392,7 +392,9 @@ class QuantumConsciousnessTunneling:
         self.quantum_states[state_id] = quantum_state
         self.metrics["quantum_states_created"] += 1
 
-        logger.info(f"⚛️ Created quantum state: {state_id} (energy: {energy_level:.2f})")
+        logger.info(
+            f"⚛️ Created quantum state: {state_id} (energy: {energy_level:.2f})"
+        )
         return state_id
 
     def create_superposition_state(
@@ -538,9 +540,7 @@ class QuantumConsciousnessTunneling:
         self.consciousness_tunnels[tunnel_id] = tunnel
 
         logger.info(f"🌀 Created consciousness tunnel: {tunnel_id}")
-        logger.info(
-            f"🌀 Length: {tunnel_length:.3f}, Stability: {tunnel_stability:.3f}"
-        )
+        logger.info(f"🌀 Length: {tunnel_length:.3f}, Stability: {tunnel_stability:.3f}")
 
         return tunnel_id
 

@@ -22,7 +22,7 @@ import logging
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 # Try to import memory components with fallbacks
 try:
@@ -329,7 +329,7 @@ class CuriosityAgent:
                     questions=[
                         f"What determines when {pattern['pattern']} works well?",
                         f"What are the key variables affecting {pattern['pattern']}?",
-                        f"Can I identify the conditions that predict success?",
+                        "Can I identify the conditions that predict success?",
                     ],
                     exploration_strategies=[
                         "controlled_testing",
@@ -373,7 +373,7 @@ class CuriosityAgent:
                     questions=[
                         f"What was the actual mechanism behind {chain['description']}?",
                         f"What steps were involved in {chain['chain_id']}?",
-                        f"How can I track the causal pathway more clearly?",
+                        "How can I track the causal pathway more clearly?",
                     ],
                     exploration_strategies=[
                         "step_by_step_analysis",
@@ -460,7 +460,7 @@ class CuriosityAgent:
                     related_memories=[opp["opportunity"]],
                     questions=[
                         f"What principles can I extract from {opp['opportunity']}?",
-                        f"How can I apply this learning to other situations?",
+                        "How can I apply this learning to other situations?",
                         f"What made {opp['opportunity']} successful?",
                     ],
                     exploration_strategies=[
@@ -600,39 +600,39 @@ class CuriosityAgent:
         return [
             f"What causes {self._extract_key_concept(gap.description)}?",
             f"What are the intermediate steps between cause and effect in {self._extract_key_concept(gap.description)}?",
-            f"What variables influence the strength of this causal relationship?",
-            f"Are there alternative causal pathways that could explain this?",
-            f"What would happen if I modified the conditions?",
+            "What variables influence the strength of this causal relationship?",
+            "Are there alternative causal pathways that could explain this?",
+            "What would happen if I modified the conditions?",
         ]
 
     async def _generate_contextual_questions(self, gap: KnowledgeGap) -> List[str]:
         """Generate questions for contextual gaps"""
         return [
             f"In which contexts does {self._extract_key_concept(gap.description)} behave differently?",
-            f"What contextual factors are most influential?",
-            f"How can I predict behavior based on context?",
-            f"What contexts have I not yet observed?",
-            f"Are there hidden contextual variables I'm missing?",
+            "What contextual factors are most influential?",
+            "How can I predict behavior based on context?",
+            "What contexts have I not yet observed?",
+            "Are there hidden contextual variables I'm missing?",
         ]
 
     async def _generate_experiential_questions(self, gap: KnowledgeGap) -> List[str]:
         """Generate questions for experiential gaps"""
         return [
             f"What can I learn from this experience with {self._extract_key_concept(gap.description)}?",
-            f"How can I apply this learning to future situations?",
-            f"What patterns can I extract from this experience?",
-            f"What would I do differently next time?",
-            f"How does this experience change my understanding?",
+            "How can I apply this learning to future situations?",
+            "What patterns can I extract from this experience?",
+            "What would I do differently next time?",
+            "How does this experience change my understanding?",
         ]
 
     async def _generate_generic_questions(self, gap: KnowledgeGap) -> List[str]:
         """Generate generic questions for unknown gap types"""
         return [
             f"What don't I understand about {self._extract_key_concept(gap.description)}?",
-            f"How can I learn more about this?",
-            f"What experiments could help me understand this better?",
-            f"Who or what could provide more information?",
-            f"What related areas should I explore?",
+            "How can I learn more about this?",
+            "What experiments could help me understand this better?",
+            "Who or what could provide more information?",
+            "What related areas should I explore?",
         ]
 
     def _extract_key_concept(self, description: str) -> str:
@@ -965,7 +965,7 @@ class CuriosityAgent:
             # Load knowledge gaps
             gaps_file = self.data_dir / "knowledge_gaps.json"
             if gaps_file.exists():
-                with open(gaps_file, "r") as f:
+                with open(gaps_file) as f:
                     gaps_data = json.load(f)
                     self.knowledge_gaps = {
                         gap_id: KnowledgeGap(**gap_data)
@@ -975,7 +975,7 @@ class CuriosityAgent:
             # Load curiosity questions
             questions_file = self.data_dir / "curiosity_questions.json"
             if questions_file.exists():
-                with open(questions_file, "r") as f:
+                with open(questions_file) as f:
                     questions_data = json.load(f)
                     self.curiosity_questions = {
                         q_id: CuriosityQuestion(**q_data)

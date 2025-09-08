@@ -9,10 +9,12 @@ Directory Documentation Generator - Creates README.md files for each major direc
 import json
 from pathlib import Path
 
+
 def load_analysis():
     """Load the updated project analysis"""
-    with open('aetherra_project_analysis.json', 'r', encoding='utf-8') as f:
+    with open("aetherra_project_analysis.json", encoding="utf-8") as f:
         return json.load(f)
+
 
 def generate_directory_readme(dir_path, dir_info):
     """Generate README.md content for a directory"""
@@ -28,52 +30,60 @@ This directory contains **{dir_info['total_files']} files** organized as follows
 """
 
     # File type breakdown
-    if dir_info['file_counts']:
+    if dir_info["file_counts"]:
         readme_content += "### File Types\n\n"
-        for file_type, count in sorted(dir_info['file_counts'].items(), key=lambda x: x[1], reverse=True):
-            readme_content += f"- **{file_type.replace('_', ' ').title()}**: {count} files\n"
+        for file_type, count in sorted(
+            dir_info["file_counts"].items(), key=lambda x: x[1], reverse=True
+        ):
+            readme_content += (
+                f"- **{file_type.replace('_', ' ').title()}**: {count} files\n"
+            )
         readme_content += "\n"
 
     # Subdirectories
-    if dir_info['subdirectories']:
+    if dir_info["subdirectories"]:
         readme_content += "### Subdirectories\n\n"
-        for subdir in sorted(dir_info['subdirectories']):
+        for subdir in sorted(dir_info["subdirectories"]):
             readme_content += f"- `{subdir}/`\n"
         readme_content += "\n"
 
     # Notable files (first 10)
-    if dir_info['files']:
+    if dir_info["files"]:
         readme_content += "### Key Files\n\n"
 
         # Group files by category
         files_by_category = {}
-        for file_info in dir_info['files']:
-            category = file_info['category']
+        for file_info in dir_info["files"]:
+            category = file_info["category"]
             if category not in files_by_category:
                 files_by_category[category] = []
             files_by_category[category].append(file_info)
 
         for category, files in sorted(files_by_category.items()):
-            if category == 'other':
+            if category == "other":
                 continue  # Skip 'other' category for now
 
             readme_content += f"#### {category.replace('_', ' ').title()}\n\n"
             for file_info in files[:5]:  # Show first 5 files per category
-                file_name = file_info['name']
+                file_name = file_info["name"]
 
                 # Add description based on file analysis
                 description = ""
-                if 'python_analysis' in file_info and file_info['python_analysis'].get('docstring'):
-                    description = f" - {file_info['python_analysis']['docstring'][:100]}..."
-                elif file_name.lower().startswith('test_'):
+                if "python_analysis" in file_info and file_info["python_analysis"].get(
+                    "docstring"
+                ):
+                    description = (
+                        f" - {file_info['python_analysis']['docstring'][:100]}..."
+                    )
+                elif file_name.lower().startswith("test_"):
                     description = " - Test file"
-                elif file_name.lower().startswith('demo_'):
+                elif file_name.lower().startswith("demo_"):
                     description = " - Demonstration/example file"
-                elif file_name == '__init__.py':
+                elif file_name == "__init__.py":
                     description = " - Python package initialization"
-                elif file_name.endswith('.md'):
+                elif file_name.endswith(".md"):
                     description = " - Documentation file"
-                elif file_name.endswith('.json'):
+                elif file_name.endswith(".json"):
                     description = " - Configuration file"
 
                 readme_content += f"- `{file_name}`{description}\n"
@@ -106,10 +116,11 @@ When working with files in this directory:
 
     return readme_content
 
+
 def create_directory_readmes():
     """Create README.md files for major directories"""
     analysis = load_analysis()
-    directories = analysis.get('directories', {})
+    directories = analysis.get("directories", {})
 
     created_count = 0
     skipped_count = 0
@@ -120,23 +131,23 @@ def create_directory_readmes():
     for dir_path, dir_info in directories.items():
         # Skip certain directories
         skip_dirs = [
-            'frontend/Lib',
-            'frontend/Scripts',
-            '.git',
-            '__pycache__',
-            'node_modules'
+            "frontend/Lib",
+            "frontend/Scripts",
+            ".git",
+            "__pycache__",
+            "node_modules",
         ]
 
         if any(skip in dir_path for skip in skip_dirs):
             continue
 
         # Only create READMEs for directories with a reasonable number of files
-        if dir_info['total_files'] == 0 or dir_info['total_files'] > 50:
+        if dir_info["total_files"] == 0 or dir_info["total_files"] > 50:
             skipped_count += 1
             continue
 
         # Check if README already exists
-        readme_path = Path(dir_path) / 'README.md'
+        readme_path = Path(dir_path) / "README.md"
         if readme_path.exists():
             print(f"⏭️ Skipped (exists): {dir_path}")
             skipped_count += 1
@@ -147,7 +158,7 @@ def create_directory_readmes():
             readme_content = generate_directory_readme(dir_path, dir_info)
 
             # Create the README file
-            readme_path.write_text(readme_content, encoding='utf-8')
+            readme_path.write_text(readme_content, encoding="utf-8")
             print(f"✅ Created: {readme_path}")
             created_count += 1
 
@@ -155,10 +166,11 @@ def create_directory_readmes():
             print(f"❌ Error creating README for {dir_path}: {e}")
 
     print()
-    print(f"🎯 README Generation Summary:")
+    print("🎯 README Generation Summary:")
     print(f"   Created: {created_count} README files")
     print(f"   Skipped: {skipped_count} directories")
     print("✅ Directory documentation complete!")
+
 
 def create_main_project_breakdown():
     """Create the main project breakdown document"""
@@ -182,11 +194,13 @@ def create_main_project_breakdown():
 """
 
     # Add file category breakdown
-    for category, count in sorted(analysis['summary']['file_categories'].items(), key=lambda x: x[1], reverse=True):
-        percentage = (count / analysis['summary']['total_files']) * 100
+    for category, count in sorted(
+        analysis["summary"]["file_categories"].items(), key=lambda x: x[1], reverse=True
+    ):
+        percentage = (count / analysis["summary"]["total_files"]) * 100
         breakdown_content += f"- **{category.replace('_', ' ').title()}**: {count} files ({percentage:.1f}%)\n"
 
-    breakdown_content += f"""
+    breakdown_content += """
 
 ## 🗂️ Directory Structure
 
@@ -195,8 +209,12 @@ def create_main_project_breakdown():
 """
 
     # Add major directory information
-    directories = analysis.get('directories', {})
-    major_dirs = {k: v for k, v in directories.items() if v['total_files'] > 5 and '/' not in k.strip('.').replace('\\', '/')}
+    directories = analysis.get("directories", {})
+    major_dirs = {
+        k: v
+        for k, v in directories.items()
+        if v["total_files"] > 5 and "/" not in k.strip(".").replace("\\", "/")
+    }
 
     for dir_path, dir_info in sorted(major_dirs.items()):
         breakdown_content += f"""#### `{dir_path}`
@@ -267,10 +285,11 @@ For detailed information about specific directories and files, see:
 """
 
     # Save the breakdown
-    with open('PROJECT_BREAKDOWN.md', 'w', encoding='utf-8') as f:
+    with open("PROJECT_BREAKDOWN.md", "w", encoding="utf-8") as f:
         f.write(breakdown_content)
 
     print("📋 Created PROJECT_BREAKDOWN.md")
+
 
 def main():
     """Main execution function"""
@@ -291,6 +310,7 @@ def main():
     print("   - Individual directory README.md files")
     print("   - PROJECT_BREAKDOWN.md (master overview)")
     print("   - Analysis reports (already generated)")
+
 
 if __name__ == "__main__":
     main()

@@ -9,7 +9,7 @@ Base class for all Lyrixa agents providing core functionality
 and interface contracts.
 """
 
-import asyncio
+
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional

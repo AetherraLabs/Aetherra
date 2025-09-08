@@ -17,14 +17,13 @@ As described in the Aetherra specification:
 "Install, chain, and orchestrate AI plugins and agents, including planners, analyzers, or code generators."
 """
 
-import json
-import os
+
 import sys
 import tempfile
 import time
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock
 
 # Add the Aetherra directory to Python path for imports
 project_root = Path(__file__).parent / "Aetherra"

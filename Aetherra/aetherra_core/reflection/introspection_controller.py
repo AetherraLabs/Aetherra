@@ -257,7 +257,8 @@ class IntrospectionController:
         """Initialize introspection database"""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS system_states (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp TEXT NOT NULL,
@@ -269,9 +270,11 @@ class IntrospectionController:
                     warning_count INTEGER NOT NULL,
                     health_score REAL NOT NULL
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS introspection_reports (
                     report_id TEXT PRIMARY KEY,
                     timestamp TEXT NOT NULL,
@@ -281,9 +284,11 @@ class IntrospectionController:
                     anomalies TEXT NOT NULL,
                     health_score REAL NOT NULL
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS component_health (
                     component_name TEXT NOT NULL,
                     state TEXT NOT NULL,
@@ -291,7 +296,8 @@ class IntrospectionController:
                     timestamp TEXT NOT NULL,
                     PRIMARY KEY (component_name, timestamp)
                 )
-            """)
+            """
+            )
 
             conn.commit()
         finally:

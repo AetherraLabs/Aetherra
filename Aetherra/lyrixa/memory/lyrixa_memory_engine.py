@@ -12,11 +12,11 @@ Core memory management system for the Aetherra AI OS.
 Handles various types of memory storage, retrieval, and organization.
 """
 
-import json
+
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 
 @dataclass

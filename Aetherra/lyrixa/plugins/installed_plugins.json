@@ -1,1 +1,90 @@
-{}
+{
+  "advanced-memory-system": {
+    "name": "advanced-memory-system",
+    "version": "1.2.3",
+    "description": "Enhanced episodic and semantic memory with vector search capabilities",
+    "installed_at": "2025-09-08T00:59:59.667955",
+    "source": "hub",
+    "category": "memory"
+  },
+  "workflow_builder_plugin": {
+    "name": "workflow_builder_plugin",
+    "version": "1.0.0",
+    "description": "WorkflowStep - Auto-generated description",
+    "installed_at": "2025-09-08T01:00:20.042396",
+    "source": "hub",
+    "category": "utility"
+  },
+  "context_aware_surfacing": {
+    "name": "context_aware_surfacing",
+    "version": "1.0.0",
+    "description": "Intelligent plugin recommendation and surfacing based on current context",
+    "installed_at": "2025-09-08T01:00:15.973985",
+    "source": "hub",
+    "category": "utility"
+  },
+  "introspector_plugin": {
+    "name": "introspector_plugin",
+    "version": "1.0.0",
+    "description": "Autonomous file analysis and self-insight generation for Lyrixa",
+    "installed_at": "2025-09-08T01:00:18.012805",
+    "source": "hub",
+    "category": "utility"
+  },
+  "plugin_analytics": {
+    "name": "plugin_analytics",
+    "version": "1.0.0",
+    "description": "PluginMetricsCollector - Auto-generated description",
+    "installed_at": "2025-09-08T01:00:22.070739",
+    "source": "hub",
+    "category": "utility"
+  },
+  "plugin_discovery": {
+    "name": "plugin_discovery",
+    "version": "1.0.0",
+    "description": "PluginMetadata - Auto-generated description",
+    "installed_at": "2025-09-08T01:00:09.871666",
+    "source": "hub",
+    "category": "utility"
+  },
+  "plugin_creation_wizard": {
+    "name": "plugin_creation_wizard",
+    "version": "1.0.0",
+    "description": "PluginTemplate - Auto-generated description",
+    "installed_at": "2025-09-08T01:00:07.818934",
+    "source": "hub",
+    "category": "utility"
+  },
+  "plugin_quality_control": {
+    "name": "plugin_quality_control",
+    "version": "1.0.0",
+    "description": "QualityMetrics - Auto-generated description",
+    "installed_at": "2025-09-08T01:00:11.911169",
+    "source": "hub",
+    "category": "utility"
+  },
+  "enhanced_plugin_manager": {
+    "name": "enhanced_plugin_manager",
+    "version": "1.0.0",
+    "description": "PluginState - Auto-generated description",
+    "installed_at": "2025-09-08T01:00:05.778817",
+    "source": "hub",
+    "category": "utility"
+  },
+  "assistant_trainer_plugin": {
+    "name": "assistant_trainer_plugin",
+    "version": "1.0.0",
+    "description": "TrainingDataset - Auto-generated description",
+    "installed_at": "2025-09-08T01:00:13.943802",
+    "source": "hub",
+    "category": "utility"
+  },
+  "plugin_lifecycle_memory": {
+    "name": "plugin_lifecycle_memory",
+    "version": "1.0.0",
+    "description": "PluginMemoryEntry - Auto-generated description",
+    "installed_at": "2025-09-08T01:00:24.089489",
+    "source": "hub",
+    "category": "utility"
+  }
+}

@@ -101,7 +101,7 @@ class AetherraPluginDiscovery:
     async def _process_aetherplug_manifest(self, manifest_path: Path):
         """Process an aetherra-plugin.json manifest file."""
         try:
-            with open(manifest_path, "r", encoding="utf-8") as f:
+            with open(manifest_path, encoding="utf-8") as f:
                 manifest = json.load(f)
 
             plugin_dir = manifest_path.parent
@@ -154,7 +154,7 @@ class AetherraPluginDiscovery:
         """Analyze a Python file to determine if it's a plugin."""
         try:
             # Read the file to look for plugin indicators
-            with open(py_file, "r", encoding="utf-8") as f:
+            with open(py_file, encoding="utf-8") as f:
                 content = f.read()
 
             # Look for plugin class or plugin_data
@@ -246,7 +246,7 @@ class AetherraPluginDiscovery:
         """Process a sample plugin file."""
         try:
             # Just read to ensure file is accessible; content not used
-            with open(sample_file, "r", encoding="utf-8"):
+            with open(sample_file, encoding="utf-8"):
                 pass
 
             # Extract basic info from the sample plugin

@@ -6,17 +6,15 @@ Plugin Creation Wizard UI
 Step-by-step plugin creation interface for non-technical users
 """
 
-import json
-import os
+
 import sys
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont, QPixmap
+from PySide6.QtCore import Qt  # noqa: F401 (optional runtime import)
+from PySide6.QtGui import QFont, QPixmap  # noqa: F401 (optional runtime import)
 from PySide6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
     QComboBox,
-    QFileDialog,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -27,11 +25,9 @@ from PySide6.QtWidgets import (
     QProgressBar,
     QPushButton,
     QRadioButton,
-    QStackedWidget,
     QTextBrowser,
     QTextEdit,
     QVBoxLayout,
-    QWidget,
     QWizard,
     QWizardPage,
 )
@@ -85,7 +81,8 @@ class PluginCreationWizardUI(QWizard):
         # Welcome content
         welcome_text = QTextBrowser()
         welcome_text.setMaximumHeight(300)
-        welcome_text.setHtml("""
+        welcome_text.setHtml(
+            """
             <div style='text-align: center; padding: 20px;'>
                 <h2 style='color: #FF6D00;'>🎉 Welcome to Plugin Creation!</h2>
                 <p style='font-size: 14px; line-height: 1.6;'>
@@ -116,7 +113,8 @@ class PluginCreationWizardUI(QWizard):
                     <strong>Ready to get started?</strong> Click "Next" to begin creating your plugin!
                 </p>
             </div>
-        """)
+        """
+        )
         layout.addWidget(welcome_text)
 
         # Getting started tips
@@ -513,12 +511,14 @@ class PluginCreationWizardUI(QWizard):
 
         success_text = QTextBrowser()
         success_text.setMaximumHeight(150)
-        success_text.setHtml("""
+        success_text.setHtml(
+            """
             <div style='text-align: center; color: green;'>
                 <h2>✅ Plugin Created Successfully!</h2>
                 <p>Your plugin has been generated and is ready to use.</p>
             </div>
-        """)
+        """
+        )
         success_layout.addWidget(success_text)
 
         layout.addWidget(success_group)
@@ -552,13 +552,15 @@ class PluginCreationWizardUI(QWizard):
         next_steps_layout.addLayout(actions_layout)
 
         # Tips
-        tips_text = QLabel("""
+        tips_text = QLabel(
+            """
 💡 Tips:
 • Test your plugin thoroughly before sharing
 • Read the generated documentation
 • Consider adding more features over time
 • Share your plugin with the community
-        """)
+        """
+        )
         tips_text.setWordWrap(True)
         next_steps_layout.addWidget(tips_text)
 
@@ -574,7 +576,8 @@ class PluginCreationWizardUI(QWizard):
 
     def apply_styling(self):
         """Apply dark theme styling to the wizard."""
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QWizard {
                 background-color: #1e1e1e;
                 color: white;
@@ -674,7 +677,8 @@ class PluginCreationWizardUI(QWizard):
             QLabel {
                 color: white;
             }
-        """)
+        """
+        )
 
     def validateCurrentPage(self):
         """Validate current page before proceeding."""
@@ -692,7 +696,6 @@ class PluginCreationWizardUI(QWizard):
         self.generation_status.setText("Starting code generation...")
 
         # Simulate generation process
-        import time
 
         from PySide6.QtCore import QTimer
 

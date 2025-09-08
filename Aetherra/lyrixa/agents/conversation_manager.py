@@ -19,19 +19,15 @@ ROADMAP ITEM #8: Intelligent Error Handling
 Builds upon Enhanced Conversational AI (#7) for intelligent error communication.
 """
 
-import asyncio
-import inspect
+
 import logging
 import os
 import re
-import sys
 import time
-import traceback
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Callable, Union
-from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -39,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 class ConversationType(Enum):
     """Types of conversation interactions"""
+
     QUESTION = "question"
     CODE_REQUEST = "code_request"
     EXPLANATION = "explanation"
@@ -50,6 +47,7 @@ class ConversationType(Enum):
 
 class IntentType(Enum):
     """Natural language intent classifications"""
+
     CREATE_CODE = "create_code"
     EXPLAIN_CONCEPT = "explain_concept"
     DEBUG_ISSUE = "debug_issue"
@@ -62,6 +60,7 @@ class IntentType(Enum):
 @dataclass
 class ConversationContext:
     """Rich conversation context for multi-turn memory"""
+
     session_id: str
     thread_id: str
     user_id: str
@@ -78,6 +77,7 @@ class ConversationContext:
 @dataclass
 class ConversationTurn:
     """Individual turn in conversation with full context"""
+
     turn_id: str
     timestamp: datetime
     user_input: str
@@ -124,7 +124,9 @@ class LyrixaEnhancedConversationManager:
         # Intent patterns for natural language processing
         self.intent_patterns = self._initialize_intent_patterns()
 
-        logger.info("🧠 Enhanced LyrixaConversationManager (#7) initialized with multi-turn memory support")
+        logger.info(
+            "🧠 Enhanced LyrixaConversationManager (#7) initialized with multi-turn memory support"
+        )
 
     def _initialize_intent_patterns(self) -> Dict[str, List[str]]:
         """Initialize intent recognition patterns for natural language processing"""
@@ -177,11 +179,14 @@ class LyrixaEnhancedConversationManager:
                 r"start\s+(?:the|a)",
                 r"launch\s+(?:the|a)",
                 r"activate\s+(?:the|a)",
-            ]
+            ],
         }
 
     async def process_enhanced_message(
-        self, message: str, user_id: str = "default", context: Optional[Dict[str, Any]] = None
+        self,
+        message: str,
+        user_id: str = "default",
+        context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Enhanced message processing with multi-turn memory and intent analysis"""
 
@@ -193,7 +198,10 @@ class LyrixaEnhancedConversationManager:
 
         # Generate session and thread IDs
         session_id = context.get("session_id", f"session_{user_id}_{int(time.time())}")
-        thread_id = context.get("thread_id", f"thread_{session_id}_{len(self.conversation_threads.get(session_id, []))}")
+        thread_id = context.get(
+            "thread_id",
+            f"thread_{session_id}_{len(self.conversation_threads.get(session_id, []))}",
+        )
 
         # Analyze intent and conversation type
         intent_analysis = await self._analyze_intent(message)
@@ -211,12 +219,14 @@ class LyrixaEnhancedConversationManager:
             personality_mode=self._select_personality(user_id, intent_analysis),
             confidence_score=intent_analysis.get("confidence", 0.0),
             urgency_level=self._assess_urgency(message, intent_analysis),
-            requires_followup=intent_analysis.get("requires_followup", False)
+            requires_followup=intent_analysis.get("requires_followup", False),
         )
 
         # Retrieve conversation history and memory context
         conversation_history = self._get_conversation_history(session_id, thread_id)
-        memory_context = await self._retrieve_memory_context(message, user_id, conv_context)
+        memory_context = await self._retrieve_memory_context(
+            message, user_id, conv_context
+        )
 
         # Generate enhanced response
         response = await self._generate_enhanced_response(
@@ -226,7 +236,9 @@ class LyrixaEnhancedConversationManager:
         # Handle code generation if requested
         generated_code = None
         if intent_analysis.get("intent") == IntentType.CREATE_CODE:
-            generated_code = await self._generate_code_from_intent(message, intent_analysis, conv_context)
+            generated_code = await self._generate_code_from_intent(
+                message, intent_analysis, conv_context
+            )
             if generated_code:
                 self.code_generations += 1
                 response["generated_code"] = generated_code
@@ -240,7 +252,7 @@ class LyrixaEnhancedConversationManager:
             context=conv_context,
             intent_analysis=intent_analysis,
             generated_code=generated_code,
-            confidence=intent_analysis.get("confidence", 0.0)
+            confidence=intent_analysis.get("confidence", 0.0),
         )
 
         # Store conversation turn
@@ -264,7 +276,7 @@ class LyrixaEnhancedConversationManager:
             "requires_followup": conv_context.requires_followup,
             "processing_time": processing_time,
             "timestamp": start_time.isoformat(),
-            "status": "success"
+            "status": "success",
         }
 
     async def _analyze_intent(self, message: str) -> Dict[str, Any]:
@@ -285,7 +297,7 @@ class LyrixaEnhancedConversationManager:
             if score > 0:
                 intent_scores[intent_name] = {
                     "score": score / len(patterns),  # Normalize by pattern count
-                    "matches": matched_patterns
+                    "matches": matched_patterns,
                 }
 
         # Determine primary intent
@@ -293,7 +305,9 @@ class LyrixaEnhancedConversationManager:
         max_score = 0.0
 
         if intent_scores:
-            primary_intent_name = max(intent_scores.keys(), key=lambda k: intent_scores[k]["score"])
+            primary_intent_name = max(
+                intent_scores.keys(), key=lambda k: intent_scores[k]["score"]
+            )
             max_score = intent_scores[primary_intent_name]["score"]
 
             if max_score >= self.intent_confidence_threshold:
@@ -313,10 +327,12 @@ class LyrixaEnhancedConversationManager:
             "intent_scores": intent_scores,
             "topic": topic,
             "requires_followup": requires_followup,
-            "analysis_timestamp": datetime.now().isoformat()
+            "analysis_timestamp": datetime.now().isoformat(),
         }
 
-    def _classify_conversation_type(self, message: str, intent_analysis: Dict[str, Any]) -> ConversationType:
+    def _classify_conversation_type(
+        self, message: str, intent_analysis: Dict[str, Any]
+    ) -> ConversationType:
         """Classify the type of conversation based on message content and intent"""
         message_lower = message.lower()
         intent = intent_analysis.get("intent")
@@ -336,9 +352,15 @@ class LyrixaEnhancedConversationManager:
             return ConversationType.SYSTEM_COMMAND
 
         # Fallback classification
-        if any(word in message_lower for word in ["?", "what", "how", "why", "when", "where"]):
+        if any(
+            word in message_lower
+            for word in ["?", "what", "how", "why", "when", "where"]
+        ):
             return ConversationType.QUESTION
-        elif any(word in message_lower for word in ["create", "build", "make", "generate", "write"]):
+        elif any(
+            word in message_lower
+            for word in ["create", "build", "make", "generate", "write"]
+        ):
             return ConversationType.CODE_REQUEST
         else:
             return ConversationType.CASUAL_CHAT
@@ -367,9 +389,15 @@ class LyrixaEnhancedConversationManager:
         urgency = 1
 
         # Urgency indicators
-        if any(word in message_lower for word in ["urgent", "critical", "emergency", "asap", "immediately"]):
+        if any(
+            word in message_lower
+            for word in ["urgent", "critical", "emergency", "asap", "immediately"]
+        ):
             urgency = 5
-        elif any(word in message_lower for word in ["important", "priority", "needed", "required"]):
+        elif any(
+            word in message_lower
+            for word in ["important", "priority", "needed", "required"]
+        ):
             urgency = 4
         elif any(word in message_lower for word in ["soon", "quickly", "fast"]):
             urgency = 3
@@ -384,7 +412,18 @@ class LyrixaEnhancedConversationManager:
         message_lower = message.lower()
 
         # Programming topics
-        programming_topics = ["python", "javascript", "react", "django", "flask", "api", "database", "sql", "html", "css"]
+        programming_topics = [
+            "python",
+            "javascript",
+            "react",
+            "django",
+            "flask",
+            "api",
+            "database",
+            "sql",
+            "html",
+            "css",
+        ]
         for topic in programming_topics:
             if topic in message_lower:
                 return topic
@@ -401,20 +440,29 @@ class LyrixaEnhancedConversationManager:
 
         return None
 
-    def _assess_followup_need(self, message: str, intent_scores: Dict[str, Any]) -> bool:
+    def _assess_followup_need(
+        self, message: str, intent_scores: Dict[str, Any]
+    ) -> bool:
         """Determine if conversation likely needs followup"""
         message_lower = message.lower()
 
         # Questions typically need followup
-        if any(word in message_lower for word in ["?", "what", "how", "why", "explain"]):
+        if any(
+            word in message_lower for word in ["?", "what", "how", "why", "explain"]
+        ):
             return True
 
         # Complex requests need followup
-        if any(intent in intent_scores for intent in ["create_code", "debug_issue", "manage_project"]):
+        if any(
+            intent in intent_scores
+            for intent in ["create_code", "debug_issue", "manage_project"]
+        ):
             return True
 
         # Learning requests need followup
-        if any(word in message_lower for word in ["learn", "tutorial", "guide", "teach"]):
+        if any(
+            word in message_lower for word in ["learn", "tutorial", "guide", "teach"]
+        ):
             return True
 
         return False

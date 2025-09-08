@@ -661,9 +661,9 @@ class MemoryBasedStyleLearning:
             # Extract pattern recommendations
             for pattern_key, pattern_value in learned.items():
                 if isinstance(pattern_value, (int, float)):
-                    recommendations["pattern_recommendations"][pattern_key] = (
-                        pattern_value
-                    )
+                    recommendations["pattern_recommendations"][
+                        pattern_key
+                    ] = pattern_value
 
         # Check context-based style mappings
         context_style_scores = defaultdict(float)

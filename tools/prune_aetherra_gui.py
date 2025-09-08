@@ -18,7 +18,6 @@ Use --apply to actually delete; otherwise runs in dry-run mode.
 from __future__ import annotations
 
 import argparse
-import os
 import shutil
 from pathlib import Path
 
@@ -35,7 +34,9 @@ KEEP = {
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Prune Aetherra/gui to minimal GUI")
-    parser.add_argument("--apply", action="store_true", help="Actually delete files (not just dry-run)")
+    parser.add_argument(
+        "--apply", action="store_true", help="Actually delete files (not just dry-run)"
+    )
     args = parser.parse_args()
 
     if not GUI_DIR.exists():

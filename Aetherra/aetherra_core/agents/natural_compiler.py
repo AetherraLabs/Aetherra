@@ -235,7 +235,7 @@ class AetherraCodeIDE:
                 # Compile to AetherraCode
                 aetherra = self.natural_to_aetherra(user_input)
 
-                print(f"\n🧬 Generated AetherraCode:")
+                print("\n🧬 Generated AetherraCode:")
                 print("=" * 40)
                 print(aetherra)
                 print("=" * 40)
@@ -243,7 +243,9 @@ class AetherraCodeIDE:
                 # Ask if user wants to execute with EOF handling
                 try:
                     execute = (
-                        input("\n▶️  Execute this AetherraCode? (y/n): ").strip().lower()
+                        input("\n▶️  Execute this AetherraCode? (y/n): ")
+                        .strip()
+                        .lower()
                     )
                 except EOFError:
                     print("\n\n👋 Input stream closed. Session ended.")
@@ -299,7 +301,7 @@ def main():
     elif args.file:
         compiler = NaturalLanguageCompiler()
         try:
-            with open(args.file, "r") as f:
+            with open(args.file) as f:
                 natural_text = f.read()
             aetherra = compiler.compile_natural_language(natural_text)
 

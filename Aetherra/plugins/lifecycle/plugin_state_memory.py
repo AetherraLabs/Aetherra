@@ -40,7 +40,8 @@ class PluginStateMemory:
         # Connection is already established in __init__
 
         # Plugin state storage
-        self.connection.execute("""
+        self.connection.execute(
+            """
             CREATE TABLE IF NOT EXISTS plugin_states (
                 plugin_name TEXT,
                 state_key TEXT,
@@ -52,10 +53,12 @@ class PluginStateMemory:
                 access_count INTEGER DEFAULT 0,
                 PRIMARY KEY (plugin_name, state_key)
             )
-        """)
+        """
+        )
 
         # Plugin conversation context
-        self.connection.execute("""
+        self.connection.execute(
+            """
             CREATE TABLE IF NOT EXISTS plugin_contexts (
                 plugin_name TEXT,
                 context_id TEXT,
@@ -69,10 +72,12 @@ class PluginStateMemory:
                 session_count INTEGER DEFAULT 1,
                 PRIMARY KEY (plugin_name, context_id)
             )
-        """)
+        """
+        )
 
         # Plugin behavioral evolution
-        self.connection.execute("""
+        self.connection.execute(
+            """
             CREATE TABLE IF NOT EXISTS plugin_evolution (
                 plugin_name TEXT,
                 behavior_hash TEXT,
@@ -85,10 +90,12 @@ class PluginStateMemory:
                 usage_frequency INTEGER DEFAULT 0,
                 PRIMARY KEY (plugin_name, behavior_hash)
             )
-        """)
+        """
+        )
 
         # Cross-plugin state sharing
-        self.connection.execute("""
+        self.connection.execute(
+            """
             CREATE TABLE IF NOT EXISTS shared_states (
                 state_namespace TEXT,
                 state_key TEXT,
@@ -101,7 +108,8 @@ class PluginStateMemory:
                 access_log TEXT,           -- JSON access history
                 PRIMARY KEY (state_namespace, state_key)
             )
-        """)
+        """
+        )
 
         self.connection.commit()
 

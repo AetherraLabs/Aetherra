@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
+
 # Stub for PluginManager for modular plugin integration
 class PluginManager:
     def __init__(self, *args, **kwargs):
@@ -18,7 +19,7 @@ class PluginManager:
 Interface for safe plugin invocation from Lyrixa
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from Aetherra.aetherra_core.plugins.plugin_manager import PluginManager
 

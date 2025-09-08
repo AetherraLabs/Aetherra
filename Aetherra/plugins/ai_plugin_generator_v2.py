@@ -18,25 +18,23 @@ from typing import Dict, List
 
 class PluginTemplate:
     """Plugin template definition."""
+
     # Required plugin metadata
     name = "ai_plugin_generator_v2"
     description = "PluginTemplate - Auto-generated description"
     input_schema = {
         "type": "object",
-        "properties": {
-            "input": {"type": "string", "description": "Input data"}
-        },
-        "required": ["input"]
+        "properties": {"input": {"type": "string", "description": "Input data"}},
+        "required": ["input"],
     }
     output_schema = {
         "type": "object",
         "properties": {
             "result": {"type": "string", "description": "Processing result"},
-            "status": {"type": "string", "description": "Operation status"}
-        }
+            "status": {"type": "string", "description": "Operation status"},
+        },
     }
     created_by = "Plugin System Auto-Fixer"
-
 
     def __init__(
         self, name: str, category: str, template: str, metadata: Dict | None = None
@@ -446,7 +444,7 @@ def main(*args, **kwargs):
                 os.path.dirname(__file__), "generator_learning_data.json"
             )
             if os.path.exists(data_file):
-                with open(data_file, "r") as f:
+                with open(data_file) as f:
                     self.learning_data = json.load(f)
         except Exception as e:
             print(f"Could not load learning data: {e}")

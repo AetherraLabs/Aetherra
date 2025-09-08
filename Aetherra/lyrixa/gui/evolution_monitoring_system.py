@@ -18,12 +18,10 @@ import json
 import logging
 import random
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime
+from typing import Dict, List
 
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PySide6.QtCore import *
@@ -131,7 +129,8 @@ class EvolutionMonitoringSystem(QWidget):
     def create_evolution_header(self) -> QWidget:
         """Create evolution status header"""
         header = QFrame()
-        header.setStyleSheet("""
+        header.setStyleSheet(
+            """
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #667eea, stop:1 #764ba2);
@@ -139,7 +138,8 @@ class EvolutionMonitoringSystem(QWidget):
                 padding: 15px;
                 color: white;
             }
-        """)
+        """
+        )
         header.setMaximumHeight(100)
 
         layout = QHBoxLayout(header)
@@ -203,7 +203,8 @@ class EvolutionMonitoringSystem(QWidget):
 
         # Fitness evolution chart
         fitness_group = QGroupBox("📈 Fitness Evolution")
-        fitness_group.setStyleSheet("""
+        fitness_group.setStyleSheet(
+            """
             QGroupBox {
                 font-weight: bold;
                 font-size: 14px;
@@ -212,7 +213,8 @@ class EvolutionMonitoringSystem(QWidget):
                 margin: 5px;
                 padding-top: 10px;
             }
-        """)
+        """
+        )
         fitness_layout = QVBoxLayout(fitness_group)
 
         # Create matplotlib figure for fitness
@@ -225,7 +227,8 @@ class EvolutionMonitoringSystem(QWidget):
 
         # Genetic composition
         genes_group = QGroupBox("🧬 Genetic Composition")
-        genes_group.setStyleSheet("""
+        genes_group.setStyleSheet(
+            """
             QGroupBox {
                 font-weight: bold;
                 font-size: 14px;
@@ -234,7 +237,8 @@ class EvolutionMonitoringSystem(QWidget):
                 margin: 5px;
                 padding-top: 10px;
             }
-        """)
+        """
+        )
         genes_layout = QVBoxLayout(genes_group)
 
         # Gene expression table
@@ -271,7 +275,8 @@ class EvolutionMonitoringSystem(QWidget):
 
         # Fitness landscape
         landscape_group = QGroupBox("🗻 Fitness Landscape")
-        landscape_group.setStyleSheet("""
+        landscape_group.setStyleSheet(
+            """
             QGroupBox {
                 font-weight: bold;
                 font-size: 14px;
@@ -280,7 +285,8 @@ class EvolutionMonitoringSystem(QWidget):
                 margin: 5px;
                 padding-top: 10px;
             }
-        """)
+        """
+        )
         landscape_layout = QVBoxLayout(landscape_group)
 
         # Create matplotlib figure for landscape
@@ -293,7 +299,8 @@ class EvolutionMonitoringSystem(QWidget):
 
         # Transcendence indicators
         transcendence_group = QGroupBox("✨ Transcendence Indicators")
-        transcendence_group.setStyleSheet("""
+        transcendence_group.setStyleSheet(
+            """
             QGroupBox {
                 font-weight: bold;
                 font-size: 14px;
@@ -302,12 +309,14 @@ class EvolutionMonitoringSystem(QWidget):
                 margin: 5px;
                 padding-top: 10px;
             }
-        """)
+        """
+        )
         transcendence_layout = QVBoxLayout(transcendence_group)
 
         # Transcendence progress bar
         self.transcendence_progress = QProgressBar()
-        self.transcendence_progress.setStyleSheet("""
+        self.transcendence_progress.setStyleSheet(
+            """
             QProgressBar {
                 border: 2px solid grey;
                 border-radius: 5px;
@@ -319,7 +328,8 @@ class EvolutionMonitoringSystem(QWidget):
                     stop:0 #9b59b6, stop:0.5 #ff6b6b, stop:1 #ffd93d);
                 border-radius: 3px;
             }
-        """)
+        """
+        )
         transcendence_layout.addWidget(QLabel("Transcendence Progress:"))
         transcendence_layout.addWidget(self.transcendence_progress)
 
@@ -348,20 +358,23 @@ class EvolutionMonitoringSystem(QWidget):
     def create_evolution_controls(self) -> QWidget:
         """Create evolution control footer"""
         footer = QFrame()
-        footer.setStyleSheet("""
+        footer.setStyleSheet(
+            """
             QFrame {
                 background: #2d3748;
                 border-radius: 5px;
                 padding: 15px;
             }
-        """)
+        """
+        )
         footer.setMaximumHeight(80)
 
         layout = QHBoxLayout(footer)
 
         # Start/Stop evolution
         self.evolution_btn = QPushButton("🧬 Start Evolution")
-        self.evolution_btn.setStyleSheet("""
+        self.evolution_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #4ecdc4;
                 color: white;
@@ -374,12 +387,14 @@ class EvolutionMonitoringSystem(QWidget):
             QPushButton:hover {
                 background: #45b7aa;
             }
-        """)
+        """
+        )
         self.evolution_btn.clicked.connect(self.toggle_evolution)
 
         # Reset evolution
         reset_btn = QPushButton("🔄 Reset Evolution")
-        reset_btn.setStyleSheet("""
+        reset_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #ff6b6b;
                 color: white;
@@ -392,7 +407,8 @@ class EvolutionMonitoringSystem(QWidget):
             QPushButton:hover {
                 background: #ff5252;
             }
-        """)
+        """
+        )
         reset_btn.clicked.connect(self.reset_evolution)
 
         # Speed control
@@ -406,7 +422,8 @@ class EvolutionMonitoringSystem(QWidget):
 
         # Export evolution data
         export_btn = QPushButton("💾 Export Evolution")
-        export_btn.setStyleSheet("""
+        export_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #ffd93d;
                 color: #2d3748;
@@ -419,7 +436,8 @@ class EvolutionMonitoringSystem(QWidget):
             QPushButton:hover {
                 background: #ffcd02;
             }
-        """)
+        """
+        )
         export_btn.clicked.connect(self.export_evolution_data)
 
         layout.addWidget(self.evolution_btn)

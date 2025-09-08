@@ -19,11 +19,11 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 try:
-    from Aetherra.lyrixa.memory.advanced_memory_integration import (
-        create_advanced_memory_manager,
-    )
     from Aetherra.lyrixa.agents.enhanced_conversation_manager import (
         create_enhanced_conversation_manager,
+    )
+    from Aetherra.lyrixa.memory.advanced_memory_integration import (
+        create_advanced_memory_manager,
     )
 
     AETHERRA_AVAILABLE = True
@@ -168,7 +168,7 @@ class AdvancedMemoryDemo:
             # Small delay to simulate realistic timing
             await asyncio.sleep(0.1)
 
-        print(f"\n📊 Storage Summary:")
+        print("\n📊 Storage Summary:")
         print(f"   • Total conversations stored: {len(test_conversations)}")
         print(
             f"   • Quantum storage attempts: {sum(1 for r in storage_results if r.get('quantum_stored', False))}"
@@ -240,7 +240,7 @@ class AdvancedMemoryDemo:
             print(f"   📊 Results found: {len(results)}")
 
             if results:
-                print(f"   🏆 Top result:")
+                print("   🏆 Top result:")
                 top_result = results[0]
                 content = (
                     top_result.get("content", "")[:80] + "..."
@@ -258,7 +258,7 @@ class AdvancedMemoryDemo:
 
             await asyncio.sleep(0.1)
 
-        print(f"\n📊 Recall Summary:")
+        print("\n📊 Recall Summary:")
         total_results = sum(len(r.get("results", [])) for r in recall_results)
         avg_recall_time = sum(r.get("recall_time", 0.0) for r in recall_results) / len(
             recall_results
@@ -319,7 +319,7 @@ class AdvancedMemoryDemo:
             # Show memory context if available
             memory_context = response_result.get("memory_context", {})
             if memory_context.get("memory_enhanced", False):
-                print(f"   🧠 Memory context:")
+                print("   🧠 Memory context:")
                 print(
                     f"      • Total memories used: {memory_context.get('total_memories', 0)}"
                 )
@@ -341,7 +341,7 @@ class AdvancedMemoryDemo:
             await asyncio.sleep(0.2)  # Realistic conversation pacing
 
         # Show conversation statistics
-        print(f"\n📊 Enhanced Conversation Summary:")
+        print("\n📊 Enhanced Conversation Summary:")
         memory_enhanced_count = sum(
             1 for r in conversation_results if r.get("memory_enhanced", False)
         )
