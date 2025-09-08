@@ -36,6 +36,17 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+# Generic public error helper to avoid leaking internal exception details.
+# Returns a stable generic message unless AETHERRA_DEBUG=1, in which case it appends the exception string.
+def _public_error(e: Exception | BaseException, generic: str = "internal error") -> str:  # type: ignore[override]
+    try:
+        if os.environ.get("AETHERRA_DEBUG", "0") == "1":
+            return f"{generic}: {e}" if e else generic
+    except Exception:
+        pass
+    return generic
+
+
 class AetherraHubServer:
     """🧩 Built-in Aetherra Hub Server"""
 
@@ -306,7 +317,11 @@ class AetherraHubServer:
                 job = self.trainer_jobs.get(job_id)
                 if job:
                     job["state"] = "failed"
-                    job["error"] = str(e)
+                    try:
+                        # Use public error helper if present to avoid leaking internals
+                        job["error"] = _public_error(e, "job failed")  # type: ignore[name-defined]
+                    except Exception:
+                        job["error"] = "job failed"
                     job["finished_at"] = self._trainer_now_iso()
 
     # ---- Trainer evaluation helpers ----
@@ -405,7 +420,10 @@ class AetherraHubServer:
                 ev = self.trainer_evals.get(eval_id)
                 if ev:
                     ev["state"] = "failed"
-                    ev["error"] = str(e)
+                    try:
+                        ev["error"] = _public_error(e, "eval failed")  # type: ignore[name-defined]
+                    except Exception:
+                        ev["error"] = "eval failed"
                     ev["finished_at"] = self._trainer_now_iso()
 
     def _setup_routes(self):
