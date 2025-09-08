@@ -305,7 +305,7 @@ class SystemMonitor:
             logger.error(f"Error getting Aetherra status: {e}")
             return {
                 "available": False,
-                "status": f"Error: {str(e)}",
+                "status": "An internal error has occurred while fetching engine status.",
                 "components": {},
             }
 
