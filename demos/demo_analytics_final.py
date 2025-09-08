@@ -12,8 +12,10 @@ import asyncio
 import random
 import sqlite3
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
+
 from demo_analytics_standalone import SimpleAnalyticsEngine, SimpleInsightPattern
+
 
 class FinalAnalyticsEngine(SimpleAnalyticsEngine):
     """Enhanced analytics engine that generates immediate insights"""
@@ -27,12 +29,14 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
             cursor = conn.cursor()
 
             # Analyze all response time data (no time filter for demo)
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT AVG(value) as avg_response_time, COUNT(*) as count,
                        MIN(value) as min_time, MAX(value) as max_time
                 FROM metrics
                 WHERE name = 'response_time'
-            """)
+            """
+            )
 
             response_data = cursor.fetchone()
 
@@ -43,46 +47,56 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
                 max_time = response_data[3]
 
                 if avg_time > 2.0:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="critical_response_time",
-                        description=f"🚨 CRITICAL: High average response time detected: {avg_time:.2f}s "
-                                  f"(range: {min_time:.2f}s - {max_time:.2f}s). "
-                                  f"Immediate performance optimization required!",
-                        confidence=0.95,
-                        impact_score=0.95,
-                        category="performance",
-                        discovered_at=datetime.now(),
-                        evidence=[{
-                            "avg_response_time": avg_time,
-                            "sample_count": count,
-                            "min_time": min_time,
-                            "max_time": max_time,
-                            "performance_threshold": 2.0
-                        }]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="critical_response_time",
+                            description=f"🚨 CRITICAL: High average response time detected: {avg_time:.2f}s "
+                            f"(range: {min_time:.2f}s - {max_time:.2f}s). "
+                            f"Immediate performance optimization required!",
+                            confidence=0.95,
+                            impact_score=0.95,
+                            category="performance",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_response_time": avg_time,
+                                    "sample_count": count,
+                                    "min_time": min_time,
+                                    "max_time": max_time,
+                                    "performance_threshold": 2.0,
+                                }
+                            ],
+                        )
+                    )
                 elif avg_time < 0.5:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="excellent_response_performance",
-                        description=f"🟢 EXCELLENT: Outstanding response performance: {avg_time:.2f}s average. "
-                                  f"System is operating at peak efficiency!",
-                        confidence=0.9,
-                        impact_score=0.7,
-                        category="performance",
-                        discovered_at=datetime.now(),
-                        evidence=[{
-                            "avg_response_time": avg_time,
-                            "sample_count": count,
-                            "performance_rating": "excellent"
-                        }]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="excellent_response_performance",
+                            description=f"🟢 EXCELLENT: Outstanding response performance: {avg_time:.2f}s average. "
+                            f"System is operating at peak efficiency!",
+                            confidence=0.9,
+                            impact_score=0.7,
+                            category="performance",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_response_time": avg_time,
+                                    "sample_count": count,
+                                    "performance_rating": "excellent",
+                                }
+                            ],
+                        )
+                    )
 
             # Analyze memory usage patterns
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT AVG(value) as avg_memory, MAX(value) as max_memory,
                        COUNT(*) as count
                 FROM metrics
                 WHERE name = 'memory_usage'
-            """)
+            """
+            )
 
             memory_data = cursor.fetchone()
 
@@ -92,45 +106,55 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
                 count = memory_data[2]
 
                 if avg_memory > 80:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="high_memory_usage_alert",
-                        description=f"[WARN] WARNING: High memory usage detected! "
-                                  f"Average: {avg_memory:.1f}%, Peak: {max_memory:.1f}%. "
-                                  f"Consider scaling resources or optimizing memory usage.",
-                        confidence=0.88,
-                        impact_score=0.85,
-                        category="performance",
-                        discovered_at=datetime.now(),
-                        evidence=[{
-                            "avg_memory": avg_memory,
-                            "max_memory": max_memory,
-                            "sample_count": count,
-                            "threshold_exceeded": True
-                        }]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="high_memory_usage_alert",
+                            description=f"[WARN] WARNING: High memory usage detected! "
+                            f"Average: {avg_memory:.1f}%, Peak: {max_memory:.1f}%. "
+                            f"Consider scaling resources or optimizing memory usage.",
+                            confidence=0.88,
+                            impact_score=0.85,
+                            category="performance",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_memory": avg_memory,
+                                    "max_memory": max_memory,
+                                    "sample_count": count,
+                                    "threshold_exceeded": True,
+                                }
+                            ],
+                        )
+                    )
                 elif avg_memory < 50:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="optimal_memory_usage",
-                        description=f"🟢 OPTIMAL: Excellent memory management! "
-                                  f"Average usage: {avg_memory:.1f}%. System has healthy memory headroom.",
-                        confidence=0.85,
-                        impact_score=0.6,
-                        category="performance",
-                        discovered_at=datetime.now(),
-                        evidence=[{
-                            "avg_memory": avg_memory,
-                            "max_memory": max_memory,
-                            "sample_count": count
-                        }]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="optimal_memory_usage",
+                            description=f"🟢 OPTIMAL: Excellent memory management! "
+                            f"Average usage: {avg_memory:.1f}%. System has healthy memory headroom.",
+                            confidence=0.85,
+                            impact_score=0.6,
+                            category="performance",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_memory": avg_memory,
+                                    "max_memory": max_memory,
+                                    "sample_count": count,
+                                }
+                            ],
+                        )
+                    )
 
             # Analyze user engagement patterns
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT AVG(value) as avg_engagement, COUNT(*) as samples,
                        MIN(value) as min_engagement, MAX(value) as max_engagement
                 FROM metrics
                 WHERE name = 'user_engagement'
-            """)
+            """
+            )
 
             engagement_data = cursor.fetchone()
 
@@ -141,48 +165,58 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
                 max_engagement = engagement_data[3]
 
                 if avg_engagement > 0.8:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="exceptional_user_engagement",
-                        description=f"🎉 EXCEPTIONAL: Outstanding user engagement! "
-                                  f"Average: {avg_engagement:.1%} (range: {min_engagement:.1%} - {max_engagement:.1%}). "
-                                  f"Users are highly satisfied with current experience!",
-                        confidence=0.92,
-                        impact_score=0.8,
-                        category="user_behavior",
-                        discovered_at=datetime.now(),
-                        evidence=[{
-                            "avg_engagement": avg_engagement,
-                            "min_engagement": min_engagement,
-                            "max_engagement": max_engagement,
-                            "sample_count": samples,
-                            "engagement_level": "exceptional"
-                        }]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="exceptional_user_engagement",
+                            description=f"🎉 EXCEPTIONAL: Outstanding user engagement! "
+                            f"Average: {avg_engagement:.1%} (range: {min_engagement:.1%} - {max_engagement:.1%}). "
+                            f"Users are highly satisfied with current experience!",
+                            confidence=0.92,
+                            impact_score=0.8,
+                            category="user_behavior",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_engagement": avg_engagement,
+                                    "min_engagement": min_engagement,
+                                    "max_engagement": max_engagement,
+                                    "sample_count": samples,
+                                    "engagement_level": "exceptional",
+                                }
+                            ],
+                        )
+                    )
                 elif avg_engagement < 0.5:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="concerning_user_engagement",
-                        description=f"🔴 CONCERN: Low user engagement detected! "
-                                  f"Average: {avg_engagement:.1%}. "
-                                  f"Immediate attention needed to improve user experience and retention.",
-                        confidence=0.9,
-                        impact_score=0.95,
-                        category="user_behavior",
-                        discovered_at=datetime.now(),
-                        evidence=[{
-                            "avg_engagement": avg_engagement,
-                            "min_engagement": min_engagement,
-                            "max_engagement": max_engagement,
-                            "sample_count": samples,
-                            "engagement_level": "concerning"
-                        }]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="concerning_user_engagement",
+                            description=f"🔴 CONCERN: Low user engagement detected! "
+                            f"Average: {avg_engagement:.1%}. "
+                            f"Immediate attention needed to improve user experience and retention.",
+                            confidence=0.9,
+                            impact_score=0.95,
+                            category="user_behavior",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_engagement": avg_engagement,
+                                    "min_engagement": min_engagement,
+                                    "max_engagement": max_engagement,
+                                    "sample_count": samples,
+                                    "engagement_level": "concerning",
+                                }
+                            ],
+                        )
+                    )
 
             # Analyze conversation success patterns
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT AVG(value) as avg_success, COUNT(*) as conversations
                 FROM metrics
                 WHERE name = 'conversation_success'
-            """)
+            """
+            )
 
             success_data = cursor.fetchone()
 
@@ -191,28 +225,34 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
                 conversations = success_data[1]
 
                 if avg_success > 0.9:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="outstanding_conversation_success",
-                        description=f"🌟 OUTSTANDING: Exceptional conversation success rate! "
-                                  f"{avg_success:.1%} success across {conversations} conversations. "
-                                  f"AI conversation strategies are highly effective!",
-                        confidence=0.95,
-                        impact_score=0.75,
-                        category="conversation",
-                        discovered_at=datetime.now(),
-                        evidence=[{
-                            "success_rate": avg_success,
-                            "conversation_count": conversations,
-                            "performance_level": "outstanding"
-                        }]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="outstanding_conversation_success",
+                            description=f"🌟 OUTSTANDING: Exceptional conversation success rate! "
+                            f"{avg_success:.1%} success across {conversations} conversations. "
+                            f"AI conversation strategies are highly effective!",
+                            confidence=0.95,
+                            impact_score=0.75,
+                            category="conversation",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "success_rate": avg_success,
+                                    "conversation_count": conversations,
+                                    "performance_level": "outstanding",
+                                }
+                            ],
+                        )
+                    )
 
             # Analyze system load patterns
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT AVG(value) as avg_load, MAX(value) as max_load, COUNT(*) as samples
                 FROM metrics
                 WHERE name = 'system_load'
-            """)
+            """
+            )
 
             load_data = cursor.fetchone()
 
@@ -222,21 +262,25 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
                 samples = load_data[2]
 
                 if avg_load > 70:
-                    insights.append(SimpleInsightPattern(
-                        pattern_id="high_system_load",
-                        description=f"[WARN] HIGH LOAD: System under heavy load! "
-                                  f"Average: {avg_load:.1f}%, Peak: {max_load:.1f}%. "
-                                  f"Consider load balancing or capacity expansion.",
-                        confidence=0.85,
-                        impact_score=0.8,
-                        category="performance",
-                        discovered_at=datetime.now(),
-                        evidence=[{
-                            "avg_load": avg_load,
-                            "max_load": max_load,
-                            "sample_count": samples
-                        }]
-                    ))
+                    insights.append(
+                        SimpleInsightPattern(
+                            pattern_id="high_system_load",
+                            description=f"[WARN] HIGH LOAD: System under heavy load! "
+                            f"Average: {avg_load:.1f}%, Peak: {max_load:.1f}%. "
+                            f"Consider load balancing or capacity expansion.",
+                            confidence=0.85,
+                            impact_score=0.8,
+                            category="performance",
+                            discovered_at=datetime.now(),
+                            evidence=[
+                                {
+                                    "avg_load": avg_load,
+                                    "max_load": max_load,
+                                    "sample_count": samples,
+                                }
+                            ],
+                        )
+                    )
 
         # Store insights
         await self._store_insights(insights)
@@ -251,12 +295,12 @@ class FinalAnalyticsEngine(SimpleAnalyticsEngine):
 async def run_final_demo():
     """Run the final comprehensive analytics demo"""
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🎯 FINAL ANALYTICS & INSIGHTS ENGINE DEMONSTRATION (#6)")
-    print("="*80)
+    print("=" * 80)
     print("🧠 Comprehensive Analytics with Intelligent Insight Generation")
     print(f"⏰ Demo started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("="*80)
+    print("=" * 80)
 
     try:
         demo_start = time.time()
@@ -283,8 +327,10 @@ async def run_final_demo():
                 response_time = random.uniform(0.1, 0.8)  # Fast responses
 
             await analytics_engine.collect_metric(
-                "response_time", response_time, "performance",
-                {"test_phase": "performance_analysis", "iteration": i}
+                "response_time",
+                response_time,
+                "performance",
+                {"test_phase": "performance_analysis", "iteration": i},
             )
 
         # Memory usage metrics
@@ -296,8 +342,10 @@ async def run_final_demo():
                 memory_usage = random.uniform(30, 60)  # Normal memory usage
 
             await analytics_engine.collect_metric(
-                "memory_usage", memory_usage, "performance",
-                {"test_phase": "memory_analysis", "iteration": i}
+                "memory_usage",
+                memory_usage,
+                "performance",
+                {"test_phase": "memory_analysis", "iteration": i},
             )
 
         # User engagement metrics
@@ -311,8 +359,10 @@ async def run_final_demo():
                 engagement = random.uniform(0.6, 0.8)  # Medium engagement
 
             await analytics_engine.collect_metric(
-                "user_engagement", engagement, "user_behavior",
-                {"test_phase": "engagement_analysis", "iteration": i}
+                "user_engagement",
+                engagement,
+                "user_behavior",
+                {"test_phase": "engagement_analysis", "iteration": i},
             )
 
         # Conversation success metrics
@@ -320,8 +370,10 @@ async def run_final_demo():
         for i in range(30):
             success_rate = random.uniform(0.88, 0.98)  # High success rate
             await analytics_engine.collect_metric(
-                "conversation_success", success_rate, "conversation",
-                {"test_phase": "conversation_analysis", "iteration": i}
+                "conversation_success",
+                success_rate,
+                "conversation",
+                {"test_phase": "conversation_analysis", "iteration": i},
             )
 
         # System load metrics
@@ -333,8 +385,10 @@ async def run_final_demo():
                 load = random.uniform(20, 50)  # Normal load
 
             await analytics_engine.collect_metric(
-                "system_load", load, "performance",
-                {"test_phase": "load_analysis", "iteration": i}
+                "system_load",
+                load,
+                "performance",
+                {"test_phase": "load_analysis", "iteration": i},
             )
 
         # Flush all metrics
@@ -362,29 +416,41 @@ async def run_final_demo():
             for i, insight in enumerate(insights, 1):
                 # Get category emoji
                 category_emoji = {
-                    'performance': '⚡',
-                    'user_behavior': '👤',
-                    'conversation': '💬',
-                    'memory': '🧠',
-                    'system': '🖥️'
-                }.get(insight.category, '📊')
+                    "performance": "⚡",
+                    "user_behavior": "👤",
+                    "conversation": "💬",
+                    "memory": "🧠",
+                    "system": "🖥️",
+                }.get(insight.category, "📊")
 
                 # Get confidence and impact indicators
                 confidence_indicator = (
-                    '🟢' if insight.confidence > 0.9 else
-                    '🟡' if insight.confidence > 0.8 else
-                    '🟠' if insight.confidence > 0.7 else '🔴'
+                    "🟢"
+                    if insight.confidence > 0.9
+                    else "🟡"
+                    if insight.confidence > 0.8
+                    else "🟠"
+                    if insight.confidence > 0.7
+                    else "🔴"
                 )
 
                 impact_indicator = (
-                    '🔴' if insight.impact_score > 0.9 else
-                    '🟠' if insight.impact_score > 0.8 else
-                    '🟡' if insight.impact_score > 0.7 else '🟢'
+                    "🔴"
+                    if insight.impact_score > 0.9
+                    else "🟠"
+                    if insight.impact_score > 0.8
+                    else "🟡"
+                    if insight.impact_score > 0.7
+                    else "🟢"
                 )
 
-                print(f"\n{i}. {category_emoji} [{insight.category.upper()}] {confidence_indicator}{impact_indicator}")
+                print(
+                    f"\n{i}. {category_emoji} [{insight.category.upper()}] {confidence_indicator}{impact_indicator}"
+                )
                 print(f"   📝 {insight.description}")
-                print(f"   📊 Confidence: {insight.confidence:.1%} | Impact: {insight.impact_score:.1%}")
+                print(
+                    f"   📊 Confidence: {insight.confidence:.1%} | Impact: {insight.impact_score:.1%}"
+                )
                 print(f"   🆔 Pattern ID: {insight.pattern_id}")
                 print(f"   🕐 Discovered: {insight.discovered_at.strftime('%H:%M:%S')}")
 
@@ -394,85 +460,94 @@ async def run_final_demo():
                     print("   📈 Evidence Summary:")
                     for key, value in evidence.items():
                         if isinstance(value, float):
-                            if 'rate' in key or 'engagement' in key:
-                                print(f"      • {key.replace('_', ' ').title()}: {value:.1%}")
+                            if "rate" in key or "engagement" in key:
+                                print(
+                                    f"      • {key.replace('_', ' ').title()}: {value:.1%}"
+                                )
                             else:
-                                print(f"      • {key.replace('_', ' ').title()}: {value:.2f}")
+                                print(
+                                    f"      • {key.replace('_', ' ').title()}: {value:.2f}"
+                                )
                         else:
                             print(f"      • {key.replace('_', ' ').title()}: {value}")
         else:
-            print("[WARN] No patterns detected - this indicates extremely stable metrics")
+            print(
+                "[WARN] No patterns detected - this indicates extremely stable metrics"
+            )
 
         # Performance snapshot
-        print(f"\n⚡ PHASE 4: Comprehensive Performance Analysis")
+        print("\n⚡ PHASE 4: Comprehensive Performance Analysis")
         print("-" * 50)
 
         snapshot = await analytics_engine.get_performance_snapshot()
 
         # System health analysis
-        health = snapshot.get('system_health', {})
-        health_status = health.get('status', 'unknown')
-        health_score = health.get('score', 0)
+        health = snapshot.get("system_health", {})
+        health_status = health.get("status", "unknown")
+        health_score = health.get("score", 0)
 
-        health_emoji = {
-            'excellent': '🟢',
-            'good': '🟡',
-            'fair': '🟠',
-            'poor': '🔴'
-        }.get(health_status, '⚪')
+        health_emoji = {"excellent": "🟢", "good": "🟡", "fair": "🟠", "poor": "🔴"}.get(
+            health_status, "⚪"
+        )
 
-        print(f"🏥 Overall System Health: {health_emoji} {health_status.upper()} ({health_score:.0f}%)")
+        print(
+            f"🏥 Overall System Health: {health_emoji} {health_status.upper()} ({health_score:.0f}%)"
+        )
 
         # Health factors breakdown
-        factors = health.get('factors', {})
+        factors = health.get("factors", {})
         if factors:
             print("\n🔍 Health Factor Analysis:")
             for factor, status in factors.items():
                 factor_emoji = {
-                    'excellent': '🟢',
-                    'healthy': '🟢',
-                    'good': '🟢',
-                    'fair': '🟡',
-                    'warning': '🟠',
-                    'poor': '🔴',
-                    'critical': '🚨'
-                }.get(status, '❓')
-                print(f"   {factor_emoji} {factor.replace('_', ' ').title()}: {status.upper()}")
+                    "excellent": "🟢",
+                    "healthy": "🟢",
+                    "good": "🟢",
+                    "fair": "🟡",
+                    "warning": "🟠",
+                    "poor": "🔴",
+                    "critical": "🚨",
+                }.get(status, "❓")
+                print(
+                    f"   {factor_emoji} {factor.replace('_', ' ').title()}: {status.upper()}"
+                )
 
         # Category performance breakdown
-        category_stats = snapshot.get('category_statistics', {})
+        category_stats = snapshot.get("category_statistics", {})
         if category_stats:
-            print(f"\n📊 Performance by Category:")
+            print("\n📊 Performance by Category:")
             for category, stats in category_stats.items():
-                avg_val = stats.get('average', 0)
-                count = stats.get('count', 0)
+                avg_val = stats.get("average", 0)
+                count = stats.get("count", 0)
 
                 # Performance indicators
-                if category == 'performance':
+                if category == "performance":
                     if avg_val > 2.0:
-                        indicator = '🔴 CRITICAL'
+                        indicator = "🔴 CRITICAL"
                     elif avg_val > 1.0:
-                        indicator = '🟠 WARNING'
+                        indicator = "🟠 WARNING"
                     else:
-                        indicator = '🟢 EXCELLENT'
-                elif category == 'user_behavior':
+                        indicator = "🟢 EXCELLENT"
+                elif category == "user_behavior":
                     if avg_val > 0.8:
-                        indicator = '🟢 EXCELLENT'
+                        indicator = "🟢 EXCELLENT"
                     elif avg_val > 0.6:
-                        indicator = '🟡 GOOD'
+                        indicator = "🟡 GOOD"
                     elif avg_val > 0.4:
-                        indicator = '🟠 FAIR'
+                        indicator = "🟠 FAIR"
                     else:
-                        indicator = '🔴 POOR'
+                        indicator = "🔴 POOR"
                 else:
-                    indicator = '🟡 NORMAL'
+                    indicator = "🟡 NORMAL"
 
-                print(f"   {indicator} | {category.title()}: {avg_val:.2f} avg ({count:,} metrics)")
+                print(
+                    f"   {indicator} | {category.title()}: {avg_val:.2f} avg ({count:,} metrics)"
+                )
 
         demo_time = time.time() - demo_start
 
         # Final summary
-        print(f"\n📋 PHASE 5: Demo Results Summary")
+        print("\n📋 PHASE 5: Demo Results Summary")
         print("-" * 50)
 
         final_stats = analytics_engine.get_analytics_statistics()
@@ -508,14 +583,14 @@ async def run_final_demo():
         print("  🤝 Prepared for Enhanced Agents integration")
         print("  🧩 Compatible with Advanced Memory Systems")
 
-        print(f"\n" + "="*80)
+        print("\n" + "=" * 80)
         print("🎉 ANALYTICS & INSIGHTS ENGINE (#6) DEMONSTRATION COMPLETE!")
-        print("="*80)
+        print("=" * 80)
         print("🌟 ROADMAP ITEM #6 IS NOW FULLY OPERATIONAL!")
         print("📊 Advanced analytics capabilities successfully demonstrated")
         print("🧠 Intelligent insight generation validated")
         print("🚀 Ready for full Aetherra AI OS integration!")
-        print("="*80)
+        print("=" * 80)
 
         return True
 

@@ -241,7 +241,8 @@ class AetherraPerśistentMemorySystem:
             cursor = conn.cursor()
 
             # Create tables
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS memories (
                     id TEXT PRIMARY KEY,
                     content TEXT,
@@ -259,17 +260,21 @@ class AetherraPerśistentMemorySystem:
                     verified BOOLEAN,
                     session_id TEXT
                 )
-            """)
+            """
+            )
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS cognitive_state (
                     key TEXT PRIMARY KEY,
                     value TEXT,
                     updated_at TEXT
                 )
-            """)
+            """
+            )
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS sessions (
                     session_id TEXT PRIMARY KEY,
                     started_at TEXT,
@@ -277,7 +282,8 @@ class AetherraPerśistentMemorySystem:
                     memory_count INTEGER,
                     cognitive_events TEXT
                 )
-            """)
+            """
+            )
 
             conn.commit()
             conn.close()

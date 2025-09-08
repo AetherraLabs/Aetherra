@@ -11,13 +11,11 @@ This version focuses on working correctly with the shared registry.
 """
 
 import asyncio
-import json
 import logging
 import sys
 import threading
 import time
 import webbrowser
-from datetime import datetime
 from pathlib import Path
 
 # Add project root to path
@@ -26,7 +24,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 # Web framework
 try:
-    from flask import Flask, jsonify, render_template
+    from flask import Flask, jsonify
     from flask_socketio import SocketIO, emit
 
     WEB_AVAILABLE = True

@@ -291,7 +291,8 @@ class AgentOrchestrator:
         """Initialize orchestrator database"""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS agents (
                     agent_id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -302,9 +303,11 @@ class AgentOrchestrator:
                     created_at TEXT NOT NULL,
                     last_activity TEXT
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS tasks (
                     task_id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -321,9 +324,11 @@ class AgentOrchestrator:
                     result TEXT,
                     error_message TEXT
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS orchestration_sessions (
                     session_id TEXT PRIMARY KEY,
                     start_time TEXT NOT NULL,
@@ -334,7 +339,8 @@ class AgentOrchestrator:
                     active_agents INTEGER DEFAULT 0,
                     performance_metrics TEXT
                 )
-            """)
+            """
+            )
 
             conn.commit()
         finally:

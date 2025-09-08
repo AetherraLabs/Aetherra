@@ -18,7 +18,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from typing import Iterable, Optional, Tuple
+from typing import Iterable, Optional
 
 STRICT = os.environ.get("AETHERRA_SIGNING_STRICT", "0") == "1"
 APP_DIR = Path(os.path.expanduser("~/.aetherra")).resolve()
@@ -79,7 +79,7 @@ def compute_files_hash(paths: Iterable[str]) -> str:
     return h.hexdigest()
 
 
-def generate_keypair(seed: Optional[bytes] = None) -> Tuple[str, str]:
+def generate_keypair(seed: Optional[bytes] = None) -> tuple[str, str]:
     """Return (public_base64, secret_base64)."""
     if not NACL:
         # Fallback: return dummy keys for dev

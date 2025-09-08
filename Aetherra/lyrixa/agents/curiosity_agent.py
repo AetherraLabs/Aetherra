@@ -11,8 +11,7 @@ questions, identifying knowledge gaps, and pursuing interesting paths.
 """
 
 import logging
-from typing import Dict, List, Any, Optional
-from datetime import datetime
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ class CuriosityAgent:
         return [
             "What patterns emerge from this data?",
             "How does this relate to previous experiences?",
-            "What would happen if we tried a different approach?"
+            "What would happen if we tried a different approach?",
         ]
 
     def identify_knowledge_gaps(self, domain: str) -> List[Dict[str, Any]]:
@@ -50,7 +49,7 @@ class CuriosityAgent:
         return {
             "topic": topic,
             "exploration_id": f"exp_{self.explorations_initiated}",
-            "status": "exploring"
+            "status": "exploring",
         }
 
     def get_status(self) -> Dict[str, Any]:
@@ -61,7 +60,7 @@ class CuriosityAgent:
             "status": self.status,
             "questions_generated": self.questions_generated,
             "explorations_initiated": self.explorations_initiated,
-            "is_available": self.is_available
+            "is_available": self.is_available,
         }
 
 

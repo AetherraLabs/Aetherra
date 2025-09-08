@@ -15,10 +15,7 @@ without relocating files immediately. Later, implementations can be moved here
 with no public API change.
 """
 
-from .hmr_controller import (
-    HMRController,
-    get_hmr_controller,
-)
+from .hmr_controller import HMRController, get_hmr_controller
 from .kernel_loop import (
     AetherraKernelLoop,
     get_kernel,

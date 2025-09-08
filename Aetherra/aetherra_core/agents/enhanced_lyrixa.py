@@ -11,6 +11,9 @@ Provides a sophisticated interface for Aetherra code interaction.
 
 import sys
 
+# Public exports for optional GUI component
+__all__ = ["EnhancedLyrixaWindow", "launch_enhanced_lyrixa"]
+
 
 class EnhancedLyrixaWindow:
     """
@@ -32,20 +35,9 @@ class EnhancedLyrixaWindow:
 
         # Check if Qt is available
         try:
-            from PySide6.QtCore import Qt
-            from PySide6.QtWidgets import (
-                QHBoxLayout,
-                QLabel,
-                QLineEdit,
-                QMainWindow,
-                QPushButton,
-                QSplitter,
-                QStatusBar,
-                QTextEdit,
-                QVBoxLayout,
-                QWidget,
-            )
+            from PySide6.QtCore import Qt  # noqa: F401 (optional runtime import)
 
+            # Defer heavy widget imports to _setup_qt_window to avoid F401 noise here
             self.qt_available = True
             self._setup_qt_window()
         except ImportError:
@@ -92,12 +84,14 @@ class EnhancedLyrixaWindow:
                 central_widget = QWidget()
                 self.setCentralWidget(central_widget)
 
-                # Create main splitter
+                # Create main splitter with safe orientation attempt
                 main_splitter = QSplitter()
-                try:
-                    main_splitter.setOrientation(Qt.Horizontal)
-                except Exception:
-                    pass  # Use default orientation
+                import contextlib
+
+                with contextlib.suppress(Exception):
+                    orientation = getattr(Qt, "Horizontal", None)
+                    if orientation is not None:
+                        main_splitter.setOrientation(orientation)
                 layout = QVBoxLayout(central_widget)
                 layout.addWidget(main_splitter)
 
@@ -229,95 +223,5 @@ def launch_enhanced_lyrixa():
 
 
 if __name__ == "__main__":
+    # Direct module execution launches (GUI if available, else console fallback)
     launch_enhanced_lyrixa()
-
-    def execute_code(self):
-        """Execute Aetherra code from the editor."""
-        code = self.code_editor.toPlainText()
-        if code.strip():
-            self.console_output.append(f"> Executing Aetherra code:\n{code}\n")
-            # Emit signal for external handling
-            self.code_executed.emit(code)
-            self.status_bar.showMessage("Code executed successfully")
-        else:
-            self.console_output.append("> No code to execute")
-
-    def send_message(self):
-        """Send message to Lyrixa assistant."""
-        message = self.chat_input.text()
-        if message.strip():
-            self.chat_display.append(f"You: {message}")
-            self.chat_input.clear()
-
-            # Simulate assistant response
-            response = f"Lyrixa: I understand you said '{message}'. How can I help you with Aetherra development?"
-            self.chat_display.append(response)
-            self.assistant_response.emit(response)
-
-    def activate_plugin(self):
-        """Activate the selected plugin."""
-        plugin = self.plugin_combo.currentText()
-        self.console_output.append(f"> Activating plugin: {plugin}")
-        self.status_bar.showMessage(f"Plugin activated: {plugin}")
-
-    def update_performance(self):
-        """Update performance metrics."""
-        # Simulate performance data
-        self.status_bar.showMessage("System running optimally - Memory: 45MB, CPU: 12%")
-
-    # Menu action handlers
-    def new_project(self):
-        self.code_editor.clear()
-        self.console_output.clear()
-        self.status_bar.showMessage("New project created")
-
-    def open_file(self):
-        self.status_bar.showMessage("Open file dialog would appear here")
-
-    def save_file(self):
-        self.status_bar.showMessage("File saved successfully")
-
-    def undo(self):
-        self.code_editor.undo()
-
-    def redo(self):
-        self.code_editor.redo()
-
-    def cut(self):
-        self.code_editor.cut()
-
-    def copy(self):
-        self.code_editor.copy()
-
-    def paste(self):
-        self.code_editor.paste()
-
-    def toggle_debug(self):
-        self.console_output.append("> Debug mode toggled")
-
-    def show_memory(self):
-        self.console_output.append("> Memory viewer would open here")
-
-    def show_about(self):
-        self.console_output.append(
-            "> About: Lyrixa Assistant - Enhanced Aetherra Interface"
-        )
-
-    def show_docs(self):
-        self.console_output.append("> Documentation would open here")
-
-
-def main():
-    """Main function to run the Enhanced Lyrixa Window."""
-    if not QT_AVAILABLE:
-        print("PySide6 is not available. Cannot run Enhanced Lyrixa Window.")
-        return
-
-    app = QApplication(sys.argv)
-    window = EnhancedLyrixaWindow()
-    window.show()
-    sys.exit(app.exec())
-
-
-if __name__ == "__main__":
-    main()

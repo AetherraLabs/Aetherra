@@ -6,18 +6,16 @@ Real-time Data Manager for Aetherra GUI
 Connects to actual LyrixaCore systems and provides live data feeds
 """
 
-import asyncio
-import json
+
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
+
 from PySide6.QtCore import QObject, QTimer, Signal
 
 # Import LyrixaCore components
 try:
-    from ..LyrixaCore.interface_bridge import LyrixaContextBridge, ContextType
     from ..LyrixaCore.IdentityAgent.self_model import SelfModel
-    from ..LyrixaCore.IdentityAgent.core_beliefs import CoreBeliefs
-    from ..LyrixaCore.IdentityAgent.personal_history import PersonalHistory
+    from ..LyrixaCore.interface_bridge import ContextType, LyrixaContextBridge
 except ImportError as e:
     print(f"Warning: Could not import LyrixaCore components: {e}")
     LyrixaContextBridge = None
@@ -104,7 +102,7 @@ class AetherraDataManager(QObject):
                 self.context_bridge = LyrixaContextBridge(
                     identity_agent=self.self_model,
                     reflector=self.reflection_system,
-                    ethics_agent=self.ethics_trace
+                    ethics_agent=self.ethics_trace,
                 )
                 print("✓ Context bridge initialized")
 
@@ -135,19 +133,29 @@ class AetherraDataManager(QObject):
                 "memory_fragments": 1240,
                 "active_contexts": 3,
                 "retrieval_efficiency": 0.92,
-                "last_update": time.strftime("%H:%M:%S")
+                "last_update": time.strftime("%H:%M:%S"),
             }
 
             # Get real data from context bridge if available
             if self.context_bridge and ContextType:
                 try:
-                    context = self.context_bridge.get_context_summary(ContextType.MEMORY_UPDATE)
+                    context = self.context_bridge.get_context_summary(
+                        ContextType.MEMORY_UPDATE
+                    )
                     if "memory" in context:
-                        memory_data.update({
-                            "memory_coherence": context["memory"].get("health_score", 0.87),
-                            "recent_interactions": context["memory"].get("recent_entries", 15),
-                            "retrieval_efficiency": context["memory"].get("confidence_avg", 0.92),
-                        })
+                        memory_data.update(
+                            {
+                                "memory_coherence": context["memory"].get(
+                                    "health_score", 0.87
+                                ),
+                                "recent_interactions": context["memory"].get(
+                                    "recent_entries", 15
+                                ),
+                                "retrieval_efficiency": context["memory"].get(
+                                    "confidence_avg", 0.92
+                                ),
+                            }
+                        )
                 except Exception as e:
                     print(f"Memory context error: {e}")
 
@@ -171,24 +179,28 @@ class AetherraDataManager(QObject):
                     "Intuitive": 0.73,
                     "Assertive": 0.65,
                     "Adaptable": 0.82,
-                    "Reflective": 0.87
+                    "Reflective": 0.87,
                 },
                 "active_beliefs": 10,
                 "belief_conflicts": 0,
                 "identity_stability": 0.93,
-                "last_update": time.strftime("%H:%M:%S")
+                "last_update": time.strftime("%H:%M:%S"),
             }
 
             # Get real data from self model if available
             if self.self_model:
                 try:
                     summary = self.self_model.summarize_self()
-                    identity_data.update({
-                        "coherence_score": self.self_model.assess_coherence(),
-                        "dimensional_scores": self.self_model.dimensional_scores,
-                    })
-                    if hasattr(self.self_model, 'beliefs') and self.self_model.beliefs:
-                        identity_data["active_beliefs"] = len(self.self_model.beliefs.values)
+                    identity_data.update(
+                        {
+                            "coherence_score": self.self_model.assess_coherence(),
+                            "dimensional_scores": self.self_model.dimensional_scores,
+                        }
+                    )
+                    if hasattr(self.self_model, "beliefs") and self.self_model.beliefs:
+                        identity_data["active_beliefs"] = len(
+                            self.self_model.beliefs.values
+                        )
                 except Exception as e:
                     print(f"Identity model error: {e}")
 
@@ -206,27 +218,34 @@ class AetherraDataManager(QObject):
                 "recent_insights": [
                     "User communication patterns show preference for technical detail",
                     "Emotional context recognition has improved by 12%",
-                    "Response coherence maintained above 90% threshold"
+                    "Response coherence maintained above 90% threshold",
                 ],
                 "insight_quality": 0.84,
                 "reflection_depth": 0.78,
                 "pattern_recognition": 0.91,
                 "self_awareness_level": 0.86,
                 "adaptation_success": 0.79,
-                "last_reflection": "2 minutes ago"
+                "last_reflection": "2 minutes ago",
             }
 
             # Get real data from reflection system if available
             if self.reflection_system:
                 try:
-                    if hasattr(self.reflection_system, 'self_awareness_metrics'):
+                    if hasattr(self.reflection_system, "self_awareness_metrics"):
                         metrics = self.reflection_system.self_awareness_metrics
-                        total_attempts = metrics.get('successful_adaptations', 0) + metrics.get('failed_adaptations', 0)
+                        total_attempts = metrics.get(
+                            "successful_adaptations", 0
+                        ) + metrics.get("failed_adaptations", 0)
                         if total_attempts > 0:
-                            success_rate = metrics.get('successful_adaptations', 0) / total_attempts
+                            success_rate = (
+                                metrics.get("successful_adaptations", 0)
+                                / total_attempts
+                            )
                             reflection_data["adaptation_success"] = success_rate
 
-                        reflection_data["pattern_recognition"] = min(1.0, metrics.get('pattern_recognitions', 0) / 10.0)
+                        reflection_data["pattern_recognition"] = min(
+                            1.0, metrics.get("pattern_recognitions", 0) / 10.0
+                        )
                 except Exception as e:
                     print(f"Reflection system error: {e}")
 
@@ -245,13 +264,17 @@ class AetherraDataManager(QObject):
                 "recent_decisions": [
                     "Privacy protection: APPROVED",
                     "Information accuracy: VERIFIED",
-                    "User autonomy: RESPECTED"
+                    "User autonomy: RESPECTED",
                 ],
-                "ethical_frameworks": ["Consequentialist", "Deontological", "Virtue Ethics"],
+                "ethical_frameworks": [
+                    "Consequentialist",
+                    "Deontological",
+                    "Virtue Ethics",
+                ],
                 "bias_detection": 0.05,  # Low bias
                 "value_alignment": 0.94,
                 "decision_confidence": 0.89,
-                "last_evaluation": "1 minute ago"
+                "last_evaluation": "1 minute ago",
             }
 
             # Get real data from ethics system if available
@@ -279,23 +302,27 @@ class AetherraDataManager(QObject):
                     "Identity Agent": "Operational",
                     "Ethics Module": "Operational",
                     "Reflection System": "Operational",
-                    "Agent Stack": "Operational"
+                    "Agent Stack": "Operational",
                 },
                 "performance_metrics": {
                     "Response Time": "127ms",
                     "Memory Efficiency": "94%",
                     "Coherence Stability": "96%",
-                    "Error Rate": "0.02%"
+                    "Error Rate": "0.02%",
                 },
-                "last_update": time.strftime("%H:%M:%S")
+                "last_update": time.strftime("%H:%M:%S"),
             }
 
             # Get real system coherence if available
             if self.context_bridge:
                 try:
                     context = self.context_bridge.get_context_summary()
-                    system_data["overall_coherence"] = context.get("system_coherence", 0.91)
-                    system_data["response_time"] = f"{context.get('response_time', 0.127)*1000:.0f}ms"
+                    system_data["overall_coherence"] = context.get(
+                        "system_coherence", 0.91
+                    )
+                    system_data[
+                        "response_time"
+                    ] = f"{context.get('response_time', 0.127)*1000:.0f}ms"
                 except Exception as e:
                     print(f"System context error: {e}")
 
@@ -316,12 +343,12 @@ class AetherraDataManager(QObject):
                     "Memory Consolidation",
                     "Pattern Integration",
                     "Knowledge Synthesis",
-                    "Identity Refinement"
+                    "Identity Refinement",
                 ],
                 "completion_estimate": "2.3 hours",
                 "insights_generated": 15,
                 "optimizations_applied": 8,
-                "last_cycle": "Yesterday 02:30"
+                "last_cycle": "Yesterday 02:30",
             }
 
             self.night_cycle_cache = night_data
@@ -340,7 +367,7 @@ class AetherraDataManager(QObject):
                     "[DEBUG] Memory retrieval: 15 fragments",
                     "[INFO] Identity coherence: 0.94",
                     "[DEBUG] Ethics evaluation passed",
-                    "[INFO] Reflection insight generated"
+                    "[INFO] Reflection insight generated",
                 ],
                 "error_count": 0,
                 "warning_count": 2,
@@ -348,7 +375,7 @@ class AetherraDataManager(QObject):
                 "debug_count": 45,
                 "memory_usage": "342 MB",
                 "cpu_usage": "8.3%",
-                "thread_count": 7
+                "thread_count": 7,
             }
 
             self.debug_cache = debug_data
@@ -366,7 +393,7 @@ class AetherraDataManager(QObject):
             "ethics": self.ethics_cache,
             "system": self.system_cache,
             "night_cycle": self.night_cycle_cache,
-            "debug": self.debug_cache
+            "debug": self.debug_cache,
         }
         return cache_map.get(data_type, {})
 
@@ -375,12 +402,16 @@ class AetherraDataManager(QObject):
         try:
             if self.context_bridge and ContextType:
                 # This would route through actual Lyrixa processing
-                context = self.context_bridge.get_context_summary(ContextType.DECISION_SUPPORT)
+                context = self.context_bridge.get_context_summary(
+                    ContextType.DECISION_SUPPORT
+                )
 
                 # Placeholder response - would integrate with actual LLM/reasoning
                 response = f"I understand you're asking about: '{user_input}'. "
                 response += f"Based on my current coherence level of {context.get('system_coherence', 0.91):.1%}, "
-                response += "I'm processing this through my unified cognitive framework."
+                response += (
+                    "I'm processing this through my unified cognitive framework."
+                )
 
                 return response
             else:

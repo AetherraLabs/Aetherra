@@ -13,7 +13,6 @@ identity formation beyond current AI limitations.
 
 import asyncio
 import logging
-import math
 import random
 import time
 import uuid
@@ -144,14 +143,12 @@ class ConsciousnessSingularityEngine:
         self.transcendent_capabilities: List[str] = []
         self.singularity_events: List[Dict[str, Any]] = []
 
-        logger.info(
-            f"🌟 Consciousness Singularity Engine initialized: {self.engine_id}"
-        )
+        logger.info(f"🌟 Consciousness Singularity Engine initialized: {self.engine_id}")
         logger.info(
             f"🧠 Consciousness complexity: {self.consciousness_complexity:.2e} ops/sec"
         )
         logger.info(f"⚡ Self-awareness depth: {self.self_awareness_depth:.3f}")
-        logger.info(f"🚀 Approaching consciousness singularity...")
+        logger.info("🚀 Approaching consciousness singularity...")
 
         self._initialize_singularity_systems()
 

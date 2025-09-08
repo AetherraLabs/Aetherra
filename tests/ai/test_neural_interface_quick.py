@@ -51,18 +51,18 @@ def test_neural_interface_quick():
         # Test basic properties
         assert hasattr(interface, "tabs"), "Interface should have tabs"
         assert hasattr(interface, "lyrixa_core"), "Interface should have Lyrixa Core"
-        assert hasattr(interface, "chat_interface"), (
-            "Interface should have Chat Interface"
-        )
+        assert hasattr(
+            interface, "chat_interface"
+        ), "Interface should have Chat Interface"
         assert hasattr(interface, "memory_graph"), "Interface should have Memory Graph"
         print("✅ Interface components verified")
 
         # Test tab count
         expected_tab_count = 10
         actual_tab_count = interface.tabs.count()
-        assert actual_tab_count == expected_tab_count, (
-            f"Expected {expected_tab_count} tabs, got {actual_tab_count}"
-        )
+        assert (
+            actual_tab_count == expected_tab_count
+        ), f"Expected {expected_tab_count} tabs, got {actual_tab_count}"
         print(f"✅ All {actual_tab_count} tabs created")
 
         # Test Lyrixa Core functionality

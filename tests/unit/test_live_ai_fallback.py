@@ -7,7 +7,7 @@ Live Test: Demonstrate Lyrixa's Multi-AI Fallback System in Action
 This script will actually test the real AI models and fallback behavior.
 """
 
-import os
+
 import sys
 from pathlib import Path
 
@@ -30,14 +30,9 @@ def test_real_ai_fallback():
 
     # Import Lyrixa components
     try:
-        from datetime import datetime
-
         from Aetherra.lyrixa.gui.phase6_personality import (
-            EmotionalState,
             GUIPersonalityManager,
             LyrixaAI,
-            PersonalityState,
-            PersonalityTrait,
         )
 
         print("🧪 Creating test personality manager...")

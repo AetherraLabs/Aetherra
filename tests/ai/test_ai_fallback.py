@@ -6,7 +6,7 @@
 Test script to demonstrate Lyrixa's Multi-AI Fallback System
 """
 
-import os
+
 import sys
 from pathlib import Path
 

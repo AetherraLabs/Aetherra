@@ -13,7 +13,6 @@ Purpose: Fix violations detected by architectural compliance checker
 
 import os
 import re
-import shutil
 from pathlib import Path
 from typing import Dict, List
 
@@ -50,7 +49,7 @@ class ArchitecturalFixer:
                 continue
 
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read()
 
                 # Remove Lyrixa imports

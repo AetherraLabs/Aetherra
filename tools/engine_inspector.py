@@ -19,7 +19,7 @@ import os
 import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -115,7 +115,7 @@ def intended_for_area(
 
 def collect_references(
     target_module: str, class_names: List[str], all_files: List[Path]
-) -> Tuple[List[str], List[str], List[str], List[str], List[str]]:
+) -> tuple[List[str], List[str], List[str], List[str], List[str]]:
     os_refs: Set[str] = set()
     lyrixa_refs: Set[str] = set()
     ui_refs: Set[str] = set()
@@ -250,22 +250,18 @@ def main() -> int:
         if len(infos) <= 1:
             continue
 
-        # Choose canonical by path preference heuristics
-        def rank(info: EngineInfo) -> Tuple[int, int]:
+        def rank(info: EngineInfo) -> tuple[int, int]:
+            """Ranking heuristic to pick canonical implementation."""
             path = info.file
-            # Prefer canonical quantum memory path
             if (
                 "Aetherra/aetherra_core/memory/QuantumEnhancedMemoryEngine/quantum_memory_engine.py"
                 in path
             ):
                 return (0, len(path))
-            # Prefer aetherra_core engine path
             if "/aetherra_core/engine/" in path:
                 return (1, len(path))
-            # Prefer consciousness quantum engine under Aetherra/consciousness
             if "/consciousness/quantum/" in path:
                 return (2, len(path))
-            # Else fallback
             return (9, len(path))
 
         canonical = sorted(infos, key=rank)[0]

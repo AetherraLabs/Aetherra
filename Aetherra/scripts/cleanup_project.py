@@ -18,7 +18,7 @@ import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set
 
 # Configure logging
 logging.basicConfig(
@@ -167,9 +167,7 @@ class AetherraCleanup:
         logger.info("Creating backup of current project state...")
 
         backup_dir = (
-            self.project_root
-            / "backup"
-            / f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            self.project_root / "backup" / f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         )
 
         if not self.dry_run:
@@ -246,34 +244,20 @@ class AetherraCleanup:
 
         # Content-based categorization
         if any(
-            keyword in file_content
-            for keyword in ["class.*agent", "def.*agent", "agent.*class"]
+            keyword in file_content for keyword in ["class.*agent", "def.*agent", "agent.*class"]
         ):
             return "agents"
-        elif any(
-            keyword in file_content for keyword in ["memory", "episodic", "semantic"]
-        ):
+        elif any(keyword in file_content for keyword in ["memory", "episodic", "semantic"]):
             return "memory"
-        elif any(
-            keyword in file_content for keyword in ["analytics", "dashboard", "metrics"]
-        ):
+        elif any(keyword in file_content for keyword in ["analytics", "dashboard", "metrics"]):
             return "analytics"
-        elif any(
-            keyword in file_content for keyword in ["neural", "brain", "interface"]
-        ):
+        elif any(keyword in file_content for keyword in ["neural", "brain", "interface"]):
             return "neural"
-        elif any(
-            keyword in file_content for keyword in ["quantum", "qubit", "circuit"]
-        ):
+        elif any(keyword in file_content for keyword in ["quantum", "qubit", "circuit"]):
             return "quantum"
-        elif any(
-            keyword in file_content for keyword in ["qtwidgets", "qapplication", "gui"]
-        ):
+        elif any(keyword in file_content for keyword in ["qtwidgets", "qapplication", "gui"]):
             return "ui"
-        elif any(
-            keyword in file_content
-            for keyword in ["flask", "fastapi", "endpoint", "router"]
-        ):
+        elif any(keyword in file_content for keyword in ["flask", "fastapi", "endpoint", "router"]):
             return "api"
         elif any(keyword in file_content for keyword in ["test", "pytest", "unittest"]):
             return "tests"
@@ -363,13 +347,11 @@ class AetherraCleanup:
                             dir_path.rmdir()
                             logger.info(f"Removed empty directory: {dir_path}")
                         else:
-                            logger.info(
-                                f"[DRY RUN] Would remove empty directory: {dir_path}"
-                            )
+                            logger.info(f"[DRY RUN] Would remove empty directory: {dir_path}")
                 except OSError:
                     pass  # Directory not empty or other issue
 
-    def identify_duplicates(self) -> List[Tuple[Path, Path]]:
+    def identify_duplicates(self) -> List[tuple[Path, Path]]:
         """Identify potential duplicate files"""
         logger.info("Identifying potential duplicate files...")
 
@@ -388,9 +370,7 @@ class AetherraCleanup:
 
                 if file_hash in file_hashes:
                     duplicates.append((file_hashes[file_hash], file_path))
-                    logger.warning(
-                        f"Potential duplicate: {file_path} <-> {file_hashes[file_hash]}"
-                    )
+                    logger.warning(f"Potential duplicate: {file_path} <-> {file_hashes[file_hash]}")
                     self.stats["warnings"] += 1
                 else:
                     file_hashes[file_hash] = file_path
@@ -404,7 +384,7 @@ class AetherraCleanup:
     def generate_report(
         self,
         categorized_files: Dict[str, List[Path]],
-        duplicates: List[Tuple[Path, Path]],
+        duplicates: List[tuple[Path, Path]],
     ) -> None:
         """Generate cleanup report"""
         logger.info("Generating cleanup report...")
@@ -415,13 +395,10 @@ class AetherraCleanup:
             "dry_run": self.dry_run,
             "statistics": self.stats,
             "categorization": {
-                category: [str(f) for f in files]
-                for category, files in categorized_files.items()
+                category: [str(f) for f in files] for category, files in categorized_files.items()
             },
             "duplicates": [[str(f1), str(f2)] for f1, f2 in duplicates],
-            "recommendations": self._generate_recommendations(
-                categorized_files, duplicates
-            ),
+            "recommendations": self._generate_recommendations(categorized_files, duplicates),
         }
 
         report_path = self.project_root / "cleanup_report.json"
@@ -440,7 +417,7 @@ class AetherraCleanup:
     def _generate_recommendations(
         self,
         categorized_files: Dict[str, List[Path]],
-        duplicates: List[Tuple[Path, Path]],
+        duplicates: List[tuple[Path, Path]],
     ) -> List[str]:
         """Generate recommendations based on analysis"""
         recommendations = []
@@ -471,16 +448,14 @@ class AetherraCleanup:
                     pass
 
         if large_files:
-            recommendations.append(
-                f"Review {len(large_files)} large files (>1MB) for optimization"
-            )
+            recommendations.append(f"Review {len(large_files)} large files (>1MB) for optimization")
 
         return recommendations
 
     def _print_summary(
         self,
         categorized_files: Dict[str, List[Path]],
-        duplicates: List[Tuple[Path, Path]],
+        duplicates: List[tuple[Path, Path]],
     ) -> None:
         """Print cleanup summary"""
         print("\n" + "=" * 60)
@@ -585,9 +560,7 @@ def main():
     print(f"Mode: {'DRY RUN' if dry_run else 'ACTUAL CLEANUP'}")
 
     if not dry_run:
-        response = input(
-            "\nThis will make actual changes to your project. Continue? (y/N): "
-        )
+        response = input("\nThis will make actual changes to your project. Continue? (y/N): ")
         if response.lower() != "y":
             print("Cleanup cancelled.")
             sys.exit(0)

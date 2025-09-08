@@ -9,8 +9,9 @@ Intelligently migrates the most important agents from the comprehensive discover
 
 import json
 import shutil
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 
 class SmartAgentMigrator:
     def __init__(self, project_root):
@@ -27,13 +28,15 @@ class SmartAgentMigrator:
         report_files = list(tools_dir.glob("agent_discovery_report_*.json"))
 
         if not report_files:
-            print("❌ No discovery report found! Run comprehensive_agent_discovery.py first")
+            print(
+                "❌ No discovery report found! Run comprehensive_agent_discovery.py first"
+            )
             return None
 
         # Get the latest report
         latest_report = max(report_files, key=lambda f: f.stat().st_mtime)
 
-        with open(latest_report, 'r', encoding='utf-8') as f:
+        with open(latest_report, encoding="utf-8") as f:
             report = json.load(f)
 
         print(f"✅ Loaded report: {latest_report.name}")
@@ -47,10 +50,10 @@ class SmartAgentMigrator:
 
         # We'll be much more selective given the massive scope
         smart_filtered = {
-            "core_agents": [],           # Absolutely essential agents
+            "core_agents": [],  # Absolutely essential agents
             "web_interface_agents": [],  # Agents related to your working web interface
-            "memory_agents": [],         # Agents working with memory systems
-            "ai_model_agents": [],       # Agents handling AI models
+            "memory_agents": [],  # Agents working with memory systems
+            "ai_model_agents": [],  # Agents handling AI models
             "orchestration_agents": [],  # Key orchestration components
         }
 
@@ -58,15 +61,26 @@ class SmartAgentMigrator:
 
         # Core agents: Filter for truly essential explicit agents
         core_keywords = [
-            'lyrixa', 'aetherra', 'core', 'main', 'primary', 'central',
-            'manager', 'controller', 'engine', 'system'
+            "lyrixa",
+            "aetherra",
+            "core",
+            "main",
+            "primary",
+            "central",
+            "manager",
+            "controller",
+            "engine",
+            "system",
         ]
 
         for agent in priority_agents["critical"]:
             agent_file = agent["file"].lower()
 
             # Skip archived, backup, test files
-            if any(skip in agent_file for skip in ['archive', 'backup', 'test_', 'demo_', 'example_']):
+            if any(
+                skip in agent_file
+                for skip in ["archive", "backup", "test_", "demo_", "example_"]
+            ):
                 continue
 
             # Focus on core components
@@ -74,18 +88,24 @@ class SmartAgentMigrator:
                 smart_filtered["core_agents"].append(agent)
 
             # Web interface related
-            elif any(web_term in agent_file for web_term in ['web', 'gui', 'interface', 'server']):
+            elif any(
+                web_term in agent_file
+                for web_term in ["web", "gui", "interface", "server"]
+            ):
                 smart_filtered["web_interface_agents"].append(agent)
 
         # AI handlers: Focus on actual AI model interfaces
-        ai_keywords = ['openai', 'gpt', 'claude', 'mistral', 'ai_client', 'model']
+        ai_keywords = ["openai", "gpt", "claude", "mistral", "ai_client", "model"]
 
         for agent in priority_agents["high"]:
             if agent["category"] == "ai_handler":
                 agent_file = agent["file"].lower()
 
                 # Skip archived/test files
-                if any(skip in agent_file for skip in ['archive', 'backup', 'test_', 'demo_']):
+                if any(
+                    skip in agent_file
+                    for skip in ["archive", "backup", "test_", "demo_"]
+                ):
                     continue
 
                 # Focus on real AI handlers
@@ -93,26 +113,32 @@ class SmartAgentMigrator:
                     smart_filtered["ai_model_agents"].append(agent)
 
         # Memory agents: Components that work with your migrated databases
-        memory_keywords = ['memory', 'database', 'storage', 'persistence']
+        memory_keywords = ["memory", "database", "storage", "persistence"]
 
         for agent in priority_agents["high"]:
             if agent["category"] == "cognitive_component":
                 agent_file = agent["file"].lower()
 
-                if any(skip in agent_file for skip in ['archive', 'backup', 'test_', 'demo_']):
+                if any(
+                    skip in agent_file
+                    for skip in ["archive", "backup", "test_", "demo_"]
+                ):
                     continue
 
                 if any(mem_term in agent_file for mem_term in memory_keywords):
                     smart_filtered["memory_agents"].append(agent)
 
         # Orchestration: Key coordination components
-        orchestration_keywords = ['orchestrat', 'coordinat', 'dispatch', 'workflow']
+        orchestration_keywords = ["orchestrat", "coordinat", "dispatch", "workflow"]
 
         for agent in priority_agents["medium"]:
             if agent["category"] == "orchestrator":
                 agent_file = agent["file"].lower()
 
-                if any(skip in agent_file for skip in ['archive', 'backup', 'test_', 'demo_']):
+                if any(
+                    skip in agent_file
+                    for skip in ["archive", "backup", "test_", "demo_"]
+                ):
                     continue
 
                 if any(orch_term in agent_file for orch_term in orchestration_keywords):
@@ -124,7 +150,9 @@ class SmartAgentMigrator:
 
         for category, agents in smart_filtered.items():
             if agents:
-                print(f"\n🔸 {category.upper().replace('_', ' ')} ({len(agents)} agents):")
+                print(
+                    f"\n🔸 {category.upper().replace('_', ' ')} ({len(agents)} agents):"
+                )
                 for i, agent in enumerate(agents[:3]):
                     print(f"   {i+1}. {agent['file']}")
                 if len(agents) > 3:
@@ -136,11 +164,7 @@ class SmartAgentMigrator:
         """Migrate the smart filtered agents to clean architecture"""
         print("🚀 MIGRATING SMART FILTERED AGENTS...")
 
-        migration_results = {
-            "migrated": [],
-            "skipped": [],
-            "errors": []
-        }
+        migration_results = {"migrated": [], "skipped": [], "errors": []}
 
         # Migration mapping
         target_mapping = {
@@ -148,7 +172,7 @@ class SmartAgentMigrator:
             "web_interface_agents": "web/components",
             "memory_agents": "lyrixa/memory",
             "ai_model_agents": "lyrixa/interfaces",
-            "orchestration_agents": "lyrixa/agents/orchestration"
+            "orchestration_agents": "lyrixa/agents/orchestration",
         }
 
         for category, agents in smart_filtered.items():
@@ -158,7 +182,9 @@ class SmartAgentMigrator:
             target_dir = self.clean_dir / target_mapping[category]
             target_dir.mkdir(parents=True, exist_ok=True)
 
-            print(f"\n[DISC] Migrating {category.replace('_', ' ')} to {target_mapping[category]}:")
+            print(
+                f"\n[DISC] Migrating {category.replace('_', ' ')} to {target_mapping[category]}:"
+            )
 
             for agent in agents:
                 try:
@@ -169,25 +195,25 @@ class SmartAgentMigrator:
                         # Copy file
                         shutil.copy2(source_file, target_file)
 
-                        migration_results["migrated"].append({
-                            "source": agent["file"],
-                            "target": str(target_file.relative_to(self.clean_dir)),
-                            "category": category
-                        })
+                        migration_results["migrated"].append(
+                            {
+                                "source": agent["file"],
+                                "target": str(target_file.relative_to(self.clean_dir)),
+                                "category": category,
+                            }
+                        )
 
                         print(f"   ✅ {source_file.name}")
                     else:
-                        migration_results["skipped"].append({
-                            "file": agent["file"],
-                            "reason": "Source file not found"
-                        })
+                        migration_results["skipped"].append(
+                            {"file": agent["file"], "reason": "Source file not found"}
+                        )
                         print(f"   [WARN]  Skipped {agent['file']} (not found)")
 
                 except Exception as e:
-                    migration_results["errors"].append({
-                        "file": agent["file"],
-                        "error": str(e)
-                    })
+                    migration_results["errors"].append(
+                        {"file": agent["file"], "error": str(e)}
+                    )
                     print(f"   ❌ Error migrating {agent['file']}: {e}")
 
         return migration_results
@@ -350,9 +376,11 @@ class AgentIntegrationBridge:
 agent_bridge = AgentIntegrationBridge()
 '''
 
-        bridge_file = self.clean_dir / "lyrixa" / "agents" / "agent_integration_bridge.py"
+        bridge_file = (
+            self.clean_dir / "lyrixa" / "agents" / "agent_integration_bridge.py"
+        )
         bridge_file.parent.mkdir(parents=True, exist_ok=True)
-        bridge_file.write_text(bridge_content, encoding='utf-8')
+        bridge_file.write_text(bridge_content, encoding="utf-8")
 
         print(f"✅ Created: {bridge_file.relative_to(self.project_root)}")
         return bridge_file
@@ -422,7 +450,7 @@ if __name__ == "__main__":
 '''
 
         launcher_file = self.clean_dir / "launch_agents.py"
-        launcher_file.write_text(launcher_content, encoding='utf-8')
+        launcher_file.write_text(launcher_content, encoding="utf-8")
 
         print(f"✅ Created: {launcher_file.relative_to(self.project_root)}")
         return launcher_file
@@ -435,18 +463,18 @@ if __name__ == "__main__":
 
         if main_launcher.exists():
             try:
-                content = main_launcher.read_text(encoding='utf-8')
+                content = main_launcher.read_text(encoding="utf-8")
 
                 # Add agent bridge import
-                agent_import = '''from lyrixa.agents.agent_integration_bridge import agent_bridge
-'''
+                agent_import = """from lyrixa.agents.agent_integration_bridge import agent_bridge
+"""
 
                 # Find import section
-                lines = content.split('\n')
+                lines = content.split("\n")
                 import_end = 0
 
                 for i, line in enumerate(lines):
-                    if line.strip().startswith('from web.server.web_adapter'):
+                    if line.strip().startswith("from web.server.web_adapter"):
                         import_end = i + 1
                         break
 
@@ -455,24 +483,24 @@ if __name__ == "__main__":
 
                     # Find the main function and add agent initialization
                     for i, line in enumerate(lines):
-                        if 'await web_adapter.initialize_web_systems()' in line:
+                        if "await web_adapter.initialize_web_systems()" in line:
                             agent_init_lines = [
-                                '',
-                                '        # Initialize agent systems',
+                                "",
+                                "        # Initialize agent systems",
                                 '        logger.info("🤖 Initializing agent systems...")',
-                                '        discovered_agents = agent_bridge.discover_migrated_agents()',
-                                '        loaded_count = agent_bridge.load_agent_modules(discovered_agents)',
-                                '        agent_bridge.initialize_agent_communication()',
+                                "        discovered_agents = agent_bridge.discover_migrated_agents()",
+                                "        loaded_count = agent_bridge.load_agent_modules(discovered_agents)",
+                                "        agent_bridge.initialize_agent_communication()",
                                 '        logger.info(f"✅ Initialized {loaded_count} agents")',
-                                ''
+                                "",
                             ]
 
                             for j, agent_line in enumerate(agent_init_lines):
                                 lines.insert(i + 1 + j, agent_line)
                             break
 
-                    updated_content = '\n'.join(lines)
-                    main_launcher.write_text(updated_content, encoding='utf-8')
+                    updated_content = "\n".join(lines)
+                    main_launcher.write_text(updated_content, encoding="utf-8")
                     print("✅ Updated main launcher with agent initialization")
                 else:
                     print("[WARN]  Could not find import section in main launcher")
@@ -481,6 +509,7 @@ if __name__ == "__main__":
                 print(f"[WARN]  Could not update main launcher: {e}")
         else:
             print("[WARN]  Main launcher not found")
+
 
 def main():
     project_root = Path.cwd()
@@ -510,25 +539,27 @@ def main():
     # Update main launcher
     migrator.update_main_launcher_with_agents()
 
-    print(f"\n🎉 PHASE 4 COMPLETE!")
+    print("\n🎉 PHASE 4 COMPLETE!")
     print(f"✅ Migrated {len(migration_results['migrated'])} important agents")
-    print(f"✅ Created agent integration bridge")
-    print(f"✅ Created agent launcher")
-    print(f"✅ Updated main launcher with agent support")
+    print("✅ Created agent integration bridge")
+    print("✅ Created agent launcher")
+    print("✅ Updated main launcher with agent support")
 
     if migration_results["skipped"]:
-        print(f"[WARN]  Skipped {len(migration_results['skipped'])} agents (files not found)")
+        print(
+            f"[WARN]  Skipped {len(migration_results['skipped'])} agents (files not found)"
+        )
 
     if migration_results["errors"]:
         print(f"❌ Errors with {len(migration_results['errors'])} agents")
 
-    print(f"\n🎯 AGENT INTEGRATION SUCCESS:")
+    print("\n🎯 AGENT INTEGRATION SUCCESS:")
     print("• Smart filtering focused on truly important agents")
     print("• All migrated agents connected to integration bridge")
     print("• Agent communication and memory access enabled")
     print("• Main system launcher updated with agent support")
 
-    print(f"\n🧪 NEXT: TEST THE INTEGRATED AGENT SYSTEM")
+    print("\n🧪 NEXT: TEST THE INTEGRATED AGENT SYSTEM")
     print("Run: python Aetherra_v2/launch_agents.py")
     print("Or: python Aetherra_v2/launch_with_web.py (includes agents)")
 
@@ -536,8 +567,9 @@ def main():
         "migrated_agents": len(migration_results["migrated"]),
         "bridge_file": str(bridge_file),
         "launcher_file": str(launcher_file),
-        "migration_results": migration_results
+        "migration_results": migration_results,
     }
+
 
 if __name__ == "__main__":
     main()

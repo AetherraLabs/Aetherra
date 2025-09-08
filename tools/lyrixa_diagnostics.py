@@ -121,8 +121,8 @@ async def run_checks(
     async def memory_check():
         try:
             from aetherra_persistent_memory import (
-                get_persistent_memory_system,  # type: ignore
-            )
+                get_persistent_memory_system,
+            )  # type: ignore
 
             mem = await get_persistent_memory_system()
             if not mem:
@@ -163,8 +163,8 @@ async def run_checks(
     async def workspace_tools_check():
         try:
             from Aetherra.lyrixa.lyrixa_basic import (
-                LyrixaBasicAssistant,  # type: ignore
-            )
+                LyrixaBasicAssistant,
+            )  # type: ignore
 
             assistant = LyrixaBasicAssistant()
             ok = await assistant.initialize()
@@ -209,9 +209,9 @@ async def run_checks(
     # 7. Intelligence capability reinforcement check
     async def intelligence_capabilities_check():
         try:
-            from Aetherra.lyrixa.intelligence.lyrixa_full_intelligence import (  # type: ignore
+            from Aetherra.lyrixa.intelligence.lyrixa_full_intelligence import (
                 LyrixaIntelligenceCore,
-            )
+            )  # type: ignore
 
             core = LyrixaIntelligenceCore()
             # Force run provider init cheaply (may no-op if keys absent)

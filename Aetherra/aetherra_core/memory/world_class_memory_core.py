@@ -6,6 +6,10 @@ DEPRECATED: world_class_memory_core.py is now an adapter for QuantumEnhancedMemo
 All memory operations are delegated to the canonical engine.
 """
 
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 from ..memory.QuantumEnhancedMemoryEngine.engine import QuantumEnhancedMemoryEngine
 
 
@@ -40,7 +44,7 @@ class MemoryCluster:
 
     id: str
     name: str
-    center: Tuple[float, float]
+    center: tuple[float, float]
     memories: List[str]  # Memory IDs
     color: str
     size: float
@@ -183,9 +187,7 @@ class MemoryGraphView(QGraphicsView):
     def add_memory_node(self, memory: Memory):
         """Add a memory node to the graph"""
         # Calculate position (simple circular layout for now)
-        angle = len(self.memory_nodes) * (
-            2 * math.pi / max(len(self.memory_nodes) + 1, 8)
-        )
+        angle = len(self.memory_nodes) * (2 * math.pi / max(len(self.memory_nodes) + 1, 8))
         x = self.center_x + math.cos(angle) * self.radius_multiplier
         y = self.center_y + math.sin(angle) * self.radius_multiplier
 
@@ -336,9 +338,7 @@ class MemorySearchWidget(QWidget):
 
         # Time filter
         self.time_filter = QComboBox()
-        self.time_filter.addItems(
-            ["All Time", "Last Hour", "Last Day", "Last Week", "Last Month"]
-        )
+        self.time_filter.addItems(["All Time", "Last Hour", "Last Day", "Last Week", "Last Month"])
 
         # Sort options
         self.sort_combo = QComboBox()
@@ -451,9 +451,7 @@ class MemoryInjectionDialog(QDialog):
         content_layout = QVBoxLayout(content_group)
 
         self.content_input = QTextEdit()
-        self.content_input.setPlaceholderText(
-            "Enter the memory content, insight, or knowledge..."
-        )
+        self.content_input.setPlaceholderText("Enter the memory content, insight, or knowledge...")
         content_layout.addWidget(self.content_input)
 
         layout.addWidget(content_group)
@@ -466,9 +464,7 @@ class MemoryInjectionDialog(QDialog):
         type_layout = QHBoxLayout()
         type_layout.addWidget(QLabel("Type:"))
         self.type_combo = QComboBox()
-        self.type_combo.addItems(
-            ["general", "goal", "insight", "experience", "knowledge"]
-        )
+        self.type_combo.addItems(["general", "goal", "insight", "experience", "knowledge"])
         type_layout.addWidget(self.type_combo)
         props_layout.addLayout(type_layout)
 
@@ -541,9 +537,7 @@ class MemoryInjectionDialog(QDialog):
             "memory_type": self.type_combo.currentText(),
             "importance": self.importance_slider.value() / 100.0,
             "confidence": self.confidence_slider.value() / 100.0,
-            "tags": [
-                tag.strip() for tag in self.tags_input.text().split(",") if tag.strip()
-            ],
+            "tags": [tag.strip() for tag in self.tags_input.text().split(",") if tag.strip()],
             "auto_link": self.auto_link_cb.isChecked(),
             "goal_relevance": self.goal_relevance_cb.isChecked(),
         }
@@ -560,7 +554,8 @@ class WorldClassMemoryCore(QWidget):
         self.current_goals = []  # List of Goal
 
         # Apply Aetherra dark theme
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             /* === AETHERRA DARK THEME === */
             QWidget {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
@@ -707,7 +702,8 @@ class WorldClassMemoryCore(QWidget):
             QSlider::handle:horizontal:hover {
                 background: rgba(0, 255, 136, 0.8);
             }
-        """)
+        """
+        )
 
         # Initialize with sample data
         self.initialize_sample_data()
@@ -798,9 +794,7 @@ class WorldClassMemoryCore(QWidget):
         controls_layout = QHBoxLayout()
 
         self.layout_combo = QComboBox()
-        self.layout_combo.addItems(
-            ["Circular", "Clustered", "Force-directed", "Hierarchical"]
-        )
+        self.layout_combo.addItems(["Circular", "Clustered", "Force-directed", "Hierarchical"])
         self.layout_combo.currentTextChanged.connect(self.change_graph_layout)
 
         self.show_connections_cb = QCheckBox("Show Connections")
@@ -1076,9 +1070,7 @@ class WorldClassMemoryCore(QWidget):
         self.clusters_list.clear()
 
         for cluster in self.clusters:
-            item = QListWidgetItem(
-                f"🎯 {cluster.name} ({len(cluster.memories)} memories)"
-            )
+            item = QListWidgetItem(f"🎯 {cluster.name} ({len(cluster.memories)} memories)")
             item.setData(Qt.UserRole, cluster)
             self.clusters_list.addItem(item)
 
@@ -1122,9 +1114,7 @@ Recent Activity:
 
     def update_timeline(self):
         """Update memory timeline"""
-        sorted_memories = sorted(
-            self.memories.values(), key=lambda m: m.timestamp, reverse=True
-        )
+        sorted_memories = sorted(self.memories.values(), key=lambda m: m.timestamp, reverse=True)
 
         timeline_text = "📈 Memory Timeline\n" + "=" * 20 + "\n\n"
 
@@ -1198,9 +1188,7 @@ Recent Activity:
                 memory_keywords = memory.content.lower().split()
 
                 if any(keyword in memory_keywords for keyword in goal_keywords):
-                    memory.context["linked_goals"] = memory.context.get(
-                        "linked_goals", []
-                    )
+                    memory.context["linked_goals"] = memory.context.get("linked_goals", [])
                     memory.context["linked_goals"].append(goal.id)
 
     def show_relevant_memories(self):
@@ -1252,10 +1240,7 @@ Recent Activity:
         relevance = 0.0
 
         # Direct goal linking
-        if (
-            "linked_goals" in memory.context
-            and goal.id in memory.context["linked_goals"]
-        ):
+        if "linked_goals" in memory.context and goal.id in memory.context["linked_goals"]:
             relevance += 0.5
 
         # Keyword matching
@@ -1324,13 +1309,9 @@ Recent Activity:
         # Refresh UI
         self.refresh_ui()
 
-        self.status_label.setText(
-            f"✅ Auto-clustered into {len(self.clusters)} clusters"
-        )
+        self.status_label.setText(f"✅ Auto-clustered into {len(self.clusters)} clusters")
 
-    def calculate_cluster_similarity(
-        self, memory: Memory, cluster_memories: List[Memory]
-    ) -> float:
+    def calculate_cluster_similarity(self, memory: Memory, cluster_memories: List[Memory]) -> float:
         """Calculate similarity between memory and cluster"""
         if not cluster_memories:
             return 0.0
@@ -1340,14 +1321,10 @@ Recent Activity:
         for cluster_memory in cluster_memories:
             # Tag similarity
             tag_overlap = set(memory.tags) & set(cluster_memory.tags)
-            tag_similarity = len(tag_overlap) / max(
-                len(memory.tags), len(cluster_memory.tags), 1
-            )
+            tag_similarity = len(tag_overlap) / max(len(memory.tags), len(cluster_memory.tags), 1)
 
             # Type similarity
-            type_similarity = (
-                1.0 if memory.memory_type == cluster_memory.memory_type else 0.0
-            )
+            type_similarity = 1.0 if memory.memory_type == cluster_memory.memory_type else 0.0
 
             # Combined similarity
             similarity = (tag_similarity * 0.6) + (type_similarity * 0.4)
@@ -1365,10 +1342,7 @@ Recent Activity:
                 continue
 
             # Type filter
-            if (
-                filters["type"] != "All Types"
-                and memory.memory_type != filters["type"].lower()
-            ):
+            if filters["type"] != "All Types" and memory.memory_type != filters["type"].lower():
                 continue
 
             # Importance filter
@@ -1396,9 +1370,7 @@ Recent Activity:
         # Update search results
         self.search_widget.update_results(results)
 
-        self.status_label.setText(
-            f"🔍 Found {len(results)} memories matching search criteria"
-        )
+        self.status_label.setText(f"🔍 Found {len(results)} memories matching search criteria")
 
     def get_time_delta(self, time_filter: str) -> timedelta:
         """Get time delta for filtering"""
@@ -1500,16 +1472,10 @@ Connected Memories: {len(memory.connections)}
             with open(filename, "w") as f:
                 json.dump(export_data, f, indent=2)
 
-            QMessageBox.information(
-                self, "Export Complete", f"Memories exported to {filename}"
-            )
-            self.status_label.setText(
-                f"📤 Exported {len(self.memories)} memories to {filename}"
-            )
+            QMessageBox.information(self, "Export Complete", f"Memories exported to {filename}")
+            self.status_label.setText(f"📤 Exported {len(self.memories)} memories to {filename}")
         except Exception as e:
-            QMessageBox.critical(
-                self, "Export Error", f"Failed to export memories: {str(e)}"
-            )
+            QMessageBox.critical(self, "Export Error", f"Failed to export memories: {str(e)}")
 
     def refresh_memory_data(self):
         """Refresh memory data from memory manager"""

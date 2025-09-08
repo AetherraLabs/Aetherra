@@ -38,9 +38,15 @@ def test_phase_imports():
 
     # Phase 1: Basic GUI
     try:
-        from PySide6.QtWebChannel import QWebChannel
-        from PySide6.QtWebEngineWidgets import QWebEngineView
-        from PySide6.QtWidgets import QApplication
+        from PySide6.QtWebChannel import (
+            QWebChannel,
+        )  # noqa: F401 (optional runtime import)
+        from PySide6.QtWebEngineWidgets import (
+            QWebEngineView,
+        )  # noqa: F401 (optional runtime import)
+        from PySide6.QtWidgets import (
+            QApplication,
+        )  # noqa: F401 (optional runtime import)
 
         print("✅ Phase 1: PySide6 + WebEngine components available")
     except ImportError as e:
@@ -49,48 +55,36 @@ def test_phase_imports():
 
     # Phase 2: Live Context Bridge
     try:
-        from Aetherra.lyrixa.gui.main_window import LyrixaContextBridge
-
         print("✅ Phase 2: Live Context Bridge available")
     except ImportError as e:
         print(f"❌ Phase 2: Context Bridge missing: {e}")
 
     # Phase 3: Auto-Generation System
     try:
-        from Aetherra.lyrixa.gui.phase3_auto_generator import Phase3AutoGenerator
-
         print("✅ Phase 3: Auto-Generation System available")
     except ImportError as e:
         print(f"❌ Phase 3: Auto-Generation System missing: {e}")
 
     # Phase 4: Cognitive UI Integration
     try:
-        from Aetherra.lyrixa.gui.phase4_cognitive_ui import CognitiveStateMonitor
-
         print("✅ Phase 4: Cognitive UI Integration available")
     except ImportError as e:
         print(f"❌ Phase 4: Cognitive UI Integration missing: {e}")
 
     # Phase 5: Plugin-Driven UI System
     try:
-        from Aetherra.lyrixa.gui.phase5_plugin_ui import PluginUIManager
-
         print("✅ Phase 5: Plugin-Driven UI System available")
     except ImportError as e:
         print(f"❌ Phase 5: Plugin-Driven UI System missing: {e}")
 
     # Phase 6: GUI Personality + State Memory
     try:
-        from Aetherra.lyrixa.gui.phase6_personality import GUIPersonalityManager
-
         print("✅ Phase 6: GUI Personality + State Memory available")
     except ImportError as e:
         print(f"❌ Phase 6: GUI Personality + State Memory missing: {e}")
 
     # Main Window Integration
     try:
-        from Aetherra.lyrixa.gui.main_window import LyrixaHybridWindow
-
         print("✅ Main Window: LyrixaHybridWindow available")
     except ImportError as e:
         print(f"❌ Main Window: LyrixaHybridWindow missing: {e}")
@@ -175,7 +169,6 @@ def test_phase6_components():
         from Aetherra.lyrixa.gui.phase6_personality import (
             EmotionalState,
             EmotionalThemeEngine,
-            GUIPersonalityManager,
             LayoutMemorySystem,
             LyrixaAI,
             PersonalityTrait,
@@ -357,9 +350,7 @@ def main():
 
     if passed == total:
         print("🎉 ALL SYSTEMS OPERATIONAL! Phase 1-6 integration complete!")
-        print(
-            "🌌 Lyrixa is ready for launch with full personality and AI capabilities!"
-        )
+        print("🌌 Lyrixa is ready for launch with full personality and AI capabilities!")
     elif passed >= total * 0.8:
         print("⚠️  Most systems operational. Minor issues detected.")
         print("🚀 Lyrixa can launch but may have reduced functionality.")

@@ -11,14 +11,13 @@ adding consciousness-layer coordination.
 """
 
 import asyncio
-import inspect
 import json
 import logging
 import sys
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set
 
 # Add project root to path for imports
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -709,7 +708,7 @@ async def main():
     print("\n🔍 Discovering agents...")
     discovered = await adapter.discover_all_agents()
 
-    print(f"\nDiscovered Agents:")
+    print("\nDiscovered Agents:")
     for category, agents in discovered.items():
         print(f"  {category}: {len(agents)} agents")
         for agent in agents[:3]:  # Show first 3 agents
@@ -718,7 +717,7 @@ async def main():
             print(f"    ... and {len(agents) - 3} more")
 
     # Show integration status
-    print(f"\n📊 Integration Status:")
+    print("\n📊 Integration Status:")
     status = await adapter.get_integration_status()
     print(json.dumps(status, indent=2, default=str))
 

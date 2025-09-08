@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from .agent_base import AgentBase, AgentResponse
 
@@ -123,7 +123,7 @@ class GoalAgent(AgentBase):
         pending_goals = [g for g in self.goals.values() if g.status == "pending"]
         completed_goals = [g for g in self.goals.values() if g.status == "completed"]
 
-        status_text = f"Goal Status Summary:\n"
+        status_text = "Goal Status Summary:\n"
         status_text += f"Active Goals: {len(active_goals)}\n"
         status_text += f"Pending Goals: {len(pending_goals)}\n"
         status_text += f"Completed Goals: {len(completed_goals)}\n\n"

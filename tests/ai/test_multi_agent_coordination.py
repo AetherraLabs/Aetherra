@@ -949,9 +949,7 @@ def run_multi_agent_coordination_tests():
             "🟠 FAIR: Multi-Agent Coordination has basic functionality but needs improvement"
         )
     else:
-        print(
-            "🔴 NEEDS WORK: Multi-Agent Coordination requires significant development"
-        )
+        print("🔴 NEEDS WORK: Multi-Agent Coordination requires significant development")
 
     # Specific capability status
     core_capabilities = [

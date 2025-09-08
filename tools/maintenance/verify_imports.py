@@ -83,7 +83,7 @@ def is_valid_import(module: str | None) -> bool:
 
 
 def check_file(filepath):
-    with open(filepath, "r", encoding="utf-8") as f:
+    with open(filepath, encoding="utf-8") as f:
         try:
             tree = ast.parse(f.read(), filename=filepath)
         except Exception as e:

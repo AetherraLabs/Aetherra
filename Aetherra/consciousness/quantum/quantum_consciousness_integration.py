@@ -146,9 +146,7 @@ class QuantumConsciousnessSystem:
         """Initialize all quantum consciousness components"""
         try:
             if not QUANTUM_MODULES_AVAILABLE:
-                self.logger.error(
-                    "❌ Cannot initialize - quantum modules not available"
-                )
+                self.logger.error("❌ Cannot initialize - quantum modules not available")
                 return False
 
             self.logger.info("⚡ Initializing quantum consciousness engines...")
@@ -265,7 +263,7 @@ class QuantumConsciousnessSystem:
                 barrier_type="risk_barrier",
                 height=risk_factor,
                 width=0.8,
-                description=f"High-risk scenarios present",
+                description="High-risk scenarios present",
                 conventional_solution_prob=0.3,
                 breakthrough_potential=0.8,
                 energy_required=risk_factor * 1000,
@@ -349,9 +347,9 @@ class QuantumConsciousnessSystem:
                 for choice in context.available_choices:
                     # Use interference patterns from decision result
                     if choice.choice_id in decision_result.interference_patterns:
-                        base_probabilities[choice.choice_id] = (
-                            decision_result.interference_patterns[choice.choice_id]
-                        )
+                        base_probabilities[
+                            choice.choice_id
+                        ] = decision_result.interference_patterns[choice.choice_id]
                     else:
                         base_probabilities[choice.choice_id] = 1.0 / len(choice_ids)
 
@@ -452,9 +450,7 @@ class QuantumConsciousnessSystem:
                 success_metrics=success_metrics,
             )
 
-            self.logger.info(
-                f"✅ Quantum cognition completed in {processing_time:.3f}s"
-            )
+            self.logger.info(f"✅ Quantum cognition completed in {processing_time:.3f}s")
             self.logger.info(
                 f"🧠 Consciousness level: {self.consciousness_level * 100:.2f}%"
             )

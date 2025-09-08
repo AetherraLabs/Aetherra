@@ -42,7 +42,7 @@ class ArchitecturalChecker:
                 continue
 
             try:
-                with open(py_file, "r", encoding="utf-8", errors="ignore") as f:
+                with open(py_file, encoding="utf-8", errors="ignore") as f:
                     content = f.read()
 
                 # Check for critical violations

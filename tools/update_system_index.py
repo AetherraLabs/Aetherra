@@ -21,14 +21,14 @@ import io
 import os
 import re
 import sys
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 DOCS_DIR = os.path.join(ROOT, "docs")
 OUT_FILE = os.path.join(DOCS_DIR, "SYSTEM_INDEX.md")
 
 
-DOCS: List[Tuple[str, str]] = [
+DOCS: List[tuple[str, str]] = [
     ("Aether Script Language System", "Aether_Script_Language_System.md"),
     ("Aetherra Kernel System", "AETHERRA_KERNEL_SYSTEM.md"),
     (
@@ -71,7 +71,7 @@ DEPENDENCIES: Dict[str, str] = {
     "Aetherra Security System": "hooks into Kernel and Memory",
 }
 
-FOUNDATIONAL_FILES: List[Tuple[str, List[str]]] = [
+FOUNDATIONAL_FILES: List[tuple[str, List[str]]] = [
     (
         "Aetherra Manifesto",
         [
@@ -105,8 +105,8 @@ def _rel_from_docs(abs_path: str) -> str:
     return os.path.relpath(abs_path, DOCS_DIR).replace("\\", "/")
 
 
-def find_foundational_docs() -> List[Tuple[str, str]]:
-    found: List[Tuple[str, str]] = []
+def find_foundational_docs() -> List[tuple[str, str]]:
+    found: List[tuple[str, str]] = []
     for title, candidates in FOUNDATIONAL_FILES:
         for p in candidates:
             if os.path.exists(p):
@@ -146,7 +146,7 @@ def extract_purpose(name: str, text: str) -> str:
     return FALLBACK_PURPOSE.get(name, "")
 
 
-def extract_status(text: str) -> Tuple[str, str]:
+def extract_status(text: str) -> tuple[str, str]:
     """Return (emoji, label) reduced status from doc content."""
     # Narrow to At-a-glance section if present to avoid noise
     block = text

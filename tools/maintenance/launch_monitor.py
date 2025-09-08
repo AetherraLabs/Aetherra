@@ -13,23 +13,25 @@ Usage:
 """
 
 import argparse
-import sys
 
 
 def main(argv=None) -> int:
-	from aetherra_live_monitor import monitor_aetherra_activity
+    from aetherra_live_monitor import monitor_aetherra_activity
 
-	parser = argparse.ArgumentParser(description="Launch Aetherra OS Live Monitor")
-	parser.add_argument(
-		"--watch", "-w", type=int, default=0, help="Refresh every N seconds (0 = one-shot)",
-	)
-	args = parser.parse_args(argv)
+    parser = argparse.ArgumentParser(description="Launch Aetherra OS Live Monitor")
+    parser.add_argument(
+        "--watch",
+        "-w",
+        type=int,
+        default=0,
+        help="Refresh every N seconds (0 = one-shot)",
+    )
+    args = parser.parse_args(argv)
 
-	# Delegate to the real monitor
-	monitor_aetherra_activity(args.watch)
-	return 0
+    # Delegate to the real monitor
+    monitor_aetherra_activity(args.watch)
+    return 0
 
 
 if __name__ == "__main__":
-	raise SystemExit(main())
-
+    raise SystemExit(main())

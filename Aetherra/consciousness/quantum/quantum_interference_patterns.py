@@ -577,9 +577,7 @@ class QuantumInterferenceEngine:
                 cleanup_count += 1
 
             if cleanup_count > 0:
-                self.logger.info(
-                    f"🧹 Cleaned up {cleanup_count} old patterns and waves"
-                )
+                self.logger.info(f"🧹 Cleaned up {cleanup_count} old patterns and waves")
 
         except Exception as e:
             self.logger.error(f"❌ Error during cleanup: {e}")

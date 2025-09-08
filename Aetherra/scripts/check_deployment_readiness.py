@@ -12,12 +12,10 @@ by checking all prerequisites, configurations, and system health.
 
 import json
 import logging
-import os
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict
 
 # Configure logging
 logging.basicConfig(
@@ -201,7 +199,7 @@ class DeploymentReadinessChecker:
             return {"status": "fail", "message": "Dockerfile not found"}
 
         try:
-            with open(dockerfile_path, "r") as f:
+            with open(dockerfile_path) as f:
                 dockerfile_content = f.read()
 
             # Check for multi-stage build
@@ -274,7 +272,7 @@ class DeploymentReadinessChecker:
             }
 
         try:
-            with open(cleanup_report, "r") as f:
+            with open(cleanup_report) as f:
                 report_data = json.load(f)
 
             # Check if cleanup was actually executed (not just dry run)
@@ -303,7 +301,7 @@ class DeploymentReadinessChecker:
             return {"status": "fail", "message": "CI workflow file not found"}
 
         try:
-            with open(ci_workflow, "r", encoding="utf-8", errors="ignore") as f:
+            with open(ci_workflow, encoding="utf-8", errors="ignore") as f:
                 ci_content = f.read()
 
             # Check for secrets usage
@@ -370,7 +368,7 @@ class DeploymentReadinessChecker:
             security_issues.append("No .gitignore file found")
         else:
             try:
-                with open(gitignore_path, "r") as f:
+                with open(gitignore_path) as f:
                     gitignore_content = f.read().lower()
 
                 security_patterns = [
@@ -403,7 +401,7 @@ class DeploymentReadinessChecker:
 
         for workflow_file in workflow_files:
             try:
-                with open(workflow_file, "r", encoding="utf-8", errors="ignore") as f:
+                with open(workflow_file, encoding="utf-8", errors="ignore") as f:
                     content = f.read().lower()
 
                 # Simple check for potential hardcoded secrets
@@ -537,7 +535,7 @@ class DeploymentReadinessChecker:
         print(f"\nProject: {self.project_root}")
         print(f"Timestamp: {self.results['timestamp']}")
 
-        print(f"\nSummary:")
+        print("\nSummary:")
         print(f"  Total Checks: {self.results['summary']['total_checks']}")
         print(f"  ✅ Passed: {self.results['summary']['passed']}")
         print(f"  [WARN]  Warnings: {self.results['summary']['warnings']}")
@@ -546,7 +544,7 @@ class DeploymentReadinessChecker:
             f"  🚀 Deployment Ready: {'YES' if self.results['summary']['deployment_ready'] else 'NO'}"
         )
 
-        print(f"\nCheck Results:")
+        print("\nCheck Results:")
         for check_name, result in self.results["checks"].items():
             status_icon = {"pass": "✅", "warning": "[WARN] ", "fail": "❌"}.get(
                 result["status"], "❓"
@@ -555,7 +553,7 @@ class DeploymentReadinessChecker:
             print(f"  {status_icon} {check_name}: {result['message']}")
 
         if self.results["recommendations"]:
-            print(f"\nRecommendations:")
+            print("\nRecommendations:")
             for rec in self.results["recommendations"]:
                 print(f"  • {rec}")
 

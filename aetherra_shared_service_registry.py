@@ -17,21 +17,14 @@ Licensed under GNU General Public License v3.0
 import asyncio
 import json
 import logging
-import mmap
-import multiprocessing
 import os
-import pickle
 import socket
-import subprocess
 import tempfile
-import threading
 import time
-import uuid
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -163,7 +156,7 @@ class AetherraSharedServiceRegistry:
         """Load services from shared registry file."""
         try:
             if self.registry_file.exists():
-                with open(self.registry_file, "r") as f:
+                with open(self.registry_file) as f:
                     data = json.load(f)
                     for name, service_data in data.get("services", {}).items():
                         self.services[name] = SharedServiceInfo(**service_data)
@@ -461,7 +454,7 @@ if __name__ == "__main__":
 
         # Get registry status
         status = registry.get_registry_status()
-        print(f"✅ Registry Status:")
+        print("✅ Registry Status:")
         print(f"   - Total services: {status['total_services']}")
         print(f"   - Healthy services: {status['healthy_services']}")
         print(f"   - Communication port: {status['communication_port']}")
@@ -469,12 +462,12 @@ if __name__ == "__main__":
 
         # List services
         services = registry.list_services()
-        print(f"✅ Registered Services:")
+        print("✅ Registered Services:")
         for name, info in services.items():
             print(f"   - {name}: PID {info.process_id}, Status {info.status}")
 
         # Test cross-process persistence
-        print(f"✅ Testing persistence across 'process restart'...")
+        print("✅ Testing persistence across 'process restart'...")
         await registry.stop()
 
         # Simulate new process

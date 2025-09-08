@@ -23,6 +23,7 @@ sys.path.insert(0, str(aetherra_root / "core"))
 sys.path.insert(0, str(aetherra_root / "tools"))
 
 from core.aetherra_self_organizer import AetherraFileIntelligence
+
 from tools.aetherra_file_watcher import AetherraFileWatcherDaemon
 
 
@@ -124,14 +125,14 @@ Examples:
             print(f"  🎯 Critical files: {len(analysis.critical_files)}")
 
             if analysis.orphaned_files:
-                print(f"\n🔍 Orphaned files found:")
+                print("\n🔍 Orphaned files found:")
                 for orphan in analysis.orphaned_files[:5]:  # Show first 5
                     print(f"    • {orphan}")
                 if len(analysis.orphaned_files) > 5:
                     print(f"    ... and {len(analysis.orphaned_files) - 5} more")
 
             if analysis.optimization_suggestions:
-                print(f"\n💡 Optimization suggestions:")
+                print("\n💡 Optimization suggestions:")
                 for suggestion in analysis.optimization_suggestions[:3]:  # Show first 3
                     print(
                         f"    • {suggestion['type']}: {suggestion.get('reason', 'No reason provided')}"

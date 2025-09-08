@@ -23,6 +23,7 @@ Note: Further phases will delegate to specialization agents & analysis modules.
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import time
@@ -56,6 +57,8 @@ class PatchResult:
     rollback_token: str | None = None
     summary: str | None = None
     diagnostics: list[str] = field(default_factory=list)
+    risk_level: str | None = None
+    changed_lines: int | None = None
 
 
 @dataclass
@@ -64,6 +67,7 @@ class VerifyResult:
     spec_tests_gate: bool
     quality_gates: bool
     aether_risk: bool
+    format_lint: bool | None
     diagnostics: list[str] = field(default_factory=list)
 
 
@@ -81,6 +85,8 @@ class CodeOrchestrator:
         self.repo_root = Path(repo_root).resolve()
         self._plan: PlanResult | None = None
         self.mode = os.getenv("AETHERRA_MODE", "assist")
+        self._rollback_store = self.repo_root / ".aetherra" / "rollback"
+        self._rollback_store.mkdir(parents=True, exist_ok=True)
 
     # ---- Public API ----
     def plan(self, intent: str, scope: Optional[List[str]] = None) -> PlanResult:
@@ -116,9 +122,19 @@ class CodeOrchestrator:
             )
         summary = f"Proposed patch touching {target}"
         audit.record_event("generate", {"step": step_index, "target": str(target)})
-        return PatchResult(applied=False, dry_run=dry_run, diff=diff, summary=summary)
+        lvl, changed = ops_engine.classify_risk(diff)
+        return PatchResult(
+            applied=False,
+            dry_run=dry_run,
+            diff=diff,
+            summary=summary,
+            risk_level=lvl,
+            changed_lines=changed,
+        )
 
-    def apply_patch(self, diff_text: str, dry_run: bool = False) -> PatchResult:
+    def apply_patch(
+        self, diff_text: str, dry_run: bool = False, colorize: bool = True
+    ) -> PatchResult:
         raw = ops_engine.apply_unified_diff(
             diff_text, repo_root=self.repo_root, dry_run=dry_run
         )
@@ -126,17 +142,26 @@ class CodeOrchestrator:
         # Autonomy mode could auto-stage
         if raw.applied and not dry_run and self.mode in {"co-drive", "autopilot"}:
             self._git_add_from_diff(diff_text)
+        if raw.applied and raw.rollback_token:
+            self._persist_rollback_snapshot(raw.rollback_token, raw.originals)
+        # Use detailed risk classification for richer diagnostics
+        risk_level, changed, added, removed = ops_engine.classify_risk_detailed(
+            raw.diff
+        )
+        colored_diff = self._colorize_diff(raw.diff) if colorize else raw.diff
         pr = PatchResult(
             applied=raw.applied,
             dry_run=raw.dry_run,
-            diff=raw.diff,
+            diff=colored_diff,
             rollback_token=raw.rollback_token,
             summary=(
-                f"Applied patch ({len(raw.diagnostics)} diag)"
+                f"Applied patch ({len(raw.diagnostics)} diag, risk={risk_level}, +{added}/-{removed}, changed={changed})"
                 if raw.applied
-                else "Dry run"
+                else f"Dry run (risk={risk_level}, +{added}/-{removed}, changed={changed})"
             ),
             diagnostics=raw.diagnostics,
+            risk_level=risk_level,
+            changed_lines=changed,
         )
         return pr
 
@@ -145,8 +170,35 @@ class CodeOrchestrator:
         run_spec_tests_gate: bool = True,
         run_quality_gates: bool = True,
         strict_aether: bool = True,
+        run_format_lint: bool = True,
     ) -> VerifyResult:
+        """Run verification gates.
+
+        Parameters:
+            run_spec_tests_gate: execute spec → tests gate script.
+            run_quality_gates: execute quality gates (tests + coverage etc.).
+            strict_aether: enforce strict .aether script signature / risk rules.
+            run_format_lint: run format/lint aggregator first (can be disabled via CLI flag or env).
+        """
         diagnostics: list[str] = []
+
+        # ---- Optional format/lint stage (run early so auto-fixes are included) ----
+        format_lint_enabled_env = os.getenv("AETHERRA_FORMAT_LINT", "1") == "1"
+        format_lint_ran = run_format_lint and format_lint_enabled_env
+        format_lint_ok = True
+        if format_lint_ran:
+            fmt_tool = self.repo_root / "tools" / "format_lint.py"
+            if fmt_tool.exists():
+                format_lint_ok = self._run_tool(
+                    ["python", str(fmt_tool)], diagnostics, label="format_lint"
+                )
+            else:
+                diagnostics.append(
+                    "[format_lint] missing script tools/format_lint.py (skipped)"
+                )
+                format_lint_ran = False  # treat as skipped
+
+        # ---- Spec → Tests Gate ----
         spec_ok = True
         if run_spec_tests_gate:
             spec_ok = self._run_tool(
@@ -154,29 +206,43 @@ class CodeOrchestrator:
                 diagnostics,
                 label="spec_tests_gate",
             )
+
+        # ---- Quality Gates ----
         quality_ok = True
         if run_quality_gates:
             quality_ok = self._run_tool(
                 ["python", "tools/quality_gates.py"], diagnostics, label="quality_gates"
             )
+
+        # ---- Aether risk / signature verifier ----
         aether_ok = safety.run_aether_risk_verifier(
             strict=strict_aether, diagnostics=diagnostics
         )
-        passed = spec_ok and quality_ok and aether_ok
+
+        passed = (
+            spec_ok
+            and quality_ok
+            and aether_ok
+            and (format_lint_ok if format_lint_ran else True)
+        )
+
         audit.record_event(
             "verify",
             {
                 "passed": passed,
                 "spec": spec_ok,
                 "quality": quality_ok,
+                "format_lint": (format_lint_ok if format_lint_ran else None),
                 "aether": aether_ok,
             },
         )
+
         return VerifyResult(
             passed=passed,
             spec_tests_gate=spec_ok,
             quality_gates=quality_ok,
             aether_risk=aether_ok,
+            format_lint=(format_lint_ok if format_lint_ran else None),
             diagnostics=diagnostics,
         )
 
@@ -191,6 +257,132 @@ class CodeOrchestrator:
             audit.record_event("commit", {"message": message, "sha": sha})
         return CommitResult(
             committed=committed, sha=sha, message=message, diagnostics=diagnostics
+        )
+
+    # ---- New Phase 1 API additions ----
+    def revert(self, token: str) -> PatchResult:
+        """Revert files using stored snapshot (restores or deletes new files)."""
+        snapshot_path = self._rollback_store / f"{token}.json"
+        if not snapshot_path.exists():
+            return PatchResult(
+                applied=False,
+                dry_run=False,
+                diff="",
+                rollback_token=None,
+                summary="Token not found",
+                diagnostics=[f"No snapshot for token {token}"],
+            )
+        data = json.loads(snapshot_path.read_text(encoding="utf-8"))
+        diagnostics: list[str] = []
+        restored = deleted = 0
+        for file_path, meta in data.items():
+            p = self.repo_root / file_path
+            existed = meta.get("existed", True)
+            content = meta.get("content", "")
+            try:
+                if existed:
+                    p.parent.mkdir(parents=True, exist_ok=True)
+                    p.write_text(content, encoding="utf-8")
+                    diagnostics.append(f"Restored {file_path}")
+                    restored += 1
+                else:
+                    if p.exists():
+                        p.unlink()
+                        diagnostics.append(f"Deleted new file {file_path}")
+                        deleted += 1
+            except Exception as e:  # pragma: no cover
+                diagnostics.append(f"Failed revert {file_path}: {e}")
+        audit.record_event(
+            "revert", {"token": token, "restored": restored, "deleted": deleted}
+        )
+        summary = f"Reverted: restored={restored} deleted={deleted}"
+        return PatchResult(
+            applied=True,
+            dry_run=False,
+            diff="",
+            rollback_token=None,
+            summary=summary,
+            diagnostics=diagnostics,
+        )
+
+    def scaffold_plugin(self, name: str) -> PatchResult:
+        """Create minimal plugin scaffold (manifest + runtime stub + test)."""
+        plugin_dir = self.repo_root / "plugins" / name
+        runtime_py = plugin_dir / f"{name}.py"
+        test_py = self.repo_root / "tests" / "plugins" / f"test_{name}.py"
+        manifest = plugin_dir / "plugin.json"
+        files_created: dict[str, str] = {}
+        if plugin_dir.exists():
+            return PatchResult(
+                applied=False,
+                dry_run=False,
+                diff="",
+                summary="Plugin already exists",
+                diagnostics=[f"Directory {plugin_dir} exists"],
+            )
+        plugin_dir.mkdir(parents=True, exist_ok=True)
+        (self.repo_root / "tests" / "plugins").mkdir(parents=True, exist_ok=True)
+        class_name = f"{name.title().replace('_', '')}Plugin"
+        runtime_content = (
+            '"""Minimal Lyrixa Plugin Runtime Stub\n\nGenerated by aetherra_code scaffold.\n"""\n'
+            f"class {class_name}:\n    def run(self):\n        return 'ok'\n"
+        )
+        test_content = (
+            "import importlib\n\n"
+            "def test_plugin_scaffold():\n"
+            f"    mod = importlib.import_module('plugins.{name}.{name}')\n"
+            f"    cls = getattr(mod, '{class_name}')\n"
+            "    assert cls().run() == 'ok'\n"
+        )
+        manifest_content = json.dumps(
+            {
+                "name": name,
+                "version": "0.0.0",
+                "description": "Scaffolded plugin",
+                "entry": f"plugins.{name}.{name}:{class_name}",
+                "phase": 1,
+            },
+            indent=2,
+        )
+        runtime_py.write_text(runtime_content, encoding="utf-8")
+        test_py.write_text(test_content, encoding="utf-8")
+        manifest.write_text(manifest_content + "\n", encoding="utf-8")
+        files_created[str(runtime_py.relative_to(self.repo_root))] = runtime_content
+        files_created[str(test_py.relative_to(self.repo_root))] = test_content
+        files_created[str(manifest.relative_to(self.repo_root))] = manifest_content
+        token = f"scaffold-{int(time.time())}"
+        snapshot = {
+            k: {"content": v, "existed": False} for k, v in files_created.items()
+        }
+        self._persist_rollback_snapshot(token, snapshot)
+        audit.record_event("plugin_scaffold", {"name": name, "token": token})
+        diff_summary = "\n".join(files_created.keys())
+        # Update central registered plugins index for auto-registration
+        try:
+            registry_dir = self.repo_root / "Aetherra" / "plugins" / "core"
+            registry_dir.mkdir(parents=True, exist_ok=True)
+            registry_file = registry_dir / "registered_plugins.json"
+            if registry_file.exists():
+                try:
+                    reg_data = json.loads(registry_file.read_text(encoding="utf-8"))
+                except Exception:
+                    reg_data = {"plugins": []}
+            else:
+                reg_data = {"plugins": []}
+            if name not in reg_data.get("plugins", []):
+                reg_data.setdefault("plugins", []).append(name)
+                registry_file.write_text(
+                    json.dumps(reg_data, indent=2), encoding="utf-8"
+                )
+        except Exception:  # pragma: no cover
+            pass
+        return PatchResult(
+            applied=True,
+            dry_run=False,
+            diff=diff_summary,
+            rollback_token=token,
+            summary=f"Created plugin {name}",
+            diagnostics=[f"Created {len(files_created)} files"],
         )
 
     # ---- Helpers ----
@@ -239,6 +431,38 @@ class CodeOrchestrator:
                 paths.add(Path(path))
         if paths:
             self._run_git(["git", "add", *[str(p) for p in paths]])
+
+    def _persist_rollback_snapshot(
+        self, token: str, originals: dict[str, dict]
+    ) -> None:
+        try:
+            snap_path = self._rollback_store / f"{token}.json"
+            snap_path.write_text(
+                json.dumps(originals, ensure_ascii=False), encoding="utf-8"
+            )
+        except Exception:  # pragma: no cover
+            pass
+
+    def _colorize_diff(self, diff_text: str) -> str:
+        if os.getenv("NO_COLOR", "0") == "1":
+            return diff_text
+        GREEN = "\x1b[32m"
+        RED = "\x1b[31m"
+        CYAN = "\x1b[36m"
+        RESET = "\x1b[0m"
+        out_lines: list[str] = []
+        for line in diff_text.splitlines():
+            if line.startswith("@@"):
+                out_lines.append(CYAN + line + RESET)
+            elif line.startswith("+++") or line.startswith("---"):
+                out_lines.append(CYAN + line + RESET)
+            elif line.startswith("+") and not line.startswith("+++ "):
+                out_lines.append(GREEN + line + RESET)
+            elif line.startswith("-") and not line.startswith("--- "):
+                out_lines.append(RED + line + RESET)
+            else:
+                out_lines.append(line)
+        return "\n".join(out_lines)
 
 
 # End of orchestrator skeleton

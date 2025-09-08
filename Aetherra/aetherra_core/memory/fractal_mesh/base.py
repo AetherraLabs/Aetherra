@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 
 class MemoryFragmentType(Enum):
@@ -65,7 +65,7 @@ class ConceptCluster:
     related_concepts: Set[str]
     member_fragments: Set[str]
     cluster_strength: float
-    temporal_evolution: List[Tuple[datetime, float]]  # How concept evolved
+    temporal_evolution: List[tuple[datetime, float]]  # How concept evolved
     narrative_themes: List[str]
 
 
@@ -77,7 +77,7 @@ class EpisodicChain:
     fragments: List[str]  # Ordered fragment IDs
     narrative_arc: str  # Overall story of this chain
     causal_links: Dict[str, List[str]]  # fragment_id -> caused fragments
-    temporal_span: Tuple[datetime, datetime]
+    temporal_span: tuple[datetime, datetime]
     significance_score: float
 
 
@@ -122,7 +122,8 @@ class FractalMeshCore:
         """Initialize the fractal mesh database"""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS memory_fragments (
                     fragment_id TEXT PRIMARY KEY,
                     content TEXT NOT NULL,
@@ -136,9 +137,11 @@ class FractalMeshCore:
                     created_at TEXT,
                     last_evolved TEXT
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS concept_clusters (
                     cluster_id TEXT PRIMARY KEY,
                     central_concept TEXT NOT NULL,
@@ -148,9 +151,11 @@ class FractalMeshCore:
                     temporal_evolution TEXT,
                     narrative_themes TEXT
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS episodic_chains (
                     chain_id TEXT PRIMARY KEY,
                     fragments TEXT NOT NULL,
@@ -160,7 +165,8 @@ class FractalMeshCore:
                     temporal_span_end TEXT,
                     significance_score REAL
                 )
-            """)
+            """
+            )
 
             # Indexes for performance
             conn.execute(
@@ -201,20 +207,14 @@ class FractalMeshCore:
 
         return fragment.fragment_id
 
-    def retrieve_by_concept(
-        self, concept: str, limit: int = 10
-    ) -> List[MemoryFragment]:
+    def retrieve_by_concept(self, concept: str, limit: int = 10) -> List[MemoryFragment]:
         """Retrieve fragments related to a concept"""
         related_fragment_ids = self.concept_index.get(concept, set())
-        fragments = [
-            self.fragments[fid] for fid in related_fragment_ids if fid in self.fragments
-        ]
+        fragments = [self.fragments[fid] for fid in related_fragment_ids if fid in self.fragments]
 
         # Sort by relevance (combination of confidence and recency)
         fragments.sort(
-            key=lambda f: (
-                f.confidence_score * 0.7 + self._temporal_relevance(f.created_at) * 0.3
-            ),
+            key=lambda f: (f.confidence_score * 0.7 + self._temporal_relevance(f.created_at) * 0.3),
             reverse=True,
         )
 
@@ -242,7 +242,7 @@ class FractalMeshCore:
 
     def find_analogous_patterns(
         self, query_fragment: MemoryFragment, limit: int = 5
-    ) -> List[Tuple[MemoryFragment, float]]:
+    ) -> List[tuple[MemoryFragment, float]]:
         """Find fragments with analogous patterns to the query"""
         similar_fragments = []
         query_concepts = query_fragment.symbolic_tags
@@ -267,14 +267,10 @@ class FractalMeshCore:
         similar_fragments.sort(key=lambda x: x[1], reverse=True)
         return similar_fragments[:limit]
 
-    def detect_memory_drift(
-        self, time_window: timedelta = timedelta(days=7)
-    ) -> Dict[str, Any]:
+    def detect_memory_drift(self, time_window: timedelta = timedelta(days=7)) -> Dict[str, Any]:
         """Detect changes in memory patterns over time"""
         cutoff_time = datetime.now() - time_window
-        recent_fragments = [
-            f for f in self.fragments.values() if f.created_at >= cutoff_time
-        ]
+        recent_fragments = [f for f in self.fragments.values() if f.created_at >= cutoff_time]
 
         # Analyze concept frequency changes
         recent_concepts = {}
@@ -283,21 +279,15 @@ class FractalMeshCore:
                 recent_concepts[concept] = recent_concepts.get(concept, 0) + 1
 
         # Compare with historical patterns (simplified)
-        historical_fragments = [
-            f for f in self.fragments.values() if f.created_at < cutoff_time
-        ]
+        historical_fragments = [f for f in self.fragments.values() if f.created_at < cutoff_time]
         historical_concepts = {}
         for fragment in historical_fragments[-100:]:  # Sample recent history
             for concept in fragment.symbolic_tags:
                 historical_concepts[concept] = historical_concepts.get(concept, 0) + 1
 
         # Calculate drift metrics
-        emerging_concepts = set(recent_concepts.keys()) - set(
-            historical_concepts.keys()
-        )
-        declining_concepts = set(historical_concepts.keys()) - set(
-            recent_concepts.keys()
-        )
+        emerging_concepts = set(recent_concepts.keys()) - set(historical_concepts.keys())
+        declining_concepts = set(historical_concepts.keys()) - set(recent_concepts.keys())
 
         return {
             "time_window": str(time_window),
@@ -339,10 +329,7 @@ class FractalMeshCore:
         for concept in fragment.symbolic_tags:
             existing_cluster = None
             for cluster in self.concept_clusters.values():
-                if (
-                    concept in cluster.related_concepts
-                    or concept == cluster.central_concept
-                ):
+                if concept in cluster.related_concepts or concept == cluster.central_concept:
                     existing_cluster = cluster
                     break
 
@@ -376,9 +363,7 @@ class FractalMeshCore:
             if (
                 other_id != fragment.fragment_id
                 and other_fragment.fragment_type == MemoryFragmentType.EPISODIC
-                and abs(
-                    (fragment.created_at - other_fragment.created_at).total_seconds()
-                )
+                and abs((fragment.created_at - other_fragment.created_at).total_seconds())
                 <= time_window.total_seconds()
             ):
                 nearby_fragments.append(other_fragment)

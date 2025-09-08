@@ -5,10 +5,8 @@
 # Clean Architecture Imports
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from integration.bridges.aetherra_lyrixa_bridge import bridge
-from web.server.web_adapter import web_adapter
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
 """
@@ -77,12 +75,14 @@ class LyrixaWebView(QWidget):
 
         # Create web engine view
         self.web_view = QWebEngineView()
-        self.web_view.setStyleSheet("""
+        self.web_view.setStyleSheet(
+            """
             QWebEngineView {
                 background: #0a0a0a;
                 border: none;
             }
-        """)
+        """
+        )
 
         layout.addWidget(self.web_view)
 

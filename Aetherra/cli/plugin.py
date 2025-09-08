@@ -371,9 +371,7 @@ def cmd_categories(args, manager):
         for category in sorted(categories):
             print(f"📁 {category}")
 
-        print(
-            "\n💡 Use 'aetherra plugin search --category=<name>' to browse a category"
-        )
+        print("\n💡 Use 'aetherra plugin search --category=<name>' to browse a category")
         return 0
 
     except Exception as e:

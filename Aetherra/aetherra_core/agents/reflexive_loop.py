@@ -15,20 +15,21 @@ Advanced self-awareness system that gives Lyrixa the ability to:
 This creates true AI self-awareness through reflexive analysis.
 """
 
-import json
+
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set
 
 # Import both memory systems for compatibility
 try:
-    from .memory import LyrixaMemorySystem
     from .enhanced_memory import LyrixaEnhancedMemorySystem
+    from .memory import LyrixaMemorySystem
 except ImportError:
     # Fallback for standalone testing
     import sys
     from pathlib import Path
+
     project_root = Path(__file__).parent.parent.parent
     sys.path.insert(0, str(project_root))
 # ARCHITECTURAL FIX: Removed Lyrixa import -     from lyrixa.core.memory import LyrixaMemorySystem
@@ -38,6 +39,7 @@ except ImportError:
 @dataclass
 class ProjectUnderstanding:
     """Lyrixa's understanding of the current project"""
+
     project_name: str
     project_type: str  # "web_app", "plugin", "ai_system", "data_pipeline", etc.
     main_goals: List[str]
@@ -52,6 +54,7 @@ class ProjectUnderstanding:
 @dataclass
 class UserPattern:
     """Patterns Lyrixa observes about user behavior"""
+
     pattern_type: str  # "goal_revisiting", "preferred_tech", "work_schedule", etc.
     description: str
     evidence: List[str]  # Supporting examples
@@ -64,6 +67,7 @@ class UserPattern:
 @dataclass
 class SelfReflection:
     """Lyrixa's self-reflection entry"""
+
     reflection_id: str
     topic: str
     insight: str
@@ -76,6 +80,7 @@ class SelfReflection:
 @dataclass
 class ConversationInsight:
     """Insights derived from conversation analysis"""
+
     insight_type: str  # "productivity", "goals", "preferences", "challenges"
     message: str
     evidence: List[str]
@@ -95,7 +100,9 @@ class LyrixaReflexiveLoop:
     5. Provide self-aware responses and recommendations
     """
 
-    def __init__(self, memory_system: Union[LyrixaMemorySystem, LyrixaEnhancedMemorySystem]):
+    def __init__(
+        self, memory_system: Union[LyrixaMemorySystem, LyrixaEnhancedMemorySystem]
+    ):
         self.memory = memory_system
         self.project_understanding: Optional[ProjectUnderstanding] = None
         self.user_patterns: List[UserPattern] = []
@@ -103,7 +110,9 @@ class LyrixaReflexiveLoop:
         self.session_interactions: List[Dict[str, Any]] = []
 
         # Analysis configuration
-        self.pattern_detection_window = timedelta(days=7)  # Look back 7 days for patterns
+        self.pattern_detection_window = timedelta(
+            days=7
+        )  # Look back 7 days for patterns
         self.min_pattern_evidence = 3  # Minimum occurrences to identify a pattern
         self.reflection_interval = timedelta(hours=2)  # Reflect every 2 hours
         self.last_reflection = datetime.now()
@@ -115,19 +124,19 @@ class LyrixaReflexiveLoop:
 
     def _extract_memory_content(self, memory) -> Dict[str, Any]:
         """Extract content from memory object regardless of format"""
-        if hasattr(memory, 'content'):
-            return getattr(memory, 'content')
+        if hasattr(memory, "content"):
+            return getattr(memory, "content")
         elif isinstance(memory, dict):
-            return memory.get('content', memory)
+            return memory.get("content", memory)
         else:
             return {}
 
     def _extract_memory_tags(self, memory) -> List[str]:
         """Extract tags from memory object regardless of format"""
-        if hasattr(memory, 'tags'):
-            return getattr(memory, 'tags')
+        if hasattr(memory, "tags"):
+            return getattr(memory, "tags")
         elif isinstance(memory, dict):
-            return memory.get('tags', [])
+            return memory.get("tags", [])
         else:
             return []
 
@@ -165,7 +174,9 @@ class LyrixaReflexiveLoop:
             actions_taken = interaction_data.get("actions_taken", [])
 
             # Extract project information from interaction
-            project_info = self._extract_project_information(user_input, context, actions_taken)
+            project_info = self._extract_project_information(
+                user_input, context, actions_taken
+            )
 
             if project_info:
                 await self._update_project_state(project_info)
@@ -178,15 +189,15 @@ class LyrixaReflexiveLoop:
         """Analyze user behavior patterns from recent interactions"""
         try:
             # Add current interaction to session data
-            self.session_interactions.append({
-                **interaction_data,
-                "timestamp": datetime.now()
-            })
+            self.session_interactions.append(
+                {**interaction_data, "timestamp": datetime.now()}
+            )
 
             # Keep only recent interactions (within pattern detection window)
             cutoff_time = datetime.now() - self.pattern_detection_window
             self.session_interactions = [
-                interaction for interaction in self.session_interactions
+                interaction
+                for interaction in self.session_interactions
                 if interaction.get("timestamp", datetime.min) > cutoff_time
             ]
 
@@ -269,7 +280,10 @@ class LyrixaReflexiveLoop:
     async def get_current_project_awareness(self) -> Dict[str, Any]:
         """Get Lyrixa's current understanding of the project"""
         if not self.project_understanding:
-            return {"status": "no_project_awareness", "message": "I'm still learning about this project."}
+            return {
+                "status": "no_project_awareness",
+                "message": "I'm still learning about this project.",
+            }
 
         return {
             "project_name": self.project_understanding.project_name,
@@ -279,7 +293,7 @@ class LyrixaReflexiveLoop:
             "technologies": list(self.project_understanding.technologies),
             "confidence": self.project_understanding.confidence,
             "last_updated": self.project_understanding.last_updated.isoformat(),
-            "patterns_observed": self.project_understanding.patterns_observed
+            "patterns_observed": self.project_understanding.patterns_observed,
         }
 
     async def get_user_behavior_insights(self) -> List[Dict[str, Any]]:
@@ -290,7 +304,7 @@ class LyrixaReflexiveLoop:
                 "description": pattern.description,
                 "frequency": pattern.frequency,
                 "confidence": pattern.confidence,
-                "last_observed": pattern.last_observed.isoformat()
+                "last_observed": pattern.last_observed.isoformat(),
             }
             for pattern in self.user_patterns
             if pattern.confidence > 0.6  # Only return confident patterns
@@ -328,18 +342,20 @@ class LyrixaReflexiveLoop:
 
         if memories:
             data = self._extract_memory_content(memories[0])
-            if isinstance(data, dict) and 'project_understanding' in data:
-                proj_data = data['project_understanding']
+            if isinstance(data, dict) and "project_understanding" in data:
+                proj_data = data["project_understanding"]
                 self.project_understanding = ProjectUnderstanding(
-                    project_name=proj_data.get('project_name', 'Unknown Project'),
-                    project_type=proj_data.get('project_type', 'unknown'),
-                    main_goals=proj_data.get('main_goals', []),
-                    current_phase=proj_data.get('current_phase', 'unknown'),
-                    technologies=set(proj_data.get('technologies', [])),
-                    key_files=proj_data.get('key_files', []),
-                    patterns_observed=proj_data.get('patterns_observed', []),
-                    last_updated=datetime.fromisoformat(proj_data.get('last_updated', datetime.now().isoformat())),
-                    confidence=proj_data.get('confidence', 0.5)
+                    project_name=proj_data.get("project_name", "Unknown Project"),
+                    project_type=proj_data.get("project_type", "unknown"),
+                    main_goals=proj_data.get("main_goals", []),
+                    current_phase=proj_data.get("current_phase", "unknown"),
+                    technologies=set(proj_data.get("technologies", [])),
+                    key_files=proj_data.get("key_files", []),
+                    patterns_observed=proj_data.get("patterns_observed", []),
+                    last_updated=datetime.fromisoformat(
+                        proj_data.get("last_updated", datetime.now().isoformat())
+                    ),
+                    confidence=proj_data.get("confidence", 0.5),
                 )
 
     async def _load_user_patterns(self):
@@ -348,16 +364,20 @@ class LyrixaReflexiveLoop:
 
         for memory in memories:
             data = self._extract_memory_content(memory)
-            if isinstance(data, dict) and 'user_pattern' in data:
-                pattern_data = data['user_pattern']
+            if isinstance(data, dict) and "user_pattern" in data:
+                pattern_data = data["user_pattern"]
                 pattern = UserPattern(
-                    pattern_type=pattern_data.get('pattern_type', 'unknown'),
-                    description=pattern_data.get('description', ''),
-                    evidence=pattern_data.get('evidence', []),
-                    frequency=pattern_data.get('frequency', 1),
-                    first_observed=datetime.fromisoformat(pattern_data.get('first_observed', datetime.now().isoformat())),
-                    last_observed=datetime.fromisoformat(pattern_data.get('last_observed', datetime.now().isoformat())),
-                    confidence=pattern_data.get('confidence', 0.5)
+                    pattern_type=pattern_data.get("pattern_type", "unknown"),
+                    description=pattern_data.get("description", ""),
+                    evidence=pattern_data.get("evidence", []),
+                    frequency=pattern_data.get("frequency", 1),
+                    first_observed=datetime.fromisoformat(
+                        pattern_data.get("first_observed", datetime.now().isoformat())
+                    ),
+                    last_observed=datetime.fromisoformat(
+                        pattern_data.get("last_observed", datetime.now().isoformat())
+                    ),
+                    confidence=pattern_data.get("confidence", 0.5),
                 )
                 self.user_patterns.append(pattern)
 
@@ -367,16 +387,18 @@ class LyrixaReflexiveLoop:
 
         for memory in memories:
             data = self._extract_memory_content(memory)
-            if isinstance(data, dict) and 'self_reflection' in data:
-                reflection_data = data['self_reflection']
+            if isinstance(data, dict) and "self_reflection" in data:
+                reflection_data = data["self_reflection"]
                 reflection = SelfReflection(
-                    reflection_id=reflection_data.get('reflection_id', ''),
-                    topic=reflection_data.get('topic', ''),
-                    insight=reflection_data.get('insight', ''),
-                    supporting_data=reflection_data.get('supporting_data', {}),
-                    generated_at=datetime.fromisoformat(reflection_data.get('generated_at', datetime.now().isoformat())),
-                    importance=reflection_data.get('importance', 0.5),
-                    follow_up_actions=reflection_data.get('follow_up_actions', [])
+                    reflection_id=reflection_data.get("reflection_id", ""),
+                    topic=reflection_data.get("topic", ""),
+                    insight=reflection_data.get("insight", ""),
+                    supporting_data=reflection_data.get("supporting_data", {}),
+                    generated_at=datetime.fromisoformat(
+                        reflection_data.get("generated_at", datetime.now().isoformat())
+                    ),
+                    importance=reflection_data.get("importance", 0.5),
+                    follow_up_actions=reflection_data.get("follow_up_actions", []),
                 )
                 self.self_reflections.append(reflection)
 
@@ -384,20 +406,25 @@ class LyrixaReflexiveLoop:
         """Infer initial project understanding from existing memory"""
         try:
             # Look for recent project-related interactions
-            memories = await self.memory.recall_memories("project development coding", limit=10)
+            memories = await self.memory.recall_memories(
+                "project development coding", limit=10
+            )
 
             if not memories:
                 # Create basic understanding
                 self.project_understanding = ProjectUnderstanding(
                     project_name="Aetherra AI Assistant Project",
                     project_type="ai_system",
-                    main_goals=["Build AI assistant", "Implement natural language processing"],
+                    main_goals=[
+                        "Build AI assistant",
+                        "Implement natural language processing",
+                    ],
                     current_phase="development",
                     technologies={"python", "ai", "nlp"},
                     key_files=[],
                     patterns_observed=[],
                     last_updated=datetime.now(),
-                    confidence=0.3
+                    confidence=0.3,
                 )
                 return
 
@@ -406,7 +433,7 @@ class LyrixaReflexiveLoop:
                 "technologies": set(),
                 "goals": [],
                 "files": [],
-                "patterns": []
+                "patterns": [],
             }
 
             for memory in memories[:5]:  # Analyze recent memories
@@ -414,13 +441,27 @@ class LyrixaReflexiveLoop:
                 if isinstance(content, dict):
                     # Extract technologies
                     text_content = str(content)
-                    tech_keywords = ["python", "javascript", "react", "node", "ai", "ml", "nlp", "api", "database", "sql"]
+                    tech_keywords = [
+                        "python",
+                        "javascript",
+                        "react",
+                        "node",
+                        "ai",
+                        "ml",
+                        "nlp",
+                        "api",
+                        "database",
+                        "sql",
+                    ]
                     for tech in tech_keywords:
                         if tech.lower() in text_content.lower():
                             project_info["technologies"].add(tech)
 
                     # Extract goals
-                    if "goal" in text_content.lower() or "build" in text_content.lower():
+                    if (
+                        "goal" in text_content.lower()
+                        or "build" in text_content.lower()
+                    ):
                         project_info["goals"].append(str(content)[:100])
 
             self.project_understanding = ProjectUnderstanding(
@@ -432,7 +473,7 @@ class LyrixaReflexiveLoop:
                 key_files=project_info["files"],
                 patterns_observed=project_info["patterns"],
                 last_updated=datetime.now(),
-                confidence=0.7 if project_info["technologies"] else 0.4
+                confidence=0.7 if project_info["technologies"] else 0.4,
             )
 
         except Exception as e:
@@ -447,19 +488,25 @@ class LyrixaReflexiveLoop:
                 key_files=[],
                 patterns_observed=[],
                 last_updated=datetime.now(),
-                confidence=0.2
+                confidence=0.2,
             )
 
-    def _extract_project_information(self, user_input: str, context: Dict[str, Any], actions_taken: List[str]) -> Dict[str, Any]:
+    def _extract_project_information(
+        self, user_input: str, context: Dict[str, Any], actions_taken: List[str]
+    ) -> Dict[str, Any]:
         """Extract project-related information from interaction"""
         project_info = {}
 
         # Extract project type
         if any(word in user_input.lower() for word in ["plugin", "extension", "addon"]):
             project_info["project_type"] = "plugin"
-        elif any(word in user_input.lower() for word in ["web app", "website", "frontend"]):
+        elif any(
+            word in user_input.lower() for word in ["web app", "website", "frontend"]
+        ):
             project_info["project_type"] = "web_app"
-        elif any(word in user_input.lower() for word in ["ai", "ml", "model", "assistant"]):
+        elif any(
+            word in user_input.lower() for word in ["ai", "ml", "model", "assistant"]
+        ):
             project_info["project_type"] = "ai_system"
         elif any(word in user_input.lower() for word in ["api", "service", "backend"]):
             project_info["project_type"] = "api_service"
@@ -470,7 +517,7 @@ class LyrixaReflexiveLoop:
             "javascript": r"\b(javascript|js|node|npm|react|vue|angular)\b",
             "database": r"\b(database|sql|postgres|mysql|mongodb)\b",
             "ai": r"\b(ai|ml|machine learning|neural|model)\b",
-            "web": r"\b(html|css|web|frontend|backend)\b"
+            "web": r"\b(html|css|web|frontend|backend)\b",
         }
 
         technologies = set()
@@ -486,7 +533,7 @@ class LyrixaReflexiveLoop:
         for keyword in goal_keywords:
             if keyword in user_input.lower():
                 # Extract the goal phrase
-                sentences = user_input.split('.')
+                sentences = user_input.split(".")
                 for sentence in sentences:
                     if keyword in sentence.lower():
                         project_info.setdefault("goals", []).append(sentence.strip())
@@ -495,11 +542,17 @@ class LyrixaReflexiveLoop:
         # Extract current phase
         if any(word in user_input.lower() for word in ["testing", "test", "debug"]):
             project_info["current_phase"] = "testing"
-        elif any(word in user_input.lower() for word in ["deploy", "production", "release"]):
+        elif any(
+            word in user_input.lower() for word in ["deploy", "production", "release"]
+        ):
             project_info["current_phase"] = "deployment"
-        elif any(word in user_input.lower() for word in ["plan", "design", "architecture"]):
+        elif any(
+            word in user_input.lower() for word in ["plan", "design", "architecture"]
+        ):
             project_info["current_phase"] = "planning"
-        elif any(word in user_input.lower() for word in ["code", "implement", "develop"]):
+        elif any(
+            word in user_input.lower() for word in ["code", "implement", "develop"]
+        ):
             project_info["current_phase"] = "development"
 
         return project_info if project_info else {}
@@ -517,7 +570,7 @@ class LyrixaReflexiveLoop:
                 key_files=[],
                 patterns_observed=[],
                 last_updated=datetime.now(),
-                confidence=0.6
+                confidence=0.6,
             )
         else:
             # Update existing understanding
@@ -533,27 +586,33 @@ class LyrixaReflexiveLoop:
                 self.project_understanding.current_phase = project_info["current_phase"]
 
             if "technologies" in project_info:
-                self.project_understanding.technologies.update(project_info["technologies"])
+                self.project_understanding.technologies.update(
+                    project_info["technologies"]
+                )
 
             self.project_understanding.last_updated = datetime.now()
-            self.project_understanding.confidence = min(self.project_understanding.confidence + 0.1, 1.0)
+            self.project_understanding.confidence = min(
+                self.project_understanding.confidence + 0.1, 1.0
+            )
 
         # Store updated understanding in memory
         await self.memory.store_memory(
-            content={"project_understanding": {
-                "project_name": self.project_understanding.project_name,
-                "project_type": self.project_understanding.project_type,
-                "main_goals": self.project_understanding.main_goals,
-                "current_phase": self.project_understanding.current_phase,
-                "technologies": list(self.project_understanding.technologies),
-                "key_files": self.project_understanding.key_files,
-                "patterns_observed": self.project_understanding.patterns_observed,
-                "last_updated": self.project_understanding.last_updated.isoformat(),
-                "confidence": self.project_understanding.confidence
-            }},
+            content={
+                "project_understanding": {
+                    "project_name": self.project_understanding.project_name,
+                    "project_type": self.project_understanding.project_type,
+                    "main_goals": self.project_understanding.main_goals,
+                    "current_phase": self.project_understanding.current_phase,
+                    "technologies": list(self.project_understanding.technologies),
+                    "key_files": self.project_understanding.key_files,
+                    "patterns_observed": self.project_understanding.patterns_observed,
+                    "last_updated": self.project_understanding.last_updated.isoformat(),
+                    "confidence": self.project_understanding.confidence,
+                }
+            },
             context={"type": "project_understanding", "system": "reflexive_loop"},
             tags=["project_understanding", "self_awareness", "reflexive"],
-            importance=0.9
+            importance=0.9,
         )
 
     async def _detect_behavioral_patterns(self) -> List[UserPattern]:
@@ -592,7 +651,7 @@ class LyrixaReflexiveLoop:
             for keyword in goal_keywords:
                 if keyword in user_input:
                     # Use the sentence containing the keyword as a goal identifier
-                    sentences = user_input.split('.')
+                    sentences = user_input.split(".")
                     for sentence in sentences:
                         if keyword in sentence:
                             goal_key = sentence.strip()[:50]  # First 50 chars as key
@@ -600,7 +659,11 @@ class LyrixaReflexiveLoop:
                             break
 
         # Find frequently mentioned goals
-        frequent_goals = [(goal, count) for goal, count in goal_mentions.items() if count >= self.min_pattern_evidence]
+        frequent_goals = [
+            (goal, count)
+            for goal, count in goal_mentions.items()
+            if count >= self.min_pattern_evidence
+        ]
 
         if frequent_goals:
             most_frequent = max(frequent_goals, key=lambda x: x[1])
@@ -611,7 +674,7 @@ class LyrixaReflexiveLoop:
                 frequency=most_frequent[1],
                 first_observed=datetime.now() - self.pattern_detection_window,
                 last_observed=datetime.now(),
-                confidence=min(most_frequent[1] / 10.0, 1.0)
+                confidence=min(most_frequent[1] / 10.0, 1.0),
             )
 
         return None
@@ -622,7 +685,10 @@ class LyrixaReflexiveLoop:
             return None
 
         # Analyze time distribution of interactions
-        hours = [interaction.get("timestamp", datetime.now()).hour for interaction in self.session_interactions]
+        hours = [
+            interaction.get("timestamp", datetime.now()).hour
+            for interaction in self.session_interactions
+        ]
 
         # Find most common hour
         hour_counts = {}
@@ -635,11 +701,14 @@ class LyrixaReflexiveLoop:
                 return UserPattern(
                     pattern_type="time_preference",
                     description=f"Most active around {most_active_hour}:00",
-                    evidence=[f"Active at {most_active_hour}:00 in {hour_counts[most_active_hour]} recent sessions"],
+                    evidence=[
+                        f"Active at {most_active_hour}:00 in {hour_counts[most_active_hour]} recent sessions"
+                    ],
                     frequency=hour_counts[most_active_hour],
                     first_observed=datetime.now() - self.pattern_detection_window,
                     last_observed=datetime.now(),
-                    confidence=hour_counts[most_active_hour] / len(self.session_interactions)
+                    confidence=hour_counts[most_active_hour]
+                    / len(self.session_interactions),
                 )
 
         return None
@@ -652,7 +721,16 @@ class LyrixaReflexiveLoop:
             user_input = interaction.get("user_input", "").lower()
 
             # Count technology mentions
-            technologies = ["python", "javascript", "react", "node", "sql", "api", "ml", "ai"]
+            technologies = [
+                "python",
+                "javascript",
+                "react",
+                "node",
+                "sql",
+                "api",
+                "ml",
+                "ai",
+            ]
             for tech in technologies:
                 if tech in user_input:
                     tech_mentions[tech] = tech_mentions.get(tech, 0) + 1
@@ -663,11 +741,14 @@ class LyrixaReflexiveLoop:
                 return UserPattern(
                     pattern_type="technology_preference",
                     description=f"Prefers working with {preferred_tech}",
-                    evidence=[f"Mentioned {preferred_tech} {tech_mentions[preferred_tech]} times"],
+                    evidence=[
+                        f"Mentioned {preferred_tech} {tech_mentions[preferred_tech]} times"
+                    ],
                     frequency=tech_mentions[preferred_tech],
                     first_observed=datetime.now() - self.pattern_detection_window,
                     last_observed=datetime.now(),
-                    confidence=tech_mentions[preferred_tech] / len(self.session_interactions)
+                    confidence=tech_mentions[preferred_tech]
+                    / len(self.session_interactions),
                 )
 
         return None
@@ -677,14 +758,19 @@ class LyrixaReflexiveLoop:
         # Check if pattern already exists
         existing_pattern = None
         for i, pattern in enumerate(self.user_patterns):
-            if pattern.pattern_type == new_pattern.pattern_type and pattern.description == new_pattern.description:
+            if (
+                pattern.pattern_type == new_pattern.pattern_type
+                and pattern.description == new_pattern.description
+            ):
                 existing_pattern = i
                 break
 
         if existing_pattern is not None:
             # Update existing pattern
             self.user_patterns[existing_pattern].frequency = new_pattern.frequency
-            self.user_patterns[existing_pattern].last_observed = new_pattern.last_observed
+            self.user_patterns[
+                existing_pattern
+            ].last_observed = new_pattern.last_observed
             self.user_patterns[existing_pattern].confidence = new_pattern.confidence
             self.user_patterns[existing_pattern].evidence.extend(new_pattern.evidence)
         else:
@@ -693,18 +779,20 @@ class LyrixaReflexiveLoop:
 
         # Store in memory
         await self.memory.store_memory(
-            content={"user_pattern": {
-                "pattern_type": new_pattern.pattern_type,
-                "description": new_pattern.description,
-                "evidence": new_pattern.evidence,
-                "frequency": new_pattern.frequency,
-                "first_observed": new_pattern.first_observed.isoformat(),
-                "last_observed": new_pattern.last_observed.isoformat(),
-                "confidence": new_pattern.confidence
-            }},
+            content={
+                "user_pattern": {
+                    "pattern_type": new_pattern.pattern_type,
+                    "description": new_pattern.description,
+                    "evidence": new_pattern.evidence,
+                    "frequency": new_pattern.frequency,
+                    "first_observed": new_pattern.first_observed.isoformat(),
+                    "last_observed": new_pattern.last_observed.isoformat(),
+                    "confidence": new_pattern.confidence,
+                }
+            },
             context={"type": "user_pattern", "system": "reflexive_loop"},
             tags=["user_patterns", "behavior_analysis", "reflexive"],
-            importance=0.8
+            importance=0.8,
         )
 
     # Additional methods for insights and reflections would continue here...
@@ -715,20 +803,24 @@ class LyrixaReflexiveLoop:
         insights = []
 
         # Find goal revisiting patterns
-        goal_patterns = [p for p in self.user_patterns if p.pattern_type == "goal_revisiting"]
+        goal_patterns = [
+            p for p in self.user_patterns if p.pattern_type == "goal_revisiting"
+        ]
         for pattern in goal_patterns:
             if pattern.frequency >= 3:
-                insights.append(ConversationInsight(
-                    insight_type="goals",
-                    message=f"Based on past {pattern.frequency} sessions, you tend to revisit the goal: '{pattern.description}'. This suggests it's important to you but might need a different approach.",
-                    evidence=pattern.evidence,
-                    actionable_suggestions=[
-                        "Try breaking this goal into smaller, specific tasks",
-                        "Set a dedicated time block for this goal",
-                        "Consider what obstacles prevented completion before"
-                    ],
-                    confidence=pattern.confidence
-                ))
+                insights.append(
+                    ConversationInsight(
+                        insight_type="goals",
+                        message=f"Based on past {pattern.frequency} sessions, you tend to revisit the goal: '{pattern.description}'. This suggests it's important to you but might need a different approach.",
+                        evidence=pattern.evidence,
+                        actionable_suggestions=[
+                            "Try breaking this goal into smaller, specific tasks",
+                            "Set a dedicated time block for this goal",
+                            "Consider what obstacles prevented completion before",
+                        ],
+                        confidence=pattern.confidence,
+                    )
+                )
 
         return insights
 
@@ -737,22 +829,28 @@ class LyrixaReflexiveLoop:
         insights = []
 
         # Time-based productivity insights
-        time_patterns = [p for p in self.user_patterns if p.pattern_type == "time_preference"]
+        time_patterns = [
+            p for p in self.user_patterns if p.pattern_type == "time_preference"
+        ]
         for pattern in time_patterns:
             hour = int(pattern.description.split("around ")[1].split(":")[0])
-            time_desc = "morning" if hour < 12 else "afternoon" if hour < 18 else "evening"
+            time_desc = (
+                "morning" if hour < 12 else "afternoon" if hour < 18 else "evening"
+            )
 
-            insights.append(ConversationInsight(
-                insight_type="productivity",
-                message=f"I notice you're most active in the {time_desc} (around {hour}:00). Your productivity seems highest during this time.",
-                evidence=pattern.evidence,
-                actionable_suggestions=[
-                    f"Schedule important tasks during your peak {time_desc} hours",
-                    "Use this time for complex problem-solving",
-                    "Consider batch processing routine tasks outside peak hours"
-                ],
-                confidence=pattern.confidence
-            ))
+            insights.append(
+                ConversationInsight(
+                    insight_type="productivity",
+                    message=f"I notice you're most active in the {time_desc} (around {hour}:00). Your productivity seems highest during this time.",
+                    evidence=pattern.evidence,
+                    actionable_suggestions=[
+                        f"Schedule important tasks during your peak {time_desc} hours",
+                        "Use this time for complex problem-solving",
+                        "Consider batch processing routine tasks outside peak hours",
+                    ],
+                    confidence=pattern.confidence,
+                )
+            )
 
         return insights
 
@@ -761,20 +859,26 @@ class LyrixaReflexiveLoop:
         insights = []
 
         if self.project_understanding:
-            days_since_update = (datetime.now() - self.project_understanding.last_updated).days
+            days_since_update = (
+                datetime.now() - self.project_understanding.last_updated
+            ).days
 
             if days_since_update > 7:
-                insights.append(ConversationInsight(
-                    insight_type="progress",
-                    message=f"It's been {days_since_update} days since we updated the project understanding. The project might have evolved significantly.",
-                    evidence=[f"Last update: {self.project_understanding.last_updated.strftime('%Y-%m-%d')}"],
-                    actionable_suggestions=[
-                        "Provide an update on current project status",
-                        "Review and update project goals",
-                        "Identify any new technologies or approaches being used"
-                    ],
-                    confidence=0.8
-                ))
+                insights.append(
+                    ConversationInsight(
+                        insight_type="progress",
+                        message=f"It's been {days_since_update} days since we updated the project understanding. The project might have evolved significantly.",
+                        evidence=[
+                            f"Last update: {self.project_understanding.last_updated.strftime('%Y-%m-%d')}"
+                        ],
+                        actionable_suggestions=[
+                            "Provide an update on current project status",
+                            "Review and update project goals",
+                            "Identify any new technologies or approaches being used",
+                        ],
+                        confidence=0.8,
+                    )
+                )
 
         return insights
 
@@ -782,21 +886,25 @@ class LyrixaReflexiveLoop:
         """Analyze technology preference patterns"""
         insights = []
 
-        tech_patterns = [p for p in self.user_patterns if p.pattern_type == "technology_preference"]
+        tech_patterns = [
+            p for p in self.user_patterns if p.pattern_type == "technology_preference"
+        ]
         for pattern in tech_patterns:
             tech_name = pattern.description.split("working with ")[1]
 
-            insights.append(ConversationInsight(
-                insight_type="preferences",
-                message=f"I notice you prefer working with {tech_name}. Your confidence and efficiency seem higher with this technology.",
-                evidence=pattern.evidence,
-                actionable_suggestions=[
-                    f"Leverage {tech_name} for core project components",
-                    f"Consider {tech_name}-based solutions for new features",
-                    f"Build on your {tech_name} expertise for complex tasks"
-                ],
-                confidence=pattern.confidence
-            ))
+            insights.append(
+                ConversationInsight(
+                    insight_type="preferences",
+                    message=f"I notice you prefer working with {tech_name}. Your confidence and efficiency seem higher with this technology.",
+                    evidence=pattern.evidence,
+                    actionable_suggestions=[
+                        f"Leverage {tech_name} for core project components",
+                        f"Consider {tech_name}-based solutions for new features",
+                        f"Build on your {tech_name} expertise for complex tasks",
+                    ],
+                    confidence=pattern.confidence,
+                )
+            )
 
         return insights
 
@@ -807,7 +915,8 @@ class LyrixaReflexiveLoop:
 
         # Analyze conversation patterns
         avg_response_quality = sum(
-            interaction.get("confidence", 0.5) for interaction in self.session_interactions
+            interaction.get("confidence", 0.5)
+            for interaction in self.session_interactions
         ) / len(self.session_interactions)
 
         return SelfReflection(
@@ -817,15 +926,15 @@ class LyrixaReflexiveLoop:
             supporting_data={
                 "avg_confidence": avg_response_quality,
                 "interaction_count": len(self.session_interactions),
-                "time_period": self.pattern_detection_window.days
+                "time_period": self.pattern_detection_window.days,
             },
             generated_at=datetime.now(),
             importance=0.7,
             follow_up_actions=[
                 "Focus on providing more specific and actionable responses",
                 "Ask clarifying questions when user intent is unclear",
-                "Provide more context for recommendations"
-            ]
+                "Provide more context for recommendations",
+            ],
         )
 
     async def _reflect_on_learning(self) -> Optional[SelfReflection]:
@@ -840,15 +949,15 @@ class LyrixaReflexiveLoop:
             supporting_data={
                 "project_confidence": self.project_understanding.confidence,
                 "technologies_learned": len(self.project_understanding.technologies),
-                "goals_tracked": len(self.project_understanding.main_goals)
+                "goals_tracked": len(self.project_understanding.main_goals),
             },
             generated_at=datetime.now(),
             importance=0.8,
             follow_up_actions=[
                 "Ask more detailed questions about project architecture",
                 "Request clarification on project goals and priorities",
-                "Gather information about project constraints and requirements"
-            ]
+                "Gather information about project constraints and requirements",
+            ],
         )
 
     async def _reflect_on_assistance_quality(self) -> Optional[SelfReflection]:
@@ -875,32 +984,34 @@ class LyrixaReflexiveLoop:
             supporting_data={
                 "success_rate": success_rate,
                 "total_actions": total_actions,
-                "successful_actions": successful_actions
+                "successful_actions": successful_actions,
             },
             generated_at=datetime.now(),
             importance=0.9,
             follow_up_actions=[
                 "Request feedback on assistance quality",
                 "Focus on understanding the full context before suggesting actions",
-                "Provide alternative approaches when primary suggestion might not work"
-            ]
+                "Provide alternative approaches when primary suggestion might not work",
+            ],
         )
 
     async def _store_self_reflection(self, reflection: SelfReflection):
         """Store a self-reflection in memory"""
         await self.memory.store_memory(
-            content={"self_reflection": {
-                "reflection_id": reflection.reflection_id,
-                "topic": reflection.topic,
-                "insight": reflection.insight,
-                "supporting_data": reflection.supporting_data,
-                "generated_at": reflection.generated_at.isoformat(),
-                "importance": reflection.importance,
-                "follow_up_actions": reflection.follow_up_actions
-            }},
+            content={
+                "self_reflection": {
+                    "reflection_id": reflection.reflection_id,
+                    "topic": reflection.topic,
+                    "insight": reflection.insight,
+                    "supporting_data": reflection.supporting_data,
+                    "generated_at": reflection.generated_at.isoformat(),
+                    "importance": reflection.importance,
+                    "follow_up_actions": reflection.follow_up_actions,
+                }
+            },
             context={"type": "self_reflection", "system": "reflexive_loop"},
             tags=["self_reflection", "self_awareness", "improvement"],
-            importance=reflection.importance
+            importance=reflection.importance,
         )
 
     async def _is_revisiting_goal(self, current_input: str) -> bool:
@@ -926,7 +1037,9 @@ class LyrixaReflexiveLoop:
                 pattern_words = set(pattern.description.lower().split())
                 input_words = set(current_input.lower().split())
 
-                overlap_ratio = len(pattern_words & input_words) / len(pattern_words | input_words)
+                overlap_ratio = len(pattern_words & input_words) / len(
+                    pattern_words | input_words
+                )
                 if overlap_ratio > 0.4:  # 40% similarity
                     return pattern.frequency
 
@@ -938,10 +1051,12 @@ class LyrixaReflexiveLoop:
 
         for pattern in self.user_patterns:
             if pattern.pattern_type == "time_preference":
-                preferred_hour = int(pattern.description.split("around ")[1].split(":")[0])
+                preferred_hour = int(
+                    pattern.description.split("around ")[1].split(":")[0]
+                )
 
                 if abs(current_hour - preferred_hour) <= 1:
-                    return f"This is typically your most productive time! Based on past patterns, you accomplish more during this hour."
+                    return "This is typically your most productive time! Based on past patterns, you accomplish more during this hour."
                 elif abs(current_hour - preferred_hour) > 4:
                     return f"I notice you're working outside your typical productive hours. You usually work best around {preferred_hour}:00."
 

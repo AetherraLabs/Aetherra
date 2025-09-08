@@ -10,8 +10,7 @@ Demonstrates the real-time bidirectional communication between
 Python backend and web panels with live data updates.
 """
 
-import asyncio
-import os
+
 import sys
 import time
 from pathlib import Path

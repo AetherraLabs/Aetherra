@@ -9,7 +9,7 @@ Aetherra API Server Launcher
 Startup script for the Aetherra .aether Script Execution API.
 """
 
-import os
+
 import sys
 from pathlib import Path
 

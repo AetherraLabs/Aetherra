@@ -484,9 +484,9 @@ def get_ai_plugin_recommendations(
             f"with relevance score {top_plugin['score']:.1f}"
         )
     else:
-        recommendations["summary"] = (
-            "No plugins found matching the specified goal or context."
-        )
+        recommendations[
+            "summary"
+        ] = "No plugins found matching the specified goal or context."
 
     return recommendations
 

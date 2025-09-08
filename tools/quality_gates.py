@@ -34,6 +34,7 @@ Env/config:
     REQUIRE_LICENSE_POLICY    : 1 require LICENSE_POLICY.md presence (default 1)
 """
 
+import json
 import os
 import re
 import subprocess
@@ -163,6 +164,28 @@ def main() -> int:
     else:
         print("[GATES] Vulnerability scan skipped (disabled or lock absent)")
 
+    # Optional test selection heuristic (Phase 1 stub)
+    selection_tool = Path("tools/test_selection_stub.py")
+    if selection_tool.exists() and os.getenv("TEST_SELECTION", "1") == "1":
+        touched_raw = os.getenv("TOUCHED_PATHS", "").strip()
+        touched = [p for p in touched_raw.split() if p]
+        sel_cmd = [sys.executable, str(selection_tool), *touched]
+        print(f"[GATES] Running test selection stub: {' '.join(sel_cmd)}")
+        code_sel, out_sel = run(sel_cmd)
+        print(out_sel)
+        if code_sel == 0:
+            try:
+                data_sel = json.loads(out_sel)
+                candidates = data_sel.get("candidates") or []
+                if candidates and not data_sel.get("fallback"):
+                    if 0 < len(candidates) < len(targets):
+                        print(
+                            f"[GATES] Adopting selected test subset ({len(candidates)} < {len(targets)})"
+                        )
+                        targets = candidates
+            except Exception as e:  # pragma: no cover
+                print(f"[GATES] Warning: cannot parse selection output: {e}\n{out_sel}")
+
     # 1. Run pytest with coverage
     cmd = [
         sys.executable,
@@ -202,15 +225,21 @@ def main() -> int:
             prev = float(baseline_file.read_text().strip())
         except Exception:
             prev = None
-    if prev is not None and cov < prev:
-        print(f"[GATES] Coverage dropped: prev {prev}% -> now {cov}%")
-        return 1
+    coverage_delta = None
+    coverage_drop = False
+    if prev is not None:
+        coverage_delta = cov - prev
+        if cov < prev:
+            coverage_drop = True
+            print(f"[GATES] Coverage dropped: prev {prev}% -> now {cov}%")
+            # Do not return yet; gather gating reasons for JSON report then fail.
 
     # Update baseline to latest
-    try:
-        baseline_file.write_text(str(cov))
-    except Exception as e:
-        print(f"[GATES] Warning: failed to write baseline: {e}")
+    if not coverage_drop:  # Only update baseline if not a regression
+        try:
+            baseline_file.write_text(str(cov))
+        except Exception as e:
+            print(f"[GATES] Warning: failed to write baseline: {e}")
 
     # Security & memory fragmentation supplemental gates (post-tests so new tools are importable)
     if os.getenv("STATIC_SECURITY_SCAN", "1") == "1":
@@ -453,6 +482,35 @@ def main() -> int:
         print(f"[GATES] Staged {copied} artifact files in {artifacts_dir}")
     else:
         print("[GATES] Artifact publishing disabled (PUBLISH_ARTIFACTS=0)")
+
+    # Consolidated gating reasons & metrics export
+    gating_reasons: list[str] = []
+    if coverage_drop:
+        gating_reasons.append("coverage_drop")
+    # Future: append reasons for vuln scan, arch failures, etc.
+
+    coverage_report_path = Path(
+        os.getenv("COVERAGE_REPORT_JSON", "coverage_gate_report.json")
+    )
+    report = {
+        "coverage": cov,
+        "previous": prev,
+        "delta": coverage_delta,
+        "min_threshold": min_cov,
+        "drop": coverage_drop,
+        "updated_baseline": not coverage_drop,
+        "gating_reasons": gating_reasons,
+        "targets": targets,
+    }
+    try:
+        coverage_report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        print(f"[GATES] Wrote coverage gate report -> {coverage_report_path}")
+    except Exception as e:  # pragma: no cover
+        print(f"[GATES] Warning: failed to write coverage report: {e}")
+
+    if coverage_drop:
+        print("[GATES] Gate failure due to coverage drop.")
+        return 1
 
     print("[GATES] All quality gates passed.")
     return 0

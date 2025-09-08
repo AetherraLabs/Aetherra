@@ -10,10 +10,9 @@ Enhanced testing for Lyrixa's cognitive, personality, and self-awareness systems
 This version attempts to import actual modules and provides comprehensive testing.
 """
 
-import os
+
 import sys
 import unittest
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 

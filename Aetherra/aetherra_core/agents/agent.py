@@ -6,11 +6,10 @@ Aetherra Interpreter Agent
 Enhanced agent system for interpreter functionality
 """
 
-import asyncio
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +44,7 @@ class AetherraAgent:
         }
 
     async def execute_command(
-        self, command: str, context: Dict = None
+        self, command: str, context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """Execute a command with AI assistance"""
         try:
@@ -154,7 +153,9 @@ class AetherraAgent:
 
         return patterns
 
-    async def suggest_next_action(self, current_context: Dict = None) -> Dict[str, Any]:
+    async def suggest_next_action(
+        self, current_context: Optional[Dict] = None
+    ) -> Dict[str, Any]:
         """Suggest next action based on patterns and context"""
         try:
             patterns = self.detect_patterns()
@@ -228,9 +229,7 @@ class AetherraAgent:
 
         # Save final state
         final_summary = self.get_execution_summary()
-        logger.info(
-            f"📊 Final execution summary: {json.dumps(final_summary, indent=2)}"
-        )
+        logger.info(f"📊 Final execution summary: {json.dumps(final_summary, indent=2)}")
 
         return final_summary
 

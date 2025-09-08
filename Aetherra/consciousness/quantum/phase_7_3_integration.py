@@ -174,9 +174,7 @@ class QuantumMemoryTemporalIntegration:
             return state_id
 
         except Exception as e:
-            self.logger.error(
-                f"❌ Failed to create integrated consciousness state: {e}"
-            )
+            self.logger.error(f"❌ Failed to create integrated consciousness state: {e}")
             raise
 
     async def enhanced_memory_retrieval(
@@ -742,9 +740,9 @@ def initialize_quantum_memory_temporal_integration() -> (
     return quantum_memory_temporal_integration
 
 
-def get_quantum_memory_temporal_integration() -> Optional[
-    QuantumMemoryTemporalIntegration
-]:
+def get_quantum_memory_temporal_integration() -> (
+    Optional[QuantumMemoryTemporalIntegration]
+):
     """Get global integration system instance"""
     return quantum_memory_temporal_integration
 
@@ -797,9 +795,7 @@ async def test_quantum_memory_temporal_integration():
         temporal_window=timedelta(minutes=10),
     )
 
-    print(
-        f"  ✅ Enhanced retrieval: {len(enhanced_results['memories'])} memories found"
-    )
+    print(f"  ✅ Enhanced retrieval: {len(enhanced_results['memories'])} memories found")
     print(
         f"  🔗 Temporal integration applied: {enhanced_results['enhancement_applied']}"
     )

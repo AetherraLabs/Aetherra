@@ -15,17 +15,20 @@ __version__ = "1.0.0"
 
 # Graceful imports with fallbacks
 import logging
+
 logger = logging.getLogger(__name__)
 
 # Package status
 PACKAGE_AVAILABLE = True
 
+
 def get_package_status():
     """Get the status of this package."""
-    return {'available': PACKAGE_AVAILABLE}
+    return {"available": PACKAGE_AVAILABLE}
+
 
 # Export main components
 __all__ = [
-    'get_package_status',
-    'PACKAGE_AVAILABLE',
+    "get_package_status",
+    "PACKAGE_AVAILABLE",
 ]

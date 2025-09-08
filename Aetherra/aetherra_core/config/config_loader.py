@@ -25,7 +25,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -236,7 +236,7 @@ class AetherraConfigLoader:
     def _load_from_file(self):
         """Load configuration from JSON file"""
         try:
-            with open(self.config_path, "r", encoding="utf-8") as f:
+            with open(self.config_path, encoding="utf-8") as f:
                 file_config = json.load(f)
 
             # Deep merge with default configuration

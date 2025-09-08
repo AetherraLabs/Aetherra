@@ -749,7 +749,7 @@ def console_demo():
 
         elif choice == "4":
             stats = core.get_memory_stats()
-            print(f"\n📊 Memory Statistics:")
+            print("\n📊 Memory Statistics:")
             print(f"Total Memories: {stats['total']}")
             print(f"Active Goals: {stats['active_goals']}")
             print(f"Average Importance: {stats['avg_importance']:.1%}")

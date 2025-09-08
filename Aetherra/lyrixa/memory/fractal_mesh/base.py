@@ -109,7 +109,8 @@ class FractalHierarchies:
         cursor = conn.cursor()
 
         # Fractal clusters table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS fractal_clusters (
                 cluster_id TEXT PRIMARY KEY,
                 level INTEGER,
@@ -125,10 +126,12 @@ class FractalHierarchies:
                 created_at REAL,
                 last_updated REAL
             )
-        """)
+        """
+        )
 
         # Hierarchy metrics table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS hierarchy_metrics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp REAL,
@@ -141,10 +144,12 @@ class FractalHierarchies:
                 pattern_coverage REAL,
                 reorganization_frequency REAL
             )
-        """)
+        """
+        )
 
         # Cross-level bridges table (for patterns that span multiple levels)
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS cross_level_bridges (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 source_cluster_id TEXT,
@@ -154,7 +159,8 @@ class FractalHierarchies:
                 pattern_overlap TEXT,
                 created_at REAL
             )
-        """)
+        """
+        )
 
         conn.commit()
         conn.close()
@@ -689,10 +695,12 @@ class FractalHierarchies:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT hierarchy_coherence FROM hierarchy_metrics
             ORDER BY timestamp DESC LIMIT 1
-        """)
+        """
+        )
 
         row = cursor.fetchone()
         conn.close()
@@ -733,10 +741,12 @@ class FractalHierarchies:
         avg_compression = cursor.fetchone()[0] or 0.0
 
         # Get latest metrics
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT * FROM hierarchy_metrics
             ORDER BY timestamp DESC LIMIT 1
-        """)
+        """
+        )
 
         metrics_row = cursor.fetchone()
         conn.close()

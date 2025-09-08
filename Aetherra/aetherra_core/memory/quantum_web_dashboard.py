@@ -7,7 +7,6 @@ Displays real-time quantum memory metrics: coherence, branching, entropy.
 """
 
 from flask import Blueprint, Flask, jsonify
-from memory.quantum_memory_state import get_quantum_metrics
 
 quantum_dashboard = Blueprint("quantum_dashboard", __name__)
 app = Flask(__name__)

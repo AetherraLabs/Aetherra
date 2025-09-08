@@ -18,7 +18,8 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass
-from typing import Tuple
+
+# Removed legacy Tuple usage after migration
 
 
 def _get_bool(name: str, default: bool) -> bool:
@@ -104,7 +105,7 @@ class HumanStyle:
         base_text: str,
         evidence_count: int = 0,
         bucket_index: int = 0,
-    ) -> Tuple[str, HumanStyleMarkers]:
+    ) -> tuple[str, HumanStyleMarkers]:
         """Return (styled_text, markers). If disabled, returns base_text unchanged."""
         if not self.enabled:
             return base_text, HumanStyleMarkers()
@@ -133,30 +134,30 @@ class HumanStyle:
         markers.used_contractions = 1 if text != before else 0
 
         # 3) Offer a concise follow-up question when appropriate
-        if self.ask_question and _stable_choice(self.seed, bucket_index):
-            if not text.rstrip().endswith("?"):
-                # Short, open question varies with tone
+        if (
+            self.ask_question
+            and _stable_choice(self.seed, bucket_index)
+            and not text.rstrip().endswith("?")
+        ):
+            # Short, open question varies with tone
+            q = "What would you like to try next?"
+            if self.tone == "friendly":
                 q = "What would you like to try next?"
-                if self.tone == "friendly":
-                    q = "What would you like to try next?"
-                elif self.tone == "enthusiastic":
-                    q = "What should we tackle next?"
-                elif self.tone == "concise":
-                    q = "Next step?"
-                text = f"{text} {q}"
-                markers.asked_question = True
+            elif self.tone == "enthusiastic":
+                q = "What should we tackle next?"
+            elif self.tone == "concise":
+                q = "Next step?"
+            text = f"{text} {q}"
+            markers.asked_question = True
 
         # 4) Optional, minimal emoji (1 symbol max) — safe-mapped
-        if self.use_emoji:
-            # add only if not a failure apology
-            if ":" not in text and "sorry" not in text.lower():
-                emoji = " 🙂" if self.tone in ("friendly", "enthusiastic") else ""
-                if emoji:
-                    text = self._emoji_safe(text + emoji)
+        if self.use_emoji and ":" not in text and "sorry" not in text.lower():
+            emoji = " 🙂" if self.tone in ("friendly", "enthusiastic") else ""
+            if emoji:
+                text = self._emoji_safe(text + emoji)
 
         # 5) Max length clamp if configured
-        if self.max_len and self.max_len > 20:
-            if len(text) > self.max_len:
-                text = text[: self.max_len - 1].rstrip() + "…"
+        if self.max_len and self.max_len > 20 and len(text) > self.max_len:
+            text = text[: self.max_len - 1].rstrip() + "…"
 
         return text, markers

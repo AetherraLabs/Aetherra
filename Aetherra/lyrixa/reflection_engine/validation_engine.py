@@ -1061,9 +1061,7 @@ class PersonalityReflectionSystem:
                 new_value = min(1.0, max(0.0, current_value + adjustment))
                 lyrixa_personality.base_traits[trait] = new_value
 
-                print(
-                    f"🎭 Adjusted {trait_name}: {current_value:.3f} → {new_value:.3f}"
-                )
+                print(f"🎭 Adjusted {trait_name}: {current_value:.3f} → {new_value:.3f}")
                 return True
 
             return False

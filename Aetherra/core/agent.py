@@ -4,6 +4,7 @@
 # core/agent.py
 # Removed dangling import statement - functions can be imported when needed
 
+
 # Stub functions for missing dependencies
 def analyze_memory_patterns(memories, tag_frequency, category_frequency):
     """Placeholder for memory pattern analysis"""

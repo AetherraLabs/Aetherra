@@ -29,7 +29,7 @@ def ultimate_phase_7_4_test():
         from parallel_reality_navigator import ParallelRealityNavigator
         from quantum_consciousness_tunneling import QuantumConsciousnessTunneling
         from quantum_memory_system import QuantumMemorySystem
-        from reality_synthesis_engine import RealitySynthesisEngine, SynthesisMode
+        from reality_synthesis_engine import RealitySynthesisEngine
         from temporal_consciousness_system import TemporalConsciousnessEngine
 
         print("✅ All Phase 7.4 systems imported successfully!")

@@ -11,8 +11,7 @@ and optimizes system performance through iterative improvement.
 """
 
 import logging
-from typing import Dict, List, Any, Optional
-from datetime import datetime
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +41,7 @@ class LearningLoopIntegrationAgent:
         # Placeholder implementation
         return {
             "insights": ["Pattern identified", "Performance improvement possible"],
-            "action_items": ["Adjust parameters", "Update model"]
+            "action_items": ["Adjust parameters", "Update model"],
         }
 
     def apply_improvements(self, improvements: List[Dict[str, Any]]) -> bool:
@@ -55,7 +54,7 @@ class LearningLoopIntegrationAgent:
         return {
             "total_cycles": self.learning_cycles,
             "improvements_applied": self.improvements_applied,
-            "active_learning_rate": 0.85
+            "active_learning_rate": 0.85,
         }
 
     def get_status(self) -> Dict[str, Any]:
@@ -66,7 +65,7 @@ class LearningLoopIntegrationAgent:
             "status": self.status,
             "learning_cycles": self.learning_cycles,
             "improvements_applied": self.improvements_applied,
-            "is_available": self.is_available
+            "is_available": self.is_available,
         }
 
 

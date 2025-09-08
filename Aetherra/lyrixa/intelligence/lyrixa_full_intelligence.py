@@ -41,9 +41,7 @@ except ImportError:
 
 try:
     # Prefer enhanced Lyrixa-compatible memory engines
-    from Aetherra.aetherra_core.memory.lyrixa_memory_engine import (
-        LyrixaMemoryEngine,
-    )
+    from Aetherra.aetherra_core.memory.lyrixa_memory_engine import LyrixaMemoryEngine
 
     _memory_instance = LyrixaMemoryEngine()
 except ImportError:
@@ -230,9 +228,7 @@ class LyrixaIntelligenceCore:
                     "available": True,
                     "priority": 1,
                 }
-                logger.info(
-                    f"✅ OpenAI provider initialized (model={configured_model})"
-                )
+                logger.info(f"✅ OpenAI provider initialized (model={configured_model})")
             else:
                 logger.warning("⚠️ OpenAI API key not found")
 

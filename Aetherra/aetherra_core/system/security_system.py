@@ -197,7 +197,7 @@ class AetherraSecuritySystem:
         if not env_file.exists():
             env_template = self.workspace_path / ".env.template"
             if env_template.exists():
-                with open(env_template, "r") as f:
+                with open(env_template) as f:
                     content = f.read()
 
                 with open(env_file, "w") as f:
@@ -393,7 +393,7 @@ class AetherraSecuritySystem:
             file_path = self.workspace_path / filename
             if file_path.exists():
                 try:
-                    with open(file_path, "r") as f:
+                    with open(file_path) as f:
                         content = f.read()
 
                     # Simple pattern matching for potential keys

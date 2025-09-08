@@ -14,7 +14,7 @@ import sqlite3
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 from ..base import EpisodicChain, MemoryFragment, MemoryFragmentType
 
@@ -25,8 +25,8 @@ class TemporalPattern:
 
     pattern_id: str
     pattern_type: str  # "daily", "weekly", "situational"
-    fragments: List[str]  # Fragment IDs that follow this pattern
-    temporal_signature: Dict[str, Any]  # Time-based characteristics
+    fragments: list[str]  # Fragment IDs that follow this pattern
+    temporal_signature: dict[str, Any]  # Time-based characteristics
     confidence: float
     last_occurrence: datetime
 
@@ -37,10 +37,10 @@ class NarrativeArc:
 
     arc_id: str
     title: str
-    fragments: List[str]  # Ordered fragment IDs
-    key_moments: List[str]  # Important fragment IDs
-    themes: List[str]
-    emotional_trajectory: List[float]  # Emotional valence over time
+    fragments: list[str]  # Ordered fragment IDs
+    key_moments: list[str]  # Important fragment IDs
+    themes: list[str]
+    emotional_trajectory: list[float]  # Emotional valence over time
     resolution_status: str  # "ongoing", "resolved", "abandoned"
     significance_score: float
 
@@ -71,10 +71,10 @@ class EpisodicTimeline:
 
     def __init__(self, db_path: str = "episodic_timeline.db"):
         self.db_path = db_path
-        self.episodic_chains: Dict[str, EpisodicChain] = {}
-        self.narrative_arcs: Dict[str, NarrativeArc] = {}
-        self.causal_links: List[CausalLink] = []
-        self.temporal_patterns: Dict[str, TemporalPattern] = {}
+        self.episodic_chains: dict[str, EpisodicChain] = {}
+        self.narrative_arcs: dict[str, NarrativeArc] = {}
+        self.causal_links: list[CausalLink] = []
+        self.temporal_patterns: dict[str, TemporalPattern] = {}
 
         self.max_chain_gap = timedelta(hours=6)  # Max time gap in episodic chains
         self.min_chain_length = 3  # Minimum fragments to form a chain
@@ -87,7 +87,8 @@ class EpisodicTimeline:
         """Initialize episodic timeline database"""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS episodic_chains (
                     chain_id TEXT PRIMARY KEY,
                     fragments TEXT NOT NULL,
@@ -99,9 +100,11 @@ class EpisodicTimeline:
                     created_at TEXT,
                     last_updated TEXT
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS narrative_arcs (
                     arc_id TEXT PRIMARY KEY,
                     title TEXT NOT NULL,
@@ -113,9 +116,11 @@ class EpisodicTimeline:
                     significance_score REAL,
                     created_at TEXT
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS causal_links (
                     link_id TEXT PRIMARY KEY,
                     cause_fragment_id TEXT NOT NULL,
@@ -125,9 +130,11 @@ class EpisodicTimeline:
                     temporal_delay TEXT,
                     detected_at TEXT
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS temporal_patterns (
                     pattern_id TEXT PRIMARY KEY,
                     pattern_type TEXT NOT NULL,
@@ -136,7 +143,8 @@ class EpisodicTimeline:
                     confidence REAL,
                     last_occurrence TEXT
                 )
-            """)
+            """
+            )
 
             conn.commit()
         finally:
@@ -167,7 +175,7 @@ class EpisodicTimeline:
         finally:
             conn.close()
 
-    def process_new_fragment(self, fragment: MemoryFragment) -> List[str]:
+    def process_new_fragment(self, fragment: MemoryFragment) -> list[str]:
         """Process new fragment for episodic timeline integration"""
         affected_chains = []
 
@@ -188,7 +196,7 @@ class EpisodicTimeline:
 
         return affected_chains
 
-    def _find_or_create_chain(self, fragment: MemoryFragment) -> Optional[str]:
+    def _find_or_create_chain(self, fragment: MemoryFragment) -> str | None:
         """Find existing chain to extend or create new one"""
         best_chain = None
         best_score = 0.0
@@ -216,9 +224,7 @@ class EpisodicTimeline:
                 best_chain.temporal_span[0],
                 fragment.created_at,
             )
-            best_chain.significance_score = self._calculate_chain_significance(
-                best_chain
-            )
+            best_chain.significance_score = self._calculate_chain_significance(best_chain)
             self._persist_chain(best_chain)
             return best_chain.chain_id
 
@@ -280,7 +286,8 @@ class EpisodicTimeline:
     def _detect_causal_relationships(self, new_fragment: MemoryFragment):
         """Detect potential causal relationships with existing fragments"""
         # Look for fragments within causal window
-        cutoff_time = new_fragment.created_at - self.causal_window
+        # Window start (reserved for future filtering logic)
+        _cutoff_time = new_fragment.created_at - self.causal_window
 
         # This would iterate through recent fragments to find causal patterns
         # Simplified for now - would use semantic analysis to detect causality
@@ -314,7 +321,7 @@ class EpisodicTimeline:
         # Extract time-based features
         timestamp = fragment.created_at
         hour = timestamp.hour
-        day_of_week = timestamp.weekday()
+        _day_of_week = timestamp.weekday()  # Reserved for future weekly pattern logic
 
         # Look for recurring patterns (simplified)
         pattern_key = f"daily_{hour}"
@@ -344,15 +351,11 @@ class EpisodicTimeline:
                 arc.fragments.append(fragment.fragment_id)
 
                 # Update emotional trajectory (simplified)
-                emotional_value = (
-                    fragment.confidence_score
-                )  # Proxy for emotional valence
+                emotional_value = fragment.confidence_score  # Proxy for emotional valence
                 arc.emotional_trajectory.append(emotional_value)
 
                 # Update themes based on fragment symbolic tags
-                arc.themes.extend(
-                    [tag for tag in fragment.symbolic_tags if tag not in arc.themes]
-                )
+                arc.themes.extend([tag for tag in fragment.symbolic_tags if tag not in arc.themes])
 
                 self._persist_narrative_arc(arc)
                 return
@@ -364,9 +367,7 @@ class EpisodicTimeline:
                 arc_id=arc_id,
                 title=f"Arc starting {fragment.created_at.strftime('%Y-%m-%d')}",
                 fragments=[fragment.fragment_id],
-                key_moments=[fragment.fragment_id]
-                if fragment.confidence_score > 0.7
-                else [],
+                key_moments=[fragment.fragment_id] if fragment.confidence_score > 0.7 else [],
                 themes=list(fragment.symbolic_tags),
                 emotional_trajectory=[fragment.confidence_score],
                 resolution_status="ongoing",
@@ -397,9 +398,7 @@ class EpisodicTimeline:
         length_factor = min(len(chain.fragments) / 10, 1.0)  # Normalize to 10 fragments
 
         # Temporal span factor (longer spans = more significant, up to a point)
-        span_hours = (
-            chain.temporal_span[1] - chain.temporal_span[0]
-        ).total_seconds() / 3600
+        span_hours = (chain.temporal_span[1] - chain.temporal_span[0]).total_seconds() / 3600
         span_factor = min(span_hours / (24 * 7), 1.0)  # Normalize to 1 week
 
         # Causal density (more causal links = more significant)
@@ -409,8 +408,8 @@ class EpisodicTimeline:
         return significance
 
     def get_episodic_story(
-        self, time_range: Tuple[datetime, datetime], min_significance: float = 0.1
-    ) -> List[Dict[str, Any]]:
+        self, time_range: tuple[datetime, datetime], min_significance: float = 0.1
+    ) -> list[dict[str, Any]]:
         """Get episodic story within time range"""
         story_elements = []
 
@@ -444,7 +443,7 @@ class EpisodicTimeline:
 
         return story_elements
 
-    def get_causal_network(self, fragment_id: str, depth: int = 2) -> Dict[str, Any]:
+    def get_causal_network(self, fragment_id: str, depth: int = 2) -> dict[str, Any]:
         """Get causal network around a specific fragment"""
         network = {
             "center_fragment": fragment_id,
@@ -476,9 +475,7 @@ class EpisodicTimeline:
 
         return network
 
-    def detect_temporal_patterns(
-        self, pattern_type: str = "daily"
-    ) -> List[TemporalPattern]:
+    def detect_temporal_patterns(self, pattern_type: str = "daily") -> list[TemporalPattern]:
         """Get detected temporal patterns of specified type"""
         return [
             pattern
@@ -627,8 +624,7 @@ class EpisodicTimeline:
             relationship_type=row[3] or "unknown",
             confidence=row[4] or 0.5,
             temporal_delay=timedelta(
-                seconds=int(row[5].split(":")[0]) * 3600
-                + int(row[5].split(":")[1]) * 60
+                seconds=int(row[5].split(":")[0]) * 3600 + int(row[5].split(":")[1]) * 60
             )
             if row[5]
             else timedelta(),

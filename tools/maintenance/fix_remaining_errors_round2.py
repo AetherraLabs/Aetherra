@@ -7,7 +7,7 @@ Comprehensive Error Fixing Script for Phase 7.1 - Round 2
 Addresses the remaining issues after initial fixes.
 """
 
-import glob
+
 import logging
 import os
 import re
@@ -28,7 +28,7 @@ def fix_phase3_auto_generator_type_handling():
         logger.warning(f"File not found: {file_path}")
         return False
 
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
 
     # Also need to update the individual panel generation methods to handle dict/object
@@ -100,7 +100,7 @@ def add_defensive_programming_to_all_panel_methods():
         logger.warning(f"File not found: {file_path}")
         return False
 
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
 
     # Helper function to get attribute safely
@@ -174,7 +174,7 @@ def update_roadmap_with_latest_status():
         logger.warning(f"Roadmap file not found: {roadmap_path}")
         return False
 
-    with open(roadmap_path, "r", encoding="utf-8") as f:
+    with open(roadmap_path, encoding="utf-8") as f:
         content = f.read()
 
     # Update quantum computing status
@@ -213,7 +213,7 @@ def update_roadmap_with_latest_status():
     with open(roadmap_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    logger.info(f"✅ Updated roadmap with latest status")
+    logger.info("✅ Updated roadmap with latest status")
     return True
 
 
@@ -242,7 +242,7 @@ def main():
         except Exception as e:
             logger.error(f"❌ {description} - ERROR: {e}")
 
-    logger.info(f"\n🎉 COMPREHENSIVE ERROR FIXING COMPLETE!")
+    logger.info("\n🎉 COMPREHENSIVE ERROR FIXING COMPLETE!")
     logger.info(f"✅ Successfully applied {successful_fixes}/{len(fixes)} fixes")
 
     if successful_fixes == len(fixes):

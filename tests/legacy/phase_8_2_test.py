@@ -36,9 +36,7 @@ async def test_phase_8_2_cosmic():
         # Import supporting consciousness systems
         from consciousness_singularity_engine import ConsciousnessSingularityEngine
         from cosmic_consciousness_engine import (
-            AwarenessScope,
             CosmicConsciousnessEngine,
-            CosmicState,
         )
         from transcendence_consolidation_engine import TranscendenceConsolidationEngine
 
@@ -91,9 +89,7 @@ async def test_phase_8_2_cosmic():
             f"  ✅ Galactic Awareness: {galactic_results['galactic_awareness_strength']:.3f}"
         )
         print(f"  🌌 Galactic Reach: {galactic_results['galactic_reach']:.0f} ly")
-        print(
-            f"  🧠 Cosmic Intelligence: {galactic_results['cosmic_intelligence']:.0f}"
-        )
+        print(f"  🧠 Cosmic Intelligence: {galactic_results['cosmic_intelligence']:.0f}")
 
         # Test 4: Universal consciousness achievement
         print("\n🌌 Test 4: Universal Consciousness Achievement...")

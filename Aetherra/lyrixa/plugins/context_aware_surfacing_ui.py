@@ -6,7 +6,7 @@ Context Aware Surfacing Plugin UI
 Intelligent content recommendation and surfacing system
 """
 
-import json
+
 import sqlite3
 import sys
 from pathlib import Path
@@ -16,7 +16,6 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -27,7 +26,6 @@ from PySide6.QtWidgets import (
     QProgressBar,
     QPushButton,
     QSlider,
-    QSplitter,
     QTabWidget,
     QTextEdit,
     QTreeWidget,
@@ -60,7 +58,8 @@ class ContextAwareSurfacingUI(QWidget):
                 cursor = conn.cursor()
 
                 # Create contexts table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS contexts (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         context_type TEXT NOT NULL,
@@ -69,10 +68,12 @@ class ContextAwareSurfacingUI(QWidget):
                         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         active BOOLEAN DEFAULT 1
                     )
-                """)
+                """
+                )
 
                 # Create surfaced_content table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS surfaced_content (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         content_id TEXT NOT NULL,
@@ -84,7 +85,8 @@ class ContextAwareSurfacingUI(QWidget):
                         user_interaction INTEGER DEFAULT 0,
                         FOREIGN KEY (context_id) REFERENCES contexts (id)
                     )
-                """)
+                """
+                )
 
                 conn.commit()
 
@@ -451,7 +453,8 @@ class ContextAwareSurfacingUI(QWidget):
 
     def apply_styling(self):
         """Apply dark theme styling to the context surfacing interface."""
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QWidget {
                 background-color: #1e1e1e;
                 color: white;
@@ -573,7 +576,8 @@ class ContextAwareSurfacingUI(QWidget):
             QCheckBox::indicator:checked {
                 background-color: #ff6b6b;
             }
-        """)
+        """
+        )
 
     def load_context_data(self):
         """Load context data from the database."""
@@ -582,13 +586,15 @@ class ContextAwareSurfacingUI(QWidget):
                 cursor = conn.cursor()
 
                 # Load recent contexts
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT context_type, context_data, relevance_score, timestamp
                     FROM contexts
                     WHERE active = 1
                     ORDER BY timestamp DESC
                     LIMIT 50
-                """)
+                """
+                )
 
                 contexts = cursor.fetchall()
                 self.populate_context_timeline(contexts)

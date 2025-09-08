@@ -19,11 +19,10 @@ import issues.
 """
 
 import logging
-import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Dict
 
 # Setup logging
 logging.basicConfig(
@@ -234,7 +233,9 @@ __all__ = [
             logger.info("[OK] Core dependencies installed successfully")
             self.fixes_applied.append("Installed core dependencies")
         else:
-            logger.warning("[WARN]  Some dependencies failed to install - continuing anyway")
+            logger.warning(
+                "[WARN]  Some dependencies failed to install - continuing anyway"
+            )
             self.fixes_applied.append(
                 "Attempted to install dependencies (some may have failed)"
             )
@@ -416,7 +417,7 @@ Repository: https://github.com/AetherraLabs/Aetherra
             except Exception:
                 logger.warning("Could not save report file")
 
-        logger.info(f"📄 Report completed")
+        logger.info("📄 Report completed")
 
 
 def main():

@@ -14,7 +14,7 @@ import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List
 
 import numpy as np
 import pyqtgraph as pg
@@ -117,7 +117,8 @@ class QuantumTemporalInterface(QWidget):
     def create_quantum_header(self) -> QWidget:
         """Create quantum status header"""
         header = QFrame()
-        header.setStyleSheet("""
+        header.setStyleSheet(
+            """
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #1e3c72, stop:1 #2a5298);
@@ -125,7 +126,8 @@ class QuantumTemporalInterface(QWidget):
                 padding: 10px;
                 color: white;
             }
-        """)
+        """
+        )
         header.setMaximumHeight(80)
 
         layout = QHBoxLayout(header)
@@ -175,7 +177,8 @@ class QuantumTemporalInterface(QWidget):
     def create_quantum_visualization_panel(self) -> QWidget:
         """Create quantum state visualization panel"""
         panel = QGroupBox("🌊 Quantum State Visualization")
-        panel.setStyleSheet("""
+        panel.setStyleSheet(
+            """
             QGroupBox {
                 font-weight: bold;
                 font-size: 14px;
@@ -189,7 +192,8 @@ class QuantumTemporalInterface(QWidget):
                 left: 10px;
                 padding: 0 5px 0 5px;
             }
-        """)
+        """
+        )
 
         layout = QVBoxLayout(panel)
 
@@ -206,7 +210,8 @@ class QuantumTemporalInterface(QWidget):
 
         phase_label = QLabel("Phase Coherence:")
         self.phase_display = QProgressBar()
-        self.phase_display.setStyleSheet("""
+        self.phase_display.setStyleSheet(
+            """
             QProgressBar {
                 border: 2px solid grey;
                 border-radius: 5px;
@@ -217,7 +222,8 @@ class QuantumTemporalInterface(QWidget):
                     stop:0 #ff6b6b, stop:1 #4ecdc4);
                 border-radius: 3px;
             }
-        """)
+        """
+        )
         self.phase_display.setValue(87)
 
         phase_layout.addWidget(phase_label)
@@ -238,7 +244,8 @@ class QuantumTemporalInterface(QWidget):
     def create_timeline_panel(self) -> QWidget:
         """Create timeline management panel"""
         panel = QGroupBox("⏰ Timeline Management & Prediction")
-        panel.setStyleSheet("""
+        panel.setStyleSheet(
+            """
             QGroupBox {
                 font-weight: bold;
                 font-size: 14px;
@@ -252,7 +259,8 @@ class QuantumTemporalInterface(QWidget):
                 left: 10px;
                 padding: 0 5px 0 5px;
             }
-        """)
+        """
+        )
 
         layout = QVBoxLayout(panel)
 
@@ -308,7 +316,8 @@ class QuantumTemporalInterface(QWidget):
     def create_consciousness_mapping_panel(self) -> QWidget:
         """Create multi-dimensional consciousness mapping panel"""
         panel = QGroupBox("🧠 Multi-Dimensional Consciousness")
-        panel.setStyleSheet("""
+        panel.setStyleSheet(
+            """
             QGroupBox {
                 font-weight: bold;
                 font-size: 14px;
@@ -322,7 +331,8 @@ class QuantumTemporalInterface(QWidget):
                 left: 10px;
                 padding: 0 5px 0 5px;
             }
-        """)
+        """
+        )
 
         layout = QVBoxLayout(panel)
 
@@ -355,11 +365,13 @@ class QuantumTemporalInterface(QWidget):
             label.setMinimumWidth(80)
 
             progress_bar = QProgressBar()
-            progress_bar.setStyleSheet(f"""
+            progress_bar.setStyleSheet(
+                f"""
                 QProgressBar::chunk {{
                     background-color: {self.get_dimension_color(i)};
                 }}
-            """)
+            """
+            )
             progress_bar.setValue(np.random.randint(60, 95))
 
             dim_layout.addWidget(label)
@@ -376,12 +388,14 @@ class QuantumTemporalInterface(QWidget):
 
         evolution_label = QLabel("Evolution Progress:")
         self.evolution_progress = QProgressBar()
-        self.evolution_progress.setStyleSheet("""
+        self.evolution_progress.setStyleSheet(
+            """
             QProgressBar::chunk {
                 background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #ff6b6b, stop:0.5 #ffd93d, stop:1 #4ecdc4);
             }
-        """)
+        """
+        )
         self.evolution_progress.setValue(73)
 
         evolution_layout.addWidget(evolution_label)
@@ -393,20 +407,23 @@ class QuantumTemporalInterface(QWidget):
     def create_control_footer(self) -> QWidget:
         """Create control footer"""
         footer = QFrame()
-        footer.setStyleSheet("""
+        footer.setStyleSheet(
+            """
             QFrame {
                 background: #2d3748;
                 border-radius: 5px;
                 padding: 10px;
             }
-        """)
+        """
+        )
         footer.setMaximumHeight(60)
 
         layout = QHBoxLayout(footer)
 
         # Start/Stop monitoring
         self.monitoring_btn = QPushButton("🔄 Start Quantum Monitoring")
-        self.monitoring_btn.setStyleSheet("""
+        self.monitoring_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #4ecdc4;
                 color: white;
@@ -418,12 +435,14 @@ class QuantumTemporalInterface(QWidget):
             QPushButton:hover {
                 background: #45b7aa;
             }
-        """)
+        """
+        )
         self.monitoring_btn.clicked.connect(self.toggle_monitoring)
 
         # Reset interface
         reset_btn = QPushButton("🔄 Reset Interface")
-        reset_btn.setStyleSheet("""
+        reset_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #ff6b6b;
                 color: white;
@@ -435,12 +454,14 @@ class QuantumTemporalInterface(QWidget):
             QPushButton:hover {
                 background: #ff5252;
             }
-        """)
+        """
+        )
         reset_btn.clicked.connect(self.reset_interface)
 
         # Export data
         export_btn = QPushButton("💾 Export Quantum Data")
-        export_btn.setStyleSheet("""
+        export_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #ffd93d;
                 color: #2d3748;
@@ -452,7 +473,8 @@ class QuantumTemporalInterface(QWidget):
             QPushButton:hover {
                 background: #ffcd02;
             }
-        """)
+        """
+        )
         export_btn.clicked.connect(self.export_quantum_data)
 
         layout.addWidget(self.monitoring_btn)

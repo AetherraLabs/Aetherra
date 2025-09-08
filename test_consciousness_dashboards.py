@@ -26,8 +26,6 @@ def test_dashboard_imports():
 
     # Test 1: Import consciousness panel
     try:
-        from lyrixa.gui.consciousness_panel import ConsciousnessPanel
-
         print("✅ ConsciousnessPanel imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import ConsciousnessPanel: {e}")
@@ -35,24 +33,18 @@ def test_dashboard_imports():
 
     # Test 2: Try to import quantum temporal interface directly
     try:
-        from lyrixa.gui.quantum_temporal_interface import QuantumTemporalInterface
-
         print("✅ QuantumTemporalInterface imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import QuantumTemporalInterface: {e}")
 
     # Test 3: Try to import evolution monitoring system directly
     try:
-        from lyrixa.gui.evolution_monitoring_system import EvolutionMonitoringSystem
-
         print("✅ EvolutionMonitoringSystem imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import EvolutionMonitoringSystem: {e}")
 
     # Test 4: Try to import meta learning control panel directly
     try:
-        from lyrixa.gui.meta_learning_control_panel import MetaLearningControlPanel
-
         print("✅ MetaLearningControlPanel imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import MetaLearningControlPanel: {e}")

@@ -90,11 +90,11 @@ class EscalationAgent(AgentBase):
         self.escalations[escalation_id] = escalation
         self.log(f"Created escalation: {escalation_id} - Level: {level.name}")
 
-        result_text = f"Escalation Created:\n"
+        result_text = "Escalation Created:\n"
         result_text += f"ID: {escalation_id}\n"
         result_text += f"Level: {level.name}\n"
         result_text += f"Description: {input_text}\n"
-        result_text += f"Status: Open\n"
+        result_text += "Status: Open\n"
 
         return AgentResponse(
             content=result_text,
@@ -117,7 +117,7 @@ class EscalationAgent(AgentBase):
             e for e in self.escalations.values() if e["status"] == "open"
         ]
 
-        status_text = f"Escalation Status:\n\n"
+        status_text = "Escalation Status:\n\n"
         status_text += f"Open Escalations: {len(open_escalations)}\n"
 
         return AgentResponse(

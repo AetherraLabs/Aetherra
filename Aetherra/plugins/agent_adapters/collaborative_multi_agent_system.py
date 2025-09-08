@@ -6,20 +6,19 @@
 # Specialized agents working together on complex code tasks
 
 import asyncio
-import json
 import logging
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, asdict
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Set
-import threading
+from typing import Any, Dict, List, Optional, Set
 
 logger = logging.getLogger(__name__)
 
+
 class AgentRole(Enum):
     """Different agent roles in the collaborative system"""
+
     ARCHITECT = "architect"  # Designs overall structure
     REFACTOR_SPECIALIST = "refactor_specialist"  # Improves code quality
     TEST_ENGINEER = "test_engineer"  # Creates and runs tests
@@ -28,16 +27,20 @@ class AgentRole(Enum):
     CODE_REVIEWER = "code_reviewer"  # Reviews code quality
     DOCUMENTATION_WRITER = "documentation_writer"  # Creates documentation
 
+
 class TaskPriority(Enum):
     """Task priority levels"""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
 
+
 @dataclass
 class CodeTask:
     """A task that needs to be completed by agents"""
+
     task_id: str
     title: str
     description: str
@@ -55,9 +58,11 @@ class CodeTask:
         if self.assigned_agents is None:
             self.assigned_agents = []
 
+
 @dataclass
 class AgentContribution:
     """A contribution made by an agent to a task"""
+
     agent_id: str
     task_id: str
     contribution_type: str  # "code_change", "review", "test", "documentation"
@@ -66,9 +71,11 @@ class AgentContribution:
     rationale: str
     timestamp: float
 
+
 @dataclass
 class CollaborationResult:
     """Result of a collaborative effort"""
+
     task_id: str
     success: bool
     contributions: List[AgentContribution]
@@ -76,6 +83,7 @@ class CollaborationResult:
     quality_score: float
     completion_time: float
     lessons_learned: List[str]
+
 
 class BaseAgent(ABC):
     """Base class for all collaborative agents"""
@@ -90,7 +98,7 @@ class BaseAgent(ABC):
             "tasks_completed": 0,
             "average_quality_score": 0.0,
             "average_completion_time": 0.0,
-            "success_rate": 0.0
+            "success_rate": 0.0,
         }
 
     @abstractmethod
@@ -99,14 +107,16 @@ class BaseAgent(ABC):
         pass
 
     @abstractmethod
-    async def contribute_to_task(self, task: CodeTask,
-                               previous_contributions: List[AgentContribution]) -> AgentContribution:
+    async def contribute_to_task(
+        self, task: CodeTask, previous_contributions: List[AgentContribution]
+    ) -> AgentContribution:
         """Make a contribution to a task"""
         pass
 
     @abstractmethod
-    async def review_contribution(self, contribution: AgentContribution,
-                                task: CodeTask) -> Dict[str, Any]:
+    async def review_contribution(
+        self, contribution: AgentContribution, task: CodeTask
+    ) -> Dict[str, Any]:
         """Review another agent's contribution"""
         pass
 
@@ -114,26 +124,37 @@ class BaseAgent(ABC):
         """Determine if this agent can handle the given task"""
         return self.role in task.required_roles
 
-    def update_performance_metrics(self, quality_score: float, completion_time: float, success: bool):
+    def update_performance_metrics(
+        self, quality_score: float, completion_time: float, success: bool
+    ):
         """Update agent's performance metrics"""
         self.performance_metrics["tasks_completed"] += 1
 
         # Update averages
         total_tasks = self.performance_metrics["tasks_completed"]
         self.performance_metrics["average_quality_score"] = (
-            (self.performance_metrics["average_quality_score"] * (total_tasks - 1) + quality_score) / total_tasks
-        )
+            self.performance_metrics["average_quality_score"] * (total_tasks - 1)
+            + quality_score
+        ) / total_tasks
         self.performance_metrics["average_completion_time"] = (
-            (self.performance_metrics["average_completion_time"] * (total_tasks - 1) + completion_time) / total_tasks
-        )
+            self.performance_metrics["average_completion_time"] * (total_tasks - 1)
+            + completion_time
+        ) / total_tasks
 
         # Update success rate
         if success:
-            current_successes = self.performance_metrics["success_rate"] * (total_tasks - 1)
-            self.performance_metrics["success_rate"] = (current_successes + 1) / total_tasks
+            current_successes = self.performance_metrics["success_rate"] * (
+                total_tasks - 1
+            )
+            self.performance_metrics["success_rate"] = (
+                current_successes + 1
+            ) / total_tasks
         else:
-            current_successes = self.performance_metrics["success_rate"] * (total_tasks - 1)
+            current_successes = self.performance_metrics["success_rate"] * (
+                total_tasks - 1
+            )
             self.performance_metrics["success_rate"] = current_successes / total_tasks
+
 
 class ArchitectAgent(BaseAgent):
     """Agent specialized in designing overall code structure"""
@@ -147,11 +168,12 @@ class ArchitectAgent(BaseAgent):
             "structural_complexity": self._assess_structural_complexity(task),
             "design_patterns_needed": self._identify_design_patterns(task),
             "module_dependencies": self._analyze_dependencies(task),
-            "recommended_approach": self._recommend_approach(task)
+            "recommended_approach": self._recommend_approach(task),
         }
 
-    async def contribute_to_task(self, task: CodeTask,
-                               previous_contributions: List[AgentContribution]) -> AgentContribution:
+    async def contribute_to_task(
+        self, task: CodeTask, previous_contributions: List[AgentContribution]
+    ) -> AgentContribution:
         """Provide architectural guidance and structure"""
         analysis = await self.analyze_task(task)
 
@@ -165,17 +187,22 @@ class ArchitectAgent(BaseAgent):
             content=blueprint,
             confidence_score=0.85,
             rationale="Designed optimal structure based on task requirements and best practices",
-            timestamp=time.time()
+            timestamp=time.time(),
         )
 
-    async def review_contribution(self, contribution: AgentContribution,
-                                task: CodeTask) -> Dict[str, Any]:
+    async def review_contribution(
+        self, contribution: AgentContribution, task: CodeTask
+    ) -> Dict[str, Any]:
         """Review contribution for architectural soundness"""
         return {
-            "architectural_compliance": self._check_architectural_compliance(contribution, task),
+            "architectural_compliance": self._check_architectural_compliance(
+                contribution, task
+            ),
             "design_consistency": self._check_design_consistency(contribution),
             "scalability_assessment": self._assess_scalability(contribution),
-            "recommendations": self._provide_architectural_recommendations(contribution)
+            "recommendations": self._provide_architectural_recommendations(
+                contribution
+            ),
         }
 
     def _assess_structural_complexity(self, task: CodeTask) -> float:
@@ -183,7 +210,7 @@ class ArchitectAgent(BaseAgent):
         complexity_factors = {
             "file_count": min(len(task.file_paths) / 5, 1.0),
             "description_length": min(len(task.description) / 500, 1.0),
-            "estimated_complexity": task.estimated_complexity / 10
+            "estimated_complexity": task.estimated_complexity / 10,
         }
         return sum(complexity_factors.values()) / len(complexity_factors)
 
@@ -208,7 +235,7 @@ class ArchitectAgent(BaseAgent):
         return {
             "external_dependencies": [],  # Would analyze imports
             "internal_dependencies": task.dependencies,
-            "circular_dependencies": []  # Would check for circular deps
+            "circular_dependencies": [],  # Would check for circular deps
         }
 
     def _recommend_approach(self, task: CodeTask) -> str:
@@ -248,7 +275,9 @@ class ArchitectAgent(BaseAgent):
 """
         return blueprint.strip()
 
-    def _check_architectural_compliance(self, contribution: AgentContribution, task: CodeTask) -> float:
+    def _check_architectural_compliance(
+        self, contribution: AgentContribution, task: CodeTask
+    ) -> float:
         """Check if contribution follows architectural guidelines"""
         # Simple compliance check
         return 0.8  # Would implement actual checks
@@ -261,9 +290,12 @@ class ArchitectAgent(BaseAgent):
         """Assess scalability of the contribution"""
         return 0.75  # Would implement actual checks
 
-    def _provide_architectural_recommendations(self, contribution: AgentContribution) -> List[str]:
+    def _provide_architectural_recommendations(
+        self, contribution: AgentContribution
+    ) -> List[str]:
         """Provide architectural recommendations"""
         return ["Consider using dependency injection", "Add proper error handling"]
+
 
 class RefactorSpecialistAgent(BaseAgent):
     """Agent specialized in code refactoring and quality improvement"""
@@ -276,15 +308,18 @@ class RefactorSpecialistAgent(BaseAgent):
         return {
             "code_smells": self._identify_code_smells(task),
             "refactoring_opportunities": self._find_refactoring_opportunities(task),
-            "quality_metrics": self._assess_code_quality(task)
+            "quality_metrics": self._assess_code_quality(task),
         }
 
-    async def contribute_to_task(self, task: CodeTask,
-                               previous_contributions: List[AgentContribution]) -> AgentContribution:
+    async def contribute_to_task(
+        self, task: CodeTask, previous_contributions: List[AgentContribution]
+    ) -> AgentContribution:
         """Provide refactoring improvements"""
 
         # Find code contributions to refactor
-        code_contributions = [c for c in previous_contributions if c.contribution_type == "code_change"]
+        code_contributions = [
+            c for c in previous_contributions if c.contribution_type == "code_change"
+        ]
 
         if code_contributions:
             # Refactor the latest code contribution
@@ -298,7 +333,7 @@ class RefactorSpecialistAgent(BaseAgent):
                 content=refactored_code,
                 confidence_score=0.90,
                 rationale="Improved code quality through refactoring: better naming, structure, and readability",
-                timestamp=time.time()
+                timestamp=time.time(),
             )
         else:
             # Provide refactoring guidelines
@@ -311,16 +346,19 @@ class RefactorSpecialistAgent(BaseAgent):
                 content=guidelines,
                 confidence_score=0.85,
                 rationale="Provided refactoring guidelines for better code quality",
-                timestamp=time.time()
+                timestamp=time.time(),
             )
 
-    async def review_contribution(self, contribution: AgentContribution,
-                                task: CodeTask) -> Dict[str, Any]:
+    async def review_contribution(
+        self, contribution: AgentContribution, task: CodeTask
+    ) -> Dict[str, Any]:
         """Review contribution for refactoring opportunities"""
         return {
             "code_quality_score": self._rate_code_quality(contribution.content),
-            "refactoring_suggestions": self._suggest_refactoring_improvements(contribution.content),
-            "maintainability_score": self._assess_maintainability(contribution.content)
+            "refactoring_suggestions": self._suggest_refactoring_improvements(
+                contribution.content
+            ),
+            "maintainability_score": self._assess_maintainability(contribution.content),
         }
 
     def _identify_code_smells(self, task: CodeTask) -> List[str]:
@@ -338,7 +376,7 @@ class RefactorSpecialistAgent(BaseAgent):
             "Extract common functionality into utilities",
             "Improve variable and function naming",
             "Add type hints for better code clarity",
-            "Simplify complex conditional logic"
+            "Simplify complex conditional logic",
         ]
 
     def _assess_code_quality(self, task: CodeTask) -> Dict[str, float]:
@@ -347,30 +385,30 @@ class RefactorSpecialistAgent(BaseAgent):
             "readability": 0.7,
             "maintainability": 0.8,
             "testability": 0.6,
-            "performance": 0.7
+            "performance": 0.7,
         }
 
     def _refactor_code(self, code: str) -> str:
         """Refactor the given code"""
         # Simple refactoring example
-        lines = code.split('\n')
+        lines = code.split("\n")
         refactored_lines = []
 
         for line in lines:
             # Improve variable naming
-            if 'temp' in line and '=' in line:
-                line = line.replace('temp', 'temporary_value')
+            if "temp" in line and "=" in line:
+                line = line.replace("temp", "temporary_value")
 
             # Add type hints where missing
-            if 'def ' in line and ':' not in line and '(' in line:
-                if line.endswith(':'):
+            if "def " in line and ":" not in line and "(" in line:
+                if line.endswith(":"):
                     continue
                 else:
-                    line = line.rstrip() + ' -> None:'
+                    line = line.rstrip() + " -> None:"
 
             refactored_lines.append(line)
 
-        return '\n'.join(refactored_lines)
+        return "\n".join(refactored_lines)
 
     def _create_refactoring_guidelines(self, task: CodeTask) -> str:
         """Create refactoring guidelines for the task"""
@@ -405,15 +443,15 @@ class RefactorSpecialistAgent(BaseAgent):
             quality_score += 0.2
 
         # Check for type hints
-        if '->' in code:
+        if "->" in code:
             quality_score += 0.1
 
         # Check for proper error handling
-        if 'try:' in code and 'except' in code:
+        if "try:" in code and "except" in code:
             quality_score += 0.1
 
         # Check line length (prefer shorter lines)
-        lines = code.split('\n')
+        lines = code.split("\n")
         avg_line_length = sum(len(line) for line in lines) / max(len(lines), 1)
         if avg_line_length < 80:
             quality_score += 0.1
@@ -424,14 +462,16 @@ class RefactorSpecialistAgent(BaseAgent):
         """Suggest specific refactoring improvements"""
         suggestions = []
 
-        if 'def ' in code and '"""' not in code:
+        if "def " in code and '"""' not in code:
             suggestions.append("Add docstrings to functions")
 
-        if 'print(' in code:
+        if "print(" in code:
             suggestions.append("Replace print statements with proper logging")
 
-        if code.count('if ') > 5:
-            suggestions.append("Consider using polymorphism or strategy pattern for complex conditionals")
+        if code.count("if ") > 5:
+            suggestions.append(
+                "Consider using polymorphism or strategy pattern for complex conditionals"
+            )
 
         return suggestions
 
@@ -444,13 +484,14 @@ class RefactorSpecialistAgent(BaseAgent):
             maintainability += 0.2
 
         # Shorter functions are more maintainable
-        function_count = code.count('def ')
+        function_count = code.count("def ")
         if function_count > 0:
-            avg_function_length = len(code.split('\n')) / function_count
+            avg_function_length = len(code.split("\n")) / function_count
             if avg_function_length < 15:
                 maintainability += 0.2
 
         return min(maintainability, 1.0)
+
 
 class TestEngineerAgent(BaseAgent):
     """Agent specialized in creating and running tests"""
@@ -463,16 +504,20 @@ class TestEngineerAgent(BaseAgent):
         return {
             "test_types_needed": self._identify_test_types(task),
             "test_coverage_estimate": self._estimate_test_coverage(task),
-            "testing_challenges": self._identify_testing_challenges(task)
+            "testing_challenges": self._identify_testing_challenges(task),
         }
 
-    async def contribute_to_task(self, task: CodeTask,
-                               previous_contributions: List[AgentContribution]) -> AgentContribution:
+    async def contribute_to_task(
+        self, task: CodeTask, previous_contributions: List[AgentContribution]
+    ) -> AgentContribution:
         """Create comprehensive tests"""
 
         # Find code to test
-        code_contributions = [c for c in previous_contributions
-                            if c.contribution_type in ["code_change", "code_refactor"]]
+        code_contributions = [
+            c
+            for c in previous_contributions
+            if c.contribution_type in ["code_change", "code_refactor"]
+        ]
 
         if code_contributions:
             # Create tests for the code
@@ -489,16 +534,17 @@ class TestEngineerAgent(BaseAgent):
             content=test_code,
             confidence_score=0.88,
             rationale="Created comprehensive tests covering main functionality and edge cases",
-            timestamp=time.time()
+            timestamp=time.time(),
         )
 
-    async def review_contribution(self, contribution: AgentContribution,
-                                task: CodeTask) -> Dict[str, Any]:
+    async def review_contribution(
+        self, contribution: AgentContribution, task: CodeTask
+    ) -> Dict[str, Any]:
         """Review contribution for testability"""
         return {
             "testability_score": self._assess_testability(contribution.content),
             "test_suggestions": self._suggest_additional_tests(contribution.content),
-            "edge_cases": self._identify_edge_cases(contribution.content)
+            "edge_cases": self._identify_edge_cases(contribution.content),
         }
 
     def _identify_test_types(self, task: CodeTask) -> List[str]:
@@ -628,12 +674,12 @@ Target Coverage: {self._estimate_test_coverage(task) * 100:.0f}%
         testability = 0.5  # Base score
 
         # Functions are more testable than complex scripts
-        function_count = code.count('def ')
+        function_count = code.count("def ")
         if function_count > 0:
             testability += 0.3
 
         # Clear input/output makes testing easier
-        if 'return' in code:
+        if "return" in code:
             testability += 0.2
 
         return min(testability, 1.0)
@@ -642,11 +688,11 @@ Target Coverage: {self._estimate_test_coverage(task) * 100:.0f}%
         """Suggest additional tests that might be needed"""
         suggestions = []
 
-        if 'async' in code:
+        if "async" in code:
             suggestions.append("Add tests for async/await functionality")
-        if 'try:' in code:
+        if "try:" in code:
             suggestions.append("Test exception handling paths")
-        if 'json' in code.lower():
+        if "json" in code.lower():
             suggestions.append("Test JSON parsing edge cases")
 
         return suggestions
@@ -655,14 +701,15 @@ Target Coverage: {self._estimate_test_coverage(task) * 100:.0f}%
         """Identify potential edge cases to test"""
         edge_cases = []
 
-        if 'len(' in code:
+        if "len(" in code:
             edge_cases.append("Empty collections")
-        if '/' in code:
+        if "/" in code:
             edge_cases.append("Division by zero")
-        if '[' in code:
+        if "[" in code:
             edge_cases.append("Index out of bounds")
 
         return edge_cases
+
 
 class CollaborativeMultiAgentSystem:
     """
@@ -684,8 +731,12 @@ class CollaborativeMultiAgentSystem:
     def _initialize_agents(self):
         """Initialize the default set of agents"""
         self.agents[AgentRole.ARCHITECT] = ArchitectAgent(str(self.workspace_path))
-        self.agents[AgentRole.REFACTOR_SPECIALIST] = RefactorSpecialistAgent(str(self.workspace_path))
-        self.agents[AgentRole.TEST_ENGINEER] = TestEngineerAgent(str(self.workspace_path))
+        self.agents[AgentRole.REFACTOR_SPECIALIST] = RefactorSpecialistAgent(
+            str(self.workspace_path)
+        )
+        self.agents[AgentRole.TEST_ENGINEER] = TestEngineerAgent(
+            str(self.workspace_path)
+        )
 
         logger.info(f"🤖 Initialized {len(self.agents)} collaborative agents")
 
@@ -697,7 +748,9 @@ class CollaborativeMultiAgentSystem:
         assigned_agents = await self._assign_agents_to_task(task)
         self.task_assignments[task.task_id] = assigned_agents
 
-        logger.info(f"📋 Task '{task.title}' submitted with {len(assigned_agents)} agents assigned")
+        logger.info(
+            f"📋 Task '{task.title}' submitted with {len(assigned_agents)} agents assigned"
+        )
         return task.task_id
 
     async def _assign_agents_to_task(self, task: CodeTask) -> List[str]:
@@ -739,14 +792,18 @@ class CollaborativeMultiAgentSystem:
 
             # Phase 2: Contribution - Agents make their contributions in optimal order
             logger.info(f"⚡ Phase 2: Contributions for task '{task.title}'")
-            contribution_order = self._determine_contribution_order(task, assigned_agent_ids)
+            contribution_order = self._determine_contribution_order(
+                task, assigned_agent_ids
+            )
 
             for agent_id in contribution_order:
                 agent = self._get_agent_by_id(agent_id)
                 if agent:
                     contribution = await agent.contribute_to_task(task, contributions)
                     contributions.append(contribution)
-                    logger.info(f"✨ {agent.role.value} contributed: {contribution.contribution_type}")
+                    logger.info(
+                        f"✨ {agent.role.value} contributed: {contribution.contribution_type}"
+                    )
 
             # Phase 3: Review - Agents review each other's contributions
             logger.info(f"🔍 Phase 3: Peer review for task '{task.title}'")
@@ -757,11 +814,13 @@ class CollaborativeMultiAgentSystem:
                         agent = self._get_agent_by_id(agent_id)
                         if agent:
                             review = await agent.review_contribution(contribution, task)
-                            reviews.append({
-                                "reviewer": agent_id,
-                                "contribution_id": contribution.agent_id,
-                                "review": review
-                            })
+                            reviews.append(
+                                {
+                                    "reviewer": agent_id,
+                                    "contribution_id": contribution.agent_id,
+                                    "review": review,
+                                }
+                            )
 
             # Phase 4: Integration - Combine contributions into final result
             logger.info(f"[TOOL] Phase 4: Integration for task '{task.title}'")
@@ -778,14 +837,16 @@ class CollaborativeMultiAgentSystem:
                 final_code=final_code,
                 quality_score=quality_score,
                 completion_time=completion_time,
-                lessons_learned=self._extract_lessons_learned(contributions, reviews)
+                lessons_learned=self._extract_lessons_learned(contributions, reviews),
             )
 
             # Update agent performance metrics
             for agent_id in assigned_agent_ids:
                 agent = self._get_agent_by_id(agent_id)
                 if agent:
-                    agent.update_performance_metrics(quality_score, completion_time, True)
+                    agent.update_performance_metrics(
+                        quality_score, completion_time, True
+                    )
                     agent.current_tasks.discard(task_id)
                     agent.completed_tasks.append(task_id)
 
@@ -810,7 +871,7 @@ class CollaborativeMultiAgentSystem:
                 final_code="",
                 quality_score=0.0,
                 completion_time=time.time() - start_time,
-                lessons_learned=[f"Task failed due to: {str(e)}"]
+                lessons_learned=[f"Task failed due to: {str(e)}"],
             )
 
             # Update agent performance metrics
@@ -830,7 +891,9 @@ class CollaborativeMultiAgentSystem:
                 return agent
         return None
 
-    def _determine_contribution_order(self, task: CodeTask, agent_ids: List[str]) -> List[str]:
+    def _determine_contribution_order(
+        self, task: CodeTask, agent_ids: List[str]
+    ) -> List[str]:
         """Determine optimal order for agent contributions"""
         # Simple ordering: Architect first, then others, Test Engineer last
         ordered_agents = []
@@ -845,7 +908,10 @@ class CollaborativeMultiAgentSystem:
         # Add others (except test engineer)
         for agent_id in agent_ids:
             agent = self._get_agent_by_id(agent_id)
-            if agent and agent.role not in [AgentRole.ARCHITECT, AgentRole.TEST_ENGINEER]:
+            if agent and agent.role not in [
+                AgentRole.ARCHITECT,
+                AgentRole.TEST_ENGINEER,
+            ]:
                 if agent_id not in ordered_agents:
                     ordered_agents.append(agent_id)
 
@@ -864,7 +930,9 @@ class CollaborativeMultiAgentSystem:
 
         for contribution in contributions:
             if contribution.contribution_type in ["code_change", "code_refactor"]:
-                integrated_parts.append(f"# {contribution.contribution_type.upper()} by {contribution.agent_id}")
+                integrated_parts.append(
+                    f"# {contribution.contribution_type.upper()} by {contribution.agent_id}"
+                )
                 integrated_parts.append(contribution.content)
                 integrated_parts.append("")
             elif contribution.contribution_type == "test_code":
@@ -872,16 +940,19 @@ class CollaborativeMultiAgentSystem:
                 integrated_parts.append(contribution.content)
                 integrated_parts.append("")
 
-        return '\n'.join(integrated_parts)
+        return "\n".join(integrated_parts)
 
-    def _calculate_quality_score(self, contributions: List[AgentContribution],
-                               reviews: List[Dict[str, Any]]) -> float:
+    def _calculate_quality_score(
+        self, contributions: List[AgentContribution], reviews: List[Dict[str, Any]]
+    ) -> float:
         """Calculate overall quality score"""
         if not contributions:
             return 0.0
 
         # Average contribution confidence scores
-        avg_confidence = sum(c.confidence_score for c in contributions) / len(contributions)
+        avg_confidence = sum(c.confidence_score for c in contributions) / len(
+            contributions
+        )
 
         # Factor in review scores (simplified)
         review_bonus = 0.0
@@ -891,8 +962,9 @@ class CollaborativeMultiAgentSystem:
 
         return min(1.0, avg_confidence + review_bonus)
 
-    def _extract_lessons_learned(self, contributions: List[AgentContribution],
-                               reviews: List[Dict[str, Any]]) -> List[str]:
+    def _extract_lessons_learned(
+        self, contributions: List[AgentContribution], reviews: List[Dict[str, Any]]
+    ) -> List[str]:
         """Extract lessons learned from the collaboration"""
         lessons = []
 
@@ -905,8 +977,8 @@ class CollaborativeMultiAgentSystem:
             lessons.append("Peer review improves overall code quality")
 
         # Analyze agent types
-        agent_types = set(c.agent_id.split('_')[0] for c in contributions)
-        if 'architect' in agent_types:
+        agent_types = set(c.agent_id.split("_")[0] for c in contributions)
+        if "architect" in agent_types:
             lessons.append("Architectural guidance improves code structure")
 
         return lessons
@@ -919,8 +991,12 @@ class CollaborativeMultiAgentSystem:
         if total_tasks == 0:
             return {"message": "No collaborative tasks completed yet"}
 
-        avg_quality = sum(r.quality_score for r in self.collaboration_history) / total_tasks
-        avg_completion_time = sum(r.completion_time for r in self.collaboration_history) / total_tasks
+        avg_quality = (
+            sum(r.quality_score for r in self.collaboration_history) / total_tasks
+        )
+        avg_completion_time = (
+            sum(r.completion_time for r in self.collaboration_history) / total_tasks
+        )
 
         # Agent performance
         agent_metrics = {}
@@ -934,7 +1010,7 @@ class CollaborativeMultiAgentSystem:
             "average_completion_time": avg_completion_time,
             "agent_performance": agent_metrics,
             "active_tasks": len(self.active_tasks),
-            "collaboration_patterns": self._analyze_collaboration_patterns()
+            "collaboration_patterns": self._analyze_collaboration_patterns(),
         }
 
     def _analyze_collaboration_patterns(self) -> Dict[str, Any]:
@@ -954,18 +1030,22 @@ class CollaborativeMultiAgentSystem:
         agent_combinations = {}
         for result in self.collaboration_history:
             agents = sorted(set(c.agent_id for c in result.contributions))
-            combo_key = '+'.join(agents)
+            combo_key = "+".join(agents)
             agent_combinations[combo_key] = agent_combinations.get(combo_key, 0) + 1
 
         return {
             "common_contribution_types": contribution_types,
             "effective_agent_combinations": agent_combinations,
-            "average_agents_per_task": sum(len(r.contributions) for r in self.collaboration_history) / len(self.collaboration_history)
+            "average_agents_per_task": sum(
+                len(r.contributions) for r in self.collaboration_history
+            )
+            / len(self.collaboration_history),
         }
 
 
 # Example usage
 if __name__ == "__main__":
+
     async def test_collaborative_system():
         """Test the collaborative multi-agent system"""
         print("🤖 Testing Collaborative Multi-Agent System")
@@ -978,13 +1058,17 @@ if __name__ == "__main__":
             task_id="test_001",
             title="Optimize Data Processing Function",
             description="Improve the performance and readability of a data processing function",
-            required_roles=[AgentRole.ARCHITECT, AgentRole.REFACTOR_SPECIALIST, AgentRole.TEST_ENGINEER],
+            required_roles=[
+                AgentRole.ARCHITECT,
+                AgentRole.REFACTOR_SPECIALIST,
+                AgentRole.TEST_ENGINEER,
+            ],
             priority=TaskPriority.HIGH,
             file_paths=["data_processor.py"],
             estimated_complexity=6.0,
             dependencies=[],
             metadata={"language": "python", "domain": "data_processing"},
-            created_timestamp=time.time()
+            created_timestamp=time.time(),
         )
 
         # Submit and execute task
@@ -992,7 +1076,9 @@ if __name__ == "__main__":
         print(f"📋 Task submitted: {task_id}")
 
         result = await system.execute_collaborative_task(task_id)
-        print(f"✅ Task completed: Success={result.success}, Quality={result.quality_score:.2f}")
+        print(
+            f"✅ Task completed: Success={result.success}, Quality={result.quality_score:.2f}"
+        )
 
         # Get system metrics
         metrics = system.get_system_metrics()

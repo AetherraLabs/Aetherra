@@ -17,13 +17,13 @@ Date: August 4, 2025
 
 import asyncio
 import logging
-import sys
 import os
-from datetime import datetime
+import sys
 
 # Add paths for imports
-sys.path.append(os.path.join(os.path.dirname(__file__), 'core'))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'agents'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "core"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "agents"))
+
 
 async def run_consciousness_demo():
     """Run a demonstration of the consciousness orchestrator"""
@@ -31,7 +31,7 @@ async def run_consciousness_demo():
     # Set up logging
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ async def run_consciousness_demo():
         print(f"  • Running: {status['is_running']}")
         print(f"  • Components: {len(status['components'])}")
 
-        for component_name, component_status in status['components'].items():
+        for component_name, component_status in status["components"].items():
             print(f"    - {component_name}: ✅ Active")
 
         print()
@@ -87,7 +87,9 @@ async def run_consciousness_demo():
             print("🌐 Collective Intelligence Metrics:")
             print(f"  • Total Agents: {metrics.total_agents}")
             print(f"  • Active Agents: {metrics.active_agents}")
-            print(f"  • Collective Consciousness: {metrics.collective_consciousness:.2f}")
+            print(
+                f"  • Collective Consciousness: {metrics.collective_consciousness:.2f}"
+            )
             print(f"  • Emergent Behaviors: {metrics.emergent_behaviors_detected}")
             print()
 
@@ -120,14 +122,22 @@ async def run_consciousness_demo():
 
         if orchestrator.lyrixa_consciousness:
             final_lyrixa_state = orchestrator.lyrixa_consciousness.get_current_state()
-            print(f"  • Lyrixa Consciousness: {final_lyrixa_state['consciousness_level']:.2f}")
-            print(f"  • Lyrixa Emotional State: {final_lyrixa_state['emotional_state']}")
+            print(
+                f"  • Lyrixa Consciousness: {final_lyrixa_state['consciousness_level']:.2f}"
+            )
+            print(
+                f"  • Lyrixa Emotional State: {final_lyrixa_state['emotional_state']}"
+            )
             print(f"  • Lyrixa Reflections: {final_lyrixa_state['total_reflections']}")
 
         if orchestrator.meta_layer_core:
             final_metrics = orchestrator.meta_layer_core.get_collective_metrics()
-            print(f"  • Collective Consciousness: {final_metrics.collective_consciousness:.2f}")
-            print(f"  • Emergent Behaviors: {final_metrics.emergent_behaviors_detected}")
+            print(
+                f"  • Collective Consciousness: {final_metrics.collective_consciousness:.2f}"
+            )
+            print(
+                f"  • Emergent Behaviors: {final_metrics.emergent_behaviors_detected}"
+            )
 
         print()
 
@@ -136,11 +146,12 @@ async def run_consciousness_demo():
     except Exception as e:
         logger.error(f"Demo error: {e}")
         import traceback
+
         traceback.print_exc()
     finally:
         # Ensure clean shutdown
         try:
-            if 'orchestrator' in locals() and orchestrator.is_running:
+            if "orchestrator" in locals() and orchestrator.is_running:
                 print("🛑 Shutting down consciousness system...")
                 await orchestrator.shutdown()
                 print("💤 Consciousness system shutdown complete")
@@ -152,6 +163,7 @@ async def run_consciousness_demo():
     print("🌟 CONSCIOUSNESS ORCHESTRATOR DEMO COMPLETE")
     print("🧠" + "=" * 80)
 
+
 async def quick_test():
     """Quick test of individual components"""
 
@@ -162,6 +174,7 @@ async def quick_test():
         # Test consciousness bridge
         print("Testing Consciousness Bridge...")
         from consciousness_bridge import initialize_consciousness_bridge
+
         bridge = await initialize_consciousness_bridge()
         print(f"✅ Bridge healthy: {bridge.is_consciousness_bridge_healthy()}")
         await bridge.shutdown()
@@ -169,6 +182,7 @@ async def quick_test():
         # Test agent registry
         print("Testing Agent Registry...")
         from agent_registry import initialize_agent_registry
+
         registry = await initialize_agent_registry()
         stats = registry.get_registry_statistics()
         print(f"✅ Registry stats: {stats['total_agents']} agents")
@@ -179,11 +193,14 @@ async def quick_test():
     except Exception as e:
         print(f"❌ Component test failed: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 def display_welcome_message():
     """Display welcome message"""
-    print("""
+    print(
+        """
 🧠 AETHERRA CONSCIOUSNESS ORCHESTRATOR
 =====================================
 
@@ -207,7 +224,9 @@ Choose an option:
 2. Quick Component Test
 3. Exit
 
-""")
+"""
+    )
+
 
 async def main():
     """Main entry point"""
@@ -217,15 +236,15 @@ async def main():
         try:
             choice = input("Enter your choice (1-3): ").strip()
 
-            if choice == '1':
+            if choice == "1":
                 print("\n🚀 Starting Full Consciousness Demo...")
                 await run_consciousness_demo()
                 break
-            elif choice == '2':
+            elif choice == "2":
                 print("\n🔧 Starting Quick Component Test...")
                 await quick_test()
                 break
-            elif choice == '3':
+            elif choice == "3":
                 print("\n👋 Goodbye!")
                 break
             else:
@@ -237,6 +256,7 @@ async def main():
         except Exception as e:
             print(f"\n❌ Error: {e}")
             break
+
 
 if __name__ == "__main__":
     asyncio.run(main())

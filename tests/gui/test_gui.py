@@ -6,7 +6,9 @@
 Simple GUI test to verify PySide6 works
 """
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget
+
+from PySide6.QtWidgets import QApplication, QLabel, QMainWindow, QVBoxLayout, QWidget
+
 
 class TestWindow(QMainWindow):
     def __init__(self):
@@ -22,11 +24,13 @@ class TestWindow(QMainWindow):
         label.setStyleSheet("font-size: 18px; color: green; padding: 20px;")
         layout.addWidget(label)
 
+
 def main():
     app = QApplication(sys.argv)
     window = TestWindow()
     window.show()
     return app.exec()
+
 
 if __name__ == "__main__":
     exit_code = main()

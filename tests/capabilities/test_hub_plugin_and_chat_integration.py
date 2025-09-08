@@ -76,9 +76,9 @@ async def test_plugin_registration_and_listing(hub_server):
     r2 = requests.get(f"http://localhost:{HUB_PORT}/api/plugins", timeout=3)
     assert r2.status_code == 200, r2.text
     data = r2.json()
-    assert any(p.get("name") == "sample_plugin" for p in data.get("plugins", [])), (
-        "Registered plugin not in listing"
-    )
+    assert any(
+        p.get("name") == "sample_plugin" for p in data.get("plugins", [])
+    ), "Registered plugin not in listing"
 
 
 def test_lyrixa_chat_bridge_fallback_or_forward(hub_server):

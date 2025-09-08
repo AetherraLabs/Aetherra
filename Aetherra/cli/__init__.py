@@ -9,6 +9,7 @@ Command-line interfaces for all AetherraCode functionality.
 # Always available basic CLI
 try:
     from .basic import main as run_basic_cli
+
     BASIC_CLI_AVAILABLE = True
 except ImportError:
     BASIC_CLI_AVAILABLE = False
@@ -17,6 +18,7 @@ except ImportError:
 try:
     from .demo import main as run_demo
     from .main import AetherraCodePersonaInterface
+
     CLI_DEMO_AVAILABLE = True
 except ImportError:
     CLI_DEMO_AVAILABLE = False
@@ -25,6 +27,7 @@ except ImportError:
 
 try:
     from .persona import PersonaCLI
+
     PERSONA_CLI_AVAILABLE = True
 except ImportError:
     PERSONA_CLI_AVAILABLE = False

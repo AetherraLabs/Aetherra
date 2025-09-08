@@ -13,4 +13,4 @@ from .aetherra_memory_engine import AetherraMemoryEngine as LyrixaMemoryEngine
 from .enhanced_memory import LyrixaEnhancedMemorySystem
 
 # Re-export for backward compatibility
-__all__ = ['LyrixaMemoryEngine', 'LyrixaEnhancedMemorySystem']
+__all__ = ["LyrixaMemoryEngine", "LyrixaEnhancedMemorySystem"]

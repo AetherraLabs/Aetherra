@@ -22,10 +22,12 @@ def show_basic_status():
     print("  --version   Show version")
     print("  --help      Show help")
 
+
 def show_version():
     """Show version information"""
     print("AetherraCode CLI v1.0.0")
     print("Core functionality ready")
+
 
 def main():
     """Main CLI entry point"""
@@ -58,6 +60,7 @@ For full features, ensure all dependencies are installed.
         print(f"🎯 Processing: {command_text}")
         print("⚠️ Full command processing requires persona modules")
         print("Command logged for future processing")
+
 
 if __name__ == "__main__":
     main()

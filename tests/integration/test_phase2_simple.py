@@ -10,10 +10,9 @@ Test the updated launcher with Phase 2 Live Context Bridge capabilities.
 No GUI instantiation, Windows PowerShell compatible.
 """
 
-import os
+
 import platform
 import sys
-from pathlib import Path
 
 
 def test_phase2_launcher():

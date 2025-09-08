@@ -701,9 +701,7 @@ class AetherraOSLauncher:
         try:
             logger.info("[PLUGIN] Loading Plugin Management System...")
 
-            from Aetherra.aetherra_core.plugins.plugin_manager import (
-                get_plugin_manager,
-            )
+            from Aetherra.aetherra_core.plugins.plugin_manager import get_plugin_manager
 
             pm_impl = get_plugin_manager()
             pm_adapter = PluginManagerAdapter(pm_impl)
@@ -2287,7 +2285,7 @@ async def main():
         try:
             import json
 
-            with open(args.config, "r") as f:
+            with open(args.config) as f:
                 config = json.load(f)
         except Exception as e:
             logger.error(f"[ERROR] Failed to load config: {e}")

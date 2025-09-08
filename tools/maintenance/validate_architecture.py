@@ -11,13 +11,12 @@ Date: August 5, 2025
 Purpose: Prevent architectural confusion and validate directory structure
 """
 
-import json
 import os
 import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List
 
 
 @dataclass
@@ -159,7 +158,7 @@ class AetherraDirectoryValidator:
             ),
         ]
 
-    def _define_forbidden_patterns(self) -> List[Tuple[str, str]]:
+    def _define_forbidden_patterns(self) -> List[tuple[str, str]]:
         """Define patterns that should never appear together"""
         return [
             ("aetherra_core imports lyrixa", "Core AI should not depend on interface"),
@@ -174,7 +173,7 @@ class AetherraDirectoryValidator:
             ),
         ]
 
-    def classify_file(self, file_path: Path) -> Tuple[bool, bool, List[str]]:
+    def classify_file(self, file_path: Path) -> tuple[bool, bool, List[str]]:
         """
         Classify whether a file should be in Aetherra or Lyrixa
 
@@ -188,7 +187,7 @@ class AetherraDirectoryValidator:
         # Try to read file content for analysis
         try:
             if file_path.suffix == ".py":
-                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                with open(file_path, encoding="utf-8", errors="ignore") as f:
                     file_content = f.read()[:5000]  # First 5KB for analysis
         except Exception:
             pass
@@ -235,33 +234,33 @@ class AetherraDirectoryValidator:
         # Check for misplaced files
         if should_be_aetherra and is_in_lyrixa:
             errors.append(
-                f"Core AI file incorrectly placed in Lyrixa interface directory"
+                "Core AI file incorrectly placed in Lyrixa interface directory"
             )
             recommended_location = "Aetherra/[appropriate_core_directory]/"
             suggestions.append(
-                f"Move to Aetherra core directory - this appears to be core AI functionality"
+                "Move to Aetherra core directory - this appears to be core AI functionality"
             )
 
         elif should_be_lyrixa and is_in_aetherra_core:
             errors.append(
-                f"Interface file incorrectly placed in Aetherra core directory"
+                "Interface file incorrectly placed in Aetherra core directory"
             )
             recommended_location = "Aetherra/lyrixa/[appropriate_interface_directory]/"
             suggestions.append(
-                f"Move to Lyrixa interface directory - this appears to be user interface"
+                "Move to Lyrixa interface directory - this appears to be user interface"
             )
 
         elif should_be_aetherra and should_be_lyrixa:
             warnings.append(
-                f"File contains both core AI and interface elements - consider splitting"
+                "File contains both core AI and interface elements - consider splitting"
             )
-            suggestions.append(f"Split into separate core and interface components")
+            suggestions.append("Split into separate core and interface components")
 
         # Check for specific architectural violations
         file_content = ""
         try:
             if file_path.suffix == ".py":
-                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                with open(file_path, encoding="utf-8", errors="ignore") as f:
                     file_content = f.read()
         except Exception:
             pass
@@ -297,7 +296,7 @@ class AetherraDirectoryValidator:
         if directory is None:
             directory = self.aetherra_root
 
-        print(f"🔍 Scanning Aetherra project architecture...")
+        print("🔍 Scanning Aetherra project architecture...")
         print(f"📂 Root directory: {directory}")
 
         # Scan all Python files
@@ -484,7 +483,7 @@ def main():
     with open(report_path, "w", encoding="utf-8") as f:
         f.write(report)
 
-    print(f"📊 Validation complete!")
+    print("📊 Validation complete!")
     print(f"📄 Report saved to: {report_path}")
 
     # Print summary

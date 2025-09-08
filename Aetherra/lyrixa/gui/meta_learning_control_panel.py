@@ -16,7 +16,7 @@ import logging
 import random
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import numpy as np
 from PySide6.QtCore import *
@@ -143,7 +143,8 @@ class MetaLearningControlPanel(QWidget):
     def create_meta_learning_header(self) -> QWidget:
         """Create meta-learning status header"""
         header = QFrame()
-        header.setStyleSheet("""
+        header.setStyleSheet(
+            """
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #8360c3, stop:1 #2ebf91);
@@ -151,7 +152,8 @@ class MetaLearningControlPanel(QWidget):
                 padding: 15px;
                 color: white;
             }
-        """)
+        """
+        )
         header.setMaximumHeight(100)
 
         layout = QHBoxLayout(header)
@@ -211,7 +213,8 @@ class MetaLearningControlPanel(QWidget):
     def create_knowledge_base_panel(self) -> QWidget:
         """Create knowledge base exploration panel"""
         panel = QGroupBox("📚 Knowledge Base Explorer")
-        panel.setStyleSheet("""
+        panel.setStyleSheet(
+            """
             QGroupBox {
                 font-weight: bold;
                 font-size: 14px;
@@ -220,7 +223,8 @@ class MetaLearningControlPanel(QWidget):
                 margin: 5px;
                 padding-top: 10px;
             }
-        """)
+        """
+        )
 
         layout = QVBoxLayout(panel)
 
@@ -260,7 +264,8 @@ class MetaLearningControlPanel(QWidget):
         actions_layout = QHBoxLayout()
 
         add_knowledge_btn = QPushButton("➕ Add Knowledge")
-        add_knowledge_btn.setStyleSheet("""
+        add_knowledge_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #2ebf91;
                 color: white;
@@ -270,11 +275,13 @@ class MetaLearningControlPanel(QWidget):
                 font-weight: bold;
             }
             QPushButton:hover { background: #27ae60; }
-        """)
+        """
+        )
         add_knowledge_btn.clicked.connect(self.add_knowledge_dialog)
 
         update_knowledge_btn = QPushButton("🔄 Update")
-        update_knowledge_btn.setStyleSheet("""
+        update_knowledge_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #ffd93d;
                 color: #2d3748;
@@ -284,7 +291,8 @@ class MetaLearningControlPanel(QWidget):
                 font-weight: bold;
             }
             QPushButton:hover { background: #ffcd02; }
-        """)
+        """
+        )
         update_knowledge_btn.clicked.connect(self.update_selected_knowledge)
 
         actions_layout.addWidget(add_knowledge_btn)
@@ -299,7 +307,8 @@ class MetaLearningControlPanel(QWidget):
     def create_episodes_panel(self) -> QWidget:
         """Create learning episodes management panel"""
         panel = QGroupBox("📖 Learning Episodes Management")
-        panel.setStyleSheet("""
+        panel.setStyleSheet(
+            """
             QGroupBox {
                 font-weight: bold;
                 font-size: 14px;
@@ -308,7 +317,8 @@ class MetaLearningControlPanel(QWidget):
                 margin: 5px;
                 padding-top: 10px;
             }
-        """)
+        """
+        )
 
         layout = QVBoxLayout(panel)
 
@@ -372,7 +382,8 @@ class MetaLearningControlPanel(QWidget):
     def create_adaptation_panel(self) -> QWidget:
         """Create adaptation strategies panel"""
         panel = QGroupBox("🎯 Adaptation Strategies")
-        panel.setStyleSheet("""
+        panel.setStyleSheet(
+            """
             QGroupBox {
                 font-weight: bold;
                 font-size: 14px;
@@ -381,7 +392,8 @@ class MetaLearningControlPanel(QWidget):
                 margin: 5px;
                 padding-top: 10px;
             }
-        """)
+        """
+        )
 
         layout = QVBoxLayout(panel)
 
@@ -403,12 +415,14 @@ class MetaLearningControlPanel(QWidget):
         effectiveness_layout = QHBoxLayout()
         effectiveness_layout.addWidget(QLabel("Effectiveness:"))
         self.effectiveness_bar = QProgressBar()
-        self.effectiveness_bar.setStyleSheet("""
+        self.effectiveness_bar.setStyleSheet(
+            """
             QProgressBar::chunk {
                 background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #ff6b6b, stop:1 #2ebf91);
             }
-        """)
+        """
+        )
         effectiveness_layout.addWidget(self.effectiveness_bar)
         current_layout.addLayout(effectiveness_layout)
 
@@ -426,7 +440,8 @@ class MetaLearningControlPanel(QWidget):
         strategy_controls = QHBoxLayout()
 
         activate_btn = QPushButton("✅ Activate Strategy")
-        activate_btn.setStyleSheet("""
+        activate_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #2ebf91;
                 color: white;
@@ -436,11 +451,13 @@ class MetaLearningControlPanel(QWidget):
                 font-weight: bold;
             }
             QPushButton:hover { background: #27ae60; }
-        """)
+        """
+        )
         activate_btn.clicked.connect(self.activate_selected_strategy)
 
         create_btn = QPushButton("➕ Create Strategy")
-        create_btn.setStyleSheet("""
+        create_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #8360c3;
                 color: white;
@@ -450,7 +467,8 @@ class MetaLearningControlPanel(QWidget):
                 font-weight: bold;
             }
             QPushButton:hover { background: #6c5ce7; }
-        """)
+        """
+        )
         create_btn.clicked.connect(self.create_strategy_dialog)
 
         strategy_controls.addWidget(activate_btn)
@@ -496,20 +514,23 @@ class MetaLearningControlPanel(QWidget):
     def create_control_footer(self) -> QWidget:
         """Create meta-learning control footer"""
         footer = QFrame()
-        footer.setStyleSheet("""
+        footer.setStyleSheet(
+            """
             QFrame {
                 background: #2d3748;
                 border-radius: 5px;
                 padding: 15px;
             }
-        """)
+        """
+        )
         footer.setMaximumHeight(80)
 
         layout = QHBoxLayout(footer)
 
         # Start/Stop meta-learning
         self.meta_learning_btn = QPushButton("🧠 Start Meta-Learning")
-        self.meta_learning_btn.setStyleSheet("""
+        self.meta_learning_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #8360c3;
                 color: white;
@@ -522,12 +543,14 @@ class MetaLearningControlPanel(QWidget):
             QPushButton:hover {
                 background: #6c5ce7;
             }
-        """)
+        """
+        )
         self.meta_learning_btn.clicked.connect(self.toggle_meta_learning)
 
         # Reset learning
         reset_btn = QPushButton("🔄 Reset Learning")
-        reset_btn.setStyleSheet("""
+        reset_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #ff6b6b;
                 color: white;
@@ -540,12 +563,14 @@ class MetaLearningControlPanel(QWidget):
             QPushButton:hover {
                 background: #ff5252;
             }
-        """)
+        """
+        )
         reset_btn.clicked.connect(self.reset_meta_learning)
 
         # Export learning data
         export_btn = QPushButton("💾 Export Learning Data")
-        export_btn.setStyleSheet("""
+        export_btn.setStyleSheet(
+            """
             QPushButton {
                 background: #2ebf91;
                 color: white;
@@ -558,7 +583,8 @@ class MetaLearningControlPanel(QWidget):
             QPushButton:hover {
                 background: #27ae60;
             }
-        """)
+        """
+        )
         export_btn.clicked.connect(self.export_learning_data)
 
         # Auto-adaptation toggle

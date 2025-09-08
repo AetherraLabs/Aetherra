@@ -6,14 +6,13 @@
 Provides the foundational OS-level integration for AI-driven computing.
 """
 
-import json
+
 import logging
-import os
 import platform
 import subprocess
 import sys
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -188,9 +187,9 @@ class AetherraOS:
                 self.consciousness_metrics["level"] = self.consciousness_level
 
                 result["success"] = True
-                result["result"] = (
-                    f"Consciousness enhanced to {self.consciousness_level:.2f}"
-                )
+                result[
+                    "result"
+                ] = f"Consciousness enhanced to {self.consciousness_level:.2f}"
                 logger.info(f"🧠 {result['result']}")
 
             elif command == "launch_interface":
@@ -199,9 +198,9 @@ class AetherraOS:
                 success = self.launch_ai_interface(interface_type)
 
                 result["success"] = success
-                result["result"] = (
-                    f"Interface launch {'successful' if success else 'failed'}"
-                )
+                result[
+                    "result"
+                ] = f"Interface launch {'successful' if success else 'failed'}"
 
             elif command == "system_status":
                 # Get system status
@@ -285,7 +284,7 @@ class AetherraOS:
                 # Convert Windows timestamp to seconds
                 return "System uptime calculation needed"
             else:
-                with open("/proc/uptime", "r") as f:
+                with open("/proc/uptime") as f:
                     uptime_seconds = float(f.readline().split()[0])
 
             hours = int(uptime_seconds // 3600)

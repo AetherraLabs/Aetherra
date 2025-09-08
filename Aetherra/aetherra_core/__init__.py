@@ -17,14 +17,13 @@ __email__ = "contact@aetherralabs.com"
 
 # Core module imports with graceful fallbacks
 import logging
-import sys
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 # Try to import core components with fallbacks
 try:
-    from Aetherra.aetherra_core import memory
+    from Aetherra.aetherra_core import memory  # noqa: F401
 
     MEMORY_AVAILABLE = True
 except ImportError as e:
@@ -32,7 +31,7 @@ except ImportError as e:
     MEMORY_AVAILABLE = False
 
 try:
-    from Aetherra.aetherra_core import engine
+    from Aetherra.aetherra_core import engine  # noqa: F401
 
     ENGINE_AVAILABLE = True
 except ImportError as e:
@@ -40,7 +39,7 @@ except ImportError as e:
     ENGINE_AVAILABLE = False
 
 try:
-    from Aetherra.aetherra_core import orchestration
+    from Aetherra.aetherra_core import orchestration  # noqa: F401
 
     ORCHESTRATION_AVAILABLE = True
 except ImportError as e:
@@ -48,7 +47,7 @@ except ImportError as e:
     ORCHESTRATION_AVAILABLE = False
 
 try:
-    from Aetherra.aetherra_core import plugins
+    from Aetherra.aetherra_core import plugins  # noqa: F401
 
     PLUGINS_AVAILABLE = True
 except ImportError as e:
@@ -56,7 +55,7 @@ except ImportError as e:
     PLUGINS_AVAILABLE = False
 
 try:
-    from Aetherra.aetherra_core import config
+    from Aetherra.aetherra_core import config  # noqa: F401
 
     CONFIG_AVAILABLE = True
 except ImportError as e:
@@ -80,25 +79,10 @@ def get_system_status():
 
 def check_dependencies():
     """Check if all required dependencies are available."""
-    missing = []
+    import importlib.util as _spec
 
-    # Check essential Python modules
-    try:
-        import asyncio
-    except ImportError:
-        missing.append("asyncio")
-
-    try:
-        import json
-    except ImportError:
-        missing.append("json")
-
-    try:
-        import logging
-    except ImportError:
-        missing.append("logging")
-
-    return missing
+    required = ["asyncio", "json", "logging"]
+    return [name for name in required if _spec.find_spec(name) is None]
 
 
 # Module-level constants

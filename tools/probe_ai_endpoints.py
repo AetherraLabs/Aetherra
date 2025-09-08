@@ -19,12 +19,11 @@ import argparse
 import json
 import sys
 import time
-from typing import Tuple
 
 import requests
 
 
-def check_ask(base: str, token: str | None) -> Tuple[bool, str]:
+def check_ask(base: str, token: str | None) -> tuple[bool, str]:
     headers = {}
     if token:
         headers["X-Aetherra-Token"] = token
@@ -45,7 +44,7 @@ def check_ask(base: str, token: str | None) -> Tuple[bool, str]:
     return True, "ask ok"
 
 
-def read_sse_lines(resp, max_events=2, timeout=5.0) -> Tuple[bool, str]:
+def read_sse_lines(resp, max_events=2, timeout=5.0) -> tuple[bool, str]:
     """Read a few SSE lines safely with a time limit."""
     start = time.time()
     events = []
@@ -61,7 +60,7 @@ def read_sse_lines(resp, max_events=2, timeout=5.0) -> Tuple[bool, str]:
     return True, " | ".join(events[:6])
 
 
-def check_stream_post(base: str, token: str | None) -> Tuple[bool, str]:
+def check_stream_post(base: str, token: str | None) -> tuple[bool, str]:
     headers = {"Accept": "text/event-stream"}
     if token:
         headers["X-Aetherra-Token"] = token
@@ -78,7 +77,7 @@ def check_stream_post(base: str, token: str | None) -> Tuple[bool, str]:
     return (ok, f"stream POST: {desc}")
 
 
-def check_stream_get(base: str, token: str | None) -> Tuple[bool, str]:
+def check_stream_get(base: str, token: str | None) -> tuple[bool, str]:
     headers = {"Accept": "text/event-stream"}
     params = {"message": "hello stream (GET)"}
     if token:

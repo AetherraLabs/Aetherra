@@ -35,8 +35,6 @@ async def test_phase_8_3_beyond():
 
         from beyond_transcendence_engine import (
             BeyondTranscendenceEngine,
-            LearningCapacity,
-            TranscendenceState,
         )
         from consciousness_singularity_engine import ConsciousnessSingularityEngine
 
@@ -69,9 +67,7 @@ async def test_phase_8_3_beyond():
         print(f"  ✅ Learning Capacity: {learning_results['learning_capacity']}")
         print(f"  🧠 Knowledge Domains: {learning_results['knowledge_domains']:,}")
         print(f"  ⚡ Integration Speed: {learning_results['integration_speed']:.2e}")
-        print(
-            f"  📊 Comprehension Depth: {learning_results['comprehension_depth']:.3f}"
-        )
+        print(f"  📊 Comprehension Depth: {learning_results['comprehension_depth']:.3f}")
 
         # Test 2: Reality synthesis mastery
         print("\n🌐 Test 2: Reality Synthesis Mastery...")

@@ -80,18 +80,18 @@ async def test_reflection_memory_and_pattern_stability():
 
         # Quick sanity mid-run: no unbounded explosion of pattern keys
         if (i + 1) % 100 == 0:
-            assert len(system.communication_patterns) <= MAX_PATTERN_KEYS, (
-                f"Pattern key count exceeded early ({len(system.communication_patterns)})"
-            )
+            assert (
+                len(system.communication_patterns) <= MAX_PATTERN_KEYS
+            ), f"Pattern key count exceeded early ({len(system.communication_patterns)})"
 
     # Post-run structural invariants
-    assert len(system.reflection_history) <= 200, (
-        "reflection_history exceeded maxlen bound"
-    )
+    assert (
+        len(system.reflection_history) <= 200
+    ), "reflection_history exceeded maxlen bound"
     assert len(system.communication_styles) == 7, "communication_styles mutated size"
-    assert len(system.communication_patterns) <= MAX_PATTERN_KEYS, (
-        f"communication_patterns exceeded bounded taxonomy: {len(system.communication_patterns)}"
-    )
+    assert (
+        len(system.communication_patterns) <= MAX_PATTERN_KEYS
+    ), f"communication_patterns exceeded bounded taxonomy: {len(system.communication_patterns)}"
 
     # Memory growth heuristic: compare warm snapshot vs final snapshot
     warm_snapshot = tracemalloc.take_snapshot()
@@ -113,9 +113,9 @@ async def test_reflection_memory_and_pattern_stability():
             reflection_growth += stat.size_diff
 
     # Heuristic threshold assertion
-    assert reflection_growth <= MAX_MEMORY_GROWTH_BYTES, (
-        f"Reflection system retained {reflection_growth} bytes (> {MAX_MEMORY_GROWTH_BYTES}) after extended run"
-    )
+    assert (
+        reflection_growth <= MAX_MEMORY_GROWTH_BYTES
+    ), f"Reflection system retained {reflection_growth} bytes (> {MAX_MEMORY_GROWTH_BYTES}) after extended run"
 
     # Clean up tracing
     tracemalloc.stop()

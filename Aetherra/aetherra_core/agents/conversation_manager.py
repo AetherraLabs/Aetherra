@@ -72,10 +72,6 @@ except ImportError as e:
 # Import FractalMesh Memory System
 try:
     from Aetherra.lyrixa.memory.fractal_mesh import FractalMeshCore
-    from Aetherra.lyrixa.memory.fractal_mesh.base import (
-        MemoryFragment,
-        MemoryFragmentType,
-    )
 
     FRACTAL_MESH_AVAILABLE = True
     logger.info("✅ FractalMesh Memory System loaded")
@@ -332,7 +328,9 @@ class LyrixaConversationManager:
                 )
                 logger.info("✅ Plugin Editor Controller initialized")
             except Exception as e:
-                logger.warning(f"⚠️ Plugin Editor Controller initialization failed: {e}")
+                logger.warning(
+                    f"⚠️ Plugin Editor Controller initialization failed: {e}"
+                )
                 self.plugin_editor_controller = None
         else:
             self.plugin_editor_controller = None
@@ -369,7 +367,9 @@ class LyrixaConversationManager:
                     "✅ Integrated Memory Engine initialized with all subsystems"
                 )
             except Exception as e:
-                logger.warning(f"⚠️ Integrated Memory Engine initialization failed: {e}")
+                logger.warning(
+                    f"⚠️ Integrated Memory Engine initialization failed: {e}"
+                )
                 self.integrated_memory = None
         else:
             self.integrated_memory = None
@@ -766,7 +766,9 @@ class LyrixaConversationManager:
                                 context["active_plugins"] = len(plugin_manager.plugins)
                                 context["plugin_names"] = list(
                                     plugin_manager.plugins.keys()
-                                )[:5]  # Top 5
+                                )[
+                                    :5
+                                ]  # Top 5
                         else:
                             if not context.get("active_plugins"):
                                 context["active_plugins"] = 0
@@ -1011,12 +1013,16 @@ class LyrixaConversationManager:
                     # Check if model is available
                     available_models = self.llm_manager.list_available_models()
                     if model not in available_models:
-                        logger.warning(f"⚠️ Model {model} not available, trying next...")
+                        logger.warning(
+                            f"⚠️ Model {model} not available, trying next..."
+                        )
                         continue
 
                     # Set the model
                     if not self.llm_manager.set_model(model):
-                        logger.warning(f"⚠️ Failed to set model {model}, trying next...")
+                        logger.warning(
+                            f"⚠️ Failed to set model {model}, trying next..."
+                        )
                         self._record_model_failure(model)
                         continue
 
@@ -1083,9 +1089,9 @@ class LyrixaConversationManager:
                         ]
                     ):
                         logger.error(f"💰 {model} quota/billing issue detected")
-                        self.model_failures[model] = (
-                            self.max_retries_per_model
-                        )  # Immediately disable
+                        self.model_failures[
+                            model
+                        ] = self.max_retries_per_model  # Immediately disable
 
                     # Check for authentication errors
                     elif any(
@@ -1093,9 +1099,9 @@ class LyrixaConversationManager:
                         for keyword in ["auth", "key", "token", "permission"]
                     ):
                         logger.error(f"🔐 {model} authentication issue detected")
-                        self.model_failures[model] = (
-                            self.max_retries_per_model
-                        )  # Immediately disable
+                        self.model_failures[
+                            model
+                        ] = self.max_retries_per_model  # Immediately disable
 
                     # Check for model not found errors
                     elif any(
@@ -1103,9 +1109,9 @@ class LyrixaConversationManager:
                         for keyword in ["not found", "does not exist", "unavailable"]
                     ):
                         logger.error(f"❌ {model} not found or unavailable")
-                        self.model_failures[model] = (
-                            self.max_retries_per_model
-                        )  # Immediately disable
+                        self.model_failures[
+                            model
+                        ] = self.max_retries_per_model  # Immediately disable
 
                     # Continue to next model
                     continue
@@ -1947,17 +1953,8 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
             self.add_to_conversation_history("assistant", response)
             return response
 
-        except Exception as e:
+        except Exception as e:  # Single consolidated fallback handler
             logger.error(f"❌ Error in smart fallback response: {e}")
-            return self._generate_fallback_response(user_input)
-            response = self.handle_llm_response(response, user_input)
-
-            self.add_to_conversation_history("assistant", response)
-            return response
-
-        except Exception as e:
-            logger.error(f"❌ Error in smart fallback: {e}")
-            # Ultimate fallback
             return f"I'm Lyrixa, your AI assistant. I'm currently experiencing some technical difficulties but I'm still here to help! You asked: '{user_input}'. How can I assist you today? 🌟"
 
     def reset_model_failures(self):
@@ -2055,12 +2052,8 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
                 logger.info("💬 Using intelligent fallback response")
                 return asyncio.run(self._generate_smart_fallback_response(user_input))
 
-        except Exception as e:
+        except Exception as e:  # Single consolidated fallback
             logger.error(f"❌ Error in generate_response_sync: {e}")
-            # Final fallback - use the simple fallback response
-            return self._generate_fallback_response(user_input)
-        except Exception as e:
-            logger.error(f"❌ Error in sync wrapper: {e}")
             return asyncio.run(self._generate_smart_fallback_response(user_input))
 
     def extract_code_block(self, text: str) -> str:
@@ -2229,13 +2222,15 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
             response_parts = ["[TOOL] I found some potential plugin improvements:\n"]
 
             for i, proposal in enumerate(proposals[:3], 1):  # Show top 3
-                response_parts.append(f"""
+                response_parts.append(
+                    f"""
 {i}. **{proposal.plugin_id}**
    - Improvement: {proposal.proposed_change}
    - Impact: {proposal.impact}
    - Risk Level: {proposal.risk_level}
    - Confidence: {proposal.confidence:.1%}
-""")
+"""
+                )
 
             if len(proposals) > 3:
                 response_parts.append(
@@ -2309,12 +2304,14 @@ I'm genuinely curious about your challenge and excited to collaborate on finding
 
             # Route to plugin editor controller if available
             if self.plugin_editor_controller:
-                success, response, action_data = (
-                    self.plugin_editor_controller.handle_plugin_editor_intent(
-                        user_input=user_input,
-                        detected_intent="plugin_editor_action",
-                        meta_reasoning_engine=self.meta_reasoning_engine,
-                    )
+                (
+                    success,
+                    response,
+                    action_data,
+                ) = self.plugin_editor_controller.handle_plugin_editor_intent(
+                    user_input=user_input,
+                    detected_intent="plugin_editor_action",
+                    meta_reasoning_engine=self.meta_reasoning_engine,
                 )
 
                 # Add conversation to history

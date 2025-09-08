@@ -19,7 +19,7 @@ def main():
         print("✅ Main Lyrixa classes imported successfully")
 
         # Test LyrixaCore
-# ARCHITECTURAL FIX: Removed Lyrixa import -         from lyrixa.LyrixaCore import get_lyrixa_core
+        # ARCHITECTURAL FIX: Removed Lyrixa import -         from lyrixa.LyrixaCore import get_lyrixa_core
 
         core = get_lyrixa_core()
         print(f"✅ LyrixaCore operational: {type(core).__name__}")

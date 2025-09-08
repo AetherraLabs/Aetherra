@@ -36,11 +36,11 @@ except Exception:
 
 try:
     from Aetherra.security.sandbox import (
-        MemoryBudgetExceeded as _SandboxMemoryBudgetExceeded,  # type: ignore
-    )
+        MemoryBudgetExceeded as _SandboxMemoryBudgetExceeded,
+    )  # type: ignore
     from Aetherra.security.sandbox import (
-        TimeBudgetExceeded as _SandboxTimeBudgetExceeded,  # type: ignore
-    )
+        TimeBudgetExceeded as _SandboxTimeBudgetExceeded,
+    )  # type: ignore
     from Aetherra.security.sandbox import (  # type: ignore
         ensure_memory_budget,
         run_with_timeout,

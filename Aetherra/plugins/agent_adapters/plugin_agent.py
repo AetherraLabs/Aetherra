@@ -428,9 +428,7 @@ What would you like to do with plugins?"""
             result_text += "**Available Templates:**\n"
             for template in templates:
                 marker = (
-                    "✅"
-                    if template["category"].lower() == plugin_type.lower()
-                    else "📄"
+                    "✅" if template["category"].lower() == plugin_type.lower() else "📄"
                 )
                 result_text += (
                     f"{marker} **{template['name']}** ({template['category']})\n"
@@ -625,7 +623,9 @@ What would you like to do with plugins?"""
                 )
 
             # Build detailed info
-            result_text = f"🔌 **Plugin Information: {found_plugin.get('name', plugin_name)}**\n\n"
+            result_text = (
+                f"🔌 **Plugin Information: {found_plugin.get('name', plugin_name)}**\n\n"
+            )
             result_text += f"**Description:** {found_plugin.get('description', 'No description available')}\n\n"
             result_text += "**Details:**\n"
             result_text += f"• Type: {found_plugin.get('type', 'Unknown')}\n"

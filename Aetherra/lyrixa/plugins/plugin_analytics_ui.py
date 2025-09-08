@@ -6,7 +6,7 @@ Plugin Analytics UI
 Analytics dashboard for plugin usage and performance metrics
 """
 
-import json
+
 import sys
 from datetime import datetime
 
@@ -20,7 +20,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
     QLabel,
-    QLineEdit,
     QListWidget,
     QProgressBar,
     QPushButton,
@@ -433,7 +432,8 @@ class PluginAnalyticsUI(QWidget):
 
     def apply_styling(self):
         """Apply dark theme styling to the analytics interface."""
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QWidget {
                 background-color: #1e1e1e;
                 color: white;
@@ -558,7 +558,8 @@ class PluginAnalyticsUI(QWidget):
                 padding: 8px;
                 border: 1px solid #666666;
             }
-        """)
+        """
+        )
 
     def create_metric_card(self, label, value, color):
         """Create a metric display card."""

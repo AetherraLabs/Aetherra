@@ -20,10 +20,7 @@ This file maintains backward compatibility with existing code.
 
 # Import performance optimizations
 try:
-    from .performance_integration import (
-        optimized_operation,
-        performance_optimized,
-    )
+    from .performance_integration import optimized_operation, performance_optimized
 
     PERFORMANCE_AVAILABLE = True
 except ImportError:

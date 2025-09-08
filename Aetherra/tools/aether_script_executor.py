@@ -30,11 +30,10 @@ try:
     from Aetherra.core.agents.contradiction_detection_agent import (
         ContradictionDetectionAgent,
     )
-    from Aetherra.core.agents.curiosity_agent import CuriosityAgent
     from Aetherra.core.agents.learning_loop_integration_agent import (
         LearningLoopIntegrationAgent,
     )
-    from Aetherra.core.agents.self_question_generator import SelfQuestionGenerator
+
 except ImportError:
     print("⚠️ Using local import paths for demo")
     import sys
@@ -315,7 +314,7 @@ class AetherScriptExecutor:
             timeframe_hours=24.0
         )
 
-        print(f"📊 Learning Effectiveness Analysis:")
+        print("📊 Learning Effectiveness Analysis:")
         print(
             f"   • Overall Effectiveness: {effectiveness_analysis['overall_effectiveness']:.2f}"
         )
@@ -343,7 +342,7 @@ class AetherScriptExecutor:
             effectiveness_analysis
         )
 
-        print(f"🎯 Strategy Recommendations Generated:")
+        print("🎯 Strategy Recommendations Generated:")
         print(
             f"   • Overall Assessment: {strategy_recommendations['overall_assessment']}"
         )
@@ -371,7 +370,7 @@ class AetherScriptExecutor:
             effectiveness_analysis
         )
 
-        print(f"🎛️ Threshold Adjustments Applied:")
+        print("🎛️ Threshold Adjustments Applied:")
         for threshold, adjustment in threshold_adjustments.items():
             print(
                 f"   • {threshold}: {adjustment['old_value']:.3f} → {adjustment['new_value']:.3f}"
@@ -391,9 +390,9 @@ class AetherScriptExecutor:
         )
 
         print("\n[OK] Phase 3 Complete:")
-        print(f"   • Meta-learning analysis performed")
-        print(f"   • Strategy optimization recommendations generated")
-        print(f"   • Adaptive thresholds updated")
+        print("   • Meta-learning analysis performed")
+        print("   • Strategy optimization recommendations generated")
+        print("   • Adaptive thresholds updated")
 
     async def phase_4_comprehensive_logging(self):
         """Phase 4: Comprehensive Logging & Self-Awareness"""
@@ -454,7 +453,7 @@ class AetherScriptExecutor:
         )
 
         print(f"[OK] Learning Session Logged: {session_id}")
-        print(f"📊 Session Summary:")
+        print("📊 Session Summary:")
         print(f"   • Execution Time: {execution_time:.1f} seconds")
         print(f"   • Gaps Detected: {session_outcome['gaps_detected']}")
         print(f"   • Questions Generated: {session_outcome['questions_generated']}")
@@ -619,7 +618,9 @@ async def main():
         print("\n" + "=" * 70)
         print("🏁 AETHER SCRIPT EXECUTION COMPLETED SUCCESSFULLY!")
         print("[OK] All Phase 3 enhanced autonomous intelligence functions operational")
-        print("[OK] Curiosity-driven exploration and conflict resolution cycle complete")
+        print(
+            "[OK] Curiosity-driven exploration and conflict resolution cycle complete"
+        )
         print("[OK] Meta-learning tracker with strategy optimization functional")
         print("[OK] Self-directed learning and adaptive optimization validated")
         print("=" * 70)

@@ -12,7 +12,7 @@ This script verifies that all dependencies are compatible with GPL-3.0
 and generates a comprehensive legal compliance report.
 """
 
-import json
+
 import re
 import sys
 from pathlib import Path

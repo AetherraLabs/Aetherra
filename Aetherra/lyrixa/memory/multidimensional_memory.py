@@ -47,8 +47,8 @@ class MultidimensionalMemory:
         try:
             # Import lazily to avoid heavy imports at module import time
             from aetherra_persistent_memory import (
-                get_persistent_memory_system,  # type: ignore
-            )
+                get_persistent_memory_system,
+            )  # type: ignore
 
             self._pmem = await get_persistent_memory_system()
             self._initialized = True

@@ -20,16 +20,13 @@ Test Coverage:
 🔬 Timeline Exploration - "Paths not taken" analysis
 """
 
-import asyncio
-import json
+
 import math
 import tempfile
 import time
 import unittest
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import AsyncMock, MagicMock, patch
 
 
 class TestQuantumAwareSimulations(unittest.TestCase):
@@ -266,9 +263,9 @@ class TestCausalBranchSimulator(TestQuantumAwareSimulations):
         # Update superposition state after collapse
         collapsed_superposition = superposition.copy()
         collapsed_superposition["active_branches"] = [collapsed_branch]
-        collapsed_superposition["coherence_score"] = (
-            1.0  # Fully coherent after collapse
-        )
+        collapsed_superposition[
+            "coherence_score"
+        ] = 1.0  # Fully coherent after collapse
 
         self.assertEqual(len(collapsed_superposition["active_branches"]), 1)
         self.assertEqual(collapsed_superposition["coherence_score"], 1.0)
@@ -1001,7 +998,9 @@ def run_quantum_simulation_tests():
     elif passed >= total_tests * 0.7:
         print("[WARN] QUANTUM-AWARE SIMULATIONS: FUNCTIONAL - Some Issues Present")
     else:
-        print("[ERROR] QUANTUM-AWARE SIMULATIONS: NEEDS ATTENTION - Major Issues Detected")
+        print(
+            "[ERROR] QUANTUM-AWARE SIMULATIONS: NEEDS ATTENTION - Major Issues Detected"
+        )
 
     return passed == total_tests
 

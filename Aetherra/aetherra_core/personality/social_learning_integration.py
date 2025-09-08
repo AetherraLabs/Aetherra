@@ -22,9 +22,6 @@ from typing import Any, Dict, Optional
 # Import Phase 3.2 emotional intelligence
 from .emotional_intelligence_integration import EmotionalIntelligenceIntegration
 
-# Import existing personality components
-from .integration import enhance_lyrixa_response
-
 # Import Phase 3.3 social learning
 from .social_learning import (
     get_community_insights,
@@ -33,6 +30,8 @@ from .social_learning import (
     get_social_learning_status,
     process_with_social_learning,
 )
+
+# Import existing personality components
 
 
 class SocialLearningIntegration:

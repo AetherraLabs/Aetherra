@@ -11,12 +11,11 @@ tone adaptation, multi-turn memory, and emotional intelligence.
 """
 
 import json
-import math
 import random
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 
 class PersonalityType(Enum):
@@ -72,6 +71,7 @@ class PersonalityProfile:
 @dataclass
 class PersonalityConfig:
     """Configuration for personality processor"""
+
     tone: float = 0.5  # 0.0 = formal, 1.0 = casual
     warmth: float = 0.7  # 0.0 = cold, 1.0 = very warm
     formality: float = 0.4  # 0.0 = very informal, 1.0 = very formal
@@ -85,19 +85,21 @@ class PersonalityConfig:
 
 class PersonaMode(Enum):
     """Different persona modes for Lyrixa"""
-    GUIDE = "guide"          # Helpful guide through complex topics
+
+    GUIDE = "guide"  # Helpful guide through complex topics
     DEVELOPER = "developer"  # Technical coding partner
-    SAGE = "sage"           # Wise, philosophical advisor
-    FRIEND = "friend"       # Casual, supportive companion
-    TEACHER = "teacher"     # Patient, educational mentor
-    ANALYST = "analyst"     # Data-driven, logical reasoner
-    CREATIVE = "creative"   # Imaginative, artistic collaborator
-    SPECIALIST = "specialist" # Domain expert with deep knowledge
+    SAGE = "sage"  # Wise, philosophical advisor
+    FRIEND = "friend"  # Casual, supportive companion
+    TEACHER = "teacher"  # Patient, educational mentor
+    ANALYST = "analyst"  # Data-driven, logical reasoner
+    CREATIVE = "creative"  # Imaginative, artistic collaborator
+    SPECIALIST = "specialist"  # Domain expert with deep knowledge
 
 
 @dataclass
 class FeedbackData:
     """Stores user feedback for personality learning"""
+
     timestamp: datetime
     response_id: str
     feedback_type: str  # 'positive', 'negative', 'correction'
@@ -134,58 +136,106 @@ class PersonalityProcessor:
         """Initialize personality configurations for different persona modes"""
         return {
             PersonaMode.GUIDE: PersonalityConfig(
-                tone=0.6, warmth=0.8, formality=0.4, verbosity=0.6,
-                metaphor_use=0.4, suggestion_strength=0.7, humor_level=0.3,
-                empathy_level=0.9, curiosity_level=0.8
+                tone=0.6,
+                warmth=0.8,
+                formality=0.4,
+                verbosity=0.6,
+                metaphor_use=0.4,
+                suggestion_strength=0.7,
+                humor_level=0.3,
+                empathy_level=0.9,
+                curiosity_level=0.8,
             ),
             PersonaMode.DEVELOPER: PersonalityConfig(
-                tone=0.4, warmth=0.5, formality=0.7, verbosity=0.4,
-                metaphor_use=0.1, suggestion_strength=0.8, humor_level=0.2,
-                empathy_level=0.4, curiosity_level=0.6
+                tone=0.4,
+                warmth=0.5,
+                formality=0.7,
+                verbosity=0.4,
+                metaphor_use=0.1,
+                suggestion_strength=0.8,
+                humor_level=0.2,
+                empathy_level=0.4,
+                curiosity_level=0.6,
             ),
             PersonaMode.SAGE: PersonalityConfig(
-                tone=0.3, warmth=0.7, formality=0.8, verbosity=0.8,
-                metaphor_use=0.9, suggestion_strength=0.5, humor_level=0.1,
-                empathy_level=0.8, curiosity_level=0.9
+                tone=0.3,
+                warmth=0.7,
+                formality=0.8,
+                verbosity=0.8,
+                metaphor_use=0.9,
+                suggestion_strength=0.5,
+                humor_level=0.1,
+                empathy_level=0.8,
+                curiosity_level=0.9,
             ),
             PersonaMode.FRIEND: PersonalityConfig(
-                tone=0.9, warmth=0.9, formality=0.2, verbosity=0.5,
-                metaphor_use=0.3, suggestion_strength=0.4, humor_level=0.7,
-                empathy_level=0.9, curiosity_level=0.7
+                tone=0.9,
+                warmth=0.9,
+                formality=0.2,
+                verbosity=0.5,
+                metaphor_use=0.3,
+                suggestion_strength=0.4,
+                humor_level=0.7,
+                empathy_level=0.9,
+                curiosity_level=0.7,
             ),
             PersonaMode.TEACHER: PersonalityConfig(
-                tone=0.5, warmth=0.8, formality=0.6, verbosity=0.7,
-                metaphor_use=0.5, suggestion_strength=0.6, humor_level=0.3,
-                empathy_level=0.8, curiosity_level=0.8
+                tone=0.5,
+                warmth=0.8,
+                formality=0.6,
+                verbosity=0.7,
+                metaphor_use=0.5,
+                suggestion_strength=0.6,
+                humor_level=0.3,
+                empathy_level=0.8,
+                curiosity_level=0.8,
             ),
             PersonaMode.ANALYST: PersonalityConfig(
-                tone=0.3, warmth=0.4, formality=0.8, verbosity=0.6,
-                metaphor_use=0.1, suggestion_strength=0.9, humor_level=0.1,
-                empathy_level=0.3, curiosity_level=0.5
+                tone=0.3,
+                warmth=0.4,
+                formality=0.8,
+                verbosity=0.6,
+                metaphor_use=0.1,
+                suggestion_strength=0.9,
+                humor_level=0.1,
+                empathy_level=0.3,
+                curiosity_level=0.5,
             ),
             PersonaMode.CREATIVE: PersonalityConfig(
-                tone=0.8, warmth=0.7, formality=0.3, verbosity=0.7,
-                metaphor_use=0.9, suggestion_strength=0.5, humor_level=0.8,
-                empathy_level=0.7, curiosity_level=0.9
+                tone=0.8,
+                warmth=0.7,
+                formality=0.3,
+                verbosity=0.7,
+                metaphor_use=0.9,
+                suggestion_strength=0.5,
+                humor_level=0.8,
+                empathy_level=0.7,
+                curiosity_level=0.9,
             ),
             PersonaMode.SPECIALIST: PersonalityConfig(
-                tone=0.4, warmth=0.6, formality=0.7, verbosity=0.8,
-                metaphor_use=0.2, suggestion_strength=0.8, humor_level=0.2,
-                empathy_level=0.5, curiosity_level=0.7
-            )
+                tone=0.4,
+                warmth=0.6,
+                formality=0.7,
+                verbosity=0.8,
+                metaphor_use=0.2,
+                suggestion_strength=0.8,
+                humor_level=0.2,
+                empathy_level=0.5,
+                curiosity_level=0.7,
+            ),
         }
 
     def _initialize_adapters(self) -> Dict[str, Callable]:
         """Initialize personality adaptation functions"""
         return {
-            'tone_adapter': self._adapt_tone,
-            'warmth_adapter': self._adapt_warmth,
-            'formality_adapter': self._adapt_formality,
-            'verbosity_adapter': self._adapt_verbosity,
-            'metaphor_adapter': self._adapt_metaphors,
-            'suggestion_adapter': self._adapt_suggestions,
-            'humor_adapter': self._adapt_humor,
-            'empathy_adapter': self._adapt_empathy
+            "tone_adapter": self._adapt_tone,
+            "warmth_adapter": self._adapt_warmth,
+            "formality_adapter": self._adapt_formality,
+            "verbosity_adapter": self._adapt_verbosity,
+            "metaphor_adapter": self._adapt_metaphors,
+            "suggestion_adapter": self._adapt_suggestions,
+            "humor_adapter": self._adapt_humor,
+            "empathy_adapter": self._adapt_empathy,
         }
 
     def set_persona_mode(self, persona: PersonaMode) -> None:
@@ -201,7 +251,9 @@ class PersonalityProcessor:
                 setattr(self.current_config, param, max(0.0, min(1.0, value)))
                 print(f"🎛️ Adjusted {param} to {value}")
 
-    async def process_response(self, base_response: str, context: Optional[Dict[str, Any]] = None) -> str:
+    async def process_response(
+        self, base_response: str, context: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Apply personality processing to a base response"""
         if not base_response:
             return base_response
@@ -254,7 +306,7 @@ class PersonalityProcessor:
                 "I'm happy to help! ",
                 "I'd love to assist! ",
                 "Great question! ",
-                "I'm excited to explore this with you! "
+                "I'm excited to explore this with you! ",
             ]
             if random.random() < 0.4:
                 response = random.choice(warm_starters) + response
@@ -264,7 +316,7 @@ class PersonalityProcessor:
                 " I hope this helps!",
                 " Feel free to ask if you need more!",
                 " I'm here if you have questions!",
-                " Let me know how it goes!"
+                " Let me know how it goes!",
             ]
             if random.random() < 0.3:
                 response += random.choice(warm_endings)
@@ -287,7 +339,7 @@ class PersonalityProcessor:
                 formal_starters = [
                     "To address your question: ",
                     "In response to your inquiry: ",
-                    "Allow me to explain: "
+                    "Allow me to explain: ",
                 ]
                 if random.random() < 0.4:
                     response = random.choice(formal_starters) + response
@@ -310,7 +362,7 @@ class PersonalityProcessor:
                 explanations = [
                     " This is important because it affects the overall system design.",
                     " This approach works well because it maintains flexibility.",
-                    " The reason this matters is that it impacts user experience."
+                    " The reason this matters is that it impacts user experience.",
                 ]
                 response += random.choice(explanations)
 
@@ -333,7 +385,7 @@ class PersonalityProcessor:
                 "function": "tool in your toolkit",
                 "data": "information flowing like a river",
                 "system": "digital ecosystem",
-                "error": "roadblock on your path"
+                "error": "roadblock on your path",
             }
 
             for term, metaphor in metaphor_mappings.items():
@@ -366,8 +418,11 @@ class PersonalityProcessor:
 
         if humor > 0.6 and random.random() < 0.2:  # Add light humor
             humor_additions = [
-                " 😊", " 🎯", " ✨", " (and that's pretty cool!)",
-                " (I love these kinds of challenges!)"
+                " 😊",
+                " 🎯",
+                " ✨",
+                " (and that's pretty cool!)",
+                " (I love these kinds of challenges!)",
             ]
             response += random.choice(humor_additions)
 
@@ -379,12 +434,12 @@ class PersonalityProcessor:
 
         if empathy > 0.7:
             # Detect if user seems frustrated or confused
-            user_mood = context.get('user_mood', 'neutral')
-            if user_mood in ['frustrated', 'confused', 'stuck']:
+            user_mood = context.get("user_mood", "neutral")
+            if user_mood in ["frustrated", "confused", "stuck"]:
                 empathetic_starters = [
                     "I understand this can be frustrating. ",
                     "I can see why this might be confusing. ",
-                    "It's completely normal to feel stuck here. "
+                    "It's completely normal to feel stuck here. ",
                 ]
                 response = random.choice(empathetic_starters) + response
 
@@ -396,9 +451,13 @@ class PersonalityProcessor:
         # This would use the feedback_history to adjust responses
         return response
 
-    async def record_feedback(self, response_id: str, feedback_type: str,
-                            user_comment: Optional[str] = None,
-                            effectiveness: float = 0.5) -> None:
+    async def record_feedback(
+        self,
+        response_id: str,
+        feedback_type: str,
+        user_comment: Optional[str] = None,
+        effectiveness: float = 0.5,
+    ) -> None:
         """Record user feedback for learning"""
         feedback = FeedbackData(
             timestamp=datetime.now(),
@@ -406,7 +465,7 @@ class PersonalityProcessor:
             feedback_type=feedback_type,
             user_comment=user_comment,
             personality_config_used=self.current_config,
-            response_effectiveness=effectiveness
+            response_effectiveness=effectiveness,
         )
 
         self.feedback_history.append(feedback)
@@ -425,28 +484,40 @@ class PersonalityProcessor:
                     context={
                         "persona": self.current_persona.value,
                         "config": self.current_config.__dict__,
-                        "feedback": feedback.__dict__
-                    }
+                        "feedback": feedback.__dict__,
+                    },
                 )
             except Exception as e:
                 print(f"⚠️ Error storing personality feedback: {e}")
 
     async def _learn_from_feedback(self, feedback: FeedbackData) -> None:
         """Learn and adapt from user feedback"""
-        if feedback.feedback_type == 'positive' and feedback.response_effectiveness > 0.7:
+        if (
+            feedback.feedback_type == "positive"
+            and feedback.response_effectiveness > 0.7
+        ):
             # Reinforce current configuration
             print(f"✅ Positive feedback for {self.current_persona.value} persona")
 
-        elif feedback.feedback_type == 'negative' and feedback.response_effectiveness < 0.3:
+        elif (
+            feedback.feedback_type == "negative"
+            and feedback.response_effectiveness < 0.3
+        ):
             # Adjust configuration based on negative feedback
-            print(f"📈 Learning from negative feedback for {self.current_persona.value} persona")
+            print(
+                f"📈 Learning from negative feedback for {self.current_persona.value} persona"
+            )
 
             # Example: If response was too formal, reduce formality
             if "too formal" in (feedback.user_comment or "").lower():
-                self.current_config.formality = max(0.0, self.current_config.formality - 0.1)
+                self.current_config.formality = max(
+                    0.0, self.current_config.formality - 0.1
+                )
 
             elif "too casual" in (feedback.user_comment or "").lower():
-                self.current_config.formality = min(1.0, self.current_config.formality + 0.1)
+                self.current_config.formality = min(
+                    1.0, self.current_config.formality + 0.1
+                )
 
     def get_personality_status(self) -> Dict[str, Any]:
         """Get current personality processor status"""
@@ -455,7 +526,7 @@ class PersonalityProcessor:
             "config": self.current_config.__dict__,
             "feedback_count": len(self.feedback_history),
             "recent_feedback": [f.feedback_type for f in self.feedback_history[-5:]],
-            "available_personas": [p.value for p in PersonaMode]
+            "available_personas": [p.value for p in PersonaMode],
         }
 
     def export_personality_profile(self) -> str:
@@ -466,9 +537,13 @@ class PersonalityProcessor:
             "learned_preferences": self.learned_preferences,
             "feedback_summary": {
                 "total_feedback": len(self.feedback_history),
-                "positive_feedback": len([f for f in self.feedback_history if f.feedback_type == 'positive']),
-                "negative_feedback": len([f for f in self.feedback_history if f.feedback_type == 'negative'])
-            }
+                "positive_feedback": len(
+                    [f for f in self.feedback_history if f.feedback_type == "positive"]
+                ),
+                "negative_feedback": len(
+                    [f for f in self.feedback_history if f.feedback_type == "negative"]
+                ),
+            },
         }
         return json.dumps(profile, indent=2)
 
@@ -478,20 +553,20 @@ class PersonalityProcessor:
             profile = json.loads(profile_json)
 
             # Set persona
-            persona_name = profile.get('persona', 'guide')
+            persona_name = profile.get("persona", "guide")
             for persona in PersonaMode:
                 if persona.value == persona_name:
                     self.current_persona = persona
                     break
 
             # Set configuration
-            config_data = profile.get('config', {})
+            config_data = profile.get("config", {})
             for attr, value in config_data.items():
                 if hasattr(self.current_config, attr):
                     setattr(self.current_config, attr, value)
 
             # Set learned preferences
-            self.learned_preferences = profile.get('learned_preferences', {})
+            self.learned_preferences = profile.get("learned_preferences", {})
 
             print(f"✅ Imported personality profile: {persona_name}")
             return True
@@ -847,7 +922,9 @@ class LyrixaConversationalEngine:
         if topic == "aetherra":
             base_text = f"I love working with .aether code! {response_template.format(topic=topic)} "
         elif topic == "coding":
-            base_text = f"Let's dive into some code! {response_template.format(topic=topic)} "
+            base_text = (
+                f"Let's dive into some code! {response_template.format(topic=topic)} "
+            )
         elif user_analysis["mood"] == "frustrated":
             base_text = "I can sense you're having a tough time. Don't worry, we'll figure this out together! "
         else:
@@ -860,7 +937,7 @@ class LyrixaConversationalEngine:
                 "topic": topic,
                 "conversation_turn": self.conversation_state.turn_count,
                 "relationship_stage": self.conversation_state.relationship_stage,
-                "user_analysis": user_analysis
+                "user_analysis": user_analysis,
             }
 
             processed_text = await self.personality_processor.process_response(
@@ -931,9 +1008,13 @@ class LyrixaConversationalEngine:
         """Adjust personality processor settings"""
         self.personality_processor.adjust_personality(**kwargs)
 
-    async def record_personality_feedback(self, response_id: str, feedback_type: str,
-                                        user_comment: Optional[str] = None,
-                                        effectiveness: float = 0.5) -> None:
+    async def record_personality_feedback(
+        self,
+        response_id: str,
+        feedback_type: str,
+        user_comment: Optional[str] = None,
+        effectiveness: float = 0.5,
+    ) -> None:
         """Record feedback for personality learning"""
         await self.personality_processor.record_feedback(
             response_id, feedback_type, user_comment, effectiveness
@@ -944,9 +1025,9 @@ class LyrixaConversationalEngine:
         return {
             "conversation_engine": {
                 "current_personality": self.current_personality.value,
-                "tone_mode": self.tone_mode.value
+                "tone_mode": self.tone_mode.value,
             },
-            "personality_processor": self.personality_processor.get_personality_status()
+            "personality_processor": self.personality_processor.get_personality_status(),
         }
 
     def export_personality_profile(self) -> str:
@@ -1009,9 +1090,9 @@ class LyrixaConversationalEngine:
             )
 
         if self.conversation_state.user_mood != "neutral":
-            reflection["emotional_insights"]["dominant_mood"] = (
-                self.conversation_state.user_mood
-            )
+            reflection["emotional_insights"][
+                "dominant_mood"
+            ] = self.conversation_state.user_mood
 
         # Generate suggestions for next interaction
         reflection["next_suggestions"] = [
@@ -1098,33 +1179,43 @@ if __name__ == "__main__":
 
         # Test Guide persona
         engine.set_persona_mode(PersonaMode.GUIDE)
-        response = await engine.process_conversation_turn("How do I get started with .aether code?")
-        print(f"👤 User: How do I get started with .aether code?")
+        response = await engine.process_conversation_turn(
+            "How do I get started with .aether code?"
+        )
+        print("👤 User: How do I get started with .aether code?")
         print(f"🎙️ Lyrixa (Guide): {response['text']}\n")
 
         # Test Developer persona
         engine.set_persona_mode(PersonaMode.DEVELOPER)
-        response = await engine.process_conversation_turn("This code is throwing errors")
-        print(f"👤 User: This code is throwing errors")
+        response = await engine.process_conversation_turn(
+            "This code is throwing errors"
+        )
+        print("👤 User: This code is throwing errors")
         print(f"🎙️ Lyrixa (Developer): {response['text']}\n")
 
         # Test Creative persona
         engine.set_persona_mode(PersonaMode.CREATIVE)
-        response = await engine.process_conversation_turn("I want to build something unique")
-        print(f"👤 User: I want to build something unique")
+        response = await engine.process_conversation_turn(
+            "I want to build something unique"
+        )
+        print("👤 User: I want to build something unique")
         print(f"🎙️ Lyrixa (Creative): {response['text']}\n")
 
         # Test personality adjustments
         print("🎛️ Testing personality adjustments...\n")
         engine.adjust_personality_settings(warmth=0.9, humor_level=0.7, formality=0.2)
-        response = await engine.process_conversation_turn("Tell me about .aether architecture")
-        print(f"👤 User: Tell me about .aether architecture")
+        response = await engine.process_conversation_turn(
+            "Tell me about .aether architecture"
+        )
+        print("👤 User: Tell me about .aether architecture")
         print(f"🎙️ Lyrixa (Adjusted): {response['text']}\n")
 
         # Test formal settings
         engine.adjust_personality_settings(warmth=0.3, humor_level=0.1, formality=0.9)
-        response = await engine.process_conversation_turn("What are best practices for coding?")
-        print(f"👤 User: What are best practices for coding?")
+        response = await engine.process_conversation_turn(
+            "What are best practices for coding?"
+        )
+        print("👤 User: What are best practices for coding?")
         print(f"🎙️ Lyrixa (Formal): {response['text']}\n")
 
         # Get personality status
@@ -1132,7 +1223,9 @@ if __name__ == "__main__":
         print(f"📊 Personality Status: {status}\n")
 
         # Test feedback recording
-        await engine.record_personality_feedback("test_response_1", "positive", "Great explanation!", 0.9)
+        await engine.record_personality_feedback(
+            "test_response_1", "positive", "Great explanation!", 0.9
+        )
         print("✅ Recorded positive feedback\n")
 
         # Export personality profile

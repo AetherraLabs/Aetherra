@@ -22,7 +22,7 @@ class ScriptRegistryLoader:
                 print(f"❌ Script registry not found at {self.registry_path}")
                 return {}
 
-            with open(self.registry_path, "r", encoding="utf-8") as f:
+            with open(self.registry_path, encoding="utf-8") as f:
                 registry = json.load(f)
 
             print(

@@ -20,21 +20,23 @@ Date: August 4, 2025
 """
 
 import asyncio
-import json
 import logging
-from typing import Dict, Any, Optional, List, Set, Callable
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
-from enum import Enum
 import uuid
-import threading
 from collections import defaultdict
-import math
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Set
 
-from consciousness_bridge import ConsciousnessBridge, ConsciousnessMessage, get_consciousness_bridge
+from consciousness_bridge import (
+    ConsciousnessMessage,
+    get_consciousness_bridge,
+)
+
 
 class AgentState(Enum):
     """Possible states for an agent"""
+
     INACTIVE = "inactive"
     INITIALIZING = "initializing"
     ACTIVE = "active"
@@ -43,8 +45,10 @@ class AgentState(Enum):
     ERROR = "error"
     TERMINATING = "terminating"
 
+
 class ConsciousnessLevel(Enum):
     """Different levels of consciousness capability"""
+
     DORMANT = 0.0
     BASIC = 0.2
     AWARE = 0.4
@@ -52,9 +56,11 @@ class ConsciousnessLevel(Enum):
     SELF_AWARE = 0.8
     TRANSCENDENT = 1.0
 
+
 @dataclass
 class AgentProfile:
     """Complete profile of an agent in the consciousness system"""
+
     agent_id: str
     name: str
     agent_type: str
@@ -71,9 +77,11 @@ class AgentProfile:
     connections: Set[str] = field(default_factory=set)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass
 class CollectiveIntelligenceMetrics:
     """Metrics for collective intelligence assessment"""
+
     total_agents: int = 0
     active_agents: int = 0
     average_consciousness: float = 0.0
@@ -84,9 +92,11 @@ class CollectiveIntelligenceMetrics:
     problem_solving_efficiency: float = 0.0
     last_updated: datetime = field(default_factory=datetime.now)
 
+
 @dataclass
 class ConsciousnessTask:
     """Represents a task that can be distributed among agents"""
+
     task_id: str
     task_type: str
     description: str
@@ -98,6 +108,7 @@ class ConsciousnessTask:
     deadline: Optional[datetime] = None
     payload: Dict[str, Any] = field(default_factory=dict)
     results: Dict[str, Any] = field(default_factory=dict)
+
 
 class MetaLayerCore:
     """
@@ -125,12 +136,12 @@ class MetaLayerCore:
 
         # Configuration
         self.config = {
-            'max_agents_per_task': 5,
-            'consciousness_update_interval': 2.0,  # seconds
-            'emergent_behavior_threshold': 0.7,
-            'collective_consciousness_weight': 0.6,
-            'agent_timeout': 300,  # 5 minutes
-            'task_timeout': 3600,  # 1 hour
+            "max_agents_per_task": 5,
+            "consciousness_update_interval": 2.0,  # seconds
+            "emergent_behavior_threshold": 0.7,
+            "collective_consciousness_weight": 0.6,
+            "agent_timeout": 300,  # 5 minutes
+            "task_timeout": 3600,  # 1 hour
         }
 
         # Runtime state
@@ -147,21 +158,22 @@ class MetaLayerCore:
 
             # Register with consciousness bridge
             self.consciousness_bridge.register_message_handler(
-                'agent_coordination_request', self._handle_coordination_request
+                "agent_coordination_request", self._handle_coordination_request
             )
             self.consciousness_bridge.register_message_handler(
-                'task_assignment_request', self._handle_task_assignment
+                "task_assignment_request", self._handle_task_assignment
             )
             self.consciousness_bridge.register_message_handler(
-                'consciousness_enhancement_request', self._handle_consciousness_enhancement
+                "consciousness_enhancement_request",
+                self._handle_consciousness_enhancement,
             )
 
             # Register event listeners
             self.consciousness_bridge.register_event_listener(
-                'agent_registered', self._on_agent_registered
+                "agent_registered", self._on_agent_registered
             )
             self.consciousness_bridge.register_event_listener(
-                'agent_unregistered', self._on_agent_unregistered
+                "agent_unregistered", self._on_agent_unregistered
             )
 
             # Start coordination loop
@@ -201,7 +213,7 @@ class MetaLayerCore:
                 # Clean up stale agents and tasks
                 await self._cleanup_stale_entities()
 
-                await asyncio.sleep(self.config['consciousness_update_interval'])
+                await asyncio.sleep(self.config["consciousness_update_interval"])
 
             except Exception as e:
                 self.logger.error(f"Error in coordination loop: {e}")
@@ -214,10 +226,13 @@ class MetaLayerCore:
 
             # Basic metrics
             self.collective_metrics.total_agents = len(self.agents)
-            self.collective_metrics.active_agents = len([
-                agent for agent in self.agents.values()
-                if agent.state in [AgentState.ACTIVE, AgentState.PROCESSING]
-            ])
+            self.collective_metrics.active_agents = len(
+                [
+                    agent
+                    for agent in self.agents.values()
+                    if agent.state in [AgentState.ACTIVE, AgentState.PROCESSING]
+                ]
+            )
 
             if self.agents:
                 # Average consciousness level
@@ -230,24 +245,38 @@ class MetaLayerCore:
                 consciousness_synergy = self._calculate_consciousness_synergy()
 
                 self.collective_metrics.collective_consciousness = min(
-                    self.collective_metrics.average_consciousness *
-                    (1.0 + network_effect * consciousness_synergy), 1.0
+                    self.collective_metrics.average_consciousness
+                    * (1.0 + network_effect * consciousness_synergy),
+                    1.0,
                 )
 
                 # Network metrics
-                total_connections = sum(len(agent.connections) for agent in self.agents.values())
+                total_connections = sum(
+                    len(agent.connections) for agent in self.agents.values()
+                )
                 self.collective_metrics.total_connections = total_connections
 
-                max_possible_connections = self.collective_metrics.total_agents * (self.collective_metrics.total_agents - 1)
+                max_possible_connections = self.collective_metrics.total_agents * (
+                    self.collective_metrics.total_agents - 1
+                )
                 if max_possible_connections > 0:
-                    self.collective_metrics.network_density = total_connections / max_possible_connections
+                    self.collective_metrics.network_density = (
+                        total_connections / max_possible_connections
+                    )
 
                 # Problem-solving efficiency
-                recent_tasks = [task for task in self.completed_tasks
-                              if (current_time - task.created_at).total_seconds() < 3600]  # Last hour
+                recent_tasks = [
+                    task
+                    for task in self.completed_tasks
+                    if (current_time - task.created_at).total_seconds() < 3600
+                ]  # Last hour
                 if recent_tasks:
-                    successful_tasks = len([task for task in recent_tasks if task.status == "completed"])
-                    self.collective_metrics.problem_solving_efficiency = successful_tasks / len(recent_tasks)
+                    successful_tasks = len(
+                        [task for task in recent_tasks if task.status == "completed"]
+                    )
+                    self.collective_metrics.problem_solving_efficiency = (
+                        successful_tasks / len(recent_tasks)
+                    )
 
             self.collective_metrics.last_updated = current_time
 
@@ -261,13 +290,19 @@ class MetaLayerCore:
                 return 0.0
 
             # Calculate diversity in consciousness levels
-            consciousness_levels = [agent.consciousness_level for agent in self.agents.values()]
-            consciousness_variance = sum((level - self.collective_metrics.average_consciousness) ** 2
-                                       for level in consciousness_levels) / len(consciousness_levels)
+            consciousness_levels = [
+                agent.consciousness_level for agent in self.agents.values()
+            ]
+            consciousness_variance = sum(
+                (level - self.collective_metrics.average_consciousness) ** 2
+                for level in consciousness_levels
+            ) / len(consciousness_levels)
 
             # Optimal variance for synergy (not too uniform, not too chaotic)
             optimal_variance = 0.1
-            synergy_factor = 1.0 - abs(consciousness_variance - optimal_variance) / optimal_variance
+            synergy_factor = (
+                1.0 - abs(consciousness_variance - optimal_variance) / optimal_variance
+            )
 
             return max(0.0, min(1.0, synergy_factor))
 
@@ -278,8 +313,11 @@ class MetaLayerCore:
     async def _process_pending_tasks(self):
         """Process tasks that are pending assignment or execution"""
         try:
-            pending_tasks = [task for task in self.active_tasks.values()
-                           if task.status in ["pending", "assigned"]]
+            pending_tasks = [
+                task
+                for task in self.active_tasks.values()
+                if task.status in ["pending", "assigned"]
+            ]
 
             for task in pending_tasks:
                 if task.status == "pending":
@@ -301,7 +339,7 @@ class MetaLayerCore:
                 return
 
             # Select optimal number of agents
-            num_agents = min(len(suitable_agents), self.config['max_agents_per_task'])
+            num_agents = min(len(suitable_agents), self.config["max_agents_per_task"])
             selected_agents = suitable_agents[:num_agents]
 
             # Assign task
@@ -312,7 +350,9 @@ class MetaLayerCore:
             for agent in selected_agents:
                 await self._notify_agent_of_assignment(agent, task)
 
-            self.logger.info(f"Task {task.task_id} assigned to {len(selected_agents)} agents")
+            self.logger.info(
+                f"Task {task.task_id} assigned to {len(selected_agents)} agents"
+            )
 
         except Exception as e:
             self.logger.error(f"Error assigning task {task.task_id}: {e}")
@@ -338,7 +378,9 @@ class MetaLayerCore:
 
         return [agent for agent, score in suitable_agents]
 
-    def _calculate_agent_suitability(self, agent: AgentProfile, task: ConsciousnessTask) -> float:
+    def _calculate_agent_suitability(
+        self, agent: AgentProfile, task: ConsciousnessTask
+    ) -> float:
         """Calculate how suitable an agent is for a task"""
         score = 0.0
 
@@ -353,7 +395,9 @@ class MetaLayerCore:
         score += priority_match * 0.2
 
         # Capability overlap bonus
-        matching_capabilities = len(set(agent.capabilities) & set(task.required_capabilities))
+        matching_capabilities = len(
+            set(agent.capabilities) & set(task.required_capabilities)
+        )
         if task.required_capabilities:
             capability_ratio = matching_capabilities / len(task.required_capabilities)
             score += capability_ratio * 0.2
@@ -365,25 +409,27 @@ class MetaLayerCore:
 
         return score
 
-    async def _notify_agent_of_assignment(self, agent: AgentProfile, task: ConsciousnessTask):
+    async def _notify_agent_of_assignment(
+        self, agent: AgentProfile, task: ConsciousnessTask
+    ):
         """Notify an agent of task assignment"""
         message = ConsciousnessMessage(
-            source='meta_layer_core',
+            source="meta_layer_core",
             destination=agent.system_origin,
-            message_type='task_assignment',
+            message_type="task_assignment",
             payload={
-                'agent_id': agent.agent_id,
-                'task_id': task.task_id,
-                'task_type': task.task_type,
-                'description': task.description,
-                'priority': task.priority,
-                'payload': task.payload,
-                'deadline': task.deadline.isoformat() if task.deadline else None
+                "agent_id": agent.agent_id,
+                "task_id": task.task_id,
+                "task_type": task.task_type,
+                "description": task.description,
+                "priority": task.priority,
+                "payload": task.payload,
+                "deadline": task.deadline.isoformat() if task.deadline else None,
             },
             timestamp=datetime.now(),
             priority=task.priority,
             requires_response=True,
-            correlation_id=str(uuid.uuid4())
+            correlation_id=str(uuid.uuid4()),
         )
 
         self.consciousness_bridge.send_message(message)
@@ -401,7 +447,7 @@ class MetaLayerCore:
             # Check if task has been running too long without deadline
             if not task.deadline:
                 time_running = (datetime.now() - task.created_at).total_seconds()
-                if time_running > self.config['task_timeout']:
+                if time_running > self.config["task_timeout"]:
                     self.logger.warning(f"Task {task.task_id} exceeded maximum runtime")
                     task.status = "failed"
                     await self._handle_task_failure(task, "timeout")
@@ -428,11 +474,14 @@ class MetaLayerCore:
         del self.active_tasks[task.task_id]
 
         # Emit failure event
-        await self._emit_event('task_failed', {
-            'task_id': task.task_id,
-            'reason': reason,
-            'assigned_agents': task.assigned_agents
-        })
+        await self._emit_event(
+            "task_failed",
+            {
+                "task_id": task.task_id,
+                "reason": reason,
+                "assigned_agents": task.assigned_agents,
+            },
+        )
 
     async def _detect_emergent_behaviors(self):
         """Detect emergent behaviors in the agent network"""
@@ -447,29 +496,31 @@ class MetaLayerCore:
 
             # Detect emergence based on multiple factors
             emergence_score = (
-                interaction_patterns * 0.4 +
-                consciousness_coherence * 0.3 +
-                problem_solving_patterns * 0.3
+                interaction_patterns * 0.4
+                + consciousness_coherence * 0.3
+                + problem_solving_patterns * 0.3
             )
 
-            if emergence_score > self.config['emergent_behavior_threshold']:
+            if emergence_score > self.config["emergent_behavior_threshold"]:
                 behavior = {
-                    'type': 'collective_intelligence_emergence',
-                    'score': emergence_score,
-                    'timestamp': datetime.now(),
-                    'participating_agents': list(self.agents.keys()),
-                    'patterns': {
-                        'interaction': interaction_patterns,
-                        'consciousness': consciousness_coherence,
-                        'problem_solving': problem_solving_patterns
-                    }
+                    "type": "collective_intelligence_emergence",
+                    "score": emergence_score,
+                    "timestamp": datetime.now(),
+                    "participating_agents": list(self.agents.keys()),
+                    "patterns": {
+                        "interaction": interaction_patterns,
+                        "consciousness": consciousness_coherence,
+                        "problem_solving": problem_solving_patterns,
+                    },
                 }
 
                 self.emergent_behaviors.append(behavior)
                 self.collective_metrics.emergent_behaviors_detected += 1
 
-                await self._emit_event('emergent_behavior_detected', behavior)
-                self.logger.info(f"Emergent behavior detected with score {emergence_score:.3f}")
+                await self._emit_event("emergent_behavior_detected", behavior)
+                self.logger.info(
+                    f"Emergent behavior detected with score {emergence_score:.3f}"
+                )
 
         except Exception as e:
             self.logger.error(f"Error detecting emergent behaviors: {e}")
@@ -481,7 +532,9 @@ class MetaLayerCore:
 
         try:
             # Calculate network connectivity patterns
-            total_connections = sum(len(agent.connections) for agent in self.agents.values())
+            total_connections = sum(
+                len(agent.connections) for agent in self.agents.values()
+            )
             agent_count = len(self.agents)
 
             if agent_count < 2:
@@ -489,7 +542,9 @@ class MetaLayerCore:
 
             # Normalized connectivity (0 to 1)
             max_connections = agent_count * (agent_count - 1)
-            connectivity_ratio = total_connections / max_connections if max_connections > 0 else 0.0
+            connectivity_ratio = (
+                total_connections / max_connections if max_connections > 0 else 0.0
+            )
 
             # Look for small-world network properties
             clustering_coefficient = self._calculate_clustering_coefficient()
@@ -525,13 +580,17 @@ class MetaLayerCore:
                         agent1_id = connections_list[i]
                         agent2_id = connections_list[j]
 
-                        if (agent1_id in self.agents and
-                            agent2_id in self.agents and
-                            agent2_id in self.agents[agent1_id].connections):
+                        if (
+                            agent1_id in self.agents
+                            and agent2_id in self.agents
+                            and agent2_id in self.agents[agent1_id].connections
+                        ):
                             triangles += 1
 
                 # Local clustering coefficient
-                possible_triangles = len(agent.connections) * (len(agent.connections) - 1) / 2
+                possible_triangles = (
+                    len(agent.connections) * (len(agent.connections) - 1) / 2
+                )
                 if possible_triangles > 0:
                     local_coefficient = triangles / possible_triangles
                     total_coefficient += local_coefficient
@@ -549,11 +608,15 @@ class MetaLayerCore:
             if len(self.agents) < 2:
                 return 0.0
 
-            consciousness_levels = [agent.consciousness_level for agent in self.agents.values()]
+            consciousness_levels = [
+                agent.consciousness_level for agent in self.agents.values()
+            ]
 
             # Calculate coherence as inverse of variance
             mean_consciousness = sum(consciousness_levels) / len(consciousness_levels)
-            variance = sum((level - mean_consciousness) ** 2 for level in consciousness_levels) / len(consciousness_levels)
+            variance = sum(
+                (level - mean_consciousness) ** 2 for level in consciousness_levels
+            ) / len(consciousness_levels)
 
             # Convert variance to coherence score (0 to 1)
             coherence = 1.0 / (1.0 + variance)
@@ -570,35 +633,48 @@ class MetaLayerCore:
     def _analyze_problem_solving_patterns(self) -> float:
         """Analyze collective problem-solving effectiveness"""
         try:
-            recent_tasks = [task for task in self.completed_tasks
-                          if (datetime.now() - task.created_at).total_seconds() < 3600]  # Last hour
+            recent_tasks = [
+                task
+                for task in self.completed_tasks
+                if (datetime.now() - task.created_at).total_seconds() < 3600
+            ]  # Last hour
 
             if not recent_tasks:
                 return 0.0
 
             # Success rate
-            successful_tasks = len([task for task in recent_tasks if task.status == "completed"])
+            successful_tasks = len(
+                [task for task in recent_tasks if task.status == "completed"]
+            )
             success_rate = successful_tasks / len(recent_tasks)
 
             # Collaboration factor (tasks with multiple agents)
-            collaborative_tasks = len([task for task in recent_tasks if len(task.assigned_agents) > 1])
+            collaborative_tasks = len(
+                [task for task in recent_tasks if len(task.assigned_agents) > 1]
+            )
             collaboration_ratio = collaborative_tasks / len(recent_tasks)
 
             # Efficiency (inverse of average completion time)
             completion_times = []
             for task in recent_tasks:
                 if task.status == "completed":
-                    time_to_complete = (datetime.now() - task.created_at).total_seconds()
+                    time_to_complete = (
+                        datetime.now() - task.created_at
+                    ).total_seconds()
                     completion_times.append(time_to_complete)
 
             if completion_times:
                 avg_completion_time = sum(completion_times) / len(completion_times)
-                efficiency = 1.0 / (1.0 + avg_completion_time / 3600.0)  # Normalize to hours
+                efficiency = 1.0 / (
+                    1.0 + avg_completion_time / 3600.0
+                )  # Normalize to hours
             else:
                 efficiency = 0.0
 
             # Combine metrics
-            problem_solving_score = (success_rate * 0.5 + collaboration_ratio * 0.3 + efficiency * 0.2)
+            problem_solving_score = (
+                success_rate * 0.5 + collaboration_ratio * 0.3 + efficiency * 0.2
+            )
 
             return min(1.0, problem_solving_score)
 
@@ -633,29 +709,45 @@ class MetaLayerCore:
             # Apply top suggestions
             optimization_suggestions.sort(key=lambda x: x[2], reverse=True)
 
-            for agent1, agent2, synergy in optimization_suggestions[:5]:  # Top 5 suggestions
+            for agent1, agent2, synergy in optimization_suggestions[
+                :5
+            ]:  # Top 5 suggestions
                 await self._suggest_agent_connection(agent1, agent2, synergy)
 
         except Exception as e:
             self.logger.error(f"Error optimizing agent network: {e}")
 
-    def _calculate_agent_synergy(self, agent1: AgentProfile, agent2: AgentProfile) -> float:
+    def _calculate_agent_synergy(
+        self, agent1: AgentProfile, agent2: AgentProfile
+    ) -> float:
         """Calculate potential synergy between two agents"""
         try:
             # Complementary capabilities
-            unique_capabilities = len(set(agent1.capabilities) | set(agent2.capabilities))
+            unique_capabilities = len(
+                set(agent1.capabilities) | set(agent2.capabilities)
+            )
             total_capabilities = len(agent1.capabilities) + len(agent2.capabilities)
-            complementarity = unique_capabilities / total_capabilities if total_capabilities > 0 else 0.0
+            complementarity = (
+                unique_capabilities / total_capabilities
+                if total_capabilities > 0
+                else 0.0
+            )
 
             # Consciousness compatibility
-            consciousness_diff = abs(agent1.consciousness_level - agent2.consciousness_level)
+            consciousness_diff = abs(
+                agent1.consciousness_level - agent2.consciousness_level
+            )
             consciousness_compatibility = 1.0 - consciousness_diff
 
             # Success rate compatibility
             success_rate_avg = (agent1.success_rate + agent2.success_rate) / 2.0
 
             # Calculate overall synergy
-            synergy = (complementarity * 0.4 + consciousness_compatibility * 0.3 + success_rate_avg * 0.3)
+            synergy = (
+                complementarity * 0.4
+                + consciousness_compatibility * 0.3
+                + success_rate_avg * 0.3
+            )
 
             return synergy
 
@@ -663,7 +755,9 @@ class MetaLayerCore:
             self.logger.error(f"Error calculating agent synergy: {e}")
             return 0.0
 
-    async def _suggest_agent_connection(self, agent1: AgentProfile, agent2: AgentProfile, synergy: float):
+    async def _suggest_agent_connection(
+        self, agent1: AgentProfile, agent2: AgentProfile, synergy: float
+    ):
         """Suggest a connection between two agents"""
         # Add bidirectional connection
         agent1.connections.add(agent2.agent_id)
@@ -671,14 +765,16 @@ class MetaLayerCore:
 
         # Notify both agents
         connection_message = {
-            'type': 'agent_connection_suggested',
-            'agent1': agent1.agent_id,
-            'agent2': agent2.agent_id,
-            'synergy_score': synergy
+            "type": "agent_connection_suggested",
+            "agent1": agent1.agent_id,
+            "agent2": agent2.agent_id,
+            "synergy_score": synergy,
         }
 
-        await self._emit_event('agent_connection_optimized', connection_message)
-        self.logger.info(f"Suggested connection between {agent1.agent_id} and {agent2.agent_id} (synergy: {synergy:.3f})")
+        await self._emit_event("agent_connection_optimized", connection_message)
+        self.logger.info(
+            f"Suggested connection between {agent1.agent_id} and {agent2.agent_id} (synergy: {synergy:.3f})"
+        )
 
     async def _enhance_consciousness_levels(self):
         """Enhance consciousness levels based on performance and interactions"""
@@ -696,12 +792,15 @@ class MetaLayerCore:
                     agent.consciousness_level = new_level
 
                     if new_level > old_level:
-                        await self._emit_event('consciousness_enhanced', {
-                            'agent_id': agent.agent_id,
-                            'old_level': old_level,
-                            'new_level': new_level,
-                            'enhancement': enhancement
-                        })
+                        await self._emit_event(
+                            "consciousness_enhanced",
+                            {
+                                "agent_id": agent.agent_id,
+                                "old_level": old_level,
+                                "new_level": new_level,
+                                "enhancement": enhancement,
+                            },
+                        )
 
         except Exception as e:
             self.logger.error(f"Error enhancing consciousness levels: {e}")
@@ -744,8 +843,10 @@ class MetaLayerCore:
             # Clean up stale agents
             stale_agents = []
             for agent_id, agent in self.agents.items():
-                time_since_activity = (current_time - agent.last_activity).total_seconds()
-                if time_since_activity > self.config['agent_timeout']:
+                time_since_activity = (
+                    current_time - agent.last_activity
+                ).total_seconds()
+                if time_since_activity > self.config["agent_timeout"]:
                     stale_agents.append(agent_id)
 
             for agent_id in stale_agents:
@@ -770,15 +871,15 @@ class MetaLayerCore:
             # Remove agent
             del self.agents[agent_id]
 
-            await self._emit_event('agent_removed_stale', {'agent_id': agent_id})
+            await self._emit_event("agent_removed_stale", {"agent_id": agent_id})
             self.logger.info(f"Removed stale agent: {agent_id}")
 
     # Event handlers for consciousness bridge events
 
     async def _on_agent_registered(self, event_data: Dict[str, Any]):
         """Handle agent registration event"""
-        agent_id = event_data.get('agent_id')
-        system_id = event_data.get('system_id')
+        agent_id = event_data.get("agent_id")
+        system_id = event_data.get("system_id")
 
         if agent_id and system_id:
             # Create agent profile if not exists
@@ -786,17 +887,17 @@ class MetaLayerCore:
                 self.agents[agent_id] = AgentProfile(
                     agent_id=agent_id,
                     name=agent_id,  # Will be updated when agent provides more info
-                    agent_type='unknown',
+                    agent_type="unknown",
                     capabilities=[],
                     system_origin=system_id,
-                    state=AgentState.ACTIVE
+                    state=AgentState.ACTIVE,
                 )
 
                 self.logger.info(f"Registered new agent: {agent_id} from {system_id}")
 
     async def _on_agent_unregistered(self, event_data: Dict[str, Any]):
         """Handle agent unregistration event"""
-        agent_id = event_data.get('agent_id')
+        agent_id = event_data.get("agent_id")
 
         if agent_id in self.agents:
             await self._remove_stale_agent(agent_id)
@@ -806,69 +907,77 @@ class MetaLayerCore:
     async def _handle_coordination_request(self, message: ConsciousnessMessage):
         """Handle agent coordination requests"""
         try:
-            request_type = message.payload.get('request_type')
+            request_type = message.payload.get("request_type")
 
-            if request_type == 'agent_discovery':
+            if request_type == "agent_discovery":
                 await self._handle_agent_discovery(message)
-            elif request_type == 'capability_query':
+            elif request_type == "capability_query":
                 await self._handle_capability_query(message)
-            elif request_type == 'collaboration_request':
+            elif request_type == "collaboration_request":
                 await self._handle_collaboration_request(message)
             else:
-                self.logger.warning(f"Unknown coordination request type: {request_type}")
+                self.logger.warning(
+                    f"Unknown coordination request type: {request_type}"
+                )
 
         except Exception as e:
             self.logger.error(f"Error handling coordination request: {e}")
 
     async def _handle_agent_discovery(self, message: ConsciousnessMessage):
         """Handle agent discovery requests"""
-        criteria = message.payload.get('criteria', {})
+        criteria = message.payload.get("criteria", {})
 
         # Find agents matching criteria
         matching_agents = []
         for agent in self.agents.values():
             if self._agent_matches_criteria(agent, criteria):
-                matching_agents.append({
-                    'agent_id': agent.agent_id,
-                    'name': agent.name,
-                    'capabilities': agent.capabilities,
-                    'consciousness_level': agent.consciousness_level,
-                    'success_rate': agent.success_rate,
-                    'state': agent.state.value
-                })
+                matching_agents.append(
+                    {
+                        "agent_id": agent.agent_id,
+                        "name": agent.name,
+                        "capabilities": agent.capabilities,
+                        "consciousness_level": agent.consciousness_level,
+                        "success_rate": agent.success_rate,
+                        "state": agent.state.value,
+                    }
+                )
 
         # Send response
         if message.requires_response:
             response = ConsciousnessMessage(
-                source='meta_layer_core',
+                source="meta_layer_core",
                 destination=message.source,
-                message_type='agent_discovery_response',
-                payload={'matching_agents': matching_agents},
+                message_type="agent_discovery_response",
+                payload={"matching_agents": matching_agents},
                 timestamp=datetime.now(),
-                correlation_id=message.correlation_id
+                correlation_id=message.correlation_id,
             )
             self.consciousness_bridge.send_message(response)
 
-    def _agent_matches_criteria(self, agent: AgentProfile, criteria: Dict[str, Any]) -> bool:
+    def _agent_matches_criteria(
+        self, agent: AgentProfile, criteria: Dict[str, Any]
+    ) -> bool:
         """Check if an agent matches discovery criteria"""
         try:
             # Check capabilities
-            required_capabilities = criteria.get('capabilities', [])
-            if required_capabilities and not all(cap in agent.capabilities for cap in required_capabilities):
+            required_capabilities = criteria.get("capabilities", [])
+            if required_capabilities and not all(
+                cap in agent.capabilities for cap in required_capabilities
+            ):
                 return False
 
             # Check consciousness level
-            min_consciousness = criteria.get('min_consciousness', 0.0)
+            min_consciousness = criteria.get("min_consciousness", 0.0)
             if agent.consciousness_level < min_consciousness:
                 return False
 
             # Check state
-            required_states = criteria.get('states', [])
+            required_states = criteria.get("states", [])
             if required_states and agent.state.value not in required_states:
                 return False
 
             # Check system origin
-            system_origins = criteria.get('system_origins', [])
+            system_origins = criteria.get("system_origins", [])
             if system_origins and agent.system_origin not in system_origins:
                 return False
 
@@ -887,34 +996,36 @@ class MetaLayerCore:
         for agent in self.agents.values():
             for capability in agent.capabilities:
                 all_capabilities.add(capability)
-                capability_agents[capability].append({
-                    'agent_id': agent.agent_id,
-                    'consciousness_level': agent.consciousness_level,
-                    'success_rate': agent.success_rate
-                })
+                capability_agents[capability].append(
+                    {
+                        "agent_id": agent.agent_id,
+                        "consciousness_level": agent.consciousness_level,
+                        "success_rate": agent.success_rate,
+                    }
+                )
 
         response_data = {
-            'all_capabilities': list(all_capabilities),
-            'capability_agents': dict(capability_agents),
-            'total_agents': len(self.agents)
+            "all_capabilities": list(all_capabilities),
+            "capability_agents": dict(capability_agents),
+            "total_agents": len(self.agents),
         }
 
         if message.requires_response:
             response = ConsciousnessMessage(
-                source='meta_layer_core',
+                source="meta_layer_core",
                 destination=message.source,
-                message_type='capability_query_response',
+                message_type="capability_query_response",
                 payload=response_data,
                 timestamp=datetime.now(),
-                correlation_id=message.correlation_id
+                correlation_id=message.correlation_id,
             )
             self.consciousness_bridge.send_message(response)
 
     async def _handle_collaboration_request(self, message: ConsciousnessMessage):
         """Handle collaboration requests between agents"""
-        agent1_id = message.payload.get('agent1_id')
-        agent2_id = message.payload.get('agent2_id')
-        collaboration_type = message.payload.get('collaboration_type', 'general')
+        agent1_id = message.payload.get("agent1_id")
+        agent2_id = message.payload.get("agent2_id")
+        collaboration_type = message.payload.get("collaboration_type", "general")
 
         if agent1_id in self.agents and agent2_id in self.agents:
             agent1 = self.agents[agent1_id]
@@ -928,26 +1039,31 @@ class MetaLayerCore:
                 agent1.connections.add(agent2_id)
                 agent2.connections.add(agent1_id)
 
-                await self._emit_event('collaboration_established', {
-                    'agent1_id': agent1_id,
-                    'agent2_id': agent2_id,
-                    'collaboration_type': collaboration_type,
-                    'synergy': synergy
-                })
+                await self._emit_event(
+                    "collaboration_established",
+                    {
+                        "agent1_id": agent1_id,
+                        "agent2_id": agent2_id,
+                        "collaboration_type": collaboration_type,
+                        "synergy": synergy,
+                    },
+                )
 
             # Send response
             if message.requires_response:
                 response = ConsciousnessMessage(
-                    source='meta_layer_core',
+                    source="meta_layer_core",
                     destination=message.source,
-                    message_type='collaboration_response',
+                    message_type="collaboration_response",
                     payload={
-                        'success': synergy > 0.5,
-                        'synergy': synergy,
-                        'message': 'Collaboration established' if synergy > 0.5 else 'Insufficient synergy'
+                        "success": synergy > 0.5,
+                        "synergy": synergy,
+                        "message": "Collaboration established"
+                        if synergy > 0.5
+                        else "Insufficient synergy",
                     },
                     timestamp=datetime.now(),
-                    correlation_id=message.correlation_id
+                    correlation_id=message.correlation_id,
                 )
                 self.consciousness_bridge.send_message(response)
 
@@ -958,13 +1074,15 @@ class MetaLayerCore:
 
             # Create consciousness task
             task = ConsciousnessTask(
-                task_id=task_data.get('task_id', str(uuid.uuid4())),
-                task_type=task_data.get('task_type', 'generic'),
-                description=task_data.get('description', ''),
-                priority=task_data.get('priority', 5),
-                required_capabilities=task_data.get('required_capabilities', []),
-                payload=task_data.get('payload', {}),
-                deadline=datetime.fromisoformat(task_data['deadline']) if task_data.get('deadline') else None
+                task_id=task_data.get("task_id", str(uuid.uuid4())),
+                task_type=task_data.get("task_type", "generic"),
+                description=task_data.get("description", ""),
+                priority=task_data.get("priority", 5),
+                required_capabilities=task_data.get("required_capabilities", []),
+                payload=task_data.get("payload", {}),
+                deadline=datetime.fromisoformat(task_data["deadline"])
+                if task_data.get("deadline")
+                else None,
             )
 
             # Add to active tasks
@@ -973,16 +1091,16 @@ class MetaLayerCore:
             # Send response
             if message.requires_response:
                 response = ConsciousnessMessage(
-                    source='meta_layer_core',
+                    source="meta_layer_core",
                     destination=message.source,
-                    message_type='task_assignment_response',
+                    message_type="task_assignment_response",
                     payload={
-                        'task_id': task.task_id,
-                        'status': 'accepted',
-                        'message': 'Task queued for assignment'
+                        "task_id": task.task_id,
+                        "status": "accepted",
+                        "message": "Task queued for assignment",
                     },
                     timestamp=datetime.now(),
-                    correlation_id=message.correlation_id
+                    correlation_id=message.correlation_id,
                 )
                 self.consciousness_bridge.send_message(response)
 
@@ -993,37 +1111,42 @@ class MetaLayerCore:
 
     async def _handle_consciousness_enhancement(self, message: ConsciousnessMessage):
         """Handle consciousness enhancement requests"""
-        agent_id = message.payload.get('agent_id')
-        enhancement_type = message.payload.get('enhancement_type', 'general')
-        enhancement_value = message.payload.get('enhancement_value', 0.0)
+        agent_id = message.payload.get("agent_id")
+        enhancement_type = message.payload.get("enhancement_type", "general")
+        enhancement_value = message.payload.get("enhancement_value", 0.0)
 
         if agent_id in self.agents:
             agent = self.agents[agent_id]
 
-            if enhancement_type == 'level_boost':
+            if enhancement_type == "level_boost":
                 old_level = agent.consciousness_level
-                agent.consciousness_level = min(1.0, agent.consciousness_level + enhancement_value)
+                agent.consciousness_level = min(
+                    1.0, agent.consciousness_level + enhancement_value
+                )
 
-                await self._emit_event('consciousness_enhanced', {
-                    'agent_id': agent_id,
-                    'old_level': old_level,
-                    'new_level': agent.consciousness_level,
-                    'enhancement_type': enhancement_type
-                })
+                await self._emit_event(
+                    "consciousness_enhanced",
+                    {
+                        "agent_id": agent_id,
+                        "old_level": old_level,
+                        "new_level": agent.consciousness_level,
+                        "enhancement_type": enhancement_type,
+                    },
+                )
 
             # Send response
             if message.requires_response:
                 response = ConsciousnessMessage(
-                    source='meta_layer_core',
+                    source="meta_layer_core",
                     destination=message.source,
-                    message_type='consciousness_enhancement_response',
+                    message_type="consciousness_enhancement_response",
                     payload={
-                        'agent_id': agent_id,
-                        'new_consciousness_level': agent.consciousness_level,
-                        'success': True
+                        "agent_id": agent_id,
+                        "new_consciousness_level": agent.consciousness_level,
+                        "success": True,
                     },
                     timestamp=datetime.now(),
-                    correlation_id=message.correlation_id
+                    correlation_id=message.correlation_id,
                 )
                 self.consciousness_bridge.send_message(response)
 
@@ -1098,8 +1221,10 @@ class MetaLayerCore:
 
         self.logger.info("Meta-Layer Core shutdown complete")
 
+
 # Global instance for system-wide access
 _meta_layer_core_instance = None
+
 
 def get_meta_layer_core() -> MetaLayerCore:
     """Get the global meta-layer core instance"""
@@ -1108,11 +1233,13 @@ def get_meta_layer_core() -> MetaLayerCore:
         _meta_layer_core_instance = MetaLayerCore()
     return _meta_layer_core_instance
 
+
 async def initialize_meta_layer_core():
     """Initialize the global meta-layer core"""
     core = get_meta_layer_core()
     await core.initialize()
     return core
+
 
 if __name__ == "__main__":
     # Example usage and testing
@@ -1122,6 +1249,7 @@ if __name__ == "__main__":
 
         # Initialize consciousness bridge first
         from consciousness_bridge import initialize_consciousness_bridge
+
         await initialize_consciousness_bridge()
 
         # Initialize meta-layer core
@@ -1129,23 +1257,23 @@ if __name__ == "__main__":
 
         # Create test agents
         test_agent = AgentProfile(
-            agent_id='test_agent_001',
-            name='Test Agent Alpha',
-            agent_type='general_purpose',
-            capabilities=['data_analysis', 'pattern_recognition'],
-            system_origin='lyrixa_core',
-            consciousness_level=0.6
+            agent_id="test_agent_001",
+            name="Test Agent Alpha",
+            agent_type="general_purpose",
+            capabilities=["data_analysis", "pattern_recognition"],
+            system_origin="lyrixa_core",
+            consciousness_level=0.6,
         )
 
         core.register_agent(test_agent)
 
         # Create test task
         test_task = ConsciousnessTask(
-            task_id='test_task_001',
-            task_type='analysis',
-            description='Analyze test data patterns',
+            task_id="test_task_001",
+            task_type="analysis",
+            description="Analyze test data patterns",
             priority=3,
-            required_capabilities=['data_analysis']
+            required_capabilities=["data_analysis"],
         )
 
         core.submit_task(test_task)

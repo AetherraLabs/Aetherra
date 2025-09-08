@@ -10,12 +10,12 @@ This module integrates all Aetherra AI OS Intelligence Stack components
 into Lyrixa, providing real-time awareness and system orchestration.
 """
 
-import asyncio
+
 import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 # Add project root to path
 project_root = Path(__file__).parent.parent

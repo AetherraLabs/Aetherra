@@ -19,10 +19,7 @@ from pathlib import Path
 import pytest
 
 from Aetherra.aetherra_core.memory.memory_core import LyrixaMemorySystem
-from aetherra_service_registry import (
-    AetherraServiceRegistry,
-    ServiceStatus,
-)
+from aetherra_service_registry import AetherraServiceRegistry, ServiceStatus
 
 
 class DummyService:

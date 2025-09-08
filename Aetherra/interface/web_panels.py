@@ -9,9 +9,6 @@ Enhanced web panel templates for the hybrid interface.
 These provide beautiful, interactive visualizations for the native PySide6 interface.
 """
 
-from datetime import datetime
-import json
-
 
 def create_enhanced_dashboard_panel() -> str:
     """Create enhanced dashboard panel HTML"""

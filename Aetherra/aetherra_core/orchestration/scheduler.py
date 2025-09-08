@@ -13,16 +13,17 @@ of various Aetherra subsystems.
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 
 class TaskPriority(Enum):
     """Task priority levels."""
+
     LOW = 1
     NORMAL = 2
     HIGH = 3
@@ -31,6 +32,7 @@ class TaskPriority(Enum):
 
 class TaskStatus(Enum):
     """Task execution status."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -41,6 +43,7 @@ class TaskStatus(Enum):
 @dataclass
 class ScheduledTask:
     """A scheduled task with execution details."""
+
     task_id: str
     name: str
     func: Callable
@@ -115,7 +118,7 @@ class AetherraScheduler:
         priority: TaskPriority = TaskPriority.NORMAL,
         delay: float = 0,
         interval: Optional[float] = None,
-        max_runs: Optional[int] = None
+        max_runs: Optional[int] = None,
     ) -> str:
         """
         Schedule a task for execution.
@@ -147,7 +150,7 @@ class AetherraScheduler:
             priority=priority,
             interval=interval,
             next_run=next_run,
-            max_runs=max_runs
+            max_runs=max_runs,
         )
 
         self.tasks[task_id] = task
@@ -181,7 +184,7 @@ class AetherraScheduler:
                 "last_run": task.last_run.isoformat() if task.last_run else None,
                 "run_count": task.run_count,
                 "max_runs": task.max_runs,
-                "interval": task.interval
+                "interval": task.interval,
             }
             task_list.append(task_info)
 
@@ -209,9 +212,11 @@ class AetherraScheduler:
 
         # Find tasks ready to run
         for task in self.tasks.values():
-            if (task.status == TaskStatus.PENDING and
-                task.next_run and
-                task.next_run <= now):
+            if (
+                task.status == TaskStatus.PENDING
+                and task.next_run
+                and task.next_run <= now
+            ):
                 ready_tasks.append(task)
 
         # Sort by priority
@@ -246,7 +251,9 @@ class AetherraScheduler:
             if task.interval and (not task.max_runs or task.run_count < task.max_runs):
                 task.next_run = datetime.now() + timedelta(seconds=task.interval)
                 task.status = TaskStatus.PENDING
-                logger.debug(f"[LOOP] Rescheduled recurring task '{task.name}' for {task.next_run}")
+                logger.debug(
+                    f"[LOOP] Rescheduled recurring task '{task.name}' for {task.next_run}"
+                )
 
         except Exception as e:
             task.status = TaskStatus.FAILED
@@ -256,19 +263,24 @@ class AetherraScheduler:
         """Get scheduler status information."""
         task_counts = {}
         for status in TaskStatus:
-            task_counts[status.value] = sum(1 for t in self.tasks.values() if t.status == status)
+            task_counts[status.value] = sum(
+                1 for t in self.tasks.values() if t.status == status
+            )
 
         return {
             "running": self.running,
             "total_tasks": len(self.tasks),
             "task_counts": task_counts,
-            "next_task": self._get_next_task_info()
+            "next_task": self._get_next_task_info(),
         }
 
     def _get_next_task_info(self) -> Optional[Dict[str, Any]]:
         """Get information about the next task to run."""
-        pending_tasks = [t for t in self.tasks.values()
-                        if t.status == TaskStatus.PENDING and t.next_run is not None]
+        pending_tasks = [
+            t
+            for t in self.tasks.values()
+            if t.status == TaskStatus.PENDING and t.next_run is not None
+        ]
 
         if not pending_tasks:
             return None
@@ -279,7 +291,7 @@ class AetherraScheduler:
             "id": next_task.task_id,
             "name": next_task.name,
             "next_run": next_task.next_run.isoformat(),
-            "priority": next_task.priority.name
+            "priority": next_task.priority.name,
         }
 
 

@@ -298,7 +298,8 @@ class MemoryManager:
         """Initialize memory database"""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS memory_entries (
                     entry_id TEXT PRIMARY KEY,
                     key_name TEXT NOT NULL,
@@ -313,19 +314,26 @@ class MemoryManager:
                     size_bytes INTEGER NOT NULL,
                     compressed BOOLEAN DEFAULT FALSE
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_memory_key ON memory_entries(key_name)
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_memory_type ON memory_entries(memory_type)
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_memory_accessed ON memory_entries(accessed_at)
-            """)
+            """
+            )
 
             conn.commit()
         finally:

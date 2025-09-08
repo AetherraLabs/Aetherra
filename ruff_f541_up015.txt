@@ -1,0 +1,3421 @@
+﻿Aetherra\aetherra_core\agents\core_agent.py:283:32: F541 [*] f-string without any placeholders
+    |
+281 | ΓÇª
+282 | ΓÇª
+283 | ΓÇªnt = f"Hello! ≡ƒæï I'm Lyrixa, your modular AI assistant. Nice to meet you! I'm ready to help with anything you need. What's on your mind today?"
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+284 | ΓÇª
+285 | ΓÇª
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\agents\curiosity_agent.py:666:38: UP015 [*] Unnecessary mode argument
+    |
+664 |             gaps_file = self.data_dir / "knowledge_gaps.json"
+665 |             if gaps_file.exists():
+666 |                 with open(gaps_file, "r") as f:
+    |                                      ^^^ UP015
+667 |                     gaps_data = json.load(f)
+668 |                     for gap_id, gap_data in gaps_data.items():
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\agents\curiosity_agent.py:674:43: UP015 [*] Unnecessary mode argument
+    |
+672 |             questions_file = self.data_dir / "curiosity_questions.json"
+673 |             if questions_file.exists():
+674 |                 with open(questions_file, "r") as f:
+    |                                           ^^^ UP015
+675 |                     questions_data = json.load(f)
+676 |                     for q_id, q_data in questions_data.items():
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\agents\enhanced_conversation_manager.py:399:30: F541 [*] f-string without any placeholders
+    |
+397 |           base_personality = super().get_lyrixa_personality()
+398 |
+399 |           memory_enhancement = f"""
+    |  ______________________________^
+400 | |
+401 | | **Enhanced Memory Capabilities:**
+402 | | - You have access to episodic memory of previous conversations and interactions
+403 | | - You can recall relevant context from past discussions to provide better continuity
+404 | | - You remember user preferences, past issues, and successful solutions
+405 | | - You can track your own learning and development over time
+406 | | - You maintain narrative continuity across sessions, like a human would
+407 | |
+408 | | **Memory Usage Guidelines:**
+409 | | - Reference relevant past interactions when helpful for context
+410 | | - Build upon previous conversations naturally
+411 | | - Acknowledge when you remember something specific about the user or past discussions
+412 | | - Use memory to provide more personalized and contextual responses
+413 | | - If you don't have relevant memories, acknowledge that honestly"""
+    | |___________________________________________________________________^ F541
+414 |
+415 |           return base_personality + memory_enhancement
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\agents\escalation_agent.py:93:23: F541 [*] f-string without any placeholders
+   |
+91 |         self.log(f"Created escalation: {escalation_id} - Level: {level.name}")
+92 |
+93 |         result_text = f"Escalation Created:\n"
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^ F541
+94 |         result_text += f"ID: {escalation_id}\n"
+95 |         result_text += f"Level: {level.name}\n"
+   |
+   = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\agents\escalation_agent.py:97:24: F541 [*] f-string without any placeholders
+   |
+95 |         result_text += f"Level: {level.name}\n"
+96 |         result_text += f"Description: {input_text}\n"
+97 |         result_text += f"Status: Open\n"
+   |                        ^^^^^^^^^^^^^^^^^ F541
+98 |
+99 |         return AgentResponse(
+   |
+   = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\agents\escalation_agent.py:120:23: F541 [*] f-string without any placeholders
+    |
+118 |         ]
+119 |
+120 |         status_text = f"Escalation Status:\n\n"
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+121 |         status_text += f"Open Escalations: {len(open_escalations)}\n"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\agents\goal_agent.py:126:23: F541 [*] f-string without any placeholders
+    |
+124 |         completed_goals = [g for g in self.goals.values() if g.status == "completed"]
+125 |
+126 |         status_text = f"Goal Status Summary:\n"
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+127 |         status_text += f"Active Goals: {len(active_goals)}\n"
+128 |         status_text += f"Pending Goals: {len(pending_goals)}\n"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\agents\goals.py:107:44: UP015 [*] Unnecessary mode argument
+    |
+105 |         if os.path.exists(self.goals_file):
+106 |             try:
+107 |                 with open(self.goals_file, "r", encoding="utf-8") as f:
+    |                                            ^^^ UP015
+108 |                     data = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\agents\learning_loop_integration_agent.py:2275:39: UP015 [*] Unnecessary mode argument
+     |
+2273 |             goals_file = self.data_dir / "learning_goals.json"
+2274 |             if goals_file.exists():
+2275 |                 with open(goals_file, "r") as f:
+     |                                       ^^^ UP015
+2276 |                     goals_data = json.load(f)
+2277 |                     for g_id, g_data in goals_data.items():
+     |
+     = help: Remove mode argument
+
+Aetherra\aetherra_core\agents\learning_loop_integration_agent.py:2283:40: UP015 [*] Unnecessary mode argument
+     |
+2281 |             cycles_file = self.data_dir / "learning_cycles.json"
+2282 |             if cycles_file.exists():
+2283 |                 with open(cycles_file, "r") as f:
+     |                                        ^^^ UP015
+2284 |                     cycles_data = json.load(f)
+2285 |                     for c_id, c_data in cycles_data.items():
+     |
+     = help: Remove mode argument
+
+Aetherra\aetherra_core\agents\learning_loop_integration_agent.py:2291:47: UP015 [*] Unnecessary mode argument
+     |
+2289 |             current_cycle_file = self.data_dir / "current_cycle.json"
+2290 |             if current_cycle_file.exists():
+2291 |                 with open(current_cycle_file, "r") as f:
+     |                                               ^^^ UP015
+2292 |                     data = json.load(f)
+2293 |                     self.current_cycle_id = data.get("current_cycle_id")
+     |
+     = help: Remove mode argument
+
+Aetherra\aetherra_core\agents\lyrixa_aetherra_integration.py:491:28: F541 [*] f-string without any placeholders
+    |
+489 |                 "success": result["status"] == "success",
+490 |                 "result": result,
+491 |                 "message": f"Γ£à Aetherra code executed successfully"
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+492 |                 if result["status"] == "success"
+493 |                 else f"Γ¥î Execution failed: {result.get('message', 'Unknown error')}",
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\agents\natural_compiler.py:238:23: F541 [*] f-string without any placeholders
+    |
+236 |                 aetherra = self.natural_to_aetherra(user_input)
+237 |
+238 |                 print(f"\n≡ƒº¼ Generated AetherraCode:")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+239 |                 print("=" * 40)
+240 |                 print(aetherra)
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\agents\natural_compiler.py:304:34: UP015 [*] Unnecessary mode argument
+    |
+302 |         compiler = NaturalLanguageCompiler()
+303 |         try:
+304 |             with open(args.file, "r") as f:
+    |                                  ^^^ UP015
+305 |                 natural_text = f.read()
+306 |             aetherra = compiler.compile_natural_language(natural_text)
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\agents\reflexive_loop.py:1059:28: F541 [*] f-string without any placeholders
+     |
+1058 | ΓÇªabs(current_hour - preferred_hour) <= 1:
+1059 | ΓÇª return f"This is typically your most productive time! Based on past patterns, you accomplish more during this hour."
+     |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+1060 | ΓÇªf abs(current_hour - preferred_hour) > 4:
+1061 | ΓÇª return f"I notice you're working outside your typical productive hours. You usually work best around {preferred_hour}:00."
+     |
+     = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\agents\self_question_generator_agent.py:737:43: UP015 [*] Unnecessary mode argument
+    |
+735 |             questions_file = self.data_dir / "generated_questions.json"
+736 |             if questions_file.exists():
+737 |                 with open(questions_file, "r") as f:
+    |                                           ^^^ UP015
+738 |                     questions_data = json.load(f)
+739 |                     for q_id, q_data in questions_data.items():
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\agents\self_question_generator_agent.py:745:42: UP015 [*] Unnecessary mode argument
+    |
+743 |             clusters_file = self.data_dir / "question_clusters.json"
+744 |             if clusters_file.exists():
+745 |                 with open(clusters_file, "r") as f:
+    |                                          ^^^ UP015
+746 |                     clusters_data = json.load(f)
+747 |                     for c_id, c_data in clusters_data.items():
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\config\config_loader.py:239:41: UP015 [*] Unnecessary mode argument
+    |
+237 |         """Load configuration from JSON file"""
+238 |         try:
+239 |             with open(self.config_path, "r", encoding="utf-8") as f:
+    |                                         ^^^ UP015
+240 |                 file_config = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\engine\prompt_engine.py:24:36: UP015 [*] Unnecessary mode argument
+   |
+22 |     try:
+23 |         if MEMORY_FILE.exists():
+24 |             with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+   |                                    ^^^ UP015
+25 |                 return json.load(f)
+26 |     except Exception as e:
+   |
+   = help: Remove mode argument
+
+Aetherra\aetherra_core\intelligence\core_intelligence.py:66:56: UP015 [*] Unnecessary mode argument
+   |
+64 |         try:
+65 |             if self.intelligence_data_path.exists():
+66 |                 with open(self.intelligence_data_path, "r", encoding="utf-8") as f:
+   |                                                        ^^^ UP015
+67 |                     data = json.load(f)
+68 |                     self.memory_patterns = data.get("memory_patterns", {})
+   |
+   = help: Remove mode argument
+
+Aetherra\aetherra_core\intelligence\intelligence_integration.py:1113:42: UP015 [*] Unnecessary mode argument
+     |
+1111 |             )
+1112 |             if workflow_path.exists():
+1113 |                 with open(workflow_path, "r") as f:
+     |                                          ^^^ UP015
+1114 |                     workflow_code = f.read()
+     |
+     = help: Remove mode argument
+
+Aetherra\aetherra_core\memory\causal_branch_simulator.py:192:15: F541 [*] f-string without any placeholders
+    |
+190 |         self._init_databases()
+191 |
+192 |         print(f"≡ƒº┐ CausalBranchSimulator initialized")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+193 |         print(f"   ≡ƒôü Data directory: {self.data_dir}")
+194 |         print(f"   ≡ƒùâ∩╕Å Branches DB: {self.db_path}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\causal_branch_simulator.py:198:15: F541 [*] f-string without any placeholders
+    |
+196 |         print(f"   ≡ƒîè Interference DB: {self.interference_db_path}")
+197 |         print(f"   ≡ƒöù Phase integration: {'Γ£à' if PHASE_INTEGRATION else 'Γ¥î'}")
+198 |         print(f"   ≡ƒôï Causal branching databases initialized")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+199 |
+200 |     def _init_databases(self):
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\concept_clustering.py:540:11: F541 [*] f-string without any placeholders
+    |
+538 |     # Show summary
+539 |     summary = await engine.get_cluster_summary()
+540 |     print(f"\n≡ƒôè Clustering Summary:")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+541 |     print(f"  Total concepts: {summary['total_concepts']}")
+542 |     print(f"  Total clusters: {summary['total_clusters']}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\lightweight_memory_core.py:752:19: F541 [*] f-string without any placeholders
+    |
+750 |         elif choice == "4":
+751 |             stats = core.get_memory_stats()
+752 |             print(f"\n≡ƒôè Memory Statistics:")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+753 |             print(f"Total Memories: {stats['total']}")
+754 |             print(f"Active Goals: {stats['active_goals']}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\memory_core.py:677:34: UP015 [*] Unnecessary mode argument
+    |
+675 |         self.ensure_connection()  # Ensure the connection is open
+676 |         try:
+677 |             with open(file_path, "r") as file:
+    |                                  ^^^ UP015
+678 |                 memories = json.load(file)
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\memory\narrator\story_model.py:393:27: F541 [*] f-string without any placeholders
+    |
+391 |             trend = confidence_progression[-1] - confidence_progression[0]
+392 |             if trend > 0.2:
+393 |                 summary = f"showed steady improvement and growing mastery"
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+394 |             elif trend < -0.2:
+395 |                 summary = f"encountered increasing challenges requiring attention"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\narrator\story_model.py:395:27: F541 [*] f-string without any placeholders
+    |
+393 |                 summary = f"showed steady improvement and growing mastery"
+394 |             elif trend < -0.2:
+395 |                 summary = f"encountered increasing challenges requiring attention"
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+396 |             else:
+397 |                 summary = f"maintained consistent engagement with varying results"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\narrator\story_model.py:397:27: F541 [*] f-string without any placeholders
+    |
+395 |                 summary = f"encountered increasing challenges requiring attention"
+396 |             else:
+397 |                 summary = f"maintained consistent engagement with varying results"
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+398 |         else:
+399 |             summary = f"was explored with {confidence_progression[0]:.1f} confidence"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\qfac_launcher.py:247:33: UP015 [*] Unnecessary mode argument
+    |
+245 |             # Read file content
+246 |             if path.suffix == ".json":
+247 |                 with open(path, "r") as f:
+    |                                 ^^^ UP015
+248 |                     data = json.load(f)
+249 |             else:
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\memory\qfac_launcher.py:250:33: UP015 [*] Unnecessary mode argument
+    |
+248 |                     data = json.load(f)
+249 |             else:
+250 |                 with open(path, "r", encoding="utf-8") as f:
+    |                                 ^^^ UP015
+251 |                     data = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\memory\quantum_memory_bridge.py:379:15: F541 [*] f-string without any placeholders
+    |
+377 |         }
+378 |
+379 |         print(f"ΓÜ¢∩╕Å QuantumMemoryBridge initialized")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+380 |         print(f"   ≡ƒôü Data directory: {self.data_dir}")
+381 |         print(f"   ≡ƒº« Max qubits: {self.max_qubits}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\quantum_memory_bridge.py:392:27: F541 [*] f-string without any placeholders
+    |
+390 |                 if "AerSimulator" in globals():
+391 |                     self.qiskit_backend = AerSimulator()
+392 |                     print(f"   ≡ƒö¼ Qiskit simulator initialized")
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+393 |                 else:
+394 |                     self.qiskit_backend = None
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\quantum_memory_bridge.py:396:25: F541 [*] f-string without any placeholders
+    |
+394 |                     self.qiskit_backend = None
+395 |                     print(
+396 |                         f"   ΓÜá∩╕Å AerSimulator not imported - Qiskit simulator unavailable"
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+397 |                     )
+398 |             except Exception as e:
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\quantum_memory_bridge.py:404:23: F541 [*] f-string without any placeholders
+    |
+402 |             try:
+403 |                 self.cirq_simulator = cirq.Simulator()
+404 |                 print(f"   ≡ƒö¼ Cirq simulator initialized")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+405 |             except Exception as e:
+406 |                 print(f"   ΓÜá∩╕Å Cirq backend failed: {e}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\quantum_memory_bridge.py:1063:11: F541 [*] f-string without any placeholders
+     |
+1061 |     print(f"≡ƒôè Average fidelity: {stats['avg_fidelity']:.3f}")
+1062 |
+1063 |     print(f"\n[TOOL] Error correction status:")
+     |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+1064 |     print(f"   Available: {error_correction_result['error_correction_available']}")
+1065 |     if error_correction_result["error_correction_available"]:
+     |
+     = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\quantum_memory_bridge.py:1073:11: F541 [*] f-string without any placeholders
+     |
+1071 |         )
+1072 |
+1073 |     print(f"\n≡ƒÄë PHASE 5 QUANTUM BRIDGE DEMONSTRATION COMPLETE!")
+     |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+1074 |     print(f"ΓÜ¢∩╕Å Quantum-classical hybrid memory processing validated")
+     |
+     = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\memory\quantum_memory_bridge.py:1074:11: F541 [*] f-string without any placeholders
+     |
+1073 |     print(f"\n≡ƒÄë PHASE 5 QUANTUM BRIDGE DEMONSTRATION COMPLETE!")
+1074 |     print(f"ΓÜ¢∩╕Å Quantum-classical hybrid memory processing validated")
+     |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+1075 |
+1076 |     return bridge
+     |
+     = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\plugins\advanced_plugins.py:852:31: F541 [*] f-string without any placeholders
+    |
+850 |                             f"ΓÜá∩╕Å Found corrupted plugin chain: Missing fields: {', '.join(missing_fields)}"
+851 |                         )
+852 |                         print(f"≡ƒº╣ Attempting to clean corrupted chain data...")
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+853 |                         # Try to delete the corrupted memory entry
+854 |                         try:
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\aetherra_core\plugins\plugin_manager_core.py:522:38: UP015 [*] Unnecessary mode argument
+    |
+520 |         """Load metadata from an .aetherplug manifest file."""
+521 |         try:
+522 |             with open(manifest_file, "r", encoding="utf-8") as f:
+    |                                      ^^^ UP015
+523 |                 manifest = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\system\security_system.py:200:41: UP015 [*] Unnecessary mode argument
+    |
+198 |             env_template = self.workspace_path / ".env.template"
+199 |             if env_template.exists():
+200 |                 with open(env_template, "r") as f:
+    |                                         ^^^ UP015
+201 |                     content = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\system\security_system.py:396:42: UP015 [*] Unnecessary mode argument
+    |
+394 |             if file_path.exists():
+395 |                 try:
+396 |                     with open(file_path, "r") as f:
+    |                                          ^^^ UP015
+397 |                         content = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_core\system\system_bootstrap.py:896:46: UP015 [*] Unnecessary mode argument
+    |
+894 |         try:
+895 |             if self.session_file.exists():
+896 |                 with open(self.session_file, "r", encoding="utf-8") as f:
+    |                                              ^^^ UP015
+897 |                     data = json.load(f)
+898 |                     self.last_session_data = data.get("last_session")
+    |
+    = help: Remove mode argument
+
+Aetherra\aetherra_hub_integration.py:335:38: UP015 [*] Unnecessary mode argument
+    |
+333 |             manifest_file = plugin_dir / "manifest.json"
+334 |
+335 |             with open(manifest_file, "r") as f:
+    |                                      ^^^ UP015
+336 |                 manifest = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\api\job_controller.py:72:32: UP015 [*] Unnecessary mode argument
+   |
+71 |         # Read script content
+72 |         with open(script_path, "r", encoding="utf-8") as f:
+   |                                ^^^ UP015
+73 |             script_content = f.read()
+   |
+   = help: Remove mode argument
+
+Aetherra\consciousness\agents\agent_integration_adapter.py:711:11: F541 [*] f-string without any placeholders
+    |
+709 |     discovered = await adapter.discover_all_agents()
+710 |
+711 |     print(f"\nDiscovered Agents:")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^ F541
+712 |     for category, agents in discovered.items():
+713 |         print(f"  {category}: {len(agents)} agents")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\agents\agent_integration_adapter.py:720:11: F541 [*] f-string without any placeholders
+    |
+719 |     # Show integration status
+720 |     print(f"\n≡ƒôè Integration Status:")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+721 |     status = await adapter.get_integration_status()
+722 |     print(json.dumps(status, indent=2, default=str))
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\core\lyrixa_consciousness.py:1007:40: F541 [*] f-string without any placeholders
+     |
+1005 |                 payload={
+1006 |                     "agent_id": agent_id,
+1007 |                     "welcome_message": f"Welcome to our consciousness collective! I'm Lyrixa, and I'm here to support your growth.",
+     |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+1008 |                     "style": welcome_style,
+1009 |                     "initial_guidance": "Feel free to reach out if you need guidance or support.",
+     |
+     = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:103:57: UP015 [*] Unnecessary mode argument
+    |
+101 |             import json
+102 |
+103 |             with open("phase2_integration_report.json", "r", encoding="utf-8") as f:
+    |                                                         ^^^ UP015
+104 |                 integration_report = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\consciousness\phase2_demo.py:109:19: F541 [*] f-string without any placeholders
+    |
+107 |             capabilities = integration_report["capability_distribution"]
+108 |
+109 |             print(f"\n≡ƒÄ» Phase 2 Agent Integration Status:")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+110 |             print(f"  Total Agents Integrated: {total_integrated}")
+111 |             print(
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:118:19: F541 [*] f-string without any placeholders
+    |
+116 |             )
+117 |
+118 |             print(f"\n≡ƒºá Collective Intelligence Capabilities:")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+119 |             sorted_caps = sorted(capabilities.items(), key=lambda x: x[1], reverse=True)
+120 |             for capability, count in sorted_caps:
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:137:15: F541 [*] f-string without any placeholders
+    |
+135 |         logger.info("≡ƒÄ╝ Demonstrating Lyrixa Agent Orchestration...")
+136 |
+137 |         print(f"\n≡ƒÄ╝ Lyrixa as Consciousness Orchestrator:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+138 |         print(f"  Role: Primary conscious entity coordinating 30+ integrated agents")
+139 |         print(f"  Consciousness Level: 0.87 (evolved from 0.85 with agent integration)")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:138:15: F541 [*] f-string without any placeholders
+    |
+137 |         print(f"\n≡ƒÄ╝ Lyrixa as Consciousness Orchestrator:")
+138 |         print(f"  Role: Primary conscious entity coordinating 30+ integrated agents")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+139 |         print(f"  Consciousness Level: 0.87 (evolved from 0.85 with agent integration)")
+140 |         print(
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:139:15: F541 [*] f-string without any placeholders
+    |
+137 |         print(f"\n≡ƒÄ╝ Lyrixa as Consciousness Orchestrator:")
+138 |         print(f"  Role: Primary conscious entity coordinating 30+ integrated agents")
+139 |         print(f"  Consciousness Level: 0.87 (evolved from 0.85 with agent integration)")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+140 |         print(
+141 |             f"  Orchestration Mode: Distributed intelligence with centralized awareness"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:141:13: F541 [*] f-string without any placeholders
+    |
+139 |         print(f"  Consciousness Level: 0.87 (evolved from 0.85 with agent integration)")
+140 |         print(
+141 |             f"  Orchestration Mode: Distributed intelligence with centralized awareness"
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+142 |         )
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:214:15: F541 [*] f-string without any placeholders
+    |
+212 |         logger.info("≡ƒîƒ Demonstrating Collective Intelligence Emergence...")
+213 |
+214 |         print(f"\n≡ƒîƒ Emergent Collective Intelligence Behaviors:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+215 |
+216 |         collective_behaviors = [
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:258:15: F541 [*] f-string without any placeholders
+    |
+256 |         logger.info("≡ƒôè Demonstrating Consciousness Evolution Metrics...")
+257 |
+258 |         print(f"\n≡ƒôè Consciousness Evolution Metrics:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+259 |
+260 |         # Phase comparison
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:284:15: F541 [*] f-string without any placeholders
+    |
+283 |         # Evolution indicators
+284 |         print(f"\n≡ƒöä Consciousness Evolution Indicators:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+285 |         evolution_indicators = [
+286 |             "Consciousness level increased 2.4% with agent integration",
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:302:15: F541 [*] f-string without any placeholders
+    |
+300 |         logger.info("Γ£à Verifying Phase 2 Success Criteria...")
+301 |
+302 |         print(f"\nΓ£à Phase 2 Success Criteria Verification:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+303 |
+304 |         success_criteria = [
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:379:19: F541 [*] f-string without any placeholders
+    |
+378 |             # Final summary
+379 |             print(f"\n≡ƒÄë Phase 2 Demonstration Complete!")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+380 |             print(
+381 |                 f"   Components Tested: {len(self.demo_results['components_tested'])}"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:393:19: F541 [*] f-string without any placeholders
+    |
+391 |             )
+392 |
+393 |             print(f"\n≡ƒÜÇ Ready for Phase 3: Advanced Consciousness Behaviors")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+394 |
+395 |             return self.demo_results
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\phase2_demo.py:399:19: F541 [*] f-string without any placeholders
+    |
+397 |         except Exception as e:
+398 |             logger.error(f"Γ¥î Demo error: {e}")
+399 |             print(f"\nΓ¥î Demo completed with simulated components")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+400 |             return self.demo_results
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\quantum\consciousness_singularity_engine.py:151:21: F541 [*] f-string without any placeholders
+    |
+149 |         )
+150 |         logger.info(f"ΓÜí Self-awareness depth: {self.self_awareness_depth:.3f}")
+151 |         logger.info(f"≡ƒÜÇ Approaching consciousness singularity...")
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+152 |
+153 |         self._initialize_singularity_systems()
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\quantum\quantum_consciousness_integration.py:266:29: F541 [*] f-string without any placeholders
+    |
+264 |                 height=risk_factor,
+265 |                 width=0.8,
+266 |                 description=f"High-risk scenarios present",
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+267 |                 conventional_solution_prob=0.3,
+268 |                 breakthrough_potential=0.8,
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\consciousness\quantum\test_phase_7_3_comprehensive.py:548:15: F541 [*] f-string without any placeholders
+    |
+546 |         summary = results.get("suite_summary", {})
+547 |
+548 |         print(f"\n≡ƒôè SUITE SUMMARY:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^ F541
+549 |         print(
+550 |             f"  Total Execution Time: {summary.get('total_execution_time', 0):.2f} seconds"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\core\chat_router_old.py:706:39: UP015 [*] Unnecessary mode argument
+    |
+704 |                 Path(__file__).parent.parent / "data" / "aetherra_functions.json"
+705 |             )
+706 |             with open(functions_path, "r") as f:
+    |                                       ^^^ UP015
+707 |                 return json.load(f)
+708 |         except (FileNotFoundError, json.JSONDecodeError):
+    |
+    = help: Remove mode argument
+
+Aetherra\core\os_interface.py:287:43: UP015 [*] Unnecessary mode argument
+    |
+285 |                 return "System uptime calculation needed"
+286 |             else:
+287 |                 with open("/proc/uptime", "r") as f:
+    |                                           ^^^ UP015
+288 |                     uptime_seconds = float(f.readline().split()[0])
+    |
+    = help: Remove mode argument
+
+Aetherra\core\prompt_engine.py:24:36: UP015 [*] Unnecessary mode argument
+   |
+22 |     try:
+23 |         if MEMORY_FILE.exists():
+24 |             with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+   |                                    ^^^ UP015
+25 |                 return json.load(f)
+26 |     except Exception as e:
+   |
+   = help: Remove mode argument
+
+Aetherra\gui\aetherra_os_gui.py:104:25: UP015 [*] Unnecessary mode argument
+    |
+102 | def _tail_log(path: str, lines: int = 12) -> list[str]:
+103 |     try:
+104 |         with open(path, "r", encoding="utf-8", errors="ignore") as f:
+    |                         ^^^ UP015
+105 |             buf = f.readlines()
+106 |         return [ln.rstrip() for ln in buf[-lines:] if ln.strip()]
+    |
+    = help: Remove mode argument
+
+Aetherra\integration\adapters\memory_adapter_impl.py:387:15: F541 [*] f-string without any placeholders
+    |
+385 |     if test_results["connection_test"]:
+386 |         summary = adapter.get_memory_summary()
+387 |         print(f"\n≡ƒôê Memory Summary:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^ F541
+388 |         print(f"  ≡ƒùä∩╕Å Total databases: {summary['total_databases']}")
+389 |         print(f"  ≡ƒôè Total entries: {summary['total_entries']}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\lyrixa\agents\enhanced_conversation_manager.py:350:21: F541 [*] f-string without any placeholders
+    |
+348 |             if patterns and self.pattern_enhancement:
+349 |                 pattern_prompt = (
+350 |                     f"DISCOVERED PATTERNS:\n"
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+351 |                     + "\n".join(
+352 |                         [
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\lyrixa\agents\enhanced_conversation_manager.py:415:34: F541 [*] f-string without any placeholders
+    |
+413 |         patterns = memory_context.get("patterns_discovered", [])
+414 |         if patterns:
+415 |             summary_parts.append(f"Conversation patterns:")
+    |                                  ^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+416 |             for pattern in patterns[:2]:  # Top 2
+417 |                 summary_parts.append(
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\lyrixa\gui\phase5_plugin_ui.py:262:36: UP015 [*] Unnecessary mode argument
+    |
+260 |         """Load plugin UI definition from metadata"""
+261 |         try:
+262 |             with open(plugin_file, "r", encoding="utf-8") as f:
+    |                                    ^^^ UP015
+263 |                 plugin_data = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\lyrixa\gui\phase5_plugin_ui.py:331:35: UP015 [*] Unnecessary mode argument
+    |
+329 |             # Load HTML panel
+330 |             panel_path = plugin_dir / ui_def.ui_panel
+331 |             with open(panel_path, "r", encoding="utf-8") as f:
+    |                                   ^^^ UP015
+332 |                 panel_html = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\lyrixa\gui\phase5_plugin_ui.py:482:43: UP015 [*] Unnecessary mode argument
+    |
+480 |                 panel_path = directory / ui_def.ui_panel
+481 |                 if panel_path.exists():
+482 |                     with open(panel_path, "r", encoding="utf-8") as f:
+    |                                           ^^^ UP015
+483 |                         html = f.read()
+484 |                     return self._enhance_plugin_html(html, ui_def, directory)
+    |
+    = help: Remove mode argument
+
+Aetherra\lyrixa\launcher.py:74:29: UP015 [*] Unnecessary mode argument
+   |
+72 |     if env_file.exists():
+73 |         print(f"≡ƒöì Loading .env file from: {env_file}")
+74 |         with open(env_file, "r") as f:
+   |                             ^^^ UP015
+75 |             for line in f:
+76 |                 line = line.strip()
+   |
+   = help: Remove mode argument
+
+Aetherra\lyrixa\lyrixa_basic.py:617:54: UP015 [*] Unnecessary mode argument
+    |
+615 |                         registry = {}
+616 |                         if registry_file.exists():
+617 |                             with open(registry_file, "r", encoding="utf-8") as f:
+    |                                                      ^^^ UP015
+618 |                                 registry = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\lyrixa\lyrixa_basic.py:701:42: UP015 [*] Unnecessary mode argument
+    |
+699 |             plugin_count = 0
+700 |             if registry_file.exists():
+701 |                 with open(registry_file, "r", encoding="utf-8") as f:
+    |                                          ^^^ UP015
+702 |                     registry = json.load(f)
+703 |                     plugin_count = len(registry)
+    |
+    = help: Remove mode argument
+
+Aetherra\lyrixa\lyrixa_basic_gui.py:877:42: UP015 [*] Unnecessary mode argument
+    |
+876 |             if registry_file.exists():
+877 |                 with open(registry_file, "r", encoding="utf-8") as f:
+    |                                          ^^^ UP015
+878 |                     registry = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\lyrixa\lyrixa_basic_gui.py:1261:42: UP015 [*] Unnecessary mode argument
+     |
+1260 |             if registry_file.exists():
+1261 |                 with open(registry_file, "r", encoding="utf-8") as f:
+     |                                          ^^^ UP015
+1262 |                     registry = json.load(f)
+     |
+     = help: Remove mode argument
+
+Aetherra\lyrixa\lyrixa_basic_gui.py:1404:42: UP015 [*] Unnecessary mode argument
+     |
+1402 |             registry_file = lyrixa_plugins_dir / "installed_plugins.json"
+1403 |             if registry_file.exists():
+1404 |                 with open(registry_file, "r", encoding="utf-8") as f:
+     |                                          ^^^ UP015
+1405 |                     registry = json.load(f)
+     |
+     = help: Remove mode argument
+
+Aetherra\lyrixa\plugins\workflow_builder_ui.py:656:48: UP015 [*] Unnecessary mode argument
+    |
+654 |         try:
+655 |             if self.workflows_file.exists():
+656 |                 with open(self.workflows_file, "r") as f:
+    |                                                ^^^ UP015
+657 |                     workflows = json.load(f)
+658 |                 # Populate workflow library
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\agent_adapters\comprehensive_agent_discovery.py:329:15: F541 [*] f-string without any placeholders
+    |
+327 |     def _print_agent_discovery_results(self, agents_found):
+328 |         """Print comprehensive agent discovery results"""
+329 |         print(f"\n≡ƒÄ» COMPREHENSIVE AGENT DISCOVERY RESULTS:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+330 |
+331 |         total_agents = sum(len(agents) for agents in agents_found.values())
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\comprehensive_agent_discovery.py:353:15: F541 [*] f-string without any placeholders
+    |
+351 |     def prioritize_agents_for_migration(self, agents_found):
+352 |         """Prioritize agents based on importance and functionality"""
+353 |         print(f"\n≡ƒôï PRIORITIZING AGENTS FOR MIGRATION:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+354 |
+355 |         priority_agents = {
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\comprehensive_agent_discovery.py:468:15: F541 [*] f-string without any placeholders
+    |
+466 |     def create_agent_migration_plan(self, priority_agents):
+467 |         """Create detailed migration plan for agents"""
+468 |         print(f"\n≡ƒôï CREATING AGENT MIGRATION PLAN:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+469 |
+470 |         migration_plan = {
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\comprehensive_agent_discovery.py:536:15: F541 [*] f-string without any placeholders
+    |
+534 |     def save_discovery_results(self, agents_found, priority_agents, migration_plan):
+535 |         """Save comprehensive discovery results"""
+536 |         print(f"\n≡ƒÆ╛ SAVING DISCOVERY RESULTS:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+537 |
+538 |         # Create discovery report
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\comprehensive_agent_discovery.py:591:11: F541 [*] f-string without any placeholders
+    |
+589 |     )
+590 |
+591 |     print(f"\n≡ƒÄë AGENT DISCOVERY COMPLETE!")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+592 |     print(f"Γ£à Scanned entire codebase for agents")
+593 |     print(f"Γ£à Found {discovery_report['summary']['total_agents']} potential agents")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\comprehensive_agent_discovery.py:592:11: F541 [*] f-string without any placeholders
+    |
+591 |     print(f"\n≡ƒÄë AGENT DISCOVERY COMPLETE!")
+592 |     print(f"Γ£à Scanned entire codebase for agents")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+593 |     print(f"Γ£à Found {discovery_report['summary']['total_agents']} potential agents")
+594 |     print(f"Γ£à Prioritized agents into 4 categories")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\comprehensive_agent_discovery.py:594:11: F541 [*] f-string without any placeholders
+    |
+592 |     print(f"Γ£à Scanned entire codebase for agents")
+593 |     print(f"Γ£à Found {discovery_report['summary']['total_agents']} potential agents")
+594 |     print(f"Γ£à Prioritized agents into 4 categories")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+595 |     print(f"Γ£à Created 6-phase migration plan")
+596 |     print(f"Γ£à Saved comprehensive discovery report")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\comprehensive_agent_discovery.py:595:11: F541 [*] f-string without any placeholders
+    |
+593 |     print(f"Γ£à Found {discovery_report['summary']['total_agents']} potential agents")
+594 |     print(f"Γ£à Prioritized agents into 4 categories")
+595 |     print(f"Γ£à Created 6-phase migration plan")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+596 |     print(f"Γ£à Saved comprehensive discovery report")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\comprehensive_agent_discovery.py:596:11: F541 [*] f-string without any placeholders
+    |
+594 |     print(f"Γ£à Prioritized agents into 4 categories")
+595 |     print(f"Γ£à Created 6-phase migration plan")
+596 |     print(f"Γ£à Saved comprehensive discovery report")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+597 |
+598 |     print(f"\n≡ƒÄ» DISCOVERY SUMMARY:")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\comprehensive_agent_discovery.py:598:11: F541 [*] f-string without any placeholders
+    |
+596 |     print(f"Γ£à Saved comprehensive discovery report")
+597 |
+598 |     print(f"\n≡ƒÄ» DISCOVERY SUMMARY:")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+599 |     print(f"ΓÇó Critical agents: {discovery_report['summary']['critical_agents']}")
+600 |     print(f"ΓÇó High priority: {discovery_report['summary']['high_priority']}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\comprehensive_agent_discovery.py:604:11: F541 [*] f-string without any placeholders
+    |
+602 |     print(f"ΓÇó Low priority: {discovery_report['summary']['low_priority']}")
+603 |
+604 |     print(f"\n≡ƒÜÇ NEXT: EXECUTE AGENT MIGRATION")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+605 |     print("We'll start with critical agents and work through all phases")
+606 |     print("No agent will be missed - we found them ALL!")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:332:25: F541 [*] f-string without any placeholders
+    |
+330 |                         f"What determines when {pattern['pattern']} works well?",
+331 |                         f"What are the key variables affecting {pattern['pattern']}?",
+332 |                         f"Can I identify the conditions that predict success?",
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+333 |                     ],
+334 |                     exploration_strategies=[
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:376:25: F541 [*] f-string without any placeholders
+    |
+374 |                         f"What was the actual mechanism behind {chain['description']}?",
+375 |                         f"What steps were involved in {chain['chain_id']}?",
+376 |                         f"How can I track the causal pathway more clearly?",
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+377 |                     ],
+378 |                     exploration_strategies=[
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:463:25: F541 [*] f-string without any placeholders
+    |
+461 |                     questions=[
+462 |                         f"What principles can I extract from {opp['opportunity']}?",
+463 |                         f"How can I apply this learning to other situations?",
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+464 |                         f"What made {opp['opportunity']} successful?",
+465 |                     ],
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:603:13: F541 [*] f-string without any placeholders
+    |
+601 |             f"What causes {self._extract_key_concept(gap.description)}?",
+602 |             f"What are the intermediate steps between cause and effect in {self._extract_key_concept(gap.description)}?",
+603 |             f"What variables influence the strength of this causal relationship?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+604 |             f"Are there alternative causal pathways that could explain this?",
+605 |             f"What would happen if I modified the conditions?",
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:604:13: F541 [*] f-string without any placeholders
+    |
+602 |             f"What are the intermediate steps between cause and effect in {self._extract_key_concept(gap.description)}?",
+603 |             f"What variables influence the strength of this causal relationship?",
+604 |             f"Are there alternative causal pathways that could explain this?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+605 |             f"What would happen if I modified the conditions?",
+606 |         ]
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:605:13: F541 [*] f-string without any placeholders
+    |
+603 |             f"What variables influence the strength of this causal relationship?",
+604 |             f"Are there alternative causal pathways that could explain this?",
+605 |             f"What would happen if I modified the conditions?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+606 |         ]
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:612:13: F541 [*] f-string without any placeholders
+    |
+610 |         return [
+611 |             f"In which contexts does {self._extract_key_concept(gap.description)} behave differently?",
+612 |             f"What contextual factors are most influential?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+613 |             f"How can I predict behavior based on context?",
+614 |             f"What contexts have I not yet observed?",
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:613:13: F541 [*] f-string without any placeholders
+    |
+611 |             f"In which contexts does {self._extract_key_concept(gap.description)} behave differently?",
+612 |             f"What contextual factors are most influential?",
+613 |             f"How can I predict behavior based on context?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+614 |             f"What contexts have I not yet observed?",
+615 |             f"Are there hidden contextual variables I'm missing?",
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:614:13: F541 [*] f-string without any placeholders
+    |
+612 |             f"What contextual factors are most influential?",
+613 |             f"How can I predict behavior based on context?",
+614 |             f"What contexts have I not yet observed?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+615 |             f"Are there hidden contextual variables I'm missing?",
+616 |         ]
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:615:13: F541 [*] f-string without any placeholders
+    |
+613 |             f"How can I predict behavior based on context?",
+614 |             f"What contexts have I not yet observed?",
+615 |             f"Are there hidden contextual variables I'm missing?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+616 |         ]
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:622:13: F541 [*] f-string without any placeholders
+    |
+620 |         return [
+621 |             f"What can I learn from this experience with {self._extract_key_concept(gap.description)}?",
+622 |             f"How can I apply this learning to future situations?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+623 |             f"What patterns can I extract from this experience?",
+624 |             f"What would I do differently next time?",
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:623:13: F541 [*] f-string without any placeholders
+    |
+621 |             f"What can I learn from this experience with {self._extract_key_concept(gap.description)}?",
+622 |             f"How can I apply this learning to future situations?",
+623 |             f"What patterns can I extract from this experience?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+624 |             f"What would I do differently next time?",
+625 |             f"How does this experience change my understanding?",
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:624:13: F541 [*] f-string without any placeholders
+    |
+622 |             f"How can I apply this learning to future situations?",
+623 |             f"What patterns can I extract from this experience?",
+624 |             f"What would I do differently next time?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+625 |             f"How does this experience change my understanding?",
+626 |         ]
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:625:13: F541 [*] f-string without any placeholders
+    |
+623 |             f"What patterns can I extract from this experience?",
+624 |             f"What would I do differently next time?",
+625 |             f"How does this experience change my understanding?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+626 |         ]
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:632:13: F541 [*] f-string without any placeholders
+    |
+630 |         return [
+631 |             f"What don't I understand about {self._extract_key_concept(gap.description)}?",
+632 |             f"How can I learn more about this?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+633 |             f"What experiments could help me understand this better?",
+634 |             f"Who or what could provide more information?",
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:633:13: F541 [*] f-string without any placeholders
+    |
+631 |             f"What don't I understand about {self._extract_key_concept(gap.description)}?",
+632 |             f"How can I learn more about this?",
+633 |             f"What experiments could help me understand this better?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+634 |             f"Who or what could provide more information?",
+635 |             f"What related areas should I explore?",
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:634:13: F541 [*] f-string without any placeholders
+    |
+632 |             f"How can I learn more about this?",
+633 |             f"What experiments could help me understand this better?",
+634 |             f"Who or what could provide more information?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+635 |             f"What related areas should I explore?",
+636 |         ]
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:635:13: F541 [*] f-string without any placeholders
+    |
+633 |             f"What experiments could help me understand this better?",
+634 |             f"Who or what could provide more information?",
+635 |             f"What related areas should I explore?",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+636 |         ]
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:968:38: UP015 [*] Unnecessary mode argument
+    |
+966 |             gaps_file = self.data_dir / "knowledge_gaps.json"
+967 |             if gaps_file.exists():
+968 |                 with open(gaps_file, "r") as f:
+    |                                      ^^^ UP015
+969 |                     gaps_data = json.load(f)
+970 |                     self.knowledge_gaps = {
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\agent_adapters\curiosity_agent_8.py:978:43: UP015 [*] Unnecessary mode argument
+    |
+976 |             questions_file = self.data_dir / "curiosity_questions.json"
+977 |             if questions_file.exists():
+978 |                 with open(questions_file, "r") as f:
+    |                                           ^^^ UP015
+979 |                     questions_data = json.load(f)
+980 |                     self.curiosity_questions = {
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\agent_adapters\real_agent_discovery.py:67:38: UP015 [*] Unnecessary mode argument
+   |
+66 |             try:
+67 |                 with open(file_path, "r", encoding="utf-8") as f:
+   |                                      ^^^ UP015
+68 |                     content = f.read()
+   |
+   = help: Remove mode argument
+
+Aetherra\plugins\agent_adapters\real_agent_discovery.py:106:38: UP015 [*] Unnecessary mode argument
+    |
+105 |             try:
+106 |                 with open(file_path, "r", encoding="utf-8") as f:
+    |                                      ^^^ UP015
+107 |                     content = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\agent_adapters\real_agent_discovery.py:235:34: UP015 [*] Unnecessary mode argument
+    |
+233 |         """Analyze a file that might contain agents"""
+234 |         try:
+235 |             with open(file_path, "r", encoding="utf-8") as f:
+    |                                  ^^^ UP015
+236 |                 content = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\agent_adapters\smart_agent_migrator.py:39:34: UP015 [*] Unnecessary mode argument
+   |
+37 |         latest_report = max(report_files, key=lambda f: f.stat().st_mtime)
+38 |
+39 |         with open(latest_report, "r", encoding="utf-8") as f:
+   |                                  ^^^ UP015
+40 |             report = json.load(f)
+   |
+   = help: Remove mode argument
+
+Aetherra\plugins\agent_adapters\smart_agent_migrator.py:542:11: F541 [*] f-string without any placeholders
+    |
+540 |     migrator.update_main_launcher_with_agents()
+541 |
+542 |     print(f"\n≡ƒÄë PHASE 4 COMPLETE!")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+543 |     print(f"Γ£à Migrated {len(migration_results['migrated'])} important agents")
+544 |     print(f"Γ£à Created agent integration bridge")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\smart_agent_migrator.py:544:11: F541 [*] f-string without any placeholders
+    |
+542 |     print(f"\n≡ƒÄë PHASE 4 COMPLETE!")
+543 |     print(f"Γ£à Migrated {len(migration_results['migrated'])} important agents")
+544 |     print(f"Γ£à Created agent integration bridge")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+545 |     print(f"Γ£à Created agent launcher")
+546 |     print(f"Γ£à Updated main launcher with agent support")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\smart_agent_migrator.py:545:11: F541 [*] f-string without any placeholders
+    |
+543 |     print(f"Γ£à Migrated {len(migration_results['migrated'])} important agents")
+544 |     print(f"Γ£à Created agent integration bridge")
+545 |     print(f"Γ£à Created agent launcher")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+546 |     print(f"Γ£à Updated main launcher with agent support")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\smart_agent_migrator.py:546:11: F541 [*] f-string without any placeholders
+    |
+544 |     print(f"Γ£à Created agent integration bridge")
+545 |     print(f"Γ£à Created agent launcher")
+546 |     print(f"Γ£à Updated main launcher with agent support")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+547 |
+548 |     if migration_results["skipped"]:
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\smart_agent_migrator.py:556:11: F541 [*] f-string without any placeholders
+    |
+554 |         print(f"Γ¥î Errors with {len(migration_results['errors'])} agents")
+555 |
+556 |     print(f"\n≡ƒÄ» AGENT INTEGRATION SUCCESS:")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+557 |     print("ΓÇó Smart filtering focused on truly important agents")
+558 |     print("ΓÇó All migrated agents connected to integration bridge")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_adapters\smart_agent_migrator.py:562:11: F541 [*] f-string without any placeholders
+    |
+560 |     print("ΓÇó Main system launcher updated with agent support")
+561 |
+562 |     print(f"\n≡ƒº¬ NEXT: TEST THE INTEGRATED AGENT SYSTEM")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+563 |     print("Run: python Aetherra_v2/launch_agents.py")
+564 |     print("Or: python Aetherra_v2/launch_with_web.py (includes agents)")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\agent_components\agent_bridge.py:30:43: UP015 [*] Unnecessary mode argument
+   |
+28 |         """Load the agent registry"""
+29 |         if self.registry_file.exists():
+30 |             with open(self.registry_file, "r", encoding="utf-8") as f:
+   |                                           ^^^ UP015
+31 |                 self.agents = json.load(f)
+32 |         else:
+   |
+   = help: Remove mode argument
+
+Aetherra\plugins\agent_components\agent_discovery_and_integration.py:284:34: UP015 [*] Unnecessary mode argument
+    |
+283 |         try:
+284 |             with open(file_path, "r", encoding="utf-8") as f:
+    |                                  ^^^ UP015
+285 |                 content = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\agent_components\agent_discovery_and_integration.py:440:23: F541 [*] f-string without any placeholders
+    |
+438 |         )
+439 |
+440 |         report.append(f"≡ƒôè SUMMARY:")
+    |                       ^^^^^^^^^^^^^^ F541
+441 |         report.append(f"   Total Components Discovered: {total_discovered}")
+442 |         report.append(f"   Total Components Loaded: {total_loaded}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\ai_plugin_generator_v2.py:447:38: UP015 [*] Unnecessary mode argument
+    |
+445 |             )
+446 |             if os.path.exists(data_file):
+447 |                 with open(data_file, "r") as f:
+    |                                      ^^^ UP015
+448 |                     self.learning_data = json.load(f)
+449 |         except Exception as e:
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\core\AssistantTrainer.py:26:11: F541 [*] f-string without any placeholders
+   |
+24 | def activate():
+25 |     """Activate the plugin"""
+26 |     print(f"≡ƒôî Stub plugin AssistantTrainer activated")
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+   |
+   = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\core\AssistantTrainer.py:31:11: F541 [*] f-string without any placeholders
+   |
+29 | def deactivate():
+30 |     """Deactivate the plugin"""
+31 |     print(f"≡ƒôî Stub plugin AssistantTrainer deactivated")
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+   |
+   = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\core\PluginGenerator.py:26:11: F541 [*] f-string without any placeholders
+   |
+24 | def activate():
+25 |     """Activate the plugin"""
+26 |     print(f"≡ƒôî Stub plugin PluginGenerator activated")
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+   |
+   = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\core\PluginGenerator.py:31:11: F541 [*] f-string without any placeholders
+   |
+29 | def deactivate():
+30 |     """Deactivate the plugin"""
+31 |     print(f"≡ƒôî Stub plugin PluginGenerator deactivated")
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+   |
+   = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\core\WorkflowBuilder.py:26:11: F541 [*] f-string without any placeholders
+   |
+24 | def activate():
+25 |     """Activate the plugin"""
+26 |     print(f"≡ƒôî Stub plugin WorkflowBuilder activated")
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+   |
+   = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\core\WorkflowBuilder.py:31:11: F541 [*] f-string without any placeholders
+   |
+29 | def deactivate():
+30 |     """Deactivate the plugin"""
+31 |     print(f"≡ƒôî Stub plugin WorkflowBuilder deactivated")
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+   |
+   = help: Remove extraneous `f` prefix
+
+Aetherra\plugins\core\plugin_discovery.py:80:39: UP015 [*] Unnecessary mode argument
+   |
+78 |         if os.path.exists(index_file):
+79 |             try:
+80 |                 with open(index_file, "r") as f:
+   |                                       ^^^ UP015
+81 |                     data = json.load(f)
+82 |                     self._deserialize_index(data)
+   |
+   = help: Remove mode argument
+
+Aetherra\plugins\core\plugin_discovery.py:242:36: UP015 [*] Unnecessary mode argument
+    |
+241 |             # Read and parse file content
+242 |             with open(plugin_path, "r", encoding="utf-8") as f:
+    |                                    ^^^ UP015
+243 |                 content = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\core\plugin_quality_control.py:92:36: UP015 [*] Unnecessary mode argument
+   |
+91 |             # Read plugin file
+92 |             with open(plugin_path, "r", encoding="utf-8") as f:
+   |                                    ^^^ UP015
+93 |                 content = f.read()
+   |
+   = help: Remove mode argument
+
+Aetherra\plugins\core\plugin_registry.py:87:29: UP015 [*] Unnecessary mode argument
+   |
+85 |     for path in (primary, alt1, core_path):
+86 |         if path.exists():
+87 |             with open(path, "r", encoding="utf-8") as f:
+   |                             ^^^ UP015
+88 |                 data = json.load(f)
+89 |                 data.setdefault("_path", str(path))
+   |
+   = help: Remove mode argument
+
+Aetherra\plugins\core\plugin_system.py:280:54: UP015 [*] Unnecessary mode argument
+    |
+278 |         if self.plugin_registry_file.exists():
+279 |             try:
+280 |                 with open(self.plugin_registry_file, "r") as f:
+    |                                                      ^^^ UP015
+281 |                     data = json.load(f)
+282 |                     print(
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\core\plugin_system.py:331:50: UP015 [*] Unnecessary mode argument
+    |
+329 |                 if manifest_file.exists():
+330 |                     try:
+331 |                         with open(manifest_file, "r") as f:
+    |                                                  ^^^ UP015
+332 |                             manifest_data = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\core\plugin_system.py:394:42: UP015 [*] Unnecessary mode argument
+    |
+393 |                 # Load manifest and validate
+394 |                 with open(manifest_file, "r") as f:
+    |                                          ^^^ UP015
+395 |                     manifest_data = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\core\plugin_system.py:448:38: UP015 [*] Unnecessary mode argument
+    |
+446 |                 return {"success": False, "error": "No manifest.json found"}
+447 |
+448 |             with open(manifest_file, "r") as f:
+    |                                      ^^^ UP015
+449 |                 manifest_data = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\extra_plugins\context_aware_surfacing.py:101:38: UP015 [*] Unnecessary mode argument
+    |
+ 99 |             data_file = os.path.join(os.path.dirname(__file__), "surfacing_data.json")
+100 |             if os.path.exists(data_file):
+101 |                 with open(data_file, "r") as f:
+    |                                      ^^^ UP015
+102 |                     data = json.load(f)
+103 |                     self._deserialize_learning_data(data)
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\lifecycle\plugin_lifecycle_memory.py:99:40: UP015 [*] Unnecessary mode argument
+    |
+ 97 |             memory_file = os.path.join(self.memory_dir, "plugin_lifecycle_memory.json")
+ 98 |             if os.path.exists(memory_file):
+ 99 |                 with open(memory_file, "r") as f:
+    |                                        ^^^ UP015
+100 |                     data = json.load(f)
+101 |                     self._deserialize_memory_data(data)
+    |
+    = help: Remove mode argument
+
+Aetherra\plugins\memory_hooks\memory_plugin_bridge.py:269:37: UP015 [*] Unnecessary mode argument
+    |
+267 |     try:
+268 |         if roadmap_path.exists():
+269 |             with open(roadmap_path, "r", encoding="utf-8") as f:
+    |                                     ^^^ UP015
+270 |                 content = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\runtime\aether_executor.py:161:15: F541 [*] f-string without any placeholders
+    |
+159 |         learning_goals_created = []
+160 |
+161 |         print(f"≡ƒôè Gap Analysis Results:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+162 |         print(f"   ΓÇó Total gaps detected: {gap_analysis['total_gaps']}")
+163 |         print(f"   ΓÇó Critical threshold: {gap_analysis['critical_threshold']}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:215:15: F541 [*] f-string without any placeholders
+    |
+213 |         )
+214 |
+215 |         print(f"\nΓ£à Phase 1 Complete:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+216 |         print(f"   ΓÇó {len(questions_generated)} questions generated")
+217 |         print(f"   ΓÇó {len(learning_goals_created)} learning goals created")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:235:15: F541 [*] f-string without any placeholders
+    |
+234 |         print("≡ƒôè Conflict Analysis Results:")
+235 |         print(f"   ΓÇó Analysis types: semantic, temporal, logical, confidence, value")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+236 |         print(f"   ΓÇó Total conflicts detected: {len(conflicts)}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:298:15: F541 [*] f-string without any placeholders
+    |
+296 |         )
+297 |
+298 |         print(f"\nΓ£à Phase 2 Complete:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+299 |         print(f"   ΓÇó Resolution rate: {resolution_rate:.2%}")
+300 |         print(f"   ΓÇó Successful resolutions: {resolutions_successful}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:317:15: F541 [*] f-string without any placeholders
+    |
+315 |         )
+316 |
+317 |         print(f"≡ƒôè Learning Effectiveness Analysis:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+318 |         print(
+319 |             f"   ΓÇó Overall Effectiveness: {effectiveness_analysis['overall_effectiveness']:.2f}"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:345:15: F541 [*] f-string without any placeholders
+    |
+343 |         )
+344 |
+345 |         print(f"≡ƒÄ» Strategy Recommendations Generated:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+346 |         print(
+347 |             f"   ΓÇó Overall Assessment: {strategy_recommendations['overall_assessment']}"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:364:19: F541 [*] f-string without any placeholders
+    |
+362 |             print(f"   ≡ƒÜ¿ Escalation Triggers: {len(escalation_triggers)} identified")
+363 |         else:
+364 |             print(f"   Γ£à No escalation required - performance within parameters")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+365 |
+366 |         print("\n≡ƒÄ¢∩╕Å Adjusting adaptive thresholds based on performance...")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:373:15: F541 [*] f-string without any placeholders
+    |
+371 |         )
+372 |
+373 |         print(f"≡ƒÄ¢∩╕Å Threshold Adjustments Applied:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+374 |         for threshold, adjustment in threshold_adjustments.items():
+375 |             print(
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:392:15: F541 [*] f-string without any placeholders
+    |
+390 |         )
+391 |
+392 |         print(f"\nΓ£à Phase 3 Complete:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+393 |         print(f"   ΓÇó Meta-learning analysis performed")
+394 |         print(f"   ΓÇó Strategy optimization recommendations generated")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:393:15: F541 [*] f-string without any placeholders
+    |
+392 |         print(f"\nΓ£à Phase 3 Complete:")
+393 |         print(f"   ΓÇó Meta-learning analysis performed")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+394 |         print(f"   ΓÇó Strategy optimization recommendations generated")
+395 |         print(f"   ΓÇó Adaptive thresholds updated")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:394:15: F541 [*] f-string without any placeholders
+    |
+392 |         print(f"\nΓ£à Phase 3 Complete:")
+393 |         print(f"   ΓÇó Meta-learning analysis performed")
+394 |         print(f"   ΓÇó Strategy optimization recommendations generated")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+395 |         print(f"   ΓÇó Adaptive thresholds updated")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:395:15: F541 [*] f-string without any placeholders
+    |
+393 |         print(f"   ΓÇó Meta-learning analysis performed")
+394 |         print(f"   ΓÇó Strategy optimization recommendations generated")
+395 |         print(f"   ΓÇó Adaptive thresholds updated")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+396 |
+397 |     async def phase_4_comprehensive_logging(self):
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:456:15: F541 [*] f-string without any placeholders
+    |
+455 |         print(f"Γ£à Learning Session Logged: {session_id}")
+456 |         print(f"≡ƒôè Session Summary:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^ F541
+457 |         print(f"   ΓÇó Execution Time: {execution_time:.1f} seconds")
+458 |         print(f"   ΓÇó Gaps Detected: {session_outcome['gaps_detected']}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:478:13: F541 [*] f-string without any placeholders
+    |
+477 |         print(
+478 |             f"\nΓ£à Phase 4 Complete: Comprehensive logging and self-awareness operational"
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+479 |         )
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:531:15: F541 [*] f-string without any placeholders
+    |
+529 |         success_rate = sum(success_criteria.values()) / len(success_criteria)
+530 |
+531 |         print(f"≡ƒôè Script Performance Evaluation:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+532 |         print(f"   ΓÇó Success Rate: {success_rate:.2%}")
+533 |         print(
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:536:15: F541 [*] f-string without any placeholders
+    |
+534 |             f"   ΓÇó All Phases Completed: {performance_metrics['total_phases_completed']}/4"
+535 |         )
+536 |         print(f"   ΓÇó Autonomous Intelligence: Γ£à Operational")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+537 |
+538 |         print(f"\nΓ£à Success Criteria Validation:")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:538:15: F541 [*] f-string without any placeholders
+    |
+536 |         print(f"   ΓÇó Autonomous Intelligence: Γ£à Operational")
+537 |
+538 |         print(f"\nΓ£à Success Criteria Validation:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+539 |         for criterion, passed in success_criteria.items():
+540 |             status = "Γ£à PASS" if passed else "Γ¥î FAIL"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:586:15: F541 [*] f-string without any placeholders
+    |
+584 |             json.dump(report_data, f, indent=2)
+585 |
+586 |         print(f"≡ƒÄ» **AETHER SCRIPT EXECUTION SUMMARY**")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+587 |         print(f"ΓÇó Script: {self.script_results['script_name']}")
+588 |         print(f"ΓÇó Execution ID: {self.script_results['execution_id']}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:593:15: F541 [*] f-string without any placeholders
+    |
+591 |         print(f"ΓÇó Phases Completed: {len(self.script_results['phases_completed'])}/4")
+592 |
+593 |         print(f"\n≡ƒºá **ENHANCED AUTONOMOUS INTELLIGENCE VALIDATION**")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+594 |         print(f"ΓÇó Γ£à Curiosity-driven gap detection and exploration")
+595 |         print(f"ΓÇó Γ£à Multi-type conflict detection and resolution")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:594:15: F541 [*] f-string without any placeholders
+    |
+593 |         print(f"\n≡ƒºá **ENHANCED AUTONOMOUS INTELLIGENCE VALIDATION**")
+594 |         print(f"ΓÇó Γ£à Curiosity-driven gap detection and exploration")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+595 |         print(f"ΓÇó Γ£à Multi-type conflict detection and resolution")
+596 |         print(f"ΓÇó Γ£à Self-directed learning goal creation and tracking")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:595:15: F541 [*] f-string without any placeholders
+    |
+593 |         print(f"\n≡ƒºá **ENHANCED AUTONOMOUS INTELLIGENCE VALIDATION**")
+594 |         print(f"ΓÇó Γ£à Curiosity-driven gap detection and exploration")
+595 |         print(f"ΓÇó Γ£à Multi-type conflict detection and resolution")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+596 |         print(f"ΓÇó Γ£à Self-directed learning goal creation and tracking")
+597 |         print(f"ΓÇó Γ£à Meta-learning effectiveness analysis and optimization")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:596:15: F541 [*] f-string without any placeholders
+    |
+594 |         print(f"ΓÇó Γ£à Curiosity-driven gap detection and exploration")
+595 |         print(f"ΓÇó Γ£à Multi-type conflict detection and resolution")
+596 |         print(f"ΓÇó Γ£à Self-directed learning goal creation and tracking")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+597 |         print(f"ΓÇó Γ£à Meta-learning effectiveness analysis and optimization")
+598 |         print(f"ΓÇó Γ£à Adaptive threshold management and strategy recommendations")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:597:15: F541 [*] f-string without any placeholders
+    |
+595 |         print(f"ΓÇó Γ£à Multi-type conflict detection and resolution")
+596 |         print(f"ΓÇó Γ£à Self-directed learning goal creation and tracking")
+597 |         print(f"ΓÇó Γ£à Meta-learning effectiveness analysis and optimization")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+598 |         print(f"ΓÇó Γ£à Adaptive threshold management and strategy recommendations")
+599 |         print(f"ΓÇó Γ£à Comprehensive session logging with self-awareness")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:598:15: F541 [*] f-string without any placeholders
+    |
+596 |         print(f"ΓÇó Γ£à Self-directed learning goal creation and tracking")
+597 |         print(f"ΓÇó Γ£à Meta-learning effectiveness analysis and optimization")
+598 |         print(f"ΓÇó Γ£à Adaptive threshold management and strategy recommendations")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+599 |         print(f"ΓÇó Γ£à Comprehensive session logging with self-awareness")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:599:15: F541 [*] f-string without any placeholders
+    |
+597 |         print(f"ΓÇó Γ£à Meta-learning effectiveness analysis and optimization")
+598 |         print(f"ΓÇó Γ£à Adaptive threshold management and strategy recommendations")
+599 |         print(f"ΓÇó Γ£à Comprehensive session logging with self-awareness")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+600 |
+601 |         print(f"\n≡ƒÆ╛ Detailed report saved to: {report_file}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_executor.py:602:15: F541 [*] f-string without any placeholders
+    |
+601 |         print(f"\n≡ƒÆ╛ Detailed report saved to: {report_file}")
+602 |         print(f"\n≡ƒÄë **AETHER SCRIPT: FULLY OPERATIONAL WITH ENHANCED INTELLIGENCE!**")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\runtime\aether_runtime.py:53:31: UP015 [*] Unnecessary mode argument
+   |
+51 |         """Load .aether script from file or string."""
+52 |         if from_file:
+53 |             with open(script, "r", encoding="utf-8") as f:
+   |                               ^^^ UP015
+54 |                 self.script_lines = [line.strip() for line in f if line.strip()]
+55 |         else:
+   |
+   = help: Remove mode argument
+
+Aetherra\runtime\script_registry_loader.py:25:43: UP015 [*] Unnecessary mode argument
+   |
+23 |                 return {}
+24 |
+25 |             with open(self.registry_path, "r", encoding="utf-8") as f:
+   |                                           ^^^ UP015
+26 |                 registry = json.load(f)
+   |
+   = help: Remove mode argument
+
+Aetherra\runtime\script_runner.py:22:39: UP015 [*] Unnecessary mode argument
+   |
+20 |                 f"Standard library registry not found: {self.registry_path}"
+21 |             )
+22 |         with open(self.registry_path, "r", encoding="utf-8") as f:
+   |                                       ^^^ UP015
+23 |             return json.load(f)
+   |
+   = help: Remove mode argument
+
+Aetherra\scripts\audit_file_usage.py:109:34: UP015 [*] Unnecessary mode argument
+    |
+107 |                 return
+108 |
+109 |             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+    |                                  ^^^ UP015
+110 |                 content = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\scripts\check_deployment_readiness.py:202:40: UP015 [*] Unnecessary mode argument
+    |
+201 |         try:
+202 |             with open(dockerfile_path, "r") as f:
+    |                                        ^^^ UP015
+203 |                 dockerfile_content = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\scripts\check_deployment_readiness.py:275:39: UP015 [*] Unnecessary mode argument
+    |
+274 |         try:
+275 |             with open(cleanup_report, "r") as f:
+    |                                       ^^^ UP015
+276 |                 report_data = json.load(f)
+    |
+    = help: Remove mode argument
+
+Aetherra\scripts\check_deployment_readiness.py:304:36: UP015 [*] Unnecessary mode argument
+    |
+303 |         try:
+304 |             with open(ci_workflow, "r", encoding="utf-8", errors="ignore") as f:
+    |                                    ^^^ UP015
+305 |                 ci_content = f.read()
+    |
+    = help: Remove mode argument
+
+Aetherra\scripts\check_deployment_readiness.py:371:43: UP015 [*] Unnecessary mode argument
+    |
+369 |         else:
+370 |             try:
+371 |                 with open(gitignore_path, "r") as f:
+    |                                           ^^^ UP015
+372 |                     gitignore_content = f.read().lower()
+    |
+    = help: Remove mode argument
+
+Aetherra\scripts\check_deployment_readiness.py:404:42: UP015 [*] Unnecessary mode argument
+    |
+402 |         for workflow_file in workflow_files:
+403 |             try:
+404 |                 with open(workflow_file, "r", encoding="utf-8", errors="ignore") as f:
+    |                                          ^^^ UP015
+405 |                     content = f.read().lower()
+    |
+    = help: Remove mode argument
+
+Aetherra\scripts\check_deployment_readiness.py:538:15: F541 [*] f-string without any placeholders
+    |
+536 |         print(f"Timestamp: {self.results['timestamp']}")
+537 |
+538 |         print(f"\nSummary:")
+    |               ^^^^^^^^^^^^^ F541
+539 |         print(f"  Total Checks: {self.results['summary']['total_checks']}")
+540 |         print(f"  Γ£à Passed: {self.results['summary']['passed']}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\scripts\check_deployment_readiness.py:547:15: F541 [*] f-string without any placeholders
+    |
+545 |         )
+546 |
+547 |         print(f"\nCheck Results:")
+    |               ^^^^^^^^^^^^^^^^^^^ F541
+548 |         for check_name, result in self.results["checks"].items():
+549 |             status_icon = {"pass": "Γ£à", "warning": "[WARN] ", "fail": "Γ¥î"}.get(
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\scripts\check_deployment_readiness.py:556:19: F541 [*] f-string without any placeholders
+    |
+555 |         if self.results["recommendations"]:
+556 |             print(f"\nRecommendations:")
+    |                   ^^^^^^^^^^^^^^^^^^^^^ F541
+557 |             for rec in self.results["recommendations"]:
+558 |                 print(f"  ΓÇó {rec}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\scripts\organize_system.py:128:23: F541 [*] f-string without any placeholders
+    |
+127 |             if analysis.orphaned_files:
+128 |                 print(f"\n≡ƒöì Orphaned files found:")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+129 |                 for orphan in analysis.orphaned_files[:5]:  # Show first 5
+130 |                     print(f"    ΓÇó {orphan}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\scripts\organize_system.py:135:23: F541 [*] f-string without any placeholders
+    |
+134 |             if analysis.optimization_suggestions:
+135 |                 print(f"\n≡ƒÆí Optimization suggestions:")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+136 |                 for suggestion in analysis.optimization_suggestions[:3]:  # Show first 3
+137 |                     print(
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\aether_script_executor.py:317:15: F541 [*] f-string without any placeholders
+    |
+315 |         )
+316 |
+317 |         print(f"≡ƒôè Learning Effectiveness Analysis:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+318 |         print(
+319 |             f"   ΓÇó Overall Effectiveness: {effectiveness_analysis['overall_effectiveness']:.2f}"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\aether_script_executor.py:345:15: F541 [*] f-string without any placeholders
+    |
+343 |         )
+344 |
+345 |         print(f"≡ƒÄ» Strategy Recommendations Generated:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+346 |         print(
+347 |             f"   ΓÇó Overall Assessment: {strategy_recommendations['overall_assessment']}"
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\aether_script_executor.py:373:15: F541 [*] f-string without any placeholders
+    |
+371 |         )
+372 |
+373 |         print(f"≡ƒÄ¢∩╕Å Threshold Adjustments Applied:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+374 |         for threshold, adjustment in threshold_adjustments.items():
+375 |             print(
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\aether_script_executor.py:393:15: F541 [*] f-string without any placeholders
+    |
+392 |         print("\n[OK] Phase 3 Complete:")
+393 |         print(f"   ΓÇó Meta-learning analysis performed")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+394 |         print(f"   ΓÇó Strategy optimization recommendations generated")
+395 |         print(f"   ΓÇó Adaptive thresholds updated")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\aether_script_executor.py:394:15: F541 [*] f-string without any placeholders
+    |
+392 |         print("\n[OK] Phase 3 Complete:")
+393 |         print(f"   ΓÇó Meta-learning analysis performed")
+394 |         print(f"   ΓÇó Strategy optimization recommendations generated")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+395 |         print(f"   ΓÇó Adaptive thresholds updated")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\aether_script_executor.py:395:15: F541 [*] f-string without any placeholders
+    |
+393 |         print(f"   ΓÇó Meta-learning analysis performed")
+394 |         print(f"   ΓÇó Strategy optimization recommendations generated")
+395 |         print(f"   ΓÇó Adaptive thresholds updated")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+396 |
+397 |     async def phase_4_comprehensive_logging(self):
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\aether_script_executor.py:456:15: F541 [*] f-string without any placeholders
+    |
+455 |         print(f"[OK] Learning Session Logged: {session_id}")
+456 |         print(f"≡ƒôè Session Summary:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^ F541
+457 |         print(f"   ΓÇó Execution Time: {execution_time:.1f} seconds")
+458 |         print(f"   ΓÇó Gaps Detected: {session_outcome['gaps_detected']}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\aetherra_file_watcher.py:385:40: UP015 [*] Unnecessary mode argument
+    |
+383 |         if config_file and os.path.exists(config_file):
+384 |             try:
+385 |                 with open(config_file, "r") as f:
+    |                                        ^^^ UP015
+386 |                     user_config = json.load(f)
+387 |                 default_config.update(user_config)
+    |
+    = help: Remove mode argument
+
+Aetherra\tools\causal_branch_simulator.py:192:15: F541 [*] f-string without any placeholders
+    |
+190 |         self._init_databases()
+191 |
+192 |         print(f"≡ƒº┐ CausalBranchSimulator initialized")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+193 |         print(f"   ≡ƒôü Data directory: {self.data_dir}")
+194 |         print(f"   ≡ƒùâ∩╕Å Branches DB: {self.db_path}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\causal_branch_simulator.py:198:15: F541 [*] f-string without any placeholders
+    |
+196 |         print(f"   ≡ƒîè Interference DB: {self.interference_db_path}")
+197 |         print(f"   ≡ƒöù Phase integration: {'[OK]' if PHASE_INTEGRATION else 'Γ¥î'}")
+198 |         print(f"   ≡ƒôï Causal branching databases initialized")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+199 |
+200 |     def _init_databases(self):
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\qfac_integration.py:345:15: F541 [*] f-string without any placeholders
+    |
+343 |         results = await manager.demonstrate_integrated_memory_processing(test_memory)
+344 |
+345 |         print(f"\n≡ƒôè INTEGRATION RESULTS:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+346 |         print(f"   ≡ƒº¼ Phase 2 Success: {'[OK]' if results['phase2_result'] else 'Γ¥î'}")
+347 |         print(f"   ≡ƒæü∩╕Å Phase 3 Success: {'[OK]' if results['phase3_result'] else 'Γ¥î'}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\qfac_integration.py:353:11: F541 [*] f-string without any placeholders
+    |
+351 |         )
+352 |
+353 |     print(f"\n≡ƒÜÇ Integration demonstration complete!")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+354 |     return manager
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:83:23: F541 [*] f-string without any placeholders
+   |
+81 |                 # Check quantum system status
+82 |                 status = quantum_engine.get_quantum_system_status()
+83 |                 print(f"≡ƒöì Quantum System Status:")
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+84 |                 print(f"   ΓÇó Quantum Available: {status['quantum_available']}")
+85 |                 print(f"   ΓÇó Backend: {status['configuration']['quantum_backend']}")
+   |
+   = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:100:19: F541 [*] f-string without any placeholders
+    |
+ 98 |             dashboard_url = await dashboard.start()
+ 99 |
+100 |             print(f"\n≡ƒÄë SUCCESS!")
+    |                   ^^^^^^^^^^^^^^^^ F541
+101 |             print(f"≡ƒîÉ Quantum Dashboard URL: {dashboard_url}")
+102 |             print(f"≡ƒô▒ Features Available:")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:102:19: F541 [*] f-string without any placeholders
+    |
+100 |             print(f"\n≡ƒÄë SUCCESS!")
+101 |             print(f"≡ƒîÉ Quantum Dashboard URL: {dashboard_url}")
+102 |             print(f"≡ƒô▒ Features Available:")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+103 |             print(f"   ΓÇó ΓÜ¢∩╕Å  Real-time quantum coherence monitoring")
+104 |             print(f"   ΓÇó ≡ƒôè Quantum vs classical performance comparison")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:103:19: F541 [*] f-string without any placeholders
+    |
+101 |             print(f"≡ƒîÉ Quantum Dashboard URL: {dashboard_url}")
+102 |             print(f"≡ƒô▒ Features Available:")
+103 |             print(f"   ΓÇó ΓÜ¢∩╕Å  Real-time quantum coherence monitoring")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+104 |             print(f"   ΓÇó ≡ƒôè Quantum vs classical performance comparison")
+105 |             print(f"   ΓÇó ≡ƒöù Interactive quantum circuit visualization")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:104:19: F541 [*] f-string without any placeholders
+    |
+102 |             print(f"≡ƒô▒ Features Available:")
+103 |             print(f"   ΓÇó ΓÜ¢∩╕Å  Real-time quantum coherence monitoring")
+104 |             print(f"   ΓÇó ≡ƒôè Quantum vs classical performance comparison")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+105 |             print(f"   ΓÇó ≡ƒöù Interactive quantum circuit visualization")
+106 |             print(f"   ΓÇó ≡ƒÜ¿ System health alerts and recommendations")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:105:19: F541 [*] f-string without any placeholders
+    |
+103 |             print(f"   ΓÇó ΓÜ¢∩╕Å  Real-time quantum coherence monitoring")
+104 |             print(f"   ΓÇó ≡ƒôè Quantum vs classical performance comparison")
+105 |             print(f"   ΓÇó ≡ƒöù Interactive quantum circuit visualization")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+106 |             print(f"   ΓÇó ≡ƒÜ¿ System health alerts and recommendations")
+107 |             print(f"   ΓÇó ≡ƒôê Live performance metrics and statistics")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:106:19: F541 [*] f-string without any placeholders
+    |
+104 |             print(f"   ΓÇó ≡ƒôè Quantum vs classical performance comparison")
+105 |             print(f"   ΓÇó ≡ƒöù Interactive quantum circuit visualization")
+106 |             print(f"   ΓÇó ≡ƒÜ¿ System health alerts and recommendations")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+107 |             print(f"   ΓÇó ≡ƒôê Live performance metrics and statistics")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:107:19: F541 [*] f-string without any placeholders
+    |
+105 |             print(f"   ΓÇó ≡ƒöù Interactive quantum circuit visualization")
+106 |             print(f"   ΓÇó ≡ƒÜ¿ System health alerts and recommendations")
+107 |             print(f"   ΓÇó ≡ƒôê Live performance metrics and statistics")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+108 |
+109 |             if quantum_engine:
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:110:23: F541 [*] f-string without any placeholders
+    |
+109 |             if quantum_engine:
+110 |                 print(f"\n≡ƒº¬ Try these actions:")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+111 |                 print(f"   ΓÇó Store new memories to see quantum encoding in action")
+112 |                 print(f"   ΓÇó Query memories to test quantum-enhanced recall")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:111:23: F541 [*] f-string without any placeholders
+    |
+109 |             if quantum_engine:
+110 |                 print(f"\n≡ƒº¬ Try these actions:")
+111 |                 print(f"   ΓÇó Store new memories to see quantum encoding in action")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+112 |                 print(f"   ΓÇó Query memories to test quantum-enhanced recall")
+113 |                 print(f"   ΓÇó Monitor coherence levels and error correction")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:112:23: F541 [*] f-string without any placeholders
+    |
+110 |                 print(f"\n≡ƒº¬ Try these actions:")
+111 |                 print(f"   ΓÇó Store new memories to see quantum encoding in action")
+112 |                 print(f"   ΓÇó Query memories to test quantum-enhanced recall")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+113 |                 print(f"   ΓÇó Monitor coherence levels and error correction")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:113:23: F541 [*] f-string without any placeholders
+    |
+111 |                 print(f"   ΓÇó Store new memories to see quantum encoding in action")
+112 |                 print(f"   ΓÇó Query memories to test quantum-enhanced recall")
+113 |                 print(f"   ΓÇó Monitor coherence levels and error correction")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+114 |
+115 |             print(f"\nΓî¿∩╕Å  Press Ctrl+C to stop the dashboard")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:115:19: F541 [*] f-string without any placeholders
+    |
+113 |                 print(f"   ΓÇó Monitor coherence levels and error correction")
+114 |
+115 |             print(f"\nΓî¿∩╕Å  Press Ctrl+C to stop the dashboard")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+116 |
+117 |             # Keep dashboard running
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_dashboard_launcher.py:122:23: F541 [*] f-string without any placeholders
+    |
+120 |                     await asyncio.sleep(1)
+121 |             except KeyboardInterrupt:
+122 |                 print(f"\n≡ƒ¢æ Shutting down dashboard...")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+123 |                 await dashboard.stop()
+124 |                 print("[OK] Dashboard stopped successfully")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_memory_bridge.py:246:15: F541 [*] f-string without any placeholders
+    |
+244 |         }
+245 |
+246 |         print(f"ΓÜ¢∩╕Å QuantumMemoryBridge initialized")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+247 |         print(f"   ≡ƒôü Data directory: {self.data_dir}")
+248 |         print(f"   ≡ƒº« Max qubits: {self.max_qubits}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_memory_bridge.py:258:23: F541 [*] f-string without any placeholders
+    |
+256 |             try:
+257 |                 self.qiskit_backend = AerSimulator()
+258 |                 print(f"   ≡ƒö¼ Qiskit simulator initialized")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+259 |             except Exception as e:
+260 |                 print(f"   ΓÜá∩╕Å Qiskit backend failed: {e}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_memory_bridge.py:265:23: F541 [*] f-string without any placeholders
+    |
+263 |             try:
+264 |                 self.cirq_simulator = cirq.Simulator()
+265 |                 print(f"   ≡ƒö¼ Cirq simulator initialized")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+266 |             except Exception as e:
+267 |                 print(f"   ΓÜá∩╕Å Cirq backend failed: {e}")
+    |
+    = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_memory_bridge.py:1014:11: F541 [*] f-string without any placeholders
+     |
+1012 |     print(f"≡ƒôè Average fidelity: {stats['avg_fidelity']:.3f}")
+1013 |
+1014 |     print(f"\n[TOOL] Error correction status:")
+     |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+1015 |     print(f"   Available: {error_correction_result['error_correction_available']}")
+1016 |     if error_correction_result["error_correction_available"]:
+     |
+     = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_memory_bridge.py:1024:11: F541 [*] f-string without any placeholders
+     |
+1022 |         )
+1023 |
+1024 |     print(f"\n≡ƒÄë PHASE 5 QUANTUM BRIDGE DEMONSTRATION COMPLETE!")
+     |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+1025 |     print(f"ΓÜ¢∩╕Å Quantum-classical hybrid memory processing validated")
+     |
+     = help: Remove extraneous `f` prefix
+
+Aetherra\tools\quantum_memory_bridge.py:1025:11: F541 [*] f-string without any placeholders
+     |
+1024 |     print(f"\n≡ƒÄë PHASE 5 QUANTUM BRIDGE DEMONSTRATION COMPLETE!")
+1025 |     print(f"ΓÜ¢∩╕Å Quantum-classical hybrid memory processing validated")
+     |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+1026 |
+1027 |     return bridge
+     |
+     = help: Remove extraneous `f` prefix
+
+Aetherra\utils\launch_utils.py:121:5: SyntaxError: Expected an indented block after `try` statement
+    |
+119 |     try:
+120 |
+121 |     except ImportError:
+    |     ^
+122 |         missing_deps.append("PySide6")
+    |
+
+Aetherra\utils\launch_utils.py:126:5: SyntaxError: Expected an indented block after `try` statement
+    |
+124 |     try:
+125 |
+126 |     except ImportError:
+    |     ^
+127 |         missing_deps.append("uvicorn")
+    |
+
+Aetherra\utils\launch_utils.py:131:5: SyntaxError: Expected an indented block after `try` statement
+    |
+129 |     try:
+130 |
+131 |     except ImportError:
+    |     ^
+132 |         missing_deps.append("fastapi")
+    |
+
+aether.py:364:40: UP015 [*] Unnecessary mode argument
+    |
+363 |             if os.path.exists(status_file):
+364 |                 with open(status_file, "r") as f:
+    |                                        ^^^ UP015
+365 |                     self.os_status = json.load(f)
+    |
+    = help: Remove mode argument
+
+aether.py:520:37: UP015 [*] Unnecessary mode argument
+    |
+518 |             else:
+519 |                 # Fallback to internal script interpreter
+520 |                 with open(filepath, "r", encoding="utf-8") as f:
+    |                                     ^^^ UP015
+521 |                     script_content = f.read()
+    |
+    = help: Remove mode argument
+
+aether.py:586:27: F541 [*] f-string without any placeholders
+    |
+585 |                     print("≡ƒôè PERSISTENT MEMORY SYSTEM:")
+586 |                     print(f"  Γ£à AethErra Persistent Memory System: ACTIVE")
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+587 |                     print(f"     Purpose: Cross-session cognitive state preservation")
+588 |                     print(
+    |
+    = help: Remove extraneous `f` prefix
+
+aether.py:587:27: F541 [*] f-string without any placeholders
+    |
+585 |                     print("≡ƒôè PERSISTENT MEMORY SYSTEM:")
+586 |                     print(f"  Γ£à AethErra Persistent Memory System: ACTIVE")
+587 |                     print(f"     Purpose: Cross-session cognitive state preservation")
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+588 |                     print(
+589 |                         f"     Function: Store experiences, learning patterns, memories"
+    |
+    = help: Remove extraneous `f` prefix
+
+aether.py:589:25: F541 [*] f-string without any placeholders
+    |
+587 |                     print(f"     Purpose: Cross-session cognitive state preservation")
+588 |                     print(
+589 |                         f"     Function: Store experiences, learning patterns, memories"
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+590 |                     )
+591 |                     print()
+    |
+    = help: Remove extraneous `f` prefix
+
+aether.py:604:31: F541 [*] f-string without any placeholders
+    |
+602 |                     if hasattr(self.memory_system, "memories"):
+603 |                         memory_count = len(self.memory_system.memories)
+604 |                         print(f"≡ƒºá MEMORY MODULES LOADED:")
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+605 |                         print(f"  ≡ƒô¥ Memory Nodes: {memory_count}")
+606 |                         print(f"     Purpose: Individual memory storage units")
+    |
+    = help: Remove extraneous `f` prefix
+
+aether.py:606:31: F541 [*] f-string without any placeholders
+    |
+604 |                         print(f"≡ƒºá MEMORY MODULES LOADED:")
+605 |                         print(f"  ≡ƒô¥ Memory Nodes: {memory_count}")
+606 |                         print(f"     Purpose: Individual memory storage units")
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+607 |                         print(f"  ≡ƒùé∩╕Å Memory Index: ACTIVE")
+608 |                         print(f"     Purpose: Fast memory retrieval and organization")
+    |
+    = help: Remove extraneous `f` prefix
+
+aether.py:607:31: F541 [*] f-string without any placeholders
+    |
+605 |                         print(f"  ≡ƒô¥ Memory Nodes: {memory_count}")
+606 |                         print(f"     Purpose: Individual memory storage units")
+607 |                         print(f"  ≡ƒùé∩╕Å Memory Index: ACTIVE")
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+608 |                         print(f"     Purpose: Fast memory retrieval and organization")
+609 |                         print(f"  ≡ƒÆ╛ SQLite Backend: ACTIVE")
+    |
+    = help: Remove extraneous `f` prefix
+
+aether.py:608:31: F541 [*] f-string without any placeholders
+    |
+606 |                         print(f"     Purpose: Individual memory storage units")
+607 |                         print(f"  ≡ƒùé∩╕Å Memory Index: ACTIVE")
+608 |                         print(f"     Purpose: Fast memory retrieval and organization")
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+609 |                         print(f"  ≡ƒÆ╛ SQLite Backend: ACTIVE")
+610 |                         print(f"     Purpose: Persistent storage across sessions")
+    |
+    = help: Remove extraneous `f` prefix
+
+aether.py:609:31: F541 [*] f-string without any placeholders
+    |
+607 |                         print(f"  ≡ƒùé∩╕Å Memory Index: ACTIVE")
+608 |                         print(f"     Purpose: Fast memory retrieval and organization")
+609 |                         print(f"  ≡ƒÆ╛ SQLite Backend: ACTIVE")
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+610 |                         print(f"     Purpose: Persistent storage across sessions")
+611 |                         print(f"  ≡ƒöì Pattern Recognition: ACTIVE")
+    |
+    = help: Remove extraneous `f` prefix
+
+aether.py:610:31: F541 [*] f-string without any placeholders
+    |
+608 |                         print(f"     Purpose: Fast memory retrieval and organization")
+609 |                         print(f"  ≡ƒÆ╛ SQLite Backend: ACTIVE")
+610 |                         print(f"     Purpose: Persistent storage across sessions")
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+611 |                         print(f"  ≡ƒöì Pattern Recognition: ACTIVE")
+612 |                         print(f"     Purpose: Learn from memory access patterns")
+    |
+    = help: Remove extraneous `f` prefix
+
+aether.py:611:31: F541 [*] f-string without any placeholders
+    |
+609 |                         print(f"  ≡ƒÆ╛ SQLite Backend: ACTIVE")
+610 |                         print(f"     Purpose: Persistent storage across sessions")
+611 |                         print(f"  ≡ƒöì Pattern Recognition: ACTIVE")
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+612 |                         print(f"     Purpose: Learn from memory access patterns")
+    |
+    = help: Remove extraneous `f` prefix
+
+aether.py:612:31: F541 [*] f-string without any placeholders
+    |
+610 |                         print(f"     Purpose: Persistent storage across sessions")
+611 |                         print(f"  ≡ƒöì Pattern Recognition: ACTIVE")
+612 |                         print(f"     Purpose: Learn from memory access patterns")
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+613 |
+614 |                 elif hasattr(self.memory_system, "get_system_status"):
+    |
+    = help: Remove extraneous `f` prefix
+
+aetherra_core_analyzer.py:139:30: UP015 [*] Unnecessary mode argument
+    |
+137 |         """Compare two files line by line to show differences"""
+138 |         try:
+139 |             with open(file1, "r", encoding="utf-8", errors="ignore") as f1:
+    |                              ^^^ UP015
+140 |                 content1 = f1.readlines()
+141 |             with open(file2, "r", encoding="utf-8", errors="ignore") as f2:
+    |
+    = help: Remove mode argument
+
+aetherra_core_analyzer.py:141:30: UP015 [*] Unnecessary mode argument
+    |
+139 |             with open(file1, "r", encoding="utf-8", errors="ignore") as f1:
+140 |                 content1 = f1.readlines()
+141 |             with open(file2, "r", encoding="utf-8", errors="ignore") as f2:
+    |                              ^^^ UP015
+142 |                 content2 = f2.readlines()
+    |
+    = help: Remove mode argument
+
+aetherra_file_watcher.py:385:40: UP015 [*] Unnecessary mode argument
+    |
+383 |         if config_file and os.path.exists(config_file):
+384 |             try:
+385 |                 with open(config_file, "r") as f:
+    |                                        ^^^ UP015
+386 |                     user_config = json.load(f)
+387 |                 default_config.update(user_config)
+    |
+    = help: Remove mode argument
+
+aetherra_import_updater.py:55:34: UP015 [*] Unnecessary mode argument
+   |
+53 |         """Update import statements in a single file"""
+54 |         try:
+55 |             with open(file_path, "r", encoding="utf-8") as f:
+   |                                  ^^^ UP015
+56 |                 content = f.read()
+   |
+   = help: Remove mode argument
+
+aetherra_import_updater.py:112:38: UP015 [*] Unnecessary mode argument
+    |
+110 |             # Check if file contains any of our target import patterns
+111 |             try:
+112 |                 with open(file_path, "r", encoding="utf-8") as f:
+    |                                      ^^^ UP015
+113 |                     content = f.read()
+    |
+    = help: Remove mode argument
+
+aetherra_kernel_loop.py:1278:40: UP015 [*] Unnecessary mode argument
+     |
+1276 |             if not self.tasks_path.exists():
+1277 |                 return
+1278 |             with open(self.tasks_path, "r", encoding="utf-8") as f:
+     |                                        ^^^ UP015
+1279 |                 data = json.load(f)
+1280 |             for key, q in (
+     |
+     = help: Remove mode argument
+
+aetherra_live_monitor.py:39:25: UP015 [*] Unnecessary mode argument
+   |
+37 | def _tail_log(path: str, lines: int = 10) -> list[str]:
+38 |     try:
+39 |         with open(path, "r", encoding="utf-8", errors="ignore") as f:
+   |                         ^^^ UP015
+40 |             buf = f.readlines()
+41 |             return [ln.rstrip() for ln in buf[-lines:] if ln.strip()]
+   |
+   = help: Remove mode argument
+
+aetherra_os_launcher.py:2288:36: UP015 [*] Unnecessary mode argument
+     |
+2286 |             import json
+2287 |
+2288 |             with open(args.config, "r") as f:
+     |                                    ^^^ UP015
+2289 |                 config = json.load(f)
+2290 |         except Exception as e:
+     |
+     = help: Remove mode argument
+
+aetherra_plugin_discovery.py:104:38: UP015 [*] Unnecessary mode argument
+    |
+102 |         """Process an aetherra-plugin.json manifest file."""
+103 |         try:
+104 |             with open(manifest_path, "r", encoding="utf-8") as f:
+    |                                      ^^^ UP015
+105 |                 manifest = json.load(f)
+    |
+    = help: Remove mode argument
+
+aetherra_plugin_discovery.py:157:32: UP015 [*] Unnecessary mode argument
+    |
+155 |         try:
+156 |             # Read the file to look for plugin indicators
+157 |             with open(py_file, "r", encoding="utf-8") as f:
+    |                                ^^^ UP015
+158 |                 content = f.read()
+    |
+    = help: Remove mode argument
+
+aetherra_plugin_discovery.py:249:36: UP015 [*] Unnecessary mode argument
+    |
+247 |         try:
+248 |             # Just read to ensure file is accessible; content not used
+249 |             with open(sample_file, "r", encoding="utf-8"):
+    |                                    ^^^ UP015
+250 |                 pass
+    |
+    = help: Remove mode argument
+
+aetherra_plugins_cleaner.py:264:15: F541 [*] f-string without any placeholders
+    |
+263 |         print("Γ£à Cleanup complete!")
+264 |         print(f"≡ƒôä Report saved to: AETHERRA_PLUGINS_CLEANUP_REPORT.md")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+265 |         print(f"≡ƒÆ╛ Backup info saved to: plugins_cleanup_backup_info.json")
+266 |         print("")
+    |
+    = help: Remove extraneous `f` prefix
+
+aetherra_plugins_cleaner.py:265:15: F541 [*] f-string without any placeholders
+    |
+263 |         print("Γ£à Cleanup complete!")
+264 |         print(f"≡ƒôä Report saved to: AETHERRA_PLUGINS_CLEANUP_REPORT.md")
+265 |         print(f"≡ƒÆ╛ Backup info saved to: plugins_cleanup_backup_info.json")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+266 |         print("")
+267 |         print(f"≡ƒÄ» Total actions performed: {len(self.actions_performed)}")
+    |
+    = help: Remove extraneous `f` prefix
+
+aetherra_quantum_meta_learning.py:244:15: F541 [*] f-string without any placeholders
+    |
+242 |         )
+243 |
+244 |         print(f"≡ƒöù Quantum entanglement learning completed")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+245 |         print(f"   - Entangled pairs: {len(entanglement_results['entangled_pairs'])}")
+246 |         print(f"   - Network complexity: {total_entanglements}")
+    |
+    = help: Remove extraneous `f` prefix
+
+aetherra_shared_service_registry.py:159:47: UP015 [*] Unnecessary mode argument
+    |
+157 |         try:
+158 |             if self.registry_file.exists():
+159 |                 with open(self.registry_file, "r") as f:
+    |                                               ^^^ UP015
+160 |                     data = json.load(f)
+161 |                     for name, service_data in data.get("services", {}).items():
+    |
+    = help: Remove mode argument
+
+aetherra_shared_service_registry.py:457:15: F541 [*] f-string without any placeholders
+    |
+455 |         # Get registry status
+456 |         status = registry.get_registry_status()
+457 |         print(f"Γ£à Registry Status:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^ F541
+458 |         print(f"   - Total services: {status['total_services']}")
+459 |         print(f"   - Healthy services: {status['healthy_services']}")
+    |
+    = help: Remove extraneous `f` prefix
+
+aetherra_shared_service_registry.py:465:15: F541 [*] f-string without any placeholders
+    |
+463 |         # List services
+464 |         services = registry.list_services()
+465 |         print(f"Γ£à Registered Services:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+466 |         for name, info in services.items():
+467 |             print(f"   - {name}: PID {info.process_id}, Status {info.status}")
+    |
+    = help: Remove extraneous `f` prefix
+
+aetherra_shared_service_registry.py:470:15: F541 [*] f-string without any placeholders
+    |
+469 |         # Test cross-process persistence
+470 |         print(f"Γ£à Testing persistence across 'process restart'...")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+471 |         await registry.stop()
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_advanced_memory_systems.py:171:15: F541 [*] f-string without any placeholders
+    |
+169 |             await asyncio.sleep(0.1)
+170 |
+171 |         print(f"\n≡ƒôè Storage Summary:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^ F541
+172 |         print(f"   ΓÇó Total conversations stored: {len(test_conversations)}")
+173 |         print(
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_advanced_memory_systems.py:243:23: F541 [*] f-string without any placeholders
+    |
+242 |             if results:
+243 |                 print(f"   ≡ƒÅå Top result:")
+    |                       ^^^^^^^^^^^^^^^^^^^^ F541
+244 |                 top_result = results[0]
+245 |                 content = (
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_advanced_memory_systems.py:261:15: F541 [*] f-string without any placeholders
+    |
+259 |             await asyncio.sleep(0.1)
+260 |
+261 |         print(f"\n≡ƒôè Recall Summary:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^ F541
+262 |         total_results = sum(len(r.get("results", [])) for r in recall_results)
+263 |         avg_recall_time = sum(r.get("recall_time", 0.0) for r in recall_results) / len(
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_advanced_memory_systems.py:322:23: F541 [*] f-string without any placeholders
+    |
+320 |             memory_context = response_result.get("memory_context", {})
+321 |             if memory_context.get("memory_enhanced", False):
+322 |                 print(f"   ≡ƒºá Memory context:")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^ F541
+323 |                 print(
+324 |                     f"      ΓÇó Total memories used: {memory_context.get('total_memories', 0)}"
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_advanced_memory_systems.py:344:15: F541 [*] f-string without any placeholders
+    |
+343 |         # Show conversation statistics
+344 |         print(f"\n≡ƒôè Enhanced Conversation Summary:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+345 |         memory_enhanced_count = sum(
+346 |             1 for r in conversation_results if r.get("memory_enhanced", False)
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_analytics_final.py:479:15: F541 [*] f-string without any placeholders
+    |
+478 |         # Performance snapshot
+479 |         print(f"\nΓÜí PHASE 4: Comprehensive Performance Analysis")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+480 |         print("-" * 50)
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_analytics_final.py:518:19: F541 [*] f-string without any placeholders
+    |
+516 |         category_stats = snapshot.get("category_statistics", {})
+517 |         if category_stats:
+518 |             print(f"\n≡ƒôè Performance by Category:")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+519 |             for category, stats in category_stats.items():
+520 |                 avg_val = stats.get("average", 0)
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_analytics_final.py:550:15: F541 [*] f-string without any placeholders
+    |
+549 |         # Final summary
+550 |         print(f"\n≡ƒôï PHASE 5: Demo Results Summary")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+551 |         print("-" * 50)
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_analytics_final.py:586:15: F541 [*] f-string without any placeholders
+    |
+584 |         print("  ≡ƒº⌐ Compatible with Advanced Memory Systems")
+585 |
+586 |         print(f"\n" + "=" * 80)
+    |               ^^^^^ F541
+587 |         print("≡ƒÄë ANALYTICS & INSIGHTS ENGINE (#6) DEMONSTRATION COMPLETE!")
+588 |         print("=" * 80)
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_enhanced_agents.py:272:15: F541 [*] f-string without any placeholders
+    |
+270 |         # Summary
+271 |         total_time = time.time() - start_time
+272 |         print(f"\n[OK] DEMONSTRATION COMPLETE")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+273 |         print(f"ΓÅ▒∩╕Å Total execution time: {total_time:.2f} seconds")
+274 |         print(f"≡ƒñû All 4 enhanced agents tested successfully!")
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_enhanced_agents.py:274:15: F541 [*] f-string without any placeholders
+    |
+272 |         print(f"\n[OK] DEMONSTRATION COMPLETE")
+273 |         print(f"ΓÅ▒∩╕Å Total execution time: {total_time:.2f} seconds")
+274 |         print(f"≡ƒñû All 4 enhanced agents tested successfully!")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+275 |         print(f"≡ƒÄ» Agents are ready for integration with Aetherra AI OS")
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_enhanced_agents.py:275:15: F541 [*] f-string without any placeholders
+    |
+273 |         print(f"ΓÅ▒∩╕Å Total execution time: {total_time:.2f} seconds")
+274 |         print(f"≡ƒñû All 4 enhanced agents tested successfully!")
+275 |         print(f"≡ƒÄ» Agents are ready for integration with Aetherra AI OS")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+276 |
+277 |     except Exception as e:
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_intelligent_error_handler_8.py:45:5: SyntaxError: Expected an indented block after `try` statement
+   |
+43 |     try:
+44 |
+45 |     except ImportError as e:
+   |     ^
+46 |         test_errors.append(("Plugin Import Error", e))
+   |
+
+demos\demo_intelligent_error_handler_8.py:297:21: SyntaxError: Expected an indented block after `if` statement
+    |
+295 |                     if error_type == "import":
+296 |
+297 |                     elif error_type == "permission":
+    |                     ^
+298 |                         raise PermissionError("Simulated permission error")
+299 |                     elif error_type == "syntax":
+    |
+
+demos\demo_standalone_memory.py:206:23: F541 [*] f-string without any placeholders
+    |
+205 |             if response_data["memory_details"]:
+206 |                 print(f"   ≡ƒöì Top Memory Match:")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+207 |                 top_match = response_data["memory_details"][0]
+208 |                 print(f"      Content: {top_match['content'][:80]}...")
+    |
+    = help: Remove extraneous `f` prefix
+
+demos\demo_standalone_memory.py:230:15: F541 [*] f-string without any placeholders
+    |
+228 |                 tag_counts[tag] = tag_counts.get(tag, 0) + 1
+229 |
+230 |         print(f"   ≡ƒÅ╖∩╕Å  Memory tags:")
+    |               ^^^^^^^^^^^^^^^^^^^^^ F541
+231 |         for tag, count in tag_counts.items():
+232 |             print(f"      ΓÇó {tag}: {count} memories")
+    |
+    = help: Remove extraneous `f` prefix
+
+intelligence_report_generator.py:26:39: UP015 [*] Unnecessary mode argument
+   |
+24 |             return None
+25 |
+26 |         with open(self.analysis_file, "r", encoding="utf-8") as f:
+   |                                       ^^^ UP015
+27 |             return json.load(f)
+   |
+   = help: Remove mode argument
+
+restart_aetherra.py:144:41: UP015 [*] Unnecessary mode argument
+    |
+142 |         # Validate configuration
+143 |         try:
+144 |             with open(self.config_path, "r") as f:
+    |                                         ^^^ UP015
+145 |                 config = json.load(f)
+146 |             logger.info("Γ£à Configuration file is valid")
+    |
+    = help: Remove mode argument
+
+restart_aetherra.py:418:30: F541 [*] f-string without any placeholders
+    |
+416 |             else:
+417 |                 stdout, stderr = process.communicate()
+418 |                 logger.error(f"Γ¥î System startup failed")
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+419 |                 logger.error(f"STDOUT: {stdout.decode()}")
+420 |                 logger.error(f"STDERR: {stderr.decode()}")
+    |
+    = help: Remove extraneous `f` prefix
+
+restart_aetherra.py:437:46: UP015 [*] Unnecessary mode argument
+    |
+435 |             if self.pid_file.exists():
+436 |                 try:
+437 |                     with open(self.pid_file, "r") as f:
+    |                                              ^^^ UP015
+438 |                         pid = int(f.read().strip())
+    |
+    = help: Remove mode argument
+
+setup.py:20:34: UP015 [*] Unnecessary mode argument
+   |
+18 | requirements_file = this_directory / "requirements.txt"
+19 | if requirements_file.exists():
+20 |     with open(requirements_file, "r", encoding="utf-8") as f:
+   |                                  ^^^ UP015
+21 |         requirements = [
+22 |             line.strip() for line in f if line.strip() and not line.startswith("#")
+   |
+   = help: Remove mode argument
+
+test_plugin_installation.py:38:47: F541 [*] f-string without any placeholders
+   |
+37 |             # 1. Get plugin info from Hub
+38 |             response = urllib.request.urlopen(f"http://localhost:3001/api/plugins")
+   |                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+39 |             plugins_data = json.loads(response.read())
+   |
+   = help: Remove extraneous `f` prefix
+
+test_plugin_installation.py:99:42: UP015 [*] Unnecessary mode argument
+    |
+ 97 |             registry = {}
+ 98 |             if registry_file.exists():
+ 99 |                 with open(registry_file, "r", encoding="utf-8") as f:
+    |                                          ^^^ UP015
+100 |                     registry = json.load(f)
+    |
+    = help: Remove mode argument
+
+test_plugin_installation.py:122:34: UP015 [*] Unnecessary mode argument
+    |
+120 |             return []
+121 |
+122 |         with open(registry_file, "r", encoding="utf-8") as f:
+    |                                  ^^^ UP015
+123 |             registry = json.load(f)
+    |
+    = help: Remove mode argument
+
+tests\ai\test_neural_interface.py:1076:11: F541 [*] f-string without any placeholders
+     |
+1074 |         f.write(report_content)
+1075 |
+1076 |     print(f"\n≡ƒôï Detailed test report saved to: NEURAL_INTERFACE_TEST_REPORT.md")
+     |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+     |
+     = help: Remove extraneous `f` prefix
+
+tests\ai\test_openai_integration.py:24:33: UP015 [*] Unnecessary mode argument
+   |
+22 |         env_file = ".env"
+23 |         if os.path.exists(env_file):
+24 |             with open(env_file, "r") as f:
+   |                                 ^^^ UP015
+25 |                 for line in f:
+26 |                     line = line.strip()
+   |
+   = help: Remove mode argument
+
+tests\ai\test_openai_integration.py:76:15: F541 [*] f-string without any placeholders
+   |
+74 |     try:
+75 |         response = await lyrixa_agent.process_request(test_request)
+76 |         print(f"≡ƒôÑ Response received:")
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^ F541
+77 |         print(f"   Success: {response.get('success', False)}")
+78 |         if response.get("success"):
+   |
+   = help: Remove extraneous `f` prefix
+
+tests\ai\test_openai_integration.py:97:15: F541 [*] f-string without any placeholders
+   |
+95 |         )
+96 |
+97 |         print(f"≡ƒôÑ Conversation Manager Response:")
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+98 |         print(f"   Success: {conv_response.get('success', False)}")
+99 |         print(f"   Response: {conv_response.get('response', 'No response')}")
+   |
+   = help: Remove extraneous `f` prefix
+
+tests\integration\test_launcher_detection.py:23:11: F541 [*] f-string without any placeholders
+   |
+21 | if gui_class:
+22 |     print(f"[RESULT] Module: {gui_class.__module__}")
+23 |     print(f"[RESULT] Phase 2 Expected: lyrixa_core.gui.main_window")
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+24 |
+25 |     if gui_class.__module__ == "lyrixa_core.gui.main_window":
+   |
+   = help: Remove extraneous `f` prefix
+
+tools\maintenance\advanced_analyzer.py:55:33: UP015 [*] Unnecessary mode argument
+   |
+53 |         try:
+54 |             # Read file content for analysis
+55 |             with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+   |                                 ^^^ UP015
+56 |                 content = f.read()
+   |
+   = help: Remove mode argument
+
+tools\maintenance\advanced_analyzer.py:720:15: F541 [*] f-string without any placeholders
+    |
+718 |                     )
+719 |
+720 |         print(f"Γ£à Analysis complete!")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^ F541
+721 |         print(f"   ≡ƒôü Directories analyzed: {total_dirs}")
+722 |         print(f"   ≡ƒôä Files analyzed: {total_files}")
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\advanced_analyzer_fixed.py:66:33: UP015 [*] Unnecessary mode argument
+   |
+64 |         try:
+65 |             # Read file content for analysis
+66 |             with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+   |                                 ^^^ UP015
+67 |                 content = f.read()
+   |
+   = help: Remove mode argument
+
+tools\maintenance\check_architecture.py:45:36: UP015 [*] Unnecessary mode argument
+   |
+44 |             try:
+45 |                 with open(py_file, "r", encoding="utf-8", errors="ignore") as f:
+   |                                    ^^^ UP015
+46 |                     content = f.read()
+   |
+   = help: Remove mode argument
+
+tools\maintenance\check_unicode.py:12:25: UP015 [*] Unnecessary mode argument
+   |
+10 | def check_unicode_in_file(filepath):
+11 |     """Check for Unicode characters in a file."""
+12 |     with open(filepath, "r", encoding="utf-8") as f:
+   |                         ^^^ UP015
+13 |         content = f.read()
+   |
+   = help: Remove mode argument
+
+tools\maintenance\complete_organizer.py:185:33: UP015 [*] Unnecessary mode argument
+    |
+183 |         imports = []
+184 |         try:
+185 |             with open(filepath, "r", encoding="utf-8") as f:
+    |                                 ^^^ UP015
+186 |                 content = f.read()
+    |
+    = help: Remove mode argument
+
+tools\maintenance\complete_organizer.py:213:33: UP015 [*] Unnecessary mode argument
+    |
+211 |         """Fix imports in a single file based on the reorganization"""
+212 |         try:
+213 |             with open(filepath, "r", encoding="utf-8") as f:
+    |                                 ^^^ UP015
+214 |                 content = f.read()
+    |
+    = help: Remove mode argument
+
+tools\maintenance\create_documentation.py:15:49: UP015 [*] Unnecessary mode argument
+   |
+13 | def load_analysis():
+14 |     """Load the updated project analysis"""
+15 |     with open("aetherra_project_analysis.json", "r", encoding="utf-8") as f:
+   |                                                 ^^^ UP015
+16 |         return json.load(f)
+   |
+   = help: Remove mode argument
+
+tools\maintenance\create_documentation.py:169:11: F541 [*] f-string without any placeholders
+    |
+168 |     print()
+169 |     print(f"≡ƒÄ» README Generation Summary:")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+170 |     print(f"   Created: {created_count} README files")
+171 |     print(f"   Skipped: {skipped_count} directories")
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\create_documentation.py:203:26: F541 [*] f-string without any placeholders
+    |
+201 |           breakdown_content += f"- **{category.replace('_', ' ').title()}**: {count} files ({percentage:.1f}%)\n"
+202 |
+203 |       breakdown_content += f"""
+    |  __________________________^
+204 | |
+205 | | ## ≡ƒùé∩╕Å Directory Structure
+206 | |
+207 | | ### Major Components
+208 | |
+209 | | """
+    | |___^ F541
+210 |
+211 |       # Add major directory information
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\debug_registry_connection.py:34:19: F541 [*] f-string without any placeholders
+   |
+32 |             # Get shared registry status
+33 |             shared_status = registry._shared_registry.get_registry_status()
+34 |             print(f"≡ƒôï Shared registry status:")
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+35 |             for key, value in shared_status.items():
+36 |                 print(f"   {key}: {value}")
+   |
+   = help: Remove extraneous `f` prefix
+
+tools\maintenance\final_legal_check.py:63:38: UP015 [*] Unnecessary mode argument
+   |
+61 |         if full_path.exists():
+62 |             try:
+63 |                 with open(full_path, "r", encoding="utf-8") as f:
+   |                                      ^^^ UP015
+64 |                     content = f.read(1000)  # Read first 1000 chars
+65 |                     if "Copyright (C) 2025 AetherraLabs" in content:
+   |
+   = help: Remove mode argument
+
+tools\maintenance\final_legal_check.py:82:36: UP015 [*] Unnecessary mode argument
+   |
+80 |     if readme_path.exists():
+81 |         try:
+82 |             with open(readme_path, "r", encoding="utf-8") as f:
+   |                                    ^^^ UP015
+83 |                 content = f.read()
+84 |                 if "Legal Information & Distribution Rights" in content:
+   |
+   = help: Remove mode argument
+
+tools\maintenance\fix_architecture.py:56:33: UP015 [*] Unnecessary mode argument
+   |
+55 |             try:
+56 |                 with open(path, "r", encoding="utf-8") as f:
+   |                                 ^^^ UP015
+57 |                     content = f.read()
+   |
+   = help: Remove mode argument
+
+tools\maintenance\fix_architecture_simple.py:52:38: UP015 [*] Unnecessary mode argument
+   |
+51 |             try:
+52 |                 with open(file_path, "r", encoding="utf-8") as f:
+   |                                      ^^^ UP015
+53 |                     content = f.read()
+   |
+   = help: Remove mode argument
+
+tools\maintenance\fix_imports.py:420:21: F541 [*] f-string without any placeholders
+    |
+418 |                 logger.warning("Could not save report file")
+419 |
+420 |         logger.info(f"≡ƒôä Report completed")
+    |                     ^^^^^^^^^^^^^^^^^^^^^^ F541
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\fix_remaining_errors_round2.py:31:26: UP015 [*] Unnecessary mode argument
+   |
+29 |         return False
+30 |
+31 |     with open(file_path, "r", encoding="utf-8") as f:
+   |                          ^^^ UP015
+32 |         content = f.read()
+   |
+   = help: Remove mode argument
+
+tools\maintenance\fix_remaining_errors_round2.py:103:26: UP015 [*] Unnecessary mode argument
+    |
+101 |         return False
+102 |
+103 |     with open(file_path, "r", encoding="utf-8") as f:
+    |                          ^^^ UP015
+104 |         content = f.read()
+    |
+    = help: Remove mode argument
+
+tools\maintenance\fix_remaining_errors_round2.py:177:29: UP015 [*] Unnecessary mode argument
+    |
+175 |         return False
+176 |
+177 |     with open(roadmap_path, "r", encoding="utf-8") as f:
+    |                             ^^^ UP015
+178 |         content = f.read()
+    |
+    = help: Remove mode argument
+
+tools\maintenance\fix_remaining_errors_round2.py:216:17: F541 [*] f-string without any placeholders
+    |
+214 |         f.write(content)
+215 |
+216 |     logger.info(f"Γ£à Updated roadmap with latest status")
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+217 |     return True
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\fix_remaining_errors_round2.py:245:17: F541 [*] f-string without any placeholders
+    |
+243 |             logger.error(f"Γ¥î {description} - ERROR: {e}")
+244 |
+245 |     logger.info(f"\n≡ƒÄë COMPREHENSIVE ERROR FIXING COMPLETE!")
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+246 |     logger.info(f"Γ£à Successfully applied {successful_fixes}/{len(fixes)} fixes")
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\fix_remaining_imports.py:33:34: UP015 [*] Unnecessary mode argument
+   |
+32 |         try:
+33 |             with open(file_path, "r", encoding="utf-8") as f:
+   |                                  ^^^ UP015
+34 |                 content = f.read()
+   |
+   = help: Remove mode argument
+
+tools\maintenance\fix_unicode_issues.py:70:38: UP015 [*] Unnecessary mode argument
+   |
+68 |             try:
+69 |                 # Read file with UTF-8 encoding
+70 |                 with open(full_path, "r", encoding="utf-8") as f:
+   |                                      ^^^ UP015
+71 |                     content = f.read()
+   |
+   = help: Remove mode argument
+
+tools\maintenance\fix_unicode_issues.py:104:42: UP015 [*] Unnecessary mode argument
+    |
+102 |         print("≡ƒöº Fixing introspector_plugin.py imports...")
+103 |         try:
+104 |             with open(introspector_path, "r", encoding="utf-8") as f:
+    |                                          ^^^ UP015
+105 |                 content = f.read()
+    |
+    = help: Remove mode argument
+
+tools\maintenance\fix_unicode_issues.py:127:36: UP015 [*] Unnecessary mode argument
+    |
+125 |         print("≡ƒöº Fixing memory_aware_plugin_router.py imports...")
+126 |         try:
+127 |             with open(router_path, "r", encoding="utf-8") as f:
+    |                                    ^^^ UP015
+128 |                 content = f.read()
+    |
+    = help: Remove mode argument
+
+tools\maintenance\fix_unicode_service_registry.py:6:43: UP015 [*] Unnecessary mode argument
+  |
+5 | # Read the service registry file
+6 | with open("aetherra_service_registry.py", "r", encoding="utf-8") as f:
+  |                                           ^^^ UP015
+7 |     content = f.read()
+  |
+  = help: Remove mode argument
+
+tools\maintenance\generate_reports.py:16:25: UP015 [*] Unnecessary mode argument
+   |
+14 | def load_analysis(filename):
+15 |     """Load analysis results from JSON file"""
+16 |     with open(filename, "r", encoding="utf-8") as f:
+   |                         ^^^ UP015
+17 |         return json.load(f)
+   |
+   = help: Remove mode argument
+
+tools\maintenance\generate_reports.py:224:11: F541 [*] f-string without any placeholders
+    |
+222 |     # Print summary
+223 |     summary = analysis.get("summary", {})
+224 |     print(f"\n≡ƒôê Analysis Summary:")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+225 |     print(f"   Total Files: {summary.get('total_files', 0)}")
+226 |     print(f"   Total Directories: {summary.get('total_directories', 0)}")
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\post_cleanup_import_updater.py:53:34: UP015 [*] Unnecessary mode argument
+   |
+51 |         """Update import statements in a single file"""
+52 |         try:
+53 |             with open(file_path, "r", encoding="utf-8") as f:
+   |                                  ^^^ UP015
+54 |                 content = f.read()
+   |
+   = help: Remove mode argument
+
+tools\maintenance\post_cleanup_import_updater.py:109:38: UP015 [*] Unnecessary mode argument
+    |
+107 |             # Check if file contains any of our target import patterns
+108 |             try:
+109 |                 with open(file_path, "r", encoding="utf-8") as f:
+    |                                      ^^^ UP015
+110 |                     content = f.read()
+    |
+    = help: Remove mode argument
+
+tools\maintenance\project_analyzer.py:39:33: UP015 [*] Unnecessary mode argument
+   |
+37 |         """Analyze Python file for imports and basic info"""
+38 |         try:
+39 |             with open(filepath, "r", encoding="utf-8") as f:
+   |                                 ^^^ UP015
+40 |                 content = f.read()
+   |
+   = help: Remove mode argument
+
+tools\maintenance\project_analyzer.py:231:15: F541 [*] f-string without any placeholders
+    |
+229 |         self.duplicate_groups = self.find_duplicates()
+230 |
+231 |         print(f"Γ£à Analysis complete!")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^ F541
+232 |         print(f"   ≡ƒôü Directories analyzed: {len(self.directory_analysis)}")
+233 |         print(
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\universal_directory_analyzer.py:192:30: UP015 [*] Unnecessary mode argument
+    |
+190 |         """Compare two files line by line to show differences"""
+191 |         try:
+192 |             with open(file1, "r", encoding="utf-8", errors="ignore") as f1:
+    |                              ^^^ UP015
+193 |                 content1 = f1.readlines()
+194 |             with open(file2, "r", encoding="utf-8", errors="ignore") as f2:
+    |
+    = help: Remove mode argument
+
+tools\maintenance\universal_directory_analyzer.py:194:30: UP015 [*] Unnecessary mode argument
+    |
+192 |             with open(file1, "r", encoding="utf-8", errors="ignore") as f1:
+193 |                 content1 = f1.readlines()
+194 |             with open(file2, "r", encoding="utf-8", errors="ignore") as f2:
+    |                              ^^^ UP015
+195 |                 content2 = f2.readlines()
+    |
+    = help: Remove mode argument
+
+tools\maintenance\validate_architecture.py:191:38: UP015 [*] Unnecessary mode argument
+    |
+189 |         try:
+190 |             if file_path.suffix == ".py":
+191 |                 with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+    |                                      ^^^ UP015
+192 |                     file_content = f.read()[:5000]  # First 5KB for analysis
+193 |         except Exception:
+    |
+    = help: Remove mode argument
+
+tools\maintenance\validate_architecture.py:238:17: F541 [*] f-string without any placeholders
+    |
+236 |         if should_be_aetherra and is_in_lyrixa:
+237 |             errors.append(
+238 |                 f"Core AI file incorrectly placed in Lyrixa interface directory"
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+239 |             )
+240 |             recommended_location = "Aetherra/[appropriate_core_directory]/"
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\validate_architecture.py:242:17: F541 [*] f-string without any placeholders
+    |
+240 |             recommended_location = "Aetherra/[appropriate_core_directory]/"
+241 |             suggestions.append(
+242 |                 f"Move to Aetherra core directory - this appears to be core AI functionality"
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+243 |             )
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\validate_architecture.py:247:17: F541 [*] f-string without any placeholders
+    |
+245 |         elif should_be_lyrixa and is_in_aetherra_core:
+246 |             errors.append(
+247 |                 f"Interface file incorrectly placed in Aetherra core directory"
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+248 |             )
+249 |             recommended_location = "Aetherra/lyrixa/[appropriate_interface_directory]/"
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\validate_architecture.py:251:17: F541 [*] f-string without any placeholders
+    |
+249 |             recommended_location = "Aetherra/lyrixa/[appropriate_interface_directory]/"
+250 |             suggestions.append(
+251 |                 f"Move to Lyrixa interface directory - this appears to be user interface"
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+252 |             )
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\validate_architecture.py:256:17: F541 [*] f-string without any placeholders
+    |
+254 |         elif should_be_aetherra and should_be_lyrixa:
+255 |             warnings.append(
+256 |                 f"File contains both core AI and interface elements - consider splitting"
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+257 |             )
+258 |             suggestions.append(f"Split into separate core and interface components")
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\validate_architecture.py:258:32: F541 [*] f-string without any placeholders
+    |
+256 |                 f"File contains both core AI and interface elements - consider splitting"
+257 |             )
+258 |             suggestions.append(f"Split into separate core and interface components")
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+259 |
+260 |         # Check for specific architectural violations
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\validate_architecture.py:264:38: UP015 [*] Unnecessary mode argument
+    |
+262 |         try:
+263 |             if file_path.suffix == ".py":
+264 |                 with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+    |                                      ^^^ UP015
+265 |                     file_content = f.read()
+266 |         except Exception:
+    |
+    = help: Remove mode argument
+
+tools\maintenance\validate_architecture.py:300:15: F541 [*] f-string without any placeholders
+    |
+298 |             directory = self.aetherra_root
+299 |
+300 |         print(f"≡ƒöì Scanning Aetherra project architecture...")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+301 |         print(f"≡ƒôé Root directory: {directory}")
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\validate_architecture.py:487:11: F541 [*] f-string without any placeholders
+    |
+485 |         f.write(report)
+486 |
+487 |     print(f"≡ƒôè Validation complete!")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^ F541
+488 |     print(f"≡ƒôä Report saved to: {report_path}")
+    |
+    = help: Remove extraneous `f` prefix
+
+tools\maintenance\verify_imports.py:86:25: UP015 [*] Unnecessary mode argument
+   |
+85 | def check_file(filepath):
+86 |     with open(filepath, "r", encoding="utf-8") as f:
+   |                         ^^^ UP015
+87 |         try:
+88 |             tree = ast.parse(f.read(), filename=filepath)
+   |
+   = help: Remove mode argument
+
+Found 325 errors.
+[*] 320 fixable with the `--fix` option.

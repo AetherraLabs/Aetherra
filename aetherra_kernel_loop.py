@@ -697,8 +697,8 @@ class AetherraKernelLoop:
                 # Optional security capability check to prevent bypass
                 try:
                     from Aetherra.security.capabilities import (
-                        has_capability,  # type: ignore
-                    )
+                        has_capability,
+                    )  # type: ignore
                 except Exception:
                     has_capability = None  # type: ignore
 
@@ -1275,7 +1275,7 @@ class AetherraKernelLoop:
         try:
             if not self.tasks_path.exists():
                 return
-            with open(self.tasks_path, "r", encoding="utf-8") as f:
+            with open(self.tasks_path, encoding="utf-8") as f:
                 data = json.load(f)
             for key, q in (
                 ("high_priority", self.high_priority_queue),

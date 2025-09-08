@@ -14,9 +14,8 @@ import threading
 import time
 import uuid
 from collections import defaultdict
-from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List
 
 
 class SelfKnowledgeDomain(Enum):
@@ -106,7 +105,8 @@ class MetaCognitionSystem:
     def _init_database(self):
         """Initialize SQLite database for persistent meta-memory"""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS meta_memory_nodes (
                     node_id TEXT PRIMARY KEY,
                     knowledge_domain TEXT,
@@ -119,9 +119,11 @@ class MetaCognitionSystem:
                     validation_status TEXT,
                     learning_weight REAL
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS self_reflections (
                     reflection_id TEXT PRIMARY KEY,
                     timestamp REAL,
@@ -133,9 +135,11 @@ class MetaCognitionSystem:
                     confidence_changes TEXT,
                     meta_level INTEGER
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS cognitive_states (
                     timestamp REAL PRIMARY KEY,
                     state_data TEXT,
@@ -143,7 +147,8 @@ class MetaCognitionSystem:
                     coherence_score REAL,
                     meta_awareness_level REAL
                 )
-            """)
+            """
+            )
 
     def _initialize_self_knowledge_domains(self):
         """Initialize comprehensive self-knowledge tracking across all domains"""
@@ -306,14 +311,14 @@ class MetaCognitionSystem:
         coverage_report["overall_coverage"] = sum(domain_scores) / len(domain_scores)
 
         # Generate improvement priorities
-        coverage_report["improvement_priorities"] = (
-            self._generate_improvement_priorities()
-        )
+        coverage_report[
+            "improvement_priorities"
+        ] = self._generate_improvement_priorities()
 
         # Generate learning recommendations
-        coverage_report["learning_recommendations"] = (
-            self._generate_learning_recommendations()
-        )
+        coverage_report[
+            "learning_recommendations"
+        ] = self._generate_learning_recommendations()
 
         return coverage_report
 

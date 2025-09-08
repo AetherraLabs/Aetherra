@@ -32,14 +32,14 @@ import sys
 import time
 import urllib.request
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 
 def _exists(path: str) -> bool:
     return Path(path).exists()
 
 
-def _try_import(name: str) -> Tuple[bool, str | None]:
+def _try_import(name: str) -> tuple[bool, str | None]:
     try:
         importlib.import_module(name)
         return True, None
@@ -217,7 +217,7 @@ def check_hub_minimal_api_probe(port: int | None = None, timeout: float = 1.5) -
     time.sleep(0.2)
     base = f"http://localhost:{p}"
 
-    def _get(path: str) -> Tuple[int, str]:
+    def _get(path: str) -> tuple[int, str]:
         url = base + path
         try:
             with urllib.request.urlopen(url, timeout=timeout) as resp:  # nosec B310

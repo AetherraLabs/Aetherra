@@ -292,9 +292,7 @@ Available commands:
                 return f"✅ Persona set to {archetype_name.title()} with {voice_tone} voice tone."
             else:
                 available = ", ".join(archetype_map.keys())
-                return (
-                    f"❌ Unknown archetype '{archetype_name}'. Available: {available}"
-                )
+                return f"❌ Unknown archetype '{archetype_name}'. Available: {available}"
 
         except Exception as e:
             return f"❌ Error setting persona: {e}"

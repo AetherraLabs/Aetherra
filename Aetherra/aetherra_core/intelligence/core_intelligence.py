@@ -12,10 +12,9 @@ Provides advanced cognitive capabilities, pattern recognition, and adaptive lear
 
 import json
 import logging
-import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -64,7 +63,7 @@ class LyrixaIntelligence:
         """Load previously learned intelligence data."""
         try:
             if self.intelligence_data_path.exists():
-                with open(self.intelligence_data_path, "r", encoding="utf-8") as f:
+                with open(self.intelligence_data_path, encoding="utf-8") as f:
                     data = json.load(f)
                     self.memory_patterns = data.get("memory_patterns", {})
                     self.learned_behaviors = data.get("learned_behaviors", {})

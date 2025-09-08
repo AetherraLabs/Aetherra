@@ -12,15 +12,14 @@ Real-time system monitoring with stunning visual effects.
 import asyncio
 import json
 import logging
-import time
-import psutil
 import random
+import time
 from datetime import datetime
-from typing import Dict, Any, List
 from pathlib import Path
+from typing import Any, Dict, List
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import HTMLResponse, FileResponse
+import psutil
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -30,8 +29,10 @@ logger = logging.getLogger(__name__)
 # Try to import Aetherra engine
 try:
     import sys
+
     sys.path.append(str(Path(__file__).parent.parent))
     from Aetherra.aetherra_core.engine.aetherra_engine import aetherra_engine
+
     AETHERRA_AVAILABLE = True
     logger.info("✅ Aetherra engine successfully imported")
 except ImportError as e:
@@ -39,7 +40,9 @@ except ImportError as e:
     AETHERRA_AVAILABLE = False
     logger.warning(f"⚠️ Aetherra engine not available: {e}")
 
-app = FastAPI(title="Aetherra OS Interface", description="Revolutionary AI Operating System")
+app = FastAPI(
+    title="Aetherra OS Interface", description="Revolutionary AI Operating System"
+)
 
 # Setup static files and templates
 static_dir = Path(__file__).parent / "static"
@@ -49,6 +52,7 @@ templates_dir.mkdir(exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 templates = Jinja2Templates(directory=templates_dir)
+
 
 # WebSocket connection manager
 class ConnectionManager:
@@ -91,7 +95,9 @@ class ConnectionManager:
         for conn in disconnected:
             self.disconnect(conn)
 
+
 manager = ConnectionManager()
+
 
 class SystemMonitor:
     """Real-time system monitoring with neural enhancements"""
@@ -116,7 +122,7 @@ class SystemMonitor:
             swap = psutil.swap_memory()
 
             # Disk metrics
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
 
             # Network metrics
             network = psutil.net_io_counters()
@@ -135,40 +141,40 @@ class SystemMonitor:
                 self.memory_history.pop(0)
 
             return {
-                'timestamp': datetime.now().isoformat(),
-                'uptime': int(time.time() - self.start_time),
-                'cpu': {
-                    'percent': cpu_percent,
-                    'frequency': cpu_freq.current if cpu_freq else 0,
-                    'cores': cpu_count,
-                    'history': self.cpu_history[-20:],  # Last 20 seconds
+                "timestamp": datetime.now().isoformat(),
+                "uptime": int(time.time() - self.start_time),
+                "cpu": {
+                    "percent": cpu_percent,
+                    "frequency": cpu_freq.current if cpu_freq else 0,
+                    "cores": cpu_count,
+                    "history": self.cpu_history[-20:],  # Last 20 seconds
                 },
-                'memory': {
-                    'total': memory.total,
-                    'available': memory.available,
-                    'percent': memory.percent,
-                    'used': memory.used,
-                    'free': memory.free,
-                    'history': self.memory_history[-20:],
+                "memory": {
+                    "total": memory.total,
+                    "available": memory.available,
+                    "percent": memory.percent,
+                    "used": memory.used,
+                    "free": memory.free,
+                    "history": self.memory_history[-20:],
                 },
-                'swap': {
-                    'total': swap.total,
-                    'used': swap.used,
-                    'percent': swap.percent,
+                "swap": {
+                    "total": swap.total,
+                    "used": swap.used,
+                    "percent": swap.percent,
                 },
-                'disk': {
-                    'total': disk.total,
-                    'used': disk.used,
-                    'free': disk.free,
-                    'percent': (disk.used / disk.total) * 100,
+                "disk": {
+                    "total": disk.total,
+                    "used": disk.used,
+                    "free": disk.free,
+                    "percent": (disk.used / disk.total) * 100,
                 },
-                'network': {
-                    'bytes_sent': network.bytes_sent,
-                    'bytes_recv': network.bytes_recv,
-                    'packets_sent': network.packets_sent,
-                    'packets_recv': network.packets_recv,
+                "network": {
+                    "bytes_sent": network.bytes_sent,
+                    "bytes_recv": network.bytes_recv,
+                    "packets_sent": network.packets_sent,
+                    "packets_recv": network.packets_recv,
                 },
-                'processes': process_count,
+                "processes": process_count,
             }
         except Exception as e:
             logger.error(f"Error getting system metrics: {e}")
@@ -180,7 +186,7 @@ class SystemMonitor:
         connections = []
 
         # Get actual Aetherra engine activity if available
-        aetherra_active = AETHERRA_AVAILABLE and hasattr(self, '_last_aetherra_status')
+        aetherra_active = AETHERRA_AVAILABLE and hasattr(self, "_last_aetherra_status")
         base_activity = 0.3 if aetherra_active else 0.1
 
         # Generate neural nodes with activity levels based on real system state
@@ -207,51 +213,58 @@ class SystemMonitor:
 
             # Node types based on position and function
             if i < 10:
-                node_type = 'processor'
+                node_type = "processor"
             elif i < 15:
-                node_type = 'memory'
+                node_type = "memory"
             elif i < 20:
-                node_type = 'network'
+                node_type = "network"
             else:
-                node_type = 'aetherra_core' if aetherra_active else 'storage'
+                node_type = "aetherra_core" if aetherra_active else "storage"
 
-            nodes.append({
-                'id': i,
-                'x': col * 80 + 40,  # Grid positioning
-                'y': row * 60 + 40,
-                'activity': min(activity, 1.0),
-                'type': node_type,
-                'real_data': True if i >= 15 and aetherra_active else False,
-            })
+            nodes.append(
+                {
+                    "id": i,
+                    "x": col * 80 + 40,  # Grid positioning
+                    "y": row * 60 + 40,
+                    "activity": min(activity, 1.0),
+                    "type": node_type,
+                    "real_data": True if i >= 15 and aetherra_active else False,
+                }
+            )
 
         # Generate connections between nearby nodes
         for i, node in enumerate(nodes):
-            for j, other_node in enumerate(nodes[i+1:], i+1):
-                distance = ((node['x'] - other_node['x'])**2 + (node['y'] - other_node['y'])**2)**0.5
+            for j, other_node in enumerate(nodes[i + 1 :], i + 1):
+                distance = (
+                    (node["x"] - other_node["x"]) ** 2
+                    + (node["y"] - other_node["y"]) ** 2
+                ) ** 0.5
                 if distance < 120 and random.random() < 0.3:
                     strength = random.uniform(0.2, 0.8)
-                    connections.append({
-                        'source': node['id'],
-                        'target': other_node['id'],
-                        'strength': strength,
-                        'data_flow': random.choice(['up', 'down', 'bidirectional']),
-                    })
+                    connections.append(
+                        {
+                            "source": node["id"],
+                            "target": other_node["id"],
+                            "strength": strength,
+                            "data_flow": random.choice(["up", "down", "bidirectional"]),
+                        }
+                    )
 
         return {
-            'nodes': nodes,
-            'connections': connections,
-            'network_load': sum(node['activity'] for node in nodes) / len(nodes),
-            'active_processes': random.randint(50, 150),
-            'data_throughput': random.uniform(10, 100),  # MB/s
+            "nodes": nodes,
+            "connections": connections,
+            "network_load": sum(node["activity"] for node in nodes) / len(nodes),
+            "active_processes": random.randint(50, 150),
+            "data_throughput": random.uniform(10, 100),  # MB/s
         }
 
     async def get_aetherra_status(self) -> Dict[str, Any]:
         """Get Aetherra engine status if available"""
         if not AETHERRA_AVAILABLE or aetherra_engine is None:
             return {
-                'available': False,
-                'status': 'Engine not available',
-                'components': {},
+                "available": False,
+                "status": "Engine not available",
+                "components": {},
             }
 
         try:
@@ -265,33 +278,46 @@ class SystemMonitor:
             self._last_aetherra_status = status
 
             return {
-                'available': True,
-                'status': 'operational',
-                'engine_status': status.get('engine_status', 'unknown'),
-                'session_active': status.get('session_active', False),
-                'memory_system': status.get('memory_system', {}),
-                'improvement_system': status.get('improvement_system', {}),
-                'agent_orchestrator': status.get('agent_orchestrator', {}),
-                'health_monitoring': status.get('health_monitoring', {}),
-                'uptime_minutes': status.get('uptime_minutes', 0),
-                'active_components': len([k for k, v in status.items() if isinstance(v, dict) and v.get('status') == 'active']),
-                'total_memories': status.get('memory_system', {}).get('total_memories', 0),
-                'reasoning_sessions': status.get('improvement_system', {}).get('improvements', 0),
+                "available": True,
+                "status": "operational",
+                "engine_status": status.get("engine_status", "unknown"),
+                "session_active": status.get("session_active", False),
+                "memory_system": status.get("memory_system", {}),
+                "improvement_system": status.get("improvement_system", {}),
+                "agent_orchestrator": status.get("agent_orchestrator", {}),
+                "health_monitoring": status.get("health_monitoring", {}),
+                "uptime_minutes": status.get("uptime_minutes", 0),
+                "active_components": len(
+                    [
+                        k
+                        for k, v in status.items()
+                        if isinstance(v, dict) and v.get("status") == "active"
+                    ]
+                ),
+                "total_memories": status.get("memory_system", {}).get(
+                    "total_memories", 0
+                ),
+                "reasoning_sessions": status.get("improvement_system", {}).get(
+                    "improvements", 0
+                ),
             }
         except Exception as e:
             logger.error(f"Error getting Aetherra status: {e}")
             return {
-                'available': False,
-                'status': f'Error: {str(e)}',
-                'components': {},
+                "available": False,
+                "status": f"Error: {str(e)}",
+                "components": {},
             }
 
+
 monitor = SystemMonitor()
+
 
 @app.get("/", response_class=HTMLResponse)
 async def get_interface(request: Request):
     """Serve the main Aetherra OS interface"""
     return templates.TemplateResponse("index.html", {"request": request})
+
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -306,15 +332,20 @@ async def websocket_endpoint(websocket: WebSocket):
             aetherra_status = await monitor.get_aetherra_status()
 
             # Send data to client
-            await manager.send_personal_message(json.dumps({
-                'type': 'system_update',
-                'data': {
-                    'system': system_metrics,
-                    'neural': neural_activity,
-                    'aetherra': aetherra_status,
-                    'timestamp': datetime.now().isoformat(),
-                }
-            }), websocket)
+            await manager.send_personal_message(
+                json.dumps(
+                    {
+                        "type": "system_update",
+                        "data": {
+                            "system": system_metrics,
+                            "neural": neural_activity,
+                            "aetherra": aetherra_status,
+                            "timestamp": datetime.now().isoformat(),
+                        },
+                    }
+                ),
+                websocket,
+            )
 
             await asyncio.sleep(1)  # Update every second
 
@@ -324,6 +355,7 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.error(f"WebSocket error: {e}")
         manager.disconnect(websocket)
 
+
 @app.post("/api/aetherra/message")
 async def send_aetherra_message(data: dict):
     """Send message to Aetherra engine"""
@@ -331,7 +363,7 @@ async def send_aetherra_message(data: dict):
         return {"error": "Aetherra engine not available"}
 
     try:
-        message = data.get('message', '')
+        message = data.get("message", "")
         if not message:
             return {"error": "No message provided"}
 
@@ -339,16 +371,14 @@ async def send_aetherra_message(data: dict):
         response = await aetherra_engine.process_message(message)
 
         # Broadcast response to all connected clients
-        await manager.broadcast({
-            'type': 'aetherra_response',
-            'data': response
-        })
+        await manager.broadcast({"type": "aetherra_response", "data": response})
 
         return {"success": True, "response": response}
 
     except Exception as e:
         logger.error(f"Error processing Aetherra message: {e}")
         return {"error": str(e)}
+
 
 @app.get("/api/status")
 async def get_status():
@@ -358,12 +388,13 @@ async def get_status():
     aetherra_status = await monitor.get_aetherra_status()
 
     return {
-        'system': system_metrics,
-        'neural': neural_activity,
-        'aetherra': aetherra_status,
-        'connections': len(manager.active_connections),
-        'timestamp': datetime.now().isoformat(),
+        "system": system_metrics,
+        "neural": neural_activity,
+        "aetherra": aetherra_status,
+        "connections": len(manager.active_connections),
+        "timestamp": datetime.now().isoformat(),
     }
+
 
 if __name__ == "__main__":
     import uvicorn
@@ -372,10 +403,4 @@ if __name__ == "__main__":
     logger.info("🌟 Cyberpunk neural interface loading...")
     logger.info("⚡ Real-time system monitoring active")
 
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8888,
-        log_level="info",
-        reload=False
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8888, log_level="info", reload=False)

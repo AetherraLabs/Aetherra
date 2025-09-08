@@ -18,7 +18,7 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Set
+from typing import Any, Callable, Dict
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
@@ -320,9 +320,9 @@ class AetherraFileWatcher(FileSystemEventHandler):
                                     metadata = self.intelligence._analyze_file(
                                         Path(file_path)
                                     )
-                                    self.intelligence.file_registry[file_path] = (
-                                        metadata
-                                    )
+                                    self.intelligence.file_registry[
+                                        file_path
+                                    ] = metadata
                                 except Exception as e:
                                     logger.warning(
                                         f"Failed to process {file_path}: {e}"
@@ -382,7 +382,7 @@ class AetherraFileWatcherDaemon:
 
         if config_file and os.path.exists(config_file):
             try:
-                with open(config_file, "r") as f:
+                with open(config_file) as f:
                     user_config = json.load(f)
                 default_config.update(user_config)
             except Exception as e:

@@ -21,26 +21,26 @@ import json
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from .agent_base import AgentBase, AgentResponse
 
 # Try to import other Phase 3 components
 try:
-    from .contradiction_detection_agent import (
-        ContradictionDetectionAgent,
-        DetectedContradiction,
-    )
-    from .curiosity_agent import CuriosityAgent, KnowledgeGap
-    from .self_question_generator_agent import (
-        GeneratedQuestion,
-        SelfQuestionGeneratorAgent,
-    )
+    from .contradiction_detection_agent import ContradictionDetectionAgent
+    from .curiosity_agent import CuriosityAgent
+    from .self_question_generator_agent import SelfQuestionGeneratorAgent
 except ImportError:
     print("⚠️ Phase 3 components not fully available, using mock implementations")
     CuriosityAgent = None
     SelfQuestionGeneratorAgent = None
     ContradictionDetectionAgent = None
+
+# Type-only imports to avoid F401 at runtime while keeping annotations useful
+if TYPE_CHECKING:  # pragma: no cover - type checking only
+    # Forward references for type checkers
+    from .contradiction_detection_agent import DetectedContradiction  # noqa: F401
+    from .self_question_generator_agent import GeneratedQuestion  # noqa: F401
 
 # Try to import memory components
 try:
@@ -59,9 +59,7 @@ class LearningGoal:
     goal_id: str
     title: str
     description: str
-    goal_type: (
-        str  # "curiosity", "contradiction", "question", "integration", "optimization"
-    )
+    goal_type: str  # "curiosity", "contradiction", "question", "integration", "optimization"
     priority: str  # "critical", "high", "medium", "low"
 
     # Source information
@@ -71,9 +69,7 @@ class LearningGoal:
     # Goal structure
     sub_goals: List[str]  # Sub-goal IDs
     success_criteria: List[str]
-    learning_methods: List[
-        str
-    ]  # "experimentation", "reflection", "research", "observation"
+    learning_methods: List[str]  # "experimentation", "reflection", "research", "observation"
 
     # Progress tracking
     progress_percentage: float  # 0.0 to 100.0
@@ -160,9 +156,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         # Load existing data
         self._load_persistence_data()
 
-        self.log(
-            "🔄 LearningLoopIntegrationAgent initialized with autonomous goal formation"
-        )
+        self.log("🔄 LearningLoopIntegrationAgent initialized with autonomous goal formation")
 
     def _initialize_components(self):
         """Initialize Phase 3 components and memory systems"""
@@ -173,9 +167,7 @@ class LearningLoopIntegrationAgent(AgentBase):
             if SelfQuestionGeneratorAgent:
                 self.question_generator = SelfQuestionGeneratorAgent(self.memory_engine)
             if ContradictionDetectionAgent:
-                self.contradiction_detector = ContradictionDetectionAgent(
-                    self.memory_engine
-                )
+                self.contradiction_detector = ContradictionDetectionAgent(self.memory_engine)
 
             # Initialize memory components
             if FractalMesh:
@@ -278,9 +270,9 @@ class LearningLoopIntegrationAgent(AgentBase):
         self.log(f"🔄 Starting new {cycle_type} learning cycle")
 
         # Get pending goals for the cycle
-        pending_goals = [
-            g for g in self.learning_goals.values() if g.status == "pending"
-        ][: self.max_active_goals]
+        pending_goals = [g for g in self.learning_goals.values() if g.status == "pending"][
+            : self.max_active_goals
+        ]
 
         if not pending_goals:
             return AgentResponse(
@@ -330,9 +322,8 @@ class LearningLoopIntegrationAgent(AgentBase):
         for goal in activated_goals:
             goal_summary.append(f"• **{goal.title}** ({goal.goal_type})")
 
-        content = (
-            f"⚡ Activated {len(activated_goals)} learning goals:\n\n"
-            + "\n".join(goal_summary)
+        content = f"⚡ Activated {len(activated_goals)} learning goals:\n\n" + "\n".join(
+            goal_summary
         )
 
         return AgentResponse(
@@ -411,10 +402,7 @@ class LearningLoopIntegrationAgent(AgentBase):
                 goal.last_updated = datetime.now().isoformat()
 
                 # Update current cycle if applicable
-                if (
-                    self.current_cycle_id
-                    and self.current_cycle_id in self.learning_cycles
-                ):
+                if self.current_cycle_id and self.current_cycle_id in self.learning_cycles:
                     cycle = self.learning_cycles[self.current_cycle_id]
                     cycle.goals_completed += 1
 
@@ -477,9 +465,7 @@ class LearningLoopIntegrationAgent(AgentBase):
             content=content, confidence=0.95, agent_name=self.name, metadata=summary
         )
 
-    async def _handle_integration_analysis(
-        self, context: Dict[str, Any]
-    ) -> AgentResponse:
+    async def _handle_integration_analysis(self, context: Dict[str, Any]) -> AgentResponse:
         """Handle integration analysis across Phase 3 components"""
         self.log("🔗 Analyzing integration across Phase 3 components")
 
@@ -583,7 +569,9 @@ class LearningLoopIntegrationAgent(AgentBase):
                 gaps = await self.curiosity_agent.detect_knowledge_gaps()
 
                 for gap in gaps[:3]:  # Limit to top 3 gaps
-                    goal_id = f"goal_curiosity_{gap.gap_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                    goal_id = (
+                        f"goal_curiosity_{gap.gap_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                    )
 
                     goal = LearningGoal(
                         goal_id=goal_id,
@@ -792,9 +780,7 @@ class LearningLoopIntegrationAgent(AgentBase):
 
     async def activate_goals(self) -> List[LearningGoal]:
         """Activate high-priority pending goals"""
-        pending_goals = [
-            g for g in self.learning_goals.values() if g.status == "pending"
-        ]
+        pending_goals = [g for g in self.learning_goals.values() if g.status == "pending"]
 
         # Sort by priority and activate top goals
         priority_order = {"critical": 4, "high": 3, "medium": 2, "low": 1}
@@ -803,9 +789,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         )
 
         activated_goals = []
-        active_count = len(
-            [g for g in self.learning_goals.values() if g.status == "active"]
-        )
+        active_count = len([g for g in self.learning_goals.values() if g.status == "active"])
 
         for goal in sorted_goals:
             if active_count < self.max_active_goals:
@@ -981,20 +965,14 @@ class LearningLoopIntegrationAgent(AgentBase):
 
             # Capture current memory state
             current_memory_state = await self._capture_memory_state()
-            current_metrics = await self._calculate_baseline_metrics(
-                outcome_data["original_issue"]
-            )
+            current_metrics = await self._calculate_baseline_metrics(outcome_data["original_issue"])
 
             # Calculate improvement metrics
             baseline_metrics = outcome_data["baseline_metrics"]
-            improvement_score = self._calculate_improvement_score(
-                baseline_metrics, current_metrics
-            )
+            improvement_score = self._calculate_improvement_score(baseline_metrics, current_metrics)
 
             # Determine outcome success level
-            success_level = self._determine_success_level(
-                goal, improvement_score, current_metrics
-            )
+            success_level = self._determine_success_level(goal, improvement_score, current_metrics)
 
             # Generate outcome analysis
             outcome_analysis = {
@@ -1009,12 +987,8 @@ class LearningLoopIntegrationAgent(AgentBase):
                 "memory_changes": self._analyze_memory_changes(
                     outcome_data["initial_memory_state"], current_memory_state
                 ),
-                "learning_insights": self._extract_learning_insights(
-                    goal, improvement_score
-                ),
-                "goal_duration_hours": self._calculate_goal_duration(
-                    outcome_data["goal_created"]
-                ),
+                "learning_insights": self._extract_learning_insights(goal, improvement_score),
+                "goal_duration_hours": self._calculate_goal_duration(outcome_data["goal_created"]),
                 "recommendation": self._generate_outcome_recommendation(
                     success_level, improvement_score
                 ),
@@ -1035,8 +1009,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         total_tracked = tracking_results["goals_tracked"]
         if total_tracked > 0:
             effectiveness = (
-                tracking_results["successful_outcomes"]
-                + 0.5 * tracking_results["partial_outcomes"]
+                tracking_results["successful_outcomes"] + 0.5 * tracking_results["partial_outcomes"]
             ) / total_tracked
             tracking_results["overall_learning_effectiveness"] = effectiveness
 
@@ -1076,9 +1049,7 @@ class LearningLoopIntegrationAgent(AgentBase):
                 "last_adjustment": None,
             }
 
-        current_effectiveness = outcome_analysis.get(
-            "overall_learning_effectiveness", 0.0
-        )
+        current_effectiveness = outcome_analysis.get("overall_learning_effectiveness", 0.0)
         total_goals = outcome_analysis.get("goals_tracked", 0)
 
         adjustment_results = {
@@ -1093,27 +1064,19 @@ class LearningLoopIntegrationAgent(AgentBase):
         }
 
         # Determine if adjustment is needed
-        effectiveness_gap = (
-            current_effectiveness - self.adaptive_thresholds["success_rate_target"]
-        )
+        effectiveness_gap = current_effectiveness - self.adaptive_thresholds["success_rate_target"]
 
-        if (
-            abs(effectiveness_gap) > 0.1 and total_goals >= 3
-        ):  # Significant gap with enough data
+        if abs(effectiveness_gap) > 0.1 and total_goals >= 3:  # Significant gap with enough data
             adjustment_results["adjustment_needed"] = True
 
             if effectiveness_gap < 0:  # Below target - reduce sensitivity
                 # Too many failures - reduce sensitivity to create fewer, higher-quality goals
                 if self.adaptive_thresholds["gap_detection_sensitivity"] > 0.2:
-                    old_sensitivity = self.adaptive_thresholds[
-                        "gap_detection_sensitivity"
-                    ]
+                    old_sensitivity = self.adaptive_thresholds["gap_detection_sensitivity"]
                     self.adaptive_thresholds["gap_detection_sensitivity"] = max(
                         0.2, old_sensitivity - 0.1
                     )
-                    adjustment_results["adjustments_made"][
-                        "gap_detection_sensitivity"
-                    ] = {
+                    adjustment_results["adjustments_made"]["gap_detection_sensitivity"] = {
                         "old": old_sensitivity,
                         "new": self.adaptive_thresholds["gap_detection_sensitivity"],
                         "change": -0.1,
@@ -1124,19 +1087,13 @@ class LearningLoopIntegrationAgent(AgentBase):
                     )
 
                 if self.adaptive_thresholds["contradiction_severity_threshold"] < 0.9:
-                    old_threshold = self.adaptive_thresholds[
-                        "contradiction_severity_threshold"
-                    ]
+                    old_threshold = self.adaptive_thresholds["contradiction_severity_threshold"]
                     self.adaptive_thresholds["contradiction_severity_threshold"] = min(
                         0.9, old_threshold + 0.1
                     )
-                    adjustment_results["adjustments_made"][
-                        "contradiction_severity_threshold"
-                    ] = {
+                    adjustment_results["adjustments_made"]["contradiction_severity_threshold"] = {
                         "old": old_threshold,
-                        "new": self.adaptive_thresholds[
-                            "contradiction_severity_threshold"
-                        ],
+                        "new": self.adaptive_thresholds["contradiction_severity_threshold"],
                         "change": 0.1,
                     }
                     adjustment_results["rationale"].append(
@@ -1155,15 +1112,11 @@ class LearningLoopIntegrationAgent(AgentBase):
             else:  # Above target - increase sensitivity
                 # High success rate - can afford to be more sensitive
                 if self.adaptive_thresholds["gap_detection_sensitivity"] < 0.8:
-                    old_sensitivity = self.adaptive_thresholds[
-                        "gap_detection_sensitivity"
-                    ]
+                    old_sensitivity = self.adaptive_thresholds["gap_detection_sensitivity"]
                     self.adaptive_thresholds["gap_detection_sensitivity"] = min(
                         0.8, old_sensitivity + 0.1
                     )
-                    adjustment_results["adjustments_made"][
-                        "gap_detection_sensitivity"
-                    ] = {
+                    adjustment_results["adjustments_made"]["gap_detection_sensitivity"] = {
                         "old": old_sensitivity,
                         "new": self.adaptive_thresholds["gap_detection_sensitivity"],
                         "change": 0.1,
@@ -1174,19 +1127,13 @@ class LearningLoopIntegrationAgent(AgentBase):
                     )
 
                 if self.adaptive_thresholds["contradiction_severity_threshold"] > 0.5:
-                    old_threshold = self.adaptive_thresholds[
-                        "contradiction_severity_threshold"
-                    ]
+                    old_threshold = self.adaptive_thresholds["contradiction_severity_threshold"]
                     self.adaptive_thresholds["contradiction_severity_threshold"] = max(
                         0.5, old_threshold - 0.1
                     )
-                    adjustment_results["adjustments_made"][
-                        "contradiction_severity_threshold"
-                    ] = {
+                    adjustment_results["adjustments_made"]["contradiction_severity_threshold"] = {
                         "old": old_threshold,
-                        "new": self.adaptive_thresholds[
-                            "contradiction_severity_threshold"
-                        ],
+                        "new": self.adaptive_thresholds["contradiction_severity_threshold"],
                         "change": -0.1,
                     }
                     adjustment_results["rationale"].append(
@@ -1224,9 +1171,7 @@ class LearningLoopIntegrationAgent(AgentBase):
                 "adjustment_history"
             ][-10:]
 
-        self.adaptive_thresholds["last_adjustment"] = adjustment_results[
-            "adjustment_timestamp"
-        ]
+        self.adaptive_thresholds["last_adjustment"] = adjustment_results["adjustment_timestamp"]
 
         # Save persistence
         self._save_persistence_data()
@@ -1246,9 +1191,7 @@ class LearningLoopIntegrationAgent(AgentBase):
                 return {
                     "timestamp": datetime.now().isoformat(),
                     "total_memories": len(getattr(self.memory_engine, "memories", [])),
-                    "concept_clusters": len(
-                        getattr(self.memory_engine, "concept_clusters", {})
-                    ),
+                    "concept_clusters": len(getattr(self.memory_engine, "concept_clusters", {})),
                     "confidence_distribution": "mock_distribution",  # Would calculate actual distribution
                     "coherence_score": 0.75,  # Mock coherence score
                 }
@@ -1265,9 +1208,7 @@ class LearningLoopIntegrationAgent(AgentBase):
                 "fallback_state": True,
             }
 
-    async def _calculate_baseline_metrics(
-        self, memory_issue: Dict[str, Any]
-    ) -> Dict[str, float]:
+    async def _calculate_baseline_metrics(self, memory_issue: Dict[str, Any]) -> Dict[str, float]:
         """Calculate baseline metrics for tracking improvement"""
         issue_type = memory_issue.get("type", "unknown")
 
@@ -1319,9 +1260,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         else:
             return "failed"
 
-    def _analyze_memory_changes(
-        self, initial_state: Dict, current_state: Dict
-    ) -> Dict[str, Any]:
+    def _analyze_memory_changes(self, initial_state: Dict, current_state: Dict) -> Dict[str, Any]:
         """Analyze changes in memory state"""
         return {
             "state_comparison": "mock_comparison",
@@ -1329,24 +1268,16 @@ class LearningLoopIntegrationAgent(AgentBase):
             "change_magnitude": 0.2,
         }
 
-    def _extract_learning_insights(
-        self, goal: LearningGoal, improvement_score: float
-    ) -> List[str]:
+    def _extract_learning_insights(self, goal: LearningGoal, improvement_score: float) -> List[str]:
         """Extract learning insights from goal progression"""
         insights = []
 
         if improvement_score > 0.3:
-            insights.append(
-                f"Successfully addressed {goal.goal_type} with significant improvement"
-            )
+            insights.append(f"Successfully addressed {goal.goal_type} with significant improvement")
         elif improvement_score > 0.1:
-            insights.append(
-                f"Made progress on {goal.goal_type} but room for improvement"
-            )
+            insights.append(f"Made progress on {goal.goal_type} but room for improvement")
         else:
-            insights.append(
-                f"Limited progress on {goal.goal_type} - may need different approach"
-            )
+            insights.append(f"Limited progress on {goal.goal_type} - may need different approach")
 
         if goal.progress_percentage >= 90:
             insights.append("Goal completion metrics indicate thorough resolution")
@@ -1362,9 +1293,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         except Exception:
             return 0.0
 
-    def _generate_outcome_recommendation(
-        self, success_level: str, improvement_score: float
-    ) -> str:
+    def _generate_outcome_recommendation(self, success_level: str, improvement_score: float) -> str:
         """Generate recommendation based on outcome"""
         if success_level == "successful":
             return "Goal successfully completed - consider similar approaches for future issues"
@@ -1373,9 +1302,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         else:
             return "Goal unsuccessful - reassess approach and consider alternative strategies"
 
-    def _generate_improvement_recommendations(
-        self, tracking_results: Dict[str, Any]
-    ) -> List[str]:
+    def _generate_improvement_recommendations(self, tracking_results: Dict[str, Any]) -> List[str]:
         """Generate recommendations for improving learning effectiveness"""
         recommendations = []
 
@@ -1457,9 +1384,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         success_level = outcome.get("success_level", "unknown")
         confidence_change = outcome.get("confidence_change", 0.0)
         contradiction_reduction = outcome.get("contradiction_reduction", 0)
-        narrative_clarity_improvement = outcome.get(
-            "narrative_clarity_improvement", 0.0
-        )
+        narrative_clarity_improvement = outcome.get("narrative_clarity_improvement", 0.0)
 
         # Calculate effectiveness score
         effectiveness_score = self._calculate_session_effectiveness(outcome, time_spent)
@@ -1485,21 +1410,15 @@ class LearningLoopIntegrationAgent(AgentBase):
                 / max(time_spent, 1.0),  # effectiveness per minute
             },
             "learning_insights": self._extract_session_insights(context, outcome),
-            "strategy_performance": self._evaluate_strategy_performance(
-                context, outcome
-            ),
+            "strategy_performance": self._evaluate_strategy_performance(context, outcome),
             "meta_analysis": {
                 "learning_velocity": abs(confidence_change)
                 / max(time_spent / 60.0, 0.1),  # confidence change per hour
                 "complexity_handling": self._assess_complexity_handling(
                     difficulty_level, success_level
                 ),
-                "method_suitability": self._assess_method_suitability(
-                    learning_method, outcome
-                ),
-                "agent_effectiveness": self._assess_agent_effectiveness(
-                    agent_used, outcome
-                ),
+                "method_suitability": self._assess_method_suitability(learning_method, outcome),
+                "agent_effectiveness": self._assess_agent_effectiveness(agent_used, outcome),
             },
         }
 
@@ -1549,9 +1468,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         sessions_to_analyze = []
         if session_ids:
             sessions_to_analyze = [
-                self.learning_sessions[sid]
-                for sid in session_ids
-                if sid in self.learning_sessions
+                self.learning_sessions[sid] for sid in session_ids if sid in self.learning_sessions
             ]
         else:
             # Get sessions within timeframe
@@ -1581,8 +1498,7 @@ class LearningLoopIntegrationAgent(AgentBase):
             s["key_metrics"]["contradiction_reduction"] for s in sessions_to_analyze
         )
         total_narrative_improvement = sum(
-            s["key_metrics"]["narrative_clarity_improvement"]
-            for s in sessions_to_analyze
+            s["key_metrics"]["narrative_clarity_improvement"] for s in sessions_to_analyze
         )
         average_effectiveness = (
             sum(s["effectiveness_score"] for s in sessions_to_analyze) / total_sessions
@@ -1634,9 +1550,7 @@ class LearningLoopIntegrationAgent(AgentBase):
             agent_stats = agent_analysis[agent]
             agent_stats["session_count"] += 1
             agent_stats["average_effectiveness"] += session["effectiveness_score"]
-            agent_stats["confidence_impact"] += session["key_metrics"][
-                "confidence_change"
-            ]
+            agent_stats["confidence_impact"] += session["key_metrics"]["confidence_change"]
             agent_stats["speed_score"] += session["key_metrics"]["time_efficiency"]
 
         # Calculate averages for agents
@@ -1648,15 +1562,11 @@ class LearningLoopIntegrationAgent(AgentBase):
 
         # Analyze effectiveness trends
         effectiveness_trends = {
-            "confidence_improvement_rate": total_confidence_change
-            / max(total_sessions, 1),
-            "contradiction_resolution_rate": total_contradiction_reduction
-            / max(total_sessions, 1),
+            "confidence_improvement_rate": total_confidence_change / max(total_sessions, 1),
+            "contradiction_resolution_rate": total_contradiction_reduction / max(total_sessions, 1),
             "narrative_clarity_improvement_rate": total_narrative_improvement
             / max(total_sessions, 1),
-            "learning_velocity_trend": self._calculate_velocity_trend(
-                sessions_to_analyze
-            ),
+            "learning_velocity_trend": self._calculate_velocity_trend(sessions_to_analyze),
             "difficulty_adaptation_score": self._calculate_difficulty_adaptation(
                 sessions_to_analyze
             ),
@@ -1677,18 +1587,14 @@ class LearningLoopIntegrationAgent(AgentBase):
                 "total_confidence_change": total_confidence_change,
                 "total_contradiction_reduction": total_contradiction_reduction,
                 "total_narrative_improvement": total_narrative_improvement,
-                "average_session_time": sum(
-                    s["time_spent_minutes"] for s in sessions_to_analyze
-                )
+                "average_session_time": sum(s["time_spent_minutes"] for s in sessions_to_analyze)
                 / total_sessions,
             },
             "effectiveness_trends": effectiveness_trends,
             "method_analysis": method_analysis,
             "agent_analysis": agent_analysis,
             "improvement_areas": improvement_areas,
-            "learning_insights": self._generate_meta_learning_insights(
-                sessions_to_analyze
-            ),
+            "learning_insights": self._generate_meta_learning_insights(sessions_to_analyze),
         }
 
         self.log(
@@ -1714,23 +1620,20 @@ class LearningLoopIntegrationAgent(AgentBase):
         overall_effectiveness = effectiveness_analysis.get("overall_effectiveness", 0.0)
         method_analysis = effectiveness_analysis.get("method_analysis", {})
         agent_analysis = effectiveness_analysis.get("agent_analysis", {})
-        improvement_areas = effectiveness_analysis.get("improvement_areas", [])
+        # Retrieve improvement areas (currently unused - reserved for future analytics)
+        # improvement_areas = effectiveness_analysis.get("improvement_areas", [])
 
         # Initialize recommendations structure
         strategy_recommendations = {
             "analysis_timestamp": datetime.now().isoformat(),
-            "overall_assessment": self._assess_learning_performance(
-                overall_effectiveness
-            ),
+            "overall_assessment": self._assess_learning_performance(overall_effectiveness),
             "immediate_actions": [],
             "method_recommendations": {},
             "agent_recommendations": {},
             "escalation_triggers": [],
             "optimization_opportunities": [],
             "strategic_changes": [],
-            "confidence_level": self._calculate_recommendation_confidence(
-                effectiveness_analysis
-            ),
+            "confidence_level": self._calculate_recommendation_confidence(effectiveness_analysis),
         }
 
         # Generate immediate action recommendations
@@ -1802,9 +1705,7 @@ class LearningLoopIntegrationAgent(AgentBase):
                 strategy_recommendations["agent_recommendations"][agent] = {
                     "action": "CONFIGURE",
                     "justification": "Moderate effectiveness - needs optimization",
-                    "configuration_changes": self._suggest_agent_configurations(
-                        agent, stats
-                    ),
+                    "configuration_changes": self._suggest_agent_configurations(agent, stats),
                 }
             else:
                 strategy_recommendations["agent_recommendations"][agent] = {
@@ -1822,13 +1723,7 @@ class LearningLoopIntegrationAgent(AgentBase):
             escalation_needed = True
 
         if (
-            len(
-                [
-                    m
-                    for m in method_analysis.values()
-                    if m["average_effectiveness"] < 0.3
-                ]
-            )
+            len([m for m in method_analysis.values() if m["average_effectiveness"] < 0.3])
             > len(method_analysis) * 0.7
         ):
             strategy_recommendations["escalation_triggers"].append(
@@ -1861,18 +1756,14 @@ class LearningLoopIntegrationAgent(AgentBase):
 
         # Optimization opportunities
         if method_analysis:
-            best_method = max(
-                method_analysis.items(), key=lambda x: x[1]["average_effectiveness"]
-            )
+            best_method = max(method_analysis.items(), key=lambda x: x[1]["average_effectiveness"])
             if best_method and best_method[0]:
                 strategy_recommendations["optimization_opportunities"].append(
                     f"Leverage '{best_method[0]}' method more extensively (effectiveness: {best_method[1]['average_effectiveness']:.2f})"
                 )
 
         if agent_analysis:
-            best_agent = max(
-                agent_analysis.items(), key=lambda x: x[1]["average_effectiveness"]
-            )
+            best_agent = max(agent_analysis.items(), key=lambda x: x[1]["average_effectiveness"])
             if best_agent and best_agent[0]:
                 strategy_recommendations["optimization_opportunities"].append(
                     f"Prioritize '{best_agent[0]}' agent for critical learning tasks (effectiveness: {best_agent[1]['average_effectiveness']:.2f})"
@@ -1886,9 +1777,7 @@ class LearningLoopIntegrationAgent(AgentBase):
 
         # Keep only last 10 recommendations
         if len(self.strategy_recommendations_history) > 10:
-            self.strategy_recommendations_history = (
-                self.strategy_recommendations_history[-10:]
-            )
+            self.strategy_recommendations_history = self.strategy_recommendations_history[-10:]
 
         self._save_persistence_data()
 
@@ -1907,16 +1796,12 @@ class LearningLoopIntegrationAgent(AgentBase):
 
     # Helper methods for meta-learning tracker
 
-    def _calculate_session_effectiveness(
-        self, outcome: Dict[str, Any], time_spent: float
-    ) -> float:
+    def _calculate_session_effectiveness(self, outcome: Dict[str, Any], time_spent: float) -> float:
         """Calculate effectiveness score for a learning session"""
         success_level = outcome.get("success_level", "unknown")
         confidence_change = outcome.get("confidence_change", 0.0)
         contradiction_reduction = outcome.get("contradiction_reduction", 0)
-        narrative_clarity_improvement = outcome.get(
-            "narrative_clarity_improvement", 0.0
-        )
+        narrative_clarity_improvement = outcome.get("narrative_clarity_improvement", 0.0)
 
         # Base score from success level
         success_scores = {
@@ -1960,19 +1845,13 @@ class LearningLoopIntegrationAgent(AgentBase):
         elif success_level == "success":
             insights.append(f"Successful learning with {learning_method} approach")
         elif success_level == "failure" and difficulty_level == "high":
-            insights.append(
-                f"High difficulty task requires alternative to {learning_method}"
-            )
+            insights.append(f"High difficulty task requires alternative to {learning_method}")
 
         if outcome.get("unexpected_discoveries"):
-            insights.append(
-                "Serendipitous discoveries suggest expanding exploration scope"
-            )
+            insights.append("Serendipitous discoveries suggest expanding exploration scope")
 
         if outcome.get("confidence_change", 0) > 0.5:
-            insights.append(
-                "Significant confidence improvement - method highly effective"
-            )
+            insights.append("Significant confidence improvement - method highly effective")
 
         return insights
 
@@ -1987,9 +1866,7 @@ class LearningLoopIntegrationAgent(AgentBase):
             "knowledge_transfer": self._score_knowledge_transfer(context, outcome),
         }
 
-    def _score_method_alignment(
-        self, context: Dict[str, Any], outcome: Dict[str, Any]
-    ) -> float:
+    def _score_method_alignment(self, context: Dict[str, Any], outcome: Dict[str, Any]) -> float:
         """Score how well the method aligned with the learning objective"""
         # Mock implementation - would analyze method suitability
         success_level = outcome.get("success_level", "unknown")
@@ -2000,30 +1877,22 @@ class LearningLoopIntegrationAgent(AgentBase):
             "breakthrough": 1.0,
         }.get(success_level, 0.3)
 
-    def _score_resource_efficiency(
-        self, context: Dict[str, Any], outcome: Dict[str, Any]
-    ) -> float:
+    def _score_resource_efficiency(self, context: Dict[str, Any], outcome: Dict[str, Any]) -> float:
         """Score resource efficiency of the learning session"""
         # Mock implementation - would analyze resource usage vs outcomes
         return 0.7  # Placeholder
 
-    def _score_goal_progression(
-        self, context: Dict[str, Any], outcome: Dict[str, Any]
-    ) -> float:
+    def _score_goal_progression(self, context: Dict[str, Any], outcome: Dict[str, Any]) -> float:
         """Score how much the session advanced the goal"""
         confidence_change = outcome.get("confidence_change", 0.0)
         return min(1.0, max(0.0, confidence_change + 0.5))
 
-    def _score_knowledge_transfer(
-        self, context: Dict[str, Any], outcome: Dict[str, Any]
-    ) -> float:
+    def _score_knowledge_transfer(self, context: Dict[str, Any], outcome: Dict[str, Any]) -> float:
         """Score potential for knowledge transfer to other domains"""
         # Mock implementation - would analyze generalizability
         return 0.6  # Placeholder
 
-    def _assess_complexity_handling(
-        self, difficulty_level: str, success_level: str
-    ) -> float:
+    def _assess_complexity_handling(self, difficulty_level: str, success_level: str) -> float:
         """Assess how well complexity was handled"""
         difficulty_scores = {"low": 1.0, "medium": 2.0, "high": 3.0, "extreme": 4.0}
         success_scores = {
@@ -2038,9 +1907,7 @@ class LearningLoopIntegrationAgent(AgentBase):
 
         return min(1.0, success_score / difficulty_score)
 
-    def _assess_method_suitability(
-        self, learning_method: str, outcome: Dict[str, Any]
-    ) -> float:
+    def _assess_method_suitability(self, learning_method: str, outcome: Dict[str, Any]) -> float:
         """Assess how suitable the method was for the outcome achieved"""
         # Mock implementation - would analyze method-outcome alignment
         success_level = outcome.get("success_level", "unknown")
@@ -2052,9 +1919,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         }
         return base_scores.get(success_level, 0.3)
 
-    def _assess_agent_effectiveness(
-        self, agent_used: str, outcome: Dict[str, Any]
-    ) -> float:
+    def _assess_agent_effectiveness(self, agent_used: str, outcome: Dict[str, Any]) -> float:
         """Assess how effective the agent was"""
         # Mock implementation - would analyze agent-specific performance
         confidence_change = outcome.get("confidence_change", 0.0)
@@ -2066,9 +1931,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         """Calculate learning velocity trend"""
         if len(sessions) < 2:
             return 0.0
-        velocities = [
-            s.get("meta_analysis", {}).get("learning_velocity", 0.0) for s in sessions
-        ]
+        velocities = [s.get("meta_analysis", {}).get("learning_velocity", 0.0) for s in sessions]
         return sum(velocities) / len(velocities) if velocities else 0.0
 
     def _calculate_difficulty_adaptation(self, sessions: List[Dict[str, Any]]) -> float:
@@ -2078,11 +1941,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         complexity_scores = [
             s.get("meta_analysis", {}).get("complexity_handling", 0.0) for s in sessions
         ]
-        return (
-            sum(complexity_scores) / len(complexity_scores)
-            if complexity_scores
-            else 0.0
-        )
+        return sum(complexity_scores) / len(complexity_scores) if complexity_scores else 0.0
 
     def _identify_improvement_areas(
         self,
@@ -2108,9 +1967,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         else:
             return "NEEDS_IMPROVEMENT"
 
-    def _generate_meta_learning_insights(
-        self, sessions: List[Dict[str, Any]]
-    ) -> List[str]:
+    def _generate_meta_learning_insights(self, sessions: List[Dict[str, Any]]) -> List[str]:
         """Generate insights about meta-learning patterns"""
         if not sessions:
             return ["No sessions available for analysis"]
@@ -2137,9 +1994,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         """Suggest alternative learning methods"""
         return ["reflection", "research", "experimentation", "observation"]
 
-    def _suggest_method_improvements(
-        self, method: str, stats: Dict[str, Any]
-    ) -> List[str]:
+    def _suggest_method_improvements(self, method: str, stats: Dict[str, Any]) -> List[str]:
         """Suggest improvements for a learning method"""
         return ["Add more structure", "Increase focus", "Improve feedback"]
 
@@ -2151,9 +2006,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         """Suggest alternative agents"""
         return ["curiosity_agent", "contradiction_detector", "question_generator"]
 
-    def _suggest_agent_configurations(
-        self, agent: str, stats: Dict[str, Any]
-    ) -> List[str]:
+    def _suggest_agent_configurations(self, agent: str, stats: Dict[str, Any]) -> List[str]:
         """Suggest configuration changes for agents"""
         return ["Optimize thresholds", "Improve algorithms", "Enhance feedback"]
 
@@ -2169,9 +2022,7 @@ class LearningLoopIntegrationAgent(AgentBase):
         """Analyze integration across Phase 3 components"""
         analysis = {
             "curiosity_status": "Active" if self.curiosity_agent else "Not Available",
-            "question_generator_status": "Active"
-            if self.question_generator
-            else "Not Available",
+            "question_generator_status": "Active" if self.question_generator else "Not Available",
             "contradiction_detector_status": "Active"
             if self.contradiction_detector
             else "Not Available",
@@ -2209,18 +2060,10 @@ class LearningLoopIntegrationAgent(AgentBase):
     def get_learning_loop_summary(self) -> Dict[str, Any]:
         """Get summary of learning loop status"""
         total_goals = len(self.learning_goals)
-        pending_goals = len(
-            [g for g in self.learning_goals.values() if g.status == "pending"]
-        )
-        active_goals = len(
-            [g for g in self.learning_goals.values() if g.status == "active"]
-        )
-        completed_goals = len(
-            [g for g in self.learning_goals.values() if g.status == "completed"]
-        )
-        paused_goals = len(
-            [g for g in self.learning_goals.values() if g.status == "paused"]
-        )
+        pending_goals = len([g for g in self.learning_goals.values() if g.status == "pending"])
+        active_goals = len([g for g in self.learning_goals.values() if g.status == "active"])
+        completed_goals = len([g for g in self.learning_goals.values() if g.status == "completed"])
+        paused_goals = len([g for g in self.learning_goals.values() if g.status == "paused"])
 
         # Goal type breakdown
         goal_type_breakdown = {}
@@ -2252,9 +2095,7 @@ class LearningLoopIntegrationAgent(AgentBase):
             return "• No goals yet"
 
         lines = []
-        for goal_type, count in sorted(
-            breakdown.items(), key=lambda x: x[1], reverse=True
-        ):
+        for goal_type, count in sorted(breakdown.items(), key=lambda x: x[1], reverse=True):
             lines.append(f"• {goal_type.title()}: {count}")
 
         return "\n".join(lines)
@@ -2273,7 +2114,7 @@ class LearningLoopIntegrationAgent(AgentBase):
             # Load learning goals
             goals_file = self.data_dir / "learning_goals.json"
             if goals_file.exists():
-                with open(goals_file, "r") as f:
+                with open(goals_file) as f:
                     goals_data = json.load(f)
                     for g_id, g_data in goals_data.items():
                         self.learning_goals[g_id] = LearningGoal(**g_data)
@@ -2281,7 +2122,7 @@ class LearningLoopIntegrationAgent(AgentBase):
             # Load learning cycles
             cycles_file = self.data_dir / "learning_cycles.json"
             if cycles_file.exists():
-                with open(cycles_file, "r") as f:
+                with open(cycles_file) as f:
                     cycles_data = json.load(f)
                     for c_id, c_data in cycles_data.items():
                         self.learning_cycles[c_id] = LearningCycle(**c_data)
@@ -2289,7 +2130,7 @@ class LearningLoopIntegrationAgent(AgentBase):
             # Load current cycle ID
             current_cycle_file = self.data_dir / "current_cycle.json"
             if current_cycle_file.exists():
-                with open(current_cycle_file, "r") as f:
+                with open(current_cycle_file) as f:
                     data = json.load(f)
                     self.current_cycle_id = data.get("current_cycle_id")
 
@@ -2306,17 +2147,13 @@ class LearningLoopIntegrationAgent(AgentBase):
             # Save learning goals
             goals_file = self.data_dir / "learning_goals.json"
             with open(goals_file, "w") as f:
-                goals_data = {
-                    g_id: asdict(goal) for g_id, goal in self.learning_goals.items()
-                }
+                goals_data = {g_id: asdict(goal) for g_id, goal in self.learning_goals.items()}
                 json.dump(goals_data, f, indent=2)
 
             # Save learning cycles
             cycles_file = self.data_dir / "learning_cycles.json"
             with open(cycles_file, "w") as f:
-                cycles_data = {
-                    c_id: asdict(cycle) for c_id, cycle in self.learning_cycles.items()
-                }
+                cycles_data = {c_id: asdict(cycle) for c_id, cycle in self.learning_cycles.items()}
                 json.dump(cycles_data, f, indent=2)
 
             # Save current cycle ID

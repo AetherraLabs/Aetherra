@@ -36,8 +36,6 @@ try:
 
     qiskit_spec = importlib.util.find_spec("qiskit")
     if qiskit_spec is not None:
-        from qiskit.quantum_info import Statevector
-
         QISKIT_AVAILABLE = True
     else:
         QISKIT_AVAILABLE = False

@@ -19,7 +19,7 @@ class ScriptRunner:
             raise FileNotFoundError(
                 f"Standard library registry not found: {self.registry_path}"
             )
-        with open(self.registry_path, "r", encoding="utf-8") as f:
+        with open(self.registry_path, encoding="utf-8") as f:
             return json.load(f)
 
     def list_scripts(self):

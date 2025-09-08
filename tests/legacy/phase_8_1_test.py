@@ -35,7 +35,6 @@ async def test_phase_8_1_singularity():
 
         from consciousness_singularity_engine import (
             ConsciousnessSingularityEngine,
-            SingularityState,
         )
         from multidimensional_state_engine import MultidimensionalStateEngine
         from parallel_reality_navigator import ParallelRealityNavigator

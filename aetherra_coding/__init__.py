@@ -16,10 +16,16 @@ Future:
     - Plugin scaffolding logic
 """
 
-from .orchestrator import (  # noqa: F401
+from .orchestrator import (
     CodeOrchestrator,
     CommitResult,
     PatchResult,
     PlanResult,
-    VerifyResult,
 )
+
+__all__ = [
+    "CodeOrchestrator",
+    "CommitResult",
+    "PatchResult",
+    "PlanResult",
+]

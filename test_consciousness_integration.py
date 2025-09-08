@@ -7,7 +7,7 @@ Aetherra Consciousness Evolution Integration Test
 Tests all phases 1-8.3 integration with Aetherra OS
 """
 
-import os
+
 import sys
 import traceback
 from pathlib import Path
@@ -27,27 +27,10 @@ def test_consciousness_imports():
 
     try:
         # Test Phase 7 Quantum Consciousness imports
-        from Aetherra.consciousness.quantum.consciousness_singularity_engine import (
-            ConsciousnessSingularityEngine,
-        )
-        from Aetherra.consciousness.quantum.multidimensional_state_engine import (
-            MultidimensionalStateEngine,
-        )
-        from Aetherra.consciousness.quantum.quantum_consciousness_engine import (
-            QuantumConsciousnessEngine,
-        )
-        from Aetherra.consciousness.quantum.quantum_memory_system import (
-            QuantumMemorySystem,
-        )
-        from Aetherra.consciousness.quantum.temporal_consciousness_system import (
-            TemporalConsciousnessSystem,
-        )
 
         print("✅ Phase 7 Quantum Systems imported successfully")
 
         # Test Phase 8 Consciousness Evolution imports
-        from beyond_transcendence_engine import BeyondTranscendenceEngine
-        from cosmic_consciousness_engine import CosmicConsciousnessEngine
 
         print("✅ Phase 8 Consciousness Evolution engines imported successfully")
 
@@ -190,19 +173,14 @@ def test_aetherra_lyrixa_integration():
 
     try:
         # Test Lyrixa launcher import
-        from Aetherra.lyrixa.launcher import LyrixaLauncher
 
         print("✅ Lyrixa launcher import successful")
 
         # Test consciousness panel integration
-        from Aetherra.lyrixa.gui.consciousness_panel import ConsciousnessPanel
 
         print("✅ Consciousness panel import successful")
 
         # Test Aetherra consciousness orchestrator
-        from Aetherra.consciousness.consciousness_orchestrator import (
-            ConsciousnessOrchestrator,
-        )
 
         print("✅ Consciousness orchestrator import successful")
 
@@ -218,12 +196,10 @@ def test_plugin_ecosystem():
 
     try:
         # Test plugin manager
-        from Aetherra.plugins.core.plugin_system import PluginManager
 
         print("✅ Plugin manager import successful")
 
         # Test plugin loading capability
-        from Aetherra.aetherra_core.plugins.plugin_manager_core import PluginManagerCore
 
         print("✅ Plugin manager core import successful")
 

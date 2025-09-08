@@ -11,8 +11,8 @@ with multi-turn memory, intent translation, and advanced context management.
 """
 
 import asyncio
-import sys
 import os
+import sys
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -32,22 +32,31 @@ class MockMemoryEngine:
         # Simple keyword matching for demo
         relevant_memories = []
         for memory in self.memories[-limit:]:
-            if any(word in memory.get("content", "").lower() for word in query.lower().split()):
-                relevant_memories.append({
-                    "content": memory["content"],
-                    "confidence": 0.8,
-                    "timestamp": memory["timestamp"]
-                })
+            if any(
+                word in memory.get("content", "").lower()
+                for word in query.lower().split()
+            ):
+                relevant_memories.append(
+                    {
+                        "content": memory["content"],
+                        "confidence": 0.8,
+                        "timestamp": memory["timestamp"],
+                    }
+                )
         return relevant_memories
 
-    async def store_conversation(self, user_input, assistant_response, context, intent_analysis, timestamp):
+    async def store_conversation(
+        self, user_input, assistant_response, context, intent_analysis, timestamp
+    ):
         """Mock conversation storage"""
-        self.memories.append({
-            "content": f"{user_input} -> {assistant_response}",
-            "context": context,
-            "intent": intent_analysis,
-            "timestamp": timestamp.isoformat()
-        })
+        self.memories.append(
+            {
+                "content": f"{user_input} -> {assistant_response}",
+                "context": context,
+                "intent": intent_analysis,
+                "timestamp": timestamp.isoformat(),
+            }
+        )
 
 
 class MockAnalyticsEngine:
@@ -80,8 +89,7 @@ async def demo_enhanced_conversation():
     analytics_engine = MockAnalyticsEngine()
 
     conversation_manager = LyrixaEnhancedConversationManager(
-        memory_engine=memory_engine,
-        analytics_engine=analytics_engine
+        memory_engine=memory_engine, analytics_engine=analytics_engine
     )
 
     # Demo conversation scenarios
@@ -89,28 +97,28 @@ async def demo_enhanced_conversation():
         {
             "message": "Hello! I'm working on a new Python project and need help.",
             "user_id": "demo_user",
-            "context": {"session_id": "session_1", "project_context": "Python web app"}
+            "context": {"session_id": "session_1", "project_context": "Python web app"},
         },
         {
             "message": "Can you create a function to calculate fibonacci numbers?",
             "user_id": "demo_user",
-            "context": {"session_id": "session_1", "thread_id": "thread_1"}
+            "context": {"session_id": "session_1", "thread_id": "thread_1"},
         },
         {
             "message": "Now explain how the fibonacci algorithm works",
             "user_id": "demo_user",
-            "context": {"session_id": "session_1", "thread_id": "thread_1"}
+            "context": {"session_id": "session_1", "thread_id": "thread_1"},
         },
         {
             "message": "What did we discuss earlier about fibonacci?",
             "user_id": "demo_user",
-            "context": {"session_id": "session_1", "thread_id": "thread_2"}
+            "context": {"session_id": "session_1", "thread_id": "thread_2"},
         },
         {
             "message": "URGENT: Fix a bug in my API endpoint code",
             "user_id": "demo_user",
-            "context": {"session_id": "session_1", "thread_id": "thread_3"}
-        }
+            "context": {"session_id": "session_1", "thread_id": "thread_3"},
+        },
     ]
 
     print("🎯 ENHANCED CONVERSATION DEMONSTRATION")
@@ -124,7 +132,7 @@ async def demo_enhanced_conversation():
         result = await conversation_manager.process_enhanced_message(
             message=test_case["message"],
             user_id=test_case["user_id"],
-            context=test_case["context"]
+            context=test_case["context"],
         )
 
         # Display results
@@ -134,10 +142,10 @@ async def demo_enhanced_conversation():
         print(f"📊 Confidence: {result['confidence']:.2f}")
         print(f"⚡ Processing Time: {result['processing_time']:.3f}s")
 
-        if result.get('generated_code'):
+        if result.get("generated_code"):
             print(f"💻 Code Generated: Yes ({len(result['generated_code'])} chars)")
 
-        if result.get('requires_followup'):
+        if result.get("requires_followup"):
             print("🔄 Requires Followup: Yes")
 
         # Small delay for demonstration
@@ -191,8 +199,7 @@ async def interactive_demo():
     analytics_engine = MockAnalyticsEngine()
 
     conversation_manager = LyrixaEnhancedConversationManager(
-        memory_engine=memory_engine,
-        analytics_engine=analytics_engine
+        memory_engine=memory_engine, analytics_engine=analytics_engine
     )
 
     user_id = "interactive_user"
@@ -203,19 +210,19 @@ async def interactive_demo():
         try:
             user_input = input("\n💬 You: ").strip()
 
-            if user_input.lower() in ['/exit', 'quit', 'exit']:
+            if user_input.lower() in ["/exit", "quit", "exit"]:
                 print("👋 Goodbye! Enhanced Conversational AI session ended.")
                 break
 
-            if user_input.lower() == '/stats':
+            if user_input.lower() == "/stats":
                 stats = conversation_manager.get_enhanced_stats()
                 print("\n📊 Current Statistics:")
                 for key, value in stats.items():
                     print(f"  {key}: {value}")
                 continue
 
-            if user_input.lower().startswith('/personality '):
-                personality = user_input.split(' ', 1)[1]
+            if user_input.lower().startswith("/personality "):
+                personality = user_input.split(" ", 1)[1]
                 conversation_manager.set_user_personality(user_id, personality)
                 print(f"🎭 Personality set to: {personality}")
                 continue
@@ -230,22 +237,24 @@ async def interactive_demo():
                 context={
                     "session_id": session_id,
                     "thread_id": f"thread_{thread_counter}",
-                    "project_context": "Interactive Demo"
-                }
+                    "project_context": "Interactive Demo",
+                },
             )
 
             # Display response
-            print(f"\n🧠 Lyrixa ({result.get('intent', 'general')}): {result['response']}")
+            print(
+                f"\n🧠 Lyrixa ({result.get('intent', 'general')}): {result['response']}"
+            )
 
             # Show metadata if interesting
-            if result['confidence'] > 0.8:
+            if result["confidence"] > 0.8:
                 print(f"   🎯 High confidence: {result['confidence']:.2f}")
 
-            if result.get('generated_code'):
+            if result.get("generated_code"):
                 print("   💻 Code generated - see response above")
 
             # Increment thread for topic changes
-            if result.get('requires_followup'):
+            if result.get("requires_followup"):
                 thread_counter += 1
 
         except KeyboardInterrupt:
@@ -265,8 +274,10 @@ if __name__ == "__main__":
 
     # Offer interactive mode
     try:
-        choice = input("\n🎮 Would you like to try interactive mode? (y/n): ").strip().lower()
-        if choice in ['y', 'yes']:
+        choice = (
+            input("\n🎮 Would you like to try interactive mode? (y/n): ").strip().lower()
+        )
+        if choice in ["y", "yes"]:
             asyncio.run(interactive_demo())
     except KeyboardInterrupt:
         print("\n👋 Demo session ended.")

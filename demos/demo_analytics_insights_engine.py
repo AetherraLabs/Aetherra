@@ -11,25 +11,27 @@ showcasing integration with Advanced Memory Systems and Enhanced Agents.
 
 import asyncio
 import logging
-import time
-import json
 import random
+import time
 from datetime import datetime
-from typing import Dict, Any, List
 
 # Set up logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
 # Try to import analytics components
 try:
     from Aetherra.lyrixa.analytics_insights_engine import (
-        AnalyticsEngine, InsightsEngine, AnalyticsMetric, InsightPattern,
-        create_analytics_engine, create_insights_engine
+        AnalyticsEngine,
+        AnalyticsMetric,
+        InsightPattern,
+        InsightsEngine,
+        create_analytics_engine,
+        create_insights_engine,
     )
+
     ANALYTICS_AVAILABLE = True
     logger.info("[OK] Analytics & Insights Engine components available")
 except ImportError as e:
@@ -38,7 +40,11 @@ except ImportError as e:
 
 # Try to import dashboard
 try:
-    from Aetherra.lyrixa.analytics_dashboard import AnalyticsDashboard, create_analytics_dashboard
+    from Aetherra.lyrixa.analytics_dashboard import (
+        AnalyticsDashboard,
+        create_analytics_dashboard,
+    )
+
     DASHBOARD_AVAILABLE = True
     logger.info("[OK] Analytics Dashboard available")
 except ImportError as e:
@@ -48,6 +54,7 @@ except ImportError as e:
 # Try to import advanced memory
 try:
     from Aetherra.lyrixa.memory.advanced_memory_integration import AdvancedMemoryManager
+
     MEMORY_AVAILABLE = True
     logger.info("[OK] Advanced Memory Integration available")
 except ImportError as e:
@@ -76,28 +83,52 @@ class AnalyticsDemo:
                 "db_path": "demo_analytics.db",
                 "buffer_size": 50,
                 "insight_threshold": 0.6,
-                "analysis_window_hours": 24
+                "analysis_window_hours": 24,
             },
             "dashboard": {
                 "host": "localhost",
                 "port": 8687,
                 "debug": True,
-                "cache_timeout": 60
-            }
+                "cache_timeout": 60,
+            },
         }
 
         # Demo metrics to simulate
         self.demo_metrics = [
             {"name": "response_time", "category": "performance", "range": (0.1, 3.0)},
             {"name": "memory_usage", "category": "performance", "range": (30.0, 95.0)},
-            {"name": "user_engagement", "category": "user_behavior", "range": (0.2, 1.0)},
-            {"name": "conversation_success", "category": "conversation", "range": (0.6, 1.0)},
-            {"name": "response_quality", "category": "conversation", "range": (0.5, 1.0)},
-            {"name": "memory_recall_time", "category": "memory", "range": (0.005, 0.050)},
-            {"name": "memory_enhancement_rate", "category": "memory", "range": (0.3, 0.9)},
+            {
+                "name": "user_engagement",
+                "category": "user_behavior",
+                "range": (0.2, 1.0),
+            },
+            {
+                "name": "conversation_success",
+                "category": "conversation",
+                "range": (0.6, 1.0),
+            },
+            {
+                "name": "response_quality",
+                "category": "conversation",
+                "range": (0.5, 1.0),
+            },
+            {
+                "name": "memory_recall_time",
+                "category": "memory",
+                "range": (0.005, 0.050),
+            },
+            {
+                "name": "memory_enhancement_rate",
+                "category": "memory",
+                "range": (0.3, 0.9),
+            },
             {"name": "system_load", "category": "performance", "range": (10.0, 90.0)},
             {"name": "error_rate", "category": "system", "range": (0.0, 0.1)},
-            {"name": "user_satisfaction", "category": "user_behavior", "range": (0.4, 1.0)}
+            {
+                "name": "user_satisfaction",
+                "category": "user_behavior",
+                "range": (0.4, 1.0),
+            },
         ]
 
         logger.info("📊 Analytics Demo initialized")
@@ -105,9 +136,9 @@ class AnalyticsDemo:
     async def run_demo(self):
         """Run the complete analytics demo"""
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🌌 AETHERRA ANALYTICS & INSIGHTS ENGINE DEMO (#6)")
-        print("="*60)
+        print("=" * 60)
         print(f"⏰ Demo started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print()
 
@@ -176,7 +207,9 @@ class AnalyticsDemo:
             print("-" * 40)
             await self._display_demo_summary(demo_time)
 
-            print(f"\n[OK] Analytics & Insights Engine Demo completed in {demo_time:.2f}s")
+            print(
+                f"\n[OK] Analytics & Insights Engine Demo completed in {demo_time:.2f}s"
+            )
             print("🌟 Analytics & Insights Engine (#6) is fully operational!")
 
             return True
@@ -192,7 +225,9 @@ class AnalyticsDemo:
         try:
             # Initialize Analytics Engine
             if ANALYTICS_AVAILABLE:
-                self.analytics_engine = create_analytics_engine(self.demo_config["analytics"])
+                self.analytics_engine = create_analytics_engine(
+                    self.demo_config["analytics"]
+                )
                 print("[OK] Analytics Engine initialized")
             else:
                 print("[WARN] Analytics Engine not available")
@@ -209,14 +244,15 @@ class AnalyticsDemo:
             # Initialize Insights Engine
             if ANALYTICS_AVAILABLE:
                 self.insights_engine = create_insights_engine(
-                    self.analytics_engine,
-                    self.memory_manager
+                    self.analytics_engine, self.memory_manager
                 )
                 print("[OK] Insights Engine initialized")
 
             # Initialize Dashboard
             if DASHBOARD_AVAILABLE:
-                self.dashboard = create_analytics_dashboard(self.demo_config["dashboard"])
+                self.dashboard = create_analytics_dashboard(
+                    self.demo_config["dashboard"]
+                )
                 await self.dashboard.initialize()
                 print("[OK] Analytics Dashboard initialized")
             else:
@@ -265,8 +301,8 @@ class AnalyticsDemo:
                     category=metric_def["category"],
                     metadata={
                         "demo_iteration": i,
-                        "simulated_timestamp": datetime.now().isoformat()
-                    }
+                        "simulated_timestamp": datetime.now().isoformat(),
+                    },
                 )
 
                 metrics_collected += 1
@@ -294,7 +330,9 @@ class AnalyticsDemo:
             print("\n🔍 Top Insights Discovered:")
             for insight in insights[:5]:  # Show top 5
                 print(f"  • [{insight.category.upper()}] {insight.description}")
-                print(f"    Confidence: {insight.confidence:.1%} | Impact: {insight.impact_score:.1%}")
+                print(
+                    f"    Confidence: {insight.confidence:.1%} | Impact: {insight.impact_score:.1%}"
+                )
 
         # Retrieve and display stored insights
         stored_insights = await self.analytics_engine.get_insights(limit=10)
@@ -314,16 +352,18 @@ class AnalyticsDemo:
         print(f"🔍 Total insights: {snapshot.get('total_insights', 0)}")
 
         # Display system health
-        health = snapshot.get('system_health', {})
-        print(f"🏥 System health: {health.get('status', 'unknown')} ({health.get('score', 0)}%)")
+        health = snapshot.get("system_health", {})
+        print(
+            f"🏥 System health: {health.get('status', 'unknown')} ({health.get('score', 0)}%)"
+        )
 
         # Display category statistics
-        category_stats = snapshot.get('category_statistics', {})
+        category_stats = snapshot.get("category_statistics", {})
         if category_stats:
             print("\n📈 Category Statistics:")
             for category, stats in category_stats.items():
-                avg_val = stats.get('average', 0)
-                count = stats.get('count', 0)
+                avg_val = stats.get("average", 0)
+                count = stats.get("count", 0)
                 print(f"  • {category.title()}: {avg_val:.2f} avg ({count} metrics)")
 
     async def _demonstrate_comprehensive_insights(self):
@@ -333,27 +373,31 @@ class AnalyticsDemo:
 
         comprehensive = await self.insights_engine.generate_comprehensive_insights()
 
-        if 'error' in comprehensive:
-            print(f"[WARN] Comprehensive insights generation failed: {comprehensive['error']}")
+        if "error" in comprehensive:
+            print(
+                f"[WARN] Comprehensive insights generation failed: {comprehensive['error']}"
+            )
             return
 
-        print(f"[OK] Comprehensive insights generated in {comprehensive.get('generation_time', 0):.2f}s")
+        print(
+            f"[OK] Comprehensive insights generated in {comprehensive.get('generation_time', 0):.2f}s"
+        )
 
         # Display summary
-        summary = comprehensive.get('summary', {})
+        summary = comprehensive.get("summary", {})
         print(f"📊 Total insights: {summary.get('total_insights', 0)}")
         print(f"🧠 Advanced categories: {summary.get('advanced_categories', 0)}")
         print(f"🔮 Predictions generated: {summary.get('predictions_generated', 0)}")
 
         # Display key findings
-        key_findings = summary.get('key_findings', [])
+        key_findings = summary.get("key_findings", [])
         if key_findings:
             print("\n🎯 Key Findings:")
             for finding in key_findings[:3]:
                 print(f"  • {finding}")
 
         # Display priority actions
-        priority_actions = summary.get('priority_actions', [])
+        priority_actions = summary.get("priority_actions", [])
         if priority_actions:
             print("\n⚡ Priority Actions:")
             for action in priority_actions[:3]:
@@ -377,16 +421,20 @@ class AnalyticsDemo:
         dashboard_data = await self.dashboard._get_dashboard_data()
 
         print("[OK] Dashboard data prepared")
-        print(f"📊 Dashboard served {dashboard_data.get('dashboard_stats', {}).get('requests_served', 0)} requests")
+        print(
+            f"📊 Dashboard served {dashboard_data.get('dashboard_stats', {}).get('requests_served', 0)} requests"
+        )
 
         # Show available components
-        components = dashboard_data.get('system_available', {})
+        components = dashboard_data.get("system_available", {})
         print("\n[TOOL] Dashboard Components:")
         for component, available in components.items():
             status = "[OK] Available" if available else "❌ Unavailable"
             print(f"  • {component.replace('_', ' ').title()}: {status}")
 
-        print(f"\n🌐 Dashboard URL: http://localhost:{self.demo_config['dashboard']['port']}")
+        print(
+            f"\n🌐 Dashboard URL: http://localhost:{self.demo_config['dashboard']['port']}"
+        )
         print("💡 Run the dashboard server separately to view the web interface")
 
     async def _demonstrate_memory_integration(self):
@@ -405,14 +453,14 @@ class AnalyticsDemo:
             "metadata": {
                 "category": "user_behavior",
                 "confidence": 0.85,
-                "timestamp": datetime.now().isoformat()
-            }
+                "timestamp": datetime.now().isoformat(),
+            },
         }
 
         memory_result = await self.memory_manager.store_memory(
             "analytics_insight_001",
             analytics_memory,
-            {"analytics": True, "insight": True}
+            {"analytics": True, "insight": True},
         )
 
         if memory_result:
@@ -420,8 +468,7 @@ class AnalyticsDemo:
 
         # Retrieve related memories
         related_memories = await self.memory_manager.search_memories(
-            "user engagement trends",
-            limit=5
+            "user engagement trends", limit=5
         )
 
         print(f"🔍 Found {len(related_memories)} related memories")
@@ -431,7 +478,7 @@ class AnalyticsDemo:
             "memory_integration_test",
             1.0,
             "integration",
-            {"memory_enhanced": True, "memories_found": len(related_memories)}
+            {"memory_enhanced": True, "memories_found": len(related_memories)},
         )
 
         print("[OK] Memory-enhanced analytics metrics collected")
@@ -457,14 +504,16 @@ class AnalyticsDemo:
                     f"realtime_{metric_def['name']}",
                     value,
                     "realtime",
-                    {"simulation": True, "update": updates}
+                    {"simulation": True, "update": updates},
                 )
 
             updates += 1
 
             # Show progress
             if updates % 3 == 0:
-                print(f"  📊 Real-time update #{updates} - {updates * 3} metrics processed")
+                print(
+                    f"  📊 Real-time update #{updates} - {updates * 3} metrics processed"
+                )
 
             await asyncio.sleep(update_interval)
 
@@ -487,15 +536,23 @@ class AnalyticsDemo:
 
         # Get final performance snapshot
         final_snapshot = await self.analytics_engine.get_performance_snapshot()
-        health = final_snapshot.get('system_health', {})
+        health = final_snapshot.get("system_health", {})
 
-        print(f"🏥 Final system health: {health.get('status', 'unknown')} ({health.get('score', 0)}%)")
+        print(
+            f"🏥 Final system health: {health.get('status', 'unknown')} ({health.get('score', 0)}%)"
+        )
 
         # Display component status
         print("\n[TOOL] Component Status:")
-        print(f"  • Analytics Engine: {'[OK] Active' if self.analytics_engine else '❌ Inactive'}")
-        print(f"  • Insights Engine: {'[OK] Active' if self.insights_engine else '❌ Inactive'}")
-        print(f"  • Memory Manager: {'[OK] Active' if self.memory_manager else '❌ Inactive'}")
+        print(
+            f"  • Analytics Engine: {'[OK] Active' if self.analytics_engine else '❌ Inactive'}"
+        )
+        print(
+            f"  • Insights Engine: {'[OK] Active' if self.insights_engine else '❌ Inactive'}"
+        )
+        print(
+            f"  • Memory Manager: {'[OK] Active' if self.memory_manager else '❌ Inactive'}"
+        )
         print(f"  • Dashboard: {'[OK] Ready' if self.dashboard else '❌ Unavailable'}")
 
         # Display capabilities

@@ -5,10 +5,8 @@
 # Clean Architecture Imports
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from integration.bridges.aetherra_lyrixa_bridge import bridge
-from web.server.web_adapter import web_adapter
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
 #!/usr/bin/env python3
@@ -19,7 +17,7 @@ Aetherra API Server Launcher
 Startup script for the Aetherra .aether Script Execution API.
 """
 
-import os
+
 import sys
 from pathlib import Path
 

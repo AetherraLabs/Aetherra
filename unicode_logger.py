@@ -20,7 +20,6 @@ Provides logging that properly handles Unicode characters and emojis.
 """
 
 import logging
-import os
 import sys
 from logging.handlers import RotatingFileHandler
 

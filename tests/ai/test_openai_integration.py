@@ -21,7 +21,7 @@ def load_env_file():
     try:
         env_file = ".env"
         if os.path.exists(env_file):
-            with open(env_file, "r") as f:
+            with open(env_file) as f:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith("#") and "=" in line:
@@ -37,8 +37,8 @@ def load_env_file():
 # Load environment variables
 load_env_file()
 
-from Aetherra.lyrixa.agents.lyrixa_ai import LyrixaAI
 from Aetherra.lyrixa.agents.conversation_manager import LyrixaConversationManager
+from Aetherra.lyrixa.agents.lyrixa_ai import LyrixaAI
 
 
 async def test_openai_integration():
@@ -73,7 +73,7 @@ async def test_openai_integration():
 
     try:
         response = await lyrixa_agent.process_request(test_request)
-        print(f"📥 Response received:")
+        print("📥 Response received:")
         print(f"   Success: {response.get('success', False)}")
         if response.get("success"):
             print(f"   AI Response: {response.get('response', 'No response')}")
@@ -94,7 +94,7 @@ async def test_openai_integration():
             "What capabilities does Aetherra have?", user_id="test_user"
         )
 
-        print(f"📥 Conversation Manager Response:")
+        print("📥 Conversation Manager Response:")
         print(f"   Success: {conv_response.get('success', False)}")
         print(f"   Response: {conv_response.get('response', 'No response')}")
 

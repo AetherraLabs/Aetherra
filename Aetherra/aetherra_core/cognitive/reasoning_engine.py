@@ -189,7 +189,8 @@ class ReasoningEngine:
         """Initialize reasoning database"""
         conn = sqlite3.connect(self.db_path)
         try:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS reasoning_sessions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     context TEXT NOT NULL,
@@ -198,9 +199,11 @@ class ReasoningEngine:
                     reasoning_type TEXT NOT NULL,
                     timestamp TEXT NOT NULL
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS reasoning_patterns (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     pattern_type TEXT NOT NULL,
@@ -209,7 +212,8 @@ class ReasoningEngine:
                     usage_count INTEGER DEFAULT 0,
                     created_at TEXT NOT NULL
                 )
-            """)
+            """
+            )
 
             conn.commit()
         finally:

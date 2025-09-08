@@ -9,11 +9,11 @@ Generates coherent narratives from memory fragments.
 Transforms factual memory logs into story-like recollections.
 """
 
-import json
+
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import Dict, List
 
 from ..fractal_mesh.base import EpisodicChain, MemoryFragment
 
@@ -390,11 +390,11 @@ class MemoryNarrator:
         if len(confidence_progression) > 1:
             trend = confidence_progression[-1] - confidence_progression[0]
             if trend > 0.2:
-                summary = f"showed steady improvement and growing mastery"
+                summary = "showed steady improvement and growing mastery"
             elif trend < -0.2:
-                summary = f"encountered increasing challenges requiring attention"
+                summary = "encountered increasing challenges requiring attention"
             else:
-                summary = f"maintained consistent engagement with varying results"
+                summary = "maintained consistent engagement with varying results"
         else:
             summary = f"was explored with {confidence_progression[0]:.1f} confidence"
 

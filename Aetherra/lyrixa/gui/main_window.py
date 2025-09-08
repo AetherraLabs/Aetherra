@@ -220,7 +220,8 @@ class LyrixaHybridWindow(QMainWindow):
     def createMetricWidget(self, name: str, value: str, color: str) -> QWidget:
         """Create a metric display widget."""
         widget = QFrame()
-        widget.setStyleSheet("""
+        widget.setStyleSheet(
+            """
             QFrame {
                 background: rgba(26, 26, 26, 0.6);
                 border: 1px solid rgba(255, 255, 255, 0.1);
@@ -228,7 +229,8 @@ class LyrixaHybridWindow(QMainWindow):
                 padding: 10px;
                 margin: 5px 0;
             }
-        """)
+        """
+        )
 
         layout = QVBoxLayout(widget)
         layout.setContentsMargins(10, 8, 10, 8)
@@ -273,13 +275,15 @@ class LyrixaHybridWindow(QMainWindow):
         """Create the status bar."""
         status_bar = self.statusBar()
         status_bar.showMessage("🌟 Lyrixa AI Operating System - Ready")
-        status_bar.setStyleSheet("""
+        status_bar.setStyleSheet(
+            """
             QStatusBar {
                 background: #1a1a1a;
                 color: #00ff88;
                 border-top: 1px solid rgba(0, 255, 136, 0.3);
             }
-        """)
+        """
+        )
 
     def setupWebChannel(self):
         """Setup QWebChannel for Python ↔ JavaScript communication."""
@@ -777,7 +781,7 @@ class LyrixaHybridWindow(QMainWindow):
                         sanitized_css = theme_css.replace('"', '\\"').replace(
                             "\n", "\\n"
                         )
-                        safe_js = f'''
+                        safe_js = f"""
                         (function() {{
                             try {{
                                 var style = document.getElementById('phase6-theme');
@@ -791,7 +795,7 @@ class LyrixaHybridWindow(QMainWindow):
                                 console.log('Theme injection failed:', e);
                             }}
                         }})();
-                        '''
+                        """
                         self.web_view.page().runJavaScript(safe_js)
 
         except Exception as e:
@@ -1183,7 +1187,7 @@ class LyrixaHybridWindow(QMainWindow):
 
     def createDefaultPanel(self, panel_id: str, path: Path):
         """Create a default panel if it doesn't exist."""
-        html_content = f'''
+        html_content = f"""
         <!DOCTYPE html>
         <html>
         <head>
@@ -1205,14 +1209,15 @@ class LyrixaHybridWindow(QMainWindow):
             <script src="../assets/effects.js"></script>
         </body>
         </html>
-        '''
+        """
 
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(html_content, encoding="utf-8")
 
     def applyAetherraTheme(self):
         """Apply the Aetherra color scheme and styling."""
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QMainWindow {
                 background: #0a0a0a;
                 color: #ffffff;
@@ -1239,7 +1244,8 @@ class LyrixaHybridWindow(QMainWindow):
                 background: rgba(0, 255, 136, 0.2);
                 border-radius: 4px;
             }
-        """)
+        """
+        )
 
     def getButtonStyle(self) -> str:
         """Get the Aetherra-themed button style."""

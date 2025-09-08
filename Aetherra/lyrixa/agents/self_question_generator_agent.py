@@ -11,9 +11,9 @@ self-improvement, and deeper understanding of system behavior.
 """
 
 import logging
-from typing import Dict, List, Any, Optional
-from datetime import datetime
 import random
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -34,32 +34,36 @@ class SelfQuestionGeneratorAgent:
             "performance": [
                 "How efficiently am I processing requests?",
                 "What bottlenecks are affecting my performance?",
-                "Where can I optimize my resource usage?"
+                "Where can I optimize my resource usage?",
             ],
             "learning": [
                 "What have I learned from recent interactions?",
                 "How has my understanding evolved?",
-                "What knowledge gaps should I address?"
+                "What knowledge gaps should I address?",
             ],
             "behavior": [
                 "Am I responding appropriately to different contexts?",
                 "How consistent is my behavior across similar situations?",
-                "What patterns emerge in my decision-making?"
+                "What patterns emerge in my decision-making?",
             ],
             "goals": [
                 "Are my current goals aligned with user needs?",
                 "How effectively am I pursuing my objectives?",
-                "What new goals should I consider?"
-            ]
+                "What new goals should I consider?",
+            ],
         }
 
         logger.info("❓ Self Question Generator Agent initialized")
 
-    def generate_self_questions(self, domain: Optional[str] = None, count: int = 3) -> List[str]:
+    def generate_self_questions(
+        self, domain: Optional[str] = None, count: int = 3
+    ) -> List[str]:
         """Generate self-reflective questions"""
         if domain and domain in self.question_templates:
-            questions = random.sample(self.question_templates[domain],
-                                    min(count, len(self.question_templates[domain])))
+            questions = random.sample(
+                self.question_templates[domain],
+                min(count, len(self.question_templates[domain])),
+            )
         else:
             # Mix questions from all domains
             all_questions = []
@@ -77,7 +81,7 @@ class SelfQuestionGeneratorAgent:
             "question": question,
             "reflection_id": f"refl_{self.reflections_triggered}",
             "timestamp": datetime.now().isoformat(),
-            "status": "reflecting"
+            "status": "reflecting",
         }
 
     def get_reflection_metrics(self) -> Dict[str, Any]:
@@ -85,7 +89,8 @@ class SelfQuestionGeneratorAgent:
         return {
             "total_questions": self.questions_generated,
             "total_reflections": self.reflections_triggered,
-            "reflection_rate": self.reflections_triggered / max(1, self.questions_generated)
+            "reflection_rate": self.reflections_triggered
+            / max(1, self.questions_generated),
         }
 
     def get_status(self) -> Dict[str, Any]:
@@ -96,7 +101,7 @@ class SelfQuestionGeneratorAgent:
             "status": self.status,
             "questions_generated": self.questions_generated,
             "reflections_triggered": self.reflections_triggered,
-            "is_available": self.is_available
+            "is_available": self.is_available,
         }
 
 

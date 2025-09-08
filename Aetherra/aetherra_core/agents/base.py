@@ -12,18 +12,16 @@ from datetime import datetime
 from typing import Any, List
 
 # Use robust import strategy with proper fallbacks
+# NOTE: Extremely defensive import graph required for legacy / plugin dynamic contexts.
+# ruff: noqa: I001 (import ordering intentionally suppressed due to multi-branch try/except strategy)
 try:
     # Try relative imports first (when run as module)
     try:
         from core.memory.base import AetherraMemory  # type: ignore
 
         from .agent import AetherraAgent  # type: ignore
-        from .ai_runtime import (  # type: ignore
-            ask_ai,
-            auto_tag_content,
-            reflect_on_memories,
-            suggest_next_actions,
-        )
+        from .ai_runtime import auto_tag_content  # type: ignore
+        from .ai_runtime import ask_ai, reflect_on_memories, suggest_next_actions
         from .block_executor import BlockExecutor  # type: ignore
         from .debug_system import AetherraDebugSystem  # type: ignore
         from .functions import AetherraFunctions  # type: ignore
@@ -41,23 +39,15 @@ try:
         from core.plugin_manager import PLUGIN_REGISTRY  # type: ignore
 
         from ..agent import AetherraAgent  # type: ignore
-        from ..ai_runtime import (  # type: ignore
-            ask_ai,
-            auto_tag_content,
-            reflect_on_memories,
-            suggest_next_actions,
-        )
+        from ..ai_runtime import auto_tag_content  # type: ignore
+        from ..ai_runtime import ask_ai, reflect_on_memories, suggest_next_actions
 except ImportError:
     # Fallback for when running as standalone script or from different context
     try:
         from core.aetherra_memory import AetherraMemory  # type: ignore
         from core.agent import AetherraAgent  # type: ignore
-        from core.ai_runtime import (  # type: ignore
-            ask_ai,
-            auto_tag_content,
-            reflect_on_memories,
-            suggest_next_actions,
-        )
+        from core.ai_runtime import auto_tag_content  # type: ignore
+        from core.ai_runtime import ask_ai, reflect_on_memories, suggest_next_actions
         from core.block_executor import BlockExecutor  # type: ignore
         from core.debug_system import AetherraDebugSystem  # type: ignore
         from core.functions import AetherraFunctions  # type: ignore
@@ -83,12 +73,8 @@ except ImportError:
         # Try importing again with correct path
         try:
             from agent import AetherraAgent  # type: ignore
-            from ai_runtime import (  # type: ignore
-                ask_ai,
-                auto_tag_content,
-                reflect_on_memories,
-                suggest_next_actions,
-            )
+            from ai_runtime import auto_tag_content  # type: ignore
+            from ai_runtime import ask_ai, reflect_on_memories, suggest_next_actions
             from block_executor import BlockExecutor  # type: ignore
             from debug_system import AetherraDebugSystem  # type: ignore
             from functions import AetherraFunctions  # type: ignore
@@ -96,6 +82,7 @@ except ImportError:
             from memory import AetherraMemory  # type: ignore
             from meta_plugins import MetaPluginSystem  # type: ignore
             from plugin_manager import PLUGIN_REGISTRY  # type: ignore
+
             # Success - dependencies loaded from legacy core path
         except ImportError:
             # Use fallback implementations silently
@@ -972,7 +959,7 @@ Answer this: {query}"""
         # Legacy plugins
         if PLUGIN_REGISTRY:
             result += "\n🔌 Legacy Plugins:\n"
-            for name in PLUGIN_REGISTRY.keys():
+            for name in PLUGIN_REGISTRY:  # ruff SIM118 addressed
                 result += f"  • {name}\n"
 
         if not (self.stdlib and self.stdlib.plugins) and not PLUGIN_REGISTRY:
@@ -1478,12 +1465,9 @@ Answer this: {query}"""
             return True
 
         # Check for function definition with colon
-        if stripped_line.startswith("define ") and (
+        return stripped_line.startswith("define ") and (
             stripped_line.endswith(":") or "(" in stripped_line
-        ):
-            return True
-
-        return False
+        )  # ruff SIM103 addressed
 
     def _start_block(self, line):
         """Start a new block - Enhanced for AetherraCode constructs"""
@@ -1507,7 +1491,9 @@ Answer this: {query}"""
 
         elif stripped_line.startswith("for "):
             self.block_type = "for_loop"
-            return "🔄 Started for loop block\n   🔃 Enter loop body, use 'end' to complete"
+            return (
+                "🔄 Started for loop block\n   🔃 Enter loop body, use 'end' to complete"
+            )
 
         elif stripped_line.startswith("while "):
             self.block_type = "while_loop"

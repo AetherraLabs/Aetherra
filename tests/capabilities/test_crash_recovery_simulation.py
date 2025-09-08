@@ -51,9 +51,9 @@ async def test_basic_crash_recovery_persistent_memory_roundtrip():
     cur = conn.cursor()
     cur.execute("SELECT COUNT(*) FROM memories WHERE content LIKE '%%crash-persist-%%'")
     (count_after,) = cur.fetchone()
-    assert count_after >= len(initial_ids), (
-        f"Expected >= {len(initial_ids)} rows after recovery, found {count_after}"
-    )
+    assert count_after >= len(
+        initial_ids
+    ), f"Expected >= {len(initial_ids)} rows after recovery, found {count_after}"
 
     # Ensure we can still write
     new_id = await recovered.store_memory(

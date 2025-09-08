@@ -31,13 +31,16 @@ Features:
 
 import json
 import logging
-import os
-from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List
 
-from PySide6.QtCore import QObject, QThread, QTimer, Signal, Slot
+from PySide6.QtCore import (
+    QObject,  # noqa: F401 (optional runtime import)
+    QTimer,
+    Signal,
+    Slot,
+)
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QWidget
 
@@ -254,7 +257,7 @@ class PluginUIManager(QObject):
     def _load_plugin_ui_definition(self, plugin_file: Path):
         """Load plugin UI definition from metadata"""
         try:
-            with open(plugin_file, "r", encoding="utf-8") as f:
+            with open(plugin_file, encoding="utf-8") as f:
                 plugin_data = json.load(f)
 
             # Check if plugin has UI definition
@@ -323,7 +326,7 @@ class PluginUIManager(QObject):
 
             # Load HTML panel
             panel_path = plugin_dir / ui_def.ui_panel
-            with open(panel_path, "r", encoding="utf-8") as f:
+            with open(panel_path, encoding="utf-8") as f:
                 panel_html = f.read()
 
             # Inject plugin-specific styling and scripts
@@ -351,7 +354,8 @@ class PluginUIManager(QObject):
         enhancements = []
 
         # Add plugin metadata
-        enhancements.append(f'''
+        enhancements.append(
+            f"""
         <script>
             window.pluginMetadata = {{
                 id: "{ui_def.plugin_id}",
@@ -360,7 +364,8 @@ class PluginUIManager(QObject):
                 size: "{ui_def.panel_size}",
                 updateFrequency: {ui_def.update_frequency}
             }};
-        </script>''')
+        </script>"""
+        )
 
         # Add CSS files
         for css_file in ui_def.css_files or []:
@@ -472,7 +477,7 @@ class PluginUIManager(QObject):
             for directory in self.plugin_directories:
                 panel_path = directory / ui_def.ui_panel
                 if panel_path.exists():
-                    with open(panel_path, "r", encoding="utf-8") as f:
+                    with open(panel_path, encoding="utf-8") as f:
                         html = f.read()
                     return self._enhance_plugin_html(html, ui_def, directory)
 

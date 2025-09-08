@@ -24,7 +24,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 SKIP_DIRS = {
     ".git",
@@ -64,8 +64,8 @@ REGISTER_SERVICE_RE = re.compile(r"register_service\(\s*['\"]([^'\"]+)['\"]\s*\)
 class ModuleInfo:
     path: str
     doc: Optional[str]
-    classes: List[Tuple[str, Optional[str]]]
-    functions: List[Tuple[str, Optional[str]]]
+    classes: List[tuple[str, Optional[str]]]
+    functions: List[tuple[str, Optional[str]]]
 
 
 def walk_files(root: Path) -> List[Path]:
@@ -92,8 +92,8 @@ def parse_py(text: str) -> ModuleInfo:
     except Exception:
         return ModuleInfo(path="", doc=None, classes=[], functions=[])
     doc = ast.get_docstring(tree)
-    classes: List[Tuple[str, Optional[str]]] = []
-    functions: List[Tuple[str, Optional[str]]] = []
+    classes: List[tuple[str, Optional[str]]] = []
+    functions: List[tuple[str, Optional[str]]] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.ClassDef):
             classes.append((node.name, ast.get_docstring(node)))
@@ -114,7 +114,7 @@ def extract_flask_routes(text: str) -> List[str]:
     return sorted(set(FLASK_ROUTE_RE.findall(text)))
 
 
-def extract_express_routes(text: str) -> List[Tuple[str, str]]:
+def extract_express_routes(text: str) -> List[tuple[str, str]]:
     return EXPRESS_ROUTE_RE.findall(text)
 
 
@@ -331,7 +331,7 @@ def build_narrative(root: Path, analysis: Dict[str, Any]) -> str:
 def analyze(root: Path) -> Dict[str, Any]:
     env_vars: Set[str] = set()
     flask_routes: Set[str] = set()
-    express_routes: Set[Tuple[str, str]] = set()
+    express_routes: Set[tuple[str, str]] = set()
     services: Set[str] = set()
     modules: Dict[str, ModuleInfo] = {}
 

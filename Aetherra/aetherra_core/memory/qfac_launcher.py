@@ -244,10 +244,10 @@ class QFACLauncher:
 
             # Read file content
             if path.suffix == ".json":
-                with open(path, "r") as f:
+                with open(path) as f:
                     data = json.load(f)
             else:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     data = f.read()
 
             # Analyze compression potential

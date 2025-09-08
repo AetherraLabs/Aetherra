@@ -106,7 +106,7 @@ class AetherraFileAuditor:
                 )
                 return
 
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            with open(file_path, encoding="utf-8", errors="ignore") as f:
                 content = f.read()
 
             # Parse AST for imports (with timeout protection)

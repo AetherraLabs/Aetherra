@@ -15,10 +15,9 @@ This module provides:
 """
 
 import asyncio
-import importlib.util
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 
 class QFACIntegrationManager:
@@ -343,7 +342,7 @@ async def demonstrate_full_integration():
 
         results = await manager.demonstrate_integrated_memory_processing(test_memory)
 
-        print(f"\n📊 INTEGRATION RESULTS:")
+        print("\n📊 INTEGRATION RESULTS:")
         print(f"   🧬 Phase 2 Success: {'[OK]' if results['phase2_result'] else '❌'}")
         print(f"   👁️ Phase 3 Success: {'[OK]' if results['phase3_result'] else '❌'}")
         print(f"   🧿 Phase 4 Success: {'[OK]' if results['phase4_result'] else '❌'}")
@@ -351,7 +350,7 @@ async def demonstrate_full_integration():
             f"   🔗 Pipeline Success: {'[OK]' if results['pipeline_success'] else '❌'}"
         )
 
-    print(f"\n🚀 Integration demonstration complete!")
+    print("\n🚀 Integration demonstration complete!")
     return manager
 
 

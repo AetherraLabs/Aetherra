@@ -21,12 +21,10 @@ import sqlite3
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -58,7 +56,7 @@ class SystemAnalysis:
 
     total_files: int
     orphaned_files: List[str]
-    duplicate_logic: List[Tuple[str, str]]
+    duplicate_logic: List[tuple[str, str]]
     broken_imports: List[str]
     optimization_suggestions: List[Dict[str, Any]]
     critical_files: List[str]
@@ -108,7 +106,8 @@ class AetherraFileIntelligence:
     def _init_database(self):
         """Initialize the file manifest database."""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS file_manifest (
                     path TEXT PRIMARY KEY,
                     file_type TEXT,
@@ -128,9 +127,11 @@ class AetherraFileIntelligence:
                     suggested_location TEXT,
                     scan_timestamp REAL
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS evolution_log (
                     timestamp REAL,
                     action TEXT,
@@ -139,7 +140,8 @@ class AetherraFileIntelligence:
                     success BOOLEAN,
                     details TEXT
                 )
-            """)
+            """
+            )
 
     def scan_project_files(self) -> Dict[str, FileMetadata]:
         """
@@ -175,9 +177,7 @@ class AetherraFileIntelligence:
 
             # Skip by pattern
             if (
-                dir_name.startswith(
-                    ("legacy_cleanup_", "aetherra_backup_", "housekeeping_")
-                )
+                dir_name.startswith(("legacy_cleanup_", "aetherra_backup_", "housekeeping_"))
                 or "backup" in dir_name
                 or "unused" in dir_name
             ):
@@ -271,9 +271,7 @@ class AetherraFileIntelligence:
         try:
             # Skip very large files that might cause performance issues
             if len(content) > 1_000_000:  # 1MB limit
-                logger.warning(
-                    f"Skipping large file {metadata.path} ({len(content)} bytes)"
-                )
+                logger.warning(f"Skipping large file {metadata.path} ({len(content)} bytes)")
                 metadata.risk_level = "high"
                 metadata.purpose = "Large file - manual review needed"
                 return
@@ -369,10 +367,7 @@ class AetherraFileIntelligence:
 
     def _analyze_markdown_file(self, content: str, metadata: FileMetadata):
         """Analyze Markdown documentation files."""
-        if any(
-            keyword in content.lower()
-            for keyword in ["readme", "documentation", "guide"]
-        ):
+        if any(keyword in content.lower() for keyword in ["readme", "documentation", "guide"]):
             metadata.purpose = "Documentation"
         elif "test" in content.lower():
             metadata.purpose = "Test documentation"
@@ -484,7 +479,7 @@ class AetherraFileIntelligence:
 
         return orphaned
 
-    def detect_duplicate_logic(self) -> List[Tuple[str, str, float]]:
+    def detect_duplicate_logic(self) -> List[tuple[str, str, float]]:
         """Identify modules with similar/duplicate logic."""
         duplicates = []
 
@@ -627,9 +622,7 @@ class AetherraFileIntelligence:
 
         for file_path, metadata in self.file_registry.items():
             # Files with many dependents are critical
-            dependents = sum(
-                1 for deps in self.dependency_graph.values() if file_path in deps
-            )
+            dependents = sum(1 for deps in self.dependency_graph.values() if file_path in deps)
 
             if dependents > 3:  # Threshold for criticality
                 critical.append(file_path)
@@ -744,12 +737,8 @@ remember analysis_results as "system_health_{datetime.now().strftime("%Y%m%d_%H%
         index_data = {
             "timestamp": datetime.now().isoformat(),
             "total_files": len(self.file_registry),
-            "files": {
-                path: asdict(metadata) for path, metadata in self.file_registry.items()
-            },
-            "dependency_graph": {
-                path: list(deps) for path, deps in self.dependency_graph.items()
-            },
+            "files": {path: asdict(metadata) for path, metadata in self.file_registry.items()},
+            "dependency_graph": {path: list(deps) for path, deps in self.dependency_graph.items()},
         }
 
         with open(self.live_index_path, "w", encoding="utf-8") as f:
@@ -855,9 +844,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Aetherra File Intelligence System")
     parser.add_argument("--scan", action="store_true", help="Scan project files")
-    parser.add_argument(
-        "--analyze", action="store_true", help="Perform system analysis"
-    )
+    parser.add_argument("--analyze", action="store_true", help="Perform system analysis")
     parser.add_argument("--optimize", action="store_true", help="Execute optimizations")
     parser.add_argument("--dry-run", action="store_true", help="Dry run mode")
     parser.add_argument("--project-root", default=".", help="Project root directory")

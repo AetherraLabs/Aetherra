@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import difflib
 import hashlib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -25,6 +25,36 @@ class PatchApplyResult:
     dry_run: bool
     rollback_token: str | None
     diagnostics: list[str]
+    changed_files: list[Path] = field(default_factory=list)
+    originals: dict[str, dict] = field(
+        default_factory=dict
+    )  # path -> {content:str, existed:bool}
+
+
+def classify_risk_detailed(diff_text: str) -> tuple[str, int, int, int]:
+    """Return (risk_level, changed_total, added_lines, removed_lines)."""
+    added = removed = 0
+    for line in diff_text.splitlines():
+        if line.startswith("+++") or line.startswith("---") or line.startswith("@@"):
+            continue
+        if line.startswith("+") and not line.startswith("+++ "):
+            added += 1
+        elif line.startswith("-") and not line.startswith("--- "):
+            removed += 1
+    changed = added + removed
+    if changed <= 50:
+        risk = "low"
+    elif changed <= 200:
+        risk = "medium"
+    else:
+        risk = "high"
+    return risk, changed, added, removed
+
+
+def classify_risk(diff_text: str) -> tuple[str, int]:
+    """Backward-compatible wrapper for existing callers (risk, changed_total)."""
+    risk, changed, _, _ = classify_risk_detailed(diff_text)
+    return risk, changed
 
 
 def build_new_file_diff(path: Path, content: str) -> str:
@@ -54,6 +84,7 @@ def apply_unified_diff(
 ) -> PatchApplyResult:
     diagnostics: list[str] = []
     applied_files: list[Path] = []
+    originals: dict[str, dict] = {}
     lines = diff_text.splitlines()
     i = 0
     current_file: Path | None = None
@@ -70,7 +101,11 @@ def apply_unified_diff(
                 and not dry_run
             ):
                 _write_if_changed(
-                    current_file, "".join(file_new), applied_files, diagnostics
+                    current_file,
+                    "".join(file_new),
+                    applied_files,
+                    diagnostics,
+                    originals,
                 )
             current_file = Path(line.split(":", 1)[1].strip())
             mode = "update"
@@ -84,7 +119,11 @@ def apply_unified_diff(
                 and not dry_run
             ):
                 _write_if_changed(
-                    current_file, "".join(file_new), applied_files, diagnostics
+                    current_file,
+                    "".join(file_new),
+                    applied_files,
+                    diagnostics,
+                    originals,
                 )
             current_file = Path(line.split(":", 1)[1].strip())
             mode = "add"
@@ -143,22 +182,33 @@ def apply_unified_diff(
         and file_new is not None
         and not dry_run
     ):
-        _write_if_changed(current_file, "".join(file_new), applied_files, diagnostics)
+        _write_if_changed(
+            current_file, "".join(file_new), applied_files, diagnostics, originals
+        )
 
     rollback_token = None
     if applied_files:
         rollback_token = _make_rollback_token(applied_files)
+    # Originals are captured from diagnostics earlier only if we augment _write_if_changed
+    # For Phase 1 we re-read current file contents as "new"; originals map is minimal placeholder.
+    # originals already captured pre-write in _write_if_changed
     return PatchApplyResult(
         applied=not dry_run and bool(applied_files),
         diff=diff_text,
         dry_run=dry_run,
         rollback_token=rollback_token,
         diagnostics=diagnostics,
+        changed_files=applied_files,
+        originals=originals,
     )
 
 
 def _write_if_changed(
-    path: Path, new_content: str, applied: list[Path], diagnostics: list[str]
+    path: Path,
+    new_content: str,
+    applied: list[Path],
+    diagnostics: list[str],
+    originals: dict[str, dict],
 ) -> None:
     path_parent = path.parent
     path_parent.mkdir(parents=True, exist_ok=True)
@@ -167,7 +217,19 @@ def _write_if_changed(
         old = path.read_text(encoding="utf-8", errors="replace")
     except FileNotFoundError:
         pass
+    existed = old != "" or path.exists()
     if old != new_content:
+        # compute naive line delta counts for snapshot metadata
+        old_lines = old.splitlines()
+        new_lines = new_content.splitlines()
+        added = max(0, len(new_lines) - len(old_lines)) if old_lines else len(new_lines)
+        removed = (
+            max(0, len(old_lines) - len(new_lines)) if new_lines else len(old_lines)
+        )
+        originals.setdefault(
+            str(path),
+            {"content": old, "existed": existed, "added": added, "removed": removed},
+        )
         path.write_text(new_content, encoding="utf-8")
         applied.append(path)
         diagnostics.append(f"Updated {path}")

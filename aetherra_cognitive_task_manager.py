@@ -24,15 +24,13 @@ Licensed under GNU General Public License v3.0
 """
 
 import asyncio
-import json
 import logging
 import sys
 import threading
 import time
 import webbrowser
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -40,7 +38,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 # Web framework
 try:
-    from flask import Flask, jsonify, render_template, request
+    from flask import Flask, jsonify, render_template
     from flask_socketio import SocketIO, emit
 
     WEB_AVAILABLE = True

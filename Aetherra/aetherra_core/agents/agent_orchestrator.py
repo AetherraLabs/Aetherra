@@ -12,17 +12,18 @@ Handles agent discovery, capability matching, task scheduling, and result aggreg
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 
 class TaskPriority(Enum):
     """Task priority levels for orchestration."""
+
     LOW = "low"
     NORMAL = "normal"
     HIGH = "high"
@@ -31,6 +32,7 @@ class TaskPriority(Enum):
 
 class TaskStatus(Enum):
     """Task execution status."""
+
     PENDING = "pending"
     ASSIGNED = "assigned"
     RUNNING = "running"
@@ -41,6 +43,7 @@ class TaskStatus(Enum):
 
 class AgentStatus(Enum):
     """Agent availability status."""
+
     AVAILABLE = "available"
     BUSY = "busy"
     OFFLINE = "offline"
@@ -50,6 +53,7 @@ class AgentStatus(Enum):
 @dataclass
 class Task:
     """Represents a task to be executed by an agent."""
+
     task_id: str
     name: str
     description: str
@@ -70,6 +74,7 @@ class Task:
 @dataclass
 class Agent:
     """Represents an AI agent in the system."""
+
     agent_id: str
     name: str
     capabilities: List[str]
@@ -102,31 +107,40 @@ class AgentOrchestrator:
         # Load persistent data
         self._load_state()
 
-        logger.info(f"[AGENT] Agent Orchestrator initialized with {len(self.agents)} agents")
+        logger.info(
+            f"[AGENT] Agent Orchestrator initialized with {len(self.agents)} agents"
+        )
 
     def _load_state(self):
         """Load orchestrator state from persistent storage."""
         try:
             if self.db_path.exists():
-                with open(self.db_path, 'r') as f:
+                # Mode argument not required for default text read (ruff UP015)
+                with open(self.db_path) as f:
                     data = json.load(f)
 
                 # Restore agents
-                for agent_data in data.get('agents', []):
+                for agent_data in data.get("agents", []):
                     agent = Agent(**agent_data)
-                    agent.last_seen = datetime.fromisoformat(agent_data.get('last_seen', datetime.now().isoformat()))
+                    agent.last_seen = datetime.fromisoformat(
+                        agent_data.get("last_seen", datetime.now().isoformat())
+                    )
                     agent.status = AgentStatus.OFFLINE  # Reset to offline on startup
                     self.agents[agent.agent_id] = agent
 
                 # Restore pending tasks
-                for task_data in data.get('tasks', []):
+                for task_data in data.get("tasks", []):
                     task = Task(**task_data)
-                    task.created_at = datetime.fromisoformat(task_data.get('created_at', datetime.now().isoformat()))
+                    task.created_at = datetime.fromisoformat(
+                        task_data.get("created_at", datetime.now().isoformat())
+                    )
                     if task.status in [TaskStatus.PENDING, TaskStatus.ASSIGNED]:
                         self.tasks[task.task_id] = task
                         self.task_queue.append(task.task_id)
 
-                logger.info(f"✅ Loaded {len(self.agents)} agents and {len(self.tasks)} pending tasks")
+                logger.info(
+                    f"✅ Loaded {len(self.agents)} agents and {len(self.tasks)} pending tasks"
+                )
 
         except Exception as e:
             logger.warning(f"⚠️ Could not load orchestrator state: {e}")
@@ -135,26 +149,32 @@ class AgentOrchestrator:
         """Save orchestrator state to persistent storage."""
         try:
             data = {
-                'agents': [
+                "agents": [
                     {
                         **agent.__dict__,
-                        'last_seen': agent.last_seen.isoformat(),
-                        'status': agent.status.value
-                    } for agent in self.agents.values()
+                        "last_seen": agent.last_seen.isoformat(),
+                        "status": agent.status.value,
+                    }
+                    for agent in self.agents.values()
                 ],
-                'tasks': [
+                "tasks": [
                     {
                         **task.__dict__,
-                        'created_at': task.created_at.isoformat(),
-                        'started_at': task.started_at.isoformat() if task.started_at else None,
-                        'completed_at': task.completed_at.isoformat() if task.completed_at else None,
-                        'priority': task.priority.value,
-                        'status': task.status.value
-                    } for task in self.tasks.values()
-                ]
+                        "created_at": task.created_at.isoformat(),
+                        "started_at": task.started_at.isoformat()
+                        if task.started_at
+                        else None,
+                        "completed_at": task.completed_at.isoformat()
+                        if task.completed_at
+                        else None,
+                        "priority": task.priority.value,
+                        "status": task.status.value,
+                    }
+                    for task in self.tasks.values()
+                ],
             }
 
-            with open(self.db_path, 'w') as f:
+            with open(self.db_path, "w") as f:
                 json.dump(data, f, indent=2, default=str)
 
         except Exception as e:
@@ -196,37 +216,45 @@ class AgentOrchestrator:
             {
                 "agent_id": "text_processor_01",
                 "name": "Text Processing Agent",
-                "capabilities": ["text_analysis", "summarization", "translation"]
+                "capabilities": ["text_analysis", "summarization", "translation"],
             },
             {
                 "agent_id": "data_analyst_01",
                 "name": "Data Analysis Agent",
-                "capabilities": ["data_analysis", "visualization", "statistics"]
+                "capabilities": ["data_analysis", "visualization", "statistics"],
             },
             {
                 "agent_id": "web_researcher_01",
                 "name": "Web Research Agent",
-                "capabilities": ["web_search", "information_gathering", "fact_checking"]
-            }
+                "capabilities": [
+                    "web_search",
+                    "information_gathering",
+                    "fact_checking",
+                ],
+            },
         ]
 
         for agent_data in default_agents:
             await self.register_agent(**agent_data)
 
-    async def register_agent(self, agent_id: str, name: str, capabilities: List[str]) -> bool:
+    async def register_agent(
+        self, agent_id: str, name: str, capabilities: List[str]
+    ) -> bool:
         """Register a new agent with the orchestrator."""
         try:
             agent = Agent(
                 agent_id=agent_id,
                 name=name,
                 capabilities=capabilities,
-                status=AgentStatus.AVAILABLE
+                status=AgentStatus.AVAILABLE,
             )
 
             self.agents[agent_id] = agent
             self._save_state()
 
-            logger.info(f"✅ Registered agent '{name}' with capabilities: {capabilities}")
+            logger.info(
+                f"✅ Registered agent '{name}' with capabilities: {capabilities}"
+            )
             return True
 
         except Exception as e:
@@ -284,7 +312,9 @@ class AgentOrchestrator:
         # Sort tasks by priority
         self.task_queue.sort(key=lambda tid: self._get_task_priority_value(tid))
 
-        for task_id in self.task_queue[:]:  # Copy to avoid modification during iteration
+        for task_id in self.task_queue[
+            :
+        ]:  # Copy to avoid modification during iteration
             task = self.tasks.get(task_id)
             if not task or task.status != TaskStatus.PENDING:
                 self.task_queue.remove(task_id)
@@ -306,14 +336,15 @@ class AgentOrchestrator:
             TaskPriority.CRITICAL: 0,
             TaskPriority.HIGH: 1,
             TaskPriority.NORMAL: 2,
-            TaskPriority.LOW: 3
+            TaskPriority.LOW: 3,
         }
         return priority_values.get(task.priority, 2)
 
     def _find_suitable_agent(self, required_capabilities: List[str]) -> Optional[Agent]:
         """Find the best available agent for the given capabilities."""
         available_agents = [
-            agent for agent in self.agents.values()
+            agent
+            for agent in self.agents.values()
             if agent.status == AgentStatus.AVAILABLE
         ]
 
@@ -324,7 +355,7 @@ class AgentOrchestrator:
         scored_agents = []
         for agent in available_agents:
             capability_score = len(set(required_capabilities) & set(agent.capabilities))
-            performance_score = agent.performance_metrics.get('success_rate', 0.5)
+            performance_score = agent.performance_metrics.get("success_rate", 0.5)
             total_score = capability_score * 10 + performance_score
 
             if capability_score > 0:  # Agent must have at least one required capability
@@ -353,7 +384,9 @@ class AgentOrchestrator:
             logger.info(f"[AGENT] Assigned task '{task.name}' to agent '{agent.name}'")
 
         except Exception as e:
-            logger.error(f"❌ Failed to assign task {task.task_id} to agent {agent.agent_id}: {e}")
+            logger.error(
+                f"❌ Failed to assign task {task.task_id} to agent {agent.agent_id}: {e}"
+            )
             task.status = TaskStatus.FAILED
             task.error_message = str(e)
 
@@ -372,7 +405,7 @@ class AgentOrchestrator:
                 "task_id": task.task_id,
                 "result": f"Mock result for task '{task.name}' by agent '{agent.name}'",
                 "execution_time": 2.0,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
             # Update task status
@@ -390,10 +423,12 @@ class AgentOrchestrator:
             if task.started_at:
                 execution_time = (task.completed_at - task.started_at).total_seconds()
                 agent.average_execution_time = (
-                    (agent.average_execution_time * (agent.total_tasks_completed - 1) + execution_time)
-                    / agent.total_tasks_completed
-                )
-            agent.performance_metrics['success_rate'] = min(1.0, agent.performance_metrics.get('success_rate', 0.5) + 0.1)
+                    agent.average_execution_time * (agent.total_tasks_completed - 1)
+                    + execution_time
+                ) / agent.total_tasks_completed
+            agent.performance_metrics["success_rate"] = min(
+                1.0, agent.performance_metrics.get("success_rate", 0.5) + 0.1
+            )
 
             self._save_state()
             logger.info(f"✅ Task '{task.name}' completed by agent '{agent.name}'")
@@ -446,13 +481,25 @@ class AgentOrchestrator:
     def get_system_status(self) -> Dict[str, Any]:
         """Get comprehensive system status."""
         total_agents = len(self.agents)
-        available_agents = len([a for a in self.agents.values() if a.status == AgentStatus.AVAILABLE])
-        busy_agents = len([a for a in self.agents.values() if a.status == AgentStatus.BUSY])
-        offline_agents = len([a for a in self.agents.values() if a.status == AgentStatus.OFFLINE])
+        available_agents = len(
+            [a for a in self.agents.values() if a.status == AgentStatus.AVAILABLE]
+        )
+        busy_agents = len(
+            [a for a in self.agents.values() if a.status == AgentStatus.BUSY]
+        )
+        offline_agents = len(
+            [a for a in self.agents.values() if a.status == AgentStatus.OFFLINE]
+        )
 
-        pending_tasks = len([t for t in self.tasks.values() if t.status == TaskStatus.PENDING])
-        running_tasks = len([t for t in self.tasks.values() if t.status == TaskStatus.RUNNING])
-        completed_tasks = len([t for t in self.tasks.values() if t.status == TaskStatus.COMPLETED])
+        pending_tasks = len(
+            [t for t in self.tasks.values() if t.status == TaskStatus.PENDING]
+        )
+        running_tasks = len(
+            [t for t in self.tasks.values() if t.status == TaskStatus.RUNNING]
+        )
+        completed_tasks = len(
+            [t for t in self.tasks.values() if t.status == TaskStatus.COMPLETED]
+        )
 
         return {
             "orchestration_active": self.orchestration_active,
@@ -464,7 +511,7 @@ class AgentOrchestrator:
             "running_tasks": running_tasks,
             "completed_tasks": completed_tasks,
             "queue_length": len(self.task_queue),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     def get_task_status(self, task_id: str) -> Optional[Dict[str, Any]]:
@@ -480,9 +527,11 @@ class AgentOrchestrator:
             "assigned_agent": task.assigned_agent,
             "created_at": task.created_at.isoformat(),
             "started_at": task.started_at.isoformat() if task.started_at else None,
-            "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+            "completed_at": task.completed_at.isoformat()
+            if task.completed_at
+            else None,
             "result": task.result,
-            "error_message": task.error_message
+            "error_message": task.error_message,
         }
 
     def list_agents(self) -> List[Dict[str, Any]]:
@@ -496,7 +545,7 @@ class AgentOrchestrator:
                 "current_task": agent.current_task,
                 "total_tasks_completed": agent.total_tasks_completed,
                 "average_execution_time": agent.average_execution_time,
-                "last_seen": agent.last_seen.isoformat()
+                "last_seen": agent.last_seen.isoformat(),
             }
             for agent in self.agents.values()
         ]
@@ -507,7 +556,11 @@ class AgentOrchestrator:
         if not task:
             return False
 
-        if task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED]:
+        if task.status in [
+            TaskStatus.COMPLETED,
+            TaskStatus.FAILED,
+            TaskStatus.CANCELLED,
+        ]:
             return False  # Cannot cancel already finished tasks
 
         # Cancel the task
@@ -551,7 +604,7 @@ async def test_orchestrator():
                 name="Analyze Text Document",
                 description="Analyze a document for sentiment and key topics",
                 required_capabilities=["text_analysis", "summarization"],
-                input_data={"document": "Sample text to analyze..."}
+                input_data={"document": "Sample text to analyze..."},
             ),
             Task(
                 task_id="test_002",
@@ -559,8 +612,8 @@ async def test_orchestrator():
                 description="Research current market trends in AI",
                 required_capabilities=["web_search", "data_analysis"],
                 input_data={"topic": "AI market trends"},
-                priority=TaskPriority.HIGH
-            )
+                priority=TaskPriority.HIGH,
+            ),
         ]
 
         for task in test_tasks:

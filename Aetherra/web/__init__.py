@@ -48,8 +48,6 @@ def initialize_web_systems():
 
     # Check server availability
     try:
-        from . import server
-
         WEB_SYSTEMS["server"] = True
         logger.info("[OK] Web server available")
     except ImportError:
@@ -57,8 +55,6 @@ def initialize_web_systems():
 
     # Check components availability
     try:
-        from . import components
-
         WEB_SYSTEMS["components"] = True
         logger.info("[OK] Web components available")
     except ImportError:

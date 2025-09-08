@@ -22,7 +22,7 @@ import logging
 import time
 import traceback
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from phase_7_3_integration import initialize_quantum_memory_temporal_integration
 
@@ -545,7 +545,7 @@ class Phase73TestSuite:
 
         summary = results.get("suite_summary", {})
 
-        print(f"\n📊 SUITE SUMMARY:")
+        print("\n📊 SUITE SUMMARY:")
         print(
             f"  Total Execution Time: {summary.get('total_execution_time', 0):.2f} seconds"
         )

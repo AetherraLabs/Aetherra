@@ -347,7 +347,7 @@ class EnhancedConversationManager:
             patterns = memory_context.get("patterns_discovered", [])
             if patterns and self.pattern_enhancement:
                 pattern_prompt = (
-                    f"DISCOVERED PATTERNS:\n"
+                    "DISCOVERED PATTERNS:\n"
                     + "\n".join(
                         [
                             f"- {p['pattern']} (frequency: {p['frequency']})"
@@ -412,7 +412,7 @@ class EnhancedConversationManager:
         # Patterns
         patterns = memory_context.get("patterns_discovered", [])
         if patterns:
-            summary_parts.append(f"Conversation patterns:")
+            summary_parts.append("Conversation patterns:")
             for pattern in patterns[:2]:  # Top 2
                 summary_parts.append(
                     f"  - {pattern['pattern']} (×{pattern['frequency']})"

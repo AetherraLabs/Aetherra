@@ -7,10 +7,7 @@ This allows importing HMR APIs from Aetherra.aetherra_core.os_kernel without
 moving the implementation yet.
 """
 
-from aetherra_hmr_controller import (  # type: ignore
-    HMRController,
-    get_hmr_controller,
-)
+from aetherra_hmr_controller import HMRController, get_hmr_controller  # type: ignore
 
 __all__ = [
     "HMRController",
