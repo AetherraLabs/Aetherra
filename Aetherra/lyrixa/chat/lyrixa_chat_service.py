@@ -373,7 +373,9 @@ class LyrixaChatService:
             k in message.lower()
             for k in ["fix", "update", "change", "refactor", "rename", "bug", "error"]
         ):
-            suggestions = await self.suggest_fixes(message)
+            suggestions = await self.suggest_fixes(
+                message, read_only=not bool(opts.allow_edits)
+            )
             if opts.allow_edits and suggestions:
                 first = suggestions[0]
                 ok, change = await self.apply_fix(first, edit_root=opts.edit_root)
@@ -596,10 +598,14 @@ class LyrixaChatService:
         return None
 
     async def suggest_fixes(
-        self, hint: str = "", limit: int = 3
+        self, hint: str = "", limit: int = 3, read_only: bool = False
     ) -> List[Dict[str, Any]]:
         """Lightweight heuristic: search for common issues and propose edits."""
         suggestions: List[Dict[str, Any]] = []
+
+        # If operating in read_only (allow_edits False at bridge), suppress auto heuristic noise
+        if read_only:
+            return suggestions
 
         # Example 1: escape sequences warning in setup_dev.py
         setup = self.root / "setup_dev.py"
