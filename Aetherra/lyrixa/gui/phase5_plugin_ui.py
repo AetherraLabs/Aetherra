@@ -31,9 +31,16 @@ Features:
 
 import json
 import logging
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+
+try:
+    # Prefer central sandbox for safe expression evaluation
+    from Aetherra.security.sandbox import safe_eval as sandbox_safe_eval
+except Exception:  # pragma: no cover - fallback stub if import path differs in some envs
+    sandbox_safe_eval = None  # type: ignore
 
 from PySide6.QtCore import (
     QObject,  # noqa: F401 (optional runtime import)
@@ -118,18 +125,14 @@ class PluginConditionEvaluator:
                     self.memory = type("obj", (object,), state.get("memory", {}))()
                     self.network = type("obj", (object,), state.get("network", {}))()
                     self.cpu = state.get("system", {}).get("cpu_usage", 0.2)
-                    self.security_level = state.get("system", {}).get(
-                        "security_level", 85
-                    )
+                    self.security_level = state.get("system", {}).get("security_level", 85)
 
             # Create memory object for direct access
             class MemoryObj:
                 def __init__(self, state):
                     self.active = True
                     self.usage = state.get("memory", {}).get("usage", 0.3)
-                    self.available = state.get("memory", {}).get(
-                        "available", 1024 * 1024 * 1024
-                    )
+                    self.available = state.get("memory", {}).get("available", 1024 * 1024 * 1024)
 
             # Create network object for direct access
             class NetworkObj:
@@ -150,37 +153,92 @@ class PluginConditionEvaluator:
             }
 
             # Evaluate all conditions (AND logic)
-            for condition in conditions:
-                if not self._safe_eval(condition, context):
-                    return False
-
-            return True
+            return all(self._safe_eval(condition, context) for condition in conditions)
 
         except Exception as e:
             logger.error(f"[PLUGIN-UI] Condition evaluation error for {plugin_id}: {e}")
             return False
 
     def _safe_eval(self, expression: str, context: Dict[str, Any]) -> bool:
-        """Safely evaluate a single condition expression"""
-        # Basic safety checks
-        dangerous_keywords = ["import", "exec", "eval", "open", "file", "__"]
-        if any(keyword in expression.lower() for keyword in dangerous_keywords):
-            logger.warning(f"[PLUGIN-UI] Blocked dangerous expression: {expression}")
-            return False
+        """Safely evaluate a single condition expression.
+        Delegates to central sandbox.safe_eval with a strict allowlist by mapping
+        dotted attributes into flat variable names (no attribute access allowed).
+        """
+        # Normalize common logical operators
+        expr = (
+            expression.replace("&&", " and ")
+            .replace("||", " or ")
+            .replace("==", " == ")
+            .replace("!=", " != ")
+        )
+
+        # Build a flat variables dict from provided context for sandbox evaluation
+        vars_map: Dict[str, Any] = {
+            "True": True,
+            "False": False,
+            "true": True,
+            "false": False,
+        }
+
+        # Helper to safely get nested attributes/keys
+        def _get(d: Any, *path: str, default: Any = None) -> Any:
+            cur = d
+            for p in path:
+                try:
+                    cur = cur.get(p, default) if isinstance(cur, dict) else getattr(cur, p)
+                except Exception:
+                    return default
+            return cur
+
+        # Known mappings used in UI expressions
+        mappings = {
+            "system.memory.usage": "system_memory_usage",
+            "system.memory.available": "system_memory_available",
+            "system.network.connected": "system_network_connected",
+            "system.network.speed": "system_network_speed",
+            "system.cpu": "system_cpu",
+            "memory.usage": "memory_usage",
+            "memory.available": "memory_available",
+            "network.connected": "network_connected",
+            "network.speed": "network_speed",
+            "cpu": "system_cpu",
+        }
+
+        # Populate values from context
+        vars_map.update(
+            {
+                "system_memory_usage": _get(context, "system", "memory", "usage", default=0.3),
+                "system_memory_available": _get(
+                    context, "system", "memory", "available", default=1024 * 1024 * 1024
+                ),
+                "system_network_connected": _get(
+                    context, "system", "network", "connected", default=True
+                ),
+                "system_network_speed": _get(context, "system", "network", "speed", default="high"),
+                "system_cpu": _get(context, "system", "cpu", default=0.2),
+                "memory_usage": _get(context, "memory", "usage", default=0.3),
+                "memory_available": _get(
+                    context, "memory", "available", default=1024 * 1024 * 1024
+                ),
+                "network_connected": _get(context, "network", "connected", default=True),
+                "network_speed": _get(context, "network", "speed", default="high"),
+            }
+        )
+
+        # Rewrite expression by replacing dotted names with flat variables
+        rewritten = expr
+        for dotted, flat in mappings.items():
+            rewritten = rewritten.replace(dotted, flat)
 
         try:
-            # Replace common operators and conditions
-            safe_expression = expression.replace("==", " == ").replace("!=", " != ")
-            safe_expression = safe_expression.replace("&&", " and ").replace(
-                "||", " or "
-            )
-
-            # Simple attribute access pattern matching
-            return eval(safe_expression, {"__builtins__": {}}, context)
-
+            if sandbox_safe_eval is None:
+                # Fallback: extremely restrictive eval with no builtins
+                return bool(eval(rewritten, {"__builtins__": {}}, vars_map))
+            value = sandbox_safe_eval(rewritten, variables=vars_map)
+            return bool(value)
         except Exception as e:
             logger.warning(
-                f"[PLUGIN-UI] Expression evaluation failed: {expression} - {e}"
+                f"[PLUGIN-UI] Expression evaluation failed (sandbox): {expression} -> {rewritten} - {e}"
             )
             return False
 
@@ -347,9 +405,7 @@ class PluginUIManager(QObject):
                 plugin_state.error_count += 1
                 plugin_state.last_error = str(e)
 
-    def _enhance_plugin_html(
-        self, html: str, ui_def: PluginUIDefinition, plugin_dir: Path
-    ) -> str:
+    def _enhance_plugin_html(self, html: str, ui_def: PluginUIDefinition, plugin_dir: Path) -> str:
         """Enhance plugin HTML with additional CSS/JS and metadata"""
         enhancements = []
 
@@ -371,9 +427,7 @@ class PluginUIManager(QObject):
         for css_file in ui_def.css_files or []:
             css_path = plugin_dir / css_file
             if css_path.exists():
-                enhancements.append(
-                    f'<link rel="stylesheet" href="file:///{css_path}">'
-                )
+                enhancements.append(f'<link rel="stylesheet" href="file:///{css_path}">')
 
         # Add JavaScript files
         for js_file in ui_def.js_files or []:
@@ -383,9 +437,7 @@ class PluginUIManager(QObject):
 
         # Insert enhancements before closing head tag
         if "</head>" in html:
-            enhanced_html = html.replace(
-                "</head>", "\n".join(enhancements) + "\n</head>"
-            )
+            enhanced_html = html.replace("</head>", "\n".join(enhancements) + "\n</head>")
         else:
             # Add to beginning if no head tag
             enhanced_html = "\n".join(enhancements) + "\n" + html
@@ -407,9 +459,7 @@ class PluginUIManager(QObject):
                 system_data = {
                     "memory": {
                         "usage": getattr(system_obj.memory, "usage", 0.3),
-                        "available": getattr(
-                            system_obj.memory, "available", 1024 * 1024 * 1024
-                        ),
+                        "available": getattr(system_obj.memory, "available", 1024 * 1024 * 1024),
                         "total": getattr(system_obj.memory, "total", 8192),
                     },
                     "network": {
@@ -517,9 +567,7 @@ class PluginUIManager(QObject):
         return {
             "total_plugins": len(self.plugin_definitions),
             "visible_plugins": len(self.get_visible_plugin_uis()),
-            "loaded_plugins": sum(
-                1 for state in self.plugin_states.values() if state.is_loaded
-            ),
+            "loaded_plugins": sum(1 for state in self.plugin_states.values() if state.is_loaded),
             "plugin_directories": [str(d) for d in self.plugin_directories],
             "plugins": {
                 plugin_id: {

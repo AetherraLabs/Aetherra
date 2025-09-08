@@ -239,6 +239,27 @@ PY
 
 More environment flags and safe defaults: `docs/ALPHA_READINESS.md`.
 
+### Quality Gates & Coverage (New Flags)
+
+| Variable                | Purpose                                                            | Default                   |
+| ----------------------- | ------------------------------------------------------------------ | ------------------------- |
+| GENERATE_PR_DESCRIPTION | Emit `pr_description.md` (or custom path) summarizing gate results | 0                         |
+| PR_DESCRIPTION_PATH     | Output path for generated PR description                           | pr_description.md         |
+| COVERAGE_REPORT_JSON    | Path for structured gate report JSON                               | coverage_gate_report.json |
+| COVERAGE_FILE_RETENTION | Max per-file snapshot count (`audit/coverage_delta/`)              | 30                        |
+| COVERAGE_PRUNE_ORPHANS  | Remove legacy root `coverage.json` when snapshots exist            | 1                         |
+| TEST_SELECTION          | Enable heuristic test subset selection (Phase 1)                   | 1                         |
+| TEST_SELECTION_MIN_CONF | Min confidence for adopting subset                                 | 0.8                       |
+
+Structured gate report fields (schema_version=1):
+
+- coverage, previous, delta, min_threshold, drop, updated_baseline
+- gating_reasons[] (code, severity, message)
+- selection (strategy, candidates, confidence, fallback, reason)
+- file_deltas[] (path, before, after, delta, changed)
+- future (enforce_branch_coverage, enforce_statement_coverage)
+
+
 ---
 
 ## 5. Metrics & Observability

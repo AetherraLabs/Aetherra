@@ -14,6 +14,7 @@ import threading
 import time
 import uuid
 from collections import defaultdict
+from dataclasses import dataclass  # Added for @dataclass usage
 from enum import Enum
 from typing import Any, Dict, List
 
@@ -98,13 +99,17 @@ class MetaCognitionSystem:
         # Start continuous self-monitoring
         self._start_self_monitoring()
 
-        logging.info(
-            "Meta-Cognition System initialized - Enhanced self-knowledge active"
-        )
+        logging.info("Meta-Cognition System initialized - Enhanced self-knowledge active")
 
     def _init_database(self):
         """Initialize SQLite database for persistent meta-memory"""
         with sqlite3.connect(self.db_path) as conn:
+            try:
+                conn.execute("PRAGMA journal_mode=WAL;")
+                conn.execute("PRAGMA synchronous=NORMAL;")
+                conn.execute("PRAGMA busy_timeout=3000;")  # 3s
+            except Exception:
+                pass
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS meta_memory_nodes (
@@ -149,6 +154,16 @@ class MetaCognitionSystem:
                 )
             """
             )
+            # Minimal helpful indexes (if not already)
+            try:
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_meta_domain ON meta_memory_nodes(knowledge_domain);"
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_reflection_time ON self_reflections(timestamp);"
+                )
+            except Exception:
+                pass
 
     def _initialize_self_knowledge_domains(self):
         """Initialize comprehensive self-knowledge tracking across all domains"""
@@ -210,9 +225,7 @@ class MetaCognitionSystem:
             {"domain": domain.value, "node_id": node_id, "confidence": confidence},
         )
 
-        logging.info(
-            f"Enhanced self-knowledge in domain {domain.value} - Node {node_id}"
-        )
+        logging.info(f"Enhanced self-knowledge in domain {domain.value} - Node {node_id}")
         return node_id
 
     def conduct_self_reflection(
@@ -301,9 +314,7 @@ class MetaCognitionSystem:
                     {
                         "domain": domain.value,
                         "coverage": coverage_score,
-                        "improvement_potential": self._estimate_improvement_potential(
-                            domain
-                        ),
+                        "improvement_potential": self._estimate_improvement_potential(domain),
                     }
                 )
 
@@ -311,14 +322,10 @@ class MetaCognitionSystem:
         coverage_report["overall_coverage"] = sum(domain_scores) / len(domain_scores)
 
         # Generate improvement priorities
-        coverage_report[
-            "improvement_priorities"
-        ] = self._generate_improvement_priorities()
+        coverage_report["improvement_priorities"] = self._generate_improvement_priorities()
 
         # Generate learning recommendations
-        coverage_report[
-            "learning_recommendations"
-        ] = self._generate_learning_recommendations()
+        coverage_report["learning_recommendations"] = self._generate_learning_recommendations()
 
         return coverage_report
 
@@ -472,9 +479,7 @@ class MetaCognitionSystem:
             insights.append("Significant knowledge gaps identified requiring attention")
 
         if assessment["learning_state"]["progress_rate"] > 0.8:
-            insights.append(
-                "High learning progress rate indicates effective adaptation"
-            )
+            insights.append("High learning progress rate indicates effective adaptation")
 
         # Add domain-specific insights
         for domain in SelfKnowledgeDomain:
@@ -558,6 +563,48 @@ class MetaCognitionSystem:
                 ),
             )
 
+    def _deserialize_memory_node(self, row) -> MetaMemoryNode:
+        """Stub deserializer for persisted meta memory rows."""
+        try:
+            (
+                node_id,
+                knowledge_domain,
+                content,
+                confidence,
+                created_ts,
+                last_accessed,
+                access_count,
+                meta_annotations,
+                validation_status,
+                learning_weight,
+            ) = row
+            return MetaMemoryNode(
+                node_id=node_id,
+                knowledge_domain=SelfKnowledgeDomain(knowledge_domain),
+                content=json.loads(content or "{}"),
+                confidence=float(confidence),
+                created_timestamp=float(created_ts),
+                last_accessed=float(last_accessed),
+                access_count=int(access_count),
+                meta_annotations=json.loads(meta_annotations or "{}"),
+                validation_status=validation_status or "unknown",
+                learning_weight=float(learning_weight or 0.0),
+            )
+        except Exception:
+            # Fallback minimal node
+            return MetaMemoryNode(
+                node_id=str(uuid.uuid4()),
+                knowledge_domain=SelfKnowledgeDomain.COGNITIVE_PATTERNS,
+                content={},
+                confidence=0.0,
+                created_timestamp=time.time(),
+                last_accessed=time.time(),
+                access_count=0,
+                meta_annotations={},
+                validation_status="error",
+                learning_weight=0.0,
+            )
+
     # Additional helper methods would be implemented here for all the analysis functions
     # This is a comprehensive foundation for the meta-cognition system
 
@@ -565,9 +612,7 @@ class MetaCognitionSystem:
         """Find cross-references to other knowledge nodes"""
         return []  # Placeholder
 
-    def _identify_uncertainty_factors(
-        self, knowledge_data: Dict[str, Any]
-    ) -> List[str]:
+    def _identify_uncertainty_factors(self, knowledge_data: Dict[str, Any]) -> List[str]:
         """Identify factors that create uncertainty in this knowledge"""
         return []  # Placeholder
 
@@ -581,9 +626,7 @@ class MetaCognitionSystem:
         """Calculate learning weight for knowledge prioritization"""
         return 0.5  # Placeholder
 
-    def _update_domain_coverage(
-        self, domain: SelfKnowledgeDomain, node: MetaMemoryNode
-    ):
+    def _update_domain_coverage(self, domain: SelfKnowledgeDomain, node: MetaMemoryNode):
         """Update coverage statistics for a domain"""
         domain_data = self.self_knowledge_coverage[domain.value]
         domain_data["knowledge_nodes"].append(node.node_id)
@@ -594,5 +637,156 @@ class MetaCognitionSystem:
         """Trigger meta-reflection on specific events"""
         pass  # Placeholder
 
-    # More helper methods would continue here...
-    # This provides a solid foundation for comprehensive meta-cognition
+    def _identify_knowledge_updates(self, insights: List[str]) -> List[str]:
+        """Stub: determine which knowledge nodes require updates based on insights.
+        Returns list of node IDs or descriptors. Safe no-op until implemented.
+        """
+        return []
+
+    def _track_confidence_changes(self) -> Dict[str, float]:
+        """Stub: compute confidence deltas per domain since last reflection."""
+        return {d.value: 0.0 for d in SelfKnowledgeDomain}
+
+    def _estimate_improvement_potential(self, domain: SelfKnowledgeDomain) -> float:
+        """Stub: heuristic potential (higher when coverage low)."""
+        data = self.self_knowledge_coverage.get(domain.value, {})
+        base = 1.0 - float(data.get("coverage_percentage", 0.0))
+        return max(0.0, min(1.0, base))
+
+    def _generate_improvement_priorities(self) -> List[Dict[str, Any]]:
+        """Stub: produce prioritized domains needing improvement."""
+        priorities = []
+        for domain in SelfKnowledgeDomain:
+            coverage = self.self_knowledge_coverage[domain.value]["coverage_percentage"]
+            if coverage < 0.7:
+                priorities.append({"domain": domain.value, "priority": 1 - coverage})
+        return sorted(priorities, key=lambda x: x["priority"], reverse=True)[:5]
+
+    def _generate_learning_recommendations(self) -> List[str]:
+        """Stub: human-readable learning recommendations."""
+        recs = []
+        for domain in SelfKnowledgeDomain:
+            data = self.self_knowledge_coverage[domain.value]
+            if data["coverage_percentage"] < 0.7:
+                recs.append(f"Increase knowledge depth in {domain.value}")
+        return recs[:5]
+
+    def _analyze_domain_gaps(self, domain: SelfKnowledgeDomain) -> List[Dict[str, Any]]:
+        """Stub: detect gaps inside a domain."""
+        data = self.self_knowledge_coverage[domain.value]
+        if data["coverage_percentage"] < 0.5:
+            return [
+                {
+                    "domain": domain.value,
+                    "description": "Coverage below 50% threshold",
+                    "impact_potential": 1.0 - data["coverage_percentage"],
+                }
+            ]
+        return []
+
+    def _analyze_cognitive_patterns(self) -> Dict[str, Any]:
+        """Stub: analyze recent cognitive / decision patterns."""
+        return {"patterns_analyzed": 0, "dominant_modes": []}
+
+    def _extract_thinking_patterns(self) -> List[str]:
+        """Stub: identify thinking styles."""
+        return []
+
+    def _document_learning_preferences(self) -> Dict[str, Any]:
+        """Stub: record learning modality preferences."""
+        return {"preferred_style": "balanced", "evidence_count": 0}
+
+    def _identify_cognitive_biases(self) -> List[str]:
+        """Stub: placeholder for bias detection."""
+        return []
+
+    def _measure_processing_characteristics(self) -> Dict[str, Any]:
+        """Stub: return processing speed and parallelism metrics."""
+        return {"avg_latency_ms": 0, "parallelism": 0}
+
+    def _analyze_attention_patterns(self) -> Dict[str, Any]:
+        """Stub: examine focus distribution patterns."""
+        return {"focus_switches": 0, "sustained_focus_spans": []}
+
+    def _assess_processing_capabilities(self) -> Dict[str, Any]:
+        return {"throughput": 0, "scalability": "unknown"}
+
+    def _assess_memory_systems(self) -> Dict[str, Any]:
+        return {"memory_types": [], "retrieval_quality": 0.0}
+
+    def _assess_learning_capabilities(self) -> Dict[str, Any]:
+        return {"current_rate": 0.0, "retention_estimate": 0.0}
+
+    def _assess_consciousness_capabilities(self) -> Dict[str, Any]:
+        return {"awareness_levels": [], "stability": 0.0}
+
+    def _assess_integration_abilities(self) -> Dict[str, Any]:
+        return {"cross_domain_links": 0}
+
+    def _assess_adaptation_mechanisms(self) -> Dict[str, Any]:
+        return {"mechanisms": [], "responsiveness": 0.0}
+
+    def _identify_system_limitations(self) -> List[str]:
+        return ["meta_cognition_methods_incomplete"]
+
+    def _identify_optimization_opportunities(self) -> List[str]:
+        return []
+
+    def _assess_current_cognitive_state(self) -> Dict[str, Any]:
+        return {"load": 0.0, "mode": "idle"}
+
+    def _assess_knowledge_state(self) -> Dict[str, Any]:
+        return {"gaps_count": 0}
+
+    def _assess_confidence_state(self) -> Dict[str, Any]:
+        return {"overall": 0.0}
+
+    def _assess_learning_state(self) -> Dict[str, Any]:
+        return {"progress_rate": 0.0}
+
+    def _assess_consciousness_state(self) -> Dict[str, Any]:
+        return {"coherence": 0.0}
+
+    def _assess_assessment_quality(self, assessment: Dict[str, Any]) -> Dict[str, Any]:
+        return {"internal_consistency": 1.0}
+
+    def _assess_meta_assessment_quality(self) -> Dict[str, Any]:
+        return {"meta_consistency": 1.0}
+
+    def _generate_domain_insight(
+        self, domain: SelfKnowledgeDomain, assessment: Dict[str, Any]
+    ) -> str | None:
+        return None
+
+    def _enhance_confidence_knowledge(self, insight: str):
+        pass
+
+    def _enhance_learning_knowledge(self, insight: str):
+        pass
+
+    def _address_knowledge_gap(self, insight: str):
+        pass
+
+    def _calculate_recency_factor(self, ts: float) -> float:
+        return 1.0
+
+    def _calculate_integration_factor(self, domain: SelfKnowledgeDomain) -> float:
+        return 0.5
+
+    def _identify_knowledge_strengths(self) -> List[str]:
+        return []
+
+    def _identify_knowledge_weaknesses(self) -> List[str]:
+        return []
+
+    def _track_learning_progress(self) -> Dict[str, Any]:
+        return {"recent": 0.0}
+
+    def _analyze_confidence_trends(self) -> Dict[str, Any]:
+        return {"trend": "flat"}
+
+    def _generate_meta_cognitive_insights(self) -> List[str]:
+        return []
+
+    def _generate_improvement_roadmap(self) -> List[str]:
+        return []
