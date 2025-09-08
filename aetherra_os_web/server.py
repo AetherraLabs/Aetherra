@@ -381,8 +381,9 @@ async def send_aetherra_message(data: dict):
         return {"success": True, "response": response}
 
     except Exception as e:
-        logger.error(f"Error processing Aetherra message: {e}")
-        return {"error": str(e)}
+        # Log full traceback internally but avoid leaking internal details to client
+        logger.error(f"Error processing Aetherra message: {e}", exc_info=True)
+        return {"error": "An internal error occurred while processing the message"}
 
 
 @app.get("/api/status")
