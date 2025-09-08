@@ -375,8 +375,36 @@ async def send_aetherra_message(data: dict):
         # Process message through Aetherra engine
         response = await aetherra_engine.process_message(message)
 
-        # Broadcast response to all connected clients
-        await manager.broadcast({"type": "aetherra_response", "data": response})
+        # If engine returned an explicit error field, suppress internal details
+        if isinstance(response, dict) and "error" in response:
+            try:
+                logger.error(
+                    "Aetherra engine reported error (suppressed to client): %s",
+                    response.get("error"),
+                )
+            except Exception:
+                pass
+            # Optionally still broadcast a sanitized failure event
+            try:
+                await manager.broadcast(
+                    {
+                        "type": "aetherra_response",
+                        "data": {"error": "engine_failed"},
+                    }
+                )
+            except Exception:
+                pass
+            return {
+                "error": "Aetherra engine failed to process the message",
+                "success": False,
+            }
+
+        # Broadcast only successful engine response
+        try:
+            await manager.broadcast({"type": "aetherra_response", "data": response})
+        except Exception:
+            # Non-fatal broadcast error; log and still return success to caller
+            logger.error("Broadcast failure (non-fatal)", exc_info=True)
 
         return {"success": True, "response": response}
 

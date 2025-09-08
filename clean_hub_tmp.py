@@ -2859,8 +2859,10 @@ class AetherraHubServer:
 
         @app.route("/metrics", methods=["GET"])
         def prometheus_metrics():
-            """Prometheus-style plaintext metrics for quick scraping."""
+            """Prometheus-style plaintext metrics for quick scraping (reduced complexity)."""
             self.stats["requests_served"] += 1
+
+            # Collect sources once
             ks = _get_kernel_status_sync() or {}
             rs = _get_registry_status_sync() or {}
             orch = _get_orchestrator_status_sync() or {}
@@ -2871,79 +2873,48 @@ class AetherraHubServer:
             em = _get_keb_metrics_sync() or {}
             qs = _get_quantum_bridge_status() or {}
 
-            lines = []
-            # Track whether we emitted histogram series; if not, emit zero fallbacks
-            kernel_hist_emitted = False
-            orch_hist_emitted = False
+            lines: list[str] = []
 
-            # helper for safe numeric conversion (defined at function scope)
-            def _num(x):
+            def _num(x):  # numeric coercion
                 try:
                     return float(x)
                 except Exception:
                     return 0.0
 
-            # Kernel metrics
-            try:
-                if isinstance(ks, dict) and ks:
+            # --- Emitters (each returns optional context flags) ---
+            def _emit_kernel():
+                emitted_hist = False
+                try:
+                    if not isinstance(ks, dict) or not ks:
+                        return False
                     m = ks.get("metrics", {}) or {}
                     kqs = ks.get("queue_sizes", {}) or {}
                     kql = ks.get("queue_limits", {}) or {}
                     cb_open = bool(ks.get("plugin_cb_open", False))
                     dlq_count = int(ks.get("dlq_count", 0))
                     uptime = float(ks.get("uptime", 0))
-
-                    lines.append(f"aetherra_kernel_uptime_seconds {_num(uptime)}")
-                    lines.append(
-                        f"aetherra_kernel_cycles_total {_num(m.get('total_cycles', 0))}"
+                    lines.extend(
+                        [
+                            f"aetherra_kernel_uptime_seconds {_num(uptime)}",
+                            f"aetherra_kernel_cycles_total {_num(m.get('total_cycles', 0))}",
+                            f"aetherra_kernel_cycle_time_seconds {_num(m.get('last_cycle_time', 0.0))}",
+                            f"aetherra_kernel_cycle_time_seconds_avg {_num(m.get('avg_cycle_time', 0.0))}",
+                            f"aetherra_kernel_errors_total {_num(m.get('errors_count', 0))}",
+                            f"aetherra_kernel_night_cycles_total {_num(m.get('night_cycles_count', 0))}",
+                            f'aetherra_kernel_queue_size{{queue="high"}} {_num(kqs.get("high_priority", 0))}',
+                            f'aetherra_kernel_queue_size{{queue="normal"}} {_num(kqs.get("normal_priority", 0))}',
+                            f'aetherra_kernel_queue_size{{queue="background"}} {_num(kqs.get("background", 0))}',
+                            f'aetherra_kernel_queue_limit{{queue="high"}} {_num(kql.get("high_priority", 0))}',
+                            f'aetherra_kernel_queue_limit{{queue="normal"}} {_num(kql.get("normal_priority", 0))}',
+                            f'aetherra_kernel_queue_limit{{queue="background"}} {_num(kql.get("background", 0))}',
+                            f'aetherra_kernel_queue_drops_total{{queue="high"}} {_num(m.get("drops_high", 0))}',
+                            f'aetherra_kernel_queue_drops_total{{queue="normal"}} {_num(m.get("drops_normal", 0))}',
+                            f'aetherra_kernel_queue_drops_total{{queue="background"}} {_num(m.get("drops_background", 0))}',
+                            f"aetherra_kernel_tasks_expired_total {_num(m.get('expired_tasks', 0))}",
+                            f"aetherra_kernel_dlq_count {_num(dlq_count)}",
+                            f"aetherra_kernel_plugin_cb_open {1 if cb_open else 0}",
+                        ]
                     )
-                    lines.append(
-                        f"aetherra_kernel_cycle_time_seconds {_num(m.get('last_cycle_time', 0.0))}"
-                    )
-                    lines.append(
-                        f"aetherra_kernel_cycle_time_seconds_avg {_num(m.get('avg_cycle_time', 0.0))}"
-                    )
-                    lines.append(
-                        f"aetherra_kernel_errors_total {_num(m.get('errors_count', 0))}"
-                    )
-                    lines.append(
-                        f"aetherra_kernel_night_cycles_total {_num(m.get('night_cycles_count', 0))}"
-                    )
-                    lines.append(
-                        f'aetherra_kernel_queue_size{{queue="high"}} {_num(kqs.get("high_priority", 0))}'
-                    )
-                    lines.append(
-                        f'aetherra_kernel_queue_size{{queue="normal"}} {_num(kqs.get("normal_priority", 0))}'
-                    )
-                    lines.append(
-                        f'aetherra_kernel_queue_size{{queue="background"}} {_num(kqs.get("background", 0))}'
-                    )
-                    lines.append(
-                        f'aetherra_kernel_queue_limit{{queue="high"}} {_num(kql.get("high_priority", 0))}'
-                    )
-                    lines.append(
-                        f'aetherra_kernel_queue_limit{{queue="normal"}} {_num(kql.get("normal_priority", 0))}'
-                    )
-                    lines.append(
-                        f'aetherra_kernel_queue_limit{{queue="background"}} {_num(kql.get("background", 0))}'
-                    )
-                    lines.append(
-                        f'aetherra_kernel_queue_drops_total{{queue="high"}} {_num(m.get("drops_high", 0))}'
-                    )
-                    lines.append(
-                        f'aetherra_kernel_queue_drops_total{{queue="normal"}} {_num(m.get("drops_normal", 0))}'
-                    )
-                    lines.append(
-                        f'aetherra_kernel_queue_drops_total{{queue="background"}} {_num(m.get("drops_background", 0))}'
-                    )
-                    lines.append(
-                        f"aetherra_kernel_tasks_expired_total {_num(m.get('expired_tasks', 0))}"
-                    )
-                    lines.append(f"aetherra_kernel_dlq_count {_num(dlq_count)}")
-                    lines.append(
-                        f"aetherra_kernel_plugin_cb_open {1 if cb_open else 0}"
-                    )
-                    # Plugin invoke metrics if present
                     for k in (
                         "plugin_invoke_timeouts",
                         "plugin_invoke_errors",
@@ -2952,14 +2923,12 @@ class AetherraHubServer:
                     ):
                         if k in m:
                             lines.append(f"aetherra_kernel_{k} {_num(m.get(k, 0))}")
-                    # Latency histogram (cycle time), prefer provided histogram if any
                     hist = m.get("cycle_hist") or {}
                     if isinstance(hist, dict) and hist:
-                        # assume ms buckets
                         try:
                             order = sorted(
                                 [float(x) for x in hist.keys() if x != "+Inf"]
-                            )  # type: ignore[arg-type]
+                            )
                             cum = 0.0
                             for b in order:
                                 v = _num(hist.get(b, 0))
@@ -2967,7 +2936,7 @@ class AetherraHubServer:
                                 lines.append(
                                     f'aetherra_kernel_cycle_time_ms_bucket{{le="{int(b)}"}} {cum}'
                                 )
-                            kernel_hist_emitted = True
+                            emitted_hist = True
                             inf_v = _num(hist.get("+Inf", 0))
                             lines.append(
                                 f'aetherra_kernel_cycle_time_ms_bucket{{le="+Inf"}} {cum + max(0.0, inf_v)}'
@@ -2975,7 +2944,6 @@ class AetherraHubServer:
                         except Exception:
                             pass
                     else:
-                        # Rolling fallback: accumulate last_cycle_time into hub histogram and export cumulative
                         try:
                             raw = float(m.get("last_cycle_time", 0.0))
                             ms_val = raw * 1000.0 if raw < 10 else raw
@@ -3000,11 +2968,10 @@ class AetherraHubServer:
                             lines.append(
                                 f'aetherra_kernel_cycle_time_ms_bucket{{le="{b}"}} {_num(cum)}'
                             )
-                        kernel_hist_emitted = True
+                        emitted_hist = True
                         lines.append(
                             f'aetherra_kernel_cycle_time_ms_bucket{{le="+Inf"}} {_num(cum + int(self.kernel_latency_hist.get("+Inf", 0)))}'
                         )
-                    # In-flight per target gauges (best-effort)
                     try:
                         infl = ks.get("inflight", {}) or {}
                         if isinstance(infl, dict):
@@ -3014,172 +2981,141 @@ class AetherraHubServer:
                                 )
                     except Exception:
                         pass
-            except Exception:
-                pass
+                except Exception:
+                    pass
+                return emitted_hist
 
-            # Sandbox / plugin runtime counters (alpha)
-            try:
-                sm = getattr(self, "sandbox_metrics", {}) or {}
-                if isinstance(sm, dict):
-                    for k in (
-                        "plugin_timeout_total",
-                        "sandbox_violations_total",
-                        "sandbox_policy_denied_total",
-                        "sandbox_exec_total",
-                    ):
-                        if k in sm:
-                            lines.append(f"aetherra_sandbox_{k} {_num(sm.get(k, 0))}")
-            except Exception:
-                pass
-
-            # If kernel histogram wasn't emitted (e.g., services not ready), publish zero-valued buckets to ensure series presence
-            if not kernel_hist_emitted:
+            def _emit_sandbox():
                 try:
-                    cum = 0.0
-                    for b in (10, 20, 50, 100, 200, 500, 1000):
-                        lines.append(
-                            f'aetherra_kernel_cycle_time_ms_bucket{{le="{b}"}} 0.0'
-                        )
-                    lines.append(
-                        'aetherra_kernel_cycle_time_ms_bucket{le="+Inf"} 0.0'.replace(
-                            "{", "{{"
-                        ).replace("}", "}}")
-                    )
+                    sm = getattr(self, "sandbox_metrics", {}) or {}
+                    if isinstance(sm, dict):
+                        for k in (
+                            "plugin_timeout_total",
+                            "sandbox_violations_total",
+                            "sandbox_policy_denied_total",
+                            "sandbox_exec_total",
+                        ):
+                            if k in sm:
+                                lines.append(
+                                    f"aetherra_sandbox_{k} {_num(sm.get(k, 0))}"
+                                )
                 except Exception:
                     pass
 
-            # Registry metrics
-            try:
-                if isinstance(rs, dict) and rs:
-                    lines.append(
-                        f"aetherra_registry_services_total {_num(rs.get('total_services', 0))}"
-                    )
-                    sc = rs.get("service_count_by_status") or {}
-                    for st, cnt in sc.items():
+            def _emit_registry():
+                try:
+                    if isinstance(rs, dict) and rs:
                         lines.append(
-                            f'aetherra_registry_services{{status="{st}"}} {_num(cnt)}'
+                            f"aetherra_registry_services_total {_num(rs.get('total_services', 0))}"
                         )
-            except Exception:
-                pass
+                        sc = rs.get("service_count_by_status") or {}
+                        for st, cnt in sc.items():
+                            lines.append(
+                                f'aetherra_registry_services{{status="{st}"}} {_num(cnt)}'
+                            )
+                except Exception:
+                    pass
 
-            # HMR audit counters (best-effort)
-            try:
-                if isinstance(ac, dict) and ac:
-                    for evt, cnt in ac.items():
-                        lines.append(
-                            f'aetherra_hmr_audit_total{{event="{str(evt)}"}} {_num(cnt)}'
+            def _emit_hmr():
+                try:
+                    if isinstance(ac, dict) and ac:
+                        for evt, cnt in ac.items():
+                            lines.append(
+                                f'aetherra_hmr_audit_total{{event="{str(evt)}"}} {_num(cnt)}'
+                            )
+                except Exception:
+                    pass
+
+            def _emit_klm():
+                try:
+                    if isinstance(km, dict) and km:
+                        lines.extend(
+                            [
+                                f"aetherra_klm_loads_total {_num(km.get('loads_total', 0))}",
+                                f"aetherra_klm_reloads_total {_num(km.get('reloads_total', 0))}",
+                                f"aetherra_klm_rollbacks_total {_num(km.get('rollbacks_total', 0))}",
+                                f"aetherra_klm_active_modules {_num(km.get('active_modules', 0))}",
+                            ]
                         )
-            except Exception:
-                pass
+                        pma = km.get("per_module_active", {}) or {}
+                        if isinstance(pma, dict):
+                            for mod, val in pma.items():
+                                try:
+                                    lines.append(
+                                        f'aetherra_klm_active_module{{module="{str(mod)}"}} {_num(val)}'
+                                    )
+                                except Exception:
+                                    pass
+                except Exception:
+                    pass
 
-            # KLM (Module Manager) metrics
-            try:
-                if isinstance(km, dict) and km:
-                    lines.append(
-                        f"aetherra_klm_loads_total {_num(km.get('loads_total', 0))}"
-                    )
-                    lines.append(
-                        f"aetherra_klm_reloads_total {_num(km.get('reloads_total', 0))}"
-                    )
-                    lines.append(
-                        f"aetherra_klm_rollbacks_total {_num(km.get('rollbacks_total', 0))}"
-                    )
-                    lines.append(
-                        f"aetherra_klm_active_modules {_num(km.get('active_modules', 0))}"
-                    )
-                    pma = km.get("per_module_active", {}) or {}
-                    if isinstance(pma, dict):
-                        for mod, val in pma.items():
-                            try:
-                                lines.append(
-                                    f'aetherra_klm_active_module{{module="{str(mod)}"}} {_num(val)}'
-                                )
-                            except Exception:
-                                pass
-            except Exception:
-                pass
+            def _emit_keb():
+                try:
+                    if isinstance(em, dict) and em:
+                        lines.extend(
+                            [
+                                f"aetherra_keb_events_published_total {_num(em.get('events_published_total', 0))}",
+                                f"aetherra_keb_events_delivered_total {_num(em.get('events_delivered_total', 0))}",
+                                f"aetherra_keb_events_dropped_burst {_num(em.get('events_dropped_burst', 0))}",
+                            ]
+                        )
+                        tb = em.get("topic_backlog", {}) or {}
+                        if isinstance(tb, dict):
+                            for topic, cnt in tb.items():
+                                try:
+                                    lines.append(
+                                        f'aetherra_keb_topic_backlog{{topic="{str(topic)}"}} {_num(cnt)}'
+                                    )
+                                except Exception:
+                                    pass
+                except Exception:
+                    pass
 
-            # KEB (Event Bus) metrics
-            try:
-                if isinstance(em, dict) and em:
-                    lines.append(
-                        f"aetherra_keb_events_published_total {_num(em.get('events_published_total', 0))}"
+            def _emit_orchestrator():
+                emitted = False
+                try:
+                    if not isinstance(orch, dict) or not orch:
+                        return False
+                    lines.extend(
+                        [
+                            f"aetherra_orchestrator_agents_total {_num(orch.get('total_agents', 0))}",
+                            f"aetherra_orchestrator_tasks_pending_total {_num(orch.get('pending_tasks', 0))}",
+                        ]
                     )
-                    lines.append(
-                        f"aetherra_keb_events_delivered_total {_num(em.get('events_delivered_total', 0))}"
-                    )
-                    lines.append(
-                        f"aetherra_keb_events_dropped_burst {_num(em.get('events_dropped_burst', 0))}"
-                    )
-                    tb = em.get("topic_backlog", {}) or {}
-                    if isinstance(tb, dict):
-                        for topic, cnt in tb.items():
-                            try:
-                                lines.append(
-                                    f'aetherra_keb_topic_backlog{{topic="{str(topic)}"}} {_num(cnt)}'
-                                )
-                            except Exception:
-                                pass
-            except Exception:
-                pass
-
-            # Orchestrator metrics
-            try:
-                if isinstance(orch, dict) and orch:
-                    lines.append(
-                        f"aetherra_orchestrator_agents_total {_num(orch.get('total_agents', 0))}"
-                    )
-                    lines.append(
-                        f"aetherra_orchestrator_tasks_pending_total {_num(orch.get('pending_tasks', 0))}"
-                    )
-                    # Active tasks gauge (if provided)
                     if "active_tasks" in orch:
                         lines.append(
                             f"aetherra_orchestrator_tasks_active {_num(orch.get('active_tasks', 0))}"
                         )
-                    # Pending by priority (if available)
                     pbp = orch.get("pending_by_priority") or {}
                     if isinstance(pbp, dict):
                         for prio, cnt in pbp.items():
                             lines.append(
                                 f'aetherra_orchestrator_tasks_pending{{priority="{prio}"}} {_num(cnt)}'
                             )
-                    # Task status breakdown (if available)
                     tstat = orch.get("task_statuses") or {}
                     if isinstance(tstat, dict):
                         for st, cnt in tstat.items():
                             lines.append(
                                 f'aetherra_orchestrator_tasks_total{{status="{st}"}} {_num(cnt)}'
                             )
-                    # Generic counters (timeouts, policy_denied, etc.)
                     ctrs = orch.get("counters") or {}
                     if isinstance(ctrs, dict):
                         for k, v in ctrs.items():
                             lines.append(f"aetherra_orchestrator_{str(k)} {_num(v)}")
-                    # Coherence policy gauges/counters (Q4)
                     cp = orch.get("coherence_policy") or {}
                     if isinstance(cp, dict) and cp:
                         try:
-                            lines.append(
-                                f"aetherra_orchestrator_coherence_gate_min {_num(cp.get('gate_min', 0.0))}"
-                            )
-                            lines.append(
-                                f"aetherra_orchestrator_coherence_hard_min {_num(cp.get('hard_min', 0.0))}"
-                            )
-                            lines.append(
-                                f"aetherra_orchestrator_coherence_ema {_num(cp.get('ema', 0.0))}"
-                            )
-                            lines.append(
-                                f"aetherra_orchestrator_coherence_window_size {_num(cp.get('window_size', 0))}"
-                            )
-                            # last_drift_alert as info gauge (1 when present)
-                            lda = 1 if bool(cp.get("last_drift_alert")) else 0
-                            lines.append(
-                                f"aetherra_orchestrator_last_drift_alert_present {lda}"
+                            lines.extend(
+                                [
+                                    f"aetherra_orchestrator_coherence_gate_min {_num(cp.get('gate_min', 0.0))}",
+                                    f"aetherra_orchestrator_coherence_hard_min {_num(cp.get('hard_min', 0.0))}",
+                                    f"aetherra_orchestrator_coherence_ema {_num(cp.get('ema', 0.0))}",
+                                    f"aetherra_orchestrator_coherence_window_size {_num(cp.get('window_size', 0))}",
+                                    f"aetherra_orchestrator_last_drift_alert_present {1 if bool(cp.get('last_drift_alert')) else 0}",
+                                ]
                             )
                         except Exception:
                             pass
-                    # Orchestrator latency histogram (if provided or approximate)
                     oh = (
                         orch.get("latency_hist_ms")
                         or orch.get("task_latency_hist_ms")
@@ -3187,7 +3123,7 @@ class AetherraHubServer:
                     )
                     if isinstance(oh, dict) and oh:
                         try:
-                            order = sorted([float(x) for x in oh.keys() if x != "+Inf"])  # type: ignore[arg-type]
+                            order = sorted([float(x) for x in oh.keys() if x != "+Inf"])
                             cum = 0.0
                             for b in order:
                                 v = _num(oh.get(b, 0))
@@ -3195,7 +3131,7 @@ class AetherraHubServer:
                                 lines.append(
                                     f'aetherra_orchestrator_task_latency_ms_bucket{{le="{int(b)}"}} {cum}'
                                 )
-                            orch_hist_emitted = True
+                            emitted = True
                             inf_v = _num(oh.get("+Inf", 0))
                             lines.append(
                                 f'aetherra_orchestrator_task_latency_ms_bucket{{le="+Inf"}} {cum + max(0.0, inf_v)}'
@@ -3203,7 +3139,6 @@ class AetherraHubServer:
                         except Exception:
                             pass
                     else:
-                        # Rolling fallback: accumulate avg_task_latency_ms into hub histogram and export cumulative
                         try:
                             ms_val = float(orch.get("avg_task_latency_ms", 0.0))
                         except Exception:
@@ -3229,133 +3164,33 @@ class AetherraHubServer:
                             lines.append(
                                 f'aetherra_orchestrator_task_latency_ms_bucket{{le="{b}"}} {_num(cum)}'
                             )
-                        orch_hist_emitted = True
+                        emitted = True
                         lines.append(
                             f'aetherra_orchestrator_task_latency_ms_bucket{{le="+Inf"}} {_num(cum + int(self.orchestrator_latency_hist.get("+Inf", 0)))}'
                         )
-            except Exception:
-                pass
-
-            # Per-agent telemetry (best-effort, capped cardinality)
-            try:
-                if os.environ.get("AETHERRA_AGENT_PER_METRICS", "1") == "1":
-                    try:
-                        from Aetherra.consciousness.agents.agent_registry import (
-                            get_agent_registry,
-                        )
-                    except Exception:
-                        get_agent_registry = None  # type: ignore
-                    reg = get_agent_registry() if get_agent_registry else None  # type: ignore[call-arg]
-                    if reg and hasattr(reg, "get_all_agents"):
-                        try:
-                            agents = reg.get_all_agents()  # dict[id -> registration]
-                        except Exception:
-                            agents = {}
-                        count = 0
-                        if isinstance(agents, dict):
-                            for aid, regobj in agents.items():
-                                if count >= 20:  # cap to avoid cardinality blowup
-                                    break
-                                try:
-                                    # Extract fields with defensive defaults
-                                    tot = float(
-                                        getattr(regobj, "total_requests_handled", 0)
-                                        or 0
-                                    )
-                                    succ = float(
-                                        getattr(regobj, "successful_requests", 0) or 0
-                                    )
-                                    avg = float(
-                                        getattr(regobj, "average_response_time", 0.0)
-                                        or 0.0
-                                    )
-                                    up = float(
-                                        getattr(regobj, "uptime_percentage", 0.0) or 0.0
-                                    )
-                                    # success rate
-                                    sr = 0.0
-                                    try:
-                                        sr = (succ / tot) if tot > 0 else 0.0
-                                    except Exception:
-                                        sr = 0.0
-                                    # emit
-                                    aid_s = str(aid)
-                                    lines.append(
-                                        f'aetherra_agent_requests_total{{agent="{aid_s}"}} {_num(tot)}'
-                                    )
-                                    lines.append(
-                                        f'aetherra_agent_success_rate{{agent="{aid_s}"}} {_num(sr)}'
-                                    )
-                                    lines.append(
-                                        f'aetherra_agent_avg_latency_ms{{agent="{aid_s}"}} {_num(avg)}'
-                                    )
-                                    # optional uptime gauge
-                                    lines.append(
-                                        f'aetherra_agent_uptime_pct{{agent="{aid_s}"}} {_num(up)}'
-                                    )
-                                    count += 1
-                                except Exception:
-                                    pass
-            except Exception:
-                pass
-
-            # Trainer metrics (read from in-memory trainer store when available)
-            try:
-                trainer_enabled_flag = (
-                    1 if os.environ.get("AETHERRA_TRAINER_ENABLED", "0") == "1" else 0
-                )
-                lines.append(f"aetherra_trainer_enabled {trainer_enabled_flag}")
-                q = r = c = f = 0
-                # Snapshot counts under lock
-                with self._trainer_lock:
-                    for j in self.trainer_jobs.values():
-                        st = str(j.get("state"))
-                        if st == "queued":
-                            q += 1
-                        elif st == "running":
-                            r += 1
-                        elif st == "completed":
-                            c += 1
-                        elif st == "failed":
-                            f += 1
-                lines.append(f'aetherra_trainer_jobs_total{{state="queued"}} {q}')
-                lines.append(f'aetherra_trainer_jobs_total{{state="running"}} {r}')
-                lines.append(f'aetherra_trainer_jobs_total{{state="completed"}} {c}')
-                lines.append(f'aetherra_trainer_jobs_total{{state="failed"}} {f}')
-                lines.append(f"aetherra_trainer_jobs_running {r}")
-                lines.append(
-                    f"aetherra_trainer_eval_runs_total {int(self._trainer_eval_runs_total)}"
-                )
-                # Eval state counts and last score
-                eq = er = ec = ef = 0
-                with self._trainer_lock:
-                    for eobj in self.trainer_evals.values():
-                        st = str(eobj.get("state"))
-                        if st == "queued":
-                            eq += 1
-                        elif st == "running":
-                            er += 1
-                        elif st == "completed":
-                            ec += 1
-                        elif st == "failed":
-                            ef += 1
-                    last_score = self._trainer_eval_last_score
-                lines.append(f'aetherra_trainer_evals_total{{state="queued"}} {eq}')
-                lines.append(f'aetherra_trainer_evals_total{{state="running"}} {er}')
-                lines.append(f'aetherra_trainer_evals_total{{state="completed"}} {ec}')
-                lines.append(f'aetherra_trainer_evals_total{{state="failed"}} {ef}')
-                try:
-                    if last_score is not None:
-                        lines.append(
-                            f"aetherra_trainer_eval_last_score {float(last_score)}"
-                        )
                 except Exception:
                     pass
-            except Exception:
-                pass
+                return emitted
 
-            # If orchestrator histogram wasn't emitted yet, ensure presence with zero-valued buckets
-            if not orch_hist_emitted:
+            def _emit_kernel_hist_fallback(emitted):
+                if emitted:
+                    return
+                try:
+                    for b in (10, 20, 50, 100, 200, 500, 1000):
+                        lines.append(
+                            f'aetherra_kernel_cycle_time_ms_bucket{{le="{b}"}} 0.0'
+                        )
+                    lines.append(
+                        'aetherra_kernel_cycle_time_ms_bucket{le="+Inf"} 0.0'.replace(
+                            "{", "{{"
+                        ).replace("}", "}}")
+                    )
+                except Exception:
+                    pass
+
+            def _emit_orchestrator_hist_fallback(emitted):
+                if emitted:
+                    return
                 try:
                     for b in (10, 20, 50, 100, 200, 500, 1000, 2000):
                         lines.append(
@@ -3369,263 +3204,234 @@ class AetherraHubServer:
                 except Exception:
                     pass
 
-            # Memory (quantum) metrics
-            try:
-                if isinstance(ms, dict) and ms:
-                    # Only emit when we have structure
-                    if "coherence" in ms:
-                        lines.append(
-                            f"aetherra_memory_coherence_score {_num(ms.get('coherence', 0.0))}"
-                        )
-                    if "branches" in ms:
-                        lines.append(
-                            f"aetherra_memory_branches_total {_num(ms.get('branches', 0))}"
-                        )
-                    if "fragments" in ms:
-                        lines.append(
-                            f"aetherra_memory_fragments_total {_num(ms.get('fragments', 0))}"
-                        )
-                    if "entanglement_nodes" in ms:
-                        lines.append(
-                            f"aetherra_memory_entanglement_nodes_total {_num(ms.get('entanglement_nodes', 0))}"
-                        )
-                    # Optional branch info as a gauge (low cardinality expected)
-                    if isinstance(ms.get("branch"), str):
-                        br = str(ms.get("branch"))
-                        lines.append(f'aetherra_memory_branch_info{{branch="{br}"}} 1')
-                # Optional branch edges metric from audit
-                if isinstance(ma, dict) and ma:
-                    audit = ma.get("audit") or {}
-                    if isinstance(audit, dict):
-                        # Nodes count
-                        nodes_cnt = None
-                        nodes_val = audit.get("nodes")
-                        if isinstance(nodes_val, (list, tuple)):
-                            try:
-                                nodes_cnt = len(nodes_val)
-                            except Exception:
-                                nodes_cnt = None
-                        if nodes_cnt is None and isinstance(
-                            audit.get("node_count"), (int, float)
-                        ):
-                            nodes_cnt = audit.get("node_count")
-                        if nodes_cnt is not None:
+            def _emit_memory():
+                try:
+                    if isinstance(ms, dict) and ms:
+                        if "coherence" in ms:
                             lines.append(
-                                f"aetherra_memory_branch_nodes_total {_num(nodes_cnt)}"
+                                f"aetherra_memory_coherence_score {_num(ms.get('coherence', 0.0))}"
                             )
-                        # Edges count
-                        edge_cnt = None
-                        edges_val = audit.get("edges")
-                        if isinstance(edges_val, (list, tuple)):
-                            try:
-                                edge_cnt = len(edges_val)
-                            except Exception:
-                                edge_cnt = None
-                            # Edges by type
-                            try:
-                                by_type = {}
-                                for e in edges_val:
-                                    if isinstance(e, dict):
-                                        t = (
-                                            str(e.get("type") or "").strip()
-                                            or "unknown"
+                        if "branches" in ms:
+                            lines.append(
+                                f"aetherra_memory_branches_total {_num(ms.get('branches', 0))}"
+                            )
+                        if "fragments" in ms:
+                            lines.append(
+                                f"aetherra_memory_fragments_total {_num(ms.get('fragments', 0))}"
+                            )
+                        if "entanglement_nodes" in ms:
+                            lines.append(
+                                f"aetherra_memory_entanglement_nodes_total {_num(ms.get('entanglement_nodes', 0))}"
+                            )
+                        if isinstance(ms.get("branch"), str):
+                            lines.append(
+                                f'aetherra_memory_branch_info{{branch="{str(ms.get("branch"))}"}} 1'
+                            )
+                    if isinstance(ma, dict) and ma:
+                        audit = ma.get("audit") or {}
+                        if isinstance(audit, dict):
+                            nodes_val = audit.get("nodes")
+                            nodes_cnt = None
+                            if isinstance(nodes_val, (list, tuple)):
+                                try:
+                                    nodes_cnt = len(nodes_val)
+                                except Exception:
+                                    nodes_cnt = None
+                            if nodes_cnt is None and isinstance(
+                                audit.get("node_count"), (int, float)
+                            ):
+                                nodes_cnt = audit.get("node_count")
+                            if nodes_cnt is not None:
+                                lines.append(
+                                    f"aetherra_memory_branch_nodes_total {_num(nodes_cnt)}"
+                                )
+                            edges_val = audit.get("edges")
+                            edge_cnt = None
+                            if isinstance(edges_val, (list, tuple)):
+                                try:
+                                    edge_cnt = len(edges_val)
+                                except Exception:
+                                    edge_cnt = None
+                                try:
+                                    by_type = {}
+                                    for e in edges_val:
+                                        if isinstance(e, dict):
+                                            t = (
+                                                str(e.get("type") or "").strip()
+                                                or "unknown"
+                                            )
+                                            by_type[t] = int(by_type.get(t, 0)) + 1
+                                    for t, cnt in by_type.items():
+                                        lines.append(
+                                            f'aetherra_memory_branch_edges_total_by_type{{type="{t}"}} {_num(cnt)}'
                                         )
-                                        by_type[t] = int(by_type.get(t, 0)) + 1
-                                for t, cnt in by_type.items():
-                                    lines.append(
-                                        f'aetherra_memory_branch_edges_total_by_type{{type="{t}"}} {_num(cnt)}'
-                                    )
+                                except Exception:
+                                    pass
+                            if edge_cnt is None and isinstance(
+                                audit.get("edge_count"), (int, float)
+                            ):
+                                edge_cnt = audit.get("edge_count")
+                            if edge_cnt is not None:
+                                lines.append(
+                                    f"aetherra_memory_branch_edges_total {_num(edge_cnt)}"
+                                )
+                            try:
+                                nodes_by_branch = {}
+                                if isinstance(nodes_val, (list, tuple)):
+                                    for n in nodes_val:
+                                        if isinstance(n, dict):
+                                            br = str(
+                                                n.get("branch")
+                                                or n.get("branch_id")
+                                                or ""
+                                            ).strip()
+                                            if br:
+                                                nodes_by_branch[br] = (
+                                                    int(nodes_by_branch.get(br, 0)) + 1
+                                                )
+                                edges_by_branch = {}
+                                if isinstance(edges_val, (list, tuple)):
+                                    for e in edges_val:
+                                        if isinstance(e, dict):
+                                            br = str(
+                                                e.get("branch")
+                                                or e.get("src_branch")
+                                                or e.get("src_branch_id")
+                                                or ""
+                                            ).strip()
+                                            if br:
+                                                edges_by_branch[br] = (
+                                                    int(edges_by_branch.get(br, 0)) + 1
+                                                )
+                                if 0 < len(nodes_by_branch) <= 8:
+                                    for br, cnt in nodes_by_branch.items():
+                                        lines.append(
+                                            f'aetherra_memory_branch_nodes{{branch="{br}"}} {_num(cnt)}'
+                                        )
+                                if 0 < len(edges_by_branch) <= 8:
+                                    for br, cnt in edges_by_branch.items():
+                                        lines.append(
+                                            f'aetherra_memory_branch_edges{{branch="{br}"}} {_num(cnt)}'
+                                        )
                             except Exception:
                                 pass
-                        if edge_cnt is None and isinstance(
-                            audit.get("edge_count"), (int, float)
-                        ):
-                            edge_cnt = audit.get("edge_count")
-                        if edge_cnt is not None:
-                            lines.append(
-                                f"aetherra_memory_branch_edges_total {_num(edge_cnt)}"
-                            )
-                        # Optional low-cardinality per-branch gauges
-                        try:
-                            nodes_by_branch = {}
-                            if isinstance(nodes_val, (list, tuple)):
-                                for n in nodes_val:
-                                    if isinstance(n, dict):
-                                        br = str(
-                                            n.get("branch") or n.get("branch_id") or ""
-                                        ).strip()
-                                        if br:
-                                            nodes_by_branch[br] = (
-                                                int(nodes_by_branch.get(br, 0)) + 1
-                                            )
-                            edges_by_branch = {}
-                            if isinstance(edges_val, (list, tuple)):
-                                for e in edges_val:
-                                    if isinstance(e, dict):
-                                        br = str(
-                                            e.get("branch")
-                                            or e.get("src_branch")
-                                            or e.get("src_branch_id")
-                                            or ""
-                                        ).strip()
-                                        if br:
-                                            edges_by_branch[br] = (
-                                                int(edges_by_branch.get(br, 0)) + 1
-                                            )
-                            # Emit only when small to avoid cardinality bloat
-                            if 0 < len(nodes_by_branch) <= 8:
-                                for br, cnt in nodes_by_branch.items():
-                                    lines.append(
-                                        f'aetherra_memory_branch_nodes{{branch="{br}"}} {_num(cnt)}'
-                                    )
-                            if 0 < len(edges_by_branch) <= 8:
-                                for br, cnt in edges_by_branch.items():
-                                    lines.append(
-                                        f'aetherra_memory_branch_edges{{branch="{br}"}} {_num(cnt)}'
-                                    )
-                        except Exception:
-                            pass
-            except Exception:
-                pass
-
-            # Chat metrics (hub-level)
-            try:
-                cm = self.chat_metrics
-                lines.append(
-                    f"aetherra_chat_requests_total {_num(cm.get('requests_total', 0))}"
-                )
-                lines.append(
-                    f"aetherra_chat_streams_current {_num(cm.get('streams_current', 0))}"
-                )
-                # Optional per-principal concurrent stream gauges (low-cardinality only)
-                try:
-                    sbp = cm.get("streams_by_principal", {}) or {}
-                    # Emit up to 10 principals to cap cardinality
-                    c = 0
-                    for principal, val in sbp.items():
-                        lines.append(
-                            f'aetherra_chat_streams_current_by_principal{{principal="{str(principal)}"}} {_num(val)}'
-                        )
-                        c += 1
-                        if c >= 10:
-                            break
                 except Exception:
                     pass
-                # Export sum and count to allow histogram-like calc in PromQL
-                lines.append(
-                    f"aetherra_chat_latency_ms_sum {_num(cm.get('latency_ms_sum', 0.0))}"
-                )
-                lines.append(
-                    f"aetherra_chat_latency_count {_num(cm.get('latency_count', 0))}"
-                )
-                # Histogram buckets (cumulative)
+
+            def _emit_chat():
                 try:
-                    hist = cm.get("latency_hist", {}) or {}
-                    order = [50, 100, 250, 500, 1000, 2000, 5000]
-                    cum = 0
-                    for b in order:
-                        cnt = int(hist.get(b, 0))
-                        cum += max(0, cnt)
-                        lines.append(
-                            f'aetherra_chat_latency_ms_bucket{{le="{b}"}} {_num(cum)}'
-                        )
-                    inf_cnt = int(hist.get("+Inf", 0)) + cum
-                    lines.append(
-                        f'aetherra_chat_latency_ms_bucket{{le="+Inf"}} {_num(inf_cnt)}'
+                    cm = self.chat_metrics
+                    lines.extend(
+                        [
+                            f"aetherra_chat_requests_total {_num(cm.get('requests_total', 0))}",
+                            f"aetherra_chat_streams_current {_num(cm.get('streams_current', 0))}",
+                        ]
                     )
-                except Exception:
-                    pass
-                # TTFT aggregates
-                lines.append(
-                    f"aetherra_chat_ttft_ms_sum {_num(cm.get('ttft_ms_sum', 0.0))}"
-                )
-                lines.append(
-                    f"aetherra_chat_ttft_count {_num(cm.get('ttft_count', 0))}"
-                )
-                try:
-                    th = cm.get("ttft_hist", {}) or {}
-                    order_t = [50, 100, 250, 500, 1000, 2000]
-                    cum_t = 0
-                    for b in order_t:
-                        cnt = int(th.get(b, 0))
-                        cum_t += max(0, cnt)
-                        lines.append(
-                            f'aetherra_chat_ttft_ms_bucket{{le="{b}"}} {_num(cum_t)}'
-                        )
-                    inf_t = int(th.get("+Inf", 0)) + cum_t
-                    lines.append(
-                        f'aetherra_chat_ttft_ms_bucket{{le="+Inf"}} {_num(inf_t)}'
-                    )
-                except Exception:
-                    pass
-                lines.append(
-                    f"aetherra_chat_chars_in_total {_num(cm.get('chars_in_total', 0))}"
-                )
-                lines.append(
-                    f"aetherra_chat_chars_out_total {_num(cm.get('chars_out_total', 0))}"
-                )
-                # Token totals
-                lines.append(
-                    f"aetherra_chat_tokens_in_total {_num(cm.get('tokens_in_total', 0))}"
-                )
-                lines.append(
-                    f"aetherra_chat_tokens_out_total {_num(cm.get('tokens_out_total', 0))}"
-                )
-                # Chunk counter
-                lines.append(
-                    f"aetherra_chat_chunks_total {_num(cm.get('chunks_total', 0))}"
-                )
-                # Fallback path counters as labeled series
-                try:
-                    fpc = cm.get("fallback_path_counts", {}) or {}
-                    for k in ("mock", "cached", "engine"):
-                        lines.append(
-                            f'aetherra_chat_fallback_total{{path="{k}"}} {_num(fpc.get(k, 0))}'
-                        )
-                except Exception:
-                    pass
-                # Error/limit counters
-                lines.append(
-                    f"aetherra_chat_rate_limited_total {_num(cm.get('rate_limited_total', 0))}"
-                )
-                lines.append(
-                    f"aetherra_chat_policy_denied_total {_num(cm.get('policy_denied_total', 0))}"
-                )
-                lines.append(
-                    f"aetherra_chat_backend_unavailable_total {_num(cm.get('backend_unavailable_total', 0))}"
-                )
-                lines.append(
-                    f"aetherra_chat_timeout_total {_num(cm.get('timeout_total', 0))}"
-                )
-                lines.append(
-                    f"aetherra_chat_breaker_tripped_total {_num(cm.get('breaker_tripped_total', 0))}"
-                )
-                lines.append(
-                    f"aetherra_chat_breaker_open_total {_num(cm.get('breaker_open_total', 0))}"
-                )
-            except Exception:
-                pass
-
-            # Aetherra Engine A/B recall metrics (best-effort)
-            try:
-                # Allow gating these metrics via env (default enabled)
-                if os.environ.get("AETHERRA_HUB_AB_METRICS", "1") != "1":
-                    raise RuntimeError("AB metrics disabled by env")
-
-                # Use engine's async API if available; fallback to session_metrics
-                async def _get_engine_status(engine):
                     try:
-                        st = await engine.get_system_status()
-                        return True, st
+                        sbp = cm.get("streams_by_principal", {}) or {}
+                        c = 0
+                        for principal, val in sbp.items():
+                            lines.append(
+                                f'aetherra_chat_streams_current_by_principal{{principal="{str(principal)}"}} {_num(val)}'
+                            )
+                            c += 1
+                            if c >= 10:
+                                break
                     except Exception:
-                        try:
-                            sm = engine.get_session_metrics()
-                            return True, {"session_metrics": sm}
-                        except Exception as _e:
-                            return False, str(_e)
+                        pass
+                    lines.extend(
+                        [
+                            f"aetherra_chat_latency_ms_sum {_num(cm.get('latency_ms_sum', 0.0))}",
+                            f"aetherra_chat_latency_count {_num(cm.get('latency_count', 0))}",
+                        ]
+                    )
+                    try:
+                        hist = cm.get("latency_hist", {}) or {}
+                        order = [50, 100, 250, 500, 1000, 2000, 5000]
+                        cum = 0
+                        for b in order:
+                            cnt = int(hist.get(b, 0))
+                            cum += max(0, cnt)
+                            lines.append(
+                                f'aetherra_chat_latency_ms_bucket{{le="{b}"}} {_num(cum)}'
+                            )
+                        inf_cnt = int(hist.get("+Inf", 0)) + cum
+                        lines.append(
+                            f'aetherra_chat_latency_ms_bucket{{le="+Inf"}} {_num(inf_cnt)}'
+                        )
+                    except Exception:
+                        pass
+                    lines.extend(
+                        [
+                            f"aetherra_chat_ttft_ms_sum {_num(cm.get('ttft_ms_sum', 0.0))}",
+                            f"aetherra_chat_ttft_count {_num(cm.get('ttft_count', 0))}",
+                        ]
+                    )
+                    try:
+                        th = cm.get("ttft_hist", {}) or {}
+                        order_t = [50, 100, 250, 500, 1000, 2000]
+                        cum_t = 0
+                        for b in order_t:
+                            cnt = int(th.get(b, 0))
+                            cum_t += max(0, cnt)
+                            lines.append(
+                                f'aetherra_chat_ttft_ms_bucket{{le="{b}"}} {_num(cum_t)}'
+                            )
+                        inf_t = int(th.get("+Inf", 0)) + cum_t
+                        lines.append(
+                            f'aetherra_chat_ttft_ms_bucket{{le="+Inf"}} {_num(inf_t)}'
+                        )
+                    except Exception:
+                        pass
+                    lines.extend(
+                        [
+                            f"aetherra_chat_chars_in_total {_num(cm.get('chars_in_total', 0))}",
+                            f"aetherra_chat_chars_out_total {_num(cm.get('chars_out_total', 0))}",
+                            f"aetherra_chat_tokens_in_total {_num(cm.get('tokens_in_total', 0))}",
+                            f"aetherra_chat_tokens_out_total {_num(cm.get('tokens_out_total', 0))}",
+                            f"aetherra_chat_chunks_total {_num(cm.get('chunks_total', 0))}",
+                        ]
+                    )
+                    try:
+                        fpc = cm.get("fallback_path_counts", {}) or {}
+                        for k in ("mock", "cached", "engine"):
+                            lines.append(
+                                f'aetherra_chat_fallback_total{{path="{k}"}} {_num(fpc.get(k, 0))}'
+                            )
+                    except Exception:
+                        pass
+                    lines.extend(
+                        [
+                            f"aetherra_chat_rate_limited_total {_num(cm.get('rate_limited_total', 0))}",
+                            f"aetherra_chat_policy_denied_total {_num(cm.get('policy_denied_total', 0))}",
+                            f"aetherra_chat_backend_unavailable_total {_num(cm.get('backend_unavailable_total', 0))}",
+                            f"aetherra_chat_timeout_total {_num(cm.get('timeout_total', 0))}",
+                            f"aetherra_chat_breaker_tripped_total {_num(cm.get('breaker_tripped_total', 0))}",
+                            f"aetherra_chat_breaker_open_total {_num(cm.get('breaker_open_total', 0))}",
+                        ]
+                    )
+                except Exception:
+                    pass
 
-                ok_st, payload = _with_engine_call(_get_engine_status)  # type: ignore[name-defined]
-                if bool(ok_st) and isinstance(payload, dict):
+            def _emit_engine_ab():
+                try:
+                    if os.environ.get("AETHERRA_HUB_AB_METRICS", "1") != "1":
+                        return
+
+                    async def _get_engine_status(engine):  # noqa: E306
+                        try:
+                            st = await engine.get_system_status()
+                            return True, st
+                        except Exception:
+                            try:
+                                sm = engine.get_session_metrics()
+                                return True, {"session_metrics": sm}
+                            except Exception as _e:
+                                return False, str(_e)
+
+                    ok_st, payload = _with_engine_call(_get_engine_status)  # type: ignore[name-defined]
+                    if not (bool(ok_st) and isinstance(payload, dict)):
+                        return
                     st = payload
                     sm = (
                         st.get("session_metrics")
@@ -3633,35 +3439,23 @@ class AetherraHubServer:
                         else {}
                     )
 
-                    # Emit totals and per-bucket latency aggregates
                     def _g(key, default=0.0):
                         try:
                             return float((sm or {}).get(key, default))
                         except Exception:
                             return float(default)
 
-                    lines.append(
-                        f"aetherra_engine_ab_recall_total {_g('ab_recall_total', 0.0)}"
+                    lines.extend(
+                        [
+                            f"aetherra_engine_ab_recall_total {_g('ab_recall_total', 0.0)}",
+                            f"aetherra_engine_ab_recall_classical_total {_g('ab_recall_classical_total', 0.0)}",
+                            f"aetherra_engine_ab_recall_quantum_total {_g('ab_recall_quantum_total', 0.0)}",
+                            f'aetherra_engine_ab_recall_latency_ms_sum{{bucket="classical"}} {_g("ab_recall_latency_ms_sum_classical", 0.0)}',
+                            f'aetherra_engine_ab_recall_latency_ms_count{{bucket="classical"}} {_g("ab_recall_latency_ms_count_classical", 0.0)}',
+                            f'aetherra_engine_ab_recall_latency_ms_sum{{bucket="quantum"}} {_g("ab_recall_latency_ms_sum_quantum", 0.0)}',
+                            f'aetherra_engine_ab_recall_latency_ms_count{{bucket="quantum"}} {_g("ab_recall_latency_ms_count_quantum", 0.0)}',
+                        ]
                     )
-                    lines.append(
-                        f"aetherra_engine_ab_recall_classical_total {_g('ab_recall_classical_total', 0.0)}"
-                    )
-                    lines.append(
-                        f"aetherra_engine_ab_recall_quantum_total {_g('ab_recall_quantum_total', 0.0)}"
-                    )
-                    lines.append(
-                        f'aetherra_engine_ab_recall_latency_ms_sum{{bucket="classical"}} {_g("ab_recall_latency_ms_sum_classical", 0.0)}'
-                    )
-                    lines.append(
-                        f'aetherra_engine_ab_recall_latency_ms_count{{bucket="classical"}} {_g("ab_recall_latency_ms_count_classical", 0.0)}'
-                    )
-                    lines.append(
-                        f'aetherra_engine_ab_recall_latency_ms_sum{{bucket="quantum"}} {_g("ab_recall_latency_ms_sum_quantum", 0.0)}'
-                    )
-                    lines.append(
-                        f'aetherra_engine_ab_recall_latency_ms_count{{bucket="quantum"}} {_g("ab_recall_latency_ms_count_quantum", 0.0)}'
-                    )
-                    # Mode and persistent memory readiness (gauges)
                     ab = st.get("ab") if isinstance(st.get("ab"), dict) else {}
                     try:
                         mode = str((ab or {}).get("mode") or "").strip()
@@ -3674,43 +3468,163 @@ class AetherraHubServer:
                         lines.append(f"aetherra_engine_ab_pmem_ready {pmr}")
                     except Exception:
                         pass
-
-                    # Style layer gauges (lightweight, per-session)
                     try:
-                        sc = _g("style_contractions", 0.0)
-                        sq = _g("style_questions", 0.0)
-                        se = _g("style_empathy", 0.0)
-                        lines.append(f"aetherra_style_contractions_total {sc}")
-                        lines.append(f"aetherra_style_questions_total {sq}")
-                        lines.append(f"aetherra_style_empathy_total {se}")
+                        lines.extend(
+                            [
+                                f"aetherra_style_contractions_total {_g('style_contractions', 0.0)}",
+                                f"aetherra_style_questions_total {_g('style_questions', 0.0)}",
+                                f"aetherra_style_empathy_total {_g('style_empathy', 0.0)}",
+                            ]
+                        )
                     except Exception:
                         pass
-            except Exception:
-                pass
+                except Exception:
+                    pass
 
-            # Quantum metrics
-            try:
-                if isinstance(qs, dict) and qs:
-                    lines.append(
-                        f'aetherra_quantum_mode{{provider="{str(qs.get("provider", "sim"))}"}} 1'
+            def _emit_quantum():
+                try:
+                    if isinstance(qs, dict) and qs:
+                        lines.extend(
+                            [
+                                f'aetherra_quantum_mode{{provider="{str(qs.get("provider", "sim"))}"}} 1',
+                                f"aetherra_quantum_jobs_total {float(qs.get('jobs_total', 0))}",
+                                f"aetherra_quantum_shots_total {float(qs.get('shots_total', 0))}",
+                                f"aetherra_quantum_queue_current {float(qs.get('queue_current', 0))}",
+                                f"aetherra_quantum_cost_usd {float(qs.get('cost_usd', 0.0))}",
+                                f"aetherra_quantum_error_rate {float(qs.get('error_rate', 0.0))}",
+                            ]
+                        )
+                except Exception:
+                    pass
+
+            def _emit_trainer():
+                try:
+                    trainer_enabled_flag = (
+                        1
+                        if os.environ.get("AETHERRA_TRAINER_ENABLED", "0") == "1"
+                        else 0
                     )
-                    lines.append(
-                        f"aetherra_quantum_jobs_total {float(qs.get('jobs_total', 0))}"
+                    lines.append(f"aetherra_trainer_enabled {trainer_enabled_flag}")
+                    q = r = c = f = 0
+                    with self._trainer_lock:
+                        for j in self.trainer_jobs.values():
+                            st = str(j.get("state"))
+                            if st == "queued":
+                                q += 1
+                            elif st == "running":
+                                r += 1
+                            elif st == "completed":
+                                c += 1
+                            elif st == "failed":
+                                f += 1
+                    lines.extend(
+                        [
+                            f'aetherra_trainer_jobs_total{{state="queued"}} {q}',
+                            f'aetherra_trainer_jobs_total{{state="running"}} {r}',
+                            f'aetherra_trainer_jobs_total{{state="completed"}} {c}',
+                            f'aetherra_trainer_jobs_total{{state="failed"}} {f}',
+                            f"aetherra_trainer_jobs_running {r}",
+                            f"aetherra_trainer_eval_runs_total {int(self._trainer_eval_runs_total)}",
+                        ]
                     )
-                    lines.append(
-                        f"aetherra_quantum_shots_total {float(qs.get('shots_total', 0))}"
+                    eq = er = ec = ef = 0
+                    with self._trainer_lock:
+                        for eobj in self.trainer_evals.values():
+                            st = str(eobj.get("state"))
+                            if st == "queued":
+                                eq += 1
+                            elif st == "running":
+                                er += 1
+                            elif st == "completed":
+                                ec += 1
+                            elif st == "failed":
+                                ef += 1
+                        last_score = self._trainer_eval_last_score
+                    lines.extend(
+                        [
+                            f'aetherra_trainer_evals_total{{state="queued"}} {eq}',
+                            f'aetherra_trainer_evals_total{{state="running"}} {er}',
+                            f'aetherra_trainer_evals_total{{state="completed"}} {ec}',
+                            f'aetherra_trainer_evals_total{{state="failed"}} {ef}',
+                        ]
                     )
-                    lines.append(
-                        f"aetherra_quantum_queue_current {float(qs.get('queue_current', 0))}"
-                    )
-                    lines.append(
-                        f"aetherra_quantum_cost_usd {float(qs.get('cost_usd', 0.0))}"
-                    )
-                    lines.append(
-                        f"aetherra_quantum_error_rate {float(qs.get('error_rate', 0.0))}"
-                    )
-            except Exception:
-                pass
+                    try:
+                        if last_score is not None:
+                            lines.append(
+                                f"aetherra_trainer_eval_last_score {float(last_score)}"
+                            )
+                    except Exception:
+                        pass
+                except Exception:
+                    pass
+
+            def _emit_agents():
+                try:
+                    if os.environ.get("AETHERRA_AGENT_PER_METRICS", "1") != "1":
+                        return
+                    try:
+                        from Aetherra.consciousness.agents.agent_registry import (
+                            get_agent_registry,
+                        )
+                    except Exception:
+                        get_agent_registry = None  # type: ignore
+                    reg = get_agent_registry() if get_agent_registry else None  # type: ignore[call-arg]
+                    if not (reg and hasattr(reg, "get_all_agents")):
+                        return
+                    try:
+                        agents = reg.get_all_agents()
+                    except Exception:
+                        agents = {}
+                    if not isinstance(agents, dict):
+                        return
+                    count = 0
+                    for aid, regobj in agents.items():
+                        if count >= 20:
+                            break
+                        try:
+                            tot = float(
+                                getattr(regobj, "total_requests_handled", 0) or 0
+                            )
+                            succ = float(getattr(regobj, "successful_requests", 0) or 0)
+                            avg = float(
+                                getattr(regobj, "average_response_time", 0.0) or 0.0
+                            )
+                            up = float(getattr(regobj, "uptime_percentage", 0.0) or 0.0)
+                            try:
+                                sr = (succ / tot) if tot > 0 else 0.0
+                            except Exception:
+                                sr = 0.0
+                            aid_s = str(aid)
+                            lines.extend(
+                                [
+                                    f'aetherra_agent_requests_total{{agent="{aid_s}"}} {_num(tot)}',
+                                    f'aetherra_agent_success_rate{{agent="{aid_s}"}} {_num(sr)}',
+                                    f'aetherra_agent_avg_latency_ms{{agent="{aid_s}"}} {_num(avg)}',
+                                    f'aetherra_agent_uptime_pct{{agent="{aid_s}"}} {_num(up)}',
+                                ]
+                            )
+                            count += 1
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+
+            # Execute emitters
+            kernel_hist = _emit_kernel()
+            _emit_kernel_hist_fallback(kernel_hist)
+            _emit_sandbox()
+            _emit_registry()
+            _emit_hmr()
+            _emit_klm()
+            _emit_keb()
+            orch_hist = _emit_orchestrator()
+            _emit_orchestrator_hist_fallback(orch_hist)
+            _emit_memory()
+            _emit_chat()
+            _emit_engine_ab()
+            _emit_quantum()
+            _emit_trainer()
+            _emit_agents()
 
             body = "\n".join(lines) + "\n"
             from flask import Response  # type: ignore
