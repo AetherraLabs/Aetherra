@@ -39,6 +39,7 @@ import os
 import re
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 
@@ -166,6 +167,7 @@ def main() -> int:
 
     # Optional test selection heuristic (Phase 1 stub)
     selection_tool = Path("tools/test_selection_stub.py")
+    selection_meta: dict | None = None
     if selection_tool.exists() and os.getenv("TEST_SELECTION", "1") == "1":
         touched_raw = os.getenv("TOUCHED_PATHS", "").strip()
         touched = [p for p in touched_raw.split() if p]
@@ -176,13 +178,23 @@ def main() -> int:
         if code_sel == 0:
             try:
                 data_sel = json.loads(out_sel)
+                selection_meta = data_sel
                 candidates = data_sel.get("candidates") or []
-                if candidates and not data_sel.get("fallback"):
+                conf = float(data_sel.get("confidence", 0.0) or 0.0)
+                if (
+                    candidates
+                    and not data_sel.get("fallback")
+                    and conf >= float(os.getenv("TEST_SELECTION_MIN_CONF", "0.8"))
+                ):
                     if 0 < len(candidates) < len(targets):
                         print(
-                            f"[GATES] Adopting selected test subset ({len(candidates)} < {len(targets)})"
+                            f"[GATES] Adopting selected test subset ({len(candidates)} < {len(targets)}) with confidence {conf}"
                         )
                         targets = candidates
+                else:
+                    print(
+                        f"[GATES] Ignoring selection subset (fallback or low confidence {conf}); running full targets"
+                    )
             except Exception as e:  # pragma: no cover
                 print(f"[GATES] Warning: cannot parse selection output: {e}\n{out_sel}")
 
@@ -240,6 +252,143 @@ def main() -> int:
             baseline_file.write_text(str(cov))
         except Exception as e:
             print(f"[GATES] Warning: failed to write baseline: {e}")
+
+    # ------------------------------------------------------------------
+    # Per-file coverage delta artifact (experimental Phase 1 extension)
+    # ------------------------------------------------------------------
+    file_deltas: list[dict] = []
+    file_drop_entries: list[dict] = []
+    per_file_enabled = os.getenv("COVERAGE_FILE_LEVEL", "1") == "1"
+    coverage_json_path = Path("coverage.json")
+    previous_snapshot: dict[str, float] = {}
+    previous_snapshot_path = None
+    if per_file_enabled:
+        # Attempt to create coverage.json if not present (coverage json command)
+        if not coverage_json_path.exists():
+            try:
+                code_cov_json, out_cov_json = run(
+                    [sys.executable, "-m", "coverage", "json", "-o", "coverage.json"]
+                )  # type: ignore[list-item]
+                if code_cov_json != 0:
+                    print(
+                        "[GATES] Warning: coverage json generation failed; skipping per-file deltas"
+                    )
+            except Exception as e:  # pragma: no cover
+                print(f"[GATES] Warning: exception generating coverage json: {e}")
+        if coverage_json_path.exists():
+            try:
+                cov_data = json.loads(coverage_json_path.read_text(encoding="utf-8"))
+            except Exception as e:  # pragma: no cover
+                cov_data = {}
+                print(f"[GATES] Warning: failed to parse coverage.json: {e}")
+            # Load previous artifact (latest by name) if any
+            snapshots_dir = Path("audit/coverage_delta")
+            if snapshots_dir.is_dir():
+                try:
+                    snaps = sorted(snapshots_dir.glob("*.json"))
+                    if snaps:
+                        previous_snapshot_path = snaps[-1]
+                        try:
+                            prev_data = json.loads(
+                                previous_snapshot_path.read_text(encoding="utf-8")
+                            )
+                            for f in prev_data.get("files", []):
+                                previous_snapshot[str(f.get("path"))] = float(
+                                    f.get("after")
+                                    or f.get("percent_after")
+                                    or f.get("percent", 0.0)
+                                )
+                        except Exception as e:  # pragma: no cover
+                            print(
+                                f"[GATES] Warning: could not load previous coverage snapshot: {e}"
+                            )
+                except Exception:
+                    pass
+            files_section = cov_data.get("files") if isinstance(cov_data, dict) else {}
+            # Determine changed files heuristic: TOUCHED_PATHS env or git diff HEAD~1
+            changed_files: set[str] = set()
+            touched_raw = os.getenv("TOUCHED_PATHS", "").strip()
+            if touched_raw:
+                changed_files.update(
+                    [p for p in touched_raw.split() if p.endswith(".py")]
+                )
+            if not changed_files:
+                try:
+                    code_diff, out_diff = run(["git", "diff", "--name-only", "HEAD~1"])
+                    if code_diff == 0:
+                        for line in out_diff.splitlines():
+                            if line.endswith(".py"):
+                                changed_files.add(line.strip())
+                except Exception:  # pragma: no cover
+                    pass
+            # Fallback: consider all files in coverage data
+            if not changed_files and isinstance(files_section, dict):
+                changed_files.update(files_section.keys())
+            for path_key, info in (files_section or {}).items():
+                try:
+                    summary = info.get("summary", {}) if isinstance(info, dict) else {}
+                    covered = float(summary.get("covered_lines", 0) or 0)
+                    stmts = float(summary.get("num_statements", 0) or 0)
+                    after_pct = (covered / stmts * 100.0) if stmts > 0 else 0.0
+                    before_pct = previous_snapshot.get(path_key)
+                    delta_pct = None
+                    if before_pct is not None:
+                        delta_pct = after_pct - before_pct
+                    entry = {
+                        "path": path_key,
+                        "before": before_pct,
+                        "after": after_pct,
+                        "delta": delta_pct,
+                        "changed": path_key in changed_files,
+                    }
+                    file_deltas.append(entry)
+                    if (delta_pct is not None) and delta_pct < 0:
+                        file_drop_entries.append(entry)
+                except Exception as e:  # pragma: no cover
+                    print(
+                        f"[GATES] Warning: per-file coverage entry parse failed for {path_key}: {e}"
+                    )
+            # Write snapshot artifact
+            try:
+                ts = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+                out_dir = Path("audit/coverage_delta")
+                out_dir.mkdir(parents=True, exist_ok=True)
+                snapshot_path = out_dir / f"coverage_{ts}.json"
+                snapshot_doc = {
+                    "run_id": ts,
+                    "generated_at": datetime.utcnow().isoformat() + "Z",
+                    "overall": {"after": cov, "before": prev, "delta": coverage_delta},
+                    "files": file_deltas,
+                }
+                snapshot_path.write_text(
+                    json.dumps(snapshot_doc, indent=2), encoding="utf-8"
+                )
+                print(f"[GATES] Wrote per-file coverage snapshot -> {snapshot_path}")
+                # Retention
+                retention = int(os.getenv("COVERAGE_FILE_RETENTION", "30"))
+                snaps_all = sorted(out_dir.glob("coverage_*.json"))
+                if len(snaps_all) > retention:
+                    for old in snaps_all[:-retention]:
+                        try:
+                            old.unlink()
+                        except Exception:
+                            pass
+                # Optional orphan pruning of legacy root coverage.json files
+                if os.getenv("COVERAGE_PRUNE_ORPHANS", "1") == "1":
+                    try:
+                        root_cov = Path("coverage.json")
+                        # If a root coverage.json exists and we now have at least one snapshot, remove it
+                        if root_cov.exists() and snaps_all:
+                            root_cov.unlink()
+                            print(
+                                "[GATES] Pruned orphan root coverage.json (snapshots in use)."
+                            )
+                    except Exception as e:  # pragma: no cover
+                        print(
+                            f"[GATES] Warning: failed pruning orphan coverage.json: {e}"
+                        )
+            except Exception as e:  # pragma: no cover
+                print(f"[GATES] Warning: failed to write coverage delta snapshot: {e}")
 
     # Security & memory fragmentation supplemental gates (post-tests so new tools are importable)
     if os.getenv("STATIC_SECURITY_SCAN", "1") == "1":
@@ -484,15 +633,45 @@ def main() -> int:
         print("[GATES] Artifact publishing disabled (PUBLISH_ARTIFACTS=0)")
 
     # Consolidated gating reasons & metrics export
-    gating_reasons: list[str] = []
+    gating_reasons: list[dict] = []
     if coverage_drop:
-        gating_reasons.append("coverage_drop")
+        gating_reasons.append(
+            {
+                "code": "COVERAGE_DROP",
+                "severity": "error",
+                "message": f"Coverage decreased from {prev}% to {cov}%",
+            }
+        )
+    if selection_meta:
+        gating_reasons.append(
+            {
+                "code": "TEST_SELECTION",
+                "severity": "info",
+                "message": f"Strategy {selection_meta.get('strategy')} confidence={selection_meta.get('confidence')} fallback={selection_meta.get('fallback')}",
+            }
+        )
+    # File-level regression reasons (limit to first 5)
+    for entry in file_drop_entries[:5]:
+        try:
+            gating_reasons.append(
+                {
+                    "code": "FILE_COVERAGE_DROP",
+                    "severity": "warning" if not coverage_drop else "error",
+                    "message": f"{entry['path']} {entry['delta']:.2f}% ({entry['before']} -> {entry['after']})",
+                }
+            )
+        except Exception:
+            pass
     # Future: append reasons for vuln scan, arch failures, etc.
 
     coverage_report_path = Path(
         os.getenv("COVERAGE_REPORT_JSON", "coverage_gate_report.json")
     )
+    # Schema versioning: v1 introduces explicit schema_version plus future flags to allow
+    # forward-compatible evolution (see ADR-0003). "future" keys are placeholders that
+    # downstream tools can probe for to adapt once populated.
     report = {
+        "schema_version": 1,
         "coverage": cov,
         "previous": prev,
         "delta": coverage_delta,
@@ -500,13 +679,79 @@ def main() -> int:
         "drop": coverage_drop,
         "updated_baseline": not coverage_drop,
         "gating_reasons": gating_reasons,
+        "selection": selection_meta,
+        "file_deltas": file_deltas if per_file_enabled else None,
         "targets": targets,
+        # Future flags (reserved): will flip true once branch / statement granularity enforced.
+        "future": {
+            "enforce_branch_coverage": False,
+            "enforce_statement_coverage": False,
+        },
     }
     try:
         coverage_report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
         print(f"[GATES] Wrote coverage gate report -> {coverage_report_path}")
     except Exception as e:  # pragma: no cover
         print(f"[GATES] Warning: failed to write coverage report: {e}")
+
+    # Optional PR description generation (lightweight) using gating report contents.
+    if os.getenv("GENERATE_PR_DESCRIPTION", "0") == "1":
+        try:
+            pr_path = Path(os.getenv("PR_DESCRIPTION_PATH", "pr_description.md"))
+            lines: list[str] = []
+            lines.append("# Quality Gates Summary\n")
+            status = "FAIL" if coverage_drop else "PASS"
+            lines.append(
+                f"Overall Coverage: {cov:.2f}% (prev {prev:.2f}% delta {coverage_delta:+.2f}%)  "
+                + f"Gate Result: {status}\n"
+            )
+            lines.append(f"Schema Version: {report.get('schema_version', 1)}\n")
+            # Gating reasons table
+            reasons = gating_reasons
+            if reasons:
+                lines.append("## Gating Reasons\n")
+                lines.append("| Code | Severity | Message |\n")
+                lines.append("|------|----------|---------|\n")
+                for r in reasons:
+                    lines.append(
+                        f"| {r.get('code')} | {r.get('severity')} | {r.get('message', '').replace('|', '/')} |\n"
+                    )
+            # File coverage deltas summary
+            if report.get("file_deltas"):
+                drops = [
+                    d
+                    for d in report["file_deltas"]
+                    if d.get("delta") is not None and d["delta"] < 0
+                ]
+                improves = [
+                    d
+                    for d in report["file_deltas"]
+                    if d.get("delta") is not None and d["delta"] > 0
+                ]
+                drops.sort(key=lambda x: x["delta"])
+                improves.sort(key=lambda x: x["delta"], reverse=True)
+                if drops:
+                    lines.append("\n### Top File Coverage Drops\n")
+                    for d in drops[:5]:
+                        lines.append(
+                            f"* {d['path']}: {d['before']:.2f}% -> {d['after']:.2f}% ({d['delta']:+.2f}%)"
+                        )
+                if improves:
+                    lines.append("\n### Top File Coverage Improvements\n")
+                    for d in improves[:5]:
+                        lines.append(
+                            f"* {d['path']}: {d['before']:.2f}% -> {d['after']:.2f}% ({d['delta']:+.2f}%)"
+                        )
+            # Future flags exposure
+            fut = report.get("future", {})
+            if fut:
+                lines.append("\n### Future Flags\n")
+                for k, v in fut.items():
+                    lines.append(f"* {k}: {v}")
+            pr_path.write_text("\n".join(lines), encoding="utf-8")
+            print(f"[GATES] Wrote PR description -> {pr_path}")
+        except Exception as e:  # pragma: no cover
+            print(f"[GATES] Warning: failed to generate PR description: {e}")
 
     if coverage_drop:
         print("[GATES] Gate failure due to coverage drop.")

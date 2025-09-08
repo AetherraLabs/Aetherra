@@ -11,17 +11,20 @@ Heuristic:
   - If source file touched, maps to tests with similar stem name
 
 Outputs JSON structure:
-  {
-    "requested": [...],
-    "candidates": [...],
-    "strategy": "heuristic-v1",
-    "fallback": bool
-  }
+    {
+        "requested": [...],
+        "candidates": [...],
+        "strategy": "heuristic-v1",
+        "fallback": bool,
+        "confidence": 0.0-1.0,
+        "reason": "short explanation"
+    }
 """
 
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -44,6 +47,8 @@ def main(argv: list[str]) -> int:
                     "candidates": [],
                     "strategy": "heuristic-v1",
                     "fallback": True,
+                    "confidence": 0.0,
+                    "reason": "tests directory missing",
                 }
             )
         )
@@ -74,6 +79,38 @@ def main(argv: list[str]) -> int:
         else:
             candidates = [str(p) for p in tests_dir.rglob("test_*.py")]
 
+    # Confidence heuristic:
+    # High (0.9) if we mapped each non-test source file to at least one test.
+    # Medium (0.6) if we have candidates but some requested sources produced none.
+    # Low (0.3) if fallback triggered.
+    # Very low (0.0) if no tests dir (handled earlier) or empty (should not reach here).
+    mapped_source_files = [
+        r for r in requested if r.endswith(".py") and "tests" not in r.split(os.sep)
+    ]
+    mapped_counts = 0
+    for r in mapped_source_files:
+        stem = Path(r).stem
+        if any(stem in Path(c).stem for c in candidates):
+            mapped_counts += 1
+    if fallback:
+        confidence = 0.3 if candidates else 0.0
+        reason = "fallback suite used"
+    else:
+        if mapped_source_files:
+            ratio = mapped_counts / max(1, len(mapped_source_files))
+            if ratio >= 1.0:
+                confidence = 0.9
+                reason = "all touched sources mapped to tests"
+            elif ratio >= 0.5:
+                confidence = 0.6
+                reason = "partial source→test mapping"
+            else:
+                confidence = 0.4
+                reason = "low source→test mapping"
+        else:
+            confidence = 0.5
+            reason = "only test paths provided"
+
     # De-duplicate
     candidates = sorted(set(candidates))
     out = {
@@ -81,6 +118,8 @@ def main(argv: list[str]) -> int:
         "candidates": candidates,
         "strategy": "heuristic-v1",
         "fallback": fallback,
+        "confidence": round(confidence, 2),
+        "reason": reason,
     }
     print(json.dumps(out, indent=2))
     return 0

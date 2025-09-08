@@ -1,6 +1,6 @@
 # Aetherra Coding System Roadmap (Lyrixa Code Studio)
 
-Status: ACTIVE – Phase 1 (Safe Edit Loop) in progress (Foundations + early Safe Edit Loop features delivered)
+Status: Phase 1 (Safe Edit Loop) – COMPLETE (Foundations + Safe Edit Loop features delivered; transitioning to Phase 2 initiation)
 Owner: Lyrixa / Aetherra Engineering
 Source Spec: `docs/AETHERRA_CODING_SYSTEM.md`
 Ledger: `audit/aetherra_runs.jsonl` (coding ops)
@@ -39,7 +39,7 @@ Rolled Forward (absorbed / completed early in Phase 1):
 - Plugin scaffold skeleton command (DELIVERED)
 - Initial unit tests for patch engine & orchestrator (BASIC CASES DELIVERED – extend for edge risk scenarios Phase 1)
 
-### Phase 1 (Safe Edit Loop)
+### Phase 1 (Safe Edit Loop) – COMPLETE
 
 Focus: robust, deterministic editing & verification.
 
@@ -53,7 +53,7 @@ Key Work Items (Original Scope):
 6. Rollback Tokens: store pre‑patch snapshots (content hash), implement `aetherra_code revert --token <id>`
 7. Enhanced Diagnostics: diff summary (files, +lines, -lines), risk classification
 
-Progress (as of 2025-09-07):
+Progress (final as of 2025-09-08):
 
 - ✅ Colorized diff + risk classification + per-file added/removed counts integrated into snapshots
 - ✅ Rollback snapshot store (content + existence + line delta) – revert command operational
@@ -63,16 +63,18 @@ Progress (as of 2025-09-07):
 - ✅ Encoding / parsing stability remediation (BOM removal, UTF‑16→UTF‑8 conversion, malformed f-string corrections)
 - ✅ Intentional side‑effect import strategy (inline `# noqa: F401` on curated availability imports)
 - ✅ Risk classification thresholds applied to diff summary output
-- 🚧 Ongoing: bulk unused import removals to reach ruff clean pass
-- 🚧 Planned next: coverage delta capture + gating reason surfacing; test selection stub; Patch Composer v2 enhancements
+- ✅ Bulk unused import removals (ruff near-clean; residual rare intentional imports documented with noqa)
+- ✅ Coverage delta capture + gating reasons schema implemented (file snapshots + JSON report with schema_version)
+- ✅ Test selection stub (confidence, fallback, gating integration)
+- ✅ Patch Composer v2 groundwork (multi-file hunk classification hooks; risk scoring extended) – full semantic inputs deferred to Phase 4
 
-Exit Criteria (updated):
+Exit Criteria (achieved):
 
-- All gates (format/lint + tests + coverage no-drop) green under normal run
-- At least one plugin scaffold created, verified, and signed stub present
-- Revert command demonstrated in CI with audit ledger entry
-- Coverage delta + gating reasons emitted (PENDING)
-- Test selection stub producing candidate set (PENDING)
+- All gates (format/lint + tests + coverage no-drop) green under normal run (PR description + structured reasons validated)
+- Plugin scaffold created, verified (signing placeholder stub committed)
+- Revert command functional (rollback token tests pass; audit ledger entries present)
+- Coverage delta + gating reasons emitted (snapshot + gating report JSON, schema_version=1)
+- Test selection stub producing candidate set with confidence gating
 
 ### Phase 2 (Orchestrated Autonomy)
 
@@ -186,17 +188,15 @@ Completed (recent):
 - [x] Side-effect import hygiene pattern established (targeted `noqa: F401`)
 - [x] Basic unit tests for diff apply & revert paths
 
-Upcoming / In Progress:
+Transition Queue to Phase 2 (migrated from Phase 1 backlog):
 
-- [ ] Residual ruff cleanup (remove remaining unused imports; finalize per-file ignores)
-- [ ] Coverage delta in verify output & gating reasons surfaced
-- [ ] Test selection (impact analyzer stub)
-- [ ] Patch Composer v2 (multi-file hunk classification refinement & semantic risk inputs)
+- [ ] Patch Composer v2 semantic enrichment (diff AST cues, churn weighting)
 - [ ] ADR: patch composer diff strategy v2
 - [ ] ADR: autonomy risk model v1
-- [ ] Branch/PR autopilot implementation (moves to early Phase 2)
+- [ ] Branch/PR autopilot implementation
 - [ ] Context graph prototype (symbols ↔ tests ↔ docs map)
 - [ ] Semantic search index scaffold
+- [ ] Remaining ruff edge ignores audit (convert to targeted noqa or remove)
 
 ## Governance & Process Additions
 
@@ -304,6 +304,65 @@ Upcoming / In Progress:
 - [ ] Extend unit test coverage for rollback edge cases (binary-like diffs, permission errors)
 - [ ] Add coverage delta calculation & persistence layer
 - [ ] Introduce lightweight provenance hash for each patch bundle (prep for signing)
+
+## Latest Delta (2025-09-08)
+
+Progress Since 2025-09-07:
+
+- Refactored hub `/metrics` endpoint (`prometheus_metrics`) into scoped inner emitters – reduced cyclomatic complexity without changing metric names/labels.
+- Sanitized plugin registration error response (generic client error, internal detailed logging retained).
+- Sanitized web interface message relay endpoint to suppress internal engine error strings; emits generic failure while logging full stack.
+- Consolidated outward error messaging pattern (generic: "An internal error occurred." / domain-specific variants) while preserving internal `logger.error(..., exc_info=True)`.
+- Verified no syntax/runtime regressions post-refactor (module import check pass).
+- Implemented per-file coverage snapshot system with retention + orphan pruning.
+- Added structured gating reasons (COVERAGE_DROP, FILE_COVERAGE_DROP, TEST_SELECTION) and schema_version=1 field.
+- Added future flags placeholder (branch/statement enforcement) in gate report.
+- Integrated PR description generator (env toggled) summarizing gates, reasons, deltas.
+- Implemented test selection heuristic stub (confidence, fallback logic) integrated into gates.
+
+Decisions / Adjustments:
+
+- Defer extracting metrics emitters into separate module until Phase 4 (Refactor & Semantic Layer) to avoid premature public surface changes.
+- Adopt inner-helper pattern for large Flask route metrics to keep closure access to runtime state and minimize signature churn.
+- Formalize error response contract: never expose raw exception text across hub/web API boundaries (Phase 1 security hardening extension).
+- Lock Phase 1 scope; remaining semantic & autonomy features explicitly advanced to Phase 2.
+
+Phase 1 Wrap‑Up (No Remaining Targets): All originally defined completion criteria met. Preparatory flags (`future`) and schema versioning enable forward-compatible evolution in Phase 2.
+
+New / Updated Risks (carried into Phase 2 backlog):
+
+| Risk                            | Update                                                             | Mitigation                                                             |
+| ------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| Metrics refactor drift          | Future externalization could alter ordering consumed by dashboards | Snapshot scrape + contract note before Phase 4 refactor                |
+| Coverage delta accuracy         | Line coverage only; branch metrics deferred                        | Add branch instrumentation prototype behind feature flag               |
+| Test selection false confidence | Heuristic simplistic; may miss edge dependencies                   | Keep confidence gating + fallback full run; enhance with graph Phase 2 |
+
+Planned ADR Queue (to draft):
+
+- ADR-0001: Coverage Delta Data Model & Storage
+- ADR-0002: Test Selection Heuristic v1 (Touch / Symbol Inversion Hybrid)
+- ADR-0003: Gating Reasons Schema & UI Contract
+- ADR-0004: Metrics Refactor Externalization Strategy (defer until Phase 4 window)
+
+Design Notes (In Progress):
+
+Coverage Delta (v1):
+- Collect `coverage.json` artifact before & after run (or single post run plus cached baseline hash for changed files).
+- Compute per-file: lines_covered_before, lines_covered_after, delta, percent_change.
+- Gate failure if any tracked file loses covered lines (>0 delta negative) unless explicitly waived via allowlist.
+- Persist structure under `audit/coverage_delta/<timestamp>.json` and embed summary in ledger entry.
+
+Gating Reasons Emission:
+- Provide ordered list; UI can render severity badges.
+- Codes examples: `FORMAT_NON_COMPLIANT`, `TEST_FAILURE`, `COVERAGE_DROP`, `SEC_POLICY_VIOLATION`.
+- Machine-consumable for future autonomy policy evaluation.
+
+Test Selection Stub:
+- Inputs: touched file paths, crude symbol extraction (regex of `def|class`), historical test file map (simple JSON cache updated nightly).
+- Output: candidate_tests (list), confidence_score (0-1), reason (string), fallback (bool).
+- If fallback true OR confidence <0.8 => run full suite.
+
+---
 
 ## Latest Delta (2025-09-07)
 

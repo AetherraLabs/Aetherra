@@ -471,12 +471,21 @@ class SelfImprovementEngine:
         self.improvement_task = None
         # Event loop on which the improvement task was created (for cross-loop shutdown)
         self._task_loop = None  # type: ignore[assignment]
+        # Lightweight counters
+        self._suppressed_exceptions: int = 0
+        self._analysis_cycles: int = 0
         self._init_database()
 
     def _init_database(self):
         """Initialize self-improvement database"""
         conn = sqlite3.connect(self.db_path)
         try:
+            try:
+                conn.execute("PRAGMA journal_mode=WAL;")
+                conn.execute("PRAGMA synchronous=NORMAL;")
+                conn.execute("PRAGMA busy_timeout=3000;")
+            except Exception:
+                pass
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS performance_metrics (
@@ -631,11 +640,8 @@ class SelfImprovementEngine:
                         )  # type: ignore[arg-type]
                         # Also poke the loop in case it's idle
                         task_loop.call_soon_threadsafe(lambda: None)
-                    try:
                         waiter.result(timeout=3)
                     except Exception:
-                        pass
-                    finally:
                         pass
 
                 else:
@@ -666,6 +672,7 @@ class SelfImprovementEngine:
     async def _analyze_and_improve(self):
         """Analyze system and generate improvements"""
         try:
+            self._analysis_cycles += 1
             # Analyze patterns
             patterns = self.pattern_analyzer.identify_performance_patterns(
                 self.metrics_collector.metrics_history
@@ -687,6 +694,7 @@ class SelfImprovementEngine:
 
         except Exception as e:
             logger.error(f"Error in analysis and improvement: {e}")
+            self._suppressed_exceptions += 1
 
     def _collect_current_metrics(self) -> Dict[str, Any]:
         """Collect current system metrics"""
@@ -814,6 +822,15 @@ class SelfImprovementEngine:
             "learning_outcomes": len(self.learning_outcomes),
             "tracked_metrics": len(self.metrics_collector.metrics_history),
             "last_analysis": datetime.now().isoformat(),
+            "analysis_cycles": self._analysis_cycles,
+            "suppressed_exceptions": self._suppressed_exceptions,
+        }
+
+    def export_internal_metrics(self) -> Dict[str, Any]:  # pragma: no cover - simple accessor
+        return {
+            "suppressed_exceptions": self._suppressed_exceptions,
+            "analysis_cycles": self._analysis_cycles,
+            "tracked_metrics": len(self.metrics_collector.metrics_history),
         }
 
     def get_metric_trends(self) -> Dict[str, Dict[str, Any]]:
@@ -851,6 +868,16 @@ class SelfImprovementEngine:
                     json.dumps(context) if context else None,
                 ),
             )
+            # Helpful indexes for common queries
+            try:
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_perf_name_time ON performance_metrics(name, timestamp);"
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_proposal_status ON improvement_proposals(status);"
+                )
+            except Exception:
+                pass
             conn.commit()
         finally:
             conn.close()
@@ -921,7 +948,7 @@ async def test_self_improvement_engine():
     # Simulate recording metrics
     import random
 
-    for i in range(20):
+    for _ in range(20):
         engine.record_performance_metric("response_time", 100 + random.uniform(-20, 50), "ms")
         engine.record_performance_metric("cpu_usage", 60 + random.uniform(-10, 30), "percent")
         await asyncio.sleep(0.1)

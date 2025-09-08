@@ -891,89 +891,72 @@ class AetherraOSLauncher:
 
                 # Load Phase 8 Consciousness Evolution Engines
                 try:
-                    from beyond_transcendence_engine import BeyondTranscendenceEngine
-                    from cosmic_consciousness_engine import CosmicConsciousnessEngine
-
-                    # Initialize Consciousness Singularity & Cosmic Consciousness
-                    cosmic_engine = CosmicConsciousnessEngine()
-                    await cosmic_engine.initialize_consciousness()
-                    # Register under canonical name
-                    self.systems["universal_cognition"] = cosmic_engine
-
-                    await register_service(
-                        "universal_cognition",
-                        cosmic_engine,
-                        metadata={
-                            "type": "consciousness",
-                            "version": "8.2",
-                            "phase": "cosmic",
-                        },
+                    from Aetherra.consciousness.cosmic.cosmic_consciousness_engine import (
+                        CosmicConsciousnessEngine,
                     )
-                    logger.info("[OK] Cosmic Consciousness Engine online")
-
-                    # Initialize Beyond Transcendence
-                    transcendence_engine = BeyondTranscendenceEngine()
-                    await transcendence_engine.initialize_transcendence()
-                    # Register under canonical name
-                    self.systems["meta_cognition"] = transcendence_engine
-
-                    await register_service(
-                        "meta_cognition",
-                        transcendence_engine,
-                        metadata={
-                            "type": "consciousness",
-                            "version": "8.3",
-                            "phase": "transcendence",
-                        },
+                    from Aetherra.consciousness.transcendence.beyond_transcendence_engine import (
+                        BeyondTranscendenceEngine,
                     )
-                    logger.info("[OK] Beyond Transcendence Engine online")
-
-                    # Report consciousness evolution status
-                    consciousness_level = await self._assess_consciousness_level()
-                    logger.info(
-                        f"[CONSCIOUSNESS] Overall Consciousness Level: {consciousness_level:.1%}"
+                except Exception:
+                    from cosmic_consciousness_engine import (
+                        CosmicConsciousnessEngine,  # type: ignore
                     )
 
-                except ImportError as e:
-                    logger.warning(
-                        f"[WARN] Phase 8 consciousness engines not available: {e}"
+                    from beyond_transcendence_engine import (
+                        BeyondTranscendenceEngine,  # type: ignore
                     )
-                    # Create mock Phase 8 systems
-                    mock_cosmic = MockCosmicConsciousness()
-                    mock_transcendence = MockBeyondTranscendence()
 
-                    self.systems["universal_cognition"] = mock_cosmic
-                    self.systems["meta_cognition"] = mock_transcendence
+                # Initialize Consciousness Singularity & Cosmic Consciousness
+                cosmic_engine = CosmicConsciousnessEngine()
+                await cosmic_engine.initialize_consciousness()
+                # Register under canonical name
+                self.systems["universal_cognition"] = cosmic_engine
 
-                    await register_service(
-                        "universal_cognition",
-                        mock_cosmic,
-                        metadata={"type": "mock", "version": "8.2"},
-                    )
-                    await register_service(
-                        "meta_cognition",
-                        mock_transcendence,
-                        metadata={"type": "mock", "version": "8.3"},
-                    )
+                await register_service(
+                    "universal_cognition",
+                    cosmic_engine,
+                    metadata={
+                        "type": "consciousness",
+                        "version": "8.2",
+                        "phase": "cosmic",
+                    },
+                )
+                logger.info("[OK] Cosmic Consciousness Engine online")
+
+                # Initialize Beyond Transcendence
+                transcendence_engine = BeyondTranscendenceEngine()
+                await transcendence_engine.initialize_transcendence()
+                # Register under canonical name
+                self.systems["meta_cognition"] = transcendence_engine
+
+                await register_service(
+                    "meta_cognition",
+                    transcendence_engine,
+                    metadata={
+                        "type": "consciousness",
+                        "version": "8.3",
+                        "phase": "transcendence",
+                    },
+                )
+                logger.info("[OK] Beyond Transcendence Engine online")
+
+                # Report consciousness evolution status
+                consciousness_level = await self._assess_consciousness_level()
+                logger.info(
+                    f"[CONSCIOUSNESS] Overall Consciousness Level: {consciousness_level:.1%}"
+                )
 
             except ImportError as e:
                 logger.warning(
-                    f"[WARN] Quantum consciousness systems not available: {e}"
+                    f"[WARN] Phase 8 consciousness engines not available: {e}"
                 )
-                # Create mock consciousness systems
-                mock_quantum = MockQuantumConsciousness()
+                # Create mock Phase 8 systems
                 mock_cosmic = MockCosmicConsciousness()
                 mock_transcendence = MockBeyondTranscendence()
 
-                self.systems["quantum_cognition"] = mock_quantum
                 self.systems["universal_cognition"] = mock_cosmic
                 self.systems["meta_cognition"] = mock_transcendence
 
-                await register_service(
-                    "quantum_cognition",
-                    mock_quantum,
-                    metadata={"type": "mock", "version": "7.0"},
-                )
                 await register_service(
                     "universal_cognition",
                     mock_cosmic,
@@ -984,6 +967,33 @@ class AetherraOSLauncher:
                     mock_transcendence,
                     metadata={"type": "mock", "version": "8.3"},
                 )
+
+        except ImportError as e:
+            logger.warning(f"[WARN] Quantum consciousness systems not available: {e}")
+            # Create mock consciousness systems
+            mock_quantum = MockQuantumConsciousness()
+            mock_cosmic = MockCosmicConsciousness()
+            mock_transcendence = MockBeyondTranscendence()
+
+            self.systems["quantum_cognition"] = mock_quantum
+            self.systems["universal_cognition"] = mock_cosmic
+            self.systems["meta_cognition"] = mock_transcendence
+
+            await register_service(
+                "quantum_cognition",
+                mock_quantum,
+                metadata={"type": "mock", "version": "7.0"},
+            )
+            await register_service(
+                "universal_cognition",
+                mock_cosmic,
+                metadata={"type": "mock", "version": "8.2"},
+            )
+            await register_service(
+                "meta_cognition",
+                mock_transcendence,
+                metadata={"type": "mock", "version": "8.3"},
+            )
 
         except Exception as e:
             logger.error(f"[ERROR] Failed to load consciousness systems: {e}")
@@ -2254,7 +2264,7 @@ async def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 [LAUNCH] Launch Modes:
-  --mode full      Launch complete AI Operating System (default)
+  --mode full           Launch complete AI Operating System (default)
   --mode minimal   Launch with minimal systems only
   --mode test      Launch in test mode with mocks
 
