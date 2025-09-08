@@ -19,7 +19,9 @@
         "zustand": "^5.0.8"
     },
     "devDependencies": {
+        "dependabot/npm_and_yarn/frontend/vitejs/plugin-react-5.0.2": "^5.0.2",
         "@vitejs/plugin-react": "^5.0.1",
-        "vite": "^7.0.6"
+        "vite": "^7.0.6",
+        "main": "src/main.jsx"
     }
 }
