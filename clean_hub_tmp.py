@@ -1778,12 +1778,12 @@ class AetherraHubServer:
                         else:
                             return fn(kernel)
                     except Exception as e:  # pragma: no cover - surfaced to caller
-                        return False, str(e)
-
+                        logging.error("Exception in kernel mutation: %s", e, exc_info=True)
+                        return False, "An internal error has occurred."
                 return _a.run(_run())
             except Exception as e:  # pragma: no cover - defensive
-                return False, str(e)
-
+                logging.error("Exception in _with_kernel_mutation: %s", e, exc_info=True)
+                return False, "An internal error has occurred."
         def _get_memory_quantum_status_sync():
             """Best-effort quantum memory status.
 
