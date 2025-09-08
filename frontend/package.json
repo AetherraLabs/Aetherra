@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "type": "module",
+    "main": "src/main.jsx",
     "scripts": {
         "dev": "vite",
         "build": "vite build",
@@ -19,9 +20,7 @@
         "zustand": "^5.0.8"
     },
     "devDependencies": {
-        "dependabot/npm_and_yarn/frontend/vitejs/plugin-react-5.0.2": "^5.0.2",
-        "@vitejs/plugin-react": "^5.0.1",
-        "vite": "^7.1.5",
-        "main": "src/main.jsx"
+        "@vitejs/plugin-react": "^5.0.2",
+        "vite": "^7.1.5"
     }
 }
