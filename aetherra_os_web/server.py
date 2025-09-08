@@ -20,6 +20,7 @@ from typing import Any, Dict, List
 
 import psutil
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -74,7 +75,8 @@ class ConnectionManager:
     async def send_personal_message(self, message: str, websocket: WebSocket):
         try:
             await websocket.send_text(message)
-        except:
+        except Exception:
+            # Silently ignore send errors (client likely disconnected)
             pass
 
     async def broadcast(self, message: Dict[str, Any]):
@@ -88,7 +90,7 @@ class ConnectionManager:
         for connection in self.active_connections:
             try:
                 await connection.send_text(message_str)
-            except:
+            except Exception:
                 disconnected.append(connection)
 
         # Remove disconnected clients
@@ -305,7 +307,10 @@ class SystemMonitor:
             logger.error(f"Error getting Aetherra status: {e}")
             return {
                 "available": False,
-                "status": f"Error: {str(e)}",
+                # Intentionally do not leak internal exception details to API consumers
+                # Original behavior exposed: f"Error: {str(e)}"
+                # Contract: keep keys/structure identical while sanitizing status string
+                "status": "Could not retrieve Aetherra engine status",
                 "components": {},
             }
 

@@ -528,13 +528,13 @@ class AetherraHubServer:
                     vary = resp.headers.get("Vary")
                     resp.headers["Vary"] = (vary + ", Origin") if vary else "Origin"
                     resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-                    resp.headers[
-                        "Access-Control-Allow-Headers"
-                    ] = "Content-Type, X-Aetherra-Token, X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
+                    resp.headers["Access-Control-Allow-Headers"] = (
+                        "Content-Type, X-Aetherra-Token, X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
+                    )
                     # Expose custom headers to browser JS
-                    resp.headers[
-                        "Access-Control-Expose-Headers"
-                    ] = "X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
+                    resp.headers["Access-Control-Expose-Headers"] = (
+                        "X-Aetherra-Trace-Id, X-Aetherra-Chat-Version, X-Aetherra-Policy"
+                    )
                     # Only opt into Private Network Access for allowed origins
                     if pna_allow:
                         resp.headers["Access-Control-Allow-Private-Network"] = "true"
@@ -3346,9 +3346,7 @@ class AetherraHubServer:
                     lines.append(
                         'aetherra_orchestrator_task_latency_ms_bucket{le="+Inf"} 0.0'.replace(
                             "{", "{{"
-                        ).replace(
-                            "}", "}}"
-                        )
+                        ).replace("}", "}}")
                     )
                 except Exception:
                     pass
@@ -3765,12 +3763,15 @@ class AetherraHubServer:
                             return await fn(impl)
                         else:
                             return fn(impl)
-                    except Exception as e:
-                        return False, str(e)
+                    except Exception:
+                        # Log the real exception internally but do not leak details to caller
+                        logging.error("Engine call failed", exc_info=True)
+                        return False, "internal error"
 
                 return _a.run(_run())
-            except Exception as e:
-                return False, str(e)
+            except Exception:
+                logging.error("Engine call wrapper failed", exc_info=True)
+                return False, "internal error"
 
         @app.route("/api/kernel/control/pause", methods=["POST"])
         def api_kernel_pause():
