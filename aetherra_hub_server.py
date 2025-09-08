@@ -4679,6 +4679,16 @@ class AetherraHubServer:
                 else:
                     success, payload = result  # type: ignore[assignment]
 
+                # If engine thread ended without putting any queue events and no holder result (rare race)
+                if done["flag"] and "result" not in holder:
+                    success, payload = False, "backend_unavailable"
+                    try:
+                        self.chat_metrics["breaker_open_total"] = (
+                            int(self.chat_metrics.get("breaker_open_total", 0)) + 1
+                        )
+                    except Exception:
+                        pass
+
                 normalized = None
                 if success:
                     try:
@@ -5732,6 +5742,19 @@ class AetherraHubServer:
                 payload = request.get_json(silent=True) or {}  # type: ignore[name-defined]
                 msg = payload.get("message") or payload.get("content") or ""
                 allow_edits = bool(payload.get("allow_edits", False))
+                # Early metric accounting: if AI API globally disabled we still count this as a mock fallback
+                ai_disabled = os.environ.get("AETHERRA_AI_API_ENABLED", "0") != "1"
+                _early_fallback_increment = False
+                if ai_disabled:
+                    try:
+                        fpc0 = self.chat_metrics.get("fallback_path_counts", {}) or {}
+                        # Only increment if we have not already noted a mock path (avoid double increments on retries)
+                        base_mock = int(fpc0.get("mock", 0))
+                        fpc0["mock"] = base_mock + 1
+                        self.chat_metrics["fallback_path_counts"] = fpc0
+                        _early_fallback_increment = True
+                    except Exception:
+                        pass
                 # Instrumentation helpers (capture baseline mock count + flags)
                 try:
                     _fpc_pre = int(
@@ -5742,7 +5765,7 @@ class AetherraHubServer:
                 except Exception:
                     _fpc_pre = 0
                 _service_used = False
-                _orig_upstream_suggestions = None
+                # (Upstream suggestions captured only for trimming logic; no need to materialize copy now)
                 edit_root = payload.get("edit_root")
                 trace_id = _extract_trace_id(request, payload)
                 prio = str(payload.get("priority") or "normal").strip().lower()
@@ -5845,15 +5868,7 @@ class AetherraHubServer:
                     result = _run_coro_blocking(_call())
                     if result:
                         _service_used = True
-                        try:
-                            if isinstance(result, dict) and isinstance(
-                                result.get("suggestions"), list
-                            ):
-                                _orig_upstream_suggestions = list(
-                                    result.get("suggestions")
-                                )  # type: ignore[arg-type]
-                        except Exception:
-                            _orig_upstream_suggestions = None
+                        # (No-op: we defer any trimming decisions to final block; avoid extra list() copy)
                 except Exception:
                     result = None
 
@@ -5863,12 +5878,15 @@ class AetherraHubServer:
                         "Lyrixa chat service is not online right now. "
                         "I can still answer identity and Aetherra questions."
                     )
-                    try:
-                        fpc = self.chat_metrics.get("fallback_path_counts", {}) or {}
-                        fpc["mock"] = int(fpc.get("mock", 0)) + 1
-                        self.chat_metrics["fallback_path_counts"] = fpc
-                    except Exception:
-                        pass
+                    if not _early_fallback_increment:
+                        try:
+                            fpc = (
+                                self.chat_metrics.get("fallback_path_counts", {}) or {}
+                            )
+                            fpc["mock"] = int(fpc.get("mock", 0)) + 1
+                            self.chat_metrics["fallback_path_counts"] = fpc
+                        except Exception:
+                            pass
                     r = jsonify(
                         {
                             "text": text,
@@ -6026,6 +6044,47 @@ class AetherraHubServer:
                             )
                             fpcz["mock"] = int(fpcz.get("mock", 0)) + 1
                             self.chat_metrics["fallback_path_counts"] = fpcz
+                except Exception:
+                    pass
+                # Final enforcement: when allow_edits is False limit to EXACTLY the upstream (or synthesized) suggestions list length 0 or 1
+                # Avoid leaking internal static suggestion injectors
+                try:
+                    if isinstance(result, dict):
+                        if not allow_edits:
+                            sg = result.get("suggestions")
+                            if isinstance(sg, list):
+                                # Keep only the first if more than one
+                                if len(sg) > 1:
+                                    sg = sg[:1]
+                                    result["suggestions"] = sg
+                                # Rebuild edit_plan to mirror suggestions precisely
+                                ep_mirror = []
+                                for s in sg:
+                                    if isinstance(s, dict):
+                                        ep_mirror.append(
+                                            {
+                                                "title": s.get("title")
+                                                or s.get("action")
+                                                or "suggestion",
+                                                "file": s.get("file"),
+                                                "action": s.get("action"),
+                                            }
+                                        )
+                                    else:
+                                        ep_mirror.append(
+                                            {
+                                                "title": str(s),
+                                                "file": None,
+                                                "action": None,
+                                            }
+                                        )
+                                result["edit_plan"] = ep_mirror
+                            else:
+                                # No suggestions; ensure edit_plan empty
+                                result["edit_plan"] = []
+                        # Enforce confidence default
+                        if "confidence" not in result:
+                            result["confidence"] = 0.5
                 except Exception:
                     pass
                 try:
@@ -6195,11 +6254,9 @@ class AetherraHubServer:
             """Read-only status for the Trainer system (scaffold)."""
             self.stats["requests_served"] += 1
             try:
-                # Always read env live; never cache to allow test isolation
                 raw_flag = os.environ.get("AETHERRA_TRAINER_ENABLED", "0")
-                enabled = True if str(raw_flag).strip() == "1" else False
+                enabled = str(raw_flag).strip() == "1"
                 if not enabled:
-                    # Fast path: return disabled snapshot without mutating job states first to satisfy tests
                     return jsonify(
                         {
                             "ok": True,
@@ -6213,13 +6270,6 @@ class AetherraHubServer:
                             "eval_runs_total": int(self._trainer_eval_runs_total),
                         }
                     )  # type: ignore[name-defined]
-                if not enabled:
-                    # Best-effort ensure no jobs are marked running while disabled
-                    with self._trainer_lock:
-                        for j in self.trainer_jobs.values():
-                            if j.get("state") == "running":
-                                j["state"] = "failed"
-                                j["progress"] = 0.0
                 q = r = c = f = 0
                 with self._trainer_lock:
                     for j in self.trainer_jobs.values():
