@@ -1778,12 +1778,18 @@ class AetherraHubServer:
                         else:
                             return fn(kernel)
                     except Exception as e:  # pragma: no cover - surfaced to caller
-                        logging.error("Exception in kernel mutation: %s", e, exc_info=True)
+                        logging.error(
+                            "Exception in kernel mutation: %s", e, exc_info=True
+                        )
                         return False, "An internal error has occurred."
+
                 return _a.run(_run())
             except Exception as e:  # pragma: no cover - defensive
-                logging.error("Exception in _with_kernel_mutation: %s", e, exc_info=True)
+                logging.error(
+                    "Exception in _with_kernel_mutation: %s", e, exc_info=True
+                )
                 return False, "An internal error has occurred."
+
         def _get_memory_quantum_status_sync():
             """Best-effort quantum memory status.
 
@@ -2563,7 +2569,8 @@ class AetherraHubServer:
 
             except Exception as e:
                 logger.error(f"Γ¥î Plugin registration failed: {e}")
-                return jsonify({"error": str(e)}), 500  # type: ignore[name-defined]
+                # Do not leak internal exception details to the client
+                return jsonify({"error": "An internal error occurred."}), 500  # type: ignore[name-defined]
 
         @app.route("/api/plugins/<plugin_id>", methods=["GET"])
         def get_plugin(plugin_id):

@@ -414,6 +414,7 @@ async def send_aetherra_message(data: dict):
         return {"error": "An internal error occurred while processing the message"}
 
 
+
 @app.get("/api/status")
 async def get_status():
     """Get current system status"""
