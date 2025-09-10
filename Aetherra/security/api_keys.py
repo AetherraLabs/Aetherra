@@ -18,11 +18,12 @@ Encryption design:
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 try:  # Optional dependency
     from cryptography.fernet import Fernet  # type: ignore
@@ -41,15 +42,28 @@ def _ensure():
     if not KEYS_FILE.exists():
         KEYS_FILE.write_text("{}", encoding="utf-8")
     # best-effort restrictive perms (no-op on some platforms)
-    try:
+    with contextlib.suppress(Exception):
         os.chmod(APP_DIR, 0o700)
         if KEYS_FILE.exists():
             os.chmod(KEYS_FILE, 0o600)
+    # In production/staging, auto-provision a master key if not present and plaintext is not allowed
+    try:
+        profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+        allow_plain = os.getenv("AETHERRA_KEYS_ALLOW_PLAINTEXT", "0") == "1"
+        if (
+            profile in ("prod", "production", "staging")
+            and not allow_plain
+            and Fernet is not None
+            and not os.getenv("AETHERRA_KEYS_MASTER")
+            and not MASTER_KEY_FILE.exists()
+        ):
+            ensure_master_key()
     except Exception:
+        # non-fatal
         pass
 
 
-def _load_master_key() -> Optional[bytes]:
+def _load_master_key() -> bytes | None:
     """Return Fernet key bytes if available, else None.
 
     Priority: env AETHERRA_KEYS_MASTER -> file ~/.aetherra/keys_master.key
@@ -69,7 +83,7 @@ def _load_master_key() -> Optional[bytes]:
     return None
 
 
-def _get_fernet() -> Optional[Any]:
+def _get_fernet() -> Any | None:
     global _fernet
     if _fernet is not None:
         return _fernet
@@ -100,10 +114,8 @@ def _save():
     if _cache is None:
         return
     KEYS_FILE.write_text(json.dumps(_cache, indent=2), encoding="utf-8")
-    try:
+    with contextlib.suppress(Exception):
         os.chmod(KEYS_FILE, 0o600)
-    except Exception:
-        pass
 
 
 def _maybe_encrypt_on_write():
@@ -120,7 +132,7 @@ def _maybe_encrypt_on_write():
         return
     if data.get("__encrypted__") is True:
         return
-    converted: Dict[str, object] = {
+    converted: dict[str, object] = {
         "__encrypted__": True,
         "__updated_at": datetime.utcnow().isoformat(),
     }
@@ -145,7 +157,7 @@ def _maybe_encrypt_on_write():
     _save()
 
 
-def get_key(name: str) -> Optional[str]:
+def get_key(name: str) -> str | None:
     env_name = f"AETHERRA_{name.upper()}"
     if env_name in os.environ:
         return os.environ[env_name]
@@ -183,8 +195,21 @@ def get_key(name: str) -> Optional[str]:
 def set_key(name: str, value: str):
     data = _load()
     f = _get_fernet()
+    # Enforce encryption in production/staging unless explicitly allowed
+    if not f:
+        profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+        allow_plain = os.getenv("AETHERRA_KEYS_ALLOW_PLAINTEXT", "0") == "1"
+        if profile in ("prod", "production", "staging") and not allow_plain:
+            # Attempt to provision a master key automatically
+            try:
+                ensure_master_key()
+                f = _get_fernet()
+            except Exception:
+                f = None
+            if not f:
+                raise RuntimeError("encryption_required_in_production")
     if f:
-        enc_map: Dict[str, object]
+        enc_map: dict[str, object]
         enc_map = data if data.get("__encrypted__") else {"__encrypted__": True}
         token = f.encrypt(value.encode("utf-8")).decode("utf-8")
         enc_map[name] = {"cipher": token}
@@ -205,7 +230,7 @@ def delete_key(name: str):
         _save()
 
 
-def get_key_scoped(name: str, requester: Optional[str]) -> Optional[str]:
+def get_key_scoped(name: str, requester: str | None) -> str | None:
     """Return a key only if the requester is allowed by policy.
 
     Deny-by-default when a requester is provided. Allow global callers when
@@ -234,7 +259,7 @@ def get_key_scoped(name: str, requester: Optional[str]) -> Optional[str]:
     return None
 
 
-def ensure_master_key() -> Optional[str]:
+def ensure_master_key() -> str | None:
     """Generate and persist a Fernet master key if none exists; return base64 key.
 
     No-op if cryptography isn't available. Returns the key as a string for convenience.
@@ -252,10 +277,8 @@ def ensure_master_key() -> Optional[str]:
         APP_DIR.mkdir(parents=True, exist_ok=True)
         key = Fernet.generate_key()
         MASTER_KEY_FILE.write_bytes(key + b"\n")
-        try:
+        with contextlib.suppress(Exception):
             os.chmod(MASTER_KEY_FILE, 0o600)
-        except Exception:
-            pass
         # attempt to encrypt existing plaintext entries
         _maybe_encrypt_on_write()
         return key.decode("utf-8")
