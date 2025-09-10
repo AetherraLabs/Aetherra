@@ -132,30 +132,35 @@ except Exception:
 
 
 try:
-    from ..orchestration.agent_orchestrator import AgentOrchestrator  # type: ignore
+    # Prefer canonical orchestrator path
+    from ..agents.agent_orchestrator import AgentOrchestrator  # type: ignore
 except Exception:
+    try:
+        # Fallback to deprecated shim (emits DeprecationWarning)
+        from ..orchestration.agent_orchestrator import AgentOrchestrator  # type: ignore
+    except Exception:
 
-    class AgentOrchestrator:
-        def __init__(self, *args, **kwargs):
-            self._tasks: Dict[str, Dict[str, Any]] = {}
-            self._running = False
+        class AgentOrchestrator:
+            def __init__(self, *args, **kwargs):
+                self._tasks: Dict[str, Dict[str, Any]] = {}
+                self._running = False
 
-        async def start_orchestration(self):
-            self._running = True
+            async def start_orchestration(self):
+                self._running = True
 
-        async def stop_orchestration(self):
-            self._running = False
+            async def stop_orchestration(self):
+                self._running = False
 
-        async def submit_task(self, task):
-            tid = getattr(task, "task_id", f"task_{len(self._tasks) + 1}")
-            self._tasks[tid] = {"status": "queued", "task": task}
-            return tid
+            async def submit_task(self, task):
+                tid = getattr(task, "task_id", f"task_{len(self._tasks) + 1}")
+                self._tasks[tid] = {"status": "queued", "task": task}
+                return tid
 
-        def get_task_status(self, task_id: str):
-            return self._tasks.get(task_id, {"status": "unknown"})
+            def get_task_status(self, task_id: str):
+                return self._tasks.get(task_id, {"status": "unknown"})
 
-        def get_system_status(self):
-            return {"total_agents": 0, "pending_tasks": len(self._tasks)}
+            def get_system_status(self):
+                return {"total_agents": 0, "pending_tasks": len(self._tasks)}
 
 
 # ---------- Engine ----------
