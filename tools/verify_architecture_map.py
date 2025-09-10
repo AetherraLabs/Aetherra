@@ -87,10 +87,9 @@ def check_engine() -> Dict:
 
 def check_agents() -> Dict:
     # Support both orchestrator and OS-level Agent Fabric
-    mods = [
-        "Aetherra.aetherra_core.orchestration.agent_orchestrator",
-        "aetherra_agent_fabric",
-    ]
+    canonical = "Aetherra.aetherra_core.agents.agent_orchestrator"
+    shim = "Aetherra.aetherra_core.orchestration.agent_orchestrator"
+    mods = [canonical, "aetherra_agent_fabric", shim]
     ok = False
     errors: List[str] = []
     found: List[str] = []
@@ -101,10 +100,12 @@ def check_agents() -> Dict:
             found.append(m)
         else:
             errors.append(f"{m}: {err}")
+    # Prefer canonical path; mark ok only if canonical or fabric present
+    ok = any(x in found for x in (canonical, "aetherra_agent_fabric"))
     return {
         "ok": ok,
         "found": found,
-        "notes": "Agent orchestrator/fabric available",
+        "notes": "Agent orchestrator/fabric available (canonical under aetherra_core.agents)",
         "errors": [] if ok else errors,
     }
 
