@@ -211,6 +211,65 @@ class AetherraKernelLoop:
             "AETHERRA_KERNEL_HEARTBEAT_LEVEL", "INFO"
         ).upper()
 
+        # --- Production defaults & safety rails ---
+        # Apply conservative defaults in production profile when not explicitly configured.
+        # Goals:
+        # - Bounded queues (avoid unbounded backpressure)
+        # - DLQ enabled
+        # - Plugin invoke timeout <= 20s
+        # - Circuit breaker threshold low by default
+        try:
+            profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+            is_prod = profile in ("prod", "production", "staging")
+            # Queue size defaults (only if not explicitly set)
+            if is_prod:
+                # Detect whether operator explicitly set each limit
+                env_set_high = "AETHERRA_KERNEL_QSIZE_HIGH" in os.environ
+                env_set_norm = "AETHERRA_KERNEL_QSIZE_NORMAL" in os.environ
+                env_set_bg = "AETHERRA_KERNEL_QSIZE_BACKGROUND" in os.environ
+                # If not set or set to 0/unbounded, apply safe defaults
+                if (not env_set_high) or int(
+                    self.queue_limits.get("high_priority", 0) or 0
+                ) <= 0:
+                    self.queue_limits["high_priority"] = 100
+                if (not env_set_norm) or int(
+                    self.queue_limits.get("normal_priority", 0) or 0
+                ) <= 0:
+                    self.queue_limits["normal_priority"] = 500
+                if (not env_set_bg) or int(
+                    self.queue_limits.get("background", 0) or 0
+                ) <= 0:
+                    self.queue_limits["background"] = 1000
+
+                # Ensure DLQ is enabled in production unless explicitly disabled
+                if "AETHERRA_KERNEL_DLQ" not in os.environ:
+                    self.dlq_enabled = True
+
+                # Plugin timeout: cap default at 20s in production if not explicitly configured
+                if "AETHERRA_PLUGIN_INVOKE_TIMEOUT_SEC" not in os.environ:
+                    try:
+                        self.plugin_invoke_timeout_sec = min(
+                            20.0, float(self.plugin_invoke_timeout_sec or 20.0)
+                        )
+                    except Exception:
+                        self.plugin_invoke_timeout_sec = 20.0
+
+                # Circuit breaker threshold: prefer slightly lower default in production if not set
+                if "AETHERRA_PLUGIN_CB_THRESHOLD" not in os.environ:
+                    try:
+                        self.plugin_cb_threshold = max(
+                            1, int(min(3, self.plugin_cb_threshold or 3))
+                        )
+                    except Exception:
+                        self.plugin_cb_threshold = 3
+
+                logger.info(
+                    f"[PROFILE] Production defaults applied: qlimits={{high:{self.queue_limits['high_priority']}, normal:{self.queue_limits['normal_priority']}, background:{self.queue_limits['background']}}}, "
+                    f"dlq_enabled={self.dlq_enabled}, plugin_timeout={self.plugin_invoke_timeout_sec}s, cb_threshold={self.plugin_cb_threshold}"
+                )
+        except Exception as _e:
+            logger.debug(f"[PROFILE] Failed to apply production defaults: {_e}")
+
     def inject_systems(
         self,
         memory_system,
@@ -232,6 +291,41 @@ class AetherraKernelLoop:
         logger.info("[CORE] Starting Aetherra OS Kernel Loop...")
         self.running = True
         self.start_time = datetime.now()
+
+        # Refuse to start in production if backpressure is unbounded (safety gate)
+        try:
+            profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+            allow_unbounded = os.getenv("AETHERRA_ALLOW_UNBOUNDED", "0") == "1"
+            if profile in ("prod", "production", "staging") and not allow_unbounded:
+                ql = self.queue_limits or {}
+                if any(
+                    int(ql.get(k, 0) or 0) <= 0
+                    for k in ("high_priority", "normal_priority", "background")
+                ):
+                    logger.error(
+                        "[SAFETY] Refusing to start: unbounded kernel queues in production. "
+                        "Set AETHERRA_KERNEL_QSIZE_* > 0 or use AETHERRA_ALLOW_UNBOUNDED=1 to override."
+                    )
+                    raise RuntimeError("kernel_backpressure_unbounded")
+                # Enforce DLQ in production
+                if not self.dlq_enabled:
+                    logger.error(
+                        "[SAFETY] Refusing to start: DLQ is disabled in production. "
+                        "Set AETHERRA_KERNEL_DLQ=1 or AETHERRA_ALLOW_UNBOUNDED=1 to override."
+                    )
+                    raise RuntimeError("kernel_dlq_disabled_in_production")
+        except Exception as _e:
+            # If the exception is our intentional safety exception, propagate after logging
+            if isinstance(_e, RuntimeError) and str(_e) in (
+                "kernel_backpressure_unbounded",
+                "kernel_dlq_disabled_in_production",
+            ):
+                self.running = False
+                logger.critical(
+                    f"[ABORT] Kernel did not start due to safety gate: {_e}"
+                )
+                raise
+            logger.debug(f"[SAFETY] Safety gate check error: {_e}")
 
         # Load any persisted tasks (best-effort)
         if self.persist_tasks:
