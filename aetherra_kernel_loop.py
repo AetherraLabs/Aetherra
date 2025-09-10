@@ -702,7 +702,11 @@ class AetherraKernelLoop:
                 except Exception:
                     has_capability = None  # type: ignore
 
-                require_caps = os.getenv("AETHERRA_REQUIRE_CAPABILITIES", "0") == "1"
+                # Enforce capability gate by default in production profile
+                profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+                require_caps = os.getenv(
+                    "AETHERRA_REQUIRE_CAPABILITIES", "0"
+                ) == "1" or profile in ("prod", "production")
                 if require_caps and has_capability is not None and requester:
                     if not has_capability(str(requester), "kernel:invoke_plugin"):
                         logger.warning(

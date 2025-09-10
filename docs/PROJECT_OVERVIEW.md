@@ -196,6 +196,16 @@ Note: Optional Agents endpoints (disabled by default)
 - /api/agents/evaluate
 - /api/agents/evaluation
 
+### HMR Safety Defaults and Metrics
+
+In production (`AETHERRA_PROFILE=prod`):
+
+- HMR only enables if `AETHERRA_HMR_STRICT=1` and `AETHERRA_HMR_ALLOWED_SOURCES` is non-empty.
+- When unset, audit rotation uses safe defaults: `AETHERRA_HMR_AUDIT_MAX_BYTES=5242880` and `AETHERRA_HMR_AUDIT_MAX_BACKUPS=3`.
+- The Hub exposes HMR configuration on:
+  - Prometheus `/metrics` as `aetherra_hmr_enabled`, `aetherra_hmr_strict`, `aetherra_hmr_allowed_sources_count`, `aetherra_hmr_audit_max_bytes`, and `aetherra_hmr_audit_max_backups`.
+  - JSON `/api/kernel/metrics` under the `hmr` key.
+
 #### Services
 
 None
@@ -370,14 +380,17 @@ This index lists environment variables detected in the codebase. Values are read
 Core toggles and networking:
 
 - `AETHERRA_AGENTS_API_ENABLED`
+- `AETHERRA_AUDIT_PATH` — File path for general audit logs produced by tools/services (distinct from HMR audit path).
 - `AETHERRA_AI_API_ENABLED`
 - `AETHERRA_AI_API_REQUIRE_TOKEN`
 - `AETHERRA_AI_API_STREAM`
 - `AETHERRA_AI_API_TOKEN`
+- `AETHERRA_DEBUG` — 1/0 master debug toggle; increases log verbosity across subsystems.
 - `AETHERRA_ALLOW_UNTRUSTED_SECRET`
 - `AETHERRA_AGENT_PER_METRICS`
 - `AETHERRA_ENABLE_QFAC`
 - `AETHERRA_FEDERATION_STATE`
+- `AETHERRA_MODE` — Deployment mode hint (dev|test|prod); some scripts use this in addition to AETHERRA_PROFILE.
 - `AETHERRA_HMR_ENABLED`
 - `AETHERRA_HUB_BASE`
 - `AETHERRA_HUB_HOST`
@@ -385,6 +398,7 @@ Core toggles and networking:
 - `AETHERRA_HUB_STRICT`
 - `AETHERRA_HUB_WS_PORT`
 - `AETHERRA_NET_STRICT`
+- `AETHERRA_POLICY_HOME` — Override directory for security policy files (capabilities.json, net_policy.json); default: `~/.aetherra/policy`. Useful for CI/tests or sharing policy across instances.
 - `AETHERRA_OS_MODE`
 - `AETHERRA_PEERS`
 - `AETHERRA_QFAC_IN_OS`
@@ -429,6 +443,7 @@ Plugins runtime:
 Chat and client defaults:
 
 - `AETHERRA_BASE_URL`
+- `AETHERRA_CHAT_DEBUG` — 1/0 to emit verbose chat pipeline diagnostics (routing, policy, providers).
 - `AETHERRA_CHAT_MAX_TOKENS`
 - `AETHERRA_CHAT_SAFETY_MODE`
 - `AETHERRA_CHAT_TEMPERATURE`
@@ -448,6 +463,18 @@ Chat and client defaults:
 - `AETHERRA_SECURITY_LEDGER`
 - `AETHERRA_SECURITY_LEDGER_PATH`
 - `AETHERRA_RETRY_AFTER_SEC`
+- `AETHERRA_LYRIXA_FORCE_OFFLINE` — 1/0 to force Lyrixa to operate offline (no external AI API calls; use deterministic fallbacks).
+
+Developer tooling (format/lint):
+
+- `AETHERRA_FORMAT_LINT` — 1/0 to run code formatter as part of lint tasks.
+- `AETHERRA_LINT_FIX` — 1/0 to enable auto-fix for supported linters where safe.
+- `AETHERRA_LINT_FLAKE8` — 1/0 to include flake8 checks in lint runs.
+- `AETHERRA_LINT_MYPY` — 1/0 to include mypy type checks in lint runs.
+
+Transcendence metrics and baselines:
+
+- `AETHERRA_TRANSCENDENCE_BASELINE` — Float baseline used by transcendence/consciousness metrics adapters (e.g., 0.700).
 
 ---
 

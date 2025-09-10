@@ -12,8 +12,11 @@ Policy file (optional): ~/.aetherra/policy/capabilities.json
 }
 
 Behavior:
-- Default allow in dev. Set AETHERRA_REQUIRE_CAPABILITIES=1 to deny by default
-  unless explicitly granted by policy.
+- Default allow in dev/staging. Deny-by-default in production profile.
+- Strict enforcement is enabled if either:
+    - AETHERRA_REQUIRE_CAPABILITIES=1, or
+    - AETHERRA_PROFILE is 'prod' or 'production'.
+    In strict mode, access is denied unless explicitly granted by policy.
 """
 
 from __future__ import annotations
@@ -22,7 +25,6 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -30,15 +32,13 @@ APP_DIR = Path(os.path.expanduser("~/.aetherra")).resolve()
 POLICY_FILE = APP_DIR / "policy" / "capabilities.json"
 
 
-def _load_policy() -> Dict[str, List[str]]:
+def _load_policy() -> dict[str, list[str]]:
     try:
         if POLICY_FILE.exists():
             data = json.loads(POLICY_FILE.read_text(encoding="utf-8") or "{}")
             allow = data.get("allow", {})
             if isinstance(allow, dict):
-                return {
-                    str(k): list(v) for k, v in allow.items() if isinstance(v, list)
-                }
+                return {str(k): list(v) for k, v in allow.items() if isinstance(v, list)}
     except Exception as e:
         logger.warning("Failed to load capabilities policy: %s", e)
     return {}
@@ -55,12 +55,13 @@ def has_capability(requester: str, capability: str) -> bool:
     allow_map = _load_policy()
     allowed = capability in allow_map.get(requester, [])
 
-    strict = os.getenv("AETHERRA_REQUIRE_CAPABILITIES", "0") == "1"
+    # Strict when explicitly enabled or when running in production profile
+    profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+    strict_env = os.getenv("AETHERRA_REQUIRE_CAPABILITIES", "0") == "1"
+    strict = strict_env or profile in ("prod", "production")
     if strict and not allowed:
         logger.warning("Capability denied (strict): %s -> %s", requester, capability)
         return False
     if not allowed:
-        logger.info(
-            "Capability used without explicit grant: %s -> %s", requester, capability
-        )
+        logger.info("Capability used without explicit grant: %s -> %s", requester, capability)
     return True

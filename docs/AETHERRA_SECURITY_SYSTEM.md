@@ -112,8 +112,8 @@ This document describes the security measures implemented in Aetherra OS and Lyr
 - Strict signing for plugins: set `AETHERRA_SIGNING_STRICT='1'`.
 - Strict signature verification for .aether: set `AETHERRA_SCRIPT_VERIFY_STRICT='1'`.
 - Strict require semantics in generated .aether: `AETHERRA_REQUIRE_STRICT='1'`.
-- Capabilities strict mode: `AETHERRA_REQUIRE_CAPABILITIES='1'` (deny-by-default without explicit grants).
-- Network strict mode: `AETHERRA_NET_STRICT='1'` (deny-by-default for non-allowlisted domains).
+- Capabilities strict mode: `AETHERRA_REQUIRE_CAPABILITIES='1'` (deny-by-default without explicit grants). In production profile (`AETHERRA_PROFILE=prod|production`), this is enforced by default.
+- Network strict mode: `AETHERRA_NET_STRICT='1'` (deny-by-default for non-allowlisted domains). In production profile, strict mode is enabled by default; when no policy file exists, a safe allowlist is assumed: `localhost`, `127.0.0.1`, `.aetherra.dev`.
 - Deterministic/test profiles: see Coding/Memory specs (e.g., `AETHERRA_PROFILE=test`).
 
 VS Code Tasks (Terminal → Run Task):
@@ -126,6 +126,9 @@ PowerShell examples:
 ```powershell
 $env:AETHERRA_SCRIPT_VERIFY_STRICT='1'; python tools/verify_aether_scripts.py --strict --output aether_static_report.md
 $env:AETHERRA_SIGNING_STRICT='1'; pytest -q tests/test_hub_signing.py tests/test_discovery_signing.py
+# Bootstrap policy files (capabilities and network) with safe defaults
+python -m Aetherra.cli.policy_bootstrap --all
+python -m Aetherra.cli.policy_bootstrap --network --allow api.example.com .corp.example
 ```
 
 ## Observability and reports
@@ -160,6 +163,7 @@ python -m Aetherra.cli.alerts --path C:\path\to\alerts.jsonl --recent 50
 
 - API key storage is plaintext today. Recommended mitigations: provide keys via environment variables or integrate an OS keychain/secret manager. A built‑in encrypt‑at‑rest option (e.g., keyring/cryptography) is planned.
 - The Python sandbox is intentionally narrow and not a substitute for containerization/VMs; stronger isolation and a central policy engine are planned.
+  - Recommended deployment tier for untrusted plugins: containerized plugin runner (per-plugin process/container boundary with network/FS policies). This is the suggested production posture until the integrated isolation layer ships.
 - Network/TLS hardening depends on deployment; add reverse proxy/TLS termination and CORS policies per environment.
 - Capability enforcement is partly policy/docs‑level; wire stricter checks into plugin execution and hub operations over time.
 

@@ -27,7 +27,7 @@ Aetherra pairs a lightweight Hub (APIs + metrics) with the Lyrixa AI assistant, 
 | Extensibility          | Plugin chain executor (sequential today)         | Composable augmentation surface     |
 | Governance             | License policy & ownership memory                | Attribution & compliance continuity |
 
-Quick links: [`INSTALL.md`](INSTALL.md) · [`ROADMAP.md`](ROADMAP.md) · [`CHANGELOG.md`](CHANGELOG.md) · [`SECURITY.md`](SECURITY.md) · [`BETA_READINESS_REPORT.md`](BETA_READINESS_REPORT.md) · [`Developer Onboarding`](docs/DEVELOPER_ONBOARDING.md)
+Quick links: [`INSTALL.md`](INSTALL.md) · [`ROADMAP.md`](ROADMAP.md) · [`CHANGELOG.md`](CHANGELOG.md) · [`SECURITY.md`](SECURITY.md) · [`Security: Production‑Safe Defaults`](SECURITY.md#production-safe-defaults-hub-developer-ai-api) · [`BETA_READINESS_REPORT.md`](BETA_READINESS_REPORT.md) · [`Developer Onboarding`](docs/DEVELOPER_ONBOARDING.md)
 
 ## Table of Contents
 
@@ -268,11 +268,30 @@ Prometheus text endpoint: `/metrics` (Hub).
 
 Key series (alpha):
 
-- `aetherra_trainer_enabled`, `aetherra_trainer_jobs_total`, `aetherra_trainer_evals_total`, `aetherra_trainer_eval_runs_total`, `aetherra_trainer_eval_last_score`
-- Chat per-principal gauges & duration histograms
-- Quantum/coherence gauges (simulation values unless hardware attached)
+- `aetherra_trainer_enabled`, `aetherra_trainer_jobs_total{state=…}`, `aetherra_trainer_evals_total{state=…}`, `aetherra_trainer_eval_runs_total`, `aetherra_trainer_eval_last_score`
+- Chat metrics: `aetherra_chat_requests_total`, `aetherra_chat_streams_current`, `aetherra_chat_streams_current_by_principal{principal=…}`, latency/TTFT aggregates and buckets (`aetherra_chat_latency_ms_sum|_count|_bucket{le=…}`, `aetherra_chat_ttft_ms_sum|_count|_bucket{le=…}`), `aetherra_chat_chunks_total`, token/char totals in/out
+- Fallback accounting: `aetherra_chat_fallback_total{path="mock|cached|engine"}`; mock path is also tracked with a dedicated counter to ensure deterministic visibility on first scrape
+- Error/resilience: `aetherra_chat_rate_limited_total`, `…_policy_denied_total`, `…_backend_unavailable_total`, `…_timeout_total`, `…_breaker_tripped_total`, `…_breaker_open_total`
+- Kernel/Orchestrator: uptime, queue sizes/limits, rolling latency buckets; per-agent low‑cardinality gauges when available
+- Quantum/Coherence: coherence score, fragments/branches/entanglement nodes, lightweight per‑branch gauges (cardinality‑capped)
 
-Export is intentionally stable in naming, but labels/value semantics may evolve before beta.
+Determinism: the exporter normalizes first-scrape baselines (e.g., mock fallback, chunks) and applies reuse resets between runs to keep CI metrics stable.
+
+### Debug metrics flag (optional)
+
+For troubleshooting fallback determinism, you can enable additional diagnostic series by setting the environment variable `AETHERRA_HUB_DEBUG_METRICS=1`. This emits a dual view of the mock fallback counters (raw vs. derived), allowing you to confirm baseline synchronization without affecting core series. This flag is off by default and should remain disabled in normal CI and production runs.
+
+### AI API Security: Allowlist + Tokens (Production‑safe defaults)
+
+- Deny‑by‑default network policy on AI routes with allowlist enforcement. Configure with:
+    - AETHERRA_NETWORK_ALLOWLIST: comma‑separated hosts or suffixes (e.g., `localhost,127.0.0.1,.aetherra.dev`)
+    - AETHERRA_NET_STRICT=1: block any domain not on the allowlist (recommended in prod)
+- Token‑gated AI endpoints in production. Set:
+    - AETHERRA_PROFILE=prod (implies stricter defaults)
+    - AETHERRA_AI_API_REQUIRE_TOKEN=1 and provide AETHERRA_AI_API_TOKEN (or AETHERRA_HUB_CONTROL_TOKEN)
+- CORS/PNA headers are emitted conservatively; prefer same‑origin access in production.
+
+See `SECURITY.md#production-safe-defaults-hub-developer-ai-api` for details and bootstrapping notes.
 
 ---
 

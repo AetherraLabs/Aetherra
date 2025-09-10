@@ -32,6 +32,10 @@ os.environ.setdefault("AETHERRA_AI_API_ENABLED", "0")
 os.environ.setdefault("AETHERRA_AI_API_STREAM", "0")
 os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "0")
 
+# Deterministically force Lyrixa chat service into offline/fallback mode for tests
+# Individual tests can override this by setting it to "0" via monkeypatch if needed.
+os.environ.setdefault("AETHERRA_LYRIXA_FORCE_OFFLINE", "1")
+
 
 @pytest.fixture(scope="session")
 def project_root_path():

@@ -32,6 +32,16 @@ try:
 except Exception:  # pragma: no cover
     TRY_NACL = False
 
+# Secondary backend: cryptography
+TRY_CRYPTO = True
+try:
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import (  # type: ignore
+        Ed25519PublicKey,
+    )
+except Exception:  # pragma: no cover
+    TRY_CRYPTO = False
+    Ed25519PublicKey = None  # type: ignore
+
 
 def sha256_file(p: Path) -> str:
     h = hashlib.sha256()
@@ -44,14 +54,23 @@ def sha256_file(p: Path) -> str:
 def verify_signature(
     manifest_bytes: bytes, sig_hex: str, pub_hex: str
 ) -> tuple[bool, str | None]:
-    if not TRY_NACL:
-        return False, "PyNaCl not available"
-    try:
-        vk = nacl.signing.VerifyKey(pub_hex, encoder=nacl.encoding.HexEncoder)  # type: ignore
-        vk.verify(manifest_bytes, bytes.fromhex(sig_hex))  # raises on failure
-        return True, None
-    except Exception as e:  # pragma: no cover
-        return False, str(e)
+    # Try PyNaCl first
+    if TRY_NACL:
+        try:
+            vk = nacl.signing.VerifyKey(pub_hex, encoder=nacl.encoding.HexEncoder)  # type: ignore
+            vk.verify(manifest_bytes, bytes.fromhex(sig_hex))  # raises on failure
+            return True, None
+        except Exception as e:  # pragma: no cover
+            return False, str(e)
+    # Fallback to cryptography
+    if TRY_CRYPTO and Ed25519PublicKey is not None:
+        try:
+            vk = Ed25519PublicKey.from_public_bytes(bytes.fromhex(pub_hex))
+            vk.verify(bytes.fromhex(sig_hex), manifest_bytes)
+            return True, None
+        except Exception as e:  # pragma: no cover
+            return False, str(e)
+    return False, "No Ed25519 backend available (install pynacl or cryptography)"
 
 
 def main() -> int:
