@@ -11,9 +11,7 @@ def test_canonical_import_only():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         # Clear shim module to force re-import and warning emission
-        sys.modules.pop(
-            "Aetherra.aetherra_core.orchestration.agent_orchestrator", None
-        )
+        sys.modules.pop("Aetherra.aetherra_core.orchestration.agent_orchestrator", None)
         sh = importlib.import_module(
             "Aetherra.aetherra_core.orchestration.agent_orchestrator"
         )
