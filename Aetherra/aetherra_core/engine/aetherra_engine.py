@@ -120,30 +120,35 @@ except ImportError:
 
 
 try:
-    from ..orchestration.agent_orchestrator import AgentOrchestrator
+    # Prefer canonical path
+    from ..agents.agent_orchestrator import AgentOrchestrator
 except ImportError:
+    try:
+        # Fallback to deprecated shim (emits DeprecationWarning)
+        from ..orchestration.agent_orchestrator import AgentOrchestrator  # type: ignore
+    except ImportError:
 
-    class AgentOrchestrator:
-        def __init__(self, *args, **kwargs):
-            pass
+        class AgentOrchestrator:
+            def __init__(self, *args, **kwargs):
+                pass
 
-        async def start_orchestration(self, *args, **kwargs):
-            pass
+            async def start_orchestration(self, *args, **kwargs):
+                pass
 
-        async def stop_orchestration(self, *args, **kwargs):
-            pass
+            async def stop_orchestration(self, *args, **kwargs):
+                pass
 
-        def get_system_status(self, *args, **kwargs):
-            return {"status": "mock", "total_agents": 0, "pending_tasks": 0}
+            def get_system_status(self, *args, **kwargs):
+                return {"status": "mock", "total_agents": 0, "pending_tasks": 0}
 
-        async def submit_task(self, *args, **kwargs):
-            return "mock_task_id"
+            async def submit_task(self, *args, **kwargs):
+                return "mock_task_id"
 
-        def get_task_status(self, *args, **kwargs):
-            return {"status": "mock", "progress": 100}
+            def get_task_status(self, *args, **kwargs):
+                return {"status": "mock", "progress": 100}
 
-        async def orchestrate(self, *args, **kwargs):
-            return {"status": "mock", "result": "Mock orchestration"}
+            async def orchestrate(self, *args, **kwargs):
+                return {"status": "mock", "result": "Mock orchestration"}
 
 
 logger = logging.getLogger(__name__)
