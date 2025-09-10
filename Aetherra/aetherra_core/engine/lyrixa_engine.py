@@ -7,6 +7,7 @@ Not used by Aetherra OS runtime. Will be relocated/removed in cleanup.
 """
 
 import asyncio
+import contextlib
 import inspect
 import json
 import logging
@@ -33,9 +34,7 @@ except Exception:
             return f"mem_{len(self._memories)}"
 
         async def recall_memories(self, query_text: str = "", limit: int = 5, **kwargs):
-            return [
-                _MemoryRecord(m.get("content", {})) for m in self._memories[-limit:]
-            ]
+            return [_MemoryRecord(m.get("content", {})) for m in self._memories[-limit:]]
 
         async def get_memory_stats(self):
             return {"total_memories": len(self._memories)}
@@ -93,9 +92,7 @@ except Exception:
 
         async def reason(self, ctx: ReasoningContext):
             q = getattr(ctx, "payload", {}).get("query")
-            return ReasoningResult(
-                conclusion=f"Baseline reasoning about: {q}", confidence=0.75
-            )
+            return ReasoningResult(conclusion=f"Baseline reasoning about: {q}", confidence=0.75)
 
 
 try:
@@ -250,41 +247,31 @@ class AetherraEngine:
         except Exception as e:
             logger.error(f"❌ Failed to initialize Lyrixa Engine: {e}")
             # Best-effort cleanup for partially started subsystems
-            try:
+            with contextlib.suppress(Exception):
                 if self._started_orchestration and hasattr(
                     self.agent_orchestrator, "stop_orchestration"
                 ):
                     stop_orch = self.agent_orchestrator.stop_orchestration
-                    try:
+                    with contextlib.suppress(Exception):
                         res = stop_orch()
                         if inspect.isawaitable(res):
                             await res
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-            try:
+            with contextlib.suppress(Exception):
                 if self._started_introspection and hasattr(
                     self.introspection, "stop_introspection"
                 ):
                     stop_intro = self.introspection.stop_introspection
-                    try:
+                    with contextlib.suppress(Exception):
                         res = stop_intro()
                         if inspect.isawaitable(res):
                             await res
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-            try:
+            with contextlib.suppress(Exception):
                 if self._started_improvement and hasattr(
                     self.improvement_engine, "stop_improvement_cycle"
                 ):
                     res = self.improvement_engine.stop_improvement_cycle()
                     if inspect.isawaitable(res):
                         await res
-            except Exception:
-                pass
             raise
 
     async def shutdown(self):
@@ -297,26 +284,20 @@ class AetherraEngine:
                 await self.improvement_engine.stop_improvement_cycle()
             if hasattr(self.introspection, "stop_introspection"):
                 stop_intro = self.introspection.stop_introspection
-                try:
+                with contextlib.suppress(Exception):
                     res = stop_intro()
                     if inspect.isawaitable(res):
                         await res
-                except Exception:
-                    pass
             if hasattr(self.agent_orchestrator, "stop_orchestration"):
                 stop_orch = self.agent_orchestrator.stop_orchestration
-                try:
+                with contextlib.suppress(Exception):
                     res = stop_orch()
                     if inspect.isawaitable(res):
                         await res
-                except Exception:
-                    pass
 
             if hasattr(self.memory_system, "close_connection"):
-                try:
+                with contextlib.suppress(Exception):
                     self.memory_system.close_connection()
-                except Exception:
-                    pass
 
             self.initialized = False
             logger.info("✅ Lyrixa Engine shutdown complete")
@@ -347,7 +328,7 @@ class AetherraEngine:
             except Exception:
                 return {"active_agents": 0, "pending_tasks": 0}
 
-        try:
+        with contextlib.suppress(Exception):
             monitor.register_component(
                 "memory_system",
                 check_memory_health,
@@ -363,9 +344,7 @@ class AetherraEngine:
                 check_orchestrator_health,
                 {"pending_tasks_threshold": 50.0},
             )
-        except Exception:
-            # If the monitor API is different, skip silently (fallback mode)
-            pass
+        # If the monitor API is different, skip silently (fallback mode)
 
     async def start_conversation(self, user_id: str = "default") -> str:
         """Start a new conversation session"""
@@ -449,9 +428,7 @@ class AetherraEngine:
 
                 reasoning_result = _RR()
 
-            response = self._generate_response(
-                message, reasoning_result, relevant_memories
-            )
+            response = self._generate_response(message, reasoning_result, relevant_memories)
 
             await self.memory_system.store_memory(
                 content={"role": "assistant", "content": response},
@@ -485,9 +462,7 @@ class AetherraEngine:
                 "timestamp": datetime.now().isoformat(),
             }
 
-    def _generate_response(
-        self, message: str, reasoning_result, relevant_memories: List
-    ) -> str:
+    def _generate_response(self, message: str, reasoning_result, relevant_memories: List) -> str:
         """Generate response based on message and context (placeholder)."""
         if "hello" in message.lower():
             return (
@@ -514,16 +489,13 @@ class AetherraEngine:
     async def get_conversation_summary(self) -> Dict[str, Any]:
         if not self.session_id:
             return {"status": "no_active_session"}
-        memories = await self.memory_system.get_conversation_context(
-            self.session_id, limit=20
-        )
+        memories = await self.memory_system.get_conversation_context(self.session_id, limit=20)
         return {
             "session_id": self.session_id,
             "context": self.conversation_context,
             "message_count": len(memories),
             "duration_minutes": (
-                datetime.now()
-                - self.conversation_context.get("start_time", datetime.now())
+                datetime.now() - self.conversation_context.get("start_time", datetime.now())
             ).total_seconds()
             / 60,
             "topics": self.conversation_context.get("topics", []),
@@ -536,9 +508,7 @@ class AetherraEngine:
         improvement_status = getattr(
             self.improvement_engine, "get_improvement_status", lambda: {}
         )()
-        orchestrator_status = getattr(
-            self.agent_orchestrator, "get_system_status", lambda: {}
-        )()
+        orchestrator_status = getattr(self.agent_orchestrator, "get_system_status", lambda: {})()
         health_status = getattr(
             self.introspection, "get_health_status", lambda: {"status": "unknown"}
         )()
@@ -559,10 +529,8 @@ class AetherraEngine:
 
     def _emit(self, topic: str, payload: Dict[str, Any]):
         for cb in self._subscribers.get(topic, []):
-            try:
+            with contextlib.suppress(Exception):
                 cb(payload)
-            except Exception:
-                pass
 
     # ---------- Minimal Goal Orchestration ----------
     async def create_goal(
