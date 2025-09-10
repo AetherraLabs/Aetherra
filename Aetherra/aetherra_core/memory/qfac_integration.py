@@ -45,6 +45,7 @@ except Exception:
             return {"status": "unavailable", "reason": "dashboard stub"}
 
 
+from .qfac_policy import QFACPolicy
 from .quantum_memory_bridge import QuantumMemoryBridge
 
 
@@ -137,16 +138,11 @@ class QFACMemoryNode:
             }
 
             # Optional quantum-hybrid path: encode a classical shadow via QuantumMemoryBridge
-            if (
-                self.qfac_mode in ("hybrid", "quantum")
-                and self.quantum_bridge is not None
-            ):
+            if self.qfac_mode in ("hybrid", "quantum") and self.quantum_bridge is not None:
                 try:
                     quantum_payload = {
                         "content": self.original_data,
-                        "complexity": float(
-                            getattr(self.compression_score, "entropy", 0.5)
-                        ),
+                        "complexity": float(getattr(self.compression_score, "entropy", 0.5)),
                         "confidence": float(
                             getattr(self.compression_score, "pattern_confidence", 0.8)
                         ),
@@ -210,20 +206,14 @@ class QFACMemoryNode:
                         quantum_state=None,
                         classical_shadow={
                             "content": self.original_data,
-                            "complexity": float(
-                                getattr(self.compression_score, "entropy", 0.5)
-                            ),
+                            "complexity": float(getattr(self.compression_score, "entropy", 0.5)),
                             "confidence": float(
-                                getattr(
-                                    self.compression_score, "pattern_confidence", 0.8
-                                )
+                                getattr(self.compression_score, "pattern_confidence", 0.8)
                             ),
                         },
                         encoding_fidelity=float(q_meta.get("fidelity", 0.9)),
                         measurement_results=None,
-                        creation_timestamp=__import__(
-                            "datetime"
-                        ).datetime.fromtimestamp(
+                        creation_timestamp=__import__("datetime").datetime.fromtimestamp(
                             self.compression_metadata["compression_timestamp"]
                         ),
                     )
@@ -235,9 +225,7 @@ class QFACMemoryNode:
                     if reconstructed and "content" in reconstructed:
                         decompressed_data = reconstructed["content"]
                 except Exception as qe2:
-                    print(
-                        f"⚠️ Quantum-hybrid retrieval fallback for {self.node_id}: {qe2}"
-                    )
+                    print(f"⚠️ Quantum-hybrid retrieval fallback for {self.node_id}: {qe2}")
 
             # Update access tracking
             self.access_count += 1
@@ -266,9 +254,7 @@ class QFACMemoryNode:
 
         # Simulate compression ratio from our analysis
         if self.compression_score:
-            target_size = int(
-                len(compressed) / self.compression_score.compression_ratio
-            )
+            target_size = int(len(compressed) / self.compression_score.compression_ratio)
             compressed = compressed[:target_size]  # Simulate compression
 
         return compressed
@@ -311,18 +297,108 @@ class QFACMemorySystem:
         self.analyzer = MemoryCompressionAnalyzer(str(self.data_dir / "analyzer"))
         self.dashboard = QFACDashboard(self.analyzer)
 
-        # Mode selection: classical | hybrid | quantum (quantum uses same as hybrid but expects real backend)
-        self.qfac_mode = os.getenv("AETHERRA_QFAC_MODE", "classical").lower()
-        if self.qfac_mode not in ("classical", "hybrid", "quantum"):
-            self.qfac_mode = "classical"
+        # Mode selection: classical | hybrid | quantum — governed by policy
+        desired_mode = os.getenv("AETHERRA_QFAC_MODE", "classical").lower()
+        if desired_mode not in ("classical", "hybrid", "quantum"):
+            desired_mode = "classical"
+
+        profile = os.getenv("AETHERRA_PROFILE", "").lower() or "dev"
+        # Prefer live coherence/drift metrics when available (service registry → orchestrator)
+        policy = QFACPolicy()
+
+        def _fetch_coherence_metrics_sync() -> Optional[Dict[str, Any]]:
+            """Best-effort pull of orchestrator coherence metrics for policy.
+
+            Returns a dict with keys {ema, last_drift_alert} when available, else None.
+            """
+
+            # Local async helper to query the service registry
+            async def _run() -> Optional[Dict[str, Any]]:
+                try:
+                    from aetherra_service_registry import get_service_registry  # type: ignore
+
+                    reg = await get_service_registry()
+                    info = reg.get_service_info("aetherra_engine")
+                    if not info or not info.instance:
+                        return None
+                    eng = info.instance
+                    orch = getattr(eng, "agent_orchestrator", None)
+                    status = None
+                    if orch and hasattr(orch, "get_system_status"):
+                        try:
+                            status = orch.get_system_status()
+                        except Exception:
+                            status = None
+                    if status is None and hasattr(eng, "get_system_status"):
+                        try:
+                            st = await eng.get_system_status()  # type: ignore[attr-defined]
+                            if isinstance(st, dict):
+                                status = st.get("agent_orchestrator")
+                        except Exception:
+                            status = None
+                    if not isinstance(status, dict):
+                        return None
+                    cp = status.get("coherence_policy") or {}
+                    if not isinstance(cp, dict):
+                        return None
+                    ema = cp.get("ema")
+                    last = cp.get("last_drift_alert")
+                    # Only use if EMA present; else treat as None to allow env fallback
+                    if ema is None and last is None:
+                        return None
+                    out: Dict[str, Any] = {"ema": ema, "last_drift_alert": last}
+                    return out
+                except Exception:
+                    return None
+
+            # Safely run coroutine from possibly running loop (mirrors hub helper pattern)
+            try:
+                import asyncio as _asyncio
+
+                try:
+                    loop = _asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = None
+                if loop and loop.is_running():
+                    import threading as _threading
+
+                    container: Dict[str, Any] = {}
+
+                    def _runner():
+                        try:
+                            new_loop = _asyncio.new_event_loop()
+                            try:
+                                _asyncio.set_event_loop(new_loop)
+                                container["res"] = new_loop.run_until_complete(_run())
+                            finally:
+                                new_loop.close()
+                        except Exception:
+                            container["res"] = None
+
+                    t = _threading.Thread(target=_runner, daemon=True)
+                    t.start()
+                    t.join(timeout=2.0)
+                    return container.get("res")
+                else:
+                    return _asyncio.run(_run())
+            except Exception:
+                return None
+
+        live_metrics = _fetch_coherence_metrics_sync()
+        decision = policy.resolve_mode(
+            profile=profile,
+            desired_mode=desired_mode,
+            metrics=live_metrics,
+        )
+        self.qfac_mode = decision["mode"]
+        self.qfac_policy_decision = decision
 
         # Quantum bridge (lazy init)
         self.quantum_bridge = None
         if self.qfac_mode in ("hybrid", "quantum"):
             try:
-                self.quantum_bridge = QuantumMemoryBridge(
-                    quantum_backend="simulator", max_qubits=16
-                )
+                backend = os.getenv("AETHERRA_QFAC_BACKEND", "simulator")
+                self.quantum_bridge = QuantumMemoryBridge(quantum_backend=backend, max_qubits=16)
             except Exception as e:
                 print(f"⚠️ Failed to initialize QuantumMemoryBridge: {e}")
                 self.quantum_bridge = None
@@ -339,7 +415,9 @@ class QFACMemorySystem:
         print("🎯 QFAC Memory System initialized")
         print(f"   📁 Data directory: {self.data_dir}")
         print(f"   🔄 Auto-compression: {self.auto_compression}")
-        print(f"   🧪 QFAC mode: {self.qfac_mode}")
+        print(
+            f"   🧪 QFAC mode: {self.qfac_mode} (desired={desired_mode}, policy={decision.get('policy')}, reason={decision.get('reason')})"
+        )
 
     async def store_memory(
         self, data: Any, node_id: Optional[str] = None, force_compression: bool = False
@@ -417,12 +495,8 @@ class QFACMemorySystem:
                         results["compression_details"].append(
                             {
                                 "node_id": node_id,
-                                "original_size": node.compression_metadata[
-                                    "original_size"
-                                ],
-                                "compressed_size": node.compression_metadata[
-                                    "compressed_size"
-                                ],
+                                "original_size": node.compression_metadata["original_size"],
+                                "compressed_size": node.compression_metadata["compressed_size"],
                                 "ratio": node.compression_score.compression_ratio,
                                 "fidelity": node.compression_score.fidelity_level.value,
                             }
@@ -446,14 +520,10 @@ class QFACMemorySystem:
         compressed_nodes = sum(1 for node in self.nodes.values() if node.is_compressed)
 
         # Size statistics
-        total_original_size = sum(
-            len(str(node.original_data)) for node in self.nodes.values()
-        )
+        total_original_size = sum(len(str(node.original_data)) for node in self.nodes.values())
 
         total_compressed_size = sum(
-            node.compression_metadata.get(
-                "compressed_size", len(str(node.original_data))
-            )
+            node.compression_metadata.get("compressed_size", len(str(node.original_data)))
             if node.compression_metadata
             else len(str(node.original_data))
             for node in self.nodes.values()
@@ -461,9 +531,7 @@ class QFACMemorySystem:
 
         # Compression ratio
         overall_compression_ratio = (
-            total_original_size / total_compressed_size
-            if total_compressed_size > 0
-            else 1.0
+            total_original_size / total_compressed_size if total_compressed_size > 0 else 1.0
         )
 
         # Fidelity distribution
@@ -491,9 +559,7 @@ class QFACMemorySystem:
                 "overall_compression_ratio": overall_compression_ratio,
                 "space_saved_bytes": total_original_size - total_compressed_size,
                 "space_saved_percentage": (
-                    (total_original_size - total_compressed_size)
-                    / total_original_size
-                    * 100
+                    (total_original_size - total_compressed_size) / total_original_size * 100
                 )
                 if total_original_size > 0
                 else 0,
@@ -502,6 +568,7 @@ class QFACMemorySystem:
             "system_health": performance.get("overall_health", 0.0),
             "performance_issues": performance.get("performance_issues", []),
             "optimization_suggestions": performance.get("optimization_suggestions", []),
+            "qfac_policy": self.qfac_policy_decision,
         }
 
     async def optimize_system(self) -> Dict[str, Any]:
@@ -581,9 +648,7 @@ class QFACMemorySystem:
             if not node.is_compressed and node._should_compress():
                 await node.compress()
 
-    async def export_system_report(
-        self, filename: str = "qfac_system_report.json"
-    ) -> str:
+    async def export_system_report(self, filename: str = "qfac_system_report.json") -> str:
         """Export comprehensive system report"""
         print(f"📄 Exporting system report to {filename}...")
 
@@ -593,7 +658,7 @@ class QFACMemorySystem:
 
         # Node details
         node_details = []
-        for node_id, node in self.nodes.items():
+        for _, node in self.nodes.items():
             node_details.append(node.get_status())
 
         report = {
@@ -707,12 +772,8 @@ async def demo_qfac_integration():
     status = await qfac_system.get_system_status()
     print(f"   [DISC] Nodes: {status['node_statistics']['total_nodes']}")
     print(f"   🗜️ Compressed: {status['node_statistics']['compressed_nodes']}")
-    print(
-        f"   📈 Compression ratio: {status['size_statistics']['overall_compression_ratio']:.1f}x"
-    )
-    print(
-        f"   💾 Space saved: {status['size_statistics']['space_saved_percentage']:.1f}%"
-    )
+    print(f"   📈 Compression ratio: {status['size_statistics']['overall_compression_ratio']:.1f}x")
+    print(f"   💾 Space saved: {status['size_statistics']['space_saved_percentage']:.1f}%")
     print(f"   🏥 System health: {status['system_health']:.1%}")
 
     # Test data retrieval
@@ -728,9 +789,7 @@ async def demo_qfac_integration():
 
     # Export report
     print("\n📄 Exporting system report...")
-    report_path = await qfac_system.export_system_report(
-        "demo_qfac_integration_report.json"
-    )
+    report_path = await qfac_system.export_system_report("demo_qfac_integration_report.json")
 
     print("\n✅ QFAC Integration demonstration complete!")
     print(f"📄 Report saved to: {report_path}")

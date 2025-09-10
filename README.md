@@ -27,7 +27,7 @@ Aetherra pairs a lightweight Hub (APIs + metrics) with the Lyrixa AI assistant, 
 | Extensibility          | Plugin chain executor (sequential today)         | Composable augmentation surface     |
 | Governance             | License policy & ownership memory                | Attribution & compliance continuity |
 
-Quick links: [`INSTALL.md`](INSTALL.md) · [`ROADMAP.md`](ROADMAP.md) · [`CHANGELOG.md`](CHANGELOG.md) · [`SECURITY.md`](SECURITY.md) · [`Security: Production‑Safe Defaults`](SECURITY.md#production-safe-defaults-hub-developer-ai-api) · [`BETA_READINESS_REPORT.md`](BETA_READINESS_REPORT.md) · [`Developer Onboarding`](docs/DEVELOPER_ONBOARDING.md)
+Quick links: [`INSTALL.md`](INSTALL.md) · [`ROADMAP.md`](ROADMAP.md) · [`CHANGELOG.md`](CHANGELOG.md) · [`SECURITY.md`](SECURITY.md) · [`Security: Production‑Safe Defaults`](SECURITY.md#production-safe-defaults-hub-developer-ai-api) · [`BETA_READINESS_REPORT.md`](BETA_READINESS_REPORT.md) · [`Developer Onboarding`](docs/DEVELOPER_ONBOARDING.md) · [`QFAC Policy`](docs/QFAC_POLICY.md)
 
 ## Table of Contents
 
@@ -377,6 +377,7 @@ Useful docs:
 - Release process: `docs/RELEASE_PROCESS.md`
 - License policy & enforcement: `LICENSE_POLICY.md`
 - QFAC modes (quantum memory): `docs/QFAC_MODE_GUIDE.md`
+- QFAC policy & live-metrics gating: `docs/QFAC_POLICY.md`
 - Changelog: `CHANGELOG.md`
 - Override pruning (dry-run): `python tools/prune_license_overrides.py --dry-run` (requires fresh `licenses_report.json`)
 
