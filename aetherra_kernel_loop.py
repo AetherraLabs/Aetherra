@@ -17,7 +17,7 @@ import os
 import random
 import time
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Coroutine, Dict, List, Optional, cast
 
@@ -46,6 +46,9 @@ class AetherraKernelLoop:
         self.start_time = None
         self.cycle_count = 0
         self.last_night_cycle = None
+        # Track a per-day key to ensure once-per-day behavior in selected TZ
+        self._night_last_date_key = None
+        self._night_cycle_scheduled = False
 
         # Core systems (will be injected by startup)
         self.memory_system = None
@@ -99,6 +102,25 @@ class AetherraKernelLoop:
             self.night_end_hour = int(os.getenv("AETHERRA_NIGHT_END_HOUR", "4"))
         except Exception:
             self.night_start_hour, self.night_end_hour = 2, 4
+
+        # Night cycle timezone control
+        # - AETHERRA_NIGHT_TZ: IANA name (e.g., "UTC", "America/Los_Angeles")
+        # - AETHERRA_NIGHT_UTC=1 pins scheduling to UTC (equivalent to AETHERRA_NIGHT_TZ=UTC)
+        # - AETHERRA_NIGHT_STAGGER_MAX_SEC: int seconds of max jitter to stagger start within window
+        self.night_tz_name = (os.getenv("AETHERRA_NIGHT_TZ", "") or "").strip()
+        self.night_utc = os.getenv("AETHERRA_NIGHT_UTC", "0") == "1"
+        try:
+            self.night_stagger_max_sec = int(
+                os.getenv("AETHERRA_NIGHT_STAGGER_MAX_SEC", "0") or 0
+            )
+        except Exception:
+            self.night_stagger_max_sec = 0
+        # Fixed jitter per process to preserve staggering consistency
+        self._night_stagger_sec = (
+            random.randint(0, max(0, int(self.night_stagger_max_sec)))
+            if self.night_stagger_max_sec > 0
+            else 0
+        )
 
         # Task TTL (deadline) and plugin timeouts
         try:
@@ -269,6 +291,38 @@ class AetherraKernelLoop:
                 )
         except Exception as _e:
             logger.debug(f"[PROFILE] Failed to apply production defaults: {_e}")
+
+    # ---- Night cycle helpers (TZ-aware) ----
+    def _now_in_night_tz(self) -> datetime:
+        """Return current time in configured night timezone (or local if unset)."""
+        try:
+            if self.night_tz_name:
+                # Prefer Python 3.9+ zoneinfo if available, else fallback to pytz or UTC
+                try:
+                    from zoneinfo import ZoneInfo  # type: ignore
+
+                    return datetime.now(ZoneInfo(self.night_tz_name))
+                except Exception:
+                    try:
+                        import pytz  # type: ignore
+
+                        tz = pytz.timezone(self.night_tz_name)
+                        return datetime.now(tz)
+                    except Exception:
+                        return datetime.now(timezone.utc)
+            if self.night_utc:
+                return datetime.now(timezone.utc)
+        except Exception:
+            pass
+        # Fallback: local naive datetime
+        return datetime.now()
+
+    def _night_date_key(self, now_dt: datetime) -> str:
+        tz_key = self.night_tz_name or ("UTC" if self.night_utc else "local")
+        try:
+            return f"{now_dt.date().isoformat()}|{tz_key}"
+        except Exception:
+            return f"unknown|{tz_key}"
 
     def inject_systems(
         self,
@@ -567,8 +621,25 @@ class AetherraKernelLoop:
                 await asyncio.sleep(120)
 
     async def _check_night_cycle(self):
-        """🌙 Check if we should perform night cycle processing."""
-        now = datetime.now()
+        """🌙 Check if we should perform night cycle processing (TZ-aware, once/day)."""
+        # Safety: in production refuse to run if TZ not explicitly set
+        profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+        is_prod = profile in ("prod", "production", "staging")
+        tz_explicit = bool(self.night_tz_name) or self.night_utc
+
+        # In prod/staging, block unconditionally if TZ not explicit to avoid surprises
+        if is_prod and not tz_explicit:
+            self.metrics["night_cycles_blocked_no_tz"] = (
+                self.metrics.get("night_cycles_blocked_no_tz", 0) + 1
+            )
+            logger.warning(
+                "[NIGHT] Blocking night cycle in production: timezone not explicitly set. "
+                "Set AETHERRA_NIGHT_TZ (e.g., 'UTC' or an IANA TZ) or AETHERRA_NIGHT_UTC=1."
+            )
+            return
+
+        # Determine current time in configured TZ (or local if not set)
+        now_tz = self._now_in_night_tz()
 
         # Night cycle within configured window, once per day
         start_h, end_h = (
@@ -578,13 +649,38 @@ class AetherraKernelLoop:
         if end_h < start_h:
             end_h = start_h
 
-        if start_h <= now.hour <= end_h and (
-            self.last_night_cycle is None or (now - self.last_night_cycle).days >= 1
-        ):
-            logger.info("🌙 Initiating Night Cycle...")
-            await self._perform_night_cycle()
-            self.last_night_cycle = now
-            self.metrics["night_cycles_count"] += 1
+        in_window = start_h <= int(now_tz.hour) <= end_h
+
+        if in_window:
+            date_key = self._night_date_key(now_tz)
+            if self._night_last_date_key == date_key:
+                return  # already handled today
+
+            # Schedule with optional staggering, capped within window length
+            window_len_sec = max(0, int((end_h - start_h) * 3600))
+            delay_sec = min(max(0, self._night_stagger_sec), max(0, window_len_sec - 60))
+
+            async def _run_after_delay(delay: float, date_key_val: str):
+                try:
+                    if delay > 0:
+                        await asyncio.sleep(delay)
+                    logger.info(
+                        f"🌙 Initiating Night Cycle (tz={self.night_tz_name or ('UTC' if self.night_utc else 'local')}, delay={int(delay)}s)..."
+                    )
+                    await self._perform_night_cycle()
+                    self.metrics["night_cycles_count"] += 1
+                except Exception as _e:
+                    logger.error(f"[ERROR] Night cycle error (scheduled): {_e}")
+                finally:
+                    # mark completion for the day
+                    self._night_cycle_scheduled = False
+                    self._night_last_date_key = date_key_val
+                    self.last_night_cycle = datetime.now()
+
+            # Prevent multiple schedules in the same window
+            if not self._night_cycle_scheduled:
+                self._night_cycle_scheduled = True
+                asyncio.create_task(_run_after_delay(delay_sec, date_key))
 
     async def _perform_night_cycle(self):
         """🌙 Deep system optimization and reflection during night cycle."""

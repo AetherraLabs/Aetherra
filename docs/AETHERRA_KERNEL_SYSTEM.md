@@ -187,6 +187,9 @@ Quiesce improvements (Phase 2):
     - `AETHERRA_KERNEL_DLQ_MAX` (default 10000 records)
 - Night cycle window
   - `AETHERRA_NIGHT_START_HOUR` / `AETHERRA_NIGHT_END_HOUR` (ints 0..23)
+  - `AETHERRA_NIGHT_TZ` (IANA TZ like `UTC`, `America/Los_Angeles`) or set `AETHERRA_NIGHT_UTC=1` to pin scheduling to UTC
+  - `AETHERRA_NIGHT_STAGGER_MAX_SEC` (int seconds; optional jitter to stagger per‑service start within the window)
+  - Safety: In `prod`/`production`/`staging`, the kernel will block night‑cycle runs if TZ isn’t explicitly set (set `AETHERRA_NIGHT_TZ` or `AETHERRA_NIGHT_UTC=1`).
 - Optional rate limiting and capability enforcement
   - `AETHERRA_KERNEL_RATE_LIMIT_PER_MIN` (int per requester for plugin_invoke)
   - `AETHERRA_REQUIRE_CAPABILITIES=1` enables capability check `kernel:invoke_plugin`

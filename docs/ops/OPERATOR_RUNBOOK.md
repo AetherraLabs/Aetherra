@@ -33,6 +33,16 @@ Notes:
 - If you use the Hub control plane endpoints, ensure `AETHERRA_HUB_CONTROL_TOKEN` is set; then POST to `/api/kernel/control/*` as needed.
 
 ## HMR (Hot Module Reload) Phase‑2: Safe reload procedures
+ 
+### Night cycle scheduling (TZ safety)
+
+- In prod/staging, night‑cycle jobs are blocked unless a timezone is explicitly set.
+- Set one of:
+  - `$env:AETHERRA_NIGHT_TZ = "UTC"`  # or any IANA TZ like "America/Los_Angeles"
+  - `$env:AETHERRA_NIGHT_UTC = "1"`   # pin scheduling to UTC
+- Optional per‑service staggering: `$env:AETHERRA_NIGHT_STAGGER_MAX_SEC = "900"`  # up to 15m jitter inside window
+- Window: `$env:AETHERRA_NIGHT_START_HOUR`/`$env:AETHERRA_NIGHT_END_HOUR` (defaults 2–4)
+
 
 Use HMR to swap components in‑process without a full restart. Phase‑2 adds source gating, in‑flight drain, and audit logging.
 
