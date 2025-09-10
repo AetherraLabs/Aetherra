@@ -155,10 +155,33 @@ class LyrixaChatService:
         self._coherence_threshold: float = 0.7
         self._self_improver = None
         self._proactive_monitor = None
+        # Deterministic offline guard for tests or constrained environments
+        # When enabled, initialization will skip external subsystems and operate
+        # in a pure fallback/identity/ownership-safe mode.
+        try:
+            self._forced_offline = os.getenv("AETHERRA_LYRIXA_FORCE_OFFLINE", "0") == "1"
+        except Exception:
+            self._forced_offline = False
 
     async def initialize(self):
         # Load configuration (best-effort)
         self._load_config()
+        # If forced offline, skip heavy/optional subsystem wiring entirely.
+        # This ensures deterministic answers in tests without touching network/registry.
+        if getattr(self, "_forced_offline", False):
+            # Ensure all optional subsystems are disabled
+            self.registry = None
+            self._intelligence = None
+            self._pmemory = None
+            self._orchestrator = None
+            self._mdmem = None
+            self._conscious = None
+            self._self_improver = None
+            self._proactive_monitor = None
+            # Note degraded components for visibility
+            with contextlib.suppress(Exception):
+                self._cfg.setdefault("lyrixa_chat", {})["degraded_components"] = ["forced_offline"]
+            return
         # Extract optional coherence threshold from multiple possible config shapes
         try:
             lyx = self._cfg.get("lyrixa_chat", {}) if isinstance(self._cfg, dict) else {}

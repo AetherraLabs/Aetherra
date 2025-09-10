@@ -51,43 +51,113 @@ except Exception:
         return _NullSec()
 
 
-# Try to import Aetherra components with fallback
+# Try to import Aetherra components with robust fallbacks
+# Prefer the aetherra_core modules, then legacy paths; finally provide light mocks.
+HAS_AETHERRA_ENGINES = False
+
+_ic_cls = None
+_re_cls = None
+_rc_cls = None
+_sie_cls = None
+
+# IntrospectionController
 try:
-    from Aetherra.core.engine.introspection_controller import IntrospectionController
-    from Aetherra.core.engine.reasoning_engine import ReasoningContext, ReasoningEngine
-    from Aetherra.core.self_improvement_engine import SelfImprovementEngine
+    from Aetherra.aetherra_core.reflection.introspection_controller import (  # type: ignore
+        IntrospectionController as _ic_cls,  # noqa: F401
+    )
+except Exception:
+    try:
+        from Aetherra.core.engine.introspection_controller import (  # type: ignore
+            IntrospectionController as _ic_cls,  # noqa: F401
+        )
+    except Exception:
+        _ic_cls = None
 
+# ReasoningEngine / ReasoningContext
+try:
+    from Aetherra.aetherra_core.cognitive.reasoning_engine import (
+        ReasoningContext as _rc_cls,  # noqa: F401
+    )
+    from Aetherra.aetherra_core.cognitive.reasoning_engine import (  # type: ignore
+        ReasoningEngine as _re_cls,  # noqa: F401
+    )
+except Exception:
+    try:
+        from Aetherra.core.engine.reasoning_engine import (
+            ReasoningContext as _rc_cls,  # noqa: F401
+        )
+        from Aetherra.core.engine.reasoning_engine import (  # type: ignore
+            ReasoningEngine as _re_cls,  # noqa: F401
+        )
+    except Exception:
+        _re_cls = None
+        _rc_cls = None
+
+# SelfImprovementEngine
+try:
+    from Aetherra.aetherra_core.engine.self_improvement_engine import (  # type: ignore
+        SelfImprovementEngine as _sie_cls,  # noqa: F401
+    )
+except Exception:
+    try:
+        from Aetherra.core.self_improvement_engine import (  # type: ignore
+            SelfImprovementEngine as _sie_cls,  # noqa: F401
+        )
+    except Exception:
+        _sie_cls = None
+
+if _ic_cls and _re_cls and _rc_cls and _sie_cls:
+    # Bind the imported classes to expected names
+    IntrospectionController = _ic_cls  # type: ignore[assignment]
+    ReasoningEngine = _re_cls  # type: ignore[assignment]
+    ReasoningContext = _rc_cls  # type: ignore[assignment]
+    SelfImprovementEngine = _sie_cls  # type: ignore[assignment]
     HAS_AETHERRA_ENGINES = True
-except ImportError:
-    HAS_AETHERRA_ENGINES = False
-    logger.warning("Aetherra engines not available, using mock implementations")
+else:
+    logger.warning("Aetherra engines not fully available, using mock implementations where needed")
 
-    # Create mock classes
-    class MockResult:
+    # Create lightweight mocks for any missing components
+    class _MockResult:
         def __init__(self):
             self.conclusion = "Basic routing analysis completed"
             self.alternatives = ["General response available"]
             self.confidence = 0.5
 
-    class ReasoningEngine:
-        async def reason(self, context):
-            return MockResult()
+    if _re_cls is None:
 
-    class ReasoningContext:
-        def __init__(self, query, domain, context_data, constraints, objectives):
-            self.query = query
-            self.domain = domain
-            self.context_data = context_data
-            self.constraints = constraints
-            self.objectives = objectives
+        class ReasoningEngine:  # type: ignore[no-redef]
+            async def reason(self, context):
+                return _MockResult()
+    else:
+        ReasoningEngine = _re_cls  # type: ignore[assignment]
 
-    class IntrospectionController:
-        def get_current_health(self):
-            return {"status": "unknown", "timestamp": datetime.now().isoformat()}
+    if _rc_cls is None:
 
-    class SelfImprovementEngine:
-        async def improve(self, context):
-            return {"status": "improvement_not_available"}
+        class ReasoningContext:  # type: ignore[no-redef]
+            def __init__(self, query, domain, context_data, constraints, objectives):
+                self.query = query
+                self.domain = domain
+                self.context_data = context_data
+                self.constraints = constraints
+                self.objectives = objectives
+    else:
+        ReasoningContext = _rc_cls  # type: ignore[assignment]
+
+    if _ic_cls is None:
+
+        class IntrospectionController:  # type: ignore[no-redef]
+            def get_current_health(self):
+                return {"status": "unknown", "timestamp": datetime.now().isoformat()}
+    else:
+        IntrospectionController = _ic_cls  # type: ignore[assignment]
+
+    if _sie_cls is None:
+
+        class SelfImprovementEngine:  # type: ignore[no-redef]
+            async def improve(self, context):
+                return {"status": "improvement_not_available"}
+    else:
+        SelfImprovementEngine = _sie_cls  # type: ignore[assignment]
 
 
 class IntentType(Enum):
@@ -314,9 +384,7 @@ class ChatRouter:
             # Update statistics
             self._update_stats(result, start_time)
 
-            logger.info(
-                f"💬 Message routed: {route.handler} (confidence: {result.confidence:.2f})"
-            )
+            logger.info(f"💬 Message routed: {route.handler} (confidence: {result.confidence:.2f})")
 
             return result
 
@@ -368,25 +436,16 @@ class ChatRouter:
         content = message.content.lower()
 
         # Simple keyword-based analysis
-        if any(
-            word in content
-            for word in ["what", "how", "why", "when", "where", "who", "which"]
-        ):
+        if any(word in content for word in ["what", "how", "why", "when", "where", "who", "which"]):
             intent = "question"
             confidence = 0.7
-        elif any(
-            word in content for word in ["please", "can you", "could you", "would you"]
-        ):
+        elif any(word in content for word in ["please", "can you", "could you", "would you"]):
             intent = "command"
             confidence = 0.6
-        elif any(
-            word in content for word in ["think", "reflect", "analyze", "consider"]
-        ):
+        elif any(word in content for word in ["think", "reflect", "analyze", "consider"]):
             intent = "reflection"
             confidence = 0.5
-        elif any(
-            word in content for word in ["autonomous", "self-improve", "optimize"]
-        ):
+        elif any(word in content for word in ["autonomous", "self-improve", "optimize"]):
             intent = "autonomous_request"
             confidence = 0.8
         else:
@@ -412,9 +471,7 @@ class ChatRouter:
             pattern_match = re.search(route.pattern, message.content, re.IGNORECASE)
             if pattern_match:
                 # Calculate match score
-                score = self._calculate_route_score(
-                    route, intent_analysis, pattern_match
-                )
+                score = self._calculate_route_score(route, intent_analysis, pattern_match)
 
                 if score > best_score:
                     best_score = score
@@ -478,14 +535,18 @@ class ChatRouter:
 
         # Add session history if required
         if route.requires_context:
-            context_data["session_history"] = self._get_session_history(
-                message.session_id
-            )
+            context_data["session_history"] = self._get_session_history(message.session_id)
 
         # Add system health if required
         if route.requires_context:
             try:
-                health_data = self.introspection_controller.get_current_health()
+                # Prefer get_current_health; fall back to get_health_status for compatibility
+                if hasattr(self.introspection_controller, "get_current_health"):
+                    health_data = self.introspection_controller.get_current_health()  # type: ignore[attr-defined]
+                elif hasattr(self.introspection_controller, "get_health_status"):
+                    health_data = self.introspection_controller.get_health_status()  # type: ignore[attr-defined]
+                else:
+                    health_data = {"status": "unknown", "timestamp": datetime.now().isoformat()}
                 context_data["system_health"] = health_data
             except Exception as e:
                 logger.warning(f"Could not get system health: {e}")
@@ -505,13 +566,11 @@ class ChatRouter:
 
         # Keep only last 50 messages per session
         if len(self.session_history[message.session_id]) > 50:
-            self.session_history[message.session_id] = self.session_history[
-                message.session_id
-            ][-50:]
+            self.session_history[message.session_id] = self.session_history[message.session_id][
+                -50:
+            ]
 
-    def _get_session_history(
-        self, session_id: str, limit: int = 10
-    ) -> List[Dict[str, Any]]:
+    def _get_session_history(self, session_id: str, limit: int = 10) -> List[Dict[str, Any]]:
         """Get session history for context"""
         history = self.session_history.get(session_id, [])
         return [
@@ -630,9 +689,7 @@ class ChatRouter:
                 "success": False,
             }
 
-    async def _default_handler(
-        self, message: ChatMessage, routing_result: RoutingResult
-    ) -> str:
+    async def _default_handler(self, message: ChatMessage, routing_result: RoutingResult) -> str:
         """Default handler for unregistered routes"""
         return f"I understand you're asking about '{message.content}', but I don't have a specific handler for that type of request yet. I'm routing this as a {routing_result.intent_type.value} with {routing_result.confidence:.2f} confidence."
 
@@ -662,9 +719,7 @@ class ChatRouter:
             "session_id": session_id,
             "history_length": len(self.session_history.get(session_id, [])),
             "cached_context": self.context_cache.get(session_id, {}),
-            "last_activity": self.session_history.get(session_id, [])[
-                -1
-            ].timestamp.isoformat()
+            "last_activity": self.session_history.get(session_id, [])[-1].timestamp.isoformat()
             if self.session_history.get(session_id)
             else None,
         }
@@ -685,16 +740,12 @@ def create_chat_router(workspace_path: str = ".") -> ChatRouter:
 
 
 # Example handler functions
-async def example_question_handler(
-    message: ChatMessage, routing_result: RoutingResult
-) -> str:
+async def example_question_handler(message: ChatMessage, routing_result: RoutingResult) -> str:
     """Example handler for questions"""
     return f"You asked: '{message.content}'. This is a question with {routing_result.confidence:.2f} confidence."
 
 
-async def example_command_handler(
-    message: ChatMessage, routing_result: RoutingResult
-) -> str:
+async def example_command_handler(message: ChatMessage, routing_result: RoutingResult) -> str:
     """Example handler for commands"""
     return f"I understand you want me to: '{message.content}'. This is a command with {routing_result.confidence:.2f} confidence."
 

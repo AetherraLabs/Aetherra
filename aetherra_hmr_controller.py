@@ -356,6 +356,33 @@ class HMRController:
         except Exception:
             return {}
 
+    def get_config_metrics(self) -> Dict[str, Any]:
+        """Return a small set of HMR config metrics for observability surfaces.
+
+        Keys:
+          - enabled: bool (controller running)
+          - strict: bool
+          - allowed_sources_count: int
+          - audit_max_bytes: int
+          - audit_max_backups: int
+        """
+        try:
+            return {
+                "enabled": bool(self.running),
+                "strict": bool(self.strict),
+                "allowed_sources_count": int(len(self.allowed_sources or [])),
+                "audit_max_bytes": int(self.audit_max_bytes or 0),
+                "audit_max_backups": int(self.audit_max_backups or 0),
+            }
+        except Exception:
+            return {
+                "enabled": False,
+                "strict": bool(self.strict),
+                "allowed_sources_count": 0,
+                "audit_max_bytes": 0,
+                "audit_max_backups": 0,
+            }
+
     # ---------------- Internal: audit rotation ----------------
     def _maybe_rotate_audit(self, path: str):
         """If the audit file exceeds the configured size, rotate it.

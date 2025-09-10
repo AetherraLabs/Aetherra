@@ -456,12 +456,34 @@ class AetherraOSLauncher:
                     # Ensure kernel instance is created early so controller can reference it later
                     self.kernel_loop = get_kernel()
                 if self.service_registry and self.kernel_loop:
-                    strict = os.getenv("AETHERRA_HMR_STRICT", "0") == "1"
+                    # Profile-aware hardening: in production, require strict=1 and non-empty allowed sources
+                    _profile = (
+                        (os.environ.get("AETHERRA_PROFILE", "") or "").strip().lower()
+                    )
+                    strict_env = os.getenv("AETHERRA_HMR_STRICT", "0")
+                    strict = strict_env == "1"
+                    allowed_raw = os.getenv("AETHERRA_HMR_ALLOWED_SOURCES", "")
+                    allowed = [s.strip() for s in allowed_raw.split(",") if s.strip()]
+                    if _profile in ("prod", "production"):
+                        # Enforce safe rotation defaults on missing values
+                        os.environ.setdefault(
+                            "AETHERRA_HMR_AUDIT_MAX_BYTES", str(5 * 1024 * 1024)
+                        )
+                        os.environ.setdefault("AETHERRA_HMR_AUDIT_MAX_BACKUPS", "3")
+                        # Gate enablement if unsafe
+                        if not strict or len(allowed) == 0:
+                            logger.warning(
+                                "[HMR][DENY] Production profile requires AETHERRA_HMR_STRICT=1 and non-empty AETHERRA_HMR_ALLOWED_SOURCES; HMR disabled"
+                            )
+                            # Do not initialize controller in unsafe production posture
+                            raise RuntimeError("hmr_requirements_not_met")
                     self.systems["hmr_controller"] = await get_hmr_controller(
                         self.service_registry, self.kernel_loop, strict=strict
                     )
                     # Defer wiring into kernel until kernel is fully started in Phase 3
-                    logger.info(f"[HMR] Controller initialized (strict={strict})")
+                    logger.info(
+                        f"[HMR] Controller initialized (strict={strict}, allowed_sources={len(allowed)})"
+                    )
             except Exception as e:
                 logger.warning(f"[HMR] Controller not available: {e}")
         logger.info("[OK] All core systems loaded")
@@ -1160,9 +1182,8 @@ class AetherraOSLauncher:
 
                     logger.info("[HUB] Starting Aetherra Hub server...")
 
-                    # Ensure AI Developer API is ON by default when OS launches the Hub.
-                    # Respect explicit env if set; otherwise enable sensible defaults.
-                    # Do NOT force these defaults during tests or when explicitly skipped.
+                    # Profile-aware defaults for Developer AI API.
+                    # In test/dev: enable for convenience. In prod: do not override, default-deny.
                     _testing = str(os.environ.get("TESTING", "")).strip().lower() in (
                         "true",
                         "1",
@@ -1170,11 +1191,18 @@ class AetherraOSLauncher:
                     _skip = (
                         os.environ.get("AETHERRA_SKIP_LAUNCHER_AI_DEFAULTS", "0") == "1"
                     )
-                    if not _testing and not _skip:
-                        os.environ.setdefault("AETHERRA_AI_API_ENABLED", "1")
-                        os.environ.setdefault("AETHERRA_AI_API_STREAM", "1")
-                        # Default to no token requirement for local OS usage; users can opt-in via env.
-                        os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "0")
+                    _profile = (
+                        (os.environ.get("AETHERRA_PROFILE", "") or "").strip().lower()
+                    )
+                    if not _skip:
+                        if _testing or _profile in ("test", "dev", "development"):
+                            os.environ.setdefault("AETHERRA_AI_API_ENABLED", "1")
+                            os.environ.setdefault("AETHERRA_AI_API_STREAM", "1")
+                            # In non-prod convenience profile, token optional by default
+                            os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "0")
+                        elif _profile in ("prod", "production"):
+                            # Do not auto-enable in prod; if user enables, require token by default
+                            os.environ.setdefault("AETHERRA_AI_API_REQUIRE_TOKEN", "1")
 
                     # Start the built-in Hub server
                     hub_server = start_hub_server(port=3001)

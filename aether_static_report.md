@@ -1,8 +1,7 @@
 # .aether Verification Report
 
 Root: C:\Users\enigm\Desktop\Aetherra Project
-Files found: 32
-Profile: test
+Files found: 34
 
 ## Discovered .aether Files
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\agent_diagnostics.aether
@@ -23,6 +22,7 @@ Profile: test
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\test_enhanced_language.aether
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\test_goal_autopilot.aether
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\utils.aether
+- C:\Users\enigm\Desktop\Aetherra Project\Aetherra\lyrixa\plugins\advanced-memory-system\memory_plugin.aether
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\plugins\examples\advanced-memory-system\memory_plugin.aether
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\scripts\self_organizer.aether
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\tools\curiosity_conflict_resolution.aether
@@ -34,6 +34,7 @@ Profile: test
 - C:\Users\enigm\Desktop\Aetherra Project\lyrixa_system_check.aether
 - C:\Users\enigm\Desktop\Aetherra Project\self_organizer.aether
 - C:\Users\enigm\Desktop\Aetherra Project\test_ai_os.aether
+- C:\Users\enigm\Desktop\Aetherra Project\workflows\hello_plugin_demo.aether
 - C:\Users\enigm\Desktop\Aetherra Project\workflows\on_error_chain_demo.aether
 - C:\Users\enigm\Desktop\Aetherra Project\workflows\parallel_workflow_demo.aether
 - C:\Users\enigm\Desktop\Aetherra Project\workflows\plugin_chain_demo.aether
@@ -57,6 +58,7 @@ Profile: test
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\test_enhanced_language.aether: OK
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\test_goal_autopilot.aether: OK
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\utils.aether: OK
+- C:\Users\enigm\Desktop\Aetherra Project\Aetherra\lyrixa\plugins\advanced-memory-system\memory_plugin.aether: OK
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\plugins\examples\advanced-memory-system\memory_plugin.aether: OK
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\scripts\self_organizer.aether: OK
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\tools\curiosity_conflict_resolution.aether: OK
@@ -68,6 +70,7 @@ Profile: test
 - C:\Users\enigm\Desktop\Aetherra Project\lyrixa_system_check.aether: OK
 - C:\Users\enigm\Desktop\Aetherra Project\self_organizer.aether: OK
 - C:\Users\enigm\Desktop\Aetherra Project\test_ai_os.aether: OK
+- C:\Users\enigm\Desktop\Aetherra Project\workflows\hello_plugin_demo.aether: OK
 - C:\Users\enigm\Desktop\Aetherra Project\workflows\on_error_chain_demo.aether: OK
 - C:\Users\enigm\Desktop\Aetherra Project\workflows\parallel_workflow_demo.aether: OK
 - C:\Users\enigm\Desktop\Aetherra Project\workflows\plugin_chain_demo.aether: OK
@@ -99,6 +102,7 @@ Top risky files:
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\test_enhanced_language.aether: score=0 findings=0
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\test_goal_autopilot.aether: score=0 findings=0
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\utils.aether: score=0 findings=0
+- C:\Users\enigm\Desktop\Aetherra Project\Aetherra\lyrixa\plugins\advanced-memory-system\memory_plugin.aether: score=0 findings=0
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\plugins\examples\advanced-memory-system\memory_plugin.aether: score=0 findings=0
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\scripts\self_organizer.aether: score=0 findings=0
 - C:\Users\enigm\Desktop\Aetherra Project\Aetherra\tools\curiosity_conflict_resolution.aether: score=0 findings=0
@@ -110,6 +114,7 @@ Top risky files:
 - C:\Users\enigm\Desktop\Aetherra Project\lyrixa_system_check.aether: score=0 findings=0
 - C:\Users\enigm\Desktop\Aetherra Project\self_organizer.aether: score=0 findings=0
 - C:\Users\enigm\Desktop\Aetherra Project\test_ai_os.aether: score=0 findings=0
+- C:\Users\enigm\Desktop\Aetherra Project\workflows\hello_plugin_demo.aether: score=0 findings=0
 - C:\Users\enigm\Desktop\Aetherra Project\workflows\on_error_chain_demo.aether: score=0 findings=0
 - C:\Users\enigm\Desktop\Aetherra Project\workflows\parallel_workflow_demo.aether: score=0 findings=0
 - C:\Users\enigm\Desktop\Aetherra Project\workflows\plugin_chain_demo.aether: score=0 findings=0
