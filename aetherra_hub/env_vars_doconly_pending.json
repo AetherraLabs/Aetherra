@@ -1,0 +1,4 @@
+{
+    "pending_doconly_env_vars": [],
+    "notes": "All previously documented env vars implemented (including engine reset triggers)."
+}

@@ -37,7 +37,7 @@ This document summarizes what the project is, how it’s organized, what’s wor
   - Lyrixa conversation/intelligence managers are referenced from Aetherra.aetherra_core modules (wired in GUI and launcher; gracefully skipped if missing).
 
 - Plugins + Hub:
-  - aetherra_plugin_discovery.py, aetherra_hub_server.py, aetherra_plugin_catalog.json — discovery, hub, and catalog.
+  - aetherra_plugin_discovery.py, aetherra_hub/compat.py, aetherra_plugin_catalog.json — discovery, hub, and catalog.
   - In launchers: plugin manager is loaded and hub integration attempted; when hub is down, the system continues via mock services.
 
 - Consciousness Layer:
@@ -180,7 +180,7 @@ Notes
 - Lyrixa Frontend: Aetherra/lyrixa/lyrixa_basic.py (main GUI), Aetherra/lyrixa/lyrixa_basic_gui.py (window), Aetherra/lyrixa/launcher.py (backend orchestrator), Aetherra/lyrixa/gui/* (hybrid PySide6 + web panels)
 - Consciousness Bridge: Aetherra/lyrixa/consciousness_integration.py
 - Memory: aetherra_persistent_memory.py, Aetherra/lyrixa/memory/*, quantum_memory_bridge.py
-- Plugins/Hub: aetherra_plugin_discovery.py, aetherra_hub_server.py, Aetherra/lyrixa/plugins/*
+- Plugins/Hub: aetherra_plugin_discovery.py, aetherra_hub/compat.py, Aetherra/lyrixa/plugins/*
 - Tests: tests/*, root pyproject.toml pytest config
 - Docs: README.md (top-level), Aetherra/README.md, Aetherra/lyrixa/README.md, AETHERRA_RELEASE_STATUS.md
 

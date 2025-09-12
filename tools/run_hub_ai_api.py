@@ -44,7 +44,7 @@ def main() -> int:
     os.environ.update(desired_flags)
 
     try:
-        from aetherra_hub_server import AetherraHubServer
+    from aetherra_hub.compat import AetherraHubServer
     except Exception as e:
         print(f"[ERR] failed to import hub server: {e}")
         return 1

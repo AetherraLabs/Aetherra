@@ -58,7 +58,7 @@ CORE_FILES = {
     "aetherra_os_launcher.py",
     "aetherra_kernel_loop.py",
     "aetherra_service_registry.py",
-    "aetherra_hub_server.py",
+    # Legacy hub server file removed; compat layer lives under aetherra_hub/compat.py
     "aetherra_plugin_discovery.py",
     "aetherra_script_service.py",
     "aetherra_persistent_memory.py",

@@ -165,6 +165,18 @@ Current safeguards:
 Planned enhancements:
 - Sandboxed execution contexts (sub‑interpreter or process boundary)
 - Capability-based permission gating integrated with Kernel security system
+  - Per-capability limits supported via `~/.aetherra/policy/capabilities.json` under `limits`:
+
+    ```json
+    {
+      "allow": { "core:webhook_manager": ["network:webhook"] },
+      "limits": {
+        "network:outbound": { "timeout_sec": 10, "max_concurrency": 1 },
+        "network:webhook": { "timeout_sec": 8 }
+      }
+    }
+    ```
+  - Env override for concurrency by capability: `AETHERRA_PLUGIN_CAP_CONCURRENCY_MAP` (JSON)
 - Quarantine flow for suspicious or repeatedly failing plugins
 - Provenance attestation embedded in catalog entries
 

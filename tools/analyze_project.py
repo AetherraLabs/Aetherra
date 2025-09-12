@@ -169,8 +169,9 @@ def summarize_presence(root: Path) -> Dict[str, Any]:
         "memory": exists("Aetherra/lyrixa/memory"),
         "launcher": exists("Aetherra/lyrixa/launcher.py"),
     }
+    # Hub presence now determined by compatibility module directory (blueprint impl)
     hub = {
-        "server": exists("aetherra_hub_server.py"),
+        "server": exists("aetherra_hub/compat.py"),
         "federation": exists("Aetherra/hub"),
         "node_assets": exists("Aetherra/aetherra_hub/aetherra_hub"),
     }

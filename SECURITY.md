@@ -40,6 +40,13 @@ When running the Hub’s developer AI endpoints, production builds enforce safer
 	- You can add domains or wildcards (e.g., `*.corp.example.com`).
 - Startup guard prevents enabling AI API without a token in production.
 
+Additional recent hardening (P1 set):
+
+- Night schedule timezone guard: Kernel exports `aetherra_kernel_night_schedule_guard_pass` (0=failing) until either `AETHERRA_NIGHT_TZ` is set to an IANA tz or `AETHERRA_NIGHT_UTC=1` is provided in prod/staging. This prevents ambiguous local‑time scheduling.
+- QFAC policy gating metrics: `aetherra_qfac_policy_mode_current`, `aetherra_qfac_policy_allowed`, and `aetherra_qfac_policy_info{key=reason|policy}` expose quantum/hybrid downgrade reasons for audit (shadow vs. enforce).
+- Scratchpad redaction default: Absent an explicit, permitted `scratchpad_policy`, Hub forces `redacted` and masks reasoning/evidence fields. `persisted` requires `evidence.view` capability; `ephemeral` remains allowed.
+- Key encryption status: `aetherra_keys_encrypted` and `aetherra_master_key_present` provide an at‑a‑glance encryption posture signal.
+
 See `docs/PROJECT_OVERVIEW.md` and `.env.example` for full variable descriptions and examples.
 
 ## HMR (Hot Module Reload) Safety in Production

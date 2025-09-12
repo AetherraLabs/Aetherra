@@ -59,6 +59,24 @@ class AetherraServiceRegistry:
         self._event_handlers: Dict[str, List[Callable]] = {}
         self._running = False
         self._heartbeat_task = None
+        # Heartbeat + staleness configuration
+        # Heartbeat monitor runs every 60s today; we allow future tuning via env.
+        # Stale threshold defaults to 3x declared heartbeat interval (safe early warning)
+        try:
+            self._heartbeat_interval_sec = int(
+                os.environ.get("AETHERRA_REGISTRY_HEARTBEAT_SEC", "60") or 60
+            )
+        except Exception:
+            self._heartbeat_interval_sec = 60
+        try:
+            self._stale_sec = int(
+                os.environ.get(
+                    "AETHERRA_REGISTRY_STALE_SEC",
+                    str(self._heartbeat_interval_sec * 3),
+                )
+            )
+        except Exception:
+            self._stale_sec = self._heartbeat_interval_sec * 3
         # Canonical naming with legacy alias support
         # Legacy names map to professional canonical names
         self._legacy_alias_map: Dict[str, str] = {
@@ -460,11 +478,13 @@ class AetherraServiceRegistry:
                 current_time = datetime.now()
 
                 for service_name, service_info in self._services.items():
-                    # Check for stale heartbeats (no update in 5 minutes)
-                    if (current_time - service_info.last_heartbeat).seconds > 300:
+                    # Check for stale heartbeats (no update in configured window)
+                    if (
+                        current_time - service_info.last_heartbeat
+                    ).total_seconds() > self._stale_sec:
                         if service_info.status == ServiceStatus.HEALTHY:
                             logger.warning(
-                                f"[WARN] Service '{service_name}' heartbeat stale, marking as degraded"
+                                f"[WARN] Service '{service_name}' heartbeat stale (> {self._stale_sec}s), marking as degraded"
                             )
                             await self.update_service_status(
                                 service_name, ServiceStatus.DEGRADED
@@ -483,7 +503,7 @@ class AetherraServiceRegistry:
                         except Exception:
                             pass
 
-                await asyncio.sleep(60)  # Check every minute
+                await asyncio.sleep(self._heartbeat_interval_sec)
 
             except Exception as e:
                 logger.error(f"[ERROR] Heartbeat monitor error: {e}")

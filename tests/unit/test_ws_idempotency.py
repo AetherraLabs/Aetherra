@@ -8,7 +8,8 @@ from typing import Any
 
 import pytest
 
-hub_mod = __import__("aetherra_hub_server")
+import aetherra_hub.compat as hub_mod
+
 FLASK_AVAILABLE = getattr(hub_mod, "FLASK_AVAILABLE", False)
 
 

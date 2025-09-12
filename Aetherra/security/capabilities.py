@@ -32,15 +32,62 @@ APP_DIR = Path(os.path.expanduser("~/.aetherra")).resolve()
 POLICY_FILE = APP_DIR / "policy" / "capabilities.json"
 
 
-def _load_policy() -> dict[str, list[str]]:
+def _load_policy_full() -> dict:
+    """Load full capabilities policy JSON (allow + optional limits).
+
+    Structure:
+    {
+      "allow": { "requester": ["cap1", "cap2"] },
+      "limits": { "capability": { "timeout_sec": 10, "max_concurrency": 1 } }
+    }
+    """
     try:
         if POLICY_FILE.exists():
             data = json.loads(POLICY_FILE.read_text(encoding="utf-8") or "{}")
-            allow = data.get("allow", {})
-            if isinstance(allow, dict):
-                return {str(k): list(v) for k, v in allow.items() if isinstance(v, list)}
+            if isinstance(data, dict):
+                return data
     except Exception as e:
         logger.warning("Failed to load capabilities policy: %s", e)
+    return {}
+
+
+def _load_policy() -> dict[str, list[str]]:
+    """Load only the allow map from the capabilities policy."""
+    data = _load_policy_full()
+    allow = data.get("allow", {}) if isinstance(data, dict) else {}
+    try:
+        if isinstance(allow, dict):
+            return {str(k): list(v) for k, v in allow.items() if isinstance(v, list)}
+    except Exception:
+        pass
+    return {}
+
+
+def get_capability_limits(capability: str) -> dict:
+    """Return per-capability limits from policy, if any.
+
+    Example capabilities.json:
+    {
+      "allow": { "core:webhook_manager": ["network:webhook"] },
+      "limits": {
+        "network:outbound": { "timeout_sec": 10, "max_concurrency": 1 },
+        "network:webhook": { "timeout_sec": 8 }
+      }
+    }
+    """
+    try:
+        cap = (capability or "").strip()
+        if not cap:
+            return {}
+        data = _load_policy_full()
+        limits = data.get("limits") if isinstance(data, dict) else None
+        if isinstance(limits, dict):
+            cfg = limits.get(cap)
+            if isinstance(cfg, dict):
+                # Shallow copy to avoid accidental mutation
+                return dict(cfg)
+    except Exception as e:
+        logger.debug("capabilities.get_capability_limits error: %s", e)
     return {}
 
 

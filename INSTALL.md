@@ -21,7 +21,7 @@ pip install -r requirements.txt  # or: pip install -e .
 ## 2. One-Liner Quick Hub (Dev Mode)
 
 ```powershell
-$env:AETHERRA_AI_API_ENABLED='1'; $env:AETHERRA_AI_API_STREAM='1'; python aetherra_hub_server.py
+$env:AETHERRA_AI_API_ENABLED='1'; $env:AETHERRA_AI_API_STREAM='1'; python -m aetherra_hub.compat
 ```
 
 In another shell:
@@ -34,7 +34,7 @@ Invoke-RestMethod -Method Post -Uri 'http://localhost:3001/api/lyrixa/chat' -Con
 
 ```powershell
 docker build -t aetherra-dev .
-docker run -p 3001:3001 -e AETHERRA_AI_API_ENABLED=1 -e AETHERRA_AI_API_STREAM=1 aetherra-dev python aetherra_hub_server.py
+docker run -p 3001:3001 -e AETHERRA_AI_API_ENABLED=1 -e AETHERRA_AI_API_STREAM=1 aetherra-dev python -m aetherra_hub.compat
 ```
 
 ## 4. Sample Workflows (.aether)

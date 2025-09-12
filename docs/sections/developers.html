@@ -39,7 +39,7 @@
         </ol>
 
         <h3 id="commands">Commands</h3>
-        <pre><code>python aetherra_hub_server.py
+        <pre><code>python -m aetherra_hub.compat
 python aetherra_os.py
 </code></pre>
 
@@ -53,7 +53,7 @@ python aetherra_os.py
         <h2 id="layout">Project layout</h2>
         <ul>
             <li><code>aetherra_os.py</code> — OS entrypoint.</li>
-            <li><code>aetherra_hub_server.py</code> — Hub API (plugins, status, metrics).</li>
+            <li><code>python -m aetherra_hub.compat</code> — Hub API (plugins, status, metrics).</li>
             <li><code>tools/</code> — verification scripts and quality gates.</li>
             <li><code>docs/</code> — this site; <code>sections/</code> contains landing pages.</li>
         </ul>
@@ -66,7 +66,7 @@ python aetherra_os.py
 
         <h2>Run your first .aether</h2>
         <ol>
-            <li>Start the hub: <code>python aetherra_hub_server.py</code></li>
+            <li>Start the hub: <code>python -m aetherra_hub.compat</code></li>
             <li>Start the OS: <code>python aetherra_os.py</code></li>
             <li>Open the docs page and set Hub URL via the widget title (Ctrl+click).</li>
             <li>Submit a task and watch it via the widget task watcher.</li>

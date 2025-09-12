@@ -6,12 +6,12 @@ import socket
 
 import pytest
 
-requests = pytest.importorskip("requests")
-
-import aetherra_hub_server as hub_mod
+import aetherra_hub.compat as hub_mod
 from aetherra_event_bus import EventBus
 from aetherra_module_manager import ModuleManager
 from aetherra_service_registry import get_service_registry
+
+requests = pytest.importorskip("requests")
 
 FLASK_AVAILABLE = getattr(hub_mod, "FLASK_AVAILABLE", False)
 

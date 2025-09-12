@@ -26,13 +26,13 @@
         <h2 id="cli">CLI</h2>
         <ul>
             <li><code>aetherra_os.py</code> — start the OS/kernel.</li>
-            <li><code>aetherra_hub_server.py</code> — start the Hub API.</li>
+            <li><code>python -m aetherra_hub.compat</code> — start the Hub API.</li>
             <li><code>tools/quality_gates.py</code> — run tests/coverage quality gates.</li>
         </ul>
 
         <h3>Common commands</h3>
         <pre><code># Start Hub (default :3001)
-python aetherra_hub_server.py
+python -m aetherra_hub.compat
 
 # Start OS
 python aetherra_os.py

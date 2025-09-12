@@ -40,7 +40,7 @@ This document captures the scope, constraints, and safe operational defaults for
 ```powershell
 $env:AETHERRA_AI_API_REQUIRE_TOKEN='1'
 $env:AETHERRA_HUB_SKIP_OPTIONALS='1'
-python aetherra_hub_server.py
+python -m aetherra_hub.compat
 # In another shell (enable trainer transiently)
 $env:AETHERRA_TRAINER_ENABLED='1'
 python - <<'PY'

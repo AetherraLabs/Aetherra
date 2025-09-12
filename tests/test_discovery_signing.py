@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from aetherra_hub_server import AetherraHubServer
+from aetherra_hub.compat import AetherraHubServer
 from aetherra_plugin_discovery import AetherraPluginDiscovery, PluginMetadata
 
 HAS_FLASK = importlib.util.find_spec("flask") is not None

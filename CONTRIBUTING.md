@@ -57,11 +57,28 @@ python tools/precommit_sign_aether.py --dry-run workflows/parallel_workflow_demo
 
 CI also runs a strict verification workflow (`aether-verify-signatures.yml`) to prevent unsigned or tampered `.aether` content from merging.
 
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+## Deprecations & Lifecycle
 
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->
+Active deprecations are tracked to ensure safe removal after a stability window. Current tracker:
+
+- Legacy Hub script (`aetherra_hub_server.py`) — replaced by `python -m aetherra_hub.compat`.
+- Tracker: `docs/DEPRECATION_TRACKER_LEGACY_HUB.md`
+- Enforcement:
+- Quality gate blocks new imports unless `LEGACY_HUB_IMPORT_ENFORCE=0` (emergency override)
+- Pre-commit hook (`block-legacy-hub-import`) blocks staged legacy imports unless `LEGACY_HUB_IMPORT_ALLOW=1`
+- Removal earliest: first minor release after one full stabilization cycle (see tracker + CHANGELOG)
+- Parity test: `tests/integration/test_hub_compat_parity.py` (will be removed when shim deleted)
+
+Contributor expectation: do not reintroduce imports of `aetherra_hub_server`—use module form instead (`python -m aetherra_hub.compat` or direct package imports).
+
+If proposing a new deprecation, open an issue with label `deprecation-proposal` containing:
+
+1. Rationale and replacement path
+2. Planned enforcement layers (tests, hooks, gates)
+3. Migration impact assessment
+4. Target earliest removal version
+
+Approved proposals should add a tracker doc under `docs/DEPRECATION_TRACKER_*.md` and an entry in `CHANGELOG.md` under Deprecations.
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

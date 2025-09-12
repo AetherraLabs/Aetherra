@@ -238,11 +238,9 @@ cleanup_*.py
 # Discord Bot directory (contains sensitive tokens and configurations)
 Discord Bot/
 
-# Website directory
-# Previously ignored; we now track the website for GitHub Pages deploys.
-# Allow the top-level website folder and its contents.
-!aetherra-website/
-!aetherra-website/**
+# Website directory (kept out of core repo; deployed via dedicated action in separate context)
+# Prevent accidental inclusion of site sources/build artifacts.
+aetherra-website/
 
 # Temporary development files
 scratch/

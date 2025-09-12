@@ -6,10 +6,9 @@ import socket
 
 import pytest
 
+import aetherra_hub.compat as hub_mod
+
 requests = pytest.importorskip("requests")
-
-
-hub_mod = __import__("aetherra_hub_server")
 FLASK_AVAILABLE = getattr(hub_mod, "FLASK_AVAILABLE", False)
 
 

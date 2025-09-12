@@ -19,6 +19,12 @@ repos:
         language: system
         pass_filenames: false
         stages: [commit]
+      - id: block-legacy-hub-import
+        name: Block deprecated aetherra_hub_server imports
+        entry: python tools/precommit_block_legacy_hub.py
+        language: system
+        pass_filenames: false
+        stages: [commit]
 # Aetherra Pre-commit Configuration
 # Ensures code quality before commits
 

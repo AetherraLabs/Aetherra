@@ -174,6 +174,19 @@ class PluginManagerAdapter:
         name = data.get("name") or data.get("plugin")
         args = data.get("args", [])
         kwargs = data.get("kwargs", {})
+        # Best-effort: propagate timeout/memory hints for sandbox wrappers
+        try:
+            t_sec = float(data.get("timeout_sec") or 0) or 0.0
+        except Exception:
+            t_sec = 0.0
+        try:
+            m_mb = int(data.get("memory_mb") or data.get("mem_mb") or 0) or 0
+        except Exception:
+            m_mb = 0
+        if t_sec > 0 and "_timeout_sec" not in kwargs:
+            kwargs["_timeout_sec"] = t_sec
+        if m_mb > 0 and "_memory_mb" not in kwargs:
+            kwargs["_memory_mb"] = m_mb
         if name and hasattr(self.impl, "execute_plugin"):
             return self.impl.execute_plugin(name, *args, **kwargs)
         return None
@@ -476,6 +489,14 @@ class AetherraOSLauncher:
                                 "[HMR][DENY] Production profile requires AETHERRA_HMR_STRICT=1 and non-empty AETHERRA_HMR_ALLOWED_SOURCES; HMR disabled"
                             )
                             # Do not initialize controller in unsafe production posture
+                            try:  # metrics instrumentation (Phase 0 security observability)
+                                from aetherra_hub.services import (
+                                    metrics_accum,  # type: ignore
+                                )
+
+                                metrics_accum.inc_hmr_denied("requirements_not_met")
+                            except Exception:
+                                pass
                             raise RuntimeError("hmr_requirements_not_met")
                     self.systems["hmr_controller"] = await get_hmr_controller(
                         self.service_registry, self.kernel_loop, strict=strict
@@ -486,6 +507,14 @@ class AetherraOSLauncher:
                     )
             except Exception as e:
                 logger.warning(f"[HMR] Controller not available: {e}")
+                # Increment metrics for any initialization failure distinct from the explicit requirements gate
+                try:
+                    if str(e) != "hmr_requirements_not_met":
+                        from aetherra_hub.services import metrics_accum  # type: ignore
+
+                        metrics_accum.inc_hmr_denied("init_failure")
+                except Exception:
+                    pass
         logger.info("[OK] All core systems loaded")
 
     async def _load_self_maintenance_systems(self, config: Dict):
@@ -1178,7 +1207,8 @@ class AetherraOSLauncher:
             if enabled:
                 try:
                     # Import and start the built-in Python Hub server
-                    from aetherra_hub_server import start_hub_server
+                    # Use compatibility layer instead of deprecated module
+                    from aetherra_hub.compat import start_hub_server
 
                     logger.info("[HUB] Starting Aetherra Hub server...")
 
@@ -1248,7 +1278,7 @@ class AetherraOSLauncher:
                 except Exception as hub_error:
                     logger.warning(f"[WARN] Failed to start Aetherra Hub: {hub_error}")
                     # Create a placeholder service anyway
-                    from aetherra_hub_server import AetherraHubServer
+                    from aetherra_hub.compat import AetherraHubServer
 
                     mock_hub = AetherraHubServer(3001)
                     self.systems["aetherra_hub"] = mock_hub
@@ -1616,8 +1646,11 @@ class AetherraOSLauncher:
         try:
             import json
             import os
+            import socket
             import tempfile
             from datetime import datetime
+
+            import psutil  # type: ignore
 
             temp_dir = tempfile.gettempdir()
             status_file = os.path.join(temp_dir, "aetherra_os_status.json")
@@ -1634,6 +1667,13 @@ class AetherraOSLauncher:
                 "last_heartbeat": datetime.now().isoformat(),
                 "startup_time": self.startup_time,
                 "systems_active": len(self.systems),
+                "pid": os.getpid(),
+                "host": socket.gethostname(),
+                "process_uptime_sec": int(
+                    psutil.boot_time()
+                    and datetime.now().timestamp()
+                    - psutil.Process(os.getpid()).create_time()
+                ),
             }
 
             with open(status_file, "w") as f:
@@ -1645,11 +1685,36 @@ class AetherraOSLauncher:
     async def _cleanup_os_status(self):
         """Clean up OS status file on shutdown."""
         try:
+            import json
             import os
             import tempfile
+            from datetime import datetime
 
             temp_dir = tempfile.gettempdir()
             status_file = os.path.join(temp_dir, "aetherra_os_status.json")
+
+            # Remove stale file from previous crashed instance on first cleanup call
+            # Grace window configurable (seconds); default 300s
+            try:
+                grace = int(os.environ.get("AETHERRA_OS_STATUS_GRACE_SEC", "300"))
+            except Exception:
+                grace = 300
+            if os.path.exists(status_file):
+                try:
+                    with open(status_file) as f:
+                        data = json.load(f)
+                    last_hb = data.get("last_heartbeat")
+                    if last_hb:
+                        from datetime import datetime
+
+                        hb_ts = datetime.fromisoformat(last_hb)
+                        if (datetime.now() - hb_ts).total_seconds() > grace:
+                            os.remove(status_file)
+                            logger.debug(
+                                "[STATUS] Removed stale previous OS status file"
+                            )
+                except Exception:
+                    pass
 
             if os.path.exists(status_file):
                 os.remove(status_file)

@@ -33,7 +33,7 @@ Notes:
 - If you use the Hub control plane endpoints, ensure `AETHERRA_HUB_CONTROL_TOKEN` is set; then POST to `/api/kernel/control/*` as needed.
 
 ## HMR (Hot Module Reload) Phase‑2: Safe reload procedures
- 
+
 ### Night cycle scheduling (TZ safety)
 
 - In prod/staging, night‑cycle jobs are blocked unless a timezone is explicitly set.

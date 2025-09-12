@@ -7,9 +7,9 @@ import time
 
 import pytest
 
-requests = pytest.importorskip("requests")
+import aetherra_hub.compat as hub_mod
 
-hub_mod = __import__("aetherra_hub_server")
+requests = pytest.importorskip("requests")
 FLASK_AVAILABLE = getattr(hub_mod, "FLASK_AVAILABLE", False)
 
 

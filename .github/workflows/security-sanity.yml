@@ -61,8 +61,8 @@ jobs:
         with:
           name: aether-static-report-${{ matrix.os }}
           path: aether_static_report.md
-      - name: Validate import map (warn-only)
+      - name: Validate import map (strict)
         if: always()
         run: |
-          python tools/validate_import_map.py || echo "Import map issues detected (warn-only)"
+          python tools/validate_import_map.py
         shell: bash

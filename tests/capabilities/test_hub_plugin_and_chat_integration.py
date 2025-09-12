@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 import socket
 import sys
-import threading
 import time
 from pathlib import Path
 
@@ -32,16 +31,12 @@ def hub_server():
     env_backup = os.environ.copy()
     os.environ.setdefault("AETHERRA_HUB_SKIP_OPTIONALS", "1")
 
-    from aetherra_hub_server import AetherraHubServer
+    from aetherra_hub.compat import AetherraHubServer
 
     hub = AetherraHubServer(port=HUB_PORT)
-
-    if getattr(hub, "app", None) is None:
-        pytest.skip("Flask not available; hub app is None")
-    t = threading.Thread(
-        target=lambda: hub.app.run(port=HUB_PORT, use_reloader=False), daemon=True
-    )  # type: ignore[attr-defined]
-    t.start()
+    # Start via compatibility layer API
+    if not hub.start_server():
+        pytest.skip("Hub server failed to start")
 
     # Wait for port
     for _ in range(40):
@@ -76,9 +71,9 @@ async def test_plugin_registration_and_listing(hub_server):
     r2 = requests.get(f"http://localhost:{HUB_PORT}/api/plugins", timeout=3)
     assert r2.status_code == 200, r2.text
     data = r2.json()
-    assert any(
-        p.get("name") == "sample_plugin" for p in data.get("plugins", [])
-    ), "Registered plugin not in listing"
+    assert any(p.get("name") == "sample_plugin" for p in data.get("plugins", [])), (
+        "Registered plugin not in listing"
+    )
 
 
 def test_lyrixa_chat_bridge_fallback_or_forward(hub_server):

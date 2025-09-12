@@ -56,13 +56,15 @@ def main() -> int:
 
     port = args.port
 
-    # Launch hub server in background (Python module directly). We rely on simple polling.
-    _info(f"Starting hub on port {port}...")
+    # Launch hub server in background using compatibility module (legacy shim retired).
+    # We intentionally spawn a subprocess so output streams are visible and isolation preserved.
+    _info(f"Starting hub on port {port} via aetherra_hub.compat ...")
     hub_proc = subprocess.Popen(
-        [sys.executable, "aetherra_hub_server.py"],
+        [sys.executable, "-m", "aetherra_hub.compat"],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        env={**os.environ, "AETHERRA_HUB_PORT": str(port)},
     )
 
     # Poll for readiness of /api/lyrixa/chat

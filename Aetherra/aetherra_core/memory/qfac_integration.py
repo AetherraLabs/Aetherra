@@ -138,11 +138,16 @@ class QFACMemoryNode:
             }
 
             # Optional quantum-hybrid path: encode a classical shadow via QuantumMemoryBridge
-            if self.qfac_mode in ("hybrid", "quantum") and self.quantum_bridge is not None:
+            if (
+                self.qfac_mode in ("hybrid", "quantum")
+                and self.quantum_bridge is not None
+            ):
                 try:
                     quantum_payload = {
                         "content": self.original_data,
-                        "complexity": float(getattr(self.compression_score, "entropy", 0.5)),
+                        "complexity": float(
+                            getattr(self.compression_score, "entropy", 0.5)
+                        ),
                         "confidence": float(
                             getattr(self.compression_score, "pattern_confidence", 0.8)
                         ),
@@ -206,14 +211,20 @@ class QFACMemoryNode:
                         quantum_state=None,
                         classical_shadow={
                             "content": self.original_data,
-                            "complexity": float(getattr(self.compression_score, "entropy", 0.5)),
+                            "complexity": float(
+                                getattr(self.compression_score, "entropy", 0.5)
+                            ),
                             "confidence": float(
-                                getattr(self.compression_score, "pattern_confidence", 0.8)
+                                getattr(
+                                    self.compression_score, "pattern_confidence", 0.8
+                                )
                             ),
                         },
                         encoding_fidelity=float(q_meta.get("fidelity", 0.9)),
                         measurement_results=None,
-                        creation_timestamp=__import__("datetime").datetime.fromtimestamp(
+                        creation_timestamp=__import__(
+                            "datetime"
+                        ).datetime.fromtimestamp(
                             self.compression_metadata["compression_timestamp"]
                         ),
                     )
@@ -225,7 +236,9 @@ class QFACMemoryNode:
                     if reconstructed and "content" in reconstructed:
                         decompressed_data = reconstructed["content"]
                 except Exception as qe2:
-                    print(f"⚠️ Quantum-hybrid retrieval fallback for {self.node_id}: {qe2}")
+                    print(
+                        f"⚠️ Quantum-hybrid retrieval fallback for {self.node_id}: {qe2}"
+                    )
 
             # Update access tracking
             self.access_count += 1
@@ -254,7 +267,9 @@ class QFACMemoryNode:
 
         # Simulate compression ratio from our analysis
         if self.compression_score:
-            target_size = int(len(compressed) / self.compression_score.compression_ratio)
+            target_size = int(
+                len(compressed) / self.compression_score.compression_ratio
+            )
             compressed = compressed[:target_size]  # Simulate compression
 
         return compressed
@@ -315,7 +330,9 @@ class QFACMemorySystem:
             # Local async helper to query the service registry
             async def _run() -> Optional[Dict[str, Any]]:
                 try:
-                    from aetherra_service_registry import get_service_registry  # type: ignore
+                    from aetherra_service_registry import (
+                        get_service_registry,  # type: ignore
+                    )
 
                     reg = await get_service_registry()
                     info = reg.get_service_info("aetherra_engine")
@@ -398,7 +415,9 @@ class QFACMemorySystem:
         if self.qfac_mode in ("hybrid", "quantum"):
             try:
                 backend = os.getenv("AETHERRA_QFAC_BACKEND", "simulator")
-                self.quantum_bridge = QuantumMemoryBridge(quantum_backend=backend, max_qubits=16)
+                self.quantum_bridge = QuantumMemoryBridge(
+                    quantum_backend=backend, max_qubits=16
+                )
             except Exception as e:
                 print(f"⚠️ Failed to initialize QuantumMemoryBridge: {e}")
                 self.quantum_bridge = None
@@ -495,8 +514,12 @@ class QFACMemorySystem:
                         results["compression_details"].append(
                             {
                                 "node_id": node_id,
-                                "original_size": node.compression_metadata["original_size"],
-                                "compressed_size": node.compression_metadata["compressed_size"],
+                                "original_size": node.compression_metadata[
+                                    "original_size"
+                                ],
+                                "compressed_size": node.compression_metadata[
+                                    "compressed_size"
+                                ],
                                 "ratio": node.compression_score.compression_ratio,
                                 "fidelity": node.compression_score.fidelity_level.value,
                             }
@@ -520,10 +543,14 @@ class QFACMemorySystem:
         compressed_nodes = sum(1 for node in self.nodes.values() if node.is_compressed)
 
         # Size statistics
-        total_original_size = sum(len(str(node.original_data)) for node in self.nodes.values())
+        total_original_size = sum(
+            len(str(node.original_data)) for node in self.nodes.values()
+        )
 
         total_compressed_size = sum(
-            node.compression_metadata.get("compressed_size", len(str(node.original_data)))
+            node.compression_metadata.get(
+                "compressed_size", len(str(node.original_data))
+            )
             if node.compression_metadata
             else len(str(node.original_data))
             for node in self.nodes.values()
@@ -531,7 +558,9 @@ class QFACMemorySystem:
 
         # Compression ratio
         overall_compression_ratio = (
-            total_original_size / total_compressed_size if total_compressed_size > 0 else 1.0
+            total_original_size / total_compressed_size
+            if total_compressed_size > 0
+            else 1.0
         )
 
         # Fidelity distribution
@@ -559,7 +588,9 @@ class QFACMemorySystem:
                 "overall_compression_ratio": overall_compression_ratio,
                 "space_saved_bytes": total_original_size - total_compressed_size,
                 "space_saved_percentage": (
-                    (total_original_size - total_compressed_size) / total_original_size * 100
+                    (total_original_size - total_compressed_size)
+                    / total_original_size
+                    * 100
                 )
                 if total_original_size > 0
                 else 0,
@@ -648,7 +679,9 @@ class QFACMemorySystem:
             if not node.is_compressed and node._should_compress():
                 await node.compress()
 
-    async def export_system_report(self, filename: str = "qfac_system_report.json") -> str:
+    async def export_system_report(
+        self, filename: str = "qfac_system_report.json"
+    ) -> str:
         """Export comprehensive system report"""
         print(f"📄 Exporting system report to {filename}...")
 
@@ -684,6 +717,22 @@ class QFACMemorySystem:
 
         print(f"   ✅ Report exported to {output_path}")
         return str(output_path)
+
+    # --- Policy / metrics helpers (P1 #9) ---
+    def get_policy_decision(self) -> Dict[str, Any]:  # pragma: no cover - thin accessor
+        """Return the original QFAC policy resolution decision structure.
+
+        Exposed for Prometheus metrics assembly via the hub registry client.
+        Returns an empty dict if not yet initialized (defensive during early boot).
+        """
+        try:
+            return (
+                dict(self.qfac_policy_decision)
+                if getattr(self, "qfac_policy_decision", None)
+                else {}
+            )
+        except Exception:
+            return {}
 
     async def start_dashboard(self, mode: str = "text"):
         """Start the QFAC dashboard"""
@@ -772,8 +821,12 @@ async def demo_qfac_integration():
     status = await qfac_system.get_system_status()
     print(f"   [DISC] Nodes: {status['node_statistics']['total_nodes']}")
     print(f"   🗜️ Compressed: {status['node_statistics']['compressed_nodes']}")
-    print(f"   📈 Compression ratio: {status['size_statistics']['overall_compression_ratio']:.1f}x")
-    print(f"   💾 Space saved: {status['size_statistics']['space_saved_percentage']:.1f}%")
+    print(
+        f"   📈 Compression ratio: {status['size_statistics']['overall_compression_ratio']:.1f}x"
+    )
+    print(
+        f"   💾 Space saved: {status['size_statistics']['space_saved_percentage']:.1f}%"
+    )
     print(f"   🏥 System health: {status['system_health']:.1%}")
 
     # Test data retrieval
@@ -789,7 +842,9 @@ async def demo_qfac_integration():
 
     # Export report
     print("\n📄 Exporting system report...")
-    report_path = await qfac_system.export_system_report("demo_qfac_integration_report.json")
+    report_path = await qfac_system.export_system_report(
+        "demo_qfac_integration_report.json"
+    )
 
     print("\n✅ QFAC Integration demonstration complete!")
     print(f"📄 Report saved to: {report_path}")

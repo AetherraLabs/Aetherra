@@ -46,6 +46,21 @@ QFACPolicy.resolve_mode returns:
 
 QFACMemorySystem exposes the last decision under `get_system_status()["qfac_policy"]`.
 
+### Prometheus Metrics (Exported via /metrics)
+
+The Hub surfaces policy gating state for observability and shadow-mode auditing:
+
+- `aetherra_qfac_policy_mode_current` (gauge): 0=classical, 1=hybrid, 2=quantum effective mode.
+- `aetherra_qfac_policy_allowed` (gauge 0/1): 1 if desired mode accepted; 0 if downgraded.
+- `aetherra_qfac_policy_info{key="reason",value="..."}` (gauge=1): reason string for last decision.
+- `aetherra_qfac_policy_info{key="policy",value="..."}` (gauge=1): active policy mode (`enforce|shadow|off`).
+
+Operational Usage:
+
+- Alert when `aetherra_qfac_policy_mode_current` < 1 for sustained periods while `AETHERRA_QFAC_MODE` requests `hybrid|quantum`.
+- Create audit dashboards listing top `reason` label values to justify downgrades.
+- In shadow mode (`policy=shadow`), track potential production impact before switching to `enforce`.
+
 ## Live-Metrics Source Path
 
 - Service Registry -> Aetherra Engine instance

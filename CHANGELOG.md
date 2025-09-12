@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+### Added (P1 Hardening)
+
+* Scratchpad redaction default: Hub now defaults `scratchpad_policy` to `redacted` unless explicitly set to `ephemeral` or (capability‑gated) `persisted`. Persisted exposure requires `evidence.view` capability. Redacted results mask scratchpad/evidence fields.
+* Night schedule timezone guard: Kernel emits `aetherra_kernel_night_schedule_guard_pass` (0/1). In prod/staging the guard fails (0) if neither `AETHERRA_NIGHT_TZ` nor `AETHERRA_NIGHT_UTC=1` is configured, preventing ambiguous local‑time scheduling.
+* QFAC policy gating metrics: `aetherra_qfac_policy_mode_current`, `aetherra_qfac_policy_allowed`, `aetherra_qfac_policy_info{key=reason|policy}` expose effective quantum/hybrid decision, downgrade reason, and policy mode (enforce|shadow|off).
+* SSE streaming resilience metrics: `aetherra_chat_resume_gaps_total` (missed event replay detections) and `aetherra_chat_soft_timeouts_total` (Hub enforced soft timeout completions).
+* Key encryption posture metrics: `aetherra_keys_encrypted` and `aetherra_master_key_present` (visibility for at‑rest secret hygiene).
+
+### Documentation
+
+* Updated `AETHERRA_CHAT_SYSTEM.md` with scratchpad redaction defaults and capability gating semantics.
+* Updated `README.md` metrics section to include new chat/KERNEL/QFAC/keys metrics and guard rails.
+* Updated `PROJECT_OVERVIEW.md` environment catalog with night schedule guard note and scratchpad default.
+* Updated `SECURITY.md` production-safe defaults with night schedule guard, QFAC metrics, key encryption posture, and scratchpad privacy default.
+* Added Prometheus metrics section to `QFAC_POLICY.md`.
+
 ### Planned
 
 * Documentation expansion for new observability endpoints (`/api/health`, memory/kernel metrics breakdown)
@@ -9,6 +25,13 @@
 * Federation secure peer handshake & signing enforcement
 * Enhanced evaluation metrics & dataset registry
 * Extended sandbox policy surfaces (syscall / resource limits) and deterministic replay signage
+* Removal of deprecated `aetherra_hub_server.py` shim (target: first release after 0.5.x once downstream migration confirmed)
+
+### Deprecations
+
+* `aetherra_hub_server.py` (monolithic hub) fully replaced by modular blueprint implementation exposed via `aetherra_hub.compat`. The shim now only re‑exports `AetherraHubServer` / `start_hub_server` and emits a `DeprecationWarning` on import. All tooling & docs invoke the Hub using `python -m aetherra_hub.compat`.
+	* Quality gates now enforce: any new direct `import aetherra_hub_server` usage (outside the shim itself) fails the build (can be bypassed with `LEGACY_HUB_IMPORT_ENFORCE=0`).
+	* Planned removal: after one stabilized minor cycle (earliest: post 0.5.0 GA). Downstream integrators should migrate immediately to `from aetherra_hub import compat` or `from aetherra_hub.app import create_app`.
 
 ---
 
