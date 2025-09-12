@@ -22,7 +22,7 @@ from Aetherra.lyrixa.integrations.aetherra_hub_connector import (
     hub_connector,
     os_detector,
 )
-from aetherra_hub_server import start_hub_server
+from aetherra_hub.compat import start_hub_server
 
 ROOT = Path(__file__).parent.parent
 if str(ROOT) not in sys.path:

@@ -4,7 +4,7 @@ import types
 
 import requests
 
-from aetherra_hub_server import start_hub_server
+from aetherra_hub.compat import start_hub_server
 
 
 class _FakeService:

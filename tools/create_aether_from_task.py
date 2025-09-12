@@ -36,6 +36,12 @@ DEFAULT_TEMPLATE = """
 
 # Deterministic test profile recommended for CI
 policy profile="test" max_executions=100 retries=2 timeout_ms=30000 allow_untrusted_secret=false
+# Strict execution recommended for production workflows:
+#   export AETHERRA_SCRIPT_VERIFY_STRICT=1
+#   export AETHERRA_SIGNING_STRICT=1
+#   export AETHERRA_REQUIRE_CAPABILITIES=1
+#   export AETHERRA_REQUIRE_STRICT=1
+# Sign this file: python tools/sign_aether.py <file>.aether
 
 # Dependencies
 {requires}
@@ -100,11 +106,18 @@ def main() -> int:
 
     created = datetime.utcnow().isoformat() + "Z"
     slug = slugify(args.task)[:40]
-    requires = (
-        REQUIRES_STRICT
-        if os.getenv("AETHERRA_REQUIRE_STRICT", "0") == "1"
-        else REQUIRES_LENIENT
-    )
+    # Auto-upgrade to strict requires if running in a production profile and not explicitly disabled.
+    prod_like = (os.getenv("AETHERRA_PROFILE", "") or "").lower() in {
+        "prod",
+        "production",
+    }
+    strict_flag = os.getenv("AETHERRA_REQUIRE_STRICT")
+    if prod_like and not strict_flag:
+        # Implicitly enable strict for production safety; downstream tools may rely on this.
+        os.environ["AETHERRA_REQUIRE_STRICT"] = "1"
+        strict_flag = "1"
+
+    requires = REQUIRES_STRICT if strict_flag == "1" else REQUIRES_LENIENT
 
     # Try custom template first
     raw_tpl = load_custom_template()

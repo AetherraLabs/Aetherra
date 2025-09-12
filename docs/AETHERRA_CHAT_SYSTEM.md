@@ -103,7 +103,11 @@ Unified response contract returned under `result`:
   - `score?`: number — relevance/score (best-effort normalization across `score|relevance|confidence`)
   - `snippet?`: string — supporting excerpt, trimmed to 1,024 chars
   - `tags?`: string[] — arbitrary tags when provided
-- `scratchpad_policy`: optional — `"ephemeral"|"persisted"|"redacted"`; propagates user preference and engine behavior
+- `scratchpad_policy`: optional — `"ephemeral"|"persisted"|"redacted"`.
+  - Default (when omitted) is **`redacted`** for privacy-safe reasoning by default.
+  - `ephemeral` (always allowed) exposes transient reasoning not persisted to memory.
+  - `persisted` is only honored when the caller has the `evidence.view` capability; otherwise the Hub silently downgrades to `redacted`.
+  - When the effective policy is `redacted`, the Hub masks scratchpad/evidence-like fields in the final result payload with `[redacted]` while still echoing `scratchpad_policy: "redacted"`.
 - Traceability: response includes `trace_id` and sets headers `X-Aetherra-Trace-Id`, `X-Aetherra-Chat-Version`, and `X-Aetherra-Policy`.
 
 ### Stream (SSE)
@@ -267,10 +271,14 @@ Status: ✅ implemented (core endpoints, middleware, reliability) · 🚧 partia
 
 ## RAG and citations contract
 
-Final payloads include an optional `evidence[]` array and a `scratchpad_policy` knob to control reasoning artifact handling.
+Final payloads include an optional `evidence[]` array and a `scratchpad_policy` knob to control reasoning artifact handling. The Hub now enforces a **privacy-first default**: absent an explicit, permitted value, the effective policy is `redacted`.
 
 - Evidence normalization: the hub coerces common upstream shapes like `relevant_memories[]`, `sources[]`, or `documents[]` into a stable array with fields shown below. Unknown extra fields are dropped. Snippets are trimmed to 1,024 chars.
-- Scratchpad policy: set via request (`POST` body or `GET` query) to one of `ephemeral|persisted|redacted`. The engine may honor/override based on policy. The effective value is echoed in the final result when set.
+- Scratchpad policy: request may specify one of `ephemeral|persisted|redacted`.
+  - Default: `redacted` (if absent or invalid).
+  - `ephemeral` always accepted (not stored / not replayed from memory).
+  - `persisted` requires capability `evidence.view`; without it the Hub forces `redacted`.
+  - The effective value is echoed as `result.scratchpad_policy`. If `redacted`, any scratchpad/evidence fields are replaced with `[redacted]`.
 
 Example final result (ask or stream `final.data.result`):
 

@@ -26,7 +26,7 @@ pip install -e .[dev]
 ```bash
 export AETHERRA_AI_API_ENABLED=1
 export AETHERRA_AI_API_STREAM=1
-python aetherra_hub_server.py &
+python -m aetherra_hub.compat &
 curl -X POST -H 'Content-Type: application/json' \
    http://localhost:3001/api/lyrixa/chat \
    -d '{"message":"hello beta"}'

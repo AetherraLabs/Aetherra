@@ -5,7 +5,7 @@ import time
 
 import requests
 
-from aetherra_hub_server import start_hub_server
+from aetherra_hub.compat import start_hub_server
 
 
 def get_metric_line(text: str, name: str) -> str | None:

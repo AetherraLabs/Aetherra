@@ -904,7 +904,7 @@ aetherra_core_cleanup_backup.json
 AETHERRA_CORE_CLEANUP_REPORT.md — 🧹 AETHERRA CORE CLEANUP REPORT
 AETHERRA_CORE_TRANSFORMATION_SUMMARY.md — 🎯 AETHERRA CORE ANALYSIS & CLEANUP SUMMARY
 aetherra_file_watcher.py — Determine if a file should be processed."""
-aetherra_hub_server.py — 🏪 Built-in Aetherra Hub Server"""
+aetherra_hub_server.py — (deprecated shim) use aetherra_hub/compat.py for Hub Server"""
 AETHERRA_IMPORT_UPDATE_REPORT.md — 🔄 AETHERRA IMPORT UPDATE REPORT
 aetherra_import_updater.py — Update import statements in a single file"""
 aetherra_kernel_loop.py — [PLUGIN] Inject core system references for orchestration."""

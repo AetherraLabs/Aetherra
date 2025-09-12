@@ -288,7 +288,25 @@ class ExecutorAgent(AgentBase):
             return {"ok": False, "error": "forbidden"}
         action = payload.get("action") or "generic"
         params = payload.get("params") or {}
-        # Try plugin manager for execution
+        # Prefer kernel-enforced plugin invoke with capability hints when available
+        try:
+            kernel = None
+            if getattr(self.registry, "get_service", None):
+                kernel = self.registry.get_service("kernel_loop")
+            if kernel and hasattr(kernel, "submit_plugin_invoke"):
+                await kernel.submit_plugin_invoke(
+                    "executor",
+                    capability="os:execute",
+                    args=[],
+                    kwargs=dict(params or {}),
+                    timeout_sec=10.0,
+                    requester=self.name,
+                    priority="normal",
+                )
+                return {"ok": True, "executed": True, "action": action, "result": None}
+        except Exception:
+            pass
+        # Fallback to direct plugin manager execute if kernel not present
         try:
             pm = None
             if getattr(self.registry, "get_service", None):
@@ -382,6 +400,24 @@ class SummarizerAgent(AgentBase):
                 except Exception:
                     pass
             # Try plugin manager optimizer
+            # Prefer kernel capability-enforced invoke for optimizer summarize
+            kernel = None
+            if getattr(self.registry, "get_service", None):
+                kernel = self.registry.get_service("kernel_loop")
+            if kernel and hasattr(kernel, "submit_plugin_invoke"):
+                try:
+                    await kernel.submit_plugin_invoke(
+                        "optimizer",
+                        capability="cpu:optimize",
+                        args=["summarize"],
+                        kwargs={"text": text},
+                        timeout_sec=10.0,
+                        requester=self.name,
+                        priority="normal",
+                    )
+                    # Best-effort: kernel invoke is fire-and-forget here; fallback to direct for sync result
+                except Exception:
+                    pass
             pm = None
             if getattr(self.registry, "get_service", None):
                 pm = self.registry.get_service("plugin_manager")

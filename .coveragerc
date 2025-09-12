@@ -19,7 +19,7 @@ omit =
     Aetherra/aetherra_core/memory/fractal_mesh/**
     Aetherra/aetherra_core/memory/world_class_memory_core.py
     aetherra_os_launcher.py
-    aetherra_hub_server.py
+    # aetherra_hub_server.py (legacy shim retained for deprecation window)
 
 [report]
 show_missing = True

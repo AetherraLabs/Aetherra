@@ -115,7 +115,7 @@ pip install -r requirements.txt
 # Enable chat + streaming (temporary shell scope) THEN run hub (default port 3001)
 $env:AETHERRA_AI_API_ENABLED='1'
 $env:AETHERRA_AI_API_STREAM='1'
-python aetherra_hub_server.py
+python -m aetherra_hub.compat
 
 # In a second PowerShell, minimal chat call (Invoke-RestMethod handles JSON nicely)
 Invoke-RestMethod -Method Post -Uri 'http://localhost:3001/api/lyrixa/chat' -ContentType 'application/json' -Body '{"message":"hello alpha"}'
@@ -163,7 +163,7 @@ Basic streaming (Server-Sent Events) when `AETHERRA_AI_API_STREAM=1`:
 
 ```powershell
 $env:AETHERRA_AI_API_ENABLED='1'; $env:AETHERRA_AI_API_STREAM='1'
-python aetherra_hub_server.py
+python -m aetherra_hub.compat
 
 # In another shell use curl to watch events (Windows curl supports --no-buffer)
 curl --no-buffer -X POST -H "Content-Type: application/json" ^
@@ -192,7 +192,7 @@ services:
             AETHERRA_AI_API_STREAM: "1"
         ports:
             - "3001:3001"
-        command: ["python", "aetherra_hub_server.py"]
+    command: ["python", "-m", "aetherra_hub.compat"]
 ```
 
 ### Demo Endpoint Shapes (Beta Snapshot)
@@ -251,6 +251,13 @@ More environment flags and safe defaults: `docs/ALPHA_READINESS.md`.
 | TEST_SELECTION          | Enable heuristic test subset selection (Phase 1)                   | 1                         |
 | TEST_SELECTION_MIN_CONF | Min confidence for adopting subset                                 | 0.8                       |
 
+Additional CI Guards (security & packaging):
+
+- repo_security_scan: heuristic scan for risky primitives (eval/exec/subprocess misuse, bare except) – enabled when REPO_SECURITY_SCAN=1.
+- ci_verify_no_discord_bot: ensures internal Discord Bot artifacts/imports are excluded (DISCORD_EXCLUSION_CHECK=1).
+- ci_verify_no_website_artifacts: prevents accidental commit of website build/source (WEBSITE_ARTIFACT_CHECK=1; override with AETHERRA_ALLOW_WEBSITE=1 when running dedicated deploy workflow).
+
+
 Structured gate report fields (schema_version=1):
 
 - coverage, previous, delta, min_threshold, drop, updated_baseline
@@ -266,14 +273,19 @@ Structured gate report fields (schema_version=1):
 
 Prometheus text endpoint: `/metrics` (Hub).
 
+Full catalog with alert sketches: see `docs/METRICS_REFERENCE.md`.
+
 Key series (alpha):
 
 - `aetherra_trainer_enabled`, `aetherra_trainer_jobs_total{state=…}`, `aetherra_trainer_evals_total{state=…}`, `aetherra_trainer_eval_runs_total`, `aetherra_trainer_eval_last_score`
-- Chat metrics: `aetherra_chat_requests_total`, `aetherra_chat_streams_current`, `aetherra_chat_streams_current_by_principal{principal=…}`, latency/TTFT aggregates and buckets (`aetherra_chat_latency_ms_sum|_count|_bucket{le=…}`, `aetherra_chat_ttft_ms_sum|_count|_bucket{le=…}`), `aetherra_chat_chunks_total`, token/char totals in/out
+- Chat metrics: `aetherra_chat_requests_total`, `aetherra_chat_streams_current`, `aetherra_chat_streams_current_by_principal{principal=…}`, latency/TTFT aggregates and buckets (`aetherra_chat_latency_ms_sum|_count|_bucket{le=…}`, `aetherra_chat_ttft_ms_sum|_count|_bucket{le=…}`), `aetherra_chat_chunks_total`, token/char totals in/out, `aetherra_chat_resume_gaps_total` (SSE resume gap detections), `aetherra_chat_soft_timeouts_total` (Hub‑enforced soft stream timeouts), `aetherra_chat_breaker_open_total` (timeouts/breaker events)
 - Fallback accounting: `aetherra_chat_fallback_total{path="mock|cached|engine"}`; mock path is also tracked with a dedicated counter to ensure deterministic visibility on first scrape
 - Error/resilience: `aetherra_chat_rate_limited_total`, `…_policy_denied_total`, `…_backend_unavailable_total`, `…_timeout_total`, `…_breaker_tripped_total`, `…_breaker_open_total`
-- Kernel/Orchestrator: uptime, queue sizes/limits, rolling latency buckets; per-agent low‑cardinality gauges when available
-- Quantum/Coherence: coherence score, fragments/branches/entanglement nodes, lightweight per‑branch gauges (cardinality‑capped)
+- Kernel/Orchestrator: uptime, queue sizes/limits, rolling latency buckets; per-agent low‑cardinality gauges when available; guard rails: `aetherra_kernel_backpressure_guard_pass`, `aetherra_kernel_backpressure_guard_violations{violation=…}`, `aetherra_kernel_night_schedule_guard_pass` (timezone configuration safety)
+- Quantum/Coherence & Policy: coherence score, fragments/branches/entanglement nodes, lightweight per‑branch gauges (cardinality‑capped); QFAC policy gating: `aetherra_qfac_policy_mode_current` (0=classical,1=hybrid,2=quantum), `aetherra_qfac_policy_allowed` (1 if desired mode allowed; 0 if downgraded), `aetherra_qfac_policy_info{key="reason"|"policy",value="…"}`.
+        - These reflect live gating decisions (coherence EMA / drift / backend validation) and support shadow vs. enforce auditing.
+
+Security & Key Management: `aetherra_keys_encrypted` (1 if `keys.json` is encrypted layout), `aetherra_master_key_present` (1 if master key available), unsafe overrides: `aetherra_unsafe_override_present` and `aetherra_unsafe_override_info{override=…}`.
 
 Determinism: the exporter normalizes first-scrape baselines (e.g., mock fallback, chunks) and applies reuse resets between runs to keep CI metrics stable.
 

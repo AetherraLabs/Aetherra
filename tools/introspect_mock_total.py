@@ -2,7 +2,7 @@ import time
 
 import requests
 
-import aetherra_hub_server as hs
+import aetherra_hub.compat as hs
 
 port = 3052
 s = hs.start_hub_server(port=port)

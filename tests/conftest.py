@@ -9,6 +9,7 @@ import asyncio
 import inspect
 import os
 import sys
+import warnings
 from pathlib import Path
 
 import pytest
@@ -79,3 +80,8 @@ def pytest_pyfunc_call(pyfuncitem):
         asyncio.run(testfunction(**kwargs))
         return True
     return None
+
+
+@pytest.fixture(autouse=True)
+def suppress_resource_warnings():
+    warnings.simplefilter("ignore", ResourceWarning)

@@ -25,7 +25,16 @@ import os
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
+
+# Optional capabilities import for evidence gating
+try:
+    from Aetherra.security.capabilities import has_capability as _has_capability  # type: ignore
+except Exception:
+
+    def _has_capability(requester: str, capability: str) -> bool:  # type: ignore
+        return False
+
 
 # Optional: import chat router and intelligence if present
 try:
@@ -384,9 +393,9 @@ class LyrixaChatService:
             reply = self._fallback_reply(message)
             path_used = "fallback"
 
-        suggestions: List[Dict[str, Any]] = []
-        applied: List[Dict[str, Any]] = []
-        evidence: List[Dict[str, Any]] = []
+        suggestions: list[dict[str, Any]] = []
+        applied: list[dict[str, Any]] = []
+        evidence: list[dict[str, Any]] = []
         # Add memory-based evidence from 7-layer memory
         try:
             mdm = self._mdmem
@@ -421,7 +430,37 @@ class LyrixaChatService:
         if adv_payload and adv_payload.get("confidence_breakdown"):
             awareness["confidence_breakdown"] = adv_payload["confidence_breakdown"]
         if evidence:
-            awareness["evidence"] = evidence
+            # Gate evidence details by capability (require evidence.view)
+            principal = ""
+            try:
+                # Prefer explicit env hint from hub or caller; otherwise leave empty
+                principal = str(os.getenv("AETHERRA_PRINCIPAL", "")).strip()
+            except Exception:
+                principal = ""
+            allow_unmask = False
+            try:
+                if principal:
+                    allow_unmask = bool(_has_capability(principal, "evidence.view"))
+            except Exception:
+                allow_unmask = False
+            ev_out = evidence
+            if not allow_unmask:
+                masked = 0
+                for it in ev_out:
+                    if "title" in it:
+                        it["title"] = "[redacted]"
+                        masked += 1
+                    if "snippet" in it:
+                        it["snippet"] = "[redacted]"
+                        masked += 1
+                awareness["evidence_masked"] = True
+                awareness["evidence_masked_count"] = masked
+                awareness["evidence_redaction"] = {
+                    "reason": "capability_missing",
+                    "capability": "evidence.view",
+                    "principal": principal or "anonymous",
+                }
+            awareness["evidence"] = ev_out
 
         # Entangle context lightly for continuity if supported
         with contextlib.suppress(Exception):
@@ -612,7 +651,7 @@ class LyrixaChatService:
         self, hint: str = "", limit: int = 3, read_only: bool = False
     ) -> list[dict[str, Any]]:
         """Lightweight heuristic: search for common issues and propose edits."""
-        suggestions: List[Dict[str, Any]] = []
+        suggestions: list[dict[str, Any]] = []
 
         # If operating in read_only (allow_edits False at bridge), suppress auto heuristic noise
         if read_only:
@@ -703,7 +742,7 @@ class LyrixaChatService:
             return False, {"error": str(e)}
 
     async def _workspace_awareness(self, summary_only: bool = True) -> dict[str, Any]:
-        summary: Dict[str, Any] = {
+        summary: dict[str, Any] = {
             "root": str(self.root),
             "total_py_files": 0,
             "key_components": [],

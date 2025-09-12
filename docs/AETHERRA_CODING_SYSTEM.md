@@ -517,7 +517,7 @@ The `.jsonl` ledger is appended per run and can be consumed by dashboards. Trace
 - Agents & Orchestration: `Aetherra/aetherra_core/agents/collaboration.py`, `plugins/agent_components/agent_orchestrator.py`
 - Security: `Aetherra/aetherra_core/system/security_system.py`, `lyrixa/agents/security_agent.py`
 - .aether: `aether.py`, `aetherra_script_service.py`, `tools/verify_aether_scripts.py`, tests
-- Hub/Registry: `aetherra_hub_server.py`, `aetherra_service_registry.py`
+- Hub/Registry: `aetherra_hub/compat.py`, `aetherra_service_registry.py`
 
 ## Roadmap (phased)
 

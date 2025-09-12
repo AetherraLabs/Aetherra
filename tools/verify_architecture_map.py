@@ -132,17 +132,25 @@ def check_memory() -> Dict:
 
 
 def check_chat() -> Dict:
-    # Hub server should exist; lyrixa chat bridge too
-    files = ["aetherra_hub_server.py"]
-    present = [f for f in files if _exists(f)]
-    ok_any, err = _try_import("Aetherra.lyrixa.chat.lyrixa_chat_service")
-    ok = len(present) == 1 and ok_any
-    errors = [] if ok else [err or "lyrixa_chat_service import failed"]
+    """Validate hub compatibility layer + Lyrixa chat service.
+
+    The monolithic aetherra_hub_server.py file is deprecated; we now rely on
+    aetherra_hub.compat (create_app-based implementation). Pass if compat imports
+    and Lyrixa chat service import both succeed.
+    """
+    compat_ok, compat_err = _try_import("aetherra_hub.compat")
+    chat_ok, chat_err = _try_import("Aetherra.lyrixa.chat.lyrixa_chat_service")
+    ok = compat_ok and chat_ok
+    errors: List[str] = []
+    if not compat_ok:
+        errors.append(f"compat import failed: {compat_err}")
+    if not chat_ok:
+        errors.append(f"chat import failed: {chat_err}")
     return {
         "ok": ok,
-        "present": present,
-        "notes": "Hub server file + Lyrixa chat service import",
-        "errors": [] if ok else errors,
+        "present": ["aetherra_hub.compat" if compat_ok else "(missing)"],
+        "notes": "Hub compat + Lyrixa chat service import",
+        "errors": errors,
     }
 
 
@@ -200,12 +208,12 @@ def _find_free_port() -> int:
 
 def check_hub_minimal_api_probe(port: int | None = None, timeout: float = 1.5) -> Dict:
     try:
-        from aetherra_hub_server import AetherraHubServer
+        from aetherra_hub.compat import AetherraHubServer  # updated to compat layer
     except Exception as e:
         return {
             "ok": False,
-            "errors": [f"import hub_server failed: {e}"],
-            "notes": "Flask may be missing; install to enable probe",
+            "errors": [f"import hub compat failed: {e}"],
+            "notes": "Flask or dependencies may be missing; install to enable probe",
         }
 
     errors: List[str] = []

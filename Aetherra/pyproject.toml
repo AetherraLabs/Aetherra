@@ -86,6 +86,9 @@ exclude = [
 select = ["E","F","I","UP","B","SIM","Q"]
 ignore = ["E501"]
 
+[tool.ruff.lint.flake8-tidy-imports]
+banned-modules = {"aetherra_core" = "Use Aetherra.* namespace instead of legacy aetherra_core.*", "lyrixa_core" = "Use Aetherra.* namespace instead of legacy lyrixa_core.*"}
+
 [tool.ruff.lint.per-file-ignores]
 "Aetherra/aetherra_core/__init__.py" = ["F401"]
 

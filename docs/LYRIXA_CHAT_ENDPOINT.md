@@ -42,7 +42,7 @@ Example success:
   "suggestions": [],
   "applied_changes": [],
   "persona": { "name": "Lyrixa", "title": "Lyrixa AI Assistant" },
-  "awareness": { "total_py_files": 123, "key_components": ["aetherra_os_launcher.py", "aetherra_hub_server.py"] },
+  "awareness": { "total_py_files": 123, "key_components": ["aetherra_os_launcher.py", "aetherra_hub/compat.py"] },
   "edit_plan": [],
   "confidence": 0.72
 }

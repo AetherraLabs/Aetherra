@@ -4,7 +4,7 @@ import time
 
 import requests
 
-import aetherra_hub_server as hs
+import aetherra_hub.compat as hs
 
 port = 3018
 os.environ["AETHERRA_AI_API_ENABLED"] = "0"

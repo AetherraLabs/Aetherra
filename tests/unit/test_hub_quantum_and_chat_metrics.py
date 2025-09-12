@@ -3,7 +3,7 @@
 
 import pytest
 
-from aetherra_hub_server import AetherraHubServer
+from aetherra_hub.compat import AetherraHubServer
 
 
 @pytest.fixture

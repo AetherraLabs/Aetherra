@@ -7,7 +7,7 @@ import time
 import pytest
 import requests
 
-from aetherra_hub_server import start_hub_server
+from aetherra_hub.compat import start_hub_server
 
 PORT = 3014
 BASE = f"http://localhost:{PORT}"

@@ -96,6 +96,36 @@ def parse_coverage(text: str) -> float | None:
 
 
 def main() -> int:
+    # Phase B: enforce no new imports of deprecated monolithic hub script
+    if os.getenv("LEGACY_HUB_IMPORT_ENFORCE", "1") == "1":
+        try:
+            bad_refs: list[str] = []
+            for path in Path(".").rglob("*.py"):
+                # Skip the shim file itself
+                if path.name == "aetherra_hub_server.py":
+                    continue
+                try:
+                    text = path.read_text(encoding="utf-8", errors="ignore")
+                except Exception:
+                    continue
+                if (
+                    "import aetherra_hub_server" in text
+                    or "from aetherra_hub_server" in text
+                ):
+                    bad_refs.append(str(path))
+            if bad_refs:
+                print("[GATES] Legacy hub import usage detected in:")
+                for b in bad_refs[:10]:
+                    print(f"  - {b}")
+                print(
+                    '[GATES] FAIL: replace with "from aetherra_hub import compat" or module invocation "python -m aetherra_hub.compat"'
+                )
+                print(
+                    "        (override with LEGACY_HUB_IMPORT_ENFORCE=0 if absolutely necessary)"
+                )
+                return 1
+        except Exception as e:  # pragma: no cover - defensive
+            print(f"[GATES] Warning: legacy hub enforcement check failed: {e}")
     # Default strict license trend controls (can be overridden by CI env)
     os.environ.setdefault("LICENSE_UNKNOWN_TREND_FAIL", "1")
     os.environ.setdefault("LICENSE_UNKNOWN_TOLERANCE", "0")
@@ -391,6 +421,50 @@ def main() -> int:
                 print(f"[GATES] Warning: failed to write coverage delta snapshot: {e}")
 
     # Security & memory fragmentation supplemental gates (post-tests so new tools are importable)
+    # Additional lightweight security / policy guards
+    #  - repo_security_scan: heuristic scan for risky primitives
+    #  - ci_verify_no_discord_bot: ensure internal Discord bot excluded
+    #  - ci_verify_no_website_artifacts: ensure website build artifacts not committed
+    if os.getenv("REPO_SECURITY_SCAN", "1") == "1":
+        scan_script = Path("tools/repo_security_scan.py")
+        if scan_script.exists():
+            print("[GATES] Running repo_security_scan (heuristic risk scan)...")
+            code_repo, out_repo = run([sys.executable, str(scan_script)])
+            print(out_repo)
+            if code_repo != 0 and os.getenv("REPO_SECURITY_STRICT", "1") == "1":
+                print("[GATES] repo_security_scan reported high severity findings.")
+                return 1
+        else:
+            print("[GATES] repo_security_scan.py missing; skipping.")
+    if os.getenv("DISCORD_EXCLUSION_CHECK", "1") == "1":
+        discord_guard = Path("tools/ci_verify_no_discord_bot.py")
+        if discord_guard.exists():
+            code_disc, out_disc = run([sys.executable, str(discord_guard)])
+            print(out_disc)
+            if code_disc != 0:
+                print("[GATES] Discord exclusion guard failed.")
+                return 1
+        else:
+            # Fallback to legacy guard if present
+            legacy_guard = Path("tools/guard_discord_exclusion.py")
+            if legacy_guard.exists():
+                code_disc, out_disc = run([sys.executable, str(legacy_guard)])
+                print(out_disc)
+                if code_disc != 0:
+                    print("[GATES] Legacy discord exclusion guard failed.")
+                    return 1
+            else:
+                print("[GATES] No discord exclusion guard script found.")
+    if os.getenv("WEBSITE_ARTIFACT_CHECK", "1") == "1":
+        site_guard = Path("tools/ci_verify_no_website_artifacts.py")
+        if site_guard.exists():
+            code_site, out_site = run([sys.executable, str(site_guard)])
+            print(out_site)
+            if code_site != 0:
+                print("[GATES] Website artifact guard failed.")
+                return 1
+        else:
+            print("[GATES] ci_verify_no_website_artifacts.py missing; skipping.")
     if os.getenv("STATIC_SECURITY_SCAN", "1") == "1":
         scan_tool = Path("tools/static_security_scan.py")
         if scan_tool.exists():

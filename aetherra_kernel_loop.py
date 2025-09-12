@@ -185,6 +185,22 @@ class AetherraKernelLoop:
             )
         except Exception:
             self.plugin_max_concurrency = 0
+        # Optional per-capability concurrency caps via env JSON, e.g. {"network:outbound":1}
+        self._cap_concurrency_caps: Dict[str, int] = {}
+        try:
+            import json as _json
+
+            cap_caps_raw = os.getenv("AETHERRA_PLUGIN_CAP_CONCURRENCY_MAP", "")
+            if cap_caps_raw:
+                m = _json.loads(cap_caps_raw)
+                if isinstance(m, dict):
+                    self._cap_concurrency_caps = {
+                        str(k): int(v)
+                        for k, v in m.items()
+                        if str(v).isdigit() or isinstance(v, int)
+                    }
+        except Exception:
+            self._cap_concurrency_caps = {}
         self._plugin_running_counts: Dict[str, int] = {}
 
         # Retry policy for transient failures (timeouts/errors)
@@ -221,6 +237,8 @@ class AetherraKernelLoop:
         self.hmr_controller = None  # set by launcher when HMR is enabled
         # In-flight counters per target to support safer quiesce/drain
         self._inflight_by_target: Dict[str, int] = {}
+        # Optional reply waiters for synchronous result patterns
+        self._reply_waiters: Dict[str, asyncio.Future] = {}
 
         # Optional visible heartbeat logging (for idle visibility)
         try:
@@ -275,6 +293,34 @@ class AetherraKernelLoop:
                         )
                     except Exception:
                         self.plugin_invoke_timeout_sec = 20.0
+                else:
+                    # Operator provided explicit timeout; enforce an upper safety clamp to avoid runaway long operations
+                    try:
+                        raw_timeout = float(
+                            os.getenv("AETHERRA_PLUGIN_INVOKE_TIMEOUT_SEC", "0") or 0.0
+                        )
+                        # Hard ceiling: 120s in production; clamp and warn if exceeded
+                        if raw_timeout > 120.0:
+                            self.plugin_invoke_timeout_sec = 120.0
+                            logger.warning(
+                                f"[PROFILE][CLAMP] AETHERRA_PLUGIN_INVOKE_TIMEOUT_SEC={raw_timeout}s exceeds 120s ceiling; clamped to 120s for safety"
+                            )
+                        elif raw_timeout <= 0:
+                            # Non-positive values are unsafe; reset to conservative default
+                            self.plugin_invoke_timeout_sec = 20.0
+                            logger.warning(
+                                f"[PROFILE][CLAMP] Non-positive plugin timeout ({raw_timeout}); defaulting to 20s"
+                            )
+                        else:
+                            # Accept operator value (still log if unusually high >60s for visibility)
+                            self.plugin_invoke_timeout_sec = raw_timeout
+                            if raw_timeout > 60.0:
+                                logger.info(
+                                    f"[PROFILE] High plugin invoke timeout configured: {raw_timeout}s (<=120s ceiling)"
+                                )
+                    except Exception:
+                        # Fallback to conservative default if parsing fails
+                        self.plugin_invoke_timeout_sec = 20.0
 
                 # Circuit breaker threshold: prefer slightly lower default in production if not set
                 if "AETHERRA_PLUGIN_CB_THRESHOLD" not in os.environ:
@@ -284,6 +330,13 @@ class AetherraKernelLoop:
                         )
                     except Exception:
                         self.plugin_cb_threshold = 3
+                # Prefer low per-plugin concurrency in prod unless operator opts in
+                if "AETHERRA_PLUGIN_MAX_CONCURRENCY" not in os.environ:
+                    try:
+                        # 0 means unlimited; default to 1 for safety
+                        self.plugin_max_concurrency = 1
+                    except Exception:
+                        self.plugin_max_concurrency = 1
 
                 logger.info(
                     f"[PROFILE] Production defaults applied: qlimits={{high:{self.queue_limits['high_priority']}, normal:{self.queue_limits['normal_priority']}, background:{self.queue_limits['background']}}}, "
@@ -291,6 +344,58 @@ class AetherraKernelLoop:
                 )
         except Exception as _e:
             logger.debug(f"[PROFILE] Failed to apply production defaults: {_e}")
+
+        # Initialize backpressure guard metrics placeholders
+        self._backpressure_guard_pass: bool | None = None
+        self._backpressure_guard_violations: list[str] = []
+
+    # ---- Backpressure / safety guard evaluation (P1) ----
+    def _evaluate_backpressure_guard(self) -> tuple[bool, list[str]]:
+        """Evaluate production backpressure & plugin safety invariants.
+
+        Returns (pass, violations_list).
+        Skips enforcement if not production profile OR explicit override present.
+        Violations tracked:
+          - unbounded_queue_<name>
+          - dlq_disabled
+          - plugin_timeout_high (>60s)
+          - plugin_cb_threshold_high (>5)
+          - plugin_max_concurrency_unbounded (==0)
+        """
+        profile = (os.getenv("AETHERRA_PROFILE", "") or "").strip().lower()
+        is_prod = profile in ("prod", "production", "staging")
+        override = os.getenv("AETHERRA_PROD_UNSAFE_ALLOW") or os.getenv(
+            "AETHERRA_ALLOW_UNBOUNDED"
+        )
+        disabled = os.getenv("AETHERRA_BACKPRESSURE_GUARD_DISABLE") == "1"
+        if not is_prod or override or disabled:
+            return True, []
+        violations: list[str] = []
+        try:
+            for qn, lim in self.queue_limits.items():
+                if int(lim or 0) <= 0:
+                    violations.append(f"unbounded_queue_{qn}")
+        except Exception:
+            violations.append("queue_limits_parse_error")
+        if not getattr(self, "dlq_enabled", True):
+            violations.append("dlq_disabled")
+        try:
+            if float(self.plugin_invoke_timeout_sec or 0) > 60.0:
+                violations.append("plugin_timeout_high")
+        except Exception:
+            violations.append("plugin_timeout_parse_error")
+        try:
+            if int(self.plugin_cb_threshold or 0) > 5:
+                violations.append("plugin_cb_threshold_high")
+        except Exception:
+            violations.append("plugin_cb_threshold_parse_error")
+        try:
+            if int(self.plugin_max_concurrency or 0) == 0:
+                violations.append("plugin_max_concurrency_unbounded")
+        except Exception:
+            violations.append("plugin_max_concurrency_parse_error")
+        passed = len(violations) == 0
+        return passed, violations
 
     # ---- Night cycle helpers (TZ-aware) ----
     def _now_in_night_tz(self) -> datetime:
@@ -343,6 +448,23 @@ class AetherraKernelLoop:
     async def start_kernel_loop(self):
         """[LAUNCH] Start the main OS kernel loop."""
         logger.info("[CORE] Starting Aetherra OS Kernel Loop...")
+        # Backpressure guard enforcement before declaring running
+        try:
+            passed, violations = self._evaluate_backpressure_guard()
+            self._backpressure_guard_pass = passed
+            self._backpressure_guard_violations = violations
+            if not passed:
+                logger.error(
+                    f"[GUARD][BACKPRESSURE] Production safety guard failed: violations={violations}. Set AETHERRA_PROD_UNSAFE_ALLOW=1 only for emergency override."
+                )
+                raise RuntimeError(
+                    f"Backpressure guard failed: {', '.join(violations)}"
+                )
+            else:
+                logger.info("[GUARD][BACKPRESSURE] Production safety guard pass ✅")
+        except Exception:
+            # Re-raise to abort startup (tests rely on exception)
+            raise
         self.running = True
         self.start_time = datetime.now()
 
@@ -627,6 +749,12 @@ class AetherraKernelLoop:
         is_prod = profile in ("prod", "production", "staging")
         tz_explicit = bool(self.night_tz_name) or self.night_utc
 
+        # Track guard pass (P1 #10). Pass if not prod or TZ explicit; else fail.
+        try:
+            self._night_schedule_guard_pass = (not is_prod) or bool(tz_explicit)
+        except Exception:
+            self._night_schedule_guard_pass = False
+
         # In prod/staging, block unconditionally if TZ not explicit to avoid surprises
         if is_prod and not tz_explicit:
             self.metrics["night_cycles_blocked_no_tz"] = (
@@ -658,7 +786,9 @@ class AetherraKernelLoop:
 
             # Schedule with optional staggering, capped within window length
             window_len_sec = max(0, int((end_h - start_h) * 3600))
-            delay_sec = min(max(0, self._night_stagger_sec), max(0, window_len_sec - 60))
+            delay_sec = min(
+                max(0, self._night_stagger_sec), max(0, window_len_sec - 60)
+            )
 
             async def _run_after_delay(delay: float, date_key_val: str):
                 try:
@@ -932,11 +1062,57 @@ class AetherraKernelLoop:
                     self._rl_counts[requester] = cnt + 1
 
                 if self.plugin_manager:
-                    # Timeout support with circuit breaker accounting
+                    # Determine capability context if provided
+                    cap = str(
+                        task_data.get("capability") or task_data.get("cap") or ""
+                    ).strip()
+                    # Effective timeout: start from global and then apply per-capability limit if present
                     timeout = (
                         float(task.get("timeout_sec") or 0)
                         or self.plugin_invoke_timeout_sec
                     )
+                    if cap:
+                        try:
+                            from Aetherra.security.capabilities import (
+                                get_capability_limits,
+                            )  # type: ignore
+
+                            cap_limits = get_capability_limits(cap)
+                        except Exception:
+                            cap_limits = {}
+                        # Apply tighter timeout if specified
+                        try:
+                            if isinstance(cap_limits, dict) and cap_limits.get(
+                                "timeout_sec"
+                            ):
+                                timeout = min(
+                                    float(timeout), float(cap_limits["timeout_sec"])
+                                )
+                        except Exception:
+                            pass
+                    # Per-capability-specific concurrency cap (overrides global if lower)
+                    cap_conc_cap = 0
+                    if cap:
+                        # from env map first
+                        cap_conc_cap = int(self._cap_concurrency_caps.get(cap, 0) or 0)
+                        # from policy limits if provided
+                        if cap_conc_cap <= 0 and cap:
+                            try:
+                                from Aetherra.security.capabilities import (
+                                    get_capability_limits,
+                                )  # type: ignore
+
+                                cap_limits = get_capability_limits(cap)
+                                if isinstance(cap_limits, dict) and cap_limits.get(
+                                    "max_concurrency"
+                                ):
+                                    cap_conc_cap = int(
+                                        cap_limits.get("max_concurrency") or 0
+                                    )
+                            except Exception:
+                                pass
+
+                    # Timeout support with circuit breaker accounting
                     target_for_inflight = "adapter:plugin"
                     # Enforce simple per-plugin concurrency cap if configured
                     plugin_id = str(
@@ -945,9 +1121,16 @@ class AetherraKernelLoop:
                         or task_data.get("id")
                         or ""
                     )
-                    if self.plugin_max_concurrency > 0 and plugin_id:
+                    # Determine effective concurrency cap for this invocation
+                    eff_cap = self.plugin_max_concurrency
+                    if cap_conc_cap and eff_cap:
+                        eff_cap = min(eff_cap, cap_conc_cap)
+                    elif cap_conc_cap and not eff_cap:
+                        eff_cap = cap_conc_cap
+
+                    if eff_cap > 0 and plugin_id:
                         running = self._plugin_running_counts.get(plugin_id, 0)
-                        if running >= self.plugin_max_concurrency:
+                        if running >= eff_cap:
                             # Defer with small jitter to avoid thundering herd
                             self.metrics["plugin_invoke_deferred_concurrency"] = (
                                 self.metrics.get(
@@ -957,7 +1140,7 @@ class AetherraKernelLoop:
                             )
                             delay = 0.3 + random.uniform(0.0, 0.7)
                             logger.debug(
-                                f"[CONC] Deferring plugin '{plugin_id}' invoke by {delay:.2f}s (running={running}, cap={self.plugin_max_concurrency})"
+                                f"[CONC] Deferring plugin '{plugin_id}' invoke by {delay:.2f}s (running={running}, cap={eff_cap})"
                             )
                             asyncio.create_task(
                                 self._requeue_after_delay(
@@ -967,17 +1150,24 @@ class AetherraKernelLoop:
                             return
 
                     # Proceed with invoke and manage running count
-                    if plugin_id and self.plugin_max_concurrency > 0:
+                    if plugin_id and eff_cap > 0:
                         self._plugin_running_counts[plugin_id] = (
                             self._plugin_running_counts.get(plugin_id, 0) + 1
                         )
                     try:
                         self._inflight_inc(target_for_inflight)
-                        await asyncio.wait_for(
+                        # Support capturing result for optional reply
+                        reply_key = str(task_data.get("reply_key") or "").strip()
+                        result = await asyncio.wait_for(
                             self.plugin_manager.invoke_plugin(task_data),
                             timeout=timeout,
                         )
                         self._record_plugin_success()
+                        # If a reply waiter exists, fulfill it
+                        if reply_key:
+                            fut = self._reply_waiters.pop(reply_key, None)
+                            if fut and not fut.done():
+                                fut.set_result(result)
                     except asyncio.TimeoutError:
                         self.metrics["plugin_invoke_timeouts"] = (
                             self.metrics.get("plugin_invoke_timeouts", 0) + 1
@@ -986,6 +1176,15 @@ class AetherraKernelLoop:
                         logger.warning(
                             f"[TIMEOUT] plugin_invoke timed out after {timeout}s trace={trace_id} requester={requester}"
                         )
+                        # Propagate timeout to waiter if present
+                        try:
+                            reply_key = str(task_data.get("reply_key") or "").strip()
+                            if reply_key:
+                                fut = self._reply_waiters.pop(reply_key, None)
+                                if fut and not fut.done():
+                                    fut.set_exception(asyncio.TimeoutError())
+                        except Exception:
+                            pass
                         await self._maybe_retry(task, reason="timeout")
                     except Exception as ex:
                         self.metrics["plugin_invoke_errors"] = (
@@ -995,11 +1194,20 @@ class AetherraKernelLoop:
                         logger.error(
                             f"[ERROR] plugin_invoke error trace={trace_id} requester={requester} err={ex}"
                         )
+                        # Propagate error to waiter if present
+                        try:
+                            reply_key = str(task_data.get("reply_key") or "").strip()
+                            if reply_key:
+                                fut = self._reply_waiters.pop(reply_key, None)
+                                if fut and not fut.done():
+                                    fut.set_exception(ex)
+                        except Exception:
+                            pass
                         await self._maybe_retry(task, reason="error")
                     finally:
                         if target_for_inflight:
                             self._inflight_dec(target_for_inflight)
-                        if plugin_id and self.plugin_max_concurrency > 0:
+                        if plugin_id and eff_cap > 0:
                             try:
                                 self._plugin_running_counts[plugin_id] = max(
                                     0, self._plugin_running_counts.get(plugin_id, 1) - 1
@@ -1294,6 +1502,16 @@ class AetherraKernelLoop:
             if self.start_time
             else 0,
             "cycle_count": self.cycle_count,
+            # Expose effective plugin invoke timeout (after production clamps / env overrides)
+            "plugin_invoke_timeout_sec": self.plugin_invoke_timeout_sec,
+            "backpressure_guard_pass": self._backpressure_guard_pass,
+            "backpressure_guard_violations": list(
+                getattr(self, "_backpressure_guard_violations", [])
+            ),
+            # Night schedule guard (1 pass / 0 fail) – ensures explicit TZ in prod
+            "night_schedule_guard_pass": getattr(
+                self, "_night_schedule_guard_pass", True
+            ),
             "metrics": self.metrics.copy(),
             "queue_sizes": {
                 "high_priority": self.high_priority_queue.qsize(),
@@ -1491,6 +1709,124 @@ class AetherraKernelLoop:
             )
         except Exception as e:
             logger.debug(f"[SNAPSHOT] Failed to restore tasks: {e}")
+
+    # ---- Convenience helpers for standardized task envelopes ----
+    async def submit_plugin_invoke(
+        self,
+        name: str,
+        *,
+        capability: Optional[str] = None,
+        args: Optional[List[Any]] = None,
+        kwargs: Optional[Dict[str, Any]] = None,
+        timeout_sec: Optional[float] = None,
+        memory_mb: Optional[int] = None,
+        priority: str = "normal",
+        requester: Optional[str] = None,
+    ) -> None:
+        """Submit a plugin_invoke task with standardized capability metadata.
+
+        Fields propagated into task.data:
+        - name: plugin identifier
+        - capability: optional capability string (e.g., "network:outbound")
+        - args/kwargs: invocation parameters
+        - timeout_sec/memory_mb: hints forwarded to plugin sandbox (best-effort)
+        - requester: optional identity for rate-limit/cap checks
+        """
+        payload: Dict[str, Any] = {
+            "type": "plugin_invoke",
+            "requester": requester or "",
+            "data": {
+                "name": name,
+                "args": list(args or []),
+                "kwargs": dict(kwargs or {}),
+            },
+        }
+        if capability:
+            payload["data"]["capability"] = str(capability)
+        if timeout_sec is not None:
+            try:
+                ts = float(timeout_sec)
+                if ts > 0:
+                    payload["data"]["timeout_sec"] = ts
+            except Exception:
+                pass
+        if memory_mb is not None:
+            try:
+                mm = int(memory_mb)
+                if mm > 0:
+                    payload["data"]["memory_mb"] = mm
+            except Exception:
+                pass
+        await self.add_task(payload, priority=priority)
+
+    async def submit_plugin_invoke_and_wait(
+        self,
+        name: str,
+        *,
+        capability: Optional[str] = None,
+        args: Optional[List[Any]] = None,
+        kwargs: Optional[Dict[str, Any]] = None,
+        timeout_sec: Optional[float] = None,
+        memory_mb: Optional[int] = None,
+        priority: str = "normal",
+        requester: Optional[str] = None,
+        wait_timeout: Optional[float] = None,
+    ) -> Any:
+        """Submit a plugin_invoke and await the result via an in-kernel waiter.
+
+        wait_timeout defaults to the effective plugin timeout if not provided.
+        """
+        reply_key = uuid.uuid4().hex
+        fut: asyncio.Future = asyncio.get_running_loop().create_future()
+        self._reply_waiters[reply_key] = fut
+        payload: Dict[str, Any] = {
+            "type": "plugin_invoke",
+            "requester": requester or "",
+            "data": {
+                "name": name,
+                "args": list(args or []),
+                "kwargs": dict(kwargs or {}),
+                "reply_key": reply_key,
+            },
+        }
+        if capability:
+            payload["data"]["capability"] = str(capability)
+        if timeout_sec is not None:
+            try:
+                ts = float(timeout_sec)
+                if ts > 0:
+                    payload["data"]["timeout_sec"] = ts
+            except Exception:
+                pass
+        if memory_mb is not None:
+            try:
+                mm = int(memory_mb)
+                if mm > 0:
+                    payload["data"]["memory_mb"] = mm
+            except Exception:
+                pass
+        await self.add_task(payload, priority=priority)
+        # Compute wait timeout
+        eff_wait = None
+        try:
+            eff_wait = float(wait_timeout) if wait_timeout is not None else None
+        except Exception:
+            eff_wait = None
+        if eff_wait is None:
+            try:
+                # Use provided timeout if any; else global default
+                eff_wait = float(
+                    payload["data"].get("timeout_sec") or self.plugin_invoke_timeout_sec
+                )
+            except Exception:
+                eff_wait = self.plugin_invoke_timeout_sec
+        # Add small slack
+        eff_wait = max(0.1, float(eff_wait)) + 0.2
+        try:
+            return await asyncio.wait_for(fut, timeout=eff_wait)
+        finally:
+            # Ensure cleanup
+            self._reply_waiters.pop(reply_key, None)
 
 
 # Global kernel instance

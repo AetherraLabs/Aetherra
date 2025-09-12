@@ -27,6 +27,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Run import verification
+      - name: Run import map validation (single source of truth)
         run: |
-          python verify_imports.py
+          python tools/validate_import_map.py

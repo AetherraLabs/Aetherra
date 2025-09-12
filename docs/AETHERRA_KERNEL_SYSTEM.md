@@ -31,8 +31,10 @@ This document describes the Aetherra Kernel: the core runtime loop, service regi
 - Backpressure: New (optional bounded queues with drop counters)
 - Traceability and safety: New (trace_id on tasks, optional TTL/deadlines)
 - Timeouts and resilience: New (plugin invoke timeouts + simple circuit breaker)
-- Timeouts and resilience: New (plugin invoke timeouts + simple circuit breaker)
 - Concurrency and retries: New (per-plugin concurrency caps, jittered retries)
+  - Timeouts & resilience consolidated: plugin invoke timeouts + simple circuit breaker
+  - Heartbeat stale thresholds configurable: `AETHERRA_REGISTRY_HEARTBEAT_SEC` (default 60) & `AETHERRA_REGISTRY_STALE_SEC` (default 3x heartbeat)
+  - See `DEPLOYMENT_TIERS.md` for recommended production vs. test thresholds
 - Hot Module Reload (HMR): Phase 1 implemented (controller, tasks, basic quiesce/swap)
 - HMR Phase 2 improvements: in‑flight counters per target, source gating, audit logging
 - New services: KLM (Module Manager) and KEB (Event Bus) wired in Phase 2; Hub exports their metrics
@@ -194,9 +196,11 @@ Quiesce improvements (Phase 2):
   - `AETHERRA_KERNEL_RATE_LIMIT_PER_MIN` (int per requester for plugin_invoke)
   - `AETHERRA_REQUIRE_CAPABILITIES=1` enables capability check `kernel:invoke_plugin`
 - Plugin invocation safety
-  - `AETHERRA_PLUGIN_INVOKE_TIMEOUT_SEC` (default 30) per call timeout
-  - `AETHERRA_PLUGIN_CB_THRESHOLD` (failures before opening circuit; default 5)
+  - `AETHERRA_PLUGIN_INVOKE_TIMEOUT_SEC` (default 30; prod default capped at 20) per call timeout
+  - `AETHERRA_PLUGIN_CB_THRESHOLD` (failures before opening circuit; default 5; prod default 3)
   - `AETHERRA_PLUGIN_CB_COOLDOWN_SEC` (cooldown after opening; default 60)
+  - `AETHERRA_PLUGIN_MAX_CONCURRENCY` (per-plugin running call cap; 0=unlimited; prod default 1)
+  - `AETHERRA_PLUGIN_CAP_CONCURRENCY_MAP` (JSON map of capability→cap; overrides global if lower)
 - Concurrency caps and retries
 - Hot Module Reload (HMR)
   - `AETHERRA_HMR_ENABLED=1` enables HMR controller and kernel routing
@@ -336,7 +340,7 @@ python tools/verify_aether_scripts.py --profile test
 - No durable task queue persistence across restarts (tasks in memory)
 - Scheduling is minimal; complex cron-like semantics should live in the scheduler module
 - Backpressure and rate limiting are basic; consider bounded queues and load-shedding policies
-  - Concurrency capping and retry logic are conservative; future: per-plugin policies and failure classification
+  - Concurrency capping and retry logic are conservative; per-capability limits are now supported via capabilities policy and env map
 - Night cycle timing is fixed; future: config-driven windows and multi-phase maintenance
 - Health metrics are coarse; future: expose Prometheus-style endpoints or richer telemetry
 - HMR Phase 1 uses heuristic quiesce; Phase 2 will add per-target in‑flight tracking, SLO gates, and audit/signature enforcement

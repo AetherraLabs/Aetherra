@@ -354,12 +354,16 @@ class LyrixaOperatingSystem:
                     # Optional fallback: start a local Hub server to back the Basic GUI plugin list
                     if os.getenv("AETHERRA_START_LOCAL_HUB", "1") == "1":
                         try:
-                            from aetherra_hub_server import start_hub_server
+                            from aetherra_hub.compat import start_hub_server
 
                             self.hub_server = start_hub_server(port=3001)
-                            logger.info("[HUB] Local Hub server started for fallback")
+                            logger.info(
+                                "[HUB] Local Hub server (compat layer) started for fallback"
+                            )
                         except Exception as e:
-                            logger.warning(f"[HUB] Local Hub fallback failed: {e}")
+                            logger.warning(
+                                f"[HUB] Local Hub fallback (compat) failed: {e}"
+                            )
 
             except Exception as e:
                 logger.warning(

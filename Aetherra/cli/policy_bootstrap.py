@@ -44,8 +44,18 @@ def _write_json(path: Path, data: dict, force: bool = False) -> bool:
 
 
 def bootstrap_capabilities(target_dir: Path, force: bool = False) -> Path:
-    """Create a minimal capabilities.json (deny-by-default unless explicitly granted)."""
-    data = {"allow": {"core:webhook_manager": ["network:webhook"]}}
+    """Create a minimal capabilities.json (deny-by-default unless explicitly granted).
+
+    Includes a starter 'limits' section with conservative defaults for risky capabilities.
+    """
+    data = {
+        "allow": {"core:webhook_manager": ["network:webhook"]},
+        "limits": {
+            # Outbound network actions should be fast and sparse by default
+            "network:outbound": {"timeout_sec": 10, "max_concurrency": 1},
+            "network:webhook": {"timeout_sec": 8, "max_concurrency": 1},
+        },
+    }
     path = target_dir / "capabilities.json"
     _write_json(path, data, force=force)
     return path
