@@ -56,7 +56,6 @@ addopts = [
     "--durations=10",
 
     # Warnings
-    "--strict-warnings",
     "--strict-markers",
 
     # Output formatting
