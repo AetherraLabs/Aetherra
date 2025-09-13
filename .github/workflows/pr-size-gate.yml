@@ -1,0 +1,36 @@
+name: PR Size Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+jobs:
+  size-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compute additions
+        id: diff
+        run: |
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+          additions=$(git diff --numstat $base_sha $head_sha | awk '{a+=$1} END {print a+0}')
+          echo "additions=$additions" >> $GITHUB_OUTPUT
+          echo "Additions: $additions"
+      - name: Enforce limit
+        if: ${{ steps.diff.outputs.additions != '' }}
+        run: |
+          limit=1500
+          if [ "${{ steps.diff.outputs.additions }}" -gt $limit ]; then
+            echo "PR additions exceed $limit"
+            echo "Labels: ${{ join(github.event.pull_request.labels.*.name, ',') }}"
+            if echo "${{ join(github.event.pull_request.labels.*.name, ',') }}" | grep -q 'size-override'; then
+              echo "Override label present, continuing"
+              exit 0
+            else
+              echo "Add 'size-override' label or reduce size." >&2
+              exit 1
+            fi
+          fi

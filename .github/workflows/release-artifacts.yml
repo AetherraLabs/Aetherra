@@ -6,32 +6,86 @@ on:
       - 'v*'
   workflow_dispatch:
 
+concurrency:
+  group: release-artifacts-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Extract version
         id: vars
         run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
-      - name: Build and push image
+
+      - name: Multi-arch build & push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ghcr.io/${{ github.repository_owner }}/aetherra:${{ steps.vars.outputs.version }}
             ghcr.io/${{ github.repository_owner }}/aetherra:latest
+          provenance: false
+
+      - name: Generate SBOM (syft)
+        uses: anchore/sbom-action@v0
+        with:
+          image: ghcr.io/${{ github.repository_owner }}/aetherra:${{ steps.vars.outputs.version }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - name: Trivy scan image
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/aetherra:${{ steps.vars.outputs.version }}
+          format: 'table'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          exit-code: 0
+
+      - name: Upload security artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-security
+          path: |
+            sbom.spdx.json
+          if-no-files-found: warn
+
+      - name: Cosign sign (optional)
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+        run: |
+          if [ -n "${COSIGN_KEY}" ]; then \
+            wget -q https://github.com/sigstore/cosign/releases/download/v2.2.4/cosign-linux-amd64 -O cosign && \
+            chmod +x cosign && \
+            ./cosign sign --key env://COSIGN_KEY ghcr.io/${{ github.repository_owner }}/aetherra:${{ steps.vars.outputs.version }} || echo "Cosign sign step failed"; \
+          else echo "No COSIGN_KEY provided - skipping signing"; fi
+
+      - name: Cosign attest (provenance) (optional)
+        env:
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+        run: |
+          if [ -n "${COSIGN_KEY}" ]; then \
+            ./cosign attest --key env://COSIGN_KEY --predicate sbom.spdx.json --type cyclonedx ghcr.io/${{ github.repository_owner }}/aetherra:${{ steps.vars.outputs.version }} || echo "Cosign attest failed"; \
+          else echo "No COSIGN_KEY provided - skipping attestation"; fi

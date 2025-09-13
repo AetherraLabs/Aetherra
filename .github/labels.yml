@@ -1,0 +1,49 @@
+# Canonical label definitions (name, color, description)
+- name: bug
+  color: d73a4a
+  description: Defect or incorrect behavior
+- name: enhancement
+  color: a2eeef
+  description: New feature or improvement
+- name: task
+  color: 36a64f
+  description: Internal maintenance task
+- name: dependencies
+  color: 0366d6
+  description: Dependency update
+- name: ci
+  color: 5319e7
+  description: Continuous Integration related
+- name: security
+  color: ee0701
+  description: Security related change or report
+- name: docs
+  color: 0075ca
+  description: Documentation only changes
+- name: performance
+  color: fbca04
+  description: Performance optimization
+- name: size-xs
+  color: c0ffee
+  description: <=50 additions
+- name: size-s
+  color: bfdadc
+  description: 51-199 additions
+- name: size-m
+  color: 7ae1d3
+  description: 200-499 additions
+- name: size-l
+  color: 1d76db
+  description: 500-999 additions
+- name: size-xl
+  color: 0052cc
+  description: 1000+ additions
+- name: size-override
+  color: d4c5f9
+  description: Allow large PR without failing size gate
+- name: stale
+  color: fef2c0
+  description: Marked as stale due to inactivity
+- name: critical
+  color: b60205
+  description: Critical path issue or PR
