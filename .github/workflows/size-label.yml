@@ -1,0 +1,22 @@
+name: PR Size Labels
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compute size
+        id: diff
+        run: |
+          added=$(git diff --numstat origin/${{ github.base_ref }}...HEAD | awk '{a+=$1} END {print a}')
+          echo "added=$added" >> $GITHUB_OUTPUT
+      - name: Set label
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: |
+            ${{ steps.diff.outputs.added < 50 && 'size-xs' || (steps.diff.outputs.added < 200 && 'size-s' || (steps.diff.outputs.added < 500 && 'size-m' || (steps.diff.outputs.added < 1000 && 'size-l' || 'size-xl'))) }}

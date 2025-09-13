@@ -1,0 +1,65 @@
+name: Task
+description: Internal or contributor task with clear acceptance criteria
+labels: [task]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for discrete tasks (refactors, docs improvements, automation, etc.). Not for user-facing feature requests.
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One-line task description.
+      placeholder: Add labeler config
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why this task matters; related issues or PRs.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope (Definition of Done)
+      description: Bullet list of items that must be completed.
+      placeholder: |
+        - Create .github/labeler.yml with patterns
+        - Add docs label mapping
+        - Test on sample PR
+    validations:
+      required: true
+  - type: textarea
+    id: outofscope
+    attributes:
+      label: Out of Scope
+      description: Explicitly state what will NOT be done in this task (to prevent scope creep).
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: Implementation steps or high-level plan.
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks / Dependencies
+      description: Potential blockers, ordering constraints.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Validation
+      description: How will we verify completion? Tests, metrics, file diff, etc.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Task Checklist
+      options:
+        - label: This task has a clear definition of done.
+          required: true
+        - label: Impacts to docs or release notes evaluated.
+          required: true
+        - label: No unrelated changes will be bundled.
+          required: true

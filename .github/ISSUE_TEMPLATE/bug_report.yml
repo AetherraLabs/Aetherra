@@ -1,76 +1,76 @@
-name: Bug report
-description: File a bug report
+name: Bug Report
+description: Report a reproducible problem in the project
 labels: [bug]
-title: "bug: "
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
-  - type: dropdown
-    id: area
+        Thanks for taking the time to file a bug. Please search existing issues first.
+  - type: input
+    id: summary
     attributes:
-      label: Beta focus area
-      description: Which roadmap focus area does this bug impact?
-      options:
-        - stability
-        - observability
-        - security
-        - dx
-        - plugins
-        - memory
-        - federation-prep
-        - docs
+      label: Summary
+      description: Short, clear, actionable description of the bug.
+      placeholder: Parser crashes on workflow with nested steps
     validations:
-      required: false
+      required: true
   - type: textarea
-    id: description
+    id: environment
     attributes:
-      label: Describe the bug
-      description: A clear and concise description of what the bug is.
+      label: Environment
+      description: OS, Python version, invocation (CLI flags), commit SHA if known.
+      placeholder: |
+        OS: Windows 11
+        Python: 3.12.3
+        Command: python aether.py my_workflow.aether --check --json-status
+        Commit: abc1234
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
-      label: Steps to reproduce
-      description: List the steps to reproduce the behavior.
-      value: |
-        1.
-        2.
-        3.
+      label: Reproduction Steps
+      description: Exact minimal steps or script to reproduce the problem.
+      placeholder: |
+        1. Run ...
+        2. Observe ...
+        3. Error ...
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
-      label: Expected behavior
+      label: Expected Behavior
+      description: What you thought would happen.
     validations:
       required: true
   - type: textarea
-    id: impact
+    id: actual
     attributes:
-      label: Impact
-      description: What is the severity (data loss, crash, degraded UX, cosmetic)? Include frequency.
-  - type: input
-    id: version
-    attributes:
-      label: Aetherra version/commit
-  - type: dropdown
-    id: os
-    attributes:
-      label: OS
-      options:
-        - Windows
-        - macOS
-        - Linux
+      label: Actual Behavior / Logs
+      description: Paste full traceback, structured JSON output, or relevant console logs (redact secrets).
+    validations:
+      required: true
   - type: textarea
-    id: logs
+    id: baseline
     attributes:
-      label: Logs/screenshots
-      description: Paste any relevant logs or screenshots.
+      label: Baseline / Prior Behavior
+      description: Did this work in a prior version? If so, which? Any recent changes you suspect?
   - type: textarea
     id: mitigation
     attributes:
-      label: Temporary mitigation
-      description: Any workaround you found (if none, leave blank).
+      label: Temporary Workaround
+      description: Any workaround you found (optional).
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-Submission Checklist
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I can reproduce this with the latest main branch.
+          required: true
+        - label: I provided complete reproduction steps and logs.
+          required: true
+        - label: I am willing to submit a PR to help fix this.
+          required: false
