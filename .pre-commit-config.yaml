@@ -31,7 +31,7 @@ repos:
 repos:
   # Built-in hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+  rev: v4.6.0
     hooks:
       - id: trailing-whitespace
         exclude: ^(unused|backup|archive)/
@@ -50,7 +50,7 @@ repos:
 
   # Python code formatting
   - repo: https://github.com/psf/black
-    rev: 23.7.0
+  rev: 24.4.2
     hooks:
       - id: black
         exclude: ^(unused|backup|archive)/
@@ -58,7 +58,7 @@ repos:
 
   # Import sorting
   - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+  rev: 5.13.2
     hooks:
       - id: isort
         exclude: ^(unused|backup|archive)/
@@ -66,7 +66,7 @@ repos:
 
   # Linting
   - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
+  rev: 7.1.1
     hooks:
       - id: flake8
         exclude: ^(unused|backup|archive)/
@@ -74,7 +74,7 @@ repos:
 
   # Security scanning
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.5
+  rev: 1.7.9
     hooks:
       - id: bandit
         exclude: ^(unused|backup|archive|tests)/
@@ -82,7 +82,7 @@ repos:
 
   # Type checking
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
+  rev: v1.10.0
     hooks:
       - id: mypy
         exclude: ^(unused|backup|archive)/
@@ -103,6 +103,24 @@ repos:
       - id: pydocstyle
         exclude: ^(unused|backup|archive|tests)/
         args: [--convention=google]
+
+  # Ruff (lint + extra rules) replaces part of flake8 scope gradually
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.0
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
+
+  # Legacy banned import check using Ruff TID251 mapping to new namespaces
+  - repo: local
+    hooks:
+      - id: aetherra-banned-imports
+        name: aetherra banned legacy imports check
+        entry: ruff check --select TID251
+        language: system
+        types: [python]
+        pass_filenames: true
 
 # Configuration
 default_stages: [commit, push]

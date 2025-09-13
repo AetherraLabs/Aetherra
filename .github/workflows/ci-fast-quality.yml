@@ -1,0 +1,68 @@
+name: Fast Quality Gate
+
+on:
+  push:
+    paths:
+      - '**/*.py'
+      - '**/*.aether'
+      - 'pyproject.toml'
+      - 'Aetherra/pyproject.toml'
+      - '.pre-commit-config.yaml'
+      - 'tools/quick_quality_check.ps1'
+  pull_request:
+    paths:
+      - '**/*.py'
+      - '**/*.aether'
+      - 'pyproject.toml'
+      - 'Aetherra/pyproject.toml'
+      - '.pre-commit-config.yaml'
+      - 'tools/quick_quality_check.ps1'
+
+jobs:
+  fast-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: fast-q-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
+
+      - name: Install minimal deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black isort pytest
+
+      - name: Quick lint/format/test
+        run: |
+          echo '--- Ruff lint'
+          ruff check .
+          echo '--- Ruff format check'
+          ruff format --check .
+          echo '--- Black check'
+          black --line-length 100 --check . || (echo 'Black failed' && exit 1)
+          echo '--- isort check'
+          isort --profile black --line-length 100 --check-only .
+          echo '--- Minimal pytest'
+          if [ -f tests/capabilities/test_lyrixa_chat_bridge_schema.py ]; then pytest -q -o addopts= tests/capabilities/test_lyrixa_chat_bridge_schema.py::test_edit_plan_mirrors_suggestions_and_confidence_defaults; fi
+
+      - name: Sample parse baseline (non-blocking)
+        run: |
+          python tools/generate_parse_baseline.py --limit 30 --output parse_baseline_fast.json || true
+          cat parse_baseline_fast.json || true
+
+      - name: Upload baseline artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: parse-baseline-fast
+          path: parse_baseline_fast.json
+          if-no-files-found: ignore

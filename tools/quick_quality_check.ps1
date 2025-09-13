@@ -1,0 +1,49 @@
+Param(
+  [switch]$Fix
+)
+
+Write-Host "== Aetherra Quick Quality Check ==" -ForegroundColor Cyan
+$ErrorActionPreference = 'Stop'
+
+function Invoke-Step($Name, $ScriptBlock) {
+  Write-Host "-- $Name" -ForegroundColor Yellow
+  try {
+    & $ScriptBlock
+    if ($LASTEXITCODE -ne 0) { throw "Step failed: $Name (exit $LASTEXITCODE)" }
+    Write-Host "OK: $Name" -ForegroundColor Green
+  } catch {
+    Write-Host "FAIL: $Name -> $_" -ForegroundColor Red
+    $script:FAILED = $true
+  }
+}
+
+# 1. Ruff (lint)
+Invoke-Step "ruff lint" { ruff check . }
+
+# 2. Ruff format (idempotence)
+if (-not $Fix) { Invoke-Step "ruff format (dry)" { ruff format --check . } } else { Invoke-Step "ruff format (apply)" { ruff format . } }
+
+# 3. Black
+if (-not $Fix) { Invoke-Step "black --check" { black --line-length 100 --check . } } else { Invoke-Step "black (apply)" { black --line-length 100 . } }
+
+# 4. isort
+if (-not $Fix) { Invoke-Step "isort --check-only" { isort --profile black --line-length 100 --check-only . } } else { Invoke-Step "isort (apply)" { isort --profile black --line-length 100 . } }
+
+# 5. Minimal tests (single fast file if exists)
+$test = "tests/capabilities/test_lyrixa_chat_bridge_schema.py"
+if (Test-Path $test) {
+  Invoke-Step "pytest minimal" { pytest -q -o addopts= $test::test_edit_plan_mirrors_suggestions_and_confidence_defaults }
+}
+
+# 6. Parse baseline sample
+Invoke-Step "parse baseline sample" { python tools/generate_parse_baseline.py --limit 10 --output parse_baseline_sample.json > $null }
+
+# 7. Classifier sample
+Invoke-Step "classifier sample" { python tools/classify_aether_workflow_failures.py --limit 10 --output wf_sample.json --markdown wf_sample.md > $null }
+
+if ($FAILED) {
+  Write-Host "One or more checks failed" -ForegroundColor Red
+  exit 1
+} else {
+  Write-Host "All quick checks passed" -ForegroundColor Green
+}
