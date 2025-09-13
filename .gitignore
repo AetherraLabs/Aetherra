@@ -114,12 +114,27 @@ $RECYCLE.BIN/
 .Trash-*
 .nfs*
 
-# ===== LOGS & TEMPORARY FILES =====
+# ===== REPORTS & TEMPORARY FILES =====
 *.log
 logs/
 *.tmp
 *.temp
 temp/
+temp_files/
+reports/
+*.report.json
+cleanup_report.json
+*_report*.*
+*report*.json
+*_cleanup*.*
+*cleanup*.*
+ruff_*.txt
+spdx_*.txt
+parse_baseline_*.json
+phase*_*.json
+workflow_failures*.*
+wf_sample.json
+diff_output.txt
 tmp/
 *.bak
 *.backup

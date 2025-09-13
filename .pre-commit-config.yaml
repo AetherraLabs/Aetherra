@@ -1,4 +1,8 @@
+# Aetherra Pre-commit Configuration
+# Ensures code quality before commits
+
 repos:
+  # Aetherra-specific hooks
   - repo: local
     hooks:
       - id: aether-sign
@@ -9,7 +13,7 @@ repos:
         files: \.aether$
       - id: aether-verify-strict
         name: Aether: Strict verification (.aether)
-        entry: python tools/verify_aether_scripts.py --root . --output aether_static_report.md --strict
+        entry: python tools/verify_aether_scripts.py --root . --output reports/aether_static_report.md --strict
         language: system
         pass_filenames: false
         stages: [commit]
@@ -25,18 +29,21 @@ repos:
         language: system
         pass_filenames: false
         stages: [commit]
-# Aetherra Pre-commit Configuration
-# Ensures code quality before commits
+      - id: aetherra-banned-imports
+        name: aetherra banned legacy imports check
+        entry: ruff check --select TID251
+        language: system
+        types: [python]
+        pass_filenames: true
 
-repos:
   # Built-in hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.6.0
     hooks:
       - id: trailing-whitespace
-        exclude: ^(unused|backup|archive)/
+        exclude: ^(unused|backup|archive|reports)/
       - id: end-of-file-fixer
-        exclude: ^(unused|backup|archive)/
+        exclude: ^(unused|backup|archive|reports)/
       - id: check-yaml
       - id: check-json
       - id: check-toml
