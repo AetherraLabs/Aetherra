@@ -10,6 +10,10 @@ permissions:
   discussions: write
   id-token: write
 
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -24,10 +28,38 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install .[dev]
+
+      - name: Quick quality (lint + minimal test)
+        run: |
+          pwsh tools/quick_quality_check.ps1
+
+      - name: Upload quick quality artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quick-quality
+          path: |
+            parse_baseline_sample.json
+            wf_sample.json
+            wf_sample.md
+          if-no-files-found: ignore
+
+      - name: Security audit (pip-audit)
+        run: |
+          pip install pip-audit
+          pip-audit || true
 
       - name: Semantic Release
         env:
@@ -36,3 +68,8 @@ jobs:
           semantic-release version
           semantic-release changelog
           semantic-release publish
+
+      - name: Format changelog
+        if: always()
+        run: |
+          if [ -f CHANGELOG.md ]; then python tools/format_changelog.py || true; fi

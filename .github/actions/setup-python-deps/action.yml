@@ -1,0 +1,29 @@
+name: Setup Python deps
+version: 1
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Cache pip
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: pip-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          pip-${{ runner.os }}-
+    - name: Install deps
+      shell: bash
+      run: |
+        pip install --upgrade pip
+        if [ -n "${{ inputs.extras }}" ]; then pip install .[${{ inputs.extras }}]; else pip install .; fi
+inputs:
+  python-version:
+    description: Python version
+    required: true
+    default: '3.12'
+  extras:
+    description: Optional extras group(s)
+    required: false
