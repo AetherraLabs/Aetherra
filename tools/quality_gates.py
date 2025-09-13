@@ -104,6 +104,11 @@ def main() -> int:
                 # Skip the shim file itself
                 if path.name == "aetherra_hub_server.py":
                     continue
+                # Skip enforcement scripts to avoid self-flagging
+                if path.match("tools/precommit_block_legacy_hub.py") or path.match(
+                    "tools/quality_gates.py"
+                ):
+                    continue
                 try:
                     text = path.read_text(encoding="utf-8", errors="ignore")
                 except Exception:
@@ -832,6 +837,162 @@ def main() -> int:
         return 1
 
     print("[GATES] All quality gates passed.")
+    # Optional Prometheus metrics validation (after other gates succeed)
+    if os.getenv("CONSCIOUSNESS_METRICS_CHECK", "0") == "1":
+        import time
+        import urllib.request
+
+        host = os.getenv("CONSCIOUSNESS_METRICS_HOST", "http://localhost")
+        port = int(os.getenv("AETHERRA_PROM_PORT", "9109"))
+        url = f"{host}:{port}/metrics"
+        # Always-required base metrics
+        required_base = {
+            "aetherra_consciousness_workspace_queue_size": "gauge",
+            "aetherra_consciousness_narrative_coherence": "gauge",
+        }
+        # New detailed metrics (strict mode or informational if not strict)
+        detailed_expected = {
+            "aetherra_consciousness_workspace_candidates_total": "counter",
+            "aetherra_consciousness_workspace_broadcasts_total": "counter",
+            "aetherra_consciousness_workspace_latency_seconds": "histogram",
+            "aetherra_consciousness_narrative_generation_seconds": "histogram",
+            # chapters gauge is informative (may remain 0); keep in detailed by default
+            "aetherra_consciousness_narrative_chapters_total": "gauge",
+        }
+        strict = os.getenv("CONSCIOUSNESS_METRICS_STRICT", "0") == "1"
+        require_samples = os.getenv("CONSCIOUSNESS_METRICS_REQUIRE_SAMPLES", "0") == "1"
+        expect_sources_raw = os.getenv(
+            "CONSCIOUSNESS_METRICS_EXPECT_SOURCE", ""
+        ).strip()
+        expect_sources = [s for s in re.split(r"[,\s]+", expect_sources_raw) if s]
+
+        # brief wait for exporter startup + small retry loop
+        body = ""
+        for attempt in range(5):
+            try:
+                with urllib.request.urlopen(url, timeout=3) as resp:  # nosec B310
+                    body = resp.read().decode("utf-8", errors="replace")
+                if body:
+                    break
+            except Exception:
+                pass
+            time.sleep(0.5)
+        if not body:
+            print("[GATES] Consciousness metrics endpoint not reachable.")
+            return 1
+
+        # Parse TYPE declarations for stronger validation
+        type_map: dict[str, str] = {}
+        try:
+            for line in body.splitlines():
+                # Example: '# TYPE aetherra_consciousness_workspace_queue_size gauge'
+                line = line.strip()
+                if line.startswith("# TYPE "):
+                    parts = line.split()
+                    if len(parts) >= 4:
+                        metric, mtype = parts[2], parts[3]
+                        type_map[metric] = mtype
+        except Exception:
+            type_map = {}
+
+        def present(metric: str) -> bool:
+            # Accept presence either via TYPE line or raw metric occurrences (for _bucket/_sum etc.)
+            if metric in type_map:
+                return True
+            return (metric in body) or any(
+                (metric + suffix) in body for suffix in ("_bucket", "_sum", "_count")
+            )
+
+        def has_sample(metric: str) -> bool:
+            """Detect if there is at least one emitted sample line for the metric.
+            For histograms/counters, look for *_count or labeled lines; for gauges, allow bare value lines.
+            """
+            for line in body.splitlines():
+                if line.startswith(metric + "{") or line.startswith(metric + " "):
+                    return True
+                if metric.endswith("_seconds") and (
+                    line.startswith(metric + "_count")
+                    or line.startswith(metric + "_sum")
+                ):
+                    return True
+            return False
+
+        def has_source_label(metric: str, source_value: str) -> bool:
+            needle = f'{metric}{{source="{source_value}"}}'
+            return needle in body
+
+        missing_base = [m for m in required_base.keys() if not present(m)]
+        if missing_base:
+            print(
+                f"[GATES] Consciousness metrics check FAILED missing base metrics: {', '.join(missing_base)}"
+            )
+            return 1
+
+        # For detailed metrics, warn if missing unless strict
+        missing_detailed = [m for m in detailed_expected.keys() if not present(m)]
+        type_mismatches: list[str] = []
+        # Validate expected types when available
+        for m, expected_type in {**required_base, **detailed_expected}.items():
+            actual = type_map.get(m)
+            if actual and actual != expected_type:
+                type_mismatches.append(f"{m} (expected {expected_type}, got {actual})")
+
+        if type_mismatches:
+            msg = ", ".join(type_mismatches)
+            if strict:
+                print(f"[GATES] Metrics TYPE mismatch (strict): {msg}")
+                return 1
+            else:
+                print(f"[GATES] Warning: metrics TYPE mismatch: {msg}")
+
+        if missing_detailed:
+            if strict:
+                print(
+                    f"[GATES] Consciousness detailed metrics missing (strict): {', '.join(missing_detailed)}"
+                )
+                return 1
+            else:
+                print(
+                    f"[GATES] Info: detailed metrics not all present: {', '.join(missing_detailed)}"
+                )
+        else:
+            print("[GATES] Consciousness detailed metrics present.")
+
+        # Optional: require that detailed metrics emit at least one sample (guards against registry init without updates)
+        if require_samples:
+            sample_missing: list[str] = []
+            for m in detailed_expected.keys():
+                if not has_sample(m):
+                    sample_missing.append(m)
+            if sample_missing:
+                msg = f"Detailed metrics missing samples: {', '.join(sample_missing)}"
+                if strict:
+                    print(f"[GATES] {msg} (strict)")
+                    return 1
+                else:
+                    print(f"[GATES] Warning: {msg}")
+
+        # Optional: expected source labels must appear on counters
+        if expect_sources:
+            missing_sources: list[str] = []
+            for sv in expect_sources:
+                has_any = has_source_label(
+                    "aetherra_consciousness_workspace_candidates_total", sv
+                ) or has_source_label(
+                    "aetherra_consciousness_workspace_broadcasts_total", sv
+                )
+                if not has_any:
+                    missing_sources.append(sv)
+            if missing_sources:
+                msg = (
+                    f"Expected source labels not observed: {', '.join(missing_sources)}"
+                )
+                if strict:
+                    print(f"[GATES] {msg} (strict)")
+                    return 1
+                else:
+                    print(f"[GATES] Info: {msg}")
+        print("[GATES] Consciousness metrics check OK (base metrics present)")
     return 0
 
 

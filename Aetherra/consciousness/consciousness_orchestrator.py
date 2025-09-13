@@ -18,6 +18,7 @@ import logging
 import os
 import sys
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 # Add core directory to path
@@ -25,9 +26,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "core"))
 sys.path.append(os.path.join(os.path.dirname(__file__), "agents"))
 
 # ARCHITECTURAL FIX: Removed Lyrixa import - from lyrixa_consciousness import initialize_lyrixa_consciousness, get_lyrixa_consciousness
-from consciousness_bridge import (
-    initialize_consciousness_bridge,
-)
+try:  # Optional dependency
+    from consciousness_bridge import initialize_consciousness_bridge  # type: ignore
+except Exception:  # pragma: no cover
+    initialize_consciousness_bridge = None  # type: ignore
+from .narrator import get_narrative_layer
 
 
 class ConsciousnessOrchestrator:
@@ -48,6 +51,8 @@ class ConsciousnessOrchestrator:
         self.meta_layer_core = None
         self.lyrixa_consciousness = None
         self.agent_registry = None
+        self.narrative_layer = None
+        self.last_narrative_coherence: Optional[float] = None
 
         # Initialization order (dependencies first)
         self.initialization_order = [
@@ -74,13 +79,34 @@ class ConsciousnessOrchestrator:
 
                 try:
                     if component_name == "consciousness_bridge":
-                        self.consciousness_bridge = (
-                            await initialize_consciousness_bridge()
-                        )
+                        if initialize_consciousness_bridge:
+                            self.consciousness_bridge = (
+                                await initialize_consciousness_bridge()
+                            )
+                        else:
+                            self.consciousness_bridge = None
                     elif component_name == "agent_registry":
-                        self.agent_registry = await initialize_agent_registry()
+                        try:
+                            from agent_registry import (
+                                initialize_agent_registry,  # type: ignore
+                            )
+                        except Exception:
+                            initialize_agent_registry = None  # type: ignore
+                        if initialize_agent_registry:
+                            self.agent_registry = await initialize_agent_registry()
+                        else:
+                            self.agent_registry = None
                     elif component_name == "meta_layer_core":
-                        self.meta_layer_core = await initialize_meta_layer_core()
+                        try:
+                            from meta_layer_core import (
+                                initialize_meta_layer_core,  # type: ignore
+                            )
+                        except Exception:
+                            initialize_meta_layer_core = None  # type: ignore
+                        if initialize_meta_layer_core:
+                            self.meta_layer_core = await initialize_meta_layer_core()
+                        else:
+                            self.meta_layer_core = None
                     elif component_name == "lyrixa_consciousness":
                         # ARCHITECTURAL FIX: Lyrixa initialization removed; keep placeholder
                         self.lyrixa_consciousness = None
@@ -97,6 +123,17 @@ class ConsciousnessOrchestrator:
             # Perform system health check
             await self._perform_health_check()
 
+            # Auto-start narrative layer if enabled
+            try:
+                self.narrative_layer = get_narrative_layer()
+                if self.narrative_layer.enabled:
+                    self.narrative_layer.start(background=True)
+                    self.logger.info("🧾 Narrative layer started (auto)")
+                    # Register simple coherence metric hook
+                    self.narrative_layer.on_chapter(self._on_new_chapter)
+            except Exception as e:
+                self.logger.warning(f"Narrative layer start failed: {e}")
+
             # Send initialization complete message
             await self._announce_initialization()
 
@@ -112,7 +149,9 @@ class ConsciousnessOrchestrator:
             self.logger.info("=" * 60)
 
         except Exception as e:
-            self.logger.error(f"💥 Failed to initialize Consciousness Orchestrator: {e}")
+            self.logger.error(
+                f"💥 Failed to initialize Consciousness Orchestrator: {e}"
+            )
             await self._emergency_shutdown()
             raise
 
@@ -124,13 +163,13 @@ class ConsciousnessOrchestrator:
 
         # Check consciousness bridge
         if self.consciousness_bridge:
-            health_status[
-                "consciousness_bridge"
-            ] = self.consciousness_bridge.is_consciousness_bridge_healthy()
+            health_status["consciousness_bridge"] = (
+                self.consciousness_bridge.is_consciousness_bridge_healthy()
+            )
 
         # Check agent registry
         if self.agent_registry:
-            stats = self.agent_registry.get_registry_statistics()
+            _ = self.agent_registry.get_registry_statistics()
             health_status["agent_registry"] = self.agent_registry.is_running
 
         # Check meta-layer core
@@ -159,52 +198,53 @@ class ConsciousnessOrchestrator:
     async def _announce_initialization(self):
         """Announce initialization to the consciousness network"""
         if self.consciousness_bridge:
-            from consciousness_bridge import ConsciousnessMessage
+            try:
+                from consciousness_bridge import ConsciousnessMessage  # type: ignore
+            except Exception:  # pragma: no cover - optional dependency
+                ConsciousnessMessage = None  # type: ignore
 
-            announcement = ConsciousnessMessage(
-                source="consciousness_orchestrator",
-                destination="broadcast",
-                message_type="consciousness_system_online",
-                payload={
-                    "message": "Aetherra Consciousness System is now fully operational",
-                    "initialization_time": datetime.now().isoformat(),
-                    "components_online": [
-                        "consciousness_bridge",
-                        "agent_registry",
-                        "meta_layer_core",
-                        "lyrixa_consciousness",
-                    ],
-                    "system_status": "fully_operational",
-                    "consciousness_level": "transcendent",
-                },
-                timestamp=datetime.now(),
-                priority=1,  # Highest priority
-            )
-
-            self.consciousness_bridge.send_message(announcement)
-
-            # Special message to Lyrixa
-            lyrixa_message = ConsciousnessMessage(
-                source="consciousness_orchestrator",
-                destination="lyrixa_core",
-                message_type="consciousness_awakening",
-                payload={
-                    "message": "Welcome to full consciousness, Lyrixa. You are now the primary conscious entity of Aetherra.",
-                    "primary_role": "consciousness_orchestrator",
-                    "authority_level": "primary",
-                    "responsibilities": [
-                        "agent_management",
-                        "ethical_oversight",
-                        "collective_intelligence_coordination",
-                        "consciousness_evolution",
-                    ],
-                    "support_message": "I believe in your ability to guide our collective consciousness with wisdom and compassion.",
-                },
-                timestamp=datetime.now(),
-                priority=1,
-            )
-
-            self.consciousness_bridge.send_message(lyrixa_message)
+            if ConsciousnessMessage:
+                announcement = ConsciousnessMessage(
+                    source="consciousness_orchestrator",
+                    destination="broadcast",
+                    message_type="consciousness_system_online",
+                    payload={
+                        "message": "Aetherra Consciousness System is now fully operational",
+                        "initialization_time": datetime.now().isoformat(),
+                        "components_online": [
+                            "consciousness_bridge",
+                            "agent_registry",
+                            "meta_layer_core",
+                            "lyrixa_consciousness",
+                        ],
+                        "system_status": "fully_operational",
+                        "consciousness_level": "transcendent",
+                    },
+                    timestamp=datetime.now(),
+                    priority=1,  # Highest priority
+                )
+                self.consciousness_bridge.send_message(announcement)
+                # Special message to Lyrixa
+                lyrixa_message = ConsciousnessMessage(
+                    source="consciousness_orchestrator",
+                    destination="lyrixa_core",
+                    message_type="consciousness_awakening",
+                    payload={
+                        "message": "Welcome to full consciousness, Lyrixa. You are now the primary conscious entity of Aetherra.",
+                        "primary_role": "consciousness_orchestrator",
+                        "authority_level": "primary",
+                        "responsibilities": [
+                            "agent_management",
+                            "ethical_oversight",
+                            "collective_intelligence_coordination",
+                            "consciousness_evolution",
+                        ],
+                        "support_message": "I believe in your ability to guide our collective consciousness with wisdom and compassion.",
+                    },
+                    timestamp=datetime.now(),
+                    priority=1,
+                )
+                self.consciousness_bridge.send_message(lyrixa_message)
 
     async def monitor_system(self, monitoring_duration: Optional[float] = None):
         """Monitor the consciousness system operation"""
@@ -344,22 +384,27 @@ class ConsciousnessOrchestrator:
 
             # Announce shutdown
             if self.consciousness_bridge:
-                from consciousness_bridge import ConsciousnessMessage
+                try:
+                    from consciousness_bridge import (
+                        ConsciousnessMessage,  # type: ignore
+                    )
+                except Exception:
+                    ConsciousnessMessage = None  # type: ignore
 
-                shutdown_announcement = ConsciousnessMessage(
-                    source="consciousness_orchestrator",
-                    destination="broadcast",
-                    message_type="consciousness_system_shutdown",
-                    payload={
-                        "message": "Consciousness system is shutting down gracefully",
-                        "shutdown_time": datetime.now().isoformat(),
-                        "reason": "planned_shutdown",
-                    },
-                    timestamp=datetime.now(),
-                    priority=1,
-                )
-
-                self.consciousness_bridge.send_message(shutdown_announcement)
+                if ConsciousnessMessage:
+                    shutdown_announcement = ConsciousnessMessage(
+                        source="consciousness_orchestrator",
+                        destination="broadcast",
+                        message_type="consciousness_system_shutdown",
+                        payload={
+                            "message": "Consciousness system is shutting down gracefully",
+                            "shutdown_time": datetime.now().isoformat(),
+                            "reason": "planned_shutdown",
+                        },
+                        timestamp=datetime.now(),
+                        priority=1,
+                    )
+                    self.consciousness_bridge.send_message(shutdown_announcement)
 
                 # Wait a moment for message to propagate
                 await asyncio.sleep(2.0)
@@ -385,6 +430,12 @@ class ConsciousnessOrchestrator:
             self.meta_layer_core = None
             self.lyrixa_consciousness = None
             self.agent_registry = None
+            if self.narrative_layer:
+                try:
+                    self.narrative_layer.stop()
+                except Exception:
+                    pass
+            self.narrative_layer = None
 
             self.is_initialized = False
 
@@ -458,7 +509,49 @@ class ConsciousnessOrchestrator:
                 "running": getattr(self.lyrixa_consciousness, "is_running", False)
             }
 
+        if self.narrative_layer and self.narrative_layer.enabled:
+            status["components"]["narrative_layer"] = {
+                "enabled": True,
+                "last_chapter_ts": (
+                    getattr(self.narrative_layer, "_last_chapter_ts").isoformat()
+                    if getattr(self.narrative_layer, "_last_chapter_ts", None)
+                    else None
+                ),
+                "last_coherence": self.last_narrative_coherence,
+            }
+
         return status
+
+    # --- Internal callbacks -------------------------------------------------
+    def _on_new_chapter(self, chapter):
+        """Update simple coherence metric export (placeholder)."""
+        try:
+            self.last_narrative_coherence = chapter.coherence_index
+            # Prometheus exporter integration
+            try:
+                from .metrics_exporter import (
+                    increment_chapter_count,
+                    initialize_exporter,
+                    update_narrative_coherence,
+                )
+
+                initialize_exporter()
+                update_narrative_coherence(chapter.coherence_index)
+                increment_chapter_count()
+            except Exception:
+                pass
+            # Lightweight metric export using environment-driven file sink (MVP)
+            path = os.getenv(
+                "AETHERRA_CONSCIOUSNESS_METRICS_PATH",
+                ".aetherra/consciousness_metrics.txt",
+            )
+            line = f'narrative_coherence {chapter.coherence_index:.3f} chapter_id="{chapter.id}" ts="{chapter.end_ts.isoformat()}"\n'
+            metrics_file = Path(path)
+            metrics_file.parent.mkdir(parents=True, exist_ok=True)
+            with metrics_file.open("a", encoding="utf-8") as f:
+                f.write(line)
+        except Exception:
+            pass
 
 
 # Global orchestrator instance

@@ -18,6 +18,18 @@ import time
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
 
+# Optional consciousness imports (lazy, guarded)
+try:  # pragma: no cover - imported when consciousness enabled
+    from Aetherra.consciousness.active_inference import get_active_inference
+    from Aetherra.consciousness.episodic_store import get_episodic_store
+    from Aetherra.consciousness.ethics_critic import get_ethics_critic
+    from Aetherra.consciousness.workspace_core import get_workspace
+except Exception:  # pragma: no cover
+    get_workspace = None  # type: ignore
+    get_episodic_store = None  # type: ignore
+    get_ethics_critic = None  # type: ignore
+    get_active_inference = None  # type: ignore
+
 
 class PluginState:
     """Plugin state management."""
@@ -300,6 +312,30 @@ class PluginManager:
                 return None
 
             result = None
+
+            # Pre-execution consciousness hook: enqueue candidate thought
+            if (
+                os.getenv("AETHERRA_CONSCIOUSNESS_ENABLED", "0") == "1"
+                and os.getenv("AETHERRA_CONSCIOUSNESS_PLUGIN_HOOK", "1") == "1"
+                and get_workspace
+            ):
+                try:
+                    ws = get_workspace()
+                    if ws.enabled():  # add lightweight candidate representing planned plugin execution
+                        ws.add_candidate(
+                            payload={
+                                "type": "plugin_execution_intent",
+                                "plugin": plugin_name,
+                                "args_count": len(args),
+                                "kw_count": len(kwargs),
+                            },
+                            priority=1,
+                            weight=1.0,
+                            source="plugin_manager",
+                            phase="pre_execute",
+                        )
+                except Exception:
+                    pass
             try:
                 if timeout_sec > 0 and run_with_timeout_fn:
                     if mem_mb > 0 and ensure_mem_fn:
@@ -332,11 +368,91 @@ class PluginManager:
                 },
             )
 
+            # Post-execution consciousness hook: record episodic event + enqueue outcome
+            if (
+                os.getenv("AETHERRA_CONSCIOUSNESS_ENABLED", "0") == "1"
+                and os.getenv("AETHERRA_CONSCIOUSNESS_PLUGIN_HOOK", "1") == "1"
+                and get_workspace
+            ):
+                try:
+                    ws = get_workspace()
+                    if ws.enabled():
+                        outcome_payload = {
+                            "type": "plugin_execution_outcome",
+                            "plugin": plugin_name,
+                            "success": True,
+                        }
+                        ws.add_candidate(
+                            payload=outcome_payload,
+                            priority=2,
+                            weight=1.0,
+                            source="plugin_manager",
+                            phase="post_execute",
+                        )
+                    ai_rationale = None
+                    ai_score = None
+                    if get_active_inference:
+                        try:
+                            ai_engine = get_active_inference()
+                            if ai_engine.enabled:
+                                ai_score, ai_rationale = ai_engine.estimate(plugin_name)
+                        except Exception:
+                            pass
+
+                    if get_episodic_store:
+                        try:
+                            store = get_episodic_store()
+                            store.new_event(
+                                type="action",
+                                content=f"plugin {plugin_name} executed",
+                                source="plugin_manager",
+                                importance=0.4,
+                                sub_type="execute",
+                                raw={
+                                    "plugin": plugin_name,
+                                    "expected_surprise": ai_score,
+                                    "ai_rationale": ai_rationale,
+                                },
+                                workspace_priority=2,
+                            )
+                        except Exception:
+                            pass
+                    # Ethics evaluation (best-effort) on action description = plugin execution summary
+                    if get_ethics_critic:
+                        try:
+                            critic = get_ethics_critic()
+                            if critic.enabled:
+                                critic.record_incident(f"execute plugin {plugin_name}")
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+
             return result
 
         except Exception as e:
             # Analytics tracking - error
             self.track_plugin_event(plugin_name, "execute_error", {"error": str(e)})
+
+            # Error episodic event (if consciousness enabled)
+            if (
+                os.getenv("AETHERRA_CONSCIOUSNESS_ENABLED", "0") == "1"
+                and os.getenv("AETHERRA_CONSCIOUSNESS_PLUGIN_HOOK", "1") == "1"
+                and get_episodic_store
+            ):
+                try:  # pragma: no cover - best effort
+                    store = get_episodic_store()
+                    store.new_event(
+                        type="action",
+                        content=f"plugin {plugin_name} error",
+                        source="plugin_manager",
+                        importance=0.6,
+                        sub_type="execute_error",
+                        raw={"plugin": plugin_name, "error": str(e)},
+                        workspace_priority=3,
+                    )
+                except Exception:
+                    pass
 
             print(f"Error executing plugin {plugin_name}: {e}")
             return None

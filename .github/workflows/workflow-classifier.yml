@@ -1,0 +1,51 @@
+name: Aether Workflow Classifier
+
+on:
+  push:
+    paths:
+      - '**/*.aether'
+      - 'tools/classify_aether_workflow_failures.py'
+      - 'aether.py'
+      - 'tools/migrate_legacy_aether.py'
+      - '.github/workflows/workflow-classifier.yml'
+  pull_request:
+    paths:
+      - '**/*.aether'
+      - 'tools/classify_aether_workflow_failures.py'
+      - 'aether.py'
+      - 'tools/migrate_legacy_aether.py'
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run classifier (sample)
+        env:
+          AETHERRA_PROFILE: test
+          AETHERRA_QUIET: '1'
+        run: |
+          python tools/classify_aether_workflow_failures.py --limit 400 --output workflow_failures.json --markdown workflow_failures.md
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-failure-classification
+          path: |
+            workflow_failures.json
+            workflow_failures.md
+          if-no-files-found: warn
+
