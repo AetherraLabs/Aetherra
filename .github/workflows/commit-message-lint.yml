@@ -1,0 +1,32 @@
+name: Commit Message Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  commit-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit messages
+        run: |
+          echo "Checking commit messages..."
+          pattern='^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|security)(\([a-z0-9_.-]+\))?!?: .{1,100}$'
+          fails=0
+          while read -r line; do
+            msg=$(echo "$line" | cut -d' ' -f2-)
+            sha=$(echo "$line" | awk '{print $1}')
+            if ! echo "$msg" | grep -E -q "$pattern"; then
+              echo "::error file=COMMIT,msg=Invalid commit message ($sha): $msg"
+              fails=$((fails+1))
+            fi
+          done < <(git log --oneline origin/main..HEAD || git log --oneline -n 20)
+          if [ $fails -gt 0 ]; then
+            echo "$fails commit message(s) failed conventional commit rules"; exit 1; fi
+          echo "All commit messages valid"
