@@ -29,6 +29,36 @@ Aetherra pairs a lightweight Hub (APIs + metrics) with the Lyrixa AI assistant, 
 
 Quick links: [`INSTALL.md`](INSTALL.md) · [`ROADMAP.md`](ROADMAP.md) · [`CHANGELOG.md`](CHANGELOG.md) · [`SECURITY.md`](SECURITY.md) · [`Security: Production‑Safe Defaults`](SECURITY.md#production-safe-defaults-hub-developer-ai-api) · [`BETA_READINESS_REPORT.md`](BETA_READINESS_REPORT.md) · [`Developer Onboarding`](docs/DEVELOPER_ONBOARDING.md) · [`QFAC Policy`](docs/QFAC_POLICY.md)
 
+### Local Security Scanning (Bandit + pip-audit)
+
+Run combined static + dependency vulnerability scan producing SARIF artifacts (`bandit.sarif`, `pipaudit.sarif`):
+
+```powershell
+pwsh tools/security_scan.ps1
+```
+
+Behavior:
+
+- Installs/updates required tools if missing (`bandit`, `pip-audit`, SARIF formatter)
+- Generates SARIF or creates a minimal stub on failure (so CI upload never breaks)
+- Summarizes artifact sizes for quick sanity check
+
+To open SARIF locally (VS Code): install "SARIF Viewer" extension and open the files.
+
+Add to pre-commit (optional excerpt):
+
+```yaml
+-   repo: local
+        hooks:
+            - id: security-scan
+                name: security-scan
+                entry: pwsh tools/security_scan.ps1
+                language: system
+                pass_filenames: false
+```
+
+---
+
 ## Table of Contents
 
 1. Overview
