@@ -31,16 +31,21 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Cache pip
+      - name: Cache deps & tool caches
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
-          key: fast-q-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}
+          path: |
+            ~/.cache/pip
+            .ruff_cache
+            .mypy_cache
+          key: fast-q-${{ runner.os }}-${{ hashFiles('**/requirements*.txt') }}-${{ hashFiles('pyproject.toml','Aetherra/pyproject.toml') }}
+          restore-keys: |
+            fast-q-${{ runner.os }}-
 
       - name: Install minimal deps
         run: |
           python -m pip install --upgrade pip
-          pip install ruff black isort pytest
+          pip install ruff black isort pytest jq
 
       - name: Quick lint/format/test
         run: |
@@ -60,9 +65,32 @@ jobs:
           python tools/generate_parse_baseline.py --limit 30 --output parse_baseline_fast.json || true
           cat parse_baseline_fast.json || true
 
+      - name: Workflow classifier sample (non-blocking)
+        run: |
+          python tools/classify_aether_workflow_failures.py --limit 30 --output wf_fast.json --markdown wf_fast.md || true
+          head -n 80 wf_fast.md || true
+
+      - name: GitHub summary
+        if: always()
+        run: |
+          echo "### Fast Quality Gate Summary" >> $GITHUB_STEP_SUMMARY
+          if [ -f parse_baseline_fast.json ]; then echo "#### Parse Baseline Sample" >> $GITHUB_STEP_SUMMARY; jq '.by_code' parse_baseline_fast.json >> $GITHUB_STEP_SUMMARY; fi
+          if [ -f wf_fast.json ]; then echo "\n#### Workflow Classification Sample" >> $GITHUB_STEP_SUMMARY; jq '.summary.categories' wf_fast.json | head -n 60 >> $GITHUB_STEP_SUMMARY; fi
+          echo "\n_This gate is advisory; failures here should be addressed before full quality gates._" >> $GITHUB_STEP_SUMMARY
+
       - name: Upload baseline artifact
         uses: actions/upload-artifact@v4
         with:
           name: parse-baseline-fast
           path: parse_baseline_fast.json
+          if-no-files-found: ignore
+
+      - name: Upload classifier artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-classifier-fast
+          path: |
+            wf_fast.json
+            wf_fast.md
           if-no-files-found: ignore
