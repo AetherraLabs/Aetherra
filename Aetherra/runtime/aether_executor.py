@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
 """
-🧠 AETHER SCRIPT EXECUTOR: Curiosity + Conflict Resolution
+[BRAIN] AETHER SCRIPT EXECUTOR: Curiosity + Conflict Resolution
 ==========================================================
 
 Demonstrates execution of the curiosity_conflict_resolution.aether script
 using the enhanced Phase 3 autonomous intelligence capabilities:
 
-• Multi-type conflict detection and resolution
-• Curiosity-driven gap exploration with question generation
-• Self-directed learning loop with adaptive thresholds
-• Meta-learning tracker with strategy optimization
-• Comprehensive logging and self-awareness
+* Multi-type conflict detection and resolution
+* Curiosity-driven gap exploration with question generation
+* Self-directed learning loop with adaptive thresholds
+* Meta-learning tracker with strategy optimization
+* Comprehensive logging and self-awareness
 
 This script simulates the .aether execution environment while leveraging
 all the enhanced functions we've implemented.
@@ -64,7 +65,7 @@ class AetherScriptExecutor:
 
     async def initialize_agents(self):
         """Initialize all enhanced autonomous intelligence agents"""
-        print("🧠 INITIALIZING ENHANCED AUTONOMOUS INTELLIGENCE AGENTS")
+        print("[BRAIN] INITIALIZING ENHANCED AUTONOMOUS INTELLIGENCE AGENTS")
         print("=" * 70)
 
         # Initialize learning loop integration agent (enhanced with meta-learning)
@@ -72,7 +73,7 @@ class AetherScriptExecutor:
             data_dir="aether_intelligence_data"
         )
         await self.learning_agent.initialize()
-        print("✅ LearningLoopIntegrationAgent: Meta-learning tracker operational")
+        print("[OK] LearningLoopIntegrationAgent: Meta-learning tracker operational")
 
         # Initialize contradiction detection agent (enhanced with resolution)
         self.contradiction_agent = ContradictionDetectionAgent(
@@ -80,18 +81,18 @@ class AetherScriptExecutor:
         )
         await self.contradiction_agent.initialize()
         print(
-            "✅ ContradictionDetectionAgent: Multi-type conflict resolution operational"
+            "[OK] ContradictionDetectionAgent: Multi-type conflict resolution operational"
         )
 
         # Mock other agents for demonstration (would be actual implementations)
-        print("✅ CuriosityAgent: Gap-driven exploration ready")
-        print("✅ SelfQuestionGenerator: Autonomous question creation ready")
-        print("✅ Meta-learning tracker: Strategy optimization enabled")
-        print("✅ Adaptive thresholds: Performance-based adjustment configured")
+        print("[OK] CuriosityAgent: Gap-driven exploration ready")
+        print("[OK] SelfQuestionGenerator: Autonomous question creation ready")
+        print("[OK] Meta-learning tracker: Strategy optimization enabled")
+        print("[OK] Adaptive thresholds: Performance-based adjustment configured")
 
     async def execute_aether_script(self):
         """Execute the curiosity_conflict_resolution.aether script"""
-        print("\n🎯 EXECUTING CURIOSITY + CONFLICT RESOLUTION AETHER SCRIPT")
+        print("\n[TARGET] EXECUTING CURIOSITY + CONFLICT RESOLUTION AETHER SCRIPT")
         print("=" * 70)
         print("Goal: 'resolve inconsistencies and explore unknowns'")
         print("Enhanced Intelligence: Phase 3 Complete + All Requested Functions")
@@ -118,12 +119,12 @@ class AetherScriptExecutor:
 
     async def phase_1_gap_detection(self):
         """Phase 1: Knowledge Gap Detection & Curiosity Triggering"""
-        print("\n🔍 PHASE 1: KNOWLEDGE GAP DETECTION & CURIOSITY TRIGGERING")
+        print("\n[SCAN] PHASE 1: KNOWLEDGE GAP DETECTION & CURIOSITY TRIGGERING")
         print("=" * 65)
 
         # Simulate gap detection using curiosity agent
         print(
-            "🔍 Scanning for memory gaps using curiosity_agent.analyze_knowledge_gaps()..."
+            "[SCAN] Scanning for memory gaps using curiosity_agent.analyze_knowledge_gaps()..."
         )
 
         # Mock gap analysis (would use real CuriosityAgent)
@@ -158,15 +159,15 @@ class AetherScriptExecutor:
         questions_generated = []
         learning_goals_created = []
 
-        print("📊 Gap Analysis Results:")
-        print(f"   • Total gaps detected: {gap_analysis['total_gaps']}")
-        print(f"   • Critical threshold: {gap_analysis['critical_threshold']}")
+        print("[STATS] Gap Analysis Results:")
+        print(f"   * Total gaps detected: {gap_analysis['total_gaps']}")
+        print(f"   * Critical threshold: {gap_analysis['critical_threshold']}")
 
         for gap in gap_analysis["gaps"]:
-            print(f"\n📝 Processing Gap: {gap['gap_id']}")
-            print(f"   • Type: {gap['type']}")
-            print(f"   • Priority Score: {gap['priority_score']}")
-            print(f"   • Criticality: {gap['criticality']}")
+            print(f"\n[NOTE] Processing Gap: {gap['gap_id']}")
+            print(f"   * Type: {gap['type']}")
+            print(f"   * Priority Score: {gap['priority_score']}")
+            print(f"   * Criticality: {gap['criticality']}")
 
             # Generate targeted question
             question = {
@@ -182,7 +183,7 @@ class AetherScriptExecutor:
             # Create learning goal if critical
             if gap["priority_score"] > gap_analysis["critical_threshold"]:
                 print(
-                    f"   🎯 Creating autonomous learning goal (priority: {gap['priority_score']:.2f})"
+                    f"   [TARGET] Creating autonomous learning goal (priority: {gap['priority_score']:.2f})"
                 )
 
                 # Use enhanced create_learning_goal function
@@ -196,7 +197,7 @@ class AetherScriptExecutor:
 
                 goal_id = await self.learning_agent.create_learning_goal(goal_context)
                 learning_goals_created.append(goal_id)
-                print(f"   ✅ Learning Goal Created: {goal_id}")
+                print(f"   [OK] Learning Goal Created: {goal_id}")
 
         self.script_results["phases_completed"].append(
             {
@@ -212,17 +213,17 @@ class AetherScriptExecutor:
             }
         )
 
-        print("\n✅ Phase 1 Complete:")
-        print(f"   • {len(questions_generated)} questions generated")
-        print(f"   • {len(learning_goals_created)} learning goals created")
+        print("\n[OK] Phase 1 Complete:")
+        print(f"   * {len(questions_generated)} questions generated")
+        print(f"   * {len(learning_goals_created)} learning goals created")
 
     async def phase_2_conflict_resolution(self):
         """Phase 2: Multi-Type Conflict Detection & Resolution"""
-        print("\n⚔️ PHASE 2: MULTI-TYPE CONFLICT DETECTION & RESOLUTION")
+        print("\n⚔ PHASE 2: MULTI-TYPE CONFLICT DETECTION & RESOLUTION")
         print("=" * 65)
 
         print(
-            "⚔️ Scanning for conflicts using enhanced contradiction_detection_agent..."
+            "⚔ Scanning for conflicts using enhanced contradiction_detection_agent..."
         )
 
         # Use enhanced detect_conflicts function
@@ -231,19 +232,19 @@ class AetherScriptExecutor:
         # Handle the actual return format (list of conflicts)
         conflicts = conflict_analysis if isinstance(conflict_analysis, list) else []
 
-        print("📊 Conflict Analysis Results:")
-        print("   • Analysis types: semantic, temporal, logical, confidence, value")
-        print(f"   • Total conflicts detected: {len(conflicts)}")
+        print("[STATS] Conflict Analysis Results:")
+        print("   * Analysis types: semantic, temporal, logical, confidence, value")
+        print(f"   * Total conflicts detected: {len(conflicts)}")
 
         resolutions_successful = 0
         resolutions_failed = 0
 
         # Process each detected conflict
         for conflict in conflicts:
-            print(f"\n⚔️ Processing Conflict: {conflict.contradiction_id}")
-            print(f"   • Type: {conflict.contradiction_type.value}")
-            print(f"   • Severity: {conflict.severity}")
-            print(f"   • Confidence: {conflict.confidence_score:.2f}")
+            print(f"\n⚔ Processing Conflict: {conflict.contradiction_id}")
+            print(f"   * Type: {conflict.contradiction_type.value}")
+            print(f"   * Severity: {conflict.severity}")
+            print(f"   * Confidence: {conflict.confidence_score:.2f}")
 
             # Use enhanced resolve_conflict function
             resolution_result = await self.contradiction_agent.resolve_conflict(
@@ -253,10 +254,10 @@ class AetherScriptExecutor:
             if resolution_result.get("status") == "resolved":
                 resolutions_successful += 1
                 print(
-                    f"   ✅ Resolution: {resolution_result.get('strategy', 'unknown')}"
+                    f"   [OK] Resolution: {resolution_result.get('strategy', 'unknown')}"
                 )
                 print(
-                    f"   📊 Resolution Confidence: {resolution_result.get('confidence', 0.0):.2f}"
+                    f"   [STATS] Resolution Confidence: {resolution_result.get('confidence', 0.0):.2f}"
                 )
 
                 # Log successful resolution
@@ -267,7 +268,7 @@ class AetherScriptExecutor:
             else:
                 resolutions_failed += 1
                 print(
-                    f"   ❌ Resolution Failed: {resolution_result.get('reason', 'unknown')}"
+                    f"   [ERROR] Resolution Failed: {resolution_result.get('reason', 'unknown')}"
                 )
                 print(
                     f"   🚨 Escalation Required: {resolution_result.get('escalation_recommended', False)}"
@@ -277,7 +278,7 @@ class AetherScriptExecutor:
                 await self.contradiction_agent.log_resolution(
                     conflict, resolution_result
                 )
-                print("   📝 Logged for human review with priority: HIGH")
+                print("   [NOTE] Logged for human review with priority: HIGH")
 
         resolution_rate = (
             resolutions_successful / (resolutions_successful + resolutions_failed)
@@ -295,18 +296,18 @@ class AetherScriptExecutor:
             }
         )
 
-        print("\n✅ Phase 2 Complete:")
-        print(f"   • Resolution rate: {resolution_rate:.2%}")
-        print(f"   • Successful resolutions: {resolutions_successful}")
-        print(f"   • Failed resolutions: {resolutions_failed}")
+        print("\n[OK] Phase 2 Complete:")
+        print(f"   * Resolution rate: {resolution_rate:.2%}")
+        print(f"   * Successful resolutions: {resolutions_successful}")
+        print(f"   * Failed resolutions: {resolutions_failed}")
 
     async def phase_3_meta_learning(self):
         """Phase 3: Meta-Learning Analysis & Strategy Optimization"""
-        print("\n🧠 PHASE 3: META-LEARNING ANALYSIS & STRATEGY OPTIMIZATION")
+        print("\n[BRAIN] PHASE 3: META-LEARNING ANALYSIS & STRATEGY OPTIMIZATION")
         print("=" * 65)
 
         print(
-            "📊 Analyzing learning effectiveness using enhanced meta-learning tracker..."
+            "[STATS] Analyzing learning effectiveness using enhanced meta-learning tracker..."
         )
 
         # Use enhanced score_effectiveness function
@@ -314,45 +315,45 @@ class AetherScriptExecutor:
             timeframe_hours=24.0
         )
 
-        print("📊 Learning Effectiveness Analysis:")
+        print("[STATS] Learning Effectiveness Analysis:")
         print(
-            f"   • Overall Effectiveness: {effectiveness_analysis['overall_effectiveness']:.2f}"
+            f"   * Overall Effectiveness: {effectiveness_analysis['overall_effectiveness']:.2f}"
         )
         print(
-            f"   • Effectiveness Grade: {effectiveness_analysis['effectiveness_grade']}"
+            f"   * Effectiveness Grade: {effectiveness_analysis['effectiveness_grade']}"
         )
-        print(f"   • Sessions Analyzed: {effectiveness_analysis['sessions_analyzed']}")
+        print(f"   * Sessions Analyzed: {effectiveness_analysis['sessions_analyzed']}")
 
         # Core metrics breakdown
         core_metrics = effectiveness_analysis["core_metrics"]
         print(
-            f"   • Confidence Improvement: {core_metrics['total_confidence_change']:+.2f}"
+            f"   * Confidence Improvement: {core_metrics['total_confidence_change']:+.2f}"
         )
         print(
-            f"   • Contradiction Reduction: {core_metrics['total_contradiction_reduction']}"
+            f"   * Contradiction Reduction: {core_metrics['total_contradiction_reduction']}"
         )
         print(
-            f"   • Narrative Clarity: {core_metrics['total_narrative_improvement']:.2f}"
+            f"   * Narrative Clarity: {core_metrics['total_narrative_improvement']:.2f}"
         )
 
-        print("\n🎯 Generating strategy recommendations...")
+        print("\n[TARGET] Generating strategy recommendations...")
 
         # Use enhanced recommend_strategy_updates function
         strategy_recommendations = await self.learning_agent.recommend_strategy_updates(
             effectiveness_analysis
         )
 
-        print("🎯 Strategy Recommendations Generated:")
+        print("[TARGET] Strategy Recommendations Generated:")
         print(
-            f"   • Overall Assessment: {strategy_recommendations['overall_assessment']}"
+            f"   * Overall Assessment: {strategy_recommendations['overall_assessment']}"
         )
         print(
-            f"   • Recommendation Confidence: {strategy_recommendations['confidence_level']:.2f}"
+            f"   * Recommendation Confidence: {strategy_recommendations['confidence_level']:.2f}"
         )
 
         # Show method recommendations
         method_recs = strategy_recommendations.get("method_recommendations", {})
-        print(f"   • Method Recommendations: {len(method_recs)} methods analyzed")
+        print(f"   * Method Recommendations: {len(method_recs)} methods analyzed")
         for method, rec in method_recs.items():
             print(f"     - {method}: {rec['action']}")
 
@@ -361,19 +362,19 @@ class AetherScriptExecutor:
         if escalation_triggers:
             print(f"   🚨 Escalation Triggers: {len(escalation_triggers)} identified")
         else:
-            print("   ✅ No escalation required - performance within parameters")
+            print("   [OK] No escalation required - performance within parameters")
 
-        print("\n🎛️ Adjusting adaptive thresholds based on performance...")
+        print("\n🎛 Adjusting adaptive thresholds based on performance...")
 
         # Use enhanced adjust_thresholds function
         threshold_adjustments = await self.learning_agent.adjust_thresholds(
             effectiveness_analysis
         )
 
-        print("🎛️ Threshold Adjustments Applied:")
+        print("🎛 Threshold Adjustments Applied:")
         for threshold, adjustment in threshold_adjustments.items():
             print(
-                f"   • {threshold}: {adjustment['old_value']:.3f} → {adjustment['new_value']:.3f}"
+                f"   * {threshold}: {adjustment['old_value']:.3f} -> {adjustment['new_value']:.3f}"
             )
 
         self.script_results["phases_completed"].append(
@@ -389,14 +390,14 @@ class AetherScriptExecutor:
             }
         )
 
-        print("\n✅ Phase 3 Complete:")
-        print("   • Meta-learning analysis performed")
-        print("   • Strategy optimization recommendations generated")
-        print("   • Adaptive thresholds updated")
+        print("\n[OK] Phase 3 Complete:")
+        print("   * Meta-learning analysis performed")
+        print("   * Strategy optimization recommendations generated")
+        print("   * Adaptive thresholds updated")
 
     async def phase_4_comprehensive_logging(self):
         """Phase 4: Comprehensive Logging & Self-Awareness"""
-        print("\n📊 PHASE 4: COMPREHENSIVE LOGGING & SELF-AWARENESS")
+        print("\n[STATS] PHASE 4: COMPREHENSIVE LOGGING & SELF-AWARENESS")
         print("=" * 65)
 
         execution_time = time.time() - self.execution_start_time
@@ -443,7 +444,7 @@ class AetherScriptExecutor:
             "autonomous_intelligence_status": "fully_operational",
         }
 
-        print("📝 Logging comprehensive learning session...")
+        print("[NOTE] Logging comprehensive learning session...")
 
         # Use enhanced log_learning_session function
         session_id = await self.learning_agent.log_learning_session(
@@ -452,17 +453,17 @@ class AetherScriptExecutor:
             execution_time / 60.0,  # Convert to minutes
         )
 
-        print(f"✅ Learning Session Logged: {session_id}")
-        print("📊 Session Summary:")
-        print(f"   • Execution Time: {execution_time:.1f} seconds")
-        print(f"   • Gaps Detected: {session_outcome['gaps_detected']}")
-        print(f"   • Questions Generated: {session_outcome['questions_generated']}")
-        print(f"   • Conflicts Resolved: {session_outcome['conflicts_resolved']}")
+        print(f"[OK] Learning Session Logged: {session_id}")
+        print("[STATS] Session Summary:")
+        print(f"   * Execution Time: {execution_time:.1f} seconds")
+        print(f"   * Gaps Detected: {session_outcome['gaps_detected']}")
+        print(f"   * Questions Generated: {session_outcome['questions_generated']}")
+        print(f"   * Conflicts Resolved: {session_outcome['conflicts_resolved']}")
         print(
-            f"   • Learning Goals Created: {session_outcome['learning_goals_created']}"
+            f"   * Learning Goals Created: {session_outcome['learning_goals_created']}"
         )
-        print(f"   • Effectiveness Score: {session_outcome['effectiveness_score']:.2f}")
-        print(f"   • Enhancement Level: {session_context['enhancement_level']}")
+        print(f"   * Effectiveness Score: {session_outcome['effectiveness_score']:.2f}")
+        print(f"   * Enhancement Level: {session_context['enhancement_level']}")
 
         self.script_results["phases_completed"].append(
             {
@@ -475,12 +476,12 @@ class AetherScriptExecutor:
         )
 
         print(
-            "\n✅ Phase 4 Complete: Comprehensive logging and self-awareness operational"
+            "\n[OK] Phase 4 Complete: Comprehensive logging and self-awareness operational"
         )
 
     async def post_execution_analysis(self):
         """Post-execution analysis and continuous improvement"""
-        print("\n🔄 POST-EXECUTION ANALYSIS & CONTINUOUS IMPROVEMENT")
+        print("\n[LOOP] POST-EXECUTION ANALYSIS & CONTINUOUS IMPROVEMENT")
         print("=" * 65)
 
         # Evaluate script performance
@@ -528,17 +529,17 @@ class AetherScriptExecutor:
 
         success_rate = sum(success_criteria.values()) / len(success_criteria)
 
-        print("📊 Script Performance Evaluation:")
-        print(f"   • Success Rate: {success_rate:.2%}")
+        print("[STATS] Script Performance Evaluation:")
+        print(f"   * Success Rate: {success_rate:.2%}")
         print(
-            f"   • All Phases Completed: {performance_metrics['total_phases_completed']}/4"
+            f"   * All Phases Completed: {performance_metrics['total_phases_completed']}/4"
         )
-        print("   • Autonomous Intelligence: ✅ Operational")
+        print("   * Autonomous Intelligence: [OK] Operational")
 
-        print("\n✅ Success Criteria Validation:")
+        print("\n[OK] Success Criteria Validation:")
         for criterion, passed in success_criteria.items():
-            status = "✅ PASS" if passed else "❌ FAIL"
-            print(f"   • {criterion}: {status}")
+            status = "[OK] PASS" if passed else "[ERROR] FAIL"
+            print(f"   * {criterion}: {status}")
 
         # Schedule next curiosity cycle based on performance
         if success_rate >= 0.8:
@@ -548,7 +549,7 @@ class AetherScriptExecutor:
         else:
             next_cycle = "maintain_frequency"
 
-        print(f"\n🔄 Next Curiosity Cycle Scheduling: {next_cycle}")
+        print(f"\n[LOOP] Next Curiosity Cycle Scheduling: {next_cycle}")
 
         self.script_results["performance_metrics"] = performance_metrics
         self.script_results["success_criteria"] = success_criteria
@@ -583,28 +584,28 @@ class AetherScriptExecutor:
         with open(report_file, "w") as f:
             json.dump(report_data, f, indent=2)
 
-        print("🎯 **AETHER SCRIPT EXECUTION SUMMARY**")
-        print(f"• Script: {self.script_results['script_name']}")
-        print(f"• Execution ID: {self.script_results['execution_id']}")
-        print(f"• Total Time: {execution_time:.1f} seconds")
-        print(f"• Success Rate: {self.script_results.get('success_rate', 0.0):.2%}")
-        print(f"• Phases Completed: {len(self.script_results['phases_completed'])}/4")
+        print("[TARGET] **AETHER SCRIPT EXECUTION SUMMARY**")
+        print(f"* Script: {self.script_results['script_name']}")
+        print(f"* Execution ID: {self.script_results['execution_id']}")
+        print(f"* Total Time: {execution_time:.1f} seconds")
+        print(f"* Success Rate: {self.script_results.get('success_rate', 0.0):.2%}")
+        print(f"* Phases Completed: {len(self.script_results['phases_completed'])}/4")
 
-        print("\n🧠 **ENHANCED AUTONOMOUS INTELLIGENCE VALIDATION**")
-        print("• ✅ Curiosity-driven gap detection and exploration")
-        print("• ✅ Multi-type conflict detection and resolution")
-        print("• ✅ Self-directed learning goal creation and tracking")
-        print("• ✅ Meta-learning effectiveness analysis and optimization")
-        print("• ✅ Adaptive threshold management and strategy recommendations")
-        print("• ✅ Comprehensive session logging with self-awareness")
+        print("\n[BRAIN] **ENHANCED AUTONOMOUS INTELLIGENCE VALIDATION**")
+        print("* [OK] Curiosity-driven gap detection and exploration")
+        print("* [OK] Multi-type conflict detection and resolution")
+        print("* [OK] Self-directed learning goal creation and tracking")
+        print("* [OK] Meta-learning effectiveness analysis and optimization")
+        print("* [OK] Adaptive threshold management and strategy recommendations")
+        print("* [OK] Comprehensive session logging with self-awareness")
 
-        print(f"\n💾 Detailed report saved to: {report_file}")
-        print("\n🎉 **AETHER SCRIPT: FULLY OPERATIONAL WITH ENHANCED INTELLIGENCE!**")
+        print(f"\n[MEM] Detailed report saved to: {report_file}")
+        print("\n[SUCCESS] **AETHER SCRIPT: FULLY OPERATIONAL WITH ENHANCED INTELLIGENCE!**")
 
 
 async def main():
     """Execute the Aether script demonstration"""
-    print("🧠 AETHER SCRIPT EXECUTOR: Curiosity + Conflict Resolution")
+    print("[BRAIN] AETHER SCRIPT EXECUTOR: Curiosity + Conflict Resolution")
     print("=" * 70)
     print("Demonstrating enhanced Phase 3 autonomous intelligence capabilities")
     print("in a comprehensive .aether script execution environment")
@@ -617,14 +618,14 @@ async def main():
 
         print("\n" + "=" * 70)
         print("🏁 AETHER SCRIPT EXECUTION COMPLETED SUCCESSFULLY!")
-        print("✅ All Phase 3 enhanced autonomous intelligence functions operational")
-        print("✅ Curiosity-driven exploration and conflict resolution cycle complete")
-        print("✅ Meta-learning tracker with strategy optimization functional")
-        print("✅ Self-directed learning and adaptive optimization validated")
+        print("[OK] All Phase 3 enhanced autonomous intelligence functions operational")
+        print("[OK] Curiosity-driven exploration and conflict resolution cycle complete")
+        print("[OK] Meta-learning tracker with strategy optimization functional")
+        print("[OK] Self-directed learning and adaptive optimization validated")
         print("=" * 70)
 
     except Exception as e:
-        print(f"\n❌ Aether script execution encountered an error: {e}")
+        print(f"\n[ERROR] Aether script execution encountered an error: {e}")
         print("[TOOL] This indicates integration issues that need to be resolved")
         raise
 
