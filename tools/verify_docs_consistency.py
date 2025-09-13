@@ -12,8 +12,11 @@ Outputs a short report to stdout and a markdown file docs/DOCS_CONSISTENCY_REPOR
 
 from __future__ import annotations
 
+import argparse
 import json
+import os
 import re
+import time
 from pathlib import Path
 from typing import List, Set
 
@@ -108,12 +111,31 @@ def _extract_section(text: str, heading: str) -> str:
 
 
 def read_doc_section_envs(doc: Path) -> Set[str]:
+    """Extract documented environment variable names from the overview doc.
+
+    Enhancements (Sept 2025):
+    - Recognize vars inside markdown tables (| col | col |) even if not prefixed by dash.
+    - Capture backticked references `AETHERRA_X` anywhere.
+    - Be resilient to trailing punctuation, parentheses, or descriptive text.
+    """
     if not doc.exists():
         return set()
     text = doc.read_text(encoding="utf-8", errors="ignore")
-    # Collect from the entire document to avoid omissions when an Index exists
-    # This allows docs to mention envs in multiple sections naturally.
+
+    # Base pattern scan
     envs_all = set(ENV_PATTERN.findall(text))
+
+    # Additional: parse table cells explicitly to ensure no inline formatting breaks detection
+    table_envs: Set[str] = set()
+    for line in text.splitlines():
+        if "|" in line:
+            # Split columns, scan each token
+            for token in [c.strip() for c in line.split("|")]:
+                for m in ENV_PATTERN.finditer(token):
+                    table_envs.add(m.group(0))
+
+    envs_all |= table_envs
+
     return set(sorted(envs_all))
 
 
@@ -176,10 +198,58 @@ def read_doc_endpoints(doc: Path) -> Set[str]:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Verify docs consistency")
+    parser.add_argument(
+        "--debug", action="store_true", help="Enable verbose debug output"
+    )
+    args = parser.parse_args()
+
+    debug = args.debug or os.environ.get("AETHERRA_DOCS_DEBUG") == "1"
     code_envs = find_env_vars_in_code()
     code_routes = find_routes_in_code()
     doc_envs = read_doc_section_envs(DOC_OVERVIEW)
     doc_routes = read_doc_endpoints(DOC_OVERVIEW)
+
+    if debug:
+        print("[debug] code_envs count:", len(code_envs))
+        print("[debug] first 15 code_envs:", sorted(list(code_envs))[:15])
+        print("[debug] doc_envs count:", len(doc_envs))
+        print("[debug] first 15 doc_envs:", sorted(list(doc_envs))[:15])
+        print("[debug] code_routes count:", len(code_routes))
+        print("[debug] doc_routes count:", len(doc_routes))
+
+    # Consciousness metrics consistency (best-effort): ensure key metrics added to METRICS_REFERENCE
+    metrics_doc = ROOT / "docs" / "METRICS_REFERENCE.md"
+    consciousness_required = {
+        "aetherra_consciousness_identity_coherence",
+        "aetherra_consciousness_narrative_coherence",
+        "aetherra_consciousness_workspace_queue_size",
+        "aetherra_consciousness_narrative_chapters_total",
+    }
+    consciousness_hist_bases = {
+        "aetherra_consciousness_workspace_latency_seconds",
+        "aetherra_consciousness_narrative_generation_seconds",
+    }
+    missing_consciousness_metrics = set()
+    if metrics_doc.exists():
+        try:
+            text = metrics_doc.read_text(encoding="utf-8", errors="ignore")
+            for m in consciousness_required:
+                if m not in text:
+                    missing_consciousness_metrics.add(m)
+            for base in consciousness_hist_bases:
+                # Check any bucket line to confirm presence
+                if base not in text:
+                    missing_consciousness_metrics.add(base + "_bucket")
+        except Exception:
+            # If read fails, mark all as missing
+            missing_consciousness_metrics |= consciousness_required | {
+                b + "_bucket" for b in consciousness_hist_bases
+            }
+    else:
+        missing_consciousness_metrics = consciousness_required | {
+            b + "_bucket" for b in consciousness_hist_bases
+        }
 
     # Optional config to fine-tune reporting, without changing pass/fail semantics
     cfg_ignore_extra_envs: Set[str] = set()
@@ -197,10 +267,55 @@ def main() -> int:
 
     missing_envs = sorted(code_envs - doc_envs)
     raw_extra_envs = doc_envs - code_envs
+
+    if debug:
+        print("[debug] missing_envs count:", len(missing_envs))
+        print("[debug] extra_envs (raw) count:", len(raw_extra_envs))
+        if missing_envs:
+            print("[debug] sample missing_envs:", missing_envs[:10])
+        if raw_extra_envs:
+            print("[debug] sample raw_extra_envs:", sorted(list(raw_extra_envs))[:10])
     # Suppress configured doc-only envs from the extra list for a cleaner report
     extra_envs = sorted([v for v in raw_extra_envs if v not in cfg_ignore_extra_envs])
     missing_routes = sorted(code_routes - doc_routes)
     extra_routes = sorted([r for r in doc_routes if r not in code_routes])
+
+    debug_json_path = ROOT / "docs" / "DOCS_CONSISTENCY_DEBUG.json"
+    if debug:
+        print("[debug] missing_routes count:", len(missing_routes))
+        print("[debug] extra_routes count:", len(extra_routes))
+        if missing_routes:
+            print("[debug] sample missing_routes:", missing_routes[:10])
+        if extra_routes:
+            print("[debug] sample extra_routes:", extra_routes[:10])
+        # Persist structured debug info for CI artifact / further analysis
+        try:
+            debug_payload = {
+                "timestamp": time.time(),
+                "code_envs_count": len(code_envs),
+                "doc_envs_count": len(doc_envs),
+                "missing_envs": missing_envs,
+                "raw_extra_envs": sorted(list(raw_extra_envs)),
+                "suppressed_doc_only_envs": sorted(
+                    list(cfg_ignore_extra_envs & raw_extra_envs)
+                ),
+                "extra_envs_reported": extra_envs,
+                "code_routes_count": len(code_routes),
+                "doc_routes_count": len(doc_routes),
+                "missing_routes": missing_routes,
+                "extra_routes": extra_routes,
+                "missing_consciousness_metrics": sorted(
+                    list(missing_consciousness_metrics)
+                ),
+                "report_path": str(REPORT),
+                "config_ignore_count": len(cfg_ignore_extra_envs),
+            }
+            debug_json_path.write_text(
+                json.dumps(debug_payload, indent=2), encoding="utf-8"
+            )
+            print(f"[debug] wrote structured debug JSON: {debug_json_path}")
+        except Exception as e:
+            print(f"[debug] failed to write debug JSON ({debug_json_path}): {e}")
 
     lines: List[str] = []
     lines.append("# Docs Consistency Report\n")
@@ -236,11 +351,25 @@ def main() -> int:
         lines.append(f"- {r}")
     lines.append("")
 
+    # Consciousness metrics section
+    lines.append("## Consciousness Metrics Documentation")
+    lines.append("")
+    if missing_consciousness_metrics:
+        lines.append(
+            f"Missing consciousness metrics in METRICS_REFERENCE.md ({len(missing_consciousness_metrics)}):"
+        )
+        for m in sorted(missing_consciousness_metrics):
+            lines.append(f"- {m}")
+    else:
+        lines.append("All required consciousness metrics documented.")
+    lines.append("")
+
     REPORT.write_text("\n".join(lines), encoding="utf-8")
     print("\n".join(lines))
 
     # Non-zero exit only if there are critical gaps (envs or routes missing)
-    if missing_envs or missing_routes:
+    # Fail if critical gaps OR missing consciousness metrics
+    if missing_envs or missing_routes or missing_consciousness_metrics:
         return 1
     return 0
 

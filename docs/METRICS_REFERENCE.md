@@ -76,6 +76,79 @@
 | aetherra_trainer_evals_total{state} | counter | Evaluation jobs by state                   | queued/running/completed/failed |
 | aetherra_trainer_eval_last_score    | gauge   | Last evaluation score                      | 0 if none                       |
 
+## Consciousness / Identity (New)
+
+See `CONSCIOUSNESS_UNIFIED_IDENTITY.md` for conceptual context.
+
+| Metric                                                         | Type        | Description                                                              | Notes / Alert Hints                                    |
+| -------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------ | ------------------------------------------------------ |
+| aetherra_consciousness_narrative_coherence                     | gauge       | Heuristic topical + coverage + gap composite (0–1)                       | Low (<0.4) may signal fragmented event flow            |
+| aetherra_consciousness_identity_coherence                      | gauge       | First-person usage ratio in recent narrative/thought/action events (0–1) | Sustained <0.7 => perspective drift investigation      |
+| aetherra_consciousness_workspace_queue_size                    | gauge       | Current workspace candidate queue size                                   | Sudden spikes + latency hist increase => backpressure  |
+| aetherra_consciousness_narrative_chapters_total                | gauge(cntr) | Total narrative chapters generated (monotonic)                           | Growth halt while events continue => stalled generator |
+| aetherra_consciousness_workspace_candidates_total{source}      | counter     | Workspace candidates added by source                                     | Unexpected source surge => noisy producer              |
+| aetherra_consciousness_workspace_broadcasts_total{source}      | counter     | Broadcasts delivered by source                                           | Candidates >> broadcasts => latency/backpressure       |
+| aetherra_consciousness_workspace_latency_seconds_bucket{le}    | histogram   | Time from candidate add → broadcast (s)                                  | 95th >0.5s sustained => investigate queue contention   |
+| aetherra_consciousness_narrative_generation_seconds_bucket{le} | histogram   | Narrative chapter generation duration (s)                                | 95th >0.25s sustained => summarization inefficiency    |
+
+Example alert sketches:
+
+| Condition                     | Rule Sketch                                                                                                                                          |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity coherence drift      | `avg_over_time(aetherra_consciousness_identity_coherence[10m]) < 0.7`                                                                                |
+| Narrative stalled             | `increase(aetherra_consciousness_narrative_chapters_total[15m]) == 0 and sum(increase(aetherra_consciousness_workspace_candidates_total[15m])) > 10` |
+| Workspace latency spike       | `histogram_quantile(0.95, sum by (le) (rate(aetherra_consciousness_workspace_latency_seconds_bucket[5m]))) > 0.5`                                    |
+| Narrative generation slowdown | `histogram_quantile(0.95, sum by (le) (rate(aetherra_consciousness_narrative_generation_seconds_bucket[5m]))) > 0.25`                                |
+
+### Example Scrape Excerpt
+
+```text
+# HELP aetherra_consciousness_identity_coherence First-person usage ratio in recent narrative/thought/action events (0-1)
+# TYPE aetherra_consciousness_identity_coherence gauge
+aetherra_consciousness_identity_coherence 0.91
+# HELP aetherra_consciousness_narrative_coherence Latest narrative coherence index (0-1)
+# TYPE aetherra_consciousness_narrative_coherence gauge
+aetherra_consciousness_narrative_coherence 0.74
+# HELP aetherra_consciousness_workspace_queue_size Current workspace candidate queue size
+# TYPE aetherra_consciousness_workspace_queue_size gauge
+aetherra_consciousness_workspace_queue_size 3
+# TYPE aetherra_consciousness_workspace_latency_seconds histogram
+aetherra_consciousness_workspace_latency_seconds_bucket{le="0.001"} 2
+aetherra_consciousness_workspace_latency_seconds_bucket{le="0.005"} 4
+aetherra_consciousness_workspace_latency_seconds_bucket{le="0.01"} 5
+aetherra_consciousness_workspace_latency_seconds_bucket{le="0.02"} 5
+aetherra_consciousness_workspace_latency_seconds_bucket{le="0.05"} 6
+aetherra_consciousness_workspace_latency_seconds_bucket{le="0.1"} 6
+aetherra_consciousness_workspace_latency_seconds_bucket{le="0.25"} 6
+aetherra_consciousness_workspace_latency_seconds_bucket{le="0.5"} 6
+aetherra_consciousness_workspace_latency_seconds_bucket{le="1"} 6
+aetherra_consciousness_workspace_latency_seconds_bucket{le="2"} 6
+aetherra_consciousness_workspace_latency_seconds_bucket{le="5"} 6
+aetherra_consciousness_workspace_latency_seconds_bucket{le="+Inf"} 6
+aetherra_consciousness_workspace_latency_seconds_count 6
+aetherra_consciousness_workspace_latency_seconds_sum 0.013
+# TYPE aetherra_consciousness_narrative_generation_seconds histogram
+aetherra_consciousness_narrative_generation_seconds_bucket{le="0.005"} 1
+aetherra_consciousness_narrative_generation_seconds_bucket{le="0.01"} 2
+aetherra_consciousness_narrative_generation_seconds_bucket{le="0.02"} 3
+aetherra_consciousness_narrative_generation_seconds_bucket{le="0.05"} 3
+aetherra_consciousness_narrative_generation_seconds_bucket{le="0.1"} 3
+aetherra_consciousness_narrative_generation_seconds_bucket{le="0.25"} 3
+aetherra_consciousness_narrative_generation_seconds_bucket{le="0.5"} 3
+aetherra_consciousness_narrative_generation_seconds_bucket{le="1"} 3
+aetherra_consciousness_narrative_generation_seconds_bucket{le="2"} 3
+aetherra_consciousness_narrative_generation_seconds_bucket{le="+Inf"} 3
+aetherra_consciousness_narrative_generation_seconds_count 3
+aetherra_consciousness_narrative_generation_seconds_sum 0.017
+# TYPE aetherra_consciousness_narrative_chapters_total gauge
+aetherra_consciousness_narrative_chapters_total 3
+# TYPE aetherra_consciousness_workspace_candidates_total counter
+aetherra_consciousness_workspace_candidates_total{source="narrative_layer"} 9
+# TYPE aetherra_consciousness_workspace_broadcasts_total counter
+aetherra_consciousness_workspace_broadcasts_total{source="narrative_layer"} 9
+```
+
+
 ## Security / Keys / Overrides
 
 | Metric                                  | Type  | Description                                   | Key Env / Notes                                             |

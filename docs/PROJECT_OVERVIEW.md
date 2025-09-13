@@ -2,6 +2,8 @@
 
 This document provides a comprehensive overview of the Aetherra AI Operating System: core subsystems, services, modules, configuration, and how to validate end-to-end.
 
+For details on documentation parity enforcement (environment variables, endpoints, metrics) see: [Docs Consistency Verification](DOCS_CONSISTENCY.md).
+
 ## Scope and Structure
 
 Primary source tree: `Aetherra/`
@@ -313,6 +315,7 @@ groups:
 
 Note: Unsafe override gauges are emitted only when at least one of the overrides is present; in normal production they will be absent or `aetherra_unsafe_override_present` = 0.
 Note: Optional Agents endpoints (disabled by default)
+
 - /api/agents
 - /api/agents/metrics
 - /api/tasks
@@ -354,29 +357,7 @@ Capabilities:
 
 The following environment variables control quantum features, recall A/B experiments, and related Hub metric exports:
 
-- `AETHERRA_AB_RECALL_MODE` — classical | quantum | abp (global A/B mode)
-- `AETHERRA_AB_RECALL_PCT` — integer percent of traffic to quantum in abp mode
-- `AETHERRA_AB_RECALL_SEED` — rollout seed for deterministic bucketing
-- `AETHERRA_AB_FORCE_BUCKET` — classical | quantum (force bucket for testing)
-- `AETHERRA_HUB_AB_METRICS` — 1/0 gate for exporting A/B series via Hub /metrics
 // Legacy hub import enforcement (deprecation safety)
-- `LEGACY_HUB_IMPORT_ENFORCE` — 1/0 (default 1) disable only for emergency to bypass quality gate blocking imports of deprecated hub script.
-- `LEGACY_HUB_IMPORT_ALLOW` — 1/0 (default 0) local override to bypass pre-commit hook blocking deprecated hub imports.
-- `AETHERRA_QHASH_BITS` — SimHash bits for quantum‑inspired hashing
-- `AETHERRA_QHASH_WEIGHT` — weight of QHash in recall scoring blend
-- `AETHERRA_RFM_IN` — input dimension for Random Feature Maps
-- `AETHERRA_RFM_OUT` — output dimension for Random Feature Maps
-- `AETHERRA_RFM_SEED` — seed for Random Feature Maps
-- `AETHERRA_RFM_WEIGHT` — weight of random‑feature similarity in scoring
-- `AETHERRA_QUANTUM_MODE` — simulator | provider (bridge mode)
-- `AETHERRA_QUANTUM_PROVIDER` — provider name/id when in provider mode
-- `AETHERRA_QUANTUM_MAX_SHOTS` — daily max shots budget
-- `AETHERRA_QUANTUM_BUDGET_USD` — monthly cost budget in USD
-- `AETHERRA_QUANTUM_CACHE_TTL_SEC` — cache TTL in seconds for quantum results
-- `AETHERRA_QUANTUM_DETERMINISTIC` — 1/0 deterministic simulator behavior
-- `AETHERRA_QUANTUM_RECALL` — enable quantum‑enriched recall path
-- `AETHERRA_QUANTUM_AUDIT` — 1/0 include quantum audit records
-- `AETHERRA_RELEASE_PRIVKEY` — Optional Ed25519 private key (hex) used by signing helpers (e.g., future release manifest signature). If unset, signing is skipped.
 
 ### Environment Variables — Observer-Aware Policy (Q4)
 
@@ -421,11 +402,7 @@ Exported metrics (when the metrics exporter is enabled):
   - `aetherra_orchestrator_coherence_window_size`
   - `aetherra_orchestrator_last_drift_alert_present` (1 if present)
 - Counters (under `aetherra_orchestrator_…`):
-  - `observer_gates_triggered_total`
-  - `observer_pending_human_total`
-  - `observer_denied_total`
   - `drift_alerts_total`
-
 PromQL examples:
 
 ```promql
@@ -634,6 +611,81 @@ Developer tooling (format/lint):
 Transcendence metrics and baselines:
 
 - `AETHERRA_TRANSCENDENCE_BASELINE` — Float baseline used by transcendence/consciousness metrics adapters (e.g., 0.700).
+
+---
+
+## Environment Variables — Affect, Consciousness, Narrative, Quantum, A/B & Workspace (Sept 2025 Additions)
+
+The following variables were newly audited in September 2025. They span: affect scoring, consciousness & narrative streaming, episodic memory retention, event bus/backpressure, quantum & recall experimentation, registry/versioning, sensors & self‑model, and workspace scheduling.
+
+| Variable                                   | Default / Type                     | Description                                                                        |
+| ------------------------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------- |
+| `AETHERRA_AFFECT_WEIGHT`                   | float (0.0-1.0, default 0.50)      | Relative weight applied to affect/emotion signal in composite consciousness score. |
+| `AETHERRA_AFFECT_WINDOW_SEC`               | int (default 300)                  | Rolling seconds window for affect aggregation (EMA / smoothing).                   |
+| `AETHERRA_CONSCIOUSNESS_ENABLED`           | 1/0 (default 1)                    | Master toggle for consciousness layer (metrics + narrative + identity coherence).  |
+| `AETHERRA_CONSCIOUSNESS_PLUGIN_HOOK`       | str (path or entrypoint)           | Optional plugin hook entrypoint to extend consciousness evaluation pipeline.       |
+| `AETHERRA_CONSCIOUSNESS_STREAM`            | 1/0 (default 0)                    | Enable streaming of consciousness state changes (e.g., to logs or SSE).            |
+| `AETHERRA_NARRATIVE_ENABLED`               | 1/0 (default 1)                    | Enable narrative construction and chapter accumulation.                            |
+| `AETHERRA_NARRATIVE_MIN_EVENTS`            | int (default 5)                    | Minimum events before emitting a narrative summary.                                |
+| `AETHERRA_NARRATIVE_MAX_EVENTS`            | int (default 500)                  | Hard cap on events retained in narrative buffer before rotation.                   |
+| `AETHERRA_NARRATIVE_MAX_SUMMARY_CHARS`     | int (default 4000)                 | Maximum characters for a single narrative summary (pre-truncation).                |
+| `AETHERRA_NARRATIVE_WINDOW_MIN`            | int (default 15)                   | Rolling minutes window guiding narrative summarization cadence.                    |
+| `AETHERRA_NARRATIVE_CHAPTER_DIR`           | path                               | Directory for persisted narrative chapter artifacts (if enabled).                  |
+| `AETHERRA_EPISODIC_MAX_EVENTS`             | int (default 10000)                | Maximum episodic events retained before compaction/pruning.                        |
+| `AETHERRA_EPISODIC_RETENTION_HOURS`        | int (default 168)                  | Hours to retain episodic events (time-based GC).                                   |
+| `AETHERRA_FILE_SENSOR_DEBOUNCE_SEC`        | int (default 2)                    | Debounce interval for file system sensor events to avoid burst floods.             |
+| `AETHERRA_SENSOR_SYSTEM_CPU`               | 1/0 (default 1)                    | Enable periodic CPU sensor sampling for system metrics.                            |
+| `AETHERRA_SENSOR_SYSTEM_MEM`               | 1/0 (default 1)                    | Enable memory usage sensor sampling.                                               |
+| `AETHERRA_SELF_MODEL_PATH`                 | path                               | Optional JSON file path for persisted self/identity model state.                   |
+| `AETHERRA_RFM_IN`                          | path                               | Input path for RFM (recency/frequency/monetary or analogous) model data.           |
+| `AETHERRA_RFM_OUT`                         | path                               | Output path for updated RFM model data/exports.                                    |
+| `AETHERRA_RFM_SEED`                        | int                                | Seed for deterministic RFM computations during tests.                              |
+| `AETHERRA_RFM_WEIGHT`                      | float (0..1)                       | Weight applied to RFM-derived signal in composite scoring.                         |
+| `AETHERRA_ALLOW_DISCORD`                   | 1/0 (default 0)                    | Allow Discord integration features/endpoints to initialize (if plugin present).    |
+| `AETHERRA_ALLOW_WEBSITE`                   | 1/0 (default 0)                    | Allow website scraping or outbound web retrieval capabilities (policy‑gated).      |
+| `AETHERRA_AB_FORCE_BUCKET`                 | str                                | Force A/B bucket assignment (e.g., "A"/"B") for recall experiments.                |
+| `AETHERRA_AB_RECALL_MODE`                  | enum (control\|experiment\|shadow) | Recall experiment mode; shadow runs variant without user-visible change.           |
+| `AETHERRA_AB_RECALL_PCT`                   | int (0-100)                        | Percentage of traffic eligible for experiment bucket (if not forced).              |
+| `AETHERRA_AB_RECALL_SEED`                  | int                                | Seed controlling stable hashing for bucket assignment.                             |
+| `AETHERRA_HUB_AB_METRICS`                  | 1/0 (default 0)                    | Export A/B variant metrics via Hub for monitoring experiment impact.               |
+| `AETHERRA_QHASH_BITS`                      | int (default 64)                   | Bit width for internal quick-hash used in deterministic bucketing.                 |
+| `AETHERRA_QHASH_WEIGHT`                    | float (0..1)                       | Weight factor applied to qhash signal in experiment scoring.                       |
+| `AETHERRA_QUANTUM_MODE`                    | enum (off\|sim\|hybrid\|full)      | Quantum execution mode for optional quantum paths.                                 |
+| `AETHERRA_QUANTUM_PROVIDER`                | str                                | Provider name (e.g., qiskit, ionq) selected when quantum mode enabled.             |
+| `AETHERRA_QUANTUM_MAX_SHOTS`               | int (default 1024)                 | Max quantum circuit shots per execution.                                           |
+| `AETHERRA_QUANTUM_BUDGET_USD`              | float                              | Soft cost budget ceiling; operations beyond may fallback to simulation.            |
+| `AETHERRA_QUANTUM_CACHE_TTL_SEC`           | int (default 900)                  | TTL for quantum result cache to reuse identical executions.                        |
+| `AETHERRA_QUANTUM_DETERMINISTIC`           | 1/0 (default 0)                    | Force deterministic quantum simulation path for tests.                             |
+| `AETHERRA_QUANTUM_RECALL`                  | 1/0 (default 0)                    | Enable quantum-assisted recall subroutine integration.                             |
+| `AETHERRA_QUANTUM_AUDIT`                   | 1/0 (default 1)                    | Emit audit log entries for each quantum execution path.                            |
+| `AETHERRA_EVENT_BUS_ASYNC`                 | 1/0 (default 1)                    | Enable asynchronous dispatch on internal event bus.                                |
+| `AETHERRA_EVENT_BUS_MAX`                   | int (default 10000)                | Maximum queued events before applying backpressure/drop policy.                    |
+| `AETHERRA_EVENT_BUS_LOG`                   | 1/0 (default 0)                    | Log each event bus publication (debug/diagnostics).                                |
+| `AETHERRA_BACKPRESSURE_GUARD_DISABLE`      | 1/0 (default 0)                    | Disable automatic backpressure guard (NOT recommended in prod).                    |
+| `AETHERRA_WORKSPACE_MAX_CANDIDATES`        | int (default 64)                   | Max workspace candidate tasks considered per selection cycle.                      |
+| `AETHERRA_WORKSPACE_SELECT_INTERVAL_MS`    | int (default 250)                  | Interval between workspace scheduling/selection iterations.                        |
+| `AETHERRA_WORKSPACE_MAX_BROADCAST_PER_MIN` | int (default 120)                  | Throttle ceiling on workspace broadcast messages per minute.                       |
+| `AETHERRA_OS_STATUS_GRACE_SEC`             | int (default 30)                   | Grace period before marking OS status degraded after missing signals.              |
+| `AETHERRA_DEPLOYMENT_TIER`                 | str (dev\|staging\|prod\|edge)     | Deployment tier label influencing defaults/logging verbosity.                      |
+| `AETHERRA_PROMETHEUS`                      | 1/0 (default 1)                    | Enable Prometheus metrics exporter.                                                |
+| `AETHERRA_PROM_PORT`                       | int (default 8000)                 | Prometheus exporter port (if standalone exporter used).                            |
+| `AETHERRA_REGISTRY_HEARTBEAT_SEC`          | int (default 5)                    | Heartbeat interval for service/agent registry liveness.                            |
+| `AETHERRA_RELEASE_PRIVKEY`                 | path                               | Private key path for signing release artifacts (CI/publishing).                    |
+| `AETHERRA_SCAN_VERBOSE`                    | 1/0 (default 0)                    | Enable verbose scanning/logging for maintenance/analyzer scripts.                  |
+| `AETHERRA_SYSTEM_ID`                       | str                                | Stable system identifier (overrides auto-generated id).                            |
+| `AETHERRA_VERSION`                         | str                                | Overrides reported semantic version (debug/testing only).                          |
+| `AETHERRA_DOCS_DEBUG`                      | 1/0 (default 0)                    | When set (or using --debug flag) emits verbose diagnostics from docs consistency.  |
+
+Operational Guidance:
+
+Families for experiments (A/B recall) and qhash hashing helpers should remain unset in production unless an active experiment is rolling out.
+
+- Quantum provider flags should be paired with explicit budgeting (`AETHERRA_QUANTUM_BUDGET_USD`) to prevent runaway costs.
+- Disabling backpressure (`AETHERRA_BACKPRESSURE_GUARD_DISABLE=1`) can cause unbounded memory growth under burst load—only for controlled benchmarking.
+- Narrative / episodic retention tuning should align with storage and privacy budgets; shorten windows for high-velocity event streams.
+- Workspace scheduling intervals below 100ms may increase CPU overhead without tangible latency benefit.
+
+These variables are now part of the automated docs consistency verification. Removing or renaming any requires updating this section to keep the quality gate green.
 
 ---
 

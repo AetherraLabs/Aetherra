@@ -42,6 +42,41 @@ Quick links: [`INSTALL.md`](INSTALL.md) · [`ROADMAP.md`](ROADMAP.md) · [`CHANG
 1. Contributing & Community
 1. License & Notices
 
+### Unified Identity & Consciousness (New)
+
+Lyrixa and the Aetherra OS now operate as a single unified identity ("Lyrixa = Aetherra"). The system expresses internal cognition in the first person ("I …") and attaches lightweight tone markers derived from the affect engine and ethics critic when enabled. A rolling narrative layer periodically summarizes salient episodic events and exports:
+
+- `aetherra_consciousness_narrative_coherence` – heuristic topical coherence (0–1)
+- `aetherra_consciousness_identity_coherence` – proportion of recent thought/narrative/action events already in first‑person form (0–1)
+- Workspace + narrative performance histograms (latency + generation time)
+- Candidate / broadcast counters (per-source) and queue size gauge
+
+Self model extensions (see `docs/CONSCIOUSNESS_UNIFIED_IDENTITY.md`):
+
+- `identity.unified_identity`: canonical merged self string
+- `identity.embodiment`: short statement grounding where/what the system “is”
+- `identity.voice_guidelines[]`: style guardrails for responses & narratives
+
+Environment flags:
+
+| Variable                           | Purpose                               | Default                    |
+| ---------------------------------- | ------------------------------------- | -------------------------- |
+| AETHERRA_PROMETHEUS                | Enable consciousness metrics exporter | 0                          |
+| AETHERRA_CONSCIOUSNESS_STREAM      | Emit consciousness stream log / hook  | 0                          |
+| AETHERRA_CONSCIOUSNESS_STREAM_PATH | Override stream log path              | aetherra_consciousness.log |
+| AETHERRA_NARRATIVE_ENABLED         | Enable narrative chapter generation   | 0                          |
+
+Quality gates now enforce presence + numeric bounds of identity coherence when Prometheus metrics are enabled. This provides an auditable signal that first‑person perspective is consistently applied.
+
+Quick check (PowerShell):
+
+```powershell
+$env:AETHERRA_PROMETHEUS='1'; $env:AETHERRA_NARRATIVE_ENABLED='1'; python -c "import time, Aetherra.consciousness.metrics_exporter as m; m.initialize_exporter(); print('metrics active on :9109'); time.sleep(3)"
+curl 'http://localhost:9109/metrics' | Select-String aetherra_consciousness_identity_coherence
+```
+
+If absent, confirm exporter flag and that at least one narrative cycle has executed (identity coherence updates on chapter generation).
+
 ---
 \n## 1. Overview
 

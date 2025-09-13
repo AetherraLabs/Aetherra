@@ -1,0 +1,45 @@
+{
+  "timestamp": "2025-09-13T04:10:30.155522Z",
+  "total": 5,
+  "by_code": {
+    "GENERIC_FAILURE": 5
+  },
+  "failure_rate": 1.0,
+  "files": [
+    {
+      "path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\aetherra_core\\system\\agent_diagnostics.aether",
+      "ok": false,
+      "code": 1,
+      "code_name": "GENERIC_FAILURE",
+      "message": "Traceback (most recent call last):\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 1404, in <module>\n    asyncio.run(main())\n    ~~~~~~~~~~~^^^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\runners.py\", line 195, in run\n    return runner.run(main)\n           ~~~~~~~~~~^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\runners.py\", line 118, in run\n    return self._loop.run_until_complete(task)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\base_events.py\", line 725, in run_until_complete\n    return future.result()\n           ~~~~~~~~~~~~~^^\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 1166, in main\n    await aether.initialize()\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 368, in initialize\n    print(\"\\U0001f50d Initializing connection to Aetherra OS...\")\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\encodings\\cp1252.py\", line 19, in encode\n    return codecs.charmap_encode(input,self.errors,encoding_table)[0]\n           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nUnicodeEncodeError: 'charmap' codec can't encode character '\\U0001f50d' in position 0: character maps to <undefined>"
+    },
+    {
+      "path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\aetherra_core\\system\\agent_sync.aether",
+      "ok": false,
+      "code": 1,
+      "code_name": "GENERIC_FAILURE",
+      "message": "Traceback (most recent call last):\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 1404, in <module>\n    asyncio.run(main())\n    ~~~~~~~~~~~^^^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\runners.py\", line 195, in run\n    return runner.run(main)\n           ~~~~~~~~~~^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\runners.py\", line 118, in run\n    return self._loop.run_until_complete(task)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\base_events.py\", line 725, in run_until_complete\n    return future.result()\n           ~~~~~~~~~~~~~^^\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 1166, in main\n    await aether.initialize()\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 368, in initialize\n    print(\"\\U0001f50d Initializing connection to Aetherra OS...\")\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\encodings\\cp1252.py\", line 19, in encode\n    return codecs.charmap_encode(input,self.errors,encoding_table)[0]\n           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nUnicodeEncodeError: 'charmap' codec can't encode character '\\U0001f50d' in position 0: character maps to <undefined>"
+    },
+    {
+      "path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\aetherra_core\\system\\agents.aether",
+      "ok": false,
+      "code": 1,
+      "code_name": "GENERIC_FAILURE",
+      "message": "Traceback (most recent call last):\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 1404, in <module>\n    asyncio.run(main())\n    ~~~~~~~~~~~^^^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\runners.py\", line 195, in run\n    return runner.run(main)\n           ~~~~~~~~~~^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\runners.py\", line 118, in run\n    return self._loop.run_until_complete(task)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\base_events.py\", line 725, in run_until_complete\n    return future.result()\n           ~~~~~~~~~~~~~^^\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 1166, in main\n    await aether.initialize()\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 368, in initialize\n    print(\"\\U0001f50d Initializing connection to Aetherra OS...\")\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\encodings\\cp1252.py\", line 19, in encode\n    return codecs.charmap_encode(input,self.errors,encoding_table)[0]\n           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nUnicodeEncodeError: 'charmap' codec can't encode character '\\U0001f50d' in position 0: character maps to <undefined>"
+    },
+    {
+      "path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\aetherra_core\\system\\bootstrap.aether",
+      "ok": false,
+      "code": 1,
+      "code_name": "GENERIC_FAILURE",
+      "message": "Traceback (most recent call last):\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 1404, in <module>\n    asyncio.run(main())\n    ~~~~~~~~~~~^^^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\runners.py\", line 195, in run\n    return runner.run(main)\n           ~~~~~~~~~~^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\runners.py\", line 118, in run\n    return self._loop.run_until_complete(task)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\base_events.py\", line 725, in run_until_complete\n    return future.result()\n           ~~~~~~~~~~~~~^^\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 1166, in main\n    await aether.initialize()\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 368, in initialize\n    print(\"\\U0001f50d Initializing connection to Aetherra OS...\")\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\encodings\\cp1252.py\", line 19, in encode\n    return codecs.charmap_encode(input,self.errors,encoding_table)[0]\n           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nUnicodeEncodeError: 'charmap' codec can't encode character '\\U0001f50d' in position 0: character maps to <undefined>"
+    },
+    {
+      "path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\aetherra_core\\system\\daily_maintenance.aether",
+      "ok": false,
+      "code": 1,
+      "code_name": "GENERIC_FAILURE",
+      "message": "Traceback (most recent call last):\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 1404, in <module>\n    asyncio.run(main())\n    ~~~~~~~~~~~^^^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\runners.py\", line 195, in run\n    return runner.run(main)\n           ~~~~~~~~~~^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\runners.py\", line 118, in run\n    return self._loop.run_until_complete(task)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\base_events.py\", line 725, in run_until_complete\n    return future.result()\n           ~~~~~~~~~~~~~^^\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 1166, in main\n    await aether.initialize()\n  File \"C:\\Users\\enigm\\Desktop\\Aetherra Project\\aether.py\", line 368, in initialize\n    print(\"\\U0001f50d Initializing connection to Aetherra OS...\")\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\enigm\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\encodings\\cp1252.py\", line 19, in encode\n    return codecs.charmap_encode(input,self.errors,encoding_table)[0]\n           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nUnicodeEncodeError: 'charmap' codec can't encode character '\\U0001f50d' in position 0: character maps to <undefined>"
+    }
+  ]
+}

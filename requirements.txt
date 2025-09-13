@@ -110,6 +110,7 @@ python-magic>=0.4.27
 fastapi>=0.100.0
 uvicorn>=0.23.0
 pydantic>=2.0.0
+prometheus-client>=0.20.0
 
 # ===== DEVELOPMENT TOOLS (Essential) =====
 ipython>=8.14.0

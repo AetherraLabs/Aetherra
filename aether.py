@@ -42,8 +42,32 @@ import json
 import os
 import sys
 import tempfile
-from datetime import datetime
+from datetime import UTC, datetime
+from enum import IntEnum
 from pathlib import Path
+
+
+class AetherErrorCode(IntEnum):
+    SUCCESS = 0
+    GENERIC_FAILURE = (
+        1  # backward compatible (not explicitly emitted unless legacy path)
+    )
+    PARSE_ERROR = 20
+    RUNTIME_ERROR = 21
+    SIGNATURE_ERROR = 22
+    TIMEOUT_ERROR = 23
+    UNSUPPORTED_FEATURE = 24
+    VALIDATION_ERROR = 25
+    IO_ERROR = 26
+    INTERNAL_ERROR = 27
+
+
+def _error_code_name(code: int) -> str:
+    try:
+        return AetherErrorCode(code).name
+    except Exception:  # pragma: no cover - defensive
+        return "UNKNOWN"
+
 
 # Add project root to Python path
 PROJECT_ROOT = Path(__file__).parent
@@ -580,7 +604,7 @@ class AetherCognitiveInterface:
             try:
                 # Check for persistent memory system methods
                 if hasattr(self.memory_system, "get_cognitive_state"):
-                    cognitive_state = await self.memory_system.get_cognitive_state()
+                    cognitive_state = await self.memory_system.get_cognitive_state()  # type: ignore[attr-defined]
 
                     print("📊 PERSISTENT MEMORY SYSTEM:")
                     print("  ✅ AethErra Persistent Memory System: ACTIVE")
@@ -600,7 +624,7 @@ class AetherCognitiveInterface:
 
                     # Check for memory count
                     if hasattr(self.memory_system, "memories"):
-                        memory_count = len(self.memory_system.memories)
+                        memory_count = len(self.memory_system.memories)  # type: ignore[attr-defined]
                         print("🧠 MEMORY MODULES LOADED:")
                         print(f"  📝 Memory Nodes: {memory_count}")
                         print("     Purpose: Individual memory storage units")
@@ -1119,6 +1143,21 @@ This tool tests whether Aetherra is functioning as a true AI-native OS.
 
     parser.add_argument("command", nargs="*", help="Command to execute")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Parse/validate .aether script then exit (no execution). Returns 0 if parse OK, 1 on errors.",
+    )
+    parser.add_argument(
+        "--emit-error-code",
+        action="store_true",
+        help="Emit a single line 'AETHER_ERROR_CODE:<int>' to stderr on failure (or success with 0).",
+    )
+    parser.add_argument(
+        "--json-status",
+        action="store_true",
+        help="Emit machine-readable JSON status to stdout (always; success or failure).",
+    )
 
     args = parser.parse_args()
 
@@ -1126,15 +1165,206 @@ This tool tests whether Aetherra is functioning as a true AI-native OS.
     aether = AetherCognitiveInterface()
     await aether.initialize()
 
+    # Helper to finalize exit with structured emission if requested
+    def finish(
+        code: AetherErrorCode,
+        message: str = "",
+        file: str | None = None,
+        phase: str | None = None,
+        line: int | None = None,
+    ):
+        # Preserve legacy behavior: print nothing extra on success unless json/status flags
+        if args.emit_error_code:
+            # Always emit code line for easier parsing (stderr to avoid stdout contamination)
+            try:
+                sys.stderr.write(f"AETHER_ERROR_CODE:{int(code)}\n")
+            except Exception:
+                pass
+        if args.json_status:
+            payload = {
+                "ok": code == AetherErrorCode.SUCCESS,
+                "code": int(code),
+                "code_name": _error_code_name(int(code)),
+                "file": file,
+                "phase": phase,
+                "message": message,
+                "line": line,
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+            try:
+                sys.stdout.write(json.dumps(payload) + "\n")
+            except Exception:
+                pass
+        return int(code)
+
     # Process command
     if args.command:
         command_text = " ".join(args.command)
 
         # Check if it's an .aether file
         if command_text.endswith(".aether") and len(args.command) == 1:
-            # Execute Aether Script file
-            success = await aether.execute_aether_file(command_text)
-            return 0 if success else 1
+            # Execute or parse-only depending on --check
+            if args.check:
+                try:
+                    content = Path(command_text).read_text(
+                        encoding="utf-8", errors="ignore"
+                    )
+                except Exception as e:
+                    print(f"❌ Unable to read script: {e}")
+                    return finish(
+                        AetherErrorCode.IO_ERROR,
+                        f"read failure: {e}",
+                        file=command_text,
+                        phase="read",
+                    )
+                # Simple parse pass
+                lines = content.strip().split("\n")
+                parse_ok = True
+                validation_ok = True
+                first_error_msg = ""
+                first_error_line: int | None = None
+                first_validation_msg = ""
+                first_validation_line: int | None = None
+                # Collect known built-in functions for semantic validation
+                builtins_set = set(aether.script_interpreter.built_in_functions.keys())
+
+                def _extract_func_name(segment: str) -> str | None:
+                    segment = segment.strip()
+                    if "(" not in segment or not segment.endswith(")"):
+                        return None
+                    name = segment.split("(", 1)[0].strip()
+                    if not name:
+                        return None
+                    # Very basic safeguard: reject if whitespace inside name (likely not a simple call)
+                    if any(ch.isspace() for ch in name):
+                        return None
+                    return name
+
+                for line_num, raw in enumerate(lines, 1):
+                    line = raw.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    try:
+                        if line.startswith("goal:"):
+                            # goal lines are not semantically validated (free-form text)
+                            continue
+                        if line.startswith("memory:"):
+                            # Validate memory function call if present after prefix
+                            mem_call = line[len("memory:") :].strip()
+                            fname = _extract_func_name(mem_call)
+                            if fname and fname not in builtins_set:
+                                if not first_validation_msg:
+                                    first_validation_msg = f"unknown function '{fname}'"
+                                    first_validation_line = line_num
+                                validation_ok = False
+                            continue
+                        if (
+                            ":" in line
+                            and not line.startswith("if ")
+                            and not line.startswith("for ")
+                        ):
+                            parts = line.split(":", 1)
+                            if len(parts) != 2 or not parts[0].strip():
+                                msg = (
+                                    f"Parse error (assignment) line {line_num}: {line}"
+                                )
+                                print(f"❌ {msg}")
+                                if not first_error_msg:
+                                    first_error_msg = msg
+                                    first_error_line = line_num
+                                parse_ok = False
+                            else:
+                                # Semantic validation on assignment expression if it looks like a function call
+                                expr = parts[1].strip()
+                                fname = _extract_func_name(expr)
+                                if fname and fname not in builtins_set:
+                                    if not first_validation_msg:
+                                        first_validation_msg = (
+                                            f"unknown function '{fname}'"
+                                        )
+                                        first_validation_line = line_num
+                                    validation_ok = False
+                            continue
+                        if "(" in line and line.endswith(")"):
+                            if line.count("(") != line.count(")"):
+                                msg = f"Unbalanced parentheses line {line_num}: {line}"
+                                print(f"❌ {msg}")
+                                if not first_error_msg:
+                                    first_error_msg = msg
+                                    first_error_line = line_num
+                                parse_ok = False
+                            else:
+                                # Standalone function call validation
+                                fname = _extract_func_name(line)
+                                if fname and fname not in builtins_set:
+                                    if not first_validation_msg:
+                                        first_validation_msg = (
+                                            f"unknown function '{fname}'"
+                                        )
+                                        first_validation_line = line_num
+                                    validation_ok = False
+                            continue
+                        # Other patterns considered non-fatal (could add semantic checks later)
+                    except Exception as e:  # defensive parser guard
+                        msg = f"Internal parse issue line {line_num}: {e}"
+                        print(f"❌ {msg}")
+                        if not first_error_msg:
+                            first_error_msg = msg
+                            first_error_line = line_num
+                        parse_ok = False
+                if parse_ok:
+                    if validation_ok:
+                        print("✅ Parse OK (no execution performed)")
+                        return finish(
+                            AetherErrorCode.SUCCESS,
+                            "parse ok",
+                            file=command_text,
+                            phase="parse",
+                        )
+                    else:
+                        print(
+                            "⚠️ Semantic validation failed (unknown functions detected)"
+                        )
+                        return finish(
+                            AetherErrorCode.VALIDATION_ERROR,
+                            first_validation_msg or "validation error",
+                            file=command_text,
+                            phase="parse",
+                            line=first_validation_line,
+                        )
+                return finish(
+                    AetherErrorCode.PARSE_ERROR,
+                    first_error_msg or "parse error",
+                    file=command_text,
+                    phase="parse",
+                    line=first_error_line,
+                )
+            else:
+                # Full execution path with structured runtime error capture
+                try:
+                    success = await aether.execute_aether_file(command_text)
+                except Exception as e:  # Unexpected internal error
+                    return finish(
+                        AetherErrorCode.INTERNAL_ERROR,
+                        f"internal execution crash: {e}",
+                        file=command_text,
+                        phase="execute",
+                    )
+                if success:
+                    return finish(
+                        AetherErrorCode.SUCCESS,
+                        "ok",
+                        file=command_text,
+                        phase="execute",
+                    )
+                else:
+                    # Distinguish parse vs runtime not caught earlier; here treat as runtime
+                    return finish(
+                        AetherErrorCode.RUNTIME_ERROR,
+                        "runtime failure",
+                        file=command_text,
+                        phase="execute",
+                    )
 
         # Handle goal: commands specially (Aether Script syntax)
         elif command_text.startswith("goal:"):
@@ -1195,7 +1425,7 @@ This tool tests whether Aetherra is functioning as a true AI-native OS.
                 if user_input.lower() in ["exit", "quit"]:
                     break
                 elif user_input.endswith(".aether"):
-                    # Execute Aether Script file
+                    # Execute Aether Script file (interactive mode legacy path - no structured reporting)
                     await aether.execute_aether_file(user_input)
                 elif (
                     user_input.startswith("goal:")
