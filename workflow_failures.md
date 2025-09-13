@@ -1,11 +1,12 @@
 # Workflow Failure Classification
 
-Total: 34  Failures: 34  Failure Rate: 100.00%
+Total: 5  Failures: 3  Failure Rate: 60.00%
 
 ## Categories
 | Category | Count | Example(s) |
 |----------|-------|-----------|
-| RuntimeError | 34 | C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\agent_sync.aether, C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\bootstrap.aether, C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\agents.aether, C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\agent_diagnostics.aether, C:\Users\enigm\Desktop\Aetherra Project\Aetherra\aetherra_core\system\daily_maintenance.aether |
+| VALIDATION_ERROR | 3 | /home/runner/work/Aetherra/Aetherra/Aetherra/aetherra_core/system/agents.aether, /home/runner/work/Aetherra/Aetherra/Aetherra/aetherra_core/system/agent_diagnostics.aether, /home/runner/work/Aetherra/Aetherra/Aetherra/aetherra_core/system/daily_maintenance.aether |
+| SUCCESS | 2 | /home/runner/work/Aetherra/Aetherra/Aetherra/aetherra_core/system/bootstrap.aether, /home/runner/work/Aetherra/Aetherra/Aetherra/aetherra_core/system/agent_sync.aether |
 
 ## Notes
 
