@@ -18,6 +18,9 @@ function Invoke-Step($Name, $ScriptBlock) {
     }
 }
 
+# Note: Versioning is automated via python-semantic-release. Do not manually edit version strings;
+# use Conventional Commit messages (feat:, fix:, perf:, refactor:, chore:, docs:, ci:, test:, revert:) to drive releases.
+
 # 1. Ruff (lint)
 Invoke-Step "ruff lint" { ruff check . }
 
@@ -48,7 +51,7 @@ if (Test-Path wf_sample.json) {
         $data = Get-Content wf_sample.json -Raw | ConvertFrom-Json
         if ($data.workflows) {
             $groups = $data.workflows | Where-Object { -not $_.ok -and $_.fingerprint } |
-                Group-Object fingerprint | Sort-Object Count -Descending | Select-Object -First 5
+            Group-Object fingerprint | Sort-Object Count -Descending | Select-Object -First 5
             Write-Host "Top failure fingerprints:" -ForegroundColor Cyan
             foreach ($g in $groups) {
                 $sample = ($g.Group | Select-Object -First 1)
@@ -56,7 +59,8 @@ if (Test-Path wf_sample.json) {
                 Write-Host ("  {0}  count={1}  cat={2}  file={3}" -f $g.Name, $g.Count, $cat, $sample.path)
             }
         }
-    } catch {
+    }
+    catch {
         Write-Host "Fingerprint summary error: $_" -ForegroundColor Yellow
     }
 }

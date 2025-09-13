@@ -1,0 +1,24 @@
+name: Close Stale Issues
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: 30
+          days-before-close: 7
+          stale-issue-label: 'stale'
+          stale-pr-label: 'stale'
+          exempt-issue-labels: 'critical'
+          exempt-pr-labels: 'critical'
+          stale-issue-message: 'This issue has been marked stale due to inactivity.'
+          stale-pr-message: 'This PR has been marked stale due to inactivity.'
+          close-issue-message: 'Closing due to prolonged inactivity.'
+          close-pr-message: 'Closing PR due to inactivity.'

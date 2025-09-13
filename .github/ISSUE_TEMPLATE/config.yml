@@ -6,3 +6,6 @@ contact_links:
   - name: 0.5.0 Beta Roadmap Discussion
     url: https://github.com/AetherraLabs/Aetherra/discussions
     about: Coordinate with the community on roadmap alignment before large changes.
+  - name: Questions / Usage Discussion
+    url: https://github.com/Zyonic88/aetherra/discussions
+    about: Please ask and answer usage questions here.

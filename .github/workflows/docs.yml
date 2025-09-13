@@ -1,0 +1,38 @@
+name: Docs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - 'README.md'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'README.md'
+  workflow_dispatch:
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deps
+        run: |
+          pip install --upgrade pip
+          pip install .[dev]
+          if [ -f docs/requirements.txt ]; then pip install -r docs/requirements.txt; fi
+          pip install sphinx sphinx-rtd-theme
+      - name: Build docs
+        run: |
+          if [ -d docs ]; then sphinx-build -b html docs docs/_build/html; else echo "No docs directory"; fi
+      - name: Upload artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-html
+          path: docs/_build/html

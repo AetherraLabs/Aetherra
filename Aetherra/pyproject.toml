@@ -41,6 +41,7 @@ dev = [
     "ruff>=0.4.0",
     "flake8>=5.0.0",
     "mypy>=1.0.0",
+    "python-semantic-release>=9.0.0",
 ]
 gui = [
     "PySide6>=6.4.0",
@@ -101,6 +102,20 @@ python_version = "3.8"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+
+[tool.python-semantic-release]
+version_variable = ["Aetherra/__init__.py:__version__", "Aetherra/pyproject.toml:project.version"]
+major_on_zero = false
+branch = "main"
+build_command = "python -m pip install build && python -m build"
+changelog_file = "CHANGELOG.md"
+upload_to_vcs_release = true
+upload_to_repository = false
+tag_format = "v{version}"
+commit_parser = "angular"
+prerelease_token = "beta"
+allow_zero_version = true
+assets = []
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

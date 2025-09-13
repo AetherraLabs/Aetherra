@@ -1,50 +1,56 @@
-name: Feature request
-description: Suggest an idea for this project
+name: Feature Request
+description: Suggest an enhancement or new capability
 labels: [enhancement]
-title: "feat: "
 body:
-  - type: dropdown
-    id: area
+  - type: markdown
     attributes:
-      label: Beta alignment
-      description: Which roadmap focus area does this feature serve?
-      options:
-        - stability
-        - observability
-        - security
-        - dx
-        - plugins
-        - memory
-        - federation-prep
-        - docs
-    validations:
-      required: false
-  - type: textarea
-    id: description
+      value: |
+        Provide context and a clear problem statement. Avoid mixing multiple unrelated features.
+  - type: input
+    id: summary
     attributes:
-      label: Feature description
-      description: What should be built and why?
+      label: Summary
+      description: One-line concise description.
+      placeholder: Support semantic-release automated version bump
     validations:
       required: true
   - type: textarea
-    id: solution
+    id: problem
     attributes:
-      label: Proposed solution
+      label: Problem / Use Case
+      description: What problem are you trying to solve? Why is it important?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you would like, including flags, config keys, UX examples.
+    validations:
+      required: true
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternatives considered
+      label: Alternatives Considered
+      description: Other approaches or workarounds you evaluated.
   - type: textarea
-    id: context
+    id: risks
     attributes:
-      label: Additional context
+      label: Risks / Trade-offs
+      description: Complexity, performance, security, maintenance considerations.
   - type: textarea
-    id: impact
+    id: steps
     attributes:
-      label: Expected impact
-      description: What measurable improvement (DX, stability, performance, security) does this bring?
-  - type: textarea
-    id: testplan
+      label: Implementation Sketch (Optional)
+      description: Pseudocode, data structures, migration steps.
+  - type: checkboxes
+    id: checks
     attributes:
-      label: Test plan
-      description: Outline how this will be validated (new tests, metrics, manual steps).
+      label: Submission Checklist
+      options:
+        - label: I searched existing issues and discussions.
+          required: true
+        - label: This request is focused and not a bundle of unrelated changes.
+          required: true
+        - label: I would be willing to help implement this.
+          required: false

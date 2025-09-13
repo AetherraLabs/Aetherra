@@ -1,0 +1,29 @@
+# Automatically apply labels based on changed file globs
+ui:
+  - 'src/lyrixa/ui/**/*'
+  - 'lyrixa_*ui.py'
+kernel:
+  - 'aetherra_kernel_*'
+  - 'aetherra_os.py'
+  - 'aetherra_os_launcher.py'
+memory:
+  - '*memory.db'
+  - 'aetherra_meta_memory.py'
+  - 'aetherra_persistent_memory.py'
+parser:
+  - 'aether.py'
+  - 'tools/*parse*'
+workflows:
+  - 'workflows/**/*.aether'
+  - 'tools/*aether*'
+security:
+  - '.github/workflows/*security*'
+  - 'tools/*security*'
+docs:
+  - 'docs/**/*'
+  - '*.md'
+ci:
+  - '.github/workflows/*.yml'
+performance:
+  - 'aetherra_quantum_meta_learning.py'
+  - 'aetherra_core_analyzer.py'
