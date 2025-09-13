@@ -1,0 +1,129 @@
+name: Auto-Fix Workflow Failures
+
+on:
+  workflow_dispatch:
+    inputs:
+      fix_scope:
+        description: 'Scope of fixes to apply'
+        required: true
+        default: 'critical'
+        type: choice
+        options:
+        - critical
+        - all
+        - verify-only
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+jobs:
+  auto-fix-workflows:
+    name: Auto-Fix Unicode and Workflow Issues
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+    
+    - name: Set up Unicode environment
+      run: |
+        echo "PYTHONIOENCODING=utf-8" >> $GITHUB_ENV
+        echo "PYTHONUTF8=1" >> $GITHUB_ENV
+    
+    - name: Run workflow failure classifier
+      run: |
+        python3 tools/classify_aether_workflow_failures.py \
+          --output workflow_failures_auto.json \
+          --markdown workflow_failures_auto.md \
+          --timeout 10 \
+          --limit 100
+    
+    - name: Apply fixes based on scope
+      run: |
+        case "${{ github.event.inputs.fix_scope || 'critical' }}" in
+          "critical")
+            echo "Applying critical fixes only..."
+            python3 tools/auto_fix_workflow_failures.py \
+              --files "aether.py,aetherra_os.py,Aetherra/cli/main.py,Aetherra/runtime/aether_executor.py"
+            ;;
+          "all")
+            echo "Applying comprehensive fixes..."
+            python3 tools/auto_fix_workflow_failures.py
+            ;;
+          "verify-only")
+            echo "Verification mode only..."
+            python3 tools/auto_fix_workflow_failures.py --verify
+            ;;
+        esac
+    
+    - name: Test fixes
+      run: |
+        python3 test_unicode_workflow_fix.py
+        
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if git diff --quiet; then
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+        else
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Commit and push changes
+      if: steps.check_changes.outputs.has_changes == 'true' && github.event.inputs.fix_scope != 'verify-only'
+      run: |
+        git add .
+        git commit -m "fix: Auto-fix Unicode encoding issues causing workflow failures
+        
+        - Replace Unicode emojis with ASCII alternatives
+        - Add proper encoding declarations to Python files
+        - Configure environment for Unicode support
+        - Fixes UnicodeEncodeError on Windows systems with cp1252
+        
+        Scope: ${{ github.event.inputs.fix_scope || 'critical' }}
+        Automated via: .github/workflows/auto-fix-workflow-failures.yml"
+        
+        git push
+    
+    - name: Create summary
+      run: |
+        echo "## Auto-Fix Workflow Failures Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Scope:** ${{ github.event.inputs.fix_scope || 'critical' }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Changes Applied:** ${{ steps.check_changes.outputs.has_changes }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f workflow_failures_auto.md ]; then
+          echo "**Workflow Analysis:**" >> $GITHUB_STEP_SUMMARY
+          cat workflow_failures_auto.md >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Test Results:**" >> $GITHUB_STEP_SUMMARY
+        if python3 test_unicode_workflow_fix.py; then
+          echo "✅ All Unicode fixes verified successfully" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Some fixes need additional work" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: workflow-fix-results
+        path: |
+          workflow_failures_auto.json
+          workflow_failures_auto.md
+        retention-days: 30

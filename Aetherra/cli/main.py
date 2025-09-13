@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors
 
@@ -163,16 +164,16 @@ class AetherraCodePersonaInterface:
         """Show current persona configuration"""
         if not PERSONA_AVAILABLE or not self.persona_engine:
             return """
-🤖 AetherraCode Persona Status
+[BOT] AetherraCode Persona Status
 ═══════════════════════════════════════════
 
-⚠️ Persona system not available
+[WARN] Persona system not available
 [TOOL] Running in basic CLI mode
 
 Available commands:
-• Basic AetherraCode execution
-• Standard help and information
-• Limited functionality without persona features
+* Basic AetherraCode execution
+* Standard help and information
+* Limited functionality without persona features
 """
 
         try:
@@ -213,34 +214,34 @@ Available commands:
                 installation_id = str(installation_id)[:12] + "..."
 
         except Exception:
-            return "⚠️ Error accessing persona information"
+            return "[WARN] Error accessing persona information"
 
         status = f"""
-🤖 AetherraCode Persona Status
+[BOT] AetherraCode Persona Status
 ═══════════════════════════════════════════
 
 🎭 Current Archetype: {str(archetype_name).title()}
-🗣️ Voice Configuration:
-   • Formality: {str(formality).title()}
-   • Verbosity: {str(verbosity).title()}
-   • Encouragement: {str(encouragement).title()}
-   • Humor: {str(humor).title()}
+🗣 Voice Configuration:
+   * Formality: {str(formality).title()}
+   * Verbosity: {str(verbosity).title()}
+   * Encouragement: {str(encouragement).title()}
+   * Humor: {str(humor).title()}
 
-🧠 Mindprint:
-   • Installation ID: {installation_id}
-   • Personality Traits: Available
-   • Learning: Active
+[BRAIN] Mindprint:
+   * Installation ID: {installation_id}
+   * Personality Traits: Available
+   * Learning: Active
 
-📊 Emotional Intelligence:
-   • Total Interactions: {
+[STATS] Emotional Intelligence:
+   * Total Interactions: {
             len(self.emotional_memory.memories)
             if self.emotional_memory and hasattr(self.emotional_memory, "memories")
             else 0
         }
-   • Learning Velocity: Active
-   • Context Adaptation: Enabled
+   * Learning Velocity: Active
+   * Context Adaptation: Enabled
 
-🎯 Available Commands:
+[TARGET] Available Commands:
    aetherra persona: <archetype> voice: <tone>
    aetherra debug "<problem>"
    aetherra create "<project>"
@@ -266,7 +267,7 @@ Available commands:
 
             if archetype_name.lower() in archetype_map:
                 if not PERSONA_AVAILABLE or not self.persona_engine:
-                    return "⚠️ Persona system not available - cannot set archetype"
+                    return "[WARN] Persona system not available - cannot set archetype"
 
                 archetype = archetype_map[archetype_name.lower()]
                 try:
@@ -275,7 +276,7 @@ Available commands:
                     # Update voice configuration based on tone
                     current_voice = self.persona_engine.current_persona["voice"]
                 except Exception as e:
-                    return f"⚠️ Error setting persona: {e}"
+                    return f"[WARN] Error setting persona: {e}"
 
                 # Map voice tones
                 tone_map = {
@@ -289,13 +290,13 @@ Available commands:
                 if voice_tone.lower() in tone_map:
                     current_voice.formality = tone_map[voice_tone.lower()]
 
-                return f"✅ Persona set to {archetype_name.title()} with {voice_tone} voice tone."
+                return f"[OK] Persona set to {archetype_name.title()} with {voice_tone} voice tone."
             else:
                 available = ", ".join(archetype_map.keys())
-                return f"❌ Unknown archetype '{archetype_name}'. Available: {available}"
+                return f"[ERROR] Unknown archetype '{archetype_name}'. Available: {available}"
 
         except Exception as e:
-            return f"❌ Error setting persona: {e}"
+            return f"[ERROR] Error setting persona: {e}"
 
     def _extract_file_patterns(self, command: str) -> list:
         """Extract potential file patterns from command"""
@@ -431,18 +432,18 @@ Available commands:
 
         # Adjust for urgency
         if situation.urgency_level == UrgencyLevel.CRITICAL:
-            base_response = "⚡ URGENT MODE: " + base_response
+            base_response = "[SYS] URGENT MODE: " + base_response
 
         # Add voice tone adjustments
         if voice.encouragement == "enthusiastic":
-            base_response += " 🚀"
+            base_response += " [LAUNCH]"
         elif voice.encouragement == "supportive":
             base_response += " You've got this! 💪"
 
         # Add command-specific guidance
         if "help" in command.lower():
             base_response += (
-                "\n\n💡 Based on my experience, here's what I recommend:\n"
+                "\n\n[INFO] Based on my experience, here's what I recommend:\n"
                 + self._get_specific_guidance(command, guidance)
             )
 
@@ -453,11 +454,11 @@ Available commands:
         if guidance.get("confidence", 0) > 0.5:
             patterns = guidance.get("recommended_approach", "Standard approach")
             return (
-                f"• {patterns}\n• Previous similar interactions were successful\n"
-                f"• Confidence level: {guidance.get('confidence', 0):.1%}"
+                f"* {patterns}\n* Previous similar interactions were successful\n"
+                f"* Confidence level: {guidance.get('confidence', 0):.1%}"
             )
         else:
-            return "• I'll learn from this interaction to provide better guidance in the future\n• Feel free to provide feedback on my responses"
+            return "* I'll learn from this interaction to provide better guidance in the future\n* Feel free to provide feedback on my responses"
 
 
 def main() -> None:
@@ -495,7 +496,7 @@ Examples:
         return
 
     if args.interactive:
-        print("🧠 AetherraCode Persona Interactive Mode")
+        print("[BRAIN] AetherraCode Persona Interactive Mode")
         print("Type commands or 'quit' to exit")
         print("=" * 50)
 
@@ -504,19 +505,19 @@ Examples:
                 user_input = input("\naetherra> ").strip()
                 if user_input.lower() in ["quit", "exit", "q"]:
                     print(
-                        "👋 Farewell! The persona remembers our interaction for next time."
+                        "[WAVE] Farewell! The persona remembers our interaction for next time."
                     )
                     break
 
                 if user_input:
                     response = interface.process_command(user_input)
-                    print(f"\n🤖 {response}")
+                    print(f"\n[BOT] {response}")
 
             except KeyboardInterrupt:
-                print("\n👋 Goodbye!")
+                print("\n[WAVE] Goodbye!")
                 break
             except Exception as e:
-                print(f"❌ Error: {e}")
+                print(f"[ERROR] Error: {e}")
 
         return
 
@@ -536,11 +537,11 @@ Examples:
 
     # Process regular command with adaptation
     if command_text:
-        print(f"🎯 Processing: {command_text}")
+        print(f"[TARGET] Processing: {command_text}")
         print("─" * 50)
 
         response = interface.process_command(command_text)
-        print(f"\n🤖 AetherraCode Response:\n{response}")
+        print(f"\n[BOT] AetherraCode Response:\n{response}")
 
         # Show brief adaptation info
         if interface.contextual_adaptation and hasattr(
@@ -548,10 +549,10 @@ Examples:
         ):
             situation = interface.contextual_adaptation.current_situation
             print(
-                f"\n🔄 Context: {situation.context_type.value.title()} | Urgency: {situation.urgency_level.value.title()}"
+                f"\n[LOOP] Context: {situation.context_type.value.title()} | Urgency: {situation.urgency_level.value.title()}"
             )
         else:
-            print("\n🔄 Context: Standard | Urgency: Low")
+            print("\n[LOOP] Context: Standard | Urgency: Low")
     else:
         parser.print_help()
 
