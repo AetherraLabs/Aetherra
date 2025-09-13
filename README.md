@@ -39,16 +39,12 @@ pwsh tools/security_scan.ps1
 
 Behavior:
 
-- Installs/updates required tools if missing (`bandit`, `pip-audit`, SARIF formatter)
-- Generates SARIF or creates a minimal stub on failure (so CI upload never breaks)
-- Summarizes artifact sizes for quick sanity check
 
 To open SARIF locally (VS Code): install "SARIF Viewer" extension and open the files.
 
 Add to pre-commit (optional excerpt):
 
 ```yaml
--   repo: local
         hooks:
             - id: security-scan
                 name: security-scan
@@ -57,7 +53,39 @@ Add to pre-commit (optional excerpt):
                 pass_filenames: false
 ```
 
----
+
+## Fast Contributor Quality Loop
+
+To reduce friction before pushing, we provide two complementary layers:
+
+1. **Pre-commit hooks** (`.pre-commit-config.yaml`): run signing, legacy import blocks, lint/format (Black, isort), Ruff (lint + format), security (Bandit), typing (mypy) and docstyle. Enable with:
+
+```bash
+pip install pre-commit
+pre-commit install --install-hooks
+```
+
+2. **Ultra-fast aggregation script** (`tools/quick_quality_check.ps1`): executes in seconds for a spot check.
+
+```powershell
+pwsh tools/quick_quality_check.ps1          # read-only checks
+pwsh tools/quick_quality_check.ps1 -Fix     # auto-fix formatters
+```
+
+Steps performed:
+
+- Ruff lint + format check
+- Black / isort style verification
+- Minimal targeted pytest (fast schema test) if present
+- Small parse baseline sample (10) for early parse/validation drift signals
+- Small workflow classifier sample (10) to surface systemic runtime errors
+
+3. **Fast CI Gate** (`.github/workflows/ci-fast-quality.yml`): triggers on pushes / PRs touching Python, `.aether`, or config. It mirrors the local quick script and uploads a lightweight parse baseline artifact.
+
+Recommended workflow:
+
+- Run the quick script locally until green.
+- Commit; let fast CI validate; then rely on deeper gates (quality_gates, classifier, parse baseline full) for comprehensive coverage.
 
 ## Table of Contents
 
