@@ -14,5 +14,5 @@ jobs:
             fetch-depth: 0
       - name: Placeholder sync
         run: |
-          echo "Syncing external sites (placeholder)" 
+          echo "Syncing external sites (placeholder)"
           # Future: rsync or API updates
