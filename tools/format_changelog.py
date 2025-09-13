@@ -6,7 +6,9 @@ Features:
 - Ensure single blank line between sections
 - Trim trailing whitespace
 """
+
 from __future__ import annotations
+
 import re
 from pathlib import Path
 
@@ -14,10 +16,12 @@ CHANGELOG = Path("CHANGELOG.md")
 
 HEADER_RE = re.compile(r"^## \[(?P<ver>[^\]]+)\]", re.MULTILINE)
 
+
 def load() -> str:
     if not CHANGELOG.exists():
         return ""
     return CHANGELOG.read_text(encoding="utf-8")
+
 
 def collapse_duplicate_versions(text: str) -> str:
     seen = set()
@@ -45,6 +49,7 @@ def collapse_duplicate_versions(text: str) -> str:
             out_lines.extend(pending_block)
     return "\n".join(out_lines)
 
+
 def normalize_blank_lines(text: str) -> str:
     # Ensure max one blank line between non-empty lines
     cleaned = []
@@ -59,6 +64,7 @@ def normalize_blank_lines(text: str) -> str:
                 cleaned.append("")
     return "\n".join(cleaned).strip() + "\n"
 
+
 def main():
     raw = load()
     if not raw:
@@ -70,6 +76,7 @@ def main():
         print("Changelog normalized")
     else:
         print("Changelog already normalized")
+
 
 if __name__ == "__main__":
     main()

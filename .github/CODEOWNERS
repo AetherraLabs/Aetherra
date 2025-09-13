@@ -2,15 +2,17 @@
 # See: https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # Default owners
-*       @AetherraLabs/core-maintainers
+*       @Zyonic88
 
 # Workflows and security
-.github/** @AetherraLabs/devops
+.github/** @Zyonic88
 
 # Docs
-docs/**   @AetherraLabs/docs
-docs-organized/** @AetherraLabs/docs
+docs/**   @Zyonic88
+docs-organized/** @Zyonic88
 
 # Frontend
-frontend/** @AetherraLabs/frontend
-Aetherra/lyrixa/gui/** @AetherraLabs/frontend
+frontend/** @Zyonic88
+Aetherra/lyrixa/gui/** @Zyonic88
+src/** @Zyonic88
+Aetherra/** @Zyonic88
