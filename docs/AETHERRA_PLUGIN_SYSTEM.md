@@ -14,19 +14,20 @@ This document describes the Aetherra Plugin System: the facilities that allow th
 
 ## At‑a‑glance status
 
-| Area                               | Status                     | Notes                                                                   |
-| ---------------------------------- | -------------------------- | ----------------------------------------------------------------------- |
-| Local discovery & catalog          | Implemented                | `aetherra_plugin_discovery.py`, JSON catalog file                       |
-| Plugin manager / lifecycle helpers | Implemented                | Enhanced manager & cleaner utilities                                    |
-| Dynamic loading / execution hooks  | Implemented (local)        | Safe fallback paths when execution unsupported                          |
-| Creation / scaffolding tools       | Implemented                | Toolsmith / creation wizard scripts                                     |
-| Quality control & analytics        | Implemented (foundational) | Metrics & lifecycle memory plugins present                              |
-| Plugin categories (core set)       | Implemented                | 13 sample/seed plugins discovered in recent OS runs                     |
-| Hub integration (remote registry)  | Planned                    | Roadmap Phase 2+ (central registry & distribution)                      |
-| Security hardening / sandboxing    | Partial                    | Basic validation & signing hooks; deeper isolation planned              |
-| Versioning & dependency resolution | Planned                    | Manifest fields reserved; resolver not active yet                       |
-| Remote fetch / install             | Planned                    | To be enabled once registry API online                                  |
-| Prometheus / structured metrics    | Partial                    | Some counters via existing subsystems; dedicated plugin metrics planned |
+| Area                               | Status                | Notes                                                                   |
+| ---------------------------------- | --------------------- | ----------------------------------------------------------------------- |
+| Local discovery & catalog          | ✅ Implemented         | `aetherra_plugin_discovery.py`, updated JSON catalog                    |
+| Plugin manager / lifecycle helpers | ✅ Implemented         | Consolidated manager & cleaner utilities                                |
+| Dynamic loading / execution hooks  | ✅ Implemented (local) | Safe fallback paths when execution unsupported                          |
+| Creation / scaffolding tools       | ✅ Implemented         | GUI wizard + programmatic generation tools                              |
+| Quality control & analytics        | ✅ Implemented         | Metrics & lifecycle memory plugins with dashboards                      |
+| Plugin categories (core set)       | ✅ Implemented         | 14 plugins across 9 organized categories                                |
+| GUI Integration                    | ✅ Implemented         | 6 plugins with PySide6 interfaces, plugin UI host system                |
+| Hub integration (remote registry)  | 🔄 Planned             | Roadmap Phase 2+ (central registry & distribution)                      |
+| Security hardening / sandboxing    | 🔄 Partial             | Basic validation & signing hooks; deeper isolation planned              |
+| Versioning & dependency resolution | 🔄 Planned             | Manifest fields reserved; resolver not active yet                       |
+| Remote fetch / install             | 🔄 Planned             | To be enabled once registry API online                                  |
+| Prometheus / structured metrics    | 🔄 Partial             | Some counters via existing subsystems; dedicated plugin metrics planned |
 
 ## 1) Core components
 
@@ -42,21 +43,27 @@ Primary files & artifacts (current codebase):
 Recent full OS sessions reported discovery of these plugins:
 
 ```text
-advanced-memory-system
-ai_plugin_generator_v2
-enhanced_plugin_manager
-plugin_creation_wizard
-plugin_discovery
-plugin_generator_plugin
-plugin_quality_control
-assistant_trainer_plugin
-context_aware_surfacing
-introspector_plugin
-workflow_builder_plugin
-plugin_analytics
-plugin_lifecycle_memory
+advanced-memory-system (aetherplug)
+hello_plugin (aetherplug)
+ai_plugin_generator_v2 (python)
+plugin_manager (python)
+plugin_creation_wizard (python)
+plugin_discovery (python)
+plugin_generator_plugin (python)
+plugin_quality_control (python)
+assistant_trainer_plugin (python)
+context_aware_surfacing (python)
+introspector_plugin (python)
+workflow_builder_plugin (python)
+plugin_analytics (python)
+plugin_lifecycle_memory (python)
 ```
-(Names correspond to directories / modules under `Aetherra/plugins` or generated stubs.)
+
+**Plugin Status Summary (v0.3.0):**
+- **Total**: 14 plugins (2 .aetherplug, 12 Python)
+- **With GUIs**: 6 plugins have PySide6-based interfaces
+- **Categories**: 9 distinct categories for proper organization
+- **Quality**: Duplicates resolved, proper categorization implemented
 
 ## 2) Manifest & schema
 
@@ -139,20 +146,42 @@ aetherra plugins install <name>
 
 ## 6) Categories & currently available plugins
 
-Core categories (aligned with June roadmap + observed implementations):
-- Consciousness / introspection (`introspector_plugin`, `context_aware_surfacing`)
-- Memory & lifecycle (`advanced-memory-system`, `plugin_lifecycle_memory`)
-- Generation / creation (`ai_plugin_generator_v2`, `plugin_generator_plugin`, `plugin_creation_wizard`)
-- Quality / analytics (`plugin_quality_control`, `plugin_analytics`)
-- Assistance & training (`assistant_trainer_plugin`)
-- Workflow / planning (`workflow_builder_plugin`)
-- Manager / system (`enhanced_plugin_manager`, `plugin_discovery`)
+**Updated Plugin Categories (v0.3.0):**
 
-Status mapping:
+### **Memory & Persistence**
+- **`advanced-memory-system`** (.aetherplug) - Enhanced episodic and semantic memory with vector search
+- **`plugin-lifecycle-memory`** (python) - Plugin lifecycle memory persistence and learning
 
-- Most listed plugins: prototype or alpha quality; evolving toward stable APIs
-- Advanced memory system: integrated with persistent memory abstractions (extension surface evolves with consolidation)
-- Quality & analytics: logging + memory persistence; deeper metrics pipeline planned
+### **System Infrastructure**
+- **`plugin_manager`** (python) - Core plugin lifecycle management and orchestration
+- **`plugin_discovery`** (python) - Plugin discovery and catalog management system
+
+### **Development Tools**
+- **`plugin_creation_wizard`** (python) - GUI wizard for interactive plugin creation ✅ Has PySide6 UI
+- **`plugin_generator_plugin`** (python) - Programmatic plugin code generation and templating
+- **`ai_plugin_generator_v2`** (python) - Advanced AI-powered plugin generation
+
+### **Monitoring & Analytics**
+- **`plugin_quality_control`** (python) - Plugin quality assurance and validation
+- **`plugin_analytics`** (python) - Plugin performance metrics and analytics ✅ Has PySide6 Dashboard UI
+
+### **AI & Intelligence**
+- **`assistant_trainer_plugin`** (python) - AI assistant training and improvement ✅ Has PySide6 UI
+- **`context_aware_surfacing`** (python) - Intelligent plugin recommendations ✅ Has PySide6 UI
+
+### **Analysis & Introspection**
+- **`introspector_plugin`** (python) - Autonomous code analysis and self-insight ✅ Has PySide6 UI
+
+### **Workflow & Automation**
+- **`workflow_builder_plugin`** (python) - Visual workflow design and automation ✅ Has PySide6 UI
+
+### **Examples & Learning**
+- **`hello_plugin`** (.aetherplug) - Simple demonstration plugin for tutorials
+
+**GUI Integration Status:**
+- **6 plugins** have full PySide6-based graphical interfaces
+- **Plugin UI Host** system manages GUI integration and lifecycle
+- **Auto-generated panels** when plugins declare UI surfaces
 
 ## 7) Security & policy
 
@@ -279,7 +308,7 @@ resp = await plugin.invoke("compose", {"goal": "refactor memory subsystem"}, con
 
 ---
 
-Status: ✅ Core local system implemented · 🧪 Prototype plugins active · 🛠 Registry & sandboxing in progress · 🔭 Advanced telemetry forthcoming
+**Status (v0.3.0 Stable):** ✅ Core local system implemented · ✅ 14 production plugins active · ✅ GUI integration complete · 🛠 Registry & sandboxing in progress · 🔭 Advanced telemetry forthcoming
 
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- SPDX-FileCopyrightText: 2025 Aetherra Labs and Contributors -->

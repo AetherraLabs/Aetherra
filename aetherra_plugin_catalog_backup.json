@@ -1,0 +1,280 @@
+{
+  "aetherra_local_plugins": {
+    "version": "1.0.0",
+    "generated": "2025-08-02T14:30:00Z",
+    "total_plugins": 14,
+    "plugins": [
+      {
+        "id": "advanced-memory-system",
+        "name": "advanced-memory-system",
+        "version": "1.2.3",
+        "description": "Enhanced episodic and semantic memory with vector search capabilities",
+        "author": "Aetherra Community",
+        "category": "memory",
+        "license": "GPL-3.0",
+        "type": "aetherplug",
+        "featured": true,
+        "rating": 5.0,
+        "downloads": 0,
+        "keywords": [
+          "memory",
+          "vector",
+          "semantic",
+          "episodic",
+          "ai-consciousness"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\examples\\advanced-memory-system",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "ai-plugin-generator-v2",
+        "name": "ai_plugin_generator_v2",
+        "version": "1.0.0",
+        "description": "PluginTemplate - Auto-generated description",
+        "author": "Plugin System Auto-Fixer",
+        "category": "utility",
+        "license": "GPL-3.0",
+        "type": "python",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "python",
+          "local"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\ai_plugin_generator_v2.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "sample-plugin-1",
+        "name": "sample_plugin_1",
+        "version": "1.0.0",
+        "description": "Sample plugin 1 for testing and demonstration",
+        "author": "Aetherra Development Team",
+        "category": "sample",
+        "license": "GPL-3.0",
+        "type": "sample",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "sample",
+          "demo",
+          "testing"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\sample_plugin_1.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "sample-plugin-2",
+        "name": "sample_plugin_2",
+        "version": "1.0.0",
+        "description": "Sample plugin 2 for testing and demonstration",
+        "author": "Aetherra Development Team",
+        "category": "sample",
+        "license": "GPL-3.0",
+        "type": "sample",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "sample",
+          "demo",
+          "testing"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\sample_plugin_2.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "enhanced-plugin-manager",
+        "name": "enhanced_plugin_manager",
+        "version": "1.0.0",
+        "description": "PluginState - Auto-generated description",
+        "author": "Plugin System Auto-Fixer",
+        "category": "utility",
+        "license": "GPL-3.0",
+        "type": "python",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "python",
+          "local"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\core\\plugin_manager.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "plugin-creation-wizard",
+        "name": "plugin_creation_wizard",
+        "version": "1.0.0",
+        "description": "PluginTemplate - Auto-generated description",
+        "author": "Plugin System Auto-Fixer",
+        "category": "utility",
+        "license": "GPL-3.0",
+        "type": "python",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "python",
+          "local"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\core\\plugin_creation_wizard.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "plugin-discovery",
+        "name": "plugin_discovery",
+        "version": "1.0.0",
+        "description": "PluginMetadata - Auto-generated description",
+        "author": "Plugin System Auto-Fixer",
+        "category": "utility",
+        "license": "GPL-3.0",
+        "type": "python",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "python",
+          "local"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\core\\plugin_discovery.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "plugin-generator-plugin",
+        "name": "plugin_generator_plugin",
+        "version": "1.0.0",
+        "description": "PluginTemplate - Auto-generated description",
+        "author": "Plugin System Auto-Fixer",
+        "category": "utility",
+        "license": "GPL-3.0",
+        "type": "python",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "python",
+          "local"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\core\\plugin_generator_plugin.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "plugin-quality-control",
+        "name": "plugin_quality_control",
+        "version": "1.0.0",
+        "description": "QualityMetrics - Auto-generated description",
+        "author": "Plugin System Auto-Fixer",
+        "category": "utility",
+        "license": "GPL-3.0",
+        "type": "python",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "python",
+          "local"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\core\\plugin_quality_control.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "assistant-trainer-plugin",
+        "name": "assistant_trainer_plugin",
+        "version": "1.0.0",
+        "description": "TrainingDataset - Auto-generated description",
+        "author": "Plugin System Auto-Fixer",
+        "category": "utility",
+        "license": "GPL-3.0",
+        "type": "python",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "python",
+          "local"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\extra_plugins\\assistant_trainer_plugin.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "context-aware-surfacing",
+        "name": "context_aware_surfacing",
+        "version": "1.0.0",
+        "description": "Intelligent plugin recommendation and surfacing based on current context",
+        "author": "Lyrixa Team",
+        "category": "utility",
+        "license": "GPL-3.0",
+        "type": "python",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "python",
+          "local"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\extra_plugins\\context_aware_surfacing.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "workflow-builder-plugin",
+        "name": "workflow_builder_plugin",
+        "version": "1.0.0",
+        "description": "WorkflowStep - Auto-generated description",
+        "author": "Plugin System Auto-Fixer",
+        "category": "utility",
+        "license": "GPL-3.0",
+        "type": "python",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "python",
+          "local"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\extra_plugins\\workflow_builder_plugin.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "plugin-analytics",
+        "name": "plugin_analytics",
+        "version": "1.0.0",
+        "description": "PluginMetricsCollector - Auto-generated description",
+        "author": "Plugin System Auto-Fixer",
+        "category": "utility",
+        "license": "GPL-3.0",
+        "type": "python",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "python",
+          "local"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\lifecycle\\plugin_analytics.py",
+        "aetherra_version": ">=3.0.0"
+      },
+      {
+        "id": "plugin-lifecycle-memory",
+        "name": "plugin_lifecycle_memory",
+        "version": "1.0.0",
+        "description": "PluginMemoryEntry - Auto-generated description",
+        "author": "Plugin System Auto-Fixer",
+        "category": "utility",
+        "license": "GPL-3.0",
+        "type": "python",
+        "featured": false,
+        "rating": 4.5,
+        "downloads": 0,
+        "keywords": [
+          "python",
+          "local"
+        ],
+        "local_path": "C:\\Users\\enigm\\Desktop\\Aetherra Project\\Aetherra\\plugins\\lifecycle\\plugin_lifecycle_memory.py",
+        "aetherra_version": ">=3.0.0"
+      }
+    ]
+  }
+}

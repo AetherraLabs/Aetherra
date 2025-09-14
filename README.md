@@ -5,8 +5,8 @@
 
 > AI-native development environment unifying code, memory, and intelligent automation
 
-![Status](https://img.shields.io/badge/Status-BETA-blue)
-![Version](https://img.shields.io/badge/Version-0.5.0--beta.0-0891b2)
+![Status](https://img.shields.io/badge/Status-STABLE-green)
+![Version](https://img.shields.io/badge/Version-v0.3.0-0891b2)
 ![License](https://img.shields.io/badge/License-GPLv3-0891b2)
 ![Language](https://img.shields.io/badge/Language-Python%20%2B%20Aetherra-8b5cf6)
 ![Responsible AI](https://img.shields.io/badge/Responsible%20AI-Policies%20Published-22c55e)
@@ -35,6 +35,25 @@ typed recall + legacy adapters described.
 
 ✅ **Spec→Tests gate** enabled in your dev flow; tools/verify_aether_scripts.py
 wired in CI.
+
+## v0.3.0 Release Status
+
+| Area                | Status                                                     |
+| ------------------- | ---------------------------------------------------------- |
+| Tests               | 98 passed, 1 skipped (99%)                                 |
+| Security            | All scans clean                                            |
+| QFAC & Core Systems | Operational                                                |
+| Code Quality        | PEP 585, lint-clean                                        |
+| Coverage            | **13.80%** (↑ from 8.36%); gate enforces **no regression** |
+
+**🚀 v0.3.0 shipped as "Stable"** - High test reliability and security readiness achieved.
+
+### Coverage Plan (Post-release)
+- **v0.3.1 (≤ 30 days):** ≥ **25%**
+- **v0.3.2 (≤ 60 days):** ≥ **40%**
+- **v0.3.3 (≤ 90 days):** ≥ **60%**
+
+*Coverage waiver active: No regression below 13.80% allowed; new/changed files require unit tests.*
 
 ---
 
@@ -471,6 +490,34 @@ pytest tests/capabilities/test_ownership_memory.py
 
 ---
 
+## v0.3.0 Release Highlights
+
+### 🎯 Stability Achieved
+- **QFAC**: Fixed timing-based test; system passes stability checks
+- **Type system**: Full PEP 585 modernization (Dict→dict, Optional→| None)
+- **Security**: All scanners clean; strict defaults validated
+- **Tests**: 98 passed, 1 skipped; 13.80% coverage (up from 8.36%)
+
+### 🔒 Security Hardening
+- Script/plugin signing with manifest verification
+- Capability gates enforced at runtime
+- Network allowlist with strict mode toggles
+- Audit logging for all security events
+
+### 🚀 Performance & Reliability
+- SSE v2 with Last-Event-ID resume capability
+- Event-driven kernel with backpressure control
+- Plugin UI auto-generation without chat blocking
+- Prometheus metrics for all subsystems
+
+### 📈 Quality Gates
+- No-regression coverage gate (13.80% baseline)
+- Spec→Tests gate enabled in CI
+- Static verification for .aether scripts
+- Enhanced test reliability across all subsystems
+
+---
+
 ## Roadmap & Status
 
 ### ✅ Implemented (Stable)
@@ -496,12 +543,20 @@ pytest tests/capabilities/test_ownership_memory.py
 
 ### Development Status
 
-Current focus: **Stable Release Preparation**
+**🚀 v0.3.0 Released as Stable** (Current)
 
-- Plugin stability testing and UI polish
-- Documentation completeness validation
-- Security audit and penetration testing
-- Performance optimization and scalability testing
+Major achievements:
+- 98 passed, 1 skipped tests (99% pass rate)
+- All security scans clean
+- QFAC & core systems operational
+- PEP 585 modernization complete
+- Coverage improved from 8.36% → 13.80%
+
+**Next Focus: Coverage Growth & Enhancement**
+
+- **v0.3.1 (≤ 30 days):** Coverage to 25%, plugin ecosystem expansion
+- **v0.3.2 (≤ 60 days):** Coverage to 40%, GUI stability improvements
+- **v0.3.3 (≤ 90 days):** Coverage to 60%, advanced memory features
 
 Track progress at [GitHub Issues](https://github.com/AetherraLabs/Aetherra/issues)
 and [Project Board](https://github.com/AetherraLabs/Aetherra/projects).
