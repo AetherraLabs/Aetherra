@@ -77,19 +77,26 @@ for auditable evolution.
 
 ## Architecture & Repository Map
 
-`
 Aetherra/
-├── aetherra_core/           # Core engine, kernel, and orchestration
-│   ├── aetherra_os.py      # Main OS launcher
-│   ├── aetherra_kernel_loop.py
-│   └── aetherra_agent_fabric.py
-├── lyrixa/                 # AI assistant and chat interfaces
-│   ├── lyrixa_basic.py     # Core chat implementation
-│   └── ui/                 # GUI components
-└── plugins/                # Extensible plugin system
-    ├── memory_plugins/
-    └── agent_plugins/
-`
+            ├── aetherra_core/           # Core engine, kernel, and orchestration
+
+            │   ├── aetherra_os.py      # Main OS launcher
+            
+            │   ├── aetherra_kernel_loop.py
+            
+            │   └── aetherra_agent_fabric.py
+            
+            ├── lyrixa/                 # AI assistant and chat interfaces
+            
+            │   ├── lyrixa_basic.py     # Core chat implementation
+            
+            │   └── ui/                 # GUI components
+            
+            └── plugins/                # Extensible plugin system
+            
+            ├── memory_plugins/
+            
+            └── agent_plugins/
 
 **Public Hub Endpoints** (default port 3001):
 - /api/ai/ask - Direct chat interface
